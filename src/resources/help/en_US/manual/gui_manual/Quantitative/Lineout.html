@@ -1,0 +1,512 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>8.4. Lineout &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="8. Quantitative Analysis" href="index.html"/>
+        <link rel="next" title="8.5. Data-Level Comparisons Wizard" href="DataLevelComparisonsWizard.html"/>
+        <link rel="prev" title="8.3. Pick" href="Pick.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">8. Quantitative Analysis</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Expressions.html">8.1. Expressions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Query.html">8.2. Query</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Pick.html">8.3. Pick</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">8.4. Lineout</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#lineout-mode">8.4.1. Lineout mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curve-plot">8.4.2. Curve plot</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#saving-curves">8.4.2.1. Saving curves</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#lineout-operator">8.4.3. Lineout Operator</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#setting-lineout-endpoints">8.4.3.1. Setting lineout endpoints</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-number-of-lineout-samples">8.4.3.2. Setting the number of lineout samples</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#interactive-mode">8.4.3.3. Interactive mode</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#reference-line-labels">8.4.3.4. Reference line labels</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#lineout-query">8.4.4. Lineout query</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#lineout-via-curve-plot-variable-menu">8.4.5. Lineout via Curve plot variable menu</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#global-lineout-options">8.4.6. Global lineout options</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#lineout-destination-window">8.4.6.1. Lineout destination window</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#freeze-in-time">8.4.6.2. Freeze In Time</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#synchronous-lineout">8.4.6.3. Synchronous lineout</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#sampling-and-refline-labels">8.4.6.4. Sampling and Refline labels</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="DataLevelComparisonsWizard.html">8.5. Data Level Comparisons Wizard</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">8. Quantitative Analysis</a> &raquo;</li>
+        
+      <li>8.4. Lineout</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/Quantitative/Lineout.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="lineout">
+<span id="id1"></span><h1>8.4. Lineout<a class="headerlink" href="#lineout" title="Permalink to this headline">¶</a></h1>
+<p>One-dimensional curves, created using data from 2D or 3D plots, are popular
+for analyzing data because they are simple to compare. VisIt’s visualization
+windows can be put into a mode that allows you to draw lines, along which
+data are extracted, in the visualization window. The extracted data are
+turned into a Curve plot in another visualization window. If no other
+visualization window exists, VisIt creates one and adds the Curve plot to
+it. Curve plots are often more useful than 2D Pseudocolor plots because
+they allow the data along a line to be seen spatially as a 1D curve instead
+of relying on differences in color to convey information. Furthermore, the
+curve data can be exported to curve files that allow the data to be imported
+into other Lawrence Livermore National Laboratory curve analysis software
+such as <em>Ultra</em>.</p>
+<div class="section" id="lineout-mode">
+<h2>8.4.1. Lineout mode<a class="headerlink" href="#lineout-mode" title="Permalink to this headline">¶</a></h2>
+<p>You can put the visualization window into lineout mode by selecting
+the <strong>Lineout</strong> icon (<a class="reference internal" href="#id2"><span class="std std-numref">Figure 8.11</span></a>) in the visualization
+window’s Toolbar or from the <strong>Popup menu’s Mode</strong> submenu. Note that lineout
+mode is only available with 2D plots in this version though you can create 3D
+lineouts using the Lineout query in the <strong>Query Window</strong>. After the
+visualization window is in lineout mode, you can draw reference lines in
+the window. Each reference line causes VisIt to extract data from the
+database along the prescribed path and draw the data as a Curve plot in
+another visualization window. Each reference line is drawn in a color that
+matches the initial color of the Curve plot so the reference lines, which
+may not have labels, can be easily associated with their corresponding Curve
+plots. To clear the reference lines from the visualization window, select the
+<strong>Clear reference lines</strong> option from <strong>Popup menu’s Clear</strong>  submenu.
+An example of the visualization window with reference lines and Curve plots is
+shown in <a class="reference internal" href="#lineoutexample"><span class="std std-numref">Figure 8.12</span></a>.</p>
+<div class="figure" id="id3">
+<span id="id2"></span><img alt="../../_images/lineoutmodeicon.png" src="../../_images/lineoutmodeicon.png" />
+<p class="caption"><span class="caption-number">Fig. 8.11 </span><span class="caption-text">Lineout mode toolbar icon</span></p>
+</div>
+<div class="figure" id="id4">
+<span id="lineoutexample"></span><img alt="../../_images/lineout.png" src="../../_images/lineout.png" />
+<p class="caption"><span class="caption-number">Fig. 8.12 </span><span class="caption-text">Visualization windows with reference line and Curve plots</span></p>
+</div>
+</div>
+<div class="section" id="curve-plot">
+<h2>8.4.2. Curve plot<a class="headerlink" href="#curve-plot" title="Permalink to this headline">¶</a></h2>
+<p>Curve plots are created by drawing reference lines. The visualization
+window must be in lineout mode before reference lines can be created.
+You can create a reference line by positioning the mouse over the first
+point of interest, clicking the left mouse button and then moving the
+mouse, while pressing the left mouse button, and releasing the mouse over
+the second endpoint. Releasing the mouse button creates a reference line
+along the path that was drawn with the mouse. When you draw a reference
+line, you cause a Curve plot of the data along the reference line to
+appear in another visualization window. If another visualization window
+is not available, VisIt opens a new one before creating the Curve plot.
+The Curve plot in the second window can be modified by setting the active
+window to the visualization window that contains the Curve plots.</p>
+<p>See <a class="reference internal" href="../Plots/PlotTypes/CurvePlot.html#curve-plot"><span class="std std-ref">Curve Plot</span></a> for information on changing the Curve plot’s appearance.</p>
+<div class="section" id="saving-curves">
+<h3>8.4.2.1. Saving curves<a class="headerlink" href="#saving-curves" title="Permalink to this headline">¶</a></h3>
+<p>Once a curve has been generated, it can be saved to a curve file. A curve
+file is an ASCII text file that contains the X-Y pairs that make up the
+curve and it is useful for exporting curve data to other curve analysis
+programs. To save a curve, make sure you first set the active window to
+the visualization window that contains the curve. Next, save the window
+using the <em>curve</em> file format. All of the curves in the visualization
+window are saved to the specified curve file.</p>
+</div>
+</div>
+<div class="section" id="lineout-operator">
+<h2>8.4.3. Lineout Operator<a class="headerlink" href="#lineout-operator" title="Permalink to this headline">¶</a></h2>
+<p>The Curve plot uses the Lineout operator to extract data from a database
+along a linear path. The Lineout operator is not generally available
+since curves are created only through reference lines and not the
+<strong>Plot menu</strong>. Still, once a curve has been created using the Lineout
+operator, certain attributes of the Lineout can be modified. Note that
+when you modify the Lineout attributes, it is best to turn
+off the <strong>Apply operators to all plots</strong> check box in the <strong>Main Window</strong>
+so that all curves do not get the same set of Lineout operator
+attributes.</p>
+<div class="section" id="setting-lineout-endpoints">
+<h3>8.4.3.1. Setting lineout endpoints<a class="headerlink" href="#setting-lineout-endpoints" title="Permalink to this headline">¶</a></h3>
+<p>You can modify the line endpoints by typing new coordinates into the
+<strong>Point 1</strong> or <strong>Point 2</strong> text fields of the <strong>Lineout attributes</strong> window
+(<a class="reference internal" href="#lineoutwindow"><span class="std std-numref">Figure 8.13</span></a>). Each endpoint is a 3D
+coordinate that is specified by three space-separated floating point
+numbers. If you are performing a Lineout operation on 2D data, you can
+set the value for the Z coordinate to zero.</p>
+<div class="figure" id="id5">
+<span id="lineoutwindow"></span><img alt="../../_images/lineoutattswindow.png" src="../../_images/lineoutattswindow.png" />
+<p class="caption"><span class="caption-number">Fig. 8.13 </span><span class="caption-text">Lineout attributes window</span></p>
+</div>
+</div>
+<div class="section" id="setting-the-number-of-lineout-samples">
+<h3>8.4.3.2. Setting the number of lineout samples<a class="headerlink" href="#setting-the-number-of-lineout-samples" title="Permalink to this headline">¶</a></h3>
+<p>The Lineout operator works by extracting sample points along a line.
+The sample points are then used to create Curve plots. The Lineout
+operator’s default sampling scheme is to sample data values at the
+intersections between the sampling line and the cell boundaries
+encountered along the way. This method gives rise to jagged Curve plots
+favored by many VisIt users. See <a class="reference internal" href="#lineoutsampling"><span class="std std-numref">Figure 8.14</span></a>
+for a comparison between the sampling methods. If you instead want
+to smoothly sample the cells along the sampling line with some number
+of evenly spaced sample points, you can make the Lineout operator use evenly
+spaced sampling by clicking on the <strong>Override Global Lineout Settings</strong>
+check box in the <strong>Lineout attributes</strong> window. Then click on
+the <strong>Use Sampling</strong> check box and enter a number of sample points. The
+number of sample points taken along the line determine the fidelity
+of the Curve plot. Generally, it is best to set the number of sample
+points such that each cell is sampled at least once. To set the number
+of sample points, type a new number into the <strong>Samples</strong> text field.</p>
+<div class="figure" id="id6">
+<span id="lineoutsampling"></span><img alt="../../_images/lineoutsampling.png" src="../../_images/lineoutsampling.png" />
+<p class="caption"><span class="caption-number">Fig. 8.14 </span><span class="caption-text">Lineout via cell intersection and lineout via sampling</span></p>
+</div>
+</div>
+<div class="section" id="interactive-mode">
+<h3>8.4.3.3. Interactive mode<a class="headerlink" href="#interactive-mode" title="Permalink to this headline">¶</a></h3>
+<p>When the <strong>Interactive</strong> check box is checked, changes to the Lineout
+operator can be made by using the <strong>Line tool</strong> available from the
+originating plot’s visualization window Toolbar or Popup menu.
+<em>Interactive mode does not apply to lineouts created via the Curve plot’s
+variable menu</em>.</p>
+<p>To utilize the line tool to modify a Lineout curve, make the visualization
+window with the originating plot the active window. Choose the Line tool. It
+should be initialized with the endpoints of the reference line.  Moving the tool
+will change the lineout.
+(<em>Note:  Due to a current bug, the tool must be activated, deactivated, then activated a second time in order to be properly initialized with the Lineout’s endpoint values.</em>)
+See <a class="reference internal" href="../InteractiveTools/index.html#interactivetools"><span class="std std-ref">Interactive Tools</span></a> for more information on tool utilization.</p>
+</div>
+<div class="section" id="reference-line-labels">
+<h3>8.4.3.4. Reference line labels<a class="headerlink" href="#reference-line-labels" title="Permalink to this headline">¶</a></h3>
+<p>You can make the reference lines in the window that caused Curve plots to be
+generated to have labels by checking the Lineout operator’s <strong>Refline Labels</strong>
+check box.</p>
+</div>
+</div>
+<div class="section" id="lineout-query">
+<h2>8.4.4. Lineout query<a class="headerlink" href="#lineout-query" title="Permalink to this headline">¶</a></h2>
+<p>Performing a Lineout query requires an existing non-hidden plot in the active
+window. Choose <strong>Lineout</strong> from the <strong>Query</strong> window (available from the GUI’s
+Controls dropdown menu). Set start and end points (similar to Setting lineout
+endpoints).  Lineout query is the only Lineout method that allows you to create
+curves for multiple variables.  Simply select the desired variables from the
+<strong>Variables</strong> dropdown menu.  <em>Default</em> means the variable as plotted in the
+currently active plot.  A lineout curve will be generated for each variable,
+plotted along the same reference line.  Each curve will have its own color.
+The <strong>Use Sampling</strong> and <strong>Sample Points</strong> option is the same as before.</p>
+<div class="figure" id="id7">
+<span id="lineoutqueryparams"></span><img alt="../../_images/lineout_query_params.png" src="../../_images/lineout_query_params.png" />
+<p class="caption"><span class="caption-number">Fig. 8.15 </span><span class="caption-text">Lineout query’s parameters window</span></p>
+</div>
+</div>
+<div class="section" id="lineout-via-curve-plot-variable-menu">
+<h2>8.4.5. Lineout via Curve plot variable menu<a class="headerlink" href="#lineout-via-curve-plot-variable-menu" title="Permalink to this headline">¶</a></h2>
+<p>With this method, Lineout is considered one of the
+<a class="reference internal" href="../Operators/Operators_that_Generate_New_Variables.html#operators-that-generate-new-variables"><span class="std std-ref">Operators that Generate New Variables</span></a>.  That means you can use it without
+first generating a plot of the data from which you wish to extract the lineout.
+To create a Lineout in this manner, open your database, select Curve plot, then
+choose <em>operators/Lineout/&lt;var-name&gt;</em> from the Curve plot’s variable menu as
+shown in <a class="reference internal" href="#lineout-from-curve"><span class="std std-numref">Figure 8.16</span></a>.</p>
+<div class="figure" id="id8">
+<span id="lineout-from-curve"></span><a class="reference internal image-reference" href="../../_images/lineout_from_curveplot.png"><img alt="../../_images/lineout_from_curveplot.png" src="../../_images/lineout_from_curveplot.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 8.16 </span><span class="caption-text">Choosing lineout from the Curve plot’s variable menu</span></p>
+</div>
+<p>It is highly recommended that you modify the Lineout’s endpoints before clicking
+draw, as the defaults will probably not be appropriate for your data.</p>
+</div>
+<div class="section" id="global-lineout-options">
+<h2>8.4.6. Global lineout options<a class="headerlink" href="#global-lineout-options" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>Lineout Options Window</strong>, available by selecting <strong>Lineout</strong> from the
+<strong>Controls</strong> menu in the <strong>Main Window</strong> contains <em>global</em> lineout options.
+They are <em>global</em> in the sense that they will apply to <em>all</em> future lineouts.
+The <strong>Lineout Options Window</strong> has controls for choosing the destination
+window of the lineout curve plots, as well as settings for how changes to
+the originating plot affect the lineout curve plot.  Modifying these options
+will only apply to future lineouts, not lineouts already created.</p>
+<div class="figure" id="id9">
+<span id="lineoutoptionswindow"></span><img alt="../../_images/lineoutoptionswindow.png" src="../../_images/lineoutoptionswindow.png" />
+<p class="caption"><span class="caption-number">Fig. 8.17 </span><span class="caption-text">Lineout Options Window</span></p>
+</div>
+<div class="section" id="lineout-destination-window">
+<h3>8.4.6.1. Lineout destination window<a class="headerlink" href="#lineout-destination-window" title="Permalink to this headline">¶</a></h3>
+<p>By default, VisIt will place all lineout curves in the same window.  It will
+use the first unused open window or create one if one does not yet exist.
+You can override this behavior for future lineouts by unchecking the
+<strong>Use 1st unused window</strong> checkbox, and typing a window number into the
+<strong>Window #</strong> text box.</p>
+</div>
+<div class="section" id="freeze-in-time">
+<h3>8.4.6.2. Freeze In Time<a class="headerlink" href="#freeze-in-time" title="Permalink to this headline">¶</a></h3>
+<p>If the plot that originated the Lineout curve was from a time-varying database,
+the curve can be advanced in time using the animation controls for the window
+containing the lineout curve.  If you would rather the lineout be frozen
+at the timestep from which it was taken, check the <strong>Freeze in Time</strong> option.
+This will also disable the ability to synchronize the lineout curve with its
+originating plot.</p>
+</div>
+<div class="section" id="synchronous-lineout">
+<h3>8.4.6.3. Synchronous lineout<a class="headerlink" href="#synchronous-lineout" title="Permalink to this headline">¶</a></h3>
+<p>Normally when you perform a lineout operation, the Curve plot that
+results from the lineout operation is in no way connected to the plots
+in the window that originated the Curve plot. If you want variable or time
+state changes made to the originating plots to also affect the Curve plots that
+were created via lineout, click the <strong>Synchronize with originating plot</strong>
+check box in the <strong>Lineout Options Window</strong>
+(see <a class="reference internal" href="#lineoutoptionswindow"><span class="std std-numref">Figure 8.17</span></a>).</p>
+<p>With this option selected, any change to the variable in the plot that
+originated the lineout, will update the lineout to reflect the new variable’s
+data.  When you change time states for the plot that originated the lineout,
+the lineout will update to reflect the data at the new time state.</p>
+<p>To make VisIt create a new Curve plot for the lineout instead of updating when
+you change time states in the originating plot, change the <strong>Time change</strong>
+behavior in the <strong>Lineout Options Window</strong> from <strong>updates curve</strong> to
+<strong>creates new curve</strong>. VisIt will then put a new curve in the lineout
+destination window each time you advance to a new time state, resulting in many
+Curve plots (see <a class="reference internal" href="#dynamiclineout"><span class="std std-numref">Figure 8.18</span></a>). By default, VisIt will
+make all of the related Curve plots be the same color. You can override this
+behavior by selecting <strong>creates new color</strong> instead of <strong>repeats color</strong> from
+the <strong>New curve</strong> combo box.</p>
+<p><em>Synchronization does not apply to lineout curves created via the Curve plot
+variable menu, as this type of lineout does not have an originating plot.</em></p>
+<div class="figure" id="id10">
+<span id="dynamiclineout"></span><img alt="../../_images/dynamiclineout.png" src="../../_images/dynamiclineout.png" />
+<p class="caption"><span class="caption-number">Fig. 8.18 </span><span class="caption-text">Dynamic lineout can be used to create curves for multiple time states</span></p>
+</div>
+</div>
+<div class="section" id="sampling-and-refline-labels">
+<h3>8.4.6.4. Sampling and Refline labels<a class="headerlink" href="#sampling-and-refline-labels" title="Permalink to this headline">¶</a></h3>
+<p>These options are the same as described for individual lineouts.  Use these
+options when you want your choices to apply to <em>all</em> lineouts.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="DataLevelComparisonsWizard.html" class="btn btn-neutral float-right" title="8.5. Data-Level Comparisons Wizard" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Pick.html" class="btn btn-neutral" title="8.3. Pick" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

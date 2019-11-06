@@ -1,0 +1,405 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Release Candidate (RC) Development &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../index.html"/>
+        <link rel="up" title="VisIt Developer Manual" href="index.html"/>
+        <link rel="next" title="Creating a Release" href="CreateRelease.html"/>
+        <link rel="prev" title="Reviewing a Pull Request" href="pr_review.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../gui_manual/index.html">GUI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pr_create.html">Creating a Pull Request</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pr_review.html">Reviewing a Pull Request</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Release Candidate (RC) Development</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-the-rc-branch">Creating the RC branch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#making-the-changes">Making the changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-the-pull-request-on-the-release-candidate">Creating the pull request on the release candidate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apply-the-same-changes-to-develop">Apply the same changes to develop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-the-pull-request-for-develop">Creating the pull request for develop</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="CreateRelease.html">Creating a Release</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Docker.html">Using Docker</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">VisIt Developer Manual</a> &raquo;</li>
+        
+      <li>Release Candidate (RC) Development</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/dev_manual/RCDevelopment.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="release-candidate-rc-development">
+<h1>Release Candidate (RC) Development<a class="headerlink" href="#release-candidate-rc-development" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> normally has two active branches for doing development. The
+first is develop and the second is the current release candidate. Work
+performed on the develop branch will go into the next major release,
+such as 3.1. Work performed on the current release candidate will go into
+the next minor release, such as 3.0.2. When doing work on the release
+candidate the normal sequence of operations is as follows:</p>
+<ul class="simple">
+<li>A branch is created off the current release candidate.</li>
+<li>Changes are made on the branch.</li>
+<li>A pull request is generated to merge the changes to the current release candidate.</li>
+<li>The changes are then merged into the release candidate.</li>
+<li>A branch is created off of develop.</li>
+<li>The changes from the branch off the release candidate are applied to the branch.</li>
+<li>A pull request is generated to merge the changes to develop.</li>
+<li>The changes are then merged into develop.</li>
+</ul>
+<p>In some instances the changes made to the release candidate are not applied
+to develop, in many instances the exact same changes can be applied to both
+the release candidate and develop, and in some instannces the changes
+applied to the two branches are slightly or significantly different.</p>
+<p>The rest of the section will go through the steps of the most common case
+of making the exact same changes to both branches using an example of
+updating the 3.0.2 release notes on the 3.0RC and develop.</p>
+</div>
+<div class="section" id="creating-the-rc-branch">
+<h2>Creating the RC branch<a class="headerlink" href="#creating-the-rc-branch" title="Permalink to this headline">¶</a></h2>
+<p>First you checkout the 3.0RC and then create your branch.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="mf">3.0</span><span class="n">RC</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">task</span><span class="o">/</span><span class="n">brugger1</span><span class="o">/</span><span class="mi">2019_09_05</span><span class="n">_update_release_notes</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="making-the-changes">
+<h2>Making the changes<a class="headerlink" href="#making-the-changes" title="Permalink to this headline">¶</a></h2>
+<p>At this point you would modify your branch as you normally do, modifying,
+adding or deleting files, and then commiting the changes to the branch.</p>
+</div>
+<div class="section" id="creating-the-pull-request-on-the-release-candidate">
+<h2>Creating the pull request on the release candidate<a class="headerlink" href="#creating-the-pull-request-on-the-release-candidate" title="Permalink to this headline">¶</a></h2>
+<p>Once you have committed all your changes to the branch you are ready to
+create the pull request. You will start out by pushing your changes to
+GitHub as normal.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="o">--</span><span class="nb">set</span><span class="o">-</span><span class="n">upstream</span> <span class="n">origin</span> <span class="n">task</span><span class="o">/</span><span class="n">brugger1</span><span class="o">/</span><span class="mi">2019_09_05</span><span class="n">_update_release_notes</span>
+</pre></div>
+</div>
+<p>Now you go over to GitHub and create your pull request. When creating your
+pull request, make sure that you are merging it into the release candidate.</p>
+<div class="figure" id="id1">
+<img alt="../_images/RCDevelop-GitHubStep1.png" src="../_images/RCDevelop-GitHubStep1.png" />
+<p class="caption"><span class="caption-number">Fig. 6 </span><span class="caption-text">Merging into the release candidate.</span></p>
+</div>
+<p>Now you go through the normal pull request process. Once you have merged
+your changes into the release candidate you can delete the branch at GitHub
+and locally.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">remote</span> <span class="n">prune</span> <span class="n">origin</span>
+<span class="n">git</span> <span class="n">remote</span> <span class="n">update</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="mf">3.0</span><span class="n">RC</span>
+<span class="n">git</span> <span class="n">pull</span>
+<span class="n">git</span> <span class="n">branch</span> <span class="o">-</span><span class="n">D</span> <span class="n">task</span><span class="o">/</span><span class="n">brugger1</span><span class="o">/</span><span class="mi">2019_09_05</span><span class="n">_update_release_notes</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="apply-the-same-changes-to-develop">
+<h2>Apply the same changes to develop<a class="headerlink" href="#apply-the-same-changes-to-develop" title="Permalink to this headline">¶</a></h2>
+<p>You will apply your changes from the 3.0RC to develop by creating a patch
+of your changes to the 3.0RC and applying them to a branch created off of
+develop. The easiest way to create the patch is immediately after you have
+merged your changes into the release candidate before anyone else makes
+any changes. In this case you can get the last set of changes from the head.
+If someone else has made changes in the mean time you will need to use
+the SHA of your merge to the release candidate. When we create the
+branch to make the changes on develop, you can use the same name as you
+used on the release candidate branch and add <code class="docutils literal notranslate"><span class="pre">_develop</span></code>. Normally, you
+can omit the first two steps below since you presumably just did that a
+moment ago.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="mf">3.0</span><span class="n">RC</span>
+<span class="n">git</span> <span class="n">pull</span>
+<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">patch</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">git</span> <span class="nb">format</span><span class="o">-</span><span class="n">patch</span> <span class="o">-</span><span class="mi">1</span> <span class="n">HEAD</span> <span class="o">--</span><span class="n">stdout</span> <span class="o">&gt;</span> <span class="n">patch</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="n">develop</span>
+<span class="n">git</span> <span class="n">pull</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">task</span><span class="o">/</span><span class="n">brugger1</span><span class="o">/</span><span class="mi">2019_09_05</span><span class="n">_update_release_notes_develop</span>
+<span class="n">git</span> <span class="n">am</span> <span class="o">-</span><span class="mi">3</span> <span class="o">&lt;</span> <span class="n">patch</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+<p>In the case where you need to use the SHA to create the patch, you can
+get it from the code tab at GitHub for the release candidate branch.</p>
+<div class="figure" id="id2">
+<img alt="../_images/RCDevelop-GitHubStep2.png" src="../_images/RCDevelop-GitHubStep2.png" />
+<p class="caption"><span class="caption-number">Fig. 7 </span><span class="caption-text">Getting the SHA for the merge into the release candidate.</span></p>
+</div>
+<p>The command to create the patch would then look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="nb">format</span><span class="o">-</span><span class="n">patch</span> <span class="o">-</span><span class="mi">1</span> <span class="mi">69</span><span class="n">b0561</span> <span class="o">--</span><span class="n">stdout</span> <span class="o">&gt;</span> <span class="n">patch</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+<p>Sometimes conflicts occur when applying the patch. This may happen with
+frequently updated files such as the release notes. If that happens you
+will get a message similar to the one below indicating which files had
+conflicts.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Applying</span><span class="p">:</span> <span class="n">Updated</span> <span class="n">the</span> <span class="mf">3.0</span><span class="o">.</span><span class="mi">2</span> <span class="n">release</span> <span class="n">notes</span><span class="o">.</span> <span class="p">(</span><span class="c1">#3867)</span>
+<span class="n">Using</span> <span class="n">index</span> <span class="n">info</span> <span class="n">to</span> <span class="n">reconstruct</span> <span class="n">a</span> <span class="n">base</span> <span class="n">tree</span><span class="o">...</span>
+<span class="n">M</span>       <span class="n">src</span><span class="o">/</span><span class="n">resources</span><span class="o">/</span><span class="n">help</span><span class="o">/</span><span class="n">en_US</span><span class="o">/</span><span class="n">relnotes3</span><span class="o">.</span><span class="mf">0.2</span><span class="o">.</span><span class="n">html</span>
+<span class="n">Falling</span> <span class="n">back</span> <span class="n">to</span> <span class="n">patching</span> <span class="n">base</span> <span class="ow">and</span> <span class="mi">3</span><span class="o">-</span><span class="n">way</span> <span class="n">merge</span><span class="o">...</span>
+<span class="n">Auto</span><span class="o">-</span><span class="n">merging</span> <span class="n">src</span><span class="o">/</span><span class="n">resources</span><span class="o">/</span><span class="n">help</span><span class="o">/</span><span class="n">en_US</span><span class="o">/</span><span class="n">relnotes3</span><span class="o">.</span><span class="mf">0.2</span><span class="o">.</span><span class="n">html</span>
+<span class="n">CONFLICT</span> <span class="p">(</span><span class="n">content</span><span class="p">):</span> <span class="n">Merge</span> <span class="n">conflict</span> <span class="ow">in</span> <span class="n">src</span><span class="o">/</span><span class="n">resources</span><span class="o">/</span><span class="n">help</span><span class="o">/</span><span class="n">en_US</span><span class="o">/</span><span class="n">relnotes3</span><span class="o">.</span><span class="mf">0.2</span><span class="o">.</span><span class="n">html</span>
+<span class="n">error</span><span class="p">:</span> <span class="n">Failed</span> <span class="n">to</span> <span class="n">merge</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">changes</span><span class="o">.</span>
+<span class="n">Patch</span> <span class="n">failed</span> <span class="n">at</span> <span class="mi">0001</span> <span class="n">Updated</span> <span class="n">the</span> <span class="mf">3.0</span><span class="o">.</span><span class="mi">2</span> <span class="n">release</span> <span class="n">notes</span><span class="o">.</span> <span class="p">(</span><span class="c1">#3867)</span>
+<span class="n">The</span> <span class="n">copy</span> <span class="n">of</span> <span class="n">the</span> <span class="n">patch</span> <span class="n">that</span> <span class="n">failed</span> <span class="ow">is</span> <span class="n">found</span> <span class="ow">in</span><span class="p">:</span> <span class="o">.</span><span class="n">git</span><span class="o">/</span><span class="n">rebase</span><span class="o">-</span><span class="n">apply</span><span class="o">/</span><span class="n">patch</span>
+<span class="n">When</span> <span class="n">you</span> <span class="n">have</span> <span class="n">resolved</span> <span class="n">this</span> <span class="n">problem</span><span class="p">,</span> <span class="n">run</span> <span class="s2">&quot;git am --continue&quot;</span><span class="o">.</span>
+<span class="n">If</span> <span class="n">you</span> <span class="n">prefer</span> <span class="n">to</span> <span class="n">skip</span> <span class="n">this</span> <span class="n">patch</span><span class="p">,</span> <span class="n">run</span> <span class="s2">&quot;git am --skip&quot;</span> <span class="n">instead</span><span class="o">.</span>
+<span class="n">To</span> <span class="n">restore</span> <span class="n">the</span> <span class="n">original</span> <span class="n">branch</span> <span class="ow">and</span> <span class="n">stop</span> <span class="n">patching</span><span class="p">,</span> <span class="n">run</span> <span class="s2">&quot;git am --abort&quot;</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>In our case it was the release notes. The file will be modified with
+the conflicts highlighted in the normal <code class="docutils literal notranslate"><span class="pre">&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">=========</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span></code> notation. You can go in and edit the files and then do a
+<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">add</span></code> for each file that was in conflict. After that point you can
+do a <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">am</span> <span class="pre">--continue</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vi</span> <span class="n">src</span><span class="o">/</span><span class="n">resources</span><span class="o">/</span><span class="n">help</span><span class="o">/</span><span class="n">en_US</span><span class="o">/</span><span class="n">relnotes3</span><span class="o">.</span><span class="mf">0.2</span><span class="o">.</span><span class="n">html</span>
+<span class="n">git</span> <span class="n">add</span> <span class="n">src</span><span class="o">/</span><span class="n">resources</span><span class="o">/</span><span class="n">help</span><span class="o">/</span><span class="n">en_US</span><span class="o">/</span><span class="n">relnotes3</span><span class="o">.</span><span class="mf">0.2</span><span class="o">.</span><span class="n">html</span>
+<span class="n">git</span> <span class="n">am</span> <span class="o">--</span><span class="k">continue</span>
+</pre></div>
+</div>
+<p>Now you changes will have been commited to the branch with the appropriate
+commit message. You are now ready to push the change to GitHub and create
+a new pull request.</p>
+</div>
+<div class="section" id="creating-the-pull-request-for-develop">
+<h2>Creating the pull request for develop<a class="headerlink" href="#creating-the-pull-request-for-develop" title="Permalink to this headline">¶</a></h2>
+<p>You first push your changes to GitHub as normal.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="o">--</span><span class="nb">set</span><span class="o">-</span><span class="n">upstream</span> <span class="n">origin</span> <span class="n">task</span><span class="o">/</span><span class="n">brugger1</span><span class="o">/</span><span class="mi">2019_09_05</span><span class="n">_update_release_notes_develop</span>
+</pre></div>
+</div>
+<p>Now you go over to GitHub and create your pull request. When creating your
+pull request, make sure that you are merging it into develop.</p>
+<div class="figure" id="id3">
+<img alt="../_images/RCDevelop-GitHubStep3.png" src="../_images/RCDevelop-GitHubStep3.png" />
+<p class="caption"><span class="caption-number">Fig. 8 </span><span class="caption-text">Merging into develop.</span></p>
+</div>
+<p>In the description you can simply say that you are merging from the
+release candidate into develop rather than providing all the normal pull
+request information. If you are resolving an issue, you will want to
+mention that, since the automatic closing of issues only happens when
+you merge into develop.</p>
+<div class="figure" id="id4">
+<img alt="../_images/RCDevelop-GitHubStep4.png" src="../_images/RCDevelop-GitHubStep4.png" />
+<p class="caption"><span class="caption-number">Fig. 9 </span><span class="caption-text">The pull request with the abbreviated description.</span></p>
+</div>
+<p>Now you go through the normal pull request process. Once you have merged
+your changes into develop you can delete the branch at GitHub and locally.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">remote</span> <span class="n">prune</span> <span class="n">origin</span>
+<span class="n">git</span> <span class="n">remote</span> <span class="n">update</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="mf">3.0</span><span class="n">RC</span>
+<span class="n">git</span> <span class="n">pull</span>
+<span class="n">git</span> <span class="n">branch</span> <span class="o">-</span><span class="n">D</span> <span class="n">task</span><span class="o">/</span><span class="n">brugger1</span><span class="o">/</span><span class="mi">2019_09_05</span><span class="n">_update_release_notes_develop</span>
+</pre></div>
+</div>
+<p>That’s it. You have now made the exact same change to both the 3.0RC and
+develop.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="CreateRelease.html" class="btn btn-neutral float-right" title="Creating a Release" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="pr_review.html" class="btn btn-neutral" title="Reviewing a Pull Request" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,503 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>3.2.14. Volume plot &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../../index.html"/>
+        <link rel="up" title="3.2. Standard Plot Types" href="index.html"/>
+        <link rel="next" title="4. Operators" href="../../Operators/index.html"/>
+        <link rel="prev" title="3.2.13. Vector plot" href="VectorPlot.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">3. Plots</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../Working_with_Plots.html">3.1. Working with Plots</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">3.2. Standard Plot Types</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="Common.html">3.2.1. Common Controls</a></li>
+<li class="toctree-l4"><a class="reference internal" href="BoundaryPlot.html">3.2.2. Boundary and FilledBoundary Plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ContourPlot.html">3.2.3. Contour Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="CurvePlot.html">3.2.4. Curve Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="HistogramPlot.html">3.2.5. Histogram Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="LabelPlot.html">3.2.6. Label Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="MeshPlot.html">3.2.7. Mesh Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PseudocolorPlot.html">3.2.8. Pseudocolor plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ScatterPlot.html">3.2.9. Scatter Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="SubsetPlot.html">3.2.10. Subset Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TensorPlot.html">3.2.11. Tensor plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TruecolorPlot.html">3.2.12. Truecolor plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="VectorPlot.html">3.2.13. Vector plot</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">3.2.14. Volume plot</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#setting-colors">3.2.14.1. Setting colors</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#limits">3.2.14.2. Limits</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-opacities">3.2.14.3. Setting opacities</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#changing-the-opacity-variable">3.2.14.4. Changing the opacity variable</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#controlling-image-quality">3.2.14.5. Controlling image quality</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#software-rendered-images">3.2.14.6. Software rendered images</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#lighting">3.2.14.7. Lighting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="../index.html">3. Plots</a> &raquo;</li>
+        
+          <li><a href="index.html">3.2. Standard Plot Types</a> &raquo;</li>
+        
+      <li>3.2.14. Volume plot</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/gui_manual/Plots/PlotTypes/VolumePlot.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="volume-plot">
+<h1>3.2.14. Volume plot<a class="headerlink" href="#volume-plot" title="Permalink to this headline">¶</a></h1>
+<div class="figure" id="id1">
+<span id="volume-plot-example"></span><img alt="../../../_images/volumeplot.png" src="../../../_images/volumeplot.png" />
+<p class="caption"><span class="caption-number">Fig. 3.49 </span><span class="caption-text">Volume Plot Example</span></p>
+</div>
+<p>This plot, shown in (<a class="reference internal" href="#volume-plot-example"><span class="std std-numref">Figure 3.49</span></a>), uses both color
+and transparency to visualize 3D scalar fields. The values in the data range
+have associated color and opacity values that allow parts of the dataset to
+become partially or completely transparent. This plot captures internal details
+while keeping the whole dataset at least partially visible.</p>
+<p>The Volume plot uses a visualization technique known as volume-rendering, which
+assigns color and opacity values to a range of data values. The colors and
+opacities are collectively known as a volume transfer function. The volume
+transfer function determines the colors of the plot and which parts are
+visible. The Volume plot uses three types of volume-rendering to visualize
+data.</p>
+<p>The first volume rendering method, hardware-accelerated splatting, resamples
+the entire database onto a small rectilinear grid and then, at each node in
+the grid, draws a small textured polygon. The polygon gets its colors and
+opacity from the transfer function. This method is fast due to its use of
+graphics hardware but it can require a large number of points in the
+resampled mesh to look accurate.</p>
+<p>Like the first volume rendering method, the second method, hardware-accelerated
+3D texturing, resamples the entire database onto a small rectilinear grid. Once
+the data has been resampled, it is converted into a 3D texture using the Volume
+plot’s volume-transfer function and gets loaded into the video card’s texture
+memory. The Volume plot then draws a set of planes that are perpendicular to
+the view vector from back to front, with each plane getting the pre-loaded
+texture mapped onto it. The resulting image is very crisp and captures details
+not evident when the splatting method is used.</p>
+<p>The third volume-rendering technique, called ray-casting, used by the Volume
+plot is not hardware accelerated. In ray-casting, a ray is followed in reverse
+from the computer screen into the dataset. As a ray progresses through the
+dataset, sample points are taken and the sample values are used to determine
+a color and opacity value for the sample point. Each sample point along the
+ray is composited to form a final color for the screen pixel. Rays are traced
+from closest to farthest to allow for early ray termination which stops the
+sampling process when the pixel opacity gets above a certain threshold. This
+method of volume-rendering yields superior pictures at the cost of speed and
+memory use.</p>
+<div class="figure" id="volume-plot-atts-window">
+<img alt="../../../_images/volumewindow.png" src="../../../_images/volumewindow.png" />
+</div>
+<div class="figure" id="id2">
+<img alt="../../../_images/volumewindow2.png" src="../../../_images/volumewindow2.png" />
+<p class="caption"><span class="caption-number">Fig. 3.51 </span><span class="caption-text">Volume Attributes Window</span></p>
+</div>
+<p>The <strong>Volume Attributes Window</strong>, shown in
+(<a class="reference internal" href="#volume-plot-atts-window"><span class="std std-numref">Figure 3.50</span></a>), is divided into two main tabs.
+The <strong>Rendering Options</strong> tab controls the rendering setting. Each volume
+rendering method has a different set of inputs. For example, splatting and
+3D Texturing both specify the total number of samples, while ray-casting
+settings are specified in samples-per-ray. Additionally, the <strong>Rendering
+Options</strong> tab contains controls for lighting. <strong>1D transfer function tab</strong>
+controls how the data is mapped onto colors and the opacities to use for
+different scalar values.</p>
+<div class="section" id="setting-colors">
+<h2>3.2.14.1. Setting colors<a class="headerlink" href="#setting-colors" title="Permalink to this headline">¶</a></h2>
+<p>You can design the color component of the volume transfer function using the
+controls in <strong>1D Transfer Function</strong> tab of the <strong>Volume Attributes Window</strong>.
+The controls are
+similar to the controls for the <strong>Color Table Window</strong>. There is a color
+spectrum that has color control points which determine the final look of the
+color table. Color control points are added and removed using the <code class="docutils literal notranslate"><span class="pre">+</span></code>
+and <code class="docutils literal notranslate"><span class="pre">-</span></code> buttons. Dragging control points with the mouse moves them and
+changes their order. Right-clicking on a color control point displays a
+popup color menu from which a new control point color can be chosen.</p>
+</div>
+<div class="section" id="limits">
+<h2>3.2.14.2. Limits<a class="headerlink" href="#limits" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>1D transfer function</strong> tab provides controls for setting the limits of
+the variable being plotted. Limits are artificial minima or maxima that are
+specified by the user. Setting the limits to a smaller range of values than
+present in the database cause the plot’s colors to be distributed among a
+smaller range of values, resulting in a plot with more color variety.</p>
+<p>To set the limits are set by first clicking the <strong>Min</strong>
+or <strong>Max</strong> check box next to the <strong>Min</strong> or <strong>Max</strong> text field. Clicking a
+check box enables a text field into which you can type a new minimum or
+maximum value.</p>
+<p>Like VisIt’s other plots that map scalar values to colors, the Volume plot
+allows for the data values to be scaled using Linear, Log, and Skew functions.
+To select a scaling function other than linear where values in the data range
+are mapped 1:1 to values in the color range, click on the <strong>Log</strong> or <strong>Skew</strong>
+radio buttons.</p>
+</div>
+<div class="section" id="setting-opacities">
+<h2>3.2.14.3. Setting opacities<a class="headerlink" href="#setting-opacities" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>1D transfer function</strong> tab provides several controls that allow you
+to define the opacity portion of the volume transfer function. The opacity
+portion of the volume transfer function determines what can be seen in the
+volume-rendered image. Data values with a lower opacity allow more to be seen
+and give the plot a gel-like appearance, while data values with higher opacity
+appear more solid and occlude objects behind them. The controls for setting
+opacities are located at the button of the window in the <strong>Opacity</strong> area.</p>
+<div class="figure" id="id3">
+<span id="volume-plot-opacity"></span><img alt="../../../_images/volume_opacity.png" src="../../../_images/volume_opacity.png" />
+<p class="caption"><span class="caption-number">Fig. 3.52 </span><span class="caption-text">Volume Plot Opacity Options</span></p>
+</div>
+<p>You can set opacity three ways. You can hand-draw an opacity map, create it by
+designing curves that specify the opacity when they are added together, or use
+the opacities in the color table, if present. All
+methods use the controls shown in <a class="reference internal" href="#volume-plot-atts-window"><span class="std std-numref">Figure 3.50</span></a>.</p>
+<p>The interaction mode determines how opacity is set. Clicking on the
+<strong>Freeform</strong> or <strong>Gaussian</strong> radio buttons selects the interaction mode.
+If the interaction mode switches from <strong>Gaussian</strong> to <strong>Freeform</strong>, the shape
+constructed by the <strong>Gaussian</strong> controls is copied to the <strong>Freeform</strong> control.
+Both controls pretend that the plot’s data range is positioned horizontally
+such that the values on the left of the control correspond to the low data
+values while the values on the right of the control correspond to high data
+values. In addition to the color map, there is a histogram of the current data
+to aide in setting opacity of interesting values.
+The vertical direction corresponds to the opacity for the given data
+value. Taller curves are more opaque while shorter curves are more transparent.</p>
+<div class="figure" id="id4">
+<span id="volume-plot-freeform"></span><img alt="../../../_images/volume_freeform_controls.png" src="../../../_images/volume_freeform_controls.png" />
+<p class="caption"><span class="caption-number">Fig. 3.53 </span><span class="caption-text">Volume Plot Freeform Opacity Options</span></p>
+</div>
+<p>To design an opacity map using the <strong>Freeform</strong> control, position the mouse over
+it and click the left mouse button while moving the mouse. The shape traced by
+the mouse is entered into the <strong>Freeform</strong> control so you can draw the desired
+opacity curve. Immediately under the <strong>Freeform</strong> control, there are four
+buttons, shown in (<a class="reference internal" href="#volume-plot-freeform"><span class="std std-numref">Figure 3.53</span></a>), which can be
+used to manipulate the curve. The first three buttons initialize a new curve.
+The black button makes all data values completely transparent. The ramp button
+creates a linear ramp of opacity that emphasizes high data values. The white
+button makes all data values completely opaque. The <strong>Smooth</strong> button smooths
+out small bumps in the opacity curve that occur when drawing the curve by hand.</p>
+<div class="figure" id="id5">
+<span id="volume-plot-gauss-controls"></span><img alt="../../../_images/volume_gauss_controls.png" src="../../../_images/volume_gauss_controls.png" />
+<p class="caption"><span class="caption-number">Fig. 3.54 </span><span class="caption-text">Volume Plot Gaussian Opacity Options</span></p>
+</div>
+<p>The <strong>Gaussian</strong> control used during Gaussian interaction mode is complex but
+it provides precise control over the shape of a curve. The basic paradigm
+followed by the <strong>Gaussian</strong> control is that new curves are added and reshaped
+to yield the desired opacity curve. You add new curves by clicking and dragging
+in the control. Right clicking with the mouse on an existing curve removes the
+curve. Each curve has five control points which can change the curve’s position
+and shape. The control points are shown in along with the shapes that a curve
+can assume. A control point changes color when it becomes active so there you
+know which control point is used. Curves start as a smooth Gaussian shape but
+they can change between the shapes shown in by moving the shape control point
+up and down or left and right. Opacity maps are typically created by adding
+several curves to the window and altering their shapes and sizes until the
+desired image is obtained in the visualization window. The
+<strong>Attenuation slider</strong>, the final control involved in creating an opacity map,
+controls the opacity of the entire opacity map defined by the <strong>Freeform</strong>
+or <strong>Gaussian</strong> controls. It provides a knob to scale all opacities without
+having to modify the opacity map.</p>
+</div>
+<div class="section" id="changing-the-opacity-variable">
+<h2>3.2.14.4. Changing the opacity variable<a class="headerlink" href="#changing-the-opacity-variable" title="Permalink to this headline">¶</a></h2>
+<p>The variable used to determine opacity does not have to be the plotted
+variable. Having a different opacity variable than the plotted variable
+is useful for instances in which you want to determine the opacity using a
+variable like density while coloring the plot by another variable such as
+pressure. To change the opacity variable, select a new variable from the
+<strong>Opacity variable</strong> variable menu. By default, the plotted variable is
+used as the opacity variable. This is implied when the <strong>Opacity variable</strong>
+variable button contains the word default. Even when “default” is chosen, it
+is possible to set artificial data limits on the opacity variable by entering
+new values into the <strong>Min</strong> or <strong>Max</strong> text fields.</p>
+</div>
+<div class="section" id="controlling-image-quality">
+<h2>3.2.14.5. Controlling image quality<a class="headerlink" href="#controlling-image-quality" title="Permalink to this headline">¶</a></h2>
+<p>When the Volume plot is drawn with graphics hardware, the database is resampled
+onto a rectilinear grid that is used to place the polygons that are drawn to
+produce the image. You can control the coarseness of the resampled grid with the
+<strong>Number of samples</strong> text field and slider. To increase the number of sample
+points, enter a larger number into the <strong>Number of samples</strong> text field or move
+the slider to the right. Note that the slider is on an exponential scale and
+moving it to the right increases the number of sample points exponentially.</p>
+<p>In addition to setting the number of samples, when the Volume plot is using the
+3D texturing method, you can set the number of planes to be drawn from back to
+front. Increasing the number of planes can help to reduce the amount of
+aliasing in the resulting image. However, as the Volume plot uses a higher
+number of planes, more work must be done to draw the plot and it takes a little
+longer to draw. To set the number of planes, enter a new number of planes into
+the <strong>Number of slices</strong> text field.</p>
+<p>When the Volume plot is drawn in ray casting mode, the number of samples along
+each ray that is cast through the data becomes important. Having too few sample
+points along a ray gives rise to sampling artifacts such as rings or voids.
+You should adjust this number until you are satisfied with the image. More
+samples generally produce a better image, though the image will take longer to
+produce. To change the number of samples per ray, enter a new number of samples
+per ray into the <strong>Samples per ray</strong> text field.</p>
+<p>When using lighting, the gradient calculation method that the Volume plot uses
+influences the quality of the images that are produced. By default, VisIt uses
+the Sobel operator, which uses more information from adjacent cells to
+calculate a gradient. When the Sobel operator is used to calculate the gradient,
+lighting usually looks better. The alternative gradient calculation method is
+centered-differences and while it is much less compute intensive than the Sobel
+operator, it also produces lesser quality gradient vectors, which results in
+images that are not lit as well. To change the gradient calculation method,
+click on either the <strong>Centered diff</strong> or <strong>Sobel</strong> radio buttons.</p>
+</div>
+<div class="section" id="software-rendered-images">
+<h2>3.2.14.6. Software rendered images<a class="headerlink" href="#software-rendered-images" title="Permalink to this headline">¶</a></h2>
+<p>The Volume plot uses hardware-accelerated graphics by default. While you will
+want to operate in this mode most of the time, since it’s faster, images drawn
+by software are more accurate. To get a more accurate image, select
+<strong>Ray casting</strong> from the <strong>Rendering method</strong> combo box. When the Volume plot
+is set to use ray casting as its rendering mode, VisIt recalculates what the
+image should look like in software mode. Note that this can be a time-consuming
+process if the database being used is large or if the visualization window is
+large. We recommend shrinking the size of the visualization window before
+changing the rendering method to ray casting to reduce the time and resources
+required to draw the plot. It is worth noting that if you have a large dataset
+with intricate details, the software volume rendering method is the best method
+to use because it scales well in parallel. Using a parallel compute engine can
+greatly speed up the rate at which software volume rendering operates as long
+as the dataset is domain-decomposed into equal-sized pieces.</p>
+</div>
+<div class="section" id="lighting">
+<h2>3.2.14.7. Lighting<a class="headerlink" href="#lighting" title="Permalink to this headline">¶</a></h2>
+<p>The Volume plot can use lighting to enhance the look of the plot. Lighting is
+enabled by default but you can disable it by unchecking the <strong>Lighting</strong> check
+box near the bottom of the window. Note that lighting is not currently
+available when the Volume plot is using the ray casting volume renderer.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../Operators/index.html" class="btn btn-neutral float-right" title="4. Operators" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="VectorPlot.html" class="btn btn-neutral" title="3.2.13. Vector plot" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

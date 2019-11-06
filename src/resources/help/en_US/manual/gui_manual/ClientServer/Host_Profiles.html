@@ -1,0 +1,896 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>13.2. Host Profiles &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="13. Client Server" href="index.html"/>
+        <link rel="next" title="14. Compute Engines" href="../ComputeEngines/index.html"/>
+        <link rel="prev" title="13.1. Client-Server Mode" href="Client_server_mode.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">13. Client Server</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Client_server_mode.html">13.1. Client-Server Mode</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">13.2. Host Profiles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#host-profiles-window">13.2.1. Host profiles window</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#creating-a-new-host-profile">13.2.1.1. Creating a new host profile</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#deleting-a-host-profile">13.2.1.2. Deleting a host profile</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#copying-a-host-profile">13.2.1.3. Copying a host profile</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#exporting-a-host-profile">13.2.1.4. Exporting a host profile</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#setting-general-options">13.2.2. Setting general options</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#host-nickname">13.2.2.1. Host nickname</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#remote-host-name">13.2.2.2. Remote host name</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#host-name-aliases">13.2.2.3. Host name aliases</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#maximum-nodes-processors">13.2.2.4. Maximum nodes/processors</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#path-to-visit-installation">13.2.2.5. Path to VisIt installation</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#account">13.2.2.6. Account</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#sharing-a-compute-job">13.2.2.7. Sharing a compute job</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#determining-the-host-name">13.2.2.8. Determining the host name</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#ssh-command">13.2.2.9. SSH command</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#ssh-port">13.2.2.10. SSH port</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#gateway">13.2.2.11. Gateway</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#managing-launch-profiles">13.2.3. Managing launch profiles</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#creating-a-new-launch-profile">13.2.3.1. Creating a new launch profile</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#deleting-a-launch-profile">13.2.3.2. Deleting a launch profile</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#activating-a-launch-profile">13.2.3.3. Activating a launch profile</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-timeout">13.2.3.4. Setting the timeout</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-number-of-threads">13.2.3.5. Setting the number of threads</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#providing-additional-command-line-options">13.2.3.6. Providing additional command line options</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#setting-parallel-options">13.2.4. Setting parallel options</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-parallel-launch-method">13.2.4.1. Setting the parallel launch method</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-partition-pool-queue">13.2.4.2. Setting the partition/pool/queue</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-number-of-processors">13.2.4.3. Setting the number of processors</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-number-of-nodes">13.2.4.4. Setting the number of nodes</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-default-bank">13.2.4.5. Setting the default bank</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-parallel-time-limit">13.2.4.6. Setting the parallel time limit</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#specifying-a-machine-file">13.2.4.7. Specifying a machine file</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#specifying-constraints">13.2.4.8. Specifying constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#advanced-host-profile-options">13.2.5. Advanced host profile options</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#load-balancing">13.2.5.1. Load balancing</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-up-the-parallel-environment">13.2.5.2. Setting up the parallel environment</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-launcher-arguments">13.2.5.3. Setting launcher arguments</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-sublauncher-options">13.2.5.4. Setting sublauncher options</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#installing-pre-defined-host-profiles-shipped-with-visit">13.2.5.5. Installing pre-defined host profiles shipped with VisIt</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#installing-pre-defined-host-profiles-from-the-visit-repository">13.2.5.6. Installing pre-defined host profiles from the VisIt repository</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#engine-launch-options-window">13.2.6. Engine launch options window</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#id4">13.2.6.1. Setting the number of processors</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-batch-queue-options">13.2.6.2. Setting batch queue options</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-machine-file">13.2.6.3. Setting the machine file</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">13. Client Server</a> &raquo;</li>
+        
+      <li>13.2. Host Profiles</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/ClientServer/Host_Profiles.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="host-profiles">
+<h1>13.2. Host Profiles<a class="headerlink" href="#host-profiles" title="Permalink to this headline">¶</a></h1>
+<p>When <a class="reference external" href="https://visit.llnl.gov">VisIt</a> launches a component on a remote computer, it looks for something
+called a <em>host profile</em>. A host profile contains information that <a class="reference external" href="https://visit.llnl.gov">VisIt</a> uses
+to launch components on a remote computer. Host profiles allow you to specify
+information like the remote username, the number of processors, the parallel
+launch method, etc. You can have multiple launch profiles for any given host,
+most often a serial profile and one or more parallel profiles.</p>
+<div class="section" id="host-profiles-window">
+<h2>13.2.1. Host profiles window<a class="headerlink" href="#host-profiles-window" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id5">
+<span id="host-profile-win"></span><img alt="../../_images/hostprofile.png" src="../../_images/hostprofile.png" />
+<p class="caption"><span class="caption-number">Fig. 13.5 </span><span class="caption-text">Host profiles window</span></p>
+</div>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> provides a <strong>Host profiles</strong> window, shown in
+<a class="reference internal" href="#host-profile-win"><span class="std std-numref">Figure 13.5</span></a>, that you can use to manage
+your host profiles. You can open the <strong>Host profiles</strong> window by choosing
+<strong>Host profiles</strong> from the <strong>Options</strong> dropdown menu. The
+<strong>Host profiles</strong> window is divided into two main areas. The left
+area contains a list of host profiles currently installed, as well as controls
+to create, delete, copy and export profiles. The right area contains two
+vertical tabs: <strong>Remote Profiles</strong>, used for installing profiles retrieved
+from a remote location; and <strong>Machines</strong>, which displays all attributes for
+the selected host profile. The <strong>Remote Profiles</strong> tab is useful for
+obtaining profiles that were not installed with <a class="reference external" href="https://visit.llnl.gov">VisIt</a>. <strong>Machines</strong> has
+two sections contained in tabs displayed horizontally across the top:
+<strong>Host Settings</strong> and <strong>Launch Profiles</strong>. The <strong>Host Settings</strong> tab displays
+information for the selected machine, including the nickname, the full host
+name, aliases, the username, and connection information. The
+<strong>Launch Profiles</strong> tab displays a list of available profiles in the top
+section, and information for the selected launch profile in tabs on the
+bottom.</p>
+<p>If the <strong>Hosts</strong> section in the left pane of the <strong>Host profiles</strong> window
+has no hosts listed, you have two options for installing already generated
+profiles. The first is to install one or more of the pre-defined host
+profiles shipped with <a class="reference external" href="https://visit.llnl.gov">VisIt</a> while the second is to install one or more of
+the pre-defined host profiles from the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> repository. See
+<a class="reference internal" href="#installprofilesshippedwithvisit"><span class="std std-ref">Installing pre-defined host profiles shipped with VisIt</span></a> and
+<a class="reference internal" href="#installprofilesfromvisitrepository"><span class="std std-ref">Installing pre-defined host profiles from the VisIt repository</span></a>.</p>
+<p>Click <strong>Apply</strong> when you are finished making changes in this window, and
+remember to save your settings (<a class="reference internal" href="../Preferences/How_to_Save_Settings.html#how-to-save-settings"><span class="std std-ref">How to Save Settings</span></a>) before
+exiting <a class="reference external" href="https://visit.llnl.gov">VisIt</a> in order for your changes to be available in future sessions of
+<a class="reference external" href="https://visit.llnl.gov">VisIt</a>.</p>
+<div class="section" id="creating-a-new-host-profile">
+<h3>13.2.1.1. Creating a new host profile<a class="headerlink" href="#creating-a-new-host-profile" title="Permalink to this headline">¶</a></h3>
+<p>You click the <strong>New Host</strong> button to create a new host profile.
+The host profile will have a default name corresponding to the machine on
+which you are running <a class="reference external" href="https://visit.llnl.gov">VisIt</a>. When you change the <strong>Host nickname</strong> the
+new name will be reflected in the Hosts list. See
+<a class="reference internal" href="#setting-general-options"><span class="std std-ref">Setting general options</span></a>, <a class="reference internal" href="#managing-launch-profiles"><span class="std std-ref">Managing launch profiles</span></a> and
+<a class="reference internal" href="#setting-parallel-options"><span class="std std-ref">Setting parallel options</span></a> for more information on the available settings.</p>
+</div>
+<div class="section" id="deleting-a-host-profile">
+<h3>13.2.1.2. Deleting a host profile<a class="headerlink" href="#deleting-a-host-profile" title="Permalink to this headline">¶</a></h3>
+<p>If a host profile is no longer useful, you can click on it in the hosts list
+to select it and then click the <strong>Delete Host</strong> button to delete it.</p>
+</div>
+<div class="section" id="copying-a-host-profile">
+<h3>13.2.1.3. Copying a host profile<a class="headerlink" href="#copying-a-host-profile" title="Permalink to this headline">¶</a></h3>
+<p>To copy a host profile, select the desired source host from the <strong>Hosts</strong> list,
+then click the <strong>Copy Host</strong> button at the bottom of the Hosts list. A new
+host profile called <code class="docutils literal notranslate"><span class="pre">Copy</span> <span class="pre">of</span> <span class="pre">XXX</span></code> (where <code class="docutils literal notranslate"><span class="pre">XXX</span></code> is the name of the host you
+chose to copy) will be added to the <strong>Hosts</strong> list. Select this new host
+from the list and modify it’s <strong>Host Settings</strong> and <strong>Launch Profiles</strong>
+appropriately. Once you change the <strong>Host nickname</strong> the new name will be
+reflected in the <strong>Hosts</strong> list.</p>
+</div>
+<div class="section" id="exporting-a-host-profile">
+<h3>13.2.1.4. Exporting a host profile<a class="headerlink" href="#exporting-a-host-profile" title="Permalink to this headline">¶</a></h3>
+<p>The <strong>Export Host</strong> button is useful for saving a host profile installed on
+your machine to share with someone else. Select the host profile you wish to
+export, and click the <strong>Export Host</strong> button. The exported host will be saved
+to your user <a class="reference external" href="https://visit.llnl.gov">VisIt</a> directory (~/.visit/hosts on Linux). The name of the host
+profile file will start with <code class="docutils literal notranslate"><span class="pre">hosts_</span></code>, followed by the <strong>Host nickname</strong>,
+where letters are all converted to lower case and blanks are converted to
+underscores, followed by “.xml”.</p>
+<p>To share the host profile with someone else have them copy the host profile
+to their <a class="reference external" href="https://visit.llnl.gov">VisIt</a> directory. It is recommended that you don’t change the name
+of the file, but if you do, be aware that <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will only recognize it as
+a host profile if it starts with <code class="docutils literal notranslate"><span class="pre">hosts_</span></code> of <code class="docutils literal notranslate"><span class="pre">HOSTS_</span></code> and ends with
+<code class="docutils literal notranslate"><span class="pre">.xml</span></code> or <code class="docutils literal notranslate"><span class="pre">.XML</span></code>.</p>
+</div>
+</div>
+<div class="section" id="setting-general-options">
+<span id="id1"></span><h2>13.2.2. Setting general options<a class="headerlink" href="#setting-general-options" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>Host Settings</strong> tab allows you to set general attributes for all launch
+profiles on the host.</p>
+<div class="figure" id="id6">
+<span id="host-settings-tab"></span><img alt="../../_images/machine_hostsettings.png" src="../../_images/machine_hostsettings.png" />
+<p class="caption"><span class="caption-number">Fig. 13.6 </span><span class="caption-text">Host Settings tab</span></p>
+</div>
+<div class="section" id="host-nickname">
+<h3>13.2.2.1. Host nickname<a class="headerlink" href="#host-nickname" title="Permalink to this headline">¶</a></h3>
+<p>Change the <strong>Host nickname</strong> to the name as you would like it to appear in the
+<strong>Hosts</strong> list in the left pane.</p>
+</div>
+<div class="section" id="remote-host-name">
+<h3>13.2.2.2. Remote host name<a class="headerlink" href="#remote-host-name" title="Permalink to this headline">¶</a></h3>
+<p>The <strong>Remote host name</strong> should be the fully qualified host name <em>(hostname.domain.net)</em>.</p>
+</div>
+<div class="section" id="host-name-aliases">
+<h3>13.2.2.3. Host name aliases<a class="headerlink" href="#host-name-aliases" title="Permalink to this headline">¶</a></h3>
+<p>Some clustered systems have one overall host name but also have names for
+the individual compute nodes that comprise the system. The compute nodes
+are often named by appending the node number to the host name. For example,
+if the clustered system is called <code class="docutils literal notranslate"><span class="pre">cluster</span></code>, you might be logged into node
+<code class="docutils literal notranslate"><span class="pre">cluster023</span></code>. When you launch a remote component, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will not find any
+host profiles if the host name in the host profiles is: <code class="docutils literal notranslate"><span class="pre">cluster</span></code>.</p>
+<p>To ensure that <a class="reference external" href="https://visit.llnl.gov">VisIt</a> correctly matches a computer’s node name to one of
+<a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s host profiles, you should include host name aliases in the host profile
+for a clustered system. Host name aliases typically consist of the host name
+with different wildcard characters appended to it. Three wildcards are
+supported. The <code class="docutils literal notranslate"><span class="pre">?</span></code> wildcard character lets any one character replace
+it while the <code class="docutils literal notranslate"><span class="pre">*</span></code> wildcard character lets any character or group of
+characters replace it and the <code class="docutils literal notranslate"><span class="pre">#</span></code> wildcard character lets any numeric
+digit replace it. Appropriate host aliases for the previous example would be:
+<code class="docutils literal notranslate"><span class="pre">cluster#</span></code>, <code class="docutils literal notranslate"><span class="pre">cluster##</span></code> , <code class="docutils literal notranslate"><span class="pre">cluster###</span></code>, etc. If you need to enter host
+name aliases for the host profile, type them into the <strong>Host name aliases</strong>
+text field.</p>
+</div>
+<div class="section" id="maximum-nodes-processors">
+<h3>13.2.2.4. Maximum nodes/processors<a class="headerlink" href="#maximum-nodes-processors" title="Permalink to this headline">¶</a></h3>
+<p>If the host has a maximum number of nodes and/or processors that can be
+allocated, these can be specified by checking the <strong>Maximum nodes</strong> or
+<strong>Maximum processors</strong> checkboxes and entering a number in the corresponding
+text fields.</p>
+</div>
+<div class="section" id="path-to-visit-installation">
+<h3>13.2.2.5. Path to VisIt installation<a class="headerlink" href="#path-to-visit-installation" title="Permalink to this headline">¶</a></h3>
+<p>Most of the host profiles that are installed with <a class="reference external" href="https://visit.llnl.gov">VisIt</a> specify the expected
+installation directory for <a class="reference external" href="https://visit.llnl.gov">VisIt</a> so <a class="reference external" href="https://visit.llnl.gov">VisIt</a> does not have to be in your path on
+remote computers. Enter the path to <a class="reference external" href="https://visit.llnl.gov">VisIt</a> on the host in the
+<strong>Path to VisIt installation</strong> text field. It should be the full path up-to
+but not including the <code class="docutils literal notranslate"><span class="pre">bin</span></code> directory.</p>
+</div>
+<div class="section" id="account">
+<h3>13.2.2.6. Account<a class="headerlink" href="#account" title="Permalink to this headline">¶</a></h3>
+<p>The remote user name is the name of the account that you want to use when you
+access the remote computer. The remote user name does not have to match your
+local user name and it is often the case that your desktop user name will not
+match your remote user name. To change the remote user name, type a new user
+name into the <strong>Username</strong> text field.</p>
+</div>
+<div class="section" id="sharing-a-compute-job">
+<h3>13.2.2.7. Sharing a compute job<a class="headerlink" href="#sharing-a-compute-job" title="Permalink to this headline">¶</a></h3>
+<p>Some computers place restrictions on the number of interactive sessions that
+a single user can have on the computer. To allow <a class="reference external" href="https://visit.llnl.gov">VisIt</a> to run on computer
+systems that enforce these kinds of restrictions, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> can optionally
+force the metadata server and parallel compute engine to share the same job
+in the batch system. If you want to make the database server and parallel
+compute engine share the same batch job, you can click the
+<strong>Share batch job with Metadata Server</strong> check box.</p>
+</div>
+<div class="section" id="determining-the-host-name">
+<h3>13.2.2.8. Determining the host name<a class="headerlink" href="#determining-the-host-name" title="Permalink to this headline">¶</a></h3>
+<p>There are many different network naming schemes and each major operating system
+type seems to have its own variant. While being largely compatible, the network
+naming schemes sometimes present problems when you attempt to use a computer
+that has one idea of what its name is with another computer that may use a
+somewhat different network naming scheme. Since <a class="reference external" href="https://visit.llnl.gov">VisIt</a> users are encouraged to
+use client-server mode because it provides fast local graphics hardware without
+sacrificing computing power, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> must provide a way to reconcile the network
+naming schemes when 2 different computer types are used.</p>
+<p>Workstations often have a host name that was arbitrarily set when the computer
+was installed and that host name has nothing to do with the computer’s network
+name, which ultimately resolves to an IP address. This condition is common on
+computers running MS Windows though other operating systems can also exhibit
+this behavior. When <a class="reference external" href="https://visit.llnl.gov">VisIt</a> launches a component on a remote computer, it passes
+information that includes the host name of the local computer so the remote
+component will know how to connect back to the local computer. If the local
+computer did not supply a valid network name then the remote component will
+not be able to connect back to the local computer and <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will wait for the
+connection until you click the <strong>Cancel</strong> button in the
+<strong>Launch progress window</strong>.</p>
+<p>By default, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> tunnels data connections through SSH. If you don’t want to
+tunnel, or SSH tunneling is not working you can turn it off by unchecking
+<strong>Tunnel data connections through SSH</strong> in the <strong>Connection</strong> section. If you
+want <a class="reference external" href="https://visit.llnl.gov">VisIt</a> to rely on the the name obtained from the local computer, click on
+<strong>Use local machine name</strong>. If you choose the
+<strong>Parse from SSH_CLIENT environment variable</strong> option then <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will not pass
+a host name for the local computer but will instead tell the remote computer
+to inspect the <code class="docutils literal notranslate"><span class="pre">SSH_CLIENT</span></code> environment variable to determine the IP address
+of the local computer that initiated the connection. This option usually works
+if you have a local computer that does not accurately report its host name. If
+you don’t trust the output of any implicit scheme for getting the local
+computer’s name, you can provide the name of the local computer by typing its
+name or IP address into the text field next to the <strong>Specify manually</strong> radio
+button.</p>
+</div>
+<div class="section" id="ssh-command">
+<h3>13.2.2.9. SSH command<a class="headerlink" href="#ssh-command" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> uses ssh for its connections to remote computers. On Windows, <a class="reference external" href="https://visit.llnl.gov">VisIt</a>
+packages its own putty-based ssh program: <code class="docutils literal notranslate"><span class="pre">qtssh.exe</span></code>. Regardless of the
+system, you can override <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s SSH by clicking the <strong>SSH command</strong> checkbox
+and entering the full path to the ssh command you want to use in the text box.</p>
+</div>
+<div class="section" id="ssh-port">
+<h3>13.2.2.10. SSH port<a class="headerlink" href="#ssh-port" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> uses secure shell (ssh) to launch its components on remote computers.
+Secure shell often uses port 22 but if you are attempting to communicate with a
+computer that does not use port 22 for ssh then you can specify a port for ssh
+by clicking the <strong>SSH port</strong> check box and then typing a new port number
+into the adjacent text field.</p>
+<p>In addition to relying on remote computers’ ssh port, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> listens on its
+own ports (5600-5605) while launching components. If your desktop computer is
+running a firewall that blocks ports 5600-5605 then any remote components that
+you launch will be unable to connect back to the viewer running on your local
+computer. If you are not able to successfully launch <a class="reference external" href="https://visit.llnl.gov">VisIt</a> components on remote
+computers, be sure that you make sure your firewall does not block <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s
+ports. Windows’ default software firewall configurations block <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s ports so
+if you run those software firewall programs, you will have to unblock <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s
+ports if you want to run <a class="reference external" href="https://visit.llnl.gov">VisIt</a> in client-server mode.</p>
+</div>
+<div class="section" id="gateway">
+<h3>13.2.2.11. Gateway<a class="headerlink" href="#gateway" title="Permalink to this headline">¶</a></h3>
+<p>If access to the compute nodes on your remote cluster is controlled by a
+gateway computer, then check the <strong>Use gateway</strong> checkbox, and enter the fully
+qualified name of the gateway computer in the text field. In order for <a class="reference external" href="https://visit.llnl.gov">VisIt</a>
+to tunnel SSH connections through the gateway computer, passwordless-ssh needs
+to be set up from the gateway computer to the hose where you ultimately want
+to run <a class="reference external" href="https://visit.llnl.gov">VisIt</a>. See <a class="reference internal" href="Client_server_mode.html#settinguppasswordlessssh"><span class="std std-ref">Setting Up Password-less SSH</span></a> for instructions on how
+to do this.</p>
+</div>
+</div>
+<div class="section" id="managing-launch-profiles">
+<span id="id2"></span><h2>13.2.3. Managing launch profiles<a class="headerlink" href="#managing-launch-profiles" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>Launch Profiles</strong> tab (<a class="reference internal" href="#launch-profile-tab"><span class="std std-numref">Figure 13.7</span></a>) displays
+the launch profiles available for the selected host, generally a serial
+profile and one or more parallel profiles. There are controls for creating,
+deleting and copying launch profiles as well as tabs for setting the launch
+profile attributes.</p>
+<div class="figure" id="id7">
+<span id="launch-profile-tab"></span><img alt="../../_images/hostprofile_launchtab.png" src="../../_images/hostprofile_launchtab.png" />
+<p class="caption"><span class="caption-number">Fig. 13.7 </span><span class="caption-text">Launch Profiles tab</span></p>
+</div>
+<div class="section" id="creating-a-new-launch-profile">
+<h3>13.2.3.1. Creating a new launch profile<a class="headerlink" href="#creating-a-new-launch-profile" title="Permalink to this headline">¶</a></h3>
+<p>Click the <strong>New Profile</strong> button. Give the profile an appropriate name by
+filling in the <strong>Profile name</strong> text box. The new name will be reflected in
+the profiles list as soon as it is entered. After filling out all the
+necessary attributes, click <strong>Apply</strong> in the lower left corner of the window
+in order to use the new profile immediately. The new profile to be available
+in future sessions of <a class="reference external" href="https://visit.llnl.gov">VisIt</a>.</p>
+</div>
+<div class="section" id="deleting-a-launch-profile">
+<h3>13.2.3.2. Deleting a launch profile<a class="headerlink" href="#deleting-a-launch-profile" title="Permalink to this headline">¶</a></h3>
+<p>Select the profile to be deleted by clicking on its name in the list, then
+click the <strong>Delete Profile</strong> button. If you have made a mistake in deleting
+the profile, you must exit <a class="reference external" href="https://visit.llnl.gov">VisIt</a> and restart. Saving your settings will make
+the change permanent for future sessions.</p>
+</div>
+<div class="section" id="activating-a-launch-profile">
+<h3>13.2.3.3. Activating a launch profile<a class="headerlink" href="#activating-a-launch-profile" title="Permalink to this headline">¶</a></h3>
+<p>Only one launch profile can be active for any given host. When <a class="reference external" href="https://visit.llnl.gov">VisIt</a>
+launches a remote component, it looks for the active launch profile for the
+host where the component is to be launched. The currently active launch
+profile is the one with the box to the left of the name checked in the list
+of launch profile names. To activate a different launch profile, select it
+from the list and click the <strong>Apply</strong> button. The VCL and the metadata
+server use the active launch profile but <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will prompt you for a launch
+profile to use before launching a compute engine if you have more than one
+launch profile or your only launch profile has parallel options set for the
+compute engine.</p>
+</div>
+<div class="section" id="setting-the-timeout">
+<h3>13.2.3.4. Setting the timeout<a class="headerlink" href="#setting-the-timeout" title="Permalink to this headline">¶</a></h3>
+<p>The compute engine and metadata server have a timeout mechanism that causes
+them to exit if no requests have been made of them for a certain period of
+time so they do not run indefinitely if their connection to <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s viewer
+is severed. You can set this period of time, or timeout, by typing in a new
+number of minutes into the <strong>Timeout</strong> text field. You can also increase or
+decrease the timeout by clicking on the up and down arrows next to the
+<strong>Timeout</strong> text field.</p>
+</div>
+<div class="section" id="setting-the-number-of-threads">
+<h3>13.2.3.5. Setting the number of threads<a class="headerlink" href="#setting-the-number-of-threads" title="Permalink to this headline">¶</a></h3>
+<p>If <a class="reference external" href="https://visit.llnl.gov">VisIt</a> is running in threading mode, the number of threads per task can be
+set by typing in the desired number of threads in the
+<strong>Number of threads per task</strong> text field, or by utilizing the up and down
+arrows next to the text field.</p>
+</div>
+<div class="section" id="providing-additional-command-line-options">
+<h3>13.2.3.6. Providing additional command line options<a class="headerlink" href="#providing-additional-command-line-options" title="Permalink to this headline">¶</a></h3>
+<p>The <strong>Launch Profiles</strong> tab allows you to provide additional command line
+options to the compute engine and metadata server through the
+<strong>Additional arguments</strong> text field. When you provide additional command line
+options, you should type them, separated by spaces, into the
+<strong>Additional arguments</strong> text field. Command line options influence how the
+compute engine and metadata server are executed. For more information on
+<a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s command line options, see <a class="reference internal" href="../StartupOptions/index.html#startupoptions"><span class="std std-ref">Startup Options</span></a>.</p>
+</div>
+</div>
+<div class="section" id="setting-parallel-options">
+<span id="id3"></span><h2>13.2.4. Setting parallel options<a class="headerlink" href="#setting-parallel-options" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id8">
+<span id="host-profile-parallel"></span><img alt="../../_images/parallel.png" src="../../_images/parallel.png" />
+<p class="caption"><span class="caption-number">Fig. 13.8 </span><span class="caption-text">Parallel options</span></p>
+</div>
+<p>The chief purpose of host profiles is to make launching compute engines easier.
+This is even more the case when host profiles are used to launch parallel
+compute engines on large computers that often have complex scheduling programs
+that determine when parallel jobs can be executed. It is easy to forget how to
+use the scheduling programs on a large computer because each scheduling program
+requires different arguments. In order to make launching compute engines easy,
+<a class="reference external" href="https://visit.llnl.gov">VisIt</a> hides the details of the scheduling program used to launch parallel
+compute engines. <a class="reference external" href="https://visit.llnl.gov">VisIt</a> instead allows you to set some common parallel options
+and then figures out how to launch the parallel compute engine on the specified
+computer using the parallel options specified in the host profile. Furthermore,
+once you create a host profile that works for a computer, you rarely need to
+modify it.</p>
+<p>To enable parallel options open the <strong>Parallel</strong> tab of the <strong>Launch Profiles</strong>
+tab, and click the <strong>Launch parallel engine</strong> checkbox.</p>
+<div class="section" id="setting-the-parallel-launch-method">
+<h3>13.2.4.1. Setting the parallel launch method<a class="headerlink" href="#setting-the-parallel-launch-method" title="Permalink to this headline">¶</a></h3>
+<p>The parallel launch method option allows you to specify which launch program
+should be used to execute the parallel compute engine. This setting depends on
+the computer where you plan to run the compute engine and how the computer is
+configured. Some computers have multiple launch programs depending on which
+part of the parallel machine you want to use.
+<a class="reference internal" href="#parallel-launch-method"><span class="std std-numref">Figure 13.9</span></a> shows some
+common parallel-launch options that <a class="reference external" href="https://visit.llnl.gov">VisIt</a> currently supports.</p>
+<div class="figure" id="id9">
+<span id="parallel-launch-method"></span><img alt="../../_images/launch_method_options.png" src="../../_images/launch_method_options.png" />
+<p class="caption"><span class="caption-number">Fig. 13.9 </span><span class="caption-text">Parallel launch method options</span></p>
+</div>
+</div>
+<div class="section" id="setting-the-partition-pool-queue">
+<h3>13.2.4.2. Setting the partition/pool/queue<a class="headerlink" href="#setting-the-partition-pool-queue" title="Permalink to this headline">¶</a></h3>
+<p>Some parallel computers are divided into partitions so that batch processes
+might be executed on one part of the computer while interactive processes are
+executed on another part of the computer. You can use launch profiles to tell
+<a class="reference external" href="https://visit.llnl.gov">VisIt</a> which partition to use when launching the compute engine on systems
+that have multiple partitions. To set the partition, check the
+<strong>Partition/Pool/Queue</strong> check box and type a partition name into the text
+field.</p>
+</div>
+<div class="section" id="setting-the-number-of-processors">
+<h3>13.2.4.3. Setting the number of processors<a class="headerlink" href="#setting-the-number-of-processors" title="Permalink to this headline">¶</a></h3>
+<p>You can set the number of processors by typing a new number of processors into
+the <strong>Number of processors</strong> text field in the <strong>Defaults</strong> section. When the
+number of processors is greater than 1, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will attempt to run the parallel
+version of the compute engine. You can also click on the up and down arrows
+next to the text field to increase or decrease the number of processors. If
+<a class="reference external" href="https://visit.llnl.gov">VisIt</a> finds a parallel launch profile, you will have the option of changing
+the number of processors before the compute engine is actually launched.</p>
+</div>
+<div class="section" id="setting-the-number-of-nodes">
+<h3>13.2.4.4. Setting the number of nodes<a class="headerlink" href="#setting-the-number-of-nodes" title="Permalink to this headline">¶</a></h3>
+<p>The number of nodes refers to the number of compute nodes that you want to
+reserve for your parallel job. Each compute node typically contains more than
+one processor (often 2, 4, 16) and the number of nodes required is usually the
+ceiling of the number of processors divided by the number of processors per
+node. It is only necessary to set the number of nodes if you want to use fewer
+processors than the number of processors that exist on a compute node. This
+option is not available on some computers as it is meant primarily for compute
+clusters. To set the number of nodes, check the <strong>Number of nodes</strong> check
+box and type a new number into the text field.</p>
+</div>
+<div class="section" id="setting-the-default-bank">
+<h3>13.2.4.5. Setting the default bank<a class="headerlink" href="#setting-the-default-bank" title="Permalink to this headline">¶</a></h3>
+<p>Some computers, if they are large enough, have scheduling systems that break
+up the number of processors into banks, which are usually reserved for
+particular projects. Users who contribute to a project take processors from
+their default bank of processors. By default, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> uses environment variables
+to get your default bank when submitting a parallel job to the batch system.
+If you want to override those settings, you can click the <strong>Bank/Account</strong>
+check box to turn it on and then type your desired bank into the text field
+next to the check box.</p>
+</div>
+<div class="section" id="setting-the-parallel-time-limit">
+<h3>13.2.4.6. Setting the parallel time limit<a class="headerlink" href="#setting-the-parallel-time-limit" title="Permalink to this headline">¶</a></h3>
+<p>The parallel time limit is the amount of time given to the scheduling program
+to tell it the maximum amount of time, usually in minutes, that your program
+will be allowed to run. The parallel time limit is one of the factors that
+determines when your compute engine will be run and smaller time limits often
+have a greater likelihood of running before jobs with large time limits. To
+specify a parallel time limit, click the <strong>Time Limit</strong> check box and
+enter a number of minutes or hours into the text field. If you want to
+specify minutes, be sure to append <code class="docutils literal notranslate"><span class="pre">m</span></code> to the number or append an <code class="docutils literal notranslate"><span class="pre">h</span></code>
+for hours. If you want to specify a timeout of 30 minutes, you would
+type: <code class="docutils literal notranslate"><span class="pre">30m</span></code>.</p>
+</div>
+<div class="section" id="specifying-a-machine-file">
+<h3>13.2.4.7. Specifying a machine file<a class="headerlink" href="#specifying-a-machine-file" title="Permalink to this headline">¶</a></h3>
+<p>When using <a class="reference external" href="https://visit.llnl.gov">VisIt</a> with some versions of MPI on some clustered computers, it
+may be necessary to specify a <em>machine file</em>, which is a file containing a
+list of the compute nodes where the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> compute engine should be executed.
+If you want to specify a machine file when you execute <a class="reference external" href="https://visit.llnl.gov">VisIt</a> in parallel
+on a cluster that requires a machine file, click on the <strong>Machine File</strong>
+check box and type the name of the machine file that you want to associate
+with your host profile into the text field.</p>
+</div>
+<div class="section" id="specifying-constraints">
+<h3>13.2.4.8. Specifying constraints<a class="headerlink" href="#specifying-constraints" title="Permalink to this headline">¶</a></h3>
+<p>Some machines constrain the processor-to-node ratio. In order to prevent
+accidentally requesting nodes/processors outside those constraints, they can be
+entered in table form by clicking the <strong>Constraints</strong> checkbox to enable the
+controls. Click <strong>Add row</strong> to add a new row to the table, and <strong>Delete row</strong>
+to remove a row from the table. For each row, enter number of nodes and
+appropriate associated number of processors in appropriate columns. When
+the launch engine dialog pops up, users won’t be able to specify node-processor
+combinations outside of the constraints.</p>
+<div class="figure" id="id10">
+<span id="parallel-constraints"></span><img alt="../../_images/parallel_launch_constraints.png" src="../../_images/parallel_launch_constraints.png" />
+<p class="caption"><span class="caption-number">Fig. 13.10 </span><span class="caption-text">Parallel launch constraints</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="advanced-host-profile-options">
+<h2>13.2.5. Advanced host profile options<a class="headerlink" href="#advanced-host-profile-options" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id11">
+<span id="host-profile-advanced-options"></span><img alt="../../_images/advancedoptions.png" src="../../_images/advancedoptions.png" />
+<p class="caption"><span class="caption-number">Fig. 13.11 </span><span class="caption-text">Advanced options tab</span></p>
+</div>
+<p>The <strong>Advanced</strong> tab
+(see <a class="reference internal" href="#host-profile-advanced-options"><span class="std std-numref">Figure 13.11</span></a>) in the
+<strong>Launch Profiles tab</strong> lets you specify advanced networking options to ensure
+that the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> components running on the remote computer use resources
+correctly and can connect back to the viewer running on your local workstation.</p>
+<div class="section" id="load-balancing">
+<h3>13.2.5.1. Load balancing<a class="headerlink" href="#load-balancing" title="Permalink to this headline">¶</a></h3>
+<p>Load balancing refers to how well tasks are distributed among computer
+processors. The goal is to make each computer processor have roughly the same
+amount of work so they all finish at the same time. <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s compute engine
+supports two forms of load balancing. The first form is static load balancing
+where the entire problem is distributed among processors and that distribution
+of work never changes. The second form of load balancing is dynamic load
+balancing. In dynamic load balancing, the work is redistributed as needed each
+time work is done. Idle processors independently ask for work until the entire
+task is complete. <a class="reference external" href="https://visit.llnl.gov">VisIt</a> allows you to specify the form of load balancing that
+you want to use. You can choose to use static or dynamic load balancing by
+clicking the <strong>Static</strong> or <strong>Dynamic</strong> radio buttons. There is also a default
+setting that uses the most appropriate form of load balancing.</p>
+</div>
+<div class="section" id="setting-up-the-parallel-environment">
+<h3>13.2.5.2. Setting up the parallel environment<a class="headerlink" href="#setting-up-the-parallel-environment" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> is usually executed by a script called: <code class="docutils literal notranslate"><span class="pre">visit</span></code>, which sets up the
+environment variables required for <a class="reference external" href="https://visit.llnl.gov">VisIt</a> to execute. When the visit script is
+told to launch a parallel compute engine, it sets up the environment variables
+as it usually does and then invokes an appropriate parallel launch program that
+takes care of either spawning the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> parallel compute engine processes or
+scheduling them to run in a batch system. When <a class="reference external" href="https://visit.llnl.gov">VisIt</a> is used with some versions
+of MPI on some clusters, the parallel launch program does not replicate the
+environment
+variables that the visit script set up, preventing the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> parallel compute
+engine from running. On clusters where the parallel launch program does not
+replicate the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> environment variables, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> provides an option to start
+each process of the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> compute engine under the visit script. This ensures
+that the environment variables that <a class="reference external" href="https://visit.llnl.gov">VisIt</a> requires in order to run are indeed
+set up before the parallel compute engine processes are started. To enable this
+feature, click on the <strong>Use VisIt script to set up parallel environment</strong>
+check box.</p>
+</div>
+<div class="section" id="setting-launcher-arguments">
+<h3>13.2.5.3. Setting launcher arguments<a class="headerlink" href="#setting-launcher-arguments" title="Permalink to this headline">¶</a></h3>
+<p>In addition to choosing a launch program, you can also elect to give it
+additional command line options to influence how it launches your compute
+engine. To give additional command line options to the launch program, click
+the <strong>Launcher arguments</strong> check box and type command line options
+into the text field to the right of that check box.</p>
+</div>
+<div class="section" id="setting-sublauncher-options">
+<h3>13.2.5.4. Setting sublauncher options<a class="headerlink" href="#setting-sublauncher-options" title="Permalink to this headline">¶</a></h3>
+<p>To give additional command line options to the sublauncher program, click
+the <strong>Sublauncher arguments</strong>, <strong>Sublauncher pre-mpi command</strong> or
+<strong>Sublauncher post-mpi command</strong> check box and type options into the text
+field to the right of that check box.</p>
+</div>
+<div class="section" id="installing-pre-defined-host-profiles-shipped-with-visit">
+<span id="installprofilesshippedwithvisit"></span><h3>13.2.5.5. Installing pre-defined host profiles shipped with VisIt<a class="headerlink" href="#installing-pre-defined-host-profiles-shipped-with-visit" title="Permalink to this headline">¶</a></h3>
+<p>The <strong>Setup Host Profiles And Configuration</strong> window is used to install
+pre-defined host profiles that are shipped with <a class="reference external" href="https://visit.llnl.gov">VisIt</a>. It can be accessed
+from the <strong>Options</strong> dropdown. It will list all the pre-defined host
+profiles shipped with the installation, listed according to location. From
+the list, you can choose one or more locations and all the host profiles
+for the selected locations will be installed. However, you will need to exit
+and restart <a class="reference external" href="https://visit.llnl.gov">VisIt</a> for them to become available for use. With this window,
+you can also specify a default configuration for <a class="reference external" href="https://visit.llnl.gov">VisIt</a> to use. Don’t forget
+to click <strong>Install</strong> before dismissing the window.
+(<a class="reference internal" href="#install-remote-profiles-4"><span class="std std-numref">Figure 13.12</span></a>)</p>
+<div class="figure" id="id12">
+<span id="install-remote-profiles-4"></span><img alt="../../_images/install_remote_profiles_4.png" src="../../_images/install_remote_profiles_4.png" />
+<p class="caption"><span class="caption-number">Fig. 13.12 </span><span class="caption-text">The Host Profile Configuration Window</span></p>
+</div>
+</div>
+<div class="section" id="installing-pre-defined-host-profiles-from-the-visit-repository">
+<span id="installprofilesfromvisitrepository"></span><h3>13.2.5.6. Installing pre-defined host profiles from the VisIt repository<a class="headerlink" href="#installing-pre-defined-host-profiles-from-the-visit-repository" title="Permalink to this headline">¶</a></h3>
+<p>The <strong>Remote Profiles</strong> tab can be used to install pre-defined host
+profiles from the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> repository. The advantage to using the <a class="reference external" href="https://visit.llnl.gov">VisIt</a>
+repository is that it may have additional host profiles defined after a
+particular release of <a class="reference external" href="https://visit.llnl.gov">VisIt</a> was released. To do so, click on the
+<strong>Remote Profiles</strong> vertical tab in the middle of the <strong>Host Profiles</strong>
+window. The top section of the tab allows you to choose the remote location
+(currently, only <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s repository is available).</p>
+<p>(<a class="reference internal" href="#install-remote-profiles-1"><span class="std std-numref">Figure 13.13</span></a>)</p>
+<div class="figure" id="id13">
+<span id="install-remote-profiles-1"></span><img alt="../../_images/install_remote_profiles_1.png" src="../../_images/install_remote_profiles_1.png" />
+<p class="caption"><span class="caption-number">Fig. 13.13 </span><span class="caption-text">Remote Profiles tab</span></p>
+</div>
+<p>If you click the <strong>Update</strong> button, the list of host profiles available from
+the remote location will be displayed.
+(<a class="reference internal" href="#install-remote-profiles-2"><span class="std std-numref">Figure 13.14</span></a>)</p>
+<div class="figure" id="id14">
+<span id="install-remote-profiles-2"></span><img alt="../../_images/install_remote_profiles_2.png" src="../../_images/install_remote_profiles_2.png" />
+<p class="caption"><span class="caption-number">Fig. 13.14 </span><span class="caption-text">Remote Profiles tab with updated content</span></p>
+</div>
+<p>Scroll through the list, clicking on the arrow next to a location to view
+the profiles available for that location, then highlight a profile and
+click the <strong>Import</strong> button. (<a class="reference internal" href="#install-remote-profiles-3"><span class="std std-numref">Figure 13.15</span></a>)
+The selected host profile will now show up in the hosts list in the left pane.</p>
+<div class="figure" id="id15">
+<span id="install-remote-profiles-3"></span><img alt="../../_images/install_remote_profiles_3.png" src="../../_images/install_remote_profiles_3.png" />
+<p class="caption"><span class="caption-number">Fig. 13.15 </span><span class="caption-text">Remote Profiles tab with host selected for import</span></p>
+</div>
+<p>It is important to save your settings before exiting <a class="reference external" href="https://visit.llnl.gov">VisIt</a> in order to save
+the newly imported host profiles for future sessions.</p>
+</div>
+</div>
+<div class="section" id="engine-launch-options-window">
+<h2>13.2.6. Engine launch options window<a class="headerlink" href="#engine-launch-options-window" title="Permalink to this headline">¶</a></h2>
+<p>The engine launch options window, shown in
+(<a class="reference internal" href="#host-profile-engine-options"><span class="std std-numref">Figure 13.16</span></a>), is used to pick a launch
+profile to use when there are multiple launch profiles for a host or if
+there are any parallel launch profiles. When there is a single serial host
+profile or no host profiles, the window is not activated and <a class="reference external" href="https://visit.llnl.gov">VisIt</a> launches
+a serial compute engine. The window’s primary purpose is to select a launch
+profile and set some parallel options such as the number of processors. This
+window is provided as a convenience so host profiles do not have to be
+modified each time you want to launch a parallel engine to run with a
+different number of processors.</p>
+<p>The engine launch options window has a list of launch profiles from which to
+choose. The active profile for the host is selected by default though
+another profile can be used instead. Once a launch profile is selected, the
+parallel options such as the number of processors/nodes, processor count, can
+be changed to fine-tune how the compute engine is launched. After making any
+changes, click the window’s <strong>OK</strong> button to launch the compute engine.
+Clicking the <strong>Cancel</strong> button prevents the compute engine from being launched.</p>
+<div class="figure" id="id16">
+<span id="host-profile-engine-options"></span><img alt="../../_images/optionwindow.png" src="../../_images/optionwindow.png" />
+<p class="caption"><span class="caption-number">Fig. 13.16 </span><span class="caption-text">Engine launch options window</span></p>
+</div>
+<div class="section" id="id4">
+<h3>13.2.6.1. Setting the number of processors<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>The number of processors determines how many processors are used by <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s
+compute engine. Generally, a higher number of processors yields higher
+performance but it depends on the host platform and the database being
+visualized. The <strong>Num procs</strong> text field initially contains the number of
+processors used in the active host profile but you can change it by typing a
+new number of processors. The number of processors can also be incremented or
+decremented by clicking the up/down buttons next to the text field.</p>
+</div>
+<div class="section" id="setting-batch-queue-options">
+<h3>13.2.6.2. Setting batch queue options<a class="headerlink" href="#setting-batch-queue-options" title="Permalink to this headline">¶</a></h3>
+<p>Many compute environments schedule parallel jobs in batch queues. The engine
+launch options window provides a few controls that are useful for batch
+queue systems. The first option is the number of nodes which determines the
+number of smaller portions of the computer that are allocated to a particular
+task. Typically the number of processors is evenly divisible by the number of
+nodes but the window allows you to specify the number of nodes such that not
+all processors within a node need be active. You can set the number of nodes,
+by typing a new number into the <strong>Num nodes</strong> text field or you can increment
+or decrement the number by clicking on the arrow buttons to the right of the
+text field. The second option is the bank which is a large collection of nodes
+from which nodes can be allocated. To change the bank, you can type a new bank
+name into the <strong>Bank</strong> text field. The final option that the window allows to
+be changed is the time limit. The time limit is an important piece of
+information to set because it can help to determine when the compute engine is
+scheduled to run. A smaller time limit can increase the likelihood that a task
+will be scheduled to run sooner than a longer running task. You can change the
+time limit by typing a new number of minutes into the <strong>Time limit</strong> text
+field.</p>
+</div>
+<div class="section" id="setting-the-machine-file">
+<h3>13.2.6.3. Setting the machine file<a class="headerlink" href="#setting-the-machine-file" title="Permalink to this headline">¶</a></h3>
+<p>Some compute environments use machine files, text files that contain the names
+of the nodes to use for executing a parallel job, when running a parallel job.
+If you are running <a class="reference external" href="https://visit.llnl.gov">VisIt</a> in such an environment, the engine launch options
+window provides a text field called <strong>Machine file</strong>. The <strong>Machine file</strong>
+text field allows you to enter the name of a new machine file if you want to
+override which machine file is used for the selected host profile.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../ComputeEngines/index.html" class="btn btn-neutral float-right" title="14. Compute Engines" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Client_server_mode.html" class="btn btn-neutral" title="13.1. Client-Server Mode" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

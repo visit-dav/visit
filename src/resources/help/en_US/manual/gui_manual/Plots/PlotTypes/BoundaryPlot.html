@@ -1,0 +1,434 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>3.2.2. Boundary and FilledBoundary Plots &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../../index.html"/>
+        <link rel="up" title="3.2. Standard Plot Types" href="index.html"/>
+        <link rel="next" title="3.2.3. Contour Plot" href="ContourPlot.html"/>
+        <link rel="prev" title="3.2.1. Common Controls" href="Common.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">3. Plots</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../Working_with_Plots.html">3.1. Working with Plots</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">3.2. Standard Plot Types</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="Common.html">3.2.1. Common Controls</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">3.2.2. Boundary and FilledBoundary Plots</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#changing-colors">3.2.2.1. Changing colors</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#opacity">3.2.2.2. Opacity</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#wireframe-mode">3.2.2.3. Wireframe mode</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#geometry-smoothing">3.2.2.4. Geometry smoothing</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#drawing-only-clean-zones">3.2.2.5. Drawing only clean zones</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-point-properties">3.2.2.6. Setting point properties</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="ContourPlot.html">3.2.3. Contour Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="CurvePlot.html">3.2.4. Curve Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="HistogramPlot.html">3.2.5. Histogram Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="LabelPlot.html">3.2.6. Label Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="MeshPlot.html">3.2.7. Mesh Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PseudocolorPlot.html">3.2.8. Pseudocolor plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ScatterPlot.html">3.2.9. Scatter Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="SubsetPlot.html">3.2.10. Subset Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TensorPlot.html">3.2.11. Tensor plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TruecolorPlot.html">3.2.12. Truecolor plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="VectorPlot.html">3.2.13. Vector plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="VolumePlot.html">3.2.14. Volume plot</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="../index.html">3. Plots</a> &raquo;</li>
+        
+          <li><a href="index.html">3.2. Standard Plot Types</a> &raquo;</li>
+        
+      <li>3.2.2. Boundary and FilledBoundary Plots</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/gui_manual/Plots/PlotTypes/BoundaryPlot.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="boundary-and-filledboundary-plots">
+<h1>3.2.2. Boundary and FilledBoundary Plots<a class="headerlink" href="#boundary-and-filledboundary-plots" title="Permalink to this headline">¶</a></h1>
+<p>The Boundary plot and FilledBoundary plot are discussed together because
+of their similarity. Both plots concentrate on the boundaries between
+materials but each plot shows the boundary in a different way. The
+Boundary plot, shown in <a class="reference internal" href="#boundarystuff"><span class="std std-numref">Figure 3.8</span></a>, displays the surface or lines that separate materials.</p>
+<div class="figure" id="id1">
+<span id="boundarystuff"></span><img alt="../../../_images/boundarystuff.png" src="../../../_images/boundarystuff.png" />
+<p class="caption"><span class="caption-number">Fig. 3.8 </span><span class="caption-text">Boundary plot and its plot attributes window</span></p>
+</div>
+<div class="figure" id="id2">
+<span id="filledboundarystuff"></span><img alt="../../../_images/filledboundarystuff.png" src="../../../_images/filledboundarystuff.png" />
+<p class="caption"><span class="caption-number">Fig. 3.9 </span><span class="caption-text">FilledBoundary plot and its plot attributes window</span></p>
+</div>
+<p>The FilledBoundary plot (see <a class="reference internal" href="#filledboundarystuff"><span class="std std-numref">Figure 3.9</span></a>) shows
+the entire set of materials, each using a different color. Both plots perform
+material interface reconstruction on materials that have mixed cells,
+resulting in the material boundaries used in the plots.</p>
+<div class="figure" id="id3">
+<span id="filledboundarysubsets"></span><img alt="../../../_images/filledboundarysubsets.png" src="../../../_images/filledboundarysubsets.png" />
+<p class="caption"><span class="caption-number">Fig. 3.10 </span><span class="caption-text">FilledBoundary plot combined with subsets</span></p>
+</div>
+<p>Combining the FilledBoundary plot with subsets (see <a class="reference internal" href="#filledboundarysubsets"><span class="std std-numref">Figure 3.10</span></a>)
+can provide a insight into where each material is inside the mesh by turning off
+materials in a particular domain. For more information about subsets, see the <strong>Subsetting</strong>
+chapter.
+.</p>
+<div class="section" id="changing-colors">
+<h2>3.2.2.1. Changing colors<a class="headerlink" href="#changing-colors" title="Permalink to this headline">¶</a></h2>
+<p>The main portion of the <strong>Boundary plot attributes window</strong> and
+<strong>FilledBoundary plot attributes window</strong>, also known as the
+<strong>Boundary colors area</strong>, is devoted to setting material boundary
+colors. The <strong>Boundary colors area</strong> contains a list of material names with
+an associated material color. Boundary plot and FilledBoundary plot colors
+can be assigned three different ways, the first of which uses a color table.
+A color table is a named palette of colors that you can customize to suite
+your needs. When the Boundary plot or FilledBoundary plot use a color table
+to color subsets, they selects colors that are evenly spaced through the
+color table based on the number of subsets. For example, if you have three
+materials and you are coloring them using the “xray” color table, three
+colors are picked out of the color table so your material boundaries are
+colored black, gray, and white. To color a Boundary plot or FilledBoundary
+plot with a color table, click on the <strong>Color table radio button</strong>
+and choose a color table from the <strong>Color table menu</strong> to right of the
+<strong>Color table radio button</strong>.</p>
+<p>If you want all subsets to be the same color, click the <strong>Single</strong>
+radio button at the top of the <strong>Boundary plot attributes window</strong>
+and select a new color from the <strong>Popup color menu</strong> that is activated by
+clicking on the <strong>Single color button</strong>. The opacity slider next to the
+<strong>Single color button</strong> sets the opacity for the single color.</p>
+<p>Clicking the <strong>Multiple</strong> radio button causes each material boundary to
+be a different, user-specified color. By default, multiple colors are set
+using the colors of the discrete color table that is active when the
+Boundary or FilledBoundary plot is created. To change the color for any
+of the materials, select one or more materials from the list of materials
+and click on the <strong>Color button</strong> to the right of the <strong>Multiple</strong> radio
+button and select a new color from the <strong>Popup color menu</strong>. To change
+the opacity for a material, move <strong>Multiple</strong> opacity slider to the left
+to make the material more transparent or move the slider to the right to
+make the material more opaque.</p>
+<p>The <strong>Boundary plot attributes window</strong> contains a list of material names
+with an associated color. To change a material’s color, select one or more
+materials from the list, click the color button and select a new color from
+the popup color menu.</p>
+</div>
+<div class="section" id="opacity">
+<h2>3.2.2.2. Opacity<a class="headerlink" href="#opacity" title="Permalink to this headline">¶</a></h2>
+<p>The Boundary plot’s opacity can be changed globally as well as on a per
+material basis. To change material opacity, first select one or more
+materials in the list and move the opacity slider next to the color button.
+Moving the opacity slider to the left makes the selected materials more
+transparent and moving the slider to the right makes the selected materials
+more opaque. To change the entire plot’s opacity globally, use the <strong>Opacity</strong>
+slider near the bottom of the window.</p>
+</div>
+<div class="section" id="wireframe-mode">
+<h2>3.2.2.3. Wireframe mode<a class="headerlink" href="#wireframe-mode" title="Permalink to this headline">¶</a></h2>
+<p>The Boundary plot and the FilledBoundary plot can be modified so that they
+only display outer edges of material boundaries. This option usually leaves
+lines that give only the rough shape of materials and where they join other
+materials as seen in. To make the Boundary or FilledBoundary plots display
+in wireframe mode, check the <strong>Wireframe</strong> check box near the bottom of the
+window.</p>
+<div class="figure" id="id4">
+<span id="filledboundarywireframe"></span><img alt="../../../_images/filledboundarywireframe.png" src="../../../_images/filledboundarywireframe.png" />
+<p class="caption"><span class="caption-number">Fig. 3.11 </span><span class="caption-text">Filled mode and wireframe mode</span></p>
+</div>
+</div>
+<div class="section" id="geometry-smoothing">
+<h2>3.2.2.4. Geometry smoothing<a class="headerlink" href="#geometry-smoothing" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes visualization operations such as material interface reconstruction
+can alter mesh surfaces so they are pointy or distorted. The Boundary plot
+and the FilledBoundary plot provide an optional Geometry smoothing option to
+smooth out the mesh surfaces so they look better when the plots are visualized.
+Geometry smoothing is not done by default, you must click the <strong>Fast</strong> or
+<strong>High</strong> radio buttons to enable it. The <strong>Fast</strong> geometry smoothing setting
+smooths out the geometry a little while the <strong>High</strong> setting works produces
+smoother surfaces.</p>
+</div>
+<div class="section" id="drawing-only-clean-zones">
+<h2>3.2.2.5. Drawing only clean zones<a class="headerlink" href="#drawing-only-clean-zones" title="Permalink to this headline">¶</a></h2>
+<p>The FilledBoundary plot, since it deals almost exclusively with plotting
+materials, has an option to only draw clean zones, which are zones that contain
+a single material. When only clean zones are drawn, all clean cells are drawn
+normally but all zones that contained more than one material are drawn with
+a color that can be set to match the vis window’s background color (see).
+Drawing clean zones is primarily used to examine how materials mix in 2D
+databases. To make VisIt draw only the clean zones, click the
+<strong>Clean zones only</strong> check box. After that, you can set the mixed color by
+clicking on the <strong>Mixed color</strong> color button and selecting a new color from
+the popup color palette.</p>
+<div class="figure" id="id5">
+<span id="filledboundarymixedzones"></span><img alt="../../../_images/filledboundarymixedzones.png" src="../../../_images/filledboundarymixedzones.png" />
+<p class="caption"><span class="caption-number">Fig. 3.12 </span><span class="caption-text">All zones and clean zones</span></p>
+</div>
+</div>
+<div class="section" id="setting-point-properties">
+<h2>3.2.2.6. Setting point properties<a class="headerlink" href="#setting-point-properties" title="Permalink to this headline">¶</a></h2>
+<p>Albeit rare, the Boundary and FilledBoundary plots can be used to plot points
+that belong to different materials. Both plots provide controls that allow you
+to set the representation and size of the points. You can change the points’
+representation using the different <strong>Point Type</strong> radio buttons. The available
+options are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Box</strong></li>
+<li><strong>Axis</strong></li>
+<li><strong>Icosahedron</strong></li>
+<li><strong>Octahedron</strong></li>
+<li><strong>Tetrahedron</strong></li>
+<li><strong>Point</strong></li>
+<li><strong>Sphere</strong></li>
+</ul>
+</div></blockquote>
+<p>The default point type is <strong>Point</strong> because that is the fastest to draw,
+followed by <strong>Sphere</strong>. The other point types create additional geometry and
+can take longer to appear on the screen and subsequently draw. To change the
+size of the points when the point type is set to <strong>Box</strong>, <strong>Axis</strong>, or
+<strong>Icosahedron</strong>, you can enter a new floating point value into the
+<strong>Point size</strong> text field. When the point type is set to <strong>Point</strong> or
+<strong>Sphere</strong>, the <strong>Point size</strong> text field becomes the <strong>Point size (pixels)</strong>
+text field and you should enter your point size in terms of pixels. Finally,
+you can opt to scale the points’ glyphs using a scalar expression by turning
+on the <strong>Scale point size by variable</strong> check box and by selecting a scalar
+variable from the <strong>Variable</strong> button to the right of that check box. Note
+that point scaling does not occur when the point type is set to <strong>Point</strong>
+or <strong>Sphere</strong>.</p>
+<div class="figure" id="id6">
+<span id="pointtypes"></span><img alt="../../../_images/pointtypes.png" src="../../../_images/pointtypes.png" />
+<p class="caption"><span class="caption-number">Fig. 3.13 </span><span class="caption-text">Point types (left-to-right): Box, Axis, Icosahedron, Point, Sphere</span></p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="ContourPlot.html" class="btn btn-neutral float-right" title="3.2.3. Contour Plot" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Common.html" class="btn btn-neutral" title="3.2.1. Common Controls" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

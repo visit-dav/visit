@@ -1,0 +1,372 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>18.1. Basic Usage &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="18. Building" href="index.html"/>
+        <link rel="next" title="18.2. Advanced Usage" href="Advanced_Usage.html"/>
+        <link rel="prev" title="18. Building" href="index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">18. Building</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">18.1. Basic Usage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#doing-a-minimal-build">18.1.1. Doing a minimal build</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#building-with-multiple-cores">18.1.2. Building with multiple cores</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#specifying-the-third-party-library-install-location">18.1.3. Specifying the third party library install location</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#building-with-the-hdf5-and-silo-libraries">18.1.4. Building with the HDF5 and Silo libraries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#building-the-stable-optional-libraries">18.1.5. Building the stable optional libraries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#using-a-visit-source-code-tar-file">18.1.6. Using a VisIt source code tar file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#if-build-visit-is-interrupted">18.1.7. If <code class="docutils literal notranslate"><span class="pre">build_visit</span></code> is interrupted</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finishing-up">18.1.8. Finishing up</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Advanced_Usage.html">18.2. Advanced Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Common_Build_Scenarios.html">18.3. Common Build Scenarios</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">18. Building</a> &raquo;</li>
+        
+      <li>18.1. Basic Usage</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/Building/Basic_Usage.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="basic-usage">
+<span id="id1"></span><h1>18.1. Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="doing-a-minimal-build">
+<h2>18.1.1. Doing a minimal build<a class="headerlink" href="#doing-a-minimal-build" title="Permalink to this headline">¶</a></h2>
+<p>When using <code class="docutils literal notranslate"><span class="pre">build_visit</span></code> without any arguments it will do a minimal build
+of <a class="reference external" href="https://visit.llnl.gov">VisIt</a> downloading the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> source code by making an anonymous git clone
+from GitHub and downloading the source code for the third party libraries
+from NERSC. It will build a serial version of the code without any of the
+optional I/O libraries. This will result in only the file readers that require
+no external dependencies to be built. Buiding <a class="reference external" href="https://visit.llnl.gov">VisIt</a> in this fashion will give
+you the highest probability of success.</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">build_visit3_0_1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="building-with-multiple-cores">
+<h2>18.1.2. Building with multiple cores<a class="headerlink" href="#building-with-multiple-cores" title="Permalink to this headline">¶</a></h2>
+<p>When <code class="docutils literal notranslate"><span class="pre">build_visit</span></code> is run by default it will build the code using a single
+core. This may take a half a day or longer. Modern computers have anywhere
+from 4 to 80 cores at the time of the writing of this chapter. You can speed
+up the build process by specify that <code class="docutils literal notranslate"><span class="pre">build_visit</span></code> use more cores. If you
+are using a shared resource you probably shouldn’t use all the cores in
+consideration of other users of the system. The following example specifies
+using 4 cores.</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">build_visit3_0_1</span> <span class="o">--</span><span class="n">makeflags</span> <span class="o">-</span><span class="n">j4</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="specifying-the-third-party-library-install-location">
+<h2>18.1.3. Specifying the third party library install location<a class="headerlink" href="#specifying-the-third-party-library-install-location" title="Permalink to this headline">¶</a></h2>
+<p>When <code class="docutils literal notranslate"><span class="pre">build_visit</span></code> is run by default it will install the third party
+libraries in the directory <code class="docutils literal notranslate"><span class="pre">third_party</span></code> in the current directory. If you
+would like to install the libraries in another directory for the purposes
+of sharing them with other users of the system, you can have <code class="docutils literal notranslate"><span class="pre">build_visit</span></code>
+install them in a different directory. The following example specifies
+installing the third party libraries in a another location.</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">build_visit3_0_1</span> <span class="o">--</span><span class="n">thirdparty</span><span class="o">-</span><span class="n">path</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">gapps</span><span class="o">/</span><span class="n">visit</span><span class="o">/</span><span class="n">third_party</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="building-with-the-hdf5-and-silo-libraries">
+<h2>18.1.4. Building with the HDF5 and Silo libraries<a class="headerlink" href="#building-with-the-hdf5-and-silo-libraries" title="Permalink to this headline">¶</a></h2>
+<p>Some of the more common I/O libraries that will result in building a larger
+number of file readers are HDF5 and Silo. The following example specifies
+building HDF5 and Silo.</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">build_visit3_0_1</span> <span class="o">--</span><span class="n">hdf5</span> <span class="o">--</span><span class="n">silo</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="building-the-stable-optional-libraries">
+<h2>18.1.5. Building the stable optional libraries<a class="headerlink" href="#building-the-stable-optional-libraries" title="Permalink to this headline">¶</a></h2>
+<p>If you are feeling lucky you can have <code class="docutils literal notranslate"><span class="pre">build_visit</span></code> build all of the optional
+I/O libraries that have a high probability of building. The following example
+specifies building the more reliable of the optional I/O libraries.</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">build_visit3_0_1</span> <span class="o">--</span><span class="n">optional</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-a-visit-source-code-tar-file">
+<h2>18.1.6. Using a <a class="reference external" href="https://visit.llnl.gov">VisIt</a> source code tar file<a class="headerlink" href="#using-a-visit-source-code-tar-file" title="Permalink to this headline">¶</a></h2>
+<p>You can also have visit use the prepackaged source code for a specific version
+of <a class="reference external" href="https://visit.llnl.gov">VisIt</a> instead of doing a git download of the source code. The tar file
+should be considerably smaller than a git clone. The following example uses
+the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> source code corresponding to the official 3.0.1 release of <a class="reference external" href="https://visit.llnl.gov">VisIt</a>.</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">build_visit3_0_1</span> <span class="o">--</span><span class="n">optional</span> <span class="o">--</span><span class="n">tarball</span> <span class="n">visit3</span><span class="o">.</span><span class="mf">0.1</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="if-build-visit-is-interrupted">
+<h2>18.1.7. If <code class="docutils literal notranslate"><span class="pre">build_visit</span></code> is interrupted<a class="headerlink" href="#if-build-visit-is-interrupted" title="Permalink to this headline">¶</a></h2>
+<p>If <code class="docutils literal notranslate"><span class="pre">build_visit</span></code> is interrupted while it is executing, it is suggested that
+you remove the directories associated with the last package it was in the
+process of building. <code class="docutils literal notranslate"><span class="pre">build_visit</span></code> always leaves directories intact when
+it runs to aid with troubleshooting failures. Likewise, <code class="docutils literal notranslate"><span class="pre">build_visit</span></code>
+doesn’t remove existing directories before starting to build a package.
+This can sometimes problems when <code class="docutils literal notranslate"><span class="pre">build_visit</span></code> is interrupted and you
+restart the build again.</p>
+</div>
+<div class="section" id="finishing-up">
+<h2>18.1.8. Finishing up<a class="headerlink" href="#finishing-up" title="Permalink to this headline">¶</a></h2>
+<p>Once you have successfully built VisIt, there are a couple of directions
+you can go. The first option is to use it in the location where it was
+built. The executable can run by executing the following command:</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">visit</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">visit</span>
+</pre></div>
+</div>
+<p>if you built using a git clone.</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">visit3</span><span class="o">.</span><span class="mf">0.1</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">visit</span>
+</pre></div>
+</div>
+<p>if you built using a tar file.</p>
+<p>The second option is to create a distribution file that you can install
+using <code class="docutils literal notranslate"><span class="pre">visit-install</span></code>. This can be done by executing the following
+command:</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">visit</span><span class="o">/</span><span class="n">build</span>
+<span class="n">make</span> <span class="n">package</span>
+</pre></div>
+</div>
+<p>if you built using a git clone.</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">visit3</span><span class="o">.</span><span class="mf">0.1</span><span class="o">/</span><span class="n">build</span>
+<span class="n">make</span> <span class="n">package</span>
+</pre></div>
+</div>
+<p>if you built using a tar file.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Advanced_Usage.html" class="btn btn-neutral float-right" title="18.2. Advanced Usage" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="18. Building" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

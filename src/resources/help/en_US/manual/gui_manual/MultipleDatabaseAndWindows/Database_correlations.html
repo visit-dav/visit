@@ -1,0 +1,747 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>12.2. Database correlations &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="12. Multiple Databases and Windows" href="index.html"/>
+        <link rel="next" title="12.3. Database comparison" href="Database_comparison.html"/>
+        <link rel="prev" title="12.1. Databases" href="Databases.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">12. Multiple Databases and Windows</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Databases.html">12.1. Databases</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">12.2. Database correlations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#database-correlations-and-time-sliders">12.2.1. Database correlations and time sliders</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#types-of-database-correlations">12.2.2. Types of database correlations</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#padded-index-database-correlation">12.2.2.1. Padded index database correlation</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#stretched-index-database-correlation">12.2.2.2. Stretched index database correlation</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#time-database-correlation">12.2.2.3. Time database correlation</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#cycle-database-correlation">12.2.2.4. Cycle database correlation</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#managing-database-correlations">12.2.3. Managing database correlations</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#creating-a-new-database-correlation">12.2.3.1. Creating a new database correlation</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#altering-an-existing-database-correlation">12.2.3.2. Altering an existing database correlation</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#deleting-a-database-correlation">12.2.3.3. Deleting a database correlation</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#automatic-database-correlation">12.2.3.4. Automatic database correlation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Database_comparison.html">12.3. Database comparison</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Multiple_Window_Operations.html">12.4. Multiple window operations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">12. Multiple Databases and Windows</a> &raquo;</li>
+        
+      <li>12.2. Database correlations</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/MultipleDatabaseAndWindows/Database_correlations.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="database-correlations">
+<span id="id1"></span><h1>12.2. Database correlations<a class="headerlink" href="#database-correlations" title="Permalink to this headline">¶</a></h1>
+<p>A database correlation is a map that relates one or more different
+time-varying databases so that when accessed with a common time state, the
+database correlation can tell VisIt which time state to use for any of the
+databases in the database correlation. VisIt supports multiple logical time
+sliders, so time states can be changed independently for different
+time-varying databases in the same window. No time slider for any database
+can have any effect on another database. Sometimes when comparing two
+different, but related, time-varying databases, it is useful to make plots
+of both databases and see how they behave over time. Since changing time
+for each database independently would be tedious, VisIt provides database
+correlations to simplify visualizing multiple time-varying databases.</p>
+<div class="section" id="database-correlations-and-time-sliders">
+<h2>12.2.1. Database correlations and time sliders<a class="headerlink" href="#database-correlations-and-time-sliders" title="Permalink to this headline">¶</a></h2>
+<p>When you open a database for the first time, VisIt creates a trivial
+database correlation for that single database and creates a new logical
+time slider for it. Each database correlation has its own logical time
+slider. <a class="reference internal" href="#correlationtimeslider"><span class="std std-numref">Figure 12.4</span></a> shows a database
+correlation as the active time slider.</p>
+<div class="figure" id="id2">
+<span id="correlationtimeslider"></span><img alt="../../_images/correlationtimeslider.png" src="../../_images/correlationtimeslider.png" />
+<p class="caption"><span class="caption-number">Fig. 12.4 </span><span class="caption-text">Database correlation as the active time slider</span></p>
+</div>
+<p>Suppose you have plots from time-varying database A and database B in the
+same visualization window. You can use the logical time slider for database
+A to change database A’s time state and you can use the logical time slider
+for database B to change database B’s time state. If you want to change the
+time state for both databases at the same time using a single logical time
+slider, you can create a database correlation involving database A and
+database B and then change time states using the database correlation’s
+logical time slider. When you change time states using a database
+correlation’s time slider, the time state used in each plot is calculated
+by using the database correlation’s time slider’s time state to look up
+the plot’s expected time state in the database correlation. Thus changing
+time states using a database correlation also updates the logical time
+slider for each database involved in the database correlation.</p>
+</div>
+<div class="section" id="types-of-database-correlations">
+<h2>12.2.2. Types of database correlations<a class="headerlink" href="#types-of-database-correlations" title="Permalink to this headline">¶</a></h2>
+<p>A database correlation is a map that relates one or more databases. When
+there is more than one database involved in a database correlation, the
+time states from each database are related using a correlation method.
+Database correlations currently have 4 supported correlation methods:
+padded index, stretched index, time, and cycle. This section describes
+each of the correlation methods and when you might want to use each method.</p>
+<p>For illustration purposes, the examples describing each correlation method
+use two databases, though database correlations can have any number of
+databases. The examples refer to the databases as: database A and database
+B. Both databases consist of a rectilinear grid with a material variable.
+The material variable is used to identify the database using a large
+letter A or B and also to visually indicate progress through the databases’
+numbers of time states by sweeping out a red material like a clock in
+reverse. At the first time state, there is no red material but as time
+progresses, the read material increases and finally totally replaces the
+material that was blue. Database A has 10 time states and database B has
+20 time states. The tables below list the cycles and times for each time
+state in each database so the time and cycle behavior of database A and
+database B will make more sense later when time database correlations and
+cycle database correlations are covered.</p>
+<table border="1" class="docutils" id="id3">
+<caption><span class="caption-number">Table 12.1 </span><span class="caption-text">Database A</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="24%" />
+<col width="6%" />
+<col width="9%" />
+<col width="6%" />
+<col width="9%" />
+<col width="6%" />
+<col width="9%" />
+<col width="6%" />
+<col width="9%" />
+<col width="6%" />
+<col width="9%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Time state</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
+<td>9</td>
+</tr>
+<tr class="row-even"><td>Times</td>
+<td>14</td>
+<td>14.5</td>
+<td>15</td>
+<td>15.5</td>
+<td>16</td>
+<td>16.5</td>
+<td>17</td>
+<td>17.5</td>
+<td>18</td>
+<td>18.5</td>
+</tr>
+<tr class="row-odd"><td>Cycles</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
+<td>9</td>
+</tr>
+</tbody>
+</table>
+<table border="1" class="docutils" id="id4">
+<caption><span class="caption-number">Table 12.2 </span><span class="caption-text">Database B (part 1)</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="38%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Time state</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
+<td>9</td>
+</tr>
+<tr class="row-even"><td>Times</td>
+<td>16</td>
+<td>17</td>
+<td>18</td>
+<td>19</td>
+<td>20</td>
+<td>21</td>
+<td>22</td>
+<td>23</td>
+<td>24</td>
+<td>25</td>
+</tr>
+<tr class="row-odd"><td>Cycles</td>
+<td>10</td>
+<td>11</td>
+<td>12</td>
+<td>13</td>
+<td>14</td>
+<td>15</td>
+<td>16</td>
+<td>17</td>
+<td>18</td>
+<td>19</td>
+</tr>
+</tbody>
+</table>
+<table border="1" class="docutils" id="id5">
+<caption><span class="caption-number">Table 12.3 </span><span class="caption-text">Database B (part 2)</span><a class="headerlink" href="#id5" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="38%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Time state</td>
+<td>10</td>
+<td>11</td>
+<td>12</td>
+<td>13</td>
+<td>14</td>
+<td>15</td>
+<td>16</td>
+<td>17</td>
+<td>18</td>
+<td>19</td>
+</tr>
+<tr class="row-even"><td>Times</td>
+<td>26</td>
+<td>27</td>
+<td>28</td>
+<td>29</td>
+<td>30</td>
+<td>31</td>
+<td>32</td>
+<td>33</td>
+<td>34</td>
+<td>35</td>
+</tr>
+<tr class="row-odd"><td>Cycles</td>
+<td>20</td>
+<td>21</td>
+<td>22</td>
+<td>23</td>
+<td>24</td>
+<td>25</td>
+<td>26</td>
+<td>27</td>
+<td>28</td>
+<td>29</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="padded-index-database-correlation">
+<h3>12.2.2.1. Padded index database correlation<a class="headerlink" href="#padded-index-database-correlation" title="Permalink to this headline">¶</a></h3>
+<p>A padded index database correlation, like any other database correlation,
+involves multiple input databases where each database potentially has a
+different number of time states. A padded index database correlation has
+as many time states as the input database with the largest number of time
+states. All other input databases that have fewer time states than the
+longest database have their last time state repeated until they have
+the same number of time states as the input database with the largest
+number of time states. Using the example databases A and B, since B has
+20 time states and A only has 10 time states, database A will have its
+last time state repeated 10 times to make up the difference in time
+states between A and B. Note how database A’s last time state is repeated
+in <a class="reference internal" href="#paddedindex"><span class="std std-numref">Figure 12.5</span></a>.</p>
+<div class="figure" id="id6">
+<span id="paddedindex"></span><img alt="../../_images/paddedindex.png" src="../../_images/paddedindex.png" />
+<p class="caption"><span class="caption-number">Fig. 12.5 </span><span class="caption-text">Padded index database correlation of A and B (every 5th time state)</span></p>
+</div>
+</div>
+<div class="section" id="stretched-index-database-correlation">
+<h3>12.2.2.2. Stretched index database correlation<a class="headerlink" href="#stretched-index-database-correlation" title="Permalink to this headline">¶</a></h3>
+<p>A stretched index database correlation, like any other database correlation,
+involves multiple input databases where each database potentially has a
+different number of time states. Like a padded index database correlation,
+a stretched index database correlation also has as many time states as
+the input database with the largest number of time states. The difference
+between the two correlation methods is in how the input databases are mapped
+to a larger number of time states. The padded index database correlation
+method simply repeated the last frame of the input databases that needed
+more time states to be made even with the length of the database correlation.
+Stretched index database correlations on the other hand do not repeat only
+the last frame; they repeat frames throughout the middle time states until
+shorter input databases have the same number of time states as the database
+correlation. The effect of repeating time states throughout the middle is
+to evenly spread out the time states over a larger number of time states.</p>
+<p>Stretched index database correlations are useful for comparing related
+related simulation databases where one simulation wrote out data at 2x, 3x,
+4x, … the frequency of another simulation. Stretched index database
+correlations repeat the data for smaller databases, which makes it easier
+to compare the databases. <a class="reference internal" href="#stretchedindex"><span class="std std-numref">Figure 12.6</span></a> shows example
+databases A and B related using a stretched index database correlation.
+Note how the plots for both databases, even though the databases contain a
+different number of time states, remain roughly in sync.</p>
+<div class="figure" id="id7">
+<span id="stretchedindex"></span><img alt="../../_images/stretchedindex.png" src="../../_images/stretchedindex.png" />
+<p class="caption"><span class="caption-number">Fig. 12.6 </span><span class="caption-text">Stretched index database correlation of A and B (every 5th time state)</span></p>
+</div>
+</div>
+<div class="section" id="time-database-correlation">
+<h3>12.2.2.3. Time database correlation<a class="headerlink" href="#time-database-correlation" title="Permalink to this headline">¶</a></h3>
+<p>A time index database correlation, like any other database correlation,
+involves multiple input databases where each database potentially has a
+different number of time states. The number of time states in a time
+database correlation is not directly related to the number of time states
+in each input database. The number of time states in the database
+correlation are instead determined by counting the number of unique time
+values for every time state in every input database. The times from each
+input database are arranged on a number line and each unique time value
+is counted as one time state. Time values from different input databases
+that happen to have the same time value are counted as a single time
+state. Once the time values have been arranged on the number line and
+counted, VisIt calculates a list of time state indices for each database
+that identify the right time state to use for each database with respect
+to the time database correlation’s time state. The first time state for
+each database is always the first time state index stored for a database.
+The first time state is used until the time exceeds the first time on the
+number line, and so on.</p>
+<p>Time database correlations are useful in many of the same situations
+as stretched index database correlations since they are both used to
+align different databases in time. Unlike a stretched index database
+correlation, the time database correlation does a better job of
+aligning unrelated databases in actual simulation time rather than just
+spreading out the time states until each input database has an equal
+number. Use a time database correlation when you are correlating two
+or more databases that were generated with different dump frequencies
+or databases that were generated by totally different simulation codes.
+<a class="reference internal" href="#timecorrelation"><span class="std std-numref">Figure 12.7</span></a> shows the behavior of databases
+A and B when using a time database correlation.</p>
+<div class="figure" id="id8">
+<span id="timecorrelation"></span><img alt="../../_images/timecorrelation.png" src="../../_images/timecorrelation.png" />
+<p class="caption"><span class="caption-number">Fig. 12.7 </span><span class="caption-text">Time database correlation of A and B (every 5th time state)</span></p>
+</div>
+</div>
+<div class="section" id="cycle-database-correlation">
+<h3>12.2.2.4. Cycle database correlation<a class="headerlink" href="#cycle-database-correlation" title="Permalink to this headline">¶</a></h3>
+<p>Cycle database correlations operate in exactly the same way as time database
+correlations except that they correlate using the cycles from each input
+database instead of using times. <a class="reference internal" href="#timecorrelation"><span class="std std-numref">Figure 12.7</span></a> shows
+the behavior of databases A and B when using a cycle database correlation.</p>
+<div class="figure" id="id9">
+<span id="cyclecorrelation"></span><img alt="../../_images/cyclecorrelation.png" src="../../_images/cyclecorrelation.png" />
+<p class="caption"><span class="caption-number">Fig. 12.8 </span><span class="caption-text">Cycle database correlation of A and B (every 5th time state)</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="managing-database-correlations">
+<h2>12.2.3. Managing database correlations<a class="headerlink" href="#managing-database-correlations" title="Permalink to this headline">¶</a></h2>
+<p>If you want to create a new database correlation or edit properties related
+to database correlations, you can use the <strong>Database Correlation Window</strong>.
+You can open the <strong>Database Correlation Window</strong>,
+shown in <a class="reference internal" href="#correlationwindow"><span class="std std-numref">Figure 12.9</span></a>, by clicking on the
+<strong>Database correlations</strong> option in the <strong>Main Window’s Controls</strong> menu.
+The <strong>Database Correlation Window</strong> contains the list of database
+correlations, along with controls that allow you to create new database
+correlations, edit existing database correlations, delete database
+correlations, or set global settings that tell VisIt when to automatically
+create database correlations.</p>
+<div class="figure" id="id10">
+<span id="correlationwindow"></span><a class="reference internal image-reference" href="../../_images/correlationwindow.png"><img alt="../../_images/correlationwindow.png" src="../../_images/correlationwindow.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 12.9 </span><span class="caption-text">Database Correlation Window</span></p>
+</div>
+<div class="section" id="creating-a-new-database-correlation">
+<h3>12.2.3.1. Creating a new database correlation<a class="headerlink" href="#creating-a-new-database-correlation" title="Permalink to this headline">¶</a></h3>
+<p>If you want to create a new database correlation to relate time-varying
+databases that you have opened, you can do so by opening the
+<strong>Database Correlation Window</strong>. The <strong>Database Correlation Window</strong>
+contains a list of trivial database correlations for the time-varying
+databases that you have opened. You can create a new, database
+correlation by clicking on the New button to the left of the list of
+database correlations. Clicking the <strong>New</strong> button opens a
+<strong>Database Correlation Properties Window</strong>
+(<a class="reference internal" href="#createcorrelation1"><span class="std std-numref">Figure 12.10</span></a>) that you can use to edit
+properties for the database correlation.</p>
+<div class="figure" id="id11">
+<span id="createcorrelation1"></span><a class="reference internal image-reference" href="../../_images/createcorrelation1.png"><img alt="../../_images/createcorrelation1.png" src="../../_images/createcorrelation1.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 12.10 </span><span class="caption-text">Database Correlation Properties Window</span></p>
+</div>
+<p>New database correlations are automatically named when you first create
+them but you can change the name of the database correlation to something
+more memorable by entering a new name into the <strong>Name</strong> text field. Once
+you have entered a name, you should set the correlation method that the
+database correlation will use to relate the time states from all of the
+input databases. The available choices, shown in
+<a class="reference internal" href="#createcorrelation3"><span class="std std-numref">Figure 12.11</span></a>, are: padded index, stretched
+index, time, and cycle.</p>
+<div class="figure" id="id12">
+<span id="createcorrelation3"></span><a class="reference internal image-reference" href="../../_images/createcorrelation3.png"><img alt="../../_images/createcorrelation3.png" src="../../_images/createcorrelation3.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 12.11 </span><span class="caption-text">Correlation methods</span></p>
+</div>
+<p>Once you have chosen a correlation method, it is time to choose the input
+databases for the correlation. The input databases, or sources as they are
+sometimes called in VisIt, are listed in the <strong>Sources</strong> list (see
+<a class="reference internal" href="#createcorrelation2"><span class="std std-numref">Figure 12.12</span></a>). The <strong>Sources</strong> list only
+contains the databases that you have opened so far. If you do not see a
+database that you would like to have in the database correlation, you can
+either click the <strong>Cancel</strong> button to cancel creating the new database
+correlation or you can continue creating the database correlation and
+then add the other database to the correlation later after you have opened
+it. To add databases to the new database correlation, click on the them in
+the <strong>Sources</strong> list to highlight then and then click on the <strong>Right arrow</strong>
+button to move the highlighted databases into the database correlation’s
+<strong>Correlated sources</strong> list. If you want to remove a database from the
+<strong>Correlated sources</strong> list, highlight the database in the
+<strong>Correlated sources</strong> list and then click the <strong>Left arrow</strong> button to
+move it back to the <strong>Sources</strong> list. Once you are satisfied with the
+new database correlation, click the <strong>Create database correlation</strong> button
+to create a new database correlation.</p>
+<div class="figure" id="id13">
+<span id="createcorrelation2"></span><a class="reference internal image-reference" href="../../_images/createcorrelation2.png"><img alt="../../_images/createcorrelation2.png" src="../../_images/createcorrelation2.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 12.12 </span><span class="caption-text">Sources list and Correlated sources list</span></p>
+</div>
+<p>When you create a new database correlation, VisIt also creates a new time
+slider for the new database correlation. The database correlation’s active
+time state is initially set to the first time state, which might not match
+the time state of individual plots in the vis window. Once you change time
+states using the <strong>Time slider</strong>, the plots in the vis window will be
+updated using the correct time state with respect to the correlation’s
+active time state. As always, if you want to update the time state for
+only one database, you can select a different time slider using the
+<strong>Active time slider</strong> combo box and then change time states using the
+<strong>Time slider</strong>. Any time state changes made to an individual database
+that is also an input database for a database correlation has no effect
+on the database correlations that involve the changed database. Time
+state changes for a database correlation can only happen if you have
+selected the database correlation as your active time slider.</p>
+</div>
+<div class="section" id="altering-an-existing-database-correlation">
+<h3>12.2.3.2. Altering an existing database correlation<a class="headerlink" href="#altering-an-existing-database-correlation" title="Permalink to this headline">¶</a></h3>
+<div class="figure" id="id14">
+<span id="altercorrelation"></span><a class="reference internal image-reference" href="../../_images/altercorrelation.png"><img alt="../../_images/altercorrelation.png" src="../../_images/altercorrelation.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 12.13 </span><span class="caption-text">Altering a database correlation</span></p>
+</div>
+<p>Once a database correlation has been created, you can alter it at any time
+by highlighting it in the <strong>Correlation</strong> list in the
+<strong>Database Correlation Window</strong> and clicking the <strong>Edit</strong> button to the
+left of the <strong>Correlation</strong> list. Clicking the <strong>Edit</strong> button opens the
+<strong>Database Correlation Properties Window</strong> and allows you to change the
+correlation method and the input databases. Once the desired changes are
+made, clicking the <strong>Alter database correlation</strong> button will make the
+specified database correlation use the new options and all plots in all
+vis windows that are subject to the changed database correlation will
+update to the new time states prescribed by the altered database correlation.</p>
+<p>Using the <strong>Database Correlation Properties Window</strong> explicitly alters a
+database correlation. Reopening a file or refreshing the file list can
+implicitly alter a database correlation if after reopening the affected
+databases, there are different numbers of time states in the databases.
+When reopened databases that are input databases to database correlations
+have a new number of time states, VisIt recalculates the indices used to
+access the input databases via the time slider and updates any plots that
+were affected. In addition to the time state indices changing, the number
+of time states in the database correlation and its time slider can also
+change.</p>
+</div>
+<div class="section" id="deleting-a-database-correlation">
+<h3>12.2.3.3. Deleting a database correlation<a class="headerlink" href="#deleting-a-database-correlation" title="Permalink to this headline">¶</a></h3>
+<p>Database correlations are automatically deleted when you close a database
+that you are not using anymore provided that the closed database is not an
+input database to any database correlation except for that database’s
+trivial database correlation. You can delete non-trivial database
+correlations that you have created by highlighting a database correlation
+in the <strong>Correlation</strong> list in the <strong>Database Correlation Window</strong> and
+clicking the <strong>Delete</strong> button to the left of the <strong>Correlation</strong> list.
+When you delete a database correlation, the new active time slider will
+be set to the active database’s time slider if the active database has
+more than one time state. Otherwise, the new active time slider, if any,
+will be set to the time slider for the first source that has more than
+one time state.</p>
+</div>
+<div class="section" id="automatic-database-correlation">
+<h3>12.2.3.4. Automatic database correlation<a class="headerlink" href="#automatic-database-correlation" title="Permalink to this headline">¶</a></h3>
+<p>VisIt can automatically create database correlations when they are needed
+if you enable certain global settings to control the creation of database
+correlations. By default, VisIt will prompt you when it wants to create a
+database correlation. VisIt can automatically create a database correlation
+when you add a plot of a multiple time-varying database to a vis window
+that already contains a plot from a different time-varying database. VisIt
+first looks for the most suitable existing database correlation and if the
+one it picks must be modified to accommodate a new input database or if
+an entirely new database correlation must be created, VisIt will prompt
+you using a <strong>Correlation question</strong> dialog
+(<a class="reference internal" href="#correlatedialog"><span class="std std-numref">Figure 12.14</span></a>). If you prevent VisIt from creating
+a database correlation or altering the most suitable correlation, you will
+no longer be prompted to create a database correlation for the list of
+databases listed in the <strong>Correlation question</strong> dialog.</p>
+<div class="figure" id="id15">
+<span id="correlatedialog"></span><a class="reference internal image-reference" href="../../_images/correlatedialog.png"><img alt="../../_images/correlatedialog.png" src="../../_images/correlatedialog.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 12.14 </span><span class="caption-text">Correlation question dialog</span></p>
+</div>
+<p>By default, VisIt will only attempt to create a database correlation for
+you if the new plot’s database has the same number of time states as the
+existing plot. You can change when VisIt creates a database correlation for
+you by selecting a different option from the <strong>When to create correlation</strong>
+combo box in the <strong>Database Correlation Window</strong>. The available options
+are: <strong>Always</strong>, <strong>Never</strong>, and <strong>Same number of states</strong>. You can change
+the default correlation method by selecting a new option from the
+<strong>Default correlation method</strong> combo box. Finally, you can prevent VisIt
+from prompting you when it needs to create a database correlation if you
+turn off the <strong>Prompt before creating new correlation</strong> check box.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Database_comparison.html" class="btn btn-neutral float-right" title="12.3. Database comparison" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Databases.html" class="btn btn-neutral" title="12.1. Databases" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

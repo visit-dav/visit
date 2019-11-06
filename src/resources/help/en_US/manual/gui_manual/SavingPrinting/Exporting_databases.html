@@ -1,0 +1,340 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>5.5. Exporting databases &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="5. Saving and Printing" href="index.html"/>
+        <link rel="next" title="5.6. Printing" href="Printing.html"/>
+        <link rel="prev" title="5.4. Saving Cinema" href="Saving_Cinema.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">5. Saving and Printing</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Session_files.html">5.1. Session files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Saving_the_visualization_window.html">5.2. Saving the Visualization Window</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Saving_movies.html">5.3. Saving movies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Saving_Cinema.html">5.4. Saving Cinema</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">5.5. Exporting databases</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#exporting-variables">5.5.1. Exporting variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#choosing-an-export-file-format">5.5.2. Choosing an export file format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#export-options">5.5.3. Export Options</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Printing.html">5.6. Printing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">5. Saving and Printing</a> &raquo;</li>
+        
+      <li>5.5. Exporting databases</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/SavingPrinting/Exporting_databases.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="exporting-databases">
+<h1>5.5. Exporting databases<a class="headerlink" href="#exporting-databases" title="Permalink to this headline">¶</a></h1>
+<p>Plot geometry can be saved to a handful of geometric formats by saving the
+plots in the window to a format such as VTK. Often saving the plot geometry,
+which only consists of the visible faces required to draw the plot, is not
+enough. When interfacing VisIt to other tools you may want to save out the
+database in a different file format. For instance, you
+might plot a 3D database and want to export actual 3D cells for the entire
+database instead of just the externally visible geometry. You might also
+want to save out additional variables that you did not plot. VisIt allows
+this kind of data export via the <strong>Export Database Window</strong> , shown in
+<a class="reference internal" href="#export-db-1"><span class="std std-numref">Figure 5.15</span></a> .</p>
+<div class="figure" id="id1">
+<span id="export-db-1"></span><img alt="../../_images/exportdatabase1.png" src="../../_images/exportdatabase1.png" />
+<p class="caption"><span class="caption-number">Fig. 5.15 </span><span class="caption-text">Export Database Window</span></p>
+</div>
+<p>You can find the <strong>Export Database Window</strong> in the <strong>Main Window’s File</strong>
+menu. To save a database, you must first have opened a database and created
+a plot. Note that the data transformations applied by plots or operators will
+affect the data that you export. This allows you to alter the data using
+sophisticated chains of operators before you export it for use in another tool.</p>
+<div class="section" id="exporting-variables">
+<h2>5.5.1. Exporting variables<a class="headerlink" href="#exporting-variables" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id2">
+<span id="export-db-2"></span><img alt="../../_images/exportdatabase2.png" src="../../_images/exportdatabase2.png" />
+<p class="caption"><span class="caption-number">Fig. 5.16 </span><span class="caption-text">Variables menu</span></p>
+</div>
+<p>The <strong>Export Database Window</strong> allows you to export a subset of the variables
+for your active plot’s database by letting you specify which variables are to
+be exported. To choose which variables should be exported, you can type the
+names of the variables to export into the <strong>Variables</strong> text field or you can
+select from the available variables in the <strong>Variables</strong> menu depicted in
+<a class="reference internal" href="#export-db-2"><span class="std std-numref">Figure 5.16</span></a> . You can select as many variables as you
+want from the menu. Each time you select a variable from the <strong>Variables</strong>
+menu, VisIt will append it to the list of variables to be exported.</p>
+</div>
+<div class="section" id="choosing-an-export-file-format">
+<h2>5.5.2. Choosing an export file format<a class="headerlink" href="#choosing-an-export-file-format" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>Export Database Window</strong> lists the names of the database reader plugins
+that can also write data back into their native file formats. A small handful
+of the total number of database plugins currently support this feature but in
+the future most formats will support this capability more fully, making VisIt
+not only a powerful visualization tool but a powerful database conversion tool.</p>
+<p>You can try to use any of the supported export formats to export your data but
+some of the file formats may not be able to accept certain types of data. The
+Silo file format can safely export any type of data that you may want to export.
+If you want to export data to other applications and the data must be stored in
+an ASCII file that contains columns of data, you might want to choose the Xmdv
+file format. If you want to choose a specific database plugin to export your
+data files, make a selection from the <strong>Export to</strong> menu shown in
+<a class="reference internal" href="#export-db-3"><span class="std std-numref">Figure 5.17</span></a> .</p>
+<div class="figure" id="id3">
+<span id="export-db-3"></span><img alt="../../_images/exportdatabase3.png" src="../../_images/exportdatabase3.png" />
+<p class="caption"><span class="caption-number">Fig. 5.17 </span><span class="caption-text">Export file types</span></p>
+</div>
+</div>
+<div class="section" id="export-options">
+<h2>5.5.3. Export Options<a class="headerlink" href="#export-options" title="Permalink to this headline">¶</a></h2>
+<p>Some export formats support various options. Those options will be presented
+in a dialog box when the <strong>Export</strong> button is pressed in the
+<strong>Export Database Window</strong>. For example, shown below are some options for
+exporting to the Silo database.</p>
+<div class="figure" id="id4">
+<span id="export-options-example"></span><img alt="../../_images/export_options_example.png" src="../../_images/export_options_example.png" />
+<p class="caption"><span class="caption-number">Fig. 5.18 </span><span class="caption-text">Export options example (for Silo)</span></p>
+</div>
+<p>If VisIt has been compiled with HDF5 support, Silo’s export options will include
+the ability to select either the <code class="docutils literal notranslate"><span class="pre">PDB</span></code> or <code class="docutils literal notranslate"><span class="pre">HDF5</span></code> driver. The <code class="docutils literal notranslate"><span class="pre">Checksums</span></code>
+check-box indicates where the Silo library should compute checksums on the exported
+data. In addition, the <strong>DBSetCompression()</strong> option text box is for specifying a
+compression string to be used in Silo’s <code class="docutils literal notranslate"><span class="pre">DBSetCompression()</span></code> method before
+exporting data.</p>
+<p>When the meaning of an export option is not clear, try also pressing the <strong>Help</strong>
+button in <strong>Export options for XXX writer</strong> window to get more information.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Printing.html" class="btn btn-neutral float-right" title="5.6. Printing" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Saving_Cinema.html" class="btn btn-neutral" title="5.4. Saving Cinema" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

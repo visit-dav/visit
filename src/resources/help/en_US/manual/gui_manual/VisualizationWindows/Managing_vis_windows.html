@@ -1,0 +1,438 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>6.1. Managing vis windows &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="6. Visualization Windows" href="index.html"/>
+        <link rel="next" title="6.2. Using vis windows" href="Using_vis_windows.html"/>
+        <link rel="prev" title="6. Visualization Windows" href="index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">6. Visualization Windows</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">6.1. Managing vis windows</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#adding-a-new-vis-window">6.1.1. Adding a new vis window</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deleting-a-vis-window">6.1.2. Deleting a vis window</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#clearing-plots-from-vis-windows">6.1.3. Clearing plots from vis windows</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#changing-window-layouts">6.1.4. Changing window layouts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setting-the-active-window">6.1.5. Setting the active window</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#copying-window-attributes">6.1.5.1. Copying window attributes</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#locking-vis-windows-together">6.1.5.2. Locking vis windows together</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Using_vis_windows.html">6.2. Using vis windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Interactor_settings.html">6.3. Interactor settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="The_Popup_menu_and_the_Toolbar.html">6.4. The Popup menu and the Toolbar</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">6. Visualization Windows</a> &raquo;</li>
+        
+      <li>6.1. Managing vis windows</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/VisualizationWindows/Managing_vis_windows.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="managing-vis-windows">
+<span id="id1"></span><h1>6.1. Managing vis windows<a class="headerlink" href="#managing-vis-windows" title="Permalink to this headline">¶</a></h1>
+<p>VisIt allows you to create up to 16 vis windows and to manage those vis
+windows, VisIt provides controls to add vis windows, remove vis windows or
+alter their layout. The controls for managing vis windows are located in the
+<strong>Main Window’s Windows</strong> menu (see <a class="reference internal" href="#popupmenuwindowmenu"><span class="std std-numref">Figure 6.1</span></a>),
+as well as in the vis window’s <strong>Toolbars</strong> and <strong>Popup menu</strong>.</p>
+<div class="figure" id="id2">
+<span id="popupmenuwindowmenu"></span><img alt="../../_images/popupmenuwindowmenu.png" src="../../_images/popupmenuwindowmenu.png" />
+<p class="caption"><span class="caption-number">Fig. 6.1 </span><span class="caption-text">Window menu</span></p>
+</div>
+<div class="section" id="adding-a-new-vis-window">
+<h2>6.1.1. Adding a new vis window<a class="headerlink" href="#adding-a-new-vis-window" title="Permalink to this headline">¶</a></h2>
+<p>You can add a new vis window in a few different ways, the first of which is
+by selecting the <strong>New</strong> option from the <strong>Main Window’s Windows</strong> menu. You
+can also click on the <strong>New window icon</strong> in the vis window’s <strong>Toolbar</strong> or
+you can select the <strong>New window</strong> option from the <strong>Windows</strong> submenu in the
+vis window’s <strong>Popup menu</strong> to add a new vis window. When you add a new
+window, it will be sized according to the window layout so if you have only
+a single, large vis window, the new vis window will also be large. You can
+change the window layout to shrink the vis windows so that they both fit on
+the screen. Vis windows are numbered 1 to 16 so the new window will have
+the first available number for which there is not already a window. If you
+have windows 1, 2, and 4, vis window 3 would be created by adding a new
+window. Adding a new window also makes the new window the active window.</p>
+<p>A new vis window can also be added by cloning the active window. You
+can clone the active window by selecting the Clone option from the
+<strong>Main Window’s Windows</strong> menu or you can click the <strong>Clone window icon</strong>
+in the vis window’s <strong>Toolbar</strong>. When you clone the active window, VisIt
+creates a new window as if you had clicked the Add option but it also
+copies the plots, annotations, and lighting from the active window so
+that the new window is identical in appearance to the active window. When
+plots are copied to the new cloned window, they have not yet been
+generated so their plot list entries in the <strong>Plot list</strong> are green. You
+can force the plots to be generated by clicking the <strong>Draw</strong> button in
+the <strong>Main Window</strong>.</p>
+</div>
+<div class="section" id="deleting-a-vis-window">
+<h2>6.1.2. Deleting a vis window<a class="headerlink" href="#deleting-a-vis-window" title="Permalink to this headline">¶</a></h2>
+<p>There are four ways to delete a vis window. The first way is to select the
+<strong>Delete</strong> option from the <strong>Main Window’s Windows</strong> menu. When you delete
+a window in this manner, the active window gets deleted and VisIt makes
+the window with the smallest number the new active window. The second way
+to delete a window is to click on the <strong>close window button</strong> in the
+window decorations provided by the windowing system. The window decorations’
+appearance varies based on the platform and windowing system used to run
+VisIt, but the button used to close windows is commonly a button with an
+X in it. An example of a <strong>close window button</strong> is shown in
+<a class="reference internal" href="#closebutton"><span class="std std-numref">Figure 6.2</span></a>.</p>
+<div class="figure" id="id3">
+<span id="closebutton"></span><img alt="../../_images/closebutton.png" src="../../_images/closebutton.png" />
+<p class="caption"><span class="caption-number">Fig. 6.2 </span><span class="caption-text">Window decorations with close button</span></p>
+</div>
+<p>The third way to delete a vis window is to click on the <strong>Delete window icon</strong>
+in the vis window’s <strong>Toolbar</strong>. The fourth way to delete a vis window is to
+use the <strong>Delete</strong> option in the vis window’s <strong>Popup menu</strong>. When you use
+the <strong>Toolbar</strong> or the <strong>Popup menu</strong> to delete a window, the window does not
+need to be the active window as when other controls are used.</p>
+</div>
+<div class="section" id="clearing-plots-from-vis-windows">
+<h2>6.1.3. Clearing plots from vis windows<a class="headerlink" href="#clearing-plots-from-vis-windows" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>Main Window’s Windows</strong> menu provides a <strong>Clear all</strong> option that you
+can use to clear the plots from all vis windows. Selecting this option does
+not delete the plots from a vis window’s plot list but it does clear the
+plots so they have to be regenerated by VisIt’s compute engine. You can also
+clear the plots for just the active window by selecting the <strong>Plots</strong> option
+from the <strong>Clear</strong> submenu in the <strong>Main Window’s Windows</strong> menu (see
+<a class="reference internal" href="#windowclearmenu"><span class="std std-numref">Figure 6.3</span></a>). You might find clearing plots useful
+when you want to make several changes to plot attributes because, unlike
+plots that are already generated, setting attributes of cleared plots does
+not force them to regenerate when you change their attributes.</p>
+<p>In addition to clearing plots, you can also clear pick points and
+reference lines from a vis window. A pick point is a marker that VisIt
+adds to a vis window when you click on a plot in pick mode. The marker
+indicates the location of the pick point. A reference line is a line
+that you draw in a vis window when it is in lineout mode. You can clear
+a vis window’s pick points or reference lines, by selecting the
+<strong>Pick points</strong> or <strong>Reference lines</strong> options from the <strong>Clear</strong> submenu
+in the <strong>Main Window’s Windows</strong> menu.</p>
+<div class="figure" id="id4">
+<span id="windowclearmenu"></span><img alt="../../_images/windowclearmenu.png" src="../../_images/windowclearmenu.png" />
+<p class="caption"><span class="caption-number">Fig. 6.3 </span><span class="caption-text">Clear menu</span></p>
+</div>
+</div>
+<div class="section" id="changing-window-layouts">
+<h2>6.1.4. Changing window layouts<a class="headerlink" href="#changing-window-layouts" title="Permalink to this headline">¶</a></h2>
+<p>VisIt uses different window layouts to organize vis windows so they all fit
+on the screen. Changing the window layout typically resizes all of the
+vis windows and moves them into a tiled formation. If there are not enough
+vis windows to complete the desired layout, VisIt creates new vis windows
+until the layout is complete. You can change the layout selecting a new
+layout from the <strong>Layouts</strong> menu located in the <strong>Main Window’s Windows</strong> menu
+or you can click on a layout icon in the vis window’s <strong>Toolbar</strong>.</p>
+</div>
+<div class="section" id="setting-the-active-window">
+<h2>6.1.5. Setting the active window<a class="headerlink" href="#setting-the-active-window" title="Permalink to this headline">¶</a></h2>
+<p>VisIt has the concept of an active window that is the window to which
+new plots are added. You can change the active window by selecting a
+window number from the <strong>Active window</strong> menu located near the top of
+the <strong>Main Window</strong>. Setting the active window updates the GUI so that
+it displays the state for the new active window. The <strong>Active window</strong>
+menu is shown in <a class="reference internal" href="#activewindow"><span class="std std-numref">Figure 6.4</span></a>. You can also set
+the active window using the <strong>Active window</strong> submenu in the
+<strong>Main Window’s Windows</strong> menu or you can click on the <strong>Active window icon</strong>
+in the vis window’s <strong>Toolbar</strong>.</p>
+<div class="figure" id="id5">
+<span id="activewindow"></span><img alt="../../_images/activewindow.png" src="../../_images/activewindow.png" />
+<p class="caption"><span class="caption-number">Fig. 6.4 </span><span class="caption-text">Active window menu</span></p>
+</div>
+<div class="section" id="copying-window-attributes">
+<h3>6.1.5.1. Copying window attributes<a class="headerlink" href="#copying-window-attributes" title="Permalink to this headline">¶</a></h3>
+<p>VisIt allows you to copy window attributes and plots from one window to
+another when you have more than one window. This can be useful when you
+are comparing plots generated from similar databases. The <strong>Copy</strong> menu,
+shown in <a class="reference internal" href="#windowcopymenu"><span class="std std-numref">Figure 6.5</span></a>, contains options to copy
+the view, lighting, annotations, plots, or everything from other from other
+vis windows. Under each option, the <strong>Copy</strong> menu provides a list of
+available vis windows from which attributes can be copied so, for example,
+if you have two windows and you want to copy the view from vis window 1
+into vis window 2, you can select the <strong>Window 2</strong> option from the
+<strong>View from</strong> submenu. The list of available windows depends on the vis
+windows that you have created. You can copy the lighting from one window
+to another window by using the <strong>Lighting from</strong> submenu or you can use
+the <strong>Annotations from</strong> or <strong>Plots from</strong> to copy the annotations or
+plots, respectively. If you make a selection from the <strong>Everything from</strong>
+submenu, all attributes and plots are copied into the active vis window.</p>
+<div class="figure" id="id6">
+<span id="windowcopymenu"></span><img alt="../../_images/windowcopymenu.png" src="../../_images/windowcopymenu.png" />
+<p class="caption"><span class="caption-number">Fig. 6.5 </span><span class="caption-text">Copy menu</span></p>
+</div>
+</div>
+<div class="section" id="locking-vis-windows-together">
+<h3>6.1.5.2. Locking vis windows together<a class="headerlink" href="#locking-vis-windows-together" title="Permalink to this headline">¶</a></h3>
+<p>When you use VisIt to do side by side comparisons of databases, you may
+find is useful to lock vis windows together. Vis windows can be locked
+together in time so that when you change the active database timestep in
+one database, as when viewing an animation, all vis windows that are locked
+in time switch to the same database timestep. You can lock vis windows
+together in time by selecting the <strong>Time</strong> option from the <strong>Lock</strong> menu
+(see <a class="reference internal" href="#windowlockmenu"><span class="std std-numref">Figure 6.6</span></a>) in the <strong>Main Window’s Windows</strong>
+menu. Any number of windows can be locked together in time and you can turn
+off time locking at any time.</p>
+<div class="figure" id="id7">
+<span id="windowlockmenu"></span><img alt="../../_images/windowlockmenu.png" src="../../_images/windowlockmenu.png" />
+<p class="caption"><span class="caption-number">Fig. 6.6 </span><span class="caption-text">Lock menu</span></p>
+</div>
+<p>You can also lock interactive tools together so that updating a tool in
+one window updates the tool in other windows that have enabled tool locking.
+This can be useful when you have sliced a database using the plane tool
+in more than one window and you want to be able to change the slice using
+plane tool in either window and have it affect the other vis windows. You
+can enable tool locking by selecting the <strong>Tools</strong> option from the <strong>Lock</strong>
+menu.</p>
+<p>In addition to locking vis windows in time, or locking their tools together,
+you can also lock vis windows’ views together so that when you change the
+view in one vis window, other vis windows get the same view. When you change
+the view in a vis window that has view locking enabled, the view only
+effects other vis windows that also have view locking enabled and have plots
+of the same dimension. That is, when you change the view of a vis window
+that contains 3D plots, it will only have an effect on other locked vis
+windows if they have 3D plots. Vis windows that contain 2D plots are not
+affected by changing the view of a vis window containing 3D plots and
+vice-versa. When you enable view locking, the vis window snaps to the view
+used by other vis windows with locked views or it stays the same if no
+other vis windows have locked views. To enable view locking, select the
+<strong>View</strong> option from the <strong>Lock</strong> menu or click on the <strong>Lock view</strong>
+<strong>icon</strong> in the vis window’s <strong>Toolbar</strong>.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Using_vis_windows.html" class="btn btn-neutral float-right" title="6.2. Using vis windows" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="6. Visualization Windows" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

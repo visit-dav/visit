@@ -1,0 +1,701 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>1. VisIt Basics &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../index.html"/>
+        <link rel="up" title="VisIt Tutorials" href="index.html"/>
+        <link rel="next" title="2. Data Analysis" href="Data_Analysis.html"/>
+        <link rel="prev" title="VisIt Tutorials" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../gui_manual/index.html">GUI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">1. VisIt Basics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#starting-visit">1.1. Starting VisIt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#what-you-see">1.2. What you see</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#opening-files">1.3. Opening files</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#advanced-file-opening-features">1.3.1. Advanced file opening features</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#making-a-plot">1.4. Making a plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modifying-the-plot-attributes">1.5. Modifying the plot attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#applying-an-operator">1.6. Applying an operator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visit-interaction-modes">1.7. VisIt interaction modes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#using-navigate-mode">1.7.1. Using navigate mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#using-zoom-mode">1.7.2. Using zoom mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#using-lineout-mode">1.7.3. Using lineout mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#using-pick-mode">1.7.4. Using pick mode</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#other-plots">1.8. Other plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#other-operators">1.9. Other operators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#saving-an-image">1.10. Saving an image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#saving-a-database">1.11. Saving a database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#subsetting">1.12. Subsetting</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Data_Analysis.html">2. Data Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Scripting.html">3. Scripting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Aneurysm.html">4. Aneurysm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PotentialFlow.html">5. Potential Flow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">VisIt Tutorials</a> &raquo;</li>
+        
+      <li>1. VisIt Basics</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/tutorials/VisIt_Basics.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="visit-basics">
+<span id="id1"></span><h1>1. VisIt Basics<a class="headerlink" href="#visit-basics" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="starting-visit">
+<h2>1.1. Starting <a class="reference external" href="https://visit.llnl.gov">VisIt</a><a class="headerlink" href="#starting-visit" title="Permalink to this headline">¶</a></h2>
+<p>The way you start <a class="reference external" href="https://visit.llnl.gov">VisIt</a> depends on the platform you are on:</p>
+<ul class="simple">
+<li>On Windows, double click on the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> desktop icon</li>
+<li>On Mac, double click on the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> icon where you installed it (generally in the /Applications folder).</li>
+<li>On Unix, invoke: <code class="docutils literal notranslate"><span class="pre">/path/to/visit/bin/visit</span></code><ul>
+<li>Most people ultimately put <code class="docutils literal notranslate"><span class="pre">/path/to/visit/bin</span></code> in their $PATH and then just say <code class="docutils literal notranslate"><span class="pre">visit</span></code>.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="what-you-see">
+<h2>1.2. What you see<a class="headerlink" href="#what-you-see" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id2">
+<img alt="../_images/Basics-GUIOverview.png" src="../_images/Basics-GUIOverview.png" />
+<p class="caption"><span class="caption-number">Fig. 1.9 </span><span class="caption-text">The VisIt graphical user interface and visualization window</span></p>
+</div>
+<ul class="simple">
+<li>The tall grey window on the left is called the <strong>Graphical User Interface</strong>, which will be refered to from here on as the <em>GUI</em>. It is the primary mechanism for driving <a class="reference external" href="https://visit.llnl.gov">VisIt</a>.</li>
+<li>The window on the right is called the <strong>visualization window</strong>. It displays results.</li>
+</ul>
+</div>
+<div class="section" id="opening-files">
+<h2>1.3. Opening files<a class="headerlink" href="#opening-files" title="Permalink to this headline">¶</a></h2>
+<p>The first thing to do is to open files.</p>
+<ol class="arabic simple">
+<li>Go to the <em>GUI</em> and click on the <em>Open</em> icon.</li>
+<li>This brings up the File open window.</li>
+</ol>
+<div class="figure" id="id3">
+<img alt="../_images/Basics-FileOpen.png" src="../_images/Basics-FileOpen.png" />
+<p class="caption"><span class="caption-number">Fig. 1.10 </span><span class="caption-text">The File open window</span></p>
+</div>
+<ol class="arabic simple" start="3">
+<li>Change the <em>Path</em> field to the “tutorial_data” folder.</li>
+<li>Highlight the file “example.silo” and then click <em>OK</em>.</li>
+</ol>
+<p>You’ve opened a file!</p>
+<div class="section" id="advanced-file-opening-features">
+<h3>1.3.1. Advanced file opening features<a class="headerlink" href="#advanced-file-opening-features" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>In the File open window:</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>There is a field for <em>Host</em>. That is how you open a file on another system and run in client/server mode.</li>
+<li>There is a <em>Filter</em>. That is provided to subset the file list to only the files <a class="reference external" href="https://visit.llnl.gov">VisIt</a> may want.<ul>
+<li>Example filter: “*.silo *.vtk”</li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><a class="reference external" href="https://visit.llnl.gov">VisIt</a> uses heuristics to determine the file type.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>You can explicitly set the file type by setting the <em>Open file as type:</em> to the appropriate type.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>You can also open files on the command line. For example, <code class="docutils literal notranslate"><span class="pre">visit</span> <span class="pre">-o</span> <span class="pre">file.ext</span></code> opens the file “file.ext”.</li>
+</ol>
+</div>
+</div>
+<div class="section" id="making-a-plot">
+<h2>1.4. Making a plot<a class="headerlink" href="#making-a-plot" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Click on the <em>Add</em> icon to access various plots. This is located about half way down the Main window.</li>
+<li>Select <em>Pseudocolor-&gt;temp</em> to add a Pseudocolor plot.</li>
+<li>After adding a plot, you will see a green entry added to the “Plot list”, which is located half way down the <em>GUI</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This means <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will draw this plot after you click <em>Draw</em>.</li>
+</ul>
+</div></blockquote>
+<div class="figure" id="id4">
+<img alt="../_images/Basics-PlotList.png" src="../_images/Basics-PlotList.png" />
+<p class="caption"><span class="caption-number">Fig. 1.11 </span><span class="caption-text">The plot list with a Pseudocolor plot in it</span></p>
+</div>
+<ol class="arabic simple" start="4">
+<li>Click <em>Draw</em>.</li>
+<li>You should see a plot appear in the visualization window.</li>
+<li>Go to <em>Add-&gt;Mesh-&gt;Mesh</em>.</li>
+<li>Click <em>Draw</em>.</li>
+<li>You should now see both a Pseudocolor and Mesh plot.</li>
+</ol>
+<div class="figure" id="id5">
+<img alt="../_images/Basics-PcMesh.png" src="../_images/Basics-PcMesh.png" />
+<p class="caption"><span class="caption-number">Fig. 1.12 </span><span class="caption-text">A Pseudocolor and mesh plot displayed in a visualization window</span></p>
+</div>
+<ol class="arabic simple" start="9">
+<li>Highlight the Pseudocolor plot in the Plot list.</li>
+<li>Click the <em>Hide/Show</em> button.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This will hide the Pseudocolor plot. You should now see only the Mesh plot.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="11">
+<li>Highlight the Mesh plot and click <em>Delete</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>You should now have an empty visualization window.</li>
+<li>The Pseudocolor plot should now be selected.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="12">
+<li>Click <em>Hide/Show</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>The Pseudocolor plot should reappear.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="modifying-the-plot-attributes">
+<h2>1.5. Modifying the plot attributes<a class="headerlink" href="#modifying-the-plot-attributes" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Go to <em>PlotAtts-&gt;Pseudocolor</em>. This is located in the menu bar at the top of the Main menu.</li>
+<li>This brings up the Pseudocolor plot attributes window.</li>
+</ol>
+<div class="figure" id="id6">
+<img alt="../_images/Basics-PseudocolorAttributes.png" src="../_images/Basics-PseudocolorAttributes.png" />
+<p class="caption"><span class="caption-number">Fig. 1.13 </span><span class="caption-text">The Pseudocolor plot attributes window</span></p>
+</div>
+<ol class="arabic simple" start="3">
+<li>Change the <em>Scale</em> from <em>Linear</em> to <em>Log</em>.</li>
+<li>Click <em>Apply</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>The colors changed.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li>Click <em>Minimum</em> on and change the value to “3”.</li>
+<li>Click <em>Maximum</em> on and change the value to “4”.</li>
+<li>Click <em>Apply</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>The colors change again.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="8">
+<li>Change the <em>Opacity</em> mode to <em>Constant</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Change the opacity slider to 50%.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="9">
+<li>Click <em>Apply</em>.</li>
+</ol>
+<ul class="simple">
+<li>You can now see through the plot. Note that you only see the external faces. If you want to see the data from the whole volume, that will be with the volume plot.</li>
+</ul>
+<ol class="arabic simple" start="10">
+<li>Change back the <em>Scale</em>, <em>Limits</em>, and <em>Opacity</em> back to their original settings and click <em>Apply</em>.</li>
+<li>Dismiss the Pseudocolor plot attributes window.</li>
+</ol>
+</div>
+<div class="section" id="applying-an-operator">
+<h2>1.6. Applying an operator<a class="headerlink" href="#applying-an-operator" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Click on the <em>Operators</em> button to access various operators. This is located next to the <em>Add</em> button.</li>
+<li>Select <em>Slicing-&gt;Slice</em> to add a Slice operator</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>The visualization window will go blank and the Pseudocolor entry in the Plot list will turn green.</li>
+<li>This allows you to change the slice attributes before applying the Slice operator.</li>
+<li>We will apply the operator with the default attributes.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>Click <em>Draw</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>You are now looking at a 2D slice.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li>Go to <em>OpAtts-&gt;Slicing-&gt;Slice</em>.</li>
+<li>This brings up the Slice operator attributes window.</li>
+</ol>
+<div class="figure" id="id7">
+<img alt="../_images/Basics-SliceAttributes.png" src="../_images/Basics-SliceAttributes.png" />
+<p class="caption"><span class="caption-number">Fig. 1.14 </span><span class="caption-text">The Slice operator attributes window</span></p>
+</div>
+<ol class="arabic simple" start="6">
+<li>There are many controls for setting the slice plane … play with them.</li>
+<li>Operators can be removed by clicking on an expansion arrow in the Plot list, then clicking on the red X icon next to an operator.</li>
+</ol>
+</div>
+<div class="section" id="visit-interaction-modes">
+<h2>1.7. <a class="reference external" href="https://visit.llnl.gov">VisIt</a> interaction modes<a class="headerlink" href="#visit-interaction-modes" title="Permalink to this headline">¶</a></h2>
+<p>There are six basic interaction modes:</p>
+<ol class="arabic simple">
+<li>Navigate</li>
+<li>Zoom</li>
+<li>Zone pick</li>
+<li>Node pick</li>
+<li>Spreadsheet pick</li>
+<li>Lineout</li>
+</ol>
+<div class="figure" id="id8">
+<img alt="../_images/Basics-InteractionModes.png" src="../_images/Basics-InteractionModes.png" />
+<p class="caption"><span class="caption-number">Fig. 1.15 </span><span class="caption-text">The visualization tool bar with the icons for setting the interaction mode</span></p>
+</div>
+<p>The interaction mode is controlled by the toolbar, which is located at the
+top of the visualization window. The six interaction modes are all located
+together on the toolbar, towards the bottom.</p>
+<div class="section" id="using-navigate-mode">
+<h3>1.7.1. Using navigate mode<a class="headerlink" href="#using-navigate-mode" title="Permalink to this headline">¶</a></h3>
+<p>You always start in Navigate mode. Navigate mode is indicated by the Navigate
+icon, represented by a compass, being indented. It allows you to pan and
+rotate the data set.</p>
+<ol class="arabic simple">
+<li>Put the cursor in the visualization window.</li>
+<li>Left click (or single click if you do not have a 3 button mouse) and move the mouse.</li>
+<li>The data set will pan with the mouse.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>In 3D, the data set rotates.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="using-zoom-mode">
+<h3>1.7.2. Using zoom mode<a class="headerlink" href="#using-zoom-mode" title="Permalink to this headline">¶</a></h3>
+<p>Zoom mode is indicated by the Zoom icon, represented by a magnifying glass,
+being indented. It allows you to zoom the image by selecting a rectangular
+region.</p>
+<ol class="arabic simple">
+<li>Click on the Zoom icon.</li>
+<li>Go to the visualization window and left click (single click) and HOLD IT DOWN.</li>
+<li>Move the mouse a bit.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>You should see a rubber band.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li>Lift up the mouse button.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>You should now be zoomed in so that the viewport matches what was previously inside the rubber band.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="using-lineout-mode">
+<h3>1.7.3. Using lineout mode<a class="headerlink" href="#using-lineout-mode" title="Permalink to this headline">¶</a></h3>
+<p>Lineout mode is indicated by the Lineout icon, represented by a curve plot
+of red and blue curves, being indented. It allows the user to create a plot
+of a scalar variable as a function of distance along a line.</p>
+<ol class="arabic simple">
+<li>First we will reset the view. Click on the Reset view icon, represented by a camera that has a green “X” around it (The camera is mostly obscured by the X).</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This will reset your view.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Click on the Lineout icon.</li>
+<li>Put the cursor over the data and left click (single click) and HOLD IT DOWN.</li>
+<li>Move the mouse a bit.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>You should see a single line moving around.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li>Lift up the mouse button.</li>
+<li>The window layout changes. You now have two windows. The first window is the same, but the second now contains a “Lineout”, which has temp as a function of distance over the line.</li>
+<li>On the window that has the curve, find the Delete window icon, represented by a window with a red circle with a line through it.</li>
+<li>Click this button.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>The new window will disappear and you should now have only one window.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="using-pick-mode">
+<h3>1.7.4. Using pick mode<a class="headerlink" href="#using-pick-mode" title="Permalink to this headline">¶</a></h3>
+<p>Pick mode is indicated by the Zone pick or Node pick icon, represented by
+a “+” with a small Z or a “+” with a small N, being indented. It allows the
+user to query a variable associated with a zone or node.</p>
+<ol class="arabic simple">
+<li>Click on the Zone pick icon.</li>
+<li>Put the cursor over the data set and left click (single click).</li>
+<li>This brings up the Pick window.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>The Pick window contains information about the zone (i.e. cell or element) that you just picked in.</li>
+</ul>
+</div></blockquote>
+<div class="figure" id="id9">
+<img alt="../_images/Basics-PickOutput.png" src="../_images/Basics-PickOutput.png" />
+<p class="caption"><span class="caption-number">Fig. 1.16 </span><span class="caption-text">The Pick output window</span></p>
+</div>
+<p>Pick can return a lot more information than what it just did if you use
+the Pick window.</p>
+<ol class="arabic simple" start="4">
+<li>Go to the <em>Variables</em> drop down menu and select <em>Scalars/pressure</em>.</li>
+<li>Turn on <em>Physical Coords</em> under <em>For Nodes</em>.</li>
+<li>Turn on <em>Domain-Logical Coords</em> under <em>For Zones</em>.</li>
+<li>Click <em>Apply</em>.</li>
+<li>Make another pick.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>You get information about pressure, the coordinates of each node, and the logical coordinates for the zone.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="other-plots">
+<h2>1.8. Other plots<a class="headerlink" href="#other-plots" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>We will experiment with the Contour, Filled Boundary, Label, Vector and Volume plots.</li>
+</ol>
+</div>
+<div class="section" id="other-operators">
+<h2>1.9. Other operators<a class="headerlink" href="#other-operators" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>We will experiment with the Clip and Threshold operators.</li>
+</ol>
+</div>
+<div class="section" id="saving-an-image">
+<h2>1.10. Saving an image<a class="headerlink" href="#saving-an-image" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>With a current plot, go to <em>File-&gt;Save window</em>.</li>
+</ol>
+<ul class="simple">
+<li>This saves an image to the filesystem.</li>
+</ul>
+<p>On Windows, the default location for saved images is in <em>Documents/VisIt/My images</em>.</p>
+</div>
+<div class="section" id="saving-a-database">
+<h2>1.11. Saving a database<a class="headerlink" href="#saving-a-database" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> can be part of a larger tool chain.</p>
+<ol class="arabic simple">
+<li>If you do not already have one, make a Pseudocolor plot of temp from the “example.silo” database.</li>
+<li>Apply the Threshold operator and change the range to be 3-&gt;max.</li>
+<li>Click <em>Draw</em>.</li>
+<li>Go to <em>File-&gt;Export database</em>.</li>
+<li>This brings up the Export Database window.</li>
+</ol>
+<div class="figure" id="id10">
+<img alt="../_images/Basics-ExportDatabase.png" src="../_images/Basics-ExportDatabase.png" />
+<p class="caption"><span class="caption-number">Fig. 1.17 </span><span class="caption-text">The Export Database window</span></p>
+</div>
+<ol class="arabic simple" start="6">
+<li>Change <em>Export to</em> to <em>VTK</em>.</li>
+<li>Be sure to set the output directory or the exported file will be written to the working directory <em>(on Windows that would be the directory where VisIt_ is installed)</em>.</li>
+<li>Click <em>Export</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>The Export options for VTK writer window will pop up at this point. It allows you to specify the options for the VTK writer. We will use the default options.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="9">
+<li>Click <em>Ok</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>A file named “visit_ex_db.vtk” has been saved to the file system.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="subsetting">
+<h2>1.12. Subsetting<a class="headerlink" href="#subsetting" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Delete any plots in your visualization window.</li>
+<li>Open the file “multi_ucd3d.silo”.</li>
+<li>Make a Subset plot of “domains(mesh1)”.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>The plot is colored by “domains”, which normally correspond to a simulation’s processors.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li>In the Plot list, find the overlapping transparent black and white ovals (like a Venn diagram) and click on it.</li>
+<li>This brings up the Subset window.</li>
+</ol>
+<div class="figure" id="id11">
+<img alt="../_images/Basics-Subset.png" src="../_images/Basics-Subset.png" />
+<p class="caption"><span class="caption-number">Fig. 1.18 </span><span class="caption-text">The Subset window</span></p>
+</div>
+<ol class="arabic simple" start="6">
+<li>Click on <em>domains</em> in the left most panel.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This will expand the list of domains in the center panel.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="7">
+<li>Turn off some domains and click <em>Apply</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>You will see some of the domains disappear.</li>
+<li>Subsetting works with any plot type.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="8">
+<li>Turn all the domains back on.</li>
+<li>Click on <em>mat1</em> in the left most panel.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This will expand the list of materials in the center panel.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="10">
+<li>Turn off materials 1 and 3.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>You will see material 2 only, colored by domain.</li>
+</ul>
+</div></blockquote>
+<p>This mechanism is used to expose subsetting for materials, domains, AMR levels, and other custom subsettable parts.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Data_Analysis.html" class="btn btn-neutral float-right" title="2. Data Analysis" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="VisIt Tutorials" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

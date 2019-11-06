@@ -1,0 +1,1060 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>2. Data Analysis &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../index.html"/>
+        <link rel="up" title="VisIt Tutorials" href="index.html"/>
+        <link rel="next" title="3. Scripting" href="Scripting.html"/>
+        <link rel="prev" title="1. VisIt Basics" href="VisIt_Basics.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../gui_manual/index.html">GUI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="VisIt_Basics.html">1. VisIt Basics</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">2. Data Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#queries">2.1. Queries</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#what-are-queries">2.1.1. What are queries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#experiment-with-queries">2.1.2. Experiment with queries</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#variable-related">2.1.2.1. Variable-related</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#mesh-related">2.1.2.2. Mesh-related</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#connectedcomponents-related">2.1.2.3. ConnectedComponents related</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#queries-over-time">2.2. Queries over Time</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#what-are-queries-over-time">2.2.1. What are queries over time</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#experiment-with-queries-over-time">2.2.2. Experiment with queries over time</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#weighted-variable-sum">2.2.2.1. Weighted Variable Sum</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#pick">2.2.2.2. Pick</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#changing-global-options">2.2.3. Changing global options</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#built-in-queries">2.3. Built-in queries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#expressions">2.4. Expressions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#a-simple-algebraic-expression-2-radial">2.4.1. A simple algebraic expression, “2*radial”</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#accessing-coordinates-of-a-mesh-in-expressions">2.4.2. Accessing coordinates (of a mesh) in expressions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#creating-vector-and-tensor-valued-variables-from-scalars">2.4.3. Creating vector and tensor valued variables from scalars</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#variable-compatibility-gotchas-tensor-rank-centering-mesh">2.4.4. Variable compatibility gotchas (tensor rank, centering, mesh)</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#tensor-rank-compatibility">2.4.4.1. Tensor rank compatibility</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#centering-compatibility">2.4.4.2. Centering compatibility</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#mesh-compatibility">2.4.4.3. Mesh compatibility</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#mapping-shepardglobal-onto-pointmesh">2.4.4.4. Mapping <em>shepardglobal</em> onto <em>PointMesh</em></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#mapping-pointvar-onto-mesh">2.4.4.5. Mapping <em>PointVar</em> onto <em>Mesh</em></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#combining-expressions-and-queries-is-powerful">2.4.5. Combining expressions and queries is powerful</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#automatic-saved-and-database-expressions">2.4.6. Automatic, saved and database expressions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Scripting.html">3. Scripting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Aneurysm.html">4. Aneurysm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PotentialFlow.html">5. Potential Flow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">VisIt Tutorials</a> &raquo;</li>
+        
+      <li>2. Data Analysis</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/tutorials/Data_Analysis.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="data-analysis">
+<span id="id1"></span><h1>2. Data Analysis<a class="headerlink" href="#data-analysis" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>This section describes two important abstractions in <a class="reference external" href="https://visit.llnl.gov">VisIt</a>: Queries and Expressions.</p>
+<div class="section" id="queries">
+<h2>2.1. Queries<a class="headerlink" href="#queries" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="what-are-queries">
+<h3>2.1.1. What are queries<a class="headerlink" href="#what-are-queries" title="Permalink to this headline">¶</a></h3>
+<p>Queries are the mechanism to do data analysis, to pull out a number or curve that describes the data set.</p>
+</div>
+<div class="section" id="experiment-with-queries">
+<h3>2.1.2. Experiment with queries<a class="headerlink" href="#experiment-with-queries" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Go to <em>Controls-&gt;Query</em>.</li>
+<li>This brings up the Query window.</li>
+</ol>
+<div class="figure" id="id2">
+<img alt="../_images/DataAnalysis-QueryMinMax.png" src="../_images/DataAnalysis-QueryMinMax.png" />
+<p class="caption"><span class="caption-number">Fig. 2.10 </span><span class="caption-text">The MinMax query</span></p>
+</div>
+<div class="section" id="variable-related">
+<h4>2.1.2.1. Variable-related<a class="headerlink" href="#variable-related" title="Permalink to this headline">¶</a></h4>
+<p>Variable related queries provide information about variables.</p>
+<ol class="arabic simple">
+<li>Change the <em>Display</em> in the Query window to be <em>Variable-related</em>.</li>
+<li>Go back to the <em>GUI</em>, delete any plots, open up “example.silo”, create a Pseudocolor plot of <em>temp</em> and click <em>Draw</em>.</li>
+<li>Highlight <em>MinMax</em> and click <em>Query</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>The result will be displayed in the <em>Query results</em>. It will tell you the minimum, maximum and their locations.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li>Apply the Slice operator to your plot.</li>
+<li>Do another <em>MinMax</em> query.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>It gives you the different results. This is because the Query parameter <em>Actual Data</em> is selected. This means the answer will be the minimum and maximum constrained to the slice.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="6">
+<li>Change the Query parameter to be <em>Original Data</em>.</li>
+<li>Do another <em>MinMax</em> query.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This time the answer will match the result of the first query. It will display the minimum and maximum for what is in the file, not what is on the screen.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple">
+<li>Now highlight <em>Variable Sum</em> and click <em>Query</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This will sum up all of the values in the data set.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Now highlight <em>Weighted Variable Sum</em> and click <em>Query</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This will sum up all of the values, but it will weight by area (since you have a slice).</li>
+<li>For 3D, it will weight by volume.</li>
+<li>For axi-symmetric 2D calculations, it will weight by revolved volume.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>Note that both queries have options for doing queries over time (grayed out because we don’t have a time varying data set).</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This is for time varying data and will produce a curve in a separate window.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple">
+<li>Now highlight <em>Lineout</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Note that you must have left <em>Project to 2D</em> enabled in the Slice operator for this next one to work correctly.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Change the start point to “-5 -5 0” and the end point to “5 5 0”.</li>
+<li>Click <em>Query</em>.</li>
+<li>This is a way to get exact lineouts.</li>
+<li>You can also take 3D lineouts this way.</li>
+</ol>
+<ol class="arabic simple">
+<li>Now highlight <em>Pick</em>.</li>
+<li>Click <em>Query</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This will provide information about the zone containing the coordinate “0 0 0”.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>Change the mode to <em>Pick using coordinate to determine node</em>.</li>
+<li>Click <em>Query</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This will provide information about the node nearest the coordinate “0 0 0”.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li>Change the mode to <em>Pick using domain and element Id</em>.</li>
+<li>Click <em>Query</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This will provide information about the node or zone in the specied domain.</li>
+</ul>
+</div></blockquote>
+<p>You can also perform a query using the global element id by selecting <em>Pick using global elememnt Id</em>. This only works if the file contains global element id information, which this file does not.</p>
+</div>
+<div class="section" id="mesh-related">
+<h4>2.1.2.2. Mesh-related<a class="headerlink" href="#mesh-related" title="Permalink to this headline">¶</a></h4>
+<ol class="arabic simple">
+<li>Change the <em>Display</em> in the Query window to be <em>Mesh-related</em>.</li>
+<li>Experiment with the <em>2D area</em>, <em>SpatialExtents</em>, <em>NumZones</em>, and <em>Zone Center</em> queries.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>For the <em>Zone Center</em> query, you will set the <em>Domain</em> to “0”.</li>
+<li>The domain is used for when you have a parallel file, where the data has been “domain decomposed” for parallel processing.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="connectedcomponents-related">
+<h4>2.1.2.3. ConnectedComponents related<a class="headerlink" href="#connectedcomponents-related" title="Permalink to this headline">¶</a></h4>
+<ol class="arabic simple">
+<li>If you haven’t already removed the slice operator, do that now, so you have just a Pseudocolor plot of <em>temp</em>.</li>
+<li>Apply the Isovolume operator.  Change the <em>Lower bound</em> of the Isovolume operator attributes to be “4”.</li>
+<li>You will now see a bunch of blobs in space.</li>
+<li>Change the <em>Display</em> in the Query window to be <em>ConnectedComponents-related</em>.</li>
+<li>Perform the <em>Number of Connected Components</em> query.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>It should tell you that there are 15 components.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="6">
+<li>Apply the Clip operator with the default settings.</li>
+<li>Perform the <em>Number of Connected Components</em> query again.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>It should now say there are 14 components.</li>
+<li>Operators affect queries.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+</div>
+<div class="section" id="queries-over-time">
+<h2>2.2. Queries over Time<a class="headerlink" href="#queries-over-time" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="what-are-queries-over-time">
+<h3>2.2.1. What are queries over time<a class="headerlink" href="#what-are-queries-over-time" title="Permalink to this headline">¶</a></h3>
+<p>Queries over time perform analysis through time and generate a time-curve.</p>
+</div>
+<div class="section" id="experiment-with-queries-over-time">
+<h3>2.2.2. Experiment with queries over time<a class="headerlink" href="#experiment-with-queries-over-time" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="weighted-variable-sum">
+<h4>2.2.2.1. Weighted Variable Sum<a class="headerlink" href="#weighted-variable-sum" title="Permalink to this headline">¶</a></h4>
+<ol class="arabic simple">
+<li>Go to <em>Controls-&gt;Query</em>.</li>
+<li>This brings up the Query window.</li>
+</ol>
+<div class="figure" id="id3">
+<img alt="../_images/DataAnalysis-QueryWeightedVariableSum.png" src="../_images/DataAnalysis-QueryWeightedVariableSum.png" />
+<p class="caption"><span class="caption-number">Fig. 2.11 </span><span class="caption-text">The Weighted Variable Sum query</span></p>
+</div>
+<ol class="arabic simple" start="3">
+<li>Go back to the <em>GUI</em>, delete any existing plots, open up “wave.visit”, and make a Pseudocolor plot of <em>pressure</em>.</li>
+<li>Find and Highlight <em>Weighted Variable Sum</em> and click <em>Do Time Query</em>.</li>
+<li>Options for changing the <em>Starting timestep</em>, <em>Ending timestep</em> and <em>Stride</em> will be available.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Note that these are 0-origin timestate indices and not cycles or times.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="6">
+<li>Click <em>Query</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>The result will be displayed in a new Window. By default the x-axis will be cycle and the y-axis will be the weighted summation of the <em>pressure</em>.</li>
+</ul>
+</div></blockquote>
+<div class="figure" id="id4">
+<img alt="../_images/DataAnalysis-QueryWeightedVariableSumOutput.png" src="../_images/DataAnalysis-QueryWeightedVariableSumOutput.png" />
+<p class="caption"><span class="caption-number">Fig. 2.12 </span><span class="caption-text">The output of the Weighted Variable Sum query over time</span></p>
+</div>
+</div>
+<div class="section" id="pick">
+<h4>2.2.2.2. Pick<a class="headerlink" href="#pick" title="Permalink to this headline">¶</a></h4>
+<ol class="arabic simple">
+<li>Pick can do multiple-variable time curves.</li>
+<li>Make <em>Window 2</em> active, delete the plot, and make <em>Window 1</em> active again.</li>
+<li>Find and Highlight <em>Pick</em> in the Query window and click <em>Do Time Query</em> to enable time-curve options.</li>
+</ol>
+<div class="figure" id="id5">
+<img alt="../_images/DataAnalysis-QueryPick.png" src="../_images/DataAnalysis-QueryPick.png" />
+<p class="caption"><span class="caption-number">Fig. 2.13 </span><span class="caption-text">The Pick query</span></p>
+</div>
+<ol class="arabic simple" start="4">
+<li>Change the <em>Variables</em> option to add <em>v</em> using the <em>Variables-&gt;Scalars</em> dropdown menu.</li>
+<li>Select <em>Pick using domain and element Id</em>. Leave the defaults for <em>Node Id</em> and <em>Domain Id</em> as “0”.</li>
+<li>Select <em>Preserve Picked Element Id</em>.</li>
+<li>Click <em>Query</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>The result will be two curves in a single xy plot.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="8">
+<li>Make <em>Window 2</em> active, delete the plot, and make <em>Window 1</em> active again.</li>
+<li>Change the <em>Multiple-variable Time Curve options</em> to <em>Create Multiple Y-Axes plot</em>.</li>
+<li>Click <em>Query</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>The result will be a Multi-curve plot (multiple axes) in <em>Window 2</em>.</li>
+</ul>
+</div></blockquote>
+<div class="figure" id="id6">
+<img alt="../_images/DataAnalysis-QueryPickOutput.png" src="../_images/DataAnalysis-QueryPickOutput.png" />
+<p class="caption"><span class="caption-number">Fig. 2.14 </span><span class="caption-text">The Pick query output</span></p>
+</div>
+<ol class="arabic simple" start="11">
+<li><strong>NOTE:</strong>  Time Pick can also be performed via the mouse by first setting things up on the <em>Time Pick</em> tab in the Pick window (<em>Controls-&gt;Pick</em>).</li>
+</ol>
+</div>
+</div>
+<div class="section" id="changing-global-options">
+<h3>2.2.3. Changing global options<a class="headerlink" href="#changing-global-options" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Go to <em>Controls-&gt;Query over time options</em>.</li>
+<li>This brings up the QueryOverTime window.</li>
+</ol>
+<div class="figure" id="id7">
+<img alt="../_images/DataAnalysis-QueryOverTime.png" src="../_images/DataAnalysis-QueryOverTime.png" />
+<p class="caption"><span class="caption-number">Fig. 2.15 </span><span class="caption-text">The QueryOverTime window</span></p>
+</div>
+<ol class="arabic simple" start="3">
+<li>Here you can change the values displayed in the x-axis for all subsequent queries over time.</li>
+<li>You can also change the window used to display time-curves. By default, the first un-used window becomes the time-curve window, and all subsequent time-curves are generated in the same window.</li>
+</ol>
+</div>
+</div>
+<div class="section" id="built-in-queries">
+<h2>2.3. Built-in queries<a class="headerlink" href="#built-in-queries" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="../gui_manual/Quantitative/Query.html#built-in-queries"><span class="std std-ref">Built-in queries</span></a></p>
+</div>
+<div class="section" id="expressions">
+<h2>2.4. Expressions<a class="headerlink" href="#expressions" title="Permalink to this headline">¶</a></h2>
+<p>Expressions in <a class="reference external" href="https://visit.llnl.gov">VisIt</a> create new mesh variables from existing ones. These
+are also known as <em>derived quantities</em>. <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s expression system supports
+only derived quantities that create a new mesh variable defined over the
+<em>entire</em> mesh. Given a mesh on which a variable named <em>pressure</em> is defined,
+an example of a very simple expression is “2*pressure”. On the other hand,
+suppose one wanted to sum (or integrate) “pressure” over the entire mesh
+(maybe the mesh represents some surface area over which a force calculation
+is desired). Such an operation is not an expression in <a class="reference external" href="https://visit.llnl.gov">VisIt</a> because it
+does not result in a new variable defined over the entire mesh. In this
+example, summing pressure over the entire mesh results in a single, scalar,
+number, like “25.6”. Such an operation is supported instead by <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s
+Variable Sum Query. This tends to be true in general; Expressions define
+whole mesh variables while Queries define single numerical values (there
+are, however, some Queries for which this is not strictly true).</p>
+<div class="section" id="a-simple-algebraic-expression-2-radial">
+<h3>2.4.1. A simple algebraic expression, “2*radial”<a class="headerlink" href="#a-simple-algebraic-expression-2-radial" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Open up “noise2d.silo”.</li>
+<li>Create a Pseudocolor plot of the variable <em>radial</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Take note of the legend range, “0…28.28”</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>Go to <em>Controls-&gt;Expressions</em>.</li>
+<li>Click on <em>New</em> in the bottom left.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This will create an expression and give it a default name, “unnamed1”.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li>Rename this expression by typing “radial2” into the <em>Name</em> field</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Take note of the <em>Type</em> of the variable. By default, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> assumes the type of the new variable you are creating is a s scalar mesh variable (e.g. a single numerical value for each node or zone/cell in the mesh). Here, we are indeed creating a scalar variable and so there is no need to adjust the <em>Type</em>. However, in some of the examples that follow, we’ll be creating vector mesh variables and if we don’t specify the correct type, we’ll get an error message.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="6">
+<li>Place the cursor in the <em>Definition</em> pane of the <em>Expressions</em> dialog.</li>
+<li>Type the number “2” followed by the C/C++ language symbol for multiplication, “*”.</li>
+<li>Now, you can either type the name “radial” or you can go to the <em>Insert Variable…</em> pulldown menu and find and select the <em>radial</em> variable there (see picture at right).</li>
+</ol>
+<div class="figure" id="id8">
+<img alt="../_images/DataAnalysis-ExpressionsRadial2.png" src="../_images/DataAnalysis-ExpressionsRadial2.png" />
+<p class="caption"><span class="caption-number">Fig. 2.16 </span><span class="caption-text">Using the Expressions window Insert variable</span></p>
+</div>
+<ol class="arabic simple" start="9">
+<li>Click <em>Apply</em>.</li>
+<li>Now, go to the main <a class="reference external" href="https://visit.llnl.gov">VisIt</a> <em>GUI</em> Panel to the <em>Variables</em> pulldown.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Note that <em>radial2</em> now appears in the list of variables there.</li>
+</ul>
+</div></blockquote>
+<div class="figure" id="id9">
+<img alt="../_images/DataAnalysis-VariablesMenu.png" src="../_images/DataAnalysis-VariablesMenu.png" />
+<p class="caption"><span class="caption-number">Fig. 2.17 </span><span class="caption-text">Expression variable appears in the plot menus</span></p>
+</div>
+<ol class="arabic simple" start="11">
+<li>Select <em>radial2</em> from the pull down and click <em>Draw</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Visually, the image will not look any different. But, if you take a close look at the legend you will see it is now showing “0…56.57”.</li>
+</ul>
+</div></blockquote>
+<p>Visit supports several unary and binary algebraic expressions including
+<code class="docutils literal notranslate"><span class="pre">+,</span> <span class="pre">-,</span> <span class="pre">/,</span> <span class="pre">\*,</span> <span class="pre">bitwise-^,</span> <span class="pre">bitwise-&amp;,</span> <span class="pre">sqrt(),</span> <span class="pre">abs(),</span> <span class="pre">ciel(),</span> <span class="pre">floor(),</span> <span class="pre">ln(),</span> <span class="pre">log10(),</span> <span class="pre">exp()</span></code>
+and more.</p>
+</div>
+<div class="section" id="accessing-coordinates-of-a-mesh-in-expressions">
+<h3>2.4.2. Accessing coordinates (of a mesh) in expressions<a class="headerlink" href="#accessing-coordinates-of-a-mesh-in-expressions" title="Permalink to this headline">¶</a></h3>
+<p>Here, we’ll use the category of <em>Mesh</em> expressions to access the coordinates
+of a mesh, again, working with “noise2d.silo”.</p>
+<ol class="arabic simple">
+<li>Go to <em>Controls-&gt;Expressions</em>.</li>
+<li>Click the <em>New</em> button and name this expression “Coords”.</li>
+<li>Set the <em>Type</em> to <em>Vector mesh variable</em> (because coordinates, at least in this 2D example, are a vector quantity).</li>
+<li>Put the cursor in the <em>Definition</em> pane.</li>
+<li>Go to <em>Insert Function…</em> and find the <em>Mesh</em> category of expressions and then, within it, find the <em>coord</em> function expression.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This should result in the insertion of “coord()” in the <em>Definition</em> pane and place the cursor between the two parenthesis characters.</li>
+<li>Note that in almost all cases, the category of <em>Mesh</em> expressions expect one or more mesh variables as operands.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="6">
+<li>Now, go to <em>Insert Variable…</em> pull down and then to the <em>Meshes</em> submenu and select <em>Mesh</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This should result in <em>Mesh</em> being inserted between the parentheses in the definition.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="7">
+<li>Click <em>Apply</em>.</li>
+<li>Now, we’ll define two scalar expressions for the “X” and “Y” coordinates of the mesh. While still in the Expressions window,</li>
+</ol>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Click <em>New</em>.</li>
+<li>Name the new expression “X”.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Note that <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s expression system is case sensitive so “x” and “X” can be different variable names.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>Leave the type as <em>Scalar mesh variable</em></li>
+<li>Type into the definition pane, “Coords[0]”</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This expression uses the array bracket dereference operator “[]” to specify a particular component of an array. In this case, the <em>array</em> being derefrenced is the vector variable defined by “Coords”.</li>
+<li>Note that <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s expression system always numbers its array indices starting from zero.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li>Click <em>Apply</em>.</li>
+<li>Now, repeat these steps to define a “Y” expression for the “Y” coordinates.</li>
+</ol>
+</div></blockquote>
+<ol class="arabic simple" start="9">
+<li>Finally, we’ll define the “distance” expression</li>
+</ol>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Click the <em>New</em> button.</li>
+<li>Give the new variable the name “Dist” (Type should be <em>Scalar mesh variable</em>).</li>
+<li>Type in the definition “sqrt(X*X+Y*Y)”.</li>
+<li>Click <em>Apply</em>.</li>
+</ol>
+</div></blockquote>
+<p>Now, we’ll use the new “Dist” variable we’ve just defined to display some data.</p>
+<ol class="arabic simple">
+<li>Delete any existing plots from the plot list.</li>
+<li>Add a Pseudocolor plot of <em>shepardglobal</em>.</li>
+<li>Add an Isovolume operator.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Although this example is a 2D example and so <em>volume</em> doesn’t seem to apply, <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s Isovolume operator performs the equivalent operation for 2D data.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li>Bring up the Isovolume operator attributes (either expand the plot by clicking on the triangle to the left of its name in the plot list and double clicking on the Isovolume operator there or go to the <em>OpAtts</em> menu and bring up Isovolume operator attributes that way).</li>
+<li>Set the variable to <em>Dist</em>.</li>
+<li>Set the <em>Lower bound</em> to “5” and the <em>Upper bound</em> to “7”.</li>
+<li>Click <em>Apply</em>.</li>
+<li>Click <em>Draw</em>.</li>
+</ol>
+<p>You should get the picture below. In this picture, we are displaying a
+Pseudocolor plot of <em>shepardglobal</em>, but Isovolumed by our <em>Dist</em> expression
+in the range “[5…7]”.</p>
+<div class="figure" id="id10">
+<img alt="../_images/DataAnalysis-ExpressionRadial2Output.png" src="../_images/DataAnalysis-ExpressionRadial2Output.png" />
+<p class="caption"><span class="caption-number">Fig. 2.18 </span><span class="caption-text">Example of using the radial expression</span></p>
+</div>
+<p>This example also demonstrates the use of an expression <em>function</em>, <em>coord()</em>
+to operate on a mesh and return its coordinates as a vector variable on the
+mesh.</p>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> has a variety of expression functions that operate on a Mesh including
+<em>area</em> (for 2D meshes), <em>volume</em> (for 3D meshes, <em>revolved_volume</em> (for
+2D cylindrically symmetric meshes), <em>zonetype</em>, and more. In addition,
+<a class="reference external" href="https://visit.llnl.gov">VisIt</a> includes the entire suite of <em>Mesh quality</em> expressions from the
+<a class="reference external" href="http://cubit.sandia.gov/public/verdict.html">Verdict Library</a>.</p>
+</div>
+<div class="section" id="creating-vector-and-tensor-valued-variables-from-scalars">
+<h3>2.4.3. Creating vector and tensor valued variables from scalars<a class="headerlink" href="#creating-vector-and-tensor-valued-variables-from-scalars" title="Permalink to this headline">¶</a></h3>
+<p>If the database contains scalar variables representing the individual
+components of a vector or tensor, <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s Expression system allows you
+to construct the associated vector (or tensor). You create vectors in
+<a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s Expression system using the curly bracket <em>vector compose</em>
+“{}” operator. For example, using “noise2d.silo” again as an example,
+suppose we want to compose a <em>Vector</em> valued expression that has
+“shepardglobal” and “hardyglobal” as components. Here are the steps.</p>
+<ol class="arabic simple">
+<li>Go to <em>Controls-&gt;Expressions</em>.</li>
+<li>Click the <em>New</em> button and set <em>Name</em> to “randvec”.</li>
+<li>Be sure to also set the <em>Type</em> to <em>Vector mesh variable</em>.</li>
+<li>Place the cursor in <em>Definition</em> pane and type “{shepardglobal, hardyglobal}”.</li>
+<li>Click <em>Apply</em>.</li>
+<li>Go to <em>Plots-&gt;Vector</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>You should now see <em>randvec</em> appear there as a variable name to plot.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="7">
+<li>Add the Vector plot of <em>randvec</em>.</li>
+</ol>
+<p>In the example above, we used the <em>vector compose</em> operator, “{}” to
+create a vector variable from multiple scalar variables. We can do the
+same to create a tensor variable. Recall from calculus that a rank 0 tensor
+is a scalar, a rank 1 tensor is a vector and a rank 2 tensor is a matrix.
+So, to create a tensor variable, we use multiple <em>vector compose</em> operators
+nesting within another <em>vector compose</em> operator. Here, solely for the
+purposes of illustration (e.g. this isn’t a physically meaningful tensor)
+we’ll use the “X” and “Y” coordinate component scalars we defined earlier
+together with the <em>shepardglobal</em> and <em>hardyglobal</em>.</p>
+<ol class="arabic simple">
+<li>Go to <em>Controls-&gt;Expressions</em>.</li>
+<li>Click <em>New</em> and set the <em>Name</em> to “tensor”.</li>
+<li>Be sure to also set the <em>Type</em> to <em>Tensor mesh variable</em>.</li>
+<li>Place the cursor in <em>Definition</em> pane and type “{ {shepardglobal, hardyglobal}, {X,Y} }”.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Note the two levels of curly braces. The outer level is the whole rank 2 tensor matrix and the inner curly braces are each row of the matrix.</li>
+<li>Note that you could also have defined the same tensor expression using two vector expressions like so, “{randvec, Coords}”.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li>Click <em>Apply</em>.</li>
+<li>Add a Tensor plot of <em>tensor</em> variable.</li>
+</ol>
+<div class="figure" id="id11">
+<img alt="../_images/DataAnalysis-ExpressionVectorTensorOutput.png" src="../_images/DataAnalysis-ExpressionVectorTensorOutput.png" />
+<p class="caption"><span class="caption-number">Fig. 2.19 </span><span class="caption-text">Example of using vector and tensor expressions</span></p>
+</div>
+</div>
+<div class="section" id="variable-compatibility-gotchas-tensor-rank-centering-mesh">
+<h3>2.4.4. Variable compatibility gotchas (tensor rank, centering, mesh)<a class="headerlink" href="#variable-compatibility-gotchas-tensor-rank-centering-mesh" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> will allow you to define expressions that it winds up determining to
+be invalid later when it attempts to execute those expressions. Some common
+issues are the mixing of incompatible mesh variables in the same expression
+<em>without</em> the necessary additional functions to make them compatible.</p>
+<div class="section" id="tensor-rank-compatibility">
+<h4>2.4.4.1. Tensor rank compatibility<a class="headerlink" href="#tensor-rank-compatibility" title="Permalink to this headline">¶</a></h4>
+<p>For example, what happens if you mix scalar and vector mesh variables
+(e.g. variables of different <em>Tensor rank</em>) in the same expression?
+Again, using “noise2d.silo”.</p>
+<ol class="arabic simple">
+<li>Define the expression, “foo” as “grad+shepardglobal” with the <em>Type</em> <em>Vector mesh variable</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Note that <em>grad</em> is a <em>Vector mesh variable</em> and <em>shepardglobal</em> is a <em>Scalar mesh variable</em>.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Now, attempt to do a Vector plot of <em>foo</em>. This works because <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will add the scalar to each component of the vector resulting a new vector mesh variable</li>
+<li>But, suppose you instead defined <em>foo</em> to be of <em>Type</em> <em>Scalar mesh variable</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="https://visit.llnl.gov">VisIt</a> will allow you to define this expression. But, when you go to plot it, the plot will fail.</li>
+</ul>
+</div></blockquote>
+<p>As an aside, as you go back and forth between the Expressions window
+creating and/or adjusting expression definitions, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> makes no attempt
+to keep track of all the changes you’ve made in expressions and
+automatically update plots as expressions change. You will have to
+manually clear or delete plots to force <a class="reference external" href="https://visit.llnl.gov">VisIt</a> to re-draw plots in which
+you’ve changed expressions.</p>
+<p>In the above example, if on the other hand, you had set type of “foo”
+to Scalar Mesh Variable, then <a class="reference external" href="https://visit.llnl.gov">VisIt</a> would have failed to plot it because
+it is adding a scalar and a vector variable and the result of such an
+operation is <em>always</em> a <em>Vector mesh variable</em>. If what you really
+intended was a scalar mesh variable, then use one of the expression
+functions that converts a vector to a scalar (e.g. <em>magnitude()</em> function
+or array dereference operator <em>[]</em>) to convert the <em>Vector mesh variable</em>
+in your expression to a scalar mesh variable. So, “grad[i]+shephardglobal”
+where “i” is “0” or “1” would work to define a scalar mesh variable.
+Or, “magnitude(grad)+shepardglobal” would also have worked.</p>
+</div>
+<div class="section" id="centering-compatibility">
+<h4>2.4.4.2. Centering compatibility<a class="headerlink" href="#centering-compatibility" title="Permalink to this headline">¶</a></h4>
+<p>In “noise2d.silo”, some variables are zone centered and some are node
+centered. What happens if you combine these in an expression? <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will
+default to zone centering for the result. If this is not the desired
+result, use the “recenter()” expression function, where appropriate,
+to adjust centering of some of the terms in your expression. For example,
+again using “noise2d.silo”.</p>
+<ol class="arabic simple">
+<li>Define the <em>Scalar mesh variable</em> expression “bar” as “shepardglobal+airVf”.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>For reference, in “noise2d.silo”, “shepardglobal” is node centered while “airVf” is zone centered.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Do a Pseudocolor plot of “bar”.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Note that “bar” displays as a zone centered quantity.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>Now, go back to the expression and recenter “airVf” by adjusting the definition to “shepardglobal+recenter(airVf)”.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>The <em>recenter()</em> expression function is a <em>toggle</em> in that it will take whatever the variable’s centering is and swap it (node-&gt;zone and zone-&gt;node).</li>
+<li>The <em>recenter()</em> expression function also takes a second argument, a string of one of the values <em>toggle</em>, <em>zonal</em>, <em>nodal</em> to force a particular behavior.</li>
+<li>Note that when you click <em>Apply</em>, the current plot of “bar” does not change. You need to manually delete and re-create the plot (or clear and re-draw the plots).</li>
+</ul>
+</div></blockquote>
+<p>Finally, note that these two expressions…</p>
+<ul class="simple">
+<li>“shepardglobal+recenter(airVf)”</li>
+<li>“recenter(shepardglobal+airVf)”</li>
+</ul>
+<p>both achieve a node-centered result. But, each expression is subtly
+(and numerically) different. The first recenter’s “airVf” to the nodes
+and then performs the summation operator at each node. In the second,
+there is an implied recentering of “shepardglobal” to the zones first.
+Then, the summation operator is applied at each zone center and finally
+the results are recentered back to the nodes. In all likelihood this
+results in a numerically lower quality result. The moral is that in a
+complex series of expressions be sure to take care where you want
+recentering to occur.</p>
+</div>
+<div class="section" id="mesh-compatibility">
+<h4>2.4.4.3. Mesh compatibility<a class="headerlink" href="#mesh-compatibility" title="Permalink to this headline">¶</a></h4>
+<p>In many cases, especially in Silo databases, all the available variables
+in a database are not always defined on the same mesh. This can complicate
+matters involving expressions in variables from different meshes.</p>
+<p>Just as in the previous two examples of incompatible variables where the
+solution was to apply some functions to make the variables compatible,
+we have to do the same thing when variables from different meshes are
+combined in an expression. The key expression functions which enable this
+are called <em>Cross Mesh Field Evaluation</em> or <em>CMFE</em> functions. We will only
+briefly touch on these here. CMFEs will be discussed in much greater
+detail in a tutorial devoted to that topic.</p>
+<p>Again, using “noise2d.silo”</p>
+<ol class="arabic simple">
+<li>Define the expression “gorf” with definition “PointVar + shepardglobal”.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Note that <em>PointVar</em> is defined on a mesh named <em>PointMesh</em> while <em>shepardglobal</em> is defined on a mesh named <em>Mesh</em>.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Try to do a Pseudocolor plot of “gorfo”. You will get a plot of points and a warning message like this one…</li>
+</ol>
+<blockquote>
+<div>The compute engine running on host somehost.com issued the following warning:
+In domain 0, your nodal variable “shepardglobal” has 2500 values, but it should have 100.
+Some values were removed to ensure <a class="reference external" href="https://visit.llnl.gov">VisIt</a> runs smoothly.</div></blockquote>
+<p>So, whats happening here? <a class="reference external" href="https://visit.llnl.gov">VisIt</a> is deciding to perform the summation
+operation on the <em>PointVar</em>’s mesh. That mesh consists of 100 points. So,
+when it encounters the <em>shepardglobal</em> variable (defined on <em>Mesh</em> with
+50x50 nodes), it simply ignores any values in “shepardgloabl” after the
+first 100. Most likely, this is not the desired outcome.</p>
+<p>We have two options each of which involves <em>mapping</em> one of the variables
+onto the other variable’s mesh using one of the CMFE expression functions.
+We can map <em>shepardglobal</em> onto <em>PointMesh</em> or we can map <em>PointVar</em> onto
+<em>Mesh</em>. We’ll do both here</p>
+</div>
+<div class="section" id="mapping-shepardglobal-onto-pointmesh">
+<h4>2.4.4.4. Mapping <em>shepardglobal</em> onto <em>PointMesh</em><a class="headerlink" href="#mapping-shepardglobal-onto-pointmesh" title="Permalink to this headline">¶</a></h4>
+<ol class="arabic simple">
+<li>Define a new expression named “shepardglobal_mapped”.</li>
+<li>Go to <em>Insert Function…</em>, then to the <em>Comparisons</em> submenu and select <em>pos_cmfe</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This defines a <em>position based</em> cross-mesh field evaluation function. The other option is a <em>conn_cmfe</em> or <em>connectivity-based</em> which is faster but requires both meshes to be topologically congruent and is not appropriate here.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>A template for the arguments to the <em>pos_cmfe</em> will appear in the <em>Definition</em> pane.</li>
+<li>Replace “&lt;filename:var&gt;” with “&lt;./noise2d.silo:shepardglobal&gt;”.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This assumes the “noise2d.silo” file is in the same directory from which <a class="reference external" href="https://visit.llnl.gov">VisIt</a> was started.</li>
+<li>This defines the <em>source</em> or <em>donor</em> variable to be mapped onto a new mesh.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li>Replace “&lt;meshname&gt;” with “PointMesh”.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This defines the <em>destination</em> or <em>target</em> mesh the variable is to be mapped onto.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="6">
+<li>Replace “&lt;fill-var-for-uncovered-regions&gt;” with “-1”.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>This is needed for position-based CMFE’s because the donor variable’s mesh and target mesh may not always volumetrically overlap 100%. In places where this winds up being the case, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will use this value to fill in.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="7">
+<li>Now with “shepardglobal_mapped” defined, you can define the desired expression, “PointVar + shepardglobal_mapped” and this will achieve the desired result and is shown below.</li>
+</ol>
+<div class="figure" id="id12">
+<img alt="../_images/DataAnalysis-ExpressionCMFEOutput.png" src="../_images/DataAnalysis-ExpressionCMFEOutput.png" />
+<p class="caption"><span class="caption-number">Fig. 2.20 </span><span class="caption-text">The variable Shepardglobal mapped onto a point mesh</span></p>
+</div>
+</div>
+<div class="section" id="mapping-pointvar-onto-mesh">
+<h4>2.4.4.5. Mapping <em>PointVar</em> onto <em>Mesh</em><a class="headerlink" href="#mapping-pointvar-onto-mesh" title="Permalink to this headline">¶</a></h4>
+<p>To be completed. But, cannot map point mesh onto a volumetric mesh. <a class="reference external" href="https://visit.llnl.gov">VisIt</a>
+always returns zero overlap.</p>
+</div>
+</div>
+<div class="section" id="combining-expressions-and-queries-is-powerful">
+<h3>2.4.5. Combining expressions and queries is powerful<a class="headerlink" href="#combining-expressions-and-queries-is-powerful" title="Permalink to this headline">¶</a></h3>
+<p>Suppose you have a database generated by some application code simulating
+some object being blown apart. Maybe its a 2D, cylindrically symmetric
+calculation. Next, suppose the code produced a “density” and “velocity”
+variable. However, what you want to compute is the total mass of some
+(portion of) of the object that has velocity (magnitude) greater than
+some threshold, say 5 meters/second. You can use a combination of
+Expressions, Queries and the Threshold operator to achieve this.</p>
+<p>Mass is “density * volume”. You have a 2D mesh, so how do you get volume
+from something that has only 2 dimensions? You know the mesh represents
+a calculation that is cylindrically symmetric (revolved around the y-axis).
+You can use the <em>revolved_volume()</em> Expression function to obtain the
+volume of each zone in the mesh. Then, you can multiply the result of
+<em>revolved_volume()</em> by <em>density</em> to get mass of each zone in the mesh.
+Once you have that, you can use threshold operator to display only those
+zones with velocity (magnitude) greater than 5 and then a variable sum
+query to add up all the mass moving at that velocity.</p>
+<p>Here, we demonstrate the steps involved using the “noise2d.silo” database.
+Because that database does not quite match the problem assumption described
+in the preceding paragraphs, we simply  re-purpose a few of the variables
+in the database to serve as our <em>density</em> and <em>velocity</em> variables in
+this example. Namely, we define the expression <em>density</em> as an alias for
+<em>shephardglobal</em> and <em>velocity</em> as an alias for <em>grad</em>.</p>
+<div class="figure" id="id13">
+<img alt="../_images/DataAnalysis-ExpressionsMass.png" src="../_images/DataAnalysis-ExpressionsMass.png" />
+<p class="caption"><span class="caption-number">Fig. 2.21 </span><span class="caption-text">Mass Expression Definition</span></p>
+</div>
+<p>Here are the steps involved…</p>
+<ol class="arabic simple">
+<li>Go to <em>Controls-&gt;Expressions</em>.</li>
+<li>Click <em>New</em>.</li>
+<li>Set the <em>Name</em> to “density”.</li>
+<li>Make sure the <em>Type</em> is set to <em>Scalar mesh variable</em>.</li>
+<li>Set the <em>Definition</em> to “shepardglobal”.</li>
+<li>Click <em>Apply</em>.</li>
+<li>Click <em>New</em>.</li>
+<li>Set the <em>Name</em> to “velocity”.</li>
+<li>Make sure the <em>Type</em> is set to <em>Vector mesh variable</em>.</li>
+<li>Set the <em>Definition</em> to “grad”.</li>
+<li>Click <em>Apply</em>.</li>
+<li>Click <em>New</em>.</li>
+<li>Set the <em>Name</em> to “mass”.</li>
+<li>Make sure the <em>Type</em> is set to <em>Scalar mesh variable</em>.</li>
+<li>Set the <em>Definition</em> to “revolved_volume(Mesh) * density”.</li>
+<li>Click <em>Apply</em>.</li>
+<li>Click the <em>New</em> button again (for a new expression).</li>
+<li>Set the <em>Name</em> to “velmag” (for velocity magnitude).</li>
+<li>Set the <em>Definition</em> to “magnitude(velocity)”.</li>
+<li>Go to <em>Plot-&gt;Pseudocolor-&gt;mass</em>.</li>
+<li>Click <em>Draw</em>.</li>
+</ol>
+<div class="figure" id="id14">
+<img alt="../_images/DataAnalysis-ExpressionMassOutput.png" src="../_images/DataAnalysis-ExpressionMassOutput.png" />
+<p class="caption"><span class="caption-number">Fig. 2.22 </span><span class="caption-text">Mass plot</span></p>
+</div>
+<ol class="arabic simple" start="22">
+<li>Add <em>Operator-&gt;Threshold</em>.</li>
+<li>Open the Threshold operator attributes window.</li>
+</ol>
+<div class="figure" id="id15">
+<img alt="../_images/DataAnalysis-ThresholdAttributes.png" src="../_images/DataAnalysis-ThresholdAttributes.png" />
+<p class="caption"><span class="caption-number">Fig. 2.23 </span><span class="caption-text">Threshold attributes</span></p>
+</div>
+<ol class="arabic simple" start="24">
+<li>Select the <em>default</em> variable and then click <em>Delete selected variable</em>.</li>
+<li>Go to <em>Add Variable</em> and select <em>velmag</em> from the list of <em>Scalars</em>.</li>
+<li>Set <em>Lower Bound</em> to “5”.</li>
+<li>Click <em>Apply</em>.</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Now the displayed plot changes to show only those parts of the mesh that are moving with velocity greater than 5.</li>
+</ul>
+</div></blockquote>
+<div class="figure" id="id16">
+<img alt="../_images/DataAnalysis-ThresholdOutput.png" src="../_images/DataAnalysis-ThresholdOutput.png" />
+<p class="caption"><span class="caption-number">Fig. 2.24 </span><span class="caption-text">Mass plot after threshold</span></p>
+</div>
+<ol class="arabic simple" start="28">
+<li>Go to <em>Controls-&gt;Query</em>.</li>
+<li>Find the <em>Variable sum query</em> from the list of queries.</li>
+<li>Click the <em>Query</em> button. The computed result will be a sum of all the individual zones’ masses in the mesh for those zones that are moving with velocity greater than 5.</li>
+</ol>
+<div class="figure" id="id17">
+<img alt="../_images/DataAnalysis-QueryVariableSumOutput.png" src="../_images/DataAnalysis-QueryVariableSumOutput.png" />
+<p class="caption"><span class="caption-number">Fig. 2.25 </span><span class="caption-text">The variable sum query result</span></p>
+</div>
+</div>
+<div class="section" id="automatic-saved-and-database-expressions">
+<h3>2.4.6. Automatic, saved and database expressions<a class="headerlink" href="#automatic-saved-and-database-expressions" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> defines several types of expressions automatically. For all vector
+variables from a database, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will automatically define the associated
+magnitude expressions. For unstructured meshes, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will automatically
+define <em>mesh quality</em> expressions. For any databases consisting of
+multiple time states, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will define <em>time derivative</em> expressions.
+This behavior can be controlled by going to <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s <em>Preferences</em> dialog
+and enabling or disabling various kinds of <em>automatic</em> expressions.</p>
+<p>If you save settings, any expressions you have defined are also saved with
+the settings. And, they will appear (and sometimes pollute) your menus
+whether or not they are valid expressions for the currently active database.</p>
+<p>Finally, databases are also free to define expressions. In fact, many
+databases define a large number of expressions for the convenience of
+their users who often use the expressions in their post-processing
+workflows. Ordinarily, you never see <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s automatic expressions or a
+database’s expressions in the Expression window because they are not
+editable. However, you can check the <em>display expressions from database</em>
+check box in the Expressions window and <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will also show these expressions.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Scripting.html" class="btn btn-neutral float-right" title="3. Scripting" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="VisIt_Basics.html" class="btn btn-neutral" title="1. VisIt Basics" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

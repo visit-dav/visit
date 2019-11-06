@@ -1,0 +1,417 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>19.2. Configuring With CMake GUI &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="19. Building on Windows" href="index.html"/>
+        <link rel="next" title="20. Acknowledgments" href="../Acknowledgments/index.html"/>
+        <link rel="prev" title="19.1. Prerequisites" href="Prerequisites.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">19. Building on Windows</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Prerequisites.html">19.1. Prerequisites</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">19.2. Configuring With CMake GUI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#locating-source-and-build-directories">19.2.1. Locating Source and Build Directories</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#location-of-windowsbuild-directory">19.2.2. Location of windowsbuild Directory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#limiting-plugins">19.2.3. Limiting Plugins</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configuring">19.2.4. Configuring</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parallel">19.2.5. Parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#suppressing-regeneration">19.2.6. Suppressing Regeneration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#generate">19.2.7. Generate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#compile">19.2.8. Compile</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">19. Building on Windows</a> &raquo;</li>
+        
+      <li>19.2. Configuring With CMake GUI</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/BuildingOnWindows/ConfiguringWithCMakeGUI.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="configuring-with-cmake-gui">
+<span id="configuringwithcmakegui"></span><h1>19.2. Configuring With CMake GUI<a class="headerlink" href="#configuring-with-cmake-gui" title="Permalink to this headline">¶</a></h1>
+<p>Run cmake-gui.exe, which will display this window.
+<a class="reference internal" href="#cmake-gui-01-image"><span class="std std-numref">Figure 19.1</span></a></p>
+<div class="figure" id="id1">
+<span id="cmake-gui-01-image"></span><img alt="../../_images/cmake_gui_01.png" src="../../_images/cmake_gui_01.png" />
+<p class="caption"><span class="caption-number">Fig. 19.1 </span><span class="caption-text">CMake-gui</span></p>
+</div>
+<div class="section" id="locating-source-and-build-directories">
+<h2>19.2.1. Locating Source and Build Directories<a class="headerlink" href="#locating-source-and-build-directories" title="Permalink to this headline">¶</a></h2>
+<p>Fill in the location of VisIt’s src directory in the <em>Where is the source
+code:</em> section.</p>
+<p>Then tell CMake where you want the build to go by filling in <em>Where to build the binaries</em>. It is best to create a new build directory somewhere other than inside the <em>src</em> or <em>windowsbuild</em> directories. This is called <em>out-of-source build</em> and it prevents pollution your src directory.</p>
+<p>The Browse buttons come in handy here.</p>
+<p>If you are building from a clone of the github repository, it is recommended
+to do the build in a directory outside the repo (eg peer to <em>visit</em>) to keep
+your checkout clean. <a class="reference internal" href="#cmake-gui-02-image"><span class="std std-numref">Figure 19.2</span></a></p>
+<div class="figure" id="id2">
+<span id="cmake-gui-02-image"></span><img alt="../../_images/cmake_gui_02.png" src="../../_images/cmake_gui_02.png" />
+<p class="caption"><span class="caption-number">Fig. 19.2 </span><span class="caption-text">Setting source and build directories</span></p>
+</div>
+</div>
+<div class="section" id="location-of-windowsbuild-directory">
+<h2>19.2.2. Location of windowsbuild Directory<a class="headerlink" href="#location-of-windowsbuild-directory" title="Permalink to this headline">¶</a></h2>
+<p>For a released version of  VisIt’s source code, the <em>windowsbuild</em> directory
+containing the pre-built thirdparty binaries is located peer to <em>src</em>.  CMake
+generation should locate this directory automatically.
+<a class="reference internal" href="#visit-dirs-from-released-source-image"><span class="std std-numref">Figure 19.3</span></a></p>
+<div class="figure" id="id3">
+<span id="visit-dirs-from-released-source-image"></span><img alt="../../_images/visit_dirs_from_released_source.png" src="../../_images/visit_dirs_from_released_source.png" />
+<p class="caption"><span class="caption-number">Fig. 19.3 </span><span class="caption-text">Directory structure with source from a released version</span></p>
+</div>
+<p>For developement build cloned or downloaded from the github repositories, in
+order for CMake to locate the directory automatically, visit-deps should be
+peer to visit.
+<a class="reference internal" href="#visit-dirs-from-github-repos-image"><span class="std std-numref">Figure 19.4</span></a></p>
+<div class="figure" id="id4">
+<span id="visit-dirs-from-github-repos-image"></span><img alt="../../_images/visit_dirs_from_github_repos.png" src="../../_images/visit_dirs_from_github_repos.png" />
+<p class="caption"><span class="caption-number">Fig. 19.4 </span><span class="caption-text">Expected directory structure with source from GitHub repo</span></p>
+</div>
+<p>If neither of the above is true for your situation, use the CMake gui to set
+<em>VISIT_WINDOWS_DIR</em> to the location of the <em>windowsbuild</em> directory.
+<a class="reference internal" href="#adding-windowsbuild-dir-image"><span class="std std-numref">Figure 19.5</span></a></p>
+<div class="figure" id="id5">
+<span id="adding-windowsbuild-dir-image"></span><img alt="../../_images/adding_windowsbuild_dir.png" src="../../_images/adding_windowsbuild_dir.png" />
+<p class="caption"><span class="caption-number">Fig. 19.5 </span><span class="caption-text">Setting VISIT_WINDOWS_DIR</span></p>
+</div>
+</div>
+<div class="section" id="limiting-plugins">
+<h2>19.2.3. Limiting Plugins<a class="headerlink" href="#limiting-plugins" title="Permalink to this headline">¶</a></h2>
+<p>By default, most of the supported database reader plugins are built, which can
+slow down loading of the solution in the Visual Studio IDE, and slow down the
+build.  If you want to reduce the number of plugins built, add a CMake var
+using the <strong>Add Entry</strong> Button. If you are producing a version of VisIt that
+you plan to distribute, you should skip this step so all database reader
+plugins are built.
+<a class="reference internal" href="#selected-databases-image"><span class="std std-numref">Figure 19.6</span></a></p>
+<div class="figure" id="id6">
+<span id="selected-databases-image"></span><img alt="../../_images/selected_databases.png" src="../../_images/selected_databases.png" />
+<p class="caption"><span class="caption-number">Fig. 19.6 </span><span class="caption-text">Selecting a limited number of database plugins</span></p>
+</div>
+<p>To limit the database plugins to a specific set of plugins, set the <strong>Name:</strong>
+to <em>VISIT_SELECTED_DATABASE_PLUGINS</em>. The <strong>Type:</strong> should be <em>STRING</em>. The
+<strong>Value:</strong> should be a ‘;’ separated list of database plugins names. Case
+must match the name of the folder in <em>/src/databases</em>.</p>
+<p>The same procedure applies to plots and operators. The VisIt CMake variables
+to limit plots and operator plugins are <em>VISIT_SELECTED_PLOT_PLUGINS</em> and <em>VISIT_SELECTED_OPERATOR_PLUGINS</em>, respectively.</p>
+<p>Click <strong>OK</strong> when finished.</p>
+</div>
+<div class="section" id="configuring">
+<h2>19.2.4. Configuring<a class="headerlink" href="#configuring" title="Permalink to this headline">¶</a></h2>
+<p>Before configuring, you may want to suppress warnings.  From the <strong>Options</strong>
+menu, choose <em>Warnings</em>.  Check the <em>Developer Warnings</em> and <em>Deprecated Warnings</em> in the <em>Supress Warnings</em> section. Click <strong>OK</strong>.
+<a class="reference internal" href="#suppress-cmake-warnings-image"><span class="std std-numref">Figure 19.7</span></a></p>
+<div class="figure" id="id7">
+<span id="suppress-cmake-warnings-image"></span><img alt="../../_images/suppress_cmake_warnings.png" src="../../_images/suppress_cmake_warnings.png" />
+<p class="caption"><span class="caption-number">Fig. 19.7 </span><span class="caption-text">Suppress CMake warnings</span></p>
+</div>
+<p>In the main CMake Window, click the <strong>Configure</strong> button.</p>
+<p>If the build directory does not exist, you will be prompted to allow its creation.</p>
+<p>You will also be prompted to choose a <em>generator</em>. On Windows, this
+corresponds to the version of Visual Studio for which you plan to generate a
+solution and projects.</p>
+<p>Currently, only Visual Studio version 2017 64-bit is supported by the prebuilt
+thirdparty libraries.  Choose <em>Visual Studio 15 2017 Win64</em> from the dropdown
+and add <em>host=x64</em> to use the full 64-bit toolset.
+<a class="reference internal" href="#choose-generator-popup-image"><span class="std std-numref">Figure 19.8</span></a></p>
+<div class="figure" id="id8">
+<span id="choose-generator-popup-image"></span><img alt="../../_images/choose_generator_popup.png" src="../../_images/choose_generator_popup.png" />
+<p class="caption"><span class="caption-number">Fig. 19.8 </span><span class="caption-text">Choosing the generator</span></p>
+</div>
+<p>CMakeCache entries will be displayed after the initial configure.  All entries
+at this point will be highlighted reddish orange – a signal that you may want
+to modify some of them.  Subsequent clicks of the <strong>Configure</strong> button
+highlight only entries that contain errors or entries that are new since the
+last configure.</p>
+<p>You can modify how many entries are seen, and how they are viewed by selecting
+the: <strong>Grouped</strong>, and/or <strong>Advanced</strong> buttons.  <em>Grouped</em> option groups
+similarly named items, <em>Advanced</em> option shows all the entries. Using both is
+probably the easiest to navigate for use with VisIt.  Mouse-hover over
+individual entries (not groups) will generate a brief description.
+<a class="reference internal" href="#after-first-configure-image"><span class="std std-numref">Figure 19.9</span></a></p>
+<div class="figure" id="id9">
+<span id="after-first-configure-image"></span><img alt="../../_images/after_first_configure.png" src="../../_images/after_first_configure.png" />
+<p class="caption"><span class="caption-number">Fig. 19.9 </span><span class="caption-text">After first configure</span></p>
+</div>
+<p>Most of the default settings should be fine, though you may want to change
+<em>CMAKE_INSTALL_PREFIX</em> from its default location within the Build directory.
+If you’ve grouped the entries, click the <strong>+</strong> button next to <em>CMAKE</em>, find
+<em>CMAKE_INSTALL_PREFIX</em> and modify it as desired.</p>
+</div>
+<div class="section" id="parallel">
+<h2>19.2.5. Parallel<a class="headerlink" href="#parallel" title="Permalink to this headline">¶</a></h2>
+<p>If you have an MPI implementation installed (Microsoft’s MPI), you can choose
+to create a parallel build. Expand the <em>VISIT</em> section within the CMake gui,
+then check the box for <em>VISIT_PARALLEL</em>. You will have to scroll to find it.</p>
+<p>Click the <strong>Configure</strong> button again to have CMake check the prerequisites for
+building parallel VisIt. If the prerequisites are met then some new cache
+entries related to MPI will be created.  If not, the MPI entries may have to
+be modified by hand.</p>
+</div>
+<div class="section" id="suppressing-regeneration">
+<h2>19.2.6. Suppressing Regeneration<a class="headerlink" href="#suppressing-regeneration" title="Permalink to this headline">¶</a></h2>
+<p>The solution file that CMake creates has a project called <em>ZERO_CHECK</em> that is
+occasionally invoked to regenerate the projects. This can be highly undesirable
+during development, since it may be triggered  during a build and can cause
+numerous projects to be reloaded into the VS IDE, wasting time unnecessarily.
+To avoid this behavior, you can create a new CMake cache entry named
+<em>CMAKE_SUPRESS_REGENERATION</em>,  with type <em>BOOL</em> and make sure that it is
+checked. If you made this change click <strong>Configure</strong> again.</p>
+<dl class="docutils">
+<dt>You can automate this step in your host.cmake file by adding this line to your host.cmake file:</dt>
+<dd><code class="docutils literal notranslate"><span class="pre">set(CMAKE_SUPPRESS_REGENERATION</span> <span class="pre">TRUE)</span></code></dd>
+</dl>
+<p>Note that setting this flag means that CMake won’t automatically reconfigure
+from within the VS IDE when changes are made to the build scripts
+(CMakeLists.txt) or Cache entries.  You will have to manually reconfigure.
+Once reconfigured, Visual Studio will notify you the project files have been
+modified and prompt you to reload.</p>
+</div>
+<div class="section" id="generate">
+<h2>19.2.7. Generate<a class="headerlink" href="#generate" title="Permalink to this headline">¶</a></h2>
+<p>The <em>Generate</em> step creates the Visual Studio project and solution files.
+Make sure any changes made to the cache entries have been <em>Configured</em> and
+that no entries remain red, then click the <strong>Generate</strong> button.</p>
+</div>
+<div class="section" id="compile">
+<h2>19.2.8. Compile<a class="headerlink" href="#compile" title="Permalink to this headline">¶</a></h2>
+<p>Open the generated VisIt.sln file with Visual Studio (it may take awhile to
+load all the project file).  Select desired Configuration and Build solution.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../Acknowledgments/index.html" class="btn btn-neutral float-right" title="20. Acknowledgments" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Prerequisites.html" class="btn btn-neutral" title="19.1. Prerequisites" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

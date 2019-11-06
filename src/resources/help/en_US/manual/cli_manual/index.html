@@ -1,0 +1,666 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>VisIt Python (CLI) Interface Manual &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../index.html"/>
+        <link rel="next" title="Introduction to VisIt" href="intro.html"/>
+        <link rel="prev" title="22. Contributing" href="../gui_manual/Contributing/index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../gui_manual/index.html">GUI Manual</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CLI Manual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html">Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python.html">Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickrecipes.html">Quick Recipes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html">Attribute Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="events.html">VisIt CLI Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html">Contributing To VisIt CLI Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="acknowledgments.html">Acknowledgments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>VisIt Python (CLI) Interface Manual</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/cli_manual/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="visit-python-cli-interface-manual">
+<span id="pythonmanual"></span><h1>VisIt Python (CLI) Interface Manual<a class="headerlink" href="#visit-python-cli-interface-manual" title="Permalink to this headline">¶</a></h1>
+<a class="reference internal image-reference" href="../_images/teaser.png"><img alt="../_images/teaser.png" src="../_images/teaser.png" style="width: 4.8in;" /></a>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to VisIt</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#manual-chapters">Manual chapters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#understanding-how-visit-works">Understanding how VisIt works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#starting-visit">Starting VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#getting-started">Getting started</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python.html">Python</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="python.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python.html#indentation">Indentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python.html#comments">Comments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python.html#identifiers">Identifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python.html#data-types">Data types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python.html#control-flow">Control flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python.html#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quickrecipes.html">Quick Recipes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickrecipes.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickrecipes.html#how-to-start">How to start</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickrecipes.html#saving-images">Saving images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickrecipes.html#working-with-databases">Working with databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickrecipes.html#working-with-plots">Working with plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickrecipes.html#operators">Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickrecipes.html#quantitative-operations">Quantitative operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickrecipes.html#subsetting">Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickrecipes.html#view">View</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickrecipes.html#working-with-annotations">Working with annotations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#activatedatabase">ActivateDatabase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#addargument">AddArgument</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#addmachineprofile">AddMachineProfile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#addoperator">AddOperator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#addplot">AddPlot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#addwindow">AddWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#alterdatabasecorrelation">AlterDatabaseCorrelation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#applynamedselection">ApplyNamedSelection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#changeactiveplotsvar">ChangeActivePlotsVar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#checkfornewstates">CheckForNewStates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#choosecenterofrotation">ChooseCenterOfRotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#clearallwindows">ClearAllWindows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#clearcache">ClearCache</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#clearcacheforallengines">ClearCacheForAllEngines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#clearmacros">ClearMacros</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#clearpickpoints">ClearPickPoints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#clearreferencelines">ClearReferenceLines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#clearviewkeyframes">ClearViewKeyframes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#clearwindow">ClearWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#clonewindow">CloneWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#close">Close</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#closecomputeengine">CloseComputeEngine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#closedatabase">CloseDatabase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#colortablenames">ColorTableNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#constructdatabinning">ConstructDataBinning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#copyannotationstowindow">CopyAnnotationsToWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#copylightingtowindow">CopyLightingToWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#copyplotstowindow">CopyPlotsToWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#copyviewtowindow">CopyViewToWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#createannotationobject">CreateAnnotationObject</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#createdatabasecorrelation">CreateDatabaseCorrelation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#createnamedselection">CreateNamedSelection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#databaseplugins">DatabasePlugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#deiconifyallwindows">DeIconifyAllWindows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#definearrayexpression">DefineArrayExpression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#definecurveexpression">DefineCurveExpression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#definematerialexpression">DefineMaterialExpression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#definemeshexpression">DefineMeshExpression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#definepythonexpression">DefinePythonExpression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#definescalarexpression">DefineScalarExpression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#definespeciesexpression">DefineSpeciesExpression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#definetensorexpression">DefineTensorExpression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#definevectorexpression">DefineVectorExpression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#deleteactiveplots">DeleteActivePlots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#deleteallplots">DeleteAllPlots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#deletedatabasecorrelation">DeleteDatabaseCorrelation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#deleteexpression">DeleteExpression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#deletenamedselection">DeleteNamedSelection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#deleteplotdatabasekeyframe">DeletePlotDatabaseKeyframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#deleteplotkeyframe">DeletePlotKeyframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#deleteviewkeyframe">DeleteViewKeyframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#deletewindow">DeleteWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#demoteoperator">DemoteOperator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#disableredraw">DisableRedraw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#drawplots">DrawPlots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#enabletool">EnableTool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#evalcubic">EvalCubic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#evalcubicspline">EvalCubicSpline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#evallinear">EvalLinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#evalquadratic">EvalQuadratic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#executemacro">ExecuteMacro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#exportdatabase">ExportDatabase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#expressions">Expressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getactivecontinuouscolortable">GetActiveContinuousColorTable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getactivediscretecolortable">GetActiveDiscreteColorTable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getactivetimeslider">GetActiveTimeSlider</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getanimationattributes">GetAnimationAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getanimationtimeout">GetAnimationTimeout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getannotationattributes">GetAnnotationAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getannotationobject">GetAnnotationObject</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getannotationobjectnames">GetAnnotationObjectNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getcallbackargumentcount">GetCallbackArgumentCount</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getcallbacknames">GetCallbackNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getdatabasenstates">GetDatabaseNStates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getdebuglevel">GetDebugLevel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getdefaultfileopenoptions">GetDefaultFileOpenOptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getdomains">GetDomains</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getenginelist">GetEngineList</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getengineproperties">GetEngineProperties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getglobalattributes">GetGlobalAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getgloballineoutattributes">GetGlobalLineoutAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getinteractorattributes">GetInteractorAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getkeyframeattributes">GetKeyframeAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getlasterror">GetLastError</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getlight">GetLight</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getlocalhostname">GetLocalHostName</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getlocalusername">GetLocalUserName</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getmachineprofile">GetMachineProfile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getmachineprofilenames">GetMachineProfileNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getmaterialattributes">GetMaterialAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getmaterials">GetMaterials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getmeshmanagementattributes">GetMeshManagementAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getmetadata">GetMetaData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getnumplots">GetNumPlots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getoperatoroptions">GetOperatorOptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getpickattributes">GetPickAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getpickoutput">GetPickOutput</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getpickoutputobject">GetPickOutputObject</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getpipelinecachingmode">GetPipelineCachingMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getplotinformation">GetPlotInformation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getplotlist">GetPlotList</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getplotoptions">GetPlotOptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getpreferredfileformats">GetPreferredFileFormats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getqueryoutputobject">GetQueryOutputObject</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getqueryoutputstring">GetQueryOutputString</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getqueryoutputvalue">GetQueryOutputValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getqueryoutputxml">GetQueryOutputXML</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getqueryovertimeattributes">GetQueryOverTimeAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getqueryparameters">GetQueryParameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getrenderingattributes">GetRenderingAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getsavewindowattributes">GetSaveWindowAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getselection">GetSelection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getselectionlist">GetSelectionList</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getselectionsummary">GetSelectionSummary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#gettimesliders">GetTimeSliders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getultrascript">GetUltraScript</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getview2d">GetView2D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getview3d">GetView3D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getviewaxisarray">GetViewAxisArray</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getviewcurve">GetViewCurve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#getwindowinformation">GetWindowInformation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#hideactiveplots">HideActivePlots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#hidetoolbars">HideToolbars</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#iconifyallwindows">IconifyAllWindows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#initializenamedselectionvariables">InitializeNamedSelectionVariables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#invertbackgroundcolor">InvertBackgroundColor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#launch">Launch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#launchnowin">LaunchNowin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#lineout">Lineout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#listdomains">ListDomains</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#listmaterials">ListMaterials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#listplots">ListPlots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#loadattribute">LoadAttribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#loadnamedselection">LoadNamedSelection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#loadultra">LoadUltra</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#localnamespace">LocalNameSpace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#longfilename">LongFileName</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#moveandresizewindow">MoveAndResizeWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#moveplotdatabasekeyframe">MovePlotDatabaseKeyframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#moveplotkeyframe">MovePlotKeyframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#moveplotordertowardfirst">MovePlotOrderTowardFirst</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#moveplotordertowardlast">MovePlotOrderTowardLast</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#moveviewkeyframe">MoveViewKeyframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#movewindow">MoveWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#nodepick">NodePick</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#numcolortablenames">NumColorTableNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#numoperatorplugins">NumOperatorPlugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#numplotplugins">NumPlotPlugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#opencomputeengine">OpenComputeEngine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#opendatabase">OpenDatabase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#openmdserver">OpenMDServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#operatorplugins">OperatorPlugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#overlaydatabase">OverlayDatabase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#pickbyglobalnode">PickByGlobalNode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#pickbyglobalzone">PickByGlobalZone</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#pickbynode">PickByNode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#pickbynodelabel">PickByNodeLabel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#pickbyzone">PickByZone</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#pickbyzonelabel">PickByZoneLabel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#plotplugins">PlotPlugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#pointpick">PointPick</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#printwindow">PrintWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#promoteoperator">PromoteOperator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#pythonquery">PythonQuery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#queries">Queries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#queriesovertime">QueriesOverTime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#query">Query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#queryovertime">QueryOverTime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#reopendatabase">ReOpenDatabase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#readhostprofilesfromdirectory">ReadHostProfilesFromDirectory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#recenterview">RecenterView</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#redoview">RedoView</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#redrawwindow">RedrawWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#registercallback">RegisterCallback</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#registermacro">RegisterMacro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#removealloperators">RemoveAllOperators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#removelastoperator">RemoveLastOperator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#removemachineprofile">RemoveMachineProfile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#removeoperator">RemoveOperator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#removepicks">RemovePicks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#renamepicklabel">RenamePickLabel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#replacedatabase">ReplaceDatabase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#resetlineoutcolor">ResetLineoutColor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#resetoperatoroptions">ResetOperatorOptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#resetpickletter">ResetPickLetter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#resetplotoptions">ResetPlotOptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#resetview">ResetView</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#resizewindow">ResizeWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#restoresession">RestoreSession</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#restoresessionwithdifferentsources">RestoreSessionWithDifferentSources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#saveattribute">SaveAttribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#savenamedselection">SaveNamedSelection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#savesession">SaveSession</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#savewindow">SaveWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#sendsimulationcommand">SendSimulationCommand</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setactivecontinuouscolortable">SetActiveContinuousColorTable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setactivediscretecolortable">SetActiveDiscreteColorTable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setactiveplots">SetActivePlots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setactivetimeslider">SetActiveTimeSlider</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setactivewindow">SetActiveWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setanimationtimeout">SetAnimationTimeout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setannotationattributes">SetAnnotationAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setbackendtype">SetBackendType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setcenterofrotation">SetCenterOfRotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setcolortexturingenabled">SetColorTexturingEnabled</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setcreatemeshqualityexpressions">SetCreateMeshQualityExpressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setcreatetimederivativeexpressions">SetCreateTimeDerivativeExpressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setcreatevectormagnitudeexpressions">SetCreateVectorMagnitudeExpressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setdatabasecorrelationoptions">SetDatabaseCorrelationOptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setdebuglevel">SetDebugLevel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setdefaultannotationattributes">SetDefaultAnnotationAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setdefaultfileopenoptions">SetDefaultFileOpenOptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setdefaultinteractorattributes">SetDefaultInteractorAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setdefaultmaterialattributes">SetDefaultMaterialAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setdefaultmeshmanagementattributes">SetDefaultMeshManagementAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setdefaultoperatoroptions">SetDefaultOperatorOptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setdefaultpickattributes">SetDefaultPickAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setdefaultplotoptions">SetDefaultPlotOptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setgloballineoutattributes">SetGlobalLineoutAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setinteractorattributes">SetInteractorAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setkeyframeattributes">SetKeyframeAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setlight">SetLight</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setmachineprofile">SetMachineProfile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setmaterialattributes">SetMaterialAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setmeshmanagementattributes">SetMeshManagementAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setnamedselectionautoapply">SetNamedSelectionAutoApply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setoperatoroptions">SetOperatorOptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setpickattributes">SetPickAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setpipelinecachingmode">SetPipelineCachingMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setplotdatabasestate">SetPlotDatabaseState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setplotdescription">SetPlotDescription</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setplotfollowstime">SetPlotFollowsTime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setplotframerange">SetPlotFrameRange</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setplotoptions">SetPlotOptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setplotordertofirst">SetPlotOrderToFirst</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setplotordertolast">SetPlotOrderToLast</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setplotsilrestriction">SetPlotSILRestriction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setprecisiontype">SetPrecisionType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setpreferredfileformats">SetPreferredFileFormats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setprinterattributes">SetPrinterAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setqueryfloatformat">SetQueryFloatFormat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setqueryoutputtoobject">SetQueryOutputToObject</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setqueryoutputtostring">SetQueryOutputToString</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setqueryoutputtovalue">SetQueryOutputToValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setqueryovertimeattributes">SetQueryOverTimeAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setremoveduplicatenodes">SetRemoveDuplicateNodes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setrenderingattributes">SetRenderingAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setsavewindowattributes">SetSaveWindowAttributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#settimesliderstate">SetTimeSliderState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#settreatalldbsastimevarying">SetTreatAllDBsAsTimeVarying</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#settryhardercyclestimes">SetTryHarderCyclesTimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setultrascript">SetUltraScript</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setview2d">SetView2D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setview3d">SetView3D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setviewaxisarray">SetViewAxisArray</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setviewcurve">SetViewCurve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setviewextentstype">SetViewExtentsType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setviewkeyframe">SetViewKeyframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setwindowarea">SetWindowArea</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setwindowlayout">SetWindowLayout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#setwindowmode">SetWindowMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#showallwindows">ShowAllWindows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#showtoolbars">ShowToolbars</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#source">Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#suppressmessages">SuppressMessages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#suppressqueryoutputoff">SuppressQueryOutputOff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#suppressqueryoutputon">SuppressQueryOutputOn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#timeslidergetnstates">TimeSliderGetNStates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#timeslidernextstate">TimeSliderNextState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#timesliderpreviousstate">TimeSliderPreviousState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#timeslidersetstate">TimeSliderSetState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#toggleboundingboxmode">ToggleBoundingBoxMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#togglecameraviewmode">ToggleCameraViewMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#togglefullframemode">ToggleFullFrameMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#togglelocktime">ToggleLockTime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#togglelocktools">ToggleLockTools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#togglelockviewmode">ToggleLockViewMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#togglemaintainviewmode">ToggleMaintainViewMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#togglespinmode">ToggleSpinMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#turndomainsoff">TurnDomainsOff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#turndomainson">TurnDomainsOn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#turnmaterialsoff">TurnMaterialsOff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#turnmaterialson">TurnMaterialsOn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#undoview">UndoView</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#updatenamedselection">UpdateNamedSelection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#version">Version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#writeconfigfile">WriteConfigFile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#writescript">WriteScript</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#zonepick">ZonePick</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="attributes.html">Attribute Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#amrstitchcell-amrstitchcellattributes"><strong>AMRStitchCell</strong>: <em>AMRStitchCellAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#animation-animationattributes"><strong>Animation</strong>: <em>AnimationAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#annotation-annotationattributes"><strong>Annotation</strong>: <em>AnnotationAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#axis-axisattributes"><strong>Axis</strong>: <em>AxisAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#axisalignedslice4d-axisalignedslice4dattributes"><strong>AxisAlignedSlice4D</strong>: <em>AxisAlignedSlice4DAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#boundary-boundaryattributes"><strong>Boundary</strong>: <em>BoundaryAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#boundaryop-boundaryopattributes"><strong>BoundaryOp</strong>: <em>BoundaryOpAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#box-boxattributes"><strong>Box</strong>: <em>BoxAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#cartographicprojection-cartographicprojectionattributes"><strong>CartographicProjection</strong>: <em>CartographicProjectionAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#clip-clipattributes"><strong>Clip</strong>: <em>ClipAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#cone-coneattributes"><strong>Cone</strong>: <em>ConeAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#connectedcomponents-connectedcomponentsattributes"><strong>ConnectedComponents</strong>: <em>ConnectedComponentsAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#constructdatabinning-constructdatabinningattributes"><strong>ConstructDataBinning</strong>: <em>ConstructDataBinningAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#contour-contourattributes"><strong>Contour</strong>: <em>ContourAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#coordswap-coordswapattributes"><strong>CoordSwap</strong>: <em>CoordSwapAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#createbonds-createbondsattributes"><strong>CreateBonds</strong>: <em>CreateBondsAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#curve-curveattributes"><strong>Curve</strong>: <em>CurveAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#cylinder-cylinderattributes"><strong>Cylinder</strong>: <em>CylinderAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#databinning-databinningattributes"><strong>DataBinning</strong>: <em>DataBinningAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#deferexpression-deferexpressionattributes"><strong>DeferExpression</strong>: <em>DeferExpressionAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#displace-displaceattributes"><strong>Displace</strong>: <em>DisplaceAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#dualmesh-dualmeshattributes"><strong>DualMesh</strong>: <em>DualMeshAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#edge-edgeattributes"><strong>Edge</strong>: <em>EdgeAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#elevate-elevateattributes"><strong>Elevate</strong>: <em>ElevateAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#ellipsoidslice-ellipsoidsliceattributes"><strong>EllipsoidSlice</strong>: <em>EllipsoidSliceAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#explode-explodeattributes"><strong>Explode</strong>: <em>ExplodeAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#exportdb-exportdbattributes"><strong>ExportDB</strong>: <em>ExportDBAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#externalsurface-externalsurfaceattributes"><strong>ExternalSurface</strong>: <em>ExternalSurfaceAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#extrude-extrudeattributes"><strong>Extrude</strong>: <em>ExtrudeAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#fft-fftattributes"><strong>FFT</strong>: <em>FFTAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#filledboundary-filledboundaryattributes"><strong>FilledBoundary</strong>: <em>FilledBoundaryAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#flux-fluxattributes"><strong>Flux</strong>: <em>FluxAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#font-fontattributes"><strong>Font</strong>: <em>FontAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#global-globalattributes"><strong>Global</strong>: <em>GlobalAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#histogram-histogramattributes"><strong>Histogram</strong>: <em>HistogramAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#indexselect-indexselectattributes"><strong>IndexSelect</strong>: <em>IndexSelectAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#integralcurve-integralcurveattributes"><strong>IntegralCurve</strong>: <em>IntegralCurveAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#inverseghostzone-inverseghostzoneattributes"><strong>InverseGhostZone</strong>: <em>InverseGhostZoneAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#isosurface-isosurfaceattributes"><strong>Isosurface</strong>: <em>IsosurfaceAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#isovolume-isovolumeattributes"><strong>Isovolume</strong>: <em>IsovolumeAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#keyframe-keyframeattributes"><strong>Keyframe</strong>: <em>KeyframeAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#lcs-lcsattributes"><strong>LCS</strong>: <em>LCSAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#label-labelattributes"><strong>Label</strong>: <em>LabelAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#lagrangian-lagrangianattributes"><strong>Lagrangian</strong>: <em>LagrangianAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#light-lightattributes"><strong>Light</strong>: <em>LightAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#limitcycle-limitcycleattributes"><strong>LimitCycle</strong>: <em>LimitCycleAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#lineout-lineoutattributes"><strong>Lineout</strong>: <em>LineoutAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#material-materialattributes"><strong>Material</strong>: <em>MaterialAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#mesh-meshattributes"><strong>Mesh</strong>: <em>MeshAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#meshmanagement-meshmanagementattributes"><strong>MeshManagement</strong>: <em>MeshManagementAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#molecule-moleculeattributes"><strong>Molecule</strong>: <em>MoleculeAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#multicurve-multicurveattributes"><strong>MultiCurve</strong>: <em>MultiCurveAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#multirescontrol-multirescontrolattributes"><strong>MultiresControl</strong>: <em>MultiresControlAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#onionpeel-onionpeelattributes"><strong>OnionPeel</strong>: <em>OnionPeelAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#parallelcoordinates-parallelcoordinatesattributes"><strong>ParallelCoordinates</strong>: <em>ParallelCoordinatesAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#persistentparticles-persistentparticlesattributes"><strong>PersistentParticles</strong>: <em>PersistentParticlesAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#poincare-poincareattributes"><strong>Poincare</strong>: <em>PoincareAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#printer-printerattributes"><strong>Printer</strong>: <em>PrinterAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#process-processattributes"><strong>Process</strong>: <em>ProcessAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#project-projectattributes"><strong>Project</strong>: <em>ProjectAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#pseudocolor-pseudocolorattributes"><strong>Pseudocolor</strong>: <em>PseudocolorAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#radialresample-radialresampleattributes"><strong>RadialResample</strong>: <em>RadialResampleAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#reflect-reflectattributes"><strong>Reflect</strong>: <em>ReflectAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#remap-remapattributes"><strong>Remap</strong>: <em>RemapAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#rendering-renderingattributes"><strong>Rendering</strong>: <em>RenderingAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#replicate-replicateattributes"><strong>Replicate</strong>: <em>ReplicateAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#resample-resampleattributes"><strong>Resample</strong>: <em>ResampleAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#revolve-revolveattributes"><strong>Revolve</strong>: <em>RevolveAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#sphresample-sphresampleattributes"><strong>SPHResample</strong>: <em>SPHResampleAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#savewindow-savewindowattributes"><strong>SaveWindow</strong>: <em>SaveWindowAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#scatter-scatterattributes"><strong>Scatter</strong>: <em>ScatterAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#slice-sliceattributes"><strong>Slice</strong>: <em>SliceAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#smoothoperator-smoothoperatorattributes"><strong>SmoothOperator</strong>: <em>SmoothOperatorAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#sphereslice-spheresliceattributes"><strong>SphereSlice</strong>: <em>SphereSliceAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#spreadsheet-spreadsheetattributes"><strong>Spreadsheet</strong>: <em>SpreadsheetAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#stagger-staggerattributes"><strong>Stagger</strong>: <em>StaggerAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#statisticaltrends-statisticaltrendsattributes"><strong>StatisticalTrends</strong>: <em>StatisticalTrendsAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#subdividequads-subdividequadsattributes"><strong>SubdivideQuads</strong>: <em>SubdivideQuadsAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#subset-subsetattributes"><strong>Subset</strong>: <em>SubsetAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#surfacenormal-surfacenormalattributes"><strong>SurfaceNormal</strong>: <em>SurfaceNormalAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#tensor-tensorattributes"><strong>Tensor</strong>: <em>TensorAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#threeslice-threesliceattributes"><strong>ThreeSlice</strong>: <em>ThreeSliceAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#threshold-thresholdattributes"><strong>Threshold</strong>: <em>ThresholdAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#transform-transformattributes"><strong>Transform</strong>: <em>TransformAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#triangulateregularpoints-triangulateregularpointsattributes"><strong>TriangulateRegularPoints</strong>: <em>TriangulateRegularPointsAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#truecolor-truecolorattributes"><strong>Truecolor</strong>: <em>TruecolorAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#tube-tubeattributes"><strong>Tube</strong>: <em>TubeAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#vector-vectorattributes"><strong>Vector</strong>: <em>VectorAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#view-viewattributes"><strong>View</strong>: <em>ViewAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#view2d-view2dattributes"><strong>View2D</strong>: <em>View2DAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#view3d-view3dattributes"><strong>View3D</strong>: <em>View3DAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#viewaxisarray-viewaxisarrayattributes"><strong>ViewAxisArray</strong>: <em>ViewAxisArrayAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#viewcurve-viewcurveattributes"><strong>ViewCurve</strong>: <em>ViewCurveAttributes()</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#volume-volumeattributes"><strong>Volume</strong>: <em>VolumeAttributes()</em></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">VisIt CLI Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing To VisIt CLI Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#steps-to-update-the-cli-manual">Steps to update the CLI Manual</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgments</a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="intro.html" class="btn btn-neutral float-right" title="Introduction to VisIt" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../gui_manual/Contributing/index.html" class="btn btn-neutral" title="22. Contributing" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

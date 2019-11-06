@@ -1,0 +1,428 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>13.1. Client-Server Mode &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="13. Client Server" href="index.html"/>
+        <link rel="next" title="13.2. Host Profiles" href="Host_Profiles.html"/>
+        <link rel="prev" title="13. Client Server" href="index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">13. Client Server</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">13.1. Client-Server Mode</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#passwords">13.1.1. Passwords</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setting-up-password-less-ssh">13.1.2. Setting Up Password-less SSH</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#on-the-local-machine">13.1.2.1. On the Local Machine</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#on-the-remote-machine">13.1.2.2. On the Remote Machine</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#completing-the-process">13.1.2.3. Completing the Process</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#environment">13.1.3. Environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#launch-progress-window">13.1.4. Launch Progress Window</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Host_Profiles.html">13.2. Host Profiles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">13. Client Server</a> &raquo;</li>
+        
+      <li>13.1. Client-Server Mode</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/ClientServer/Client_server_mode.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="client-server-mode">
+<span id="id1"></span><h1>13.1. Client-Server Mode<a class="headerlink" href="#client-server-mode" title="Permalink to this headline">¶</a></h1>
+<p>When you run VisIt locally, you usually select files and create plots using
+the open database. Fortunately, the procedure for running VisIt in
+client-server mode is no different than it is for running in single-computer
+mode. You begin by launching the <a class="reference internal" href="../WorkingWithFiles/File_Open_Window.html#file-open-window"><span class="std std-ref">File Open Window</span></a> and typing the name
+of the computer where the files are stored into the <strong>Host</strong> text field.</p>
+<p>Once you have told VisIt which host to use when accessing files, VisIt launches
+the VisIt Component Launcher (VCL) on the remote computer. The VCL is a VisIt
+component that runs on remote computers and is responsible for launching other
+VisIt components such as the metadata server (mdserver) and compute engine.
+(<a class="reference internal" href="#visit-architecture-image"><span class="std std-numref">Figure 13.1</span></a>).  Once you are connected to
+the remote computer and VCL is running, you won’t have to enter a password
+again for the remote computer because VCL stays active for the life of your
+VisIt session and it takes care of launching VisIt components on the remote
+computer.</p>
+<div class="figure align-center" id="id2">
+<span id="visit-architecture-image"></span><a class="reference internal image-reference" href="../../_images/Visit_connectivity_diagram.png"><img alt="../../_images/Visit_connectivity_diagram.png" src="../../_images/Visit_connectivity_diagram.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 13.1 </span><span class="caption-text">VisIt’s Architecture</span></p>
+</div>
+<p>If VCL was able to launch on the remote computer and if it was able to
+successfully launch the metadata server, the files for the remote computer
+will be listed in the <strong>Files</strong> pane of the <strong>File Open Window</strong>, just as if
+you were running locally.  You then select the file or virtual database and
+click <strong>OK</strong>.  Now that you have files from the remote computer at
+your disposal, you can create plots as usual.</p>
+<div class="section" id="passwords">
+<h2>13.1.1. Passwords<a class="headerlink" href="#passwords" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes when you try to access files on a remote computer, VisIt prompts you
+for a password by opening a <strong>Password Window</strong>
+(<a class="reference internal" href="#remote-vis-password"><span class="std std-numref">Figure 13.2</span></a>). If you are prompted for a
+password, type your password into the window and click the <strong>Ok</strong> button. If
+the password window appears and you decide to abort the launch of the remote
+component, you can click the <strong>Password Window’s Cancel</strong> button to stop the
+remote component from being launched.</p>
+<div class="figure" id="id3">
+<span id="remote-vis-password"></span><img alt="../../_images/password.png" src="../../_images/password.png" />
+<p class="caption"><span class="caption-number">Fig. 13.2 </span><span class="caption-text">Password Window</span></p>
+</div>
+<p>If your username for the remote machine is not listed correctly, you can
+click on the <strong>Change username</strong> button and a new window will pop up allowing
+you to enter the proper username for the remote system.
+(<a class="reference internal" href="#change-remote-username"><span class="std std-numref">Figure 13.3</span></a>). Enter the correct
+username in the text field provided and click <strong>Confirm username</strong>. Proceed
+with entering the password in the <strong>Password Window</strong>.</p>
+<div class="figure" id="id4">
+<span id="change-remote-username"></span><img alt="../../_images/changeusername.png" src="../../_images/changeusername.png" />
+<p class="caption"><span class="caption-number">Fig. 13.3 </span><span class="caption-text">Change Username Window</span></p>
+</div>
+<p>VisIt uses <em>ssh</em> for authentication and you can set up ssh so that passwords
+are not required. This is called <em>passwordless</em> ssh and once it is set up for a
+computer, VisIt will no longer need to prompt for a password.</p>
+</div>
+<div class="section" id="setting-up-password-less-ssh">
+<span id="settinguppasswordlessssh"></span><h2>13.1.2. Setting Up Password-less SSH<a class="headerlink" href="#setting-up-password-less-ssh" title="Permalink to this headline">¶</a></h2>
+<p>The following instructions describe how to set up <strong>ssh</strong> to allow password-less
+authentication among a collection of machines.</p>
+<div class="section" id="on-the-local-machine">
+<h3>13.1.2.1. On the Local Machine<a class="headerlink" href="#on-the-local-machine" title="Permalink to this headline">¶</a></h3>
+<p>If you do not already have a <strong>~/.ssh/id_rsa.pub</strong> file, generate the key:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span>
+
+<span class="n">ssh</span><span class="o">-</span><span class="n">keygen</span> <span class="o">-</span><span class="n">t</span> <span class="n">rsa</span>
+</pre></div>
+</div>
+<p>Accept default values by pressing <em>&lt;Enter&gt;</em>.  This will generate two files,
+<strong>~/.ssh/id_rsa</strong> and <strong>~/.ssh/id_rsa.pub</strong>.  The <strong>~/.ssh/id_rsa.pub</strong> file
+contains your public key in one very long line of text.  This information needs
+to be concatenated to the <strong>authorized_keys</strong> file on the remote machine, so
+copy it to a temp file on the remote machine:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scp</span> <span class="o">~/.</span><span class="n">ssh</span><span class="o">/</span><span class="n">id_rsa</span><span class="o">.</span><span class="n">pub</span> <span class="o">&lt;</span><span class="n">your</span><span class="o">-</span><span class="n">user</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;@&lt;</span><span class="n">the</span><span class="o">.</span><span class="n">remote</span><span class="o">.</span><span class="n">machine</span><span class="o">&gt;</span><span class="p">:</span><span class="n">tmp</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="on-the-remote-machine">
+<h3>13.1.2.2. On the Remote Machine<a class="headerlink" href="#on-the-remote-machine" title="Permalink to this headline">¶</a></h3>
+<p>If you do not already have a <strong>~/.ssh</strong> directory, create one with <strong>r-w-x</strong>
+permission for the owner only:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span>
+
+<span class="n">mkdir</span> <span class="o">.</span><span class="n">ssh</span>
+
+<span class="n">chmod</span> <span class="mi">700</span> <span class="o">.</span><span class="n">ssh</span>
+</pre></div>
+</div>
+<p>If you do not already have a <strong>~/.ssh/authorized_keys</strong> file, create an empty
+one with permission for the owner only:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/.</span><span class="n">ssh</span>
+
+<span class="n">touch</span> <span class="n">authorized_keys</span>
+
+<span class="n">chmod</span> <span class="mi">600</span> <span class="n">authorized_keys</span>
+</pre></div>
+</div>
+<p>Concatenate the temporary file you copied into authorized_keys:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/.</span><span class="n">ssh</span>
+
+<span class="n">cat</span> <span class="n">authorized_keys</span> <span class="o">~/</span><span class="n">tmp</span> <span class="o">&gt;</span> <span class="n">authorized_keys</span>
+
+<span class="n">rm</span> <span class="o">~/</span><span class="n">tmp</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="completing-the-process">
+<h3>13.1.2.3. Completing the Process<a class="headerlink" href="#completing-the-process" title="Permalink to this headline">¶</a></h3>
+<p>If you have more remote machines you want to access from the same local machine
+using <em>passwordless</em> ssh, repeat the process starting with copying the
+<strong>~/.ssh/id_rsa.pub</strong> file from the local machine to the remote, and
+continuing from there.</p>
+<p>You can also repeat the above sections, reversing the local and remote
+machines, in order to allow <em>passwordless</em> ssh to the local machine from the
+remote machine.</p>
+</div>
+</div>
+<div class="section" id="environment">
+<h2>13.1.3. Environment<a class="headerlink" href="#environment" title="Permalink to this headline">¶</a></h2>
+<p>It is important to have VisIt in your default search path instead of specifying
+the absolute path to VisIt when starting it. This is not as important when you
+run VisIt locally, but VisIt may not run properly in client-server mode if it
+is not in your default search path on remote machines. If you regularly run
+VisIt using the network configurations provided for LLNL computers then VisIt
+will have host profiles, which are sets of information that tell VisIt how to
+launch its components on a remote computer. The provided host profiles have
+special options that tell the remote computer where it can expect to find the
+installed version of VisIt so it is not required to be in your path. If you
+did not opt to install the provided network configurations or if you are at a
+site that requires other network configurations then you will probably not have
+host profiles by default and it will be necessary for you to add VisIt to your
+path on the remote computer. You can add VisIt to your default search path on
+Linux systems by editing the initialization file for your command line shell.</p>
+</div>
+<div class="section" id="launch-progress-window">
+<h2>13.1.4. Launch Progress Window<a class="headerlink" href="#launch-progress-window" title="Permalink to this headline">¶</a></h2>
+<p>When VisIt launches a compute engine or metadata server, it opens the
+<strong>Launch Progress Window</strong> when the component cannot be launched in under four
+seconds. An exception to this rule is that VisIt will always show the
+<strong>Launch Progress Window</strong> when launching a parallel compute engine or any
+compute engine on OSX. VisIt’s components frequently launch fast enough
+that it is not necessary to show the <strong>Launch Progress Window</strong> but you will
+often see it if you launch compute engines using a batch system.</p>
+<div class="figure" id="id5">
+<span id="client-server-launch-progress"></span><img alt="../../_images/launchprogress.png" src="../../_images/launchprogress.png" />
+<p class="caption"><span class="caption-number">Fig. 13.4 </span><span class="caption-text">Launch Progress Window</span></p>
+</div>
+<p>The <strong>Launch Progress Window</strong> indicates VisIt is waiting to hear back from the
+component being launched on the remote computer and gives you some indication
+that VisIt is still alive by animating a set of moving dots representing the
+connection from the local computer to the remote computer. The icon used for
+the remote computer will vary depending on whether a serial or parallel VisIt
+component is being launched. The <strong>Launch Progress Window</strong> for a parallel
+compute engine is shown in <a class="reference internal" href="#client-server-launch-progress"><span class="std std-numref">Figure 13.4</span></a>.
+The window is visible until the remote compute engine connects back to the
+viewer or the connection is cancelled. If you get tired of waiting for a
+remote component to launch, you can cancel it by clicking the <strong>Cancel</strong>
+button. Once you cancel the launch of a remote component, you can return to
+your VisIt session. Note that if the remote compute is a parallel compute
+engine launched via a batch system, the engine will still run when it is
+finally scheduled but it will immediately die since VisIt has stopped
+listening for it. On heavily saturated batch systems, it might be prudent for
+you to manually remove your compute engine job from the queue.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Host_Profiles.html" class="btn btn-neutral float-right" title="13.2. Host Profiles" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="13. Client Server" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

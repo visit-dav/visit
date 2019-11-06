@@ -1,0 +1,302 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>2. Working with Databases &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="VisIt GUI User Manual" href="../index.html"/>
+        <link rel="next" title="2.1. Supported File Types" href="Supported_File_Types.html"/>
+        <link rel="prev" title="1.4. Getting Started" href="../Intro/Getting_started.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">2. Working with Databases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Supported_File_Types.html">2.1. Supported File Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="File_Open_Window.html">2.2. File Open Window</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Sources_Pane.html">2.3. Sources Pane</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Time_Pane.html">2.4. Time Pane</a></li>
+<li class="toctree-l3"><a class="reference internal" href="File_Information_Window.html">2.5. File Information Window</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+      <li>2. Working with Databases</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/WorkingWithFiles/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="working-with-databases">
+<span id="workingwithfiles"></span><h1>2. Working with Databases<a class="headerlink" href="#working-with-databases" title="Permalink to this headline">¶</a></h1>
+<p>In this chapter, we will discuss how to work with databases in VisIt. A
+database can be either a set of files on disk or a running simulation. You can
+manage both types of databases using the same VisIt windows. First we’ll learn
+about <a class="reference internal" href="Supported_File_Types.html#supported-file-types"><span class="std std-ref">Supported File Types</span></a>, then the <a class="reference internal" href="File_Open_Window.html#file-open-window"><span class="std std-ref">File Open Window</span></a> which
+allows you to browse the local system or a remote host to find your files.
+Next, we’ll learn how to open databases for visualization using the
+<a class="reference internal" href="Sources_Pane.html#sources-pane"><span class="std std-ref">Sources Pane</span></a>.  After that we’ll learn how to control animation in the
+<a class="reference internal" href="Time_Pane.html#time-pane"><span class="std std-ref">Time Pane</span></a> before learning how to examine information about a database
+using the <a class="reference internal" href="File_Information_Window.html#file-information-window"><span class="std std-ref">File Information Window</span></a>.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Supported_File_Types.html">2.1. Supported File Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Supported_File_Types.html#file-extensions">2.1.1. File extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Supported_File_Types.html#example-data-files">2.1.2. Example Data Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Supported_File_Types.html#more-details-of-ascii-formats">2.1.3. More Details of ASCII Formats</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="File_Open_Window.html">2.2. File Open Window</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="File_Open_Window.html#changing-hosts">2.2.1. Changing hosts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="File_Open_Window.html#changing-directories">2.2.2. Changing directories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="File_Open_Window.html#default-directory">2.2.3. Default directory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="File_Open_Window.html#changing-filters">2.2.4. Changing filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="File_Open_Window.html#virtual-databases">2.2.5. Virtual databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="File_Open_Window.html#refreshing-the-file-list">2.2.6. Refreshing the file list</a></li>
+<li class="toctree-l2"><a class="reference internal" href="File_Open_Window.html#clearing-out-recently-visited-paths">2.2.7. Clearing out recently visited paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="File_Open_Window.html#connecting-to-a-running-simulation">2.2.8. Connecting to a running simulation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Sources_Pane.html">2.3. Sources Pane</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Sources_Pane.html#opening-a-file">2.3.1. Opening a file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Sources_Pane.html#reopening-a-database">2.3.2. Reopening a database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Sources_Pane.html#replacing-a-database">2.3.3. Replacing a database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Sources_Pane.html#overlaying-a-database">2.3.4. Overlaying a database</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Time_Pane.html">2.4. Time Pane</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Time_Pane.html#setting-the-active-time-step">2.4.1. Setting the active time step</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Time_Pane.html#playing-animations">2.4.2. Playing animations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="File_Information_Window.html">2.5. File Information Window</a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Supported_File_Types.html" class="btn btn-neutral float-right" title="2.1. Supported File Types" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../Intro/Getting_started.html" class="btn btn-neutral" title="1.4. Getting Started" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

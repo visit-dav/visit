@@ -1,0 +1,652 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>8.2. Query &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="8. Quantitative Analysis" href="index.html"/>
+        <link rel="next" title="8.3. Pick" href="Pick.html"/>
+        <link rel="prev" title="8.1. Expressions" href="Expressions.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">8. Quantitative Analysis</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Expressions.html">8.1. Expressions</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">8.2. Query</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#query-types">8.2.1. Query types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#built-in-queries">8.2.2. Built-in queries</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#database-queries">8.2.2.1. Database Queries</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#point-queries">8.2.2.2. Point Queries</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#line-queries">8.2.2.3. Line Queries</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#executing-a-query">8.2.3. Executing a query</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#querying-over-time">8.2.4. Querying over time</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#querying-over-a-time-range">8.2.4.1. Querying over a time range</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-axis-title">8.2.4.2. Setting the axis title</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-time-curve-s-destination-window">8.2.4.3. Setting the time curve’s destination window</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Pick.html">8.3. Pick</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Lineout.html">8.4. Lineout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DataLevelComparisonsWizard.html">8.5. Data Level Comparisons Wizard</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">8. Quantitative Analysis</a> &raquo;</li>
+        
+      <li>8.2. Query</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/Quantitative/Query.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="query">
+<h1>8.2. Query<a class="headerlink" href="#query" title="Permalink to this headline">¶</a></h1>
+<p>VisIt allows you to gather quantitative information from the database being
+visualized through the use of queries. A query is a type of calculation that
+can either return values from the database or values that are calculated
+from data in the database. For example, VisIt’s Pick and Lineout capabilities
+(described later in this chapter) are specialized point and line queries
+that print out the values of variables in the database at points or along
+lines. In addition to point and line queries, VisIt provides database
+queries that return values that are based on all of the data in a database.</p>
+<p>Some queries can even be executed for all of the time states in a database
+to yield a Curve plot of the query’s behavior over time. This feature will
+be covered in more detail a little later.</p>
+<div class="figure" id="id2">
+<span id="querywindow"></span><img alt="../../_images/querywindow.png" src="../../_images/querywindow.png" />
+<p class="caption"><span class="caption-number">Fig. 8.5 </span><span class="caption-text">Query window</span></p>
+</div>
+<p>VisIt’s queries are available in the <strong>Query Window</strong> (shown in
+<a class="reference internal" href="#querywindow"><span class="std std-numref">Figure 8.5</span></a>), which you can open by clicking the
+<strong>Query</strong> option in the <strong>Main Window’s Control</strong> menu. The <strong>Query Window</strong>
+consists of upper and lower areas where the upper area allows you to select
+a query and set its query parameters. The controls for setting a query’s
+parameters change as required and some queries have no parameters and thus
+have no controls for setting parameters. The bottom area of the window
+displays the results of the query once VisIt has finished processing it.
+The results for new queries are appended to the output from previous queries
+until you clear the <strong>Query results</strong> by clicking the <strong>Clear results</strong>
+button.</p>
+<div class="section" id="query-types">
+<h2>8.2.1. Query types<a class="headerlink" href="#query-types" title="Permalink to this headline">¶</a></h2>
+<p>VisIt’s queries can be divided into three types: database queries, point
+queries, and line queries. Database queries usually calculate information
+for the database as a whole instead of concentrating on a single zone or
+node but some Pick-related database queries do concentrate on cells and
+nodes. Point queries calculate information for a point in the database
+and several types of variable picking queries fall into this category.
+Line queries calculate information along a line. Each type of query has
+different controls in the <strong>Query parameters</strong> area (see
+<a class="reference internal" href="#queryparams-line"><span class="std std-numref">Figure 8.6</span></a>) and as you highlight different
+queries, the controls in the <strong>Query parameters</strong> area may change.</p>
+<img alt="../../_images/queryparams_db.png" src="../../_images/queryparams_db.png" />
+<img alt="../../_images/queryparams_db2.png" src="../../_images/queryparams_db2.png" />
+<img alt="../../_images/queryparams_db3.png" src="../../_images/queryparams_db3.png" />
+<img alt="../../_images/queryparams_point.png" src="../../_images/queryparams_point.png" />
+<div class="figure" id="id3">
+<span id="queryparams-line"></span><img alt="../../_images/queryparams_line.png" src="../../_images/queryparams_line.png" />
+<p class="caption"><span class="caption-number">Fig. 8.6 </span><span class="caption-text">Query parameters area</span></p>
+</div>
+<p>Database queries provide a few different interfaces depending on the query.
+Many database queries require no additional input so they have no controls
+except for the <strong>Query</strong> button. Other database queries ask whether the
+query is to be performed with respect to the original data or the actual
+data, which is that data that is left in the plot after subsets have been
+removed and operators have transformed the data. Finally, some database
+queries ask for a specific domain number and zone or node number.</p>
+<p>Point queries provide interfaces in the <strong>Query parameters</strong> area that allow
+you to enter a 3D point or a screen space point to use as the point for the
+query. Line queries provide an interface that lets you specify the start
+and end positions of the line as well as the number of sample points to
+consider along the length of the line. Nearly all query types allow you to
+provide additional variables to query in a <strong>Variables</strong> text field.</p>
+</div>
+<div class="section" id="built-in-queries">
+<span id="id1"></span><h2>8.2.2. Built-in queries<a class="headerlink" href="#built-in-queries" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="database-queries">
+<h3>8.2.2.1. Database Queries<a class="headerlink" href="#database-queries" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>2D area</dt>
+<dd>The 2D area query calculates the area of the 2D plot highlighted in the
+<strong>Plot list</strong> and prints the result to the <strong>Query results</strong>. VisIt can
+produce a Curve plot of this query with respect to time.</dd>
+<dt>3D surfacea area</dt>
+<dd>The 3D surface area calculates the area of the plot highlighted in the
+<strong>Plot list</strong> and prints the result to the <strong>Query results</strong>. VisIt can
+produce a Curve plot of this query with respect to time.</dd>
+<dt>Area Between Curves</dt>
+<dd>The Area Between Curves query calculates the area between 2 curve plots.
+The plots that will serve as input to this query must both be highlighted
+in the <strong>Plot list</strong> or VisIt will issue an error message. Once the area
+has been calculated, the result is printed to the <strong>Query results</strong>.</dd>
+<dt>Centroid</dt>
+<dd>This query will calculate the centroid of a dataset. The contribution of
+each cell is calculated assuming its mass all lies at the center of the
+cell. If the query is performed on a Pseudocolor plot, the plot’s variable
+will be assumed to be density. If the query is performed on a plot such as
+a Mesh plot or FilledBoundary plot, uniform density will be used. The
+results are print to the <strong>Query results</strong>.</dd>
+<dt>Chord Length Distribution</dt>
+<dd>The Chord Length Distribution query calculates a probability density
+function of chord length over a two or three dimensional object. Axially
+symmetric objects (RZ-meshes) are treated as 3D meshes and chords are
+calculated over the revolved, 3D object. A statistical approach, casting
+uniform density, random lines, is used. The result of this query is a
+curve, which is outputted as a separate file. This curve is a probability
+density function over length scale. The name of the resulting file is
+printed to the <strong>Query results</strong>.</dd>
+<dt>Compactness</dt>
+<dd>The Compactness query calculates mesh metrics and prints them in the
+<strong>Query results</strong>.</dd>
+<dt>Cycle</dt>
+<dd>The Cycle query prints the cycle for the plot that is highlighted in the
+<strong>Plot list</strong> to the <strong>Query results</strong>.</dd>
+<dt>Distance from Boundary</dt>
+<dd>The Distance From Boundary query calculates how much mass is at a given
+distance away from the boundary of a shape. An important distinction for
+this query is that distance from the boundary (for a given point) is not
+defined as the shortest distance to the boundary, but simultaneously as all
+surrounding distances. Axially symmetric objects (RZ-meshes) are treated as
+3D meshes and length scales are calculated over the revolved, 3D object.
+The implementation employs a statistical approach, with the casting of
+uniform density, random lines. The result of this query is a curve, which
+is outputted as a separate file. This curve contains the amount of mass as
+a function of length scale. Integrating the curve between P0 and P1 will
+give the total mass at distance between P0 and P1 (given the interpretation
+above). The name of the resulting file is printed to the <strong>Query results</strong>.</dd>
+<dt>Eulerian</dt>
+<dd>The Eulerian query calculates the Eulerian number for the mesh that is used
+by the highlighted plot in the Plot list. The results are printed to the
+<strong>Query results</strong>.</dd>
+<dt>Expected Value</dt>
+<dd>The Expected Value query calculates the integral of <span class="math notranslate nohighlight">\(xf(x)dx\)</span> for
+some curve f(x). The curve should be highlighted in the <strong>Plot list</strong> and
+prints the result to the <strong>Query results</strong>. This query is intended for
+distribution functions.</dd>
+<dt>Grid Information</dt>
+<dd>The Grid Information query prints information for each domain in a multi-
+domain mesh. The mesh type is printed as well as the mesh sizes. For
+structured meshes the size information contains the logical mesh dimensions
+(IJK sizes) and for unstructured meshes the size information contains the
+number of nodes and number of cells in the mesh. The query can optionally
+accept a <em>get_extents</em> parameter that will cause the spatial extents for
+each domain to be obtained. The query also accepts an optional
+<em>get_ghosttype</em> parameter that causes the ghost zone information for each
+domain to be obtained. Both the numerical value and list of or’d values for
+ghost values are obtained. All query outputs are printed to the
+<strong>Queryresults</strong>.</dd>
+<dt>Integrate</dt>
+<dd>The Integrate query calculates the area under the Curve plot that is
+highlighted in the Plot list and prints the result to the
+<strong>Query results</strong>.</dd>
+<dt>Kurtosis</dt>
+<dd>The Kurtosis query calculates the kurtosis of a normalized distribution
+function. The normalized distribution function must be represented as a
+Curve plot in VisIt. Kurtosis measures the variability of a distribution by
+comparing the ratios of the fourth and second central moments. The results
+are print to the <strong>Query results</strong>.</dd>
+<dt>L2Norm</dt>
+<dd>The L2Norm query calculates the L2Norm, or square of the integrated area,
+of a Curve plot. The Curve plot must be highlighted in the <strong>Plot list</strong>.
+The results are printed to the <strong>Query results</strong>.</dd>
+<dt>L2Norm Between Curves</dt>
+<dd>The L2Norm query takes two Curve plots as input and calculates the L2Norm
+between the 2 curves. Both Curve plots must be highlighted in the
+<strong>Plot list</strong> or VisIt will issue an error message. The results are printed
+to the <strong>Query results</strong>.</dd>
+<dt>Min</dt>
+<dd>The Min query calculates the minimum value for the variable used by the
+highlighted plot in the <strong>Plot list</strong> and prints the value and the logical
+and physical coordinates where the minimum value was found to the
+<strong>Query results</strong>.</dd>
+<dt>Mass Distribution</dt>
+<dd>The Mass Distribution query calculates how much mass occurs at different
+length scales over a two or three dimensional object. Axially symmetric
+objects (RZ-meshes) are treated as 3D meshes and length scales are
+calculated over the revolved, 3D object. The implementation employs a
+statistical approach, with the casting of uniform density, random lines.
+The result of this query is a curve, which is outputted as a separate file.
+This curve contains the amount of mass as a function of length scale.
+Integrating the curve between P0 and P1 will give the total mass between
+length scale P0 and length scale P1. The name of the resulting file is
+printed to the <strong>Query results</strong>.</dd>
+<dt>Max</dt>
+<dd>The Max query calculates the maximum value for the variable used by the
+highlighted plot in the Plot list and prints the value and the logical and
+physical coordinates where the maximum value was found to the
+<strong>Query results</strong>.</dd>
+<dt>MinMax</dt>
+<dd>The MinMax query calculates the minimum and maximum values for the variable
+used by the highlighted plot in the Plot list and prints the values and
+their logical and physical coordinates in the <strong>Query results</strong>.</dd>
+<dt>Moment of inertia</dt>
+<dd>This query will calculate the moment of inertia tensor for each cell in a
+three-dimensional dataset. The contribution of each cell is calculated
+assuming its mass all lies at the center of the cell. If the query is
+performed on a Pseudocolor plot, the plot’s variable will be assumed to be
+density. If the query is performed on a plot such as a mesh plot or
+FilledBoundary plot, uniform density will be used. The results are printed
+to the <strong>Query results</strong>.</dd>
+<dt>NodeCoords</dt>
+<dd>The NodeCoords query prints the node coordinates for the specified node and
+prints the values in the <strong>Query results</strong>.</dd>
+<dt>NumNodes</dt>
+<dd>The NumNodes query prints the number of nodes for the mesh used by the
+highlighted plot in the <strong>Plot list</strong> to the <strong>Query results</strong>.</dd>
+<dt>NumZones</dt>
+<dd>The NumZones query prints the number of zones for the mesh used by the
+highlighted plot in the <strong>Plot list</strong> to the <strong>Query results</strong>.</dd>
+<dt>Revolved surface area</dt>
+<dd>The Revolved surface area query revolves the mesh used by the highlighted
+plot in the <strong>Plot list</strong> about the X-axis and prints the plot’s revolved
+surface area to the <strong>Query results</strong>.</dd>
+<dt>Revolved volume</dt>
+<dd>The Revolved volume area query revolves the mesh used by the highlighted
+plot in the <strong>Plot list</strong> about the X-axis and print’s the plot’s volume
+to the <strong>Query results</strong>.</dd>
+<dt>Skewness</dt>
+<dd>The Skewness query calculates the skewness of a normalized distribution
+function. The normalized distribution function must be represented as a
+Curve plot in VisIt. Skewness measures the symmetry of a distribution using
+its second and third central moments. The results are print to the
+<strong>Query results</strong></dd>
+<dt>Spatial Extents</dt>
+<dd>The Spatial Extents query calculates the original or actual spatial extents
+for the plot that is highlighted in the <strong>Plot list</strong>. Whether the original
+or actual extents are calculated is determined by setting the options in
+the <strong>Query parameters</strong> area. The spatial extents are printed to the
+<strong>Query results</strong> when the query has finished.</dd>
+<dt>Spherical compactness factor</dt>
+<dd>This query attempts to measure how spherical a three dimensional shape is.
+The query first determines what the volume of a shape is. It then
+constructs a sphere that has that same volume. Finally, the query positions
+the sphere so that the maximum amount of the original shape is within the
+sphere. The query returns the percentage of the original shape that is
+contained within the sphere. The results are print to the
+<strong>Query results</strong>. VisIt can produce a Curve plot of this query with
+respect to time.</dd>
+<dt>Time</dt>
+<dd>The Time query prints the time for the plot that is highlighted in the Plot
+list to the <strong>Query results</strong>.</dd>
+<dt>Variable Sum</dt>
+<dd>The Variable Sum query adds up the variable values for all cells using the
+plot highlighted in the <strong>Plot list</strong> and prints the results to the
+<strong>Query results</strong>. VisIt can produce a Curve plot of this query with
+respect to time.</dd>
+<dt>Volume</dt>
+<dd>The Volume query calculates the volume of the mesh used by the plot
+highlighted in the <strong>Plot list</strong> and prints the value to the
+<strong>Query results</strong>. VisIt can use this query to produce a Curve plot of
+volume with respect to time.</dd>
+<dt>Watertight</dt>
+<dd>The Watertight query determines if a three-dimensional surface mesh, of the
+plot highlighted in the <strong>Plot list</strong>, is “watertight”, meaning that it is
+a closed volume with mesh connectivity such that every edge is incident to
+exactly two faces. This means that no edge can have a duplicate in the
+exact same position. The result of the query is printed in the
+<strong>Query results</strong>.</dd>
+<dt>Weighted Variable Sum</dt>
+<dd>The Weighted Variable Sum query adds up the variable values, weighted by
+cell size, for all cells using the plot highlighted in the <strong>Plot list</strong>
+and prints the results to the <strong>Query results</strong>. VisIt can produce a Curve
+plot of this query with respect to time.</dd>
+<dt>ZoneCenter</dt>
+<dd>The ZoneCenter query calculates the zone center for a certain cell in the
+database used by the highlighted plot in the Plot list. The cell center is
+printed to the <strong>Query results</strong> and the <strong>Pick Window</strong>.</dd>
+</dl>
+</div>
+<div class="section" id="point-queries">
+<h3>8.2.2.2. Point Queries<a class="headerlink" href="#point-queries" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>NodePick</dt>
+<dd>The NodePick query performs node picking at the specified world coordinate
+which, if used in 3D, need not be on the surface of a 3D dataset.The plot
+to be picked must be highlighted in the <strong>Plot list</strong>. Information about
+the picked node, if there is one, is printed to the <strong>Query results</strong> and
+the <strong>Pick Window</strong>.</dd>
+<dt>Pick</dt>
+<dd>The Pick query performs zone picking at the specified world coordinate
+which, if used in 3D, need not be on the surface of a 3D dataset.The plot
+to be picked must be highlighted in the <strong>Plot list</strong>. Information about
+the picked node, if there is one, is printed to the <strong>Query results</strong> and
+the <strong>Pick Window</strong>.</dd>
+<dt>PickByNode</dt>
+<dd>The PickByNode query performs node pick using the highlighted plot in the
+<strong>Plot list</strong> and specified domain and node values. You can give a global
+node number if you turn on the <strong>Use Global Node</strong> check box. A pick point
+is added to the vis window and the query results appear in the
+<strong>Query results</strong> and the <strong>Pick Window</strong>. Note: this is the query to use
+if you want to query the database for the value of a variable at a certain
+node. VisIt can produce a Curve plot of this query with respect to time.</dd>
+<dt>PickByZone</dt>
+<dd>The PickByZone query performs zone pick using the highlighted plot in the
+Plot list and specified domain and zone values. You can give a global node
+number if you turn on the <strong>Use Global ** **Zone</strong> check box. A pick point
+is added to the vis window and the query results appear in the
+<strong>Query results</strong> and the <strong>Pick Window</strong>. Note: this is the query to use
+if you want to query the database for the value of a variable at a certain
+cell. VisIt can produce a Curve plot of this query with respect to time.</dd>
+</dl>
+</div>
+<div class="section" id="line-queries">
+<h3>8.2.2.3. Line Queries<a class="headerlink" href="#line-queries" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>Lineout</dt>
+<dd>The Lineout query creates a new instance of the highlighted plot in the
+<strong>Plot list</strong>, applies a Lineout operator, and copies the plot to another
+vis window. The properties of the Lineout operator such as the start and
+end points are set using the controls in the <strong>Query parameters area</strong> of
+the <strong>Query Window</strong>. Creating Lineouts in this manner instead of using
+VisIt’s interactive lineout allows you to create 1D Curve plots from 3D
+databases.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="executing-a-query">
+<h2>8.2.3. Executing a query<a class="headerlink" href="#executing-a-query" title="Permalink to this headline">¶</a></h2>
+<p>VisIt has many queries from which to choose. You can choose the type of query
+to execute by clicking on the name of the query in the <strong>Queries list</strong>. The
+<strong>Queries list</strong> usually displays the names of all of the queries that VisIt
+knows how to execute. If you instead want to view a subset of the queries,
+grouped by function, you can make a selection from the <strong>Display as</strong> combo
+box. Once you have clicked on a query in the <strong>Query list</strong>, the
+<strong>Query parameters</strong> area updates to show the controls that you need to edit
+the parameters for the query. In the case of a point query like Pick, the
+only parameters you need to specify are the 3D point where VisIt will extract
+values and the names of the variables that you want to examine. Once you
+specify the query parameters, click the <strong>Query</strong> button to tell VisIt to
+process the query. Once VisIt has fulfilled your request, the query results
+are displayed in the <strong>Query results</strong> at the bottom of the <strong>Query Window</strong>.</p>
+</div>
+<div class="section" id="querying-over-time">
+<h2>8.2.4. Querying over time<a class="headerlink" href="#querying-over-time" title="Permalink to this headline">¶</a></h2>
+<p>Many of VisIt’s queries can be executed for every time state in the database
+used by the queried plot. The results from a query over time is a Curve plot
+that plots the query results with respect to time. The <strong>Query parameters</strong>
+area contains a <strong>Time Curve</strong> button when the selected query can be plotted
+over time. Clicking the <strong>Time Curve</strong> button executes the selected query
+for each time state in the database used by the plot highlighted in the
+<strong>Plot list</strong>. VisIt then creates a new Curve plot in a new vis window and
+uses the query results versus time as the curve data.</p>
+<div class="figure" id="id4">
+<span id="queryovertimewindow"></span><img alt="../../_images/queryovertimewindow.png" src="../../_images/queryovertimewindow.png" />
+<p class="caption"><span class="caption-number">Fig. 8.7 </span><span class="caption-text">Query Over Time Window</span></p>
+</div>
+<p>By default, querying over time will force VisIt to execute the selected
+query on every time state in the relevant database. If you want to restrict
+the number of time states used when querying over time or if you want to
+set some general options that also affect how time curves are created, you
+can set additional options in the <strong>Query Over Time Window</strong> (see
+<a class="reference internal" href="#queryovertimewindow"><span class="std std-numref">Figure 8.7</span></a>). If you want to open the
+<strong>Query Over Time Window</strong>, click on the <strong>Query over time</strong> option in the
+<strong>Controls</strong> menu in VisIt’s <strong>Main Window</strong>.</p>
+<div class="section" id="querying-over-a-time-range">
+<h3>8.2.4.1. Querying over a time range<a class="headerlink" href="#querying-over-a-time-range" title="Permalink to this headline">¶</a></h3>
+<p>You can restrict the range of time states that are considered when VisIt
+is performing a query over time if you specify a start or end time state
+in the <strong>Query Over Time Window</strong>. To set a starting time state, click the
+<strong>Starting timestep</strong> check box and enter a new time state into the adjacent
+text field. To set an ending time state, click the <strong>Ending timestep</strong>
+check box and enter a new ending time state into the adjacent text field.</p>
+<p>In addition to setting the starting and ending time states, you can also
+specify a stride so VisIt can skip frames in the middle and consider every
+Nth frame instead of every frame. If you want to specify a stride, enter
+a new stride into the <strong>Stride</strong> text field in the <strong>Query Over Time Window</strong>
+and click the <strong>Apply</strong> button.</p>
+</div>
+<div class="section" id="setting-the-axis-title">
+<h3>8.2.4.2. Setting the axis title<a class="headerlink" href="#setting-the-axis-title" title="Permalink to this headline">¶</a></h3>
+<p>When VisIt creates a new Curve plot, after having calculated a query over
+time, the horizontal axis label is labeled with the database cycles. If you
+prefer to think about time in terms of time state or simulation time then
+you can change the axis label by clicking one of the following radio buttons
+in the <strong>Query Over Time Window</strong> : <strong>Cycle</strong>, <strong>Time</strong>, <strong>Timestep</strong>.</p>
+</div>
+<div class="section" id="setting-the-time-curve-s-destination-window">
+<h3>8.2.4.3. Setting the time curve’s destination window<a class="headerlink" href="#setting-the-time-curve-s-destination-window" title="Permalink to this headline">¶</a></h3>
+<p>When VisIt creates a Curve plot using the results of a query over time,
+the Curve plot is placed in a vis window designated for Curve plots. If
+there is no vis window into which the Curve plot can be added, VisIt
+creates a new vis window to contain the Curve plot. If you want VisIt to
+always place the new Curve plot in a specific window, turn off the
+<strong>Use 1st unused window or create new one</strong> check box and enter a new
+window number into the <strong>Window#</strong> text field. After setting these
+options, subsequent Curve plots created by querying over time will be
+added to the specified vis window.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Pick.html" class="btn btn-neutral float-right" title="8.3. Pick" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Expressions.html" class="btn btn-neutral" title="8.1. Expressions" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

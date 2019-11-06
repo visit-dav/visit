@@ -1,0 +1,375 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>4.3.14. Isosurface operator &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../../index.html"/>
+        <link rel="up" title="4.3. Operator Types" href="index.html"/>
+        <link rel="next" title="4.3.15. Isovolume operator" href="Isovolume_operator.html"/>
+        <link rel="prev" title="4.3.13. InverseGhostZone operator" href="InverseGhostZone_operator.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">4. Operators</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../Working_with_Operators.html">4.1. Working with Operators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Operators_that_Generate_New_Variables.html">4.2. Operators that Generate New Variables</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">4.3. Operator Types</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="Box_operator.html">4.3.1. Box operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Clip_operator.html">4.3.2. Clip operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Cone_operator.html">4.3.3. Cone operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ConnectedComponents_operator.html">4.3.4. Connected Components operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Cylinder_operator.html">4.3.5. Cylinder operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Decimate_operator.html">4.3.6. Decimate operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="DeferExpression_operator.html">4.3.7. DeferExpression operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Displace_operator.html">4.3.8. Displace operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Elevate_operator.html">4.3.9. Elevate operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Explode_operator.html">4.3.10. Explode operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ExternalSurface_operator.html">4.3.11. ExternalSurface operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Index_Select_operator.html">4.3.12. Index Select operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="InverseGhostZone_operator.html">4.3.13. InverseGhostZone operator</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">4.3.14. Isosurface operator</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#setting-isosurface-levels">4.3.14.1. Setting isosurface levels</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-limits">4.3.14.2. Setting Limits</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#scaling">4.3.14.3. Scaling</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-isosurfacing-variable">4.3.14.4. Setting the isosurfacing variable</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="Isovolume_operator.html">4.3.15. Isovolume operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Lineout_operator.html">4.3.16. Lineout operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Merge_operator.html">4.3.17. Merge operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="OnionPeel_operator.html">4.3.18. OnionPeel operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Project_operator.html">4.3.19. Project operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Reflect_operator.html">4.3.20. Reflect operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Resample_operator.html">4.3.21. Resample operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Revolve_operator.html">4.3.22. Revolve operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Slice_operator.html">4.3.23. Slice operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Smooth_operator.html">4.3.24. Smooth operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="SphereSlice_operator.html">4.3.25. SphereSlice operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ThreeSlice_operator.html">4.3.26. ThreeSlice operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Threshold_operator.html">4.3.27. Threshold operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Transform_operator.html">4.3.28. Transform operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Tube_operator.html">4.3.29. Tube operator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="../index.html">4. Operators</a> &raquo;</li>
+        
+          <li><a href="index.html">4.3. Operator Types</a> &raquo;</li>
+        
+      <li>4.3.14. Isosurface operator</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/gui_manual/Operators/OperatorTypes/Isosurface_operator.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="isosurface-operator">
+<span id="id1"></span><h1>4.3.14. Isosurface operator<a class="headerlink" href="#isosurface-operator" title="Permalink to this headline">¶</a></h1>
+<p>The Isosurface operator extracts surfaces from 2D or 3D databases and
+allows them to be plotted. The Isosurface operator takes as input a
+database and a list of values and creates a set of isosurfaces through
+the database. An isosurface is a surface where every point on the surface
+has the same data value. You can use an isosurface to see a surface
+through cells that contain a certain value. The Isosurface operator
+performs essentially the same visualization operation as the Contour plot,
+but it allows the resulting data to be used in VisIt’s other plots. For
+example, an Isosurface operator can be applied to a Pseudocolor plot
+where the Isosurface variable is different from the Pseudocolor variable.
+In that case, not only are the isosurfaces shown, but they are colored by
+another variable. An example of the Isosurface operator is shown in
+<a class="reference internal" href="#isosurface"><span class="std std-numref">Figure 4.39</span></a>.</p>
+<div class="figure align-center" id="id2">
+<span id="isosurface"></span><a class="reference internal image-reference" href="../../../_images/isosurface.png"><img alt="../../../_images/isosurface.png" src="../../../_images/isosurface.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 4.39 </span><span class="caption-text">Isosurface operator example</span></p>
+</div>
+<div class="section" id="setting-isosurface-levels">
+<h2>4.3.14.1. Setting isosurface levels<a class="headerlink" href="#setting-isosurface-levels" title="Permalink to this headline">¶</a></h2>
+<p>By default, VisIt constructs 10 levels into which the data fall. These
+levels are linearly interpolated values between the data minimum and data
+maximum. However, you can set your own number of levels, specify the
+levels you want to see or indicate the percentages for the levels.</p>
+<div class="figure align-center" id="id3">
+<span id="isosurfacewindow"></span><a class="reference internal image-reference" href="../../../_images/isosurfacewindow.png"><img alt="../../../_images/isosurfacewindow.png" src="../../../_images/isosurfacewindow.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 4.40 </span><span class="caption-text">Isosurface attributes</span></p>
+</div>
+<p>To choose how levels are specified, make a selection from the <strong>Select by</strong>
+menu. The available options are: <strong>N levels</strong>, <strong>Levels</strong>, and <strong>Percent</strong>.
+<strong>N levels</strong>, the default method, allows you to specify the number of
+levels that will be generated, with 10 being the default.  <strong>Levels</strong>
+requires you to specify real numbers for the levels you want to see.
+<strong>Percent</strong> takes a list of percentages like 50.5 60 40. Using the numbers
+just mentioned, the first isosurface would be placed at the value which is
+50.5% of the way between the minimum and maximum data values. The next
+isosurface would be placed at the value that is 60% of the way between the
+minimum and maximum data values, and so forth. You specify all values for
+setting the number of isosurfaces by typing into the text field to the right
+of the <strong>Select by</strong> menu.</p>
+</div>
+<div class="section" id="setting-limits">
+<h2>4.3.14.2. Setting Limits<a class="headerlink" href="#setting-limits" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>Isosurface attributes window</strong>, shown in
+<a class="reference internal" href="#isosurfacewindow"><span class="std std-numref">Figure 4.40</span></a>, provides controls that allow you to
+specify artificial minima and maxima for the data in the plot. You might set
+limits when you have a small range of values that you are interested in and
+you only want the isosurfaces to be generated through that range. To set the
+minimum value, click the <strong>Minimum</strong> check box to enable the <strong>Minimum</strong> text
+field and then type a new minimum value into the text field. To set the maximum
+value, click the <strong>Maximum</strong> check box to enable the <strong>Maximum</strong> text field and
+then type a new maximum value into the text field. Note that either the
+minimum, maximum or both can be specified. If neither minimum nor maximum
+values are specified, VisIt uses the minimum and maximum values in the dataset.</p>
+</div>
+<div class="section" id="scaling">
+<h2>4.3.14.3. Scaling<a class="headerlink" href="#scaling" title="Permalink to this headline">¶</a></h2>
+<p>The Isosurface operator typically creates isosurfaces through a range of
+values by linearly interpolating to the next value. You can also change
+scales so a logarithmic function is used to get the list of isosurface
+values through the specified range. To change the scale, click either the
+<strong>Linear</strong> or <strong>Log</strong> radio buttons in the
+<strong>Isosurface attributes window</strong>.</p>
+</div>
+<div class="section" id="setting-the-isosurfacing-variable">
+<h2>4.3.14.4. Setting the isosurfacing variable<a class="headerlink" href="#setting-the-isosurfacing-variable" title="Permalink to this headline">¶</a></h2>
+<p>The Isosurface operator database variable can differ from the plotted
+variable. This enables plots to combine information from two variables by
+having isosurfaces of one variable and then coloring the resulting
+surfaces by another variable. You can change the isosurfacing variable,
+by selecting a new variable name from the <strong>Variable</strong> variable button.</p>
+<p>Sometimes it is useful to set the isosurfacing variable when the plotted
+variable is not a scalar. For example, you might want to apply the
+Isosurface operator to a Mesh plot but the Mesh plot’s plotted variable is
+not a scalar so the Isosurface operator does not know what to do. To avoid
+this situation, you can set the isosurfacing variable to one you know to
+be scalar and the operator will succeed.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Isovolume_operator.html" class="btn btn-neutral float-right" title="4.3.15. Isovolume operator" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="InverseGhostZone_operator.html" class="btn btn-neutral" title="4.3.13. InverseGhostZone operator" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,296 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>18. Building &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="VisIt GUI User Manual" href="../index.html"/>
+        <link rel="next" title="18.1. Basic Usage" href="Basic_Usage.html"/>
+        <link rel="prev" title="17. Startup Options" href="../StartupOptions/index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">18. Building</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Basic_Usage.html">18.1. Basic Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Advanced_Usage.html">18.2. Advanced Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Common_Build_Scenarios.html">18.3. Common Build Scenarios</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+      <li>18. Building</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/Building/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="building">
+<span id="id1"></span><h1>18. Building<a class="headerlink" href="#building" title="Permalink to this headline">¶</a></h1>
+<p>In this chapter, we will discuss how to build visit. The building of <a class="reference external" href="https://visit.llnl.gov">VisIt</a>
+is automated with the <code class="docutils literal notranslate"><span class="pre">build_visit</span></code> script. It will build <a class="reference external" href="https://visit.llnl.gov">VisIt</a> and all of
+<a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s third party libraries. It can be configured to build <a class="reference external" href="https://visit.llnl.gov">VisIt</a> with a
+minimum of third party libraries to building <a class="reference external" href="https://visit.llnl.gov">VisIt</a> with all of it’s third
+party libraries. This chapter describes how to build <a class="reference external" href="https://visit.llnl.gov">VisIt</a>, starting with
+the most simple case and moving then moving to more complex use cases.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Basic_Usage.html">18.1. Basic Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Basic_Usage.html#doing-a-minimal-build">18.1.1. Doing a minimal build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Basic_Usage.html#building-with-multiple-cores">18.1.2. Building with multiple cores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Basic_Usage.html#specifying-the-third-party-library-install-location">18.1.3. Specifying the third party library install location</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Basic_Usage.html#building-with-the-hdf5-and-silo-libraries">18.1.4. Building with the HDF5 and Silo libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Basic_Usage.html#building-the-stable-optional-libraries">18.1.5. Building the stable optional libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Basic_Usage.html#using-a-visit-source-code-tar-file">18.1.6. Using a VisIt source code tar file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Basic_Usage.html#if-build-visit-is-interrupted">18.1.7. If <code class="docutils literal notranslate"><span class="pre">build_visit</span></code> is interrupted</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Basic_Usage.html#finishing-up">18.1.8. Finishing up</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Advanced_Usage.html">18.2. Advanced Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Advanced_Usage.html#building-a-parallel-version">18.2.1. Building a parallel version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Advanced_Usage.html#building-with-mesa-as-the-opengl-implementation">18.2.2. Building with Mesa as the OpenGL implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Advanced_Usage.html#the-difference-between-mesagl-and-osmesa">18.2.3. The difference between <code class="docutils literal notranslate"><span class="pre">--mesagl</span></code> and <code class="docutils literal notranslate"><span class="pre">--osmesa</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="Advanced_Usage.html#building-on-a-system-without-internet-access">18.2.4. Building on a system without internet access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Advanced_Usage.html#different-versions-of-build-visit">18.2.5. Different versions of <code class="docutils literal notranslate"><span class="pre">build_visit</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="Advanced_Usage.html#troubleshooting-build-visit-failures">18.2.6. Troubleshooting <code class="docutils literal notranslate"><span class="pre">build_visit</span></code> failures</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Common_Build_Scenarios.html">18.3. Common Build Scenarios</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Common_Build_Scenarios.html#kickit-a-redhat-enterprise-linux-7-system">18.3.1. Kickit, a RedHat Enterprise Linux 7 system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Common_Build_Scenarios.html#quartz-a-linux-x86-64-toss3-cluster">18.3.2. Quartz, a Linux X86_64 TOSS3 cluster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Common_Build_Scenarios.html#lassen-a-linux-power9-blueos-cluster">18.3.3. Lassen, a Linux Power9 BlueOS cluster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Common_Build_Scenarios.html#cori-a-cray-knl-cluster">18.3.4. Cori, a Cray KNL cluster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Common_Build_Scenarios.html#summit-a-linux-power9-blueos-cluster">18.3.5. Summit, a Linux Power9 BlueOS cluster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Common_Build_Scenarios.html#trinity-a-cray-knl-cluster">18.3.6. Trinity, a Cray KNL cluster</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Basic_Usage.html" class="btn btn-neutral float-right" title="18.1. Basic Usage" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../StartupOptions/index.html" class="btn btn-neutral" title="17. Startup Options" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

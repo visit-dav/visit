@@ -1,0 +1,385 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>9.3. Lighting &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="9. Making it pretty" href="index.html"/>
+        <link rel="next" title="9.4. Rendering Options" href="Rendering_Options.html"/>
+        <link rel="prev" title="9.2. Color Tables" href="Color_tables.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">9. Making it pretty</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Annotations.html">9.1. Annotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Color_tables.html">9.2. Color Tables</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">9.3. Lighting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#lighting-window">9.3.1. Lighting Window</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#switching-between-edit-mode-and-preview-mode">9.3.1.1. Switching between edit mode and preview mode</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#choosing-the-active-light">9.3.1.2. Choosing the active light</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#turning-a-light-on">9.3.1.3. Turning a light on</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#light-type">9.3.1.4. Light type</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#positioning-a-light">9.3.1.5. Positioning a light</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#light-color-and-brightness">9.3.1.6. Light color and brightness</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Rendering_Options.html">9.4. Rendering Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="View.html">9.5. View</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">9. Making it pretty</a> &raquo;</li>
+        
+      <li>9.3. Lighting</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/MakingItPretty/Lighting.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="lighting">
+<span id="id1"></span><h1>9.3. Lighting<a class="headerlink" href="#lighting" title="Permalink to this headline">¶</a></h1>
+<p>Lighting is an important element when producing 3D visualizations because
+all areas of interest in the visualization should be lit so they can be
+easily seen. To this end, it is often necessary to have multiple light
+sources so all of the visualization’s important areas are bright enough.
+VisIt can have up to 8 light colored light sources in order to improve
+the look of 3D visualizations. Each light source can be positioned and
+colored using VisIt’s <strong>Lighting Window</strong>. It is also possible to have
+specular highlights in addition to multiple colored lights. For more
+information on specular highlights, which can make visualizations appear
+much more realistic, read about specular lighting in the <a class="reference internal" href="../Preferences/index.html#preferences"><span class="std std-ref">Preferences</span></a>
+chapter.</p>
+<div class="section" id="lighting-window">
+<h2>9.3.1. Lighting Window<a class="headerlink" href="#lighting-window" title="Permalink to this headline">¶</a></h2>
+<p>You can open the <strong>Lighting Window</strong>
+(see <a class="reference internal" href="#fig-makingitpretty-lighting"><span class="std std-numref">Figure 9.28</span></a>) by selecting the
+<strong>Lighting</strong> option from the <strong>Main Window’s Controls</strong> menu. The
+<strong>Lighting Window</strong> has two modes of operation: edit and preview. When
+the window is in preview mode, light sources cannot be modified, but they
+are all visible and illuminate the <strong>Lighting Window’s</strong> test sphere so
+the cumulative effect of the lights can be observed. When the window is
+in edit mode, light sources can be modified one at a time. You set light
+properties using the controls in the <strong>Properties</strong> panel and you can
+position lights interactively by moving them around in the lighting panel
+to the left of the <strong>Properties</strong> panel.</p>
+<div class="figure" id="id2">
+<span id="fig-makingitpretty-lighting"></span><img alt="../../_images/MakingItPretty-Lighting.png" src="../../_images/MakingItPretty-Lighting.png" />
+<p class="caption"><span class="caption-number">Fig. 9.28 </span><span class="caption-text">The lighting Window</span></p>
+</div>
+<div class="section" id="switching-between-edit-mode-and-preview-mode">
+<h3>9.3.1.1. Switching between edit mode and preview mode<a class="headerlink" href="#switching-between-edit-mode-and-preview-mode" title="Permalink to this headline">¶</a></h3>
+<p>Changing the <strong>Mode</strong> between <strong>Edit</strong> and <strong>Preview</strong> switches the
+<strong>Lighting Window</strong> into the desired mode. When the <strong>Lighting Window</strong>
+is in edit mode, one light source at a time is shown in the lighting
+panel and the lights properties can be set by moving the light
+interactively or by settings its properties by using the controls in
+the <strong>Properties</strong> panel. When the <strong>Lighting Window</strong> is in preview
+mode, all lights are shown in the lighting panel and none of them can
+be modified.</p>
+</div>
+<div class="section" id="choosing-the-active-light">
+<h3>9.3.1.2. Choosing the active light<a class="headerlink" href="#choosing-the-active-light" title="Permalink to this headline">¶</a></h3>
+<div class="figure" id="id3">
+<span id="fig-makingitpretty-activelightmenu"></span><img alt="../../_images/MakingItPretty-ActiveLightMenu.png" src="../../_images/MakingItPretty-ActiveLightMenu.png" />
+<p class="caption"><span class="caption-number">Fig. 9.29 </span><span class="caption-text">The active light menu</span></p>
+</div>
+<p>The active light is the light whose properties are shown in the
+<strong>Lighting Window</strong>. Only the active light can be modified so you must
+switch active lights each time you want to make changes to a light. To
+change the active light, select a new light from the <strong>Active light</strong>
+menu (<a class="reference internal" href="#fig-makingitpretty-activelightmenu"><span class="std std-numref">Figure 9.29</span></a>). The
+<strong>Active light</strong> menu contains a list of eight possible lights of which
+only light 1 is active by default. When a light is active, it has a
+small light bulb icon next to it. Inactive lights have no light bulb
+icon. Once a new light has been selected from the <strong>Active light</strong> menu,
+its properties are displayed in the <strong>Lighting Window’s Properties</strong>
+panel.</p>
+</div>
+<div class="section" id="turning-a-light-on">
+<h3>9.3.1.3. Turning a light on<a class="headerlink" href="#turning-a-light-on" title="Permalink to this headline">¶</a></h3>
+<p>You can turn lights on and off using the <strong>Enabled</strong> check box that appears
+at the bottom of the <strong>Lighting Window’s Properties</strong> panel. You can only
+modify lights when the <strong>Lighting Window</strong> is in edit mode.</p>
+</div>
+<div class="section" id="light-type">
+<h3>9.3.1.4. Light type<a class="headerlink" href="#light-type" title="Permalink to this headline">¶</a></h3>
+<div class="figure" id="id4">
+<span id="fig-makingitpretty-lighttypes"></span><img alt="../../_images/MakingItPretty-LightTypes.png" src="../../_images/MakingItPretty-LightTypes.png" />
+<p class="caption"><span class="caption-number">Fig. 9.30 </span><span class="caption-text">The different kinds of lights</span></p>
+</div>
+<p>VisIt supports three types of lights. The first type is called an ambient
+light. An ambient light is a light that has no direction and contributes
+brightness to the entire visualization. When an ambient light is present,
+the lighting panel displays a small light bulb. The second type of light
+and the default light in VisIt is a camera light. A camera light stays
+fixed in space and always points the same direction regardless of how the
+objects in the visualization are positioned. Camera lights are represented
+in the lighting panel as small blue arrows. The third type of light in
+VisIt is the object light. An object light has a direction that is relative
+to the orientation of the object in the visualization. When the objects
+in the visualization are rotated, an object light keeps shining on the
+same area of the object. Object lights are represented in the lighting
+panel as small yellow cones. To change the light type for the active light,
+select a new light type from the <strong>Light type</strong> menu in the <strong>Properties</strong>
+panel.</p>
+</div>
+<div class="section" id="positioning-a-light">
+<h3>9.3.1.5. Positioning a light<a class="headerlink" href="#positioning-a-light" title="Permalink to this headline">¶</a></h3>
+<p>There are two ways to position a light. The first, and most intuitive, way
+is to interactively position the light by dragging it to the desired
+location in the lighting panel. Lights move in a sphere around the test
+sphere. Experiment with the motion until you are comfortable moving the
+light. The second way to move the light is to type a direction vector into
+the <strong>Direction</strong> text field. The coordinate system for specifying a
+direction vector is right-handed. Suppose you want to create a light that
+looks directly into the visualization. Since the Z-axis points directly
+out of the screen, the negative Z-axis points into the screen. This can
+be captured by entering a direction vector of: 0 0 -1. Note that ambient
+lights have no direction.</p>
+</div>
+<div class="section" id="light-color-and-brightness">
+<h3>9.3.1.6. Light color and brightness<a class="headerlink" href="#light-color-and-brightness" title="Permalink to this headline">¶</a></h3>
+<p>VisIt allows lights to have color as well as brightness. Colored lighting
+can produce interesting effects that may be desirable for presentations.
+To change the light color, click on the light <strong>Color</strong> button and select
+a new color from the <strong>Color</strong> menu. Once a color is picked, you can also
+set the brightness for the light. The brightness is essentially a knob
+that allows you to dim the light. If the brightness is set completely to
+the right then the light will have exactly the color that was picked for
+it. If the brightness is not set to full intensity then the light will be
+dimmer. You can set the brightness by adjusting the <strong>Brightness</strong> slider
+in the <strong>Lighting Window</strong>.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Rendering_Options.html" class="btn btn-neutral float-right" title="9.4. Rendering Options" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Color_tables.html" class="btn btn-neutral" title="9.2. Color Tables" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

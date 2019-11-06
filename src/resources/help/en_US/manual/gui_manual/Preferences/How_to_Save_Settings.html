@@ -1,0 +1,299 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>15.3. How to Save Settings &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="15. Preferences" href="index.html"/>
+        <link rel="next" title="15.4. Appearance Window" href="Appearance_Window.html"/>
+        <link rel="prev" title="15.2. Setting Default Values" href="Setting_default_values.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">15. Preferences</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="How_VisIt_uses_preferences.html">15.1. How VisIt Uses Preferences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Setting_default_values.html">15.2. Setting Default Values</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">15.3. How to Save Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Appearance_Window.html">15.4. Appearance Window</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugin_Manager_Window.html">15.5. Plugin Manager Window</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Rendering_Options_Window.html">15.6. Rendering Options Window</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Preferences_Window.html">15.7. Preferences Window</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">15. Preferences</a> &raquo;</li>
+        
+      <li>15.3. How to Save Settings</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/Preferences/How_to_Save_Settings.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="how-to-save-settings">
+<span id="id1"></span><h1>15.3. How to Save Settings<a class="headerlink" href="#how-to-save-settings" title="Permalink to this headline">¶</a></h1>
+<p>To save preferences in <a class="reference external" href="https://visit.llnl.gov">VisIt</a>, select <strong>Save settings</strong> from the <strong>Main</strong>
+window’s <strong>Options</strong> menu. When <a class="reference external" href="https://visit.llnl.gov">VisIt</a> saves the current settings to the
+users preferences file they are used to set the initial state the next
+time the user runs <a class="reference external" href="https://visit.llnl.gov">VisIt</a>. <a class="reference external" href="https://visit.llnl.gov">VisIt</a> does not automatically save settings
+when changes are made to the default attributes for plots, operators, or
+various control windows. For windows that only have current attributes
+(windows without a <strong>Make default</strong> button), the current attributes are
+saved. For windows that have current and default attributes (windows with
+a <strong>Make default</strong> button), the default attributes are saved.</p>
+<p>To save the entire state of <a class="reference external" href="https://visit.llnl.gov">VisIt</a>, which includes things such as the plots
+in the window and the operators applied to the plots for each visualization
+window, select either <strong>Save session</strong> or <strong>Save session as</strong> from the <strong>Main</strong>
+window’s <strong>File</strong> menu. When using <strong>Save session</strong>, if a session has already
+been restored or saved, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will overwrite the existing session file. If
+a session has not already been restored or saved, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will bring up a
+dialog window that will allow the user to specify the location and name of
+the session file. When using <strong>Save session as</strong> <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will always bring
+up a dialog window that will allow the user to specify the location and name
+of the session file and prompt the user to confirm before overwriting an
+existing session file.</p>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> saves two preference files, the first of which stores preferences
+for <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s GUI while the second file stores preferences for <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s
+state. When running <a class="reference external" href="https://visit.llnl.gov">VisIt</a> on UNIX and MacOS X systems, the preference files
+are called: <code class="docutils literal notranslate"><span class="pre">guiconfig</span></code> and <code class="docutils literal notranslate"><span class="pre">config</span></code> and they are saved in the <code class="docutils literal notranslate"><span class="pre">.visit</span></code>
+directory in the users home directory. The Windows version of the <code class="docutils literal notranslate"><span class="pre">.visit</span></code>
+directory is <code class="docutils literal notranslate"><span class="pre">%USERPROFILE%\Documents\VisIt</span></code>, which may be something like:
+<code class="docutils literal notranslate"><span class="pre">C:\Users\&lt;your-user-name&gt;\Documents\VisIt</span></code>.</p>
+<p>To run <a class="reference external" href="https://visit.llnl.gov">VisIt</a> without reading the saved settings, add <code class="docutils literal notranslate"><span class="pre">-noconfig</span></code> to the
+command line when running <a class="reference external" href="https://visit.llnl.gov">VisIt</a>.  The <code class="docutils literal notranslate"><span class="pre">-noconfig</span></code> argument is often
+useful when running an updated version of <a class="reference external" href="https://visit.llnl.gov">VisIt</a> that is incompatible with
+the saved settings. <a class="reference external" href="https://visit.llnl.gov">VisIt</a> settings are usually compatible between different
+versions but this is not always the case and some users have had trouble
+on occasion when transitioning to a newer version. If <a class="reference external" href="https://visit.llnl.gov">VisIt</a> has stability
+problems when it starts up after upgrading to a newer version, add the
+<code class="docutils literal notranslate"><span class="pre">-noconfig</span></code> option to the command line and save the settings to write over
+any older preference files.</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Appearance_Window.html" class="btn btn-neutral float-right" title="15.4. Appearance Window" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Setting_default_values.html" class="btn btn-neutral" title="15.2. Setting Default Values" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,423 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>2.1. Supported File Types &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="2. Working with Databases" href="index.html"/>
+        <link rel="next" title="2.2. File Open Window" href="File_Open_Window.html"/>
+        <link rel="prev" title="2. Working with Databases" href="index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">2. Working with Databases</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">2.1. Supported File Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#file-extensions">2.1.1. File extensions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#example-data-files">2.1.2. Example Data Files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#more-details-of-ascii-formats">2.1.3. More Details of ASCII Formats</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#creating-visit-files">2.1.3.1. Creating <code class="docutils literal notranslate"><span class="pre">.visit</span></code> Files</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#point3d-files">2.1.3.2. Point3D Files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="File_Open_Window.html">2.2. File Open Window</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Sources_Pane.html">2.3. Sources Pane</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Time_Pane.html">2.4. Time Pane</a></li>
+<li class="toctree-l3"><a class="reference internal" href="File_Information_Window.html">2.5. File Information Window</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">2. Working with Databases</a> &raquo;</li>
+        
+      <li>2.1. Supported File Types</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/WorkingWithFiles/Supported_File_Types.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="supported-file-types">
+<span id="id1"></span><h1>2.1. Supported File Types<a class="headerlink" href="#supported-file-types" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> can create visualizations from databases that are stored in many types
+of underlying file formats. <a class="reference external" href="https://visit.llnl.gov">VisIt</a> has a database reader for each supported
+file format and the database reader is a plugin that reads the data from the
+input file and imports it into <a class="reference external" href="https://visit.llnl.gov">VisIt</a>. If your data format is not listed in
+<a class="reference external" href="http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports">File formats supported by VisIt</a>
+then you can first translate your data into a format that <a class="reference external" href="https://visit.llnl.gov">VisIt</a> can read
+(e.g. Silo, VTK, etc.) or you can create a new database reader plugin for
+<a class="reference external" href="https://visit.llnl.gov">VisIt</a>. For more information on developing a database reader plugin, refer to
+the <a class="reference external" href="https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/visit/GettingDataIntoVisIt2.0.0.pdf">Getting Data Into VisIt</a>
+manual or send an e-mail inquiry to <a class="reference external" href="mailto:visit-users&#37;&#52;&#48;elist&#46;ornl&#46;gov">visit-users<span>&#64;</span>elist<span>&#46;</span>ornl<span>&#46;</span>gov</a>.</p>
+<div class="section" id="file-extensions">
+<h2>2.1.1. File extensions<a class="headerlink" href="#file-extensions" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> uses file extensions to decide which database reader plugin should be
+used to open a particular file format. Each database reader plugin has a set
+of file extensions that are used to match a filename to it. When a file’s
+extension matches (case sensitive except on MS Windows) that of a certain
+plugin, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> attempts to load the file with that plugin. If the plugin cannot
+load the file then <a class="reference external" href="https://visit.llnl.gov">VisIt</a> attempts to open the file with the next suitable
+plugin, before trying to open the file with the default database reader plugin.
+If your files do not have file extensions then <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will attempt to use the
+default database reader plugin. You can provide the <code class="docutils literal notranslate"><span class="pre">-default_format</span></code>
+command line option with the name of the database reader plugin to use if
+you want to specify which reader <a class="reference external" href="https://visit.llnl.gov">VisIt</a> should use when first trying to open a
+file. For example, if you want to load a PDB/Flash file, which usually has no
+file extension, you could provide: <code class="docutils literal notranslate"><span class="pre">-default_format</span> <span class="pre">PDB</span></code> on the command line.</p>
+</div>
+<div class="section" id="example-data-files">
+<h2>2.1.2. Example Data Files<a class="headerlink" href="#example-data-files" title="Permalink to this headline">¶</a></h2>
+<p>As part of <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s regular testing, a number of example data files <a class="reference external" href="https://visit.llnl.gov">VisIt</a> reads
+can be found in <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s <a class="reference external" href="https://github.com/visit-dav/visit/tree/develop/data">data</a>
+subdirectory of the main code repository. In particular, if you are looking for examples
+of various of the human readable ASCII formats <a class="reference external" href="https://visit.llnl.gov">VisIt</a> reads so that you can produce
+a compatible file, you may find examples there that help.</p>
+</div>
+<div class="section" id="more-details-of-ascii-formats">
+<h2>2.1.3. More Details of ASCII Formats<a class="headerlink" href="#more-details-of-ascii-formats" title="Permalink to this headline">¶</a></h2>
+<p>Here we describe more details specific to some of the ASCII formats <a class="reference external" href="https://visit.llnl.gov">VisIt</a> reads.</p>
+<div class="section" id="creating-visit-files">
+<span id="dotvisitfiles"></span><h3>2.1.3.1. Creating <code class="docutils literal notranslate"><span class="pre">.visit</span></code> Files<a class="headerlink" href="#creating-visit-files" title="Permalink to this headline">¶</a></h3>
+<p>To create a <code class="docutils literal notranslate"><span class="pre">.visit</span></code> file, simply make a new text file that contains the names
+of the files that you want to visualize and save the file with a <code class="docutils literal notranslate"><span class="pre">.visit</span></code> extension.</p>
+<ul class="simple">
+<li>Visit will take the first entry in the <code class="docutils literal notranslate"><span class="pre">.visit</span></code> file and attempt to determine the
+appropriate plugin to read the file.</li>
+<li>Not all plugins can be used with <code class="docutils literal notranslate"><span class="pre">.visit</span></code> files. In general, <strong>MD</strong> or <strong>MT</strong> formats
+sometimes do not work.<ul>
+<li>An <strong>MT</strong> file is a file format that provides multiple time steps in a single file. Thus,
+grouping multiple <strong>MT</strong> files to produce a time series may not be supported.</li>
+<li>An <strong>MD</strong> file is one that provides multiple domains in a single file. Thus, grouping
+multiple <strong>MD</strong> files to produce a view of the whole may not be supported.</li>
+</ul>
+</li>
+</ul>
+<p>Here is an example <code class="docutils literal notranslate"><span class="pre">.visit</span></code> file that groups time steps together. These files should contain
+1 time step per file.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>timestep0.silo
+timestep1.silo
+timestep2.silo
+timestep3.silo
+...
+</pre></div>
+</div>
+<p>Here is an example <code class="docutils literal notranslate"><span class="pre">.visit</span></code> file that groups various smaller domain files into a whole dataset
+that VisIt can visualize. Note the use of the <code class="docutils literal notranslate"><span class="pre">!NBLOCKS</span></code> directive and how it designates the
+number of files in a time step that constitute the whole domain. The <code class="docutils literal notranslate"><span class="pre">!NBLOCKS</span></code> directive must
+be on the first line of the file. In this example, we have 2 time steps each composed of 4 domain
+files.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span><span class="hll">!NBLOCKS 4
+</span>timestep0_domain0.silo
+timestep0_domain1.silo
+timestep0_domain2.silo
+timestep0_domain3.silo
+timestep1_domain0.silo
+timestep1_domain1.silo
+timestep1_domain2.silo
+timestep1_domain3.silo
+...
+</pre></div>
+</div>
+<p>You may also explicitly indicate the <em>time</em> associated with a file (or group of block files)
+using the <code class="docutils literal notranslate"><span class="pre">!TIME</span></code> directive like so…</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span><span class="hll">!NBLOCKS 4
+</span><span class="hll">!TIME 1.01
+</span>timestep0_domain0.silo
+timestep0_domain1.silo
+timestep0_domain2.silo
+timestep0_domain3.silo
+<span class="hll">!TIME 2.02
+</span>timestep1_domain0.silo
+timestep1_domain1.silo
+timestep1_domain2.silo
+timestep1_domain3.silo
+...
+</pre></div>
+</div>
+</div>
+<div class="section" id="point3d-files">
+<h3>2.1.3.2. Point3D Files<a class="headerlink" href="#point3d-files" title="Permalink to this headline">¶</a></h3>
+<p>Point3D files are four or fewer columns of ASCII values with some header text to indicate the
+variable names associated with each column and a <code class="docutils literal notranslate"><span class="pre">coordflag</span></code> entry to indicate how to
+interpret the columns of data as coordinates. Point3D files can be used to define discrete
+points in 1, 2 and 3 dimensions having a single scalar value associated with each point.
+Some examples are below. The Point3D file…</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>x y z value
+0 0 0 0
+0 0 1 1
+0 1 0 2
+0 1 1 3
+1 0 0 4
+1 0 1 5
+1 1 0 6
+1 1 1 7
+</pre></div>
+</div>
+<p>Defines a collection of 8 points in 3 dimensions have a scalar variable named <em>value</em>.
+Below, the <code class="docutils literal notranslate"><span class="pre">#coordflag</span></code> directive is used to define the same collection of 8 points in
+3 dimensions as the previous example except where the columns holding the z-coordinate
+and the scalar variable are interleaved.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> x y value z
+<span class="hll"> #coordflag xyvz
+</span> 0 0 0 0
+ 0 0 1 1
+ 0 1 2 0
+ 0 1 3 1
+ 1 0 4 0
+ 1 0 5 1
+ 1 1 6 0
+ 1 1 7 1
+</pre></div>
+</div>
+<p>In the example below, the <code class="docutils literal notranslate"><span class="pre">#coordflag</span></code> directive is used to define a collection of
+points in <em>two dimensions</em> where each point has a velocity magnitude value associated
+with it.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>x y velocity
+#coordflag xyv
+0 0 1
+0 1 1.01
+1 0 2.02
+</pre></div>
+</div>
+<p>Likewise, for a collection of points in just <em>one dimension</em>, we would have</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>x y velocity
+#coordflag xv
+0 1
+1 1.01
+2 2.02
+</pre></div>
+</div>
+<p>There are some
+<a class="reference external" href="https://www.visitusers.org/index.php?title=Reading_point_data#Using_Point3D_files">additional examples</a>
+of Point3D files on the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> wiki pages.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="File_Open_Window.html" class="btn btn-neutral float-right" title="2.2. File Open Window" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="2. Working with Databases" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
