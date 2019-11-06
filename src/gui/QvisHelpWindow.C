@@ -65,6 +65,9 @@
 //   Brad Whitlock, Fri Oct 12 16:43:20 PDT 2012
 //   I moved help under resources.
 //
+//   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
+//   Added manualPath for accessing the sphinx manual.
+//
 // ****************************************************************************
 
 QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
@@ -363,6 +366,9 @@ QvisHelpWindow::ReleaseNotesFile() const
 //   Kathleen Bonnell, Sat Aug 28 13:17:45 MST 2010 
 //   Added ultrawrapper document.
 //
+//   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
+//   Replaced manual pages with our new sphinx manuals.
+//
 // ****************************************************************************
 
 void
@@ -507,6 +513,9 @@ QvisHelpWindow::BuildContents(QTreeWidgetItem *parentItem,
 //
 //   Brad Whitlock, Thu Jun 19 16:45:54 PDT 2008
 //   Qt 4.
+//
+//   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
+//   Added the new sphinx manual path.
 //
 // ****************************************************************************
 
@@ -1405,7 +1414,7 @@ QvisHelpWindow::displayPage(const QString &page, bool reload)
 
     if(page != helpFile || reload)
     {
-        QString file = CompleteFileName(page);
+        QString file(CompleteFileName(page));
 
         if(QFile(file).exists())
         {
