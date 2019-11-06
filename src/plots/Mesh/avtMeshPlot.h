@@ -153,6 +153,9 @@ class     avtVariablePointGlyphMapper;
 //    Kathleen Biagas, Wed May 11 08:48:51 PDT 2016
 //    Remove custom renderer in favor of native renderers in VTK-7.
 //
+//    Kathleen Biagas, Thu Oct 31 12:29:18 PDT 2019
+//    Added PlotHasBeenGlyphed.
+//
 // ****************************************************************************
 
 class
@@ -164,7 +167,7 @@ avtMeshPlot : public avtPlot
 
     static avtPlot *Create();
 
-    virtual const char *GetName(void)  { return "MeshPlot"; };
+    virtual const char *GetName(void)  { return "MeshPlot"; }
     virtual void    ReleaseData(void);
 
     virtual void    SetAtts(const AttributeGroup*);
@@ -188,6 +191,8 @@ avtMeshPlot : public avtPlot
 
     virtual const MapNode &GetExtraInfoForPick(void);
 
+    virtual bool    PlotHasBeenGlyphed();
+
   protected:
     avtMeshPlotMapper               *mapper;
     avtVariablePointGlyphMapper     *glyphMapper;
@@ -206,7 +211,7 @@ avtMeshPlot : public avtPlot
     virtual avtDataObject_p  ApplyRenderingTransformation(avtDataObject_p);
     virtual void             CustomizeBehavior(void);
     virtual void             CustomizeMapper(avtDataObjectInformation &);
-    virtual avtLegend_p      GetLegend(void) { return varLegendRefPtr; };
+    virtual avtLegend_p      GetLegend(void) { return varLegendRefPtr; }
     void                     SetCellCountMultiplierForSRThreshold(
                                  const avtDataObject_p);
 

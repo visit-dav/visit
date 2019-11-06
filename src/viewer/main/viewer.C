@@ -152,6 +152,12 @@ Viewer_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QS
 //    files. The GUI has the sole responsiblity for removing the crash
 //    session files on exit.
 //
+//    Kevin Griffin, Wed Oct 23 14:28:32 PDT 2019
+//    The GUIenabled flag was removed from the QApplication constructor which
+//    was used to trigger 'nowin' mode that allowed the VisIt CLI to run
+//    without a window system. To get the same effect, instantiating a plain
+//    QCoreApplication is done when nowin mode is set.
+//
 // ****************************************************************************
 
 int
@@ -193,12 +199,10 @@ ViewerMain(int argc, char *argv[])
         // Create the QApplication. This sets the qApp pointer.
         //
         bool add_platform_arg = false;
-
         int nExtraArgs = 5;
-// Instead of being exclusionary, should the check insted be
-// #if defined(Q_OS_LINUX) ??
+        
 #if !defined(_WIN32) && !defined(Q_OS_MAC)
-        if (viewer.GetNowinMode())
+        if(viewer.GetNowinMode())
         {
             // really only need this if X11 not running, but how to test?
             add_platform_arg = true;
@@ -220,7 +224,7 @@ ViewerMain(int argc, char *argv[])
         argv2[real_argc+1] = (char*)viewer.State()->GetAppearanceAttributes()->GetFontName().c_str();
         argv2[real_argc+2] = (char*)"-name";
         argv2[real_argc+3] = (char*)"visit-viewer";
-        if (add_platform_arg)
+        if(add_platform_arg)
         {
             argv2[real_argc+4] = (char*)"-platform";
             argv2[real_argc+5] = (char*)"minimal";
@@ -237,7 +241,15 @@ ViewerMain(int argc, char *argv[])
         surfaceFormat.setAlphaBufferSize(0);
         QSurfaceFormat::setDefaultFormat(surfaceFormat);
 
-        QApplication *mainApp = new QApplication(argc2, argv2, !viewer.GetNowinMode());
+        QCoreApplication *mainApp = NULL;
+        if(viewer.GetNowinMode())
+        {
+            mainApp = new QCoreApplication(argc2, argv2);
+        }
+        else
+        {
+            mainApp = new QApplication(argc2, argv2);
+        }
 
         //
         // Now that we've created the QApplication, let's call the viewer's
