@@ -33,7 +33,7 @@
     <key>LSRequiresCarbon</key>
     <true/>
     <key>LSUIElement</key>
-    <string>1</string>
+    <true/>
     <key>NSHumanReadableCopyright</key>
     <string>Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC</string>
     <key>NSHighResolutionCapable</key>

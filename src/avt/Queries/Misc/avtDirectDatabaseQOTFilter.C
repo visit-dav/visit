@@ -142,10 +142,10 @@ avtDirectDatabaseQOTFilter::Execute(void)
     //
     success = true;
 
-    avtDataTree_p dataTree = GetInputDataTree();
-
     if (PAR_Rank() == 0)
     {
+        avtDataTree_p dataTree = GetInputDataTree();
+
         bool multiCurve = false;
         if (atts.GetQueryAtts().GetQueryInputParams().
             HasNumericEntry("curve_plot_type"))
@@ -418,8 +418,7 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
     {
         debug1 << "avtDirectDatabaseQOTFilter: missing curves and/or points."
             << endl;
-        avtDataTree_p tree = new avtDataTree(NULL, 0);
-        return tree;
+        return new avtDataTree();
     }
 
     int numCurves = inPtData->GetNumberOfArrays();
@@ -430,8 +429,7 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
         success = false;
         debug2 << "avtDirectDatabaseQOTFilter: missing curves and/or points" 
             << endl;
-        avtDataTree_p tree = new avtDataTree(NULL, 0);
-        return tree;
+        return new avtDataTree();
     }
 
     if (numCurves == 1)
@@ -446,8 +444,7 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
             snprintf(msg, 512, "VisIt was unable to retreive data for the "
                 "following variable: %s\n", curve->GetName());
             avtCallback::IssueWarning(msg);
-            avtDataTree_p tree = new avtDataTree(NULL, 0);
-            return tree;
+            return new avtDataTree();
         }
 
         vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(numPts);
