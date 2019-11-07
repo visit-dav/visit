@@ -12,7 +12,6 @@
     <FilePatterns>
       *.pmd
       *.opmd
-      *.h5
     </FilePatterns>
     <Files components="M">
       OpenPMDClasses/PMDParticle.C

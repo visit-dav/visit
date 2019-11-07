@@ -168,7 +168,6 @@ OpenPMDGeneralPluginInfo::GetDefaultFilePatterns() const
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.pmd");
     defaultPatterns.push_back("*.opmd");
-    defaultPatterns.push_back("*.h5");
 
     return defaultPatterns;
 }
