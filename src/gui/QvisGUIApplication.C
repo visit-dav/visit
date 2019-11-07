@@ -365,14 +365,19 @@ LongFileName(const std::string &shortName)
 //   Issue an error message to the console if we cannot connect to the 
 //   X server.
 //
+//   Kevin Griffin, Wed Nov  6 13:43:17 PST 2019
+//   Added the "Empty filename passed to function" warning to the suppress list.
+//   Added the additional context information if available. By default, the
+//   context information is only recorded in debug builds.
+//
 // ****************************************************************************
 
 static void
 GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    const int n_strs_to_suppress = 1;
+    const int n_strs_to_suppress = 2;
     const char *strs_to_suppress[] =
-       { "Invalid XLFD" };
+    { "Invalid XLFD", "Empty filename passed to function" };
     bool shouldPrint = true;
     for (int i = 0 ; i < n_strs_to_suppress ; i++)
     {
@@ -383,28 +388,50 @@ GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QStri
         }
     }
 
-    if (shouldPrint)
-        cerr << msg.toStdString() << endl;
-
+    std::string qtMsgStr;
+    bool isFatal = false;
     switch(type)
     {
-    case QtInfoMsg:
-        debug1 << "Qt: Info: " << msg.toStdString() << endl;
-        break;
-    case QtDebugMsg:
-        debug1 << "Qt: Debug: " << msg.toStdString() << endl;
-        break;
-    case QtWarningMsg:
-        debug1 << "Qt: Warning: " << msg.toStdString() << endl;
-        break;
-    case QtCriticalMsg:
-        debug1 << "Qt: Critical: " << msg.toStdString() << endl;
-        break;
-    case QtFatalMsg:
-        debug1 << "Qt: Fatal: " << msg.toStdString() << endl;
-        abort(); // HOOKS_IGNORE
-        break;
+        case QtInfoMsg:
+            qtMsgStr.append("Qt: Info: ");
+            break;
+        case QtDebugMsg:
+            qtMsgStr.append("Qt: Debug: ");
+            break;
+        case QtWarningMsg:
+            qtMsgStr.append("Qt: Warning: ");
+            break;
+        case QtCriticalMsg:
+            qtMsgStr.append("Qt: Critical: ");
+            break;
+        case QtFatalMsg:
+            qtMsgStr.append("Qt: Fatal: ");
+            isFatal = true;
+            break;
     }
+
+    // Build QT message
+    qtMsgStr.append(msg.toStdString());
+
+    // Print additional information if provided
+    if(context.file != NULL)
+    {
+        qtMsgStr.append(" [");
+        qtMsgStr.append(context.file);
+        qtMsgStr.append(":");
+        qtMsgStr.append(std::to_string(context.line));
+        qtMsgStr.append(":");
+        qtMsgStr.append(context.function);
+        qtMsgStr.append("]");
+    }
+
+    if(shouldPrint)
+        cerr << qtMsgStr << endl;
+
+    debug1 << qtMsgStr << endl;
+
+    if(isFatal)
+        abort(); // HOOKS_IGNORE
 }
 
 
