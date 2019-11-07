@@ -176,8 +176,8 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                                 OpacityType(opacityType) != FullyOpaque));
 
     // Certain point type changes require a recalculation.
-    bool currentPointTypeIsPoint = (    pointType == Point ||     pointType == Sphere);
-    bool newPointTypeIsPoint     = (obj.pointType == Point || obj.pointType == Sphere);
+    bool currentPointTypeIsPoint =     pointType == Point; 
+    bool newPointTypeIsPoint     = obj.pointType == Point;
 
     bool changingPointType =  pointType != obj.pointType && currentPointTypeIsPoint != newPointTypeIsPoint;
 
