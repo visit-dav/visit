@@ -61,12 +61,13 @@ function bv_adios2_initialize_vars
 
 function bv_adios2_info
 {
-    export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.4.0"}
+    export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.5.0"}
     export ADIOS2_FILE=${ADIOS2_FILE:-"adios2-${ADIOS2_VERSION}.tar.gz"}
     export ADIOS2_COMPATIBILITY_VERSION=${ADIOS2_COMPATIBILITY_VERSION:-"${ADIOS2_VERSION}"}
-    export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/releases/download/v2.4.0-rc"}
+    export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/archive/v2.5.0"}
     export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"ADIOS2-"${ADIOS2_VERSION}}
-    export ADIOS2_MD5_CHECKSUM="be3f5c7d7ab4f7df65599bebc91e0ce4"
+    export ADIOS2_MD5_CHECKSUM="a50a6bcd02a0a296484a213dca7f9a11"
+    export ADIOS2_MD5_CHECKSUM=""
     export ADIOS2_SHA256_CHECKSUM=""
 }
 
@@ -170,37 +171,31 @@ function build_adios2
         info "Configuring ADIOS2-$bt (~1 minute)"
 
         if [[ "$bt" == "par" ]]; then
+
+            SED_CMD="sed -i "
+
+            # sed for OSX is different then most Linux distros in that you have
+            # to use a few extra characters to get it to do the same command (see
+            # https://ed.gs/2016/01/26/os-x-sed-invalid-command-code/).
             if [[ "$OPSYS" == "Darwin" ]]; then
-                # sed for OSX is different then most Linux distros in that you have
-                # to use a few extra characters to get it to do the same command (see
-                # https://ed.gs/2016/01/26/os-x-sed-invalid-command-code/).
-                #
-                # Change all references from adios2 to adios2_mpi.
-                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2/adios2_mpi/g" {} \;
-                # This changes too many things, now we need to change specific
-                # things back.
-                sed -i "" "s/adios2_mpi/adios2/g" source/CMakeLists.txt
-                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2_mpi.h/adios2.h/g" {} \;
-                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2_mpi\//adios2\//g" {} \;
-                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2_mpi_/adios2_/g" {} \;
-                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2_mpi-/adios2-/g" {} \;
-                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2_mpi::/adios2::/g" {} \;
-                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2_mpisys/adios2sys/g" {} \;
-                find . -name "CMakeLists.txt" -exec sed -i "" "s/\/adios2_mpi/\/adios2/g" {} \;
-            else
-                # Change all references from adios2 to adios2_mpi.
-                find . -name "CMakeLists.txt" -exec sed -i "s/adios2/adios2_mpi/g" {} \;
-                # This changes too many things, now we need to change specific
-                # things back.
-                sed -i "s/adios2_mpi/adios2/g" source/CMakeLists.txt
-                find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi.h/adios2.h/g" {} \;
-                find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi\//adios2\//g" {} \;
-                find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi_/adios2_/g" {} \;
-                find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi-/adios2-/g" {} \;
-                find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi::/adios2::/g" {} \;
-                find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpisys/adios2sys/g" {} \;
-                find . -name "CMakeLists.txt" -exec sed -i "s/\/adios2_mpi/\/adios2/g" {} \;
+                SED_CMD="sed -i \"\" "
             fi
+
+            # Change all references from adios2 to adios2_mpi.
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2/adios2_mpi/g" {} \;
+            # This changes too many things, now we need to change specific things back.
+
+            ${SED_CMD} "s/adios2_mpi/adios2/g" source/CMakeLists.txt
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi.h/adios2.h/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi\//adios2\//g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi_/adios2_/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi-/adios2-/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi::/adios2::/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpisys/adios2sys/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/\/adios2_mpi/\/adios2/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpiExports/adios2Exports/g" {} \;
+            ${SED_CMD} "s/adios2.helper/adios2\/helper/g" source/adios2/toolkit/sst/CMakeLists.txt
+            ${SED_CMD} "s/find_package(adios2_mpi/find_package(adios2/g" cmake/install/post/adios2-config-dummy/CMakeLists.txt
         fi
 
         # Make a build directory for an out-of-source build.. Change the
@@ -289,6 +284,7 @@ function build_adios2
             chmod -R ug+w,a+rX "$VISITDIR/adios2"
             chgrp -R ${GROUP} "$VISITDIR/adios2"
         fi
+
         cd "$START_DIR"
     done
 
