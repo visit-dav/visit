@@ -327,7 +327,7 @@ avtGeometryDrawable::ShiftByVector(const double vec[3])
     for (int i = 0 ; i < nActors ; i++)
     {
         if (actors[i] != NULL && actors[i]->IsA("vtkActor") &&
-            mapper->ActorIsShiftable(i))
+            mapper != NULL && mapper->ActorIsShiftable(i))
         {
             // VTK is ridiculous -- needs const.
             double v[3];
