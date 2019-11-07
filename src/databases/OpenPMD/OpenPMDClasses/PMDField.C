@@ -302,7 +302,7 @@ PMDField::SetGridSpacing(char * name,
 
         int npoints = H5Sget_simple_extent_npoints(attrSpace);
 
-        double tmpArray[npoints];
+        double *tmpArray = new double[npoints];
 
         err = H5Aread(attrId, attrType, tmpArray);
 
@@ -318,6 +318,8 @@ PMDField::SetGridSpacing(char * name,
             this->gridSpacing[1] = tmpArray[1];
             this->gridSpacing[2] = 0;
         }
+        
+        delete tmpArray;
     }
 }
 
@@ -353,7 +355,7 @@ PMDField::SetGridGlobalOffset(char * name,
 
         int npoints = H5Sget_simple_extent_npoints(attrSpace);
 
-        double tmpArray[npoints];
+        double *tmpArray = new double[npoints];
 
         err = H5Aread(attrId, attrType, tmpArray);
 
@@ -369,6 +371,8 @@ PMDField::SetGridGlobalOffset(char * name,
             this->gridGlobalOffset[1] = tmpArray[1];
             this->gridGlobalOffset[2] = 0;
         }
+
+        delete tmpArray;
     }
 }
 
@@ -402,7 +406,7 @@ PMDField::SetGridPosition(char * name,
 
         int npoints = H5Sget_simple_extent_npoints(attrSpace);
 
-        double tmpArray[npoints];
+        double *tmpArray = new double[npoints];
 
         err = H5Aread(attrId, attrType, tmpArray);
 
@@ -418,6 +422,8 @@ PMDField::SetGridPosition(char * name,
             gridPosition[1] = tmpArray[1];
             gridPosition[2] = 0;
         }
+
+        delete tmpArray;
     }
 }
 
@@ -519,7 +525,7 @@ PMDField::SetGeometry(char * name,
         size_t size = H5Tget_size (attrType);
 
         // buffer
-        char buffer[size+1];
+        char *buffer = new char[size+1];
 
         err = H5Aread(attrId, attrType, buffer);
         buffer[size] = '\0';
@@ -537,6 +543,8 @@ PMDField::SetGeometry(char * name,
             cerr << " Error in PMDField::SetGeometry:" << endl;
             cerr << " tmpchar is not a valid geometry" << endl;
         }
+
+        delete buffer;
     }
 }
 
@@ -586,7 +594,7 @@ PMDField::SetAxisLabels(char * name,
              << " size: " << size
              << endl;*/
 
-        char buffer[size*npoints];
+        char *buffer = new char[size*npoints];
 
         // We put all the labels in buffer
         err = H5Aread(attrId, attrType, buffer);
@@ -599,6 +607,8 @@ PMDField::SetAxisLabels(char * name,
                 this->axisLabels[iLabel] += buffer[i + iLabel*size];
             }
         }
+
+        delete buffer;
     }
 }
 
@@ -637,7 +647,7 @@ void PMDField::SetUnitDimension(char * name,
         int npoints = H5Sget_simple_extent_npoints(attrSpace);
 
         // Unit powers
-        double powers[npoints];
+        double *powers = new double[npoints];
 
         err = H5Aread(attrId, attrType, powers);
 
@@ -707,6 +717,8 @@ void PMDField::SetUnitDimension(char * name,
             }
         }
         //cerr << this->unitsLabel << endl;
+
+        delete powers;
     }
 }
 
@@ -755,7 +767,7 @@ PMDField::SetFieldBoundary(char * name,
              << endl;*/
 
         // Creation of the buffer
-        char buffer[size*npoints];
+        char *buffer = new char[size*npoints];
 
         err = H5Aread(attrId, attrType, buffer);
 
@@ -768,6 +780,8 @@ PMDField::SetFieldBoundary(char * name,
             }
             //cerr << this->fieldBoundary[iLabel] << endl;
         }
+
+        delete buffer;
     }
 }
 
@@ -815,7 +829,7 @@ PMDField::SetFieldBoundaryParameters(char * name,
              << " size: " << size
              << endl;*/
 
-        char buffer[size*npoints];
+        char *buffer = new char[size*npoints];
 
         err = H5Aread(attrId, attrType, buffer);
 
@@ -827,6 +841,8 @@ PMDField::SetFieldBoundaryParameters(char * name,
                 this->fieldBoundaryParameters[iLabel] += buffer[i + iLabel*size];
             }
         }
+
+        delete buffer;
     }
 }
 
@@ -863,13 +879,14 @@ PMDField::SetDataOrder(char * name,
         // Size of an elements
         size_t size = H5Tget_size (attrType);
 
-        char buffer[size+1];
+        char *buffer = new char[size+1];
 
         err = H5Aread(attrId, attrType, buffer);
         buffer[size] = '\0';
 
         this->dataOrder = buffer;
 
+        delete buffer;
     }
 }
 
@@ -906,7 +923,7 @@ PMDField::SetGeometryParameters(char * name,
       size_t size = H5Tget_size (attrType);
 
       // Buffer to get the attribute
-      char buffer[size+1];
+      char *buffer = new char[size+1];
 
       // Reading of the attribute
       err = H5Aread(attrId, attrType, buffer);
@@ -928,6 +945,7 @@ PMDField::SetGeometryParameters(char * name,
         return -1;
       }
 
+      delete buffer;
   }
   else
   {
