@@ -114,12 +114,14 @@ avtPseudocolorMapper::CreateActorMapperPairs(vtkDataSet **children)
     actors   = new vtkActor*[nMappers];
 
     int mi = 0;
+    vector<int> usedDS;
     if (topoDim != 0 && (drawSurface || drawWireframe))
     {
         for (int i = 0; i < nDS; ++i)
         {
             if (children[i] == NULL || children[i]->GetNumberOfCells() <= 0)
             {
+                usedDS.push_back(i);
                 mappers[mi] = NULL;
                 actors[mi]  = NULL;
                 ++mi;
@@ -128,6 +130,7 @@ avtPseudocolorMapper::CreateActorMapperPairs(vtkDataSet **children)
             if (labels.empty() ||  !LabelIsFromPCPlot(labels[i]) ||
                 (labels[i].compare(0, 10, string("pc_points_")) != 0))
             {
+                usedDS.push_back(i);
                 mappers[mi] = vtkDataSetMapper::New();
                 mappers[mi]->SetInputData(children[i]);
                 actors[mi]  = vtkActor::New();
@@ -141,6 +144,9 @@ avtPseudocolorMapper::CreateActorMapperPairs(vtkDataSet **children)
     {
         for (int i = 0; i < nDS; ++i)
         {
+            if (std::find(usedDS.begin(), usedDS.end(), i) != usedDS.end() && !drawPoints)
+                continue;
+
             if (children[i] == NULL || children[i]->GetNumberOfCells() <= 0)
             {
                 mappers[mi] = NULL;

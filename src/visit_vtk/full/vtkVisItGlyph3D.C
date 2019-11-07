@@ -589,7 +589,10 @@ vtkVisItGlyph3D::RequestData(
       }
       else if ( inScalars_forScaling )
       {
-        s = inScalars_forScaling->GetComponent(inPtId, 0);
+        if (inScalars_forScaling_pd)
+            s = inScalars_forScaling->GetComponent(inPtId, 0);
+        else
+            s = inScalars_forScaling->GetComponent(cellIdx, 0);
         if ( this->ScaleMode == VTK_SCALE_BY_SCALAR ||
              this->ScaleMode == VTK_DATA_SCALING_OFF )
         {
@@ -598,7 +601,10 @@ vtkVisItGlyph3D::RequestData(
       }
       else if ( inScalars )
       {
-        s = inScalars->GetComponent(inPtId, 0);
+        if (inScalars_pd)
+          s = inScalars->GetComponent(inPtId, 0);
+        else
+          s = inScalars->GetComponent(cellIdx, 0);
         if ( this->ScaleMode == VTK_SCALE_BY_SCALAR ||
              this->ScaleMode == VTK_DATA_SCALING_OFF )
         {

@@ -186,6 +186,10 @@ avtPseudocolorFilter::UpdateDataObjectInfo(void)
 //    I modified the plot to support independently setting the point style
 //    for the two end points of lines.
 //
+//    Kathleen Biagas, Wed Nov  6 15:19:01 PST 2019
+//    Cannot use topological dimension test for point/line settings.
+//    Dataset may be of mixed topology.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -221,8 +225,7 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
     }
 
     // Point scaling by a secondary variable
-    if( (topoDim == 0 || (topoDim > 0 && plotAtts.GetRenderPoints())) &&
-        plotAtts.GetPointType() != Point &&
+    if( plotAtts.GetPointType() != Point &&
         plotAtts.GetPointType() != Sphere &&
         plotAtts.GetPointSizeVarEnabled() &&
         pointVar != "default" &&
@@ -235,8 +238,7 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
     }
 
     // Tube/Ribbon scaling by a secondary variable
-    if( (topoDim == 1 || (topoDim > 1 && plotAtts.GetRenderWireframe())) &&
-        (plotAtts.GetLineType() == PseudocolorAttributes::Tube ||
+    if( (plotAtts.GetLineType() == PseudocolorAttributes::Tube ||
          plotAtts.GetLineType() == PseudocolorAttributes::Ribbon) &&
         plotAtts.GetTubeRadiusVarEnabled() &&
         tubeRadiusVar != "default" &&
@@ -253,8 +255,7 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
     }
 
     // End Point scaling by a secondary variable
-    if( (topoDim == 1 || (topoDim > 1 && plotAtts.GetRenderWireframe())) &&
-        (plotAtts.GetTailStyle() != PseudocolorAttributes::None ||
+    if( (plotAtts.GetTailStyle() != PseudocolorAttributes::None ||
          plotAtts.GetHeadStyle() != PseudocolorAttributes::None) &&
         plotAtts.GetEndPointRadiusVarEnabled() &&
         endPointRadiusVar != "default" &&

@@ -524,8 +524,8 @@ avtPseudocolorGeometryFilter::ProcessLines(const vtkDataSet *inputDS,
         extractLines->Update();
         linesOnly = vtkPolyData::SafeDownCast(extractLines->GetOutput());
         linesOnly->Register(NULL);
-        removeLinesFromInput = glyphingLines;
     }
+    removeLinesFromInput = glyphingLines;
 
     // Get bounding box size, used for scaling tubes, ribbons, line-end glyphs
     double bbox[6] = {0.,1.,0.,1.,0.,1.};
