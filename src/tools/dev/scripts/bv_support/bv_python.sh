@@ -177,6 +177,12 @@ function bv_python_info
     export MPI4PY_BUILD_DIR=${MPI4PY_BUILD_DIR:-"mpi4py-2.0.0"}
     export MPI4PY_MD5_CHECKSUM="4f7d8126d7367c239fd67615680990e3"
     export MPI4PY_SHA256_CHECKSUM="6543a05851a7aa1e6d165e673d422ba24e45c41e4221f0993fe1e5924a00cb81"
+
+    export SPHINX_URL=${SPHINX_URL:-"https://files.pythonhosted.org/packages/d9/56/7c0b0e60c69ae5e995c9a6c9bbe66ad381a00a44cd090f21dcd179c47460/Sphinx-1.3.1.tar.gz"}
+    export SPHINX_FILE=${SPHINX_FILE:-"Sphinx-1.3.1.tar.gz"}
+    export SPHINX_BUILD_DIR=${SPHINX_BUILD_DIR:-"Sphinx-1.3.1"}
+    export SPHINX_MD5_CHECKSUM="8786a194acf9673464c5455b11fd4332"
+    export SPHINX_SHA256_CHECKSUM="1a6e5130c2b42d2de301693c299f78cc4bd3501e78b610c08e45efc70e2b5114"
 }
 
 function bv_python_print
@@ -832,6 +838,51 @@ function build_numpy
     return 0
 }
 
+# *************************************************************************** #
+#                                  build_sphinx                               #
+# *************************************************************************** #
+function build_sphinx
+{
+    # download
+    if ! test -f ${SPHINX_FILE} ; then
+        download_file ${SPHINX_FILE}
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPHINX_FILE}"
+            return 1
+        fi
+    fi
+
+    # extract
+    if ! test -d ${SPHINX_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${SPHINX_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPHINX_FILE}"
+            return 1
+        fi
+    fi
+
+    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
+    # install
+    pushd $SPHINX_BUILD_DIR > /dev/null
+    info "Installing sphinx ..."
+    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinx"
+        return 1
+    fi
+    popd > /dev/null
+
+    # fix the perms
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/python"
+        chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    return 0
+}
+
 function bv_python_is_enabled
 {
     if [[ $DO_PYTHON == "yes" ]]; then
@@ -916,6 +967,12 @@ function bv_python_build
                 error "seedme python module build failed. Bailing out."
             fi
             info "Done building the seedme python module."
+
+            build_sphinx
+            if [[ $? != 0 ]] ; then
+                error "sphinx python module build failed. Bailing out."
+            fi
+            info "Done building the sphinx python module."
 
         fi
     fi
