@@ -116,7 +116,7 @@ class QvisVariableButton;
 //   Add named selections as a seed source.
 //
 //   Kathleen Biagas, Fri Nov  8 08:56:52 PST 2019
-//   Added CreateSourceFieldTab, to reduce window height.
+//   Added CreateSourceTab, to reduce window height.
 //
 // ****************************************************************************
 
@@ -134,7 +134,7 @@ class QvisLimitCycleWindow : public QvisOperatorWindow
     virtual void CreateWindowContents();
 
   protected:
-    void CreateSourceFieldTab(QWidget *);
+    void CreateSourceTab(QWidget *);
     void CreateIntegrationTab(QWidget *);
     void CreateAppearanceTab(QWidget *);
     void CreateAdvancedTab(QWidget *);

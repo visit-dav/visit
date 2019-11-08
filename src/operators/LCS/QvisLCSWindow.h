@@ -29,7 +29,7 @@ class QButtonGroup;
 //
 // Modifications:
 //   Kathleen Biagas, Fri Nov  8 08:07:40 PST 2019
-//   Added CreateSourceFieldTab.
+//   Added CreateSourceTab.
 //
 // ****************************************************************************
 
@@ -47,7 +47,7 @@ class QvisLCSWindow : public QvisOperatorWindow
     virtual void CreateWindowContents();
 
   protected:
-    void CreateSourceFieldTab(QWidget *);
+    void CreateSourceTab(QWidget *);
     void CreateIntegrationTab(QWidget *);
     void CreateAppearanceTab(QWidget *);
     void CreateAdvancedTab(QWidget *);

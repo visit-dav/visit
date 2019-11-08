@@ -186,7 +186,7 @@ QvisIntegralCurveWindow::~QvisIntegralCurveWindow()
 //   Add named selections as a seed source.
 //
 //   Kathleen Biagas, Fri Nov  8 09:14:27 PST 2019
-//   Added SourceField tab to reduce window height.
+//   Added Source tab to reduce window height.
 //
 // ****************************************************************************
 
@@ -199,9 +199,9 @@ QvisIntegralCurveWindow::CreateWindowContents()
     // ----------------------------------------------------------------------
     // Source field  tab
     // ----------------------------------------------------------------------
-    QWidget *sourceFieldTab = new QWidget(central);
-    propertyTabs->addTab(sourceFieldTab, tr("Source / Field"));
-    CreateSourceFieldTab(sourceFieldTab);
+    QWidget *sourceTab = new QWidget(central);
+    propertyTabs->addTab(sourceTab, tr("Source"));
+    CreateSourceTab(sourceTab);
 
     // ----------------------------------------------------------------------
     // Integration tab
@@ -226,10 +226,10 @@ QvisIntegralCurveWindow::CreateWindowContents()
 }
 
 // ****************************************************************************
-// Method: QvisIntegralCurveWindow::CreateSourceFieldTab
+// Method: QvisIntegralCurveWindow::CreateSourceTab
 //
 // Purpose:
-//   Populates the source / field tab.
+//   Populates the source tab.
 //
 // Programmer: Dave Pugmire
 // Creation:   Tue Dec 29 14:37:53 EST 2009
@@ -245,16 +245,16 @@ QvisIntegralCurveWindow::CreateWindowContents()
 // ****************************************************************************
 
 void
-QvisIntegralCurveWindow::CreateSourceFieldTab(QWidget *pageSourceField)
+QvisIntegralCurveWindow::CreateSourceTab(QWidget *pageSource)
 {
-    QVBoxLayout *sfLayout = new QVBoxLayout(pageSourceField);
+    QVBoxLayout *sLayout = new QVBoxLayout(pageSource);
 
     QGridLayout *mainLayout = new QGridLayout();
     mainLayout->setMargin(5);
     mainLayout->setSpacing(10);
 
-    sfLayout->addLayout(mainLayout);
-    sfLayout->addStretch(1);
+    sLayout->addLayout(mainLayout);
+    sLayout->addStretch(1);
 
     // Create the source group box.
     QGroupBox *sourceGroup = new QGroupBox(central);
@@ -602,7 +602,7 @@ QvisIntegralCurveWindow::CreateSourceFieldTab(QWidget *pageSourceField)
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
 //   Kathleen Biagas, Fri Nov  8 09:15:53 PST 2019
-//   Source and field widgets moved to new tab to reduce window height.
+//   Source and field widgets moved to Source tab to reduce window height.
 //
 // ****************************************************************************
 

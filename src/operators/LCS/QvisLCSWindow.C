@@ -82,7 +82,7 @@ QvisLCSWindow::~QvisLCSWindow()
 //
 // Modifications:
 //   Kathleen Biagas, Fri Nov  8 08:08:13 PST 2019
-//   Added sourceFieldTab to hold Source and Field widgets.
+//   Added sourceTab to hold Source and Field widgets.
 //
 // ****************************************************************************
 
@@ -95,9 +95,9 @@ QvisLCSWindow::CreateWindowContents()
     // ----------------------------------------------------------------------
     // Source/Field tab
     // ----------------------------------------------------------------------
-    QWidget *sourceFieldTab = new QWidget();
-    propertyTabs->addTab(sourceFieldTab, tr("Source / Field"));
-    CreateSourceFieldTab(sourceFieldTab);
+    QWidget *sourceTab = new QWidget();
+    propertyTabs->addTab(sourceTab, tr("Source"));
+    CreateSourceTab(sourceTab);
 
     // ----------------------------------------------------------------------
     // Integration tab
@@ -123,10 +123,10 @@ QvisLCSWindow::CreateWindowContents()
 
 
 // ****************************************************************************
-// Method: QvisLCSWindow::CreateSourceFieldTab
+// Method: QvisLCSWindow::CreateSourceTab
 //
 // Purpose:
-//   Populates the source/field tab.
+//   Populates the source tab.
 //
 // Programmer: Dave Pugmire
 // Creation:   Tue Dec 29 14:37:53 EST 2009
@@ -138,13 +138,16 @@ QvisLCSWindow::CreateWindowContents()
 // ****************************************************************************
 
 void
-QvisLCSWindow::CreateSourceFieldTab(QWidget *pageSourceField)
+QvisLCSWindow::CreateSourceTab(QWidget *pageSource)
 {
-    QVBoxLayout *sfLayout = new QVBoxLayout(pageSourceField);
+    QVBoxLayout *sLayout = new QVBoxLayout(pageSource);
 
     QGridLayout *mainLayout = new QGridLayout();
     mainLayout->setMargin(5);
     mainLayout->setSpacing(10);
+
+    sLayout->addLayout(mainLayout);
+    sLayout->addStretch(1);
 
     // Create the source group box.
     QGroupBox *sourceGroup = new QGroupBox();
@@ -301,9 +304,6 @@ QvisLCSWindow::CreateSourceFieldTab(QWidget *pageSourceField)
     // forceNodal = new QCheckBox(tr("Force node centering"));
     // connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
     // fieldLayout->addWidget(forceNodal, 2, 0);
-
-    sfLayout->addLayout(mainLayout);
-    sfLayout->addStretch(1);
 }
 
 
@@ -318,7 +318,7 @@ QvisLCSWindow::CreateSourceFieldTab(QWidget *pageSourceField)
 //
 // Modifications:
 //    Kathleen Biagas, Fri Nov  8 08:09:41 PST 2019
-//    Moved Source and Field widgets to their own tab.
+//    Moved Source and Field widgets to Source tab.
 //
 // ****************************************************************************
 

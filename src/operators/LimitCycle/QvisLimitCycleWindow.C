@@ -179,6 +179,9 @@ QvisLimitCycleWindow::~QvisLimitCycleWindow()
 //   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
 //   Add named selections as a seed source.
 //
+//   Kathleen Biagas, Fri Nov  8 10:05:16 PST 2019
+//   Add source tab for source and field widgets to reduce window height.
+//
 // ****************************************************************************
 
 void
@@ -190,9 +193,9 @@ QvisLimitCycleWindow::CreateWindowContents()
     // ----------------------------------------------------------------------
     // SourceField tab
     // ----------------------------------------------------------------------
-    QWidget *sourceFieldTab = new QWidget();
-    propertyTabs->addTab(sourceFieldTab, tr("Source / Field"));
-    CreateSourceFieldTab(sourceFieldTab);
+    QWidget *sourceTab = new QWidget();
+    propertyTabs->addTab(sourceTab, tr("Source"));
+    CreateSourceTab(sourceTab);
 
     // ----------------------------------------------------------------------
     // Integration tab
@@ -217,10 +220,10 @@ QvisLimitCycleWindow::CreateWindowContents()
 }
 
 // ****************************************************************************
-// Method: QvisLimitCycleWindow::CreateSourceFieldTab
+// Method: QvisLimitCycleWindow::CreateSourceTab
 //
 // Purpose:
-//   Populates the source / field tab.
+//   Populates the source tab.
 //
 // Programmer: Dave Pugmire
 // Creation:   Tue Dec 29 14:37:53 EST 2009
@@ -236,16 +239,16 @@ QvisLimitCycleWindow::CreateWindowContents()
 // ****************************************************************************
 
 void
-QvisLimitCycleWindow::CreateSourceFieldTab(QWidget *pageSourceField)
+QvisLimitCycleWindow::CreateSourceTab(QWidget *pageSource)
 {
-    QVBoxLayout *sfLayout = new QVBoxLayout(pageSourceField);
+    QVBoxLayout *sLayout = new QVBoxLayout(pageSource);
 
     QGridLayout *mainLayout = new QGridLayout();
     mainLayout->setMargin(5);
     mainLayout->setSpacing(10);
 
-    sfLayout->addLayout(mainLayout);
-    sfLayout->addStretch(1);
+    sLayout->addLayout(mainLayout);
+    sLayout->addStretch(1);
 
     // Create the source group box.
     QGroupBox *sourceGroup = new QGroupBox(central);
@@ -478,7 +481,7 @@ QvisLimitCycleWindow::CreateSourceFieldTab(QWidget *pageSourceField)
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
 //   Kathleen Biagas, Fri Nov  8 09:04:47 PST 2019
-//   Source and field widgets moved to new tab, to reduce window height.
+//   Source and field widgets moved to Source tab, to reduce window height.
 //
 // ****************************************************************************
 
