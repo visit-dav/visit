@@ -382,5 +382,11 @@ QvisSetupHostProfilesAndConfigWindow::performSetup()
     else
     {
         debug1 << "Hosts directory (" << hostsInstallDirectory.toStdString() << ") was not successfully created." << endl;
+        
+        QMessageBox msgBox;
+        msgBox.setText(tr("Error: Host profiles and configuration files have not been installed. See debug logs for more information."));
+        msgBox.exec();
+        
+        close();
     }
 }
