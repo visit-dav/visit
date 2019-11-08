@@ -834,7 +834,8 @@ avtTecplotWriter::WritePolyData(vtkPolyData *pd, int chunk)
     // Search through the poly cells and see what we have.
     int ntri = 0, nquad = 0;
     pd->GetPolys()->InitTraversal();
-    vtkIdType npts, *pts = 0;
+    vtkIdType npts;
+    const vtkIdType *pts = 0;
     while(pd->GetPolys()->GetNextCell(npts, pts))
     {
         if(npts == 3)

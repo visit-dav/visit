@@ -6120,7 +6120,7 @@ vtkMultiBlockDataSet *visit_vtkOpenFOAMReaderPrivate::MakeBoundaryMesh(
         for (int faceI = abStartFace; faceI < abEndFace; faceI++)
           {
           vtkIdType nPoints;
-          vtkIdType *points;
+          const vtkIdType *points;
           this->AllBoundaries->GetCellPoints(faceI, nPoints, points);
           if (beI.BoundaryType == vtkFoamBoundaryEntry::PHYSICAL)
             {
