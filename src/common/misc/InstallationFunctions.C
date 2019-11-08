@@ -404,6 +404,28 @@ GetAndMakeUserVisItHostsDirectory()
 }
 
 // ****************************************************************************
+// Method:  GetVisItHostsDirectory
+//
+// Purpose:
+//   Returns only the path to the user's .visit directory's host subdirectory.
+//   Doesn't try to create the directory like
+//   GetAndMakeUserVisItHostsDirectory.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Kevin Griffin
+// Creation:    November 07, 2019
+//
+// ****************************************************************************
+std::string
+GetVisItHostsDirectory()
+{
+    std::string retval = GetUserVisItDirectory() + "hosts";
+    return retval;
+}
+
+// ****************************************************************************
 // Method:  GetUserVisItHostsDirectory
 //
 // Purpose:
