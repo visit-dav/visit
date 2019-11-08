@@ -48,6 +48,10 @@
 #   for this library, and CMake automagically pulls them in when compiling
 #   VisIt even if not listed, but not when building the plugins.
 #
+#   Kathleen Biagas, Tue Nov  5 08:12:29 PST 2019
+#   Remove avtPolylineToRibbonFilter, avtPolylineToTubeFilter,
+#   avtPolylineAddEndPointsFilter, avtPointToGlyphFilter.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -74,11 +78,7 @@ avtMeshLogFilter.C
 avtMissingDataFilter.C
 avtMultiresFilter.C
 avtNamedSelectionFilter.C
-avtPointToGlyphFilter.C
-avtPolylineAddEndPointsFilter.C
 avtPolylineCleanupFilter.C
-avtPolylineToRibbonFilter.C
-avtPolylineToTubeFilter.C
 avtRayCompositer.C
 avtRayTracerBase.C
 avtRayTracer.C
