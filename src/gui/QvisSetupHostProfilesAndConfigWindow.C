@@ -7,11 +7,11 @@
 #include <iostream>
 #include <fstream>
 
-#include <QCheckBox>
 #include <QDir>
 #include <QFile>
-#include <QGroupBox>
 #include <QLabel>
+#include <QListWidget>
+#include <QListWidgetItem>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRadioButton>
@@ -43,7 +43,7 @@ QvisSetupHostProfilesAndConfigWindow::QvisSetupHostProfilesAndConfigWindow(
 // ****************************************************************************
 // Method: QvisSetupHostProfilesAndConfigWindow::~QvisSetupHostProfilesAndConfigWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisSetupHostProfilesAndConfigWindow class.
 //
 // Programmer: Gunther H. Weber
@@ -60,19 +60,33 @@ QvisSetupHostProfilesAndConfigWindow::~QvisSetupHostProfilesAndConfigWindow()
 // ****************************************************************************
 // Method: QvisSetupHostProfilesAndConfigWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the Mac app bundle setup window.
 //
 // Programmer: Gunther H. Weber
 // Creation:   Thu Aug 11 17:48:10 PDT 2011
 //
 // Modifications:
+//   Kathleen Biagas, Thu Nov  7 12:54:14 PST 2019
+//   Use QListWidgets for scrollability and window height control. 
 //
 // ****************************************************************************
 
 void
 QvisSetupHostProfilesAndConfigWindow::CreateWindowContents()
 {
+    networkList = new QListWidget();
+    defaultConfigList = new QListWidget();
+    defaultConfigShortNames.append("None");
+
+    QRadioButton *radioButton = new QRadioButton(
+            tr("None (use VisIt's standard defaults)"));
+    radioButton->setChecked(true);
+
+    QListWidgetItem *item = new QListWidgetItem();
+    defaultConfigList->addItem(item);
+    defaultConfigList->setItemWidget(item, radioButton);
+
     readNetworkList();
     readDefaultConfigList();
 
@@ -81,35 +95,28 @@ QvisSetupHostProfilesAndConfigWindow::CreateWindowContents()
                 "configure host profiles automatically for their machines."));
     label->setWordWrap(true);
     topLayout->addWidget(label);
-    QGroupBox *networkGroup = new QGroupBox(
-            tr("Select computing centers used"));
-    topLayout->addWidget(networkGroup);
-    QVBoxLayout *networkGroupLayout = new QVBoxLayout;
-    networkGroup->setLayout(networkGroupLayout);
 
-    for(std::list<NetworkInfo>::iterator it = networkList.begin();
-            it != networkList.end(); ++it)
+    QLabel *l = new QLabel(tr("Select computing centers used"));
+    topLayout->addWidget(l);
+
+    // finish setting up the networkList as a checkable list with
+    // nothing checked initially.
+    for (int i = 0; i < networkList->count(); ++i)
     {
-        it->checkBox = new QCheckBox(it->longName);
-        networkGroupLayout->addWidget(it->checkBox);
+        item = networkList->item(i);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(Qt::Unchecked);
     }
+    networkList->setMinimumWidth(networkList->sizeHintForColumn(0));
+    topLayout->addWidget(networkList);
 
-    QGroupBox *configGroup = new QGroupBox(
-            tr("Select default configuration"));
-    topLayout->addWidget(configGroup);
-    QVBoxLayout *configGroupLayout = new QVBoxLayout;
-    configGroup->setLayout(configGroupLayout);
+    QLabel *clabel = new QLabel(tr("Select default configuration"));
+    topLayout->addWidget(clabel);
 
-    QRadioButton *radioButton = new QRadioButton(
-            tr("None (use VisIt's standard defaults)"));
-    radioButton->setChecked(true);
-    configGroupLayout->addWidget(radioButton);
-    for(std::list<DefaultConfigInfo>::iterator it = defaultConfigList.begin();
-            it != defaultConfigList.end(); ++it)
-    {
-        it->radioButton = new QRadioButton(it->longName);
-        configGroupLayout->addWidget(it->radioButton);
-    }
+    // this will help constrain the height, since the list is currently short.
+    // if the list gets too long, may need to remove this.
+    defaultConfigList->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    topLayout->addWidget(defaultConfigList);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout;
     topLayout->addLayout(buttonLayout);
@@ -129,7 +136,7 @@ QvisSetupHostProfilesAndConfigWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisSetupHostProfilesAndConfigWindow::readNetworkList()
 //
-// Purpose: 
+// Purpose:
 //   Read list of "network/computing center" configurations.
 //
 // Programmer: Gunther H. Weber
@@ -138,6 +145,9 @@ QvisSetupHostProfilesAndConfigWindow::CreateWindowContents()
 // Modifications:
 //   Brad Whitlock, Thu Sep  6 11:05:19 PDT 2012
 //   Get the file from resources/hosts.
+//
+//   Kathleen Biagas, Thu Nov  7 12:54:14 PST 2019
+//   Info now stored in QListWidgets and QStringLists.
 //
 // ****************************************************************************
 
@@ -156,16 +166,15 @@ QvisSetupHostProfilesAndConfigWindow::readNetworkList()
             std::cerr << "Igonoring invalid line: " << line << std::endl;
             continue;
         }
-
-        networkList.push_back(
-                NetworkInfo(line.substr(0, splitPos), line.substr(splitPos+1)));
+        networkList->addItem(line.substr(0, splitPos).c_str());
+        networkShortNames.append(line.substr(splitPos+1).c_str());
     }
 }
 
 // ****************************************************************************
 // Method: QvisSetupHostProfilesAndConfigWindow::readDefaultConfigList()
 //
-// Purpose: 
+// Purpose:
 //   Read list of default configurations.
 //
 // Programmer: Gunther H. Weber
@@ -175,6 +184,9 @@ QvisSetupHostProfilesAndConfigWindow::readNetworkList()
 //   Brad Whitlock, Thu Sep  6 11:11:40 PDT 2012
 //   Get the file from the resources/hosts directory.
 //
+//   Kathleen Biagas, Thu Nov  7 12:54:14 PST 2019
+//   Info now stored in QListWidgets and QStringLists.
+//
 // ****************************************************************************
 
 void
@@ -183,6 +195,7 @@ QvisSetupHostProfilesAndConfigWindow::readDefaultConfigList()
     std::ifstream is(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS, "default_configs.dat").c_str());
 
     std::string line;
+    QListWidgetItem *item = 0;
     while(std::getline(is, line))
     {
         // Find two deliminiting ":"
@@ -192,16 +205,18 @@ QvisSetupHostProfilesAndConfigWindow::readDefaultConfigList()
             std::cerr << "Igonoring invalid line: " << line << std::endl;
             continue;
         }
+        item = new QListWidgetItem();
+        defaultConfigList->addItem(item);
+        defaultConfigList->setItemWidget(item, new QRadioButton(line.substr(0, splitPos).c_str()));
 
-        defaultConfigList.push_back(DefaultConfigInfo(
-                    line.substr(0, splitPos), line.substr(splitPos+1)));
+        defaultConfigShortNames.append(line.substr(splitPos+1).c_str());
     }
 }
 
 // ****************************************************************************
 // Method: QvisSetupHostProfilesAndConfigWindow::installConfigFile()
 //
-// Purpose: 
+// Purpose:
 //   Install a configuration file. Ask via dialog if a file should be
 //   overwritten if it exists..
 //
@@ -243,7 +258,7 @@ QvisSetupHostProfilesAndConfigWindow::installConfigFile(const QString& srcFilena
 // ****************************************************************************
 // Method: QvisSetupHostProfilesAndConfigWindow::performSetup()
 //
-// Purpose: 
+// Purpose:
 //   Perform the actual setup (i.e., copy selected host profiles and
 //   configuration into a user's .visit directory).
 //
@@ -255,13 +270,17 @@ QvisSetupHostProfilesAndConfigWindow::installConfigFile(const QString& srcFilena
 //   Prevent copying of "closed" profiles when we did not ask for them.
 //
 //   Brad Whitlock, Thu Sep  6 11:24:41 PDT 2012
-//   Adapt to hosts being in separate directories. Also we're no longer 
+//   Adapt to hosts being in separate directories. Also we're no longer
 //   installing all configs to the system config directory so we need to
 //   get the configs from the resources directory.
 //
 //   Mark C. Miller, Mon Sep 17 08:46:24 PDT 2012
 //   Fixed leak from using GetDefaultConfigFile directly as arg
 //   in installConfigFile.
+//
+//   Kathleen Biagas, Thu Nov  7 11:51:53 PST 2019
+//   Info now stored in QListWidgets and QStringlists.
+//
 // ****************************************************************************
 
 void
@@ -270,13 +289,12 @@ QvisSetupHostProfilesAndConfigWindow::performSetup()
     QString hostsInstallDirectory =
         QString::fromStdString(GetAndMakeUserVisItHostsDirectory());
 
-    for (std::list<NetworkInfo>::iterator it = networkList.begin();
-            it != networkList.end(); ++it)
+    for (int i =0; i < networkList->count(); ++i)
     {
-        if (it->checkBox->isChecked())
+        if (networkList->item(i)->checkState() == Qt::Checked)
         {
-            QString srcDir(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS, 
-                                                 it->shortName.toStdString()).c_str());
+            QString srcDir(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS,
+                              networkShortNames.at(i).toStdString()).c_str());
             QDir srcHostProfileDir(srcDir, "host*.xml");
             QStringList files = srcHostProfileDir.entryList();
             for (int i = 0; i < files.size(); ++ i)
@@ -287,23 +305,25 @@ QvisSetupHostProfilesAndConfigWindow::performSetup()
             }
         }
     }
-    for (std::list<DefaultConfigInfo>::iterator it = defaultConfigList.begin();
-            it != defaultConfigList.end(); ++it)
+
+    // the 0'th radio button is for 'None', so start loop at 1.
+    for (int i =1; i < defaultConfigList->count(); ++i)
     {
-        if (it->radioButton->isChecked())
+        QRadioButton *rb = qobject_cast<QRadioButton *>(defaultConfigList->
+                           itemWidget(defaultConfigList->item(i)));
+        if (rb && rb->isChecked())
         {
             const char *configFilename[] = {
                 "config", "guiconfig", "visitrc", 0 };
-
-            for (int i = 0; configFilename[i] != 0; ++i)
+            for (int j = 0; configFilename[j] != 0; ++j)
             {
                 std::string srcCfgName =
-                    it->shortName.toStdString() +
-                    "/" + std::string(configFilename[i]);
+                    defaultConfigShortNames.at(i).toStdString() +
+                    "/" + std::string(configFilename[j]);
                 QString srcCfgPath(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS, srcCfgName).c_str());
                 if (QFile::exists(srcCfgPath))
                 {
-                    char *srcCfgFile = GetDefaultConfigFile(configFilename[i]);
+                    char *srcCfgFile = GetDefaultConfigFile(configFilename[j]);
                     installConfigFile(srcCfgPath, srcCfgFile);
                     delete [] srcCfgFile;
                 }

@@ -16,7 +16,7 @@ class QSpinBox;
 // ****************************************************************************
 // Class: QvisPreferencesWindow
 //
-// Purpose: 
+// Purpose:
 //   Defines QvisPreferencesWindow class.
 //
 // Programmer: Eric Brugger
@@ -44,7 +44,7 @@ class QSpinBox;
 //
 //   Mark C. Miller, Mon Jun 11 17:45:24 PDT 2007
 //   Added treatAllDBsAsTimeVarying check box
-// 
+//
 //   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
 //   Added 'Update' method, as this class now observes GlobalAttributes.
 //   Added createMeshQuality, createTimeDerivative buttons.
@@ -80,13 +80,16 @@ class QSpinBox;
 //   Added a preference for floating point precision.
 //
 //   David Camp, Thu Aug  8 08:50:06 PDT 2013
-//   Added the restore from last session feature. 
+//   Added the restore from last session feature.
 //
 //   Cameron Christensen, Tuesday, June 10, 2014
 //   Added a preference for setting the backend type.
 //
 //   Kathleen Biagas, Mon Dec 22 10:45:42 PST 2014
 //   Added preference for automatically removing duplicate nodes.
+//
+//   Kathleen Biagas, Fri Nov  8 07:40:44 PST 2019
+//   Added methods for creating tab content.
 //
 // ****************************************************************************
 
@@ -171,6 +174,11 @@ private:
     bool              showSelFiles;
     bool              allowFileSelChange;
     bool              enableWarnPopups;
+
+    void              CreateGeneralTab(QWidget *gtab);
+    void              CreateDatabasesTab(QWidget *gtab);
+    void              CreateSessionFilesTab(QWidget *gtab);
+    void              CreateFilePanelTab(QWidget *gtab);
 };
 
 #endif

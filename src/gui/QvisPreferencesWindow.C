@@ -15,13 +15,14 @@
 #include <QLayout>
 #include <QRadioButton>
 #include <QSpinBox>
+#include <QTabWidget>
 
 #include <visit-config.h>
 
 // ****************************************************************************
 // Method: QvisPreferencesWindow::QvisPreferencesWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Programmer: Eric Brugger
@@ -39,7 +40,7 @@
 //
 //   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
 //   Attach the global attributes.
-// 
+//
 //   Cyrus Harrison, Thu Nov 29 16:21:48 PST 2007
 //   No need to attach the global atts, they are already attached
 //   in a parent class.  Also removed the Apply button.
@@ -80,7 +81,7 @@ QvisPreferencesWindow::QvisPreferencesWindow(
 // ****************************************************************************
 // Method: QvisPreferencesWindow::~QvisPreferencesWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: Eric Brugger
@@ -92,7 +93,7 @@ QvisPreferencesWindow::QvisPreferencesWindow(
 //
 //   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
 //   Detach from  the global attributes.
-// 
+//
 // ****************************************************************************
 
 QvisPreferencesWindow::~QvisPreferencesWindow()
@@ -105,7 +106,7 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 // ****************************************************************************
 // Method: QvisPreferencesWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Eric Brugger
@@ -133,7 +134,7 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //
 //   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
 //   Added toggles for createMeshQuality, createTimeDerivative.
-// 
+//
 //   Cyrus Harrison, Wed Nov 28 13:31:30 PST 2007
 //   Added creation of createVectorMagnitudeToggle check box
 //
@@ -150,7 +151,7 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Initial Qt4 Port.
 //
 //   Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
-//   Added support for ignoring bad extents from dbs. 
+//   Added support for ignoring bad extents from dbs.
 //
 //   Hank Childs, Wed Mar 17 20:13:21 PDT 2010
 //   Added "Expand new plots"
@@ -165,7 +166,7 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Added controls for precision type.
 //
 //   David Camp, Thu Aug  8 08:50:06 PDT 2013
-//   Added the restore from last session feature. 
+//   Added the restore from last session feature.
 //
 //   Cameron Christensen, Tuesday, June 10, 2014
 //   Added a preference for setting the backend type.
@@ -182,75 +183,129 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Kathleen Biagas, Wed Jan 30 10:43:52 PST 2019
 //   Removed support for EAVL.
 //
+//   Kathleen Biagas, Fri Nov  8 07:27:31 PST 2019
+//   Moved content into tabs.
+//
 // ****************************************************************************
 
 void
 QvisPreferencesWindow::CreateWindowContents()
 {
+    QTabWidget *tabs = new QTabWidget(central);
+    topLayout->addWidget(tabs);
+
+    //
+    // General tab
+    //
+    QWidget *generalTab = new QWidget();
+    tabs->addTab(generalTab, tr("General"));
+    CreateGeneralTab(generalTab);
+
+    //
+    // Databases tab
+    //
+    QWidget *databasesTab = new QWidget();
+    tabs->addTab(databasesTab, tr("Database"));
+    CreateDatabasesTab(databasesTab);
+
+    //
+    // Session files tab
+    //
+    QWidget *sessionFilesTab = new QWidget();
+    tabs->addTab(sessionFilesTab, tr("Session file"));
+    CreateSessionFilesTab(sessionFilesTab);
+
+    //
+    // File panel properties tab
+    //
+    QWidget *filePanelTab = new QWidget();
+    tabs->addTab(filePanelTab, tr("File panel"));
+    CreateFilePanelTab(filePanelTab);
+}
+
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::CreateGeneralTab
+//
+// Purpose:
+//   Creates the widgets for general preferences on the general tab.
+//
+// Programmer: Kathleen Biagas
+// Creation:   November 8, 2019
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::CreateGeneralTab(QWidget *gTab)
+{
+    QVBoxLayout *genLayout = new QVBoxLayout(gTab);
+
     cloneWindowOnFirstRefToggle =
-        new QCheckBox(tr("Clone window on first reference"),central);
+        new QCheckBox(tr("Clone window on first reference"));
     connect(cloneWindowOnFirstRefToggle, SIGNAL(toggled(bool)),
             this, SLOT(cloneWindowOnFirstRefToggled(bool)));
-    topLayout->addWidget(cloneWindowOnFirstRefToggle);
+    genLayout->addWidget(cloneWindowOnFirstRefToggle);
 
     postWindowsWhenShownToggle =
-        new QCheckBox(tr("Post windows when shown"),central);
+        new QCheckBox(tr("Post windows when shown"));
     connect(postWindowsWhenShownToggle, SIGNAL(toggled(bool)),
             this, SLOT(postWindowsWhenShownToggled(bool)));
-    topLayout->addWidget(postWindowsWhenShownToggle);
+    genLayout->addWidget(postWindowsWhenShownToggle);
 
     makeDefaultConfirmToggle =
-        new QCheckBox(tr("Prompt before setting default attributes"),central);
+        new QCheckBox(tr("Prompt before setting default attributes"));
     connect(makeDefaultConfirmToggle, SIGNAL(toggled(bool)),
             this, SLOT(makeDefaultConfirmToggled(bool)));
-    topLayout->addWidget(makeDefaultConfirmToggle);
+    genLayout->addWidget(makeDefaultConfirmToggle);
 
     automaticallyApplyOperatorToggle =
-        new QCheckBox(tr("Prompt before applying new operator"),central);
+        new QCheckBox(tr("Prompt before applying new operator"));
     connect(automaticallyApplyOperatorToggle, SIGNAL(toggled(bool)),
             this, SLOT(automaticallyApplyOperatorToggled(bool)));
-    topLayout->addWidget(automaticallyApplyOperatorToggle);
+    genLayout->addWidget(automaticallyApplyOperatorToggle);
 
     newPlotsInheritSILRestrictionToggle =
-        new QCheckBox(tr("New plots inherit SIL restriction"),central);
+        new QCheckBox(tr("New plots inherit SIL restriction"));
     connect(newPlotsInheritSILRestrictionToggle, SIGNAL(toggled(bool)),
             this, SLOT(newPlotsInheritSILRestrictionToggled(bool)));
-    topLayout->addWidget(newPlotsInheritSILRestrictionToggle);
+    genLayout->addWidget(newPlotsInheritSILRestrictionToggle);
 
     expandNewPlotsToggle =
-        new QCheckBox(tr("New plots automatically expanded"),central);
+        new QCheckBox(tr("New plots automatically expanded"));
     connect(expandNewPlotsToggle, SIGNAL(toggled(bool)),
             this, SLOT(expandNewPlotsToggled(bool)));
-    topLayout->addWidget(expandNewPlotsToggle);
+    genLayout->addWidget(expandNewPlotsToggle);
 
-    replacePlotsToggle = new QCheckBox(tr("Replace plots"), central);
+    replacePlotsToggle = new QCheckBox(tr("Replace plots"));
     connect(replacePlotsToggle, SIGNAL(toggled(bool)),
             this, SLOT(replacePlotsToggled(bool)));
-    topLayout->addWidget(replacePlotsToggle);
+    genLayout->addWidget(replacePlotsToggle);
 
-    enableWarningPopupsToggle = new QCheckBox(tr("Enable warning message popups"), central);
+    enableWarningPopupsToggle = new QCheckBox(tr("Enable warning message popups"));
     connect(enableWarningPopupsToggle, SIGNAL(toggled(bool)),
             this, SLOT(enableWarningPopupsToggled(bool)));
-    topLayout->addWidget(enableWarningPopupsToggle);
+    genLayout->addWidget(enableWarningPopupsToggle);
 
     //
     // Create radio button controls to change the precision.
     //
-    QGroupBox *precisionGroup = new QGroupBox(central);
+    QGroupBox *precisionGroup = new QGroupBox();
     precisionGroup->setTitle(tr("Floating point precision:"));
-    topLayout->addWidget(precisionGroup);
-    precisionType = new QButtonGroup(central);
+    genLayout->addWidget(precisionGroup);
+    precisionType = new QButtonGroup();
     connect(precisionType, SIGNAL(buttonClicked(int)),
             this, SLOT(precisionTypeChanged(int)));
 
     QHBoxLayout *precLayout = new QHBoxLayout(precisionGroup);
-    QRadioButton *dec = new QRadioButton(tr("Float"), precisionGroup);
+    QRadioButton *dec = new QRadioButton(tr("Float"));
     precisionType->addButton(dec,0);
     precLayout->addWidget(dec);
-    QRadioButton *nat = new QRadioButton(tr("Native"), precisionGroup);
+    QRadioButton *nat = new QRadioButton(tr("Native"));
     precisionType->addButton(nat,1);
     precLayout->addWidget(nat);
-    QRadioButton *inc = new QRadioButton(tr("Double"), precisionGroup);
+    QRadioButton *inc = new QRadioButton(tr("Double"));
     precisionType->addButton(inc,2);
     precLayout->addWidget(inc);
 
@@ -258,126 +313,162 @@ QvisPreferencesWindow::CreateWindowContents()
     //
     // Create radio button controls to change the backend.
     //
-    QGroupBox *backendGroup = new QGroupBox(central);
-    backendGroup->setTitle(tr("Parallel Computation Library:"));
-    topLayout->addWidget(backendGroup);
-    backendType = new QButtonGroup(central);
+    QGroupBox *backendGroup = new QGroupBox();
+    backendGroup->setTitle(tr("Parallel computation library:"));
+    genLayout->addWidget(backendGroup);
+    backendType = new QButtonGroup();
     connect(backendType, SIGNAL(buttonClicked(int)),
             this, SLOT(backendTypeChanged(int)));
 
     QHBoxLayout *backendLayout = new QHBoxLayout(backendGroup);
-    QRadioButton *b0 = new QRadioButton(tr("VTK"), backendGroup);
+    QRadioButton *b0 = new QRadioButton(tr("VTK"));
     backendType->addButton(b0,0);
     backendLayout->addWidget(b0);
-    QRadioButton *b1 = new QRadioButton(tr("VTKm"), backendGroup);
+    QRadioButton *b1 = new QRadioButton(tr("VTKm"));
     backendType->addButton(b1,1);
     backendLayout->addWidget(b1);
 #endif
+}
 
-    //
-    //
-    // Create group box for database controls.
-    //
-    QGroupBox *dbControlsGroup = new QGroupBox(central);
-    dbControlsGroup->setTitle(tr("Databases"));
-    topLayout->addWidget(dbControlsGroup, 5);
-    QVBoxLayout *dbOptionsLayout = new QVBoxLayout(dbControlsGroup);
-    dbOptionsLayout->setSpacing(7);
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::CreateDatabasesTab
+//
+// Purpose:
+//   Creates the widgets for databases preferences on the databases tab.
+//
+// Programmer: Kathleen Biagas
+// Creation:   November 8, 2019
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::CreateDatabasesTab(QWidget *dTab)
+{
+    QVBoxLayout *dbOptionsLayout = new QVBoxLayout(dTab);
 
     tryHarderCyclesTimesToggle =
-        new QCheckBox(tr("Try harder to get accurate cycles/times"),dbControlsGroup);
+        new QCheckBox(tr("Try harder to get accurate cycles/times"));
     connect(tryHarderCyclesTimesToggle, SIGNAL(toggled(bool)),
             this, SLOT(tryHarderCyclesTimesToggled(bool)));
     dbOptionsLayout->addWidget(tryHarderCyclesTimesToggle);
 
     ignoreDbExtentsToggle =
-        new QCheckBox(tr("Ignore database extents (may degrade performance)"),
-                      dbControlsGroup);
+        new QCheckBox(tr("Ignore database extents (may degrade performance)"));
     connect(ignoreDbExtentsToggle, SIGNAL(toggled(bool)),
             this, SLOT(ignoreDbExtentsToggled(bool)));
     dbOptionsLayout->addWidget(ignoreDbExtentsToggle);
 
     treatAllDBsAsTimeVaryingToggle =
-        new QCheckBox(tr("Treat all databases as time-varying"),dbControlsGroup);
+        new QCheckBox(tr("Treat all databases as time-varying"));
     connect(treatAllDBsAsTimeVaryingToggle, SIGNAL(toggled(bool)),
             this, SLOT(treatAllDBsAsTimeVaryingToggled(bool)));
     dbOptionsLayout->addWidget(treatAllDBsAsTimeVaryingToggle);
 
     createMeshQualityToggle =
-        new QCheckBox(tr("Automatically create mesh quality expressions"),dbControlsGroup);
+        new QCheckBox(tr("Automatically create mesh quality expressions"));
     connect(createMeshQualityToggle, SIGNAL(toggled(bool)),
             this, SLOT(createMeshQualityToggled(bool)));
     dbOptionsLayout->addWidget(createMeshQualityToggle);
 
     createTimeDerivativeToggle =
-        new QCheckBox(tr("Automatically create time derivative expressions"),dbControlsGroup);
+        new QCheckBox(tr("Automatically create time derivative expressions"));
     connect(createTimeDerivativeToggle, SIGNAL(toggled(bool)),
             this, SLOT(createTimeDerivativeToggled(bool)));
     dbOptionsLayout->addWidget(createTimeDerivativeToggle);
-    
+
     createVectorMagnitudeToggle =
-        new QCheckBox(tr("Automatically create vector magnitude expressions"),dbControlsGroup);
+        new QCheckBox(tr("Automatically create vector magnitude expressions"));
     connect(createVectorMagnitudeToggle, SIGNAL(toggled(bool)),
             this, SLOT(createVectorMagnitudeToggled(bool)));
     dbOptionsLayout->addWidget(createVectorMagnitudeToggle);
 
     removeDuplicateNodesToggle =
-        new QCheckBox(tr("Automatically remove duplicate nodes from fully disconnected unstructured grids"),dbControlsGroup);
+        new QCheckBox(tr("Automatically remove duplicate nodes from fully disconnected unstructured grids"));
     connect(removeDuplicateNodesToggle, SIGNAL(toggled(bool)),
             this, SLOT(removeDuplicateNodesToggled(bool)));
     dbOptionsLayout->addWidget(removeDuplicateNodesToggle);
 
-    //
-    // Create group box for session file controls.
-    //
-    QGroupBox *sessionControlsGroup = new QGroupBox(central);
-    sessionControlsGroup->setTitle(tr("Session files"));
-    topLayout->addWidget(sessionControlsGroup, 5);
-    QVBoxLayout *sessionOptionsLayout = new QVBoxLayout(sessionControlsGroup);
-    sessionOptionsLayout->setSpacing(7);
+    // fill up bottom space
+    dbOptionsLayout->addStretch(1);
+}
+
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::CreateSessionFilesTab
+//
+// Purpose:
+//   Creates the widgets for sessionfile preferences on the sessionfile tab.
+//
+// Programmer: Kathleen Biagas
+// Creation:   November 8, 2019
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::CreateSessionFilesTab(QWidget *sfTab)
+{
+    QVBoxLayout *sessionOptionsLayout = new QVBoxLayout(sfTab);
 
     userDirForSessionFilesToggle =
-        new QCheckBox(tr("User directory is default location for session files"),
-                      sessionControlsGroup);
+        new QCheckBox(tr("User directory is default location for session files"));
     connect(userDirForSessionFilesToggle, SIGNAL(toggled(bool)),
             this, SLOT(userDirForSessionFilesToggled(bool)));
     sessionOptionsLayout->addWidget(userDirForSessionFilesToggle);
 
     saveCrashRecoveryFileToggle =
-        new QCheckBox(tr("Periodically save a crash recovery file"),
-                      sessionControlsGroup);
+        new QCheckBox(tr("Periodically save a crash recovery file"));
     connect(saveCrashRecoveryFileToggle, SIGNAL(toggled(bool)),
             this, SLOT(saveCrashRecoveryFileToggled(bool)));
     sessionOptionsLayout->addWidget(saveCrashRecoveryFileToggle);
 
     userRestoreSessionFileToggle =
-        new QCheckBox(tr("Restore session on startup"),
-                      sessionControlsGroup);
+        new QCheckBox(tr("Restore session on startup"));
+
     connect(userRestoreSessionFileToggle, SIGNAL(toggled(bool)),
             this, SLOT(userRestoreSessionFileToggled(bool)));
     sessionOptionsLayout->addWidget(userRestoreSessionFileToggle);
 
-    //
-    // Create group box for time controls.
-    //
-    QGroupBox *filePanelControlsGroup = new QGroupBox(central);
-    filePanelControlsGroup->setTitle(tr("File panel properties"));
-    topLayout->addWidget(filePanelControlsGroup, 5);
-    QGridLayout *tsModeLayout = new QGridLayout(filePanelControlsGroup);
-    tsModeLayout->setSpacing(7);
+    // fill up bottom space
+    sessionOptionsLayout->addStretch(1);
+}
+
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::CreateFilePanelTab
+//
+// Purpose:
+//   Creates the widgets for filepanel preferences on the filepanel tab.
+//
+// Programmer: Kathleen Biagas
+// Creation:   November 8, 2019
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::CreateFilePanelTab(QWidget *fpTab)
+{
+    QVBoxLayout *fpLayout = new QVBoxLayout(fpTab);
+
+    QGridLayout *tsModeLayout = new QGridLayout();
 
     //
     // Widgets that let you control the file panel.
     //
-    selectedFilesToggle = new QCheckBox(tr("Show selected files"),
-                                        filePanelControlsGroup);
+    selectedFilesToggle = new QCheckBox(tr("Show selected files"));
     selectedFilesToggle->setChecked(showSelFiles);
     connect(selectedFilesToggle, SIGNAL(toggled(bool)),
             this, SLOT(selectedFilesToggled(bool)));
     tsModeLayout->addWidget(selectedFilesToggle, 0, 0, 1, 4);
 
     allowFileSelectionChangeToggle = new QCheckBox(
-        tr("Automatically highlight open file"), filePanelControlsGroup);
+        tr("Automatically highlight open file"));
     allowFileSelectionChangeToggle->setChecked(allowFileSelChange);
     connect(allowFileSelectionChangeToggle, SIGNAL(toggled(bool)),
             this, SLOT(allowFileSelectionChangeToggled(bool)));
@@ -386,16 +477,15 @@ QvisPreferencesWindow::CreateWindowContents()
     //
     // Create radio button controls to let us change the timestate display mode.
     //
-    tsModeLayout->addWidget(new QLabel(tr("Display time using:"),
-        filePanelControlsGroup), 2, 0, 1, 3);
-    timeStateDisplayMode = new QButtonGroup(filePanelControlsGroup);
-    QRadioButton *rb = new QRadioButton(tr("Cycles"),filePanelControlsGroup);
+    tsModeLayout->addWidget(new QLabel(tr("Display time using:")), 2, 0, 1, 3);
+    timeStateDisplayMode = new QButtonGroup();
+    QRadioButton *rb = new QRadioButton(tr("Cycles"));
     timeStateDisplayMode->addButton(rb,0);
     tsModeLayout->addWidget(rb, 3, 0);
-    rb = new QRadioButton(tr("Times"),filePanelControlsGroup);
+    rb = new QRadioButton(tr("Times"));
     timeStateDisplayMode->addButton(rb,1);
     tsModeLayout->addWidget(rb, 3, 1);
-    rb = new QRadioButton(tr("Cycles and times"),filePanelControlsGroup);
+    rb = new QRadioButton(tr("Cycles and times"));
     timeStateDisplayMode->addButton(rb,2);
     tsModeLayout->addWidget(rb, 3, 2);
     timeStateDisplayMode->button(int(tsFormat.GetDisplayMode()))->setChecked(true);
@@ -407,7 +497,7 @@ QvisPreferencesWindow::CreateWindowContents()
     //
     tsModeLayout->addWidget(new QLabel(tr("Number of significant digits")),
                             4, 0, 1, 2);
-    timeStateNDigits = new QSpinBox(filePanelControlsGroup);
+    timeStateNDigits = new QSpinBox();
     timeStateNDigits->setRange(1,16);
     timeStateNDigits->setSingleStep(1);
     timeStateNDigits->setValue(tsFormat.GetPrecision());
@@ -415,25 +505,27 @@ QvisPreferencesWindow::CreateWindowContents()
             this, SLOT(timeStateNDigitsChanged(int)));
     tsModeLayout->addWidget(timeStateNDigits, 4, 2);
 
-    topLayout->addStretch(100);
+    fpLayout->addLayout(tsModeLayout);
+    // fill up bottom space
+    fpLayout->addStretch(1);
 }
 
 // ****************************************************************************
 // Method: QvisPreferencesWindow::Update
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the GlobalAttributes that this window
 //   is updated.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   October 9, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   October 9, 2007
 //
 // Modifications:
 //
 //   Cyrus Harrison, Wed Nov 28 13:28:47 PST 2007
 //   Added support for flag for creating vector magnitude expressions
 //
-//   Cyrus Harrison, 
+//   Cyrus Harrison,
 //   Fixed missing call to parent class Update method. This was preventing
 //   UpdateWindow from being called  - making the window out of sync with
 //   the app values.
@@ -471,7 +563,7 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: Eric Brugger
@@ -495,7 +587,7 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //
 //   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
 //   Added toggles for createMeshQuality, createTimeDerivative.
-// 
+//
 //   Cyrus Harrison, Wed Nov 28 13:28:47 PST 2007
 //   Added toggle for createVectorMagnitude
 //
@@ -527,7 +619,7 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //   Handle precisionType.
 //
 //   David Camp, Thu Aug  8 08:50:06 PDT 2013
-//   Added the restore from last session feature. 
+//   Added the restore from last session feature.
 //
 //   Cameron Christensen, Tuesday, June 10, 2014
 //   Added a preference for setting the backend type.
@@ -597,7 +689,7 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
     if (doAll || atts->IsSelected(GlobalAttributes::ID_tryHarderCyclesTimes))
     {
         //
-        // Try harder to get accurate cycles and times 
+        // Try harder to get accurate cycles and times
         //
         tryHarderCyclesTimesToggle->blockSignals(true);
         tryHarderCyclesTimesToggle->setChecked(
@@ -608,7 +700,7 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
     if (doAll || atts->IsSelected(GlobalAttributes::ID_ignoreExtentsFromDbs))
     {
         //
-        // Try harder to get accurate cycles and times 
+        // Try harder to get accurate cycles and times
         //
         ignoreDbExtentsToggle->blockSignals(true);
         ignoreDbExtentsToggle->setChecked(
@@ -727,7 +819,7 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::SetTimeStateDisplayMode
 //
-// Purpose: 
+// Purpose:
 //   Sets the timeDisplayMode toggle.
 //
 // Arguments:
@@ -738,7 +830,7 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
 //
 // Modifications:
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 2008
-//   Initial Qt4 Port. 
+//   Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -761,14 +853,14 @@ QvisPreferencesWindow::SetTimeStateFormat(const TimeFormat &fmt)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::SetShowSelectedFiles
 //
-// Purpose: 
+// Purpose:
 //   This method sets the toggle for the selected files.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jan 30 14:40:03 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -787,14 +879,14 @@ QvisPreferencesWindow::SetShowSelectedFiles(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::SetAllowFileSelectionChange
 //
-// Purpose: 
+// Purpose:
 //   This method sets the toggle for the automatic file highlighting.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Apr 9 14:24:33 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -813,14 +905,14 @@ QvisPreferencesWindow::SetAllowFileSelectionChange(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::SetEnableWarningPopups
 //
-// Purpose: 
+// Purpose:
 //   This method sets the toggle for the enable warning popups.
 //
 // Programmer: Eric Brugger
 // Creation:   Tue Aug 24 12:33:44 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -839,14 +931,14 @@ QvisPreferencesWindow::SetEnableWarningPopups(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::GetEnableWarningPopups
 //
-// Purpose: 
+// Purpose:
 //   This method returns the value of enable warning popups.
 //
 // Programmer: Eric Brugger
 // Creation:   Tue Aug 24 12:33:44 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -863,7 +955,7 @@ QvisPreferencesWindow::GetEnableWarningPopups()
 // ****************************************************************************
 // Modifications:
 //    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
-//    Notify the GlobalAttributes 
+//    Notify the GlobalAttributes
 //
 void
 QvisPreferencesWindow::cloneWindowOnFirstRefToggled(bool val)
@@ -875,7 +967,7 @@ QvisPreferencesWindow::cloneWindowOnFirstRefToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::postWindowsWhenShownToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag that tells the GUI whether
 //   or not windows should automatically post when they are shown.
 //
@@ -886,7 +978,7 @@ QvisPreferencesWindow::cloneWindowOnFirstRefToggled(bool val)
 // Creation:   Fri Sep 5 15:47:26 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -898,7 +990,7 @@ QvisPreferencesWindow::postWindowsWhenShownToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::makeDefaultConfirmToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that gets the flag that tells the GUI whether
 //   it should prompt users before "make defaults".
 //
@@ -910,7 +1002,7 @@ QvisPreferencesWindow::postWindowsWhenShownToggled(bool val)
 //
 // Modifications:
 //    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
-//    Notify the GlobalAttributes 
+//    Notify the GlobalAttributes
 //
 // ****************************************************************************
 
@@ -924,7 +1016,7 @@ QvisPreferencesWindow::makeDefaultConfirmToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::automaticallyApplyOperatorToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that gets the flag that tells the GUI whether
 //   it should prompt users before automatically adding an operator when
 //   the user sets the operator attributes when none were applied.
@@ -937,7 +1029,7 @@ QvisPreferencesWindow::makeDefaultConfirmToggled(bool val)
 //
 // Modifications:
 //    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
-//    Notify the GlobalAttributes 
+//    Notify the GlobalAttributes
 //
 // ****************************************************************************
 
@@ -951,7 +1043,7 @@ QvisPreferencesWindow::automaticallyApplyOperatorToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::newPlotsInheritSILRestrictionToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that gets the flag that tells whether new plots
 //   should inherit the SIL retriction of a previous plot.
 //
@@ -976,7 +1068,7 @@ QvisPreferencesWindow::newPlotsInheritSILRestrictionToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::expandNewPlotsToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that gets the flag that tells whether new plots
 //   should be automatically expanded.
 //
@@ -1001,7 +1093,7 @@ QvisPreferencesWindow::expandNewPlotsToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::handleTimeStateDisplayModeChange
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the display mode radio
 //   buttons are clicked.
 //
@@ -1012,7 +1104,7 @@ QvisPreferencesWindow::expandNewPlotsToggled(bool val)
 // Creation:   Tue Oct 14 09:57:55 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1025,7 +1117,7 @@ QvisPreferencesWindow::handleTimeStateDisplayModeChange(int val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::timeStateNDigitsChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the time format spin box
 //   is changed.
 //
@@ -1036,7 +1128,7 @@ QvisPreferencesWindow::handleTimeStateDisplayModeChange(int val)
 // Creation:   Tue Oct 14 13:34:11 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1049,7 +1141,7 @@ QvisPreferencesWindow::timeStateNDigitsChanged(int val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::selectedFilesToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the selectedFilesToggle
 //   is clicked.
 //
@@ -1060,7 +1152,7 @@ QvisPreferencesWindow::timeStateNDigitsChanged(int val)
 // Creation:   Fri Jan 30 14:28:44 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1073,7 +1165,7 @@ QvisPreferencesWindow::selectedFilesToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::allowFileSelectionChangeToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the
 //    allowFileSelectionChange toggle is clicked.
 //
@@ -1084,7 +1176,7 @@ QvisPreferencesWindow::selectedFilesToggled(bool val)
 // Creation:   Fri Jan 30 14:28:44 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1097,16 +1189,16 @@ QvisPreferencesWindow::allowFileSelectionChangeToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::tryHarderCyclesTimesToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the
 //   tryHarderCyclesTimesToggle is clicked.
 //
-// Programmer: Mark C. Miller 
-// Creation:   June 1, 2005 
+// Programmer: Mark C. Miller
+// Creation:   June 1, 2005
 //
 // Modifications:
 //    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
-//    Notify the GlobalAttributes 
+//    Notify the GlobalAttributes
 //
 // ****************************************************************************
 
@@ -1121,12 +1213,12 @@ QvisPreferencesWindow::tryHarderCyclesTimesToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::ignoreDbExtentsToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the
 //   ignoreDbExtentsToggle is clicked.
 //
-// Programmer: Mark C. Miller 
-// Creation:   May 27, 2008 
+// Programmer: Mark C. Miller
+// Creation:   May 27, 2008
 //
 // ****************************************************************************
 
@@ -1140,16 +1232,16 @@ QvisPreferencesWindow::ignoreDbExtentsToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::treatAllDBsAsTimeVarying
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the
 //   treatAllDBsAsTimeVarying is clicked.
 //
-// Programmer: Mark C. Miller 
-// Creation:   June 11, 2007 
+// Programmer: Mark C. Miller
+// Creation:   June 11, 2007
 //
 // Modifications:
 //    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
-//    Notify the GlobalAttributes 
+//    Notify the GlobalAttributes
 //
 // ****************************************************************************
 
@@ -1164,16 +1256,16 @@ QvisPreferencesWindow::treatAllDBsAsTimeVaryingToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::createMeshQualityToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the
 //   createMeshQualityToggle is clicked.
 //
-// Programmer: Mark C. Miller 
-// Creation:   June 11, 2007 
+// Programmer: Mark C. Miller
+// Creation:   June 11, 2007
 //
 // Modifications:
 //    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
-//    Notify the GlobalAttributes 
+//    Notify the GlobalAttributes
 //
 // ****************************************************************************
 
@@ -1188,16 +1280,16 @@ QvisPreferencesWindow::createMeshQualityToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::createTimeDerivativeToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the
 //   createTimeDerivativeToggle is clicked.
 //
-// Programmer: Mark C. Miller 
-// Creation:   June 11, 2007 
+// Programmer: Mark C. Miller
+// Creation:   June 11, 2007
 //
 // Modifications:
 //    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
-//    Notify the GlobalAttributes 
+//    Notify the GlobalAttributes
 //
 // ****************************************************************************
 
@@ -1212,16 +1304,16 @@ QvisPreferencesWindow::createTimeDerivativeToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::createVectorMagnitudeToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the
 //   createVectorMagnitudeToggle is clicked.
 //
 // Programmer: Cyrus Harrison
-// Creation:   November 28, 2007 
+// Creation:   November 28, 2007
 //
 // Modifications:
 //    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
-//    Notify the GlobalAttributes 
+//    Notify the GlobalAttributes
 //
 // ****************************************************************************
 
@@ -1236,21 +1328,21 @@ QvisPreferencesWindow::createVectorMagnitudeToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::userDirForSessionFilesToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function called when userDirForSessionFiles is toggled.
 //
 // Arguments:
 //   val : The new value.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jan 31 10:32:48 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1264,21 +1356,21 @@ QvisPreferencesWindow::userDirForSessionFilesToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::saveCrashRecoveryFileToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function called when saveCrashRecoveryFile is toggled.
 //
 // Arguments:
 //   val : The new value.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jan 31 10:32:48 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 
@@ -1293,7 +1385,7 @@ QvisPreferencesWindow::saveCrashRecoveryFileToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::replacePlotsToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the replace plots checkbox
 //   is toggled.
 //
@@ -1304,7 +1396,7 @@ QvisPreferencesWindow::saveCrashRecoveryFileToggled(bool val)
 // Creation:   Mon Mar 4 11:45:12 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1317,7 +1409,7 @@ QvisPreferencesWindow::replacePlotsToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::EnableWarningPopupsToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the enable warning
 //   popups checkbox is toggled.
 //
@@ -1328,7 +1420,7 @@ QvisPreferencesWindow::replacePlotsToggled(bool val)
 // Creation:   Tue Aug 24 12:33:44 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1341,21 +1433,21 @@ QvisPreferencesWindow::enableWarningPopupsToggled(bool val)
 // ****************************************************************************
 // Method: QvisPreferencesWindow::userRestoreSessionFileToggle
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function called when userRestoreSessionFileToggle is toggled.
 //
 // Arguments:
 //   val : The new value.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: David Camp
 // Creation:   Tue Jul 30 08:34:16 PDT 2013
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
