@@ -31,7 +31,7 @@ class PseudocolorAttributes;
 //   This class is a postable window that watches pseudocolot plot
 //   attributes and always represents their current state.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jul 28 17:16:38 PST 2000
@@ -47,7 +47,7 @@ class PseudocolorAttributes;
 //   Brad Whitlock, Sat Jun 16 15:17:12 PST 2001
 //   I added a color table button.
 //
-//   Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001 
+//   Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001
 //   I added a limits combo box.
 //
 //   Brad Whitlock, Fri Feb 15 10:27:55 PDT 2002
@@ -59,9 +59,9 @@ class PseudocolorAttributes;
 //   Jeremy Meredith, Fri Dec 20 11:36:03 PST 2002
 //   Added scaling of point variables by a scalar field.
 //
-//   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004 
+//   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
 //   Replace individual point-size related widgets and associated slots
-//   with QvisPointControl 
+//   with QvisPointControl
 //
 //   Brad Whitlock, Wed Jul 20 14:23:58 PST 2005
 //   Added a new slot to handle a new signal from QvisPointControl.
@@ -89,6 +89,11 @@ class PseudocolorAttributes;
 //
 //   Kathleen Biagas, Wed Dec 26 13:08:45 PST 2018
 //   Add belowMinColor, aboveMaxColor, belowMinToggle, aboveMaxToggle.
+//
+//   Kathleen Biagas, Tue Aug 27 09:15:38 PDT 2019
+//   Added lineSettings and endPointSettings methods which allow changing the
+//   visibility and/or enabled state of certain controls based on the rendering
+//   type(s) in effect.
 //
 // ****************************************************************************
 
@@ -162,7 +167,7 @@ private slots:
 
     void tailStyleChanged(int newStyle);
     void headStyleChanged(int newStyle);
-  
+
     void endPointRadiusProcessText();
     void endPointRadiusSizeTypeChanged(int v);
     void endPointRatioProcessText();
@@ -268,5 +273,8 @@ private:
 
     QCheckBox             *legendToggle;
     QCheckBox             *lightingToggle;
+
+    void lineSettings(void);
+    void endPointSettings(void);
 };
 #endif

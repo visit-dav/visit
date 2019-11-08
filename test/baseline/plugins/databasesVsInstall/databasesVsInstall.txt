@@ -74,6 +74,7 @@
     'OVERFLOW': 'success',
     'OpenEXR': 'success',
     'OpenFOAM': 'success',
+    'OpenPMD': 'success',
     'PATRAN': 'success',
     'PDB': 'success',
     'PFLOTRAN': 'success',
