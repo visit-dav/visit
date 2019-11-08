@@ -205,21 +205,21 @@ QvisPreferencesWindow::CreateWindowContents()
     // Databases tab
     //
     QWidget *databasesTab = new QWidget();
-    tabs->addTab(databasesTab, tr("Databases"));
+    tabs->addTab(databasesTab, tr("Database"));
     CreateDatabasesTab(databasesTab);
 
     //
     // Session files tab
     //
     QWidget *sessionFilesTab = new QWidget();
-    tabs->addTab(sessionFilesTab, tr("Session files"));
+    tabs->addTab(sessionFilesTab, tr("Session file"));
     CreateSessionFilesTab(sessionFilesTab);
 
     //
     // File panel properties tab
     //
     QWidget *filePanelTab = new QWidget();
-    tabs->addTab(filePanelTab, tr("File panel properties"));
+    tabs->addTab(filePanelTab, tr("File panel"));
     CreateFilePanelTab(filePanelTab);
 }
 
@@ -314,7 +314,7 @@ QvisPreferencesWindow::CreateGeneralTab(QWidget *gTab)
     // Create radio button controls to change the backend.
     //
     QGroupBox *backendGroup = new QGroupBox();
-    backendGroup->setTitle(tr("Parallel Computation Library:"));
+    backendGroup->setTitle(tr("Parallel computation library:"));
     genLayout->addWidget(backendGroup);
     backendType = new QButtonGroup();
     connect(backendType, SIGNAL(buttonClicked(int)),
