@@ -1,6 +1,6 @@
 function bv_openssl_initialize
 {
-    export DO_OPENSSL="no"
+    export DO_OPENSSL="yes"
 }
 
 function bv_openssl_enable

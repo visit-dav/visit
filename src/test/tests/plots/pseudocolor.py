@@ -21,8 +21,12 @@
 #    Wrapped the first test in a function and added 
 #    TestDomainBoundaries. 
 #
+#    Kathleen Biagas, Wed Nov  6 18:29:29 PST 2019
+#    Add new tests: PointGlyphing MixedTopology Lines ObjectRenderingOptions
+#
 # ----------------------------------------------------------------------------
 
+import itertools
 
 def TestScale():
     OpenDatabase(silo_data_path("rect2d.silo"))
@@ -141,11 +145,368 @@ def TestDomainBoundaries():
     
     Test("pseudocolor_domain_bounds_03")
 
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("multi_ucd3d.silo"))
 
+def PointGlyphing():
+    # github issue 3390
+    TestSection("Point Glyphing: Topological dimension not set to 0")
+    idx = itertools.count(1)
+    # Reader not reporting topodim 0
+    OpenDatabase(data_path("blueprint_v0.3.1_test_data/braid_2d_examples.blueprint_root_hdf5"))
+    AddPlot("Pseudocolor", "points_mesh/braid")
+    DrawPlots()
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+
+    # glyph the points with Tets
+    pc = PseudocolorAttributes()
+    pc.pointType = pc.Tetrahedron
+    pc.pointSize = 0.5
+    SetPlotOptions(pc)
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+    # transition back to point
+    pc.pointType = pc.Point
+    SetPlotOptions(pc)
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+    # glyph the points with Sphere 
+    pc.pointType = pc.Sphere
+    SetPlotOptions(pc)
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+
+    DeleteAllPlots()
+    CloseDatabase(data_path("blueprint_v0.3.1_test_data/braid_2d_examples.blueprint_root_hdf5"))
+
+    OpenDatabase(data_path("synergia_test_data/vis_particles_* database"), 0, "Vs")
+    AddPlot("Pseudocolor", "particles_0")
+    pc.pointType = pc.Tetrahedron
+    pc.pointSize = 0.005
+    SetPlotOptions(pc)
+    DrawPlots()
+    ResetView()
+    v = GetView3D()
+    v.viewNormal = (-0.882869, -0.011028, 0.469489)
+    v.focus = (-0.000169306, 0.000401067, -0.00167359)
+    v.viewUp = (-0.118292, 0.972711, -0.199599)
+    v.imageZoom = 1.77
+    SetView3D(v); 
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+
+    # PsersistentParticles sets the topological dimension incorrectly,
+    # but the points should still be glyphable
+    AddOperator("PersistentParticles")
+    pp = PersistentParticlesAttributes()
+    pp.connectParticles = 0
+    SetOperatorOptions(pp)
+    DrawPlots()
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+
+    DeleteAllPlots()
+    CloseDatabase(data_path("synergia_test_data/vis_particles_* database"))
+
+    TestSection("Point Glyphing: Lighting")
+    OpenDatabase(silo_data_path("noise.silo"))
+    AddPlot("Pseudocolor", "PointVar")
+    pc.pointType = pc.Icosahedron
+    pc.pointSize = 3
+    SetPlotOptions(pc)
+    DrawPlots()
+    ResetView()
+    v = GetView3D()
+    v.viewNormal = (0.272848, 0.209847, 0.938892)
+    v.focus = (-0.0242615, -0.170417, -0.0304632)
+    v.viewUp = (0.134518, 0.958013, -0.253212)
+    v.imageZoom=1.5
+    SetView3D(v) 
+    # standard lighting
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+
+    # turn off lighting, points should still be glyphed
+    pc.lightingFlag = 0
+    SetPlotOptions(pc)
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+    pc.lightingFlag = 1
+
+    # github issue 1461, 1800
+    TestSection("Point Glyphing: Changing Opacity")
+    pc.opacityType = pc.Constant
+    pc.opacity = 0.25
+    SetPlotOptions(pc)
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+
+    # change glyph type while transparent
+    pc.pointType = pc.Box
+    SetPlotOptions(pc)
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+
+    pc.opacityType = pc.FullyOpaque
+
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("noise.silo"))
+
+    TestSection("Unstructured grid, cell-centered data, poly-vertex cells")
+    OpenDatabase(data_path("vtk_test_data/ugrid_polyvertex_points.vtk"))
+    AddPlot("Pseudocolor", "foo_cells")
+    DrawPlots()
+    v2 = GetView2D()
+    v2.windowCoords = (-0.945, 9.945, -0.945, 9.945)
+    SetView2D(v2)
+    pc.pointType = pc.Axis
+    pc.pointSize = 0.6
+    SetPlotOptions(pc)
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+    pc.pointType = pc.Box
+    SetPlotOptions(pc)
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+    ChangeActivePlotsVar("u")
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+
+    TestSection("scaling point glyphs by variable")
+    pc.pointSizeVarEnabled = 1
+    pc.pointSize = 0.1
+    SetPlotOptions(pc)
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+
+    pc.pointSizeVar = "foo_cells"
+    SetPlotOptions(pc)
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+
+    ChangeActivePlotsVar("foo_cells")
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+    pc.pointSizeVar = "u"
+    SetPlotOptions(pc)
+    Test("pseudocolor_point_glyphs_%02d" %next(idx))
+    
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_test_data/ugrid_polyvertex_points.vtk"))
+
+    
+def MixedTopology(): 
+    TestSection("ugrid, vertex and poly vertex, line and polyline")
+    OpenDatabase(data_path("vtk_test_data/ugrid_mixed_cells.vtk"))
+    AddPlot("Pseudocolor","foo_cells")
+    pc = PseudocolorAttributes()
+    pc.colorTableName = "rainbow"
+    pc.invertColorTable = 1
+    pc.lineWidth = 2
+    pc.pointSizePixels = 10 
+    SetPlotOptions(pc)
+    DrawPlots()
+    ResetView()
+    v = GetView3D()
+    v.viewNormal = (-0.195485, 0.629643, 0.751888)
+    v.focus = (1.5, 0.5, 0.5)
+    v.viewUp = (0.158378, 0.776885, -0.609398)
+    SetView3D(v)
+
+    idx = itertools.count(1)
+    Test("pseudocolor_mixed_cells_%02d"%next(idx))
+
+    pc.pointType = pc.Tetrahedron
+    pc.pointSize = 0.4
+    SetPlotOptions(pc)
+    Test("pseudocolor_mixed_cells_%02d"%next(idx))
+
+    pc.lineType = pc.Tube
+    pc.tubeRadiusBBox = 0.05
+    SetPlotOptions(pc)
+    Test("pseudocolor_mixed_cells_%02d"%next(idx))
+
+    pc.tubeRadiusSizeType = pc.Absolute
+    pc.tubeRadiusAbsolute = 0.125
+    SetPlotOptions(pc)
+    Test("pseudocolor_mixed_cells_%02d"%next(idx))
+
+    pc.tubeRadiusSizeType = pc.FractionOfBBox
+    pc.tailStyle = pc.Spheres 
+    pc.headStyle = pc.Cones 
+    SetPlotOptions(pc)
+    Test("pseudocolor_mixed_cells_%02d"%next(idx))
+   
+    DeleteAllPlots() 
+    CloseDatabase(data_path("vtk_test_data/ugrid_mixed_cells.vtk"))
+
+def DoLines(ltype):
+    pc = PseudocolorAttributes()
+    idx =  itertools.count(1)
+    if ltype == "tube":
+        TestSection("Line Tubes")
+        pc.lineType = pc.Tube
+    else:
+        TestSection("Line Ribbons")
+        pc.lineType = pc.Ribbon
+
+    pc.tubeRadiusSizeType = pc.FractionOfBBox
+    pc.tubeRadiusBBox = 0.2
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_%s_%02d" %(ltype, next(idx)))
+
+    if ltype == "tube":
+        # test tube resolution
+        pc.tubeResolution = 3
+        SetPlotOptions(pc)
+        Test("pseudocolor_line_%s_%02d" %(ltype, next(idx)))
+
+        pc.tubeResolution = 4
+        SetPlotOptions(pc)
+        Test("pseudocolor_line_%s_%02d" %(ltype, next(idx)))
+
+        pc.tubeResolution = 20 
+        SetPlotOptions(pc)
+        Test("pseudocolor_line_%s_%02d" %(ltype, next(idx)))
+
+    pc.tubeRadiusSizeType = pc.Absolute
+    pc.tubeRadiusAbsolute = 0.6
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_%s_%02d" %(ltype, next(idx)))
+
+    pc.tubeRadiusVarEnabled = 1
+    pc.tubeRadiusVar = "var2"
+    pc.tubeRadiusVarRatio = 2
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_%s_%02d" %(ltype, next(idx)))
+
+    pc.tubeRadiusVar = "var1"
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_%s_%02d" %(ltype, next(idx)))
+
+    ChangeActivePlotsVar("var1")
+    Test("pseudocolor_line_%s_%02d" %(ltype, next(idx)))
+
+    pc.tubeRadiusVar = "var2"
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_%s_%02d" %(ltype, next(idx)))
+
+def DoEndpoints():
+    TestSection("line endpoints")
+    ChangeActivePlotsVar("var2")
+    idx = itertools.count(1) 
+    pc = PseudocolorAttributes()
+    pc.lineType = pc.Tube
+    pc.tubeRadiusSizeType = pc.Absolute
+    pc.tubeRadiusAbsolute = 0.1
+    pc.tailStyle = pc.Spheres
+    pc.headStyle = pc.Cones
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_endpoints_%02d"%next(idx))
+
+    pc.endPointRadiusSizeType = pc.Absolute
+    pc.endPointRadiusAbsolute = 0.5
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_endpoints_%02d"%next(idx))
+
+    pc.endPointResolution = 3
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_endpoints_%02d"%next(idx))
+
+    pc.endPointResolution = 20 
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_endpoints_%02d"%next(idx))
+
+    pc.endPointRadiusVarEnabled = 1
+    pc.endPointRadiusVar = "var2"
+    pc.endPointRadiusVarRatio = 2
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_endpoints_%02d"%next(idx))
+
+    pc.endPointRadiusVar = "var1"
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_endpoints_%02d"%next(idx))
+
+    ChangeActivePlotsVar("var2")
+    Test("pseudocolor_line_endpoints_%02d"%next(idx))
+
+    pc.endPointRadiusVar = "var2"
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_endpoints_%02d"%next(idx))
+
+    pc.endPointRatio = 1
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_endpoints_%02d"%next(idx))
+    
+    pc.endPointRatio = 10
+    SetPlotOptions(pc)
+    Test("pseudocolor_line_endpoints_%02d"%next(idx))
+    
+
+def Lines():
+    OpenDatabase(data_path("vtk_test_data/lines.vtk"))
+    AddPlot("Pseudocolor", "var2")
+    DrawPlots()
+    ResetView()
+    v = GetView3D()
+    v.viewNormal = (0.508199, 0.390103, 0.767824)
+    v.focus = (0, 0, 0)
+    v.viewUp = (-0.065159, 0.906394, -0.417379)
+    v.imageZoom = 1.4641
+    SetView3D(v)
+
+    DoLines("tube")
+    DoLines("ribbon")
+    DoEndpoints()
+   
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_test_data/lines.vtk"))
+
+
+def ObjectRenderingOptions():
+    TestSection("Object rendering options")
+    idx = itertools.count(1)
+    OpenDatabase(silo_data_path("rect3d.silo"))
+    AddPlot("Pseudocolor", "p")
+    DrawPlots()
+
+    ResetView()
+    v = GetView3D()
+    v.viewNormal = (0.30955, 0.438716, 0.843627)
+    v.focus = (0.5, 0.5, 0.5)
+    v.viewUp = (0.00113002, 0.887033, -0.461704)
+    SetView3D(v)
+
+    Test("pseudocolor_rendering_options_%02d" %next(idx))
+ 
+    pc = PseudocolorAttributes()
+    pc.renderWireframe = 1
+    pc.wireframeColor = (255, 0, 0)
+    SetPlotOptions(pc) 
+    Test("pseudocolor_rendering_options_%02d" %next(idx))
+
+    pc.renderPoints = 1
+    pc.pointColor = (255, 255, 0)
+    SetPlotOptions(pc) 
+    Test("pseudocolor_rendering_options_%02d" %next(idx))
+
+    pc.renderSurfaces = 0
+    SetPlotOptions(pc) 
+    Test("pseudocolor_rendering_options_%02d" %next(idx))
+
+    pc.renderPoints = 0
+    SetPlotOptions(pc) 
+    Test("pseudocolor_rendering_options_%02d" %next(idx))
+
+    pc.renderWireframe = 0
+    pc.renderPoints = 1
+    SetPlotOptions(pc) 
+    Test("pseudocolor_rendering_options_%02d" %next(idx))
+
+    pc.pointType = pc.Sphere
+    pc.pointSize = 0.02
+    SetPlotOptions(pc) 
+    Test("pseudocolor_rendering_options_%02d" %next(idx))
+    
+    pc.renderSurfaces = 1
+    SetPlotOptions(pc) 
+    Test("pseudocolor_rendering_options_%02d" %next(idx))
+
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("rect3d.silo"))
+    
 def Main():
     TestScale()
     TestDomainBoundaries()
-
+    PointGlyphing()
+    MixedTopology()
+    Lines()
+    ObjectRenderingOptions()
 
 Main()
 Exit()

@@ -6,12 +6,12 @@
   Date:      $Date: 2003/03/25 14:58:57 $
   Version:   $Revision: 1.57 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -25,7 +25,7 @@
 // creating a table of source objects, each defining a different glyph. If a
 // table of glyphs is defined, then the table can be indexed into by using
 // either scalar value or vector magnitude.
-// 
+//
 // To use this object you'll have to provide an input dataset and a source
 // to define the glyph. Then decide whether you want to scale the glyph and
 // how to scale the glyph (using scalar value or vector magnitude). Next
@@ -34,7 +34,7 @@
 // table of glyphs, or just a single glyph. If you use a table of glyphs,
 // you'll have to decide whether to index into it with scalar value or with
 // vector magnitude.
-// 
+//
 // .SECTION Caveats
 // The scaling of the glyphs is controlled by the ScaleFactor ivar multiplied
 // by the scalar value at each point (if VTK_SCALE_BY_SCALAR is set), or
@@ -45,7 +45,7 @@
 // Clamping ivar. If clamping is enabled, the scale is normalized by the
 // Range ivar, and then multiplied by the scale factor. The normalization
 // process includes clamping the scale value between (0,1).
-// 
+//
 // Typically this object operates on input data with scalar and/or vector
 // data. However, scalar and/or vector aren't necessary, and it can be used
 // to copy data from a single source to each point. In this case the scale
@@ -53,9 +53,9 @@
 //
 // The object uses "vector" data to scale glyphs, orient glyphs, and/or index
 // into a table of glyphs. You can choose to use either the vector or normal
-// data at each input point. Use the method SetVectorModeToUseVector() to use 
+// data at each input point. Use the method SetVectorModeToUseVector() to use
 // the vector input data, and SetVectorModeToUseNormal() to use the
-// normal input data. 
+// normal input data.
 //
 // If you do use a table of glyphs, make sure to set the Range ivar to make
 // sure the index into the glyph table is computed correctly.
@@ -108,7 +108,7 @@ public:
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description
-  // Construct object with scaling on, scaling mode is by scalar value, 
+  // Construct object with scaling on, scaling mode is by scalar value,
   // scale factor = 1.0, the range is (0,1), orient geometry is on, and
   // orientation is by vector. Clamping and indexing are turned off. No
   // initial sources are defined.
@@ -116,7 +116,7 @@ public:
 
   // Description:
   // Set the source to use for the glyph. Old style. See SetSourceConnection.
-  void SetSourceData(vtkPolyData *pd) {this->SetSourceData(0,pd);};
+  void SetSourceData(vtkPolyData *pd) {this->SetSourceData(0,pd);}
 
   // Description:
   // Specify a source object at a specified table location.
@@ -148,15 +148,15 @@ public:
   vtkSetMacro(ScaleMode,int);
   vtkGetMacro(ScaleMode,int);
   void SetScaleModeToScaleByScalar()
-    {this->SetScaleMode(VTK_SCALE_BY_SCALAR);};
+    {this->SetScaleMode(VTK_SCALE_BY_SCALAR);}
   void SetScaleModeToScaleByVector()
-    {this->SetScaleMode(VTK_SCALE_BY_VECTOR);};
+    {this->SetScaleMode(VTK_SCALE_BY_VECTOR);}
   void SetScaleModeToScaleByTensor()
-    {this->SetScaleMode(VTK_SCALE_BY_TENSOR);};
+    {this->SetScaleMode(VTK_SCALE_BY_TENSOR);}
   void SetScaleModeToScaleByVectorComponents()
-    {this->SetScaleMode(VTK_SCALE_BY_VECTORCOMPONENTS);};
+    {this->SetScaleMode(VTK_SCALE_BY_VECTORCOMPONENTS);}
   void SetScaleModeToDataScalingOff()
-    {this->SetScaleMode(VTK_DATA_SCALING_OFF);};
+    {this->SetScaleMode(VTK_DATA_SCALING_OFF);}
   const char *GetScaleModeAsString();
 
   // Description:
@@ -164,13 +164,13 @@ public:
   vtkSetMacro(ColorMode,int);
   vtkGetMacro(ColorMode,int);
   void SetColorModeToColorByScale()
-    {this->SetColorMode(VTK_COLOR_BY_SCALE);};
+    {this->SetColorMode(VTK_COLOR_BY_SCALE);}
   void SetColorModeToColorByScalar()
-    {this->SetColorMode(VTK_COLOR_BY_SCALAR);};
+    {this->SetColorMode(VTK_COLOR_BY_SCALAR);}
   void SetColorModeToColorByVector()
-    {this->SetColorMode(VTK_COLOR_BY_VECTOR);};
+    {this->SetColorMode(VTK_COLOR_BY_VECTOR);}
   void SetColorModeToColorBySingleColor()
-    {this->SetColorMode(VTK_COLOR_BY_SINGLE_COLOR);};
+    {this->SetColorMode(VTK_COLOR_BY_SINGLE_COLOR);}
   const char *GetColorModeAsString();
 
   // Description:
@@ -200,10 +200,10 @@ public:
   // Specify whether to use vector or normal to perform vector operations.
   vtkSetMacro(VectorMode,int);
   vtkGetMacro(VectorMode,int);
-  void SetVectorModeToUseVector() {this->SetVectorMode(VTK_USE_VECTOR);};
-  void SetVectorModeToUseNormal() {this->SetVectorMode(VTK_USE_NORMAL);};
+  void SetVectorModeToUseVector() {this->SetVectorMode(VTK_USE_VECTOR);}
+  void SetVectorModeToUseNormal() {this->SetVectorMode(VTK_USE_NORMAL);}
   void SetVectorModeToVectorRotationOff()
-    {this->SetVectorMode(VTK_VECTOR_ROTATION_OFF);};
+    {this->SetVectorMode(VTK_VECTOR_ROTATION_OFF);}
   const char *GetVectorModeAsString();
 
   // Description:
@@ -212,9 +212,9 @@ public:
   // the table of glyphs is used.
   vtkSetMacro(IndexMode,int);
   vtkGetMacro(IndexMode,int);
-  void SetIndexModeToScalar() {this->SetIndexMode(VTK_INDEXING_BY_SCALAR);};
-  void SetIndexModeToVector() {this->SetIndexMode(VTK_INDEXING_BY_VECTOR);};
-  void SetIndexModeToOff() {this->SetIndexMode(VTK_INDEXING_OFF);};
+  void SetIndexModeToScalar() {this->SetIndexMode(VTK_INDEXING_BY_SCALAR);}
+  void SetIndexModeToVector() {this->SetIndexMode(VTK_INDEXING_BY_VECTOR);}
+  void SetIndexModeToOff() {this->SetIndexMode(VTK_INDEXING_OFF);}
   const char *GetIndexModeAsString();
 
   // Description:
@@ -341,21 +341,21 @@ private:
 inline const char *vtkVisItGlyph3D::GetScaleModeAsString(void)
 {
   if ( this->ScaleMode == VTK_SCALE_BY_SCALAR )
-    {
+  {
     return "ScaleByScalar";
-    }
+  }
   else if ( this->ScaleMode == VTK_SCALE_BY_VECTOR )
-    {
+  {
     return "ScaleByVector";
-    }
+  }
   else if ( this->ScaleMode == VTK_SCALE_BY_TENSOR )
-    {
+  {
     return "ScaleByTensor";
-    }
-  else 
-    {
+  }
+  else
+  {
     return "DataScalingOff";
-    }
+  }
 }
 
 // Description:
@@ -363,21 +363,21 @@ inline const char *vtkVisItGlyph3D::GetScaleModeAsString(void)
 inline const char *vtkVisItGlyph3D::GetColorModeAsString(void)
 {
   if ( this->ColorMode == VTK_COLOR_BY_SCALAR )
-    {
+  {
     return "ColorByScalar";
-    }
+  }
   else if ( this->ColorMode == VTK_COLOR_BY_VECTOR )
-    {
+  {
     return "ColorByVector";
-    }
+  }
   else if ( this->ColorMode == VTK_COLOR_BY_SINGLE_COLOR )
-    {
+  {
     return "ColorBySingleColor";
-    }
-  else 
-    {
+  }
+  else
+  {
     return "ColorByScale";
-    }
+  }
 }
 
 // Description:
@@ -385,17 +385,17 @@ inline const char *vtkVisItGlyph3D::GetColorModeAsString(void)
 inline const char *vtkVisItGlyph3D::GetVectorModeAsString(void)
 {
   if ( this->VectorMode == VTK_USE_VECTOR)
-    {
+  {
     return "UseVector";
-    }
+  }
   else if ( this->VectorMode == VTK_USE_NORMAL)
-    {
+  {
     return "UseNormal";
-    }
+  }
   else
-    {
+  {
     return "VectorRotationOff";
-    }
+  }
 }
 
 // Description:
@@ -403,17 +403,17 @@ inline const char *vtkVisItGlyph3D::GetVectorModeAsString(void)
 inline const char *vtkVisItGlyph3D::GetIndexModeAsString(void)
 {
   if ( this->IndexMode == VTK_INDEXING_OFF)
-    {
+  {
     return "IndexingOff";
-    }
+  }
   else if ( this->IndexMode == VTK_INDEXING_BY_SCALAR)
-    {
+  {
     return "IndexingByScalar";
-    }
+  }
   else
-    {
+  {
     return "IndexingByVector";
-    }
+  }
 }
 
 #endif

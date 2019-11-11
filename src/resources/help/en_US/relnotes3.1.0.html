@@ -32,30 +32,28 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_features"></a>
 <p><b><font size="4">General features added in version 3.1</font></b></p>
 <ul>
-  <li>A Binary distribution has been added for CentOS 8.</li>
-
-  <li></li>
+  <li>Binary distributions have been added for CentOS 8 and Ubuntu 19.</li>
 </ul>
 
 <a name="GUI_changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 3.1</font></b></p>
 <ul>
-  <li></li>
-</ul>
+  <li>The VCR play/reverse play buttons are now inactive when there are no active drawn plots.</li>
+  <li>The following windows were restructured to reduce their height and allow for better usage on laptops: Pick, Preference, Host profiles configuration setup, Poincare operator, LCS operator, Limit Cycle operator and Integral Curve operator.</li>
 </ul>
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 3.1</font></b></p>
 <ul>
-  <li></li>
-</ul>
+  <li>Corrected a bug with the VTK reader parsing .vtm files when the 'DataSet' tag doesn't have a 'file' attribute.</li>
+  <li>An openPMD reader was added to VisIt.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 3.1</font></b></p>
 <ul>
-  <li></li>
-</ul>
+  <li>Pseudocolor can now apply tubes/ribbons to lines and apply glyphs to points found in mixed-topology unstructured grids and poly data.</li>
+  <li>Pseudocolor can now glyph points when 'Render Points' option is selected.</li>
 </ul>
 
 <a name="Operator_changes"></a>
@@ -63,27 +61,25 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li></li>
 </ul>
-</ul>
 
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 3.1</font></b></p>
 <ul>
-  <li></li>
-</ul>
+  <li>Added the <i>divide</i> expression to allow users to specify a divide by zero value and a tolerance for zero.</li>
+  <li>Enhanced the <i>min</i> and <i>max</i> expressssions to support more than two input variables.</li>
 </ul>
 
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 3.1</font></b></p>
 <ul>
-  <li></li>
-</ul>
+  <li>Corrected a bug where sometimes it wasn't possible to pick on a glyphed point lying near the dataset bounds.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 3.1</font></b></p>
 <ul>
-  <li></li>
-</ul>
+  <li>Changing the opacity for a Pseudocolor plot no longer affects the glyph type of glyphed points.</li>
+  <li>Fixed the issue with installing host profiles after deleting or moving the .visit folder while VisIt is running.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
@@ -91,20 +87,20 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li></li>
 </ul>
-</ul>
 
 <a name="Build_features"></a>
 <p><b><font size="4">Build features added in version 3.1</font></b></p>
 <ul>
-  <li></li>
-</ul>
+  <li>Modified build_visit to enable OpenSSL by default since Python depends on OpenSSL and Python is enabled by default.</li>
+  <li>Corrected a bug in build_visit that prevented OSMesa and MesaGL from building from within a Git checkout.</li>
+  <li>Added a patch to build_visit so that Qt builds on CentOS 8 and Ubuntu 19.</li>
+  <li>Modified build_visit so that it would build Adios2 on Mac OS X.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.1</font></b></p>
 <ul>
-  <li></li>
-</ul>
+  <li>Suppressed the Qt warning 'Empty filename passed to function'. Also added additional context information to the Qt log message if available.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

@@ -2832,6 +2832,9 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //   Alister Maguire, Tue Jul 16 11:00:45 PDT 2019
 //   I added a check to see if transparency is allowed.
 //
+//   Kathleen Biagas, Tue Nov  5 08:23:09 PST 2019
+//   Added check for certain pointType changes.
+//
 // ****************************************************************************
 bool
 PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &obj) const
@@ -2897,6 +2900,12 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                                (newOpacType == FullyOpaque &&
                                 OpacityType(opacityType) != FullyOpaque));
 
+    // Certain point type changes require a recalculation.
+    bool currentPointTypeIsPoint =     pointType == Point;
+    bool newPointTypeIsPoint     = obj.pointType == Point;
+
+    bool changingPointType =  pointType != obj.pointType && currentPointTypeIsPoint != newPointTypeIsPoint;
+
     return (centering != obj.centering ||
             needSecondaryVar ||
             geometryChange ||
@@ -2907,6 +2916,7 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
             wireframeColor != obj.wireframeColor ||
             pointColor != obj.pointColor ||
             alteringOpacChange ||
+            changingPointType ||
             0);
 
 }

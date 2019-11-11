@@ -33,6 +33,7 @@ std::string MISC_API GetUserVisItRCFile();
 std::string MISC_API GetSystemVisItRCFile();
 
 std::string MISC_API GetAndMakeUserVisItHostsDirectory();
+std::string MISC_API GetVisItHostsDirectory();
 std::string MISC_API GetSystemVisItHostsDirectory();
 
 typedef enum {
