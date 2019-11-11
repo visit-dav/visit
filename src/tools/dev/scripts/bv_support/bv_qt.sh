@@ -223,6 +223,14 @@ function apply_qt_patch
                     return 1
                 fi
             fi
+        elif [[ -f /etc/lsb-release ]] ; then
+            VER=`cat /etc/lsb-release | grep "DISTRIB_RELEASE" | cut -d'=' -f 2`
+            if [[ "${VER:0:3}" == "19." ]] ; then
+                apply_qt_5101_centos8_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
         fi
     fi
 
