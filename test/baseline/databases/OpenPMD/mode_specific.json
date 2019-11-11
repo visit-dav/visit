@@ -1,0 +1,5 @@
+{"modes":
+    {"scalable,parallel,icet":
+        {"openPMD_3D_Fieldsrho.png" : "scalable_parallel"}
+    }
+}
