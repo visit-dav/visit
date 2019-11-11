@@ -178,11 +178,19 @@ function bv_python_info
     export MPI4PY_MD5_CHECKSUM="4f7d8126d7367c239fd67615680990e3"
     export MPI4PY_SHA256_CHECKSUM="6543a05851a7aa1e6d165e673d422ba24e45c41e4221f0993fe1e5924a00cb81"
 
-    export SPHINX_URL=${SPHINX_URL:-"https://files.pythonhosted.org/packages/d9/56/7c0b0e60c69ae5e995c9a6c9bbe66ad381a00a44cd090f21dcd179c47460/Sphinx-1.3.1.tar.gz"}
-    export SPHINX_FILE=${SPHINX_FILE:-"Sphinx-1.3.1.tar.gz"}
-    export SPHINX_BUILD_DIR=${SPHINX_BUILD_DIR:-"Sphinx-1.3.1"}
-    export SPHINX_MD5_CHECKSUM="8786a194acf9673464c5455b11fd4332"
-    export SPHINX_SHA256_CHECKSUM="1a6e5130c2b42d2de301693c299f78cc4bd3501e78b610c08e45efc70e2b5114"
+    export PYTHON3_URL=${PYTHON3_URL:-"https://www.python.org/ftp/python/3.7.5"}
+    export PYTHON3_FILE_SUFFIX="tgz"
+    export PYTHON3_VERSION=${PYTHON3_VERSION:-"3.7.5"}
+    export PYTHON3_COMPATIBILITY_VERSION=${PYTHON3_COMPATIBILITY_VERSION:-"3.7"}
+    export PYTHON3_FILE="Python-$PYTHON3_VERSION.$PYTHON3_FILE_SUFFIX"
+    export PYTHON3_BUILD_DIR="Python-$PYTHON3_VERSION"
+    export PYTHON3_MD5_CHECKSUM="1cd071f78ff6d9c7524c95303a3057aa"
+
+    export SPHINX_URL=${SPHINX_URL:-"https://files.pythonhosted.org/packages/f6/3a/c51fc285c0c5c30bcd9426bf096187840683d9383df716a6b6a4ca0a8bde"}
+    export SPHINX_FILE=${SPHINX_FILE:-"Sphinx-2.2.1.tar.gz"}
+    export SPHINX_BUILD_DIR=${SPHINX_BUILD_DIR:-"Sphinx-2.2.1"}
+    export SPHINX_MD5_CHECKSUM="60ea892a09b463e5ecb6ea26d2470f36"
+    export SPHINX_SHA256_CHECKSUM="31088dfb95359384b1005619827eaee3056243798c62724fd3fa4b84ee4d71bd"
 }
 
 function bv_python_print
@@ -377,7 +385,7 @@ function build_python
         OPENSSL_INCLUDE="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/include"
         OPENSSL_LIB="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/lib"
         PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${OPENSSL_LIB}"
-        PYTHON_CPPFLAGS="${PTYHON_CPPFLAGS} -I${OPENSSL_INCLUDE}"
+        PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${OPENSSL_INCLUDE}"
     fi
 
     PY_ZLIB_INCLUDE="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/include"
@@ -839,13 +847,126 @@ function build_numpy
 }
 
 # *************************************************************************** #
+#                             build_python3                                   #
+# *************************************************************************** #
+
+function build_python3
+{
+    # download
+    if ! test -f ${PYTHON3_FILE} ; then
+        download_file ${PYTHON3_FILE} "${PYTHON3_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${PYTHON3_FILE}"
+            return 1
+        fi
+    fi
+
+    prepare_build_dir $PYTHON3_BUILD_DIR $PYTHON3_FILE
+    untarred_python=$?
+    # 0, already exists, 1 untarred src, 2 error
+
+    if [[ $untarred_python == -1 ]] ; then
+        warn "Unable to prepare Python3 build directory. Giving Up!"
+        return 1
+    fi
+
+    cd $PYTHON3_BUILD_DIR || error "Can't cd to Python3 build dir."
+
+    #
+    # Configure Python3
+    #
+    cCompiler="${C_COMPILER}"
+    cFlags="${CFLAGS} ${C_OPT_FLAGS}"
+    cxxCompiler="${CXX_COMPILER}"
+    cxxFlags="{$CXXFLAGS} ${CXX_OPT_FLAGS}"
+    if [[ "$OPSYS" == "Linux" && "$C_COMPILER" == "xlc" ]]; then
+        cCompiler="gxlc"
+        cxxCompiler="gxlC"
+        cFlags=`echo ${CFLAGS} ${C_OPT_FLAGS} | sed "s/-qpic/-fPIC/g"`
+        cxxFlags=`echo $CXXFLAGS} ${CXX_OPT_FLAGS} | sed "s/-qpic/-fPIC/g"`
+    fi
+    PYTHON3_OPT="$cFlags"
+    PYTHON3_LDFLAGS=""
+    PYTHON3_CPPFLAGS=""
+    PYTHON3_PREFIX_DIR="$VISITDIR/python/$PYTHON3_VERSION/$VISITARCH"
+    PYTHON3_LDFLAGS="${PYTHON3_LDFLAGS} -L${PY_ZLIB_LIB}"
+    PYTHON3_CPPFLAGS="${PYTHON3_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
+
+    if [[ "$OPSYS" == "AIX" ]]; then
+        info "Configuring Python3 (AIX): ./configure OPT=\"$PYTHON3_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
+             "--prefix=\"$PYTHON3_PREFIX_DIR\" --disable-ipv6"
+        ./configure OPT="$PYTHON3_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
+                    --prefix="$PYTHON3_PREFIX_DIR" --disable-ipv6
+    else
+        info "Configuring Python3 : ./configure OPT=\"$PYTHON3_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
+             "LDFLAGS=\"$PYTHON3_LDFLAGS\" CPPFLAGS=\"$PYTHON3_CPPFLAGS\""\
+             "${PYTHON3_SHARED} --prefix=\"$PYTHON3_PREFIX_DIR\" --disable-ipv6"
+        ./configure OPT="$PYTHON3_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
+                    LDFLAGS="$PYTHON3_LDFLAGS" \
+                    CPPFLAGS="$PYTHON3_CPPFLAGS" \
+                    ${PYTHON3_SHARED} \
+                    --prefix="$PYTHON3_PREFIX_DIR" --disable-ipv6
+    fi
+
+    if [[ $? != 0 ]] ; then
+        warn "Python3 configure failed.  Giving up"
+        return 1
+    fi
+
+    #
+    # Build Python.
+    #
+    info "Building Python3 . . . (~2 minutes)"
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+        warn "Python3 build failed.  Giving up"
+        return 1
+    fi
+    info "Installing Python3 . . ."
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+        warn "Python3 build (make install) failed.  Giving up"
+        return 1
+    fi
+
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "AIX" ]]; then
+        # configure flag --enable-shared doesn't work on llnl aix5 systems
+        # we need to create the shared lib manually and place it in the
+        # proper loc
+        mv $VISITDIR/python/$PYTHON3_VERSION/$VISITARCH/lib/libpython$PYTHON3_COMPATIBILITY_VERSION.$SO_EXT \
+           $VISITDIR/python/$PYTHON3_VERSION/$VISITARCH/lib/libpython$PYTHON3_COMPATIBILITY_VERSION.static.a
+
+        $C_COMPILER -qmkshrobj -lm \
+                    $VISITDIR/python/$PYTHON3_VERSION/$VISITARCH/lib/libpython$PYTHON3_COMPATIBILITY_VERSION.static.a \
+                    -o $VISITDIR/python/$PYTHON3_VERSION/$VISITARCH/lib/libpython$PYTHON3_COMPATIBILITY_VERSION.$SO_EXT
+
+        if [[ $? != 0 ]] ; then
+            warn "Python3 dynamic library build failed.  Giving up"
+            return 1
+        fi
+
+        # we can safely remove this version of the static lib b/c it also exists under python3.7/config/
+        rm -f $VISITDIR/python/$PYTHON3_VERSION/$VISITARCH/lib/libpython$PYTHON3_COMPATIBILITY_VERSION.static.a
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/python"
+        chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+    cd "$START_DIR"
+    info "Done with Python3"
+
+    return 0
+}
+
+# *************************************************************************** #
 #                                  build_sphinx                               #
 # *************************************************************************** #
 function build_sphinx
 {
     # download
     if ! test -f ${SPHINX_FILE} ; then
-        download_file ${SPHINX_FILE}
+        download_file ${SPHINX_FILE} "${SPHINX_URL}"
         if [[ $? != 0 ]] ; then
             warn "Could not download ${SPHINX_FILE}"
             return 1
@@ -862,11 +983,11 @@ function build_sphinx
         fi
     fi
 
-    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
+    PY3HOME="${VISITDIR}/python/${PYTHON3_VERSION}/${VISITARCH}"
     # install
     pushd $SPHINX_BUILD_DIR > /dev/null
     info "Installing sphinx ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install sphinx"
@@ -967,6 +1088,15 @@ function bv_python_build
                 error "seedme python module build failed. Bailing out."
             fi
             info "Done building the seedme python module."
+
+            #
+            # Currently, we only need python3 for sphinx.
+            #
+            build_python3
+            if [[ $? != 0 ]] ; then
+                error "python3 build failed. Bailing out."
+            fi
+            info "Done building python3."
 
             build_sphinx
             if [[ $? != 0 ]] ; then
