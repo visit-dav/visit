@@ -191,6 +191,12 @@ function bv_python_info
     export SPHINX_BUILD_DIR=${SPHINX_BUILD_DIR:-"Sphinx-2.2.1"}
     export SPHINX_MD5_CHECKSUM="60ea892a09b463e5ecb6ea26d2470f36"
     export SPHINX_SHA256_CHECKSUM="31088dfb95359384b1005619827eaee3056243798c62724fd3fa4b84ee4d71bd"
+
+    export SPHINX_RTD_URL=${SPHINX_RTD_URL:-"https://files.pythonhosted.org/packages/ed/73/7e550d6e4cf9f78a0e0b60b9d93dba295389c3d271c034bf2ea3463a79f9"}
+    export SPHINX_RTD_FILE=${SPHINX_RTD_FILE:-"sphinx_rtd_theme-0.4.3.tar.gz"}
+    export SPHINX_RTD_BUILD_DIR=${SPHINX_RTD_BUILD_DIR:-"sphinx_rtd_theme-0.4.3"}
+    export SPHINX_RTD_MD5_CHECKSUM="6c50f30bc39046f497d336039a0c13fa"
+    export SPHINX_RTD_SHA256_CHECKSUM="728607e34d60456d736cc7991fd236afb828b21b82f956c5ea75f94c8414040a"
 }
 
 function bv_python_print
@@ -1004,6 +1010,51 @@ function build_sphinx
     return 0
 }
 
+# *************************************************************************** #
+#                              build_sphinx_rtd                               #
+# *************************************************************************** #
+function build_sphinx_rtd
+{
+    # download
+    if ! test -f ${SPHINX_RTD_FILE} ; then
+        download_file ${SPHINX_RTD_FILE} "${SPHINX_RTD_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPHINX_RTD_FILE}"
+            return 1
+        fi
+    fi
+
+    # extract
+    if ! test -d ${SPHINX_RTD_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${SPHINX_RTD_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPHINX_RTD_FILE}"
+            return 1
+        fi
+    fi
+
+    PY3HOME="${VISITDIR}/python/${PYTHON3_VERSION}/${VISITARCH}"
+    # install
+    pushd $SPHINX_RTD_BUILD_DIR > /dev/null
+    info "Installing sphinx ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinx"
+        return 1
+    fi
+    popd > /dev/null
+
+    # fix the perms
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/python"
+        chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    return 0
+}
+
 function bv_python_is_enabled
 {
     if [[ $DO_PYTHON == "yes" ]]; then
@@ -1103,6 +1154,12 @@ function bv_python_build
                 error "sphinx python module build failed. Bailing out."
             fi
             info "Done building the sphinx python module."
+
+            build_sphinx_rtd
+            if [[ $? != 0 ]] ; then
+                error "sphinx rtd python theme build failed. Bailing out."
+            fi
+            info "Done building the sphinx rtd python theme."
 
         fi
     fi
