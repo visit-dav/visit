@@ -2240,7 +2240,7 @@ ENDIF (NOT WIN32)
 # Build the sphinx documentation.
 #
 execute_process(
-                  COMMAND ${PYTHON_DIR}/bin/sphinx-build -b html ${VISIT_SOURCE_DIR}/doc ${VISIT_SOURCE_DIR}/resources/help/en_US/manual -a
+                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build -b html ${VISIT_SOURCE_DIR}/doc ${VISIT_SOURCE_DIR}/resources/help/en_US/manual -a
                )
 
 #CMake add subdirectory forces this action to go last

@@ -234,6 +234,8 @@ function bv_python_host_profile
         else
             echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR \${VISITHOME}/python/$PYTHON_VERSION/\${VISITARCH})" \
                  >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON3_DIR \${VISITHOME}/python/$PYTHON3_VERSION/\${VISITARCH})" \
+                 >> $HOSTCONF
             #           echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
         fi
     fi
