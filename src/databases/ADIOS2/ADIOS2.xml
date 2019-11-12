@@ -16,13 +16,13 @@
       *.bp
       *.bp.sst
       *.bp.ssc
-      *.bp.staging
+      md.idx
+      md.0
     </FilePatterns>
     <Files components="M">
       avtADIOS2FileFormat.C
       avtMEUMMAPSFileFormat.C
       avtGTCFileFormat.C
-      avtLAMMPSFileFormat.C
       avtADIOS2BaseFileFormat.C
       avtADIOS2SSTFileFormat.C
       avtLAMMPSFileFormat.C
@@ -35,7 +35,6 @@
       avtADIOS2FileFormat.C
       avtMEUMMAPSFileFormat.C
       avtGTCFileFormat.C
-      avtLAMMPSFileFormat.C
       avtADIOS2BaseFileFormat.C
       avtADIOS2SSTFileFormat.C
       avtLAMMPSFileFormat.C
