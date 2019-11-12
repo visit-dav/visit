@@ -120,6 +120,9 @@ class     avtStaggeringFilter;
 //    avtPolylineToTubeFilter with single avtPseudcolorGeometryFilter.
 //    Remove avtVariablePointGlyphMapper, GetBBoxSize.
 //
+//    Kathleen Biagas, Mon Nov 11 17:36:15 PST 2019
+//    Added ManagesOwnTransparency, so SR mode with transparency will work.
+//
 // ****************************************************************************
 
 class avtPseudocolorPlot : public avtSurfaceDataPlot
@@ -147,6 +150,8 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     void                        SetScaling(int, double);
 
     virtual bool                PlotHasBeenGlyphed();
+    virtual bool                ManagesOwnTransparency()
+                                    { return PlotHasBeenGlyphed(); }
 
   protected:
     avtPseudocolorMapper          *mapper;
