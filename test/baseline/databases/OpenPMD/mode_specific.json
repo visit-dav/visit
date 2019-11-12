@@ -1,5 +1,9 @@
-{"modes":
+{"modes": [
+    {"parallel":
+        {"openPMD_3D_Fieldsrho.png" : "parallel"}
+    },
     {"scalable,parallel,icet":
         {"openPMD_3D_Fieldsrho.png" : "scalable_parallel"}
     }
+    ]
 }
