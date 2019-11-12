@@ -288,7 +288,7 @@ QvisSetupHostProfilesAndConfigWindow::installConfigFile(const QString& srcFilena
 //   in installConfigFile.
 //
 //   Kathleen Biagas, Thu Nov  7 11:51:53 PST 2019
-//   Info now stored in QListWidgets and QStringlists
+//   Info now stored in QListWidgets and QStringlists.
 //
 //   Kevin Griffin, Thu Nov  7 17:43:56 PST 2019
 //   In rare cases when the user moves or deletes their .visit directory
