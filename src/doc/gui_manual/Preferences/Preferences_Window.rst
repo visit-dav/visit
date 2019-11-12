@@ -5,11 +5,10 @@ Preferences Window
 
 The **Preferences** window, shown in
 :numref:`Figure %s<Preferences-Preferences>`, contains controls that allow
-setting global options that influence VisIt_'s behavior. The top portion of
-the window contains a collection of miscellaneous options. This is followed
-by collections of options that are grouped by functionality. The groups are
-contained in the **Floating point precision**, **Databases**,
-**Session files** and **File panel properties** areas.
+setting global options that influence VisIt_'s behavior. The **General** tab 
+contains a collection of miscellaneous options. This is followed by options 
+that are grouped by functionality. The groups are contained in the 
+**Database**, **Session file** and **File panel** tabs.
 
 .. _Preferences-Preferences:
 
