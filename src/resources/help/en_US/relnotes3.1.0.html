@@ -20,11 +20,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
-  <li><a href="#Operator_changes">Changes to operators</a></li>
   <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
-  <li><a href="#Configuration_changes">Configuration changes</a></li>
   <li><a href="#Build_features">Changes for build_visit</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
@@ -46,20 +44,15 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">File format reader changes in version 3.1</font></b></p>
 <ul>
   <li>Corrected a bug with the VTK reader parsing .vtm files when the 'DataSet' tag doesn't have a 'file' attribute.</li>
-  <li>An openPMD reader was added to VisIt.</li>
+  <li>An OpenPMD reader was added to VisIt. OpenPMD files are automatically recognized when the have the "pmd" or "opmd" extensions.</li>
+  <li>The ADIOS2 reader was updated to use ADIOS2 2.5.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 3.1</font></b></p>
 <ul>
-  <li>Pseudocolor can now apply tubes/ribbons to lines and apply glyphs to points found in mixed-topology unstructured grids and poly data.</li>
-  <li>Pseudocolor can now glyph points when 'Render Points' option is selected.</li>
-</ul>
-
-<a name="Operator_changes"></a>
-<p><b><font size="4">Changes to VisIt's operators in version 3.1</font></b></p>
-<ul>
-  <li></li>
+  <li>The Pseudocolor plot can now render lines as tubes and ribbons and points as glyphs in mixed-topology unstructured grids and poly data.</li>
+  <li>The Pseudocolor plot can now glyph points when <i>Draw objects as</i> is set to <i>Points</i>.</li>
 </ul>
 
 <a name="Expression_changes"></a>
@@ -79,13 +72,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Other bugs fixed in version 3.1</font></b></p>
 <ul>
   <li>Changing the opacity for a Pseudocolor plot no longer affects the glyph type of glyphed points.</li>
-  <li>Fixed the issue with installing host profiles after deleting or moving the .visit folder while VisIt is running.</li>
-</ul>
-
-<a name="Configuration_changes"></a>
-<p><b><font size="4">Configuration changes in version 3.1</font></b></p>
-<ul>
-  <li></li>
+  <li>Corrected an issue with installing host profiles after deleting or moving the .visit folder while VisIt is running.</li>
 </ul>
 
 <a name="Build_features"></a>
