@@ -1379,7 +1379,8 @@ avtPseudocolorPlot::SetCellCountMultiplierForSRThreshold(
 //
 //  Purpose:
 //    Returns whether or not this plot has been glyphed (point type isn't
-//    point or sphere). Will also return true if 'RenderPoints' is turned on.
+//    point). Will also return true if 'RenderPoints' is turned on, due to
+//    use of vtkPointGlyphMapper.
 //
 //  Programmer: Kathleen Biagas
 //  Creation:   October 31, 2019
@@ -1389,6 +1390,5 @@ avtPseudocolorPlot::SetCellCountMultiplierForSRThreshold(
 bool
 avtPseudocolorPlot::PlotHasBeenGlyphed()
 {
-    return ((atts.GetPointType() != Point && atts.GetPointType() != Sphere) ||
-             atts.GetRenderPoints());
+    return (atts.GetPointType() != Point || atts.GetRenderPoints());
 }
