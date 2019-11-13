@@ -65,6 +65,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Changing the opacity for a Pseudocolor plot no longer affects the glyph type of glyphed points.</li>
   <li>Corrected an issue with installing host profiles after deleting or moving the .visit folder while VisIt is running.</li>
+  <li>Removed the visual artifacts of the Expressions window that were present on first draw.</li>
 </ul>
 
 <h2>Build changes in version 3.1</h2>
