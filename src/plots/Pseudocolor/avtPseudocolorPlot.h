@@ -16,14 +16,11 @@
 
 class     avtLookupTable;
 class     avtPseudocolorFilter;
+class     avtPseudocolorGeometryFilter;
 class     avtShiftCenteringFilter;
 class     avtPseudocolorMapper;
-class     avtVariablePointGlyphMapper;
 class     avtVariableLegend;
 class     avtPolylineCleanupFilter;
-class     avtPolylineAddEndPointsFilter;
-class     avtPolylineToRibbonFilter;
-class     avtPolylineToTubeFilter;
 class     avtStaggeringFilter;
 
 // ****************************************************************************
@@ -118,6 +115,14 @@ class     avtStaggeringFilter;
 //    Kathleen Biagas, Thu Oct 31 12:31:03 MST 2019
 //    Added PlotHasBeenGlyphed.
 //
+//    Kathleen Biagas, Tue Nov  5 11:29:55 PST 2019
+//    Replace avtPolylineAddEndPointsFilter, avtPolylineToRibbonFilter,
+//    avtPolylineToTubeFilter with single avtPseudcolorGeometryFilter.
+//    Remove avtVariablePointGlyphMapper, GetBBoxSize.
+//
+//    Kathleen Biagas, Mon Nov 11 17:36:15 PST 2019
+//    Added ManagesOwnTransparency, so SR mode with transparency will work.
+//
 // ****************************************************************************
 
 class avtPseudocolorPlot : public avtSurfaceDataPlot
@@ -145,21 +150,20 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     void                        SetScaling(int, double);
 
     virtual bool                PlotHasBeenGlyphed();
+    virtual bool                ManagesOwnTransparency()
+                                    { return PlotHasBeenGlyphed(); }
 
   protected:
-    avtVariablePointGlyphMapper   *glyphMapper;
     avtPseudocolorMapper          *mapper;
     avtVariableLegend             *varLegend;
     avtLegend_p                    varLegendRefPtr;
     PseudocolorAttributes          atts;
-    avtPseudocolorFilter          *pcfilter;
+    avtPseudocolorFilter          *pcFilter;
+    avtPseudocolorGeometryFilter  *geoFilter;
 
     avtPolylineCleanupFilter      *polylineCleanupFilter;
-    avtPolylineAddEndPointsFilter *polylineAddEndPointsFilter;
-    avtPolylineToRibbonFilter     *polylineToRibbonFilter;
-    avtPolylineToTubeFilter       *polylineToTubeFilter;
     avtStaggeringFilter           *staggeringFilter;
-    avtShiftCenteringFilter       *filter;
+    avtShiftCenteringFilter       *shiftFilter;
     bool                           colorsInitialized;
     int                            topoDim;
     avtLookupTable                *avtLUT;
@@ -168,7 +172,6 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
-    // virtual avtContract_p       EnhanceSpecification(avtContract_p);
     virtual void                CustomizeBehavior(void);
     virtual int                 GetSmoothingLevel();
 
@@ -179,31 +182,6 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
 private:
     void                        SetLegendRanges(void);
     void                        SetPointGlyphSize();
-
-    double GetBBoxSize( double *bbox )
-    {
-        double vol = 1;
-        int    numDims = 0;
-        if (bbox[1] > bbox[0])
-        {
-            vol *= (bbox[1]-bbox[0]);
-            numDims++;
-        }
-        if (bbox[3] > bbox[2])
-        {
-            vol *= (bbox[3]-bbox[2]);
-            numDims++;
-        }
-        if (bbox[5] > bbox[4])
-        {
-            vol *= (bbox[5]-bbox[4]);
-            numDims++;
-        }
-
-        double length = pow(vol, 1.0/numDims);
-        return length;
-    }
-
 };
 
 #endif

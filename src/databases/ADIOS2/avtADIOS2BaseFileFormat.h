@@ -1,6 +1,40 @@
-// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
-// Project developers.  See the top-level LICENSE file for dates and other
-// details.  No copyright assignment is required to contribute to VisIt.
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
 
 // ************************************************************************* //
 //                            avtADIOS2FileFormat.h                           //
@@ -9,8 +43,8 @@
 #ifndef AVT_ADIOS2_BASE_FILE_FORMAT_H
 #define AVT_ADIOS2_BASE_FILE_FORMAT_H
 
-#include <avtMTMDFileFormat.h>
-#include <VisItStreamUtil.h>
+#include <avtMTSDFileFormat.h>
+
 #include <vector>
 #include <adios2.h>
 #include <memory>
@@ -26,27 +60,37 @@
 //
 // ****************************************************************************
 
-class avtADIOS2BaseFileFormat : public avtMTMDFileFormat
+class avtADIOS2BaseFileFormat : public avtMTSDFileFormat
 {
   public:
     static bool        Identify(const char *fname);
     static avtFileFormatInterface *CreateInterface(const char *const *list,
                                                    int nList,
-                                                   int nBlock,
-                                                   std::shared_ptr<adios2::ADIOS> adios,
-                                                   adios2::Engine &reader,
-                                                   adios2::IO &io,
-                                                   std::map<std::string, adios2::Params> &variables,
-                                                   std::map<std::string, adios2::Params> &attributes);
+                                                   int nBlock);
 
-    avtADIOS2BaseFileFormat(const char *);
+                       avtADIOS2BaseFileFormat(const char *);
+
+    // interface creator with first file already opened
+    static avtFileFormatInterface *CreateInterfaceADIOS2(
+            const char *const *list,
+            int nList,
+            int nBlock,
+            std::shared_ptr<adios2::ADIOS> adios,
+            adios2::Engine &reader,
+            adios2::IO &io,
+            std::map<std::string, adios2::Params> &variables,
+            std::map<std::string, adios2::Params> &attributes
+            );
+
+    // constructor with already-opened stream
     avtADIOS2BaseFileFormat(std::shared_ptr<adios2::ADIOS> adios,
-                            adios2::Engine &reader,
-                            adios2::IO &io,
-                            std::map<std::string, adios2::Params> &variables,
-                            std::map<std::string, adios2::Params> &attributes,
-                            const char *fname);
+            adios2::Engine &reader,
+            adios2::IO &io,
+            std::map<std::string, adios2::Params> &variables,
+            std::map<std::string, adios2::Params> &attributes,
+            const char *);
 
+    //virtual           ~avtADIOS2BaseFileFormat() {;};
     virtual           ~avtADIOS2BaseFileFormat();
 
     //
@@ -71,9 +115,9 @@ class avtADIOS2BaseFileFormat : public avtMTMDFileFormat
     virtual const char    *GetType(void)   { return "ADIOS2Base"; };
     virtual void           FreeUpResources(void);
 
-    virtual vtkDataSet    *GetMesh(int, int, const char *);
-    virtual vtkDataArray  *GetVar(int, int, const char *);
-    virtual vtkDataArray  *GetVectorVar(int, int, const char *);
+    virtual vtkDataSet    *GetMesh(int, const char *);
+    virtual vtkDataArray  *GetVar(int, const char *);
+    virtual vtkDataArray  *GetVectorVar(int, const char *);
 
   protected:
     // DATA MEMBERS
@@ -81,55 +125,17 @@ class avtADIOS2BaseFileFormat : public avtMTMDFileFormat
     adios2::IO io;
     adios2::Engine reader;
     std::map<std::string, adios2::Params> variables;
-
-    struct meshInfo
-    {
-        std::vector<int> dims;
-        std::vector<std::string> meshVars;
-        std::vector<std::pair<adios2::Dims, adios2::Dims>> blockInfo;
-    };
-    std::map<std::string, meshInfo> meshes;
-    std::map<std::string, std::string> varToMesh;
+    std::map<std::string, std::pair<int,std::string>> meshInfo;
 
     bool isClosed;
+
+
     int numTimeSteps;
     std::string engineName;
     bool stagingMode; // engine is staging or file-based?
-    bool supportMultiDom;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
-
-    std::string MeshNameFromDim(const std::vector<int> &dims)
-    {
-        std::string nm;
-        if (dims.size() == 2)
-            nm = "mesh" + std::to_string(dims[0])+"x"+std::to_string(dims[1]);
-        else if (dims.size() == 3)
-            nm = "mesh" + std::to_string(dims[0])+"x"+std::to_string(dims[1])+"x"+std::to_string(dims[2]);
-        else
-            EXCEPTION1(ImproperUseException, "Unsupported dimensions");
-        return nm;
-    }
-
-    template <typename T>
-    void SetBlockInfo(meshInfo &mi, const std::string &meshName, const std::string &varName, int ts)
-    {
-        auto var = io.InquireVariable<T>(varName);
-        auto blockInfo = reader.BlocksInfo(var, ts);
-        int numBlocks = blockInfo.size();
-        mi.blockInfo.resize(numBlocks);
-        for (int i = 0; i < numBlocks; i++)
-            mi.blockInfo[i] = std::make_pair(blockInfo[i].Start, blockInfo[i].Count);
-    }
-
-    friend std::ostream& operator<<(std::ostream& out, const meshInfo &mi);
 };
 
-inline std::ostream& operator<<(std::ostream& out,
-                                const avtADIOS2BaseFileFormat::meshInfo &mi)
-{
-    out<<"{ dims="<<mi.dims<<" blockInfo: "<<mi.blockInfo<<" vars= "<<mi.meshVars<<"}"<<std::endl;
-    return out;
-}
 
 #endif
