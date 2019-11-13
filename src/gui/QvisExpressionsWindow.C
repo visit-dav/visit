@@ -952,8 +952,9 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
     typeList->setEnabled(enable);
     notHidden->setEnabled(enable);
 
-    stdEditorWidget->setEnabled(enable && stdExprActive);
-    pyEditorWidget->setEnabled(enable && pyExprActive);
+    editorTabs->setTabEnabled(0, enable && stdExprActive);
+    editorTabs->setTabEnabled(1, enable && pyExprActive);
+    editorTabs->update();
     
     this->update();
 }
