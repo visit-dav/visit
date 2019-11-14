@@ -65,6 +65,8 @@ avtEffectiveTensorExpression::~avtEffectiveTensorExpression()
 //    Hank Childs, Fri Jan 30 11:38:50 PST 2004
 //    Fix mistake in calculating ('4085).
 //
+//    Mark C. Miller, Mon Nov 11 14:21:38 PST 2019
+//    Added comments to try to document what this function is computing.
 // ****************************************************************************
 
 void
@@ -77,15 +79,25 @@ avtEffectiveTensorExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
         {
             double *vals = in->GetTuple9(i);   
 
-            double trace = -(vals[0] + vals[4] + vals[8]) / 3.;
-            double dev0 = vals[0] + trace;
-            double dev1 = vals[4] + trace;
-            double dev2 = vals[8] + trace;
+            // First invariant of the stress tensor
+            // aka "pressure" of incompressible fluid in motion
+            // aka "mean effective stress"
+            double trace = (vals[0] + vals[4] + vals[8]) / 3.;
 
+            // components of the deviatoric stress
+            double dev0 = vals[0] - trace;
+            double dev1 = vals[4] - trace;
+            double dev2 = vals[8] - trace;
+
+            // The second invariant of the stress deviator
+            // aka "J2"
             double out2 = 0.5*(dev0*dev0 + dev1*dev1 + dev2*dev2) +
                          vals[1]*vals[1] + vals[2]*vals[2] +
                          vals[5]*vals[5];
+
+            // stress deviator
             out2 = sqrt(3.*out2);
+
             out->SetTuple1(i, out2);
         }
     }
