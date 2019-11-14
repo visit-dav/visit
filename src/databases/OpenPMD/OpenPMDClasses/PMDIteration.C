@@ -49,7 +49,7 @@
 // ***************************************************************************
 
 #include "PMDIteration.h"
-
+#include <DebugStream.h>
 vector <PMDIteration> iterations;
 
 // ***************************************************************************
@@ -372,7 +372,7 @@ void PMDIteration::ScanParticles(hid_t fileId)
 
 		if (err!=0)
 		{
-			cerr << " No group named particles of path: " << path << endl;
+			debug5 << " No group named particles of path: " << path << endl;
 		}
 		else
 		{
