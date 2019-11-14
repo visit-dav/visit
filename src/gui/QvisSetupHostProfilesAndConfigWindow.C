@@ -52,6 +52,7 @@
 #include <QVBoxLayout>
 
 #include <InstallationFunctions.h>
+#include <DebugStream.h>
 
 // ****************************************************************************
 // Method: QvisSetupHostProfilesAndConfigWindow::QvisSetupHostProfilesAndConfigWindow
@@ -248,6 +249,10 @@ QvisSetupHostProfilesAndConfigWindow::readDefaultConfigList()
 //
 // Modifications:
 //
+//    Kevin Griffin, Thu Nov  7 17:43:56 PST 2019
+//    Added a check to see if the files were successfully copied. If not, a
+//    debug log message is generated to aid in troubleshooting.
+//
 // ****************************************************************************
 
 void
@@ -271,7 +276,11 @@ QvisSetupHostProfilesAndConfigWindow::installConfigFile(const QString& srcFilena
     }
 
     // Note: Copy will not overwrite existing files
-    QFile::copy(srcFilename, destFilename);
+    bool success = QFile::copy(srcFilename, destFilename);
+    if(!success)
+    {
+        debug1 << "Installing " << srcFilename.toStdString() << " to " << destFilename.toStdString() << " was not successful" << endl;
+    }
 }
 
 // ****************************************************************************
@@ -296,59 +305,88 @@ QvisSetupHostProfilesAndConfigWindow::installConfigFile(const QString& srcFilena
 //   Mark C. Miller, Mon Sep 17 08:46:24 PDT 2012
 //   Fixed leak from using GetDefaultConfigFile directly as arg
 //   in installConfigFile.
+//
+//   Kevin Griffin, Thu Nov  7 17:43:56 PST 2019
+//   In rare cases when the user moves or deletes their .visit directory
+//   all the directories in the path need to be recreated. The call to mkdir
+//   in the previous GetAndMakeUserVisItHostsDirectory called didn't do that
+//   and there were no checks for successful creation of the hosts directory.
+//   The call to get the hosts directory was split from making the directory
+//   so mkpath could be used to create all the parent directories if needed.
+//   Successful creation is now checked and if it fails the appropriate debug
+//   log message is created.
+//
 // ****************************************************************************
 
 void
 QvisSetupHostProfilesAndConfigWindow::performSetup()
 {
     QString hostsInstallDirectory =
-        QString::fromStdString(GetAndMakeUserVisItHostsDirectory());
-
-    for (std::list<NetworkInfo>::iterator it = networkList.begin();
-            it != networkList.end(); ++it)
+        QString::fromStdString(GetVisItHostsDirectory());
+    
+    // mkpath will create all parent directories necessary to create the directory
+    // this is needed in rare cases where the .visit directory is deleted or moved and the
+    // user wants to install the hosts profiles.
+    QDir dir;
+    bool success = dir.mkpath(hostsInstallDirectory);
+    if(success)
     {
-        if (it->checkBox->isChecked())
+        for (std::list<NetworkInfo>::iterator it = networkList.begin();
+                it != networkList.end(); ++it)
         {
-            QString srcDir(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS, 
-                                                 it->shortName.toStdString()).c_str());
-            QDir srcHostProfileDir(srcDir, "host*.xml");
-            QStringList files = srcHostProfileDir.entryList();
-            for (int i = 0; i < files.size(); ++ i)
+            if (it->checkBox->isChecked())
             {
-                const QString &thisProfile = files.at(i);
-                installConfigFile(srcDir + "/" + thisProfile,
-                                  hostsInstallDirectory + "/" + thisProfile);
-            }
-        }
-    }
-    for (std::list<DefaultConfigInfo>::iterator it = defaultConfigList.begin();
-            it != defaultConfigList.end(); ++it)
-    {
-        if (it->radioButton->isChecked())
-        {
-            const char *configFilename[] = {
-                "config", "guiconfig", "visitrc", 0 };
-
-            for (int i = 0; configFilename[i] != 0; ++i)
-            {
-                std::string srcCfgName =
-                    it->shortName.toStdString() +
-                    "/" + std::string(configFilename[i]);
-                QString srcCfgPath(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS, srcCfgName).c_str());
-                if (QFile::exists(srcCfgPath))
+                QString srcDir(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS,
+                                                     it->shortName.toStdString()).c_str());
+                QDir srcHostProfileDir(srcDir, "host*.xml");
+                QStringList files = srcHostProfileDir.entryList();
+                for (int i = 0; i < files.size(); ++ i)
                 {
-                    char *srcCfgFile = GetDefaultConfigFile(configFilename[i]);
-                    installConfigFile(srcCfgPath, srcCfgFile);
-                    delete [] srcCfgFile;
+                    const QString &thisProfile = files.at(i);
+                    installConfigFile(srcDir + "/" + thisProfile,
+                                      hostsInstallDirectory + "/" + thisProfile);
                 }
             }
         }
+        for (std::list<DefaultConfigInfo>::iterator it = defaultConfigList.begin();
+                it != defaultConfigList.end(); ++it)
+        {
+            if (it->radioButton->isChecked())
+            {
+                const char *configFilename[] = {
+                    "config", "guiconfig", "visitrc", 0 };
+
+                for (int i = 0; configFilename[i] != 0; ++i)
+                {
+                    std::string srcCfgName =
+                        it->shortName.toStdString() +
+                        "/" + std::string(configFilename[i]);
+                    QString srcCfgPath(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS, srcCfgName).c_str());
+                    if (QFile::exists(srcCfgPath))
+                    {
+                        char *srcCfgFile = GetDefaultConfigFile(configFilename[i]);
+                        installConfigFile(srcCfgPath, srcCfgFile);
+                        delete [] srcCfgFile;
+                    }
+                }
+            }
+        }
+
+        QMessageBox msgBox;
+        msgBox.setText(tr("Host profiles and configuration files have been installed"
+                   " and will be available after VisIt is restarted."));
+        msgBox.exec();
+
+        close();
     }
-
-    QMessageBox msgBox;
-    msgBox.setText(tr("Host profiles and configuration files have been installed"
-               " and will be available after VisIt is restarted."));
-    msgBox.exec();
-
-    close();
+    else
+    {
+        debug1 << "Hosts directory (" << hostsInstallDirectory.toStdString() << ") was not successfully created." << endl;
+        
+        QMessageBox msgBox;
+        msgBox.setText(tr("Error: Host profiles and configuration files have not been installed. See debug logs for more information."));
+        msgBox.exec();
+        
+        close();
+    }
 }
