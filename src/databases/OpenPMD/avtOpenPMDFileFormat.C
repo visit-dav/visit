@@ -127,6 +127,8 @@ avtOpenPMDFileFormat::Initialize()
     debug5 << "avtOpenPMDFileFormat::Initialize" << endl;
     if(!this->initialized)
     {
+        H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+
         // Open the OpenPMD file
         openPMDFile.OpenFile(filename);
 
