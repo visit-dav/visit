@@ -1,83 +1,74 @@
-<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
-<html>
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-  <meta http-equiv="Content-Language" content="en-us">
-  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-  <meta name="ProgId" content="FrontPage.Editor.Document">
-  <title>VisIt 3.1 Release Notes</title>
-</head>
-<body>
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[Release Notes for VisIt 3.1]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <IM>LLNL-WEB-796739</IM>
+  <lastchanged><![CDATA[November 13, 2019]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
 
-<center><b><font size="6">VisIt 3.1 Release Notes</font></b></center>
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
 
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
 
-<p><b>Sections</b></p>
-<ul>
-  <li><a href="#General_Features">Features for all users</a></li>
-  <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
-  <li><a href="#File_format">Changes to file format readers</a></li>
-  <li><a href="#Plot_changes">Changes to plots</a></li>
-  <li><a href="#Expression_changes">Changes to expressions</a></li>
-  <li><a href="#Query_changes">Changes to picks and queries</a></li>
-  <li><a href="#Bugs_fixed">Other bug fixes</a></li>
-  <li><a href="#Build_features">Changes for build_visit</a></li>
-  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
-</ul>
-
-<a name="General_features"></a>
-<p><b><font size="4">General features added in version 3.1</font></b></p>
+<h2>General features added in version 3.1</h2>
 <ul>
   <li>Binary distributions have been added for CentOS 8 and Ubuntu 19.</li>
 </ul>
 
-<a name="GUI_changes"></a>
-<p><b><font size="4">Changes in GUI behavior for version 3.1</font></b></p>
+<h2>Changes in GUI behavior in version 3.1</h2>
 <ul>
   <li>The VCR play/reverse play buttons are now inactive when there are no active drawn plots.</li>
   <li>The following windows were restructured to reduce their height and allow for better usage on laptops: Pick, Preference, Host profiles configuration setup, Poincare operator, LCS operator, Limit Cycle operator and Integral Curve operator.</li>
 </ul>
 
-<a name="File_format"></a>
-<p><b><font size="4">File format reader changes in version 3.1</font></b></p>
+<h2>File format reader changes in version 3.1</h2>
 <ul>
   <li>Corrected a bug with the VTK reader parsing .vtm files when the 'DataSet' tag doesn't have a 'file' attribute.</li>
   <li>An OpenPMD reader was added to VisIt. OpenPMD files are automatically recognized when the have the "pmd" or "opmd" extensions.</li>
   <li>The ADIOS2 reader was updated to use ADIOS2 2.5.</li>
 </ul>
 
-<a name="Plot_changes"></a>
-<p><b><font size="4">Changes to VisIt's plots in version 3.1</font></b></p>
+<h2>Changes to VisIt's plots in version 3.1</h2>
 <ul>
   <li>The Pseudocolor plot can now render lines as tubes and ribbons and points as glyphs in mixed-topology unstructured grids and poly data.</li>
   <li>The Pseudocolor plot can now glyph points when <i>Draw objects as</i> is set to <i>Points</i>.</li>
 </ul>
 
-<a name="Expression_changes"></a>
-<p><b><font size="4">Changes to VisIt's expression language in version 3.1</font></b></p>
+<h2>Changes to VisIt's expression language in version 3.1</h2>
 <ul>
   <li>Added the <i>divide</i> expression to allow users to specify a divide by zero value and a tolerance for zero.</li>
   <li>Enhanced the <i>min</i> and <i>max</i> expressssions to support more than two input variables.</li>
 </ul>
 
-<a name="Query_changes"></a>
-<p><b><font size="4">Changes to VisIt's picks and queries in version 3.1</font></b></p>
+<h2>Changes to VisIt's picks and queries in version 3.1</h2>
 <ul>
   <li>Corrected a bug where sometimes it wasn't possible to pick on a glyphed point lying near the dataset bounds.</li>
 </ul>
 
-<a name="Bugs_fixed"></a>
-<p><b><font size="4">Other bugs fixed in version 3.1</font></b></p>
+<h2>Other bugs fixed in version 3.1</h2>
 <ul>
   <li>Changing the opacity for a Pseudocolor plot no longer affects the glyph type of glyphed points.</li>
   <li>Corrected an issue with installing host profiles after deleting or moving the .visit folder while VisIt is running.</li>
   <li>Removed the visual artifacts of the Expressions window that were present on first draw.</li>
 </ul>
 
-<a name="Build_features"></a>
-<p><b><font size="4">Build features added in version 3.1</font></b></p>
+<h2>Build changes in version 3.1</h2>
 <ul>
   <li>Modified build_visit to enable OpenSSL by default since Python depends on OpenSSL and Python is enabled by default.</li>
   <li>Corrected a bug in build_visit that prevented OSMesa and MesaGL from building from within a Git checkout.</li>
@@ -85,13 +76,17 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Modified build_visit so that it would build Adios2 on Mac OS X.</li>
 </ul>
 
-<a name="Dev_changes"></a>
-<p><b><font size="4">Changes for VisIt developers in version 3.1</font></b></p>
+<h2>Changes for VisIt developers in version 3.1</h2>
 <ul>
   <li>Suppressed the Qt warning 'Empty filename passed to function'. Also added additional context information to the Qt log message if available.</li>
 </ul>
 
-<p>Click the following link to view the release notes for the previous version
-of VisIt: <a href=relnotes3.0.2.html>3.0.2</a>.</p>
-</body>
-</html>
+
+<p>For any additional questions, send e-mail to <a href="mailto:visit-users@ornl.gov">VisIt Users</a>.</p>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>
