@@ -925,6 +925,10 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
 //    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Kevin Griffin, Tue Nov 12 14:30:34 PST 2019
+//    Added a call to update() to remove the visual artificats present during
+//    the first draw of the expressions window.
+//
 // ****************************************************************************
 
 void
@@ -948,8 +952,11 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
     typeList->setEnabled(enable);
     notHidden->setEnabled(enable);
 
-    stdEditorWidget->setEnabled(enable && stdExprActive);
-    pyEditorWidget->setEnabled(enable && pyExprActive);
+    editorTabs->setTabEnabled(0, enable && stdExprActive);
+    editorTabs->setTabEnabled(1, enable && pyExprActive);
+    editorTabs->update();
+    
+    this->update();
 }
 
 // ****************************************************************************
