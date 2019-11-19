@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM ubuntu:disco
 MAINTAINER Eric Brugger <brugger1@llnl.gov>
 
 # fetch build env
@@ -51,7 +51,7 @@ WORKDIR /home/visit
 RUN mkdir third-party
 # Copy build_visit and the script to run it
 COPY build_visit3_1_0 /home/visit
-COPY run_build_visit.sh /home/visit
+COPY run_build_visit_centos8.sh /home/visit
 COPY build_visit_docker_cleanup.py /home/visit
-# Build the third party libraries
-RUN /bin/bash run_build_visit.sh
+# Build the third party libraries.
+RUN /bin/bash run_build_visit_centos8.sh
