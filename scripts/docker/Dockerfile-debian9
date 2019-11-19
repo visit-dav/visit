@@ -50,7 +50,7 @@ WORKDIR /home/visit
 # Create the third-party directory
 RUN mkdir third-party
 # Copy build_visit and the script to run it
-COPY build_visit3_0_2 /home/visit
+COPY build_visit3_1_0 /home/visit
 COPY run_build_visit.sh /home/visit
 COPY build_visit_docker_cleanup.py /home/visit
 # Build the third party libraries
