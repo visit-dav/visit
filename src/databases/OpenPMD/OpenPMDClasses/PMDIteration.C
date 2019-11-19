@@ -325,7 +325,7 @@ void PMDIteration::ScanFields(hid_t fileId)
 			break;
 
 			default:
-			cerr << "visitLinks: node '" << name <<
+			debug5 << "visitLinks: node '" << name <<
 			"' has an unknown type " << object_info.type << std::endl;
 			break;
 			}
