@@ -104,6 +104,7 @@
 
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
             <lib name="no-cmake"/>
+            <lib name="no-openssl"/>
             <lib name="no-python"/>
             <lib name="no-qt" />
             <lib name="no-qwt" />
