@@ -232,6 +232,11 @@ function apply_qt_patch
                 fi
             fi
         fi
+
+        apply_qt_5101_blueos_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
 
     return 0
@@ -305,6 +310,18 @@ diff -c qtbase/src/corelib/io/qfilesystemengine_unix.cpp.orig qtbase/src/corelib
 EOF
     if [[ $? != 0 ]] ; then
         warn "qt 5.10.1 centos8 patch failed."
+        return 1
+    fi
+    
+    return 0;
+}
+
+function apply_qt_5101_blueos_patch
+{   
+    info "Patching qt 5.10.1 for Blueos"
+    sed -i "s/PNG_ARM_NEON_OPT=0/PNG_ARM_NEON_OPT=0 PNG_POWERPC_VSX_OPT=0/" qtbase/src/3rdparty/libpng/libpng.pro
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 blueos patch failed."
         return 1
     fi
     
