@@ -378,12 +378,12 @@ void create_potential_mesh_vertex_list( //float **data_in,
 {
     float *data_in[3] = {X_in, Y_in, Z_in};
 
-    vector<int> nPoloidalNodes[nPoloidalPlanes];   // Number of nodes in each poloidal contour
-    vector<int> poloidalIndex[nPoloidalPlanes];    // Starting node index of each poloidal contour
+    vector <vector<int> > nPoloidalNodes(nPoloidalPlanes);   // Number of nodes in each poloidal contour
+    vector <vector<int> > poloidalIndex(nPoloidalPlanes);    // Starting node index of each poloidal contour
 
-    vector<int> vertices[nPoloidalPlanes]; // Plane vertex connections
+    vector <vector<int> > vertices(nPoloidalPlanes); // Plane vertex connections
 
-    vector< vector< int > > degeneracies[nPoloidalPlanes]; // degenerate indices
+    vector <vector< vector< int > > > degeneracies(nPoloidalPlanes); // degenerate indices
 
     // Index of the closest node on the neighboring contour.
     int **neighborIndex = new int*[nPoloidalPlanes];

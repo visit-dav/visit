@@ -48,6 +48,7 @@ bool ADIOS2Helper_IsStagingEngine(const std::string &engineName)
 #include <windows.h>
 #include <winioctl.h>
 #include <string.h>
+#include <vtksys/Encoding.hxx>
 #ifndef INVALID_FILE_ATTRIBUTES
 #define INVALID_FILE_ATTRIBUTES ((DWORD)-1)
 #endif
@@ -99,7 +100,7 @@ bool ADIOS2Helper_FileIsDirectory(const std::string& inName)
 // Now check the file node type.
 #if defined(_WIN32)
   DWORD attr =
-    GetFileAttributesW(Encoding::ToWindowsExtendedPath(name).c_str());
+    GetFileAttributesW(vtksys::Encoding::ToWindowsExtendedPath(name).c_str());
   if (attr != INVALID_FILE_ATTRIBUTES) {
     return (attr & FILE_ATTRIBUTE_DIRECTORY) != 0;
 #else
