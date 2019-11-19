@@ -49,6 +49,7 @@
 
 #include "PMDFile.h"
 
+#include <DebugStream.h>
 #include <stdio.h>
 
 #ifndef TEST
@@ -540,8 +541,8 @@ PMDFile::ReadScalarDataSet(void * array,
 #ifndef TEST
                     EXCEPTION1(InvalidVariableException, path);
 #endif
-                    cerr << " Problem when reading the dataset: "
-                         << path << endl;
+                    debug5 << " Problem when reading the dataset: "
+                           << path << endl;
                     return -4;
                 }
 
@@ -593,8 +594,8 @@ PMDFile::ReadScalarDataSet(void * array,
 #ifndef TEST
                 EXCEPTION2(InvalidFilesException, (const char *) path,error);
 #endif
-            	cerr << " Invalid size for the current dataset:" << numValues
-                     << " " << long(datasetStorageSize) << endl;
+            	debug5 << " Invalid size for the current dataset:" << numValues
+                       << " " << long(datasetStorageSize) << endl;
                 return -3;
             }
         }
@@ -605,8 +606,8 @@ PMDFile::ReadScalarDataSet(void * array,
                        (const char *) path,
                         "The current dataset is not of a valid class.");
 #endif
-            cerr << "The current dataset, " << path
-                 << ", is not a valid class: " << dataClass << endl;
+            debug5 << "The current dataset, " << path
+                   << ", is not a valid class: " << dataClass << endl;
             return -2;
         }
 
@@ -671,8 +672,8 @@ PMDFile::ReadFieldScalarBlock(void * array,
         EXCEPTION2(InvalidFilesException, (const char *)
                    fieldBlock->dataSetPath,error);
 #endif
-        cerr << " Problem when opening the dataset: "
-             << fieldBlock->dataSetPath << endl;
+        debug5 << " Problem when opening the dataset: "
+               << fieldBlock->dataSetPath << endl;
         return -1;
     }
     else
@@ -722,7 +723,7 @@ PMDFile::ReadFieldScalarBlock(void * array,
 
                 if (err!=0)
                 {
-                    cerr << " Problem when defining "
+                    debug5 << " Problem when defining "
                     " the hyperslab in the dataset" << endl;
                     return -3;
                 }
@@ -755,8 +756,8 @@ PMDFile::ReadFieldScalarBlock(void * array,
                     EXCEPTION1(InvalidVariableException,
                                fieldBlock->dataSetPath);
 #endif
-                    cerr << " Problem when reading the dataset: "
-                         << fieldBlock->dataSetPath << endl;
+                    debug5 << " Problem when reading the dataset: "
+                           << fieldBlock->dataSetPath << endl;
                     return -4;
                 }
             }
@@ -786,8 +787,8 @@ PMDFile::ReadFieldScalarBlock(void * array,
 
                 if (err!=0)
                 {
-                    cerr << " Problem when defining the "
-                            "hyperslab in the dataset" << endl;
+                    debug5 << " Problem when defining the "
+                              "hyperslab in the dataset" << endl;
                     return -3;
                 }
 
@@ -818,9 +819,9 @@ PMDFile::ReadFieldScalarBlock(void * array,
                     EXCEPTION1(InvalidVariableException,
                                fieldBlock->dataSetPath);
 #endif
-                    cerr << " Problem when reading the dataset: "
-                         << fieldBlock->dataSetPath
-                         << endl;
+                    debug5 << " Problem when reading the dataset: "
+                           << fieldBlock->dataSetPath
+                           << endl;
                     return -4;
                 }
 
@@ -862,8 +863,8 @@ PMDFile::ReadFieldScalarBlock(void * array,
                        (const char *) fieldBlock->dataSetPath,
                        "The current dataset is not of a valid class.");
 #endif
-            cerr << "The current dataset, " << fieldBlock->dataSetPath
-                 << ", is not a valid class: " << fieldDataClass << endl;
+            debug5 << "The current dataset, " << fieldBlock->dataSetPath
+                   << ", is not a valid class: " << fieldDataClass << endl;
             return -2;
         }
 
@@ -918,8 +919,8 @@ int PMDFile::ReadParticleScalarBlock(void * array,
     if ((datasetId = H5Dopen(this->fileId,particleBlock->dataSetPath,
                              H5P_DEFAULT))<0)
     {
-        cerr << " Problem when opening the dataset: "
-             << particleBlock->dataSetPath << endl;
+        debug5 << " Problem when opening the dataset: "
+               << particleBlock->dataSetPath << endl;
         return -1;
     }
     else
@@ -964,8 +965,8 @@ int PMDFile::ReadParticleScalarBlock(void * array,
 
             if (err!=0)
             {
-                cerr << " Problem when defining the hyperslab in the dataset"
-                     << endl;
+                debug5 << " Problem when defining the hyperslab in the dataset"
+                       << endl;
                 return -3;
             }
 
@@ -993,8 +994,8 @@ int PMDFile::ReadParticleScalarBlock(void * array,
                 EXCEPTION1(InvalidVariableException,
                            particleBlock->dataSetPath);
 #endif
-                cerr << " Problem when reading the dataset: "
-                     << particleBlock->dataSetPath << endl;
+                debug5 << " Problem when reading the dataset: "
+                       << particleBlock->dataSetPath << endl;
                 return -4;
             }
 
@@ -1027,9 +1028,9 @@ int PMDFile::ReadParticleScalarBlock(void * array,
             }
 						else
 						{
-								cerr << " Error in PMDFile::ReadParticleScalarBlock"
+								debug5 << " Error in PMDFile::ReadParticleScalarBlock"
 										 << endl;
-								cerr << " DataSize is not recognized"
+								debug5 << " DataSize is not recognized"
 										 << endl;
 						}
 
@@ -1041,9 +1042,9 @@ int PMDFile::ReadParticleScalarBlock(void * array,
                        (const char *) particleBlock->dataSetPath,
                        "The current dataset is not a float dataset");
 #endif
-            cerr << "The current dataset, " << particleBlock->dataSetPath
-                 << ", is not of the specified class:" << H5T_FLOAT
-                 << endl;
+            debug5 << "The current dataset, " << particleBlock->dataSetPath
+                   << ", is not of the specified class:" << H5T_FLOAT
+                   << endl;
             return -2;
         }
 
