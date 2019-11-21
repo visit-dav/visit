@@ -188,6 +188,17 @@ AssertTrue("Second Eigenvector of (4,2,-5)", HasEigvec(vecs, (4,2,-5), Prec))
 AssertTrue("Third Eigenvector of (2,1,2)", HasEigvec(vecs, (2,1,2), Prec))
 DeleteAllPlots()
 
+# Confirm principal_tensor function gives same result as above
+TestSection("Cross Principal Stresses and Eigenvalues")
+DefineVectorExpression("pcomps_complex/result", "principal_tensor(<eigvals_symm/tensor>)")
+AddPlot("Vector", "pcomps_symm/result")
+DrawPlots()
+p = PickByNode(0)
+pcomps = list(p['pcomps_symm/result'])
+AssertTrue("First principal component is first eigenvalue", HasEigval(pcomps, -1, Prec))
+AssertTrue("Second principal component is second eigenvalue", HasEigval(pcomps, -1, Prec))
+AssertTrue("Third principal component is third eigenvalue", HasEigval(pcomps, 8, Prec))
+
 TestSection("2D, Symmetric Eigenvalues and Eigenvectors")
 CreateConstantTensorExpr("eigvals_symm_2d", meshName, "nodal",\
     (2,  3,  0,\
@@ -238,17 +249,6 @@ s = GetPickOutput()
 vecs = ExtractIterablesFromString(s, '()', Prec)
 AssertTrue("First Eigenvector of (0,0,1)", HasEigvec(vecs, (0,0,1), Prec))
 DeleteAllPlots()
-
-# Confirm principal_tensor function gives same result
-TestSection("Cross Principal Stresses and Eigenvalues")
-DefineVectorExpression("pcomps_complex/result", "principal_tensor(<eigvals_complex/tensor>)")
-AddPlot("Vector", "pcomps_complex/result")
-DrawPlots()
-p = PickByNode(0)
-pcomps = list(p['pcomps_complex/result'])
-AssertTrue("First principal component is first eigenvalue", HasEigval(pcomps, 2, Prec))
-AssertTrue("Second principal component is second eigenvalue", HasEigval(pcomps, float(4+3)/5.0, Prec))
-AssertTrue("Third principal component is third eigenvalue", HasEigval(pcomps, float(4-3)/5.0, Prec))
 
 # Re-use eigvals_symm here
 TestSection("Cross Check Deviatoric and Principal Stresses")
