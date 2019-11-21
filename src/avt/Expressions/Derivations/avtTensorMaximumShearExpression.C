@@ -113,6 +113,8 @@ avtTensorMaximumShearExpression::DoOperation(vtkDataArray *in, vtkDataArray *out
             invariant2 +=     dev1*s13*s13;
             invariant2 +=     dev2*s12*s12;
 
+            // Cubic roots of the characteristic equation
+            // http://mathworld.wolfram.com/CubicFormula.html
             double princ0 = 0.;
             double princ2 = 0.;
             if (invariant1 >= 1e-100)
