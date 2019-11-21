@@ -25,6 +25,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
   <li><a href="#Build_features">Changes for build_visit</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+  <li><a href="#Doc_changes">Changes to Visit documentation</a></li>
+  <li><a href="#Testing_changes">Changes to VisIt testsing</a></li>
 </ul>
 
 <a name="General_features"></a>
@@ -46,6 +48,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected a bug with the VTK reader parsing .vtm files when the 'DataSet' tag doesn't have a 'file' attribute.</li>
   <li>An OpenPMD reader was added to VisIt. OpenPMD files are automatically recognized when the have the "pmd" or "opmd" extensions.</li>
   <li>The ADIOS2 reader was updated to use ADIOS2 2.5.</li>
+  <li>Silo plugin handling of 2/3D tensor and symmetric tensor data was improved and fixed.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -89,6 +92,21 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 3.1</font></b></p>
 <ul>
   <li>Suppressed the Qt warning 'Empty filename passed to function'. Also added additional context information to the Qt log message if available.</li>
+  <li>Documentation now supports collapsible sections. For examples, see sections to show/hide code in the documentation of tensor expression functions.</li>
+  <li>Silo plugin code sections for recognizing variale types in metadata was re-factored to a single function.</li>
+</ul>
+
+<a name="Doc_changes"></a>
+<p><b><font size="4">Changes to VisIt documentation in version 3.1</font></b></p>
+<ul>
+  <li>Tensor expression functions have been fully documented.</li>
+</ul>
+
+<a name="Testing_changes"></a>
+<p><b><font size="4">Changes to VisIt testing in version 3.1</font></b></p>
+<ul>
+  <li>Testing of tensor expression functions was added.</li>
+  <li>Assertion tests were fixed to return proper error codes. Previously, they had no effect on overall error return from a .py file.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
