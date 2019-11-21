@@ -37,6 +37,7 @@ Here are the steps used to create the 3.1RC. ::
     git checkout develop
     git pull
     git checkout -b 3.1RC
+    git push --set-upstream origin 3.1RC
 
 Updating the Splashscreen
 ~~~~~~~~~~~~~~~~~~~~~~~~~
