@@ -900,7 +900,7 @@ Tensor Maximum Shear Function: ``tensor_maximum_shear()`` : ``tensor_maximum_she
     and Applied Elasticity", Prentice Hall 4th Edition, page 81.* the specific
     mathematical operations of which are shown in the code snip-it below.
 
-.. container:: collapsible 
+.. container:: collapsible
 
     .. container:: header
 
@@ -936,7 +936,7 @@ Viscous Stress Function: ``viscous_stress()`` : ``viscous_stress(expr0)``
     the current implementation of this function works only for 2D, structured
     gridded meshes.
 
-.. container:: collapsible 
+.. container:: collapsible
 
     .. container:: header
 
@@ -945,7 +945,6 @@ Viscous Stress Function: ``viscous_stress()`` : ``viscous_stress(expr0)``
     .. literalinclude:: ../../../../src/avt/Expressions/General/avtViscousStressExpression.C
         :language: C++
         :start-after: calculate the gradient
-        :end-before: set the output value
 
 Array Expressions
 """""""""""""""""
