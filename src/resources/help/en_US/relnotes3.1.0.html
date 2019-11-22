@@ -83,12 +83,14 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected a bug in build_visit that prevented OSMesa and MesaGL from building from within a Git checkout.</li>
   <li>Added a patch to build_visit so that Qt builds on CentOS 8 and Ubuntu 19.</li>
   <li>Modified build_visit so that it would build Adios2 on Mac OS X.</li>
+  <li>Modified build_visit to correct a compile error with LLVM compiling with icc 19.0.4.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.1</font></b></p>
 <ul>
   <li>Suppressed the Qt warning 'Empty filename passed to function'. Also added additional context information to the Qt log message if available.</li>
+  <li>Corrected compile errors when using Open MPI 1.6.5.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
