@@ -2607,6 +2607,126 @@ avtSiloFileFormat::ReadCSGmeshes(DBfile *dbfile,
 }
 
 // ****************************************************************************
+// Function: AddVarToMetaData
+//
+// Purpose: Refactor all the code to convert Silo mesh variables to AVT
+// metadata to one place.
+//
+//
+// Programger: Mark C. Miller, Mon Nov 11 11:20:47 PST 2019
+//
+// ****************************************************************************
+
+static void
+AddVarToMetaData(
+    avtDatabaseMetaData *md,
+    int ncomps,
+    int nsdims, // s=spatial dimensions; not topological
+    int cent,
+    int ascii_labels,
+    int guiHide,
+    bool valid_var,
+    vector<int> const &selectedMats,
+    char const *name_w_dir,
+    char const *meshname_w_dir,
+    char const *units,
+    double missing_value
+)
+{
+    avtCentering centering = cent == DB_NODECENT ? AVT_NODECENT : AVT_ZONECENT;
+    if (ascii_labels) // anything explicitly ascii is Label
+    {                 // regardless of # comps and # dims
+        avtLabelMetaData *lmd = new avtLabelMetaData(name_w_dir,
+                                    meshname_w_dir, centering);
+        lmd->validVariable = valid_var;
+        lmd->hideFromGUI = guiHide;
+        lmd->matRestricted = selectedMats;
+        md->Add(lmd);
+    }
+    else if (ncomps == 1) // scalar
+    {
+        avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
+                                     meshname_w_dir, centering);
+        smd->treatAsASCII = ascii_labels;
+        smd->validVariable = valid_var;
+        smd->hideFromGUI = guiHide;
+        smd->matRestricted = selectedMats;
+        if(units != 0)
+        {
+            smd->hasUnits = true;
+            smd->units = units;
+        }
+        if (missing_value != DB_MISSING_VALUE_NOT_SET)
+        {
+            double arr[2] = {0., 0.};
+            arr[0] = missing_value;
+            smd->SetMissingData(arr);
+            smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+        }
+        md->Add(smd);
+    }
+    else if ((ncomps == 2 && nsdims == 2) ||
+             (ncomps == 3 && nsdims == 3)) // Likely vectors
+    {
+        avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
+                                     meshname_w_dir, centering, ncomps);
+        vmd->validVariable = valid_var;
+        vmd->hideFromGUI = guiHide;
+        vmd->matRestricted = selectedMats;
+        if(units != 0)
+        {
+            vmd->hasUnits = true;
+            vmd->units = units;
+        }
+        md->Add(vmd);
+    }
+    else if ((ncomps == 3 && nsdims == 2) ||
+             (ncomps == 6 && nsdims == 3)) // Likely symm. tensors
+    {
+        avtSymmetricTensorMetaData *stmd = new avtSymmetricTensorMetaData(name_w_dir,
+                                           meshname_w_dir, centering, ncomps);
+        stmd->validVariable = valid_var;
+        stmd->hideFromGUI = guiHide;
+        stmd->matRestricted = selectedMats;
+        if(units != 0)
+        {
+            stmd->hasUnits = true;
+            stmd->units = units;
+        }
+        md->Add(stmd);
+    }
+    else if ((ncomps == 4 && nsdims == 2) ||
+             (ncomps == 9 && nsdims == 3)) // Likely full tensors
+    {
+        avtTensorMetaData *tmd = new avtTensorMetaData(name_w_dir,
+                                 meshname_w_dir, centering, ncomps);
+        tmd->validVariable = valid_var;
+        tmd->hideFromGUI = guiHide;
+        tmd->matRestricted = selectedMats;
+        if(units != 0)
+        {
+            tmd->hasUnits = true;
+            tmd->units = units;
+        }
+        md->Add(tmd);
+    }
+    else // catch-all; array variable
+    {
+        avtArrayMetaData *amd = new avtArrayMetaData(name_w_dir,
+                                meshname_w_dir, centering, ncomps);
+        amd->validVariable = valid_var;
+        amd->hideFromGUI = guiHide;
+        amd->matRestricted = selectedMats;
+        if(units != 0)
+        {
+            amd->hasUnits = true;
+            amd->units = units;
+        }
+        md->Add(amd);
+    }
+}
+
+// ****************************************************************************
 //  Function: GetRestrictedMaterialIndices
 //
 //  Purpose:
@@ -3146,13 +3266,6 @@ avtSiloFileFormat::ReadQuadvars(DBfile *dbfile,
             meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
 
             //
-            // Get the centering information.
-            //
-            avtCentering   centering = (qv->align[0] == 0. ? AVT_NODECENT :
-                                                             AVT_ZONECENT);
-            bool guiHide = qv->guihide;
-
-            //
             // If this variable is defined on material subset(s), determine
             // the associated material numbers and indi
             //
@@ -3161,61 +3274,17 @@ avtSiloFileFormat::ReadQuadvars(DBfile *dbfile,
                 valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
                     meshname_w_dir, qv->region_pnames, &selectedMats);
 
-            //
-            // Get the dimension of the variable.
-            //
-            if (qv->nvals == 1)
-            {
-                avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
-                                             meshname_w_dir, centering);
-                smd->treatAsASCII = (qv->ascii_labels);
-                smd->validVariable = valid_var;
-                smd->hideFromGUI = guiHide;
-                smd->matRestricted = selectedMats;
-                if(qv->units != 0)
-                {
-                    smd->hasUnits = true;
-                    smd->units = string(qv->units);
-                }
+            AddVarToMetaData(md, qv->nvals, qv->ndims,
+                qv->align[0] == 0. ? DB_NODECENT : DB_ZONECENT,
+                qv->ascii_labels, qv->guihide, valid_var, selectedMats,
+                name_w_dir, meshname_w_dir, qv->units, qv->missing_value); 
 
-                if (qv->missing_value != DB_MISSING_VALUE_NOT_SET)
-                {
-                    double arr[2] = {0., 0.};
-                    arr[0] = qv->missing_value;
-                    smd->SetMissingData(arr);
-                    smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
-                }
-                md->Add(smd);
-            }
-            else if (qv->ascii_labels)
-            {
-                avtLabelMetaData *lmd = new avtLabelMetaData(name_w_dir,
-                                            meshname_w_dir, centering);
-                lmd->validVariable = valid_var;
-                lmd->hideFromGUI = guiHide;
-                lmd->matRestricted = selectedMats;
-                md->Add(lmd);
-            }
-            else
-            {
-                avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
-                                             meshname_w_dir, centering, qv->nvals);
-                vmd->validVariable = valid_var;
-                vmd->hideFromGUI = guiHide;
-                vmd->matRestricted = selectedMats;
-                if(qv->units != 0)
-                {
-                    vmd->hasUnits = true;
-                    vmd->units = string(qv->units);
-                }
-                md->Add(vmd);
-            }
         }
         CATCHALL
         {
             debug1 << "Invalidating quad var \"" << qvar_names[i] << "\"" << endl;
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
-                                                       "unknown", AVT_UNKNOWN_CENT);
+                                         "unknown", AVT_UNKNOWN_CENT);
             smd->validVariable = false;
             md->Add(smd);
         }
@@ -3271,13 +3340,6 @@ avtSiloFileFormat::ReadUcdvars(DBfile *dbfile,
             meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
 
             //
-            // Get the centering information.
-            //
-            avtCentering centering = (uv->centering == DB_ZONECENT ? AVT_ZONECENT
-                                                               : AVT_NODECENT);
-            bool guiHide = uv->guihide;
-
-            //
             // If this variable is defined on material subset(s), determine
             // the associated material numbers and indi
             //
@@ -3285,54 +3347,11 @@ avtSiloFileFormat::ReadUcdvars(DBfile *dbfile,
             if (uv->region_pnames)
                 valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
                     meshname_w_dir, uv->region_pnames, &selectedMats);
-            //
-            // Get the dimension of the variable.
-            //
-            if (uv->nvals == 1)
-            {
-                avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
-                                                    meshname_w_dir, centering);
-                smd->validVariable = valid_var;
-                smd->treatAsASCII = (uv->ascii_labels);
-                smd->hideFromGUI = guiHide;
-                smd->matRestricted = selectedMats;
-                if(uv->units != 0)
-                {
-                    smd->hasUnits = true;
-                    smd->units = string(uv->units);
-                }
 
-                if (uv->missing_value != DB_MISSING_VALUE_NOT_SET)
-                {
-                    double arr[2] = {0., 0.};
-                    arr[0] = uv->missing_value;
-                    smd->SetMissingData(arr);
-                    smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
-                }
-                md->Add(smd);
-            }
-            else if (uv->ascii_labels)
-            {
-                avtLabelMetaData *lmd = new avtLabelMetaData(name_w_dir, meshname_w_dir, centering);
-                lmd->validVariable = valid_var;
-                lmd->hideFromGUI = guiHide;
-                lmd->matRestricted = selectedMats;
-                md->Add(lmd);
-            }
-            else
-            {
-                avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
-                                             meshname_w_dir, centering, uv->nvals);
-                vmd->validVariable = valid_var;
-                vmd->hideFromGUI = guiHide;
-                vmd->matRestricted = selectedMats;
-                if(uv->units != 0)
-                {
-                    vmd->hasUnits = true;
-                    vmd->units = string(uv->units);
-                }
-                md->Add(vmd);
-            }
+            AddVarToMetaData(md, uv->nvals, uv->ndims, uv->centering,
+                uv->ascii_labels, uv->guihide, valid_var, selectedMats,
+                name_w_dir, meshname_w_dir, uv->units, uv->missing_value);
+
         }
         CATCHALL
         {
@@ -3393,52 +3412,12 @@ avtSiloFileFormat::ReadPointvars(DBfile *dbfile,
             char meshname[256];
             DBInqMeshname(correctFile, realvar.c_str(), meshname);
 
-            //
-            // Get the dimension of the variable.
-            //
-            bool guiHide = pv->guihide;
             meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
-            if (pv->nvals == 1)
-            {
-                avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
-                                                meshname_w_dir, AVT_NODECENT);
-                smd->treatAsASCII = (pv->ascii_labels);
-                smd->validVariable = valid_var;
-                smd->hideFromGUI = guiHide;
-                if(pv->units != 0)
-                {
-                    smd->hasUnits = true;
-                    smd->units = string(pv->units);
-                }
-                if (pv->missing_value != DB_MISSING_VALUE_NOT_SET)
-                {
-                    double arr[2] = {0., 0.};
-                    arr[0] = pv->missing_value;
-                    smd->SetMissingData(arr);
-                    smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
-                }
-                md->Add(smd);
-            }
-            else if (pv->ascii_labels)
-            {
-                avtLabelMetaData *lmd = new avtLabelMetaData(name_w_dir, meshname_w_dir, AVT_NODECENT);
-                lmd->validVariable = valid_var;
-                lmd->hideFromGUI = guiHide;
-                md->Add(lmd);
-            }
-            else
-            {
-                avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
-                                          meshname_w_dir, AVT_NODECENT, pv->nvals);
-                vmd->validVariable = valid_var;
-                vmd->hideFromGUI = guiHide;
-                if(pv->units != 0)
-                {
-                    vmd->hasUnits = true;
-                    vmd->units = string(pv->units);
-                }
-                md->Add(vmd);
-            }
+
+            AddVarToMetaData(md, pv->nvals, pv->ndims, DB_NODECENT,
+                pv->ascii_labels, pv->guihide, valid_var, vector<int>(),
+                name_w_dir, meshname_w_dir, pv->units, pv->missing_value); 
+
         }
         CATCHALL
         {
@@ -7622,9 +7601,11 @@ template <typename T, typename Tarr>
 static vtkDataArray *
 CopyAndPadUcdVar(const DBucdvar *uv, const vector<int> &remap, avtVarType vtype = AVT_UNKNOWN_TYPE)
 {
-    int const X = -1; // Place holder for zero'd components 
-    int const j_remap_2d[9] = {0,2,X,2,1,X,X,X,X}; // map 2d symm. tensor comp Voigt order to VTK
-    int const j_remap_3d[9] = {0,5,4,5,1,3,4,3,2}; // map 3d symm. tensor comp Voigt order to VTK
+    int const Z = -1; // Place holder for zero'd components 
+    int const j_remap_2df[9] = {0,1,Z,2,3,Z,Z,Z,Z}; // map 2d full tensor to VTK
+    int const j_remap_2d[9]  = {0,2,Z,2,1,Z,Z,Z,Z}; // map 2d symm. tensor comp Voigt order to VTK
+    int const j_remap_3d[9]  = {0,5,4,5,1,3,4,3,2}; // map 3d symm. tensor comp Voigt order to VTK
+    int const *j_remap = 0;
     size_t i;
     int j, k, n, cnt;
     T *ptr = 0;
@@ -7638,8 +7619,20 @@ CopyAndPadUcdVar(const DBucdvar *uv, const vector<int> &remap, avtVarType vtype 
         nvtkcomps = 3;
     else if (vtype == AVT_VECTOR_VAR)
         nvtkcomps = 3; // zero pad extra components
-    else if (vtype == AVT_SYMMETRIC_TENSOR_VAR && (uv->nvals == 3 || uv->nvals == 6))
+    else if (vtype == AVT_SYMMETRIC_TENSOR_VAR)
+    {
+        if (uv->nvals == 3)
+            j_remap = j_remap_2d;
+        else if (uv->nvals == 6)
+            j_remap = j_remap_3d;
         nvtkcomps = 9; // fill and/or zero pad extra components
+    }
+    else if (vtype == AVT_TENSOR_VAR)
+    {
+        if (uv->nvals == 4)
+            j_remap = j_remap_2df;
+        nvtkcomps = 9; // fill and/or zero pad extra components
+    }
     vtkvar->SetNumberOfComponents(nvtkcomps);
     if (remap.size() > 0)
     {
@@ -7647,9 +7640,8 @@ CopyAndPadUcdVar(const DBucdvar *uv, const vector<int> &remap, avtVarType vtype 
         {
             vtkvar->SetNumberOfTuples(remap.size());
             ptr = (T *) vtkvar->GetVoidPointer(0);
-            if (vtype == AVT_SYMMETRIC_TENSOR_VAR)
+            if (j_remap)
             {
-                int const *j_remap = uv->nvals==3?j_remap_2d:j_remap_3d;
                 for (i = 0; i < remap.size(); i++)
                 {
                     for (j = 0; j < nvtkcomps; j++)
@@ -7927,9 +7919,11 @@ template <typename T, typename Tarr, typename DBvar>
 static vtkDataArray *
 CopyAndPadPointOrQuadVectorVar(const DBvar *mv, avtVarType vtype)
 {
-    int const X = -1; // Place holder for zero'd components 
-    int const j_remap_2d[9] = {0,2,X,2,1,X,X,X,X}; // map 2d symm. tensor comp Voigt order to VTK
-    int const j_remap_3d[9] = {0,5,4,5,1,3,4,3,2}; // map 3d symm. tensor comp Voigt order to VTK
+    int const Z = -1; // Place holder for zero'd components 
+    int const j_remap_2df[9] = {0,1,Z,2,3,Z,Z,Z,Z}; // map 2d full tensor to VTK
+    int const j_remap_2d[9]  = {0,2,Z,2,1,Z,Z,Z,Z}; // map 2d symm. tensor comp Voigt order to VTK
+    int const j_remap_3d[9]  = {0,5,4,5,1,3,4,3,2}; // map 3d symm. tensor comp Voigt order to VTK
+    int const *j_remap = 0;
     size_t i;
     int j, nvtkcomps = mv->nvals;
     Tarr *vectors = Tarr::New();
@@ -7938,15 +7932,26 @@ CopyAndPadPointOrQuadVectorVar(const DBvar *mv, avtVarType vtype)
         nvtkcomps = 3;
     else if (vtype == AVT_VECTOR_VAR)
         nvtkcomps = 3; // zero pad extra components
-    else if (vtype == AVT_SYMMETRIC_TENSOR_VAR && (mv->nvals == 3 || mv->nvals == 6))
+    else if (vtype == AVT_SYMMETRIC_TENSOR_VAR)
+    {
+        if (mv->nvals == 3)
+            j_remap = j_remap_2d;
+        else if (mv->nvals == 6)
+            j_remap = j_remap_3d;
         nvtkcomps = 9; // fill and/or zero pad extra components
+    }
+    else if (vtype == AVT_TENSOR_VAR)
+    {
+        if (mv->nvals == 4)
+            j_remap = j_remap_2df;
+        nvtkcomps = 9; // fill and/or zero pad extra components
+    }
     vectors->SetNumberOfComponents(nvtkcomps);
     vectors->SetNumberOfTuples(mv->nels);
     T *ptr = vectors->GetPointer(0);
 
-    if (vtype == AVT_SYMMETRIC_TENSOR_VAR)
+    if (j_remap)
     {
-        int const *j_remap = mv->nvals==3?j_remap_2d:j_remap_3d;
         for (i = 0; i < (size_t)mv->nels; i++)
         {
             for (j = 0; j < nvtkcomps; j++)
