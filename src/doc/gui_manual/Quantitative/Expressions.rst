@@ -890,7 +890,7 @@ Principal Tensor Function: ``principal_tensor()`` : ``principal_tensor(expr0)``
 Transpose Function: ``transpose()`` : ``transpose(expr0)``
     Creates a new tensor expression which is everywhere the transpose of
     its input argument which must also be a tensor. The first row vector
-    in the input becomse the first column vector in the output, etc.
+    in the input becomes the first column vector in the output, etc.
 
 .. _Tensor_Maximum_Shear_Expression_Function:
 
@@ -1242,7 +1242,7 @@ VisIt_ employs the *Verdict Mesh Quality Library* to support a number of
 expressions related to computing cell-by-cell mesh quality metrics. The
 specific definitions of the various mesh quality metrics defined by the
 *Verdict Mesh Quality Library* are amply explained in the
-`Verdict Manual <../../_downloads/VerdictManual-revA.pdf>`__. Below, we
+:download:`Verdict Manual <./VerdictManual-revA.pdf>`. Below, we
 simply list all the mesh quality metrics and describe in detail only
 those that are not part of the *Verdict Mesh Quality Library*
 
