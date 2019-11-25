@@ -97,6 +97,7 @@ avtMapper::avtMapper() : avtMapperBase()
 
 avtMapper::~avtMapper()
 {
+    ClearSelf();
 }
 
 
@@ -174,6 +175,7 @@ avtMapper::ClearSelf(void)
     //
     mappers = NULL;
     actors = NULL;
+    nMappers = 0;
 }
 
 
