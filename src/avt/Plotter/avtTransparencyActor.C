@@ -611,16 +611,12 @@ avtTransparencyActor::~avtTransparencyActor()
 //    Mark C. Miller, Thu Jan 20 22:27:39 PST 2005
 //    Added opacity arg. Added code to stick opacity value in map
 //
-//    Kathleen Biagas, Tue Nov  5 12:34:55 PST 2019
-//    Set actorMTime to 0.
-//
 // ****************************************************************************
 
 void
 avtTransparencyActor::InputWasModified(int transparencyIndex, double opacity)
 {
     inputModified = true;
-    actorMTime = 0;
     if (opacity != -1.0)
         inputsOpacities[transparencyIndex] = opacity;
 }
