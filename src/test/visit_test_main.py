@@ -1811,8 +1811,12 @@ def TestText(case_name, inText):
 def AssertTrue(case_name,val):
     CheckInteractive(case_name)
     result = val == True
-    LogAssertTestResult(case_name,"True",result,val,
-                        TestEnv.check_skip(case_name))
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
+    LogAssertTestResult(case_name,"True",result,val,skip)
 
 # ----------------------------------------------------------------------------
 # Function: AssertTrue
@@ -1824,8 +1828,12 @@ def AssertTrue(case_name,val):
 def AssertFalse(case_name,val):
     CheckInteractive(case_name)
     result = val == False
-    LogAssertTestResult(case_name,"False",result,val,
-                        TestEnv.check_skip(case_name))
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
+    LogAssertTestResult(case_name,"False",result,val,skip)
 
 # ----------------------------------------------------------------------------
 # Function: AssertEqual
@@ -1837,10 +1845,13 @@ def AssertFalse(case_name,val):
 def AssertEqual(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a == val_b
-    skip   =  TestEnv.check_skip(case_name)
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
     LogAssertTestResult(case_name,"Equal",result,
-                        "%s == %s" % (str(val_a),str(val_b)),
-                         TestEnv.check_skip(case_name))
+                        "%s == %s" % (str(val_a),str(val_b)),skip)
 
 # ----------------------------------------------------------------------------
 # Function: AssertGT
@@ -1852,9 +1863,13 @@ def AssertEqual(case_name,val_a,val_b):
 def AssertGT(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a > val_b
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
     LogAssertTestResult(case_name,"Greater than",
-                        result,"%s > %s" % (str(val_a),str(val_b)),
-                        TestEnv.check_skip(case_name))
+                        result,"%s > %s" % (str(val_a),str(val_b)),skip)
 
 # ----------------------------------------------------------------------------
 # Function: AssertGTE
@@ -1866,9 +1881,13 @@ def AssertGT(case_name,val_a,val_b):
 def AssertGTE(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a >= val_b
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
     LogAssertTestResult(case_name,"Greater than or Equal",
-                        result,"%s >= %s" % (str(val_a),str(val_b)),
-                        TestEnv.check_skip(case_name))
+                        result,"%s >= %s" % (str(val_a),str(val_b)),skip)
 
 # ----------------------------------------------------------------------------
 # Function: AssertLT
@@ -1880,9 +1899,13 @@ def AssertGTE(case_name,val_a,val_b):
 def AssertLT(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a < val_b
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
     LogAssertTestResult(case_name,"Less than",
-                        result,"%s < %s" % (str(val_a),str(val_b)),
-                        TestEnv.check_skip(case_name))
+                        result,"%s < %s" % (str(val_a),str(val_b)),skip)
 
 # ----------------------------------------------------------------------------
 # Function: AssertLTE
@@ -1894,9 +1917,13 @@ def AssertLT(case_name,val_a,val_b):
 def AssertLTE(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a <= val_b
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
     LogAssertTestResult(case_name,"Less than or Equal",
-                        result,"%s <= %s" % (str(val_a),str(val_b)),
-                        TestEnv.check_skip(case_name))
+                        result,"%s <= %s" % (str(val_a),str(val_b)),skip)
 
 # ----------------------------------------------------------------------------
 # Function: TestSection
