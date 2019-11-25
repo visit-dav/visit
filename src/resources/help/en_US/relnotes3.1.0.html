@@ -86,13 +86,14 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected a bug in build_visit that prevented OSMesa and MesaGL from building from within a Git checkout.</li>
   <li>Added a patch to build_visit so that Qt builds on CentOS 8 and Ubuntu 19.</li>
   <li>Modified build_visit so that it would build Adios2 on Mac OS X.</li>
+  <li>Modified build_visit to correct a compile error with LLVM compiling with icc 19.0.4.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.1</font></b></p>
 <ul>
   <li>Suppressed the Qt warning 'Empty filename passed to function'. Also added additional context information to the Qt log message if available.</li>
-  <li>Documentation now supports collapsible sections. For examples, see sections to show/hide code in the documentation of tensor expression functions.</li>
+  <li>Corrected compile errors when using Open MPI 1.6.5.</li>
   <li>Silo plugin code sections for recognizing variable types in metadata was re-factored to a single function.</li>
 </ul>
 
@@ -100,6 +101,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to VisIt documentation in version 3.1</font></b></p>
 <ul>
   <li>Tensor expression functions have been fully documented.</li>
+  <li>Documentation now supports collapsible sections. For examples, see sections to show/hide code in the documentation of tensor expression functions.</li>
 </ul>
 
 <a name="Testing_changes"></a>
