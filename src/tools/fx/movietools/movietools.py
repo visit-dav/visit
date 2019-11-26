@@ -1,4 +1,5 @@
 import Image, os, arial
+import sys
 
 ###############################################################################
 # Function: getTypeFromExtension
@@ -89,7 +90,10 @@ def applyFunctionToNFrames(func, filesPerThread, nframes, conversionargs):
         func(0, 0, nframes, conversionargs)
     else:
         try:
-            import _thread
+            if (sys.version_info > (3, 0)):
+                import _thread
+            else:
+                import thread as _thread
             keepSpawning = 1
             start = filesPerThread
             end = filesPerThread
