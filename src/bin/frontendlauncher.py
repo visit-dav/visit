@@ -1,4 +1,8 @@
-import os, string, sys, subprocess
+from __future__ import print_function
+import os
+import string
+import sys
+import subprocess
 
 ###############################################################################
 #

@@ -2,7 +2,7 @@
 #   The Parser class is the Python Source Parser
 #   taken from http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/52298
 #############################################################################
-
+from __future__ import print_function
 # Imports
 import sys
 import cgi
