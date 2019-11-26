@@ -10,25 +10,25 @@ from masonry import *
 
 def load_opts(opts_json):
     opts_data = open(opts_json).read()
-    print "[Build Options:]"
-    print opts_data
+    print("[Build Options:]")
+    print(opts_data)
     opts = json.loads(opts_data)["bootstrap_visit"]
     # setup platform name
-    if not opts.has_key("platform"):
+    if "platform" not in opts:
         opts["platform"] = "linux"
         if opts["arch"].count("darwin") > 0: 
             opts["platform"] = "osx"
     # setup paths
-    if not opts.has_key("build_dir"):
+    if "build_dir" not in opts:
         opts_json_base = os.path.split(opts_json)[1]
         opts_json_base = os.path.splitext(opts_json_base)[0]
-        print opts_json_base
+        print(opts_json_base)
         opts["build_dir"] = "build-%s" % (opts_json_base)
     opts["build_dir"] = os.path.abspath(opts["build_dir"])
-    print "[build directory: %s]" % opts["build_dir"] 
-    if not opts.has_key("force_clean"):
+    print("[build directory: %s]" % opts["build_dir"]) 
+    if "force_clean" not in opts:
         opts["force_clean"] = False
-    if opts.has_key("skip_checkout"):
+    if "skip_checkout" in opts:
         if opts["skip_checkout"].upper() == "NO":
             opts["skip_checkout"] = False
         else:
@@ -37,26 +37,26 @@ def load_opts(opts_json):
         opts["skip_checkout"] = False
     # Setup bb env vars
     env = {'VISITARCH' : opts["arch"]}
-    if opts.has_key("par_compiler"):
+    if "par_compiler" in opts:
         env["PAR_COMPILER"] = opts["par_compiler"]
-    if opts.has_key("par_include"):
+    if "par_include" in opts:
         env["PAR_INCLUDE"] = opts["par_include"]
-    if opts.has_key("par_libs"):
+    if "par_libs" in opts:
         env["PAR_LIBS"] = opts["par_libs"]
-    if opts.has_key("svn") and opts["svn"].has_key("nersc_uname"):
+    if "svn" in opts and "nersc_uname" in opts["svn"]:
         env["SVN_NERSC_NAME"] = opts["svn"]["nersc_uname"]
-    if opts.has_key("fc_compiler"):
+    if "fc_compiler" in opts:
         env["FC_COMPILER"] = opts["fc_compiler"]
-    if not opts.has_key("tarball"):
+    if "tarball" not in opts:
         opts["tarball"] = None
-    if not opts.has_key("branch"):
+    if "branch" not in opts:
         opts["branch"] = "develop" 
-    if not opts.has_key("tag"):
+    if "tag" not in opts:
         opts["tag"] = None
-    if opts.has_key("env"):
+    if "env" in opts:
         env.update(opts["env"])
     opts["env"] = env
-    if not opts.has_key("cert"):
+    if "cert" not in opts:
         opts["cert"] = ""
     return opts
 
@@ -105,18 +105,18 @@ def steps_bv(opts,ctx):
                                                 working_dir=thirdparty_dir,
                                                 description="create %s" % thirdparty_dir)
     bv_args = " --console "
-    if opts["build_visit"].has_key("make_flags"):
+    if "make_flags" in opts["build_visit"]:
         bv_args    += " --makeflags '%s'" % opts["build_visit"]["make_flags"]
-    elif opts.has_key("make_nthreads"):
+    elif "make_nthreads" in opts:
         bv_args   += " --makeflags '-j%d'" % opts["make_nthreads"]
     bv_args   += " --no-visit"
-    if opts.has_key("c_compiler"):
+    if "c_compiler" in opts:
         bv_args += " --cc " + opts["c_compiler"]
-    if opts.has_key("cxx_compiler"):
+    if "cxx_compiler" in opts:
         bv_args += " --cxx " + opts["cxx_compiler"]
-    if opts["build_visit"].has_key("args"):
+    if "args" in opts["build_visit"]:
         bv_args += " " + opts["build_visit"]["args"]
-    if opts["build_visit"].has_key("libs"):
+    if "libs" in opts["build_visit"]:
         bv_args +=  " " + " ".join(["--%s" % l for l in opts["build_visit"]["libs"]])
     bv_cmd   = "echo yes | ../visit/src/tools/dev/scripts/build_visit %s" % bv_args
     ctx.actions["bv_run"] = shell(cmd=bv_cmd,
@@ -168,21 +168,21 @@ def steps_configure(opts,build_type,ctx):
     cmake_opts  = " -DCMAKE_BUILD_TYPE:STRING=%s" % build_type
     cmake_opts += " -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON"
     cmake_opts += " -DCMAKE_INSTALL_PREFIX:PATH=%s" % install_dir
-    if opts.has_key("c_compiler"):
+    if "c_compiler" in opts:
         cmake_opts += ' -DVISIT_C_COMPILER:PATH="%s"' % opts["c_compiler"]
-    if opts.has_key("cxx_compiler"):
+    if "cxx_compiler" in opts:
         cmake_opts += ' -DVISIT_CXX_COMPILER:PATH="%s"' % opts["cxx_compiler"]
-    if opts.has_key("boost_dir"):
+    if "boost_dir" in opts:
         cmake_opts += ' -DVISIT_USE_BOOST:BOOL="ON"'
         cmake_opts += ' -DBOOST_ROOT:PATH="%s"' % opts["boost_dir"]
-    if opts.has_key("build_xdb"):
+    if "build_xdb" in opts:
         if opts["build_xdb"]:
             cmake_opts += " -DVISIT_ENABLE_XDB:BOOL=ON"    
-    if opts.has_key("build_visit"):
+    if "build_visit" in opts:
         cmake_opts += " -DVISIT_CONFIG_SITE:PATH=%s/$(hostname).cmake" % config_dir
-    if opts.has_key("cmake_extra_args"):
+    if "cmake_extra_args" in opts:
         cmake_opts += opts["cmake_extra_args"]
-    elif opts.has_key("config_site"):
+    elif "config_site" in opts:
         cfg_site = opts["config_site"]
         cfg_site_abs = os.path.abspath(cfg_site)
         if not os.path.isfile(cfg_site_abs):
@@ -227,7 +227,7 @@ def steps_package(opts,build_type,ctx):
     ctx.triggers["build"].append(a_make_pkg)
     if opts["platform"] == "osx":
         cmake_opts = " -DVISIT_CREATE_APPBUNDLE_PACKAGE:BOOL=ON"
-        if opts.has_key("cert"):
+        if "cert" in opts:
             cmake_opts += ' -DCPACK_BUNDLE_APPLE_CERT_APP="%s"' % opts["cert"]
         a_cmake_bundle = "cmake_cfg_bundle_" + build_type
         a_make_bundle  = "package_osx_bundle." + build_type
@@ -292,7 +292,7 @@ def steps_visit(opts,ctx):
     if not opts["skip_checkout"]:
         steps_checkout(opts,ctx)
 
-    if opts.has_key("build_visit"):
+    if "build_visit" in opts:
         steps_bv(opts,ctx)
 
     for build_type in opts["build_types"]:

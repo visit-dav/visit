@@ -23,7 +23,7 @@ def process_one_timings_file(filename):
         if took != -1:
             result[s[0]] = lines[s[2]][took+5:]
         else:
-            print "Arrgh!"
+            print("Arrgh!")
     return result
 
 def combine_results(results):
@@ -32,7 +32,7 @@ def combine_results(results):
         key = s[0]
         for r in results:
             val = r[key]
-            if combined.has_key(key):
+            if key in combined:
                 combined[key] = combined[key] + [val]
             else:
                 combined[key] = [val]
@@ -72,6 +72,6 @@ def main():
         results = results + [result]
     combined = combine_results(results)
     stats = compute_stats(combined)
-    print stats
+    print(stats)
 
 main()

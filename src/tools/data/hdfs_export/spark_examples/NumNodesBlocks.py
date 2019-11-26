@@ -36,7 +36,7 @@ def ParitionByBlockKeyField(key):
 #
 if __name__ == "__main__":
   if len(sys.argv) < 3:
-    print >> sys.stderr, "Usage: NumNodes <dbfile> <mesh>"
+    print("Usage: NumNodes <dbfile> <mesh>", file=sys.stderr)
     exit(-1)
 
   sc = SparkContext()
@@ -47,5 +47,5 @@ if __name__ == "__main__":
   ghost_nodes_per_block = coord_data.filter(lambda line: line[19]=='1').map(lambda line: line[8:12]).countByValue()
 
   for p in sorted(nodes_per_block):
-    print "Block %d has %d nodes and %d ghost nodes"%(AsciiKeyToIndex(p),nodes_per_block[p],ghost_nodes_per_block[p])
+    print("Block %d has %d nodes and %d ghost nodes"%(AsciiKeyToIndex(p),nodes_per_block[p],ghost_nodes_per_block[p]))
       
