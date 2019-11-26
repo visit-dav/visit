@@ -35,7 +35,7 @@ def _decode_list(data):
         return data
     rv = []
     for item in data:
-        if isinstance(item, str):
+        if isinstance(item, unicode):
             item = item.encode('utf-8')
         elif isinstance(item, list):
             item = _decode_list(item)
@@ -60,9 +60,9 @@ def _decode_dict(data):
         return data
     rv = {}
     for key, value in data.items():
-        if isinstance(key, str):
+        if isinstance(key, unicode):
            key = key.encode('utf-8')
-        if isinstance(value, str):
+        if isinstance(value, unicode):
            value = value.encode('utf-8')
         elif isinstance(value, list):
            value = _decode_list(value)
