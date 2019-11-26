@@ -21,7 +21,7 @@ import os
 # Check the version.
 ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
-    print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
+    print("This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version()))
 
 def fadeout():
     OpenDatabase("localhost:../../data/globe.silo")
@@ -95,7 +95,7 @@ def fadeout():
     #nsteps = 100
     for i in range(50):
         t = float(i) / (50. - 1.)
-        print "t = %g" % t
+        print("t = %g" % t)
         t2 = t * t
         t3 = t * t2
         omt = 1. - t
@@ -129,7 +129,7 @@ def fadeout():
             SetPlotOptions(pc)
             # If t > 0.666 then create a pc plot.
             if(vecPlotCreated == 0):
-                print "Creating vector plot"
+                print("Creating vector plot")
                 vec = VectorAttributes()
                 vec.colorByMag = 1
                 SetDefaultPlotOptions(vec)
@@ -151,7 +151,7 @@ def fadeout():
     
 
 if(not os.path.isfile("../../data/globe.silo")):
-    print "This script requires the file globe.silo to be built in the data directory"
+    print("This script requires the file globe.silo to be built in the data directory")
 else:
     fadeout()
 
