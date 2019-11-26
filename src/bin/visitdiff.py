@@ -36,7 +36,7 @@ import sys, string, os, re, time
 #
 ###############################################################################
 def help():
-    print """
+    print("""
 
     This python script is intended to be used in concert with VisIt's CLI and GUI.
 
@@ -137,7 +137,7 @@ def help():
 
     Note that 'visit -diff' cannot currently handle differences in databases that
     have a different number of time states.
-"""
+""")
 
 ###############################################################################
 # Function: GetDiffVarNames 
@@ -428,14 +428,14 @@ def SyncTimeStates(srcWin):
         # no work to do if the current time state is already set
         tmpCurrentTimeState = GetCurrentTimeState(srcWin)
         if currentTimeState == tmpCurrentTimeState:
-	    print "Time state is up to date"
+	    print("Time state is up to date")
             return
 
-        print "Updating time state to state %d"%tmpCurrentTimeState
+        print("Updating time state to state %d"%tmpCurrentTimeState)
         currentTimeState = tmpCurrentTimeState
 
     else:
-        print "Updating time state to state 0"
+        print("Updating time state to state 0")
         currentTimeState = 0
 
     TimeSliderSetState(currentTimeState)
@@ -448,9 +448,9 @@ def SyncTimeStates(srcWin):
     mdr = GetMetaData(dbr)
 
     if mdl.numStates != mdr.numStates:
-        print "Database \"%s\" has %d states"%(dbl, mdl.numStates)
-        print "Database \"%s\" has %d states"%(dbr, mdr.numStates)
-        print "Currently, 'visit -diff' is unable to handle databases with different numbers of states"
+        print("Database \"%s\" has %d states"%(dbl, mdl.numStates))
+        print("Database \"%s\" has %d states"%(dbr, mdr.numStates))
+        print("Currently, 'visit -diff' is unable to handle databases with different numbers of states")
 	sys.exit(4)
 
     UpdateExpressions(mdl, mdr)
@@ -521,11 +521,11 @@ def ProcessCLArgs():
                 i = i + 1
             i = i + 1
     except:
-        print "The -vdiff flag takes 2 database names.", dbl, dbr
+        print("The -vdiff flag takes 2 database names.", dbl, dbr)
         sys.exit(1)
 
     if dbl == "notset" or dbr == "notset":
-        print "The -vdiff argument was not given."
+        print("The -vdiff argument was not given.")
         sys.exit(2)
     
 ###############################################################################
@@ -605,7 +605,7 @@ def UpdateExpressions(mdl, mdr):
     global diffVars
 
     if diffSummaryOnly == 0:
-        print "Defining expressions for state %d"%currentTimeState
+        print("Defining expressions for state %d"%currentTimeState)
 
     cmfeModeNew = 0
     diffVarsNew = []
@@ -782,22 +782,22 @@ def UpdateExpressions(mdl, mdr):
     # Print out some information about what we did
     if diffSummaryOnly == 0:
         if len(addedExpressions) > 0:
-            print "    Added %d expressions..."%len(addedExpressions)
+            print("    Added %d expressions..."%len(addedExpressions))
             for expr_i in range(len(addedExpressions)):
-                print "       %s"%addedExpressions[expr_i]
+                print("       %s"%addedExpressions[expr_i])
         if len(unchangedExpressions) > 0:
-            print "    Unchanged %d expressioons..."%len(unchangedExpressions)
+            print("    Unchanged %d expressioons..."%len(unchangedExpressions))
             for expr_i in range(len(unchangedExpressions)):
-                print "       %s"%unchangedExpressions[expr_i]
+                print("       %s"%unchangedExpressions[expr_i])
         if len(updatedExpressions) > 0:
-            print "    Updated %d expressions..."%len(updatedExpressions)
+            print("    Updated %d expressions..."%len(updatedExpressions))
             for expr_i in range(len(updatedExpressions)):
-                print "       %s"%updatedExpressions[expr_i]
+                print("       %s"%updatedExpressions[expr_i])
         if len(deletedExpressions) > 0:
-            print "    Deleted %d expressions"%len(deletedExpressions)
+            print("    Deleted %d expressions"%len(deletedExpressions))
             for expr_i in range(len(deletedExpressions)):
-                print "       %s"%deletedExpressions[expr_i]
-        print "Finished defining expressions"
+                print("       %s"%deletedExpressions[expr_i])
+        print("Finished defining expressions")
 
     cmfeMode = cmfeModeNew
     diffVarsNew.sort()
@@ -832,11 +832,11 @@ def Initialize():
     # Open left and right database operands
     #
     if OpenDatabase(dbl) == 0:
-       print "VisIt could not open ", dbl
+       print("VisIt could not open ", dbl)
        sys.exit(3)
 
     if OpenDatabase(dbr) == 0:
-       print "VisIt could not open ", dbr
+       print("VisIt could not open ", dbr)
        sys.exit(3)
 
     #
@@ -866,7 +866,7 @@ def Initialize():
                 continue
             AddPlot("Pseudocolor", windowsToVars[win])
     else:
-        print "No plots are being set up by default since the databases did not have any scalars in common."
+        print("No plots are being set up by default since the databases did not have any scalars in common.")
         sys.exit(5)
 
     # Set up text annotations.
@@ -926,7 +926,7 @@ def Initialize():
     SetActiveWindow(1)
 
     if diffSummaryOnly == 0:
-        print "Type 'help()' to get more information on using 'visit -diff'"
+        print("Type 'help()' to get more information on using 'visit -diff'")
 
 ###############################################################################
 # Function: ChangeVar 
@@ -945,13 +945,13 @@ def Initialize():
 def ChangeVar(new_var):
     leadingDiff = re.search("^diff/(.*)", new_var)
     if leadingDiff != None:
-        print "Passed variable from 'diff/' menu to ChangeVar()."
-        print "Pass only the original name of the variable to ChangeVar()."
-	print "Removing leading 'diff/' and using name \"%s\""%leadingDiff.group(1)
+        print("Passed variable from 'diff/' menu to ChangeVar().")
+        print("Pass only the original name of the variable to ChangeVar().")
+	print("Removing leading 'diff/' and using name \"%s\""%leadingDiff.group(1))
 	new_var = leadingDiff.group(1)
     varType = GetVarType(mdl, new_var)
     if varType == "Unknown":
-        print "Unable to find variable type for variable \"%s\""%new_var
+        print("Unable to find variable type for variable \"%s\""%new_var)
         return
     for win in (1,2,3,4):
         if win == 2 and cmfeMode == 0:
@@ -990,7 +990,7 @@ def ChangeVar(new_var):
             else:
                 ChangeActivePlotsVar(new_var);
         else:
-            print "Unable to find an existing plot compatible with the variable \"%s\""%new_var
+            print("Unable to find an existing plot compatible with the variable \"%s\""%new_var)
     SetActiveWindow(1)
 
 ###############################################################################
@@ -1048,7 +1048,7 @@ def ToggleHidePlot(plotId):
         SetActiveWindow(win)
 	plotList = GetPlotList()
 	if plotId >= plotList.GetNumPlots():
-	    print "Plot id %d is out of range 0...%d"%(plotId,plotList.GetNumPlots()-1)
+	    print("Plot id %d is out of range 0...%d"%(plotId,plotList.GetNumPlots()-1))
 	    return
 	if plotList.GetPlots(plotId).hiddenFlag == 1:
 	    hiddenTarget = hiddenTarget - 1
@@ -1170,7 +1170,7 @@ def TogglePlot(plotTypeName):
         #
         if win == 1:
             targetState = 0
-            for m in plotInfo.keys():
+            for m in list(plotInfo.keys()):
                 if plotInfo[m][0] == 0 or plotInfo[m][0] == 1:
                     targetState = targetState + 1
                 else:
@@ -1180,7 +1180,7 @@ def TogglePlot(plotTypeName):
         # First handle toggling of existing plots (hidden or displayed)
         #
         plotsToToggle = []
-        for m in plotInfo.keys():
+        for m in list(plotInfo.keys()):
             if targetState > 0 and plotInfo[m][0] == 1:
                 plotsToToggle.append(plotInfo[m][1])
             if targetState <= 0 and plotInfo[m][0] == 2:
@@ -1193,7 +1193,7 @@ def TogglePlot(plotTypeName):
         # Now handle adding new <plotTypeName> plots if needed
         #
         if targetState > 0:
-            for m in plotInfo.keys():
+            for m in list(plotInfo.keys()):
                 if plotInfo[m][0] == 0:
                     AddPlot(plotTypeName, m)
             DrawPlots()
@@ -1298,7 +1298,7 @@ def PickLoop(ids, pickType):
             k = k + 1
 #    Disabled for now: winds up poorly formatting the message
 #    ClientMethod("MessageBoxOk", result)
-    print result
+    print(result)
     SetActiveWindow(1)
     UnMinimizePickOutput()
 
@@ -1395,7 +1395,7 @@ def SyncWindows(srcWin):
                 continue
             theVar = GetDiffVarNames(pv) 
             if win == 1 and pv == theVar[0]:
-                print "Warning: Looks like you are not displaying a diff variable in the DIFF window"
+                print("Warning: Looks like you are not displaying a diff variable in the DIFF window")
             SetActivePlots((p,))
             if win == 1:
                 ChangeActivePlotsVar(theVar[1])
@@ -1496,7 +1496,7 @@ def DiffSummary():
         else:
             vname = v
         if diffSummaryOnly == 1:
-	    print "Processing variable \"%s\""%v
+	    print("Processing variable \"%s\""%v)
         AddPlot("Pseudocolor", v)
         DrawPlots()
         Query("MinMax")
@@ -1516,17 +1516,17 @@ def DiffSummary():
         #time.sleep(0.5)
         DeleteActivePlots()
     SuppressQueryOutputOff()
-    print "Difference Summary sorted in decreasing difference magnitude...\n"
-    print "NOTE: Differences are computed in only single precision"
-    print "    var     |max -diff   | max -elem  ; -dom  |max +diff   | max +elem  ;  +dom |"
-    print "------------|------------|--------------------|------------|--------------------|"
+    print("Difference Summary sorted in decreasing difference magnitude...\n")
+    print("NOTE: Differences are computed in only single precision")
+    print("    var     |max -diff   | max -elem  ; -dom  |max +diff   | max +elem  ;  +dom |")
+    print("------------|------------|--------------------|------------|--------------------|")
     diffSummary.sort(CompareMinMaxInfos)
     for k in range(len(diffSummary)):
         if diffSummary[k][1] == 0.0 and diffSummary[k][5] == 0.0:
-            print "% 12.12s| NO DIFFERENCES"%diffSummary[k][0]
+            print("% 12.12s| NO DIFFERENCES"%diffSummary[k][0])
 	    resultStr = resultStr + "% 12.12s| NO DIFFERENCES\n"%diffSummary[k][0]
         else:
-            print "% 12.12s|%+12.7f|%4s % 7s;% 7s|%+12.7f|%4s % 7s;% 7s|"%diffSummary[k]
+            print("% 12.12s|%+12.7f|%4s % 7s;% 7s|%+12.7f|%4s % 7s;% 7s|"%diffSummary[k])
 	    resultStr = resultStr + "% 12.12s|%+12.7f|%4s % 7s;% 7s|%+12.7f|%4s % 7s;% 7s|\n"%diffSummary[k]
     UnHideAllUnHiddenPlots(1, plotsToUnHide)
     RedrawWindow()
