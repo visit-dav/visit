@@ -31,9 +31,11 @@ from os.path import join as pjoin
 #  http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-unicode-ones-from-json-in-python
 # ----------------------------------------------------------------------------
 def _decode_list(data):
+    if (sys.version_info > (3, 0)):
+        return data
     rv = []
     for item in data:
-        if isinstance(item, unicode):
+        if isinstance(item, str):
             item = item.encode('utf-8')
         elif isinstance(item, list):
             item = _decode_list(item)
@@ -54,11 +56,13 @@ def _decode_list(data):
 #  http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-unicode-ones-from-json-in-python
 # ----------------------------------------------------------------------------
 def _decode_dict(data):
+    if (sys.version_info > (3, 0)):
+        return data
     rv = {}
-    for key, value in data.iteritems():
-        if isinstance(key, unicode):
+    for key, value in data.items():
+        if isinstance(key, str):
            key = key.encode('utf-8')
-        if isinstance(value, unicode):
+        if isinstance(value, str):
            value = value.encode('utf-8')
         elif isinstance(value, list):
            value = _decode_list(value)
@@ -265,7 +269,7 @@ def Log(msg,echo=True):
     Prints message to screen and also records to a log file.
     """
     if echo:
-        print msg
+        print(msg)
     if (os.path.isfile("log")):
         log = open("log", 'a')
         log.write(msg)

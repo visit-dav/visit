@@ -72,7 +72,7 @@ def check_skip(skip_list,test_modes,test_cat,test_file):
         if v['mode'] == test_modes:
             for test in v['tests']:
                 # check for platform restrictions
-                if test.has_key("platform"):
+                if "platform" in test:
                     tplat = test["platform"].lower()
                     splat = sys.platform.lower()
                     # win,linux,osx
@@ -81,9 +81,9 @@ def check_skip(skip_list,test_modes,test_cat,test_file):
                     if not splat.startswith(tplat):
                         continue
                 if test['category'] == test_cat:
-                    if test.has_key("file"):
+                    if "file" in test:
                         if test['file'] == test_file:
-                            if not test.has_key("cases"):
+                            if "cases" not in test:
                             # skip the entire file if
                             # there are no specific cases
                                 return True
@@ -295,7 +295,7 @@ def launch_visit_test(args):
         json_res_file = pjoin(opts["result_dir"],"json","%s_%s.json" %(test_cat,test_base))
         if os.path.isfile(json_res_file):
             results = json_load(json_res_file)
-            if results.has_key("result_code"):
+            if "result_code" in results:
                 rcode = results["result_code"]
             # os.mkdir(run_dir)
         if sexe_res["killed"]:
@@ -483,7 +483,7 @@ def finalize_options(opts):
     opts["data_dir"]     = abs_path(opts["data_dir"])
     opts["tests_dir"]    = abs_path(opts["tests_dir"])
     opts["baseline_dir"] = abs_path(opts["baseline_dir"])
-    if isinstance(opts["classes"],basestring):
+    if isinstance(opts["classes"],str):
         opts["classes"]  = opts["classes"].split(",")
     opts["skip_list"]    = None
     if not opts["skip_file"] is None and os.path.isfile(opts["skip_file"]):
@@ -1105,7 +1105,7 @@ def run_visit_tests(tests,
     else:
         opts["nprocs"] = 1 # default to 1 for now
     opts["test_dir"] = os.path.split(os.path.abspath(__file__))[0]
-    print opts["test_dir"]
+    print(opts["test_dir"])
     res_file  = main(opts,tests)
     return JSONIndex.load_results(res_file,True)
 

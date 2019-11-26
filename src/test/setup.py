@@ -50,7 +50,7 @@ def generate():
     else:
         src_path = __file__
     src_dir = os.path.split(os.path.abspath(src_path))[0]
-    print "[generating module source at: %s]" % build_base
+    print("[generating module source at: %s]" % build_base)
     module_items = ["HtmlDiff.py",
                     "HtmlPython.py",
                     "visit_test_common.py",
@@ -63,7 +63,7 @@ def generate():
                     "report_templates"]
     for itm in module_items:
         itm_path = pjoin(src_dir,itm)
-        print "[copying %s]" % itm_path
+        print("[copying %s]" % itm_path)
         if os.path.isfile(itm_path):
             shutil.copy(itm_path,build_base)
         else:
