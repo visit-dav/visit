@@ -22,8 +22,8 @@ from flow.filters import *
 def main():
     w = Workspace()
     w.register_filters(pyocl_ops)
-    v_a = npy.array(range(10),dtype=npy.float32)
-    v_b = npy.array(range(10),dtype=npy.float32)
+    v_a = npy.array(list(range(10)),dtype=npy.float32)
+    v_b = npy.array(list(range(10)),dtype=npy.float32)
     ctx  = w.add_context("pyocl_ops","root")
     ctx.start()
     ctx.registry_add(":src_a",v_a)
@@ -49,11 +49,11 @@ def main():
     ctx.connect("f3","f5:in_a")
     ctx.connect("f4","f5:in_b")
     act_res = w.execute()
-    print "Setting up Workspace"
-    print "v_a: ", v_a
-    print "v_b: ", v_a
-    print "Executing: (v_a + v_b)^2 + (v_a - v_b)^2"
-    print w.execute()
+    print("Setting up Workspace")
+    print("v_a: ", v_a)
+    print("v_b: ", v_a)
+    print("Executing: (v_a + v_b)^2 + (v_a - v_b)^2")
+    print(w.execute())
 
 if __name__ == "__main__":
     main()

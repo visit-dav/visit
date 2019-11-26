@@ -10,7 +10,7 @@
     Exception infrastructure for flow.
 """
 
-import log
+from . import log
 
 # base error class
 class BaseError(Exception):
