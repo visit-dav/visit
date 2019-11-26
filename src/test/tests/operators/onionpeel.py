@@ -423,7 +423,7 @@ def TestArbPoly():
     op.honorOriginalMesh = 0
     SetActivePlots(0)
     numZones = Query("NumZones", use_actual_data=1)['num_zones']
-    print "numZones: ", numZones
+    print("numZones: ", numZones)
     SetActivePlots(1)
     for i in range (numZones):
         op.index = i

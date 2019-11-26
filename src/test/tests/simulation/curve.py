@@ -39,7 +39,7 @@ if connected:
         sim.consolecommand("step")
         # Read from stderr to look for the echoed command.
         buf = sim.p.stderr.readline()
-        print buf
+        print(buf)
         sim.consolecommand("update")
 
     Test("curve03")
@@ -47,7 +47,7 @@ if connected:
     for i in range(25):
         sim.consolecommand("step")
         buf = sim.p.stderr.readline()
-        print buf
+        print(buf)
         sim.consolecommand("update")
     Test("curve04")
 

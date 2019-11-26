@@ -18,8 +18,8 @@ TurnOnAllAnnotations()
 
 tpath = tests_path("session","restorewithsources.session")
 dpath = silo_data_path("rect3d.silo") 
-print repr(tpath)
-print repr(silo_data_path("rect3d.silo") )
+print(repr(tpath))
+print(repr(silo_data_path("rect3d.silo") ))
 
 RestoreSessionWithDifferentSources(tests_path("session","restorewithsources.session"),
                                    0,

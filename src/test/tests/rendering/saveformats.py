@@ -62,7 +62,7 @@ def FileExists(name, waitToAppear, growthInterval):
             curSize = size
 
 # find tif to rgb image convert utility
-if os.environ.has_key('VISIT_TEST_CONVERT'):
+if 'VISIT_TEST_CONVERT' in os.environ:
     imgConverter = os.environ['VISIT_TEST_CONVERT']
 elif (os.path.isfile("/usr/bin/convert")):
     imgConverter = "/usr/bin/convert"

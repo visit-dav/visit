@@ -133,7 +133,7 @@ def CreateMTFile(prefix, makeVisItFile, percent):
             fileFrom = data_path("silo_hdf5_test_data/%s" % file)
             fileTo   = "%s%s" % (prefix, file)
             if not os.path.exists(fileFrom):
-                print >>sys.stderr, "Error: %s didn't exist" % fileFrom
+                print("Error: %s didn't exist" % fileFrom, file=sys.stderr)
             try:
                 # Copy a file from the data directory to the current directory.
                 if not sys.platform.startswith("win"):
@@ -141,7 +141,7 @@ def CreateMTFile(prefix, makeVisItFile, percent):
                 else:
                     shutil.copyfile(fileFrom, fileTo)
             except OSError:
-                print >>sys.stderr, "Don't need to copy %s" % file
+                print("Don't need to copy %s" % file, file=sys.stderr)
         db = prefix + "wave*.silo database"
     else:
         # .visit file.
@@ -445,7 +445,7 @@ def test6():
         try:
             os.unlink(f)
         except:
-            print >>sys.stderr, "Could not delete %s" % f
+            print("Could not delete %s" % f, file=sys.stderr)
 
     # Change to a time state that we deleted. This should put the plot
     # in the error state and we should get an error message.

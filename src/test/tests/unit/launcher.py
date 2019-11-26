@@ -62,7 +62,7 @@ def GetLauncherCommand(args):
     return cmd
 
 def FilterLauncherOutput(text, replacements):
-    for k in replacements.keys():
+    for k in list(replacements.keys()):
         text = string.replace(text, k, replacements[k])
     return text
 
@@ -117,7 +117,7 @@ def FormatLauncherOutput(cmd):
 
 # For each launcher
 i = 0
-keys = launch_cases.keys()
+keys = list(launch_cases.keys())
 keys.sort()
 for k in keys:
     # Test the launcher with each debugger.

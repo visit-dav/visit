@@ -16,7 +16,7 @@ def TestHistogram(name, data):
     file = "tmp.curve"
     f = open(file, "wt")
     f.write("# histogram\n")
-    for x in xrange(len(data)):
+    for x in range(len(data)):
         f.write("%g %g\n" % (x, data[x]))
     f.close()
 
@@ -280,7 +280,7 @@ def test123():
     
     # Demonstrate that limiting the histogram end bin removes high frequency
     # cells.
-    end_test = zip((4,2,0), (3,4,5))
+    end_test = list(zip((4,2,0), (3,4,5)))
     for maxBin,testNum in end_test:
         s.histogramEndBin = maxBin
         UpdateNamedSelection(selName, s)
@@ -312,7 +312,7 @@ def test123():
     TestText("selections_3_02", str(GetSelectionSummary(selName)))
 
     # Demonstrate that limiting the histogram end bin removes related cells.
-    end_test = zip((4,2,0), (3,4,5))
+    end_test = list(zip((4,2,0), (3,4,5)))
     for maxBin,testNum in end_test:
         s.histogramEndBin = maxBin
         UpdateNamedSelection(selName, s)
@@ -370,7 +370,7 @@ def test4():
 
     # Demonstrate that limiting the histogram start bin removes cells with
     # low dist values.
-    end_test = zip((0,2,4), (4,5,6))
+    end_test = list(zip((0,2,4), (4,5,6)))
     for minBin,testNum in end_test:
         s.histogramStartBin = minBin
         UpdateNamedSelection(selName, s)
@@ -422,7 +422,7 @@ def test5():
     
     # Demonstrate that limiting the histogram end bin removes high frequency
     # cells.
-    end_test = zip((3,1,0), (2,3,4))
+    end_test = list(zip((3,1,0), (2,3,4)))
     for maxBin,testNum in end_test:
         s.histogramEndBin = maxBin
         UpdateNamedSelection(selName, s)
