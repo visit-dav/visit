@@ -23,7 +23,7 @@ class CellAvgQuery(SimplePythonQuery):
         ncells = ds_in.GetNumberOfCells()
         self.total_ncells += ncells
         cell_data = ds_in.GetCellData().GetArray(self.input_var_names[0])
-        for i in xrange(ncells):
+        for i in range(ncells):
             self.total_sum += cell_data.GetTuple1(i)
     def post_execute(self):
         # calculate average and set results
