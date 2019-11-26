@@ -125,7 +125,7 @@ class JobSubmitter_bsub_ORNL(JobSubmitter):
             #self.TFileSetup(tfile)
             tfile.write(" ".join(parcmd))
             tfile.close()
-            os.chmod(self.tfilename, 0775)
+            os.chmod(self.tfilename, 0o775)
         except (OSError, IOError):
             exit("Could not create ORNL script file to launch %s job." % self.parallel.launcher, 0)
 
@@ -167,7 +167,7 @@ compiled against.  If you are a *developer*, it's
 very likely I've chosen the wrong MPI
 implementation; you might have to hack
 internallauncher to load the module you need."""
-            print msg
+            print(msg)
             tfile.write("eval $(modulecmd sh unload PE-pgi)\n")
             tfile.write("eval $(modulecmd sh load PE-gnu)\n")
         elif self.launcher.IsRunningOnJaguar():
