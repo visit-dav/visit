@@ -23,23 +23,42 @@ class Struct(object):
       (k, v) in self.__dict__.items()))
 
   def __setattr__(self,name,value):
-    if name in self.__dict__: 
-        if type(value) == type(self.__dict__[name]):
-            self.__dict__[name] = value
-        elif isinstance(value,(bool,int,float)) \
-             and isinstance(self.__dict__[name],(bool,int,float)):
-             if isinstance(self.__dict__[name],bool) : 
-                self.__dict__[name] = bool(value)
-             elif isinstance(self.__dict__[name],int) : 
-                self.__dict__[name] = int(value)
-             elif isinstance(self.__dict__[name],int) : 
-                self.__dict__[name] = int(value)
-             elif isinstance(self.__dict__[name],float) : 
-                self.__dict__[name] = float(value)
-             #if isinstance(self.__dict__[name],complex) : 
-             #   self.__dict__[name] = complex(value)
-        else:
-            raise ValueError("Types mismatch {0} and {1}".format(type(value),type(self.__dict__[name])))
+    if name in self.__dict__:
+        # python 3 path
+        if (sys.version_info > (3, 0)):
+            if type(value) == type(self.__dict__[name]):
+                self.__dict__[name] = value
+            elif isinstance(value,(bool,int,float)) \
+                 and isinstance(self.__dict__[name],(bool,int,float)):
+                 if isinstance(self.__dict__[name],bool) : 
+                    self.__dict__[name] = bool(value)
+                 elif isinstance(self.__dict__[name],int) : 
+                    self.__dict__[name] = int(value)
+                 elif isinstance(self.__dict__[name],int) : 
+                    self.__dict__[name] = int(value)
+                 elif isinstance(self.__dict__[name],float) : 
+                    self.__dict__[name] = float(value)
+                 #if isinstance(self.__dict__[name],complex) : 
+                 #   self.__dict__[name] = complex(value)
+            else:
+                raise ValueError("Types mismatch {0} and {1}".format(type(value),type(self.__dict__[name])))
+        else: # python 2 path (includes long)
+            if type(value) == type(self.__dict__[name]):
+                self.__dict__[name] = value
+            elif isinstance(value,(bool,int,long,float)) \
+                 and isinstance(self.__dict__[name],(bool,int,long,float)):
+                 if isinstance(self.__dict__[name],bool) : 
+                    self.__dict__[name] = bool(value)
+                 elif isinstance(self.__dict__[name],int) : 
+                    self.__dict__[name] = int(value)
+                 elif isinstance(self.__dict__[name],long) : 
+                    self.__dict__[name] = int(value)
+                 elif isinstance(self.__dict__[name],float) : 
+                    self.__dict__[name] = float(value)
+                 #if isinstance(self.__dict__[name],complex) : 
+                 #   self.__dict__[name] = complex(value)
+            else:
+                raise ValueError("Types mismatch {0} and {1}".format(type(value),type(self.__dict__[name])))
     else:
         raise RuntimeError("Unable to set unknown attribute: '{0}'".format(name))
 
