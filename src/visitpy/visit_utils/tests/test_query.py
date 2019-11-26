@@ -61,7 +61,7 @@ class TestQuery(unittest.TestCase):
         res_a = python_query(file=vpq_file,msg_lvl=4)
         res_b = python_query(source=open(vpq_file).read(),msg_lvl=4)
         res_c = python_query(file=vpq_file,rmode="string",msg_lvl=4).strip()
-        print res_a, res_b, res_c
+        print(res_a, res_b, res_c)
         self.assertTrue( (res_a - 0.02357020415365696) < 1e-5 )
         self.assertTrue( (res_b - 0.02357020415365696) < 1e-5 )
         self.assertEqual(res_c,"Min = %s" % str(res_a))
