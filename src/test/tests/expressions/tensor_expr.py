@@ -190,7 +190,7 @@ DeleteAllPlots()
 
 # Confirm principal_tensor function gives same result as above
 TestSection("Cross Principal Stresses and Eigenvalues")
-DefineVectorExpression("pcomps_complex/result", "principal_tensor(<eigvals_symm/tensor>)")
+DefineVectorExpression("pcomps_symm/result", "principal_tensor(<eigvals_symm/tensor>)")
 AddPlot("Vector", "pcomps_symm/result")
 DrawPlots()
 p = PickByNode(0)
