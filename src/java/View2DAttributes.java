@@ -2,6 +2,7 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
+
 package llnl.visit;
 
 
@@ -30,7 +31,7 @@ public class View2DAttributes extends AttributeSubject
     public final static int TRISTATEMODE_AUTO = 2;
 
     // Constants
-    public final static double DEFAULT_FULL_FRAME_AUTO_THRESHOLD = 100.0;
+public final static double DEFAULT_FULL_FRAME_AUTO_THRESHOLD = 100.0;
 
 
     public View2DAttributes()
