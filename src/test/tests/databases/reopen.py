@@ -47,8 +47,12 @@
 #    Fixed reopen_04_01 for windows to use the same file as for non-windows.
 #
 # ----------------------------------------------------------------------------
-
-import os, string, sys, time, shutil
+from __future__ import print_function
+import os
+import string
+import sys
+import time
+import shutil
 
 def GetTruncatedWindowInformationString():
     # Get the window information and convert it to a string.

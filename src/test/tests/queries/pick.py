@@ -229,6 +229,9 @@
 #    Add test for highlighting a zone picked by global id. 
 #
 # ----------------------------------------------------------------------------
+from __future__ import print_function
+
+
 RequiredDatabasePlugin(("Boxlib2D","SAMRAI","Mili"))
 defaultAtts = GetPickAttributes()
 
