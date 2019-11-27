@@ -253,7 +253,7 @@ DeleteAllPlots()
 # Re-use eigvals_symm here
 TestSection("Cross Check Deviatoric and Principal Stresses")
 DefineVectorExpression("eigvals_symm/dev", "principal_deviatoric_tensor(<eigvals_symm/tensor>)")
-AddPlot("Tensor", "eigvals_symm/dev")
+AddPlot("Vector", "eigvals_symm/dev")
 DrawPlots()
 PickByNode(0)
 s = GetPickOutput()
@@ -268,7 +268,7 @@ DefineTensorExpression("eigvals_symm/tensor3",\
 """
 )
 DefineVectorExpression("eigvals_symm/dev2", "principal_tensor(<eigvals_symm/tensor3>)")
-AddPlot("Tensor", "eigvals_symm/dev2")
+AddPlot("Vector", "eigvals_symm/dev2")
 DrawPlots()
 PickByNode(0)
 s = GetPickOutput()
