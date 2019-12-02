@@ -1,8 +1,6 @@
 # ----------------------------------------------------------------------------
 #  CLASSES:    nightly
 #
-#  LIMIT:      1800
-#
 #  Test Case:  databasesVsInstall.py 
 #
 #  Tests:      Building database plugins against an installed version of VisIt
