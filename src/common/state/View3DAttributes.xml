@@ -70,6 +70,10 @@
     </Function>
     <Function name="View3DAttributes_RotateAxis" user="true" member="true">
     </Function>
+    <Function name="View3DAttributes_Add" user="true" member="true">
+    </Function>
+    <Function name="View3DAttributes_Mul" user="true" member="true">
+    </Function>
     <Include file="source" quoted="false">
       math.h
     </Include>
