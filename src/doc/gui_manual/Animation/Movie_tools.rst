@@ -16,15 +16,16 @@ utility. The following list provides ``visit -movie`` command line arguments:
 ``-format fmt``
     The format option allows you to set the output format for your movie. The
     supported values for fmt are:
-        * mpeg : MPEG 2 movie.
-        * qt : QuickTime movie.
-        * sm : Streaming movie format.
-        * png : Save raw movie frames as individual PNG files.
-        * ppm : Save raw movie frames as individual PPM files.
-        * tiff : Save raw movie frames as individual TIFF files.
-        * jpeg : Save raw movie frames as individual JPEG files.
-        * bmp : Save raw movie frames as individual BMP (Windows Bitmap) files.
-        * rgb : Save raw movie frames as individual RGB (SGI format) files.
+
+      * mpeg : MPEG 2 movie.
+      * qt : QuickTime movie.
+      * sm : Streaming movie format.
+      * png : Save raw movie frames as individual PNG files.
+      * ppm : Save raw movie frames as individual PPM files.
+      * tiff : Save raw movie frames as individual TIFF files.
+      * jpeg : Save raw movie frames as individual JPEG files.
+      * bmp : Save raw movie frames as individual BMP (Windows Bitmap) files.
+      * rgb : Save raw movie frames as individual RGB (SGI format) files.
 
 ``-geometry size``
     The geometry option allows you to set the movie resolution. The size

@@ -65,6 +65,9 @@
 //   Brad Whitlock, Fri Oct 12 16:43:20 PDT 2012
 //   I moved help under resources.
 //
+//   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
+//   Added manualPath for accessing the sphinx manual.
+//
 // ****************************************************************************
 
 QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
@@ -72,6 +75,10 @@ QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
 {
     // Set the help path from an environment variable.
     helpPath = QString(GetVisItResourcesDirectory(VISIT_RESOURCES_HELP).c_str());
+
+    // Create a path to locate the manual from the helpPath. 
+    manualPath = QString("manual") + QString(VISIT_SLASH_STRING) + 
+        QString("index.html");
 
     firstShow = true;
     activeTab = 0;
@@ -359,6 +366,9 @@ QvisHelpWindow::ReleaseNotesFile() const
 //   Kathleen Bonnell, Sat Aug 28 13:17:45 MST 2010 
 //   Added ultrawrapper document.
 //
+//   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
+//   Replaced manual pages with our new sphinx manuals.
+//
 // ****************************************************************************
 
 void
@@ -409,52 +419,11 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
     ultraPage->setData(0, Qt::UserRole, QVariant("ultrawrapper.html"));
     ultraPage->setIcon(0, helpIcon);
 
-    // Read the XML file and create the DOM tree. Then use the tree to
-    // build the User manual content.
-    bool noHelp = false;
-    QFile helpIndexFile(fileName);
-    if(helpIndexFile.open(QIODevice::ReadOnly))
-    {
-        QDomDocument domTree;
-        if(domTree.setContent(&helpIndexFile))
-        {
-            // Create a root node for the User's manual.
-            QTreeWidgetItem *UMrootItem = new QTreeWidgetItem(helpContents);
-            UMrootItem->setIcon(0, openBookIcon);
-            UMrootItem->setText(0, tr("VisIt User's Manual"));
-            UMrootItem->setData(0, Qt::UserRole, QVariant("list0000.html"));
-
-            // Create the tree view out of the DOM
-            QDomElement root = domTree.documentElement();
-            QDomNode node = root.firstChild();
-            while(!node.isNull())
-            {
-                if(node.isElement() && node.nodeName() == "body")
-                {
-                    QDomElement body = node.toElement();
-                    BuildContents(UMrootItem, body);
-                    break;
-                }
-                node = node.nextSibling();
-            }
-
-            // Make the root node open by default.
-            helpContents->expandItem(UMrootItem);
-        }
-        else
-            noHelp = true;
-        helpIndexFile.close();
-    }
-    else
-        noHelp = true;
-
-    if(noHelp)
-    {
-        Message(tr("VisIt cannot read the help index file! "
-                "No online help will be available."));
-        debug1 << "VisIt cannot read the help index file! "
-                  "No online help will be available.\n";
-    }
+    QTreeWidgetItem *manual = new QTreeWidgetItem(
+        helpContents, 0);
+    manual->setText(0, tr("VisIt Manuals"));
+    manual->setData(0, Qt::UserRole, QVariant(manualPath));
+    manual->setIcon(0, helpIcon);
 
     helpContents->blockSignals(false);
 
@@ -545,6 +514,9 @@ QvisHelpWindow::BuildContents(QTreeWidgetItem *parentItem,
 //   Brad Whitlock, Thu Jun 19 16:45:54 PDT 2008
 //   Qt 4.
 //
+//   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
+//   Added the new sphinx manual path.
+//
 // ****************************************************************************
 
 void
@@ -558,6 +530,7 @@ QvisHelpWindow::BuildIndex()
     AddToIndex(tr("Ultra wrapper"), "ultrawrapper.html");
     AddToIndex(tr("VisIt"), "home.html");
     AddToIndex(tr("Release notes"), ReleaseNotesFile());
+    AddToIndex(tr("VisIt Manuals"), manualPath);
 
     // Populate the index list box.
     helpIndex->blockSignals(true);

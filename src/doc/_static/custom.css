@@ -1,0 +1,13 @@
+.collapsible .header {
+    display: block;
+    clear: both;
+    margin-bottom: 0.5cm;
+}
+
+.collapsible .header:after {
+    content: " ▶";
+}
+
+.collapsible .header.open:after {
+    content: " ▼";
+}
