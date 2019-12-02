@@ -4,14 +4,13 @@ Database comparison
 -------------------
 
 Comparing the results of multiple related simulation databases is one of
-VisIt_'s main uses. You can put plots from multiple databases in the same
-window or you can put plots from each database in adjacent visualization
-windows, allowing you to compare plots visually. In addition to these
-visual comparison modes, VisIt_ supports more direct comparison of databases
-using database comparisons. Database comparison allows you to plot direct
+VisIt_'s main uses. Users can plot multiple databases in the same
+window or adjacent windows, allowing comparison of plots visually.
+In addition to these *visual* modes of comparison, VisIt_ supports more
+direct *numerical* comparison through VisIt_'s expression system.
+Database comparison allows users to plot direct
 differences between two databases or between different time states in the
-same database (i.e. time derivatives). VisIt_'s expression language is used
-extensively to facilitate the database comparison.
+same database including even in the definition of time derivatives.
 
 The role of expressions
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -36,8 +35,9 @@ one database onto a mesh in the active database, which then allows you to
 create difference expressions involving the active database.
 
 There is also a position-based CMFE (*pos_cmfe*), which will resample the field
-from one mesh onto another mesh by calculating the values of the field on
-the first mesh using the locations of the cells or nodes in a second mesh.
+from one mesh, the *donor*, onto another mesh, the *target*, by calculating the
+values of the field on
+the donor mesh using the locations of the cells or nodes in the target mesh.
 More information on CMFE expressions are found in the
 :ref:`Cross-Mesh Field Evaluation (CMFE) <Comparison_Expressions>` section
 of the :ref:`Exprssions <Expressions>` chapter.
@@ -45,8 +45,8 @@ of the :ref:`Exprssions <Expressions>` chapter.
 Note that there is also a helpful *wizard*, the
 :ref:`Data Level Comparison Wizard <DataLevelComparisonsWizard>`, that
 simplifies the process of defining comparison expressions. Here, we
-describe the :ref:`CMFE <Comparison_Expressions>` expressions and
-demonstrate how to use them in comparisons.
+walk through a few basic examples of using :ref:`CMFE <Comparison_Expressions>`
+expressions and demonstrate how to use them in comparisons.
 
 Plotting the difference between two databases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -91,6 +91,9 @@ the values at the current time state. Consider the following expression:
 <mesh/ireg> - conn_cmfe(</usr/local/visit/data/dbA00.pdb[0]i:mesh/ireg>, mesh)
 
 The above expression subtracts the value of *mesh/ireg* at time state zero
+(in the `[0]i` at the end of the database specification just before the `:`,
+the `i` means to treat the number in brackets as a time *index*  and the
+`[0]` means absolute, as opposed to relative,  zero)
 from the value of *mesh/ireg* at the current time state. The interesting
 feature about the above expression is its use of the expression language's
 *[]* operator for specifying a database time state. The expression uses
