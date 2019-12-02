@@ -1,8 +1,6 @@
 # ----------------------------------------------------------------------------
 #  CLASSES:    nightly
 #
-#  LIMIT:      1200
-#
 #  Test Case:  operatorsVsInstall.py 
 #
 #  Tests:      Building operator plugins against an installed version of VisIt
