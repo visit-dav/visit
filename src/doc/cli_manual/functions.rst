@@ -484,7 +484,7 @@ return type : CLI_return_t
   # coordinates and print the value.
   ResetView()
   ChooseCenterOfRotation(0.5, 0.3)
-  print "The new center of rotation is:", GetView3D().centerOfRotation
+  print("The new center of rotation is:{}".format(GetView3D().centerOfRotation))
 
 
 ClearAllWindows
@@ -954,9 +954,9 @@ return type : CLI_return_t
   OpenDatabase(db)
   AddPlot("Pseudocolor", "u")
   DrawPlots()
-  print "This won't work: retval = %d" % CloseDatabase(db)
+  print("This won't work: retval = %d" % CloseDatabase(db))
   DeleteAllPlots()
-  print "Now it works: retval = %d" % CloseDatabase(db)
+  print("Now it works: retval = %d" % CloseDatabase(db))
 
 
 ColorTableNames
@@ -1292,7 +1292,7 @@ return type : annotation object
   AddPlot("Pseudocolor", "pressure")
   DrawPlots()
   slider = CreateAnnotationObject("TimeSlider")
-  print slider
+  print(slider)
   slider.startColor = (255,0,0,255)
   slider.endColor = (255,255,0,255)
 
@@ -1370,7 +1370,7 @@ return type : CLI_return_t
   # Creating a new database correlation also creates a new time
   # slider and makes it be active.
   w = GetWindowInformation()
-  print "Active time slider: %s" % w.timeSliders[w.activeTimeSlider]
+  print("Active time slider: %s" % w.timeSliders[w.activeTimeSlider])
   # Animate through time using the "common" database correlation's
   # time slider.
   for i in range(TimeSliderGetNStates()):
@@ -1462,8 +1462,8 @@ return type : dictionary
 
   #% visit -cli
   dbp = DatabasePlugins("localhost")
-  print dbp["host"]
-  print dbp["plugins"]
+  print(dbp["host"])
+  print(dbp["plugins"])
 
 
 DeIconifyAllWindows
@@ -2883,8 +2883,8 @@ return type : string
 ::
 
   #% visit -cli
-  print "Default continuous color table: %s" % GetActiveContinuousColorTable()
-  print "Default discrete color table: %s" % GetActiveDiscreteColorTable()
+  print("Default continuous color table: %s" % GetActiveContinuousColorTable())
+  print("Default discrete color table: %s" % GetActiveDiscreteColorTable())
 
 
 GetActiveDiscreteColorTable
@@ -2924,10 +2924,8 @@ return type : string
 ::
 
   #% visit -cli
-  print "Default continuous color table: %s" % \
-  GetActiveContinuousColorTable()
-  print "Default discrete color table: %s" % \
-  GetActiveDiscreteColorTable()
+  print("Default continuous color table: %s" % GetActiveContinuousColorTable())
+  print("Default discrete color table: %s" % GetActiveDiscreteColorTable())
 
 
 GetActiveTimeSlider
@@ -2965,9 +2963,9 @@ return type : string
   AddPlot("FilledBoundary", "material(mesh)")
   OpenDatabase("dbB00.pdb")
   AddPlot("FilledBoundary", "materials(mesh)")
-  print "Active time slider: %s" % GetActiveTimeSlider()
+  print("Active time slider: %s" % GetActiveTimeSlider())
   CreateDatabaseCorrelation("common", ("dbA00.pdb", "dbB00.pdb"), 2)
-  print "Active time slider: %s" % GetActiveTimeSlider()
+  print("Active time slider: %s" % GetActiveTimeSlider())
 
 
 GetAnimationAttributes
@@ -2995,7 +2993,7 @@ return type : AnimationAttributes object
 ::
 
   a = GetAnimationAttributes()
-  print a
+  print(a)
 
 
 GetAnimationTimeout
@@ -3025,7 +3023,7 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  print "Animation timeout = %d" % GetAnimationTimeout()
+  print("Animation timeout = %d" % GetAnimationTimeout())
 
 
 GetAnnotationAttributes
@@ -3060,7 +3058,7 @@ return type : AnnotationAttributes object
   AddPlot("Pseudocolor", "u")
   DrawPlots()
   a = GetAnnotationAttributes()
-  print a
+  print(a)
   a.backgroundMode = a.BACKGROUNDMODE_GRADIENT
   a.gradientColor1 = (0, 0, 255)
   SetAnnotationAttributes(a)
@@ -3109,7 +3107,7 @@ return type : Annotation object
   GetAnnotationObjectNames()
   ["plot0000", "TimeSlider1"]
   ref = GetAnnotationObject("TimeSlider1")
-  print ref
+  print(ref)
 
 
 GetAnnotationObjectNames
@@ -3162,7 +3160,7 @@ return type : CLI_return_t
 
   cbName = 'OpenDatabaseRPC'
   count = GetCallbackArgumentCount(cbName)
-  print 'The number of arguments for %s is: %d' % (cbName, count)
+  print('The number of arguments for %s is: %d' % (cbName, count))
 
 
 GetCallbackNames
@@ -3190,7 +3188,7 @@ return type : tuple of string objects
 ::
 
   import visit
-  print visit.GetCallbackNames()
+  print(visit.GetCallbackNames())
 
 
 GetDatabaseNStates
@@ -3222,7 +3220,7 @@ return type : CLI_return_t
 
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/wave*.silo database")
-  print "Number of time states: %d" % GetDatabaseNStates()
+  print("Number of time states: %d" % GetDatabaseNStates())
 
 
 GetDebugLevel
@@ -3251,7 +3249,7 @@ return type : CLI_return_t
 ::
 
   #% visit -cli -debug 2
-  print "VisIt's debug level is: %d" % GetDebugLevel()
+  print("VisIt's debug level is: %d" % GetDebugLevel())
 
 
 GetDefaultFileOpenOptions
@@ -3320,7 +3318,7 @@ return type : tuple of strings
   AddPlot("Pseudocolor", "u")
   DrawPlots()
   doms = GetDomains()
-  print doms
+  print(doms)
   # Turn off all but the last domain, one after the other.
   for d in doms[:-1]:
       TurnDomainsOff(d)
@@ -3371,7 +3369,7 @@ return type : tuple of strings
   AddPlot("Mesh", "mesh1")
   DrawPlots()
   for name in GetEngineList():
-      print "VisIt has a compute engine running on %s" % name
+      print("VisIt has a compute engine running on %s" % name)
       CloseComputeEngine(GetEngineList()[1])
 
 
@@ -3448,7 +3446,7 @@ return type : GlobalAttributes object
   AddPlot("Pseudocolor", "u")
   DrawPlots()
   g = GetGlobalAttributes()
-  print g
+  print(g)
 
 
 GetGlobalLineoutAttributes
@@ -3486,7 +3484,7 @@ return type : GlobalLineoutAttributes object
   AddPlot("Pseudocolor", "d")
   DrawPlots()
   g = GetGlobalLineoutAttributes()
-  print g
+  print(g)
   g.samplingOn = 1
   g.windowId = 4
   g.createWindow = 0
@@ -3526,7 +3524,7 @@ return type : InteractorAttributes object
 
   #% visit -cli
   ia = GetInteractorAttributes()
-  print ia
+  print(ia)
   ia.showGuidelines = 0
   SetInteractorAttributes(ia)
 
@@ -3559,7 +3557,7 @@ return type : KeyframeAttributes object
 
   #% visit -cli
   k = GetKeyframeAttributes()
-  print k
+  print(k)
   k.enabled,k.nFrames,k.nFramesWasUserSet = 1, 100, 1
   SetKeyframeAttributes(k)
 
@@ -3590,7 +3588,7 @@ return type : string
 
   #% visit -cli
   OpenDatabase("/this/database/does/not/exist")
-  print "VisIt Error: %s" % GetLastError()
+  print("VisIt Error: %s" % GetLastError())
 
 
 GetLight
@@ -3632,7 +3630,7 @@ return type : LightAttributes object
   DrawPlots()
   InvertBackgroundColor()
   light = GetLight(0)
-  print light
+  print(light)
   light.enabledFlag = 1
   light.direction = (0,-1,0)
   light.color = (255,0,0,255)
@@ -3666,8 +3664,8 @@ return type : string
 ::
 
   #% visit -cli
-  print "Local machine name is: %s" % GetLocalHostName()
-  print "My username: %s" % GetLocalUserName()
+  print("Local machine name is: %s" % GetLocalHostName())
+  print("My username: %s" % GetLocalUserName())
 
 
 GetLocalUserName
@@ -3695,8 +3693,8 @@ return type : string
 ::
 
   #% visit -cli
-  print "Local machine name is: %s" % GetLocalHostName()
-  print "My username: %s" % GetLocalUserName()
+  print("Local machine name is: %s" % GetLocalHostName())
+  print("My username: %s" % GetLocalUserName())
 
 
 GetMachineProfile
@@ -3892,7 +3890,7 @@ return type : avtDatabaseMetaData object
 ::
 
   md = GetMetaData('noise.silo')
-  for i in xrange(md.GetNumScalars()):
+  for i in range(md.GetNumScalars()):
       AddPlot('Pseudocolor', md.GetScalars(i).name)
   DrawPlots()
 
@@ -3920,13 +3918,13 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  print "Number of plots", GetNumPlots()
+  print("Number of plots", GetNumPlots())
   OpenDatabase("/usr/gapps/visit/data/curv2d.silo")
   AddPlot("Pseudocolor", "d")
-  print "Number of plots", GetNumPlots()
+  print("Number of plots", GetNumPlots())
   AddPlot("Mesh", "curvmesh2d")
   DrawPlots()
-  print "Number of plots", GetNumPlots()
+  print("Number of plots", GetNumPlots())
 
 
 GetOperatorOptions
@@ -3960,7 +3958,7 @@ return type : operator attributes object
   AddOperator('Transform')
   AddOperator('Transform')
   t = GetOperatorOptions(1)
-  print 'Attributes for the 2nd Transform operator:', t
+  print('Attributes for the 2nd Transform operator:', t)
 
 
 GetPickAttributes
@@ -3997,7 +3995,7 @@ return type : PickAttributes object
   AddPlot("Pseudocolor", "mesh/ireg")
   DrawPlots()
   p = GetPickAttributes()
-  print p
+  print(p)
   p.variables = ("default", "mesh/a", "mesh/mixvar")
   SetPickAttributes(p)
   # Now do some interactive picks and you'll see pick information
@@ -4037,7 +4035,7 @@ return type : string
   DrawPlots()
   ZonePick(coord=(0.4, 0.6, 0), vars=("default", "u", "v"))
   s = GetPickOutput()
-  print s
+  print(s)
 
 
 GetPickOutputObject
@@ -4069,7 +4067,7 @@ return type : dictionary
   DrawPlots()
   ZonePick(coord=(0.4, 0.6, 0), vars=("default", "u", "v"))
   o = GetPickOutputObject()
-  print o
+  print(o)
 
 
 GetPipelineCachingMode
@@ -4100,7 +4098,7 @@ return type : CLI_return_t
 
   #%visit -cli
   offon = ("off", "on")
-  print "Pipeline caching is %s" % offon[GetPipelineCachingMode()]
+  print("Pipeline caching is %s" % offon[GetPipelineCachingMode()])
 
 
 GetPlotInformation
@@ -4135,7 +4133,7 @@ return type : dictionary
   SetActiveWindow(2)
   info = GetPlotInformation()
   lineout = info["Curve"]
-  print "The first lineout point is: [%g, %g] " % lineout[0], lineout[1]
+  print("The first lineout point is: [%g, %g] " % lineout[0], lineout[1])
 
 
 GetPlotList
@@ -4169,7 +4167,7 @@ return type : PlotList object
   # Copy plots (without operators to window 2)
   pL = GetPlotList()
   AddWindow()
-  for i in xrange(pL.GetNumPlots()):
+  for i in range(pL.GetNumPlots()):
       AddPlot(PlotPlugins()[pL.GetPlots(i).plotType], pL.GetPlots(i).plotVar)
   DrawPlots()
 
@@ -4264,8 +4262,8 @@ return type : dictionary or value
   AddPlot("Pseudocolor", "d")
   DrawPlots()
   Query("MinMax")
-  print GetQueryOutputString()
-  print "The min is: %g and the max is: %g" % GetQueryOutputValue()
+  print(GetQueryOutputString())
+  print("The min is: %g and the max is: %g" % GetQueryOutputValue())
 
 
 GetQueryOutputString
@@ -4300,8 +4298,8 @@ return type : string
   AddPlot("Pseudocolor", "d")
   DrawPlots()
   Query("MinMax")
-  print GetQueryOutputString()
-  print "The min is: %g and the max is: %g" % GetQueryOutputValue()
+  print(GetQueryOutputString())
+  print("The min is: %g and the max is: %g" % GetQueryOutputValue())
 
 
 GetQueryOutputValue
@@ -4337,8 +4335,8 @@ return type : double, tuple of doubles
   AddPlot("Pseudocolor", "d")
   DrawPlots()
   Query("MinMax")
-  print GetQueryOutputString()
-  print "The min is: %g and the max is: %g" % GetQueryOutputValue()
+  print(GetQueryOutputString())
+  print("The min is: %g and the max is: %g" % GetQueryOutputValue())
 
 
 GetQueryOutputXML
@@ -4373,8 +4371,8 @@ return type : string
   AddPlot("Pseudocolor", "d")
   DrawPlots()
   Query("MinMax")
-  print GetQueryOutputString()
-  print "The min is: %g and the max is: %g" % GetQueryOutputValue()
+  print(GetQueryOutputString())
+  print("The min is: %g and the max is: %g" % GetQueryOutputValue())
 
 
 GetQueryOverTimeAttributes
@@ -4409,7 +4407,7 @@ return type : QueryOverTimeAttributes object
   AddPlot("Pseudocolor", "mesh/mixvar")
   DrawPlots()
   qot = GetQueryOverTimeAttributes()
-  print qot
+  print(qot)
   # Make queries over time go to window 4.
   qot.createWindow,q.windowId = 0, 4
   SetQueryOverTimeAttributes(qot)
@@ -4531,11 +4529,11 @@ return type : SaveWindowAttributes object
 
   #% visit -cli
   s = GetSaveWindowAttributes()
-  print s
+  print(s)
   s.width = 600
   s.height = 600
   s.format = s.RGB
-  print s
+  print(s)
 
 
 GetSelection
@@ -4634,7 +4632,7 @@ return type : SelectionSummary object
 
 ::
 
-  print GetSelectionSummary('selection1')
+  print(GetSelectionSummary('selection1'))
 
 
 GetTimeSliders
@@ -4670,7 +4668,7 @@ return type : tuple of strings
       AddPlot("FilledBoundary", "material(mesh)")
       DrawPlots()
   CreateDatabaseCorrelation("common", dbs, 1)
-  print "The list of time sliders is: ", GetTimeSliders()
+  print("The list of time sliders is: ", GetTimeSliders())
 
 
 GetUltraScript
@@ -4725,7 +4723,7 @@ return type : View2DAttributes object
   v0 = GetView3D()
   # Change the view again using the mouse
   v1 = GetView3D()
-  print v0
+  print(v0)
   for i in range(0,20):
       t = float(i) / 19.
       v2 = (1. - t) * v1 + t * v0
@@ -4764,7 +4762,7 @@ return type : View3DAttributes object
   v0 = GetView3D()
   # Change the view again using the mouse
   v1 = GetView3D()
-  print v0
+  print(v0)
   for i in range(0,20):
       t = float(i) / 19.
       v2 = (1. - t) * v1 + t * v0
@@ -4803,7 +4801,7 @@ return type : ViewAxisArrayAttributes object
   v0 = GetView3D()
   # Change the view again using the mouse
   v1 = GetView3D()
-  print v0
+  print(v0)
   for i in range(0,20):
       t = float(i) / 19.
       v2 = (1. - t) * v1 + t * v0
@@ -4842,7 +4840,7 @@ return type : ViewCurveAttributes object
   v0 = GetView3D()
   # Change the view again using the mouse
   v1 = GetView3D()
-  print v0
+  print(v0)
   for i in range(0,20):
       t = float(i) / 19.
       v2 = (1. - t) * v1 + t * v0
@@ -5878,7 +5876,7 @@ return type : CLI_return_t
   p.colorTableName = "default"
   SetPlotOptions(p)
   DrawPlots()
-  print "There are %d color tables." % NumColorTableNames()
+  print("There are %d color tables." % NumColorTableNames())
   for ct in ColorTableNames():
       SetActiveContinuousColorTable(ct)
       SaveWindow()
@@ -5908,8 +5906,8 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  print "The number of operator plugins is: ", NumOperatorPlugins()
-  print "The names of the plugins are: ", OperatorPlugins()
+  print("The number of operator plugins is: ", NumOperatorPlugins())
+  print("The names of the plugins are: ", OperatorPlugins())
 
 
 NumPlotPlugins
@@ -5935,8 +5933,8 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  print "The number of plot plugins is: ", NumPlotPlugins()
-  print "The names of the plugins are: ", PlotPlugins()
+  print("The number of plot plugins is: ", NumPlotPlugins())
+  print("The names of the plugins are: ", PlotPlugins())
 
 
 OpenComputeEngine
@@ -6146,7 +6144,7 @@ return type : tuple of strings
 
   #% visit -cli
   for plugin in OperatorPlugins():
-      print "The %s operator plugin is loaded." % plugin
+      print("The %s operator plugin is loaded." % plugin)
 
 
 OverlayDatabase
@@ -6260,10 +6258,10 @@ return type : dictionary
   # Pick on global node 236827
   pick_out = PickByGlobalNode(element=246827)
   # examine output
-  print 'value of dist at global node 246827: %g' % pick_out['dist']
-  print 'local domain/node: %d/%d' % (pick_out['domain_id'], pick_out['node_id'])
+  print('value of dist at global node 246827: %g' % pick_out['dist'])
+  print('local domain/node: %d/%d' % (pick_out['domain_id'], pick_out['node_id']))
   # get last pick output as string
-  print 'Last pick = ', GetPickOutput()
+  print('Last pick = ', GetPickOutput())
 
 
 PickByGlobalZone
@@ -6331,10 +6329,10 @@ return type : dictionary
   # Pick on global zone 237394
   pick_out = PickByGlobalZone(element=237394)
   # examine output
-  print 'value of p at global zone 237394: %g' % pick_out['p']
-  print 'local domain/zone: %d/%d' % (pick_out['domain_id'], pick_out['zone_id'])
+  print('value of p at global zone 237394: %g' % pick_out['p'])
+  print('local domain/zone: %d/%d' % (pick_out['domain_id'], pick_out['zone_id']))
   # get last pick output as string
-  print 'Last pick = ', GetPickOutput()
+  print('Last pick = ', GetPickOutput())
 
 
 PickByNode
@@ -6408,15 +6406,15 @@ return type : dictionary
   # Pick on node 200 in the first domain.
   pick_out = PickByNode(element=200, domain=1)
   # examine output
-  print 'value of u at node 200: %g' % pick_out['u']
+  print('value of u at node 200: %g' % pick_out['u'])
   # Pick on node 100 in domain 5 and return information for two additional
   # variables.
   pick_out = PickByNode(domain=5, element=100, vars=("u", "v", "d"))
   # examine output
-  print 'incident zones for node 100: ', pick_out['incident_zones']
-  print 'value of d at incident zone %d: %g' % (pick_out['incident_zones'][0], pick_out['d'][str(pick_out['incident_zones'][0])])
+  print('incident zones for node 100: ', pick_out['incident_zones'])
+  print('value of d at incident zone %d: %g' % (pick_out['incident_zones'][0], pick_out['d'][str(pick_out['incident_zones'][0])]))
   # print results formatted as string
-  print "Last pick = ", GetPickOutput()
+  print("Last pick = ", GetPickOutput())
 
 
 PickByNodeLabel
@@ -6490,15 +6488,15 @@ return type : dictionary
   opts["element_label"] ="node 4"
   pick_out = PickByNodeLabel(opts)
   # examine output
-  print 'value of d at "node 4": %g' % pick_out['d']
+  print('value of d at "node 4": %g' % pick_out['d'])
   # Pick on node labeled "node 12" return information for two additional
   # variables.
   pick_out = PickByNodeLabel(element_label="node 12", vars=("d", "u", "v"))
   # examine output
-  print 'incident nodes for "node 12": ', pick_out['incident_nodes']
-  print 'values of u at incident node %d: %g' % (pick_out['incident_nodes'][0], pick_out['u'][str(pick_out['incident_zones'][0])])
+  print('incident nodes for "node 12": ', pick_out['incident_nodes'])
+  print('values of u at incident node %d: %g' % (pick_out['incident_nodes'][0], pick_out['u'][str(pick_out['incident_zones'][0])]))
   # print results formatted as string
-  print "Last pick = ", GetPickOutput()
+  print("Last pick = ", GetPickOutput())
 
 
 PickByZone
@@ -6572,15 +6570,15 @@ return type : dictionary
   # Pick on cell 200 in the second domain.
   pick_out = PickByZone(element=200, domain=2)
   # examine output
-  print 'value of d at zone 200: %g' % pick_out['d']
+  print('value of d at zone 200: %g' % pick_out['d'])
   # Pick on cell 100 in domain 5 and return information for two additional
   # variables.
   pick_out = PickByZone(element=100, domain=5, vars=("d", "u", "v"))
   # examine output
-  print 'incident nodes for zone 100: ', pick_out['incident_nodes']
-  print 'values of u at incident zone %d: %g' % (pick_out['incident_nodes'][0], pick_out['u'][str(pick_out['incident_zones'][0])])
+  print('incident nodes for zone 100: ', pick_out['incident_nodes'])
+  print('values of u at incident zone %d: %g' % (pick_out['incident_nodes'][0], pick_out['u'][str(pick_out['incident_zones'][0])]))
   # print results formatted as string
-  print "Last pick = ", GetPickOutput()
+  print("Last pick = ", GetPickOutput())
 
 
 PickByZoneLabel
@@ -6654,15 +6652,15 @@ return type : dictionary
   opts["element_label"] ="brick 4"
   pick_out = PickByZoneLabel(opts)
   # examine output
-  print 'value of d at "brick 4": %g' % pick_out['d']
+  print('value of d at "brick 4": %g' % pick_out['d'])
   # Pick on cell labeled "shell 12" return information for two additional
   # variables.
   pick_out = PickByZoneLabel(element_label="shell 12", vars=("d", "u", "v"))
   # examine output
-  print 'incident nodes for "shell 12": ', pick_out['incident_nodes']
-  print 'values of u at incident zone %d: %g' % (pick_out['incident_nodes'][0], pick_out['u'][str(pick_out['incident_zones'][0])])
+  print('incident nodes for "shell 12": ', pick_out['incident_nodes'])
+  print('values of u at incident zone %d: %g' % (pick_out['incident_nodes'][0], pick_out['u'][str(pick_out['incident_zones'][0])]))
   # print results formatted as string
-  print "Last pick = ", GetPickOutput()
+  print("Last pick = ", GetPickOutput())
 
 
 PlotPlugins
@@ -6691,7 +6689,7 @@ return type : tuple of strings
 
   #% visit -cli
   for plugin in PluginPlugins():
-      print "The %s plot plugin is loaded." % plugin
+      print("The %s plot plugin is loaded." % plugin)
 
 
 PointPick
@@ -6910,7 +6908,7 @@ return type : tuple of strings
 ::
 
   #% visit -cli
-  print "supported queries: ", Queries()
+  print("supported queries: ", Queries())
 
 
 QueriesOverTime
@@ -7301,7 +7299,7 @@ return type : CLI_return_t
 
   import visit
   def print_sliceatts(atts):
-      print "SLICEATTS=", atts
+      print("SLICEATTS=", atts)
       
   visit.RegisterCallback("SliceAttributes", print_sliceatts)
 
@@ -8105,7 +8103,7 @@ return type : string
   s.fileName = "test"
   SetSaveWindowAttributes(s)
   name = SaveWindow()
-  print "name = %s" % name
+  print("name = %s" % name)
 
 
 SendSimulationCommand
@@ -8749,7 +8747,7 @@ return type : CLI_return_t
   # The AddPlot caused a database correlation to be created.
   DrawPlots()
   wi = GetWindowInformation()
-  print "Active time slider: " % wi.timeSliders[wi.activeTimeSlider]
+  print("Active time slider: " % wi.timeSliders[wi.activeTimeSlider])
   # This will set time for both databases since the database correlation is
   # the active time slider.
   SetTimeSliderState(5)
@@ -8786,7 +8784,7 @@ level : string
 ::
 
   #% visit -cli -debug 2
-  print "VisIt's debug level is: %d" % GetDebugLevel()
+  print("VisIt's debug level is: %d" % GetDebugLevel())
 
 
 SetDefaultAnnotationAttributes
@@ -8915,7 +8913,7 @@ return type : CLI_return_t
 
   #% visit -cli
   ia = GetInteractorAttributes()
-  print ia
+  print(ia)
   ia.showGuidelines = 0
   SetInteractorAttributes(ia)
 
@@ -9236,7 +9234,7 @@ return type : CLI_return_t
 
   #% visit -cli
   ia = GetInteractorAttributes()
-  print ia
+  print(ia)
   ia.showGuidelines = 0
   SetInteractorAttributes(ia)
 
@@ -9276,7 +9274,7 @@ return type : CLI_return_t
 
   #% visit -cli
   k = GetKeyframeAttributes()
-  print k
+  print(k)
   k.enabled,k.nFrames,k.nFramesWasUserSet = 1, 100, 1
   SetKeyframeAttributes(k)
 
@@ -9319,7 +9317,7 @@ return type : CLI_return_t
   DrawPlots()
   InvertBackgroundColor()
   light = GetLight(0)
-  print light
+  print(light)
   light.enabledFlag = 1
   light.direction = (0,-1,0)
   light.color = (255,0,0,255)
@@ -10130,7 +10128,7 @@ SetQueryOutputToObject
   # Set query output type.
   SetQueryOutputToObject()
   query_output = Query("MinMax")
-  print query_output
+  print(query_output)
 
 
 SetQueryOutputToString
@@ -10163,7 +10161,7 @@ SetQueryOutputToString
   # Set query output type.
   SetQueryOutputToString()
   query_output = Query("MinMax")
-  print query_output
+  print(query_output)
   '''
   d -- Min = 0.0235702 (zone 434 at coord <0.483333, 0.483333>)
   d -- Max = 0.948976 (zone 1170 at coord <0.0166667, 1.31667>)
@@ -10200,7 +10198,7 @@ SetQueryOutputToValue
   # Set query output type.
   SetQueryOutputToValue()
   query_output = Query("MinMax")
-  print query_output
+  print(query_output)
   (0.02357020415365696, 0.9489759802818298)
 
 
@@ -10335,7 +10333,7 @@ return type : CLI_return_t
   light.direction = (0,1,-1)
   SetLight(0, light)
   r = GetRenderingAttributes()
-  print r
+  print(r)
   r.scalableActivationMode = r.Always
   r.doShadowing = 1
   SetRenderingAttributes(r)
@@ -11141,7 +11139,7 @@ return type : CLI_return_t
   # Turn off automatic printing of Query output.
   SuppressQueryOutputOn()
   Query("MinMax")
-  print "The min is: %g and the max is: %g" % GetQueryOutputValue()
+  print("The min is: %g and the max is: %g" % GetQueryOutputValue())
   # Turn on automatic printing of Query output.
   SuppressQueryOutputOff()
   Query("MinMax")
@@ -11178,7 +11176,7 @@ return type : CLI_return_t
   # Turn off automatic printing of Query output.
   SuppressQueryOutputOn()
   Query("MinMax")
-  print "The min is: %g and the max is: %g" % GetQueryOutputValue()
+  print("The min is: %g and the max is: %g" % GetQueryOutputValue())
   # Turn on automatic printing of Query output.
   SuppressQueryOutputOff()
   Query("MinMax")
@@ -12003,7 +12001,7 @@ return type : string
 ::
 
   #% visit -cli
-  print "We are running VisIt version %s" % Version()
+  print("We are running VisIt version %s" % Version())
 
 
 WriteConfigFile
