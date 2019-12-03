@@ -29,7 +29,7 @@ ContourAttributes *ContourViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ContourViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    if (ontourViewerEnginePluginInfo::clientAtts == NULL)
+    if (ContourViewerEnginePluginInfo::clientAtts == NULL)
     {
         ContourViewerEnginePluginInfo::clientAtts  = new ContourAttributes;
         ContourViewerEnginePluginInfo::defaultAtts = new ContourAttributes;
