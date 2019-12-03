@@ -28,8 +28,11 @@ EllipsoidSliceAttributes *EllipsoidSliceViewerEnginePluginInfo::defaultAtts = NU
 void
 EllipsoidSliceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    EllipsoidSliceViewerEnginePluginInfo::clientAtts  = new EllipsoidSliceAttributes;
-    EllipsoidSliceViewerEnginePluginInfo::defaultAtts = new EllipsoidSliceAttributes;
+    if (EllipsoidSliceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        EllipsoidSliceViewerEnginePluginInfo::clientAtts  = new EllipsoidSliceAttributes;
+        EllipsoidSliceViewerEnginePluginInfo::defaultAtts = new EllipsoidSliceAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -28,8 +28,11 @@ FiveFoldTetSubdivisionAttributes *FiveFoldTetSubdivisionViewerEnginePluginInfo::
 void
 FiveFoldTetSubdivisionViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    FiveFoldTetSubdivisionViewerEnginePluginInfo::clientAtts  = new FiveFoldTetSubdivisionAttributes;
-    FiveFoldTetSubdivisionViewerEnginePluginInfo::defaultAtts = new FiveFoldTetSubdivisionAttributes;
+    if (FiveFoldTetSubdivisionViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        FiveFoldTetSubdivisionViewerEnginePluginInfo::clientAtts  = new FiveFoldTetSubdivisionAttributes;
+        FiveFoldTetSubdivisionViewerEnginePluginInfo::defaultAtts = new FiveFoldTetSubdivisionAttributes;
+    }
 }
 
 // ****************************************************************************

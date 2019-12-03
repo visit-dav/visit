@@ -1737,8 +1737,11 @@ class InfoGeneratorPlugin : public Plugin
             c << "void" << endl;
             c << funcName << "()" << endl;
             c << "{" << endl;
-            c << "    "<<name<<"ViewerEnginePluginInfo::clientAtts  = new "<<atts->name<<";" << endl;
-            c << "    "<<name<<"ViewerEnginePluginInfo::defaultAtts = new "<<atts->name<<";" << endl;
+            c << "    if ("<<name<<"ViewerEnginePluginInfo::clientAtts == NULL)" << endl;
+            c << "    {" << endl;
+            c << "        "<<name<<"ViewerEnginePluginInfo::clientAtts  = new "<<atts->name<<";" << endl;
+            c << "        "<<name<<"ViewerEnginePluginInfo::defaultAtts = new "<<atts->name<<";" << endl;
+            c << "    }" << endl;
             c << "}" << endl;
         }
         c << endl;

@@ -28,8 +28,11 @@ TriangulateRegularPointsAttributes *TriangulateRegularPointsViewerEnginePluginIn
 void
 TriangulateRegularPointsViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    TriangulateRegularPointsViewerEnginePluginInfo::clientAtts  = new TriangulateRegularPointsAttributes;
-    TriangulateRegularPointsViewerEnginePluginInfo::defaultAtts = new TriangulateRegularPointsAttributes;
+    if (TriangulateRegularPointsViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        TriangulateRegularPointsViewerEnginePluginInfo::clientAtts  = new TriangulateRegularPointsAttributes;
+        TriangulateRegularPointsViewerEnginePluginInfo::defaultAtts = new TriangulateRegularPointsAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -28,8 +28,11 @@ DeferExpressionAttributes *DeferExpressionViewerEnginePluginInfo::defaultAtts = 
 void
 DeferExpressionViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    DeferExpressionViewerEnginePluginInfo::clientAtts  = new DeferExpressionAttributes;
-    DeferExpressionViewerEnginePluginInfo::defaultAtts = new DeferExpressionAttributes;
+    if (DeferExpressionViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        DeferExpressionViewerEnginePluginInfo::clientAtts  = new DeferExpressionAttributes;
+        DeferExpressionViewerEnginePluginInfo::defaultAtts = new DeferExpressionAttributes;
+    }
 }
 
 // ****************************************************************************
