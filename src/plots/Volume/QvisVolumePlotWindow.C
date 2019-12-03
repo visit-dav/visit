@@ -1618,6 +1618,9 @@ QvisVolumePlotWindow::UpdateHistogram()
 //   Kathleen Biagas, Fri Mar  2 14:55:01 MST 2018
 //   Removed tuvok.
 //
+//   Alister Maguire, Tue Dec  3 15:27:41 MST 2019
+//   Enable/Disable materialProperties in relation to the lighting flag.
+//
 // ****************************************************************************
 
 void
@@ -1664,6 +1667,22 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             lightingToggle->blockSignals(true);
             lightingToggle->setChecked(volumeAtts->GetLightingFlag());
             lightingToggle->blockSignals(false);
+
+            //
+            // Only enable the lighting properites when lighting
+            // is being used.
+            //
+            if (lightingToggle->isChecked() &&
+                !materialProperties->isEnabled())
+            {
+                materialProperties->setEnabled(true);
+            }
+            else if (!lightingToggle->isChecked() &&
+                materialProperties->isEnabled())
+            {
+                materialProperties->setEnabled(false);
+            }
+
             break;
         case VolumeAttributes::ID_lowGradientLightingReduction:
             lowGradientLightingReductionCombo->blockSignals(true);
