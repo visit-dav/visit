@@ -35,9 +35,11 @@ public class MeshAttributes extends AttributeSubject implements Plugin
 
     public final static int MESHCOLOR_FOREGROUND = 0;
     public final static int MESHCOLOR_MESHCUSTOM = 1;
+    public final static int MESHCOLOR_MESHRANDOM = 2;
 
     public final static int OPAQUECOLOR_BACKGROUND = 0;
     public final static int OPAQUECOLOR_OPAQUECUSTOM = 1;
+    public final static int OPAQUECOLOR_OPAQUERANDOM = 2;
 
     public final static int OPAQUEMODE_AUTO = 0;
     public final static int OPAQUEMODE_ON = 1;
@@ -366,12 +368,16 @@ public class MeshAttributes extends AttributeSubject implements Plugin
             str = str + "MESHCOLOR_FOREGROUND";
         if(meshColorSource == MESHCOLOR_MESHCUSTOM)
             str = str + "MESHCOLOR_MESHCUSTOM";
+        if(meshColorSource == MESHCOLOR_MESHRANDOM)
+            str = str + "MESHCOLOR_MESHRANDOM";
         str = str + "\n";
         str = str + indent + "opaqueColorSource = ";
         if(opaqueColorSource == OPAQUECOLOR_BACKGROUND)
             str = str + "OPAQUECOLOR_BACKGROUND";
         if(opaqueColorSource == OPAQUECOLOR_OPAQUECUSTOM)
             str = str + "OPAQUECOLOR_OPAQUECUSTOM";
+        if(opaqueColorSource == OPAQUECOLOR_OPAQUERANDOM)
+            str = str + "OPAQUECOLOR_OPAQUERANDOM";
         str = str + "\n";
         str = str + indent + "opaqueMode = ";
         if(opaqueMode == OPAQUEMODE_AUTO)
