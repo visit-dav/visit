@@ -8,7 +8,9 @@ The Python doc strings for most functions in VisIt's cli are generated
 from the examples embedded in the ``cli_manual/functions.rst`` file.
 This allows us to have a single source for both our CLI sphinx docs 
 and the doc strings embedded in VisIt's compiled Python module. 
-The ``functions_to_method_doc.py``
+The ``functions_to_method_doc.py`` helper script generates ``MethodDoc.C``
+from the examples embedded in the rst source.
+
 
 The Python doc strings for Attribute objects and Events are extracted from the CLI 
 for use in the CLI sphinx docs.  The ``sphinx_cli_extractor.py`` runs VisIt to 
@@ -53,7 +55,7 @@ Steps to update the CLI Manual
 
    The whole process only takes a few seconds.
 
-#. Assuming you successfully run the above command, producing new ``attributes.rts``
+#. Assuming you successfully ran the above command, producing new ``attributes.rst``
    and ``events.rst`` files, then do a local build of the
    documentation here and confirm there are no errors in the build
 
