@@ -900,6 +900,15 @@ function build_python3
     PYTHON3_LDFLAGS="${PYTHON3_LDFLAGS} -L${PY_ZLIB_LIB}"
     PYTHON3_CPPFLAGS="${PYTHON3_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
 
+    # we also need openssl
+    if [[ "$DO_OPENSSL" == "yes" ]]; then
+        OPENSSL_INCLUDE="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/include"
+        OPENSSL_LIB="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/lib"
+        PYTHON3_LDFLAGS="${PYTHON3_LDFLAGS} -L${OPENSSL_LIB}"
+        PYTHON3_CPPFLAGS="${PYTHON3_CPPFLAGS} -I${OPENSSL_INCLUDE}"
+    fi
+
+
     if [[ "$OPSYS" == "AIX" ]]; then
         info "Configuring Python3 (AIX): ./configure OPT=\"$PYTHON3_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
              "--prefix=\"$PYTHON3_PREFIX_DIR\" --disable-ipv6"
