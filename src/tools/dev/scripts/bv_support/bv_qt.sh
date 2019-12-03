@@ -233,9 +233,11 @@ function apply_qt_patch
             fi
         fi
 
-        apply_qt_5101_blueos_patch
-        if [[ $? != 0 ]] ; then
-            return 1
+        if [[ "$OPSYS" == "Linux" ]]; then
+            apply_qt_5101_blueos_patch
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
         fi
     fi
 
@@ -271,6 +273,28 @@ EOF
         return 1
     fi
     
+    patch -p0 <<EOF
+diff -c qtbase/mkspecs/linux-icc-64/qmake.conf.orig qtbase/mkspecs/linux-icc-64/qmake.conf
+*** qtbase/mkspecs/linux-icc-64/qmake.conf.orig	Fri Nov 22 15:24:45 2019
+--- qtbase/mkspecs/linux-icc-64/qmake.conf	Fri Nov 22 15:25:11 2019
+***************
+*** 13,16 ****
+  # Change the all LIBDIR variables to use lib64 instead of lib
+  
+  QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
+--- 13,17 ----
+  # Change the all LIBDIR variables to use lib64 instead of lib
+  
+  QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_OPENGL=$MESAGL_LIB_DIR $LLVM_LIB_DIR
+! QMAKE_INCDIR_OPENGL=$MESAGL_INCLUDE_DIR
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 linux mesagl patch failed."
+        return 1
+    fi
+
     return 0;
 }
 

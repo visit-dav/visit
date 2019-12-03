@@ -1,3 +1,48 @@
+Target: xml2python
+Code: PyView3DAttributes.C
+Prefix:
+//
+// The type description structure
+//
+static PyNumberMethods View3DAttributes_as_number = {
+    (binaryfunc)View3DAttributes_Add, /*nb_add*/
+    (binaryfunc)0, /*nb_subtract*/
+    (binaryfunc)View3DAttributes_Mul, /*nb_multiply*/
+    (binaryfunc)0, /*nb_divide*/
+    (binaryfunc)0,    /*nb_remainder*/
+    (binaryfunc)0,    /*nb_divmod*/
+    (ternaryfunc)0,    /*nb_power*/
+    (unaryfunc)0,    /*nb_negative*/
+    (unaryfunc)0,    /*nb_positive*/
+    (unaryfunc)0,    /*nb_absolute*/
+    (inquiry)0,    /*nb_nonzero*/
+    (unaryfunc)0,    /*nb_invert*/
+    (binaryfunc)0,    /*nb_lshift*/
+    (binaryfunc)0,    /*nb_rshift*/
+    (binaryfunc)0,    /*nb_and*/
+    (binaryfunc)0,    /*nb_xor*/
+    (binaryfunc)0,    /*nb_or*/
+    0,            /*nb_coerce*/
+    (unaryfunc)0,    /*nb_int*/
+    (unaryfunc)0,    /*nb_long*/
+    (unaryfunc)0,    /*nb_float*/
+    (unaryfunc)0,    /*nb_oct*/
+    (unaryfunc)0,     /*nb_hex*/
+    0,            /*nb_inplace_add*/
+    0,            /*nb_inplace_subtract*/
+    0,            /*nb_inplace_multiply*/
+    0,            /*nb_inplace_divide*/
+    0,            /*nb_inplace_remainder*/
+    0,            /*nb_inplace_power*/
+    0,            /*nb_inplace_lshift*/
+    0,            /*nb_inplace_rshift*/
+    0,            /*nb_inplace_and*/
+    0,            /*nb_inplace_xor*/
+    0,            /*nb_inplace_or*/
+}; 
+Postfix:
+
+Target: xml2atts
 Function: RotateAxis
 Declaration: void RotateAxis(int axis, double angle);
 Definition:
@@ -416,6 +461,9 @@ Definition:
 // Programmer: Mark C. Miller
 // Created:    May 15, 2008
 //
+//    Mark C. Miller, Tue Nov 26 10:26:26 PST 2019
+//    Deal with possible out of range axis argument. Instead of erroring,
+//    we do this by reversing interpretation of args if so.
 // ****************************************************************************
 
 /*static*/ PyObject *
@@ -431,6 +479,22 @@ View3DAttributes_RotateAxis(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "id", &ival, &dval))
         return NULL;
 
+    // Out of range ival could indicate user reversed axis and angle
+    if (ival < 0 || ival > 2)
+    {
+        if (dval == 0 || dval == 1 || dval == 2)
+        {
+            int tmp = (int) dval;
+            dval = ival;
+            ival = tmp;
+        }
+        else
+        {
+            PyErr_SetString(PyExc_IndexError, "Axis arg (the first) must be 0,1 or 2 for X,Y or Z");
+            return NULL;
+        }
+    }
+
     // Call the C++ method to change the view.
     obj->data->RotateAxis(ival, dval);
 
@@ -438,11 +502,12 @@ View3DAttributes_RotateAxis(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-Function: View3DAttributes_add
-Declaration: View3DAttributes_add
+Function: View3DAttributes_Add
+Declaration: View3DAttributes_Add
 Definition:
+
 static PyObject *
-View3DAttributes_add(PyObject *v, PyObject *w)
+View3DAttributes_Add(PyObject *v, PyObject *w)
 {
     bool arg1isObject = PyView3DAttributes_Check(v);
     bool arg2isObject = PyView3DAttributes_Check(w);
@@ -492,11 +557,11 @@ View3DAttributes_add(PyObject *v, PyObject *w)
     return retval;
 }
 
-Function: View3DAttributes_mul
-Declaration: View3DAttributes_mul
+Function: View3DAttributes_Mul
+Declaration: View3DAttributes_Mul
 Definition:
 static PyObject *
-View3DAttributes_mul(PyObject *v, PyObject *w)
+View3DAttributes_Mul(PyObject *v, PyObject *w)
 {
     PyObject *retval = NewView3DAttributes(0);
     View3DAttributes *c = PyView3DAttributes_FromPyObject(retval);
@@ -568,3 +633,4 @@ View3DAttributes_mul(PyObject *v, PyObject *w)
 
     return retval;
 }
+
