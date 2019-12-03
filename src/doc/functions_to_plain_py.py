@@ -9,7 +9,7 @@ import sys
 ##############################################################################
 # This is a hacked up version of functions_to_method_doc.py
 # it creates a single output file:
-#   FUNCTIONS_FLAT_PYTHON.py 
+#   PY_RST_FUNCTIONS_TO_PYTHON.py 
 # with all of the python examples from functions.rst
 #
 # Why is it useful? You can use this to check python syntax 
@@ -139,7 +139,7 @@ def write_state(writer, state_dict):
 if __name__ == '__main__':
 
     func_file_name = 'cli_manual/functions.rst'
-    py_output_name = 'FUNCTIONS_FLAT_PYTHON.py'
+    py_output_name = 'PY_RST_FUNCTIONS_TO_PYTHON.py'
 
     func_file   = open(func_file_name, 'r')
     py_output    = open(py_output_name,'w')
@@ -190,19 +190,22 @@ if __name__ == '__main__':
         elif line[0:12] == '**Example:**':
             cur_block = 'example'
             block_dict['example'] = ExampleContainer()
-            
+
         elif cur_block is not None:
-            if line.startswith("  "):
-                spaces = len(line) - len(line.lstrip())
-                spaces = spaces - 2
-                # custom strip, we don't want to loose indent!
-                # add back in spaces after "  "
-                r = ""
-                for i in range(spaces):
-                    r += " "
-                line = r + line.strip()
-            block_dict[cur_block].extend(line)
-    
+            # for examples sources, we need to preserve spaces in 
+            # the example script to keep python code valid
+            if cur_block == 'example' and line.strip() != "":
+                # find the leading number of spaces using lstrip
+                padding = len(line) - len(line.lstrip())
+                # assume padding of 2 spaces in rst
+                padding = padding - 2
+                next_text = ""
+                for i in range(padding):
+                    next_text += " "
+                next_text += line.strip()
+            else:
+                next_text = line.strip()
+            block_dict[cur_block].extend(next_text)    
     # Write the last function
     block_dict[cur_block].set_last(True)
     write_state(py_output, block_dict)

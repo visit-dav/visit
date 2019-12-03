@@ -12047,7 +12047,7 @@ WriteScript
   f = open('script.py', 'wt')
   WriteScript(f)
   f.close()
-  
+
 
 
 ZonePick
