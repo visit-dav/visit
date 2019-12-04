@@ -9,6 +9,7 @@ VisIt Developer Manual
     pr_create
     pr_review
     RCDevelopment
+    test_suite
     PrepareRelease
     CreateRelease
     Docker
