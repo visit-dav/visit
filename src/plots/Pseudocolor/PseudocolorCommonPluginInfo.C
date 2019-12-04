@@ -43,7 +43,7 @@ PseudocolorCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 PseudocolorCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
@@ -52,7 +52,7 @@ PseudocolorCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 // ****************************************************************************
 // Method: PseudocolorCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +63,7 @@ PseudocolorCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

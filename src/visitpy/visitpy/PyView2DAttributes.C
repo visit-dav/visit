@@ -373,6 +373,123 @@ View2DAttributes_GetWindowValid(PyObject *self, PyObject *args)
 }
 
 
+static PyObject *
+View2DAttributes_Add(PyObject *v, PyObject *w)
+{
+    bool arg1isObject = PyView2DAttributes_Check(v);
+    bool arg2isObject = PyView2DAttributes_Check(w);
+    if(!arg1isObject || !arg2isObject)
+    {
+        cerr << "View2DAttributes_Add: One or more arguments are not View2DAttributes!" << endl;
+        return NULL;
+    }
+
+
+    PyObject *retval = NewView2DAttributes(0);
+    View2DAttributes *c = PyView2DAttributes_FromPyObject(retval);
+    View2DAttributes *a = ((View2DAttributesObject *)v)->data;
+    View2DAttributes *b = ((View2DAttributesObject *)w)->data;
+
+
+    c->GetWindowCoords()[0] = a->GetWindowCoords()[0] + b->GetWindowCoords()[0];
+    c->GetWindowCoords()[1] = a->GetWindowCoords()[1] + b->GetWindowCoords()[1];
+    c->GetWindowCoords()[2] = a->GetWindowCoords()[2] + b->GetWindowCoords()[2];
+    c->GetWindowCoords()[3] = a->GetWindowCoords()[3] + b->GetWindowCoords()[3];
+
+
+    c->GetViewportCoords()[0] = a->GetViewportCoords()[0] + b->GetViewportCoords()[0];
+    c->GetViewportCoords()[1] = a->GetViewportCoords()[1] + b->GetViewportCoords()[1];
+    c->GetViewportCoords()[2] = a->GetViewportCoords()[2] + b->GetViewportCoords()[2];
+    c->GetViewportCoords()[3] = a->GetViewportCoords()[3] + b->GetViewportCoords()[3];
+
+
+    if(a->GetFullFrameAutoThreshold() < b->GetFullFrameAutoThreshold())
+        c->SetFullFrameAutoThreshold(a->GetFullFrameAutoThreshold());
+    else
+        c->SetFullFrameAutoThreshold(b->GetFullFrameAutoThreshold());
+
+
+    if(a->GetFullFrameActivationMode() == View2DAttributes::On &&
+       b->GetFullFrameActivationMode() == View2DAttributes::On)
+    {
+        c->SetFullFrameActivationMode(View2DAttributes::On);
+    }
+    else if(a->GetFullFrameActivationMode() == View2DAttributes::Off &&
+       b->GetFullFrameActivationMode() == View2DAttributes::Off)
+    {
+        c->SetFullFrameActivationMode(View2DAttributes::Off);
+    }
+    else
+        c->SetFullFrameActivationMode(View2DAttributes::Auto); 
+
+    return retval;
+}
+
+static PyObject *
+View2DAttributes_Mul(PyObject *v, PyObject *w)
+{
+    PyObject *retval = NewView2DAttributes(0);
+    View2DAttributes *c = PyView2DAttributes_FromPyObject(retval);
+
+
+    View2DAttributes *a;
+    double val = 1.;
+    bool arg1isObject = PyView2DAttributes_Check(v);
+    bool arg2isObject = PyView2DAttributes_Check(w);
+
+
+    if(arg1isObject && arg2isObject)
+    {
+        return NULL;
+    }
+    else
+    {
+        PyObject *num;
+
+
+        if(arg1isObject)
+        {
+            a = ((View2DAttributesObject *)v)->data;
+            num = w;
+        }
+        else
+        {
+            a = ((View2DAttributesObject *)w)->data;
+            num = v;
+        }
+
+
+        if(PyFloat_Check(num))
+            val = PyFloat_AS_DOUBLE(num);
+        else if(PyInt_Check(num))
+            val = double(PyInt_AS_LONG(num));
+        else if(PyLong_Check(num))
+            val = PyLong_AsDouble(num);
+        else
+        {
+            cerr << "MUL: Expected numeric argument is not a number!" << endl;
+        }
+
+
+        c->GetWindowCoords()[0] = a->GetWindowCoords()[0] * val;
+        c->GetWindowCoords()[1] = a->GetWindowCoords()[1] * val; 
+        c->GetWindowCoords()[2] = a->GetWindowCoords()[2] * val;
+        c->GetWindowCoords()[3] = a->GetWindowCoords()[3] * val;
+
+
+        c->GetViewportCoords()[0] = a->GetViewportCoords()[0] * val;
+        c->GetViewportCoords()[1] = a->GetViewportCoords()[1] * val;
+        c->GetViewportCoords()[2] = a->GetViewportCoords()[2] * val;
+        c->GetViewportCoords()[3] = a->GetViewportCoords()[3] * val;
+
+
+        c->SetFullFrameAutoThreshold(a->GetFullFrameAutoThreshold() * val);
+        c->SetFullFrameActivationMode(a->GetFullFrameActivationMode());
+    }
+
+    return retval;
+}
+
 
 PyMethodDef PyView2DAttributes_methods[VIEW2DATTRIBUTES_NMETH] = {
     {"Notify", View2DAttributes_Notify, METH_VARARGS},
@@ -390,6 +507,8 @@ PyMethodDef PyView2DAttributes_methods[VIEW2DATTRIBUTES_NMETH] = {
     {"GetYScale", View2DAttributes_GetYScale, METH_VARARGS},
     {"SetWindowValid", View2DAttributes_SetWindowValid, METH_VARARGS},
     {"GetWindowValid", View2DAttributes_GetWindowValid, METH_VARARGS},
+    {"Add", View2DAttributes_Add, METH_VARARGS},
+    {"Mul", View2DAttributes_Mul, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -502,119 +621,13 @@ View2DAttributes_str(PyObject *v)
     return PyString_FromString(PyView2DAttributes_ToString(obj->data,"").c_str());
 }
 
-
-static PyObject *
-View2DAttributes_add(PyObject *v, PyObject *w)
-{
-    bool arg1isObject = PyView2DAttributes_Check(v);
-    bool arg2isObject = PyView2DAttributes_Check(w);
-    if(!arg1isObject || !arg2isObject)
-    {
-        cerr << "View2DAttributes_add: One or more arguments are not View2DAttributes!" << endl;
-        return NULL;
-    }
-
-    PyObject *retval = NewView2DAttributes(0);
-    View2DAttributes *c = PyView2DAttributes_FromPyObject(retval);
-    View2DAttributes *a = ((View2DAttributesObject *)v)->data;
-    View2DAttributes *b = ((View2DAttributesObject *)w)->data;
-
-    c->GetWindowCoords()[0] = a->GetWindowCoords()[0] + b->GetWindowCoords()[0];
-    c->GetWindowCoords()[1] = a->GetWindowCoords()[1] + b->GetWindowCoords()[1];
-    c->GetWindowCoords()[2] = a->GetWindowCoords()[2] + b->GetWindowCoords()[2];
-    c->GetWindowCoords()[3] = a->GetWindowCoords()[3] + b->GetWindowCoords()[3];
-
-    c->GetViewportCoords()[0] = a->GetViewportCoords()[0] + b->GetViewportCoords()[0];
-    c->GetViewportCoords()[1] = a->GetViewportCoords()[1] + b->GetViewportCoords()[1];
-    c->GetViewportCoords()[2] = a->GetViewportCoords()[2] + b->GetViewportCoords()[2];
-    c->GetViewportCoords()[3] = a->GetViewportCoords()[3] + b->GetViewportCoords()[3];
-
-    if(a->GetFullFrameAutoThreshold() < b->GetFullFrameAutoThreshold())
-        c->SetFullFrameAutoThreshold(a->GetFullFrameAutoThreshold());
-    else
-        c->SetFullFrameAutoThreshold(b->GetFullFrameAutoThreshold());
-
-    if(a->GetFullFrameActivationMode() == View2DAttributes::On &&
-       b->GetFullFrameActivationMode() == View2DAttributes::On)
-    {
-        c->SetFullFrameActivationMode(View2DAttributes::On);
-    }
-    else if(a->GetFullFrameActivationMode() == View2DAttributes::Off &&
-       b->GetFullFrameActivationMode() == View2DAttributes::Off)
-    {
-        c->SetFullFrameActivationMode(View2DAttributes::Off);
-    }
-    else
-        c->SetFullFrameActivationMode(View2DAttributes::Auto);
-
-    return retval;
-}
-
-static PyObject *
-View2DAttributes_mul(PyObject *v, PyObject *w)
-{
-    PyObject *retval = NewView2DAttributes(0);
-    View2DAttributes *c = PyView2DAttributes_FromPyObject(retval);
-
-    View2DAttributes *a;
-    double val = 1.;
-    bool arg1isObject = PyView2DAttributes_Check(v);
-    bool arg2isObject = PyView2DAttributes_Check(w);
-
-    if(arg1isObject && arg2isObject)
-    {
-        return NULL;
-    }
-    else
-    {
-        PyObject *num;
-
-        if(arg1isObject)
-        {
-            a = ((View2DAttributesObject *)v)->data;
-            num = w;
-        }
-        else
-        {
-            a = ((View2DAttributesObject *)w)->data;
-            num = v;
-        }
-
-        if(PyFloat_Check(num))
-            val = PyFloat_AS_DOUBLE(num);
-        else if(PyInt_Check(num))
-            val = double(PyInt_AS_LONG(num));
-        else if(PyLong_Check(num))
-            val = PyLong_AsDouble(num);
-        else
-        {
-            cerr << "MUL: Expected numeric argument is not a number!" << endl;
-        }
-
-        c->GetWindowCoords()[0] = a->GetWindowCoords()[0] * val;
-        c->GetWindowCoords()[1] = a->GetWindowCoords()[1] * val;
-        c->GetWindowCoords()[2] = a->GetWindowCoords()[2] * val;
-        c->GetWindowCoords()[3] = a->GetWindowCoords()[3] * val;
-
-        c->GetViewportCoords()[0] = a->GetViewportCoords()[0] * val;
-        c->GetViewportCoords()[1] = a->GetViewportCoords()[1] * val;
-        c->GetViewportCoords()[2] = a->GetViewportCoords()[2] * val;
-        c->GetViewportCoords()[3] = a->GetViewportCoords()[3] * val;
-
-        c->SetFullFrameAutoThreshold(a->GetFullFrameAutoThreshold() * val);
-        c->SetFullFrameActivationMode(a->GetFullFrameActivationMode());
-    }
-
-    return retval;
-}
-
 //
 // The type description structure
 //
 static PyNumberMethods View2DAttributes_as_number = {
-    (binaryfunc)View2DAttributes_add, /*nb_add*/
+    (binaryfunc)View2DAttributes_Add, /*nb_add*/
     (binaryfunc)0, /*nb_subtract*/
-    (binaryfunc)View2DAttributes_mul, /*nb_multiply*/
+    (binaryfunc)View2DAttributes_Mul, /*nb_multiply*/
     (binaryfunc)0, /*nb_divide*/
     (binaryfunc)0,    /*nb_remainder*/
     (binaryfunc)0,    /*nb_divmod*/
@@ -647,7 +660,6 @@ static PyNumberMethods View2DAttributes_as_number = {
     0,            /*nb_inplace_xor*/
     0,            /*nb_inplace_or*/
 };
-
 
 //
 // The doc string for the class.

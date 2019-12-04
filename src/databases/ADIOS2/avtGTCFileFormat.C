@@ -24,13 +24,51 @@
 #include <VisItStreamUtil.h>
 #include <InvalidVariableException.h>
 
-bool avtGTCFileFormat::Identify(const std::string &fname,
-                                const std::map<std::string, adios2::Params> &vars,
-                                const std::map<std::string, adios2::Params> &attrs)
+using namespace std;
+
+bool
+avtGTCFileFormat::Identify(const char *fname)
+{
+    bool retval = false;
+    string engineName = ADIOS2Helper_GetEngineName(fname);
+    string fileName   = ADIOS2Helper_GetFileName(fname);
+    bool stagingMode  = ADIOS2Helper_IsStagingEngine(engineName);
+
+    adios2::ADIOS adios;
+    adios2::IO io(adios.DeclareIO("ReadBP"));
+    io.SetEngine(engineName);
+    adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
+    adios2::StepStatus status =
+        reader.BeginStep(adios2::StepMode::Read, -1.0f);
+    if (status == adios2::StepStatus::OK)
+    {
+        //std::cout<<" Identifier for GTC received streaming step = "<<reader.CurrentStep()<<endl;
+        std::map<std::string, adios2::Params> variables, attributes;
+        variables = io.AvailableVariables();
+        attributes = io.AvailableAttributes();
+
+        int vfind = 0;
+        vector<string> reqVars = {"coordinates", "potential",
+                                  "igrid", "index-shift"};
+        for (auto vi = variables.begin(); vi != variables.end(); vi++)
+            if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
+                vfind++;
+
+        retval = (vfind == reqVars.size());
+        reader.EndStep();
+    }
+    reader.Close();
+    return retval;
+}
+
+bool avtGTCFileFormat::IdentifyADIOS2(
+                    std::map<std::string, adios2::Params> &variables,
+                    std::map<std::string, adios2::Params> &attributes)
 {
     int vfind = 0;
-    std::vector<std::string> reqVars = {"coordinates", "potential", "igrid", "index-shift"};
-    for (auto vi = vars.begin(); vi != vars.end(); vi++)
+    vector<string> reqVars = {"coordinates", "potential",
+                              "igrid", "index-shift"};
+    for (auto vi = variables.begin(); vi != variables.end(); vi++)
         if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
             vfind++;
 
@@ -40,12 +78,7 @@ bool avtGTCFileFormat::Identify(const std::string &fname,
 avtFileFormatInterface *
 avtGTCFileFormat::CreateInterface(const char *const *list,
                                   int nList,
-                                  int nBlock,
-                                  std::shared_ptr<adios2::ADIOS> adios,
-                                  adios2::Engine &reader,
-                                  adios2::IO &io,
-                                  std::map<std::string, adios2::Params> &variables,
-                                  std::map<std::string, adios2::Params> &attributes)
+                                  int nBlock)
 {
     int nTimestepGroups = nList / nBlock;
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
@@ -53,12 +86,37 @@ avtGTCFileFormat::CreateInterface(const char *const *list,
     {
         ffl[i] =  new avtMTSDFileFormat*[nBlock];
         for (int j = 0; j < nBlock; j++)
-        {
+            ffl[i][j] =  new avtGTCFileFormat(list[i*nBlock +j]);
+    }
+    return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
+}
+
+avtFileFormatInterface *
+avtGTCFileFormat::CreateInterfaceADIOS2(
+        const char *const *list,
+        int nList,
+        int nBlock,
+        std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader,
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes
+        )
+{
+    int nTimestepGroups = nList / nBlock;
+    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+    for (int i = 0; i < nTimestepGroups; i++)
+    {
+        ffl[i] =  new avtMTSDFileFormat*[nBlock];
+        for (int j = 0; j < nBlock; j++)
             if (!i && !j)
+            {
                 ffl[i][j] =  new avtGTCFileFormat(adios, reader, io, variables, attributes, list[i*nBlock +j]);
+            }
             else
+            {
                 ffl[i][j] =  new avtGTCFileFormat(list[i*nBlock +j]);
-        }
+            }
     }
     return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
 }
@@ -71,12 +129,43 @@ avtGTCFileFormat::CreateInterface(const char *const *list,
 //
 // ****************************************************************************
 
+avtGTCFileFormat::avtGTCFileFormat(const char *filename)
+    : adios(std::make_shared<adios2::ADIOS>(adios2::DebugON)),
+      io(adios->DeclareIO("ReadBP")),
+      numTimeSteps(1),
+      avtMTSDFileFormat(&filename, 1),
+      grid(NULL),
+      cylGrid(NULL),
+      ptGrid(NULL)
+{
+    reader = io.Open(filename, adios2::Mode::Read);
+    if (!reader)
+        EXCEPTION1(ImproperUseException, "Invalid file");
+
+    variables = io.AvailableVariables();
+    attributes = io.AvailableAttributes();
+
+    //Determine how many steps we have.
+    if (variables.find("potential") != variables.end())
+        numTimeSteps = std::stoi(variables["potential"]["AvailableStepsCount"]);
+
+    /*
+    cout<<"Attrs: "<<endl;
+    for (auto ai = attributes.begin(); ai != attributes.end(); ai++)
+        cout<<ai->first<<" "<<ai->second<<endl;
+    cout<<"Vars:"<<endl;
+    for (auto vi = variables.begin(); vi != variables.end(); vi++)
+        cout<<vi->first<<" "<<vi->second<<endl;
+    */
+}
+
+
 avtGTCFileFormat::avtGTCFileFormat(std::shared_ptr<adios2::ADIOS> adios,
-                                   adios2::Engine &reader,
-                                   adios2::IO &io,
-                                   std::map<std::string, adios2::Params> &variables,
-                                   std::map<std::string, adios2::Params> &attributes,
-                                   const char *filename)
+        adios2::Engine &reader,
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes,
+        const char *filename)
     : adios(adios),
       reader(reader),
       io(io),
@@ -232,8 +321,8 @@ avtGTCFileFormat::GetPtMesh(int timestate, const char *meshname)
     //dims: nPlanes, 3, nPts
     auto cDims = cVar.Shape();
 
-    cout<<"DIMS: "<<cDims<<endl;
-    std::vector<float> xbuff, ybuff, zbuff;
+    //cout<<"DIMS: "<<cDims<<endl;
+    vector<float> xbuff, ybuff, zbuff;
 
     cVar.SetSelection(adios2::Box<adios2::Dims>({0,0,0}, {cDims[0], 1, cDims[2]}));
     reader.Get(cVar, xbuff, adios2::Mode::Sync);
@@ -289,12 +378,12 @@ void create_potential_mesh_vertex_list( //float **data_in,
 {
     float *data_in[3] = {X_in, Y_in, Z_in};
 
-    std::vector<int> nPoloidalNodes[nPoloidalPlanes];   // Number of nodes in each poloidal contour
-    std::vector<int> poloidalIndex[nPoloidalPlanes];    // Starting node index of each poloidal contour
+    vector <vector<int> > nPoloidalNodes(nPoloidalPlanes);   // Number of nodes in each poloidal contour
+    vector <vector<int> > poloidalIndex(nPoloidalPlanes);    // Starting node index of each poloidal contour
 
-    std::vector<int> vertices[nPoloidalPlanes]; // Plane vertex connections
+    vector <vector<int> > vertices(nPoloidalPlanes); // Plane vertex connections
 
-    std::vector<std::vector< int > > degeneracies[nPoloidalPlanes]; // degenerate indices
+    vector <vector< vector< int > > > degeneracies(nPoloidalPlanes); // degenerate indices
 
     // Index of the closest node on the neighboring contour.
     int **neighborIndex = new int*[nPoloidalPlanes];
@@ -572,7 +661,7 @@ void create_potential_mesh_vertex_list( //float **data_in,
         (int *) new int*[ (nPoloidalPlanes-1) * nNodes * 2 * numVertices ];
 
       int *vertex_list_ptr = *vertex_list;
-      std::vector<int> numElemPlane;
+      vector<int> numElemPlane;
 
       //  Connect along the toriodal direction.
       for( int p=0, q=1; p<nPoloidalPlanes-1; ++p, ++q )
@@ -636,7 +725,6 @@ void create_potential_mesh_vertex_list( //float **data_in,
         }
         numElemPlane.push_back(numElements);
       }
-      cout<<"MEOW: "<<numElemPlane<<endl;
     }
 
     // Multiple slices so create connections for prisms.
@@ -654,7 +742,7 @@ void create_potential_mesh_vertex_list( //float **data_in,
       int *vertex_list_ptr = *vertex_list;
 
       //  Connect along the toriodal direction.
-      std::vector<int> numElemPlane;
+      vector<int> numElemPlane;
       for( int p=0, q=1; p<nPoloidalPlanes-1; ++p, ++q )
       {
         bool degenerate = false;
@@ -720,8 +808,8 @@ void create_potential_mesh_vertex_list( //float **data_in,
           // shifting. These values are used only for getting an
           // offset for when the degeneracy goes through
           // zero. Otherwise they are just for debugging.
-          std::vector< int > p_degeneracies;
-          std::vector< int > n_degeneracies;
+          vector< int > p_degeneracies;
+          vector< int > n_degeneracies;
 
           p_degeneracies.resize( nd );
           n_degeneracies.resize( nd );
@@ -1031,9 +1119,9 @@ void create_potential_mesh_vertex_list( //float **data_in,
 }
 
 static void
-createMapping(const std::vector<int> &igrid,
-              const std::vector<int> &indexShift,
-              std::vector<int> &pn)
+createMapping(const vector<int> &igrid,
+              const vector<int> &indexShift,
+              vector<int> &pn)
 {
     for (int i = 0; i < pn.size(); i++)
         pn[i] = -1;
@@ -1101,7 +1189,7 @@ avtGTCFileFormat::CreateMesh(bool xyzMesh)
 
     auto cDims = cVar.Shape();
 
-    std::vector<float> xbuff, ybuff, zbuff;
+    vector<float> xbuff, ybuff, zbuff;
     cVar.SetSelection(adios2::Box<adios2::Dims>({0,0,0}, {cDims[0], 1, cDims[2]}));
     reader.Get(cVar, xbuff, adios2::Mode::Sync);
     cVar.SetSelection(adios2::Box<adios2::Dims>({0,1,0}, {cDims[0], 1, cDims[2]}));
@@ -1111,7 +1199,7 @@ avtGTCFileFormat::CreateMesh(bool xyzMesh)
 
     auto igridDims = igridVar.Shape();
     auto indexShiftDims = indexShiftVar.Shape();
-    std::vector<int> igrid, indexShift;
+    vector<int> igrid, indexShift;
     igridVar.SetSelection(adios2::Box<adios2::Dims>({0,0}, {1,igridDims[1]}));
     reader.Get(igridVar, igrid, adios2::Mode::Sync);
     indexShiftVar.SetSelection(adios2::Box<adios2::Dims>({0,0}, {1,indexShiftDims[1]}));
@@ -1127,7 +1215,7 @@ avtGTCFileFormat::CreateMesh(bool xyzMesh)
         float dPhi = (2.0*M_PI)/(numPlanes-1);
         for (int i = 0; i < numPlanes-1; i++)
         {
-            cout<<"PHI= "<<phi*(180.0/M_PI)<<endl;
+            //cout<<"PHI= "<<phi*(180.0/M_PI)<<endl;
             for (int j = 0; j < ptsPerPlane; j++)
             {
                 int idx = i*ptsPerPlane+j;
@@ -1194,7 +1282,7 @@ avtGTCFileFormat::CreateMesh(bool xyzMesh)
     //Connect first and last plane.
     //This requires the igrid to map nodes from last plane to first plane.
 
-    std::vector<int> pn(ptsPerPlane);
+    vector<int> pn(ptsPerPlane);
     //igrid is fortran, to convert to 0-based.
     //also, igrid needs the last point, so add it.
     for (int i = 0; i < igrid.size(); i++)
@@ -1236,7 +1324,7 @@ avtGTCFileFormat::GetMesh(int timestate, const char *meshname)
     if (!strcmp(meshname, "mesh_pt"))
         return GetPtMesh(timestate, meshname);
 
-    bool xyzMesh = (std::string(meshname) == "mesh");
+    bool xyzMesh = (string(meshname) == "mesh");
 
     if (xyzMesh && grid != NULL)
     {
@@ -1291,8 +1379,8 @@ avtGTCFileFormat::GetMesh(int timestate, const char *meshname)
 vtkDataArray *
 avtGTCFileFormat::GetVar(int timestate, const char *varname)
 {
-    std::string vname(varname);
-    if (std::string(varname) == "potential_pt" || std::string(varname) == "potential_cyl")
+    string vname(varname);
+    if (string(varname) == "potential_pt" || string(varname) == "potential_cyl")
         vname = "potential";
 
     adios2::Variable<float> var = io.InquireVariable<float>(vname);

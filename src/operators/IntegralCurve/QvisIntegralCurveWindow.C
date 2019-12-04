@@ -38,14 +38,14 @@ TurnOff(QWidget *w0, QWidget *w1=NULL);
 // ****************************************************************************
 // Method: QvisIntegralCurveWindow::QvisIntegralCurveWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
 // Modifications:
-//   
+//
 //   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
 //   Add named selections as a seed source.
 //
@@ -67,14 +67,14 @@ QvisIntegralCurveWindow::QvisIntegralCurveWindow(const int type,
 // ****************************************************************************
 // Method: QvisIntegralCurveWindow::~QvisIntegralCurveWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisIntegralCurveWindow::~QvisIntegralCurveWindow()
@@ -85,7 +85,7 @@ QvisIntegralCurveWindow::~QvisIntegralCurveWindow()
 // ****************************************************************************
 // Method: QvisIntegralCurveWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Brad Whitlock
@@ -136,7 +136,7 @@ QvisIntegralCurveWindow::~QvisIntegralCurveWindow()
 //
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Add pathline GUI.
-//    
+//
 //   Hank Childs, Sat May  2 22:14:38 PDT 2009
 //   Add support for point lists.
 //
@@ -167,7 +167,7 @@ QvisIntegralCurveWindow::~QvisIntegralCurveWindow()
 //
 //   Dave Pugmire, Tue Oct 19 13:52:00 EDT 2010
 //   Add a delete all points button for the point list seed option.
-// 
+//
 //   Hank Childs, Fri Oct 22 09:22:18 PDT 2010
 //   Rename Adams-Bashforth's "Maximum step length" to "Step length" since
 //   it always takes the same size step.
@@ -177,13 +177,16 @@ QvisIntegralCurveWindow::~QvisIntegralCurveWindow()
 //   because we set the density based on the value of the text field, and we
 //   get a signal that causes us to use the default value before we ever set
 //   the field with the correct value.
-// 
+//
 //   Hank Childs, Sun Dec  5 09:52:44 PST 2010
 //   Add support for disabling warnings for stiffness and critical points.
 //   Also add description of tolerances.
 //
 //   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
 //   Add named selections as a seed source.
+//
+//   Kathleen Biagas, Fri Nov  8 09:14:27 PST 2019
+//   Added Source tab to reduce window height.
 //
 // ****************************************************************************
 
@@ -192,6 +195,13 @@ QvisIntegralCurveWindow::CreateWindowContents()
 {
     QTabWidget *propertyTabs = new QTabWidget(central);
     topLayout->addWidget(propertyTabs);
+
+    // ----------------------------------------------------------------------
+    // Source field  tab
+    // ----------------------------------------------------------------------
+    QWidget *sourceTab = new QWidget(central);
+    propertyTabs->addTab(sourceTab, tr("Source"));
+    CreateSourceTab(sourceTab);
 
     // ----------------------------------------------------------------------
     // Integration tab
@@ -216,10 +226,10 @@ QvisIntegralCurveWindow::CreateWindowContents()
 }
 
 // ****************************************************************************
-// Method: QvisIntegralCurveWindow::CreateAppearanceTab
+// Method: QvisIntegralCurveWindow::CreateSourceTab
 //
-// Purpose: 
-//   Populates the appearance tab.
+// Purpose:
+//   Populates the source tab.
 //
 // Programmer: Dave Pugmire
 // Creation:   Tue Dec 29 14:37:53 EST 2009
@@ -229,14 +239,22 @@ QvisIntegralCurveWindow::CreateWindowContents()
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Kathleen Biagas, Fri Nov  8 09:16:34 PST 2019
+//   Some widgets moved from Integration tab to reduce window height.
+//
 // ****************************************************************************
 
 void
-QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
+QvisIntegralCurveWindow::CreateSourceTab(QWidget *pageSource)
 {
-    QGridLayout *mainLayout = new QGridLayout(pageIntegration);
+    QVBoxLayout *sLayout = new QVBoxLayout(pageSource);
+
+    QGridLayout *mainLayout = new QGridLayout();
     mainLayout->setMargin(5);
     mainLayout->setSpacing(10);
+
+    sLayout->addLayout(mainLayout);
+    sLayout->addStretch(1);
 
     // Create the source group box.
     QGroupBox *sourceGroup = new QGroupBox(central);
@@ -415,7 +433,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     fieldDataCopyPoints = new QPushButton(tr("Copy to point list"), sourceGroup);
     connect(fieldDataCopyPoints, SIGNAL(clicked()), this, SLOT(copyPoints()));
     geometryLayout->addWidget(fieldDataCopyPoints, gRow++, 1);
-    
+
     //Sampling options.
     samplingGroup = new QGroupBox(sourceGroup);
     samplingGroup->setTitle(tr("Sampling"));
@@ -425,7 +443,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->setMargin(5);
     samplingLayout->setSpacing(10);
     samplingLayout->setRowStretch(5,10);
-    
+
     int sRow = 0;
     samplingTypeLabel = new QLabel(tr("Sampling type:"), samplingGroup);
     samplingLayout->addWidget(samplingTypeLabel, sRow, 0);
@@ -450,9 +468,9 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->addWidget(fillButtons[0], sRow, 4);
     samplingLayout->addWidget(fillButtons[1], sRow, 5);
     connect(fillButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(fillChanged(int)));
-    
+
     sRow++;
-    
+
     numberOfRandomSamplesLabel = new QLabel(tr("Number of random samples"), samplingGroup);
     samplingLayout->addWidget(numberOfRandomSamplesLabel, sRow, 0, 1, 2);
     numberOfRandomSamples = new QSpinBox(samplingGroup);
@@ -542,7 +560,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);
-    
+
 
     // Create the field constant text field.
     fieldConstantLabel = new QLabel(tr("Constant"), fieldGroup);
@@ -566,7 +584,34 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
     // connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
     // fieldLayout->addWidget(forceNodal, 2, 0);
+}
 
+
+// ****************************************************************************
+// Method: QvisIntegralCurveWindow::CreateIntegrationTab
+//
+// Purpose:
+//   Populates the integration tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
+//   Kathleen Biagas, Fri Nov  8 09:15:53 PST 2019
+//   Source and field widgets moved to Source tab to reduce window height.
+//
+// ****************************************************************************
+
+void
+QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
+{
+    QGridLayout *mainLayout = new QGridLayout(pageIntegration);
+    mainLayout->setMargin(5);
+    mainLayout->setSpacing(10);
 
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);
@@ -603,7 +648,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     connect(integrationType, SIGNAL(activated(int)),
             this, SLOT(integrationTypeChanged(int)));
     integrationLayout->addWidget(integrationType, 1,1);
-    
+
     // Create the step length text field.
     maxStepLengthLabel = new QLabel(tr("Step length"), integrationGroup);
     maxStepLength = new QLineEdit(integrationGroup);
@@ -616,7 +661,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     limitMaxTimeStep = new QCheckBox(tr("Limit maximum time step"), integrationGroup);
     connect(limitMaxTimeStep, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeStepChanged(bool)));
     integrationLayout->addWidget(limitMaxTimeStep, 3, 0);
-    
+
     maxTimeStep = new QLineEdit(integrationGroup);
     connect(maxTimeStep, SIGNAL(returnPressed()),
             this, SLOT(maxTimeStepProcessText()));
@@ -684,7 +729,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
 // ****************************************************************************
 // Method: QvisIntegralCurveWindow::CreateAppearanceTab
 //
-// Purpose: 
+// Purpose:
 //   Populates the appearance tab.
 //
 // Programmer: Dave Pugmire
@@ -706,7 +751,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
 //
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
-// 
+//
 //   Dave Pugmire, Mon Feb 21 08:17:42 EST 2011
 //   Add color by correlation distance.
 //
@@ -800,7 +845,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     cleanupThreshold = new QLineEdit(cleanupGrp);
     connect(cleanupThreshold, SIGNAL(returnPressed()), this, SLOT(cleanupThresholdProcessText()));
     cleanupLayout->addWidget(cleanupThreshold, 0, 3);
-    
+
     // Create the crop group
     QGroupBox *cropGrp = new QGroupBox(pageAppearance);
     cropGrp->setTitle(tr("Crop the integral curve (for animations)"));
@@ -909,7 +954,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
 // ****************************************************************************
 // Method: QvisIntegralCurveWindow::CreateAdvancedTab
 //
-// Purpose: 
+// Purpose:
 //   Populates the advanced tab.
 //
 // Programmer: Dave Pugmire
@@ -922,7 +967,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
 //
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
-// 
+//
 //   Hank Childs, Sun Dec  5 05:31:57 PST 2010
 //   Add additional warning controls.
 //
@@ -958,13 +1003,13 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
             this, SLOT(parallelAlgorithmChanged(int)));
     algoGLayout->addWidget( parallelAlgoLabel, 1,0);
     algoGLayout->addWidget( parallelAlgo, 1,1);
-    
+
     maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
     maxSLCount = new QSpinBox(algoGrp);
     maxSLCount->setKeyboardTracking(false);
     maxSLCount->setMinimum(1);
     maxSLCount->setMaximum(100000);
-    connect(maxSLCount, SIGNAL(valueChanged(int)), 
+    connect(maxSLCount, SIGNAL(valueChanged(int)),
             this, SLOT(maxSLCountChanged(int)));
     algoGLayout->addWidget( maxSLCountLabel, 2,0);
     algoGLayout->addWidget( maxSLCount,2,1);
@@ -1025,7 +1070,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(issueWarningForStepsize, 3, 0);
     QLabel *stepsizeLabel = new QLabel(tr("Issue warning when a step size underflow is detected."), warningsGrp);
     warningsGLayout->addWidget(stepsizeLabel, 3, 1, 1, 2);
-    
+
     issueWarningForStiffness = new QCheckBox(central);
     connect(issueWarningForStiffness, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForStiffnessChanged(bool)));
@@ -1036,7 +1081,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(stiffnessDescLabel1, 5, 1, 1, 2);
     QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
     warningsGLayout->addWidget(stiffnessDescLabel2, 6, 1, 1, 2);
-    
+
     issueWarningForCriticalPoints = new QCheckBox(central);
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
@@ -1058,7 +1103,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 // ****************************************************************************
 // Method: QvisIntegralCurveWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: Brad Whitlock
@@ -1107,7 +1152,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 //
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
-// 
+//
 //   Hank Childs, Sun Dec  5 09:52:44 PST 2010
 //   Add support for disabling warnings for stiffness and critical points.
 //
@@ -1135,7 +1180,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
         if( info )
           info->Detach(this);
       }
-      
+
       // Attach to the selected plot types
       for(int i = 0; i < GetViewerState()->GetPlotList()->GetNumPlots(); ++i)
       {
@@ -1151,10 +1196,10 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
     for( int i = 0; i < GetViewerState()->GetPlotList()->GetNumPlots(); ++i)
     {
       const Plot &p = GetViewerState()->GetPlotList()->GetPlots(i);
-      
+
       PlotInfoAttributes *info =
         GetViewerState()->GetPlotInformation(p.GetPlotType());
-      
+
       if( doAll || SelectedSubject() == info )
       {
         MapNode *node = info->GetData().GetEntry("ListOfPoints");
@@ -1163,20 +1208,20 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
         {
           MapNode &ptsNode = *node;
           int nValues = ptsNode["listofpoints_size"].AsInt();
-          
+
           if( nValues )
           {
             const doubleVector &points =
               ptsNode["listofpoints_coordinates"].AsDoubleVector();
-      
+
             // Update the GUI
             fieldData->clear();
-      
+
             for (int i = 0; i < nValues; i+= 3)
             {
               char tmp[256];
               sprintf(tmp, "%lf %lf %lf", points[i], points[i+1], points[i+2]);
-                     
+
               QString str = tmp;
               QListWidgetItem *item = new QListWidgetItem(str, fieldData);
 //            item->setFlags(item->flags() | Qt::ItemIsEditable);
@@ -1304,7 +1349,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
 
                 break;
             }
-            
+
         case IntegralCurveAttributes::ID_boxExtents:
             boxExtents[0]->setText(DoublesToQString(atts->GetBoxExtents(),2));
             boxExtents[1]->setText(DoublesToQString(atts->GetBoxExtents()+2,2));
@@ -1365,7 +1410,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             dataVariable->setText(atts->GetDataVariable().c_str());
             dataVariable->blockSignals(false);
           break;
-          
+
         case IntegralCurveAttributes::ID_dataValue:
             dataValueComboBox->blockSignals(true);
             dataValueComboBox->setCurrentIndex(int(atts->GetDataValue()));
@@ -1501,7 +1546,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
               integrationType->setCurrentIndex(IntegralCurveAttributes::AdamsBashforth);
               UpdateIntegrationAttributes();
             }
-            else if (atts->GetIntegrationType() == IntegralCurveAttributes::M3DC12DIntegrator) 
+            else if (atts->GetIntegrationType() == IntegralCurveAttributes::M3DC12DIntegrator)
             {
               atts->SetIntegrationType(IntegralCurveAttributes::DormandPrince);
               integrationType->setCurrentIndex(IntegralCurveAttributes::DormandPrince);
@@ -1607,7 +1652,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
               randomSeed->setValue(atts->GetRandomSeed());
               randomSeed->blockSignals(false);
               break;
-              
+
             case IntegralCurveAttributes::ID_numberOfRandomSamples:
               numberOfRandomSamples->blockSignals(true);
               numberOfRandomSamples->setValue(atts->GetNumberOfRandomSamples());
@@ -1625,7 +1670,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
               issueWarningForAdvection->setChecked(atts->GetIssueAdvectionWarnings());
               issueWarningForAdvection->blockSignals(false);
               break;
-              
+
             case IntegralCurveAttributes::ID_issueBoundaryWarnings:
               issueWarningForBoundary->blockSignals(true);
               issueWarningForBoundary->setChecked(atts->GetIssueBoundaryWarnings());
@@ -1665,7 +1710,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             correlationDistanceAngTolEdit->setText(DoubleToQString(atts->GetCorrelationDistanceAngTol()));
             correlationDistanceAngTolEdit->blockSignals(false);
             break;
-            
+
           case IntegralCurveAttributes::ID_correlationDistanceMinDistAbsolute:
             if (atts->GetCorrelationDistanceMinDistType() == IntegralCurveAttributes::Absolute)
             {
@@ -1682,7 +1727,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
                 correlationDistanceMinDistEdit->blockSignals(false);
             }
             break;
-            
+
           case IntegralCurveAttributes::ID_correlationDistanceMinDistType:
             correlationDistanceMinDistType->blockSignals(true);
             correlationDistanceMinDistType->setCurrentIndex((int) atts->GetCorrelationDistanceMinDistType());
@@ -1774,14 +1819,14 @@ QvisIntegralCurveWindow::TurnOffSourceAttributes()
 // ****************************************************************************
 // Method: QvisIntegralCurveWindow::UpdateSourceAttributes
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets for the various stream source types.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 17:22:05 PST 2002
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Sat Mar  3 09:11:44 PST 2007
 //   Hide/show useWholeBox.  Also enable/disable pointDensity if source type
 //   is point.
@@ -1803,7 +1848,7 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
     TurnOffSourceAttributes();
 
     bool showSampling = false, enableFill = false;
-    
+
     if (atts->GetSourceType() == IntegralCurveAttributes::SpecifiedPoint)
         TurnOn(pointSource, pointSourceLabel);
     else if (atts->GetSourceType() == IntegralCurveAttributes::PointList)
@@ -1896,7 +1941,7 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
     {
         TurnOn(sphereOrigin, sphereOriginLabel);
         TurnOn(radius, radiusLabel);
-        
+
         showSampling = true;
         enableFill = true;
 
@@ -2001,7 +2046,7 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
 // ****************************************************************************
 // Method: QvisIntegralCurveWindow::UpdateFieldAttributes
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets for the various field types.
 //
 // Programmer: Dave Pugmire
@@ -2016,7 +2061,7 @@ QvisIntegralCurveWindow::UpdateFieldAttributes()
     {
     case IntegralCurveAttributes::M3DC12DField:
       if( atts->GetIntegrationType() ==
-          IntegralCurveAttributes::M3DC12DIntegrator ) 
+          IntegralCurveAttributes::M3DC12DIntegrator )
         TurnOn(fieldConstant, fieldConstantLabel);
       else
         TurnOff(fieldConstant, fieldConstantLabel);
@@ -2043,7 +2088,7 @@ QvisIntegralCurveWindow::UpdateFieldAttributes()
 // ****************************************************************************
 // Method: QvisIntegralCurveWindow::UpdateIntegrationAttributes
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets for the various integration types.
 //
 // Programmer: Dave Pugmire
@@ -2110,7 +2155,7 @@ QvisIntegralCurveWindow::UpdateIntegrationAttributes()
 // ****************************************************************************
 // Method: QvisIntegralCurveWindow::UpdateAlgorithmAttributes
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets for the various integration types.
 //
 // Programmer: Dave Pugmire
@@ -2133,7 +2178,7 @@ QvisIntegralCurveWindow::UpdateAlgorithmAttributes()
                              IntegralCurveAttributes::ParallelStaticDomains);
     bool useMasterSlave = (atts->GetParallelizationAlgorithmType() ==
                            IntegralCurveAttributes::MasterSlave);
-    
+
     //Turn off everything.
     maxDomainCacheLabel->hide();
     maxDomainCache->hide();
@@ -2166,7 +2211,7 @@ QvisIntegralCurveWindow::UpdateAlgorithmAttributes()
 // ****************************************************************************
 // Method: QvisIntegralCurveWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: Brad Whitlock
@@ -2204,7 +2249,7 @@ QvisIntegralCurveWindow::UpdateAlgorithmAttributes()
 //
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
-// 
+//
 //   Hank Childs, Sun Dec  5 09:52:44 PST 2010
 //   Add support for disabling warnings for stiffness and critical points.
 //
@@ -2634,7 +2679,7 @@ QvisIntegralCurveWindow::GetCurrentValues(int which_widget)
         if (val >= 2)
             atts->SetWorkGroupSize(val);
     }
-    
+
     // criticalPointThreshold
     if(which_widget == IntegralCurveAttributes::ID_criticalPointThreshold || doAll)
     {
@@ -2762,7 +2807,7 @@ QvisIntegralCurveWindow::selectionsChanged(int val)
 {
     const SelectionProperties &sel = selectionList->GetSelections(val);
     std::string nm = sel.GetName();
-    
+
     if(nm != atts->GetSelection())
     {
         atts->SetSelection(nm);
@@ -2778,7 +2823,7 @@ QvisIntegralCurveWindow::directionTypeChanged(int val)
         atts->SetIntegrationDirection(IntegralCurveAttributes::IntegrationDirection(val));
         Apply();
     }
-}   
+}
 
 void
 QvisIntegralCurveWindow::fieldTypeChanged(int val)
@@ -2788,7 +2833,7 @@ QvisIntegralCurveWindow::fieldTypeChanged(int val)
         atts->SetFieldType(IntegralCurveAttributes::FieldType(val));
         Apply();
     }
-}   
+}
 
 void
 QvisIntegralCurveWindow::fieldConstantProccessText()
@@ -2805,7 +2850,7 @@ QvisIntegralCurveWindow::integrationTypeChanged(int val)
         atts->SetIntegrationType(IntegralCurveAttributes::IntegrationType(val));
         Apply();
     }
-}   
+}
 
 void
 QvisIntegralCurveWindow::parallelAlgorithmChanged(int val)
@@ -2815,7 +2860,7 @@ QvisIntegralCurveWindow::parallelAlgorithmChanged(int val)
         atts->SetParallelizationAlgorithmType(IntegralCurveAttributes::ParallelizationAlgorithmType(val));
         Apply();
     }
-}   
+}
 
 void
 QvisIntegralCurveWindow::maxStepLengthProcessText()
@@ -3235,7 +3280,7 @@ QvisIntegralCurveWindow::copyPoints()
     for (int i = 0; i < fieldData->count(); i++)
     {
         QListWidgetItem *item = fieldData->item(i);
-        
+
         if (item)
         {
             std::string str = item->text().toLatin1().data();

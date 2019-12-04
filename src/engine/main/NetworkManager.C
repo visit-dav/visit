@@ -5198,13 +5198,19 @@ NetworkManager::CloneNetwork(const int id)
 //    Alister Maguire, Mon Sep 23 12:35:44 MST 2019
 //    Refactored to handle two QOT types: DirectDatabaset and TimeLoop. 
 //
+//    Alister Maguire, Tue Oct 29 14:46:38 MST 2019
+//    Updated to perform the network cloning within this method. If we're
+//    using the TimeLoop route, use a true clone. If we're using the
+//    DirectDatabase route, create a psuedo clone by starting an entirely
+//    new network based off of the cloning target.
+//
 // ****************************************************************************
 
 void
 NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
                                        const int clonedFromId)
 {
-    if (workingNet == NULL)
+    if (networkCache[clonedFromId] == NULL)
     {
         std::string error =  "Adding a filter to a non-existent network." ;
         EXCEPTION1(ImproperUseException, error);
@@ -5225,7 +5231,7 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         //
         avtExpressionEvaluatorFilter *eef = 
             dynamic_cast<avtExpressionEvaluatorFilter *> 
-            (workingNet->GetExpressionNode()->GetFilter());
+            (networkCache[clonedFromId]->GetExpressionNode()->GetFilter());
 
         if (eef != NULL)
         {
@@ -5247,33 +5253,36 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     }
 
     //
-    // Determine which input the filter should use.
+    // A screen pick requires that we use actual data.
     //
-    avtDataObject_p input;
-
-    if (useActualData || 
-        (qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
-         qA->GetQueryAtts().GetName() == "Locate and Pick Node"))
+    if (qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
+        qA->GetQueryAtts().GetName() == "Locate and Pick Node")
     {
-        input = networkCache[clonedFromId]->GetPlot()->
-                GetIntermediateDataObject();
-
-        //
-        // If this was a screen/interactive pick, it needs to 
-        // be performed on the actual data. 
-        //
+        useActualData = true;
         useDirectDatabaseQOT = false;
     }
-    else
-    {
-        input = workingNet->GetExpressionNode()->GetOutput();
-    }
+
+    qA->SetCanUseDirectDatabaseRoute(useDirectDatabaseQOT);
 
     qA->GetQueryAtts().SetPipeIndex(networkCache[clonedFromId]->
         GetContract()->GetPipelineIndex());
 
+    avtDataObject_p input = NULL;
+
     if (useDirectDatabaseQOT)
     {
+        //
+        // We're using the direct route. Let's start an entirely new
+        // network based off of the cloning target.
+        //
+        NetnodeDB *nndb = networkCache[clonedFromId]->GetNetDB();
+        StartNetwork(nndb->GetDB()->GetFileFormat(), 
+                     nndb->GetFilename(), 
+                     nndb->GetVarName(), 
+                     nndb->GetTime());
+
+        input = workingNet->GetExpressionNode()->GetOutput();
+
         //
         // We need to let the database readers know that we're asking for
         // a specialized QOT dataset.  
@@ -5294,13 +5303,31 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 
         workingNet->SetDataSpec(dr);
     }
-    else if (strcmp(workingNet->GetDataSpec()->GetVariable(),
-                    qA->GetQueryAtts().GetVariables()[0].c_str()) != 0)
+    else
     {
-        avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
-            qA->GetQueryAtts().GetVariables()[0].c_str());
+        //
+        // We're using the TimeLoop route. This means we need a true clone.
+        //
+        CloneNetwork(clonedFromId);
 
-        workingNet->SetDataSpec(dr);
+        if (useActualData)
+        {
+            input = networkCache[clonedFromId]->GetPlot()->
+                    GetIntermediateDataObject();
+        }
+        else
+        {
+            input = workingNet->GetExpressionNode()->GetOutput();
+        }
+
+        if (strcmp(workingNet->GetDataSpec()->GetVariable(),
+                        qA->GetQueryAtts().GetVariables()[0].c_str()) != 0)
+        {
+            avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
+                qA->GetQueryAtts().GetVariables()[0].c_str());
+
+            workingNet->SetDataSpec(dr);
+        }
     }
 
     //

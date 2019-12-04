@@ -828,6 +828,9 @@ View3DAttributes_GetWindowValid(PyObject *self, PyObject *args)
 // Programmer: Mark C. Miller
 // Created:    May 15, 2008
 //
+//    Mark C. Miller, Tue Nov 26 10:26:26 PST 2019
+//    Deal with possible out of range axis argument. Instead of erroring,
+//    we do this by reversing interpretation of args if so.
 // ****************************************************************************
 
 /*static*/ PyObject *
@@ -843,11 +846,152 @@ View3DAttributes_RotateAxis(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "id", &ival, &dval))
         return NULL;
 
+    // Out of range ival could indicate user reversed axis and angle
+    if (ival < 0 || ival > 2)
+    {
+        if (dval == 0 || dval == 1 || dval == 2)
+        {
+            int tmp = (int) dval;
+            dval = ival;
+            ival = tmp;
+        }
+        else
+        {
+            PyErr_SetString(PyExc_IndexError, "Axis arg (the first) must be 0,1 or 2 for X,Y or Z");
+            return NULL;
+        }
+    }
+
     // Call the C++ method to change the view.
     obj->data->RotateAxis(ival, dval);
 
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+static PyObject *
+View3DAttributes_Add(PyObject *v, PyObject *w)
+{
+    bool arg1isObject = PyView3DAttributes_Check(v);
+    bool arg2isObject = PyView3DAttributes_Check(w);
+    if(!arg1isObject || !arg2isObject)
+    {
+        cerr << "View3DAttributes_add: One or more arguments are not View3DAttributes!" << endl;
+        return NULL;
+    }
+
+    PyObject *retval = NewView3DAttributes(0);
+    View3DAttributes *c = PyView3DAttributes_FromPyObject(retval);
+    View3DAttributes *a = ((View3DAttributesObject *)v)->data;
+    View3DAttributes *b = ((View3DAttributesObject *)w)->data;
+
+    c->GetViewNormal()[0] = a->GetViewNormal()[0] + b->GetViewNormal()[0];
+    c->GetViewNormal()[1] = a->GetViewNormal()[1] + b->GetViewNormal()[1];
+    c->GetViewNormal()[2] = a->GetViewNormal()[2] + b->GetViewNormal()[2];
+
+    c->GetFocus()[0] = a->GetFocus()[0] + b->GetFocus()[0];
+    c->GetFocus()[1] = a->GetFocus()[1] + b->GetFocus()[1];
+    c->GetFocus()[2] = a->GetFocus()[2] + b->GetFocus()[2];
+
+    c->GetViewUp()[0] = a->GetViewUp()[0] + b->GetViewUp()[0];
+    c->GetViewUp()[1] = a->GetViewUp()[1] + b->GetViewUp()[1];
+    c->GetViewUp()[2] = a->GetViewUp()[2] + b->GetViewUp()[2];
+
+    c->SetViewAngle(a->GetViewAngle() + b->GetViewAngle());
+    c->SetParallelScale(a->GetParallelScale() + b->GetParallelScale());
+    c->SetNearPlane(a->GetNearPlane() + b->GetNearPlane());
+    c->SetFarPlane(a->GetFarPlane() + b->GetFarPlane());
+    c->SetPerspective(a->GetPerspective() + b->GetPerspective());
+
+    c->GetImagePan()[0] = a->GetImagePan()[0] + b->GetImagePan()[0];
+    c->GetImagePan()[1] = a->GetImagePan()[1] + b->GetImagePan()[1];
+    c->SetImageZoom(a->GetImageZoom() + b->GetImageZoom());
+
+    c->SetEyeAngle(a->GetEyeAngle() + b->GetEyeAngle());
+
+    c->SetCenterOfRotationSet(a->GetCenterOfRotationSet() +
+                              b->GetCenterOfRotationSet());
+    c->GetCenterOfRotation()[0] = a->GetCenterOfRotation()[0] +
+                                  b->GetCenterOfRotation()[0];
+    c->GetCenterOfRotation()[1] = a->GetCenterOfRotation()[1] +
+                                  b->GetCenterOfRotation()[1];
+    c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] +
+                                  b->GetCenterOfRotation()[2];
+    return retval;
+}
+
+static PyObject *
+View3DAttributes_Mul(PyObject *v, PyObject *w)
+{
+    PyObject *retval = NewView3DAttributes(0);
+    View3DAttributes *c = PyView3DAttributes_FromPyObject(retval);
+
+    View3DAttributes *a;
+    double val = 1.;
+    bool arg1isObject = PyView3DAttributes_Check(v);
+    bool arg2isObject = PyView3DAttributes_Check(w);
+
+    if(arg1isObject && arg2isObject)
+    {
+        return NULL;
+    }
+    else
+    {
+        PyObject *num;
+
+        if(arg1isObject)
+        {
+            a = ((View3DAttributesObject *)v)->data;
+            num = w;
+        }
+        else
+        {
+            a = ((View3DAttributesObject *)w)->data;
+            num = v;
+        }
+
+        if(PyFloat_Check(num))
+            val = PyFloat_AS_DOUBLE(num);
+        else if(PyInt_Check(num))
+            val = double(PyInt_AS_LONG(num));
+        else if(PyLong_Check(num))
+            val = PyLong_AsDouble(num);
+        else
+        {
+            cerr << "MUL: Expected numeric argument is not a number!" << endl;
+        }
+
+        c->GetViewNormal()[0] = a->GetViewNormal()[0] * val;
+        c->GetViewNormal()[1] = a->GetViewNormal()[1] * val;
+        c->GetViewNormal()[2] = a->GetViewNormal()[2] * val;
+
+        c->GetFocus()[0] = a->GetFocus()[0] * val;
+        c->GetFocus()[1] = a->GetFocus()[1] * val;
+        c->GetFocus()[2] = a->GetFocus()[2] * val;
+
+        c->GetViewUp()[0] = a->GetViewUp()[0] * val;
+        c->GetViewUp()[1] = a->GetViewUp()[1] * val;
+        c->GetViewUp()[2] = a->GetViewUp()[2] * val;
+
+        c->SetViewAngle(a->GetViewAngle() * val);
+        c->SetParallelScale(a->GetParallelScale() * val);
+        c->SetNearPlane(a->GetNearPlane() * val);
+        c->SetFarPlane(a->GetFarPlane() * val);
+        c->SetPerspective(a->GetPerspective() * val);
+
+        c->GetImagePan()[0] = a->GetImagePan()[0] * val;
+        c->GetImagePan()[1] = a->GetImagePan()[1] * val;
+        c->SetImageZoom(a->GetImageZoom() * val);
+
+        c->SetEyeAngle(a->GetEyeAngle() * val);
+
+        c->SetCenterOfRotationSet(a->GetCenterOfRotationSet() * val);
+        c->GetCenterOfRotation()[0] = a->GetCenterOfRotation()[0] * val;
+        c->GetCenterOfRotation()[1] = a->GetCenterOfRotation()[1] * val;
+        c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] * val;
+    }
+
+    return retval;
 }
 
 
@@ -888,6 +1032,8 @@ PyMethodDef PyView3DAttributes_methods[VIEW3DATTRIBUTES_NMETH] = {
     {"SetWindowValid", View3DAttributes_SetWindowValid, METH_VARARGS},
     {"GetWindowValid", View3DAttributes_GetWindowValid, METH_VARARGS},
     {"RotateAxis", View3DAttributes_RotateAxis, METH_VARARGS},
+    {"Add", View3DAttributes_Add, METH_VARARGS},
+    {"Mul", View3DAttributes_Mul, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1023,138 +1169,13 @@ View3DAttributes_str(PyObject *v)
     return PyString_FromString(PyView3DAttributes_ToString(obj->data,"").c_str());
 }
 
-static PyObject *
-View3DAttributes_add(PyObject *v, PyObject *w)
-{
-    bool arg1isObject = PyView3DAttributes_Check(v);
-    bool arg2isObject = PyView3DAttributes_Check(w);
-    if(!arg1isObject || !arg2isObject)
-    {
-        cerr << "View3DAttributes_add: One or more arguments are not View3DAttributes!" << endl;
-        return NULL;
-    }
-
-    PyObject *retval = NewView3DAttributes(0);
-    View3DAttributes *c = PyView3DAttributes_FromPyObject(retval);
-    View3DAttributes *a = ((View3DAttributesObject *)v)->data;
-    View3DAttributes *b = ((View3DAttributesObject *)w)->data;
-
-    c->GetViewNormal()[0] = a->GetViewNormal()[0] + b->GetViewNormal()[0];
-    c->GetViewNormal()[1] = a->GetViewNormal()[1] + b->GetViewNormal()[1];
-    c->GetViewNormal()[2] = a->GetViewNormal()[2] + b->GetViewNormal()[2];
-
-    c->GetFocus()[0] = a->GetFocus()[0] + b->GetFocus()[0];
-    c->GetFocus()[1] = a->GetFocus()[1] + b->GetFocus()[1];
-    c->GetFocus()[2] = a->GetFocus()[2] + b->GetFocus()[2];
-
-    c->GetViewUp()[0] = a->GetViewUp()[0] + b->GetViewUp()[0];
-    c->GetViewUp()[1] = a->GetViewUp()[1] + b->GetViewUp()[1];
-    c->GetViewUp()[2] = a->GetViewUp()[2] + b->GetViewUp()[2];
-
-    c->SetViewAngle(a->GetViewAngle() + b->GetViewAngle());
-    c->SetParallelScale(a->GetParallelScale() + b->GetParallelScale());
-    c->SetNearPlane(a->GetNearPlane() + b->GetNearPlane());
-    c->SetFarPlane(a->GetFarPlane() + b->GetFarPlane());
-    c->SetPerspective(a->GetPerspective() + b->GetPerspective());
-
-    c->GetImagePan()[0] = a->GetImagePan()[0] + b->GetImagePan()[0];
-    c->GetImagePan()[1] = a->GetImagePan()[1] + b->GetImagePan()[1];
-    c->SetImageZoom(a->GetImageZoom() + b->GetImageZoom());
-
-    c->SetEyeAngle(a->GetEyeAngle() + b->GetEyeAngle());
-
-    c->SetCenterOfRotationSet(a->GetCenterOfRotationSet() +
-                              b->GetCenterOfRotationSet());
-    c->GetCenterOfRotation()[0] = a->GetCenterOfRotation()[0] +
-                                  b->GetCenterOfRotation()[0];
-    c->GetCenterOfRotation()[1] = a->GetCenterOfRotation()[1] +
-                                  b->GetCenterOfRotation()[1];
-    c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] +
-                                  b->GetCenterOfRotation()[2];
-    return retval;
-}
-
-static PyObject *
-View3DAttributes_mul(PyObject *v, PyObject *w)
-{
-    PyObject *retval = NewView3DAttributes(0);
-    View3DAttributes *c = PyView3DAttributes_FromPyObject(retval);
-
-    View3DAttributes *a;
-    double val = 1.;
-    bool arg1isObject = PyView3DAttributes_Check(v);
-    bool arg2isObject = PyView3DAttributes_Check(w);
-
-    if(arg1isObject && arg2isObject)
-    {
-        return NULL;
-    }
-    else
-    {
-        PyObject *num;
-
-        if(arg1isObject)
-        {
-            a = ((View3DAttributesObject *)v)->data;
-            num = w;
-        }
-        else
-        {
-            a = ((View3DAttributesObject *)w)->data;
-            num = v;
-        }
-
-        if(PyFloat_Check(num))
-            val = PyFloat_AS_DOUBLE(num);
-        else if(PyInt_Check(num))
-            val = double(PyInt_AS_LONG(num));
-        else if(PyLong_Check(num))
-            val = PyLong_AsDouble(num);
-        else
-        {
-            cerr << "MUL: Expected numeric argument is not a number!" << endl;
-        }
-
-        c->GetViewNormal()[0] = a->GetViewNormal()[0] * val;
-        c->GetViewNormal()[1] = a->GetViewNormal()[1] * val;
-        c->GetViewNormal()[2] = a->GetViewNormal()[2] * val;
-
-        c->GetFocus()[0] = a->GetFocus()[0] * val;
-        c->GetFocus()[1] = a->GetFocus()[1] * val;
-        c->GetFocus()[2] = a->GetFocus()[2] * val;
-
-        c->GetViewUp()[0] = a->GetViewUp()[0] * val;
-        c->GetViewUp()[1] = a->GetViewUp()[1] * val;
-        c->GetViewUp()[2] = a->GetViewUp()[2] * val;
-
-        c->SetViewAngle(a->GetViewAngle() * val);
-        c->SetParallelScale(a->GetParallelScale() * val);
-        c->SetNearPlane(a->GetNearPlane() * val);
-        c->SetFarPlane(a->GetFarPlane() * val);
-        c->SetPerspective(a->GetPerspective() * val);
-
-        c->GetImagePan()[0] = a->GetImagePan()[0] * val;
-        c->GetImagePan()[1] = a->GetImagePan()[1] * val;
-        c->SetImageZoom(a->GetImageZoom() * val);
-
-        c->SetEyeAngle(a->GetEyeAngle() * val);
-
-        c->SetCenterOfRotationSet(a->GetCenterOfRotationSet() * val);
-        c->GetCenterOfRotation()[0] = a->GetCenterOfRotation()[0] * val;
-        c->GetCenterOfRotation()[1] = a->GetCenterOfRotation()[1] * val;
-        c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] * val;
-    }
-
-    return retval;
-}
-
 //
 // The type description structure
 //
 static PyNumberMethods View3DAttributes_as_number = {
-    (binaryfunc)View3DAttributes_add, /*nb_add*/
+    (binaryfunc)View3DAttributes_Add, /*nb_add*/
     (binaryfunc)0, /*nb_subtract*/
-    (binaryfunc)View3DAttributes_mul, /*nb_multiply*/
+    (binaryfunc)View3DAttributes_Mul, /*nb_multiply*/
     (binaryfunc)0, /*nb_divide*/
     (binaryfunc)0,    /*nb_remainder*/
     (binaryfunc)0,    /*nb_divmod*/

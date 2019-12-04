@@ -398,6 +398,15 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
     if (arr == NULL)
         return 0;
 
+    int accessMethod = 0;
+    if(arr->HasStandardMemoryLayout())
+    {
+        if(arr->GetDataType() == VTK_FLOAT)
+            accessMethod = 1;
+        else if(arr->GetDataType() == VTK_DOUBLE)
+            accessMethod = 2;
+    }
+
     int nToProcess = (CellList != NULL ? CellListSize : nCells);
     int numIcantContour = 0;
     for (vtkIdType i = 0 ; i < nToProcess ; i++)
@@ -449,7 +458,7 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
         if (canContour)
         {
             int tmp[3] = {0,0,0};
-            if(arr->GetDataType() == VTK_FLOAT)
+            if(accessMethod == 1)
             {
                 vtkUnstructuredCreateTriangles<float, IsoDistanceFunction<float> >(
                     sfv, cellId, pts, npts,
@@ -457,7 +466,7 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
                     IsoDistanceFunction<float>(tmp, arr, (float)this->Isovalue)
                 );
             }
-            else if(arr->GetDataType() == VTK_DOUBLE)
+            else if(accessMethod == 2)
             {
                 vtkUnstructuredCreateTriangles<double, IsoDistanceFunction<double> >(
                     sfv, cellId, pts, npts,

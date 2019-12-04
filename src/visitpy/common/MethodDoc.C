@@ -475,7 +475,7 @@ const char *visit_ChooseCenterOfRotation_doc =
 "# coordinates and print the value.\n"
 "ResetView()\n"
 "ChooseCenterOfRotation(0.5, 0.3)\n"
-"print \"The new center of rotation is:\", GetView3D().centerOfRotation\n"
+"print(\"The new center of rotation is:{}\".format(GetView3D().centerOfRotation))\n"
 ;
 const char *visit_ClearAllWindows_doc = 
 "ClearAllWindows\n"
@@ -562,7 +562,7 @@ const char *visit_ClearCache_doc =
 "OpenDatabase(\"localhost:very_large_database\")\n"
 "# Do a lot of work\n"
 "ClearCache(\"localhost\")\n"
-"OpenDatabase(localhost:another_large_database\")\n"
+"OpenDatabase(\"localhost:another_large_database\")\n"
 "# Do more work\n"
 "OpenDatabase(\"remotehost:yet_another_database\")\n"
 "# Do more work\n"
@@ -605,7 +605,7 @@ const char *visit_ClearCacheForAllEngines_doc =
 "OpenDatabase(\"localhost:very_large_database\")\n"
 "# Do a lot of work\n"
 "ClearCache(\"localhost\")\n"
-"OpenDatabase(localhost:another_large_database\")\n"
+"OpenDatabase(\"localhost:another_large_database\")\n"
 "# Do more work\n"
 "OpenDatabase(\"remotehost:yet_another_database\")\n"
 "# Do more work\n"
@@ -718,7 +718,7 @@ const char *visit_ClearViewKeyframes_doc =
 "SetViewKeyframe()\n"
 "ToggleCameraViewMode()\n"
 "for i in range(10):\n"
-"SetTimeSliderState(i)\n"
+"    SetTimeSliderState(i)\n"
 "ClearViewKeyframes()\n"
 ;
 const char *visit_ClearWindow_doc = 
@@ -914,9 +914,9 @@ const char *visit_CloseDatabase_doc =
 "OpenDatabase(db)\n"
 "AddPlot(\"Pseudocolor\", \"u\")\n"
 "DrawPlots()\n"
-"print \"This won't work: retval = %d\" % CloseDatabase(db)\n"
+"print(\"This won't work: retval = %d\" % CloseDatabase(db))\n"
 "DeleteAllPlots()\n"
-"print \"Now it works: retval = %d\" % CloseDatabase(db)\n"
+"print(\"Now it works: retval = %d\" % CloseDatabase(db))\n"
 ;
 const char *visit_ColorTableNames_doc = 
 "ColorTableNames\n"
@@ -947,9 +947,9 @@ const char *visit_ColorTableNames_doc =
 "AddPlot(\"Pseudocolor\", \"u\")\n"
 "DrawPlots()\n"
 "for ct in ColorTableNames():\n"
-"p = PseudocolorAttributes()\n"
-"p.colorTableName = ct\n"
-"SetPlotOptions(p)\n"
+"    p = PseudocolorAttributes()\n"
+"    p.colorTableName = ct\n"
+"    SetPlotOptions(p)\n"
 ;
 const char *visit_ConstructDataBinning_doc = 
 "ConstructDataBinning\n"
@@ -1244,7 +1244,7 @@ const char *visit_CreateAnnotationObject_doc =
 "AddPlot(\"Pseudocolor\", \"pressure\")\n"
 "DrawPlots()\n"
 "slider = CreateAnnotationObject(\"TimeSlider\")\n"
-"print slider\n"
+"print(slider)\n"
 "slider.startColor = (255,0,0,255)\n"
 "slider.endColor = (255,255,0,255)\n"
 ;
@@ -1320,11 +1320,11 @@ const char *visit_CreateDatabaseCorrelation_doc =
 "# Creating a new database correlation also creates a new time\n"
 "# slider and makes it be active.\n"
 "w = GetWindowInformation()\n"
-"print \"Active time slider: %s\" % w.timeSliders[w.activeTimeSlider]\n"
+"print(\"Active time slider: %s\" % w.timeSliders[w.activeTimeSlider])\n"
 "# Animate through time using the \"common\" database correlation's\n"
 "# time slider.\n"
 "for i in range(TimeSliderGetNStates()):\n"
-"SetTimeSliderState(i)\n"
+"    SetTimeSliderState(i)\n"
 ;
 const char *visit_CreateNamedSelection_doc = 
 "CreateNamedSelection\n"
@@ -1411,8 +1411,8 @@ const char *visit_DatabasePlugins_doc =
 "\n"
 "#% visit -cli\n"
 "dbp = DatabasePlugins(\"localhost\")\n"
-"print dbp[\"host\"]\n"
-"print dbp[\"plugins\"]\n"
+"print(dbp[\"host\"])\n"
+"print(dbp[\"plugins\"])\n"
 ;
 const char *visit_DeIconifyAllWindows_doc = 
 "DeIconifyAllWindows\n"
@@ -2109,7 +2109,7 @@ const char *visit_DeletePlotDatabaseKeyframe_doc =
 "AddPlot(\"Pseudocolor\", \"pressure\")\n"
 "SetPlotDatabaseState(0, 0, 60)\n"
 "# Repeat time state 60 for the first few animation frames by adding a\n"
-"keyframe at frame 3.\n"
+"# keyframe at frame 3.\n"
 "SetPlotDatabaseState(0, 3, 60)\n"
 "SetPlotDatabaseState(0, 19, 0)\n"
 "DrawPlots()\n"
@@ -2170,7 +2170,7 @@ const char *visit_DeletePlotKeyframe_doc =
 "ListPlots()\n"
 "# Iterate over all animation frames and wrap around to the first one.\n"
 "for i in list(range(TimeSliderGetNStates())) + [0]:\n"
-"SetTimeSliderState(i)\n"
+"    SetTimeSliderState(i)\n"
 "# Delete the plot keyframe at frame 19 so the min won't\n"
 "# change anymore.\n"
 "DeletePlotKeyframe(19)\n"
@@ -2222,13 +2222,13 @@ const char *visit_DeleteViewKeyframe_doc =
 "ToggleCameraViewMode()\n"
 "# Iterate over the animation frames to watch the view change.\n"
 "for i in list(range(10)) + [0]:\n"
-"SetTimeSliderState(i)\n"
+"    SetTimeSliderState(i)\n"
 "# Delete the last view keyframe, which is on frame 9.\n"
 "DeleteViewKeyframe(9)\n"
 "# Iterate over the animation frames again. The view should stay\n"
 "# the same.\n"
 "for i in range(10):\n"
-"SetTimeSliderState(i)\n"
+"    SetTimeSliderState(i)\n"
 ;
 const char *visit_DeleteWindow_doc = 
 "DeleteWindow\n"
@@ -2478,9 +2478,9 @@ const char *visit_EvalCubic_doc =
 "# Fly around the plots using the views that have been specified.\n"
 "nSteps = 100\n"
 "for i in range(nSteps):\n"
-"t = float(i) / float(nSteps - 1)\n"
-"newView = EvalCubic(t, v0, v1, v2, v3)\n"
-"SetView3D(newView)\n"
+"    t = float(i) / float(nSteps - 1)\n"
+"    newView = EvalCubic(t, v0, v1, v2, v3)\n"
+"    SetView3D(newView)\n"
 ;
 const char *visit_EvalCubicSpline_doc = 
 "EvalCubicSpline\n"
@@ -2559,9 +2559,9 @@ const char *visit_EvalLinear_doc =
 "c1.viewUp = (0.196284, 0.876524, -0.439521)\n"
 "nSteps = 100\n"
 "for i in range(nSteps):\n"
-"t = float(i) / float(nSteps - 1)\n"
-"v = EvalLinear(t, c0, c1)\n"
-"SetView3D(v)\n"
+"    t = float(i) / float(nSteps - 1)\n"
+"    v = EvalLinear(t, c0, c1)\n"
+"    SetView3D(v)\n"
 ;
 const char *visit_EvalQuadratic_doc = 
 "EvalQuadratic\n"
@@ -2602,7 +2602,7 @@ const char *visit_EvalQuadratic_doc =
 "\n"
 "Example:\n"
 "\n"
-"% visit -cli\n"
+"#% visit -cli\n"
 "OpenDatabase(\"/usr/gapps/visit/data/globe.silo\")\n"
 "AddPlot(\"Pseudocolor\", \"u\")\n"
 "DrawPlots()\n"
@@ -2614,9 +2614,9 @@ const char *visit_EvalQuadratic_doc =
 "# Fly around the plots using the views that have been specified.\n"
 "nSteps = 100\n"
 "for i in range(nSteps):\n"
-"t = float(i) / float(nSteps - 1)\n"
-"newView = EvalQuadratic(t, v0, v1, v2)\n"
-"SetView3D(newView)\n"
+"    t = float(i) / float(nSteps - 1)\n"
+"    newView = EvalQuadratic(t, v0, v1, v2)\n"
+"    SetView3D(newView)\n"
 ;
 const char *visit_ExecuteMacro_doc = 
 "ExecuteMacro\n"
@@ -2651,9 +2651,10 @@ const char *visit_ExecuteMacro_doc =
 "Example:\n"
 "\n"
 "def SetupMyPlots():\n"
-"OpenDatabase('noise.silo')\n"
-"AddPlot('Pseudocolor', 'hardyglobal')\n"
-"DrawPlots()\n"
+"    OpenDatabase('noise.silo')\n"
+"    AddPlot('Pseudocolor', 'hardyglobal')\n"
+"    DrawPlots()\n"
+"\n"
 "RegisterMacro('Setup My Plots', SetupMyPlots)\n"
 "ExecuteMacro('Setup My Plots')\n"
 ;
@@ -2739,11 +2740,11 @@ const char *visit_Expressions_doc =
 "DefineScalarExpression(\"neg_u\", \"-u\")\n"
 "DefineScalarExpression(\"bob\", \"sin_u + cos_u\")\n"
 "for i in range(1,5):\n"
-"SetActiveWindow(i)\n"
-"OpenDatabase(\"/usr/gapps/visit/data/globe.silo\")\n"
-"exprName = Expressions()[i-1][0]\n"
-"AddPlot(\"Pseudocolor\", exprName)\n"
-"DrawPlots()\n"
+"    SetActiveWindow(i)\n"
+"    OpenDatabase(\"/usr/gapps/visit/data/globe.silo\")\n"
+"    exprName = Expressions()[i-1][0]\n"
+"    AddPlot(\"Pseudocolor\", exprName)\n"
+"    DrawPlots()\n"
 ;
 const char *visit_GetActiveContinuousColorTable_doc = 
 "GetActiveContinuousColorTable\n"
@@ -2780,8 +2781,8 @@ const char *visit_GetActiveContinuousColorTable_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"print \"Default continuous color table: %s\" % GetActiveContinuousColorTable()\n"
-"print \"Default discrete color table: %s\" % GetActiveDiscreteColorTable()\n"
+"print(\"Default continuous color table: %s\" % GetActiveContinuousColorTable())\n"
+"print(\"Default discrete color table: %s\" % GetActiveDiscreteColorTable())\n"
 ;
 const char *visit_GetActiveDiscreteColorTable_doc = 
 "GetActiveDiscreteColorTable\n"
@@ -2818,10 +2819,8 @@ const char *visit_GetActiveDiscreteColorTable_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"print \"Default continuous color table: %s\" % \\n"
-"GetActiveContinuousColorTable()\n"
-"print \"Default discrete color table: %s\" % \\n"
-"GetActiveDiscreteColorTable()\n"
+"print(\"Default continuous color table: %s\" % GetActiveContinuousColorTable())\n"
+"print(\"Default discrete color table: %s\" % GetActiveDiscreteColorTable())\n"
 ;
 const char *visit_GetActiveTimeSlider_doc = 
 "GetActiveTimeSlider\n"
@@ -2857,9 +2856,9 @@ const char *visit_GetActiveTimeSlider_doc =
 "AddPlot(\"FilledBoundary\", \"material(mesh)\")\n"
 "OpenDatabase(\"dbB00.pdb\")\n"
 "AddPlot(\"FilledBoundary\", \"materials(mesh)\")\n"
-"print \"Active time slider: %s\" % GetActiveTimeSlider()\n"
+"print(\"Active time slider: %s\" % GetActiveTimeSlider())\n"
 "CreateDatabaseCorrelation(\"common\", (\"dbA00.pdb\", \"dbB00.pdb\"), 2)\n"
-"print \"Active time slider: %s\" % GetActiveTimeSlider()\n"
+"print(\"Active time slider: %s\" % GetActiveTimeSlider())\n"
 ;
 const char *visit_GetAnimationAttributes_doc = 
 "GetAnimationAttributes\n"
@@ -2884,7 +2883,7 @@ const char *visit_GetAnimationAttributes_doc =
 "Example:\n"
 "\n"
 "a = GetAnimationAttributes()\n"
-"print a\n"
+"print(a)\n"
 ;
 const char *visit_GetAnimationTimeout_doc = 
 "GetAnimationTimeout\n"
@@ -2912,7 +2911,7 @@ const char *visit_GetAnimationTimeout_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"print \"Animation timeout = %d\" % GetAnimationTimeout()\n"
+"print(\"Animation timeout = %d\" % GetAnimationTimeout())\n"
 ;
 const char *visit_GetAnnotationAttributes_doc = 
 "GetAnnotationAttributes\n"
@@ -2945,7 +2944,7 @@ const char *visit_GetAnnotationAttributes_doc =
 "AddPlot(\"Pseudocolor\", \"u\")\n"
 "DrawPlots()\n"
 "a = GetAnnotationAttributes()\n"
-"print a\n"
+"print(a)\n"
 "a.backgroundMode = a.BACKGROUNDMODE_GRADIENT\n"
 "a.gradientColor1 = (0, 0, 255)\n"
 "SetAnnotationAttributes(a)\n"
@@ -2994,7 +2993,7 @@ const char *visit_GetAnnotationObject_doc =
 "GetAnnotationObjectNames()\n"
 "[\"plot0000\", \"TimeSlider1\"]\n"
 "ref = GetAnnotationObject(\"TimeSlider1\")\n"
-"print ref\n"
+"print(ref)\n"
 ;
 const char *visit_GetAnnotationObjectNames_doc = 
 "GetAnnotationObjectNames\n"
@@ -3043,7 +3042,7 @@ const char *visit_GetCallbackArgumentCount_doc =
 "\n"
 "cbName = 'OpenDatabaseRPC'\n"
 "count = GetCallbackArgumentCount(cbName)\n"
-"print 'The number of arguments for %s is: %d' % (cbName, count)\n"
+"print('The number of arguments for %s is: %d' % (cbName, count))\n"
 ;
 const char *visit_GetCallbackNames_doc = 
 "GetCallbackNames\n"
@@ -3069,7 +3068,7 @@ const char *visit_GetCallbackNames_doc =
 "Example:\n"
 "\n"
 "import visit\n"
-"print visit.GetCallbackNames()\n"
+"print(visit.GetCallbackNames())\n"
 ;
 const char *visit_GetDatabaseNStates_doc = 
 "GetDatabaseNStates\n"
@@ -3099,7 +3098,7 @@ const char *visit_GetDatabaseNStates_doc =
 "\n"
 "#% visit -cli\n"
 "OpenDatabase(\"/usr/gapps/visit/data/wave*.silo database\")\n"
-"print \"Number of time states: %d\" % GetDatabaseNStates()\n"
+"print(\"Number of time states: %d\" % GetDatabaseNStates())\n"
 ;
 const char *visit_GetDebugLevel_doc = 
 "GetDebugLevel\n"
@@ -3126,7 +3125,7 @@ const char *visit_GetDebugLevel_doc =
 "Example:\n"
 "\n"
 "#% visit -cli -debug 2\n"
-"print \"VisIt's debug level is: %d\" % GetDebugLevel()\n"
+"print(\"VisIt's debug level is: %d\" % GetDebugLevel())\n"
 ;
 const char *visit_GetDefaultFileOpenOptions_doc = 
 "GetDefaultFileOpenOptions\n"
@@ -3192,10 +3191,10 @@ const char *visit_GetDomains_doc =
 "AddPlot(\"Pseudocolor\", \"u\")\n"
 "DrawPlots()\n"
 "doms = GetDomains()\n"
-"print doms\n"
+"print(doms)\n"
 "# Turn off all but the last domain, one after the other.\n"
 "for d in doms[:-1]:\n"
-"TurnDomainsOff(d)\n"
+"    TurnDomainsOff(d)\n"
 ;
 const char *visit_GetEngineList_doc = 
 "GetEngineList\n"
@@ -3243,8 +3242,8 @@ const char *visit_GetEngineList_doc =
 "AddPlot(\"Mesh\", \"mesh1\")\n"
 "DrawPlots()\n"
 "for name in GetEngineList():\n"
-"print \"VisIt has a compute engine running on %s\" % name\n"
-"CloseComputeEngine(GetEngineList()[1])\n"
+"    print(\"VisIt has a compute engine running on %s\" % name)\n"
+"    CloseComputeEngine(GetEngineList()[1])\n"
 ;
 const char *visit_GetEngineProperties_doc = 
 "GetEngineProperties\n"
@@ -3313,7 +3312,7 @@ const char *visit_GetGlobalAttributes_doc =
 "AddPlot(\"Pseudocolor\", \"u\")\n"
 "DrawPlots()\n"
 "g = GetGlobalAttributes()\n"
-"print g\n"
+"print(g)\n"
 ;
 const char *visit_GetGlobalLineoutAttributes_doc = 
 "GetGlobalLineoutAttributes\n"
@@ -3349,7 +3348,7 @@ const char *visit_GetGlobalLineoutAttributes_doc =
 "AddPlot(\"Pseudocolor\", \"d\")\n"
 "DrawPlots()\n"
 "g = GetGlobalLineoutAttributes()\n"
-"print g\n"
+"print(g)\n"
 "g.samplingOn = 1\n"
 "g.windowId = 4\n"
 "g.createWindow = 0\n"
@@ -3387,7 +3386,7 @@ const char *visit_GetInteractorAttributes_doc =
 "\n"
 "#% visit -cli\n"
 "ia = GetInteractorAttributes()\n"
-"print ia\n"
+"print(ia)\n"
 "ia.showGuidelines = 0\n"
 "SetInteractorAttributes(ia)\n"
 ;
@@ -3418,7 +3417,7 @@ const char *visit_GetKeyframeAttributes_doc =
 "\n"
 "#% visit -cli\n"
 "k = GetKeyframeAttributes()\n"
-"print k\n"
+"print(k)\n"
 "k.enabled,k.nFrames,k.nFramesWasUserSet = 1, 100, 1\n"
 "SetKeyframeAttributes(k)\n"
 ;
@@ -3447,7 +3446,7 @@ const char *visit_GetLastError_doc =
 "\n"
 "#% visit -cli\n"
 "OpenDatabase(\"/this/database/does/not/exist\")\n"
-"print \"VisIt Error: %s\" % GetLastError()\n"
+"print(\"VisIt Error: %s\" % GetLastError())\n"
 ;
 const char *visit_GetLight_doc = 
 "GetLight\n"
@@ -3489,7 +3488,7 @@ const char *visit_GetLight_doc =
 "DrawPlots()\n"
 "InvertBackgroundColor()\n"
 "light = GetLight(0)\n"
-"print light\n"
+"print(light)\n"
 "light.enabledFlag = 1\n"
 "light.direction = (0,-1,0)\n"
 "light.color = (255,0,0,255)\n"
@@ -3520,8 +3519,8 @@ const char *visit_GetLocalHostName_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"print \"Local machine name is: %s\" % GetLocalHostName()\n"
-"print \"My username: %s\" % GetLocalUserName()\n"
+"print(\"Local machine name is: %s\" % GetLocalHostName())\n"
+"print(\"My username: %s\" % GetLocalUserName())\n"
 ;
 const char *visit_GetLocalUserName_doc = 
 "GetLocalUserName\n"
@@ -3546,8 +3545,8 @@ const char *visit_GetLocalUserName_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"print \"Local machine name is: %s\" % GetLocalHostName()\n"
-"print \"My username: %s\" % GetLocalUserName()\n"
+"print(\"Local machine name is: %s\" % GetLocalHostName())\n"
+"print(\"My username: %s\" % GetLocalUserName())\n"
 ;
 const char *visit_GetMachineProfile_doc = 
 "GetMachineProfile\n"
@@ -3663,7 +3662,7 @@ const char *visit_GetMaterials_doc =
 "DrawPlots()\n"
 "mats = GetMaterials()\n"
 "for m in mats[:-1]:\n"
-"TurnMaterialOff(m)\n"
+"    TurnMaterialOff(m)\n"
 ;
 const char *visit_GetMeshManagementAttributes_doc = 
 "GetMeshManagementAttributes\n"
@@ -3735,8 +3734,8 @@ const char *visit_GetMetaData_doc =
 "Example:\n"
 "\n"
 "md = GetMetaData('noise.silo')\n"
-"for i in xrange(md.GetNumScalars()):\n"
-"AddPlot('Pseudocolor', md.GetScalars(i).name)\n"
+"for i in range(md.GetNumScalars()):\n"
+"    AddPlot('Pseudocolor', md.GetScalars(i).name)\n"
 "DrawPlots()\n"
 ;
 const char *visit_GetNumPlots_doc = 
@@ -3761,13 +3760,13 @@ const char *visit_GetNumPlots_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"print \"Number of plots\", GetNumPlots()\n"
+"print(\"Number of plots\", GetNumPlots())\n"
 "OpenDatabase(\"/usr/gapps/visit/data/curv2d.silo\")\n"
 "AddPlot(\"Pseudocolor\", \"d\")\n"
-"print \"Number of plots\", GetNumPlots()\n"
+"print(\"Number of plots\", GetNumPlots())\n"
 "AddPlot(\"Mesh\", \"curvmesh2d\")\n"
 "DrawPlots()\n"
-"print \"Number of plots\", GetNumPlots()\n"
+"print(\"Number of plots\", GetNumPlots())\n"
 ;
 const char *visit_GetOperatorOptions_doc = 
 "GetOperatorOptions\n"
@@ -3801,7 +3800,7 @@ const char *visit_GetOperatorOptions_doc =
 "AddOperator('Transform')\n"
 "AddOperator('Transform')\n"
 "t = GetOperatorOptions(1)\n"
-"print 'Attributes for the 2nd Transform operator:', t\n"
+"print('Attributes for the 2nd Transform operator:', t)\n"
 ;
 const char *visit_GetPickAttributes_doc = 
 "GetPickAttributes\n"
@@ -3836,7 +3835,7 @@ const char *visit_GetPickAttributes_doc =
 "AddPlot(\"Pseudocolor\", \"mesh/ireg\")\n"
 "DrawPlots()\n"
 "p = GetPickAttributes()\n"
-"print p\n"
+"print(p)\n"
 "p.variables = (\"default\", \"mesh/a\", \"mesh/mixvar\")\n"
 "SetPickAttributes(p)\n"
 "# Now do some interactive picks and you'll see pick information\n"
@@ -3874,7 +3873,7 @@ const char *visit_GetPickOutput_doc =
 "DrawPlots()\n"
 "ZonePick(coord=(0.4, 0.6, 0), vars=(\"default\", \"u\", \"v\"))\n"
 "s = GetPickOutput()\n"
-"print s\n"
+"print(s)\n"
 ;
 const char *visit_GetPickOutputObject_doc = 
 "GetPickOutputObject\n"
@@ -3904,7 +3903,7 @@ const char *visit_GetPickOutputObject_doc =
 "DrawPlots()\n"
 "ZonePick(coord=(0.4, 0.6, 0), vars=(\"default\", \"u\", \"v\"))\n"
 "o = GetPickOutputObject()\n"
-"print o\n"
+"print(o)\n"
 ;
 const char *visit_GetPipelineCachingMode_doc = 
 "GetPipelineCachingMode\n"
@@ -3933,7 +3932,7 @@ const char *visit_GetPipelineCachingMode_doc =
 "\n"
 "#%visit -cli\n"
 "offon = (\"off\", \"on\")\n"
-"print \"Pipeline caching is %s\" % offon[GetPipelineCachingMode()]\n"
+"print(\"Pipeline caching is %s\" % offon[GetPipelineCachingMode()])\n"
 ;
 const char *visit_GetPlotInformation_doc = 
 "GetPlotInformation\n"
@@ -3966,7 +3965,7 @@ const char *visit_GetPlotInformation_doc =
 "SetActiveWindow(2)\n"
 "info = GetPlotInformation()\n"
 "lineout = info[\"Curve\"]\n"
-"print \"The first lineout point is: [%g, %g] \" % lineout[0], lineout[1]\n"
+"print(\"The first lineout point is: [%g, %g] \" % lineout[0], lineout[1])\n"
 ;
 const char *visit_GetPlotList_doc = 
 "GetPlotList\n"
@@ -3997,8 +3996,8 @@ const char *visit_GetPlotList_doc =
 "# Copy plots (without operators to window 2)\n"
 "pL = GetPlotList()\n"
 "AddWindow()\n"
-"for i in xrange(pL.GetNumPlots()):\n"
-"AddPlot(PlotPlugins()[pL.GetPlots(i).plotType], pL.GetPlots(i).plotVar)\n"
+"for i in range(pL.GetNumPlots()):\n"
+"    AddPlot(PlotPlugins()[pL.GetPlots(i).plotType], pL.GetPlots(i).plotVar)\n"
 "DrawPlots()\n"
 ;
 const char *visit_GetPlotOptions_doc = 
@@ -4085,8 +4084,8 @@ const char *visit_GetQueryOutputObject_doc =
 "AddPlot(\"Pseudocolor\", \"d\")\n"
 "DrawPlots()\n"
 "Query(\"MinMax\")\n"
-"print GetQueryOutputString()\n"
-"print \"The min is: %g and the max is: %g\" % GetQueryOutputValue()\n"
+"print(GetQueryOutputString())\n"
+"print(\"The min is: %g and the max is: %g\" % GetQueryOutputValue())\n"
 ;
 const char *visit_GetQueryOutputString_doc = 
 "GetQueryOutputString\n"
@@ -4119,8 +4118,8 @@ const char *visit_GetQueryOutputString_doc =
 "AddPlot(\"Pseudocolor\", \"d\")\n"
 "DrawPlots()\n"
 "Query(\"MinMax\")\n"
-"print GetQueryOutputString()\n"
-"print \"The min is: %g and the max is: %g\" % GetQueryOutputValue()\n"
+"print(GetQueryOutputString())\n"
+"print(\"The min is: %g and the max is: %g\" % GetQueryOutputValue())\n"
 ;
 const char *visit_GetQueryOutputValue_doc = 
 "GetQueryOutputValue\n"
@@ -4154,8 +4153,8 @@ const char *visit_GetQueryOutputValue_doc =
 "AddPlot(\"Pseudocolor\", \"d\")\n"
 "DrawPlots()\n"
 "Query(\"MinMax\")\n"
-"print GetQueryOutputString()\n"
-"print \"The min is: %g and the max is: %g\" % GetQueryOutputValue()\n"
+"print(GetQueryOutputString())\n"
+"print(\"The min is: %g and the max is: %g\" % GetQueryOutputValue())\n"
 ;
 const char *visit_GetQueryOutputXML_doc = 
 "GetQueryOutputXML\n"
@@ -4188,8 +4187,8 @@ const char *visit_GetQueryOutputXML_doc =
 "AddPlot(\"Pseudocolor\", \"d\")\n"
 "DrawPlots()\n"
 "Query(\"MinMax\")\n"
-"print GetQueryOutputString()\n"
-"print \"The min is: %g and the max is: %g\" % GetQueryOutputValue()\n"
+"print(GetQueryOutputString())\n"
+"print(\"The min is: %g and the max is: %g\" % GetQueryOutputValue())\n"
 ;
 const char *visit_GetQueryOverTimeAttributes_doc = 
 "GetQueryOverTimeAttributes\n"
@@ -4222,7 +4221,7 @@ const char *visit_GetQueryOverTimeAttributes_doc =
 "AddPlot(\"Pseudocolor\", \"mesh/mixvar\")\n"
 "DrawPlots()\n"
 "qot = GetQueryOverTimeAttributes()\n"
-"print qot\n"
+"print(qot)\n"
 "# Make queries over time go to window 4.\n"
 "qot.createWindow,q.windowId = 0, 4\n"
 "SetQueryOverTimeAttributes(qot)\n"
@@ -4338,11 +4337,11 @@ const char *visit_GetSaveWindowAttributes_doc =
 "\n"
 "#% visit -cli\n"
 "s = GetSaveWindowAttributes()\n"
-"print s\n"
+"print(s)\n"
 "s.width = 600\n"
 "s.height = 600\n"
 "s.format = s.RGB\n"
-"print s\n"
+"print(s)\n"
 ;
 const char *visit_GetSelection_doc = 
 "GetSelection\n"
@@ -4438,7 +4437,7 @@ const char *visit_GetSelectionSummary_doc =
 "\n"
 "Example:\n"
 "\n"
-"print GetSelectionSummary('selection1')\n"
+"print(GetSelectionSummary('selection1'))\n"
 ;
 const char *visit_GetTimeSliders_doc = 
 "GetTimeSliders\n"
@@ -4468,11 +4467,11 @@ const char *visit_GetTimeSliders_doc =
 "path = \"/usr/gapps/visit/data/\"\n"
 "dbs = (path + \"/dbA00.pdb\", path + \"dbB00.pdb\", path + \"dbC00.pdb\")\n"
 "for db in dbs:\n"
-"OpenDatabase(db)\n"
-"AddPlot(\"FilledBoundary\", \"material(mesh)\")\n"
-"DrawPlots()\n"
+"    OpenDatabase(db)\n"
+"    AddPlot(\"FilledBoundary\", \"material(mesh)\")\n"
+"    DrawPlots()\n"
 "CreateDatabaseCorrelation(\"common\", dbs, 1)\n"
-"print \"The list of time sliders is: \", GetTimeSliders()\n"
+"print(\"The list of time sliders is: \", GetTimeSliders())\n"
 ;
 const char *visit_GetUltraScript_doc = 
 "GetUltraScript\n"
@@ -4524,11 +4523,11 @@ const char *visit_GetView2D_doc =
 "v0 = GetView3D()\n"
 "# Change the view again using the mouse\n"
 "v1 = GetView3D()\n"
-"print v0\n"
+"print(v0)\n"
 "for i in range(0,20):\n"
-"t = float(i) / 19.\n"
-"v2 = (1. - t) * v1 + t * v0\n"
-"SetView3D(v2) # Animate the view back to the first view.\n"
+"    t = float(i) / 19.\n"
+"    v2 = (1. - t) * v1 + t * v0\n"
+"    SetView3D(v2) # Animate the view back to the first view.\n"
 ;
 const char *visit_GetView3D_doc = 
 "GetView3D\n"
@@ -4561,11 +4560,11 @@ const char *visit_GetView3D_doc =
 "v0 = GetView3D()\n"
 "# Change the view again using the mouse\n"
 "v1 = GetView3D()\n"
-"print v0\n"
+"print(v0)\n"
 "for i in range(0,20):\n"
-"t = float(i) / 19.\n"
-"v2 = (1. - t) * v1 + t * v0\n"
-"SetView3D(v2) # Animate the view back to the first view.\n"
+"    t = float(i) / 19.\n"
+"    v2 = (1. - t) * v1 + t * v0\n"
+"    SetView3D(v2) # Animate the view back to the first view.\n"
 ;
 const char *visit_GetViewAxisArray_doc = 
 "GetViewAxisArray\n"
@@ -4598,11 +4597,11 @@ const char *visit_GetViewAxisArray_doc =
 "v0 = GetView3D()\n"
 "# Change the view again using the mouse\n"
 "v1 = GetView3D()\n"
-"print v0\n"
+"print(v0)\n"
 "for i in range(0,20):\n"
-"t = float(i) / 19.\n"
-"v2 = (1. - t) * v1 + t * v0\n"
-"SetView3D(v2) # Animate the view back to the first view.\n"
+"    t = float(i) / 19.\n"
+"    v2 = (1. - t) * v1 + t * v0\n"
+"    SetView3D(v2) # Animate the view back to the first view.\n"
 ;
 const char *visit_GetViewCurve_doc = 
 "GetViewCurve\n"
@@ -4635,11 +4634,11 @@ const char *visit_GetViewCurve_doc =
 "v0 = GetView3D()\n"
 "# Change the view again using the mouse\n"
 "v1 = GetView3D()\n"
-"print v0\n"
+"print(v0)\n"
 "for i in range(0,20):\n"
-"t = float(i) / 19.\n"
-"v2 = (1. - t) * v1 + t * v0\n"
-"SetView3D(v2) # Animate the view back to the first view.\n"
+"    t = float(i) / 19.\n"
+"    v2 = (1. - t) * v1 + t * v0\n"
+"    SetView3D(v2) # Animate the view back to the first view.\n"
 ;
 const char *visit_GetWindowInformation_doc = 
 "GetWindowInformation\n"
@@ -4672,17 +4671,17 @@ const char *visit_GetWindowInformation_doc =
 "path = \"/usr/gapps/visit/data/\"\n"
 "dbs = (path + \"dbA00.pdb\", path + \"dbB00.pdb\", path + \"dbC00.pdb\")\n"
 "for db in dbs:\n"
-"OpenDatabase(db)\n"
-"AddPlot(\"FilledBoundary\", \"material(mesh)\")\n"
-"DrawPlots()\n"
+"    OpenDatabase(db)\n"
+"    AddPlot(\"FilledBoundary\", \"material(mesh)\")\n"
+"    DrawPlots()\n"
 "CreateDatabaseCorrelation(\"common\", dbs, 1)\n"
 "# Get the list of available time sliders.\n"
 "tsList = GetWindowInformation().timeSliders\n"
 "# Iterate through \"time\" on each time slider.\n"
 "for ts in tsList:\n"
-"SetActiveTimeSlider(ts)\n"
+"    SetActiveTimeSlider(ts)\n"
 "for state in range(TimeSliderGetNStates()):\n"
-"SetTimeSliderState(state)\n"
+"    SetTimeSliderState(state)\n"
 "# Print the window information to examine the other attributes\n"
 "# that are available.\n"
 "GetWindowInformation()\n"
@@ -5168,11 +5167,11 @@ const char *visit_LoadUltra_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-">>> LoadUltra()\n"
-"U-> rd \"../../data/distribution.ultra\"\n"
-"U-> select 1\n"
-"U-> end\n"
-">>>\n"
+"#>>> LoadUltra()\n"
+"#U-> rd \"../../data/distribution.ultra\"\n"
+"#U-> select 1\n"
+"#U-> end\n"
+"#>>>\n"
 ;
 const char *visit_LocalNameSpace_doc = 
 "LocalNameSpace\n"
@@ -5307,10 +5306,10 @@ const char *visit_MovePlotDatabaseKeyframe_doc =
 "SetPlotDatabaseKeyframe(0, nFrames-1, 0)\n"
 "DrawPlots()\n"
 "for state in list(range(TimeSliderGetNStates())) + [0]:\n"
-"SetTimeSliderState(state)\n"
+"    SetTimeSliderState(state)\n"
 "MovePlotDatabaseKeyframe(0, nFrames/2, nFrames/4)\n"
 "for state in list(range(TimeSliderGetNStates())) + [0]:\n"
-"SetTimeSliderState(state)\n"
+"    SetTimeSliderState(state)\n"
 ;
 const char *visit_MovePlotKeyframe_doc = 
 "MovePlotKeyframe\n"
@@ -5359,15 +5358,15 @@ const char *visit_MovePlotKeyframe_doc =
 "SetTimeSliderState(nFrames-1)\n"
 "SetPlotOptions(c)\n"
 "for state in range(TimeSliderGetNStates()):\n"
-"SetTimeSliderState(state)\n"
-"SaveWindow()\n"
+"    SetTimeSliderState(state)\n"
+"    SaveWindow()\n"
 "temp = nFrames-2\n"
 "MovePlotKeyframe(0, nFrames/2, temp)\n"
 "MovePlotKeyframe(0, nFrames-1, nFrames/2)\n"
 "MovePlotKeyframe(0, temp, nFrames-1)\n"
 "for state in range(TimeSliderGetNStates()):\n"
-"SetTimeSliderState(state)\n"
-"SaveWindow()\n"
+"    SetTimeSliderState(state)\n"
+"    SaveWindow()\n"
 ;
 const char *visit_MovePlotOrderTowardFirst_doc = 
 "MovePlotOrderTowardFirst\n"
@@ -5608,10 +5607,10 @@ const char *visit_NumColorTableNames_doc =
 "p.colorTableName = \"default\"\n"
 "SetPlotOptions(p)\n"
 "DrawPlots()\n"
-"print \"There are %d color tables.\" % NumColorTableNames()\n"
+"print(\"There are %d color tables.\" % NumColorTableNames())\n"
 "for ct in ColorTableNames():\n"
-"SetActiveContinuousColorTable(ct)\n"
-"SaveWindow()\n"
+"    SetActiveContinuousColorTable(ct)\n"
+"    SaveWindow()\n"
 ;
 const char *visit_NumOperatorPlugins_doc = 
 "NumOperatorPlugins\n"
@@ -5636,8 +5635,8 @@ const char *visit_NumOperatorPlugins_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"print \"The number of operator plugins is: \", NumOperatorPlugins()\n"
-"print \"The names of the plugins are: \", OperatorPlugins()\n"
+"print(\"The number of operator plugins is: \", NumOperatorPlugins())\n"
+"print(\"The names of the plugins are: \", OperatorPlugins())\n"
 ;
 const char *visit_NumPlotPlugins_doc = 
 "NumPlotPlugins\n"
@@ -5661,8 +5660,8 @@ const char *visit_NumPlotPlugins_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"print \"The number of plot plugins is: \", NumPlotPlugins()\n"
-"print \"The names of the plugins are: \", PlotPlugins()\n"
+"print(\"The number of plot plugins is: \", NumPlotPlugins())\n"
+"print(\"The names of the plugins are: \", PlotPlugins())\n"
 ;
 const char *visit_OpenComputeEngine_doc = 
 "OpenComputeEngine\n"
@@ -5829,9 +5828,9 @@ const char *visit_OpenMDServer_doc =
 "\n"
 "Example:\n"
 "\n"
-"-assume_format PDB\n"
-"% visit -cli\n"
-"args = (\"-dir\", \"/my/private/visit/version/\", \"-assume_format\", \"PDB\", \"-debug\", \"4\")\n"
+"\n"
+"#% visit -cli -assume_format PDB\n"
+"#args = (\"-dir\", \"/my/private/visit/version/\", \"-assume_format\", \"PDB\", \"-debug\", \"4\")\n"
 "# Open a metadata server before the call to OpenDatabase so we\n"
 "# can launch it how we want.\n"
 "OpenMDServer(\"thunder\", args)\n"
@@ -5865,7 +5864,7 @@ const char *visit_OperatorPlugins_doc =
 "\n"
 "#% visit -cli\n"
 "for plugin in OperatorPlugins():\n"
-"print \"The %s operator plugin is loaded.\" % plugin\n"
+"    print(\"The %s operator plugin is loaded.\" % plugin)\n"
 ;
 const char *visit_OverlayDatabase_doc = 
 "OverlayDatabase\n"
@@ -5971,10 +5970,10 @@ const char *visit_PickByGlobalNode_doc =
 "# Pick on global node 236827\n"
 "pick_out = PickByGlobalNode(element=246827)\n"
 "# examine output\n"
-"print 'value of dist at global node 246827: %g' % pick_out['dist']\n"
-"print 'local domain/node: %d/%d' % (pick_out['domain_id'], pick_out['node_id'])\n"
+"print('value of dist at global node 246827: %g' % pick_out['dist'])\n"
+"print('local domain/node: %d/%d' % (pick_out['domain_id'], pick_out['node_id']))\n"
 "# get last pick output as string\n"
-"print 'Last pick = ', GetPickOutput()\n"
+"print('Last pick = ', GetPickOutput())\n"
 ;
 const char *visit_PickByGlobalZone_doc = 
 "PickByGlobalZone\n"
@@ -6035,10 +6034,10 @@ const char *visit_PickByGlobalZone_doc =
 "# Pick on global zone 237394\n"
 "pick_out = PickByGlobalZone(element=237394)\n"
 "# examine output\n"
-"print 'value of p at global zone 237394: %g' % pick_out['p']\n"
-"print 'local domain/zone: %d/%d' % (pick_out['domain_id'], pick_out['zone_id'])\n"
+"print('value of p at global zone 237394: %g' % pick_out['p'])\n"
+"print('local domain/zone: %d/%d' % (pick_out['domain_id'], pick_out['zone_id']))\n"
 "# get last pick output as string\n"
-"print 'Last pick = ', GetPickOutput()\n"
+"print('Last pick = ', GetPickOutput())\n"
 ;
 const char *visit_PickByNode_doc = 
 "PickByNode\n"
@@ -6104,15 +6103,15 @@ const char *visit_PickByNode_doc =
 "# Pick on node 200 in the first domain.\n"
 "pick_out = PickByNode(element=200, domain=1)\n"
 "# examine output\n"
-"print 'value of u at node 200: %g' % pick_out['u']\n"
+"print('value of u at node 200: %g' % pick_out['u'])\n"
 "# Pick on node 100 in domain 5 and return information for two additional\n"
-"variables.\n"
+"# variables.\n"
 "pick_out = PickByNode(domain=5, element=100, vars=(\"u\", \"v\", \"d\"))\n"
 "# examine output\n"
-"print 'incident zones for node 100: ', pick_out['incident_zones']\n"
-"print 'value of d at incident zone %d: %g' % (pick_out['incident_zones'][0], pick_out['d'][str(pick_out['incident_zones'][0])])\n"
+"print('incident zones for node 100: ', pick_out['incident_zones'])\n"
+"print('value of d at incident zone %d: %g' % (pick_out['incident_zones'][0], pick_out['d'][str(pick_out['incident_zones'][0])]))\n"
 "# print results formatted as string\n"
-"print \"Last pick = \", GetPickOutput()\n"
+"print(\"Last pick = \", GetPickOutput())\n"
 ;
 const char *visit_PickByNodeLabel_doc = 
 "PickByNodeLabel\n"
@@ -6179,15 +6178,15 @@ const char *visit_PickByNodeLabel_doc =
 "opts[\"element_label\"] =\"node 4\"\n"
 "pick_out = PickByNodeLabel(opts)\n"
 "# examine output\n"
-"print 'value of d at \"node 4\": %g' % pick_out['d']\n"
+"print('value of d at \"node 4\": %g' % pick_out['d'])\n"
 "# Pick on node labeled \"node 12\" return information for two additional\n"
-"variables.\n"
+"# variables.\n"
 "pick_out = PickByNodeLabel(element_label=\"node 12\", vars=(\"d\", \"u\", \"v\"))\n"
 "# examine output\n"
-"print 'incident nodes for \"node 12\": ', pick_out['incident_nodes']\n"
-"print 'values of u at incident node %d: %g' % (pick_out['incident_nodes'][0], pick_out['u'][str(pick_out['incident_zones'][0])])\n"
+"print('incident nodes for \"node 12\": ', pick_out['incident_nodes'])\n"
+"print('values of u at incident node %d: %g' % (pick_out['incident_nodes'][0], pick_out['u'][str(pick_out['incident_zones'][0])]))\n"
 "# print results formatted as string\n"
-"print \"Last pick = \", GetPickOutput()\n"
+"print(\"Last pick = \", GetPickOutput())\n"
 ;
 const char *visit_PickByZone_doc = 
 "PickByZone\n"
@@ -6253,15 +6252,15 @@ const char *visit_PickByZone_doc =
 "# Pick on cell 200 in the second domain.\n"
 "pick_out = PickByZone(element=200, domain=2)\n"
 "# examine output\n"
-"print 'value of d at zone 200: %g' % pick_out['d']\n"
+"print('value of d at zone 200: %g' % pick_out['d'])\n"
 "# Pick on cell 100 in domain 5 and return information for two additional\n"
-"variables.\n"
+"# variables.\n"
 "pick_out = PickByZone(element=100, domain=5, vars=(\"d\", \"u\", \"v\"))\n"
 "# examine output\n"
-"print 'incident nodes for zone 100: ', pick_out['incident_nodes']\n"
-"print 'values of u at incident zone %d: %g' % (pick_out['incident_nodes'][0], pick_out['u'][str(pick_out['incident_zones'][0])])\n"
+"print('incident nodes for zone 100: ', pick_out['incident_nodes'])\n"
+"print('values of u at incident zone %d: %g' % (pick_out['incident_nodes'][0], pick_out['u'][str(pick_out['incident_zones'][0])]))\n"
 "# print results formatted as string\n"
-"print \"Last pick = \", GetPickOutput()\n"
+"print(\"Last pick = \", GetPickOutput())\n"
 ;
 const char *visit_PickByZoneLabel_doc = 
 "PickByZoneLabel\n"
@@ -6328,15 +6327,15 @@ const char *visit_PickByZoneLabel_doc =
 "opts[\"element_label\"] =\"brick 4\"\n"
 "pick_out = PickByZoneLabel(opts)\n"
 "# examine output\n"
-"print 'value of d at \"brick 4\": %g' % pick_out['d']\n"
+"print('value of d at \"brick 4\": %g' % pick_out['d'])\n"
 "# Pick on cell labeled \"shell 12\" return information for two additional\n"
-"variables.\n"
+"# variables.\n"
 "pick_out = PickByZoneLabel(element_label=\"shell 12\", vars=(\"d\", \"u\", \"v\"))\n"
 "# examine output\n"
-"print 'incident nodes for \"shell 12\": ', pick_out['incident_nodes']\n"
-"print 'values of u at incident zone %d: %g' % (pick_out['incident_nodes'][0], pick_out['u'][str(pick_out['incident_zones'][0])])\n"
+"print('incident nodes for \"shell 12\": ', pick_out['incident_nodes'])\n"
+"print('values of u at incident zone %d: %g' % (pick_out['incident_nodes'][0], pick_out['u'][str(pick_out['incident_zones'][0])]))\n"
 "# print results formatted as string\n"
-"print \"Last pick = \", GetPickOutput()\n"
+"print(\"Last pick = \", GetPickOutput())\n"
 ;
 const char *visit_PlotPlugins_doc = 
 "PlotPlugins\n"
@@ -6363,7 +6362,7 @@ const char *visit_PlotPlugins_doc =
 "\n"
 "#% visit -cli\n"
 "for plugin in PluginPlugins():\n"
-"print \"The %s plot plugin is loaded.\" % plugin\n"
+"    print(\"The %s plot plugin is loaded.\" % plugin)\n"
 ;
 const char *visit_PointPick_doc = 
 "PointPick\n"
@@ -6569,7 +6568,7 @@ const char *visit_Queries_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"print \"supported queries: \", Queries()\n"
+"print(\"supported queries: \", Queries())\n"
 ;
 const char *visit_QueriesOverTime_doc = 
 "QueriesOverTime\n"
@@ -6599,11 +6598,11 @@ const char *visit_QueriesOverTime_doc =
 "DrawPlots()\n"
 "# Execute each of the queries over time on the plots.\n"
 "for q in QueriesOverTime():\n"
-"QueryOverTime(q)\n"
-"You can control timestates used in the query via start_time,\n"
-"end_time, and stride as follows:\n"
+"    QueryOverTime(q)\n"
+"# You can control timestates used in the query via start_time,\n"
+"# end_time, and stride as follows:\n"
 "QueryOverTime(\"Volume\", start_time=5, end_time=250, stride=5)\n"
-"(Defaults used if not specified are 0, nStates, 1)\n"
+"# (Defaults used if not specified are 0, nStates, 1)\n"
 ;
 const char *visit_Query_doc = 
 "Query\n"
@@ -6704,7 +6703,7 @@ const char *visit_QueryOverTime_doc =
 "Quantitative Analysis chapter. You can get also get a list of queries that\n"
 "can be executed over time using 'QueriesOverTime' function.\n"
 "Since queries can take a wide array of arguments, the Query function takes\n"
-"either a python dictorary or a list of named arguments specific to the\n"
+"either a python dictionary or a list of named arguments specific to the\n"
 "given query.  To obtain the possible options for a given query, use the\n"
 "GetQueryParameters(name) function.  If the query accepts additional\n"
 "arguments beyond its name, this function will return a python dictionary\n"
@@ -6720,8 +6719,7 @@ const char *visit_QueryOverTime_doc =
 "AddPlot(\"Pseudocolor\", \"pressure\")\n"
 "DrawPlots()\n"
 "for q in QueriesOverTime():\n"
-"QueryOverTime(q)\n"
-"ResetView()\n"
+"    QueryOverTime(q)\n"
 ;
 const char *visit_ReOpenDatabase_doc = 
 "ReOpenDatabase\n"
@@ -6770,12 +6768,12 @@ const char *visit_ReOpenDatabase_doc =
 "DrawPlots()\n"
 "last = TimeSliderGetNStates()\n"
 "for state in range(last):\n"
-"SetTimeSliderState(state)\n"
-"SaveWindow()\n"
+"    SetTimeSliderState(state)\n"
+"    SaveWindow()\n"
 "ReOpenDatabase(\"edge:/usr/gapps/visit/data/wave*.silo database\")\n"
 "for state in range(last, TimeSliderGetNStates()):\n"
-"SetTimeSliderState(state)\n"
-"SaveWindow()\n"
+"    SetTimeSliderState(state)\n"
+"    SaveWindow()\n"
 ;
 const char *visit_ReadHostProfilesFromDirectory_doc = 
 "ReadHostProfilesFromDirectory\n"
@@ -6948,7 +6946,8 @@ const char *visit_RegisterCallback_doc =
 "\n"
 "import visit\n"
 "def print_sliceatts(atts):\n"
-"print \"SLICEATTS=\", atts\n"
+"    print(\"SLICEATTS=\", atts)\n"
+"\n"
 "visit.RegisterCallback(\"SliceAttributes\", print_sliceatts)\n"
 ;
 const char *visit_RegisterMacro_doc = 
@@ -6982,9 +6981,10 @@ const char *visit_RegisterMacro_doc =
 "Example:\n"
 "\n"
 "def SetupMyPlots():\n"
-"OpenDatabase('noise.silo')\n"
-"AddPlot('Pseudocolor', 'hardyglobal')\n"
-"DrawPlots()\n"
+"    OpenDatabase('noise.silo')\n"
+"    AddPlot('Pseudocolor', 'hardyglobal')\n"
+"    DrawPlots()\n"
+"\n"
 "RegisterMacro('Setup My Plots', SetupMyPlots)\n"
 ;
 const char *visit_RemoveAllOperators_doc = 
@@ -7240,7 +7240,7 @@ const char *visit_ReplaceDatabase_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"OpenDatabase(\"/usr/gapps/visit/data/globe.silo)\n"
+"OpenDatabase(\"/usr/gapps/visit/data/globe.silo\")\n"
 "AddPlot(\"Pseudocolor\", \"u\")\n"
 "DrawPlots()\n"
 "ReplaceDatabase(\"/usr/gapps/visit/data/curv3d.silo\")\n"
@@ -7501,8 +7501,8 @@ const char *visit_RestoreSession_doc =
 "# my .visit directory.\n"
 "RestoreSessionFile(\"visit.session\", 1)\n"
 "for state in range(TimeSliderGetNStates()):\n"
-"SetTimeSliderState(state)\n"
-"SaveWindow()\n"
+"    SetTimeSliderState(state)\n"
+"    SaveWindow()\n"
 ;
 const char *visit_RestoreSessionWithDifferentSources_doc = 
 "RestoreSessionWithDifferentSources\n"
@@ -7554,8 +7554,8 @@ const char *visit_RestoreSessionWithDifferentSources_doc =
 "# my .visit directory.\n"
 "RestoreSessionFile(\"visit.session\", 1)\n"
 "for state in range(TimeSliderGetNStates()):\n"
-"SetTimeSliderState(state)\n"
-"SaveWindow()\n"
+"    SetTimeSliderState(state)\n"
+"    SaveWindow()\n"
 ;
 const char *visit_SaveAttribute_doc = 
 "SaveAttribute\n"
@@ -7728,7 +7728,7 @@ const char *visit_SaveWindow_doc =
 "s.fileName = \"test\"\n"
 "SetSaveWindowAttributes(s)\n"
 "name = SaveWindow()\n"
-"print \"name = %s\" % name\n"
+"print(\"name = %s\" % name)\n"
 ;
 const char *visit_SendSimulationCommand_doc = 
 "SendSimulationCommand\n"
@@ -7926,15 +7926,15 @@ const char *visit_SetActiveTimeSlider_doc =
 "path = \"/usr/gapps/visit/data/\"\n"
 "dbs = (path + \"dbA00.pdb\", path + \"dbB00.pdb\", path + \"dbC00.pdb\")\n"
 "for db in dbs:\n"
-"OpenDatabase(db)\n"
-"AddPlot(\"FilledBoundary\", \"material(mesh)\")\n"
-"DrawPlots()\n"
+"    OpenDatabase(db)\n"
+"    AddPlot(\"FilledBoundary\", \"material(mesh)\")\n"
+"    DrawPlots()\n"
 "CreateDatabaseCorrelation(\"common\", dbs, 1)\n"
 "tsNames = GetWindowInformation().timeSliders\n"
 "for ts in tsNames:\n"
-"SetActiveTimeSlider(ts)\n"
+"    SetActiveTimeSlider(ts)\n"
 "for state in list(range(TimeSliderGetNStates())) + [0]:\n"
-"SetTimeSliderState(state)\n"
+"    SetTimeSliderState(state)\n"
 ;
 const char *visit_SetActiveWindow_doc = 
 "SetActiveWindow\n"
@@ -8363,9 +8363,9 @@ const char *visit_SetDatabaseCorrelationOptions_doc =
 "# The AddPlot caused a database correlation to be created.\n"
 "DrawPlots()\n"
 "wi = GetWindowInformation()\n"
-"print \"Active time slider: \" % wi.timeSliders[wi.activeTimeSlider]\n"
+"print(\"Active time slider: \" % wi.timeSliders[wi.activeTimeSlider])\n"
 "# This will set time for both databases since the database correlation is\n"
-"the active time slider.\n"
+"# the active time slider.\n"
 "SetTimeSliderState(5)\n"
 ;
 const char *visit_SetDebugLevel_doc = 
@@ -8398,7 +8398,7 @@ const char *visit_SetDebugLevel_doc =
 "Example:\n"
 "\n"
 "#% visit -cli -debug 2\n"
-"print \"VisIt's debug level is: %d\" % GetDebugLevel()\n"
+"print(\"VisIt's debug level is: %d\" % GetDebugLevel())\n"
 ;
 const char *visit_SetDefaultAnnotationAttributes_doc = 
 "SetDefaultAnnotationAttributes\n"
@@ -8526,7 +8526,7 @@ const char *visit_SetDefaultInteractorAttributes_doc =
 "\n"
 "#% visit -cli\n"
 "ia = GetInteractorAttributes()\n"
-"print ia\n"
+"print(ia)\n"
 "ia.showGuidelines = 0\n"
 "SetInteractorAttributes(ia)\n"
 ;
@@ -8845,7 +8845,7 @@ const char *visit_SetInteractorAttributes_doc =
 "\n"
 "#% visit -cli\n"
 "ia = GetInteractorAttributes()\n"
-"print ia\n"
+"print(ia)\n"
 "ia.showGuidelines = 0\n"
 "SetInteractorAttributes(ia)\n"
 ;
@@ -8885,7 +8885,7 @@ const char *visit_SetKeyframeAttributes_doc =
 "\n"
 "#% visit -cli\n"
 "k = GetKeyframeAttributes()\n"
-"print k\n"
+"print(k)\n"
 "k.enabled,k.nFrames,k.nFramesWasUserSet = 1, 100, 1\n"
 "SetKeyframeAttributes(k)\n"
 ;
@@ -8927,7 +8927,7 @@ const char *visit_SetLight_doc =
 "DrawPlots()\n"
 "InvertBackgroundColor()\n"
 "light = GetLight(0)\n"
-"print light\n"
+"print(light)\n"
 "light.enabledFlag = 1\n"
 "light.direction = (0,-1,0)\n"
 "light.color = (255,0,0,255)\n"
@@ -9219,7 +9219,7 @@ const char *visit_SetPipelineCachingMode_doc =
 "AddPlot(\"Mesh\", \"quadmesh\")\n"
 "DrawPlots()\n"
 "for state in range(TimeSliderGetNStates()):\n"
-"SetTimeSliderState(state)\n"
+"    SetTimeSliderState(state)\n"
 ;
 const char *visit_SetPlotDatabaseState_doc = 
 "SetPlotDatabaseState\n"
@@ -9267,9 +9267,9 @@ const char *visit_SetPlotDatabaseState_doc =
 "SetPlotDatabaseState(0, 0, 70)\n"
 "SetPlotDatabaseState(0, nFrames-1, 0)\n"
 "# Animate through the animation frames since the \"Keyframe animation\"\n"
-"time slider is active.\n"
+"# time slider is active.\n"
 "for state in range(TimeSliderGetNStates()):\n"
-"SetTimeSliderState(state)\n"
+"    SetTimeSliderState(state)\n"
 ;
 const char *visit_SetPlotDescription_doc = 
 "SetPlotDescription\n"
@@ -9378,13 +9378,13 @@ const char *visit_SetPlotFrameRange_doc =
 "AddPlot(\"Mesh\", \"quadmesh\")\n"
 "DrawPlots()\n"
 "# Make the Pseudocolor plot take up the first half of the animation frames\n"
-"before it disappears.\n"
+"# before it disappears.\n"
 "SetPlotFrameRange(0, 0, nFrames/2-1)\n"
 "# Make the Mesh plot take up the second half of the animation frames.\n"
 "SetPlotFrameRange(1, nFrames/2, nFrames-1)\n"
-"for state in range(TimeSliderGetNStates())\n"
-"SetTimeSliderState(state)\n"
-"SaveWindow()\n"
+"for state in range(TimeSliderGetNStates()):\n"
+"    SetTimeSliderState(state)\n"
+"    SaveWindow()\n"
 ;
 const char *visit_SetPlotOptions_doc = 
 "SetPlotOptions\n"
@@ -9712,7 +9712,7 @@ const char *visit_SetQueryOutputToObject_doc =
 "# Set query output type.\n"
 "SetQueryOutputToObject()\n"
 "query_output = Query(\"MinMax\")\n"
-"print query_output\n"
+"print(query_output)\n"
 ;
 const char *visit_SetQueryOutputToString_doc = 
 "SetQueryOutputToString\n"
@@ -9741,11 +9741,11 @@ const char *visit_SetQueryOutputToString_doc =
 "# Set query output type.\n"
 "SetQueryOutputToString()\n"
 "query_output = Query(\"MinMax\")\n"
-"print query_output\n"
-"'\n"
+"print(query_output)\n"
+"'''\n"
 "d -- Min = 0.0235702 (zone 434 at coord <0.483333, 0.483333>)\n"
 "d -- Max = 0.948976 (zone 1170 at coord <0.0166667, 1.31667>)\n"
-"'\n"
+"'''\n"
 ;
 const char *visit_SetQueryOutputToValue_doc = 
 "SetQueryOutputToValue\n"
@@ -9774,7 +9774,7 @@ const char *visit_SetQueryOutputToValue_doc =
 "# Set query output type.\n"
 "SetQueryOutputToValue()\n"
 "query_output = Query(\"MinMax\")\n"
-"print query_output\n"
+"print(query_output)\n"
 "(0.02357020415365696, 0.9489759802818298)\n"
 ;
 const char *visit_SetQueryOverTimeAttributes_doc = 
@@ -9909,7 +9909,7 @@ const char *visit_SetRenderingAttributes_doc =
 "light.direction = (0,1,-1)\n"
 "SetLight(0, light)\n"
 "r = GetRenderingAttributes()\n"
-"print r\n"
+"print(r)\n"
 "r.scalableActivationMode = r.Always\n"
 "r.doShadowing = 1\n"
 "SetRenderingAttributes(r)\n"
@@ -9990,15 +9990,15 @@ const char *visit_SetTimeSliderState_doc =
 "path = \"/usr/gapps/visit/data/\"\n"
 "dbs = (path + \"dbA00.pdb\", path + \"dbB00.pdb\", path + \"dbC00.pdb\")\n"
 "for db in dbs:\n"
-"OpenDatabase(db)\n"
-"AddPlot(\"FilledBoundary\", \"material(mesh)\")\n"
-"DrawPlots()\n"
+"    OpenDatabase(db)\n"
+"    AddPlot(\"FilledBoundary\", \"material(mesh)\")\n"
+"    DrawPlots()\n"
 "CreateDatabaseCorrelation(\"common\", dbs, 1)\n"
 "tsNames = GetWindowInformation().timeSliders\n"
 "for ts in tsNames:\n"
-"SetActiveTimeSlider(ts)\n"
+"    SetActiveTimeSlider(ts)\n"
 "for state in list(range(TimeSliderGetNStates())) + [0]:\n"
-"SetTimeSliderState(state)\n"
+"    SetTimeSliderState(state)\n"
 ;
 const char *visit_SetTreatAllDBsAsTimeVarying_doc = 
 "SetTreatAllDBsAsTimeVarying\n"
@@ -10142,7 +10142,7 @@ const char *visit_SetView2D_doc =
 "\n"
 "Example:\n"
 "\n"
-"% visit -cli\n"
+"#% visit -cli\n"
 "OpenDatabase(\"/usr/gapps/visit/data/globe.silo\")\n"
 "AddPlot(\"Pseudocolor\", \"v\")\n"
 "DrawPlots()\n"
@@ -10154,9 +10154,9 @@ const char *visit_SetView2D_doc =
 "v1.camera,v1.viewUp = (1,1,1),(-1,1,-1)\n"
 "v1.parallelScale = 10.\n"
 "for i in range(0,20):\n"
-"t = float(i) / 19.\n"
-"v2 = (1. - t) * v0 + t * v1\n"
-"SetView3D(v2) # Animate the view.\n"
+"    t = float(i) / 19.\n"
+"    v2 = (1. - t) * v0 + t * v1\n"
+"    SetView3D(v2) # Animate the view.\n"
 ;
 const char *visit_SetView3D_doc = 
 "SetView3D\n"
@@ -10197,7 +10197,7 @@ const char *visit_SetView3D_doc =
 "\n"
 "Example:\n"
 "\n"
-"% visit -cli\n"
+"#% visit -cli\n"
 "OpenDatabase(\"/usr/gapps/visit/data/globe.silo\")\n"
 "AddPlot(\"Pseudocolor\", \"v\")\n"
 "DrawPlots()\n"
@@ -10209,9 +10209,9 @@ const char *visit_SetView3D_doc =
 "v1.camera,v1.viewUp = (1,1,1),(-1,1,-1)\n"
 "v1.parallelScale = 10.\n"
 "for i in range(0,20):\n"
-"t = float(i) / 19.\n"
-"v2 = (1. - t) * v0 + t * v1\n"
-"SetView3D(v2) # Animate the view.\n"
+"    t = float(i) / 19.\n"
+"    v2 = (1. - t) * v0 + t * v1\n"
+"    SetView3D(v2) # Animate the view.\n"
 ;
 const char *visit_SetViewAxisArray_doc = 
 "SetViewAxisArray\n"
@@ -10248,7 +10248,7 @@ const char *visit_SetViewAxisArray_doc =
 "\n"
 "Example:\n"
 "\n"
-"% visit -cli\n"
+"#% visit -cli\n"
 "OpenDatabase(\"/usr/gapps/visit/data/globe.silo\")\n"
 "AddPlot(\"Pseudocolor\", \"v\")\n"
 "DrawPlots()\n"
@@ -10260,9 +10260,9 @@ const char *visit_SetViewAxisArray_doc =
 "v1.camera,v1.viewUp = (1,1,1),(-1,1,-1)\n"
 "v1.parallelScale = 10.\n"
 "for i in range(0,20):\n"
-"t = float(i) / 19.\n"
-"v2 = (1. - t) * v0 + t * v1\n"
-"SetView3D(v2) # Animate the view.\n"
+"    t = float(i) / 19.\n"
+"    v2 = (1. - t) * v0 + t * v1\n"
+"    SetView3D(v2) # Animate the view.\n"
 ;
 const char *visit_SetViewCurve_doc = 
 "SetViewCurve\n"
@@ -10299,7 +10299,7 @@ const char *visit_SetViewCurve_doc =
 "\n"
 "Example:\n"
 "\n"
-"% visit -cli\n"
+"#% visit -cli\n"
 "OpenDatabase(\"/usr/gapps/visit/data/globe.silo\")\n"
 "AddPlot(\"Pseudocolor\", \"v\")\n"
 "DrawPlots()\n"
@@ -10311,9 +10311,9 @@ const char *visit_SetViewCurve_doc =
 "v1.camera,v1.viewUp = (1,1,1),(-1,1,-1)\n"
 "v1.parallelScale = 10.\n"
 "for i in range(0,20):\n"
-"t = float(i) / 19.\n"
-"v2 = (1. - t) * v0 + t * v1\n"
-"SetView3D(v2) # Animate the view.\n"
+"    t = float(i) / 19.\n"
+"    v2 = (1. - t) * v0 + t * v1\n"
+"    SetView3D(v2) # Animate the view.\n"
 ;
 const char *visit_SetViewExtentsType_doc = 
 "SetViewExtentsType\n"
@@ -10358,14 +10358,14 @@ const char *visit_SetViewExtentsType_doc =
 "v.viewUp = (0.276106, 0.891586, -0.358943)\n"
 "SetView3D(v)\n"
 "mats = GetMaterials()\n"
-"nmats = len(mats):\n"
+"nmats = len(mats)\n"
 "# Turn off all but the last material in sequence and watch\n"
 "# the view update each time.\n"
 "for i in range(nmats-1):\n"
-"index = nmats-1-i\n"
-"TurnMaterialsOff(mats[index])\n"
-"SaveWindow()\n"
-"SetViewExtentsType(\"original\")\n"
+"    index = nmats-1-i\n"
+"    TurnMaterialsOff(mats[index])\n"
+"    SaveWindow()\n"
+"    SetViewExtentsType(\"original\")\n"
 ;
 const char *visit_SetViewKeyframe_doc = 
 "SetViewKeyframe\n"
@@ -10416,8 +10416,8 @@ const char *visit_SetViewKeyframe_doc =
 "SetViewKeyframe()\n"
 "ToggleCameraViewMode()\n"
 "for state in range(TimeSliderGetNStates()):\n"
-"SetTimeSliderState(state)\n"
-"SaveWindow()\n"
+"    SetTimeSliderState(state)\n"
+"    SaveWindow()\n"
 ;
 const char *visit_SetWindowArea_doc = 
 "SetWindowArea\n"
@@ -10563,7 +10563,7 @@ const char *visit_ShowAllWindows_doc =
 "\n"
 "Example:\n"
 "\n"
-"% python\n"
+"#% python\n"
 "import visit\n"
 "visit.Launch()\n"
 "visit.ShowAllWindows()\n"
@@ -10702,7 +10702,7 @@ const char *visit_SuppressQueryOutputOff_doc =
 "# Turn off automatic printing of Query output.\n"
 "SuppressQueryOutputOn()\n"
 "Query(\"MinMax\")\n"
-"print \"The min is: %g and the max is: %g\" % GetQueryOutputValue()\n"
+"print(\"The min is: %g and the max is: %g\" % GetQueryOutputValue())\n"
 "# Turn on automatic printing of Query output.\n"
 "SuppressQueryOutputOff()\n"
 "Query(\"MinMax\")\n"
@@ -10737,7 +10737,7 @@ const char *visit_SuppressQueryOutputOn_doc =
 "# Turn off automatic printing of Query output.\n"
 "SuppressQueryOutputOn()\n"
 "Query(\"MinMax\")\n"
-"print \"The min is: %g and the max is: %g\" % GetQueryOutputValue()\n"
+"print(\"The min is: %g and the max is: %g\" % GetQueryOutputValue())\n"
 "# Turn on automatic printing of Query output.\n"
 "SuppressQueryOutputOff()\n"
 "Query(\"MinMax\")\n"
@@ -10773,8 +10773,8 @@ const char *visit_TimeSliderGetNStates_doc =
 "AddPlot(\"Pseudocolor\", \"pressure\")\n"
 "DrawPlots()\n"
 "for state in range(TimeSliderGetNStates()):\n"
-"SetTimeSliderState(state)\n"
-"SaveWindow()\n"
+"    SetTimeSliderState(state)\n"
+"    SaveWindow()\n"
 ;
 const char *visit_TimeSliderNextState_doc = 
 "TimeSliderNextState\n"
@@ -10799,15 +10799,15 @@ const char *visit_TimeSliderNextState_doc =
 "Example:\n"
 "\n"
 "# Assume that files are being written to the disk.\n"
-"% visit -cli\n"
+"#% visit -cli\n"
 "OpenDatabase(\"dynamic*.silo database\")\n"
 "AddPlot(\"Pseudocolor\", \"var\")\n"
 "AddPlot(\"Mesh\", \"mesh\")\n"
 "DrawPlots()\n"
 "SetTimeSliderState(TimeSliderGetNStates() - 1)\n"
 "while 1:\n"
-"SaveWindow()\n"
-"TimeSliderPreviousState()\n"
+"    SaveWindow()\n"
+"    TimeSliderPreviousState()\n"
 ;
 const char *visit_TimeSliderPreviousState_doc = 
 "TimeSliderPreviousState\n"
@@ -10832,14 +10832,14 @@ const char *visit_TimeSliderPreviousState_doc =
 "Example:\n"
 "\n"
 "# Assume that files are being written to the disk.\n"
-"% visit -cli\n"
+"#% visit -cli\n"
 "OpenDatabase(\"dynamic*.silo database\")\n"
 "AddPlot(\"Pseudocolor\", \"var\")\n"
 "AddPlot(\"Mesh\", \"mesh\")\n"
 "DrawPlots()\n"
 "while 1:\n"
-"TimeSliderNextState()\n"
-"SaveWindow()\n"
+"    TimeSliderNextState()\n"
+"    SaveWindow()\n"
 ;
 const char *visit_TimeSliderSetState_doc = 
 "TimeSliderSetState\n"
@@ -10874,15 +10874,15 @@ const char *visit_TimeSliderSetState_doc =
 "path = \"/usr/gapps/visit/data/\"\n"
 "dbs = (path + \"dbA00.pdb\", path + \"dbB00.pdb\", path + \"dbC00.pdb\")\n"
 "for db in dbs:\n"
-"OpenDatabase(db)\n"
-"AddPlot(\"FilledBoundary\", \"material(mesh)\")\n"
-"DrawPlots()\n"
+"    OpenDatabase(db)\n"
+"    AddPlot(\"FilledBoundary\", \"material(mesh)\")\n"
+"    DrawPlots()\n"
 "CreateDatabaseCorrelation(\"common\", dbs, 1)\n"
 "tsNames = GetWindowInformation().timeSliders\n"
 "for ts in tsNames:\n"
-"SetActiveTimeSlider(ts)\n"
+"    SetActiveTimeSlider(ts)\n"
 "for state in list(range(TimeSliderGetNStates())) + [0]:\n"
-"TimeSliderSetState(state)\n"
+"    TimeSliderSetState(state)\n"
 ;
 const char *visit_ToggleBoundingBoxMode_doc = 
 "ToggleBoundingBoxMode\n"
@@ -10918,7 +10918,7 @@ const char *visit_ToggleBoundingBoxMode_doc =
 "# Turn on spin mode.\n"
 "ToggleSpinMode()\n"
 "# Rotate the plot interactively using the mouse and watch it keep spinning\n"
-"after the mouse release.\n"
+"# after the mouse release.\n"
 "# Turn off spin mode.\n"
 "ToggleSpinMode()\n"
 ;
@@ -10956,7 +10956,7 @@ const char *visit_ToggleCameraViewMode_doc =
 "# Turn on spin mode.\n"
 "ToggleSpinMode()\n"
 "# Rotate the plot interactively using the mouse and watch it keep spinning\n"
-"after the mouse release.\n"
+"# after the mouse release.\n"
 "# Turn off spin mode.\n"
 "ToggleSpinMode()\n"
 ;
@@ -10995,7 +10995,7 @@ const char *visit_ToggleFullFrameMode_doc =
 "# Turn on spin mode.\n"
 "ToggleSpinMode()\n"
 "# Rotate the plot interactively using the mouse and watch it keep spinning\n"
-"after the mouse release.\n"
+"# after the mouse release.\n"
 "# Turn off spin mode.\n"
 "ToggleSpinMode()\n"
 ;
@@ -11035,7 +11035,7 @@ const char *visit_ToggleLockTime_doc =
 "# Turn on spin mode.\n"
 "ToggleSpinMode()\n"
 "# Rotate the plot interactively using the mouse and watch it keep spinning\n"
-"after the mouse release.\n"
+"# after the mouse release.\n"
 "# Turn off spin mode.\n"
 "ToggleSpinMode()\n"
 ;
@@ -11103,7 +11103,7 @@ const char *visit_ToggleLockTools_doc =
 "# Turn on spin mode.\n"
 "ToggleSpinMode()\n"
 "# Rotate the plot interactively using the mouse and watch it keep spinning\n"
-"after the mouse release.\n"
+"# after the mouse release.\n"
 "# Turn off spin mode.\n"
 "ToggleSpinMode()\n"
 ;
@@ -11141,7 +11141,7 @@ const char *visit_ToggleLockViewMode_doc =
 "# Turn on spin mode.\n"
 "ToggleSpinMode()\n"
 "# Rotate the plot interactively using the mouse and watch it keep spinning\n"
-"after the mouse release.\n"
+"# after the mouse release.\n"
 "# Turn off spin mode.\n"
 "ToggleSpinMode()\n"
 ;
@@ -11177,7 +11177,7 @@ const char *visit_ToggleMaintainViewMode_doc =
 "# Turn on spin mode.\n"
 "ToggleSpinMode()\n"
 "# Rotate the plot interactively using the mouse and watch it keep spinning\n"
-"after the mouse release.\n"
+"# after the mouse release.\n"
 "# Turn off spin mode.\n"
 "ToggleSpinMode()\n"
 ;
@@ -11214,7 +11214,7 @@ const char *visit_ToggleSpinMode_doc =
 "# Turn on spin mode.\n"
 "ToggleSpinMode()\n"
 "# Rotate the plot interactively using the mouse and watch it keep spinning\n"
-"after the mouse release.\n"
+"# after the mouse release.\n"
 "# Turn off spin mode.\n"
 "ToggleSpinMode()\n"
 ;
@@ -11529,7 +11529,7 @@ const char *visit_Version_doc =
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"print \"We are running VisIt version %s\" % Version()\n"
+"print(\"We are running VisIt version %s\" % Version())\n"
 ;
 const char *visit_WriteConfigFile_doc = 
 "WriteConfigFile\n"
@@ -11568,7 +11568,6 @@ const char *visit_WriteScript_doc =
 "f = open('script.py', 'wt')\n"
 "WriteScript(f)\n"
 "f.close()\n"
-"\n"
 ;
 const char *visit_ZonePick_doc = 
 "ZonePick\n"
