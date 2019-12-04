@@ -6,7 +6,7 @@
 const char *java_copyright_str = 
 "// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt\n"
 "// Project developers.  See the top-level LICENSE file for dates and other\n"
-"// details.  No copyright assignment is required to contribute to VisIt.\n\n";
+"// details.  No copyright assignment is required to contribute to VisIt.\n";
 
 #include "GenerateJava.h"
 #include "main.C"

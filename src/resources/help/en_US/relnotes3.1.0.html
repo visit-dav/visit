@@ -18,6 +18,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li><a href="#General_Features">Features for all users</a></li>
   <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
+  <li><a href="#CLI_Changes">Changes in CLI behavior</a></li>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
   <li><a href="#Expression_changes">Changes to expressions</a></li>
@@ -26,7 +27,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#Build_features">Changes for build_visit</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
   <li><a href="#Doc_changes">Changes to Visit documentation</a></li>
-  <li><a href="#Testing_changes">Changes to VisIt testsing</a></li>
+  <li><a href="#Testing_changes">Changes to VisIt testing</a></li>
 </ul>
 
 <a name="General_features"></a>
@@ -41,6 +42,12 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The VCR play/reverse play buttons are now inactive when there are no active drawn plots.</li>
   <li>The following windows were restructured to reduce their height and allow for better usage on laptops: Pick, Preference, Host profiles configuration setup, Poincare operator, LCS operator, Limit Cycle operator and Integral Curve operator.</li>
   <li> The help menu now refers to the VisIt Sphinx manual.</li>
+</ul>
+
+<a name="CLI_changes"></a>
+<p><b><font size="4">Changes in CLI behavior for version 3.1</font></b></p>
+<ul>
+  <li>Added sanity checking of args to View3DAttributes.RotateAxis.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -79,6 +86,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected an issue with installing host profiles after deleting or moving the .visit folder while VisIt is running.</li>
   <li>Removed the visual artifacts of the Expressions window that were present on first draw.</li>
   <li>Fixed a memory leak with Pseudocolor plots.</li>
+  <li>Fixed an issue with MPEG movies being generated upside down and with incorrect colors.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -98,6 +106,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Suppressed the Qt warning 'Empty filename passed to function'. Also added additional context information to the Qt log message if available.</li>
   <li>Corrected compile errors when using Open MPI 1.6.5.</li>
   <li>Silo plugin code sections for recognizing variable types in metadata was re-factored to a single function.</li>
+  <li>Fixed issues compiling adios2 on macOS 10.13.6</li>
 </ul>
 
 <a name="Doc_changes"></a>

@@ -11,7 +11,6 @@
 #include <vtkBMPWriter.h>
 #include <vtkJPEGWriter.h>
 #include <vtkTIFFWriter.h>
-#include <vtkPPMWriter.h>
 #include <vtkRGBWriter.h>
 #include <vtkPNGWriter.h>
 
