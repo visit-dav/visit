@@ -245,6 +245,12 @@ function build_adios2
             cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
         fi
 
+        # Use HDF5?
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            hdf5_install_path="${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}"
+            cfg_opts="${cfg_opts} -DCMAKE_PREFIX_PATH:PATH=${hdf5_install_path}"
+        fi
+
         # call configure.
         CMAKE_BIN="${CMAKE_INSTALL}/cmake"
         if test -e bv_run_cmake.sh ; then
