@@ -1872,8 +1872,12 @@ avtPickQuery::SetPickAttsForTimeQuery(const PickAttributes *pa)
 //  Creation:   July 8, 2016
 //
 //  Modifications:
+//
 //      Alister Maguire, Tue Oct 22 14:16:52 MST 2019
 //      Apply our transformation if we have it.
+//
+//      Alister Maguire, Wed Dec  4 09:00:28 MST 2019
+//      Make sure that we have a transform if it's needed. If not, bail.
 //
 // ****************************************************************************
 
@@ -1892,6 +1896,18 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
    pickAtts.ClearLines();
    // Bail if highlights are not on
    if(!pickAtts.GetShowPickHighlight()) return;
+
+   //
+   // If we don't have a required transform, the highlight will
+   // be invalid.
+   //
+   if (needTransform && !haveTransform)
+   {
+      pickAtts.SetErrorMessage("The requested zone highlight was unable to be "
+         "performed due to not receiving the required transform.");
+      pickAtts.SetError(true);
+      return;
+   }
 
    // Check to see if the cells were decomposed in some way
     vtkDataArray* origCellsArr = ds->GetCellData()->
