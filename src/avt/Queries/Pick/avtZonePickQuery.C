@@ -74,7 +74,7 @@ avtZonePickQuery::~avtZonePickQuery()
 void
 avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 {
-    invTransform =  m;
+    invTransform = m;
 }
 
 
@@ -94,7 +94,7 @@ avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 void
 avtZonePickQuery::SetTransform(const avtMatrix *m)
 {
-    transform =  m;
+    transform = m;
 }
 
 
@@ -139,6 +139,10 @@ avtZonePickQuery::SetTransform(const avtMatrix *m)
 //
 //    Matt Larsen, Mon Sep 11 10:15:00 PDT 2016
 //    Fixed issue with the wrong cell being highlighted with Mili
+//
+//    Alister Maguire, Wed Dec  4 11:26:19 MST 2019
+//    Changed the transform to invTransform (transform previously was
+//    set to be the inverse).
 //
 // ****************************************************************************
 
@@ -297,10 +301,10 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
     // the inverse transform matrix, transform the pick point that will 
     // be displayed in the pick info window.
     //
-    if (transform != NULL)
+    if (invTransform != NULL)
     {
         avtVector v1(pickAtts.GetPickPoint());
-        v1 = (*transform) * v1;
+        v1 = (*invTransform) * v1;
         // 
         // PickPoint is used for placing the pick letter, so set
         // this tranformed point in CellPoint instead.
