@@ -408,7 +408,7 @@ avtPickByZoneQuery::SetTransform(const avtMatrix *m)
 // ****************************************************************************
 
 void
-avtZonePickQuery::SetInvTransform(const avtMatrix *m)
+avtPickByZoneQuery::SetInvTransform(const avtMatrix *m)
 {
     invTransform = m;
 }
