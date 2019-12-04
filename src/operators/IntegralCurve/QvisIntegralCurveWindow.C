@@ -3025,21 +3025,21 @@ QvisIntegralCurveWindow::sphereOriginProcessText()
 void
 QvisIntegralCurveWindow::sampleDensity0Changed(int val)
 {
-    atts->SetSampleDensity0(val);
+    GetCurrentValues(IntegralCurveAttributes::ID_sampleDensity0); 
     Apply();
 }
 
 void
 QvisIntegralCurveWindow::sampleDensity1Changed(int val)
 {
-    atts->SetSampleDensity1(val);
+    GetCurrentValues(IntegralCurveAttributes::ID_sampleDensity1); 
     Apply();
 }
 
 void
 QvisIntegralCurveWindow::sampleDensity2Changed(int val)
 {
-    atts->SetSampleDensity2(val);
+    GetCurrentValues(IntegralCurveAttributes::ID_sampleDensity2); 
     Apply();
 }
 
