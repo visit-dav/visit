@@ -1889,7 +1889,8 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
    if (needTransform && !haveTransform)
    {
       pickAtts.SetErrorMessage("The requested zone highlight was unable to be "
-         "performed due to not receiving the required transform.");
+         "performed due to a missing transform. Try picking without the zone "
+         "highlight enabled.");
       pickAtts.SetError(true);
       return;
    }
