@@ -125,7 +125,7 @@ Viewer_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QS
 //    QCoreApplication is done when nowin mode is set.
 //
 //    Eric Brugger, Wed Nov 27 14:35:58 PST 2019
-//    Added delete of mainApp to clean up Qt memory before exiting.
+//    Added delete of argv2 and mainApp to clean up memory before exiting.
 //
 // ****************************************************************************
 
