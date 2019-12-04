@@ -140,10 +140,6 @@ avtZonePickQuery::SetTransform(const avtMatrix *m)
 //    Matt Larsen, Mon Sep 11 10:15:00 PDT 2016
 //    Fixed issue with the wrong cell being highlighted with Mili
 //
-//    Alister Maguire, Wed Dec  4 11:26:19 MST 2019
-//    Changed the transform to invTransform (transform previously was
-//    set to be the inverse).
-//
 // ****************************************************************************
 
 void
@@ -301,10 +297,10 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
     // the inverse transform matrix, transform the pick point that will 
     // be displayed in the pick info window.
     //
-    if (invTransform != NULL)
+    if (transform != NULL)
     {
         avtVector v1(pickAtts.GetPickPoint());
-        v1 = (*invTransform) * v1;
+        v1 = (*transform) * v1;
         // 
         // PickPoint is used for placing the pick letter, so set
         // this tranformed point in CellPoint instead.
@@ -341,6 +337,10 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Added avtDatAttributes arg.
 //
+//    Alister Maguire, Wed Dec  4 11:26:19 MST 2019
+//    Changed the transform to invTransform (transform previously was
+//    set to be the inverse).
+//
 // ****************************************************************************
 
 void
@@ -350,13 +350,13 @@ avtZonePickQuery::Preparation(const avtDataAttributes &)
     // Transform the point that will be used in locating the cell. 
     //
     double *cellPoint  = pickAtts.GetCellPoint();
-    if (transform != NULL)
+    if (invTransform != NULL)
     {
         //
         // Transform the intersection point back to original space.
         //
         avtVector v1(cellPoint);
-        v1 = (*transform) * v1;
+        v1 = (*invTransform) * v1;
         cellPoint[0] = v1.x;
         cellPoint[1] = v1.y;
         cellPoint[2] = v1.z;

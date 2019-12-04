@@ -120,6 +120,9 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //    Alister Maguire, Fri Oct 11 15:37:24 PDT 2019
 //    Set the real id for direct database lookups. 
 //
+//    Alister Maguire, Wed Dec  4 11:41:24 MST 2019
+//    Changed transform to invTransform.
+//
 // ****************************************************************************
 
 void
@@ -294,10 +297,10 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     // transform matrix, transform the center point that will be used to place 
     // the Pick letter. 
     //
-    if (transform != NULL)
+    if (invTransform != NULL)
     {
         avtVector v1(center);
-        v1 = (*transform) * v1;
+        v1 = (*invTransform) * v1;
         center[0] = v1.x; 
         center[1] = v1.y; 
         center[2] = v1.z; 
@@ -390,3 +393,22 @@ avtPickByZoneQuery::SetTransform(const avtMatrix *m)
     transform = m;
 }
 
+
+// ****************************************************************************
+//  Method: avtPickByZoneQuery::SetInvTransform
+//
+//  Purpose:
+//      Sets the inverse transform.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Wed Dec  4 11:41:24 MST 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtZonePickQuery::SetInvTransform(const avtMatrix *m)
+{
+    invTransform = m;
+}
