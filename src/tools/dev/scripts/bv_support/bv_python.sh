@@ -375,7 +375,7 @@ function build_python
         PYTHON_SHARED="--enable-shared"
         #
         # python's --enable-shared configure flag doesn't link
-        # the exes it builds correclty when installed to a non standard
+        # the exes it builds correctly when installed to a non standard
         # prefix. To resolve this we need to add a rpath linker flags.
         #
         mkdir -p ${PYTHON_PREFIX_DIR}/lib/
@@ -894,18 +894,16 @@ function build_python3
         cxxFlags=`echo $CXXFLAGS} ${CXX_OPT_FLAGS} | sed "s/-qpic/-fPIC/g"`
     fi
     PYTHON3_OPT="$cFlags"
+    PYTHON3_CFG=""
     PYTHON3_LDFLAGS=""
     PYTHON3_CPPFLAGS=""
     PYTHON3_PREFIX_DIR="$VISITDIR/python/$PYTHON3_VERSION/$VISITARCH"
     PYTHON3_LDFLAGS="${PYTHON3_LDFLAGS} -L${PY_ZLIB_LIB}"
     PYTHON3_CPPFLAGS="${PYTHON3_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
 
-    # we also need openssl
+    # python 3.7 uses the --with-openssl flag, instead of flag injection
     if [[ "$DO_OPENSSL" == "yes" ]]; then
-        OPENSSL_INCLUDE="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/include"
-        OPENSSL_LIB="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/lib"
-        PYTHON3_LDFLAGS="${PYTHON3_LDFLAGS} -L${OPENSSL_LIB}"
-        PYTHON3_CPPFLAGS="${PYTHON3_CPPFLAGS} -I${OPENSSL_INCLUDE}"
+        PYTHON3_CFG="${PYTHON3_CFG} --with-openssl=$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/"
     fi
 
 
@@ -922,6 +920,7 @@ function build_python3
                     LDFLAGS="$PYTHON3_LDFLAGS" \
                     CPPFLAGS="$PYTHON3_CPPFLAGS" \
                     ${PYTHON3_SHARED} \
+                    ${PYTHON3_CFG} \
                     --prefix="$PYTHON3_PREFIX_DIR" --disable-ipv6
     fi
 
