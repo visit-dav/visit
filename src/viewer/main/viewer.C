@@ -262,6 +262,7 @@ ViewerMain(int argc, char *argv[])
         }
 #ifdef DEBUG_MEMORY_LEAKS
         delete mainApp;
+        delete [] argv2;
 #endif
     }
     CATCH2(VisItException, e)
