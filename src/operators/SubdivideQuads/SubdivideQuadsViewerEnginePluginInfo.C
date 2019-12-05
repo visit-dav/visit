@@ -28,8 +28,11 @@ SubdivideQuadsAttributes *SubdivideQuadsViewerEnginePluginInfo::defaultAtts = NU
 void
 SubdivideQuadsViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SubdivideQuadsViewerEnginePluginInfo::clientAtts  = new SubdivideQuadsAttributes;
-    SubdivideQuadsViewerEnginePluginInfo::defaultAtts = new SubdivideQuadsAttributes;
+    if (SubdivideQuadsViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SubdivideQuadsViewerEnginePluginInfo::clientAtts  = new SubdivideQuadsAttributes;
+        SubdivideQuadsViewerEnginePluginInfo::defaultAtts = new SubdivideQuadsAttributes;
+    }
 }
 
 // ****************************************************************************

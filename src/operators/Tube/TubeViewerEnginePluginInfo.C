@@ -28,8 +28,11 @@ TubeAttributes *TubeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 TubeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    TubeViewerEnginePluginInfo::clientAtts  = new TubeAttributes;
-    TubeViewerEnginePluginInfo::defaultAtts = new TubeAttributes;
+    if (TubeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        TubeViewerEnginePluginInfo::clientAtts  = new TubeAttributes;
+        TubeViewerEnginePluginInfo::defaultAtts = new TubeAttributes;
+    }
 }
 
 // ****************************************************************************

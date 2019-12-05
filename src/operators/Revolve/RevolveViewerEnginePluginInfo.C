@@ -28,8 +28,11 @@ RevolveAttributes *RevolveViewerEnginePluginInfo::defaultAtts = NULL;
 void
 RevolveViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    RevolveViewerEnginePluginInfo::clientAtts  = new RevolveAttributes;
-    RevolveViewerEnginePluginInfo::defaultAtts = new RevolveAttributes;
+    if (RevolveViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        RevolveViewerEnginePluginInfo::clientAtts  = new RevolveAttributes;
+        RevolveViewerEnginePluginInfo::defaultAtts = new RevolveAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -28,8 +28,11 @@ EdgeAttributes *EdgeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 EdgeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    EdgeViewerEnginePluginInfo::clientAtts  = new EdgeAttributes;
-    EdgeViewerEnginePluginInfo::defaultAtts = new EdgeAttributes;
+    if (EdgeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        EdgeViewerEnginePluginInfo::clientAtts  = new EdgeAttributes;
+        EdgeViewerEnginePluginInfo::defaultAtts = new EdgeAttributes;
+    }
 }
 
 // ****************************************************************************

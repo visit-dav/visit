@@ -28,8 +28,11 @@ ProjectAttributes *ProjectViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ProjectViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ProjectViewerEnginePluginInfo::clientAtts  = new ProjectAttributes;
-    ProjectViewerEnginePluginInfo::defaultAtts = new ProjectAttributes;
+    if (ProjectViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ProjectViewerEnginePluginInfo::clientAtts  = new ProjectAttributes;
+        ProjectViewerEnginePluginInfo::defaultAtts = new ProjectAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -28,8 +28,11 @@ IndexSelectAttributes *IndexSelectViewerEnginePluginInfo::defaultAtts = NULL;
 void
 IndexSelectViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    IndexSelectViewerEnginePluginInfo::clientAtts  = new IndexSelectAttributes;
-    IndexSelectViewerEnginePluginInfo::defaultAtts = new IndexSelectAttributes;
+    if (IndexSelectViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        IndexSelectViewerEnginePluginInfo::clientAtts  = new IndexSelectAttributes;
+        IndexSelectViewerEnginePluginInfo::defaultAtts = new IndexSelectAttributes;
+    }
 }
 
 // ****************************************************************************

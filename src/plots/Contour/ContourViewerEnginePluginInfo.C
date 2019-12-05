@@ -29,8 +29,11 @@ ContourAttributes *ContourViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ContourViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ContourViewerEnginePluginInfo::clientAtts  = new ContourAttributes;
-    ContourViewerEnginePluginInfo::defaultAtts = new ContourAttributes;
+    if (ContourViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ContourViewerEnginePluginInfo::clientAtts  = new ContourAttributes;
+        ContourViewerEnginePluginInfo::defaultAtts = new ContourAttributes;
+    }
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);
@@ -192,7 +195,7 @@ ContourViewerEnginePluginInfo::GetMenuName() const
 // ****************************************************************************
 // Method: ContourViewerEnginePluginInfo::InitializeDefaultPalette
 //
-// Purpose: 
+// Purpose:
 //   Initializes the default palette in the contour attributes using the
 //   default discrete color table.
 //

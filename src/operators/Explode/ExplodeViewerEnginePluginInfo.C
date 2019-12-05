@@ -30,8 +30,11 @@ ExplodeAttributes *ExplodeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ExplodeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ExplodeViewerEnginePluginInfo::clientAtts  = new ExplodeAttributes;
-    ExplodeViewerEnginePluginInfo::defaultAtts = new ExplodeAttributes;
+    if (ExplodeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ExplodeViewerEnginePluginInfo::clientAtts  = new ExplodeAttributes;
+        ExplodeViewerEnginePluginInfo::defaultAtts = new ExplodeAttributes;
+    }
 }
 
 // ****************************************************************************

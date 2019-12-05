@@ -28,8 +28,11 @@ DisplaceAttributes *DisplaceViewerEnginePluginInfo::defaultAtts = NULL;
 void
 DisplaceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    DisplaceViewerEnginePluginInfo::clientAtts  = new DisplaceAttributes;
-    DisplaceViewerEnginePluginInfo::defaultAtts = new DisplaceAttributes;
+    if (DisplaceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        DisplaceViewerEnginePluginInfo::clientAtts  = new DisplaceAttributes;
+        DisplaceViewerEnginePluginInfo::defaultAtts = new DisplaceAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -28,8 +28,11 @@ CartographicProjectionAttributes *CartographicProjectionViewerEnginePluginInfo::
 void
 CartographicProjectionViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    CartographicProjectionViewerEnginePluginInfo::clientAtts  = new CartographicProjectionAttributes;
-    CartographicProjectionViewerEnginePluginInfo::defaultAtts = new CartographicProjectionAttributes;
+    if (CartographicProjectionViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        CartographicProjectionViewerEnginePluginInfo::clientAtts  = new CartographicProjectionAttributes;
+        CartographicProjectionViewerEnginePluginInfo::defaultAtts = new CartographicProjectionAttributes;
+    }
 }
 
 // ****************************************************************************

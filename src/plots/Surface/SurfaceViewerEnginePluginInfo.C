@@ -29,8 +29,11 @@ SurfaceAttributes *SurfaceViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SurfaceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SurfaceViewerEnginePluginInfo::clientAtts  = new SurfaceAttributes;
-    SurfaceViewerEnginePluginInfo::defaultAtts = new SurfaceAttributes;
+    if (SurfaceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SurfaceViewerEnginePluginInfo::clientAtts  = new SurfaceAttributes;
+        SurfaceViewerEnginePluginInfo::defaultAtts = new SurfaceAttributes;
+    }
 }
 
 // ****************************************************************************
