@@ -199,6 +199,10 @@
 //   Brad Whitlock, Wed Sep 17 09:03:11 PDT 2014
 //   Added common  base class for viewer and engine plot/operator plugins.
 //
+//   Eric Brugger, Wed Dec  4 10:12:23 PST 2019
+//   Modified InitializeGlobalObjects to eliminate a memory leak if it is
+//   called more than once.
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -1737,8 +1741,11 @@ class InfoGeneratorPlugin : public Plugin
             c << "void" << endl;
             c << funcName << "()" << endl;
             c << "{" << endl;
-            c << "    "<<name<<"ViewerEnginePluginInfo::clientAtts  = new "<<atts->name<<";" << endl;
-            c << "    "<<name<<"ViewerEnginePluginInfo::defaultAtts = new "<<atts->name<<";" << endl;
+            c << "    if ("<<name<<"ViewerEnginePluginInfo::clientAtts == NULL)" << endl;
+            c << "    {" << endl;
+            c << "        "<<name<<"ViewerEnginePluginInfo::clientAtts  = new "<<atts->name<<";" << endl;
+            c << "        "<<name<<"ViewerEnginePluginInfo::defaultAtts = new "<<atts->name<<";" << endl;
+            c << "    }" << endl;
             c << "}" << endl;
         }
         c << endl;

@@ -28,8 +28,11 @@ SPHResampleAttributes *SPHResampleViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SPHResampleViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SPHResampleViewerEnginePluginInfo::clientAtts  = new SPHResampleAttributes;
-    SPHResampleViewerEnginePluginInfo::defaultAtts = new SPHResampleAttributes;
+    if (SPHResampleViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SPHResampleViewerEnginePluginInfo::clientAtts  = new SPHResampleAttributes;
+        SPHResampleViewerEnginePluginInfo::defaultAtts = new SPHResampleAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -28,8 +28,11 @@ DecimateAttributes *DecimateViewerEnginePluginInfo::defaultAtts = NULL;
 void
 DecimateViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    DecimateViewerEnginePluginInfo::clientAtts  = new DecimateAttributes;
-    DecimateViewerEnginePluginInfo::defaultAtts = new DecimateAttributes;
+    if (DecimateViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        DecimateViewerEnginePluginInfo::clientAtts  = new DecimateAttributes;
+        DecimateViewerEnginePluginInfo::defaultAtts = new DecimateAttributes;
+    }
 }
 
 // ****************************************************************************

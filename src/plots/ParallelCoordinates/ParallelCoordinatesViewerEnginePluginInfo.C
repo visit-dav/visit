@@ -29,8 +29,11 @@ ParallelCoordinatesAttributes *ParallelCoordinatesViewerEnginePluginInfo::defaul
 void
 ParallelCoordinatesViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ParallelCoordinatesViewerEnginePluginInfo::clientAtts  = new ParallelCoordinatesAttributes;
-    ParallelCoordinatesViewerEnginePluginInfo::defaultAtts = new ParallelCoordinatesAttributes;
+    if (ParallelCoordinatesViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ParallelCoordinatesViewerEnginePluginInfo::clientAtts  = new ParallelCoordinatesAttributes;
+        ParallelCoordinatesViewerEnginePluginInfo::defaultAtts = new ParallelCoordinatesAttributes;
+    }
 }
 
 // ****************************************************************************

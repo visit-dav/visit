@@ -28,8 +28,11 @@ SurfCompPrepAttributes *SurfCompPrepViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SurfCompPrepViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SurfCompPrepViewerEnginePluginInfo::clientAtts  = new SurfCompPrepAttributes;
-    SurfCompPrepViewerEnginePluginInfo::defaultAtts = new SurfCompPrepAttributes;
+    if (SurfCompPrepViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SurfCompPrepViewerEnginePluginInfo::clientAtts  = new SurfCompPrepAttributes;
+        SurfCompPrepViewerEnginePluginInfo::defaultAtts = new SurfCompPrepAttributes;
+    }
 }
 
 // ****************************************************************************

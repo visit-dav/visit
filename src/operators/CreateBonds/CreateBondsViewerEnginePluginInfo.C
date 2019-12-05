@@ -28,8 +28,11 @@ CreateBondsAttributes *CreateBondsViewerEnginePluginInfo::defaultAtts = NULL;
 void
 CreateBondsViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    CreateBondsViewerEnginePluginInfo::clientAtts  = new CreateBondsAttributes;
-    CreateBondsViewerEnginePluginInfo::defaultAtts = new CreateBondsAttributes;
+    if (CreateBondsViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        CreateBondsViewerEnginePluginInfo::clientAtts  = new CreateBondsAttributes;
+        CreateBondsViewerEnginePluginInfo::defaultAtts = new CreateBondsAttributes;
+    }
 }
 
 // ****************************************************************************

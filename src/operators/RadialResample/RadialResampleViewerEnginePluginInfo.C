@@ -28,8 +28,11 @@ RadialResampleAttributes *RadialResampleViewerEnginePluginInfo::defaultAtts = NU
 void
 RadialResampleViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    RadialResampleViewerEnginePluginInfo::clientAtts  = new RadialResampleAttributes;
-    RadialResampleViewerEnginePluginInfo::defaultAtts = new RadialResampleAttributes;
+    if (RadialResampleViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        RadialResampleViewerEnginePluginInfo::clientAtts  = new RadialResampleAttributes;
+        RadialResampleViewerEnginePluginInfo::defaultAtts = new RadialResampleAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -28,8 +28,11 @@ ElevateAttributes *ElevateViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ElevateViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ElevateViewerEnginePluginInfo::clientAtts  = new ElevateAttributes;
-    ElevateViewerEnginePluginInfo::defaultAtts = new ElevateAttributes;
+    if (ElevateViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ElevateViewerEnginePluginInfo::clientAtts  = new ElevateAttributes;
+        ElevateViewerEnginePluginInfo::defaultAtts = new ElevateAttributes;
+    }
 }
 
 // ****************************************************************************

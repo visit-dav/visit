@@ -28,8 +28,11 @@ BoundaryOpAttributes *BoundaryOpViewerEnginePluginInfo::defaultAtts = NULL;
 void
 BoundaryOpViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    BoundaryOpViewerEnginePluginInfo::clientAtts  = new BoundaryOpAttributes;
-    BoundaryOpViewerEnginePluginInfo::defaultAtts = new BoundaryOpAttributes;
+    if (BoundaryOpViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        BoundaryOpViewerEnginePluginInfo::clientAtts  = new BoundaryOpAttributes;
+        BoundaryOpViewerEnginePluginInfo::defaultAtts = new BoundaryOpAttributes;
+    }
 }
 
 // ****************************************************************************

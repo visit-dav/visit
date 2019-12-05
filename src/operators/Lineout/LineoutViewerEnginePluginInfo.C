@@ -28,8 +28,11 @@ LineoutAttributes *LineoutViewerEnginePluginInfo::defaultAtts = NULL;
 void
 LineoutViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    LineoutViewerEnginePluginInfo::clientAtts  = new LineoutAttributes;
-    LineoutViewerEnginePluginInfo::defaultAtts = new LineoutAttributes;
+    if (LineoutViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        LineoutViewerEnginePluginInfo::clientAtts  = new LineoutAttributes;
+        LineoutViewerEnginePluginInfo::defaultAtts = new LineoutAttributes;
+    }
 }
 
 // ****************************************************************************

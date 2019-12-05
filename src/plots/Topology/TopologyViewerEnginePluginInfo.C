@@ -29,8 +29,11 @@ TopologyAttributes *TopologyViewerEnginePluginInfo::defaultAtts = NULL;
 void
 TopologyViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    TopologyViewerEnginePluginInfo::clientAtts  = new TopologyAttributes;
-    TopologyViewerEnginePluginInfo::defaultAtts = new TopologyAttributes;
+    if (TopologyViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        TopologyViewerEnginePluginInfo::clientAtts  = new TopologyAttributes;
+        TopologyViewerEnginePluginInfo::defaultAtts = new TopologyAttributes;
+    }
 }
 
 // ****************************************************************************

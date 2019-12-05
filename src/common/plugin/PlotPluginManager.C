@@ -9,6 +9,7 @@
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
 #include <PluginBroadcaster.h>
+#include <AttributeSubject.h>
 #include <DebugStream.h>
 #include <InvalidPluginException.h>
 #include <visitstream.h>
@@ -454,6 +455,9 @@ PlotPluginManager::FreeGUIPluginInfo()
 // Creation:   August 20, 2002
 //
 // Modifications:
+//   Eric Brugger, Wed Dec  4 11:10:35 PST 2019
+//   Eliminate a memory leak by deleting the default attributes for all the
+//   plugins.
 //   
 // ****************************************************************************
 
@@ -461,7 +465,11 @@ void
 PlotPluginManager::FreeViewerPluginInfo()
 {
     for (size_t i=0; i<viewerPluginInfo.size(); i++)
+    {
+        // The client atts get deleted elsewhere.
+        delete viewerPluginInfo[i]->GetDefaultAtts();
         delete viewerPluginInfo[i];
+    }
     viewerPluginInfo.clear();
 }
 

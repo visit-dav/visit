@@ -29,8 +29,11 @@ MeshAttributes *MeshViewerEnginePluginInfo::defaultAtts = NULL;
 void
 MeshViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MeshViewerEnginePluginInfo::clientAtts  = new MeshAttributes;
-    MeshViewerEnginePluginInfo::defaultAtts = new MeshAttributes;
+    if (MeshViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        MeshViewerEnginePluginInfo::clientAtts  = new MeshAttributes;
+        MeshViewerEnginePluginInfo::defaultAtts = new MeshAttributes;
+    }
 }
 
 // ****************************************************************************

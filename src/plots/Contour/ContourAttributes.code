@@ -569,8 +569,11 @@ Definition:
 void
 ContourViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ContourViewerEnginePluginInfo::clientAtts  = new ContourAttributes;
-    ContourViewerEnginePluginInfo::defaultAtts = new ContourAttributes;
+    if (ContourViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ContourViewerEnginePluginInfo::clientAtts  = new ContourAttributes;
+        ContourViewerEnginePluginInfo::defaultAtts = new ContourAttributes;
+    }
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);

@@ -28,8 +28,11 @@ FFTAttributes *FFTViewerEnginePluginInfo::defaultAtts = NULL;
 void
 FFTViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    FFTViewerEnginePluginInfo::clientAtts  = new FFTAttributes;
-    FFTViewerEnginePluginInfo::defaultAtts = new FFTAttributes;
+    if (FFTViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        FFTViewerEnginePluginInfo::clientAtts  = new FFTAttributes;
+        FFTViewerEnginePluginInfo::defaultAtts = new FFTAttributes;
+    }
 }
 
 // ****************************************************************************
