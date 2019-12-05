@@ -1,10 +1,10 @@
-Correcting Memory Leaks
-=======================
+Finding Memory Leaks
+====================
 
 Overview
 --------
 
-We support several mechanisms to find and fix memory leaks. The two best
+We support several mechanisms to find memory leaks. The two best
 mechanisms are using Valgrind and vtkDebugLeaks. Valgrind is used to detect
 memory leaks in a specific component. You run VisIt_ with the appropriate
 options and then when VisIt_ is finished running you will get logs with a
