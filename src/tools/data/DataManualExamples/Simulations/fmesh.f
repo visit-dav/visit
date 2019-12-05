@@ -133,7 +133,7 @@ c visitcommandcallback
 c---------------------------------------------------------------------------
       subroutine visitcommandcallback (cmd, lcmd, args, largs)
       implicit none
-include "visitfortransimV2interface.inc"
+      include "visitfortransimV2interface.inc"
       character*8 cmd, args
       integer     lcmd, largs
 ccc   SIMSTATE common block
