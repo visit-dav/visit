@@ -29,8 +29,11 @@ TruecolorAttributes *TruecolorViewerEnginePluginInfo::defaultAtts = NULL;
 void
 TruecolorViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    TruecolorViewerEnginePluginInfo::clientAtts  = new TruecolorAttributes;
-    TruecolorViewerEnginePluginInfo::defaultAtts = new TruecolorAttributes;
+    if (TruecolorViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        TruecolorViewerEnginePluginInfo::clientAtts  = new TruecolorAttributes;
+        TruecolorViewerEnginePluginInfo::defaultAtts = new TruecolorAttributes;
+    }
 }
 
 // ****************************************************************************

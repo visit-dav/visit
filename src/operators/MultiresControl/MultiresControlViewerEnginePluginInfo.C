@@ -28,8 +28,11 @@ MultiresControlAttributes *MultiresControlViewerEnginePluginInfo::defaultAtts = 
 void
 MultiresControlViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MultiresControlViewerEnginePluginInfo::clientAtts  = new MultiresControlAttributes;
-    MultiresControlViewerEnginePluginInfo::defaultAtts = new MultiresControlAttributes;
+    if (MultiresControlViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        MultiresControlViewerEnginePluginInfo::clientAtts  = new MultiresControlAttributes;
+        MultiresControlViewerEnginePluginInfo::defaultAtts = new MultiresControlAttributes;
+    }
 }
 
 // ****************************************************************************

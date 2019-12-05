@@ -29,8 +29,11 @@ HistogramAttributes *HistogramViewerEnginePluginInfo::defaultAtts = NULL;
 void
 HistogramViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    HistogramViewerEnginePluginInfo::clientAtts  = new HistogramAttributes;
-    HistogramViewerEnginePluginInfo::defaultAtts = new HistogramAttributes;
+    if (HistogramViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        HistogramViewerEnginePluginInfo::clientAtts  = new HistogramAttributes;
+        HistogramViewerEnginePluginInfo::defaultAtts = new HistogramAttributes;
+    }
 }
 
 // ****************************************************************************

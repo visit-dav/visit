@@ -28,8 +28,11 @@ BoxAttributes *BoxViewerEnginePluginInfo::defaultAtts = NULL;
 void
 BoxViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    BoxViewerEnginePluginInfo::clientAtts  = new BoxAttributes;
-    BoxViewerEnginePluginInfo::defaultAtts = new BoxAttributes;
+    if (BoxViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        BoxViewerEnginePluginInfo::clientAtts  = new BoxAttributes;
+        BoxViewerEnginePluginInfo::defaultAtts = new BoxAttributes;
+    }
 }
 
 // ****************************************************************************

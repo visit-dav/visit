@@ -28,8 +28,11 @@ OnionPeelAttributes *OnionPeelViewerEnginePluginInfo::defaultAtts = NULL;
 void
 OnionPeelViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    OnionPeelViewerEnginePluginInfo::clientAtts  = new OnionPeelAttributes;
-    OnionPeelViewerEnginePluginInfo::defaultAtts = new OnionPeelAttributes;
+    if (OnionPeelViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        OnionPeelViewerEnginePluginInfo::clientAtts  = new OnionPeelAttributes;
+        OnionPeelViewerEnginePluginInfo::defaultAtts = new OnionPeelAttributes;
+    }
 }
 
 // ****************************************************************************

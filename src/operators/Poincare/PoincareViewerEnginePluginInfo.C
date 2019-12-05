@@ -28,8 +28,11 @@ PoincareAttributes *PoincareViewerEnginePluginInfo::defaultAtts = NULL;
 void
 PoincareViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    PoincareViewerEnginePluginInfo::clientAtts  = new PoincareAttributes;
-    PoincareViewerEnginePluginInfo::defaultAtts = new PoincareAttributes;
+    if (PoincareViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        PoincareViewerEnginePluginInfo::clientAtts  = new PoincareAttributes;
+        PoincareViewerEnginePluginInfo::defaultAtts = new PoincareAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -28,8 +28,11 @@ ModelFitAtts *ModelFitViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ModelFitViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ModelFitViewerEnginePluginInfo::clientAtts  = new ModelFitAtts;
-    ModelFitViewerEnginePluginInfo::defaultAtts = new ModelFitAtts;
+    if (ModelFitViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ModelFitViewerEnginePluginInfo::clientAtts  = new ModelFitAtts;
+        ModelFitViewerEnginePluginInfo::defaultAtts = new ModelFitAtts;
+    }
 }
 
 // ****************************************************************************
