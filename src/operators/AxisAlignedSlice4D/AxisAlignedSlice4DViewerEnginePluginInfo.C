@@ -28,8 +28,11 @@ AxisAlignedSlice4DAttributes *AxisAlignedSlice4DViewerEnginePluginInfo::defaultA
 void
 AxisAlignedSlice4DViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    AxisAlignedSlice4DViewerEnginePluginInfo::clientAtts  = new AxisAlignedSlice4DAttributes;
-    AxisAlignedSlice4DViewerEnginePluginInfo::defaultAtts = new AxisAlignedSlice4DAttributes;
+    if (AxisAlignedSlice4DViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        AxisAlignedSlice4DViewerEnginePluginInfo::clientAtts  = new AxisAlignedSlice4DAttributes;
+        AxisAlignedSlice4DViewerEnginePluginInfo::defaultAtts = new AxisAlignedSlice4DAttributes;
+    }
 }
 
 // ****************************************************************************

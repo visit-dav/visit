@@ -28,8 +28,11 @@ ExternalSurfaceAttributes *ExternalSurfaceViewerEnginePluginInfo::defaultAtts = 
 void
 ExternalSurfaceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ExternalSurfaceViewerEnginePluginInfo::clientAtts  = new ExternalSurfaceAttributes;
-    ExternalSurfaceViewerEnginePluginInfo::defaultAtts = new ExternalSurfaceAttributes;
+    if (ExternalSurfaceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ExternalSurfaceViewerEnginePluginInfo::clientAtts  = new ExternalSurfaceAttributes;
+        ExternalSurfaceViewerEnginePluginInfo::defaultAtts = new ExternalSurfaceAttributes;
+    }
 }
 
 // ****************************************************************************

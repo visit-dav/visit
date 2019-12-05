@@ -28,8 +28,11 @@ ConnCompReduceAttributes *ConnCompReduceViewerEnginePluginInfo::defaultAtts = NU
 void
 ConnCompReduceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ConnCompReduceViewerEnginePluginInfo::clientAtts  = new ConnCompReduceAttributes;
-    ConnCompReduceViewerEnginePluginInfo::defaultAtts = new ConnCompReduceAttributes;
+    if (ConnCompReduceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ConnCompReduceViewerEnginePluginInfo::clientAtts  = new ConnCompReduceAttributes;
+        ConnCompReduceViewerEnginePluginInfo::defaultAtts = new ConnCompReduceAttributes;
+    }
 }
 
 // ****************************************************************************

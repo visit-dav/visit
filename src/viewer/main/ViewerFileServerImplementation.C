@@ -177,6 +177,10 @@ ViewerFileServerImplementation::~ViewerFileServerImplementation()
 //   Jeremy Meredith, Fri Jan 29 10:27:29 EST 2010
 //   Added knowledge of what plugin was used to open a file.  Clear it here.
 //
+//   Eric Brugger, Tue Nov 26 12:53:36 PST 2019
+//   Added code to delete pos->second->proxy before deleting pos->second to
+//   eliminate a memory leak.
+//
 // ****************************************************************************
 
 void
@@ -205,6 +209,7 @@ ViewerFileServerImplementation::CloseServers()
         ENDTRY
 
         // Delete the server
+        delete pos->second->proxy;
         delete pos->second;
     }
     servers.clear();

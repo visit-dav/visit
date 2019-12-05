@@ -124,6 +124,9 @@ Viewer_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QS
 //    without a window system. To get the same effect, instantiating a plain
 //    QCoreApplication is done when nowin mode is set.
 //
+//    Eric Brugger, Wed Nov 27 14:35:58 PST 2019
+//    Added delete of argv2 and mainApp to clean up memory before exiting.
+//
 // ****************************************************************************
 
 int
@@ -257,6 +260,10 @@ ViewerMain(int argc, char *argv[])
             }
             ENDTRY
         }
+#ifdef DEBUG_MEMORY_LEAKS
+        delete mainApp;
+        delete [] argv2;
+#endif
     }
     CATCH2(VisItException, e)
     {

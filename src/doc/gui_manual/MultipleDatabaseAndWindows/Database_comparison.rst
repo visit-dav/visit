@@ -4,74 +4,57 @@ Database comparison
 -------------------
 
 Comparing the results of multiple related simulation databases is one of
-VisIt_'s main uses. You can put plots from multiple databases in the same
-window or you can put plots from each database in adjacent visualization
-windows, allowing you to compare plots visually. In addition to these
-visual comparison modes, VisIt_ supports more direct comparison of databases
-using database comparisons. Database comparison allows you to plot direct
+VisIt_'s main uses. Users can plot multiple databases in the same
+window or adjacent windows, allowing comparison of plots visually.
+In addition to these *visual* modes of comparison, VisIt_ also supports
+more direct *numerical* comparison through the expression system.
+Database comparison allows users to plot direct
 differences between two databases or between different time states in the
-same database (i.e. time derivatives). VisIt_'s expression language is used
-extensively to facilitate the database comparison.
+same database including even in the definition of time derivatives.
 
-The role of expressions
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Database comparison is accomplished by creating new expressions that
-involve the contents of multiple databases using VisIt_'s expression
-language. Database comparisons use special expressions called
+Numerical database comparisons use special expressions called
 :ref:`Cross-Mesh Field Evaluation (CMFE) <Comparison_Expressions>`
 expressions, :ref:`pos_cmfe() <Pos_Cmfe_Expression_Function>` and
 :ref:`conn_cmfe() <Conn_Cmfe_Expression_Function>`,
-which are capable of mapping a field from one mesh to another mesh
-The name "conn_cmfe" means
-*connectivity-based cross mesh field evaluation* (CMFE) and as the name
-implies, the expression takes fields from one mesh and maps the field onto
-another mesh by taking the cell or node-centered values on the donor mesh
-and mapping them onto the cells or nodes having the same indices in the
-new mesh. For valid results, conn_cmfe requires the donor and target meshes
-be topologically congruent (e.g. size, connectivity, decomposition, etc.).
-If this is not the case, then one should use the position-based, pos_cmfe
-expression. The CMFE expressions can be used to map fields from a mesh in
-one database onto a mesh in the active database, which then allows you to
-create difference expressions involving the active database.
-
-There is also a position-based CMFE (*pos_cmfe*), which will resample the field
-from one mesh onto another mesh by calculating the values of the field on
-the first mesh using the locations of the cells or nodes in a second mesh.
-More information on CMFE expressions are found in the
+which are capable of mapping a field from one mesh, the *donor*, onto
+another mesh, the *target*. The name `conn_cmfe()` stands for
+*connectivity-based cross mesh field evaluation* (CMFE). It is a specialization
+of *position-based cmfe*, `pos_cmfe()`, for cases in which donor and target
+meshes be topologically congruent (e.g. size, connectivity, decomposition,
+etc. are identical). More information on CMFE expressions are found in the
 :ref:`Cross-Mesh Field Evaluation (CMFE) <Comparison_Expressions>` section
-of the :ref:`Exprssions <Expressions>` chapter.
-
-Note that there is also a helpful *wizard*, the
+of the :ref:`Exprssions <Expressions>` chapter. There is also a helpful
+*wizard*, the
 :ref:`Data Level Comparison Wizard <DataLevelComparisonsWizard>`, that
 simplifies the process of defining comparison expressions. Here, we
-describe the :ref:`CMFE <Comparison_Expressions>` expressions and
-demonstrate how to use them in comparisons.
+walk through a few basic examples of using :ref:`CMFE <Comparison_Expressions>`
+expressions and demonstrate how to use them in comparisons.
 
 Plotting the difference between two databases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Simulations are often run as parts of parameter studies, meaning the
-initial conditions are changed slightly to see what observable effects
-the changes produce. The ability to do direct numerical comparison of
-multiple simulation databases is required in order to observe the often
-miniscule differences between the fields in the two databases. VisIt_
-provides the conn_cmfe expression, which allows you to map a field from
-one simulation database onto a mesh from another simulation database.
-Once the mapping has been done, you can then perform difference operations
-using an expression like this:
+The typical case is where two slightly different databases time series
+have been generated from the same simulation code and the user wishes to work
+with the *difference* between the two databases *and* to have this difference
+update as the time slider is changed.
 
-<mesh/ireg> - conn_cmfe(</usr/local/visit/data/dbB00.pdb:mesh/ireg>, mesh)
+<mesh/ireg> - conn_cmfe(</usr/local/visit/data/dbB00.pdb[0]id:mesh/ireg>, <mesh>)
 
-The expression above is a simple difference operation of database A minus
-database B. The assumption made by this expression is that database A is
-the active database and we're trying to map database B onto it so we can
-subtract it from database A's *mesh/ireg* variable. Note that the conn_cmfe
-expression takes two arguments. The first argument encodes the name of
-the file and the field that we're mapping onto a mesh from the active
-database, where the mesh name is given by the second argument. In this
-example, we're mapping database B's *mesh/ireg* field onto database A's
-mesh. :numref:`Figure %s <a_minus_b>` shows a picture that illustrates
+In the above expression, the first argument to `conn_cmfe()` serves as the *donor*
+field and the second argument is the *target* mesh. This expression is a simple
+difference operation of database A minus database B. Note the special `[0]id`
+*time specification syntax* before the colon but after the file system path in
+the first argument `conn_cmfe()`. The `i` means to interpret the number in
+brackets, `[0]` as a time state *index*. The `d` means to further interpret that
+number as an index *difference* from the *current* time slider index. This
+:ref:`syntax <Pos_Cmfe_Donor_Variable_Synax>` is described in greater detail in
+the section describing :ref:`pos_cmfe() <Pos_Cmfe_Expression_Function>`.
+
+The assumption made by this expression is that database A is
+the *active* database and the user wishes to map database B onto it to
+subtract it from database A's *mesh/ireg* variable. In this example, database
+B's *mesh/ireg* field is being mapped onto database A's mesh and their difference
+is then being taken. :numref:`Figure %s <a_minus_b>` illustrates
 the database differencing operation.
 
 .. _a_minus_b:
@@ -91,18 +74,13 @@ the values at the current time state. Consider the following expression:
 <mesh/ireg> - conn_cmfe(</usr/local/visit/data/dbA00.pdb[0]i:mesh/ireg>, mesh)
 
 The above expression subtracts the value of *mesh/ireg* at time state zero
-from the value of *mesh/ireg* at the current time state. The interesting
-feature about the above expression is its use of the expression language's
-*[]* operator for specifying a database time state. The expression uses
-*"[0]i"* , which means use time state zero because the *"i"* suffix
-indicates that the number inside of the square brackets is to be used as
-an absolute time state index. As you change the time slider, the values
-for the current time state will change but the part of the expression
+(in the `[0]i` without the `d` means to always map *absolute* time index
+zero from the *donor*) from the value of *mesh/ireg* at the current time
+As the time slider is changed, the values for the *active* database will
+change but the part of the expression
 using conn_cmfe, which in this case uses the first database time state,
-will not change. This allows you to create expressions that compare the
-current time state to a fixed time state. You can, of course, substitute
-different time state indices into the conn_cmfe expression so you don't
-have to always compare the current time state to time state zero.
+will not change. This allows users to create expressions that compare the
+current time state to a fixed time state.
 
 .. _a_minus_a0:
 

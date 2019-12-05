@@ -28,8 +28,11 @@ ExtractPointFunction2DAttributes *ExtractPointFunction2DViewerEnginePluginInfo::
 void
 ExtractPointFunction2DViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ExtractPointFunction2DViewerEnginePluginInfo::clientAtts  = new ExtractPointFunction2DAttributes;
-    ExtractPointFunction2DViewerEnginePluginInfo::defaultAtts = new ExtractPointFunction2DAttributes;
+    if (ExtractPointFunction2DViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ExtractPointFunction2DViewerEnginePluginInfo::clientAtts  = new ExtractPointFunction2DAttributes;
+        ExtractPointFunction2DViewerEnginePluginInfo::defaultAtts = new ExtractPointFunction2DAttributes;
+    }
 }
 
 // ****************************************************************************

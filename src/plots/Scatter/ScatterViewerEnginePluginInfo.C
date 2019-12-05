@@ -29,8 +29,11 @@ ScatterAttributes *ScatterViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ScatterViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ScatterViewerEnginePluginInfo::clientAtts  = new ScatterAttributes;
-    ScatterViewerEnginePluginInfo::defaultAtts = new ScatterAttributes;
+    if (ScatterViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ScatterViewerEnginePluginInfo::clientAtts  = new ScatterAttributes;
+        ScatterViewerEnginePluginInfo::defaultAtts = new ScatterAttributes;
+    }
 }
 
 // ****************************************************************************
