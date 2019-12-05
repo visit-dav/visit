@@ -141,16 +141,16 @@ inline void Cross(double result[3], const double v1[3], const double v2[3])
 //-----------------------------
 // method def
 template <typename T>
-int VisIt_XRay_MPI_Alltoallv(T *sendbuf, const int *sendcounts,
-                             const int *sdispls, T *recvbuf,
-                             const int *recvcounts, const int *rdispls,
+int VisIt_XRay_MPI_Alltoallv(T *sendbuf, int *sendcounts,
+                             int *sdispls, T *recvbuf,
+                             int *recvcounts, int *rdispls,
                              MPI_Comm comm);
 
 // case specifically for floats
 template<>
-int VisIt_XRay_MPI_Alltoallv<float>(float *sendbuf, const int *sendcounts,
-                                    const int *sdispls, float *recvbuf,
-                                    const int *recvcounts, const int *rdispls,
+int VisIt_XRay_MPI_Alltoallv<float>(float *sendbuf, int *sendcounts,
+                                    int *sdispls, float *recvbuf,
+                                    int *recvcounts, int *rdispls,
                                     MPI_Comm comm)
 {
     return MPI_Alltoallv(sendbuf, sendcounts, sdispls, MPI_FLOAT,
@@ -160,9 +160,9 @@ int VisIt_XRay_MPI_Alltoallv<float>(float *sendbuf, const int *sendcounts,
 
 // case specifically for double
 template<>
-int VisIt_XRay_MPI_Alltoallv<double>(double *sendbuf, const int *sendcounts,
-                                     const int *sdispls, double *recvbuf,
-                                     const int *recvcounts, const int *rdispls,
+int VisIt_XRay_MPI_Alltoallv<double>(double *sendbuf, int *sendcounts,
+                                     int *sdispls, double *recvbuf,
+                                     int *recvcounts, int *rdispls,
                                      MPI_Comm comm)
 {
     return MPI_Alltoallv(sendbuf, sendcounts, sdispls, MPI_DOUBLE,

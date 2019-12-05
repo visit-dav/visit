@@ -1,0 +1,57 @@
+FROM ubuntu:disco
+MAINTAINER Eric Brugger <brugger1@llnl.gov>
+
+# fetch build env
+RUN apt-get update && apt-get install -y \
+    git \
+    wget \
+    curl \
+    p7zip \
+    unzip \
+    subversion \
+    build-essential \
+    gcc \
+    g++ \
+    gfortran \
+    zlib1g-dev \
+    python \
+    libsm-dev \
+    libice-dev \
+    libssl-dev \
+    libx11-xcb-dev \
+    libxcb-dri2-0-dev \
+    libxcb-xfixes0-dev \
+    xutils-dev \
+    xorg-dev \
+    libfreetype6-dev \
+    autoconf \
+    libtool \
+    m4 \
+    automake \
+    libxml2 \
+    libxml2-dev \
+    vim \
+    emacs \
+    bison \
+    flex \
+    cpio \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
+    && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+ENV LANG en_US.utf8
+
+RUN cd /usr/include && ln -s freetype2 freetype
+
+RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
+USER visit
+WORKDIR /home/visit
+
+# Create the third-party directory
+RUN mkdir third-party
+# Copy build_visit and the script to run it
+RUN wget https://raw.githubusercontent.com/visit-dav/visit/develop/scripts/ci/azure/build_visit_develop
+RUN wget https://raw.githubusercontent.com/visit-dav/visit/develop/scripts/ci/azure/run_build_visit_centos8.sh
+RUN wget https://raw.githubusercontent.com/visit-dav/visit/develop/scripts/docker/build_visit_docker_cleanup.py
+# Build the third party libraries.
+RUN /bin/bash run_build_visit_centos8.sh

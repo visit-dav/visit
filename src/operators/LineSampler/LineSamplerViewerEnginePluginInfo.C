@@ -28,8 +28,11 @@ LineSamplerAttributes *LineSamplerViewerEnginePluginInfo::defaultAtts = NULL;
 void
 LineSamplerViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    LineSamplerViewerEnginePluginInfo::clientAtts  = new LineSamplerAttributes;
-    LineSamplerViewerEnginePluginInfo::defaultAtts = new LineSamplerAttributes;
+    if (LineSamplerViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        LineSamplerViewerEnginePluginInfo::clientAtts  = new LineSamplerAttributes;
+        LineSamplerViewerEnginePluginInfo::defaultAtts = new LineSamplerAttributes;
+    }
 }
 
 // ****************************************************************************

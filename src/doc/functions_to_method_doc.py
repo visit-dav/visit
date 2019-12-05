@@ -250,7 +250,20 @@ if __name__ == '__main__':
             block_dict['example'] = ExampleContainer()
             
         elif cur_block is not None:
-            block_dict[cur_block].extend(line.strip())
+            # for examples sources, we need to preserve spaces in 
+            # the example script to keep python code valid
+            if cur_block == 'example' and line.strip() != "":
+                # find the leading number of spaces using lstrip
+                padding = len(line) - len(line.lstrip())
+                # assume padding of 2 spaces in rst
+                padding = padding - 2
+                next_text = ""
+                for i in range(padding):
+                    next_text += " "
+                next_text += line.strip()
+            else:
+                next_text = line.strip()
+            block_dict[cur_block].extend(next_text)
     
     # Write the last function
     block_dict[cur_block].set_last(True)

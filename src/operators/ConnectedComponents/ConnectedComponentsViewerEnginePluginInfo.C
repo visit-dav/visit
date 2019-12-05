@@ -28,8 +28,11 @@ ConnectedComponentsAttributes *ConnectedComponentsViewerEnginePluginInfo::defaul
 void
 ConnectedComponentsViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ConnectedComponentsViewerEnginePluginInfo::clientAtts  = new ConnectedComponentsAttributes;
-    ConnectedComponentsViewerEnginePluginInfo::defaultAtts = new ConnectedComponentsAttributes;
+    if (ConnectedComponentsViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ConnectedComponentsViewerEnginePluginInfo::clientAtts  = new ConnectedComponentsAttributes;
+        ConnectedComponentsViewerEnginePluginInfo::defaultAtts = new ConnectedComponentsAttributes;
+    }
 }
 
 // ****************************************************************************

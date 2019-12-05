@@ -28,8 +28,11 @@ DataBinningAttributes *DataBinningViewerEnginePluginInfo::defaultAtts = NULL;
 void
 DataBinningViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    DataBinningViewerEnginePluginInfo::clientAtts  = new DataBinningAttributes;
-    DataBinningViewerEnginePluginInfo::defaultAtts = new DataBinningAttributes;
+    if (DataBinningViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        DataBinningViewerEnginePluginInfo::clientAtts  = new DataBinningAttributes;
+        DataBinningViewerEnginePluginInfo::defaultAtts = new DataBinningAttributes;
+    }
 }
 
 // ****************************************************************************

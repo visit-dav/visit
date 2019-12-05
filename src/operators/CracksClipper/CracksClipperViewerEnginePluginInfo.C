@@ -28,8 +28,11 @@ CracksClipperAttributes *CracksClipperViewerEnginePluginInfo::defaultAtts = NULL
 void
 CracksClipperViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    CracksClipperViewerEnginePluginInfo::clientAtts  = new CracksClipperAttributes;
-    CracksClipperViewerEnginePluginInfo::defaultAtts = new CracksClipperAttributes;
+    if (CracksClipperViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        CracksClipperViewerEnginePluginInfo::clientAtts  = new CracksClipperAttributes;
+        CracksClipperViewerEnginePluginInfo::defaultAtts = new CracksClipperAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -29,8 +29,11 @@ SubsetAttributes *SubsetViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SubsetViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SubsetViewerEnginePluginInfo::clientAtts  = new SubsetAttributes;
-    SubsetViewerEnginePluginInfo::defaultAtts = new SubsetAttributes;
+    if (SubsetViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SubsetViewerEnginePluginInfo::clientAtts  = new SubsetAttributes;
+        SubsetViewerEnginePluginInfo::defaultAtts = new SubsetAttributes;
+    }
 }
 
 // ****************************************************************************

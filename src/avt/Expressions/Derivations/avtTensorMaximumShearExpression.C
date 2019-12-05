@@ -58,6 +58,11 @@ avtTensorMaximumShearExpression::~avtTensorMaximumShearExpression()
 //  Purpose:
 //      Determines the maximum shear of a tensor.
 //
+//  Implements method described in...
+//
+//    J.C. Ugural and S.K. Fenster "Advanced Strength and Applied Elasticity",
+//    Prentice Hall 4th Edition, Page 81
+//
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2003
 //
@@ -82,22 +87,34 @@ avtTensorMaximumShearExpression::DoOperation(vtkDataArray *in, vtkDataArray *out
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
+            // 9 components of stress tensor
             double *vals = in->GetTuple9(i);   
+            double s11 = vals[0], s12 = vals[1], s13 = vals[2];
+            double s21 = vals[3], s22 = vals[4], s23 = vals[5];
+            double s31 = vals[6], s32 = vals[7], s33 = vals[8];
 
-            double pressure = -(vals[0] + vals[4] + vals[8]) / 3.;
-            double dev0 = vals[0] + pressure;
-            double dev1 = vals[4] + pressure;
-            double dev2 = vals[8] + pressure;
+            // Hydro-static component
+            double pressure = (s11 + s22 + s33) / 3.;
+
+            // Deviatoric stress components
+            double dev0 = s11 - pressure;
+            double dev1 = s22 - pressure;
+            double dev2 = s33 - pressure;
 
             // double invariant0 = dev0 + dev1 + dev2;
+            // Second invariant of stress deviator
             double invariant1 = 0.5*(dev0*dev0 + dev1*dev1 + dev2*dev2);
-            invariant1 += vals[1]*vals[1] + vals[2]*vals[2] + vals[5]*vals[5];
-            double invariant2 = -dev0*dev1*dev2;
-            invariant2 += -2.0 *vals[1]*vals[2]*vals[5];
-            invariant2 += dev0*vals[5]*vals[5];
-            invariant2 += dev1*vals[2]*vals[2];
-            invariant2 += dev2*vals[1]*vals[1];
+            invariant1 += s12*s12 + s13*s13 + s23*s23;
 
+            // Third invariant of stress deviator
+            double invariant2 = -dev0*dev1*dev2;
+            invariant2 += -2.0*s12*s13*s23;
+            invariant2 +=     dev0*s23*s23;
+            invariant2 +=     dev1*s13*s13;
+            invariant2 +=     dev2*s12*s12;
+
+            // Cubic roots of the characteristic equation
+            // http://mathworld.wolfram.com/CubicFormula.html
             double princ0 = 0.;
             double princ2 = 0.;
             if (invariant1 >= 1e-100)
@@ -119,6 +136,7 @@ avtTensorMaximumShearExpression::DoOperation(vtkDataArray *in, vtkDataArray *out
                 princ2 = value*cos(angle);
             }
 
+            // set the output value
             out->SetTuple1(i, (princ0 - princ2) * 0.5);
         }
     }

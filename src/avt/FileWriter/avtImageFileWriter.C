@@ -13,11 +13,11 @@
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkBMPWriter.h>
+#include <vtkPNMWriter.h>
 #include <vtkImageData.h>
 #include <vtkJPEGWriter.h>
 #include <vtkTIFFWriter.h>
 #include <vtkPostScriptWriter.h>
-#include <vtkPPMWriter.h>
 #include <vtkRGBWriter.h>
 #include <vtkPNGWriter.h>
 #ifdef HAVE_LIBOPENEXR
@@ -129,6 +129,9 @@ avtImageFileWriter::~avtImageFileWriter()
 //    OpenEXR support. Write ZBuffer, luminance image, value image if present.
 //    I made it return a list of filenames.
 //
+//    Alister Maguire, Mon Dec  2 14:14:42 MST 2019
+//    Replaced our custom vtkPPMWriter with the standard vtkPNMWriter.
+//
 // ****************************************************************************
 
 std::vector<std::string>
@@ -162,7 +165,7 @@ avtImageFileWriter::Write(ImageFileFormat format, const char *filename,
         writer = vtkPostScriptWriter::New();
         break;
     case PPM:
-        writer = vtkPPMWriter::New();
+        writer = vtkPNMWriter::New();
         break;
     case RGB:
         writer = vtkRGBWriter::New();

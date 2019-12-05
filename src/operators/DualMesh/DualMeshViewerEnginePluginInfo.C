@@ -28,8 +28,11 @@ DualMeshAttributes *DualMeshViewerEnginePluginInfo::defaultAtts = NULL;
 void
 DualMeshViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    DualMeshViewerEnginePluginInfo::clientAtts  = new DualMeshAttributes;
-    DualMeshViewerEnginePluginInfo::defaultAtts = new DualMeshAttributes;
+    if (DualMeshViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        DualMeshViewerEnginePluginInfo::clientAtts  = new DualMeshAttributes;
+        DualMeshViewerEnginePluginInfo::defaultAtts = new DualMeshAttributes;
+    }
 }
 
 // ****************************************************************************

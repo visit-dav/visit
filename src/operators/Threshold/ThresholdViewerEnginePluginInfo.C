@@ -28,8 +28,11 @@ ThresholdAttributes *ThresholdViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ThresholdViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ThresholdViewerEnginePluginInfo::clientAtts  = new ThresholdAttributes;
-    ThresholdViewerEnginePluginInfo::defaultAtts = new ThresholdAttributes;
+    if (ThresholdViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ThresholdViewerEnginePluginInfo::clientAtts  = new ThresholdAttributes;
+        ThresholdViewerEnginePluginInfo::defaultAtts = new ThresholdAttributes;
+    }
 }
 
 // ****************************************************************************

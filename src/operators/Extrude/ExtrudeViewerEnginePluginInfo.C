@@ -28,8 +28,11 @@ ExtrudeAttributes *ExtrudeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ExtrudeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ExtrudeViewerEnginePluginInfo::clientAtts  = new ExtrudeAttributes;
-    ExtrudeViewerEnginePluginInfo::defaultAtts = new ExtrudeAttributes;
+    if (ExtrudeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ExtrudeViewerEnginePluginInfo::clientAtts  = new ExtrudeAttributes;
+        ExtrudeViewerEnginePluginInfo::defaultAtts = new ExtrudeAttributes;
+    }
 }
 
 // ****************************************************************************

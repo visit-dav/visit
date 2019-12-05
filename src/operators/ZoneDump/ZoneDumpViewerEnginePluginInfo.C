@@ -28,8 +28,11 @@ ZoneDumpAttributes *ZoneDumpViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ZoneDumpViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ZoneDumpViewerEnginePluginInfo::clientAtts  = new ZoneDumpAttributes;
-    ZoneDumpViewerEnginePluginInfo::defaultAtts = new ZoneDumpAttributes;
+    if (ZoneDumpViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ZoneDumpViewerEnginePluginInfo::clientAtts  = new ZoneDumpAttributes;
+        ZoneDumpViewerEnginePluginInfo::defaultAtts = new ZoneDumpAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -28,8 +28,11 @@ FluxAttributes *FluxViewerEnginePluginInfo::defaultAtts = NULL;
 void
 FluxViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    FluxViewerEnginePluginInfo::clientAtts  = new FluxAttributes;
-    FluxViewerEnginePluginInfo::defaultAtts = new FluxAttributes;
+    if (FluxViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        FluxViewerEnginePluginInfo::clientAtts  = new FluxAttributes;
+        FluxViewerEnginePluginInfo::defaultAtts = new FluxAttributes;
+    }
 }
 
 // ****************************************************************************
