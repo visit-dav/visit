@@ -28,8 +28,11 @@ StatisticalTrendsAttributes *StatisticalTrendsViewerEnginePluginInfo::defaultAtt
 void
 StatisticalTrendsViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    StatisticalTrendsViewerEnginePluginInfo::clientAtts  = new StatisticalTrendsAttributes;
-    StatisticalTrendsViewerEnginePluginInfo::defaultAtts = new StatisticalTrendsAttributes;
+    if (StatisticalTrendsViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        StatisticalTrendsViewerEnginePluginInfo::clientAtts  = new StatisticalTrendsAttributes;
+        StatisticalTrendsViewerEnginePluginInfo::defaultAtts = new StatisticalTrendsAttributes;
+    }
 }
 
 // ****************************************************************************

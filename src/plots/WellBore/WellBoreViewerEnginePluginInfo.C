@@ -31,8 +31,11 @@ WellBoreAttributes *WellBoreViewerEnginePluginInfo::defaultAtts = NULL;
 void
 WellBoreViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    WellBoreViewerEnginePluginInfo::clientAtts  = new WellBoreAttributes;
-    WellBoreViewerEnginePluginInfo::defaultAtts = new WellBoreAttributes;
+    if (WellBoreViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        WellBoreViewerEnginePluginInfo::clientAtts  = new WellBoreAttributes;
+        WellBoreViewerEnginePluginInfo::defaultAtts = new WellBoreAttributes;
+    }
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);

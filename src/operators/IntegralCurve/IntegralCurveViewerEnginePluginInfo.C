@@ -28,8 +28,11 @@ IntegralCurveAttributes *IntegralCurveViewerEnginePluginInfo::defaultAtts = NULL
 void
 IntegralCurveViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    IntegralCurveViewerEnginePluginInfo::clientAtts  = new IntegralCurveAttributes;
-    IntegralCurveViewerEnginePluginInfo::defaultAtts = new IntegralCurveAttributes;
+    if (IntegralCurveViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        IntegralCurveViewerEnginePluginInfo::clientAtts  = new IntegralCurveAttributes;
+        IntegralCurveViewerEnginePluginInfo::defaultAtts = new IntegralCurveAttributes;
+    }
 }
 
 // ****************************************************************************

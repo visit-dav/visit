@@ -29,8 +29,11 @@ BoundaryAttributes *BoundaryViewerEnginePluginInfo::defaultAtts = NULL;
 void
 BoundaryViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    BoundaryViewerEnginePluginInfo::clientAtts  = new BoundaryAttributes;
-    BoundaryViewerEnginePluginInfo::defaultAtts = new BoundaryAttributes;
+    if (BoundaryViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        BoundaryViewerEnginePluginInfo::clientAtts  = new BoundaryAttributes;
+        BoundaryViewerEnginePluginInfo::defaultAtts = new BoundaryAttributes;
+    }
 }
 
 // ****************************************************************************

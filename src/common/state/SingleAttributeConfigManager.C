@@ -94,6 +94,9 @@ SingleAttributeConfigManager::Export(const std::string &filename,
 //   Tom Fogal, Fri Mar  6 10:26:12 MST 2009
 //   Fix: function wasn't returning anything in the `success' case.
 //   
+//   Eric Brugger, Tue Nov 26 14:16:07 PST 2019
+//   Added code to delete node to eliminate a memory leak.
+//
 // ****************************************************************************
 bool
 SingleAttributeConfigManager::Import(std::istream& in)
@@ -104,6 +107,9 @@ SingleAttributeConfigManager::Import(std::istream& in)
         return false;
 
     attribute->SetFromNode(node);
+
+    delete node;
+
     return true;
 }
 
@@ -116,6 +122,9 @@ SingleAttributeConfigManager::Import(const std::string &filename)
         return false;
 
     attribute->SetFromNode(node);
+
+    delete node;
+
     return true;
 }
 

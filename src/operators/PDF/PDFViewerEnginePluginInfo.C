@@ -28,8 +28,11 @@ PDFAttributes *PDFViewerEnginePluginInfo::defaultAtts = NULL;
 void
 PDFViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    PDFViewerEnginePluginInfo::clientAtts  = new PDFAttributes;
-    PDFViewerEnginePluginInfo::defaultAtts = new PDFAttributes;
+    if (PDFViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        PDFViewerEnginePluginInfo::clientAtts  = new PDFAttributes;
+        PDFViewerEnginePluginInfo::defaultAtts = new PDFAttributes;
+    }
 }
 
 // ****************************************************************************

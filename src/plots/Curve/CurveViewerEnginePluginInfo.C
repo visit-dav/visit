@@ -29,8 +29,11 @@ CurveAttributes *CurveViewerEnginePluginInfo::defaultAtts = NULL;
 void
 CurveViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    CurveViewerEnginePluginInfo::clientAtts  = new CurveAttributes;
-    CurveViewerEnginePluginInfo::defaultAtts = new CurveAttributes;
+    if (CurveViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        CurveViewerEnginePluginInfo::clientAtts  = new CurveAttributes;
+        CurveViewerEnginePluginInfo::defaultAtts = new CurveAttributes;
+    }
 }
 
 // ****************************************************************************

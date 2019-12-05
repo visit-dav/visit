@@ -28,8 +28,11 @@ RemoveCellsAttributes *RemoveCellsViewerEnginePluginInfo::defaultAtts = NULL;
 void
 RemoveCellsViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    RemoveCellsViewerEnginePluginInfo::clientAtts  = new RemoveCellsAttributes;
-    RemoveCellsViewerEnginePluginInfo::defaultAtts = new RemoveCellsAttributes;
+    if (RemoveCellsViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        RemoveCellsViewerEnginePluginInfo::clientAtts  = new RemoveCellsAttributes;
+        RemoveCellsViewerEnginePluginInfo::defaultAtts = new RemoveCellsAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -28,8 +28,11 @@ SurfaceNormalAttributes *SurfaceNormalViewerEnginePluginInfo::defaultAtts = NULL
 void
 SurfaceNormalViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SurfaceNormalViewerEnginePluginInfo::clientAtts  = new SurfaceNormalAttributes;
-    SurfaceNormalViewerEnginePluginInfo::defaultAtts = new SurfaceNormalAttributes;
+    if (SurfaceNormalViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SurfaceNormalViewerEnginePluginInfo::clientAtts  = new SurfaceNormalAttributes;
+        SurfaceNormalViewerEnginePluginInfo::defaultAtts = new SurfaceNormalAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -31,8 +31,11 @@ MultiCurveAttributes *MultiCurveViewerEnginePluginInfo::defaultAtts = NULL;
 void
 MultiCurveViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MultiCurveViewerEnginePluginInfo::clientAtts  = new MultiCurveAttributes;
-    MultiCurveViewerEnginePluginInfo::defaultAtts = new MultiCurveAttributes;
+    if (MultiCurveViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        MultiCurveViewerEnginePluginInfo::clientAtts  = new MultiCurveAttributes;
+        MultiCurveViewerEnginePluginInfo::defaultAtts = new MultiCurveAttributes;
+    }
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);

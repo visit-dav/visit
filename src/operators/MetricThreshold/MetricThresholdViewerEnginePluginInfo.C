@@ -28,8 +28,11 @@ MetricThresholdAttributes *MetricThresholdViewerEnginePluginInfo::defaultAtts = 
 void
 MetricThresholdViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MetricThresholdViewerEnginePluginInfo::clientAtts  = new MetricThresholdAttributes;
-    MetricThresholdViewerEnginePluginInfo::defaultAtts = new MetricThresholdAttributes;
+    if (MetricThresholdViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        MetricThresholdViewerEnginePluginInfo::clientAtts  = new MetricThresholdAttributes;
+        MetricThresholdViewerEnginePluginInfo::defaultAtts = new MetricThresholdAttributes;
+    }
 }
 
 // ****************************************************************************

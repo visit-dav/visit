@@ -28,8 +28,11 @@ InverseGhostZoneAttributes *InverseGhostZoneViewerEnginePluginInfo::defaultAtts 
 void
 InverseGhostZoneViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    InverseGhostZoneViewerEnginePluginInfo::clientAtts  = new InverseGhostZoneAttributes;
-    InverseGhostZoneViewerEnginePluginInfo::defaultAtts = new InverseGhostZoneAttributes;
+    if (InverseGhostZoneViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        InverseGhostZoneViewerEnginePluginInfo::clientAtts  = new InverseGhostZoneAttributes;
+        InverseGhostZoneViewerEnginePluginInfo::defaultAtts = new InverseGhostZoneAttributes;
+    }
 }
 
 // ****************************************************************************

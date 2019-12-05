@@ -28,8 +28,11 @@ ConeAttributes *ConeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ConeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ConeViewerEnginePluginInfo::clientAtts  = new ConeAttributes;
-    ConeViewerEnginePluginInfo::defaultAtts = new ConeAttributes;
+    if (ConeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ConeViewerEnginePluginInfo::clientAtts  = new ConeAttributes;
+        ConeViewerEnginePluginInfo::defaultAtts = new ConeAttributes;
+    }
 }
 
 // ****************************************************************************
