@@ -28,8 +28,11 @@ LineSurfaceAttributes *LineSurfaceViewerEnginePluginInfo::defaultAtts = NULL;
 void
 LineSurfaceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    LineSurfaceViewerEnginePluginInfo::clientAtts  = new LineSurfaceAttributes;
-    LineSurfaceViewerEnginePluginInfo::defaultAtts = new LineSurfaceAttributes;
+    if (LineSurfaceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        LineSurfaceViewerEnginePluginInfo::clientAtts  = new LineSurfaceAttributes;
+        LineSurfaceViewerEnginePluginInfo::defaultAtts = new LineSurfaceAttributes;
+    }
 }
 
 // ****************************************************************************

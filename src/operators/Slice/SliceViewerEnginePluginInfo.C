@@ -28,8 +28,11 @@ SliceAttributes *SliceViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SliceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SliceViewerEnginePluginInfo::clientAtts  = new SliceAttributes;
-    SliceViewerEnginePluginInfo::defaultAtts = new SliceAttributes;
+    if (SliceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SliceViewerEnginePluginInfo::clientAtts  = new SliceAttributes;
+        SliceViewerEnginePluginInfo::defaultAtts = new SliceAttributes;
+    }
 }
 
 // ****************************************************************************

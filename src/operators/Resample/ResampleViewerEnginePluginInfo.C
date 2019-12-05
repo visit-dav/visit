@@ -28,8 +28,11 @@ ResampleAttributes *ResampleViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ResampleViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ResampleViewerEnginePluginInfo::clientAtts  = new ResampleAttributes;
-    ResampleViewerEnginePluginInfo::defaultAtts = new ResampleAttributes;
+    if (ResampleViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ResampleViewerEnginePluginInfo::clientAtts  = new ResampleAttributes;
+        ResampleViewerEnginePluginInfo::defaultAtts = new ResampleAttributes;
+    }
 }
 
 // ****************************************************************************

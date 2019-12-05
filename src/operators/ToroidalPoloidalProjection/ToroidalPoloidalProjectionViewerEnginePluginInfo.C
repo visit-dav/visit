@@ -28,8 +28,11 @@ ToroidalPoloidalProjection *ToroidalPoloidalProjectionViewerEnginePluginInfo::de
 void
 ToroidalPoloidalProjectionViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ToroidalPoloidalProjectionViewerEnginePluginInfo::clientAtts  = new ToroidalPoloidalProjection;
-    ToroidalPoloidalProjectionViewerEnginePluginInfo::defaultAtts = new ToroidalPoloidalProjection;
+    if (ToroidalPoloidalProjectionViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ToroidalPoloidalProjectionViewerEnginePluginInfo::clientAtts  = new ToroidalPoloidalProjection;
+        ToroidalPoloidalProjectionViewerEnginePluginInfo::defaultAtts = new ToroidalPoloidalProjection;
+    }
 }
 
 // ****************************************************************************

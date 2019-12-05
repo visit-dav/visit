@@ -33,6 +33,9 @@
 #   and CMake automagically pulls them in when compiling VisIt, even if not
 #   listed, but not when building the plugins.
 #
+#   Alister Maguire, Mon Dec  2 14:18:39 MST 2019
+#   Removed vtkPPMWriter. It's been replaced with vtkPNMWriter (not custom).
+#
 #****************************************************************************/
 
 IF(OPENEXR_FOUND)
@@ -53,7 +56,6 @@ vtkMergeTree.C
 vtkMultiSplitter.C
 vtkOBJWriter.C
 vtkOnionPeelFilter.C
-vtkPPMWriter.C
 vtkPolyDataOnionPeelFilter.C
 vtkRGBWriter.C
 vtkRectilinearGridFacelistFilter.C

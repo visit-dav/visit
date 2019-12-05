@@ -17,7 +17,7 @@
 #define GENERATOR_NAME "xml2java"
 
 // ****************************************************************************
-//  File:  GenerateAtts
+//  File:  GenerateJava
 //
 //  Purpose:
 //    Contains a set of classes which override the default implementation

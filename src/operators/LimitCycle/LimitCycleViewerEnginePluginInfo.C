@@ -28,8 +28,11 @@ LimitCycleAttributes *LimitCycleViewerEnginePluginInfo::defaultAtts = NULL;
 void
 LimitCycleViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    LimitCycleViewerEnginePluginInfo::clientAtts  = new LimitCycleAttributes;
-    LimitCycleViewerEnginePluginInfo::defaultAtts = new LimitCycleAttributes;
+    if (LimitCycleViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        LimitCycleViewerEnginePluginInfo::clientAtts  = new LimitCycleAttributes;
+        LimitCycleViewerEnginePluginInfo::defaultAtts = new LimitCycleAttributes;
+    }
 }
 
 // ****************************************************************************

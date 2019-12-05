@@ -87,7 +87,8 @@
 #   I modified the installation of visit to no longer add toss3 to the
 #   installation path.
 #
-
+#   Cyrus Harrison, Tue Nov 26 16:50:14 PST 2019
+#   Directly call visit_test_suite.py instead of old runtest wrapper
 
 #
 # Determine the users name and e-mail address.
@@ -392,7 +393,7 @@ for m in \$modes; do
 
 
     # Run the test
-    ../../src/test/runtest --parallel-launch "srun" -b ../../test/baseline -d ../../build/testdata -e ../../build/bin/visit -o \$resDir -m "\$m" -n 1 --cmake $cmakeCmd >> ../../../buildlog 2>&1
+    python ../../src/test/visit_test_suite.py --parallel-launch "srun" -b ../../test/baseline -d ../../build/testdata -e ../../build/bin/visit -o \$resDir -m "\$m" -n 1 --cmake $cmakeCmd >> ../../../buildlog 2>&1
     mv \$resDir/html \$dateTag/\$theMode
 
     # Move the results to the consolidation directory

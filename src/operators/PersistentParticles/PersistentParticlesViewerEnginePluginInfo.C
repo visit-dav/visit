@@ -28,8 +28,11 @@ PersistentParticlesAttributes *PersistentParticlesViewerEnginePluginInfo::defaul
 void
 PersistentParticlesViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    PersistentParticlesViewerEnginePluginInfo::clientAtts  = new PersistentParticlesAttributes;
-    PersistentParticlesViewerEnginePluginInfo::defaultAtts = new PersistentParticlesAttributes;
+    if (PersistentParticlesViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        PersistentParticlesViewerEnginePluginInfo::clientAtts  = new PersistentParticlesAttributes;
+        PersistentParticlesViewerEnginePluginInfo::defaultAtts = new PersistentParticlesAttributes;
+    }
 }
 
 // ****************************************************************************

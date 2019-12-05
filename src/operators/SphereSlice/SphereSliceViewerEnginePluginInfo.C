@@ -28,8 +28,11 @@ SphereSliceAttributes *SphereSliceViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SphereSliceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SphereSliceViewerEnginePluginInfo::clientAtts  = new SphereSliceAttributes;
-    SphereSliceViewerEnginePluginInfo::defaultAtts = new SphereSliceAttributes;
+    if (SphereSliceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SphereSliceViewerEnginePluginInfo::clientAtts  = new SphereSliceAttributes;
+        SphereSliceViewerEnginePluginInfo::defaultAtts = new SphereSliceAttributes;
+    }
 }
 
 // ****************************************************************************

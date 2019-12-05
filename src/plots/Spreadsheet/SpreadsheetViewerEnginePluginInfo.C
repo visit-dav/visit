@@ -29,8 +29,11 @@ SpreadsheetAttributes *SpreadsheetViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SpreadsheetViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SpreadsheetViewerEnginePluginInfo::clientAtts  = new SpreadsheetAttributes;
-    SpreadsheetViewerEnginePluginInfo::defaultAtts = new SpreadsheetAttributes;
+    if (SpreadsheetViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SpreadsheetViewerEnginePluginInfo::clientAtts  = new SpreadsheetAttributes;
+        SpreadsheetViewerEnginePluginInfo::defaultAtts = new SpreadsheetAttributes;
+    }
 }
 
 // ****************************************************************************

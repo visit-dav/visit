@@ -182,7 +182,7 @@ function build_adios2
             fi
 
             # Change all references from adios2 to adios2_mpi.
-            find . -name "CMakeLists.txt" -exec sed -i "s/adios2/adios2_mpi/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2/adios2_mpi/g" {} \;
             # This changes too many things, now we need to change specific things back.
 
             ${SED_CMD} "s/adios2_mpi/adios2/g" source/CMakeLists.txt
@@ -243,6 +243,12 @@ function build_adios2
             cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:BOOL=ON"
             cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${PAR_COMPILER}"
             cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
+        fi
+
+        # Use HDF5?
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            hdf5_install_path="${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}"
+            cfg_opts="${cfg_opts} -DCMAKE_PREFIX_PATH:PATH=${hdf5_install_path}"
         fi
 
         # call configure.

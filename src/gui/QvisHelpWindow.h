@@ -55,6 +55,9 @@ class QWidget;
 //   Brad Whitlock, Thu Jun 19 13:55:53 PDT 2008
 //   Qt 4.
 //
+//   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
+//   Added manualPath.
+//
 // ****************************************************************************
 
 class GUI_API QvisHelpWindow : public QvisDelayedWindow
@@ -135,6 +138,7 @@ private:
     QIcon        helpIcon;
     QString      helpFile;
     QString      helpPath;
+    QString      manualPath;
     bool         firstShow;
     int          activeTab;
     IndexMap     index;

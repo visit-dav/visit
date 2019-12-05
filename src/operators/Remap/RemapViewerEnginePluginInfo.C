@@ -28,8 +28,11 @@ RemapAttributes *RemapViewerEnginePluginInfo::defaultAtts = NULL;
 void
 RemapViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    RemapViewerEnginePluginInfo::clientAtts  = new RemapAttributes;
-    RemapViewerEnginePluginInfo::defaultAtts = new RemapAttributes;
+    if (RemapViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        RemapViewerEnginePluginInfo::clientAtts  = new RemapAttributes;
+        RemapViewerEnginePluginInfo::defaultAtts = new RemapAttributes;
+    }
 }
 
 // ****************************************************************************

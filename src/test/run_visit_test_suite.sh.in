@@ -1,0 +1,6 @@
+#!/bin/bash
+@PYTHON_EXECUTABLE@ @CMAKE_CURRENT_SOURCE_DIR@/visit_test_suite.py \
+   -d @CMAKE_BINARY_DIR@/testdata/  \
+   -b @CMAKE_CURRENT_SOURCE_DIR@/../../test/baseline/   \
+   -o output \
+   -e @CMAKE_BINARY_DIR@/bin/visit "$@"
