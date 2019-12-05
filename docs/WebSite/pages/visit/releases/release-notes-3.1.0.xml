@@ -3,7 +3,7 @@
   <title><![CDATA[Release Notes for VisIt 3.1]]></title>
   <owner><![CDATA[Page Owner Name]]></owner>
   <IM>LLNL-WEB-796739</IM>
-  <lastchanged><![CDATA[November 13, 2019]]></lastchanged>
+  <lastchanged><![CDATA[December 16, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -35,6 +35,12 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>The VCR play/reverse play buttons are now inactive when there are no active drawn plots.</li>
   <li>The following windows were restructured to reduce their height and allow for better usage on laptops: Pick, Preference, Host profiles configuration setup, Poincare operator, LCS operator, Limit Cycle operator and Integral Curve operator.</li>
+  <li>The help menu now refers to the VisIt Sphinx manual.</li>
+</ul>
+
+<h2>Changes in CLI behavior in version 3.1</h2>
+<ul>
+  <li>Added error checking of the arguments to View3DAttributes.RotateAxis().</li>
 </ul>
 
 <h2>File format reader changes in version 3.1</h2>
@@ -42,6 +48,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected a bug with the VTK reader parsing .vtm files when the 'DataSet' tag doesn't have a 'file' attribute.</li>
   <li>An OpenPMD reader was added to VisIt. OpenPMD files are automatically recognized when the have the "pmd" or "opmd" extensions.</li>
   <li>The ADIOS2 reader was updated to use ADIOS2 2.5.</li>
+  <li>The Silo reader handling of 2/3D tensor and symmetric tensor data was improved and corrected.</li>
 </ul>
 
 <h2>Changes to VisIt's plots in version 3.1</h2>
@@ -66,6 +73,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Changing the opacity for a Pseudocolor plot no longer affects the glyph type of glyphed points.</li>
   <li>Corrected an issue with installing host profiles after deleting or moving the .visit folder while VisIt is running.</li>
   <li>Removed the visual artifacts of the Expressions window that were present on first draw.</li>
+  <li>Corrected a memory leak with Pseudocolor plots.</li>
+  <li>Corrected a bug with MPEG movies being generated upside down with incorrect colors.</li>
+  <li>Corrected a memory leak associated with reading ghost cells and nodes in the LibSim reader.</li>
 </ul>
 
 <h2>Build changes in version 3.1</h2>
@@ -74,11 +84,17 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected a bug in build_visit that prevented OSMesa and MesaGL from building from within a Git checkout.</li>
   <li>Added a patch to build_visit so that Qt builds on CentOS 8 and Ubuntu 19.</li>
   <li>Modified build_visit so that it would build Adios2 on Mac OS X.</li>
+  <li>Modified build_visit to correct a compile error with LLVM compiling with icc 19.0.4.</li>
+  <li>Modified build_visit to include Python3 and Sphinx-2.2.1.</li>
+  <li>Modified build_visit so that Conduit would properly pick up the Fortran compiler.</li>
 </ul>
 
 <h2>Changes for VisIt developers in version 3.1</h2>
 <ul>
   <li>Suppressed the Qt warning 'Empty filename passed to function'. Also added additional context information to the Qt log message if available.</li>
+  <li>Corrected compile errors when using Open MPI 1.6.5.</li>
+  <li>Silo reader code sections for recognizing variable types in metadata was re-factored to a single function.</li>
+  <li>Corrected problems compiling Adios2 on Mac OS X 10.13.6</li>
 </ul>
 
 
