@@ -1,8 +1,8 @@
 #/usr/gapps/visit/thirdparty_shared/3.1.0/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake
 ##
 ## ./build_visit3_1_0 generated host.cmake
-## created: Wed Nov 13 17:02:59 PST 2019
-## system: Linux kickit 5.3.8-1.el7.elrepo.x86_64 #1 SMP Tue Oct 29 08:30:10 EDT 2019 x86_64 x86_64 x86_64 GNU/Linux
+## created: Fri Dec  6 14:15:17 PST 2019
+## system: Linux kickit 5.3.12-1.el7.elrepo.x86_64 #1 SMP Wed Nov 20 12:34:41 EST 2019 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger1
 
 ##
@@ -60,6 +60,7 @@ VISIT_OPTION_DEFAULT(VISIT_OPENSSL_DIR ${VISITHOME}/openssl/1.0.2j/${VISITARCH})
 ## Python
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.14/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_PYTHON3_DIR ${VISITHOME}/python/3.7.5/${VISITARCH})
 
 ##
 ## Qt
