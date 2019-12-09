@@ -120,3 +120,115 @@ MACRO(VISIT_PLUGIN_TARGET_RTOD type)
 ENDMACRO(VISIT_PLUGIN_TARGET_RTOD)
 
 
+##############################################################################
+# Function that creates XML tools C++ Code Gen Target 
+##############################################################################
+FUNCTION(ADD_CPP_GEN_TARGET gen_name
+                            src_dir
+                            dest_dir)
+
+    set(gen_target_name "gen_cpp_${gen_name}")
+    MESSAGE(STATUS "Adding xml tools C++ generation target: ${gen_target_name}")
+
+
+    set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/xml2atts)
+
+    # construct path to source file, we need to run 
+    # xml2python in the dir where we want the code to gen
+    set(xml_input ${src_dir}/${gen_name}.xml)
+
+    if(NOT IS_ABSOLUTE ${xml_input})
+        set(xml_input "${CMAKE_CURRENT_SOURCE_DIR}/${xml_input}")
+    endif()
+
+    add_custom_target(${gen_target_name}
+                     COMMAND ${xml_gen_tool} -clobber ${xml_input}
+                     DEPENDS  ${xml_file} xml2atts
+                     WORKING_DIRECTORY ${dest_dir}
+                     COMMENT "Generating C++ Code for ${gen_name}" VERBATIM)
+
+    # connect this target to roll up target for all python gen
+    if(NOT TARGET gen_atts_all)
+        add_custom_target("gen_atts_all")
+    endif()
+    
+    add_dependencies(gen_atts_all ${gen_target_name})
+
+ENDFUNCTION(ADD_CPP_GEN_TARGET)
+
+
+##############################################################################
+# Function that creates XML tools Python Code Gen Target 
+##############################################################################
+FUNCTION(ADD_PYTHON_GEN_TARGET gen_name
+                               src_dir
+                               dest_dir)
+
+    set(gen_target_name "gen_py_${gen_name}")
+    MESSAGE(STATUS "Adding xml tools Python generation target: ${gen_target_name}")
+
+
+    set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/xml2python)
+
+    # construct path to source file, we need to run 
+    # xml2python in the dir where we want the code to gen
+    set(xml_input ${src_dir}/${gen_name}.xml)
+
+    if(NOT IS_ABSOLUTE ${xml_input})
+        set(xml_input "${CMAKE_CURRENT_SOURCE_DIR}/${xml_input}")
+    endif()
+
+    add_custom_target(${gen_target_name}
+                     COMMAND ${xml_gen_tool} -clobber ${xml_input}
+                     DEPENDS  ${xml_file} xml2python 
+                     WORKING_DIRECTORY ${dest_dir}
+                     COMMENT "Generating Python Wrapping Code for ${gen_name}" VERBATIM)
+
+    # connect this target to roll up target for all python gen
+    if(NOT TARGET gen_py_all)
+        add_custom_target("gen_py_all")
+    endif()
+
+    add_dependencies(gen_py_all ${gen_target_name})
+
+ENDFUNCTION(ADD_PYTHON_GEN_TARGET)
+
+##############################################################################
+# Function that creates XML tools Java Code Gen Target 
+##############################################################################
+FUNCTION(ADD_JAVA_GEN_TARGET gen_name
+                             src_dir
+                             dest_dir)
+
+    set(gen_target_name "gen_java_${gen_name}")
+    MESSAGE(STATUS "Adding xml tools Java generation target: ${gen_target_name}")
+
+
+    set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/xml2java)
+
+    # construct path to source file, we need to run 
+    # xml2python in the dir where we want the code to gen
+    set(xml_input ${src_dir}/${gen_name}.xml)
+
+    if(NOT IS_ABSOLUTE ${xml_input})
+        set(xml_input "${CMAKE_CURRENT_SOURCE_DIR}/${xml_input}")
+    endif()
+    
+
+    add_custom_target(${gen_target_name}
+                     COMMAND ${xml_gen_tool} -clobber ${xml_input}
+                     DEPENDS  ${xml_file} xml2java 
+                     WORKING_DIRECTORY ${dest_dir}
+                     COMMENT "Generating Java Code for ${gen_name}" VERBATIM)
+
+    # connect this target to roll up target for all python gen
+    if(NOT TARGET gen_java_all)
+        add_custom_target("gen_java_all")
+    endif()
+
+    add_dependencies(gen_java_all ${gen_target_name})
+
+ENDFUNCTION(ADD_JAVA_GEN_TARGET)
+
+
+
