@@ -147,11 +147,11 @@ FUNCTION(ADD_CPP_GEN_TARGET gen_name
                       COMMENT "Generating C++ Code for ${gen_name}" VERBATIM)
 
     # connect this target to roll up target for all python gen
-    if(NOT TARGET gen_atts_all)
-        add_custom_target("gen_atts_all")
+    if(NOT TARGET gen_cpp_all)
+        add_custom_target("gen_cpp_all")
     endif()
     
-    add_dependencies(gen_atts_all ${gen_target_name})
+    add_dependencies(gen_cpp_all ${gen_target_name})
 
 ENDFUNCTION(ADD_CPP_GEN_TARGET)
 

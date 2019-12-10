@@ -19,12 +19,36 @@
 #
 #   Brad Whitlock, Fri Aug 14 12:28:12 PDT 2015
 #   Add VisIt_OptionList.
-#    
+#
+#   Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
+#   Add xml tools code gen targets
 #****************************************************************************
 
 # See ../CMakeLists.txt for LIBSIM_SOURCES
 
 SET(FORTRAN_LIBSIM_SOURCES visitfortransimV2interface.c)
+
+
+# Add XML Code Gen Targets
+
+set(LIBSIM_GEN_OBJECTS 
+    MessageMetaData
+    MaterialMetaData
+    ExpressionMetaData
+    SpeciesMetaData
+    CurveMetaData
+    NameList
+    View3D
+    VariableMetaData
+    CommandMetaData
+    MeshMetaData)
+
+# Libsim Objects
+foreach(obj_name ${LIBSIM_GEN_OBJECTS})
+    ADD_CPP_GEN_TARGET(${obj_name}
+                       ${CMAKE_CURRENT_SOURCE_DIR}
+                       ${CMAKE_CURRENT_SOURCE_DIR})
+endforeach()
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}

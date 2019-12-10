@@ -40,7 +40,131 @@
 #   Kathleen Biagas, Tue Dec 20 15:43:20 PST 2016
 #   Added GlyphTypes.
 #
+#    Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
+#    Add xml tools code gen targets
 #****************************************************************************
+
+
+# Add XML Code Gen Targets
+
+set(COMMON_STATE_GEN_OBJECTS 
+    ProcessAttributes
+    PlotList
+    Expression
+    ViewAttributes
+    TimeFormat
+    ViewerClientAttributes
+    SimilarityTransformAttributes
+    ViewAxisArrayAttributes
+    DBOptionsAttributes
+    DatabaseAttributes
+    LightAttributes
+    FontAttributes
+    ContourOpAttributes
+    AxisAttributes
+    StatusAttributes
+    ColorAttributeList
+    MovieAttributes
+    SaveWindowAttributes
+    ExpressionList
+    PickVarInfo
+    ConstructDataBinningAttributes
+    GlobalAttributes
+    FileOpenOptions
+    PrinterAttributes
+    SyncAttributes
+    SelectionSummary
+    AnnotationObject
+    SILMatrixAttributes
+    ClientMethod
+    NameschemeAttributes
+    SphereAttributes
+    DatabaseCorrelation
+    MaterialAttributes
+    MessageAttributes
+    View2DAttributes
+    AppearanceAttributes
+    PlaneAttributes
+    SILAttributes
+    MachineProfile
+    SelectionList
+    DBPluginInfoAttributes
+    BoxExtents
+    SaveSubWindowsAttributes
+    AnnotationObjectList
+    AnnotationAttributes
+    ColorControlPointList
+    RenderingAttributes
+    SaveSubWindowAttributes
+    View3DAttributes
+    MeshManagementAttributes
+    AnimationAttributes
+    AxisTitles
+    ClientInformationList
+    EngineList
+    ColorAttribute
+    QueryOverTimeAttributes
+    GaussianControlPointList
+    GaussianControlPoint
+    AxisRestrictionAttributes
+    AxesArray
+    VisualCueInfo
+    ColorControlPoint
+    Axes2D
+    HostProfileList
+    ThresholdOpAttributes
+    LaunchProfile
+    ExportDBAttributes
+    Axes3D
+    ViewerClientInformationElement
+    ViewCurveAttributes
+    PlotQueryInfo
+    PointAttributes
+    SILArrayAttributes
+    PlotInfoAttributes
+    GlobalLineoutAttributes
+    SimulationUIValues
+    ViewerClientInformation
+    WindowInformation
+    KeyframeAttributes
+    QueryList
+    InternalResampleAttributes
+    ColorTableAttributes
+    Plot
+    NamespaceAttributes
+    SelectionProperties
+    SurfaceFilterAttributes
+    AxisTickMarks
+    PickAttributes
+    EngineProperties
+    DatabaseCorrelationList
+    SelectionVariableSummary
+    InteractorAttributes
+    Line
+    SILRestrictionAttributes
+    PluginManagerAttributes
+    WindowAttributes
+    AxisLabels
+    SeedMeAttributes
+    CinemaAttributes
+    QueryAttributes
+    LinearTransformAttributes
+    ClientInformation
+    CompactSILRestrictionAttributes
+    SimulationCommand
+    VisualCueList
+    LightList)
+    
+
+# Common State Objects
+foreach(obj_name ${COMMON_STATE_GEN_OBJECTS})
+    ADD_CPP_GEN_TARGET(${obj_name}
+                       ${CMAKE_CURRENT_SOURCE_DIR}/state/
+                       ${CMAKE_CURRENT_SOURCE_DIR}/state/)
+endforeach()
+
+
+
 
 SET(COMM_SOURCES
 comm/BadHostException.C
