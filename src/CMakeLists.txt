@@ -741,6 +741,7 @@ IF(WIN32)
   ENDIF(VISIT_WINDOWS_APPLICATION)
 ENDIF(WIN32)
 
+OPTION(VISIT_CMAKE_VERBOSE_GEN_TARGET_MESSAGES "Display names and details about code gen targets during CMake configure time." OFF)
 OPTION(VISIT_INSTALL_AS_BETA "Install as beta (symlink beta instead of current to installed version)." OFF)
 OPTION(VISIT_MPICH_INSTALL "Install MPICH into VisIt binary distribution" OFF)
 IF(APPLE OR WIN32)

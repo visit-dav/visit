@@ -128,7 +128,10 @@ FUNCTION(ADD_CPP_GEN_TARGET gen_name
                             dest_dir)
 
     set(gen_target_name "gen_cpp_${gen_name}")
-    MESSAGE(STATUS "Adding xml tools C++ generation target: ${gen_target_name}")
+
+    if(VISIT_CMAKE_VERBOSE_GEN_TARGET_MESSAGES)
+        MESSAGE(STATUS "Adding xml tools C++ generation target: ${gen_target_name}")
+    endif()
 
     set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/xml2atts)
 
@@ -164,7 +167,10 @@ FUNCTION(ADD_PYTHON_GEN_TARGET gen_name
                                dest_dir)
 
     set(gen_target_name "gen_python_${gen_name}")
-    MESSAGE(STATUS "Adding xml tools Python generation target: ${gen_target_name}")
+
+    if(VISIT_CMAKE_VERBOSE_GEN_TARGET_MESSAGES)
+        MESSAGE(STATUS "Adding xml tools Python generation target: ${gen_target_name}")
+    endif()
 
     set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/xml2python)
 
@@ -199,7 +205,10 @@ FUNCTION(ADD_JAVA_GEN_TARGET gen_name
                              dest_dir)
 
     set(gen_target_name "gen_java_${gen_name}")
-    MESSAGE(STATUS "Adding xml tools Java generation target: ${gen_target_name}")
+
+    if(VISIT_CMAKE_VERBOSE_GEN_TARGET_MESSAGES)
+        MESSAGE(STATUS "Adding xml tools Java generation target: ${gen_target_name}")
+    endif()
 
     set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/xml2java)
 
@@ -235,7 +244,10 @@ FUNCTION(ADD_INFO_GEN_TARGET gen_name
                              dest_dir)
 
     set(gen_target_name "gen_info_${gen_name}")
-    MESSAGE(STATUS "Adding xml tools Info generation target: ${gen_target_name}")
+
+    if(VISIT_CMAKE_VERBOSE_GEN_TARGET_MESSAGES)
+        MESSAGE(STATUS "Adding xml tools Info generation target: ${gen_target_name}")
+    endif()
 
     set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/xml2info)
 
@@ -270,7 +282,10 @@ FUNCTION(ADD_CMAKE_GEN_TARGET gen_name
                               dest_dir)
 
     set(gen_target_name "gen_cmake_${gen_name}")
-    MESSAGE(STATUS "Adding xml tools Info generation target: ${gen_target_name}")
+
+    if(VISIT_CMAKE_VERBOSE_GEN_TARGET_MESSAGES)
+        MESSAGE(STATUS "Adding xml tools Info generation target: ${gen_target_name}")
+    endif()
 
     set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/xml2cmake)
 

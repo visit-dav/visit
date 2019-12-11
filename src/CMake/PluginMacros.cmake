@@ -93,7 +93,9 @@ FUNCTION(ADD_PLUGIN_CODE_GEN_TARGETS gen_name)
 
     set(gen_target_name "gen_plugin_${gen_name}")
 
-    MESSAGE(STATUS "Adding xml tools plugin generation target: ${gen_target_name}")
+    if(VISIT_CMAKE_VERBOSE_GEN_TARGET_MESSAGES)
+        MESSAGE(STATUS "Adding xml tools plugin generation target: ${gen_target_name}")
+    endif()
 
     ADD_CPP_GEN_TARGET(${gen_name} 
                        ${CMAKE_CURRENT_SOURCE_DIR} 
@@ -157,7 +159,9 @@ FUNCTION(ADD_DATABASE_CODE_GEN_TARGETS gen_name)
 
     set(gen_target_name "gen_plugin_${gen_name}")
 
-    MESSAGE(STATUS "Adding xml tools plugin generation target: ${gen_target_name}")
+    if(VISIT_CMAKE_VERBOSE_GEN_TARGET_MESSAGES)
+        MESSAGE(STATUS "Adding xml tools plugin generation target: ${gen_target_name}")
+    endif()
 
     add_custom_target(${gen_target_name})
 
