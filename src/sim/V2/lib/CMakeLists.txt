@@ -31,17 +31,19 @@ SET(FORTRAN_LIBSIM_SOURCES visitfortransimV2interface.c)
 
 # Add XML Code Gen Targets
 
+# Note: These names are in alphabetical order
+
 set(LIBSIM_GEN_OBJECTS 
-    MessageMetaData
-    MaterialMetaData
-    ExpressionMetaData
-    SpeciesMetaData
-    CurveMetaData
-    NameList
-    View3D
-    VariableMetaData
     CommandMetaData
-    MeshMetaData)
+    CurveMetaData
+    ExpressionMetaData
+    MaterialMetaData
+    MeshMetaData
+    MessageMetaData
+    NameList
+    SpeciesMetaData
+    VariableMetaData
+    View3D)
 
 # Libsim Objects
 foreach(obj_name ${LIBSIM_GEN_OBJECTS})

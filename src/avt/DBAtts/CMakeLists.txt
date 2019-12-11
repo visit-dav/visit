@@ -11,25 +11,27 @@
 
 # Add XML Code Gen Targets
 
+# Note: These names are in alphabetical order
+
 set(METADATA_GEN_OBJECTS 
-    avtVectorMetaData
-    avtMatSpeciesMetaData
-    avtBaseVarMetaData
-    avtSimulationCommandSpecification
-    avtDefaultPlotMetaData
-    avtSpeciesMetaData
-    avtMeshMetaData
-    avtSimulationInformation
-    avtVarMetaData
     avtArrayMetaData
-    avtDatabaseMetaData
-    avtScalarMetaData
-    avtSubsetsMetaData
+    avtBaseVarMetaData
     avtCurveMetaData
-    avtTensorMetaData
-    avtSymmetricTensorMetaData
+    avtDatabaseMetaData
+    avtDefaultPlotMetaData
+    avtLabelMetaData
+    avtMatSpeciesMetaData
     avtMaterialMetaData
-    avtLabelMetaData)
+    avtMeshMetaData
+    avtScalarMetaData
+    avtSimulationCommandSpecification
+    avtSimulationInformation
+    avtSpeciesMetaData
+    avtSubsetsMetaData
+    avtSymmetricTensorMetaData
+    avtTensorMetaData
+    avtVarMetaData
+    avtVectorMetaData)
 
 # Metadata Objects
 foreach(obj_name ${METADATA_GEN_OBJECTS})
