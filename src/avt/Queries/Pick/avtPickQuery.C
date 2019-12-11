@@ -31,6 +31,7 @@
 #include <avtMatrix.h>
 #include <avtParallel.h>
 #include <avtOriginatingSource.h>
+#include <avtTypes.h>
 #include <avtVector.h>
 
 #include <DebugStream.h>
@@ -861,6 +862,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
     int element = pickAtts.GetElementNumber();
     stringVector userVars = pickAtts.GetVariables();
     string vName;
+    string vType;
     char buff[80];
     intVector incidentElements = pickAtts.GetIncidentElements();
     double *temp = NULL;
@@ -896,7 +898,10 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
         }
 
         if (data.ValidVariable(vName))
+        {
             treatAsASCII = data.GetTreatAsASCII(vName.c_str());
+            vtype = avtVarTypeToString(data.GetVariableType(vName.c_str()));
+        }
         else
             treatAsASCII = false;
 
@@ -990,6 +995,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                     vals.push_back(mag);
                 }
             }
+            delete [] temp;
         }  // foundData
 
         if (pickAtts.GetFulfilled())
@@ -1000,20 +1006,8 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                 pickAtts.GetVarInfo(varNum).SetValues(vals);
                 pickAtts.GetVarInfo(varNum).SetCentering(centering);
                 pickAtts.GetVarInfo(varNum).SetTreatAsASCII(treatAsASCII);
-                if (pickAtts.GetVarInfo(varNum).GetVariableType() != "species")
-                {
-                    if (labelData)
-                        pickAtts.GetVarInfo(varNum).SetVariableType("label");
-                    else if (nComponents == 1)
-                        pickAtts.GetVarInfo(varNum).SetVariableType("scalar");
-                    else if (nComponents == 3)
-                        pickAtts.GetVarInfo(varNum).SetVariableType("vector");
-                    else if (nComponents == 9)
-                        pickAtts.GetVarInfo(varNum).SetVariableType("tensor");
-                    else
-                        pickAtts.GetVarInfo(varNum).SetVariableType("array");
-                }
-                delete [] temp;
+                if (!vtype.empty())
+                    pickAtts.GetVarInfo(varNum).SetVariableType(vtype);
             }
         }
         else
@@ -1022,21 +1016,12 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
             varInfo.SetVariableName(vName);
             varInfo.SetCentering(centering);
             varInfo.SetTreatAsASCII(treatAsASCII);
+            if (!vtype.empty())
+                varInfo.SetVariableType(vtype);
             if (!names.empty())
             {
                 varInfo.SetNames(names);
                 varInfo.SetValues(vals);
-                delete [] temp;
-                if (labelData)
-                    varInfo.SetVariableType("label");
-                else if (nComponents == 1)
-                    varInfo.SetVariableType("scalar");
-                else if (nComponents == 3)
-                    varInfo.SetVariableType("vector");
-                else if (nComponents == 9)
-                    varInfo.SetVariableType("tensor");
-                else
-                    varInfo.SetVariableType("array");
             }
             pickAtts.AddVarInfo(varInfo);
         }
