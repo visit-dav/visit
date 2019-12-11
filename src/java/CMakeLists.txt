@@ -36,7 +36,7 @@
 #
 #****************************************************************************
 
-PROJECT(JavaClient Java)
+PROJECT(JavaClient)
 
 
 #########################################################
@@ -203,7 +203,9 @@ endforeach()
 # (only added if java support is enabled)
 ############################################
 IF(VISIT_JAVA)
-############################################    
+############################################ 
+
+enable_language(Java)
 
 SET(METADATA_SOURCES
 avtArrayMetaData.java
