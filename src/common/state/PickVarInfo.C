@@ -1649,6 +1649,10 @@ PickVarInfo::PrintArray(std::string &os,
 //    Alister Maguire, Fri Aug 23 13:53:07 PDT 2019
 //    Avoid adding null terminating characters to label strings.
 //
+//    Kathleen Biagas, Thu Dec 12 12:08:58 PST 2019
+//    Fix logic for tensor, which was printing out too much info. Separate the
+//    'values' and the 'major_eigenvalue' into separate entries for the var.
+//
 // ****************************************************************************
 
 void

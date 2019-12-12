@@ -849,6 +849,10 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int elNum)
 //    Expanded use of 'Treat As ASCII' to handle label string case, removed
 //    use of avtLabelVariableSize.
 //
+//    Kathleen Biagas, Thu Dec 12 12:07:17 PST 2019
+//    Set pickVarInfo's VariableType from the one stored in avtDataAttributes.
+//    Don't overwrite what was set if the pick is marked as 'fulfilled'.
+//
 // ****************************************************************************
 
 void
