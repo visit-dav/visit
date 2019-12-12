@@ -24,8 +24,8 @@ PickVarInfo::PrintSelf(ostream &os)
     os << variableName.c_str() << ":  ";
     switch (centering)
     {
-        case Nodal:  os << "nodal " ; break;
-        case Zonal:  os << "zonal " ; break;
+        case Nodal:  os << "nodal "; break;
+        case Zonal:  os << "zonal "; break;
         case None : break;
     }
     if (!(names.empty() && mixNames.empty()))
@@ -89,13 +89,13 @@ PickVarInfo::PrintSelf(ostream &os)
                     os << "(";
                     for (j = 0; j < stride; j++)
                     {
-                        os << values[i*stride + j] << ", " ;
+                        os << values[i*stride + j] << ", ";
                     }
                     os << ")\n";
                 }
                 else if (values.size() == names.size())
                 {
-                    os << values[i] << "\n" ;
+                    os << values[i] << "\n";
                 }
                 if (mixVar)
                 {
@@ -188,11 +188,11 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
     std::string format="";
     switch (centering)
     {
-        case Nodal:  os += "<nodal> " ;
+        case Nodal:  os += "<nodal> ";
                      if (type == "Node" || type == "DomainNode")
                          centeringsMatch = true;
                      break;
-        case Zonal:  os += "<zonal> " ;
+        case Zonal:  os += "<zonal> ";
                      if (type == "Zone" || type == "DomainZone")
                          centeringsMatch = true;
                      break;
@@ -466,19 +466,19 @@ PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
     if (ncomps == 2)  // 2D tensor
     {
         char line[256];
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
         format = "(" + floatFormat + ", "  + floatFormat + ")\n";
         sprintf(line, format.c_str(), values[offset], values[offset+1]);
 
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         sprintf(line, format.c_str(), values[offset+2], values[offset+3]);
 
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         format = "Major Eigenvalue: " + floatFormat + "\n";
@@ -488,7 +488,7 @@ PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
     else if (ncomps == 9) // 3D tensor
     {
         char line[256];
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         format = "(" + floatFormat + ", "
@@ -497,19 +497,19 @@ PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
         sprintf(line, format.c_str(), values[offset], values[offset+1],
                                         values[offset+2]);
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         sprintf(line, format.c_str(), values[offset+3], values[offset+4],
                                         values[offset+5]);
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         sprintf(line, format.c_str(), values[offset+6], values[offset+7],
                                         values[offset+8]);
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         format = "Major Eigenvalue: " + floatFormat + "\n";
@@ -550,20 +550,20 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
     if (ncomps == 2)  // 2D tensor
     {
         char line[256];
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         format = "(" + floatFormat + ", "  + floatFormat + ")\n";
         sprintf(line, format.c_str(), values[offset], values[offset+1]);
 
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         sprintf(line, format.c_str(), values[offset+2], values[offset+3]);
 
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         format = "Major Eigenvalue: " + floatFormat + "\n";
@@ -573,7 +573,7 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
     else if (ncomps == 9) // 3D tensor
     {
         char line[256];
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         format = "(" + floatFormat + ", "
@@ -582,19 +582,19 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
         sprintf(line, format.c_str(), values[offset], values[offset+1],
                                         values[offset+2]);
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         sprintf(line, format.c_str(), values[offset+3], values[offset+4],
                                         values[offset+5]);
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         sprintf(line, format.c_str(), values[offset+6], values[offset+7],
                                         values[offset+8]);
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         format = "Major Eigenvalue: " + floatFormat + "\n";
@@ -660,7 +660,7 @@ PickVarInfo::PrintArray(std::string &os,
     line[0] = '\0';
     if (ncomps > 5)
     {
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
     }
     os += "(";

@@ -2801,7 +2801,8 @@ avtDatabase::Query(PickAttributes *pa)
         // 
         if (pa->GetVarInfo(varNum).HasInfo() )
         {
-            if (pa->GetVarInfo(varNum).GetVariableType() == "scalar") 
+            if (pa->GetVarInfo(varNum).GetVariableType() == "scalar" ||
+                pa->GetVarInfo(varNum).GetVariableType() == "species")
             {
                 ExprNode *tree = ParsingExprList::GetExpressionTree(vName);
                 //

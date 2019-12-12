@@ -31,7 +31,6 @@
 #include <avtMatrix.h>
 #include <avtParallel.h>
 #include <avtOriginatingSource.h>
-#include <avtTypes.h>
 #include <avtVector.h>
 
 #include <DebugStream.h>
@@ -900,7 +899,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
         if (data.ValidVariable(vName))
         {
             treatAsASCII = data.GetTreatAsASCII(vName.c_str());
-            vtype = avtVarTypeToString(data.GetVariableType(vName.c_str()));
+            vType = avtVarTypeToString(data.GetVariableType(vName.c_str()));
         }
         else
             treatAsASCII = false;
@@ -1006,8 +1005,6 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                 pickAtts.GetVarInfo(varNum).SetValues(vals);
                 pickAtts.GetVarInfo(varNum).SetCentering(centering);
                 pickAtts.GetVarInfo(varNum).SetTreatAsASCII(treatAsASCII);
-                if (!vtype.empty())
-                    pickAtts.GetVarInfo(varNum).SetVariableType(vtype);
             }
         }
         else
@@ -1016,12 +1013,11 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
             varInfo.SetVariableName(vName);
             varInfo.SetCentering(centering);
             varInfo.SetTreatAsASCII(treatAsASCII);
-            if (!vtype.empty())
-                varInfo.SetVariableType(vtype);
             if (!names.empty())
             {
                 varInfo.SetNames(names);
                 varInfo.SetValues(vals);
+                varInfo.SetVariableType(vType);
             }
             pickAtts.AddVarInfo(varInfo);
         }
