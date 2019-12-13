@@ -28,8 +28,11 @@ LCSAttributes *LCSViewerEnginePluginInfo::defaultAtts = NULL;
 void
 LCSViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    LCSViewerEnginePluginInfo::clientAtts  = new LCSAttributes;
-    LCSViewerEnginePluginInfo::defaultAtts = new LCSAttributes;
+    if (LCSViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        LCSViewerEnginePluginInfo::clientAtts  = new LCSAttributes;
+        LCSViewerEnginePluginInfo::defaultAtts = new LCSAttributes;
+    }
 }
 
 // ****************************************************************************

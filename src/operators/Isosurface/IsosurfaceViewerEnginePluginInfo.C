@@ -28,8 +28,11 @@ IsosurfaceAttributes *IsosurfaceViewerEnginePluginInfo::defaultAtts = NULL;
 void
 IsosurfaceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    IsosurfaceViewerEnginePluginInfo::clientAtts  = new IsosurfaceAttributes;
-    IsosurfaceViewerEnginePluginInfo::defaultAtts = new IsosurfaceAttributes;
+    if (IsosurfaceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        IsosurfaceViewerEnginePluginInfo::clientAtts  = new IsosurfaceAttributes;
+        IsosurfaceViewerEnginePluginInfo::defaultAtts = new IsosurfaceAttributes;
+    }
 }
 
 // ****************************************************************************

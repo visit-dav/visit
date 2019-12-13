@@ -28,8 +28,11 @@ CylinderAttributes *CylinderViewerEnginePluginInfo::defaultAtts = NULL;
 void
 CylinderViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    CylinderViewerEnginePluginInfo::clientAtts  = new CylinderAttributes;
-    CylinderViewerEnginePluginInfo::defaultAtts = new CylinderAttributes;
+    if (CylinderViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        CylinderViewerEnginePluginInfo::clientAtts  = new CylinderAttributes;
+        CylinderViewerEnginePluginInfo::defaultAtts = new CylinderAttributes;
+    }
 }
 
 // ****************************************************************************

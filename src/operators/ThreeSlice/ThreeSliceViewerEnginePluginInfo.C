@@ -28,8 +28,11 @@ ThreeSliceAttributes *ThreeSliceViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ThreeSliceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ThreeSliceViewerEnginePluginInfo::clientAtts  = new ThreeSliceAttributes;
-    ThreeSliceViewerEnginePluginInfo::defaultAtts = new ThreeSliceAttributes;
+    if (ThreeSliceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ThreeSliceViewerEnginePluginInfo::clientAtts  = new ThreeSliceAttributes;
+        ThreeSliceViewerEnginePluginInfo::defaultAtts = new ThreeSliceAttributes;
+    }
 }
 
 // ****************************************************************************

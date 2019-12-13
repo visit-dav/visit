@@ -28,8 +28,11 @@ ClipAttributes *ClipViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ClipViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ClipViewerEnginePluginInfo::clientAtts  = new ClipAttributes;
-    ClipViewerEnginePluginInfo::defaultAtts = new ClipAttributes;
+    if (ClipViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ClipViewerEnginePluginInfo::clientAtts  = new ClipAttributes;
+        ClipViewerEnginePluginInfo::defaultAtts = new ClipAttributes;
+    }
 }
 
 // ****************************************************************************

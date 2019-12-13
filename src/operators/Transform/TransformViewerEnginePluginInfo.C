@@ -28,8 +28,11 @@ TransformAttributes *TransformViewerEnginePluginInfo::defaultAtts = NULL;
 void
 TransformViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    TransformViewerEnginePluginInfo::clientAtts  = new TransformAttributes;
-    TransformViewerEnginePluginInfo::defaultAtts = new TransformAttributes;
+    if (TransformViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        TransformViewerEnginePluginInfo::clientAtts  = new TransformAttributes;
+        TransformViewerEnginePluginInfo::defaultAtts = new TransformAttributes;
+    }
 }
 
 // ****************************************************************************

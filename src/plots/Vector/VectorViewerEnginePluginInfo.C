@@ -29,8 +29,11 @@ VectorAttributes *VectorViewerEnginePluginInfo::defaultAtts = NULL;
 void
 VectorViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    VectorViewerEnginePluginInfo::clientAtts  = new VectorAttributes;
-    VectorViewerEnginePluginInfo::defaultAtts = new VectorAttributes;
+    if (VectorViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        VectorViewerEnginePluginInfo::clientAtts  = new VectorAttributes;
+        VectorViewerEnginePluginInfo::defaultAtts = new VectorAttributes;
+    }
 }
 
 // ****************************************************************************

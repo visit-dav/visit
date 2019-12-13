@@ -28,8 +28,11 @@ MergeOperatorAttributes *MergeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 MergeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MergeViewerEnginePluginInfo::clientAtts  = new MergeOperatorAttributes;
-    MergeViewerEnginePluginInfo::defaultAtts = new MergeOperatorAttributes;
+    if (MergeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        MergeViewerEnginePluginInfo::clientAtts  = new MergeOperatorAttributes;
+        MergeViewerEnginePluginInfo::defaultAtts = new MergeOperatorAttributes;
+    }
 }
 
 // ****************************************************************************

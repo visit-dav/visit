@@ -429,7 +429,9 @@ def default_suite_options():
     visit_exe_def   = abs_path(visit_root(),"src","bin","visit")
     src_dir_def     = abs_path(visit_root(),"src")
     skip_def        = pjoin(test_path(),"skip.json")
-    nprocs_def      = multiprocessing.cpu_count()
+    # Set nprocs_def to 1, since multi-proc test mode seems to result in
+    # crossed streams. In the past we have used: multiprocessing.cpu_count()
+    nprocs_def      = 1 
     opts_full_defs = {
                       "use_pil":True,
                       "threshold_diff":False,

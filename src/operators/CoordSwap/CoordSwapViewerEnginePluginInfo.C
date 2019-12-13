@@ -28,8 +28,11 @@ CoordSwapAttributes *CoordSwapViewerEnginePluginInfo::defaultAtts = NULL;
 void
 CoordSwapViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    CoordSwapViewerEnginePluginInfo::clientAtts  = new CoordSwapAttributes;
-    CoordSwapViewerEnginePluginInfo::defaultAtts = new CoordSwapAttributes;
+    if (CoordSwapViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        CoordSwapViewerEnginePluginInfo::clientAtts  = new CoordSwapAttributes;
+        CoordSwapViewerEnginePluginInfo::defaultAtts = new CoordSwapAttributes;
+    }
 }
 
 // ****************************************************************************
