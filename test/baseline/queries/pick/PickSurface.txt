@@ -126,7 +126,8 @@ d:  <zonal>
 
 K:  curv2d.silo
 curvmesh2d 
-Point (Z,R): <-2.19513, 3.43955>
+Point (Z,R): (in transformed space)
+        <-2.19513, 3.43955>
 Zone:  830
 Incident Nodes:  857  858  889  888  
 p:  <zonal> = 0.246486
@@ -146,7 +147,8 @@ p:  <zonal>
 
 M:  curv2d.silo
 curvmesh2d 
-Point (Z,R): <1.19098, 1.965>
+Point (Z,R): (in transformed space)
+        <1.19098, 1.965>
 Zone:  99
 Incident Nodes:  102  103  134  133  
 p:  <zonal> = 0.442576
@@ -166,7 +168,8 @@ p:  <zonal>
 
 O:  curv2d.silo
 curvmesh2d 
-Point (Z,R): <-0.979292, 1.90145>
+Point (Z,R): (in transformed space)
+        <-0.979292, 1.90145>
 Zone:  49
 Incident Nodes:  50  51  82  81  
 p:  <zonal> = 0.474
@@ -186,7 +189,8 @@ p:  <zonal>
 
 Q:  curv2d.silo
 curvmesh2d 
-Point (Z,R): <0.25521, 3.21002>
+Point (Z,R): (in transformed space)
+        <0.25521, 3.21002>
 Zone:  494
 Incident Nodes:  510  511  542  541  
 p:  <zonal> = 0.309295
@@ -206,7 +210,8 @@ p:  <zonal>
 
 S:  curv2d.silo
 curvmesh2d 
-Point (Z,R): <2.04395, 2.32597>
+Point (Z,R): (in transformed space)
+        <2.04395, 2.32597>
 Zone:  428
 Incident Nodes:  442  443  474  473  
 p:  <zonal> = 0.324321
@@ -228,7 +233,8 @@ The next three results should be the same.
 
 U:  ucd2d.silo
 ucdmesh2d 
-Point: <2.69745, 2.79508>
+Point: (in transformed space)
+        <2.69745, 2.79508>
 Zone:  3
 Incident Nodes:  12  11  4  
 d:  <nodal> 
@@ -239,7 +245,8 @@ d:  <nodal>
 
 V:  ucd2d.silo
 ucdmesh2d 
-Point: <2.83333, 2.83333>
+Point: (in transformed space)
+        <2.83333, 2.83333>
 Zone:  3
 Incident Nodes:  12  11  4  
 d:  <nodal> 
@@ -250,7 +257,8 @@ d:  <nodal>
 
 W:  ucd2d.silo
 ucdmesh2d 
-Point: <2.74917, 2.79753>
+Point: (in transformed space)
+        <2.74917, 2.79753>
 Zone:  3
 Incident Nodes:  12  11  4  
 d:  <nodal> 
