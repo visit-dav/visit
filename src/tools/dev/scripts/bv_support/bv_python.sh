@@ -999,6 +999,16 @@ function build_sphinx
         fi
     fi
 
+    # patch
+    SED_CMD="sed -i "
+    if [[ "$OPSYS" == "Darwin" ]]; then
+                SED_CMD="sed -i \"\" "
+    fi
+    pushd $SPHINX_BUILD_DIR > /dev/null
+    ${SED_CMD} "s/docutils>=0.12/docutils<0.16,>=0.12/" ./Sphinx.egg-info/requires.txt
+    ${SED_CMD} "s/docutils>=0.12/docutils<0.16,>=0.12/" ./setup.py
+    popd > /dev/null
+
     PY3HOME="${VISITDIR}/python/${PYTHON3_VERSION}/${VISITARCH}"
     # install
     pushd $SPHINX_BUILD_DIR > /dev/null
