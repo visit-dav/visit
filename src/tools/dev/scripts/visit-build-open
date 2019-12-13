@@ -182,6 +182,10 @@
 #   Eric Brugger, Thu Sep 26 17:35:20 PDT 2019
 #   I removed ifyou and ubuntu1404_64.
 #
+#   Eric Brugger, Fri Dec 13 14:04:47 PST 2019
+#   I updated the 3.0.0 cmake paths to 3.1.0 and added a "make manuals"
+#   step to build the sphinx manuals.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -366,7 +370,8 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/thirdparty_shared/3.0.0/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/3.1.0/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -385,7 +390,8 @@ ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/li
 rm -rf $dist
 gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
 cd $dist/src
-/usr/gapps/visit/thirdparty_shared/3.0.0/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_OSMESA_DIR="/usr/gapps/visit/thirdparty_shared/3.0.0/osmesa/17.2.8/linux-x86_64_gcc-4.8" >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/3.1.0/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_OSMESA_DIR="/usr/gapps/visit/thirdparty_shared/3.0.0/osmesa/17.2.8/linux-x86_64_gcc-4.8" >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../../visit\$ver2.linux-x86_64-wmesa.tar.gz
 cd ../..
@@ -436,7 +442,8 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/workspace/wsa/visit/visit/thirdparty_shared/3.1.0/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 12 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -485,8 +492,8 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 6 >> ../../buildlog 2>&1
+/usr/workspace/wsa/visit/visit/thirdparty_shared/3.1.0/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-intel.tar.gz ../..
 cd ../..
@@ -536,7 +543,8 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/workspace/visit/visit/thirdparty_shared/3.0.0/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/workspace/visit/visit/thirdparty_shared/3.1.0/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 12 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -587,7 +595,8 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/workspace/visit/visit/thirdparty_shared/3.0.0/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/workspace/visit/visit/thirdparty_shared/3.1.0/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 12 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-intel.tar.gz ../..
 cd ../..
@@ -775,6 +784,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 /home/ebrugger/buildvisit/third_party/cmake/3.9.3/linux-rhel_7-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
