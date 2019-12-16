@@ -980,17 +980,17 @@ PickVarInfo::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // ****************************************************************************
 // Method: PickVarInfo::PrintSelf
 //
-// Purpose: 
-//   Prints the contents of this class to the passed stream. 
+// Purpose:
+//   Prints the contents of this class to the passed stream.
 //
 // Modifications:
 //   Kathleen Bonnell, Thu Jun 26 09:31:56 PDT 2003
-//   Logic changed in order to support node picking. Info from material var's 
-//   now handled differently. 
-//   
+//   Logic changed in order to support node picking. Info from material var's
+//   now handled differently.
+//
 //   Kathleen Bonnell, Thu Nov 20 10:18:54 PST 2003
-//   Support species variableType. 
-// 
+//   Support species variableType.
+//
 // ****************************************************************************
 
 void
@@ -1000,15 +1000,15 @@ PickVarInfo::PrintSelf(ostream &os)
     os << variableName.c_str() << ":  ";
     switch (centering)
     {
-        case Nodal:  os << "nodal " ; break;
-        case Zonal:  os << "zonal " ; break;
+        case Nodal:  os << "nodal "; break;
+        case Zonal:  os << "zonal "; break;
         case None : break;
     }
     if (!(names.empty() && mixNames.empty()))
-    {  
+    {
         if (variableType == "material")
         {
-            mixOffset = 0; 
+            mixOffset = 0;
             for (size_t i = 0; i < numMatsPerZone.size(); i++)
             {
                 if (names.size() > 0)
@@ -1017,7 +1017,7 @@ PickVarInfo::PrintSelf(ostream &os)
                 for (j = 0; j < nMats; j++)
                 {
                     if (names.size() > 0)
-                        os << "    "; 
+                        os << "    ";
                     os << "    " << mixNames[j+mixOffset].c_str();
                     if (mixValues[j+mixOffset] < 1.)
                         os << " = " << mixValues[j+mixOffset];
@@ -1029,7 +1029,7 @@ PickVarInfo::PrintSelf(ostream &os)
         else if (variableType == "species")
         {
             matOffset = 0;
-            mixOffset = 0; 
+            mixOffset = 0;
             for (size_t i = 0; i < numMatsPerZone.size(); i++)
             {
                 if (names.size() > 0)
@@ -1053,9 +1053,9 @@ PickVarInfo::PrintSelf(ostream &os)
                 matOffset += nMats;
             }
         }
-        else 
+        else
         {
-            mixOffset = 0; 
+            mixOffset = 0;
             for (size_t i = 0; i < names.size(); i++)
             {
                 os << "    " << names[i].c_str() << " = ";
@@ -1065,17 +1065,17 @@ PickVarInfo::PrintSelf(ostream &os)
                     os << "(";
                     for (j = 0; j < stride; j++)
                     {
-                        os << values[i*stride + j] << ", " ;
+                        os << values[i*stride + j] << ", ";
                     }
                     os << ")\n";
                 }
                 else if (values.size() == names.size())
                 {
-                    os << values[i] << "\n" ;
+                    os << values[i] << "\n";
                 }
                 if (mixVar)
                 {
-                    nMats = numMatsPerZone[i]; 
+                    nMats = numMatsPerZone[i];
                     for (j = 0; j < nMats; j++)
                     {
                         os << "        " << mixNames[j+mixOffset].c_str();
@@ -1100,33 +1100,33 @@ PickVarInfo::PrintSelf(ostream &os)
 // ****************************************************************************
 // Method: PickVarInfo::CreateOutputString
 //
-// Purpose: 
-//   Creates a single output string containing all the information gathered 
+// Purpose:
+//   Creates a single output string containing all the information gathered
 //   from a pick.
 //
 // Modifications:
 //   Kathleen Bonnell, Thu Jun 26 09:31:56 PDT 2003
-//   Logic changed in order to support node picking. Info from material vars 
-//   now handled differently. 
-//   
+//   Logic changed in order to support node picking. Info from material vars
+//   now handled differently.
+//
 //   Hank Childs, Mon Sep 22 11:19:22 PDT 2003
 //   Extend for tensors.
 //
 //   Kathleen Bonnell, Thu Nov 20 10:18:54 PST 2003
-//   Support species variableType. 
-// 
-//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
-//   Added arg 'type' indicating the type of pick that generated this info. 
-// 
+//   Support species variableType.
+//
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003
+//   Added arg 'type' indicating the type of pick that generated this info.
+//
 //   Kathleen Bonnell, Tue Jun  1 16:42:46 PDT 2004
 //   Added DomainNode and DomainZone as pick types.
-// 
-//   Kathleen Bonnell, Thu Jun 10 17:31:37 PDT 2004 
-//   Reduce whitespace for material vars. 
-// 
-//   Kathleen Bonnell, Thu Jul 22 12:06:53 PDT 2004 
+//
+//   Kathleen Bonnell, Thu Jun 10 17:31:37 PDT 2004
+//   Reduce whitespace for material vars.
+//
+//   Kathleen Bonnell, Thu Jul 22 12:06:53 PDT 2004
 //   Cast values to char if treatAsASCII is true.
-// 
+//
 //   Brad Whitlock, Mon Apr 4 12:12:19 PDT 2005
 //   Added support for printing label variables.
 //
@@ -1141,11 +1141,11 @@ PickVarInfo::PrintSelf(ostream &os)
 //   buff is uninitialized (as for tensor/array variables)
 //
 //   Cyrus Harrison, Mon Sep 17 08:57:13 PDT 2007
-//   Added support for user settable floating point format string 
+//   Added support for user settable floating point format string
 //
 //   Kathleen Biagas, Wed Oct 19 20:53:18 MST 2011
 //   Modify how Tensors/Arrays are printed for consistency and a cleaner look.
-// 
+//
 // ****************************************************************************
 void
 PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
@@ -1161,23 +1161,23 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
     std::string format="";
     switch (centering)
     {
-        case Nodal:  os += "<nodal> " ; 
+        case Nodal:  os += "<nodal> ";
                      if (type == "Node" || type == "DomainNode")
                          centeringsMatch = true;
                      break;
-        case Zonal:  os += "<zonal> " ; 
-                     if (type == "Zone" || type == "DomainZone") 
+        case Zonal:  os += "<zonal> ";
+                     if (type == "Zone" || type == "DomainZone")
                          centeringsMatch = true;
                      break;
         case None :  if (variableType == "material" &&
                          numMatsPerZone.size() == 1 && numMatsPerZone[0] == 1)
-                         ;         
+                         ;
                      else
-                         os += "\n";         
+                         os += "\n";
                      break;
     }
     if (!(names.empty() && mixNames.empty()))
-    {  
+    {
         if (variableType == "material")
         {
             mixOffset  = 0;
@@ -1187,7 +1187,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 if (names.size() > 0)
                 {
                     snprintf(buff, 256, "%s ", names[0].c_str());
-                    os += buff; 
+                    os += buff;
                 }
                 snprintf(buff, 256, "%s ", mixNames[mixOffset].c_str());
                 os += buff;
@@ -1207,12 +1207,12 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                     if (names.size() > 0)
                     {
                         snprintf(buff, 256, "    %s", names[i].c_str());
-                        os += buff; 
+                        os += buff;
                         if (nMats == 1)
                             spacing = "  ";
                         else
                         {
-                            os += "\n"; 
+                            os += "\n";
                             spacing = "        ";
                         }
                     }
@@ -1220,7 +1220,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                         spacing = "    ";
                     for (j = 0; j < nMats; j++)
                     {
-                        snprintf(buff, 256, "%s%s ", spacing.c_str(), 
+                        snprintf(buff, 256, "%s%s ", spacing.c_str(),
                                  mixNames[j+mixOffset].c_str());
                         os += buff;
                         if (mixValues[j+mixOffset] < 1.)
@@ -1256,7 +1256,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                     {
                         snprintf(buff, 256, "    %s\n", names[i].c_str());
                     }
-                    os += buff; 
+                    os += buff;
                     spacing1 = "        ";
                     spacing2 = "            ";
                 }
@@ -1268,13 +1268,13 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 nMats = numMatsPerZone[i];
                 for (j = 0; j < nMats; j++)
                 {
-                    snprintf(buff, 256, "%s%s\n", spacing1.c_str(), 
+                    snprintf(buff, 256, "%s%s\n", spacing1.c_str(),
                              matNames[j+matOffset].c_str());
                     os += buff;
                     int nSpecs = numSpecsPerMat[j+matOffset];
                     for (k = 0; k < nSpecs; k++)
                     {
-                        snprintf(buff, 256, "%s%s  ", spacing2.c_str(), 
+                        snprintf(buff, 256, "%s%s  ", spacing2.c_str(),
                                  mixNames[k+mixOffset].c_str());
                         os += buff;
                         format = "= " + floatFormat + "\n";
@@ -1306,7 +1306,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                     format = "(" + floatFormat;
                     snprintf(buff, 256, format.c_str(), values[i*stride]);
                     os += buff;
-                    for (j = 1; j < stride-1; j++) 
+                    for (j = 1; j < stride-1; j++)
                     {
                         format = "," + floatFormat;
                         snprintf(buff, 256, format.c_str(), values[i*stride+j]);
@@ -1314,7 +1314,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                     }
                     format = ") mag = " + floatFormat + "\n";
                     snprintf(buff, 256, format.c_str(), values[i*stride+stride-1]);
-                    os += buff; 
+                    os += buff;
                 }
                 else if (variableType == "scalar")
                 {
@@ -1323,7 +1323,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                         format = floatFormat + "\n";
                         snprintf(buff, 256, format.c_str(), values[i]);
                     }
-                    else 
+                    else
                     {
                         snprintf(buff, 256, "%c\n", (char) values[i]);
                     }
@@ -1360,14 +1360,14 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 else if (variableType == "label")
                 {
                     int labelSize = values.size() / names.size();
-                    for (size_t j = labelSize*i; j < labelSize * (i+1); j++) 
+                    for (size_t j = labelSize*i; j < labelSize * (i+1); j++)
                     {
                         char c[2] = {(char)values[j], 0};
                         os += c;
                     }
-                    os += "\n"; 
+                    os += "\n";
                 }
-                else 
+                else
                 {
                     os += "\n";
                 }
@@ -1376,7 +1376,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                     nMats = numMatsPerZone[i];
                     for (j = 0; j < nMats; j++)
                     {
-                        snprintf(buff, 256, "        material %s = ", 
+                        snprintf(buff, 256, "        material %s = ",
                                  mixNames[j+mixOffset].c_str());
                         os += buff;
                         format = floatFormat + "\n";
@@ -1395,7 +1395,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
     }
     else
     {
-        snprintf(buff, 256, "    No Information Found\n"); 
+        snprintf(buff, 256, "    No Information Found\n");
         os += buff;
     }
 }
@@ -1404,7 +1404,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
 // ****************************************************************************
 // Method: PickVarInfo::PrintTensor
 //
-// Purpose: 
+// Purpose:
 //     Prints the information out for a tensor.
 //
 // Programmer: Hank Childs
@@ -1418,10 +1418,10 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
 //   Print major eigenvalue.  Change how offset is computed.
 //
 //   Cyrus Harrison, Mon Sep 17 08:57:13 PDT 2007
-//   Added support for user settable floating point format string 
+//   Added support for user settable floating point format string
 //
 //   Kathleen Biagas, Wed Oct 19 20:54:54 MST 2011
-//   Use "format" string, not "floatFormat" when printing Major Eigenvalue. 
+//   Use "format" string, not "floatFormat" when printing Major Eigenvalue.
 //
 // ****************************************************************************
 
@@ -1436,19 +1436,19 @@ PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
     if (ncomps == 2)  // 2D tensor
     {
         char line[256];
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
         format = "(" + floatFormat + ", "  + floatFormat + ")\n";
         sprintf(line, format.c_str(), values[offset], values[offset+1]);
 
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         sprintf(line, format.c_str(), values[offset+2], values[offset+3]);
 
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         format = "Major Eigenvalue: " + floatFormat + "\n";
@@ -1458,28 +1458,28 @@ PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
     else if (ncomps == 9) // 3D tensor
     {
         char line[256];
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
-        format = "(" + floatFormat + ", "  
+        format = "(" + floatFormat + ", "
                      + floatFormat + ", "
                      + floatFormat + ")\n";
         sprintf(line, format.c_str(), values[offset], values[offset+1],
                                         values[offset+2]);
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         sprintf(line, format.c_str(), values[offset+3], values[offset+4],
                                         values[offset+5]);
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         sprintf(line, format.c_str(), values[offset+6], values[offset+7],
                                         values[offset+8]);
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         format = "Major Eigenvalue: " + floatFormat + "\n";
@@ -1492,18 +1492,18 @@ PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
 // ****************************************************************************
 // Method: PickVarInfo::PrintSymmetricTensor
 //
-// Purpose: 
+// Purpose:
 //     Prints the information out for a tensor.
 //
 // Programmer: Hank Childs
 // Creation:   September 22, 2003
-//  
+//
 // Modifications:
 //   Kathleen Bonnell, Tue Aug 30 09:35:44 PDT 2005
 //   Print major eigenvalue.  Change how offset is computed.
 //
 //   Cyrus Harrison, Mon Sep 17 08:57:13 PDT 2007
-//   Added support for user settable floating point format string 
+//   Added support for user settable floating point format string
 //
 // ****************************************************************************
 
@@ -1517,20 +1517,20 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
     if (ncomps == 2)  // 2D tensor
     {
         char line[256];
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         format = "(" + floatFormat + ", "  + floatFormat + ")\n";
         sprintf(line, format.c_str(), values[offset], values[offset+1]);
 
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         sprintf(line, format.c_str(), values[offset+2], values[offset+3]);
 
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         format = "Major Eigenvalue: " + floatFormat + "\n";
@@ -1540,28 +1540,28 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
     else if (ncomps == 9) // 3D tensor
     {
         char line[256];
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
-        format = "(" + floatFormat + ", "  
+        format = "(" + floatFormat + ", "
                      + floatFormat + ", "
                      + floatFormat + ")\n";
         sprintf(line, format.c_str(), values[offset], values[offset+1],
                                         values[offset+2]);
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         sprintf(line, format.c_str(), values[offset+3], values[offset+4],
                                         values[offset+5]);
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         sprintf(line, format.c_str(), values[offset+6], values[offset+7],
                                         values[offset+8]);
         os += line;
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
 
         format = "Major Eigenvalue: " + floatFormat + "\n";
@@ -1574,7 +1574,7 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
 // ****************************************************************************
 // Method: PickVarInfo::HasInfo
 //
-// Purpose: 
+// Purpose:
 //    Returns true if the info has been filled in, false otherwise.
 //
 // Programmer: Kathleen Bonnell
@@ -1586,7 +1586,6 @@ PickVarInfo::HasInfo()
 {
     return (!(names.empty() && mixNames.empty()));
 }
-        
 
 // ****************************************************************************
 // Method: PickVarInfo::PrintArray
@@ -1603,7 +1602,7 @@ PickVarInfo::HasInfo()
 //   Fix indexing bug.
 //
 //   Cyrus Harrison, Mon Sep 17 08:57:13 PDT 2007
-//   Added support for user settable floating point format string 
+//   Added support for user settable floating point format string
 //
 //   Kathleen Biagas, Wed Oct 19 20:55:47 MST 2011
 //   Reformat for a cleaner output.
@@ -1621,7 +1620,7 @@ PickVarInfo::PrintArray(std::string &os,
     line[0] = '\0';
     if (ncomps > 5)
     {
-        for (j = 0 ; j < buff_len ; j++)
+        for (j = 0; j < buff_len; j++)
             os += " ";
     }
     os += "(";
@@ -1639,8 +1638,8 @@ PickVarInfo::PrintArray(std::string &os,
 // ****************************************************************************
 // Method: PickVarInfo::CreateOutputMapNode
 //
-// Purpose: 
-//   Creates a MapNode object containing all the information gathered 
+// Purpose:
+//   Creates a MapNode object containing all the information gathered
 //   from a pick.
 //
 // Programmer: Kathleen Biagas
@@ -1648,7 +1647,11 @@ PickVarInfo::PrintArray(std::string &os,
 //
 // Modifications:
 //    Alister Maguire, Fri Aug 23 13:53:07 PDT 2019
-//    Avoid adding null terminating characters to label strings. 
+//    Avoid adding null terminating characters to label strings.
+//
+//    Kathleen Biagas, Thu Dec 12 12:08:58 PST 2019
+//    Fix logic for tensor, which was printing out too much info. Separate the
+//    'values' and the 'major_eigenvalue' into separate entries for the var.
 //
 // ****************************************************************************
 
@@ -1661,13 +1664,13 @@ PickVarInfo::CreateOutputMapNode(const std::string &type, MapNode &m)
         case Nodal:  if (type == "Node" || type == "DomainNode")
                          centeringsMatch = true;
                      break;
-        case Zonal:  if (type == "Zone" || type == "DomainZone") 
+        case Zonal:  if (type == "Zone" || type == "DomainZone")
                          centeringsMatch = true;
                      break;
         case None: break;
     }
     if (!(names.empty() && mixNames.empty()))
-    {  
+    {
         if (variableType == "material")
         {
             int mixOffset = 0;
@@ -1676,7 +1679,7 @@ PickVarInfo::CreateOutputMapNode(const std::string &type, MapNode &m)
                 std::string subname;
                 if (names.size() > 0)
                     subname = names[0] + " ";
-                subname += mixNames[mixOffset]; 
+                subname += mixNames[mixOffset];
                 if (mixValues[mixOffset] < 1.)
                 {
                     MapNode n;
@@ -1698,30 +1701,30 @@ PickVarInfo::CreateOutputMapNode(const std::string &type, MapNode &m)
                     std::string base;
                     if (names.size() > 0)
                         base = names[i].substr(1, names[i].size()-2);
-                    for (int j = 0; j < nMats; ++j)                    
-                    { 
+                    for (int j = 0; j < nMats; ++j)
+                    {
                         if (mixValues[j+mixOffset] < 1.)
                         {
-                           
-                           // n[base + mixNames[j+mixOffset]] = mixValues[j+mixOffset]; 
+
+                           // n[base + mixNames[j+mixOffset]] = mixValues[j+mixOffset];
                            if (!base.empty())
-                               o[mixNames[j+mixOffset]] = mixValues[j+mixOffset]; 
-                           else 
-                               n[mixNames[j+mixOffset]] = mixValues[j+mixOffset]; 
+                               o[mixNames[j+mixOffset]] = mixValues[j+mixOffset];
+                           else
+                               n[mixNames[j+mixOffset]] = mixValues[j+mixOffset];
                         }
                         else
                         {
                            if (!base.empty())
                                n[base] = mixNames[j+mixOffset];
 #if 0
-                           else 
+                           else
                                n[mixNames[j+mixOffset]] = std::string("type2b");
 #endif
                         }
-                    } 
+                    }
                     if (!base.empty() && o.GetNumEntries() > 0)
                         n[base] = o;
-                    mixOffset += nMats; 
+                    mixOffset += nMats;
                 }
                 m[variableName] = n;
             }
@@ -1749,11 +1752,11 @@ PickVarInfo::CreateOutputMapNode(const std::string &type, MapNode &m)
                         p[mixNames[k+mixOffset]] =  mixValues[k+mixOffset];
                     }
                     o[matNames[j+matOffset]] = p;
-                    mixOffset += nSpecs; 
+                    mixOffset += nSpecs;
                 }
                 if (!base.empty() && o.GetNumEntries() > 0)
                     n[base] = o;
-                matOffset += nMats; 
+                matOffset += nMats;
             }
             if (n.GetNumEntries() > 0)
                 m[variableName] = n;
@@ -1772,14 +1775,14 @@ PickVarInfo::CreateOutputMapNode(const std::string &type, MapNode &m)
                     {
                         if (!treatAsASCII)
                             m[variableName] = values[i];
-                        else 
+                        else
                             m[variableName] = (char) values[i];
                     }
-                    else 
+                    else
                     {
                         if (!treatAsASCII)
                             n[stripName] = values[i];
-                        else 
+                        else
                             n[stripName] = (char) values[i];
                     }
                 }
@@ -1801,14 +1804,18 @@ PickVarInfo::CreateOutputMapNode(const std::string &type, MapNode &m)
                     doubleVector v;
                     for (size_t j = 0; j < ncomps; j++)
                     {
-                        v.push_back(values[offset+ncomps*j]);
-                        v.push_back(values[offset+ncomps*j+1]);
+                        v.push_back(values[offset+j]);
                     }
-                    v.push_back(values[offset+ncomps*ncomps]);
                     if (centeringsMatch)
-                        m[variableName] = v;
+                    {
+                        m[variableName]["values"] = v;
+                        m[variableName]["major_eigenvalue"] = values[offset+ncomps];
+                    }
                     else
-                        n[stripName] = v;
+                    {
+                        n[stripName]["values"] = v;
+                        n[stripName]["major_eigenvalue"] = values[offset+ncomps];
+                    }
                 }
                 else if (variableType == "symm_tensor")
                 {
@@ -1837,11 +1844,11 @@ PickVarInfo::CreateOutputMapNode(const std::string &type, MapNode &m)
                     {
                         //
                         // We don't want to add the null terminators; doing
-                        // so causes strange behaviors. 
+                        // so causes strange behaviors.
                         //
                         if ((char)values[j] == '\0')
                             break;
-                        l += (char)values[j]; 
+                        l += (char)values[j];
                     }
                     if (centeringsMatch)
                         m[variableName] = l;
@@ -1851,9 +1858,9 @@ PickVarInfo::CreateOutputMapNode(const std::string &type, MapNode &m)
             }
             if (!centeringsMatch && n.GetNumEntries() != 0)
                 m[variableName] = n;
-                
+
 #if 0
-            int mixOffset = 0; 
+            int mixOffset = 0;
             if (mixVar)
             {
                 int nMats = numMatsPerZone[i];
