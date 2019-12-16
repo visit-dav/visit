@@ -849,6 +849,10 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int elNum)
 //    Expanded use of 'Treat As ASCII' to handle label string case, removed
 //    use of avtLabelVariableSize.
 //
+//    Kathleen Biagas, Thu Dec 12 12:07:17 PST 2019
+//    Set pickVarInfo's VariableType from the one stored in avtDataAttributes.
+//    Don't overwrite what was set if the pick is marked as 'fulfilled'.
+//
 // ****************************************************************************
 
 void
@@ -861,6 +865,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
     int element = pickAtts.GetElementNumber();
     stringVector userVars = pickAtts.GetVariables();
     string vName;
+    string vType;
     char buff[80];
     intVector incidentElements = pickAtts.GetIncidentElements();
     double *temp = NULL;
@@ -896,7 +901,10 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
         }
 
         if (data.ValidVariable(vName))
+        {
             treatAsASCII = data.GetTreatAsASCII(vName.c_str());
+            vType = avtVarTypeToString(data.GetVariableType(vName.c_str()));
+        }
         else
             treatAsASCII = false;
 
@@ -990,6 +998,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                     vals.push_back(mag);
                 }
             }
+            delete [] temp;
         }  // foundData
 
         if (pickAtts.GetFulfilled())
@@ -1000,20 +1009,6 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                 pickAtts.GetVarInfo(varNum).SetValues(vals);
                 pickAtts.GetVarInfo(varNum).SetCentering(centering);
                 pickAtts.GetVarInfo(varNum).SetTreatAsASCII(treatAsASCII);
-                if (pickAtts.GetVarInfo(varNum).GetVariableType() != "species")
-                {
-                    if (labelData)
-                        pickAtts.GetVarInfo(varNum).SetVariableType("label");
-                    else if (nComponents == 1)
-                        pickAtts.GetVarInfo(varNum).SetVariableType("scalar");
-                    else if (nComponents == 3)
-                        pickAtts.GetVarInfo(varNum).SetVariableType("vector");
-                    else if (nComponents == 9)
-                        pickAtts.GetVarInfo(varNum).SetVariableType("tensor");
-                    else
-                        pickAtts.GetVarInfo(varNum).SetVariableType("array");
-                }
-                delete [] temp;
             }
         }
         else
@@ -1026,17 +1021,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
             {
                 varInfo.SetNames(names);
                 varInfo.SetValues(vals);
-                delete [] temp;
-                if (labelData)
-                    varInfo.SetVariableType("label");
-                else if (nComponents == 1)
-                    varInfo.SetVariableType("scalar");
-                else if (nComponents == 3)
-                    varInfo.SetVariableType("vector");
-                else if (nComponents == 9)
-                    varInfo.SetVariableType("tensor");
-                else
-                    varInfo.SetVariableType("array");
+                varInfo.SetVariableType(vType);
             }
             pickAtts.AddVarInfo(varInfo);
         }
