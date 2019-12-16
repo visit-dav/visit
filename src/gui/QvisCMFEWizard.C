@@ -1908,7 +1908,6 @@ QvisCMFEWizard::absVsRelTimeChanged(int val)
 void
 QvisCMFEWizard::timeTypeChanged(int val)
 {
-  cerr << "\nTIME TYPE CHANGED: " << val << endl;
     if (val == 0)
         decision_timeType = TIME_TYPE_SIMTIME;
     else if (val == 1)
