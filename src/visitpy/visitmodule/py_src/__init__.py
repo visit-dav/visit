@@ -26,15 +26,15 @@ sys.dont_write_bytecode = True
 # note: the frontend is responsible for loading the actual visit module
 #
 
-from frontend import *
-from evalfuncs import *
-from writescript import *
+from .frontend import *
+from .evalfuncs import *
+from .writescript import *
 
 try:
     import PySide2
     import pyside_hook
     import pyside_gui
-    import pyside_support
+    from . import pyside_support
 
     class KeyPressEater(PySide2.QtCore.QObject):
         def eventFilter(self, obj, event):

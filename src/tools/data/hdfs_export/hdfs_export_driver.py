@@ -41,7 +41,7 @@ def export(outdir,keybase,user,dbfile,tidx,mesh,var_list,compressCmd="gzip -6"):
     if result != 1:
         result = AddPlot("Curve", mesh)
     if result != 1:
-        print "unable to add a relevant plot object"
+        print("unable to add a relevant plot object")
         return
     DrawPlots()
     tval = query("Time")
@@ -92,7 +92,7 @@ def main():
             curve = md.GetCurves(c).name
             var_list = [curve, curve.replace("Scalar_Curves/","")]
             descendOutDir(outDir,keyBase,curve.replace('/','~'),[1,1,1])
-            print "[Exporting curve %s for time index %d]" %(curve,tidx)
+            print("[Exporting curve %s for time index %d]" %(curve,tidx))
             export(outDir,keyBase,user,dbfile,tidx,curve,var_list)
             ascendOutDir(outDir,keyBase)
         for m in range(md.GetNumMeshes()):
@@ -137,7 +137,7 @@ def main():
                 if mat.numMaterials > 1:
                     DefineArrayExpression("materials", matvf_array_expr)
                     var_list.append("materials")
-            print "[Exporting mesh %s for time index %d]" %(mesh,tidx)
+            print("[Exporting mesh %s for time index %d]" %(mesh,tidx))
             export(outDir,keyBase,user,dbfile,tidx,mesh,var_list)
             ascendOutDir(outDir,keyBase)
         ascendOutDir(outDir,keyBase)

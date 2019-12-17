@@ -3,7 +3,18 @@
 # details.  No copyright assignment is required to contribute to VisIt.
 
 
-import os, select, signal, socket, string, sys, thread
+import os
+import select
+import signal
+import socket
+import string
+import sys
+
+if (sys.version_info > (3, 0)):
+    import _thread
+else:
+    import thread as _thread
+
 import distutils.spawn
 from xmllib import *
 
@@ -66,7 +77,6 @@ def applyFunctionToNFrames(func, filesPerThread, nframes, conversionargs):
         retval = func(0, 0, nframes, conversionargs)
     else:
         try:
-            import thread
             keepSpawning = 1
             start = filesPerThread
             end = filesPerThread
@@ -82,7 +92,7 @@ def applyFunctionToNFrames(func, filesPerThread, nframes, conversionargs):
                 if(end >= nframes):
                     end = nframes
                     keepSpawning = 0
-                thread.start_new(applyFunctionToNFramesWMutex, (threadID, exitmutex, retval, func, start, end, conversionargs))
+                _thread.start_new(applyFunctionToNFramesWMutex, (threadID, exitmutex, retval, func, start, end, conversionargs))
                 start = start + filesPerThread
                 threadID = threadID + 1
             # Do the first part of the work on the main thread.
@@ -91,7 +101,7 @@ def applyFunctionToNFrames(func, filesPerThread, nframes, conversionargs):
             # Wait for all of the threads to complete
             while 0 in exitmutex: pass
         except ImportError:
-            print "Could not import threads module."
+            print("Could not import threads module.")
             retval = func(0, 0, nframes, conversionargs)
     return retval
 
@@ -159,7 +169,7 @@ def CopyFile(srcName, destName, allowLinks):
         except VisItInterrupt:
             raise
         except:
-            print "Could not copy %s to %s" % (srcName, destName)
+            print("Could not copy %s to %s" % (srcName, destName))
 
 
 ###############################################################################
@@ -363,7 +373,7 @@ class EngineAttributesParser(XMLParser):
 
     def handle_starttag(self, tag, method, attributes):
         if tag == "Object":
-            if "name" in attributes.keys():
+            if "name" in list(attributes.keys()):
                 self.dataName = attributes["name"]
                 if self.dataName == "RunningEngines":
                     self.readingEngineProperties = 1
@@ -384,7 +394,7 @@ class EngineAttributesParser(XMLParser):
                 self.readingLaunchProfile = 0
             elif self.readingMachineProfile == 1:
                 self.readingMachineProfile = 0
-                if "host" in self.engineProperties.keys():
+                if "host" in list(self.engineProperties.keys()):
                     host = self.engineProperties["host"]
                     self.allEngineProperties[host] = self.engineProperties
                     #self.engineProperties = {}
@@ -431,7 +441,7 @@ class EngineAttributesParser(XMLParser):
             elif type == "int":
                 value = int(data)
             else:
-                print "Unknown type: ", type
+                print("Unknown type: ", type)
                 return
             self.engineProperties[name] = value
 
@@ -467,7 +477,7 @@ class WindowSizeParser(XMLParser):
 
     def handle_starttag(self, tag, method, attributes):
         if tag == "Object":
-            if "name" in attributes.keys():
+            if "name" in list(attributes.keys()):
                 name = attributes["name"]
                 self.objectNames = self.objectNames + [name]
                 if name == "ViewerWindowManager":
@@ -684,7 +694,7 @@ class MakeMovie(object):
                 try:
                     self.debug_real[i] = open(debug_name, "wt")
                 except IOError: 
-                    print "Could not open debug log %s" % debug_name
+                    print("Could not open debug log %s" % debug_name)
                     pass
 
     
@@ -767,21 +777,21 @@ class MakeMovie(object):
     ###########################################################################
 
     def PrintUsage(self):
-        print "Usage: visit -movie [-format fmt] [-geometry size]"
-        print "                    -sessionfile name | -scriptfile name "
-        print "                    [-output moviename] [-framestep step]"
-        print "                    [PARALLEL OPTIONS]"
-        print ""
-        print "OPTIONS"
-        print "    The following options are recognized by visit -movie"
-        print ""
-        print "    -format fmt        The format option allows you to set the output"
-        print "                       format for your movie. The supported values "
-        print "                       for fmt are:"
-        print ""
-        print "                       Movie formats"
-        print "                       -------------"
-        keys = self.formatInfo.keys()
+        print("Usage: visit -movie [-format fmt] [-geometry size]")
+        print("                    -sessionfile name | -scriptfile name ")
+        print("                    [-output moviename] [-framestep step]")
+        print("                    [PARALLEL OPTIONS]")
+        print("")
+        print("OPTIONS")
+        print("    The following options are recognized by visit -movie")
+        print("")
+        print("    -format fmt        The format option allows you to set the output")
+        print("                       format for your movie. The supported values ")
+        print("                       for fmt are:")
+        print("")
+        print("                       Movie formats")
+        print("                       -------------")
+        keys = list(self.formatInfo.keys())
         keys.sort()
         for k in keys:
             if self.formatInfo[k][self.FMT_ENCODER] != None:
@@ -791,10 +801,10 @@ class MakeMovie(object):
                         s = s + ", " + ext
                     else:
                         s = ext
-                print "                       %s" % s
-        print ""
-        print "                       Image formats"
-        print "                       -------------"
+                print("                       %s" % s)
+        print("")
+        print("                       Image formats")
+        print("                       -------------")
         for k in keys:
             if self.formatInfo[k][self.FMT_ENCODER] == None:
                 s = ""
@@ -803,141 +813,141 @@ class MakeMovie(object):
                         s = s + ", " + ext
                     else:
                         s = ext
-                print "                       %s" % s
-        print ""
-        print "                       You can specify multiple formats by concatenating"
-        print "                       more than one allowed format using commas. Example:"
-        print "                       -format mpeg,qt,jpeg."
-        print ""
-        print "                       *** Important Note ***"
-        print "                       The qt and sm formats are not supported"
-        print "                       on the Windows platform."
-        print ""
-        print "    -geometry size     The geometry option allows you to set the movie"
-        print "                       resolution. The size argument is of the form"
-        print "                       WxH where W is the width of the image and H is"
-        print "                       the height of the image. For example, if you "
-        print "                       want an image that is 1024 pixels wide and 768"
-        print "                       pixels tall, you would provide:"
-        print "                       -geometry 1024x768."
-        print ""
-        print "                       You can specify multiple geometries by concatenating"
-        print "                       more than one WxH using commas. Example:"
-        print "                       -geometry 320x320,1024x768."
-        print ""
-        print "                       If you omit the -geometry argument then the"
-        print "                       window sizes stored in your session file will be"
-        print "                       used. If you are not using a session file then"
-        print "                       the default size will be 512x512."
-        print ""
-        print "    -sessionfile name  The sessionfile option lets you pick the name"
-        print "                       of the VisIt session to use as input for your"
-        print "                       movie. The VisIt session is a file that describes"
-        print "                       the movie that you want to make and it is created"
-        print "                       when you save your session from within VisIt's "
-        print "                       GUI after you set up your plots how you want them."
-        print ""
-        print "    -source filename   The source option appends a filename to a list of "
-        print "                       filenames to be used as the new sources when "
-        print "                       restoring the session file selected via the "
-        print "                       -sessionfile command line argument. If you want to"
-        print "                       override multiple sources in the session file then "
-        print "                       you must pass multiple instances of the -source "
-        print "                       command line argument."
-        print ""
-        print "                       Example:"
-        print "                          visit -movie -geometry 1000x1000 -format mpeg \ "
-        print "                                -sessionfile A.session \ "
-        print "                                -source new.silo -source other.silo"
-        print ""
-        print "                       If you are replacing a time series of files, remember"
-        print "                       that VisIt often renames them slightly. A time series"
-        print "                       composed of files with names A0000.silo, A0001.silo, "
-        print '                       A0002.silo, ... will have the name: "A*.silo database"'
-        print "                       When you pass the -source argument to visit -movie, "
-        print '                       be sure to pass -source "A*.silo database". '
-        print ""
-        print "    -adjustview        This command line argument is useful when -sessionfile"
-        print "                       and -source arguments are given since it will cause the"
-        print "                       view to be adjusted for the bounds of the new dataset."
-        print "                       When replacing a dataset using -source, the new dataset"
-        print "                       may have different extents, making the view stored in"
-        print "                       the session file less then optimal. The -adjustview"
-        print "                       option resets the view so the new dataset will fill the"
-        print "                       screen while still preserving the view normal & up "
-        print "                       vectors, 2 important components of the view."
-        print ""
-        print "    -scriptfile name   The scriptfile option lets you pick the name"
-        print "                       of a VisIt Python script to use as input for your"
-        print "                       movie."
-        print ""
-        print "    -templatefile name The templatefile option lets you pick the name of a"
-        print "                       VisIt movie template file to use as input for your"
-        print "                       movie. A movie template file is an XML file that "
-        print "                       describes how to put together a movie."
-        print ""
-        print "    -framestep step    The number of frames to advance when going to "
-        print "                       the next frame."
-        print ""
-        print "    -start frame       The frame that we want to start at."
-        print ""
-        print "    -end frame         The frame that we want to end at."
-        print ""
-        print "    -frame value       The initial value used in the name of the first frame."
-        print ""
-        print "    -output moviename  The output option lets you set the name of "
-        print "                       your movie."
-        print ""
-        print "    -fps number        Sets the frames per second the movie should "
-        print "                       play at."
-        print ""
-        print "    -stereo fmt        Makes a stereo movie. Note that stereo movies with"
-        print "                       left and right channels are only created for "
-        print "                       Streaming movie format, though left and right channel"
-        print "                       images are saved if you save a movie in an image "
-        print "                       format. The redblue and redgreen formats are available"
-        print "                       in any image format. The supported values for fmt are:"
-        print ""
-        print "                       off       : No stereo"
-        print "                       leftright : Left/Right channel stereo. Use this"
-        print "                                   format with streaming movie to create "
-        print "                                   movies viewable with stereo projection "
-        print "                                   and glasses."
-        print "                       redblue   : Red/Blue stereo."
-        print "                       redgreen  : Red/Green stereo."
-        print ""
-        print "                       You can specify multiple stereo formats by "
-        print "                       concatenating more than one allowed format using "
-        print "                       commas. Example: -stereo off,leftright,redgreen"
-        print ""
-        print "    -ignoresessionengines Prevents compute engine information in the"
-        print "                          session file from being used to restart"
-        print "                          the compute engine(s) during movie generation."
-        print ""
-        print "    -email addresses   If specified, this script will provide e-mail "
-        print "                       progress reports for movie generation. Multiple "
-        print "                       e-mail addresses can be provided if they are "
-        print "                       separated by commas."
-        print ""
-        print "    -noffmpeg          Don't use ffmpeg for the mpeg encoder even if it"
-        print "                       is available."
-        print ""
-        print "    -enginerestartinterval number Restarts the compute engine after"
-        print "                                  the specified number of images are"
-        print "                                  generated."
-        print ""
-        print "Parallel arguments:"
-        print "    -np   <# procs>    The number of processors to use."
-        print "    -nn   <# nodes>    The number of nodes to allocate."
-        print "    -l    <method>     Launch in parallel using the given method."
-        print "                       Method is one of the following: mpirun, poe,"
-        print "                       psub, srun."
-        print "    -la   <args>       Additional arguments for the parallel launcher."
-        print "    -p    <part>       Partition to run in."
-        print "    -b    <bank>       Bank from which to draw resources."
-        print "    -t    <time>       Maximum job run time."
-        print "    -expedite          Makes batch system give priority scheduling."
-        print ""
+                print("                       %s" % s)
+        print("")
+        print("                       You can specify multiple formats by concatenating")
+        print("                       more than one allowed format using commas. Example:")
+        print("                       -format mpeg,qt,jpeg.")
+        print("")
+        print("                       *** Important Note ***")
+        print("                       The qt and sm formats are not supported")
+        print("                       on the Windows platform.")
+        print("")
+        print("    -geometry size     The geometry option allows you to set the movie")
+        print("                       resolution. The size argument is of the form")
+        print("                       WxH where W is the width of the image and H is")
+        print("                       the height of the image. For example, if you ")
+        print("                       want an image that is 1024 pixels wide and 768")
+        print("                       pixels tall, you would provide:")
+        print("                       -geometry 1024x768.")
+        print("")
+        print("                       You can specify multiple geometries by concatenating")
+        print("                       more than one WxH using commas. Example:")
+        print("                       -geometry 320x320,1024x768.")
+        print("")
+        print("                       If you omit the -geometry argument then the")
+        print("                       window sizes stored in your session file will be")
+        print("                       used. If you are not using a session file then")
+        print("                       the default size will be 512x512.")
+        print("")
+        print("    -sessionfile name  The sessionfile option lets you pick the name")
+        print("                       of the VisIt session to use as input for your")
+        print("                       movie. The VisIt session is a file that describes")
+        print("                       the movie that you want to make and it is created")
+        print("                       when you save your session from within VisIt's ")
+        print("                       GUI after you set up your plots how you want them.")
+        print("")
+        print("    -source filename   The source option appends a filename to a list of ")
+        print("                       filenames to be used as the new sources when ")
+        print("                       restoring the session file selected via the ")
+        print("                       -sessionfile command line argument. If you want to")
+        print("                       override multiple sources in the session file then ")
+        print("                       you must pass multiple instances of the -source ")
+        print("                       command line argument.")
+        print("")
+        print("                       Example:")
+        print("                          visit -movie -geometry 1000x1000 -format mpeg \ ")
+        print("                                -sessionfile A.session \ ")
+        print("                                -source new.silo -source other.silo")
+        print("")
+        print("                       If you are replacing a time series of files, remember")
+        print("                       that VisIt often renames them slightly. A time series")
+        print("                       composed of files with names A0000.silo, A0001.silo, ")
+        print('                       A0002.silo, ... will have the name: "A*.silo database"')
+        print("                       When you pass the -source argument to visit -movie, ")
+        print('                       be sure to pass -source "A*.silo database". ')
+        print("")
+        print("    -adjustview        This command line argument is useful when -sessionfile")
+        print("                       and -source arguments are given since it will cause the")
+        print("                       view to be adjusted for the bounds of the new dataset.")
+        print("                       When replacing a dataset using -source, the new dataset")
+        print("                       may have different extents, making the view stored in")
+        print("                       the session file less then optimal. The -adjustview")
+        print("                       option resets the view so the new dataset will fill the")
+        print("                       screen while still preserving the view normal & up ")
+        print("                       vectors, 2 important components of the view.")
+        print("")
+        print("    -scriptfile name   The scriptfile option lets you pick the name")
+        print("                       of a VisIt Python script to use as input for your")
+        print("                       movie.")
+        print("")
+        print("    -templatefile name The templatefile option lets you pick the name of a")
+        print("                       VisIt movie template file to use as input for your")
+        print("                       movie. A movie template file is an XML file that ")
+        print("                       describes how to put together a movie.")
+        print("")
+        print("    -framestep step    The number of frames to advance when going to ")
+        print("                       the next frame.")
+        print("")
+        print("    -start frame       The frame that we want to start at.")
+        print("")
+        print("    -end frame         The frame that we want to end at.")
+        print("")
+        print("    -frame value       The initial value used in the name of the first frame.")
+        print("")
+        print("    -output moviename  The output option lets you set the name of ")
+        print("                       your movie.")
+        print("")
+        print("    -fps number        Sets the frames per second the movie should ")
+        print("                       play at.")
+        print("")
+        print("    -stereo fmt        Makes a stereo movie. Note that stereo movies with")
+        print("                       left and right channels are only created for ")
+        print("                       Streaming movie format, though left and right channel")
+        print("                       images are saved if you save a movie in an image ")
+        print("                       format. The redblue and redgreen formats are available")
+        print("                       in any image format. The supported values for fmt are:")
+        print("")
+        print("                       off       : No stereo")
+        print("                       leftright : Left/Right channel stereo. Use this")
+        print("                                   format with streaming movie to create ")
+        print("                                   movies viewable with stereo projection ")
+        print("                                   and glasses.")
+        print("                       redblue   : Red/Blue stereo.")
+        print("                       redgreen  : Red/Green stereo.")
+        print("")
+        print("                       You can specify multiple stereo formats by ")
+        print("                       concatenating more than one allowed format using ")
+        print("                       commas. Example: -stereo off,leftright,redgreen")
+        print("")
+        print("    -ignoresessionengines Prevents compute engine information in the")
+        print("                          session file from being used to restart")
+        print("                          the compute engine(s) during movie generation.")
+        print("")
+        print("    -email addresses   If specified, this script will provide e-mail ")
+        print("                       progress reports for movie generation. Multiple ")
+        print("                       e-mail addresses can be provided if they are ")
+        print("                       separated by commas.")
+        print("")
+        print("    -noffmpeg          Don't use ffmpeg for the mpeg encoder even if it")
+        print("                       is available.")
+        print("")
+        print("    -enginerestartinterval number Restarts the compute engine after")
+        print("                                  the specified number of images are")
+        print("                                  generated.")
+        print("")
+        print("Parallel arguments:")
+        print("    -np   <# procs>    The number of processors to use.")
+        print("    -nn   <# nodes>    The number of nodes to allocate.")
+        print("    -l    <method>     Launch in parallel using the given method.")
+        print("                       Method is one of the following: mpirun, poe,")
+        print("                       psub, srun.")
+        print("    -la   <args>       Additional arguments for the parallel launcher.")
+        print("    -p    <part>       Partition to run in.")
+        print("    -b    <bank>       Bank from which to draw resources.")
+        print("    -t    <time>       Maximum job run time.")
+        print("    -expedite          Makes batch system give priority scheduling.")
+        print("")
 
     def Log(self, msg):
         if self.log != 0:
@@ -1000,7 +1010,7 @@ class MakeMovie(object):
         if self.sendClientFeedback:
             ClientMethod("MessageBoxOk", str(s))
         else:
-            print str(s)
+            print(str(s))
 
     ###########################################################################
     # Method: SendEmail
@@ -1131,7 +1141,7 @@ class MakeMovie(object):
 
         # The string used as fmtName will be one of the extensions for the format.
         fmt = ""
-        for k in self.formatInfo.keys():
+        for k in list(self.formatInfo.keys()):
             for ext in self.formatInfo[k][self.FMT_EXTENSIONS]:
                 if fmtName == ext:
                     fmt = k
@@ -1257,19 +1267,19 @@ class MakeMovie(object):
                     for format in formats:
                         # See if the format is valid.
                         validFormat = ""
-                        for k in self.formatInfo.keys():
+                        for k in list(self.formatInfo.keys()):
                             for ext in self.formatInfo[k][self.FMT_EXTENSIONS]:
                                 if ext == format:
                                     validFormat = k
 
                         if validFormat != "":
                             if sys.platform == "win32" and not self.formatInfo[validFormat][self.FMT_WINDOWSCOMPATIBLE]:
-                                print "Error! ", format, " is not supported on Windows."
+                                print("Error! ", format, " is not supported on Windows.")
                                 sys.exit(-1)
                             else:
                                 formatList = formatList + [validFormat]
                         else:
-                            print "Error! ",format," is not a valid format."
+                            print("Error! ",format," is not a valid format.")
                             self.PrintUsage();
                             sys.exit(-1)
 
@@ -1281,7 +1291,7 @@ class MakeMovie(object):
                 if((i+1) < len(commandLine)):
                     formats = self.SplitString(commandLine[i+1], ",")
                     for format in formats:
-                        if format not in self.stereoNameToType.keys():
+                        if format not in list(self.stereoNameToType.keys()):
                             self.PrintUsage();
                             sys.exit(-1)
                         else:
@@ -1337,7 +1347,7 @@ class MakeMovie(object):
                             self.frameStep = 1
                     except ValueError:
                         self.frameStep = 1
-                        print "A bad value was provided for frame step. Using a frame step of 1."
+                        print("A bad value was provided for frame step. Using a frame step of 1.")
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -1350,7 +1360,7 @@ class MakeMovie(object):
                             self.frameStart = 0
                     except ValueError:
                         self.frameStart = 0
-                        print "A bad value was provided for frame start. Using a frame step of 0."
+                        print("A bad value was provided for frame start. Using a frame step of 0.")
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -1363,7 +1373,7 @@ class MakeMovie(object):
                             self.frameEnd = 0
                     except ValueError:
                         self.frameEnd = 0
-                        print "A bad value was provided for frame end. Using a frame end of 0."
+                        print("A bad value was provided for frame end. Using a frame end of 0.")
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -1376,7 +1386,7 @@ class MakeMovie(object):
                             self.initialFrameValue = 0
                     except ValueError:
                         self.initialFrameValue = 0
-                        print "A bad value was provided for frame initial value. Using a value of 0."
+                        print("A bad value was provided for frame initial value. Using a value of 0.")
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -1397,7 +1407,7 @@ class MakeMovie(object):
                             self.fps = 10
                     except ValueError:
                         self.fps = 10
-                        print "A bad value was provided for frames per second.  Using 10."
+                        print("A bad value was provided for frames per second.  Using 10.")
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -1411,7 +1421,7 @@ class MakeMovie(object):
                             h = int(geometry[xloc+1:])
                             sizeList = sizeList + [(w, h)]
                         else:
-                            print "Malformed geometry string: %s" % geometry
+                            print("Malformed geometry string: %s" % geometry)
                             sys.exit(-1)
                     i = i + 1
                 else:
@@ -1436,7 +1446,7 @@ class MakeMovie(object):
                             self.engineRestartInterval = 0
                     except ValueError:
                         self.engineRestartInterval = 1000000
-                        print "A bad value was provided for engine restart interval. Using an engine restart interval of 1000000."
+                        print("A bad value was provided for engine restart interval. Using an engine restart interval of 1000000.")
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -1450,12 +1460,12 @@ class MakeMovie(object):
                     try:
                         np = int(commandLine[i+1])
                         if(np < 1):
-                            print "A bad value was provided for number of processors."
+                            print("A bad value was provided for number of processors.")
                             self.PrintUsage()
                             sys.exit(-1)
                         self.engineCommandLineProperties["numProcessors"] = np
                     except ValueError:
-                        print "A bad value was provided for number of processors."
+                        print("A bad value was provided for number of processors.")
                         self.PrintUsage()
                         sys.exit(-1)
                     i = i + 1
@@ -1467,13 +1477,13 @@ class MakeMovie(object):
                     try:
                         nn = int(commandLine[i+1])
                         if(nn < 1):
-                            print "A bad value was provided for number of nodes."
+                            print("A bad value was provided for number of nodes.")
                             self.PrintUsage()
                             sys.exit(-1)
                         self.engineCommandLineProperties["numNodes"] = nn
                         self.engineCommandLineProperties["numNodesSet"] = 1
                     except ValueError:
-                        print "A bad value was provided for number of nodes."
+                        print("A bad value was provided for number of nodes.")
                         self.PrintUsage()
                         sys.exit(-1)
                     i = i + 1
@@ -1517,7 +1527,7 @@ class MakeMovie(object):
                 self.engineCommandLineProperties["launchArgsSet"] = 1
                 processingLA = 1
             elif(commandLine[i] == "-expedite"):
-                if "arguments" in self.engineCommandLineProperties.keys():
+                if "arguments" in list(self.engineCommandLineProperties.keys()):
                     self.engineCommandLineProperties["arguments"] = self.engineCommandLineProperties["arguments"] + ["-expedite"]
                 else:
                     self.engineCommandLineProperties["arguments"] = ["-expedite"]
@@ -1594,7 +1604,7 @@ class MakeMovie(object):
         # make a movie!
         if(self.stateFile == "" and self.scriptFile == "" and self.templateFile == ""):
             self.PrintUsage()
-            print "You must provide one of the -sessionfile,-scriptfile,-templatefile options!"
+            print("You must provide one of the -sessionfile,-scriptfile,-templatefile options!")
             sys.exit(-1)
 
         # If no movie output was specified, try and determine the output
@@ -1962,22 +1972,22 @@ class MakeMovie(object):
                     p.feed(line)
                 p.close()
             except:
-                print
-                print "ERROR: We could not parse the session file for engine "
-                print "launch parameters.  This will cause problems getting "
-                print "the right type of engine launched.  Please report this."
-                print
+                print()
+                print("ERROR: We could not parse the session file for engine ")
+                print("launch parameters.  This will cause problems getting ")
+                print("the right type of engine launched.  Please report this.")
+                print()
 
-            if len(p.allEngineProperties.keys()) == 0:
+            if len(list(p.allEngineProperties.keys())) == 0:
                 # There were no hosts in the engine attributes so add the command
                 # line options for localhost.
                 p.allEngineProperties["localhost"] = self.engineCommandLineProperties
             else:
                 # Override the EngineAttributesParser's engine attributes
                 # with options that were provided on the command line.
-                for host in p.allEngineProperties.keys():
+                for host in list(p.allEngineProperties.keys()):
                     dest = p.allEngineProperties[host]
-                    for key in self.engineCommandLineProperties.keys():
+                    for key in list(self.engineCommandLineProperties.keys()):
                         dest[key] = self.engineCommandLineProperties[key]
             
             return p.allEngineProperties
@@ -2037,48 +2047,48 @@ class MakeMovie(object):
 
     def CreateEngineArguments(self, engineProperties):
         arguments = []
-        if "numProcessors" in engineProperties.keys():
+        if "numProcessors" in list(engineProperties.keys()):
             np = engineProperties["numProcessors"]
             if np > 1:
                 arguments = arguments + ["-par", "-np", "%d" % np]
 
-                if "numNodesSet" in engineProperties.keys() and\
-                   "numNodes" in engineProperties.keys():
+                if "numNodesSet" in list(engineProperties.keys()) and\
+                   "numNodes" in list(engineProperties.keys()):
                     nn = engineProperties["numNodes"]
                     if engineProperties["numNodesSet"] == 1 and nn > 0:
                         arguments = arguments + ["-nn", "%d" % nn]
 
-                if "partitionSet" in engineProperties.keys() and\
-                   "partition" in engineProperties.keys():
+                if "partitionSet" in list(engineProperties.keys()) and\
+                   "partition" in list(engineProperties.keys()):
                     if engineProperties["partitionSet"] == 1:
                         arguments = arguments + ["-p", engineProperties["partition"]]
     
-                if "bankSet" in engineProperties.keys() and\
-                   "bank" in engineProperties.keys():
+                if "bankSet" in list(engineProperties.keys()) and\
+                   "bank" in list(engineProperties.keys()):
                     if engineProperties["bankSet"] == 1:
                         arguments = arguments + ["-b", engineProperties["bank"]]
 
-                if "timeLimitSet" in engineProperties.keys() and\
-                   "timeLimit" in engineProperties.keys():
+                if "timeLimitSet" in list(engineProperties.keys()) and\
+                   "timeLimit" in list(engineProperties.keys()):
                     if engineProperties["timeLimitSet"] == 1:
                         arguments = arguments + ["-t", engineProperties["timeLimit"]]
 
-                if "launchMethodSet" in engineProperties.keys() and\
-                   "launchMethod" in engineProperties.keys():
+                if "launchMethodSet" in list(engineProperties.keys()) and\
+                   "launchMethod" in list(engineProperties.keys()):
                     if engineProperties["launchMethodSet"] == 1:
                         arguments = arguments + ["-l", engineProperties["launchMethod"]]
 
-                if "launchArgsSet" in engineProperties.keys() and\
-                   "launchArgs" in engineProperties.keys():
+                if "launchArgsSet" in list(engineProperties.keys()) and\
+                   "launchArgs" in list(engineProperties.keys()):
                     if engineProperties["launchArgsSet"] == 1:
                         arguments = arguments + ["-la", str(engineProperties["launchArgs"])]
 
         arguments = arguments + ["-forcestatic"]
 
-        if "timeout" in engineProperties.keys():
+        if "timeout" in list(engineProperties.keys()):
             arguments = arguments + ["-idle-timeout", "%d" % engineProperties["timeout"]]
 
-        if "arguments" in engineProperties.keys():
+        if "arguments" in list(engineProperties.keys()):
             arguments = arguments + engineProperties["arguments"]
 
         return tuple(arguments)
@@ -2136,25 +2146,25 @@ class MakeMovie(object):
 
             if(SetTimeSliderState(i) == 0):
                 drawThePlots = 1
-                print "There was an error when trying to set the "\
-"time slider state to %d. VisIt will now try to redraw the plots." % i
+                print("There was an error when trying to set the "\
+"time slider state to %d. VisIt will now try to redraw the plots." % i)
             if(drawThePlots):
                 if(DrawPlots() == 0):
-                    print "VisIt could not draw plots for time slider "\
-"state %d. You should investigate the files used for that state." % i
+                    print("VisIt could not draw plots for time slider "\
+"state %d. You should investigate the files used for that state." % i)
                 else:
                     drawThePlots = 0
             if self.SaveImage(self.numFrames) == 0:
-                print "There was an error when trying to save the window "\
+                print("There was an error when trying to save the window "\
 "for time slider state %d. VisIt will now try to redraw the plots and re-save "\
-"the window." % i
+"the window." % i)
                 if(DrawPlots() == 0):
-                    print "VisIt could not draw plots for time slider "\
-"state %d. You should investigate the files used for that state." % i
+                    print("VisIt could not draw plots for time slider "\
+"state %d. You should investigate the files used for that state." % i)
                 else:
                     if self.SaveImage(self.numFrames) == 0:
-                        print "VisIt could not re-save the window for "\
-"time slider state %d. You should investigate the files used for that state." % i
+                        print("VisIt could not re-save the window for "\
+"time slider state %d. You should investigate the files used for that state." % i)
 
             self.numFrames = self.numFrames + 1
             i = i + self.frameStep
@@ -2293,7 +2303,7 @@ class MakeMovie(object):
             filebase = self.movieBase
             fmt = self.movieFormats[index][1]
             si = self.movieFormats[index][4]
-            s = self.stereoNameToType.keys()[si]
+            s = list(self.stereoNameToType.keys())[si]
 
             if differentResolutions:
                 w = self.movieFormats[index][2]
@@ -2351,13 +2361,13 @@ class MakeMovie(object):
                 # Get the name of the template work file from the XML template.
                 templatePY = prefix + "movietemplates" + self.slash + "visitmovietemplate.py"
                 self.Debug(1, "GenerateFrames: generic template work file: %s" % templatePY)
-                if not templateReader.generic_data.has_key("TEMPLATEFILE"):
+                if "TEMPLATEFILE" not in templateReader.generic_data:
                     self.Log("The movie template file did not have a TEMPLATEFILE key. Use visitmovietemplate.py")
                     self.Debug(1,"The movie template file did not have a TEMPLATEFILE key. Use visitmovietemplate.py")
                 else:
                     tFile = templateReader.generic_data["TEMPLATEFILE"]
                     self.Debug(1, "TEMPLATEFILE = %s" % tFile)
-                    print tFile
+                    print(tFile)
                     fileFound = 0
                     for name in (tFile, prefix + "movietemplates" + self.slash + tFile):
                         if (sys.platform != "win32") and string.find(name, "~") != -1:
@@ -2402,7 +2412,7 @@ class MakeMovie(object):
                     # The template did not return -1 for error so it must have 
                     # returned the number of frames.
                     self.numFrames = ret
-                except KeyError, value:
+                except KeyError as value:
                     msg = "The movie template work file %s contains errors or does not "\
                           "contain an InstantiateMovieTemplate function." % templatePY
                     self.Log(str(value))
@@ -2441,7 +2451,7 @@ class MakeMovie(object):
 
             # Launch any compute engines that were either specified on the
             # command line or in the session file.
-            for host in properties.keys():
+            for host in list(properties.keys()):
                 if properties[host] != {}:
                     args = self.CreateEngineArguments(properties[host])
                     self.Debug(1, "Starting compute engine: %s" % host)
@@ -2530,8 +2540,8 @@ class MakeMovie(object):
                   if ((30./i) <= self.fps):
                      pad_rate = i
                      if ((30./i) != self.fps):
-                         print "Because of limitations in MPEG encoding, the "
-                         print "movie will be encoded at %f frames per second" %(30./i)
+                         print("Because of limitations in MPEG encoding, the ")
+                         print("movie will be encoded at %f frames per second" %(30./i))
             frameExt = self.OutputExtension(self.formatInfo["mpeg"][self.FMT_INPUTFORMAT])
             framePattern = self.tmpDir + self.slash + imageFormatString + frameExt
             absMovieName = self.outputDir + self.slash + moviename
@@ -2627,8 +2637,8 @@ class MakeMovie(object):
                   if ((30./i) <= self.fps):
                      pad_rate = i
                      if ((30./i) != self.fps):
-                         print "Because of limitations in MPEG encoding, the "
-                         print "movie will be encoded at %f frames per second" %(30./i)
+                         print("Because of limitations in MPEG encoding, the ")
+                         print("movie will be encoded at %f frames per second" %(30./i))
 
             # Now create symbolic links to the images at that pad rate.
             formatExt = self.OutputExtension(self.formatInfo["mpeg"][self.FMT_INPUTFORMAT])
@@ -2720,7 +2730,7 @@ class MakeMovie(object):
             # Function to print the mpeg2encode output
             def print_mpeg_line_cb(line, this):
                 if line[:8] == "Encoding":
-                    print line
+                    print(line)
                     this.Debug(1, line)
                 else:
                     this.Debug(5, line)
@@ -2802,8 +2812,8 @@ class MakeMovie(object):
               if ((30./i) <= self.fps):
                  pad_rate = i
                  if ((30./i) != self.fps):
-                     print "Because of limitations in MPEG encoding, the "
-                     print "movie will be encoded at %f frames per second" %(30./i)
+                     print("Because of limitations in MPEG encoding, the ")
+                     print("movie will be encoded at %f frames per second" %(30./i))
         formatExt = "." + self.formatInfo[fmt][self.FMT_INPUTFORMAT]
         framePattern = self.tmpDir + self.slash + imageFormatString + formatExt
         absMovieName = self.outputDir + self.slash + moviename
@@ -2854,7 +2864,7 @@ class MakeMovie(object):
         if CommandInPath("img2sm"):
             img2sm = "img2sm"
         else:
-            if os.environ.has_key('SYS_TYPE'):
+            if 'SYS_TYPE' in os.environ:
                 res = os.path.join("/usr/gapps/asciviz/blockbuster/latest",os.environ["SYS_TYPE"],"bin/img2sm")
                 if os.path.exists(res):
                     img2sm = res
@@ -2968,7 +2978,7 @@ class MakeMovie(object):
             xr = format[2]
             yr = format[3]
             name = self.MakeMovieName(f, xr, yr, 0)
-            if name in movienames.keys():
+            if name in list(movienames.keys()):
                 movienames[name] = movienames[name] + 1
             else:
                 movienames[name] = 1

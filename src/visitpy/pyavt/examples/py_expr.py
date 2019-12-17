@@ -31,7 +31,7 @@ class MyExpression(SimplePythonExpression):
         res = vtk.vtkFloatArray()
         res.SetNumberOfComponents(1)
         res.SetNumberOfTuples(ncells)
-        for i in xrange(ncells):
+        for i in range(ncells):
             cell = ds_in.GetCell(i)
             bounds = cell.GetBounds()
             xv = bounds[0] + bounds[1] / 2.0

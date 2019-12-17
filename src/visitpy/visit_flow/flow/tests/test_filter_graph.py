@@ -65,15 +65,15 @@ class TestFilterGraph(unittest.TestCase):
         g.register_filter(FD)
         g.register_filter(FSink)
         self.g = g
-        print ""
+        print("")
     def test_01_simple_setup(self):
         n = self.g.add_node("src","database")
         self.assertEqual(n.name,"database")
         self.assertEqual(self.g.has_node("database"),True)
-        self.assertEqual(len(self.g.nodes.values()),1)
+        self.assertEqual(len(list(self.g.nodes.values())),1)
         self.g.remove_node("database")
         self.assertEqual(self.g.has_node("database"),False)
-        self.assertEqual(len(self.g.nodes.values()),0)
+        self.assertEqual(len(list(self.g.nodes.values())),0)
         self.assertRaises(UnknownFilterNodeError, self.g.remove_node, "src")
     def test_02_simple_traversal(self):
         self.g.add_node("src","database")
@@ -91,7 +91,7 @@ class TestFilterGraph(unittest.TestCase):
         self.g.connect("c0","d0","input_b")
         self.g.connect("d0","fileout","input")
         eplan = ExecutionPlan(self.g)
-        print eplan
+        print(eplan)
         traversals = [[('database', 1), ('a0', 2), ('c0', 1), ('b0', 1), ('d0', 1), ('fileout', 1)]]
         #untouched = ["!dangle!"]
         self.assertEqual(traversals,eplan.traversals)
@@ -107,7 +107,7 @@ class TestFilterGraph(unittest.TestCase):
         self.g.connect("db","d0","input_b")
         self.g.connect("d0","out0","input")
         eplan = ExecutionPlan(self.g)
-        print eplan.traversals
+        print(eplan.traversals)
         #self.assertEqual(traversals,eplan.traversals)
         #self.assertEqual(untouched,eplan.untouched)
 

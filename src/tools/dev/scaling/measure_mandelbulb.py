@@ -26,7 +26,7 @@ class MemoryLogger(object):
         self.writeSamples()
 
     def writeSamples(self):
-        print "writeSamples: start"
+        print("writeSamples: start")
         f = open(self.filebase + ".curve", "wt")
         np0 = len(self.samples[0].memory)
         if np0 > 4096:
@@ -38,7 +38,7 @@ class MemoryLogger(object):
                 if rank < np:
                     f.write("%g %g\n" % (s, self.samples[s].memory[rank]))
         f.close()
-        print "writeSamples: end"
+        print("writeSamples: end")
 
 def saveImage(casename):
     s = SaveWindowAttributes()

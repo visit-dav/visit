@@ -31,7 +31,7 @@ def test(name,curr,expected):
     if curr != expected:
         res = "failed"
         failures += 1
-    print "%d:%s=%s:%s" % (rank,name,repr(str(curr)),res)
+    print("%d:%s=%s:%s" % (rank,name,repr(str(curr)),res))
 
 # fire up mpi
 mpicom.init(sys.argv)
@@ -101,6 +101,6 @@ mpicom.finalize()
 
 # report any failures
 if failures == 0:
-    print "%d:All Tests Passed" % rank
+    print("%d:All Tests Passed" % rank)
 else:
-    print "%d:# of Failures = %d" % (rank,failures)
+    print("%d:# of Failures = %d" % (rank,failures))

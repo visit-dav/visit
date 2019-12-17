@@ -21,7 +21,7 @@ import string
 
 def attrs_getValue(dict, name):
     ret = None
-    if name in dict.keys():
+    if name in list(dict.keys()):
         ret = dict[name]
     return ret
 
@@ -292,12 +292,12 @@ class MovieTemplateReader(XMLParser):
         if name == "Field":
             if self.readMode == self.READ_VIEWPORT:
                 value = self.EvalField()
-                if self.viewport_name not in self.viewport_data.keys():
+                if self.viewport_name not in list(self.viewport_data.keys()):
                     self.viewport_data[self.viewport_name] = {}
                 self.viewport_data[self.viewport_name][self.fieldName] = value
             elif self.readMode == self.READ_SEQUENCE:
                 value = self.EvalField()
-                if self.sequence_name not in self.sequence_data.keys():
+                if self.sequence_name not in list(self.sequence_data.keys()):
                     self.sequence_data[self.sequence_name] = {}
                 self.sequence_data[self.sequence_name][self.fieldName] = value
             elif self.readMode == self.READ_GENERIC:
@@ -419,7 +419,7 @@ class VisItMovieTemplate(object):
 
     def LogAndPrint(self, s):
         self.moviemaker.Log(str(s))
-        print str(s)
+        print(str(s))
 
     def SendClientProgress(self, str, current, total):
         self.moviemaker.SendClientProgress(str, current, total)
@@ -446,12 +446,12 @@ class VisItMovieTemplate(object):
     def ValidateTemplate(self):
         # Do some basic correctness checks on the viewport_data so
         # we know that it has the required fields.
-        vkeys = self.viewport_data.keys()
+        vkeys = list(self.viewport_data.keys())
         vkeys.sort()
         for viewport in vkeys:
              requiredKeys = ("coordinates", "compositing", "opacity", "replaceColor", "dropShadow", "sequenceList")
              for k in requiredKeys:
-                 if not self.viewport_data[viewport].has_key(k):
+                 if k not in self.viewport_data[viewport]:
                      self.ClientMessageBox("Viewport %s in the options file does not contain a \"%s\" field.\n" % (viewport, k))
                      return 0
 
@@ -460,18 +460,18 @@ class VisItMovieTemplate(object):
             sequenceList = self.viewport_data[viewport]["sequenceList"]
             if type(sequenceList) == type(()):
                 for sequenceName in sequenceList:
-                    if sequenceName not in self.sequence_data.keys():
+                    if sequenceName not in list(self.sequence_data.keys()):
                         self.ClientMessageBox("Viewport %s references a sequence that does not exist." % viewport)
                         return 0
             else:
                 sequenceName = sequenceList
-                if not sequenceName in self.sequence_data.keys():
+                if not sequenceName in list(self.sequence_data.keys()):
                     self.ClientMessageBox("Viewport %s references a sequence that does not exist." % viewport)
                     return 0
 
         # Make sure that all sequences are recognized sequence types.
-        for seqName in self.sequence_data.keys():
-            if not self.sequence_data[seqName].has_key("sequenceType"):
+        for seqName in list(self.sequence_data.keys()):
+            if "sequenceType" not in self.sequence_data[seqName]:
                 self.ClientMessageBox("Sequence %s does not have a sequenceType field." % seqName)
                 return 0
             else:
@@ -479,14 +479,14 @@ class VisItMovieTemplate(object):
                 if st not in self.recognizedSequenceTypes:
                     self.ClientMessageBox("Sequence %s contains unrecognized sequence type %s." % (seqName, st))
                     return 0
-                elif st == "CurrentPlots" and seqName not in self.windowSequences.keys():
-                    self.ClientMessageBox("CurrentPlots sequences must have names in " + str(self.windowSequences.keys()))
+                elif st == "CurrentPlots" and seqName not in list(self.windowSequences.keys()):
+                    self.ClientMessageBox("CurrentPlots sequences must have names in " + str(list(self.windowSequences.keys())))
                     return 0
                 elif st in self.transitionTypes:
                     # Transitions must have certain keys.
                     transitionKeys = ("sequenceType", "input1", "color1", "input2", "color2", "nFrames")
                     for k in transitionKeys:
-                        if not self.sequence_data[seqName].has_key(k):
+                        if k not in self.sequence_data[seqName]:
                             self.ClientMessageBox("Sequence %s is a transition sequence and it is missing required field \"%s\"." % (seqName, k))
                             return 0
                     # Make sure that input1 and input2's values are "Frames" or "Color".
@@ -505,7 +505,7 @@ class VisItMovieTemplate(object):
                     # Compositing sequences must have certain keys.
                     transitionKeys = ("sequenceType", "nFrames", "reverse")
                     for k in transitionKeys:
-                        if not self.sequence_data[seqName].has_key(k):
+                        if k not in self.sequence_data[seqName]:
                             self.ClientMessageBox("Sequence %s is a compositing sequence and it is missing required field \"%s\"." % (seqName, k))
                             return 0
                     # Make sure that nFrames >= 1
@@ -516,7 +516,7 @@ class VisItMovieTemplate(object):
                     # Rotation sequences must have certain keys.
                     transitionKeys = ("sequenceType", "nSteps", "startAngle", "endAngle")
                     for k in transitionKeys:
-                        if not self.sequence_data[seqName].has_key(k):
+                        if k not in self.sequence_data[seqName]:
                             self.ClientMessageBox("Sequence %s is a rotation sequence and it is missing required field \"%s\"." % (seqName, k))
                             return 0
                     # Make sure that nFrames >= 1
@@ -559,7 +559,7 @@ class VisItMovieTemplate(object):
         # viewports and we determine to which viewport each sequence is
         # mapped.
         sequence_sizes = {}
-        vkeys = self.viewport_data.keys()
+        vkeys = list(self.viewport_data.keys())
         vkeys.sort()
         for viewport in vkeys:
              coordinates = self.viewport_data[viewport]["coordinates"]
@@ -614,7 +614,7 @@ class VisItMovieTemplate(object):
     ###########################################################################
 
     def CompositingRequired(self):
-        return len(self.viewport_data.keys()) > 1
+        return len(list(self.viewport_data.keys())) > 1
 
     ###########################################################################
     # Method: CalculatePercentagesComplete
@@ -630,7 +630,7 @@ class VisItMovieTemplate(object):
     ###########################################################################
 
     def CalculatePercentagesComplete(self):
-        vkeys = self.viewport_data.keys()
+        vkeys = list(self.viewport_data.keys())
         vkeys.sort()
         sequenceNames = []
 
@@ -829,7 +829,7 @@ class VisItMovieTemplate(object):
         prefix = self.moviemaker.tmpDir + self.moviemaker.slash
         stereo = format[2]
         if self.stereoFilenames and stereo > 0:
-            sName = self.moviemaker.stereoNameToType.keys()[stereo]
+            sName = list(self.moviemaker.stereoNameToType.keys())[stereo]
             name = "%s%s_%dx%d_%s" % (prefix, filebase, format[0], format[1], sName)
         else:
             name = "%s%s_%dx%d" % (prefix, filebase, format[0], format[1])
@@ -840,7 +840,7 @@ class VisItMovieTemplate(object):
         prefix = self.moviemaker.tmpDir + self.moviemaker.slash
         stereo = format[2]
         if self.stereoFilenames and stereo > 0:
-            sName = self.moviemaker.stereoNameToType.keys()[stereo]
+            sName = list(self.moviemaker.stereoNameToType.keys())[stereo]
             name = "%s%s_%dx%d_%s_%04d.ppm" % (prefix, filebase, format[0], format[1], sName, index)
         else:
             name = "%s%s_%dx%d_%04d.ppm" % (prefix, filebase, format[0], format[1], index)
@@ -882,7 +882,7 @@ class VisItMovieTemplate(object):
         retval = 1
 
         # If compositing is required then save in PPM
-        if self.CompositingRequired() or len(self.sequence_data.keys()) > 1:
+        if self.CompositingRequired() or len(list(self.sequence_data.keys())) > 1:
             s = SaveWindowAttributes()
             old_sw = GetSaveWindowAttributes()
             s.saveTiled = old_sw.saveTiled
@@ -1037,7 +1037,7 @@ class VisItMovieTemplate(object):
 
     def TransitionFrames(self, sequence_frames, movieFormats, trans_percents):
 
-        vkeys = self.viewport_data.keys()
+        vkeys = list(self.viewport_data.keys())
         vkeys.sort()
         # Map sequence transition types to "visit_transition" args.
         transitionTypes2Arg = {"Fade" : "fade", "LRWipe":"lrwipe", \
@@ -1211,7 +1211,7 @@ class VisItMovieTemplate(object):
 
                         # If we have not added the sequence to the list of 
                         # sequence frames yet then do that now.
-                        if not sequence_frames.has_key(seqName):
+                        if seqName not in sequence_frames:
                             sequence_frames[seqName] = (nFrames, seqBase, seqBgColor)
 
                         # Report progress
@@ -1394,7 +1394,7 @@ class VisItMovieTemplate(object):
         fmt_incr = (percents[1] - percents[0]) / float(len(movieFormats))
         fmt_start_percent = percents[0];
 
-        vkeys = self.viewport_data.keys()
+        vkeys = list(self.viewport_data.keys())
         vkeys.sort()
 
         # Composite the frames.
@@ -1430,7 +1430,7 @@ class VisItMovieTemplate(object):
             # Determine the current image being used in each sequence.
             image_in_sequence = {}
             consumed_all_images_in_sequence = {}
-            skeys = sequence_frames.keys()
+            skeys = list(sequence_frames.keys())
             skeys.sort()
             for k in skeys:
                 image_in_sequence[k] = 0
@@ -1445,7 +1445,7 @@ class VisItMovieTemplate(object):
                 seqList = self.viewport_data[k]["sequenceList"]
                 for seq in seqList:
                     nframes_in_sequence = sequence_frames[seq][0]
-                    if k in nframes_per_viewport.keys():
+                    if k in list(nframes_per_viewport.keys()):
                         nframes_per_viewport[k] = nframes_per_viewport[k] + nframes_in_sequence
                     else:
                         nframes_per_viewport[k] = nframes_in_sequence
@@ -1685,7 +1685,7 @@ class VisItMovieTemplate(object):
 
     def LinkFrames(self, sequence_frames, movieFormats):
         # There is just 1 viewport if this method was called.
-        vpName = self.viewport_data.keys()[0]
+        vpName = list(self.viewport_data.keys())[0]
         sequenceList = self.viewport_data[vpName]["sequenceList"]
         prefix = self.moviemaker.tmpDir + self.moviemaker.slash 
         index = 0
@@ -1769,14 +1769,14 @@ class VisItMovieTemplate(object):
 
     def SetupVisualizationFromSession(self):
         self.Debug(1,"Calling VisItMovieTemplate.SetupVisualizationFromSession")
-        if self.generic_data.has_key("SESSIONFILE"):
+        if "SESSIONFILE" in self.generic_data:
             sessionFile = str(self.generic_data["SESSIONFILE"])
             self.Debug(1,"VisItMovieTemplate.SetupVisualizationFromSession using session %s" % sessionFile)
 
             # When we read the template options file, we read the source list
             # if it was available. The source map lets us know that we should
             # replace certain databases in a session file.
-            if self.generic_data.has_key("SOURCES"):
+            if "SOURCES" in self.generic_data:
                 if len(self.generic_data["SOURCES"]) == 0:
                     # The source list was empty.
                     RestoreSession(sessionFile, 0)
@@ -1876,7 +1876,7 @@ class VisItMovieTemplate(object):
         # Insert some number of sequence method calls. Each of the sequence
         # methods returns (nframes, filebase, sizes tuple)
         frames = {}
-        vkeys = self.viewport_data.keys()
+        vkeys = list(self.viewport_data.keys())
         vkeys.sort()
 
         # Look for all "CurrentPlots" sequences to get the list of requested windows.
@@ -1919,7 +1919,7 @@ class VisItMovieTemplate(object):
         #
         # For each viewport, go through and create its "CurrentPlots" sequences
         #
-        vkeys = self.viewport_data.keys()
+        vkeys = list(self.viewport_data.keys())
         vkeys.sort()
         for k in vkeys:
             currentActiveWindow = -1
@@ -2084,7 +2084,7 @@ class VisItMovieTemplate(object):
             # Now that the derived class has created the sequences that produce 
             # frames, create the transitions frames.
             pct = (0,0)
-            if percentsPerSequence.has_key("TRANSITIONS"):
+            if "TRANSITIONS" in percentsPerSequence:
                 pct = percentsPerSequence["TRANSITIONS"]
             sequence_frames = self.TransitionFrames(sequence_frames, movieFormats, pct)
 
@@ -2092,7 +2092,7 @@ class VisItMovieTemplate(object):
             if self.CompositingRequired():
                 # Create new sequences based on the compositing sequences that 
                 # are stored in sequence_data.
-                for k in self.viewport_data.keys():
+                for k in list(self.viewport_data.keys()):
                     for sName in self.viewport_data[k]["sequenceList"]:
                         if self.sequence_data[sName]["sequenceType"] in self.compositingSequences:
                             sequence_frames[sName] = (self.sequence_data[sName]["nFrames"],\
@@ -2100,10 +2100,10 @@ class VisItMovieTemplate(object):
 
                 pct = percentsPerSequence["COMPOSITING"]
                 nFrames = self.CompositeFrames(sequence_frames, movieFormats, pct)
-            elif len(self.sequence_data.keys()) > 1:
+            elif len(list(self.sequence_data.keys())) > 1:
                 nFrames = self.LinkFrames(sequence_frames, movieFormats)
 
-        except self.error, value:
+        except self.error as value:
             self.LogAndPrint(value.message)
             nFrames = -1
 

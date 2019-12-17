@@ -31,6 +31,8 @@ from os.path import join as pjoin
 #  http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-unicode-ones-from-json-in-python
 # ----------------------------------------------------------------------------
 def _decode_list(data):
+    if (sys.version_info > (3, 0)):
+        return data
     rv = []
     for item in data:
         if isinstance(item, unicode):
@@ -54,8 +56,10 @@ def _decode_list(data):
 #  http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-unicode-ones-from-json-in-python
 # ----------------------------------------------------------------------------
 def _decode_dict(data):
+    if (sys.version_info > (3, 0)):
+        return data
     rv = {}
-    for key, value in data.iteritems():
+    for key, value in data.items():
         if isinstance(key, unicode):
            key = key.encode('utf-8')
         if isinstance(value, unicode):
@@ -265,7 +269,7 @@ def Log(msg,echo=True):
     Prints message to screen and also records to a log file.
     """
     if echo:
-        print msg
+        print(msg)
     if (os.path.isfile("log")):
         log = open("log", 'a')
         log.write(msg)

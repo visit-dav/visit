@@ -28,7 +28,7 @@ def GetCreateNodeFiles():
 # Execute a command. It's wrapped for debugging.
 #
 def systemCommand(command):
-    print command
+    print(command)
     return os.system(command)
 
 ###############################################################################
@@ -67,12 +67,12 @@ def main(exeDir):
     # Warn about files that have special CreateNode functions.
     cnfiles = GetCreateNodeFiles()
     if(len(cnfiles) > 0):
-        print "***"
-        print "*** The following code files have special CreateNode methods."
-        print "*** These .code files may need to be updated:"
-        print "***"
+        print("***")
+        print("*** The following code files have special CreateNode methods.")
+        print("*** These .code files may need to be updated:")
+        print("***")
         for f in cnfiles:
-            print f
+            print(f)
 
     return 0
 
@@ -82,5 +82,5 @@ def main(exeDir):
 if len(sys.argv) > 1:
     main(sys.argv[1])
 else:
-    print "usage: regenerateatts.py /path/to/xml2atts"
+    print("usage: regenerateatts.py /path/to/xml2atts")
 

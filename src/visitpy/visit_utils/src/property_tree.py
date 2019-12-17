@@ -24,10 +24,10 @@ class PropertyTree(object):
             self._value = init
     def update(self,pval):
         if isinstance(pval,dict):
-            for path,value in  pval.items():
+            for path,value in  list(pval.items()):
                 self.add_property(path,value)
         else:
-            for path,value in pval.properties().items():
+            for path,value in list(pval.properties().items()):
                 self.add_property(path,value)
     def clear(self):
         self._locked = False
@@ -38,11 +38,11 @@ class PropertyTree(object):
     def properties(self):
         res = {}
         if self._type == "tree":
-            keys = self._value.keys()
+            keys = list(self._value.keys())
             for k in keys:
                 curr = self._value[k]
                 if curr._type=="tree":
-                    for p,v in curr.properties().items():
+                    for p,v in list(curr.properties().items()):
                         res[k + "/" + p] = v
                 else:
                     res[k] = curr._value
@@ -50,7 +50,7 @@ class PropertyTree(object):
     def children(self):
         res = {}
         if self._type == "tree":
-            keys = self._value.keys()
+            keys = list(self._value.keys())
             keys.sort()
             for k in keys:
                 curr = self._value[k]
@@ -61,7 +61,7 @@ class PropertyTree(object):
         if idx > 0:
             lpath = path[:idx]
             rpath = path[idx+1:]
-            if not lpath in self._value.keys():
+            if not lpath in list(self._value.keys()):
                 tree = PropertyTree()
                 self._value[lpath] = tree
             else:
@@ -83,17 +83,17 @@ class PropertyTree(object):
             rpath = path[idx+1:]
             tree = self._value[lpath]
             tree.remove_property(rpath)
-        elif path in self._value.keys():
+        elif path in list(self._value.keys()):
             del self._value[path]
     def lock(self):
         self._locked = True
         if self._type == "tree":
-            for v in self._value.values():
+            for v in list(self._value.values()):
                 v.lock()
     def unlock(self):
         self._locked = False
         if self._type == "tree":
-            for v in self._value.values():
+            for v in list(self._value.values()):
                 v.unlock()
     def __getitem__(self,path):
         node = self.fetch_property(path)
@@ -119,12 +119,12 @@ class PropertyTree(object):
         idx = path.find("/")
         if idx > 0:
             lpath = path[:idx]
-            if lpath in self._value.keys():
+            if lpath in list(self._value.keys()):
                 rpath = path[idx+1:]
                 tree = self._value[lpath]
                 return tree.fetch_property(rpath)
             return None
-        elif path in self._value.keys():
+        elif path in list(self._value.keys()):
             return self._value[path]
         else:
             return None
@@ -133,7 +133,7 @@ class PropertyTree(object):
     def __gen_string(self,path):
         res = ""
         if self._type == "tree":
-            for k in self._value.keys():
+            for k in list(self._value.keys()):
                npath = path + k + "/"
                res +=  self._value[k].__gen_string(npath)
         else:

@@ -22,8 +22,8 @@ except ImportError:
     pass
 
 from ..core import Filter, Context, log
-import pyocl_env
-import pyocl_kernels
+from . import pyocl_env
+from . import pyocl_kernels
 
 def info(msg):
     log.info(msg,"filters.pyocl_compile")
@@ -59,7 +59,7 @@ class PyOpenCLCompileContext(Context):
                       in_types = None,
                       out_type = "float"):
         idx = len(self.stmts)
-        if not kernel_name in self.kernels.keys():
+        if not kernel_name in list(self.kernels.keys()):
             self.kernels[kernel_name] = kernel_source
         res_name  = "_auto_res_%04d" % idx
         stmt = "%s(" % kernel_name
@@ -79,7 +79,7 @@ class PyOpenCLCompileContext(Context):
         act = pyocl_env.PyOpenCLHostTimer("auto_kgen",0)
         act.start()
         res = ""
-        for kern in self.kernels.values():
+        for kern in list(self.kernels.values()):
             res += kern
         ident = "            "
         args_ident = "                               "
@@ -194,7 +194,7 @@ filters = [PyOpenCLCompileSource,
            PyOpenCLCompileConst,
            PyOpenCLCompileDecompose]
 
-for k,v in pyocl_kernels.Kernels.items():
+for k,v in list(pyocl_kernels.Kernels.items()):
     filters.append(PyOpenCLCompileKernel(v))
 
 contexts = [PyOpenCLCompileContext]

@@ -185,7 +185,7 @@ def test1(db):
 def MakeShortWave():
     db = abs_path("short_wave.visit")
     f = open(db, "wt")
-    for i in xrange(0, 700, 100):
+    for i in range(0, 700, 100):
         f.write(silo_data_path("wave%04d.silo" % i) + "\n")
     f.close()
     return os.path.abspath(db)

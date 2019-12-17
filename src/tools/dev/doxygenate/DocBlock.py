@@ -69,7 +69,7 @@ class DocBlock(object):
         if len(self.mods) == 0:
             missing.append("mods")
         if len(missing) >0:
-            print "[Missing Sections: %s]" % str(missing)
+            print("[Missing Sections: %s]" % str(missing))
     def __extract_sections(self,text):
         # tokenize by sections Name: (text)
         # (assumes sections have first letter capitalized, second uncap)
@@ -86,9 +86,9 @@ class DocBlock(object):
             stext = self.__sanitize(stext)
             self.sections[sname] = Section(sname,stext)
     def __has_section(self,key):
-        return key in self.sections.keys()
+        return key in list(self.sections.keys())
     def __get_section_text(self,key):
-        if key in self.sections.keys():
+        if key in list(self.sections.keys()):
             sect = self.sections[key]
             sect.used = 1
             return sect.text.strip()
@@ -147,7 +147,7 @@ class DocBlock(object):
     def __parse_mods(self):
         self.mods =[]
         mods_key = "Modifications"
-        if mods_key in self.sections.keys():
+        if mods_key in list(self.sections.keys()):
             # split by double newline
             mods = self.sections[mods_key].text.strip().split("\n\n")
             for m in mods:

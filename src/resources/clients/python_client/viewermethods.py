@@ -1,7 +1,10 @@
 import sys
 import inspect
 import base64
-import cStringIO
+if (sys.version_info > (3, 0)):
+    import io
+else:
+    import cStringIO as io
 from viewerstate import *
 from visitstate import RPCType as RPC
 
@@ -167,17 +170,17 @@ class ViewerMethods:
 
     def ShowImageWindow(self):
         try:
-            import PIL,cStringIO,base64
+            import PIL
             import PIL.Image
 
             queryAttr = self.state.data(38)["12"]
 
             for attr in queryAttr:
-                data = cStringIO.StringIO(base64.b64decode(attr))
+                data = io.StringIO(base64.b64decode(attr))
                 im = PIL.Image.open(data)
                 im.show()
         except:
-            print "Showing Window Failed..."
+            print("Showing Window Failed...")
 
     def SaveImageWindow(self,filename):
         try:
@@ -187,11 +190,11 @@ class ViewerMethods:
             queryAttr = self.state.data(38)["12"]
 
             for (i,attr) in enumerate(queryAttr):
-                data = cStringIO.StringIO(base64.b64decode(attr))
+                data = io.StringIO(base64.b64decode(attr))
                 im = PIL.Image.open(data)
                 im.save(filename + "_" + str(i) + ".jpg")
         except:
-            print "Saving Window Failed..."
+            print("Saving Window Failed...")
 
     def decode_base64(self,data):
         """Decode base64, padding being optional.
@@ -215,5 +218,5 @@ class ViewerMethods:
                 f.write(data)
                 f.close()
         except:
-            print "Saving VTK File Failed..."
+            print("Saving VTK File Failed...")
 

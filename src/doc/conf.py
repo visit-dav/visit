@@ -122,8 +122,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'VisItUserManual.tex', u'VisIt User Manual Documentation',
-     u'LLNL', 'manual'),
+    (master_doc, 'VisItUserManual.tex', 'VisIt User Manual Documentation',
+     'LLNL', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -152,7 +152,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'visitusermanual', u'VisIt User Manual Documentation',
+    (master_doc, 'visitusermanual', 'VisIt User Manual Documentation',
      [author], 1)
 ]
 
@@ -166,7 +166,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'VisItUserManual', u'VisIt User Manual Documentation',
+    (master_doc, 'VisItUserManual', 'VisIt User Manual Documentation',
      author, 'VisItUserManual', 'One line description of project.',
      'Miscellaneous'),
 ]

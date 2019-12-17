@@ -52,9 +52,9 @@ class ARLLauncher(MainLauncher):
         # ----
         # ARL Pitch machine:
         # ----
-        print "self.sectorname=" + self.sectorname()
+        print("self.sectorname=" + self.sectorname())
         if self.sectorname() == "pitch":
-            print "Inside of self.sectorname customization"
+            print("Inside of self.sectorname customization")
             paths = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
             addedpaths = ["/usr/cta/unsupported/openmpi/gcc/4.4.0/openmpi-1.6/lib:/opt/pbs/default/lib"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(paths + addedpaths))
@@ -87,7 +87,7 @@ class ARLLauncher(MainLauncher):
                 time = ""
                 if self.parallelArgs.time != None:
                     nodes = self.parallelArgs.time
-                logger = ["/app/visit/utils/daac_logger", "remote", "visit_server", self.visitver, short_host, nodes, procs, time)
+                logger = ["/app/visit/utils/daac_logger", "remote", "visit_server", self.visitver, short_host, nodes, procs, time]
             elif self.generalArgs.exe_name == "viewer":
                 logger = ["/usr/cta/visit/utils/daac_logger", "local", "LINUX_Visit", self.visitver]
 
@@ -113,5 +113,5 @@ class ARLLauncher(MainLauncher):
 
 # Launcher creation function
 def createlauncher():
-    print "Inside of createLauncher ARLLauncher"
+    print("Inside of createLauncher ARLLauncher")
     return ARLLauncher()

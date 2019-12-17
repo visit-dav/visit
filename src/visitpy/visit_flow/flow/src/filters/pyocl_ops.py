@@ -22,8 +22,8 @@ except ImportError:
     pass
 
 from ..core import Filter, Context, log
-import pyocl_env
-import pyocl_kernels
+from . import pyocl_env
+from . import pyocl_kernels
 
 def info(msg):
     log.info(msg,"filters.pyocl_ops")
@@ -115,7 +115,7 @@ def PyOpenCLOpsKernel(kernel_info):
 filters = [PyOpenCLOpsConst,
            PyOpenCLOpsDecompose]
 
-for k,v in pyocl_kernels.Kernels.items():
+for k,v in list(pyocl_kernels.Kernels.items()):
    filters.append(PyOpenCLOpsKernel(v))
 
 contexts = [PyOpenCLOpsContext]

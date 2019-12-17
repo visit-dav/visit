@@ -213,7 +213,7 @@ def t_NEWLINE(t):
 
 # catch all error handler
 def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
+    print(("Illegal character '%s'" % t.value[0]))
     t.lexer.skip(1)
 
 #------------------
@@ -359,7 +359,7 @@ def p_args_expr(t):
 # catch all parsing error handler
 def p_error(p):
     if p:
-        print "<line",p.lineno, "> Syntax Error", p.type, p.value
+        print("<line",p.lineno, "> Syntax Error", p.type, p.value)
 
 
 class Parser(object):

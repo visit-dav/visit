@@ -22,7 +22,7 @@ class trace_set(object):
     def to_xml(self):
         "Dumps trace set to xml string"
         res = "<trace_set>\n"
-        for t in self.traces.values():
+        for t in list(self.traces.values()):
                 res += t.to_xml()
         res += "</trace_set>\n"
         return res
@@ -49,10 +49,10 @@ class trace_set(object):
                     #  address-reuse_number
                     # Example:
                     #  0x90d8300-0
-                    if not oaddy in addy_reuse.keys():
+                    if not oaddy in list(addy_reuse.keys()):
                         addy_reuse[oaddy]=0;
                     oaddy_u = oaddy + "-%d" % addy_reuse[oaddy]
-                    if not oaddy_u in self.traces.keys():
+                    if not oaddy_u in list(self.traces.keys()):
                         trace = trace_object(oaddy_u,otype)
                         self.traces[oaddy_u] = trace
 
@@ -130,9 +130,9 @@ class leak_set(object):
         "Constructs a leak set from a trace set"
         self.leaks = {}
         self.by_type = {}
-        for k,t in trace_set.traces.items():
+        for k,t in list(trace_set.traces.items()):
             if not t.check_event("Destructing!"):
-                if not t.type in self.by_type.keys():
+                if not t.type in list(self.by_type.keys()):
                     self.by_type[t.type] =1;
                 else:
                     self.by_type[t.type] +=1;
@@ -140,9 +140,9 @@ class leak_set(object):
     def to_xml(self):
         "Dump leaks to xml string"
         res = "<leak_set>\n"
-        for k,v in self.by_type.items():
+        for k,v in list(self.by_type.items()):
             res += "<type_summary><type>%s</type><count>%d</count></type_summary>\n" % (k,v)
-        for t in self.leaks.values():
+        for t in list(self.leaks.values()):
             res +=" <leak>\n  "
             res +=" <addy>%s</addy>\n " % t.addy
             res +=" <type>%s</type>\n " % t.type
@@ -191,7 +191,7 @@ def process(fname_in,fname_out):
 
 def main():
     if len(sys.argv) < 3:
-        print "usage: vtk_debug_trace_parser.py [engine_log] [output_file]"
+        print("usage: vtk_debug_trace_parser.py [engine_log] [output_file]")
         sys.exit(-1)
     engine_log  = sys.argv[1]
     output_file = sys.argv[2]

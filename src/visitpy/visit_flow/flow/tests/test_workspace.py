@@ -53,7 +53,7 @@ class TestWorkspace(unittest.TestCase):
         w.register_filter(CalcAdd)
         w.register_context(CalcContext)
         self.w = w
-        print ""
+        print("")
     def test_01_simple_setup(self):
         ctx = self.w.add_context("calc","root")
         ctx.calc_setup() # check if we get proper context
@@ -81,7 +81,7 @@ class TestWorkspace(unittest.TestCase):
         ctx.connect(":src_a","f1:in_a")
         ctx.connect(":src_b","f1:in_b")
         ctx.connect("f1","f2:in")
-        print self.w.to_dict()
+        print(self.w.to_dict())
     def test_03_dict_load(self):
         w1 = Workspace()
         w1.register_filter(CalcPower)
@@ -90,15 +90,15 @@ class TestWorkspace(unittest.TestCase):
         w1.add_filter("pow","f2")
         w1.connect("f1","f2:in")
         w1_dict = w1.to_dict()
-        print "Source Workspace"
-        print json.dumps(w1_dict,indent=1)
+        print("Source Workspace")
+        print(json.dumps(w1_dict,indent=1))
         w2 = Workspace()
         w2.register_filter(CalcPower)
         w2.register_filter(CalcAdd)
         w2.load_dict(w1_dict)
         w2_dict = w2.to_dict()
-        print "Resulting Workspace"
-        print json.dumps(w2_dict,indent=1)
+        print("Resulting Workspace")
+        print(json.dumps(w2_dict,indent=1))
         self.assertEqual(w1_dict,w2_dict)
     def test_04_dict_init(self):
         r = {"nodes":{"f1":{"type":"add"},
@@ -109,10 +109,10 @@ class TestWorkspace(unittest.TestCase):
             }
         self.w.load_dict(r)
         w_dict = self.w.to_dict()
-        print "Input Dict"
-        print json.dumps(r,indent=1)
-        print "Resulting Workspace"
-        print json.dumps(w_dict,indent=1)
+        print("Input Dict")
+        print(json.dumps(r,indent=1))
+        print("Resulting Workspace")
+        print(json.dumps(w_dict,indent=1))
 
 
 if __name__ == '__main__':

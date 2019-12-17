@@ -62,7 +62,7 @@ def ddf(opts):
         f = open(ofname, "w")
         data = data.replace(orig_vtk_var,ddf_vtk_var)
         f.write(data)
-    print "[ddf output: %s]" % ofname
+    print("[ddf output: %s]" % ofname)
     return ofname
 
 

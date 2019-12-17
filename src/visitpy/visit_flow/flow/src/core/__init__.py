@@ -11,12 +11,12 @@
 
 """
 
-from common        import *
-from registry      import *
-from filter_graph  import *
-from workspace     import *
-from state_control import *
-from property_tree import *
+from .common        import *
+from .registry      import *
+from .filter_graph  import *
+from .workspace     import *
+from .state_control import *
+from .property_tree import *
 
-import errors
+from . import errors
 

@@ -32,7 +32,7 @@ def ParitionByBlockKeyField(key):
 
 if __name__ == "__main__":
   if len(sys.argv) < 5:
-    print >> sys.stderr, "Usage: Operator+ <dbfile> <mesh> <var1> <var2>"
+    print("Usage: Operator+ <dbfile> <mesh> <var1> <var2>", file=sys.stderr)
     exit(-1)
 
   sc = SparkContext()
