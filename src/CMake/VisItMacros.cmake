@@ -130,42 +130,45 @@ FUNCTION(ADD_XML_TOOLS_GEN_TARGET gen_name
                                   dest_dir
                                   tool_name
                                   gen_type)
+    ####
+    # only create code gen targets if:
+    #  we aren't on windows 
+    #  our cmake for gen targets option is on
+    ####
+    if(NOT WIN32 AND VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
+        set(gen_target_name "gen_${gen_type}_${gen_name}")
 
-    set(gen_target_name "gen_${gen_type}_${gen_name}")
-
-    if(VISIT_CMAKE_VERBOSE_GEN_TARGET_MESSAGES)
         MESSAGE(STATUS "Adding ${tool_name} generation target: ${gen_target_name}")
-    endif()
 
-    if(WIN32)
-        # need to test this in the future
-        set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/visit.exe -${tool_name})
-    else()
-        set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/${tool_name})
-    endif()
+        if(WIN32)
+            # need to test this in the future
+            set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/visit.exe -${tool_name})
+        else()
+            set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/${tool_name})
+        endif()
 
-    # construct path to source file, we need to run 
-    # in the dir where we want the code to gen
-    set(xml_input ${src_dir}/${gen_name}.xml)
+        # construct path to source file, we need to run 
+        # in the dir where we want the code to gen
+        set(xml_input ${src_dir}/${gen_name}.xml)
 
-    if(NOT IS_ABSOLUTE ${xml_input})
-        set(xml_input "${CMAKE_CURRENT_SOURCE_DIR}/${xml_input}")
-    endif()
+        if(NOT IS_ABSOLUTE ${xml_input})
+            set(xml_input "${CMAKE_CURRENT_SOURCE_DIR}/${xml_input}")
+        endif()
 
-    add_custom_target(${gen_target_name}
-                      COMMAND ${xml_gen_tool} -clobber ${xml_input}
-                      DEPENDS  ${xml_file} xml2atts
-                      WORKING_DIRECTORY ${dest_dir}
-                      COMMENT "Running ${tool_name} on ${gen_name}" VERBATIM)
+        add_custom_target(${gen_target_name}
+                          COMMAND ${xml_gen_tool} -clobber ${xml_input}
+                          DEPENDS  ${xml_file} xml2atts
+                          WORKING_DIRECTORY ${dest_dir}
+                          COMMENT "Running ${tool_name} on ${gen_name}" VERBATIM)
 
-    # connect this target to roll up target for all python gen
-    set(top_level_target "gen_${gen_type}_all")
-    if(NOT TARGET ${top_level_target})
-        add_custom_target(${top_level_target})
-    endif()
+        # connect this target to roll up target for all python gen
+        set(top_level_target "gen_${gen_type}_all")
+        if(NOT TARGET ${top_level_target})
+            add_custom_target(${top_level_target})
+        endif()
     
-    add_dependencies(${top_level_target} ${gen_target_name})
-
+        add_dependencies(${top_level_target} ${gen_target_name})
+    endif()
 ENDFUNCTION(ADD_XML_TOOLS_GEN_TARGET)
 
 #############################################################################
