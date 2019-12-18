@@ -464,6 +464,9 @@ function download_file
     # $1 is the file name to download
     # $2...$* [OPTIONAL] list of sites to obtain the file from
 
+    #FIXME: we need a way of pulling down from a url alone (no file).
+    #       Option: if $1 == -1, just pull the url.
+
     typeset dfile=$1
     info "Downloading $dfile . . ."
     shift
