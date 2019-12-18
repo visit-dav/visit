@@ -29,8 +29,11 @@ MoleculeAttributes *MoleculeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 MoleculeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MoleculeViewerEnginePluginInfo::clientAtts  = new MoleculeAttributes;
-    MoleculeViewerEnginePluginInfo::defaultAtts = new MoleculeAttributes;
+    if (MoleculeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        MoleculeViewerEnginePluginInfo::clientAtts  = new MoleculeAttributes;
+        MoleculeViewerEnginePluginInfo::defaultAtts = new MoleculeAttributes;
+    }
 }
 
 // ****************************************************************************

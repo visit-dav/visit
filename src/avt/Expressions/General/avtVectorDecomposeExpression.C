@@ -32,11 +32,17 @@
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Initialized canApplyToDirectDatabaseQOT. 
+//
 // ****************************************************************************
 
 avtVectorDecomposeExpression::avtVectorDecomposeExpression(int w)
 {
     which_comp = w;
+    canApplyToDirectDatabaseQOT = true;
 }
 
 

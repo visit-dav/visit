@@ -1,37 +1,37 @@
 Contributing To VisIt CLI Documentation
 =======================================
 
-**Note: This procedure is planned for change in the future.**
+.. note::
+   We are still refining this procedure!
 
-At present, all VisIt Python CLI documentation is actually composed directly
-as Python strings in the source C++ file in ``../../visitpy/common/MethodDoc.C``.
+The Python doc strings for most functions in VisIt's cli are generated
+from the examples embedded in the ``cli_manual/functions.rst`` file.
+This allows us to have a single source for both our CLI sphinx docs 
+and the doc strings embedded in VisIt's compiled Python module. 
+The ``functions_to_method_doc.py`` helper script generates ``MethodDoc.C``
+from the examples embedded in the rst source.
 
-We recognize this isn't the most convenient way to write documentation and are
-planning on changing it in the future. However, it does permit us to have a 
-single source file for documentation which is then used to provide ``help(func)``
-at the Python prompt as well as generate the restructured text used here.
 
-In the future, we will swap this arrangement and write documentation in 
-restructured text and then generate the contents of ``../../visitpy/common/MethodDoc.C``
-from the restructured text.
-
-The documentation here is then generated from the ``MethodDoc.C`` file using the script
-``../sphinx_cli_extractor.py``. That script produces ``attributes.rst``, ``events.rst``
-and ``functions.rst`` files. The other ``.rst`` files here are manually managed and can
-be modified normally as needed.
+The Python doc strings for Attribute objects and Events are extracted from the CLI 
+for use in the CLI sphinx docs.  The ``sphinx_cli_extractor.py`` runs VisIt to 
+generate ``cli_manual/attributes.rst``  and ``cli_manual/events.rst``
 
 Steps to update the CLI Manual
 ------------------------------
 
-#. Modify ``../../visitpy/common/MethodDoc.C`` as needed
+#. Modify ``cli_manual/functions.rst``
+#. Run ``functions_to_plain_py.py`` to generate ``PY_RST_FUNCTIONS_TO_PYTHON.py``
+#. Run ``2to3 -p PY_RST_FUNCTIONS_TO_PYTHON.py`` to check for Python syntax errors and Python 3 compatibly 
+#. Run ``functions_to_method_doc.py`` to regenerate ``MethodDoc.C``
 #. Build and run the VisIt_ cli and assure yourself ``help(<your-new-func-doc>)``
-   produces the desired output 
-#. Run the ``sphinx_cli_extractor.py`` tool producing new ``attributes.rst``,
-   ``events.rst`` and ``functions.rst`` files. To do so, you may need to use
+   produces the desired output
+
+#. Run the ``sphinx_cli_extractor.py`` tool producing new ``attributes.rst``
+   and ``events.rst`` files. To do so, you may need to use
    a combination of the ``PATH`` and ``PYTHONPATH`` environment variables to tell the
    ``sphinx_cli_extractor.py`` script where to find the VisIt_ module, ``visit`` in
    VisIt_'s ``site-packages`` and where to find the Python installation that that
-   module is expecting to run with. In addition, you may need to use the ``PTHONHOME``
+   module is expecting to run with. In addition, you may need to use the ``PYTHONHOME``
    environment variable to tell VisIt_'s ``visit`` module where to find standard Python
    libraries. For example, to use an installed version of VisIt_ on my OSX machine,
    the command would look like...
@@ -55,8 +55,8 @@ Steps to update the CLI Manual
 
    The whole process only takes a few seconds.
 
-#. Assuming you succesfully run the above command, producing new ``attributes.rts``,
-   ``events.rst`` and ``functions.rst`` files, then do a local build of the
+#. Assuming you successfully ran the above command, producing new ``attributes.rst``
+   and ``events.rst`` files, then do a local build of the
    documentation here and confirm there are no errors in the build
 
    .. code-block:: shell

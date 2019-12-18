@@ -120,3 +120,130 @@ MACRO(VISIT_PLUGIN_TARGET_RTOD type)
 ENDMACRO(VISIT_PLUGIN_TARGET_RTOD)
 
 
+
+##############################################################################
+# Function that creates a generic XML tool Code Gen Target 
+# (helper for functions below, don't call directly )
+##############################################################################
+FUNCTION(ADD_XML_TOOLS_GEN_TARGET gen_name
+                                  src_dir
+                                  dest_dir
+                                  tool_name
+                                  gen_type)
+    ####
+    # only create code gen targets if:
+    #  we aren't on windows 
+    #  our cmake for gen targets option is on
+    ####
+    if(NOT WIN32 AND VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
+        set(gen_target_name "gen_${gen_type}_${gen_name}")
+
+        MESSAGE(STATUS "Adding ${tool_name} generation target: ${gen_target_name}")
+
+        if(WIN32)
+            # need to test this in the future
+            set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/visit.exe -${tool_name})
+        else()
+            set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/${tool_name})
+        endif()
+
+        # construct path to source file, we need to run 
+        # in the dir where we want the code to gen
+        set(xml_input ${src_dir}/${gen_name}.xml)
+
+        if(NOT IS_ABSOLUTE ${xml_input})
+            set(xml_input "${CMAKE_CURRENT_SOURCE_DIR}/${xml_input}")
+        endif()
+
+        add_custom_target(${gen_target_name}
+                          COMMAND ${xml_gen_tool} -clobber ${xml_input}
+                          DEPENDS  ${xml_file} xml2atts
+                          WORKING_DIRECTORY ${dest_dir}
+                          COMMENT "Running ${tool_name} on ${gen_name}" VERBATIM)
+
+        # connect this target to roll up target for all python gen
+        set(top_level_target "gen_${gen_type}_all")
+        if(NOT TARGET ${top_level_target})
+            add_custom_target(${top_level_target})
+        endif()
+    
+        add_dependencies(${top_level_target} ${gen_target_name})
+    endif()
+ENDFUNCTION(ADD_XML_TOOLS_GEN_TARGET)
+
+#############################################################################
+# Function that creates XML tools C++ Code Gen Target 
+##############################################################################
+FUNCTION(ADD_CPP_GEN_TARGET gen_name
+                            src_dir
+                            dest_dir)
+
+    ADD_XML_TOOLS_GEN_TARGET(${gen_name}
+                             ${src_dir}
+                             ${dest_dir}
+                             "xml2atts"
+                             "cpp")
+
+ENDFUNCTION(ADD_CPP_GEN_TARGET)
+
+##############################################################################
+# Function that creates XML tools Python Code Gen Target 
+##############################################################################
+FUNCTION(ADD_PYTHON_GEN_TARGET gen_name
+                               src_dir
+                               dest_dir)
+
+   ADD_XML_TOOLS_GEN_TARGET(${gen_name}
+                            ${src_dir}
+                            ${dest_dir}
+                            "xml2python"
+                            "python")
+
+ENDFUNCTION(ADD_PYTHON_GEN_TARGET)
+
+##############################################################################
+# Function that creates XML tools Java Code Gen Target 
+##############################################################################
+FUNCTION(ADD_JAVA_GEN_TARGET gen_name
+                             src_dir
+                             dest_dir)
+
+     ADD_XML_TOOLS_GEN_TARGET(${gen_name}
+                              ${src_dir}
+                              ${dest_dir}
+                              "xml2java"
+                              "java")
+
+ENDFUNCTION(ADD_JAVA_GEN_TARGET)
+
+##############################################################################
+# Function that creates XML tools Info Code Gen Target 
+##############################################################################
+FUNCTION(ADD_INFO_GEN_TARGET gen_name
+                             src_dir
+                             dest_dir)
+
+    ADD_XML_TOOLS_GEN_TARGET(${gen_name}
+                             ${src_dir}
+                             ${dest_dir}
+                             "xml2info"
+                             "info")
+
+ENDFUNCTION(ADD_INFO_GEN_TARGET)
+
+##############################################################################
+# Function that creates XML tools Info Code Gen Target 
+##############################################################################
+FUNCTION(ADD_CMAKE_GEN_TARGET gen_name
+                              src_dir
+                              dest_dir)
+
+    ADD_XML_TOOLS_GEN_TARGET(${gen_name}
+                             ${src_dir}
+                             ${dest_dir}
+                             "xml2cmake"
+                             "cmake")
+
+ENDFUNCTION(ADD_CMAKE_GEN_TARGET)
+
+

@@ -19,15 +19,15 @@ import os
 # Check the version.
 ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
-    print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
+    print("This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version()))
 
 # Define a function to print out the categories and the sets in them.
 def PrintCategories(silr):
-    print "Categories and sets in current SIL Restriction..."
+    print("Categories and sets in current SIL Restriction...")
     for cats in silr.Categories():
-        print "Category \"%s\"" % cats
+        print("Category \"%s\"" % cats)
         for sets in silr.SetsInCategory(cats):
-            print "\tset[%d] = %s" % (sets, silr.SetName(sets))
+            print("\tset[%d] = %s" % (sets, silr.SetName(sets)))
 
 # Define a function that adds a subset plot and turns off the sets one by one.
 def AddSubsetPlotAndTurnOff(subset, category):
@@ -106,8 +106,8 @@ def silselect():
 
 
 if(not os.path.isfile("../data/silo_hdf5_test_data/multi_curv3d.silo")):
-    print "This script requires the file multi_curv3d.silo to be built in the data directory"
+    print("This script requires the file multi_curv3d.silo to be built in the data directory")
 elif(not os.path.isfile("../data/silo_hdf5_test_data/multi_ucd3d.silo")):
-    print "This script requires the file multi_ucd3d.silo to be built in the data directory"
+    print("This script requires the file multi_ucd3d.silo to be built in the data directory")
 else:
     silselect()

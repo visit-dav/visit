@@ -5,14 +5,12 @@
 #ifndef QVIS_SETUP_HOST_PROFILES_AND_CONFIG_WINDOW_H
 #define QVIS_SETUP_HOST_PROFILES_AND_CONFIG_WINDOW_H
 
-#include <string>
-#include <list>
 
 #include <QvisDelayedWindow.h>
 #include <QString>
+#include <QStringList>
 
-class QCheckBox;
-class QRadioButton;
+class QListWidget;
 
 class GUI_API QvisSetupHostProfilesAndConfigWindow : public QvisDelayedWindow
 {
@@ -24,30 +22,12 @@ public:
     virtual void CreateWindowContents();
 
 private:
-    struct NetworkInfo
-    {
-        QString longName;
-        QString shortName;
-        QCheckBox *checkBox;
 
-        NetworkInfo(const std::string& lN, const std::string& sN)
-            : longName(QString::fromStdString(lN)),
-              shortName(QString::fromStdString(sN)),
-              checkBox(0) {}
-    };
-    std::list<NetworkInfo> networkList;
-    struct DefaultConfigInfo
-    {
-        QString longName;
-        QString shortName;
-        QRadioButton *radioButton;
+    QStringList networkShortNames;
+    QListWidget *networkList;
 
-        DefaultConfigInfo(const std::string& lN, const std::string& sN)
-            : longName(QString::fromStdString(lN)),
-              shortName(QString::fromStdString(sN)),
-              radioButton(0) {}
-    };
-    std::list<DefaultConfigInfo> defaultConfigList;
+    QStringList defaultConfigShortNames;
+    QListWidget *defaultConfigList;
 
     void readNetworkList();
     void readDefaultConfigList();

@@ -25,7 +25,7 @@ def step(sim):
     keepGoing = True
     while keepGoing:
         buf = sim.p.stderr.readline()
-        print buf
+        print(buf)
         if "Command 'step'" in buf:
             keepGoing = False
 
@@ -51,8 +51,8 @@ if connected:
     times = "Times:\n"
     Query("Time")
     times = times + str(GetQueryOutputValue()) + "\n"
-    for outer in xrange(6):
-        for inner in xrange(3):
+    for outer in range(6):
+        for inner in range(3):
             step(sim)
         Query("Time")
         times = times + str(GetQueryOutputValue()) + "\n"

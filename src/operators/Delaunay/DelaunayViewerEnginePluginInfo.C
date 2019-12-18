@@ -28,8 +28,11 @@ DelaunayAttributes *DelaunayViewerEnginePluginInfo::defaultAtts = NULL;
 void
 DelaunayViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    DelaunayViewerEnginePluginInfo::clientAtts  = new DelaunayAttributes;
-    DelaunayViewerEnginePluginInfo::defaultAtts = new DelaunayAttributes;
+    if (DelaunayViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        DelaunayViewerEnginePluginInfo::clientAtts  = new DelaunayAttributes;
+        DelaunayViewerEnginePluginInfo::defaultAtts = new DelaunayAttributes;
+    }
 }
 
 // ****************************************************************************

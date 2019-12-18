@@ -42,13 +42,13 @@ class StateSpace(object):
     def __init__(self,dims = None):
         self.dims = {}
         if not dims is None:
-            for k,v in dims.items():
+            for k,v in list(dims.items()):
                 self.add_dimension(k,v)
     def __len__(self):
         """
         Returns the number of dimensions in the state space.
         """
-        return len(self.dims.keys())
+        return len(list(self.dims.keys()))
     def add_dimension(self,name,extent):
         """
         Adds a dimension with the given name an extent.
@@ -59,7 +59,7 @@ class StateSpace(object):
         Returns if the state space contains a dimension with
         the given name.
         """
-        return name in self.dims.keys()
+        return name in list(self.dims.keys())
     def remove_dimension(self,name):
         """
         Removes a dimension with the given name if it exists.
@@ -70,7 +70,7 @@ class StateSpace(object):
         """
         Returns a list with the active dimensions.
         """
-        return self.dims.values()
+        return list(self.dims.values())
 
 class StateVectorGenerator(object):
     """
@@ -100,7 +100,7 @@ class StateVectorGenerator(object):
         Generates a state vector for the [] operator.
         """
         if isinstance(idx,slice):
-            return [ self[i] for i in xrange(*idx.indices(self.length))]
+            return [ self[i] for i in range(*idx.indices(self.length))]
         if not isinstance(idx,int):
             raise TypeError
         if idx < 0 or idx >= self.length:

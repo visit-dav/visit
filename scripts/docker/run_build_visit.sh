@@ -1,1 +1,1 @@
-echo "yes" | ./build_visit3_0_2 --required --optional --mesagl --mpich --uintah --no-icet --no-moab --no-pidx --no-visit --thirdparty-path /home/visit/third-party --makeflags -j4; python build_visit_docker_cleanup.py
+echo "yes" | ./build_visit3_1_0 --required --optional --mesagl --mpich --uintah --no-icet --no-moab --no-pidx --no-visit --thirdparty-path /home/visit/third-party --makeflags -j4; python build_visit_docker_cleanup.py

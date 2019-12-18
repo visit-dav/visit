@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[Archive of VisIt Releases]]></title>
-  <IM>LLNL-WEB-789119</IM>
+  <IM>LLNL-WEB-796739</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[Septebmer 19, 2019]]></lastchanged>
+  <lastchanged><![CDATA[December 16, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,8 +22,16 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
+<h2>December, 2019 - VisIt 3.1 released</h2>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 3.1 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.1.0">VisIt 3.1 Release Notes</a>.</p>
+<h4>1.  Added and enhanced several readers.</h4>
+<p>Added readers for Xolotl and openPMD files. Made significant enhancements to the ADIOS2 reader, including basing it on ADIOS 2.5. Rewrote the Mili reader. It now supports a Griz-like menu, material variables, global variables, shared variables, and integration points.</p>
+<h4>2.  VisIt is now available on a greater variety of Linux platforms.</h4>
+<p>VisIt is now available on Centos 8, Debian 9, Fedora 27, Ubuntu 16, Ubuntu 18 and Ubuntu 19. These versions include parallel support by way of MPICH.</p>
+<h4>3.  Significantly improved the performance of queries over time.</h4>
+<p>The query over time performance has been improved by roughly a factor of 100 due to eliminiting multiple round trip communications between the viewer and compute engine per time step.</p>
 <h2>September, 2019 - VisIt 3.0.2 released</h2>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 3.0.2 contains about twenty bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.0.2">VisIt 3.0.2 Release Notes</a>.</p>
+<p>VisIt 3.0.2 contains about twenty bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.0.2">VisIt 3.0.2 Release Notes</a>.</p>
 <h2>July, 2019 - VisIt 3.0.1 released</h2>
 <p>VisIt 3.0.1 contains about twenty bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.0.1">VisIt 3.0.1 Release Notes</a>.</p>
 <h2>April, 2019 - VisIt 3.0 released</h2>

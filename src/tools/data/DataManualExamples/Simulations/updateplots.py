@@ -61,7 +61,7 @@ class Simulation:
         self.cycle = self.cycle + 1
         self.time = self.time + math.pi/10.
         if self.par_rank == 0:
-            print "Simulating time step: cycle=%d, time=%g" % (self.cycle,self.time)
+            print("Simulating time step: cycle=%d, time=%g" % (self.cycle,self.time))
         VisItTimeStepChanged()
         VisItUpdatePlots()
         if self.savingFiles:
@@ -69,9 +69,9 @@ class Simulation:
             if VisItSaveWindow(filename, 800, 800, VISIT_IMAGEFORMAT_JPEG) == VISIT_OKAY:
                 self.saveCounter += 1
                 if self.par_rank == 0:
-                    print "Saved",filename
+                    print("Saved",filename)
             else:
-                print "The image could not be saved to",filename
+                print("The image could not be saved to",filename)
 
     def ProcessVisItCommand(self):
         return (VisItProcessEngineCommand() == VISIT_OKAY)
@@ -120,12 +120,12 @@ class Simulation:
                 self.SimulateOneTimestep()
             elif visitstate == 1:
                 if VisItAttemptToCompleteConnection() == VISIT_OKAY:
-                    print "VisIt connected"
+                    print("VisIt connected")
                     self.runMode = VISIT_SIMMODE_STOPPED
 
                     self.ConnectCallbacks()
                 else:
-                    print "VisIt did not connect"
+                    print("VisIt did not connect")
             elif visitstate == 2:
                 if not self.ProcessVisItCommand():
                     VisItDisconnect()
@@ -134,7 +134,7 @@ class Simulation:
                 self.ProcessConsoleCommand()
                 self.DoPrompt()
             else:
-                print "Error: ", visitstate
+                print("Error: ", visitstate)
         VisItFinalize()
 
     def ConnectCallbacks(self):

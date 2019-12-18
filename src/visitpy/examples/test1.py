@@ -19,7 +19,7 @@ import os
 # Check the version.
 ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
-    print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
+    print("This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version()))
 
 view = View3DAttributes()
 
@@ -67,19 +67,19 @@ def test1():
     pp = PlotPlugins()
     i = 0
     for p in pp:
-        if(dbs.has_key(p)):
+        if(p in dbs):
             for var in plotvars[p]:
                 SetActiveWindow(i + 1)
                 OpenDatabase("../../data/%s" % dbs[p])
                 AddPlotToWindow(p, var)
                 i = i + 1
         else:
-            print "The plot type %s is not supported by this script!" % p
+            print("The plot type %s is not supported by this script!" % p)
 
 
 if(not os.path.isfile("../../data/globe.silo")):
-    print "This script requires the file globe.silo to be built in the data directory"
+    print("This script requires the file globe.silo to be built in the data directory")
 elif(not os.path.isfile("../../data/curv2d.silo")):
-    print "This script requires the file curv2d.silo to be built in the data directory"
+    print("This script requires the file curv2d.silo to be built in the data directory")
 else:
     test1()

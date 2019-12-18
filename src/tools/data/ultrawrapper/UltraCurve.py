@@ -162,7 +162,7 @@ class CurveList(object):
         elif type(c) is PlotCurveItem:
             if len(self.__class__.labels) == 0:
                 # need to raise an exception here!
-                print "Ran out of curve labels!"
+                print("Ran out of curve labels!")
             else:
                 c.id = self.__class__.labels.pop()
         self.curves.append(c)

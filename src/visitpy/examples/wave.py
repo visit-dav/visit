@@ -22,7 +22,7 @@ import os
 # Check the version.
 ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
-    print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
+    print("This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version()))
 
 def wave():
     # Open the file and do some plots.
@@ -65,6 +65,6 @@ def wave():
         RedrawWindow()
 
 if(not os.path.isfile("../../data/wave.visit")):
-    print "This script requires the file wave.visit to be built in the data directory"
+    print("This script requires the file wave.visit to be built in the data directory")
 else:
     wave()

@@ -15,7 +15,7 @@ c Create a new silo file
      . dbfile)
       if(dbfile.eq.-1) then
           write (6,*) 'Could not create Silo file!\n'
-          return
+          goto 10000
       endif
 c Set the maximum string length to 20
       err = dbset2dstrlen(20)
@@ -27,7 +27,7 @@ c Write the multimesh and multivar objects
 
 c Close the Silo file
       ierr = dbclose(dbfile)
-      stop
+10000 stop
       end
 
 

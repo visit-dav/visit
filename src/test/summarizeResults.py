@@ -19,12 +19,12 @@ if (os.path.isfile("results.json")):
     full = json.load(open("results.json"))
     for r in full["results"]:
         if "status" in r:    
-            print "%s:  %s/%s"%(r["status"],r["category"],r["base"])
+            print("%s:  %s/%s"%(r["status"],r["category"],r["base"]))
             if r["status"] != "succeeded":
                 for s in r["details"]["sections"]:
                     for c in s["cases"]:
-                        print "    %s:  %s"%(c["status"],c["name"])
+                        print("    %s:  %s"%(c["status"],c["name"]))
 else:
-    print "results.json does not exist."
+    print("results.json does not exist.")
 
 exit()

@@ -30,7 +30,7 @@ class SelectionList;
 // ****************************************************************************
 // Class: QvisIntegralCurvePlotWindow
 //
-// Purpose: 
+// Purpose:
 //   Defines QvisIntegralCurvePlotWindow class.
 //
 // Programmer: Brad Whitlock
@@ -66,7 +66,7 @@ class SelectionList;
 //
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Add pathline GUI.
-//    
+//
 //   Hank Childs, Sat May  2 22:10:26 PDT 2009
 //   Added option for specifying seed points as a point list.
 //
@@ -119,6 +119,9 @@ class SelectionList;
 //   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
 //   Add named selections as a seed source.
 //
+//   Kathleen Biagas, Fri Nov  8 09:13:02 PST 2019
+//   Added CreateSourceTab, a new tab to reduce window height.
+//
 // ****************************************************************************
 
 class QvisIntegralCurveWindow : public QvisOperatorWindow
@@ -135,9 +138,10 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     virtual void CreateWindowContents();
 
   protected:
+    void CreateSourceTab(QWidget *);
     void CreateIntegrationTab(QWidget *);
     void CreateAppearanceTab(QWidget *);
-    void CreateAdvancedTab(QWidget *);   
+    void CreateAdvancedTab(QWidget *);
 
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);

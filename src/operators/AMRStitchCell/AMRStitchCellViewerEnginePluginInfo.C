@@ -28,8 +28,11 @@ AMRStitchCellAttributes *AMRStitchCellViewerEnginePluginInfo::defaultAtts = NULL
 void
 AMRStitchCellViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    AMRStitchCellViewerEnginePluginInfo::clientAtts  = new AMRStitchCellAttributes;
-    AMRStitchCellViewerEnginePluginInfo::defaultAtts = new AMRStitchCellAttributes;
+    if (AMRStitchCellViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        AMRStitchCellViewerEnginePluginInfo::clientAtts  = new AMRStitchCellAttributes;
+        AMRStitchCellViewerEnginePluginInfo::defaultAtts = new AMRStitchCellAttributes;
+    }
 }
 
 // ****************************************************************************

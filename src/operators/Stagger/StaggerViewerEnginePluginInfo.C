@@ -28,8 +28,11 @@ StaggerAttributes *StaggerViewerEnginePluginInfo::defaultAtts = NULL;
 void
 StaggerViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    StaggerViewerEnginePluginInfo::clientAtts  = new StaggerAttributes;
-    StaggerViewerEnginePluginInfo::defaultAtts = new StaggerAttributes;
+    if (StaggerViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        StaggerViewerEnginePluginInfo::clientAtts  = new StaggerAttributes;
+        StaggerViewerEnginePluginInfo::defaultAtts = new StaggerAttributes;
+    }
 }
 
 // ****************************************************************************

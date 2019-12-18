@@ -28,8 +28,11 @@ ReflectAttributes *ReflectViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ReflectViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ReflectViewerEnginePluginInfo::clientAtts  = new ReflectAttributes;
-    ReflectViewerEnginePluginInfo::defaultAtts = new ReflectAttributes;
+    if (ReflectViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ReflectViewerEnginePluginInfo::clientAtts  = new ReflectAttributes;
+        ReflectViewerEnginePluginInfo::defaultAtts = new ReflectAttributes;
+    }
 }
 
 // ****************************************************************************

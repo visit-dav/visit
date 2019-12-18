@@ -23,7 +23,7 @@ def check_x():
 
 def launch_x():
     if not check_x():
-        print "[x-server not found: launching Xvfb]"
+        print("[x-server not found: launching Xvfb]")
         subprocess.call("Xvfb :0 -screen 0 500x500x24 &",shell=True)
         os.environ["DISPLAY"] = "127.0.0.1:0"
 

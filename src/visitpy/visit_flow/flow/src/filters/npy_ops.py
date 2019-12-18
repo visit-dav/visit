@@ -126,7 +126,7 @@ class NPyGrad(Filter):
         di = d[0]-1;
         dj = d[1]-1;
         dk = d[2]-1;
-        for gid  in xrange(lvals):
+        for gid  in range(lvals):
             zi  = gid % di
             zj  = (gid / di) % dj
             zk  = (gid / di) / dj

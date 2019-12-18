@@ -29,8 +29,11 @@ PseudocolorAttributes *PseudocolorViewerEnginePluginInfo::defaultAtts = NULL;
 void
 PseudocolorViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    PseudocolorViewerEnginePluginInfo::clientAtts  = new PseudocolorAttributes;
-    PseudocolorViewerEnginePluginInfo::defaultAtts = new PseudocolorAttributes;
+    if (PseudocolorViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        PseudocolorViewerEnginePluginInfo::clientAtts  = new PseudocolorAttributes;
+        PseudocolorViewerEnginePluginInfo::defaultAtts = new PseudocolorAttributes;
+    }
 }
 
 // ****************************************************************************

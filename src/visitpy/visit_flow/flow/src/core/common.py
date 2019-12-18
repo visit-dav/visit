@@ -13,7 +13,7 @@
 
 import sys
 import subprocess
-import log
+from . import log
 
 
 def sexe(cmd,ret_output=False,echo = False):

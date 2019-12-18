@@ -26,7 +26,7 @@ def step(sim):
     keepGoing = True
     while keepGoing:
         buf = sim.p.stderr.readline()
-        print buf
+        print(buf)
         if "Command step" in buf:
             keepGoing = False
 
@@ -87,7 +87,7 @@ def test0(sim):
     # Advance some steps and make sure that we get all domains for each mesh
     times = start_time()
     idx = 2
-    for i in xrange(10):
+    for i in range(10):
         Test("domainlist%02d" % idx)
         times = add_time(times)
         step(sim)

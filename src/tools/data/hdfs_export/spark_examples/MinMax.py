@@ -17,7 +17,7 @@ def max(a,b):
 #
 if __name__ == "__main__":
   if len(sys.argv) < 4:
-    print >> sys.stderr, "Usage: MinMax <dbfile> <mesh> <var>"
+    print("Usage: MinMax <dbfile> <mesh> <var>", file=sys.stderr)
     exit(-1)
 
   sc = SparkContext()
@@ -36,5 +36,5 @@ if __name__ == "__main__":
   max_kv = var_kv.reduce(max)
 
   # 9 seconds on laptop VM
-  print "Minimum value at %s is %g\n"%min_kv
-  print "Maximum value at %s is %g\n"%max_kv
+  print("Minimum value at %s is %g\n"%min_kv)
+  print("Maximum value at %s is %g\n"%max_kv)

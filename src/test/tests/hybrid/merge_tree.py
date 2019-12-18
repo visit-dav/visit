@@ -21,7 +21,7 @@ test_dbs = { "rect2d" : {"var":  "d",
                           "path": silo_data_path("noise.silo")}
            }
 
-for db_name,db_info in test_dbs.items():
+for db_name,db_info in list(test_dbs.items()):
     test_db_file = db_info["path"]
     OpenDatabase(test_db_file)
 

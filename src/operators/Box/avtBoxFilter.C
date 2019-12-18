@@ -100,6 +100,7 @@ vtkBoxFilter::vtkBoxFilter()
   AllOfCell = 0;
   MinX = MinY = MinZ = 0.;
   MaxX = MaxY = MaxZ = 1.;
+  Inverse = false;
 }
 
 vtkBoxFilter::~vtkBoxFilter()

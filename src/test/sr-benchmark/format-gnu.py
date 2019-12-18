@@ -3,7 +3,7 @@
 #####
 # Generates gnuplot files from an SQLite DB of render results.
 #####
-from __future__ import with_statement
+
 import sqlite3
 import sys
 
@@ -37,24 +37,24 @@ class Options(Singleton):
 def OptHandle():
     try:
         single = Options()
-    except Singleton, s:
+    except Singleton as s:
         single = s
     return single
 
 def usage():
     global prog_name
-    print "Usage:", prog_name, "-f <input> [-a] [-n #]"
-    print "Creates a gnuplot datafile from an SQLite DB of rendering data."
-    print ""
-    print "\t%-10s %-10s %-50s" % ("-f", "<string>",  "SQLite DB file")
-    print "\t%-10s %-10s %-50s" % ("-a", "",          "Aggregate results")
-    print "\t%-10s %-10s %-50s" % ("-n", "<integer>", "max # of processors")
+    print("Usage:", prog_name, "-f <input> [-a] [-n #]")
+    print("Creates a gnuplot datafile from an SQLite DB of rendering data.")
+    print("")
+    print("\t%-10s %-10s %-50s" % ("-f", "<string>",  "SQLite DB file"))
+    print("\t%-10s %-10s %-50s" % ("-a", "",          "Aggregate results"))
+    print("\t%-10s %-10s %-50s" % ("-n", "<integer>", "max # of processors"))
 
 def parse_opt(argv):
     from getopt import getopt, GetoptError
     try:
         opts, args = getopt(argv, "af:hn:")
-    except GetoptError, e:
+    except GetoptError as e:
         usage()
         sys.exit(2)
 

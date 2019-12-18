@@ -29,8 +29,11 @@ FilledBoundaryAttributes *FilledBoundaryViewerEnginePluginInfo::defaultAtts = NU
 void
 FilledBoundaryViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    FilledBoundaryViewerEnginePluginInfo::clientAtts  = new FilledBoundaryAttributes;
-    FilledBoundaryViewerEnginePluginInfo::defaultAtts = new FilledBoundaryAttributes;
+    if (FilledBoundaryViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        FilledBoundaryViewerEnginePluginInfo::clientAtts  = new FilledBoundaryAttributes;
+        FilledBoundaryViewerEnginePluginInfo::defaultAtts = new FilledBoundaryAttributes;
+    }
 }
 
 // ****************************************************************************

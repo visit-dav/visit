@@ -2626,6 +2626,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Burlen Loring, Sun Apr 27 15:17:23 PDT 2014
 //    Clean up -Wall warnings
 //
+//    Kathleen Biagas, Thu Dec 12 12:05:58 PST 2019
+//    Don't skip 'species' vars that already have info.
+//
 // ****************************************************************************
 
 void               
@@ -2797,11 +2800,12 @@ avtDatabase::Query(PickAttributes *pa)
         }
         // 
         // Skip any variables that already have info, unless they are scalar,
-        // because then MatFracs might be necessary.
+        // or species because then MatFracs might be necessary.
         // 
         if (pa->GetVarInfo(varNum).HasInfo() )
         {
-            if (pa->GetVarInfo(varNum).GetVariableType() == "scalar") 
+            if (pa->GetVarInfo(varNum).GetVariableType() == "scalar" ||
+                pa->GetVarInfo(varNum).GetVariableType() == "species")
             {
                 ExprNode *tree = ParsingExprList::GetExpressionTree(vName);
                 //

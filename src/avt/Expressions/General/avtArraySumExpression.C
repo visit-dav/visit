@@ -36,11 +36,17 @@
 //  Programmer: Hank Childs
 //  Creation:   July 21, 2005
 //
+//  Modifications:
+//
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Initialized canApplyToDirectDatabaseQOT. 
+//
 // ****************************************************************************
 
 avtArraySumExpression::avtArraySumExpression()
 {
     issuedWarning = false;
+    canApplyToDirectDatabaseQOT = true;
 }
 
 

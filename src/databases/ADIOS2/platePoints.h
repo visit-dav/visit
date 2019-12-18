@@ -1,4 +1,4 @@
-static const float platePts[] = 
+static const float platePts[] =
 {
 
 17,

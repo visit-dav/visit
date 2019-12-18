@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt Executables]]></title>
-  <IM>LLNL-WEB-789119</IM>
+  <IM>LLNL-WEB-796739</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[September 19, 2019]]></lastchanged>
+  <lastchanged><![CDATA[December 16, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -24,9 +24,9 @@
 
 <p>This page contains links to download VisIt executables for Unix, Windows, and Mac OS X systems. The page contains several versions of VisIt, organized from the most recent to the oldest. The unix executable requires downloading an install script along with the file containing the executable. The Mac executable comes in a DMG file that you use to install VisIt. The Windows executables are packaged in a self contained installer. Instructions for installing VisIt can be found in the install notes. The checksums and file sizes are provided for checking that the files were properly downloaded if corruption of the files is suspected during the download process.</p>
 
-<p>All the executables listed on this page only contain serial versions of VisIt unless the platform description indicates that it contains parallel support. If you need a parallel version for a platform not already provided you will need to build visit from source using the <a href="https://github.com/visit-dav/visit/releases/download/v3.0.2/build_visit3_0_2">build_visit</a> script.</p>
+<p>Starting with version 3.0.2, all the executables have parallel support through the use of MPICH. Prior to that, the executables listed on this page only contain serial versions of VisIt unless the platform description indicates that it contains parallel support. If you need a parallel version for a platform not already provided you will need to build visit from source (available <a href="simulation/computer-codes/visit/source">here</a>).</p>
 
-<p>If you encounter problems downloading files from this page, NERSC's <code>/project</code> filesystem may be down. You can go <a href="https://www.nersc.gov/users/live-status">here</a> to check for yourself. There, you should find a page that looks something like <a href="content/assets/images/simulation/computer-codes/visit/nersc_live_status3.png" target="_blank">this one</a>. If it shows that <code>/project</code> is down, please try again later.</p>
+<p>Starting with version 2.13 all the download files are hosted from GitHub, so you shouldn't experience any download problems. Prior versions are hosted at NERSC. If you encounter problems downloading files from NERSC, NERSC's <code>/project</code> filesystem may be down. You can go <a href="https://www.nersc.gov/users/live-status">here</a> to check for yourself. There, you should find a page that looks something like <a href="content/assets/images/simulation/computer-codes/visit/nersc_live_status3.png" target="_blank">this one</a>. If it shows that <code>/project</code> is down, please try again later.</p>
 
 <p>If you use VisIt to generate images and/or movies please cite VisIt in your paper and the credits of your movie. Doing so helps us sustain funding for future improvements and on going maintenance. Please use the following acknowledgement and send us references to any publications, presentations, or successful funding applications that make use of DOE software.</p>
 
@@ -36,6 +36,79 @@
 
 <p>VisIt is supported by the Department of Energy with funding from the Advanced Simulation and Computing Program and the Scientific Discovery through Advanced Computing Program.</p>
 
+<h2>VisIt 3.1</h2>
+
+<ul>
+  <li><a href="simulation/computer-codes/visit/releases/release-notes-3.1.0">VisIt release notes</a> </li>
+  <li><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit-install3_1_0">VisIt install script</a> </li>
+  <li><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/INSTALL_NOTES.txt">VisIt install notes</a> </li>
+  <li><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit_md5_checksums.txt">VisIt md5 checksums</a> </li>
+  <li><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit_sha1_checksums.txt">VisIt sha1 checksums</a> </li>
+  <li><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit_sha256_checksums.txt">VisIt sha256 checksums</a> </li>
+  <li><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit_filesizes.txt">VisIt file sizes</a><br><br> </li>
+</ul>
+
+<br /><br />
+
+<table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th width="615">Platform</th>
+          <th width="138">Executable</th>
+        </tr>
+        <tr>
+          <td>Windows (10 / 8 / 7) 64 bit<br />
+          Visual Studio 2017</td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit3.1.0_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X 10.13 - Intel 64 bit<br />
+          Darwin 10.13, Darwin Kernel Version 17.7.0, clang-900.39.2, MPICH<br />
+          <i>(Works on Mac OS X 10.13 and later.)</i></td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit3.1.0.darwin-x86_64-10_13.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Ubuntu 16, 4.9.184-linuxkit #1 SMP, gcc 5.4</td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit3_1_0.linux-x86_64-ubuntu16.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Ubuntu 18, 4.9.184-linuxkit #1 SMP, gcc 7.4</td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit3_1_0.linux-x86_64-ubuntu18.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Ubuntu 19, 4.9.184-linuxkit #1 SMP, gcc 8.3</td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit3_1_0.linux-x86_64-ubuntu19.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Debian 9, 4.9.184-linuxkit #1 SMP, gcc 6.3<br />
+          <i>(Works on Debian 9 and 10.)</i></td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit3_1_0.linux-x86_64-debian9.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          CentOS 8, 4.9.184-linuxkit #1 SMP, gcc 8.2.1</td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit3_1_0.linux-x86_64-centos8.tar.gz">Download</a></td>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Fedora 27, 4.9.184-linuxkit #1 SMP, gcc 7.3.1</td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit3_1_0.linux-x86_64-fedora27.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Redhat Enterprise Linux 7.5, 4.18.9-1.el7.elrepo.x86_64 #1 SMP, gcc 4.8.5</td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit3_1_0.linux-x86_64-rhel7.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Redhat Enterprise Linux 7.5, 4.18.9-1.el7.elrepo.x86_64 #1 SMP, gcc 4.8.5<br />
+          <i>(Includes Mesa support for rendering without a display. Only use on servers without a display.)</i></td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.0/visit3_1_0.linux-x86_64-rhel7-wmesa.tar.gz">Download</a></td>
+        </tr>
+      </table>  
+  
 <h2>VisIt 3.0.2</h2>
 
 <ul>

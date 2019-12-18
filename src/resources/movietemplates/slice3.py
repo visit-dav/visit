@@ -95,7 +95,7 @@ class Slice3MovieTemplate(VisItMovieTemplate):
         ret = SetTimeSliderState(timeState)
         Query("Time")
         time = GetQueryOutputValue()
-        print "time=", time
+        print("time=", time)
         self.ts.text = "Time = %1.5f" % time
         return ret
 

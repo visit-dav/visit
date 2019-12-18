@@ -25,7 +25,6 @@ import string
 import subprocess
 import sys
 import tempfile
-import thread
 import time
 
 import HtmlDiff
@@ -40,7 +39,7 @@ from xml.etree.ElementTree import ParseError
 pil_available = True
 try:
     from PIL import Image, ImageChops, ImageStat
-except ImportError, pilImpErr:
+except ImportError as pilImpErr:
     pil_available=False
 
 # check for VTK
@@ -49,7 +48,7 @@ try:
     from vtk import vtkPNGReader, vtkPNMReader, vtkJPEGReader, vtkTIFFReader, \
                     vtkImageResize, vtkImageDifference
     import array
-except ImportError, vtkImpErr:
+except ImportError as vtkImpErr:
     VTK_available=False
 
 # used to acccess visit_test_common
@@ -381,7 +380,7 @@ def GenFileNames(test_case, ext):
             if modes in modemap["modes"]:
                 selected_mode = modemap["modes"][modes]
                 case_file     = test_case + ext
-                if case_file in selected_mode.keys():
+                if case_file in list(selected_mode.keys()):
                     ms_dir  = selected_mode[case_file]
                     altbase = test_baseline_path(category,pyfilebase,ms_dir,case_file)
                     base = altbase
@@ -822,7 +821,7 @@ def Save_Validate_Perturb_Restore_Session(cur):
     else:
         try:
             xmlvalid = RestoreSession(ofile, 0)
-            if xmlvalid != 1L:
+            if xmlvalid != 1:
                 retval = 1
         except:
             retval = 1
@@ -1689,14 +1688,14 @@ def CheckInteractive(case_name):
     """
     # if interactive, pause for user
     if TestEnv.params["interactive"]:
-        print "***********************"
-        print "***********************"
-        print "***********************"
-        print "Saving %s"% case_name
-        print "Hit Any Key To Continue"
-        print "***********************"
-        print "***********************"
-        print "***********************"
+        print("***********************")
+        print("***********************")
+        print("***********************")
+        print("Saving %s"% case_name)
+        print("Hit Any Key To Continue")
+        print("***********************")
+        print("***********************")
+        print("***********************")
         next = sys.stdin.read(1)
 
 # ----------------------------------------------------------------------------
@@ -1811,8 +1810,12 @@ def TestText(case_name, inText):
 def AssertTrue(case_name,val):
     CheckInteractive(case_name)
     result = val == True
-    LogAssertTestResult(case_name,"True",result,val,
-                        TestEnv.check_skip(case_name))
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
+    LogAssertTestResult(case_name,"True",result,val,skip)
 
 # ----------------------------------------------------------------------------
 # Function: AssertTrue
@@ -1824,8 +1827,12 @@ def AssertTrue(case_name,val):
 def AssertFalse(case_name,val):
     CheckInteractive(case_name)
     result = val == False
-    LogAssertTestResult(case_name,"False",result,val,
-                        TestEnv.check_skip(case_name))
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
+    LogAssertTestResult(case_name,"False",result,val,skip)
 
 # ----------------------------------------------------------------------------
 # Function: AssertEqual
@@ -1837,10 +1844,13 @@ def AssertFalse(case_name,val):
 def AssertEqual(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a == val_b
-    skip   =  TestEnv.check_skip(case_name)
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
     LogAssertTestResult(case_name,"Equal",result,
-                        "%s == %s" % (str(val_a),str(val_b)),
-                         TestEnv.check_skip(case_name))
+                        "%s == %s" % (str(val_a),str(val_b)),skip)
 
 # ----------------------------------------------------------------------------
 # Function: AssertGT
@@ -1852,9 +1862,13 @@ def AssertEqual(case_name,val_a,val_b):
 def AssertGT(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a > val_b
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
     LogAssertTestResult(case_name,"Greater than",
-                        result,"%s > %s" % (str(val_a),str(val_b)),
-                        TestEnv.check_skip(case_name))
+                        result,"%s > %s" % (str(val_a),str(val_b)),skip)
 
 # ----------------------------------------------------------------------------
 # Function: AssertGTE
@@ -1866,9 +1880,13 @@ def AssertGT(case_name,val_a,val_b):
 def AssertGTE(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a >= val_b
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
     LogAssertTestResult(case_name,"Greater than or Equal",
-                        result,"%s >= %s" % (str(val_a),str(val_b)),
-                        TestEnv.check_skip(case_name))
+                        result,"%s >= %s" % (str(val_a),str(val_b)),skip)
 
 # ----------------------------------------------------------------------------
 # Function: AssertLT
@@ -1880,9 +1898,13 @@ def AssertGTE(case_name,val_a,val_b):
 def AssertLT(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a < val_b
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
     LogAssertTestResult(case_name,"Less than",
-                        result,"%s < %s" % (str(val_a),str(val_b)),
-                        TestEnv.check_skip(case_name))
+                        result,"%s < %s" % (str(val_a),str(val_b)),skip)
 
 # ----------------------------------------------------------------------------
 # Function: AssertLTE
@@ -1894,9 +1916,13 @@ def AssertLT(case_name,val_a,val_b):
 def AssertLTE(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a <= val_b
+    skip = TestEnv.check_skip(case_name)
+    if skip:
+        TestEnv.results["numskip"] += 1
+    if result == False and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
     LogAssertTestResult(case_name,"Less than or Equal",
-                        result,"%s <= %s" % (str(val_a),str(val_b)),
-                        TestEnv.check_skip(case_name))
+                        result,"%s <= %s" % (str(val_a),str(val_b)),skip)
 
 # ----------------------------------------------------------------------------
 # Function: TestSection
@@ -2295,7 +2321,7 @@ class Simulation(object):
         s="Running: "
         for a in args:
             s = s + a + " "
-        print s
+        print(s)
         if not sys.platform.startswith("win"):
             self.p = subprocess.Popen(args,
                                       stdin=subprocess.PIPE,
@@ -2320,7 +2346,7 @@ class Simulation(object):
     def wait(self):
         if self.batch:
             return True
-        for i in xrange(120): # Wait up to 2 minutes.
+        for i in range(120): # Wait up to 2 minutes.
             try:
                 s = os.stat(self.sim2)
                 return True
@@ -2332,7 +2358,7 @@ class Simulation(object):
         """
         Connect to the simulation."
         """
-        print "Connecting to simulation ", self.simulation
+        print("Connecting to simulation ", self.simulation)
 
         # The sim might not have started by the time we get here.
         # Wait for the sim2 file to exist.
@@ -2478,7 +2504,7 @@ class SimulationMemoryRecorder(object):
 
         pa = GetProcessAttributes("engine", engine[0], engine[1])
         for i in range(len(pa.pids)):
-            if self.samples.has_key(pa.pids[i]):
+            if pa.pids[i] in self.samples:
                 self.samples[pa.pids[i]] = self.samples[pa.pids[i]] + [pa.memory[i]]
             else:
                 self.samples[pa.pids[i]] = [pa.memory[i]]
@@ -2486,7 +2512,7 @@ class SimulationMemoryRecorder(object):
 
     def WriteFile(self):
         f = open(self.filename, "wt")
-        for k in self.samples.keys():
+        for k in list(self.samples.keys()):
             f.write("#pid_%s\n" % str(k))
             for i in range(len(self.samples[k])):
                 f.write("%g %g\n" % (self.times[i], self.samples[k][i]))
@@ -2584,7 +2610,7 @@ class TestEnv(object):
             if v['mode'] ==cls.params["modes"]:
                 for test in v['tests']:
                     # check for platform restrictions
-                    if test.has_key("platform"):
+                    if "platform" in test:
                         tplat = test["platform"].lower()
                         splat = sys.platform.lower()
                         # win,linux,osx
@@ -2594,9 +2620,9 @@ class TestEnv(object):
                             continue
                     if test['category'] == cls.params["category"]:
                         # see if the file matches
-                        if test.has_key("file"):
+                        if "file" in test:
                             if test['file'] == cls.params["file"]:
-                                if not test.has_key("cases"):
+                                if "cases" not in test:
                                     return True
                                 else:
                                     if case_name in test['cases']:
@@ -2614,7 +2640,7 @@ class TestEnv(object):
             if v['mode'] ==cls.params["modes"]:
                 for test in v['tests']:
                     # check for platform restrictions
-                    if test.has_key("platform"):
+                    if "platform" in test:
                         tplat = test["platform"].lower()
                         splat = sys.platform.lower()
                         # win,linux,osx
@@ -2625,7 +2651,7 @@ class TestEnv(object):
                     if test['category'] == cls.params["category"]:
                         # see if the file matches
                         if test['file'] == cls.params["file"]:
-                            if not test.has_key("cases"):
+                            if "cases" not in test:
                                 test['cases'] = case_name
                                 return
                             else:

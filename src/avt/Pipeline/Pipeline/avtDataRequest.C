@@ -22,6 +22,8 @@
 
 #include <visit-config.h>
 
+#include <QueryOverTimeAttributes.h>
+
 using     std::vector;
 using     std::map;
 
@@ -160,6 +162,9 @@ using     std::map;
 //    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
 //    Added forceConstructMaterialLabels. 
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added initialization of retrieveQOTDataset and QOTAtts.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts,
@@ -205,6 +210,8 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     passNativeCSG = false;
     transformVectorsDuringProject = true;
     needPostGhostMaterialInfo = false;
+    retrieveQOTDataset = false;
+    QOTAtts = NULL;
 
     InitAdmissibleDataTypes();
 
@@ -655,6 +662,9 @@ avtDataRequest::avtDataRequest(avtDataRequest_p spec)
 //    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
 //    added forceConstructMaterialLabels.
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added retrieveQOTDataset and QOTAtts.
+//
 // ****************************************************************************
 
 avtDataRequest &
@@ -724,6 +734,8 @@ avtDataRequest::operator=(const avtDataRequest &spec)
     passNativeCSG                   = spec.passNativeCSG;
     transformVectorsDuringProject   = spec.transformVectorsDuringProject;
     needPostGhostMaterialInfo       = spec.needPostGhostMaterialInfo;
+    retrieveQOTDataset              = spec.retrieveQOTDataset;
+    QOTAtts                         = spec.QOTAtts;
     secondaryVariables              = spec.secondaryVariables;
     selectionName                   = spec.selectionName;
     missingDataBehavior             = spec.missingDataBehavior;
@@ -851,6 +863,9 @@ avtDataRequest::operator=(const avtDataRequest &spec)
 //
 //    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
 //    Added forceConstructMaterialLabels.
+//
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added retrieveQOTDataset and QOTAtts.
 //
 // ****************************************************************************
 
@@ -1072,6 +1087,27 @@ avtDataRequest::operator==(const avtDataRequest &ds)
 
     if (needPostGhostMaterialInfo != ds.needPostGhostMaterialInfo)
         return false;
+
+    if (retrieveQOTDataset != ds.retrieveQOTDataset)
+        return false;
+
+    if (QOTAtts != NULL && ds.QOTAtts != NULL)
+    {
+        if ((*QOTAtts) == (*ds.QOTAtts))
+        {
+            return true;
+        }
+
+        return false;
+    }
+    else if (QOTAtts == NULL && ds.QOTAtts == NULL)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
  
     //if (selectionName != ds.selectionName)
     //    return false;
@@ -1198,6 +1234,45 @@ avtDataRequest::GetRestriction(void)
     }
 
     return sil.silr;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::SetQOTAtts
+//
+//  Purpose:
+//      Set the query over time attribitues. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//
+// ****************************************************************************
+
+void
+avtDataRequest::SetQOTAtts(QueryOverTimeAttributes *qA)
+{
+    QOTAtts = qA;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::GetQOTAtts
+//
+//  Purpose:
+//      Get the query over time attributes. 
+//
+//  Returns: 
+//      The query over time attributes. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Tue Sep 24 11:15:10 MST 2019 
+//
+// ****************************************************************************
+
+const QueryOverTimeAttributes *
+avtDataRequest::GetQOTAtts(void) const
+{
+    return QOTAtts;
 }
 
 
@@ -1957,6 +2032,9 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
 //    Added forceConstructMaterialLabels.
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added retrieveQOTDataset.
+//
 // ****************************************************************************
 
 static const char *
@@ -2061,6 +2139,7 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("usesAllDomains", YesOrNo(usesAllDomains));
     webpage->AddTableEntry2("transformVectorsDuringProject", YesOrNo(transformVectorsDuringProject));
     webpage->AddTableEntry2("needPostGhostMaterialInfo", YesOrNo(needPostGhostMaterialInfo));
+    webpage->AddTableEntry2("retrieveQOTDataset", YesOrNo(retrieveQOTDataset));
     webpage->AddTableEntry2("selectionName", selectionName.c_str());
     if(missingDataBehavior == MISSING_DATA_IGNORE)
         webpage->AddTableEntry2("missingDataBehavior", "MISSING_DATA_IGNORE");

@@ -28,8 +28,11 @@ SmoothOperatorAttributes *SmoothViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SmoothViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SmoothViewerEnginePluginInfo::clientAtts  = new SmoothOperatorAttributes;
-    SmoothViewerEnginePluginInfo::defaultAtts = new SmoothOperatorAttributes;
+    if (SmoothViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SmoothViewerEnginePluginInfo::clientAtts  = new SmoothOperatorAttributes;
+        SmoothViewerEnginePluginInfo::defaultAtts = new SmoothOperatorAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -22,6 +22,7 @@
 #include <avtGhostData.h>
 
 #include <avtDataSelection.h>
+#include <QueryOverTimeAttributes.h>
 
 class PIPELINE_API avtSILSpecification
 {
@@ -191,6 +192,10 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //    Added forceConstructMaterialLabels to allow access to 
 //    material labels without a material variable. 
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added retrieveQOTDataset and QOTAtts along with their respective
+//    getters and setters. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRequest
@@ -213,6 +218,9 @@ class PIPELINE_API avtDataRequest
     const char                  *GetVariable(void) const { return variable; };
     avtSILSpecification         &GetSIL(void)          { return sil; };
     avtSILRestriction_p          GetRestriction(void);
+    const QueryOverTimeAttributes
+                                *GetQOTAtts(void) const;
+    void                         SetQOTAtts(QueryOverTimeAttributes *);
 
     const char                  *GetOriginalVariable(void)
                                                        {return orig_variable;};
@@ -446,6 +454,11 @@ class PIPELINE_API avtDataRequest
     void                         SetNeedPostGhostMaterialInfo(bool b)
                                      { needPostGhostMaterialInfo = b; }
 
+    bool                         RetrieveQOTDataset() const
+                                     { return retrieveQOTDataset; }; 
+    void                         SetRetrieveQOTDataset(bool q)
+                                     { retrieveQOTDataset = q; }; 
+
     void                         SetSelectionName(const std::string &s)
                                      { selectionName = s; }
     const std::string           &GetSelectionName() const
@@ -473,6 +486,7 @@ class PIPELINE_API avtDataRequest
     int                          timestep;
     char                        *variable;
     avtSILSpecification          sil;
+    QueryOverTimeAttributes     *QOTAtts;
     std::vector<CharStrRef>      secondaryVariables;
 
     // original_variable is the name of the variable that the pipeline is
@@ -521,6 +535,7 @@ class PIPELINE_API avtDataRequest
     bool                         passNativeCSG;
     bool                         transformVectorsDuringProject;
     bool                         needPostGhostMaterialInfo;
+    bool                         retrieveQOTDataset;
     std::string                  selectionName;
     MissingDataBehavior_t        missingDataBehavior;
 

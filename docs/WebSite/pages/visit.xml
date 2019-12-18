@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt]]></title>
-  <IM>LLNL-WEB-789119</IM>
+  <IM>LLNL-WEB-796739</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[September 19, 2019]]></lastchanged>
+  <lastchanged><![CDATA[December 16, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -41,7 +41,7 @@ this partial list</a>). [See a <a href="simulation/computer-codes/visit/features
 
 <h2>What's New</h2>
 
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 3.0.2, which can be <a href="simulation/computer-codes/visit/downloads">downloaded from this site</a>, contains about twenty bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.0.2">VisIt 3.0.2 Release Notes</a>. [See the <a href="simulation/computer-codes/visit/releases">archive of releases</a> for more information.]</p>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 3.1, which can be <a href="simulation/computer-codes/visit/downloads">downloaded from this site</a>, contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.1.0">VisIt 3.1 Release Notes</a>. [See the <a href="simulation/computer-codes/visit/releases">archive of releases</a> for more information.]</p>
 
 <h2>History</h2>
 <p>VisIt was originally developed by the Department of Energy (DOE) Advanced Simulation and Computing Initiative (ASCI) to visualize and analyze the results of terascale simulations. It was designed with a high degree of modularity to support rapid deployment of new visualization technology. This includes a plugin architecture for custom readers, data operators and plots as well as the ability to support multiple different user interfaces. Following a prototyping effort in the summer of 2000, an initial version of VisIt was developed and released in the fall of 2002. Since then, over 100 database readers, 60 operators and 20 plots have been added to the open source code. In addition, commercial, government and academic organizations in the US, Europe and elsewhere have developed and maintained proprietary plugins and user interfaces for their own needs. Although the primary driving force behind the original development of VisIt was for visualizing ASCI terascale data, VisIt has also proven to be well suited for visualizing smaller scale data from simulations on desktop systems. Because of its applicability beyond visualizing terascale data, we are making VisIt freely available as a BSD licensed open source product.</p>

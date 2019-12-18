@@ -122,7 +122,8 @@ ADIOS2GeneralPluginInfo::GetDefaultFilePatterns() const
     defaultPatterns.push_back("*.bp");
     defaultPatterns.push_back("*.bp.sst");
     defaultPatterns.push_back("*.bp.ssc");
-    defaultPatterns.push_back("*.bp.staging");
+    defaultPatterns.push_back("md.idx");
+    defaultPatterns.push_back("md.0");
     return defaultPatterns;
 }
 

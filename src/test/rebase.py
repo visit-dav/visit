@@ -83,19 +83,24 @@ import glob
 import imghdr
 from optparse import OptionParser
 import os
-import urllib
 import sys
+
+if (sys.version_info > (3, 0)):
+    import urllib.request, urllib.parse, urllib.error
+else:
+    import urllib
+
 
 def confirm_startup_dir_is_visit_test_root():
     retval = True
     if not os.getcwd().split('/')[-1] == 'test':
-        print '"test" does not appear to be current working directory name.'
+        print('"test" does not appear to be current working directory name.')
         retval = False
     if not os.access("baseline", os.F_OK):
-        print '"baseline" does not appear to be present in the current working directory.'
+        print('"baseline" does not appear to be present in the current working directory.')
         retval = False
     if not retval:
-        print "Run this script only from the root of the VisIt test dir tree"
+        print("Run this script only from the root of the VisIt test dir tree")
         sys.exit(1)
     return True
 
@@ -167,7 +172,7 @@ def copy_currents_from_html_pages(filelist, datetag, prompt, test_type):
             mode = "serial"
             f = ffields[2]
         if prompt:
-            docopy = raw_input("Copy file \"%s\" (enter y/Y for yes)? "%f)
+            docopy = input("Copy file \"%s\" (enter y/Y for yes)? "%f)
             if docopy != 'y' and docopy != 'Y':
                 continue
         if mode == "serial":
@@ -176,19 +181,26 @@ def copy_currents_from_html_pages(filelist, datetag, prompt, test_type):
             target_file = "baseline/%s/%s/%s/%s"%(cat,pyfile,mode,f)
         # As a sanity check, get current baseline image file size
         cursize = os.stat(target_file).st_size
-        g = urllib.urlopen("http://portal.nersc.gov/project/visit/tests/%s/pascal_trunk_%s/c_%s"%(datetag,mode,f))
-        if 'Not Found' in g.read():
-            print "*** Current \"%s\" not found. Skipping."%f
+        if (sys.version_info > (3, 0)):
+            g = urllib.request.urlopen("http://portal.nersc.gov/project/visit/tests/%s/pascal_trunk_%s/c_%s"%(datetag,mode,f))
         else:
-            print "Copying file \"%s\""%f
-            urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/pascal_trunk_%s/c_%s"%(datetag,mode,f),
-                filename=target_file)
+            g = urllib.urlopen("http://portal.nersc.gov/project/visit/tests/%s/pascal_trunk_%s/c_%s"%(datetag,mode,f))
+        if 'Not Found' in g.read():
+            print("*** Current \"%s\" not found. Skipping."%f)
+        else:
+            print("Copying file \"%s\""%f)
+            if (sys.version_info > (3, 0)):
+                urllib.request.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/pascal_trunk_%s/c_%s"%(datetag,mode,f),
+                                           filename=target_file)
+            else:
+                urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/pascal_trunk_%s/c_%s"%(datetag,mode,f),
+                                   filename=target_file)
         # Do some simple sanity checks on the resulting file
         if test_type == 'png' and imghdr.what(target_file) != 'png':
-            print "Warning: file \"%s\" is not PNG format!"%target_file
+            print("Warning: file \"%s\" is not PNG format!"%target_file)
         newsize = os.stat(target_file).st_size
         if newsize < (1-0.25)*cursize or newsize > (1+0.25)*cursize:
-            print "Warning: dramatic change in size of file (old=%d/new=%d)\"%s\"!"%(cursize,newsize,target_file)
+            print("Warning: dramatic change in size of file (old=%d/new=%d)\"%s\"!"%(cursize,newsize,target_file))
 
 #
 # Confirm in correct dir

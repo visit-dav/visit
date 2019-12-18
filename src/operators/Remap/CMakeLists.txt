@@ -3,6 +3,8 @@ PROJECT(Remap_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Remap)
+
 SET(COMMON_SOURCES
 RemapPluginInfo.C
 RemapCommonPluginInfo.C

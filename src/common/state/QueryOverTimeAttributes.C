@@ -70,6 +70,7 @@ void QueryOverTimeAttributes::Init()
     createWindow = true;
     windowId = 2;
     useCachedPts = false;
+    canUseDirectDatabaseRoute = true;
 
     QueryOverTimeAttributes::SelectAll();
 }
@@ -104,6 +105,7 @@ void QueryOverTimeAttributes::Copy(const QueryOverTimeAttributes &obj)
     pickAtts = obj.pickAtts;
     cachedCurvePts = obj.cachedCurvePts;
     useCachedPts = obj.useCachedPts;
+    canUseDirectDatabaseRoute = obj.canUseDirectDatabaseRoute;
 
     QueryOverTimeAttributes::SelectAll();
 }
@@ -273,7 +275,8 @@ QueryOverTimeAttributes::operator == (const QueryOverTimeAttributes &obj) const
             (queryAtts == obj.queryAtts) &&
             (pickAtts == obj.pickAtts) &&
             (cachedCurvePts == obj.cachedCurvePts) &&
-            (useCachedPts == obj.useCachedPts));
+            (useCachedPts == obj.useCachedPts) &&
+            (canUseDirectDatabaseRoute == obj.canUseDirectDatabaseRoute));
 }
 
 // ****************************************************************************
@@ -417,19 +420,20 @@ QueryOverTimeAttributes::NewInstance(bool copy) const
 void
 QueryOverTimeAttributes::SelectAll()
 {
-    Select(ID_timeType,       (void *)&timeType);
-    Select(ID_startTimeFlag,  (void *)&startTimeFlag);
-    Select(ID_startTime,      (void *)&startTime);
-    Select(ID_endTimeFlag,    (void *)&endTimeFlag);
-    Select(ID_endTime,        (void *)&endTime);
-    Select(ID_strideFlag,     (void *)&strideFlag);
-    Select(ID_stride,         (void *)&stride);
-    Select(ID_createWindow,   (void *)&createWindow);
-    Select(ID_windowId,       (void *)&windowId);
-    Select(ID_queryAtts,      (void *)&queryAtts);
-    Select(ID_pickAtts,       (void *)&pickAtts);
-    Select(ID_cachedCurvePts, (void *)&cachedCurvePts);
-    Select(ID_useCachedPts,   (void *)&useCachedPts);
+    Select(ID_timeType,                  (void *)&timeType);
+    Select(ID_startTimeFlag,             (void *)&startTimeFlag);
+    Select(ID_startTime,                 (void *)&startTime);
+    Select(ID_endTimeFlag,               (void *)&endTimeFlag);
+    Select(ID_endTime,                   (void *)&endTime);
+    Select(ID_strideFlag,                (void *)&strideFlag);
+    Select(ID_stride,                    (void *)&stride);
+    Select(ID_createWindow,              (void *)&createWindow);
+    Select(ID_windowId,                  (void *)&windowId);
+    Select(ID_queryAtts,                 (void *)&queryAtts);
+    Select(ID_pickAtts,                  (void *)&pickAtts);
+    Select(ID_cachedCurvePts,            (void *)&cachedCurvePts);
+    Select(ID_useCachedPts,              (void *)&useCachedPts);
+    Select(ID_canUseDirectDatabaseRoute, (void *)&canUseDirectDatabaseRoute);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -670,6 +674,13 @@ QueryOverTimeAttributes::SetUseCachedPts(bool useCachedPts_)
     Select(ID_useCachedPts, (void *)&useCachedPts);
 }
 
+void
+QueryOverTimeAttributes::SetCanUseDirectDatabaseRoute(bool canUseDirectDatabaseRoute_)
+{
+    canUseDirectDatabaseRoute = canUseDirectDatabaseRoute_;
+    Select(ID_canUseDirectDatabaseRoute, (void *)&canUseDirectDatabaseRoute);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -770,6 +781,12 @@ QueryOverTimeAttributes::GetUseCachedPts() const
     return useCachedPts;
 }
 
+bool
+QueryOverTimeAttributes::GetCanUseDirectDatabaseRoute() const
+{
+    return canUseDirectDatabaseRoute;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -816,19 +833,20 @@ QueryOverTimeAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_timeType:       return "timeType";
-    case ID_startTimeFlag:  return "startTimeFlag";
-    case ID_startTime:      return "startTime";
-    case ID_endTimeFlag:    return "endTimeFlag";
-    case ID_endTime:        return "endTime";
-    case ID_strideFlag:     return "strideFlag";
-    case ID_stride:         return "stride";
-    case ID_createWindow:   return "createWindow";
-    case ID_windowId:       return "windowId";
-    case ID_queryAtts:      return "queryAtts";
-    case ID_pickAtts:       return "pickAtts";
-    case ID_cachedCurvePts: return "cachedCurvePts";
-    case ID_useCachedPts:   return "useCachedPts";
+    case ID_timeType:                  return "timeType";
+    case ID_startTimeFlag:             return "startTimeFlag";
+    case ID_startTime:                 return "startTime";
+    case ID_endTimeFlag:               return "endTimeFlag";
+    case ID_endTime:                   return "endTime";
+    case ID_strideFlag:                return "strideFlag";
+    case ID_stride:                    return "stride";
+    case ID_createWindow:              return "createWindow";
+    case ID_windowId:                  return "windowId";
+    case ID_queryAtts:                 return "queryAtts";
+    case ID_pickAtts:                  return "pickAtts";
+    case ID_cachedCurvePts:            return "cachedCurvePts";
+    case ID_useCachedPts:              return "useCachedPts";
+    case ID_canUseDirectDatabaseRoute: return "canUseDirectDatabaseRoute";
     default:  return "invalid index";
     }
 }
@@ -853,19 +871,20 @@ QueryOverTimeAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_timeType:       return FieldType_enum;
-    case ID_startTimeFlag:  return FieldType_bool;
-    case ID_startTime:      return FieldType_int;
-    case ID_endTimeFlag:    return FieldType_bool;
-    case ID_endTime:        return FieldType_int;
-    case ID_strideFlag:     return FieldType_bool;
-    case ID_stride:         return FieldType_int;
-    case ID_createWindow:   return FieldType_bool;
-    case ID_windowId:       return FieldType_int;
-    case ID_queryAtts:      return FieldType_att;
-    case ID_pickAtts:       return FieldType_att;
-    case ID_cachedCurvePts: return FieldType_doubleVector;
-    case ID_useCachedPts:   return FieldType_bool;
+    case ID_timeType:                  return FieldType_enum;
+    case ID_startTimeFlag:             return FieldType_bool;
+    case ID_startTime:                 return FieldType_int;
+    case ID_endTimeFlag:               return FieldType_bool;
+    case ID_endTime:                   return FieldType_int;
+    case ID_strideFlag:                return FieldType_bool;
+    case ID_stride:                    return FieldType_int;
+    case ID_createWindow:              return FieldType_bool;
+    case ID_windowId:                  return FieldType_int;
+    case ID_queryAtts:                 return FieldType_att;
+    case ID_pickAtts:                  return FieldType_att;
+    case ID_cachedCurvePts:            return FieldType_doubleVector;
+    case ID_useCachedPts:              return FieldType_bool;
+    case ID_canUseDirectDatabaseRoute: return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -890,19 +909,20 @@ QueryOverTimeAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_timeType:       return "enum";
-    case ID_startTimeFlag:  return "bool";
-    case ID_startTime:      return "int";
-    case ID_endTimeFlag:    return "bool";
-    case ID_endTime:        return "int";
-    case ID_strideFlag:     return "bool";
-    case ID_stride:         return "int";
-    case ID_createWindow:   return "bool";
-    case ID_windowId:       return "int";
-    case ID_queryAtts:      return "att";
-    case ID_pickAtts:       return "att";
-    case ID_cachedCurvePts: return "doubleVector";
-    case ID_useCachedPts:   return "bool";
+    case ID_timeType:                  return "enum";
+    case ID_startTimeFlag:             return "bool";
+    case ID_startTime:                 return "int";
+    case ID_endTimeFlag:               return "bool";
+    case ID_endTime:                   return "int";
+    case ID_strideFlag:                return "bool";
+    case ID_stride:                    return "int";
+    case ID_createWindow:              return "bool";
+    case ID_windowId:                  return "int";
+    case ID_queryAtts:                 return "att";
+    case ID_pickAtts:                  return "att";
+    case ID_cachedCurvePts:            return "doubleVector";
+    case ID_useCachedPts:              return "bool";
+    case ID_canUseDirectDatabaseRoute: return "bool";
     default:  return "invalid index";
     }
 }
@@ -992,6 +1012,11 @@ QueryOverTimeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) cons
     case ID_useCachedPts:
         {  // new scope
         retval = (useCachedPts == obj.useCachedPts);
+        }
+        break;
+    case ID_canUseDirectDatabaseRoute:
+        {  // new scope
+        retval = (canUseDirectDatabaseRoute == obj.canUseDirectDatabaseRoute);
         }
         break;
     default: retval = false;

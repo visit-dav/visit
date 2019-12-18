@@ -76,11 +76,12 @@
 #
 #   Mark C. Miller, Tue Apr 16 13:11:15 PDT 2019
 #   Reduced min cmake vesion required to 3.7
+#
+#   Mark C. Miller, Tue Dec 10 09:24:24 PST 2019
+#   Remove custom help target.
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
-CMAKE_POLICY(PUSH)
-CMAKE_POLICY(SET CMP0037 OLD) # allow defining help target
 
 IF(WIN32)
     PROJECT(VISIT_DATA)
@@ -204,25 +205,13 @@ ADD_CUSTOM_COMMAND(
 ADD_CUSTOM_TARGET(list DEPENDS _archive_list)
 
 #-----------------------------------------------------------------------------
-# Define help bootstrap and associate with all (default) target so would-be
-# users are likely to stumble into it.
-#-----------------------------------------------------------------------------
-ADD_CUSTOM_TARGET(
-    _help_hint ALL VERBATIM
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "Run 'make help' for useful make targets and meanings"
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "")
-
-#-----------------------------------------------------------------------------
 # Define target for help on 7z
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_TARGET(
-    7zhelp VERBATIM
+    7z-more-help VERBATIM
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "              Help using 7z archiver/compresser"
+    COMMAND ${CMAKE_COMMAND} -E echo "             More help using 7z archiver/compresser"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "7z (or 7-Zip) is an archiving and compression tool that replaces"  
     COMMAND ${CMAKE_COMMAND} -E echo "the combination of tools like tar and gzip (.tar.gz or .tgz) and"
@@ -255,7 +244,7 @@ ADD_CUSTOM_TARGET(
 # set to old.
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_TARGET(
-    help VERBATIM
+    7z-help VERBATIM
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "               Conveninent make targets:"
@@ -279,8 +268,6 @@ ADD_CUSTOM_TARGET(
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=foodir_archive AFILES=foodir archive"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "To get more help on using the 7z archiver"
-    COMMAND ${CMAKE_COMMAND} -E echo "  make 7zhelp"
+    COMMAND ${CMAKE_COMMAND} -E echo "  make 7z-more-help"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "")
-
-CMAKE_POLICY(POP)

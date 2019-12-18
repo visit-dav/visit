@@ -10,28 +10,9 @@
 #
 #   Warning:
 #       This script is only expected to work for Linux, and Darwin systems.
-#       If you need to build VisIt for another platform, you should consult
-#       the BUILD_NOTES that come with the VisIt source.  That document
-#       contains instructions on how to build VisIt and its third party
-#       libraries.
 #
-#   This script has been tested and is known to work with the following OS/
-#   compiler combinations:
-#
-#	OS	Hardware	Compiler	Machine
-#	-----	--------	--------	-------
-#       RHEL3, 	x86,		GCC 3.2.3	hoth.llnl.gov
-#       CHAOS, 	x86_64,		GCC 4.1.2	aztec.llnl.gov
-#       SuSE,   x86_64,		GCC 4.0.2	antares.lbl.gov
-#       SuSE,   x86_64,		GCC 4.1.0	octagon.lbl.gov
-#       MacOSX  x86_64          GCC 4.2.1       cyclonus.llnl.gov
-#
-#   It is believed that this script will also work with other Linux variations.
 #   Please send feedback to visit-users@ornl.gov if you run into problems
-#   so that this script can be improved in the future.  If you have built
-#   VisIt using this script on an OS/hardware/compiler combination not listed
-#   above, please send a note to visit-users@ornl.gov, so we can add that
-#   information to the script.
+#   so that this script can be improved in the future.
 #
 
 # To create your own modular file these 7 functions need to be implemented..
@@ -60,9 +41,9 @@ export VISIT_VERSION=${VISIT_VERSION:-"3.1.0"}
 ####
 # Trunk:
 ####
-export TRUNK_BUILD="yes"
-export RC_BUILD="no"
-export TAGGED_BUILD="no"
+#export TRUNK_BUILD="yes"
+#export RC_BUILD="no"
+#export TAGGED_BUILD="no"
 
 ###
 # RC Branch:
@@ -75,9 +56,9 @@ export TAGGED_BUILD="no"
 ###
 # Tagged Release:
 ###
-#export TRUNK_BUILD="no"
-#export RC_BUILD="no"
-#export TAGGED_BUILD="yes"
+export TRUNK_BUILD="no"
+export RC_BUILD="no"
+export TAGGED_BUILD="yes"
 
 export INITIAL_PWD=$PWD
 

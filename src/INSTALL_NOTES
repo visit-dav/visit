@@ -11,7 +11,7 @@ followed by the Unix installation instructions.
 Windows:
 ========
 
-1.  Download the visit3_0_0.windows-x86_64.exe installer program to
+1.  Download the visit3_1_0.windows-x86_64.exe installer program to
     your desktop.
 
 2.  Double click on the installer program icon to run the installer.
@@ -24,7 +24,7 @@ MacOS X:
 
 Downloads:
 
-1. Download visit3_0_0.darwin-x86_64-10_13.dmg and copy it to the desktop.
+1. Download visit3_1_0.darwin-x86_64-10_13.dmg and copy it to the desktop.
 
 2. Double click on the file to open it. This will cause MacOS to mount the
    disk image and open it in Finder.
@@ -46,12 +46,12 @@ Unix (gzipped tar file):
     distribution directory or update an existing distribution.  This is
     handled automatically.
 
-        chmod 755 visit-install3_0_0
-        ./visit-install3_0_0 "version" "platform" "directory"
+        chmod 755 visit-install3_1_0
+        ./visit-install3_1_0 "version" "platform" "directory"
 
     where
 
-        "version" will be 3.0.0 for the current distribution.
+        "version" will be 3.1.0 for the current distribution.
 
         "platform" will be one of the following:
 
@@ -69,12 +69,12 @@ Unix (gzipped tar file):
 
     For example
 
-        chmod 755 visit-install3_0_0
-        ./visit-install3_0_0 3.0.0 linux-x86_64-rhel7 /usr/local/visit
+        chmod 755 visit-install3_1_0
+        ./visit-install3_1_0 3.1.0 linux-x86_64-rhel7 /usr/local/visit
 
-    will install the linux-x86_64-rhel7, 3.0.0 version of visit in the
+    will install the linux-x86_64-rhel7, 3.1.0 version of visit in the
     directory "/usr/local/visit".  Note that you will need to have the
-    file "visit3_0_0.linux-x86_64-rhel7.tar.gz" present in the current
+    file "visit3_1_0.linux-x86_64-rhel7.tar.gz" present in the current
     directory for this to function properly.
 
 2.  Add the bin directory below the installation directory

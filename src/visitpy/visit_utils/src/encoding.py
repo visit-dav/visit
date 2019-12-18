@@ -33,7 +33,7 @@ import shutil
 
 from os.path import join as pjoin
 
-from common import VisItException, sexe
+from .common import VisItException, sexe
 
 __all__ = [ 'encoders','encode','extract']
 
@@ -142,7 +142,7 @@ def encode_patterns(patterns,
         outputs = [ (patterns["full"],ofile,False)]
     nfails = 0
     for out in outputs:
-        print "[encoding: %s]" % out[1]
+        print("[encoding: %s]" % out[1])
         cur = 0
         if etype == "sm":
             cur = encode_sm(out[0],out[1],stereo=out[2])
@@ -422,7 +422,7 @@ def encode_mov(ipattern,
             cmd += "-passlogfile %s " % ffmpeg_log_file_prefix(ofile)
             cmd += "-an -b:v 18000000 -f mov -r %s %s"
             # pass 1
-            print cmd
+            print(cmd)
             cmd_pass1 =  cmd % (enc_bin,ipattern,1,mov_ofps,ofile)
             res = sexe(cmd_pass1,echo=True)
             if res == 0:
@@ -550,8 +550,8 @@ def gen_symlinks_stereo(ipattern,fdup=None):
     pattern_l   = rbase + ".left"  + rext
     pattern_r   = rbase + ".right" + rext
     ifs = list_input_files(ipattern)
-    ifs_l = [ ifs[i] for i in xrange(len(ifs)) if i == 0 or i % 2 == 0]
-    ifs_r = [ ifs[i] for i in xrange(len(ifs)) if i %  2 == 1]
+    ifs_l = [ ifs[i] for i in range(len(ifs)) if i == 0 or i % 2 == 0]
+    ifs_r = [ ifs[i] for i in range(len(ifs)) if i %  2 == 1]
     cnt_l = len(ifs_l)
     cnt_r = len(ifs_r)
     # num left frames  & num right frames should match
@@ -561,7 +561,7 @@ def gen_symlinks_stereo(ipattern,fdup=None):
     lnks = []
     lnk_cnt = 0
     frm_cnt = 0
-    for i in xrange(cnt_l):
+    for i in range(cnt_l):
         for j in range(fdup):
             in_l = ifs_l[i]
             in_r = ifs_r[i]
@@ -638,7 +638,7 @@ def img2sm_bin():
     res = sexe("which img2sm",ret_output=True)[1].strip()
     if os.path.exists(res):
         return res
-    if os.environ.has_key('SYS_TYPE'):
+    if 'SYS_TYPE' in os.environ:
         res= pjoin("/usr/gapps/asciviz/blockbuster/latest",os.environ["SYS_TYPE"],"bin/img2sm")
         if os.path.exists(res):
             return res

@@ -94,6 +94,9 @@ class     ExprNode;
 //    Added nProcessedArgs to keep track of the number of arguments that this
 //    filter processes in ProcessArguments().
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added canApplyToDirectDatabaseQOT and corresponding getter. 
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 
@@ -122,10 +125,14 @@ class EXPRESSION_API avtExpressionFilter : virtual public
 
     bool                     GetNumericVal(ExprNode *, double &res);
 
+    bool                     CanApplyToDirectDatabaseQOT(void)
+                               { return canApplyToDirectDatabaseQOT; };
+
   protected:
     char                    *outputVariableName;
     int                      currentTimeState;
     bool                     calculateExtents;
+    bool                     canApplyToDirectDatabaseQOT;
     int                      nProcessedArgs;
 
     virtual bool             IsPointVariable();
