@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                          HistogramPluginInfo.h                            //
+//                               HistogramPluginInfo.h                            //
 // ************************************************************************* //
 
 #ifndef HISTOGRAM_PLUGIN_INFO_H

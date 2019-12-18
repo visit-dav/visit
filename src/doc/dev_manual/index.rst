@@ -11,6 +11,7 @@ VisIt Developer Manual
     pr_review
     RCDevelopment
     test_suite
+    xmltools
     PrepareRelease
     CreateRelease
     MemoryLeaks
