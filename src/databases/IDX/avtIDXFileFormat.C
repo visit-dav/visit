@@ -225,8 +225,8 @@ void avtIDXFileFormat::domainDecomposition()
     }
 
 #if 1
-    // Fix domains boundaries when use extracells with Uintah
-    if(uintah_metadata && use_extracells)
+    // Fix domains boundaries when use extracells with Uintah (and not single box)
+    if(uintah_metadata && use_extracells && input_patches.patchInfo.size()>1)
     {
         int center[3] = {global_size[0]/2,global_size[1]/2, global_size[2]/2};
 
@@ -890,15 +890,16 @@ avtIDXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         //md->Add(new avtVectorMetaData(field.name,mesh->name,AVT_ZONECENT, field.ncomponents));
     }
 
-    std::vector<int> cycles;
-    cycles.resize(GetNTimesteps());
+    if(timeIndex.size() == 0)
+      createTimeIndex();
 
-    for (int ti=0;ti<(int)cycles.size();ti++)
-        cycles[ti] = ti;
-
-    md->SetCycles( cycles );
+    md->SetCycles( logTimeIndex); //cycles );
+    md->SetTimes( timeIndex );
     //md->SetMustRepopulateOnStateChange(true);
 
+    md->SetTimesAreAccurate(true);
+    //md->setCyclesAreAccurate(true);
+    
     debug5 << rank << ": end meta" <<std::endl;
 }
 
