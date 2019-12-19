@@ -59,6 +59,7 @@ SET(VISIT_BIN_FILES
         frontendlauncher
         frontendlauncher.py
         makemili_driver
+        mcurvit
         mkgrdbl
         mpeg2encode
         regen-ajp
