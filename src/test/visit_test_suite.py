@@ -1016,8 +1016,6 @@ def main(opts,tests):
            if not '*' in t:
               expandedtests.append(t)
            else:
-              print("t: ", t)
-              print("glob.iglob: ", t)
               for match in glob.iglob(t):
                  expandedtests.append(match)
         if len(expandedtests) > 0:
