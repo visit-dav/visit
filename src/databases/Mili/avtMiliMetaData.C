@@ -118,6 +118,9 @@ SubrecInfo::AddSubrec(const int SRId,
 //
 //  Modifications:
 //
+//      Alister Maguire, Thu Dec 19 11:13:35 MST 2019
+//      If we don't have any subrecords, just return.
+//
 // ****************************************************************************
 
 void
@@ -126,6 +129,14 @@ SubrecInfo::GetSubrec(const int SRId,
                       int &numDB,
                       intVector &dBRanges)
 {
+    if (numSubrecs == 0)
+    {
+        numEl = -1;
+        numDB = -1;
+        dBRanges.clear();
+        return;
+    }
+
     std::map<int, int>::iterator mapItr = indexMap.find(SRId);
 
     if (mapItr != indexMap.end())
@@ -1511,6 +1522,10 @@ MiliMaterialMetaData::~MiliMaterialMetaData(void)
 //
 //  Modifications:
 //
+//      Alister Maguire, Thu Dec 19 11:13:35 MST 2019
+//      Manually add SubrecInfo objects to our vector to avoid
+//      construction issues.
+//
 // ****************************************************************************
 
 avtMiliMetaData::avtMiliMetaData(int nDomains)
@@ -1533,13 +1548,24 @@ avtMiliMetaData::avtMiliMetaData(int nDomains)
     miliMaterials = NULL;
     numCells.resize(numDomains, -1);
     numNodes.resize(numDomains, -1);
-    subrecInfo.resize(numDomains);
     zoneBasedLabels.resize(numDomains, stringVector());
     nodeBasedLabels.resize(numDomains, stringVector());
     maxZoneLabelLengths.resize(numDomains, 0);
     maxNodeLabelLengths.resize(numDomains, 0);
     zoneLabelsGenerated.resize(numDomains, false);
     nodeLabelsGenerated.resize(numDomains, false);
+
+    //
+    // We need to manually add these objects to the vector;
+    // calling "resize" doesn't seem to reliably construct
+    // the objects.
+    //
+    subrecInfo.reserve(numDomains);
+    for (int i = 0; i < numDomains; ++i)
+    {
+        SubrecInfo sri;
+        subrecInfo.push_back(sri);
+    }
 }
 
 
