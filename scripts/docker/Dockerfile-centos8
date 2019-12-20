@@ -40,6 +40,8 @@ RUN dnf -y upgrade \
  && dnf -y --enablerepo=PowerTools install bison-devel flex-devel \
  && rm -rf /var/lib/apt/lists/*
 
+RUN dnf -y upgrade && dnf -y install libffi-devel && rm -rf /var/lib/apt/lists/*
+
 RUN cd /usr/include && ln -s freetype2 freetype
 RUN cd /usr/bin && ln -s bison yacc
 RUN cd /usr/bin && ln -s python2 python
@@ -54,5 +56,7 @@ RUN mkdir third_party
 COPY build_visit3_1_0 /home/visit
 COPY run_build_visit_centos8.sh /home/visit
 COPY build_visit_docker_cleanup.py /home/visit
+COPY build_test_visit.sh /home/visit
+COPY test_visit.py /home/visit
 # Build the third party libraries
 RUN /bin/bash run_build_visit_centos8.sh
