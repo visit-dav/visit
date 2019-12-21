@@ -522,6 +522,10 @@ def finalize_options(opts):
 #    Added '--src' for specifying src_dir, and --cmake for specifying
 #    cmake_cmd, used for plugin-vs-install tests.
 #
+#    Kathleen Biagas, Wed Dec 18 17:22:59 MST 2019
+#    For windows, move the glob of '*.py' tests name to after full-path
+#    expansion in main.
+#
 # ----------------------------------------------------------------------------
 def parse_args():
     """
@@ -745,17 +749,6 @@ def parse_args():
     opts, tests = parser.parse_args()
     # note: we want a dict b/c the values could be passed without using optparse
     opts = vars(opts)
-    if sys.platform.startswith("win"):
-        # use glob to match any *.py
-        expandedtests = []
-        for t in tests:
-           if not '*' in t:
-              expandedtests.append(t)
-           else:
-              for match in glob.iglob(t):
-                 expandedtests.append(match)
-        if len(expandedtests) > 0:
-            tests = expandedtests
     return opts, tests
 
 # ----------------------------------------------------------------------------
@@ -994,6 +987,9 @@ def rsync_post(src_dir,rsync_dest):
 #   into the ctest module so that I could track time spent
 #   in the sub test.
 #
+#   Kathleen Biagas, Wed Dec 18 17:22:59 MST 2019
+#   On windows, glob any '*.py' tests names.
+#
 # ----------------------------------------------------------------------------
 def main(opts,tests):
     """
@@ -1013,6 +1009,17 @@ def main(opts,tests):
     elif len(tests) == 0:
         tests = find_test_cases(opts["tests_dir"],opts["classes"]) 
     tests = [ abs_path(pjoin(opts["tests_dir"], "..",t)) for t in tests]
+    if sys.platform.startswith("win"):
+        # use glob to match any *.py
+        expandedtests = []
+        for t in tests:
+           if not '*' in t:
+              expandedtests.append(t)
+           else:
+              for match in glob.iglob(t):
+                 expandedtests.append(match)
+        if len(expandedtests) > 0:
+            tests = expandedtests
     prepare_result_dirs(opts["result_dir"])
     ststamp = timestamp(sep=":")
     stime   = time.time()
