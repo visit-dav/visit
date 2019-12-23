@@ -186,6 +186,96 @@ function bv_python_info
     export PYTHON3_BUILD_DIR="Python-$PYTHON3_VERSION"
     export PYTHON3_MD5_CHECKSUM="1cd071f78ff6d9c7524c95303a3057aa"
 
+    export PACKAGING_URL=${PACKAGING_URL:-""}
+    export PACKAGING_FILE=${PACKAGING_FILE:-"packaging-1.1.0.tar.gz"}
+    export PACKAGING_BUILD_DIR=${PACKAGING_BUILD_DIR:-"packaging-1.1.0"}
+    export PACKAGING_MD5_CHECKSUM="867ce70984dc7b89bbbc3cac2a72b171"
+    export PACKAGING_SHA256_CHECKSUM="28b924174df7a2fa32c1953825ff29c61e2f5e082343165438812f00d3a7fc47"
+
+    export IMAGESIZE_URL=${IMAGESIZE_URL:-""}
+    export IMAGESIZE_FILE=${IMAGESIZE_FILE:-"imagesize-1.1.0.tar.gz"}
+    export IMAGESIZE_BUILD_DIR=${IMAGESIZE_BUILD_DIR:-"imagesize-1.1.0"}
+    export IMAGESIZE_MD5_CHECKSUM="2f89749b05e07c79c46330dbc62f1e02"
+    export IMAGESIZE_SHA256_CHECKSUM="f3832918bc3c66617f92e35f5d70729187676313caa60c187eb0f28b8fe5e3b5"
+
+    export ALABASTER_URL=${ALABASTER_URL:-""}
+    export ALABASTER_FILE=${ALABASTER_FILE:-"alabaster-0.7.12.tar.gz"}
+    export ALABASTER_BUILD_DIR=${ALABASTER_BUILD_DIR:-"alabaster-0.7.12"}
+    export ALABASTER_MD5_CHECKSUM=""
+    export ALABASTER_SHA256_CHECKSUM=""
+
+    export BABEL_URL=${BABEL_URL:-""}
+    export BABEL_FILE=${BABEL_FILE:-"Babel-2.7.0.tar.gz"}
+    export BABEL_BUILD_DIR=${BABEL_BUILD_DIR:-"Babel-2.7.0"}
+    export BABEL_MD5_CHECKSUM=""
+    export BABEL_SHA256_CHECKSUM=""
+
+    export SNOWBALLSTEMMER_URL=${SNOWBALLSTEMMER_URL:-""}
+    export SNOWBALLSTEMMER_FILE=${SNOWBALLSTEMMER_FILE:-"snowballstemmer-2.0.0.tar.gz"}
+    export SNOWBALLSTEMMER_BUILD_DIR=${SNOWBALLSTEMMER_BUILD_DIR:-"snowballstemmer-2.0.0"}
+    export SNOWBALLSTEMMER_MD5_CHECKSUM=""
+    export SNOWBALLSTEMMER_SHA256_CHECKSUM=""
+
+    export DOCUTILS_URL=${DOCUTILS_URL:-""}
+    export DOCUTILS_FILE=${DOCUTILS_FILE:-"docutils-0.15.2.tar.gz"}
+    export DOCUTILS_BUILD_DIR=${DOCUTILS_BUILD_DIR:-"docutils-0.15.2"}
+    export DOCUTILS_MD5_CHECKSUM=""
+    export DOCUTILS_SHA256_CHECKSUM=""
+
+    export PYGMENTS_URL=${PYGMENTS_URL:-""}
+    export PYGMENTS_FILE=${PYGMENTS_FILE:-"Pygments-2.5.2.tar.gz"}
+    export PYGMENTS_BUILD_DIR=${PYGMENTS_BUILD_DIR:-"Pygments-2.5.2"}
+    export PYGMENTS_MD5_CHECKSUM=""
+    export PYGMENTS_SHA256_CHECKSUM=""
+
+    export JINJA2_URL=${JINJA2_URL:-""}
+    export JINJA2_FILE=${JINJA2_FILE:-"Jinja2-2.10.3.tar.gz"}
+    export JINJA2_BUILD_DIR=${JINJA2_BUILD_DIR:-"Jinja2-2.10.3"}
+    export JINJA2_MD5_CHECKSUM=""
+    export JINJA2_SHA256_CHECKSUM=""
+
+    export SIX_URL=${SIX_URL:-""}
+    export SIX_FILE=${SIX_FILE:-"six-1.13.0.tar.gz"}
+    export SIX_BUILD_DIR=${SIX_BUILD_DIR:-"six-1.13.0"}
+    export SIX_MD5_CHECKSUM=""
+    export SIX_SHA256_CHECKSUM=""
+
+    export URLLIB3_URL=${URLLIB3_URL:-""}
+    export URLLIB3_FILE=${URLLIB3_FILE:-"urllib3-1.25.7.tar.gz"}
+    export URLLIB3_BUILD_DIR=${URLLIB3_BUILD_DIR:-"urllib3-1.25.7"}
+    export URLLIB3_MD5_CHECKSUM=""
+    export URLLIB3_SHA256_CHECKSUM=""
+
+    export IDNA_URL=${IDNA_URL:-""}
+    export IDNA_FILE=${IDNA_FILE:-"idna-2.8.tar.gz"}
+    export IDNA_BUILD_DIR=${IDNA_BUILD_DIR:-"idna-2.8"}
+    export IDNA_MD5_CHECKSUM=""
+    export IDNA_SHA256_CHECKSUM=""
+
+    export CHARDET_URL=${CHARDET_URL:-""}
+    export CHARDET_FILE=${CHARDET_FILE:-"chardet-3.0.4.tar.gz"}
+    export CHARDET_BUILD_DIR=${CHARDET_BUILD_DIR:-"chardet-3.0.4"}
+    export CHARDET_MD5_CHECKSUM=""
+    export CHARDET_SHA256_CHECKSUM=""
+
+    export CERTIFI_URL=${CERTIFI_URL:-""}
+    export CERTIFI_FILE=${CERTIFI_FILE:-"certifi-2019.11.28.tar.gz"}
+    export CERTIFI_BUILD_DIR=${CERTIFI_BUILD_DIR:-"certifi-2019.11.28"}
+    export CERTIFI_MD5_CHECKSUM=""
+    export CERTIFI_SHA256_CHECKSUM=""
+
+    export PYTZ_URL=${PYTZ_URL:-""}
+    export PYTZ_FILE=${PYTZ_FILE:-"pytz-2019.3.tar.gz"}
+    export PYTZ_BUILD_DIR=${PYTZ_BUILD_DIR:-"pytz-2019.3"}
+    export PYTZ_MD5_CHECKSUM=""
+    export PYTZ_SHA256_CHECKSUM=""
+
+    export MARKUPSAFE_URL=${MARKUPSAFE_URL:-""}
+    export MARKUPSAFE_FILE=${MARKUPSAFE_FILE:-"MarkupSafe-1.1.1.tar.gz"}
+    export MARKUPSAFE_BUILD_DIR=${MARKUPSAFE_BUILD_DIR:-"MarkupSafe-1.1.1"}
+    export MARKUPSAFE_MD5_CHECKSUM=""
+    export MARKUPSAFE_SHA256_CHECKSUM=""
+
     export SPHINX_URL=${SPHINX_URL:-"https://files.pythonhosted.org/packages/f6/3a/c51fc285c0c5c30bcd9426bf096187840683d9383df716a6b6a4ca0a8bde"}
     export SPHINX_FILE=${SPHINX_FILE:-"Sphinx-2.2.1.tar.gz"}
     export SPHINX_BUILD_DIR=${SPHINX_BUILD_DIR:-"Sphinx-2.2.1"}
@@ -981,6 +1071,126 @@ function build_python3
 function build_sphinx
 {
     # download
+    if ! test -f ${PACKAGING_FILE} ; then
+        download_file ${PACKAGING_FILE} "${PACKAGING_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${PACKAGING_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${IMAGESIZE_FILE} ; then
+        download_file ${IMAGESIZE_FILE} "${IMAGESIZE_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${IMAGESIZE_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${ALABASTER_FILE} ; then
+        download_file ${ALABASTER_FILE} "${ALABASTER_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${ALABASTER_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${BABEL_FILE} ; then
+        download_file ${BABEL_FILE} "${BABEL_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${BABEL_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SNOWBALLSTEMMER_FILE} ; then
+        download_file ${SNOWBALLSTEMMER_FILE} "${SNOWBALLSTEMMER_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SNOWBALLSTEMMER_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${DOCUTILS_FILE} ; then
+        download_file ${DOCUTILS_FILE} "${DOCUTILS_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${DOCUTILS_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${PYGMENTS_FILE} ; then
+        download_file ${PYGMENTS_FILE} "${PYGMENTS_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${PYGMENTS_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${JINJA2_FILE} ; then
+        download_file ${JINJA2_FILE} "${JINJA2_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${JINJA2_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SIX_FILE} ; then
+        download_file ${SIX_FILE} "${SIX_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SIX_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${URLLIB3_FILE} ; then
+        download_file ${URLLIB3_FILE} "${URLLIB3_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${URLLIB3_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${IDNA_FILE} ; then
+        download_file ${IDNA_FILE} "${IDNA_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${IDNA_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${CHARDET_FILE} ; then
+        download_file ${CHARDET_FILE} "${CHARDET_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${CHARDET_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${CERTIFI_FILE} ; then
+        download_file ${CERTIFI_FILE} "${CERTIFI_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${CERTIFI_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${PYTZ_FILE} ; then
+        download_file ${PYTZ_FILE} "${PYTZ_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${PYTZ_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${MARKUPSAFE_FILE} ; then
+        download_file ${MARKUPSAFE_FILE} "${MARKUPSAFE_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${MARKUPSAFE_FILE}"
+            return 1
+        fi
+    fi
+
     if ! test -f ${SPHINX_FILE} ; then
         download_file ${SPHINX_FILE} "${SPHINX_URL}"
         if [[ $? != 0 ]] ; then
@@ -990,6 +1200,141 @@ function build_sphinx
     fi
 
     # extract
+    if ! test -d ${PACKAGING_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${PACKAGING_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${PACKAGING_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${IMAGESIZE_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${IMAGESIZE_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${IMAGESIZE_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${ALABASTER_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${ALABASTER_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${ALABASTER_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${BABEL_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${BABEL_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${BABEL_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SNOWBALLSTEMMER_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${SNOWBALLSTEMMER_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SNOWBALLSTEMMER_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${DOCUTILS_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${DOCUTILS_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${DOCUTILS_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${PYGMENTS_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${PYGMENTS_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${PYGMENTS_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${JINJA2_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${JINJA2_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${JINJA2_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SIX_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${SIX_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SIX_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${URLLIB3_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${URLLIB3_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${URLLIB3_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${IDNA_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${IDNA_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${IDNA_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${CHARDET_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${CHARDET_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${CHARDET_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${CERTIFI_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${CERTIFI_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${CERTIFI_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${PYTZ_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${PYTZ_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${PYTZ_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${MARKUPSAFE_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${MARKUPSAFE_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${MARKUPSAFE_FILE}"
+            return 1
+        fi
+    fi
+
     if ! test -d ${SPHINX_BUILD_DIR} ; then
         info "Extracting sphinx ..."
         uncompress_untar ${SPHINX_FILE}
@@ -1011,6 +1356,156 @@ function build_sphinx
 
     PY3HOME="${VISITDIR}/python/${PYTHON3_VERSION}/${VISITARCH}"
     # install
+    pushd $PACKAGING_BUILD_DIR > /dev/null
+    info "Installing packaging ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install packaging"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $IMAGESIZE_BUILD_DIR > /dev/null
+    info "Installing imagesize ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install imagesize"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $ALABASTER_BUILD_DIR > /dev/null
+    info "Installing alabaster..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install alabaster"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $BABEL_BUILD_DIR > /dev/null
+    info "Installing babel ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install babel"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SNOWBALLSTEMMER_BUILD_DIR > /dev/null
+    info "Installing snowballstemmer ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install snowballstemmer"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $DOCUTILS_BUILD_DIR > /dev/null
+    info "Installing docutils ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install docutils"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $PYGMENTS_BUILD_DIR > /dev/null
+    info "Installing pygments ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install pygments"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $JINJA2_BUILD_DIR > /dev/null
+    info "Installing jinja2 ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install jinja2"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SIX_BUILD_DIR > /dev/null
+    info "Installing six ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install six"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $URLLIB3_BUILD_DIR > /dev/null
+    info "Installing urllib3 ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install urllib3"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $IDNA_BUILD_DIR > /dev/null
+    info "Installing idna ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install idna"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $CHARDET_BUILD_DIR > /dev/null
+    info "Installing chardet ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install chardet"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $CERTIFI_BUILD_DIR > /dev/null
+    info "Installing certifi ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install certifi"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $PYTZ_BUILD_DIR > /dev/null
+    info "Installing pytz ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install pytz"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $MARKUPSAFE_BUILD_DIR > /dev/null
+    info "Installing markupsafe ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install markupsafe"
+        return 1
+    fi
+    popd > /dev/null
+
     pushd $SPHINX_BUILD_DIR > /dev/null
     info "Installing sphinx ..."
     ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
