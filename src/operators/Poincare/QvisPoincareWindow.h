@@ -60,7 +60,6 @@ class QvisPoincareWindow : public QvisOperatorWindow
     virtual void CreateWindowContents();
 
   protected:
-    void CreateSourceTab(QWidget *);
     void CreateIntegrationTab(QWidget *);
     void CreateAnalysisTab(QWidget *);
     void CreateAppearanceTab(QWidget *);
@@ -174,7 +173,6 @@ class QvisPoincareWindow : public QvisOperatorWindow
 
     // Fieldlines
     QWidget   *sourceType;
-    QLabel    *sourceTypeLabel;
     QComboBox *sourceTypeCombo;
     QLineEdit *velocitySource;
     QLabel    *velocitySourceLabel;
