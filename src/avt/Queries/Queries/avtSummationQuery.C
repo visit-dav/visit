@@ -11,6 +11,7 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkIdList.h>
+#include <vtkBitArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkUnsignedCharArray.h>
@@ -441,13 +442,20 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
     }
 
     vtkDataArray *arr2 = NULL;
+    vtkBitArray *volumeDependent = NULL; // Tracks if the cell is volume dependent.
     bool doAverage = CalculateAverage();
     if (doAverage)
     {
         if (pointData)
+        {
             arr2 = ds->GetPointData()->GetArray(denomVariableName.c_str());
-        else 
+            volumeDependent = vtkBitArray::SafeDownCast(ds->GetPointData()->GetArray("VolumeDependent"));
+        }
+        else
+        {
             arr2 = ds->GetCellData()->GetArray(denomVariableName.c_str());
+            volumeDependent = vtkBitArray::SafeDownCast(ds->GetCellData()->GetArray("VolumeDependent"));
+        }
 
         if (arr2 == NULL)
         {
@@ -473,7 +481,9 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
     int comp =0;
     vtkIntArray *originalCells = NULL;
     vtkIntArray *originalNodes = NULL;
-    if (sumFromOriginalElement)
+
+    bool volumeDependentBool = volumeDependent ? false : volumeDependent->GetValue(0);
+    if (sumFromOriginalElement && !volumeDependentBool)
     {
         if (pointData)
         {
