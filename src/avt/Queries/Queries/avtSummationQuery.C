@@ -442,20 +442,13 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
     }
 
     vtkDataArray *arr2 = NULL;
-    vtkBitArray *volumeDependent = NULL; // Tracks if the cell is volume dependent.
     bool doAverage = CalculateAverage();
     if (doAverage)
     {
         if (pointData)
-        {
             arr2 = ds->GetPointData()->GetArray(denomVariableName.c_str());
-            volumeDependent = vtkBitArray::SafeDownCast(ds->GetPointData()->GetArray("VolumeDependent"));
-        }
         else
-        {
             arr2 = ds->GetCellData()->GetArray(denomVariableName.c_str());
-            volumeDependent = vtkBitArray::SafeDownCast(ds->GetCellData()->GetArray("VolumeDependent"));
-        }
 
         if (arr2 == NULL)
         {
@@ -482,7 +475,18 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
     vtkIntArray *originalCells = NULL;
     vtkIntArray *originalNodes = NULL;
 
-    bool volumeDependentBool = volumeDependent ? false : volumeDependent->GetValue(0);
+    // Determine if the variable begin summed is volume dependent.
+    vtkBitArray *volumeDependent = NULL; // Tracks if the cell is volume dependent.
+    if (pointData)
+    {
+        volumeDependent = vtkBitArray::SafeDownCast(ds->GetPointData()->GetArray("VolumeDependent"));
+    }
+    else
+    {
+        volumeDependent = vtkBitArray::SafeDownCast(ds->GetCellData()->GetArray("VolumeDependent"));
+    }
+    bool volumeDependentBool = volumeDependent ? volumeDependent->GetValue(0) : false;
+
     if (sumFromOriginalElement && !volumeDependentBool)
     {
         if (pointData)
