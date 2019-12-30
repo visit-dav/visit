@@ -9,6 +9,8 @@
 #ifndef AVT_EXPRESSION_DATA_TREE_ITERATOR_H
 #define AVT_EXPRESSION_DATA_TREE_ITERATOR_H
 
+#include <vtkBitArray.h>
+
 #include <expression_exports.h>
 
 #include <avtExpressionFilter.h>
@@ -67,6 +69,9 @@ class EXPRESSION_API avtExpressionDataTreeIterator
                                                       int currentDomainsIndex,
                                                       const std::string &activeVar,
                                                       const std::string &outputVar);
+
+    // Track if the created array is volume-dependent.
+    vtkBitArray              *volumeDependent;
 };
 
 #endif

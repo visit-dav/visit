@@ -44,6 +44,7 @@ avtVMetricVolume::avtVMetricVolume()
 {
     useOnlyPositiveVolumes = false;
     useVerdictHex = true;
+    volumeDependent->SetComponent(0, 0, true); // Set volume dependency to true
 }
 
 

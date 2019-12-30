@@ -40,7 +40,11 @@
 
 avtExpressionDataTreeIterator::avtExpressionDataTreeIterator()
 {
-    ;
+    volumeDependent = vtkBitArray::New();
+    volumeDependent->SetName("VolumeDependent");
+    volumeDependent->SetNumberOfComponents(1);
+    volumeDependent->SetNumberOfTuples(1);
+    volumeDependent->SetComponent(0, 0, false); // Default volume dependency to false
 }
 
 
@@ -275,6 +279,8 @@ avtExpressionDataTreeIterator::ExecuteData_VTK(avtDataRepresentation *in_dr)
             rv->GetPointData()->SetActiveVectors(outputVariableName);
         else if (vardim == 9)
             rv->GetPointData()->SetActiveTensors(outputVariableName);
+        
+        rv->GetPointData()->AddArray(this->volumeDependent);
     }
     else
     {
@@ -285,6 +291,8 @@ avtExpressionDataTreeIterator::ExecuteData_VTK(avtDataRepresentation *in_dr)
             rv->GetCellData()->SetActiveVectors(outputVariableName);
         else if (vardim == 9)
             rv->GetCellData()->SetActiveTensors(outputVariableName);
+        
+        rv->GetCellData()->AddArray(this->volumeDependent);
     }
 
     //
