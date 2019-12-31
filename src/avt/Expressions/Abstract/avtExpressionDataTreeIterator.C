@@ -36,6 +36,11 @@
 //  Programmer: Hank Childs
 //  Creation:   December 27, 2004
 //
+//  Modifications:
+//
+//    Eddie Rusu, Mon Dec 30 20:41:07 PST 2019
+//    Initialize the volumeDependent array. Default dependency to false.
+//
 // ****************************************************************************
 
 avtExpressionDataTreeIterator::avtExpressionDataTreeIterator()
