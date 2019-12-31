@@ -1712,7 +1712,10 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     }
     else
     {
-      varType = "Patch_Mesh";
+      // Get the mesh type.
+      varName = std::string(varname);
+      found = varName.find_last_of("/");
+      varType = varName.substr(found + 1);
     }
   }
   // Grid variables
@@ -1866,7 +1869,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     // The region we're going to ask uintah for (from plow to phigh-1)
     int plow[3], phigh[3];
     patchInfo.getBounds(plow, phigh, varType);
-    
+
     // For node based meshes add one if there is a neighbor patch.
     bool nodeCentered = (varType.find("NC") != std::string::npos);
     
@@ -1923,7 +1926,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
         std::string meshname = std::string(varname);
         found = meshname.find_last_of("/");
         meshname = meshname.substr(found + 1);
-        
+
         patchInfo.getBounds(plow, phigh, meshname);
       
         int *value;
@@ -1963,6 +1966,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       // Patch based data node and ranks.
       else if( strncmp(varname, "Nodes/", 6) == 0 ||
                strncmp(varname, "Ranks/", 6) == 0 ) {
+
         // Using the patch mesh
         if (strcmp(&(varname[6]), "Patch_Mesh") == 0 )
           gd->num = 1;
@@ -1975,7 +1979,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
           gd->num = ((phigh[0] - plow[0]) *
                      (phigh[1] - plow[1]) *
                      (phigh[2] - plow[2]));
-        
+
         gd->components = 1;
         gd->data = new double[gd->num * gd->components];
 
@@ -2036,8 +2040,6 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
                           varName, matlNo, timestate,
                           plow, phigh,
                           (nodeCentered ? 0 : loadExtraGeometry));
-
-      // visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getGridData");
 #endif
     }
 
