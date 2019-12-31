@@ -197,13 +197,6 @@ QvisIntegralCurveWindow::CreateWindowContents()
     topLayout->addWidget(propertyTabs);
 
     // ----------------------------------------------------------------------
-    // Source field  tab
-    // ----------------------------------------------------------------------
-    QWidget *sourceTab = new QWidget(central);
-    propertyTabs->addTab(sourceTab, tr("Source"));
-    CreateSourceTab(sourceTab);
-
-    // ----------------------------------------------------------------------
     // Integration tab
     // ----------------------------------------------------------------------
     QWidget *integrationTab = new QWidget(central);
@@ -226,10 +219,10 @@ QvisIntegralCurveWindow::CreateWindowContents()
 }
 
 // ****************************************************************************
-// Method: QvisIntegralCurveWindow::CreateSourceTab
+// Method: QvisIntegralCurveWindow::CreateIntegrationTab
 //
 // Purpose:
-//   Populates the source tab.
+//   Populates the integration tab.
 //
 // Programmer: Dave Pugmire
 // Creation:   Tue Dec 29 14:37:53 EST 2009
@@ -245,21 +238,16 @@ QvisIntegralCurveWindow::CreateWindowContents()
 // ****************************************************************************
 
 void
-QvisIntegralCurveWindow::CreateSourceTab(QWidget *pageSource)
+QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
 {
-    QVBoxLayout *sLayout = new QVBoxLayout(pageSource);
-
-    QGridLayout *mainLayout = new QGridLayout();
+    QGridLayout *mainLayout = new QGridLayout(pageIntegration);
     mainLayout->setMargin(5);
     mainLayout->setSpacing(10);
-
-    sLayout->addLayout(mainLayout);
-    sLayout->addStretch(1);
 
     // Create the source group box.
     QGroupBox *sourceGroup = new QGroupBox(central);
     sourceGroup->setTitle(tr("Source"));
-    mainLayout->addWidget(sourceGroup, 0, 0, 5, 2);
+    mainLayout->addWidget(sourceGroup, 0, 0, 4, 2);
 //    mainLayout->setStretchFactor(sourceGroup, 100);
     QGridLayout *sourceLayout = new QGridLayout(sourceGroup);
     sourceLayout->setMargin(5);
@@ -283,7 +271,7 @@ QvisIntegralCurveWindow::CreateSourceTab(QWidget *pageSource)
 
     // Create the source geometry subgroup
     QGroupBox *geometryGroup = new QGroupBox(sourceGroup);
-    sourceLayout->addWidget(geometryGroup, 1, 0, 1, 3);
+    sourceLayout->addWidget(geometryGroup, 1, 0, 1, 4);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
     geometryLayout->setMargin(5);
@@ -303,7 +291,7 @@ QvisIntegralCurveWindow::CreateSourceTab(QWidget *pageSource)
     //Point list.
     gRow = 0;
     pointList = new QListWidget(sourceGroup);
-    geometryLayout->addWidget(pointList, gRow, 1, 4, 1);
+    geometryLayout->addWidget(pointList, gRow, 0, 2, 1);
     connect(pointList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(pointListDoubleClicked(QListWidgetItem*)));
     connect(pointList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(pointListClicked(QListWidgetItem*)));
     connect(pointList, SIGNAL(currentTextChanged(const QString&)), this, SLOT(textChanged(QString)));
@@ -318,10 +306,10 @@ QvisIntegralCurveWindow::CreateSourceTab(QWidget *pageSource)
     connect(pointListDelAllPoints, SIGNAL(clicked()), this, SLOT(deletePoints()));
     connect(pointListReadPoints, SIGNAL(clicked()), this, SLOT(readPoints()));
 
-    geometryLayout->addWidget(pointListAddPoint, gRow++, 0);
-    geometryLayout->addWidget(pointListDelPoint, gRow++, 0);
-    geometryLayout->addWidget(pointListDelAllPoints, gRow++, 0);
-    geometryLayout->addWidget(pointListReadPoints, gRow++, 0);
+    geometryLayout->addWidget(pointListAddPoint,     gRow,   2);
+    geometryLayout->addWidget(pointListReadPoints,   gRow++, 3);
+    geometryLayout->addWidget(pointListDelPoint,     gRow,   2);
+    geometryLayout->addWidget(pointListDelAllPoints, gRow++, 3);
 
     // Create the widgets that specify a line source.
     gRow = 0;
@@ -331,15 +319,15 @@ QvisIntegralCurveWindow::CreateSourceTab(QWidget *pageSource)
     lineStartLabel = new QLabel(tr("Start"), sourceGroup);
     lineStartLabel->setBuddy(lineStart);
     geometryLayout->addWidget(lineStartLabel, gRow, 0);
-    geometryLayout->addWidget(lineStart, gRow++, 1);
+    geometryLayout->addWidget(lineStart, gRow, 1);
 
     lineEnd = new QLineEdit(sourceGroup);
     connect(lineEnd, SIGNAL(returnPressed()),
             this, SLOT(lineEndProcessText()));
     lineEndLabel = new QLabel(tr("End"), sourceGroup);
     lineEndLabel->setBuddy(lineEnd);
-    geometryLayout->addWidget(lineEndLabel, gRow, 0);
-    geometryLayout->addWidget(lineEnd, gRow++, 1);
+    geometryLayout->addWidget(lineEndLabel, gRow, 2);
+    geometryLayout->addWidget(lineEnd, gRow++, 3);
 
     // Create the widgets that specify a plane source.
     gRow = 0;
@@ -357,31 +345,32 @@ QvisIntegralCurveWindow::CreateSourceTab(QWidget *pageSource)
     planeNormalLabel = new QLabel(tr("Normal"), sourceGroup);
     planeNormalLabel->setBuddy(planeNormal);
     geometryLayout->addWidget(planeNormalLabel,gRow,0);
-    geometryLayout->addWidget(planeNormal, gRow++,1);
+    geometryLayout->addWidget(planeNormal, gRow,1);
 
     planeUpAxis = new QLineEdit(sourceGroup);
     connect(planeUpAxis, SIGNAL(returnPressed()),
             this, SLOT(planeUpAxisProcessText()));
     planeUpAxisLabel = new QLabel(tr("Up axis"), sourceGroup);
     planeUpAxisLabel->setBuddy(planeUpAxis);
-    geometryLayout->addWidget(planeUpAxisLabel,gRow,0);
-    geometryLayout->addWidget(planeUpAxis, gRow++,1);
+    geometryLayout->addWidget(planeUpAxisLabel,gRow,2);
+    geometryLayout->addWidget(planeUpAxis, gRow++,3);
 
     // Create the widgets that specify a sphere source.
+    gRow = 0;
     sphereOrigin = new QLineEdit(sourceGroup);
     connect(sphereOrigin, SIGNAL(returnPressed()),
             this, SLOT(sphereOriginProcessText()));
     sphereOriginLabel = new QLabel(tr("Origin"), sourceGroup);
     sphereOriginLabel->setBuddy(sphereOrigin);
     geometryLayout->addWidget(sphereOriginLabel,gRow,0);
-    geometryLayout->addWidget(sphereOrigin, gRow++,1);
+    geometryLayout->addWidget(sphereOrigin, gRow,1);
 
     radius = new QLineEdit(sourceGroup);
     connect(radius, SIGNAL(returnPressed()), this, SLOT(radiusProcessText()));
     radiusLabel = new QLabel(tr("Radius"), sourceGroup);
     radiusLabel->setBuddy(radius);
-    geometryLayout->addWidget(radiusLabel,gRow,0);
-    geometryLayout->addWidget(radius, gRow++,1);
+    geometryLayout->addWidget(radiusLabel,gRow,2);
+    geometryLayout->addWidget(radius, gRow++,3);
 
     // Create the widgets that specify a box source
     gRow = 0;
@@ -396,23 +385,23 @@ QvisIntegralCurveWindow::CreateSourceTab(QWidget *pageSource)
     boxExtentsLabel[0] = new QLabel(tr("X Extents"), sourceGroup);
     boxExtentsLabel[0]->setBuddy(boxExtents[0]);
     geometryLayout->addWidget(boxExtentsLabel[0], gRow, 0);
-    geometryLayout->addWidget(boxExtents[0], gRow++, 1);
+    geometryLayout->addWidget(boxExtents[0], gRow, 1);
 
     boxExtents[1] = new QLineEdit(sourceGroup);
     connect(boxExtents[1], SIGNAL(returnPressed()),
             this, SLOT(boxExtentsProcessText()));
     boxExtentsLabel[1] = new QLabel(tr("Y Extents"), sourceGroup);
     boxExtentsLabel[1]->setBuddy(boxExtents[1]);
-    geometryLayout->addWidget(boxExtentsLabel[1], gRow, 0);
-    geometryLayout->addWidget(boxExtents[1], gRow++, 1);
+    geometryLayout->addWidget(boxExtentsLabel[1], gRow, 2);
+    geometryLayout->addWidget(boxExtents[1], gRow, 3);
 
     boxExtents[2] = new QLineEdit(sourceGroup);
     connect(boxExtents[2], SIGNAL(returnPressed()),
             this, SLOT(boxExtentsProcessText()));
     boxExtentsLabel[2] = new QLabel(tr("Z Extents"), sourceGroup);
     boxExtentsLabel[2]->setBuddy(boxExtents[2]);
-    geometryLayout->addWidget(boxExtentsLabel[2], gRow, 0);
-    geometryLayout->addWidget(boxExtents[2], gRow++, 1);
+    geometryLayout->addWidget(boxExtentsLabel[2], gRow, 4);
+    geometryLayout->addWidget(boxExtents[2], gRow++, 5);
 
     // FieldData Point list.
     gRow = 0;
@@ -428,7 +417,7 @@ QvisIntegralCurveWindow::CreateSourceTab(QWidget *pageSource)
     // FieldData Point list.
     gRow = 0;
     fieldData = new QListWidget(sourceGroup);
-    geometryLayout->addWidget(fieldData, gRow, 0, 4, 1);
+    geometryLayout->addWidget(fieldData, gRow, 0, 2, 1);
 
     fieldDataCopyPoints = new QPushButton(tr("Copy to point list"), sourceGroup);
     connect(fieldDataCopyPoints, SIGNAL(clicked()), this, SLOT(copyPoints()));
@@ -579,39 +568,10 @@ QvisIntegralCurveWindow::CreateSourceTab(QWidget *pageSource)
     fieldLayout->addWidget(velocitySourceLabel, 1, 2);
     fieldLayout->addWidget(velocitySource, 1, 3);
 
-
     // Create the node centering
     // forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
     // connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
     // fieldLayout->addWidget(forceNodal, 2, 0);
-}
-
-
-// ****************************************************************************
-// Method: QvisIntegralCurveWindow::CreateIntegrationTab
-//
-// Purpose:
-//   Populates the integration tab.
-//
-// Programmer: Dave Pugmire
-// Creation:   Tue Dec 29 14:37:53 EST 2009
-//
-// Modifications:
-//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
-//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
-//   signal will only emit when 'enter' is pressed or spinbox loses focus.
-//
-//   Kathleen Biagas, Fri Nov  8 09:15:53 PST 2019
-//   Source and field widgets moved to Source tab to reduce window height.
-//
-// ****************************************************************************
-
-void
-QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
-{
-    QGridLayout *mainLayout = new QGridLayout(pageIntegration);
-    mainLayout->setMargin(5);
-    mainLayout->setSpacing(10);
 
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);
