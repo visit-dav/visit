@@ -160,6 +160,9 @@ avtExpressionDataTreeIterator::~avtExpressionDataTreeIterator()
 //    Eric Brugger, Wed Aug 20 16:25:34 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Eddie Rusu, Mon Dec 30 20:41:07 PST 2019
+//    Add the volumeDependent tracking array to the vtkDataSet.
+//
 // ****************************************************************************
 
 avtDataRepresentation *

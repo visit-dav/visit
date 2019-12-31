@@ -424,6 +424,9 @@ avtSummationQuery::PostExecute(void)
 //    Cyrus Harrison, Mon Aug 16 15:34:12 PDT 2010
 //    Added support for the sum of each component of an array variable.
 //
+//    Eddie Rusu, Mon Dec 30 20:41:07 PST 2019
+//    Added extra checking for volume dependency.
+//
 // ****************************************************************************
 
 void
