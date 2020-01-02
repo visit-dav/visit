@@ -85,103 +85,6 @@ QvisLimitCycleWindow::~QvisLimitCycleWindow()
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
-// Modifications:
-//   Brad Whitlock, Wed Dec 22 13:05:04 PST 2004
-//   I added support for coloring by vorticity.
-//
-//   Hank Childs, Sat Mar  3 09:11:44 PST 2007
-//   Added useWholeBox.
-//
-//   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
-//   Add integral curve direction option.
-//
-//   Brad Whitlock, Wed Apr 23 11:46:59 PDT 2008
-//   Added tr()'s
-//
-//   Dave Pugmire, Mon Aug 4 2:49:38 EDT 2008
-//   Added termination, algorithm and integration options.
-//
-//   Brad Whitlock, Wed Aug  6 10:20:49 PDT 2008
-//   Qt 4.
-//
-//   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
-//   Add accurate distance calculate option.
-//
-//   Dave Pugmire, Wed Aug 13 12:56:11 EST 2008
-//   Changed label text for integral curve algorithms.
-//
-//   Dave Pugmire, Tue Aug 19 17:18:03 EST 2008
-//   Removed the accurate distance calculation option.
-//
-//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
-//   Add new coloring methods, length, time and ID.
-//
-//   Sean Ahern, Wed Sep  3 16:19:27 EDT 2008
-//   Tweaked the layout to make it a bit more consistent.
-//
-//   Dave Pugmire, Tue Oct 7 08:17:22 EDT 2008
-//   Changed 'Termination Criteria' to 'Termination Criterion'
-//
-//   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
-//
-//   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
-//   Added number of steps as a termination criterion.
-//
-//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//   Add pathline GUI.
-//
-//   Hank Childs, Sat May  2 22:14:38 PDT 2009
-//   Add support for point lists.
-//
-//   Dave Pugmire, Wed Jun 10 16:26:25 EDT 2009
-//   Add color by variable.
-//
-//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
-//   Add custom renderer and lots of appearance options to the integral curves plots.
-//
-//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
-//   Change layout of window for 2.0 interface changes.
-//
-//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
-//   New seed sources.
-//
-//   Dave Pugmire, Mon Jul 12 15:34:29 EDT 2010
-//   Rename Exterior to Boundary.
-//
-//   Hank Childs, Wed Sep 29 20:22:36 PDT 2010
-//   Add label and check box for whether we should restrict the maximum
-//   time step length.
-//
-//   Hank Childs, Fri Oct  1 21:13:56 PDT 2010
-//   Add size type for absTol.
-//
-//   Hank Childs, Oct  8 23:30:27 PDT 2010
-//   Set up controls for multiple termination criteria.
-//
-//   Dave Pugmire, Tue Oct 19 13:52:00 EDT 2010
-//   Add a delete all points button for the point list seed option.
-//
-//   Hank Childs, Fri Oct 22 09:22:18 PDT 2010
-//   Rename Adams-Bashforth's "Maximum step length" to "Step length" since
-//   it always takes the same size step.
-//
-//   Hank Childs, Sat Oct 30 11:25:04 PDT 2010
-//   Initialize sample density.  Otherwise, atts set from the CLI gets overset,
-//   because we set the density based on the value of the text field, and we
-//   get a signal that causes us to use the default value before we ever set
-//   the field with the correct value.
-//
-//   Hank Childs, Sun Dec  5 09:52:44 PST 2010
-//   Add support for disabling warnings for stiffness and critical points.
-//   Also add description of tolerances.
-//
-//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
-//   Add named selections as a seed source.
-//
-//   Kathleen Biagas, Fri Nov  8 10:05:16 PST 2019
-//   Add source tab for source and field widgets to reduce window height.
-//
 // ****************************************************************************
 
 void
@@ -189,13 +92,6 @@ QvisLimitCycleWindow::CreateWindowContents()
 {
     QTabWidget *propertyTabs = new QTabWidget();
     topLayout->addWidget(propertyTabs);
-
-    // ----------------------------------------------------------------------
-    // SourceField tab
-    // ----------------------------------------------------------------------
-    QWidget *sourceTab = new QWidget();
-    propertyTabs->addTab(sourceTab, tr("Source"));
-    CreateSourceTab(sourceTab);
 
     // ----------------------------------------------------------------------
     // Integration tab
@@ -233,22 +129,14 @@ QvisLimitCycleWindow::CreateWindowContents()
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
-//   Kathleen Biagas, Fri Nov  8 09:03:19 PST 2019
-//   Content moved from CreateIntegration tab, to reduce window height.
-//
 // ****************************************************************************
 
 void
-QvisLimitCycleWindow::CreateSourceTab(QWidget *pageSource)
+QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
 {
-    QVBoxLayout *sLayout = new QVBoxLayout(pageSource);
-
-    QGridLayout *mainLayout = new QGridLayout();
+    QGridLayout *mainLayout = new QGridLayout(pageIntegration);
     mainLayout->setMargin(5);
     mainLayout->setSpacing(10);
-
-    sLayout->addLayout(mainLayout);
-    sLayout->addStretch(1);
 
     // Create the source group box.
     QGroupBox *sourceGroup = new QGroupBox(central);
@@ -263,14 +151,14 @@ QvisLimitCycleWindow::CreateSourceTab(QWidget *pageSource)
     sourceLayout->addWidget(new QLabel(tr("Source type"), sourceGroup), 0, 0);
     sourceType = new QComboBox(sourceGroup);
     sourceType->addItem(tr("Line"));
-//    sourceType->addItem(tr("Plane"));
+    // sourceType->addItem(tr("Plane"));
     connect(sourceType, SIGNAL(activated(int)),
             this, SLOT(sourceTypeChanged(int)));
     sourceLayout->addWidget(sourceType, 0, 1, 1, 2);
 
     // Create the source geometry subgroup
     QGroupBox *geometryGroup = new QGroupBox(sourceGroup);
-    sourceLayout->addWidget(geometryGroup, 1, 0, 4, 3);
+    sourceLayout->addWidget(geometryGroup, 1, 0, 1, 6);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
     geometryLayout->setMargin(5);
@@ -287,14 +175,14 @@ QvisLimitCycleWindow::CreateSourceTab(QWidget *pageSource)
     lineStartLabel->setBuddy(lineStart);
     geometryLayout->addWidget(lineStartLabel, gRow, 0);
     geometryLayout->addWidget(lineStart, gRow, 1);
-    ++gRow;
+
     lineEnd = new QLineEdit(sourceGroup);
     connect(lineEnd, SIGNAL(returnPressed()),
             this, SLOT(lineEndProcessText()));
     lineEndLabel = new QLabel(tr("End"), sourceGroup);
     lineEndLabel->setBuddy(lineEnd);
-    geometryLayout->addWidget(lineEndLabel, gRow, 0);
-    geometryLayout->addWidget(lineEnd, gRow, 1);
+    geometryLayout->addWidget(lineEndLabel, gRow, 2);
+    geometryLayout->addWidget(lineEnd, gRow, 3);
     ++gRow;
 
 
@@ -306,24 +194,22 @@ QvisLimitCycleWindow::CreateSourceTab(QWidget *pageSource)
     planeOriginLabel->setBuddy(planeOrigin);
     geometryLayout->addWidget(planeOriginLabel,gRow,0);
     geometryLayout->addWidget(planeOrigin, gRow,1);
-    ++gRow;
 
     planeNormal = new QLineEdit(sourceGroup);
     connect(planeNormal, SIGNAL(returnPressed()),
             this, SLOT(planeNormalProcessText()));
     planeNormalLabel = new QLabel(tr("Normal"), sourceGroup);
     planeNormalLabel->setBuddy(planeNormal);
-    geometryLayout->addWidget(planeNormalLabel,gRow,0);
-    geometryLayout->addWidget(planeNormal, gRow,1);
-    ++gRow;
+    geometryLayout->addWidget(planeNormalLabel,gRow,2);
+    geometryLayout->addWidget(planeNormal, gRow,3);
 
     planeUpAxis = new QLineEdit(sourceGroup);
     connect(planeUpAxis, SIGNAL(returnPressed()),
             this, SLOT(planeUpAxisProcessText()));
     planeUpAxisLabel = new QLabel(tr("Up axis"), sourceGroup);
     planeUpAxisLabel->setBuddy(planeUpAxis);
-    geometryLayout->addWidget(planeUpAxisLabel,gRow,0);
-    geometryLayout->addWidget(planeUpAxis, gRow,1);
+    geometryLayout->addWidget(planeUpAxisLabel,gRow,4);
+    geometryLayout->addWidget(planeUpAxis, gRow,5);
     ++gRow;
 
 
@@ -463,34 +349,6 @@ QvisLimitCycleWindow::CreateSourceTab(QWidget *pageSource)
     // forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
     // connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
     // fieldLayout->addWidget(forceNodal, 2, 0);
-}
-
-
-// ****************************************************************************
-// Method: QvisLimitCycleWindow::CreateIntegrationTab
-//
-// Purpose:
-//   Populates the appearance tab.
-//
-// Programmer: Dave Pugmire
-// Creation:   Tue Dec 29 14:37:53 EST 2009
-//
-// Modifications:
-//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
-//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
-//   signal will only emit when 'enter' is pressed or spinbox loses focus.
-//
-//   Kathleen Biagas, Fri Nov  8 09:04:47 PST 2019
-//   Source and field widgets moved to Source tab, to reduce window height.
-//
-// ****************************************************************************
-
-void
-QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
-{
-    QGridLayout *mainLayout = new QGridLayout(pageIntegration);
-    mainLayout->setMargin(5);
-    mainLayout->setSpacing(10);
 
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);

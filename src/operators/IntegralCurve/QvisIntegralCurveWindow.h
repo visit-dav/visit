@@ -119,9 +119,6 @@ class SelectionList;
 //   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
 //   Add named selections as a seed source.
 //
-//   Kathleen Biagas, Fri Nov  8 09:13:02 PST 2019
-//   Added CreateSourceTab, a new tab to reduce window height.
-//
 // ****************************************************************************
 
 class QvisIntegralCurveWindow : public QvisOperatorWindow
@@ -138,7 +135,6 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     virtual void CreateWindowContents();
 
   protected:
-    void CreateSourceTab(QWidget *);
     void CreateIntegrationTab(QWidget *);
     void CreateAppearanceTab(QWidget *);
     void CreateAdvancedTab(QWidget *);
