@@ -28,8 +28,11 @@ LagrangianAttributes *LagrangianViewerEnginePluginInfo::defaultAtts = NULL;
 void
 LagrangianViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    LagrangianViewerEnginePluginInfo::clientAtts  = new LagrangianAttributes;
-    LagrangianViewerEnginePluginInfo::defaultAtts = new LagrangianAttributes;
+    if (LagrangianViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        LagrangianViewerEnginePluginInfo::clientAtts  = new LagrangianAttributes;
+        LagrangianViewerEnginePluginInfo::defaultAtts = new LagrangianAttributes;
+    }
 }
 
 // ****************************************************************************

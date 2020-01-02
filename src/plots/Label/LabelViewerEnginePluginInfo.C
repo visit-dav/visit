@@ -29,8 +29,11 @@ LabelAttributes *LabelViewerEnginePluginInfo::defaultAtts = NULL;
 void
 LabelViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    LabelViewerEnginePluginInfo::clientAtts  = new LabelAttributes;
-    LabelViewerEnginePluginInfo::defaultAtts = new LabelAttributes;
+    if (LabelViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        LabelViewerEnginePluginInfo::clientAtts  = new LabelAttributes;
+        LabelViewerEnginePluginInfo::defaultAtts = new LabelAttributes;
+    }
 }
 
 // ****************************************************************************

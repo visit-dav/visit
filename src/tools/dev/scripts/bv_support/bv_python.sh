@@ -375,7 +375,7 @@ function build_python
         PYTHON_SHARED="--enable-shared"
         #
         # python's --enable-shared configure flag doesn't link
-        # the exes it builds correclty when installed to a non standard
+        # the exes it builds correctly when installed to a non standard
         # prefix. To resolve this we need to add a rpath linker flags.
         #
         mkdir -p ${PYTHON_PREFIX_DIR}/lib/
@@ -894,11 +894,18 @@ function build_python3
         cxxFlags=`echo $CXXFLAGS} ${CXX_OPT_FLAGS} | sed "s/-qpic/-fPIC/g"`
     fi
     PYTHON3_OPT="$cFlags"
+    PYTHON3_CFG=""
     PYTHON3_LDFLAGS=""
     PYTHON3_CPPFLAGS=""
     PYTHON3_PREFIX_DIR="$VISITDIR/python/$PYTHON3_VERSION/$VISITARCH"
     PYTHON3_LDFLAGS="${PYTHON3_LDFLAGS} -L${PY_ZLIB_LIB}"
     PYTHON3_CPPFLAGS="${PYTHON3_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
+
+    # python 3.7 uses the --with-openssl flag, instead of flag injection
+    if [[ "$DO_OPENSSL" == "yes" ]]; then
+        PYTHON3_CFG="${PYTHON3_CFG} --with-openssl=$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/"
+    fi
+
 
     if [[ "$OPSYS" == "AIX" ]]; then
         info "Configuring Python3 (AIX): ./configure OPT=\"$PYTHON3_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
@@ -913,6 +920,7 @@ function build_python3
                     LDFLAGS="$PYTHON3_LDFLAGS" \
                     CPPFLAGS="$PYTHON3_CPPFLAGS" \
                     ${PYTHON3_SHARED} \
+                    ${PYTHON3_CFG} \
                     --prefix="$PYTHON3_PREFIX_DIR" --disable-ipv6
     fi
 
@@ -990,6 +998,16 @@ function build_sphinx
             return 1
         fi
     fi
+
+    # patch
+    SED_CMD="sed -i "
+    if [[ "$OPSYS" == "Darwin" ]]; then
+                SED_CMD="sed -i \"\" "
+    fi
+    pushd $SPHINX_BUILD_DIR > /dev/null
+    ${SED_CMD} "s/docutils>=0.12/docutils<0.16,>=0.12/" ./Sphinx.egg-info/requires.txt
+    ${SED_CMD} "s/docutils>=0.12/docutils<0.16,>=0.12/" ./setup.py
+    popd > /dev/null
 
     PY3HOME="${VISITDIR}/python/${PYTHON3_VERSION}/${VISITARCH}"
     # install

@@ -28,8 +28,11 @@ IsovolumeAttributes *IsovolumeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 IsovolumeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    IsovolumeViewerEnginePluginInfo::clientAtts  = new IsovolumeAttributes;
-    IsovolumeViewerEnginePluginInfo::defaultAtts = new IsovolumeAttributes;
+    if (IsovolumeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        IsovolumeViewerEnginePluginInfo::clientAtts  = new IsovolumeAttributes;
+        IsovolumeViewerEnginePluginInfo::defaultAtts = new IsovolumeAttributes;
+    }
 }
 
 // ****************************************************************************

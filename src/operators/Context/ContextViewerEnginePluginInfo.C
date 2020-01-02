@@ -28,8 +28,11 @@ ContextAttributes *ContextViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ContextViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ContextViewerEnginePluginInfo::clientAtts  = new ContextAttributes;
-    ContextViewerEnginePluginInfo::defaultAtts = new ContextAttributes;
+    if (ContextViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ContextViewerEnginePluginInfo::clientAtts  = new ContextAttributes;
+        ContextViewerEnginePluginInfo::defaultAtts = new ContextAttributes;
+    }
 }
 
 // ****************************************************************************

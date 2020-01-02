@@ -29,8 +29,11 @@ TensorAttributes *TensorViewerEnginePluginInfo::defaultAtts = NULL;
 void
 TensorViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    TensorViewerEnginePluginInfo::clientAtts  = new TensorAttributes;
-    TensorViewerEnginePluginInfo::defaultAtts = new TensorAttributes;
+    if (TensorViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        TensorViewerEnginePluginInfo::clientAtts  = new TensorAttributes;
+        TensorViewerEnginePluginInfo::defaultAtts = new TensorAttributes;
+    }
 }
 
 // ****************************************************************************
