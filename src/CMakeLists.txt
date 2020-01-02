@@ -424,6 +424,10 @@
 #    Alister Maguire, Thu Nov  7 16:22:47 PST 2019
 #    Build the sphinx documentation.
 #
+#    Kathleen Biagas, Wed Dec 18 08:51:04 PST 2019
+#    Remove VISIT_ZLIB as we no longer have an internal (third_party_builtin)
+#    zlib.
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -709,7 +713,6 @@ ENDIF(VISIT_DDT)
 
 OPTION(VISIT_BUILD_ALL_PLUGINS     "Build all of VisIt's plugins." OFF)
 OPTION(VISIT_BUILD_MINIMAL_PLUGINS "Build a minimal set of VisIt's plugins." OFF)
-OPTION(VISIT_ZLIB "Use VisIt's internal libz" OFF)
 OPTION(VISIT_JAVA "Build the VisIt Java client interface" OFF)
 OPTION(VISIT_PARADIS "Build the VisIt paraDIS client interface" ON)
 OPTION(VISIT_SERVER_COMPONENTS_ONLY "Build only vcl, mdserver, engine and their plugins" OFF)
