@@ -454,18 +454,18 @@ function verify_checksum_by_lookup
 #   I made it use the anonymous svn site as the fallback download site        #
 #   instead of llnl's web site.                                               #
 #                                                                             #
-#   Eric Brugger, Fri Feb  1 14:56:58 PST 2019
-#   I modified it to work post git transition.
-#
+#   Eric Brugger, Fri Feb  1 14:56:58 PST 2019                                #
+#   I modified it to work post git transition.                                #
+#                                                                             #
+#   Alister Maguire, Thu Jan  2 11:45:44 MST 2020                             #
+#   Added download attempt for links that exclude the file name.              #
+#                                                                             #
 # *************************************************************************** #
 
 function download_file
 {
     # $1 is the file name to download
     # $2...$* [OPTIONAL] list of sites to obtain the file from
-
-    #FIXME: we need a way of pulling down from a url alone (no file).
-    #       Option: if $1 == -1, just pull the url.
 
     typeset dfile=$1
     info "Downloading $dfile . . ."
@@ -503,6 +503,12 @@ function download_file
                 try_download_file $site/$dfile $dfile
                 if [[ $? == 0 ]] ; then
                     return 0
+                else
+                    # Some download links exclude the file name.
+                    try_download_file_from_shortened_url $site $dfile
+                    if [[ $? == 0 ]] ; then
+                        return 0
+                    fi
                 fi
             fi
         done
