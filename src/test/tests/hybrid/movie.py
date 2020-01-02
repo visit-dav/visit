@@ -41,7 +41,7 @@ def GetFiles(prefix):
     for f in names:
         s = os.stat(f)
         sizes = sizes + [s.st_size]
-    return zip(names, sizes)
+    return list(zip(names, sizes))
 
 def RemoveFiles(files):
     for f in files:
@@ -151,7 +151,7 @@ def test012():
 
         # Look at the mpeg movie file size.
         files = GetFiles("test_0")
-        print files
+        print(files)
         txt = ""
         for f in files:
             if f[0] == "test_0.mpg":
@@ -281,7 +281,7 @@ def test34():
 
         # Get the frame files
         files = GetFiles("test4_")[1:]
-        print files
+        print(files)
         txt = string.join([x[0] for x in files], "\n")
         TestText("movie_4_00", txt)
 
@@ -301,9 +301,9 @@ def test5():
     TestSection("Template movie")
 
     f = open("shortwave.visit", "wt")
-    for i in xrange(0,71,5):
+    for i in range(0,71,5):
         line = silo_data_path("wave%04d.silo" % (i*10))
-        print line
+        print(line)
         f.write("%s\n" % line)
     f.close()
 
@@ -332,7 +332,7 @@ def test5():
             #
             bmp = f[0]
             png = f[0][:-4] + ".png"
-            print "convert %s %s" % (bmp, png)
+            print("convert %s %s" % (bmp, png))
             im1 = Image.open(bmp)
             im1.save(png, "png")
             img = img + [(png,0)]

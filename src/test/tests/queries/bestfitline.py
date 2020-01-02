@@ -71,7 +71,7 @@ def removeFiles(ds):
         try:
             os.unlink(d)
         except:
-            print "Could not remove ", d
+            print("Could not remove ", d)
 
 #
 # Test best fit line of known lines from Curve plots

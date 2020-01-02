@@ -424,6 +424,10 @@
 #    Alister Maguire, Thu Nov  7 16:22:47 PST 2019
 #    Build the sphinx documentation.
 #
+#    Kathleen Biagas, Wed Dec 18 08:51:04 PST 2019
+#    Remove VISIT_ZLIB as we no longer have an internal (third_party_builtin)
+#    zlib.
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -709,7 +713,6 @@ ENDIF(VISIT_DDT)
 
 OPTION(VISIT_BUILD_ALL_PLUGINS     "Build all of VisIt's plugins." OFF)
 OPTION(VISIT_BUILD_MINIMAL_PLUGINS "Build a minimal set of VisIt's plugins." OFF)
-OPTION(VISIT_ZLIB "Use VisIt's internal libz" OFF)
 OPTION(VISIT_JAVA "Build the VisIt Java client interface" OFF)
 OPTION(VISIT_PARADIS "Build the VisIt paraDIS client interface" ON)
 OPTION(VISIT_SERVER_COMPONENTS_ONLY "Build only vcl, mdserver, engine and their plugins" OFF)
@@ -741,6 +744,7 @@ IF(WIN32)
   ENDIF(VISIT_WINDOWS_APPLICATION)
 ENDIF(WIN32)
 
+OPTION(VISIT_CREATE_XMLTOOLS_GEN_TARGETS "Create cmake targets to run xmltools code gen targets" ON)
 OPTION(VISIT_INSTALL_AS_BETA "Install as beta (symlink beta instead of current to installed version)." OFF)
 OPTION(VISIT_MPICH_INSTALL "Install MPICH into VisIt binary distribution" OFF)
 IF(APPLE OR WIN32)
@@ -2028,9 +2032,9 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ADD_SUBDIRECTORY(visitpy)
         ENDIF(NOT VISIT_STATIC)
     ENDIF(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND)
-    IF(VISIT_JAVA)
-        ADD_SUBDIRECTORY(java)
-    ENDIF(VISIT_JAVA)
+    # always add java subdir, so code gen targets can be active even 
+    # if java is not enabled
+    ADD_SUBDIRECTORY(java)
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 

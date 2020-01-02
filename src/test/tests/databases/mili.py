@@ -16,6 +16,9 @@
 #    Added a test that handles .mili files containing integers in 
 #    scientific notation. 
 #
+#    Alister Maguire, Thu Dec 19 13:40:07 PST 2019
+#    Added a test to make sure correct subrecord offsets are used.
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Mili")
 single_domain_path = data_path("mili_test_data/single_proc/")
@@ -259,6 +262,22 @@ def TestSciNotation():
     DeleteAllPlots()
 
 
+def TestMultiSubrecRead():
+    #
+    # This tests a bug fix that occurred when loading variables
+    # that span several subrecords at different offsets.
+    #
+    OpenDatabase(single_domain_path + "/test4_0.15.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+
+    AddPlot("Pseudocolor", "Primal/brick/stress/sx")
+    DrawPlots()
+    Test("mili_subrec_offset")
+    DeleteAllPlots()
+
+
 def Main():
     TestComponentVis()    
     TestNonSharedElementSets()
@@ -273,6 +292,7 @@ def Main():
     TestStaticNodes()
     TestLabels()
     TestSciNotation()
+    TestMultiSubrecRead()
 
 Main()
 Exit()

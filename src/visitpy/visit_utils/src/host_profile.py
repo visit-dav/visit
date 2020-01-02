@@ -21,7 +21,7 @@ import xml.etree.ElementTree as et
 from os.path import join as pjoin
 
 
-from common import VisItException, hostname, require_visit
+from .common import VisItException, hostname, require_visit
 
 
 try:
@@ -40,7 +40,7 @@ class HostProfile(object):
         self.partitions = partitions
         self.defaults = defaults
     def launch_method(self,part):
-        if not self.partitions.has_key(part):
+        if part not in self.partitions:
             raise VisItException("Unsupported partition '%s' on host %s" % (part,self.name))
         return self.partitions[part]
     @classmethod
@@ -66,7 +66,7 @@ class HostProfile(object):
                     if nnset:
                         nn  = cls.__fetch_xml_field(lp,"numNodes")
                         ppn = nprocs / nn
-                if par and len(defs.keys()) == 0:
+                if par and len(list(defs.keys())) == 0:
                     nnset =  cls.__fetch_xml_field(lp,"numNodesSet")
                     nn    = cls.__fetch_xml_field(lp,"numNodes")
                     defs["nprocs"] = nprocs
@@ -103,7 +103,7 @@ class HostProfile(object):
 
 def hosts(vdir=None,legacy=False,reload=False):
     global __hosts
-    if len(__hosts.keys()) == 0 or reload:
+    if len(list(__hosts.keys())) == 0 or reload:
         __hosts.clear()
         if legacy:
             llnl_open, llnl_closed = legacy_vutils_engine_profiles()
@@ -111,7 +111,7 @@ def hosts(vdir=None,legacy=False,reload=False):
             __hosts.update(llnl_closed)
         else:
             if vdir is None:
-                if not os.environ.has_key("VISITHOME"):
+                if "VISITHOME" not in os.environ:
                     raise VisItException("hosts() requires VISITHOME env var or explicit vdir argument")
                 vdir = os.environ["VISITHOME"]
             hpf_files = glob.glob(pjoin(vdir,".visit","hosts","*.xml"))
@@ -120,5 +120,5 @@ def hosts(vdir=None,legacy=False,reload=False):
                     hpf = HostProfile.load(hpf_file)
                     __hosts[hpf.name] = hpf
                 except:
-                    print "[warning: Could not load host profile: '%s']" % hpf_file
+                    print("[warning: Could not load host profile: '%s']" % hpf_file)
     return __hosts

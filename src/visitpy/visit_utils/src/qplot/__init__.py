@@ -10,5 +10,5 @@
      qplot is Qt based offscreen Curve Rendering lib.
 """
 
-from scene import *
-from plots import *
+from .scene import *
+from .plots import *

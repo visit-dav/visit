@@ -297,8 +297,8 @@ class PlotSim(Simulation):
 def main():
     try:
         sim = PlotSim(VISIT_LIBPATH, VISIT_HOME)
-    except ImportError, e:
-        print >>sys.stderr, "%s\n\nVISIT_LIBPATH is '%s', is this correct?" % (e, VISIT_LIBPATH)
+    except ImportError as e:
+        print("%s\n\nVISIT_LIBPATH is '%s', is this correct?" % (e, VISIT_LIBPATH), file=sys.stderr)
         sys.exit(1)
     # The second pair of arguments are passed to initialize() as kwargs.
     sim.Initialize("updateplots", "LLNL updateplots... reloaded",

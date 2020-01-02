@@ -217,7 +217,7 @@ def PartitionByBlockKeyField(key):
 
 if __name__ == "__main__":
   if len(sys.argv) != 5:
-    print >> sys.stderr, "Usage: WireFrame <dbfile> <time-spec> <mesh> <keyBase>"
+    print("Usage: WireFrame <dbfile> <time-spec> <mesh> <keyBase>", file=sys.stderr)
     exit(-1)
 
   sc = SparkContext()
@@ -278,7 +278,7 @@ if __name__ == "__main__":
   # We really should 'insert' this data into the HDFS database but
   # for now, we'll just write external files from the master to cwd
   #
-  print "WireFrame yielded %d edges and %d nodes"%(len(collectedEdges),len(collectedCoords))
+  print("WireFrame yielded %d edges and %d nodes"%(len(collectedEdges),len(collectedCoords)))
   f = os.popen("bzip2 > WireFrame_%s_coords.txt.bz2"%sys.argv[3],"w")
   for c in collectedCoords:
       f.write("%s,0,%g,%g,%g\n"%(c[0],c[1][0],c[1][1],c[1][2]))

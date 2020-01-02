@@ -20,6 +20,10 @@ def check_to_keep(path):
         res = True
     elif path.count("run_build_visit.sh") > 0:
         res = True
+    elif path.count("test_visit.py") > 0:
+        res = True
+    elif path.count("build_test_visit.sh") > 0:
+        res = True
     elif path.endswith(".cmake"):
         res = True
     return res

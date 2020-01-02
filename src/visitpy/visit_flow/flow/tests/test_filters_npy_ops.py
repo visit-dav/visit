@@ -29,14 +29,14 @@ from decorators import numpy_test
 
 class TestNPyOps(unittest.TestCase):
     def setUp(self):
-        print ""
+        print("")
     @numpy_test
     def test_01_simple_workspace(self):
         w = Workspace()
         w.register_filters(npy_ops)
-        v_a = npy.array(range(10),dtype=npy.double)
-        v_b = npy.array(range(10),dtype=npy.double)
-        print ""
+        v_a = npy.array(list(range(10)),dtype=npy.double)
+        v_b = npy.array(list(range(10)),dtype=npy.double)
+        print("")
         w.registry_add(":src_a",v_a)
         w.registry_add(":src_b",v_b)
         w.add_filter("add","f1")
@@ -59,23 +59,23 @@ class TestNPyOps(unittest.TestCase):
         # f5 = f4 + f3
         w.connect("f3","f5:in_a")
         w.connect("f4","f5:in_b")
-        print ""
-        print w.graph
-        print w.execution_plan()
+        print("")
+        print(w.graph)
+        print(w.execution_plan())
         act_res = w.execute()
         # get output and test
         test_res = npy.power((v_a + v_b),2.0)+ npy.power((v_a - v_b),2.0)
         dsum = npy.sum(act_res - test_res)
-        print "Filter Graph Result: %s" % str(act_res)
-        print "Test Result:         %s" % str(test_res)
-        print "Difference:          %s" % str(dsum)
+        print("Filter Graph Result: %s" % str(act_res))
+        print("Test Result:         %s" % str(test_res))
+        print("Difference:          %s" % str(dsum))
         self.assertTrue(dsum < 1e-6)
     @numpy_test
     def test_02_more_ops(self):
         w = Workspace()
         w.register_filters(npy_ops)
-        v_a = npy.array(range(10),dtype=npy.double)
-        v_b = npy.array(range(10),dtype=npy.double)
+        v_a = npy.array(list(range(10)),dtype=npy.double)
+        v_b = npy.array(list(range(10)),dtype=npy.double)
         v_p = npy.array([2]*10,dtype=npy.double)
         w.registry_add(":src_a",v_a)
         w.registry_add(":src_b",v_b)
@@ -100,14 +100,14 @@ class TestNPyOps(unittest.TestCase):
         # f5 = f4 + f3
         w.connect("f3","f5:in_a")
         w.connect("f4","f5:in_b")
-        print ""
+        print("")
         act_res = w.execute()
         # get output and test
         test_res = npy.power((v_a + v_b),2.0)+ npy.power((v_a - v_b),2.0)
         dsum = npy.sum(act_res - test_res)
-        print "Filter Graph Result: %s" % str(act_res)
-        print "Test Result:         %s" % str(test_res)
-        print "Difference:          %s" % str(dsum)
+        print("Filter Graph Result: %s" % str(act_res))
+        print("Test Result:         %s" % str(test_res))
+        print("Difference:          %s" % str(dsum))
         self.assertTrue(dsum < 1e-6)
 
 

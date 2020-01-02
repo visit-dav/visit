@@ -5,9 +5,11 @@
     </CXXFLAGS>
     <LIBS components="M,ESer">
       ${MOAB_LIBRARY_DIR}/${MOAB_LIB}
+      ${HDF5_LIBRARY_DIR}/${HDF5_LIB}
     </LIBS>
     <LIBS components="EPar">
       ${MOAB_MPI_LIBRARY_DIR}/${MOAB_MPI_LIB}
+      ${HDF5_MPI_LIBRARY_DIR}/${HDF5_MPI_LIB}
     </LIBS>
     <FilePatterns>
       *.h5m

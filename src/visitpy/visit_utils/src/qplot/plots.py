@@ -109,7 +109,7 @@ class IntervalPlot(CurvePlot):
             cx = start_x
             cx,cy = lerp(s0,s1,start_x,self.params.log_scale_y)
             res.append(ult.Sample(cx,cy))
-        for i in xrange(start,stop+1):
+        for i in range(start,stop+1):
             s = self.curve.samples[i]
             cx,cy = s.x, s.y
             if self.params.log_scale_y:
@@ -141,7 +141,7 @@ class LinePlot(IntervalPlot):
         painter.setPen(pen)
         path = QPainterPath()
         path.moveTo(isamples[0].x,isamples[0].y)
-        for i in xrange(1,nsamps):
+        for i in range(1,nsamps):
             path.lineTo(isamples[i].x,isamples[i].y)
         painter.drawPath(path)
 
@@ -171,7 +171,7 @@ class AreaPlot(IntervalPlot):
             ymin = log10(ymin)
         path = QPainterPath()
         path.moveTo(xmin,ymin)
-        for i in xrange(0,nsamps):
+        for i in range(0,nsamps):
             path.lineTo(isamples[i].x,isamples[i].y)
         # complete the circit
         path.lineTo(isamples[-1].x,ymin)

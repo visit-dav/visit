@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                           BoundaryPluginInfo.h                            //
+//                               BoundaryPluginInfo.h                            //
 // ************************************************************************* //
 
 #ifndef BOUNDARY_PLUGIN_INFO_H

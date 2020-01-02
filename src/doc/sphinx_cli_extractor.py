@@ -441,7 +441,7 @@ def attributes_to_sphinx(atts):
         visitString = "visit."+attr_names[attr]
         alist       = str(eval(visitString)()).splitlines()
         if not alist:
-            print >> sys.stderr, "** Warning: function "+attr_names[attr]+" does not return any attributes"
+            print("** Warning: function "+attr_names[attr]+" does not return any attributes", file=sys.stderr)
     
         for line in alist:
             basic_match = basic_finder.match(line)
@@ -457,8 +457,8 @@ def attributes_to_sphinx(atts):
                  str_form = ''.join(line).strip()
                  table.row_from_hash_line(str_form)
             else:
-                print >> sys.stderr, "\nERROR: MISSING CASE!"
-                print >> sys.stderr, "LINE: " + str(line) + "\n"
+                print("\nERROR: MISSING CASE!", file=sys.stderr)
+                print("LINE: " + str(line) + "\n", file=sys.stderr)
     
         attributes_doc += "\n|\n\n%s\n|\n" % (str(table))
 
@@ -516,7 +516,7 @@ if __name__ == '__main__':
     visit.AddArgument("-nowin")
     visit.AddArgument("-noconfig")
     visit.Launch()
-    print >> sys.stderr, "**\n**  Running VisIt", eval('visit.Version()'), "\n**"
+    print("**\n**  Running VisIt", eval('visit.Version()'), "\n**", file=sys.stderr)
     
     for func in dir(visit):
       # Deprecated

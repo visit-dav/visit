@@ -44,11 +44,11 @@ try:
             meshName = sys.argv[i]
         i = i + 1
 except:
-    print "Usage: AMRDetect.py -db_name <db-name> -mesh_name <mesh_name>"
+    print("Usage: AMRDetect.py -db_name <db-name> -mesh_name <mesh_name>")
     sys.exit(1)
 
 if db == "" or meshName == "":
-    print "Usage: AMRDetect.py -db_name <db-name> -mesh_name <mesh_name>"
+    print("Usage: AMRDetect.py -db_name <db-name> -mesh_name <mesh_name>")
     sys.exit(1)
 
 def GetMeshLogicalDims(metadata, meshname):
@@ -234,27 +234,27 @@ for d in silr.SetsInCategory("domains"):
     zoneCount = int(GetQueryOutputValue())
     Query("NumNodes","actual")
     v = int(GetQueryOutputValue())
-    print "Domain %d, nodeId %d"%(d, v-1)
+    print("Domain %d, nodeId %d"%(d, v-1))
     PickByNode(v-1,d)
     s = GetPickOutput()
     vals = re.search("Node: *([0-9]*) domain <([0-9]*), ([0-9]*)(, ([0-9]*))?>", s)
     if meshDim == 2:
-        print "Logical dimensions = %d, %d"%(int(vals.group(2)), int(vals.group(3)))
+        print("Logical dimensions = %d, %d"%(int(vals.group(2)), int(vals.group(3))))
 	logSizes.append((int(vals.group(2)), int(vals.group(3))))
     else:
-        print "Logical dimensions = %d, %d, %d"%(int(vals.group(2)), int(vals.group(3)), int(vals.group(5)))
+        print("Logical dimensions = %d, %d, %d"%(int(vals.group(2)), int(vals.group(3)), int(vals.group(5))))
 	logSizes.append((int(vals.group(2)), int(vals.group(3)), int(vals.group(5))))
     Query("SpatialExtents","actual")
     s = GetQueryOutputString()
     vals = re.search("The actual extents are \(([0-9eE+-\.]*), ([0-9eE+-\.]*), ([0-9eE+-\.]*), ([0-9eE+-\.]*)(, ([0-9eE+-\.]*), ([0-9eE+-\.]*))?\)$", s)
     if meshDim == 2:
-        print "Spatial Extents = %f, %f, %f, %f"%(float(vals.group(1)), float(vals.group(2)),
-	    float(vals.group(3)), float(vals.group(4)))
+        print("Spatial Extents = %f, %f, %f, %f"%(float(vals.group(1)), float(vals.group(2)),
+	    float(vals.group(3)), float(vals.group(4))))
         spatExtents.append((float(vals.group(1)), float(vals.group(2)),
 	                    float(vals.group(3)), float(vals.group(4))))
     else:
-        print "Spatial Extents = %f, %f, %f, %f, %f, %f"%(float(vals.group(1)), float(vals.group(2)),
-	    float(vals.group(3)), float(vals.group(4)), float(vals.group(6)), float(vals.group(7)))
+        print("Spatial Extents = %f, %f, %f, %f, %f, %f"%(float(vals.group(1)), float(vals.group(2)),
+	    float(vals.group(3)), float(vals.group(4)), float(vals.group(6)), float(vals.group(7))))
         spatExtents.append((float(vals.group(1)), float(vals.group(2)),
 	                    float(vals.group(3)), float(vals.group(4)),
 			    float(vals.group(6)), float(vals.group(7))))
@@ -266,10 +266,10 @@ for d in silr.SetsInCategory("domains"):
         Query("Volume")
         rank = float(GetQueryOutputValue()/zoneCount)
     domRankMap.append((nDomId,rank))
-    print "Rank = %f"%rank
+    print("Rank = %f"%rank)
 
     # Turn this domain back off
-    print "\n"
+    print("\n")
     silr.TurnOffSet(d)
     n2vDomMap.append(d)
     nDomId = nDomId + 1
@@ -301,10 +301,10 @@ domOrder = []
 for dr in domRankMap:
     domOrder.append(dr[0])
 domRankOrder = tuple(domOrder)
-print "Domain rank order...", 
+print("Domain rank order...", end=' ') 
 for dr in domRankOrder:
-    print "%d"%n2vDomId(dr),
-print ""
+    print("%d"%n2vDomId(dr), end=' ')
+print("")
 
 #
 # Loop, using spatial extents, to determine which domains
@@ -352,37 +352,37 @@ def PrintDescendantsLists(domDescendants):
             if mode == 0:
                 mode = 1
                 run = 0
-                print "Empty: %d"%n2vDomId(d1),
+                print("Empty: %d"%n2vDomId(d1), end=' ')
             else:
                 if run >= 40:
                     run = 0
-                    print "\n", "    "
-                print "%d"%n2vDomId(d1),
+                    print("\n", "    ")
+                print("%d"%n2vDomId(d1), end=' ')
                 run = run + 1
         else:
             if mode == 1:
                 mode = 0
-                print ""
-            print "Candidate descendants of domain %d"%n2vDomId(d1)
-            print "    ",
+                print("")
+            print("Candidate descendants of domain %d"%n2vDomId(d1))
+            print("    ", end=' ')
             run = 0
             for desc in domDescendants[d]:
                 if run >= 40:
                     run = 0
-                    print "\n", "    "
-                print n2vDomId(desc), 
+                    print("\n", "    ")
+                print(n2vDomId(desc), end=' ') 
                 run = run + 1
-            print ""
+            print("")
         d = d + 1
-    print ""
-    print ""
-    print ""
+    print("")
+    print("")
+    print("")
 
-print "************************************************************"
-print "************************************************************"
-print "Candidate descendants lists as determined by spatial extents"
-print "************************************************************"
-print "************************************************************"
+print("************************************************************")
+print("************************************************************")
+print("Candidate descendants lists as determined by spatial extents")
+print("************************************************************")
+print("************************************************************")
 PrintDescendantsLists(domDescendants)
 
 #
@@ -400,13 +400,13 @@ PrintDescendantsLists(domDescendants)
 #
 pickMap = {}
 if not MeshIsRectilinear(meshName):
-    print ""
-    print ""
-    print "**********************************************"
-    print "**********************************************"
-    print "Computing zone-by-zone overlaps using pos_cmfe"
-    print "**********************************************"
-    print "**********************************************"
+    print("")
+    print("")
+    print("**********************************************")
+    print("**********************************************")
+    print("Computing zone-by-zone overlaps using pos_cmfe")
+    print("**********************************************")
+    print("**********************************************")
 
     domRankOrderRev = list(domRankOrder)
     domRankOrderRev.reverse()
@@ -432,11 +432,11 @@ if not MeshIsRectilinear(meshName):
 	ClearCacheForAllEngines()
 
 	# 
-        print "Checking domain %d against "%n2vDomId(d1),
+        print("Checking domain %d against "%n2vDomId(d1), end=' ')
         SwitchPlotsTo("overlapMap")
 	silr.TurnOffAll()
 	for d in d1Parents:
-            print "%d"%n2vDomId(d),
+            print("%d"%n2vDomId(d), end=' ')
 	    silr.TurnOnSet(n2vDomId(d))
 	    SetPlotSILRestriction(silr)
 	    Query("Max","actual")
@@ -456,13 +456,13 @@ if not MeshIsRectilinear(meshName):
                     val = (int(vals.group(1)), (float(vals.group(2)), float(vals.group(3)), float(vals.group(5))))
                 pickMap[key] = val 
 	    silr.TurnOffSet(n2vDomId(d))
-        print ""
+        print("")
 
-    print "**********************************************************"
-    print "**********************************************************"
-    print "Candidate descendants as modifed by pos_cmfe overlap tests"
-    print "**********************************************************"
-    print "**********************************************************"
+    print("**********************************************************")
+    print("**********************************************************")
+    print("Candidate descendants as modifed by pos_cmfe overlap tests")
+    print("**********************************************************")
+    print("**********************************************************")
     PrintDescendantsLists(domDescendants)
 
 def IsADeepDescendantOf(dDom, pDom, depth):
@@ -491,11 +491,11 @@ def IsADeepDescendantOf(dDom, pDom, depth):
 # descendants, those that appear in other domain's list of 
 # descendants.
 #
-print "****************************"
-print "****************************"
-print "Eliminating deep descendants"
-print "****************************"
-print "****************************"
+print("****************************")
+print("****************************")
+print("Eliminating deep descendants")
+print("****************************")
+print("****************************")
 domChildren = []
 for d in domRankOrder:
     didx = list(domRankOrder).index(d)
@@ -506,11 +506,11 @@ for d in domRankOrder:
 	    children_copy.remove(c)
     domChildren.append(tuple(children_copy))
 
-print "**************************"
-print "**************************"
-print "Final descendants lists..."
-print "**************************"
-print "**************************"
+print("**************************")
+print("**************************")
+print("Final descendants lists...")
+print("**************************")
+print("**************************")
 PrintDescendantsLists(domChildren)
 
 def MaxHeight(dDom):
@@ -536,7 +536,7 @@ def MaxHeight(dDom):
 domHeights = []
 for d in domRankOrder:
     domHeights.append(MaxHeight(d))
-print domHeights
+print(domHeights)
 
 
 def ComputeRectilinearRatios():
@@ -579,7 +579,7 @@ def ComputeCurvilinearRatios():
     SetPlotSILRestriction(silr)
     for d in domRankOrder:
 
-        print "Working on domain", n2vDomId(d)
+        print("Working on domain", n2vDomId(d))
         didx = list(domRankOrder).index(d)
         dChildList = domChildren[didx]
         ratios = []
@@ -595,11 +595,11 @@ def ComputeCurvilinearRatios():
             ZonePick(pickPoint)
             s = GetPickOutput()
             if re.search("Chosen pick did not intersect surface.",s) != None:
-                print "Missed ZonePick at", pickPoint
+                print("Missed ZonePick at", pickPoint)
                 continue
             vals = re.search("\nZone: *([0-9]*)\n",s)
             zoneId = int(vals.group(1))
-            print "At pick point", pickPoint, "got zone id", zoneId
+            print("At pick point", pickPoint, "got zone id", zoneId)
             dCornerPoints = GetCornerPointsForZone(d,n2vDomId(d),zoneId)
 
             silr.TurnOffSet(n2vDomId(d))
@@ -609,11 +609,11 @@ def ComputeCurvilinearRatios():
             ZonePick(pickPoint)
             s = GetPickOutput()
             if re.search("Chosen pick did not intersect surface.",s) != None:
-                print "Missed ZonePick at", pickPoint
+                print("Missed ZonePick at", pickPoint)
                 continue
             vals = re.search("\nZone: *([0-9]*)\n",s)
             zoneId = int(vals.group(1))
-            print "At pick point", pickPoint, "got zone id", zoneId
+            print("At pick point", pickPoint, "got zone id", zoneId)
             dcCornerPoints = GetCornerPointsForZone(dc,n2vDomId(dc),zoneId)
 
             dSizeX  =  dCornerPoints[1][0] -  dCornerPoints[0][0]
@@ -645,13 +645,13 @@ def ComputeRatios():
     else:
         return ComputeCurvilinearRatios()
 
-print "*********************************************"
-print "*********************************************"
-print "Determining parent/child refinement ratios..."
-print "*********************************************"
-print "*********************************************"
+print("*********************************************")
+print("*********************************************")
+print("Determining parent/child refinement ratios...")
+print("*********************************************")
+print("*********************************************")
 domRatios = ComputeRatios()
-print domRatios
+print(domRatios)
 
 #
 # See if the ratios are same for all parent-child of the
@@ -671,7 +671,7 @@ for d in domRankOrder:
         dcHeight = domHeights[dcidx]
 	ratios = domRatios[didx][dccidx]
 	hKey = (dHeight, dcHeight)
-	if levelRatios.has_key(hKey):
+	if hKey in levelRatios:
 	    if levelRatios[hKey] != ratios:
                 levelRatios[hKey] = 0
         else:
@@ -683,9 +683,9 @@ for lr in levelRatios:
         levelRatiosAreGood = 0
 	break
 if levelRatiosAreGood:
-    print "We have constant ratios for each level"
+    print("We have constant ratios for each level")
     for lr in levelRatios:
-        print "for height pairing", lr, "ratios =", levelRatios[lr]
+        print("for height pairing", lr, "ratios =", levelRatios[lr])
 
 def Qf(f):
     g = f * 10**6
@@ -774,11 +774,11 @@ for i in range(len(domHeights)):
     if domHeights[i] == maxHeight:
 	highestDoms.append(domRankOrder[i])
 if len(highestDoms) > 1:
-    print "***************************************************************"
-    print "***************************************************************"
-    print "Assembling top-level patches into coherent, logical index space"
-    print "***************************************************************"
-    print "***************************************************************"
+    print("***************************************************************")
+    print("***************************************************************")
+    print("Assembling top-level patches into coherent, logical index space")
+    print("***************************************************************")
+    print("***************************************************************")
 
     SwitchPlotsTo(meshName)
     silr.TurnOffAll()
@@ -841,9 +841,9 @@ if len(highestDoms) > 1:
 		    infoI[2][5] = domJ
 		    infoJ[2][4] = domI
 
-    print "Top-level domain neighbor relationships..."
+    print("Top-level domain neighbor relationships...")
     for i in range(len(highestDoms)):
-        print highestDoms[i][0], highestDoms[i][2]
+        print(highestDoms[i][0], highestDoms[i][2])
 
     #
     # Find the south-most, west-most, back-most
@@ -867,7 +867,7 @@ if len(highestDoms) > 1:
 	    done = True
 
     swbMostDom = highestDoms[hDom][0]
-    print "The top-level, south-most, west-most, back-most domain is", n2vDomId(swbMostDom)
+    print("The top-level, south-most, west-most, back-most domain is", n2vDomId(swbMostDom))
     if meshDim == 2:
         logExtents[swbMostDom] = [0, logSizes[swbMostDom][0]-1, 0, logSizes[swbMostDom][1]-1, 0, 0]
     else:
@@ -929,8 +929,8 @@ if len(highestDoms) > 1:
 	else:
 	    fbDone = True
 
-    print "Logical extents are..."
-    print logExtents
+    print("Logical extents are...")
+    print(logExtents)
 
     # Walk east as far as possible, summing logical extents
     hDom = swbMostDom
@@ -970,7 +970,7 @@ if len(highestDoms) > 1:
             else:
 	        done = True
 
-    print "Top-level logical extents are", lxSize, lySize, lzSize
+    print("Top-level logical extents are", lxSize, lySize, lzSize)
 
 else: # if len(highestDoms) > 1:
     hDom = highestDoms[0]
@@ -1014,12 +1014,12 @@ def ClampPointToDomainExtents(p, d):
 SwitchPlotsTo(meshName)
 currentHeight = maxHeight
 while currentHeight >= 0:
-    print "Doms at height", currentHeight, "...",
+    print("Doms at height", currentHeight, "...", end=' ')
     for i in range(len(domHeights)):
         if domHeights[i] != currentHeight:
             continue
-        print n2vDomId(domRankOrder[i]),
-    print ""
+        print(n2vDomId(domRankOrder[i]), end=' ')
+    print("")
 
     for i in range(len(domHeights)):
         if domHeights[i] != currentHeight:
@@ -1044,10 +1044,10 @@ while currentHeight >= 0:
             d = d + 1
         if len(d1Parents) == 0:
             continue
-        print "Parents of dom", n2vDomId(d1), "are",
+        print("Parents of dom", n2vDomId(d1), "are", end=' ')
         for d in d1Parents:
-            print n2vDomId(d),
-        print ""
+            print(n2vDomId(d), end=' ')
+        print("")
 
         #
         # Get coords of first and last node of this domain
@@ -1077,9 +1077,9 @@ while currentHeight >= 0:
         else:
             nodeNCoords = (QfStr(vals.group(1)), QfStr(vals.group(2)), QfStr(vals.group(4)))
         silr.TurnOffSet(n2vDomId(d1))
-        print "coords to pick at are..."
-        print "    ", node0Coords
-        print "    ", nodeNCoords
+        print("coords to pick at are...")
+        print("    ", node0Coords)
+        print("    ", nodeNCoords)
 
         #
         # Get logical coords of node in parent nearest the points found above.
@@ -1112,12 +1112,12 @@ while currentHeight >= 0:
                         iextents[0] = (dextents[0] + logId[0]) * ratio[0]
                         iextents[2] = (dextents[2] + logId[1]) * ratio[1]
                         iextents[4] = (dextents[4] + logId[2]) * ratio[2]
-                    print "got node 0 pick", s, nodeId, logId, dextents, iextents
+                    print("got node 0 pick", s, nodeId, logId, dextents, iextents)
             if not havePickedNodeN:
                 pN = copy.copy(nodeNCoords)
-                print "pN=",pN
+                print("pN=",pN)
                 pN = ClampPointToDomainExtents(pN, d)
-                print "pN, again",pN
+                print("pN, again",pN)
                 NodePick(pN)
                 s = GetPickOutput()
                 vals = re.search("Node: *([0-9]*) domain <([0-9]*), ([0-9]*)(, ([0-9]*))?>", s)
@@ -1132,7 +1132,7 @@ while currentHeight >= 0:
                         iextents[1] = (dextents[0] + logId[0]) * ratio[0] - 1
                         iextents[3] = (dextents[2] + logId[1]) * ratio[1] - 1
                         iextents[5] = (dextents[4] + logId[2]) * ratio[2] - 1
-                    print "got node N pick", s, nodeId, logId, dextents, iextents
+                    print("got node N pick", s, nodeId, logId, dextents, iextents)
             silr.TurnOffSet(n2vDomId(d))
             if havePickedNode0 and havePickedNodeN:
                 break

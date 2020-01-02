@@ -4,8 +4,42 @@
 
 #*****************************************************************************
 # Modifications:
-#
+#    Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
+#    Add xml tools code gen targets
 #****************************************************************************
+
+
+# Add XML Code Gen Targets
+
+# Note: These names are in alphabetical order
+
+set(METADATA_GEN_OBJECTS 
+    avtArrayMetaData
+    avtBaseVarMetaData
+    avtCurveMetaData
+    avtDatabaseMetaData
+    avtDefaultPlotMetaData
+    avtLabelMetaData
+    avtMatSpeciesMetaData
+    avtMaterialMetaData
+    avtMeshMetaData
+    avtScalarMetaData
+    avtSimulationCommandSpecification
+    avtSimulationInformation
+    avtSpeciesMetaData
+    avtSubsetsMetaData
+    avtSymmetricTensorMetaData
+    avtTensorMetaData
+    avtVarMetaData
+    avtVectorMetaData)
+
+# Metadata Objects
+foreach(obj_name ${METADATA_GEN_OBJECTS})
+    ADD_CPP_GEN_TARGET(${obj_name}
+                       ${CMAKE_CURRENT_SOURCE_DIR}/MetaData/
+                       ${CMAKE_CURRENT_SOURCE_DIR}/MetaData/)
+endforeach()
+
 
 SET(METADATA_SOURCES
 MetaData/avtArrayMetaData.C

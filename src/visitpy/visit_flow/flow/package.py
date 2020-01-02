@@ -25,7 +25,7 @@ def create_package(output_file=None):
     cmd = "git archive --format=tar --prefix=%s/ HEAD > %s; " % (repo_name,output_file)
     cmd += "cd ../; tar -rf %s/%s %s/.git; cd %s; " % (repo_name,output_file,repo_name,repo_name)
     cmd += "gzip %s; " % output_file
-    print "[exe: %s]" % cmd
+    print("[exe: %s]" % cmd)
     subprocess.call(cmd,shell=True)
 
 if __name__ == "__main__":

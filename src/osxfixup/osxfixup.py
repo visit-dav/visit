@@ -79,7 +79,7 @@ def add_qt_conf(bundles):
         if not os.path.isdir(resources_dir):
             os.mkdir(resources_dir)
         qtconf_fname = pjoin(resources_dir,"qt.conf")
-        print "[creating: %s]" % qtconf_fname
+        print("[creating: %s]" % qtconf_fname)
         qtconf = open(qtconf_fname,"w")
         qtconf.write("[Paths]\nPlugins=\n")
 
@@ -93,7 +93,7 @@ def find_exes(sdir):
         for fname in  files:
           fname = pjoin(root,fname)
           if not os.path.exists(fname):
-              print 'WARNING: not found %s -- skipped.'%(fname)
+              print('WARNING: not found %s -- skipped.'%(fname))
               continue
           st = os.stat(fname)
           mode = st.st_mode
@@ -105,7 +105,7 @@ def find_exes(sdir):
                   if chk.count("executable") >= 1:
                       exes.append(fname)
               except:
-                    print "[warning: failed to obtain file type for '%s']" % fname
+                    print("[warning: failed to obtain file type for '%s']" % fname)
     return exes
 
 def fixup_items(items,lib_maps,prefix_path):
@@ -124,7 +124,7 @@ def fixup_items(items,lib_maps,prefix_path):
         #if os.path.islink(lib):             continue
         
         id_cmd = "install_name_tool -id @rpath{0} {1}"
-        if item_base in lib_maps.keys():
+        if item_base in list(lib_maps.keys()):
             id_cmd  = id_cmd.format(lib_maps[item_base], item)
         else:
             id_cmd  =  id_cmd.format(item.replace(prefix_path,""), item) 
@@ -142,7 +142,7 @@ def fixup_items(items,lib_maps,prefix_path):
                 if invalid_path.find(home) != -1:
                     invalid_paths.append(invalid_path)
         except:
-            print "[info: no invalid LC_RPATHS for '%s']" % item
+            print("[info: no invalid LC_RPATHS for '%s']" % item)
 
         del_rpath_cmd = "install_name_tool -delete_rpath {0} {1} 2>&1"
         for invalid_path in invalid_paths:
@@ -154,7 +154,7 @@ def fixup_items(items,lib_maps,prefix_path):
             dependencies = subprocess.check_output(deps_cmd.format(item), shell=True)
             dependencies = [ d for d in dependencies.split("\n")[1:] if d.strip() != ""]
         except:
-            print "[warning: failed to obtain dependencies for '%s']" % item
+            print("[warning: failed to obtain dependencies for '%s']" % item)
             dependencies = []
         
         # if we have an exe exe_rpaths[0]
@@ -188,20 +188,20 @@ def main():
     if len(sys.argv) > 1:
         prefix_path = sys.argv[1]
     prefix_path = os.path.abspath(prefix_path)
-    print "[Finding libraries @ %s]" % prefix_path
+    print("[Finding libraries @ %s]" % prefix_path)
     lib_names,lib_maps = find_libs(prefix_path)
-    print "[Found %d libraries]" % len(lib_names)
-    print "[Finding executables @ %s]" % prefix_path
+    print("[Found %d libraries]" % len(lib_names))
+    print("[Finding executables @ %s]" % prefix_path)
     exe_names = find_exes(prefix_path)
-    print "[Found %d executables]" % len(exe_names)
-    print "[Finding bundles @ %s]" % prefix_path
+    print("[Found %d executables]" % len(exe_names))
+    print("[Finding bundles @ %s]" % prefix_path)
     bundle_names = find_bundles(prefix_path)
-    print "[Found %d bundles]" % len(bundle_names)
-    print "[Fixing Libraries...]"
+    print("[Found %d bundles]" % len(bundle_names))
+    print("[Fixing Libraries...]")
     fixup_items(lib_names,lib_maps,prefix_path)
-    print "[Fixing Executables...]"
+    print("[Fixing Executables...]")
     fixup_items(exe_names,lib_maps,prefix_path)
-    print "[Fixing Bundles...]"
+    print("[Fixing Bundles...]")
     fixup_bundles(bundle_names)
 
 

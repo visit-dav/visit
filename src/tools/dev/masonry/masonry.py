@@ -55,6 +55,8 @@ def mkdir_p(path):
 #  http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-unicode-ones-from-json-in-python
 # ----------------------------------------------------------------------------
 def _decode_list(data):
+    if (sys.version_info > (3, 0)):
+        return data
     rv = []
     for item in data:
         if isinstance(item, unicode):
@@ -78,8 +80,10 @@ def _decode_list(data):
 #  http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-unicode-ones-from-json-in-python
 # ----------------------------------------------------------------------------
 def _decode_dict(data):
+    if (sys.version_info > (3, 0)):
+        return data
     rv = {}
-    for key, value in data.iteritems():
+    for key, value in data.items():
         if isinstance(key, unicode):
            key = key.encode('utf-8')
         if isinstance(value, unicode):
@@ -134,7 +138,7 @@ def sexe(cmd,ret_output=False,echo = False,env=None):
         if not env is None:
             kwargs["env"] = env
         if echo:
-            print "[exe: %s]" % cmd
+            print("[exe: %s]" % cmd)
         if ret_output:
             kwargs["stdout"] = subprocess.PIPE
             kwargs["stderr"] = subprocess.STDOUT
@@ -159,21 +163,21 @@ class Context(object):
                      "triggers":{},
                      "log_dir":self.log_dir,
                      "enable_logging":self.enable_logging}}
-        for k,v in self.actions.items():
+        for k,v in list(self.actions.items()):
             r["context"]["actions"][k] = v.params
-        for k,v in self.triggers.items():
+        for k,v in list(self.triggers.items()):
             r["context"]["triggers"][k] = v.params
         return r
     def to_json(self):
         return json_dumps(self.to_dict())
     @classmethod 
     def load_dict(cls,params):
-        if params.has_key("context"):
+        if "context" in params:
             res = Context(enable_logging = params["context"]["enable_logging"],
                           log_dir        = params["context"]["log_dir"])
-            for k,v in params["context"]["actions"].items():
+            for k,v in list(params["context"]["actions"].items()):
                 res.actions[k]  = Action.load_dict(v)
-            for k,v in params["context"]["triggers"].items():
+            for k,v in list(params["context"]["triggers"].items()):
                 res.triggers[k] = Action.load_dict(v)
         return res
     @classmethod 
@@ -207,7 +211,7 @@ class Context(object):
                 os.unlink(lastlink)
             os.symlink(ofname,lastlink)
         except Exception as e:
-            print "<logging error> failed to write results to %s" % ofname
+            print("<logging error> failed to write results to %s" % ofname)
             raise e
     def unique_key(self):
         return timestamp()["key"]
@@ -221,7 +225,7 @@ class Action(object):
         return json_dumps(self.to_dict())
     @classmethod
     def load_dict(cls,params):
-        if params.has_key("type"):
+        if "type" in params:
             atype = params["type"]
             aparams = dict(params)
             del aparams["type"]
@@ -278,7 +282,7 @@ class ShellAction(Action):
             if not os.path.isdir(self.params["working_dir"]):
                 mkdir_p(self.params["working_dir"])
 
-            print "[chdir to: %s]" % self.params["working_dir"]
+            print("[chdir to: %s]" % self.params["working_dir"])
             os.chdir(self.params["working_dir"])
             rcode, rout = sexe(self.params["cmd"],
                                ret_output=True,
@@ -289,7 +293,7 @@ class ShellAction(Action):
         except KeyboardInterrupt as e:
             res["action"]["error"] = "shell command interrupted by user (ctrl-c)"
         except Exception as e:
-            print e
+            print(e)
             res["action"]["error"] = str(e)
         t_end = timenow()
         res["action"]["finish_time"]  = timestamp(t_end)
@@ -409,18 +413,18 @@ class InorderTrigger(Action):
         base.log(key,res)
         try:
             for  action in self.params["actions"]:
-                print "[fire: %s]" % action
+                print("[fire: %s]" % action)
                 a = base.actions[action]
                 r = a.execute(base,key,action,res)
                 res["trigger"]["results"].append(r)
                 base.log(key,res)
-                if r["action"].has_key("return_code"):
-                    print "[rcode: %d]" % r["action"]["return_code"]
-                if "error" in r["action"].keys() or \
-                    (r["action"].has_key("return_code") and r["action"]["return_code"] != 0) :
+                if "return_code" in r["action"]:
+                    print("[rcode: %d]" % r["action"]["return_code"])
+                if "error" in list(r["action"].keys()) or \
+                    ("return_code" in r["action"] and r["action"]["return_code"] != 0) :
                     emsg = "[action failed: %s]" % json.dumps(r,indent=2)
-                    print emsg
-                    if r["action"].has_key("halt_on_error") and r["action"]["halt_on_error"]:
+                    print(emsg)
+                    if "halt_on_error" in r["action"] and r["action"]["halt_on_error"]:
                         raise Exception(emsg)
         except Exception as emsg:
             res["trigger"]["error"] = str(emsg)

@@ -18,7 +18,7 @@
 """
 import sys
 import os
-from parser import *
+from .parser import *
 
 from ..core import log
 
@@ -59,7 +59,7 @@ class Generator(object):
                 info(msg)
                 vmaps[expr.name] = res[0].name
             if isinstance(expr,Identifier):
-                if expr.name in vmaps.keys():
+                if expr.name in list(vmaps.keys()):
                     iname =  vmaps[expr.name]
                 else:
                     iname = ":" + expr.name
@@ -79,17 +79,17 @@ class Generator(object):
         return res
     @classmethod
     def __vmaps_sub(cls,filters,vmaps):
-        vmaps_inv = dict([[v,k] for k,v in vmaps.items()])
+        vmaps_inv = dict([[v,k] for k,v in list(vmaps.items())])
         for f in filters:
             fname = f[0]
             # check for nick name
-            if fname in vmaps_inv.keys():
+            if fname in list(vmaps_inv.keys()):
                 fname = vmaps_inv[fname]
                 f[0] = fname
             fcall = f[1]
             for arg in fcall.args:
                 if isinstance(arg,Identifier):
-                    if arg.name in vmaps_inv.keys():
+                    if arg.name in list(vmaps_inv.keys()):
                         arg.name = vmaps_inv[arg.name]
     @classmethod
     def __cse_elim(cls,filters):
@@ -99,7 +99,7 @@ class Generator(object):
         for f in filters:
             fname = f[0]
             fcall = str(f[1])
-            if not fcall in fmaps.keys():
+            if not fcall in list(fmaps.keys()):
                 fmaps[fcall] = fname
                 rfilters.append(f)
             else:
@@ -107,7 +107,7 @@ class Generator(object):
         for f in rfilters:
             fcall = f[1]
             for arg in fcall.args:
-                if arg.name in rmaps.keys():
+                if arg.name in list(rmaps.keys()):
                     arg.name = rmaps[arg.name]
         return rfilters
     @classmethod

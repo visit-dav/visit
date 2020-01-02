@@ -42,8 +42,8 @@ cmdHelp = {}
 def AddMathOps():
     """ Adds math operators to the help dictionary
     """
-    tempDict = dict(zip(mathOpsNoArg, mathOpsLongName) + \
-                    zip(mathOpsXNoArg, mathOpsLongName))
+    tempDict = dict(list(zip(mathOpsNoArg, mathOpsLongName)) + \
+                    list(zip(mathOpsXNoArg, mathOpsLongName)))
     for cmd in mathOpsNoArg + mathOpsXNoArg:
         if cmd in mathOpsNoArg:
             yc = "y"
@@ -54,8 +54,8 @@ def AddMathOps():
         cmdHelp[cmd] = [proc, usg]
 
 
-    tempDict = dict(zip(mathOpsArg, mathOpsArgLongName) + \
-                    zip(mathOpsXArg, mathOpsArgLongName))
+    tempDict = dict(list(zip(mathOpsArg, mathOpsArgLongName)) + \
+                    list(zip(mathOpsXArg, mathOpsArgLongName)))
 
     for cmd in mathOpsArg + mathOpsXArg:
         if cmd in mathOpsArg:
@@ -85,7 +85,7 @@ def AddMathOps():
                     %(tempDict[cmd], yc)
         cmdHelp[cmd] = [proc, usg]
 
-    tempDict = dict(zip(cmfeOps, cmfeOpsLongName)) 
+    tempDict = dict(list(zip(cmfeOps, cmfeOpsLongName))) 
     for cmd in cmfeOps:
         usg = "Usage: %s <curve-list>" %cmd
         proc = "Take %s of curves" % tempDict[cmd]
@@ -162,56 +162,56 @@ def CreateHelp():
 
 def UltraUsage(cmd):
     if cmd in cmdHelp:
-        print cmdHelp[cmd][1]
+        print(cmdHelp[cmd][1])
     else:
-        print "%s not valid command or not currently supported"%cmd
+        print("%s not valid command or not currently supported"%cmd)
 
 def UltraHelp(cmd):
     if cmd == "":
-        print " io  - I/O Commands"
-        print " ma  - Math Operations Which Do Not Generate a New Curve"
-        print " m+  - Math Operations Which Do Generate a New Curve"
-        print " ie  - Environmental Inquiry Commands"
+        print(" io  - I/O Commands")
+        print(" ma  - Math Operations Which Do Not Generate a New Curve")
+        print(" m+  - Math Operations Which Do Generate a New Curve")
+        print(" ie  - Environmental Inquiry Commands")
         #print " ic  - Curve Inquiry Commands"
-        print " ce  - Environemtal Control Commands"
-        print " cp  - Plot Control Commands"
-        print " cc  - Curve Control Commands"
+        print(" ce  - Environemtal Control Commands")
+        print(" cp  - Plot Control Commands")
+        print(" cc  - Curve Control Commands")
         #print " cn  - Constants"
         #print " var - Variables"
         #print " sy  - Synonyms"
-        print " To list the member of a group, enter:    help <group-id>"
+        print(" To list the member of a group, enter:    help <group-id>")
         #print " To list the member of all groups, enter: help all"
-        print " For information about a command, enter:  help <command-name>"
+        print(" For information about a command, enter:  help <command-name>")
     elif cmd == "io":
-        print " I/O Commands"
-        print "   rd save"
+        print(" I/O Commands")
+        print("   rd save")
     elif cmd == "ma":
-        print " Math Operations Which Do Not Generate a New Curve:"
+        print(" Math Operations Which Do Not Generate a New Curve:")
         a = mathOpsNoArg + mathOpsXNoArg + mathOpsArg + mathOpsXArg
         a.sort() 
-        print "   ", string.join(a)
+        print("   ", string.join(a))
     elif cmd == "m+":
-        print " Math Operations Which Do Generate a New Curve:"
+        print(" Math Operations Which Do Generate a New Curve:")
         a = cmfeOps
         a.sort() 
-        print "   ", string.join(a)
+        print("   ", string.join(a))
     elif cmd == "ie":
-        print " Environment Inquiry Commands:"
-        print "   lst menu"
+        print(" Environment Inquiry Commands:")
+        print("   lst menu")
     elif cmd == "ce":
-        print " Environment Control Commands:"
-        print "   end erase quit"
+        print(" Environment Control Commands:")
+        print("   end erase quit")
     elif cmd == "cp":
-        print " Plot Control Commands:"
+        print(" Plot Control Commands:")
         a = togglePlotOps + rangePlotOps
         a.sort() 
-        print "   ", string.join(a)
+        print("   ", string.join(a))
     elif cmd == "cc":
-        print " Curve Control Commands:"
-        print "   del lnstyle lnwidth select"
+        print(" Curve Control Commands:")
+        print("   del lnstyle lnwidth select")
     elif cmd in cmdHelp:
-        print "    %s" %cmdHelp[cmd][0]
-        print "    %s" %cmdHelp[cmd][1]
+        print("    %s" %cmdHelp[cmd][0])
+        print("    %s" %cmdHelp[cmd][1])
     
 
 CreateHelp()
@@ -305,7 +305,7 @@ saveCmd = oneOf(saveOps).setResultsName("cmd") + \
 #          curveListAlpha.setResultsName("clist")
 
 helpCmd = oneOf("""help""").setResultsName("cmd") + \
-             Optional(oneOf(cmdHelp.keys())).setResultsName("arg")
+             Optional(oneOf(list(cmdHelp.keys()))).setResultsName("arg")
 
 # head
 ultracommand = lnstylecmd | multiCurveOpAlpha | multiCurveOpNum | fileOp | \

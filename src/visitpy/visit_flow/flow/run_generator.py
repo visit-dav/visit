@@ -8,12 +8,12 @@ import subprocess
 from   os.path import join as pjoin
 
 def sexe(cmd):
-    print "[exec: %s]" % cmd
+    print("[exec: %s]" % cmd)
     subprocess.call(cmd,shell=True)
 
 def main():
     if len(sys.argv) < 2:
-        print "usage: run_generator.py [expr_file]"
+        print("usage: run_generator.py [expr_file]")
         sys.exit(-1)
     args  = sys.argv[1:]
     nargs = len(args)
@@ -24,15 +24,15 @@ def main():
     sys.path.append("build/lib")
     import flow
     stmts = flow.Parser.parse(expr)
-    print "Parser Statments:"
+    print("Parser Statments:")
     for s in stmts:
-        print s
-    print "\n"
-    print "Filter Network:"
+        print(s)
+    print("\n")
+    print("Filter Network:")
     filters = flow.Generator.parse_network(expr)
     for f in filters:
-        print f
-    print "# of filters: %d" % len(filters)
+        print(f)
+    print("# of filters: %d" % len(filters))
 
 if __name__ == "__main__":
     main()

@@ -5,7 +5,11 @@ import shutil
 import subprocess
 import time
 import unittest
-import urllib
+if (sys.version_info > (3, 0)):
+    import urllib.request, urllib.parse, urllib.error
+else:
+    import urllib
+
 from optparse import OptionParser
 from PyQt4 import QtCore,QtGui
 
@@ -39,7 +43,7 @@ else:
   uri += mode + "/"
 parser.destroy()
 
-print "uri:", uri
+print("uri:", uri)
 
 class MW(QtGui.QMainWindow):
   def __init__(self, parent=None):
@@ -264,20 +268,20 @@ class Layout(QtGui.QWidget):
     self._mainwin.update()
 
   def _die(self):
-    print "You thought these test results were bugs:"
+    print("You thought these test results were bugs:")
     for f in self._bugs:
-      print "\t", f
+      print("\t", f)
     self._mainwin.close()
 
   def calc_width(self):
     w = 0
-    for col in xrange(0,self.layout().columnCount()):
+    for col in range(0,self.layout().columnCount()):
       w += self.layout().columnMinimumWidth(col)
     return w
 
   def calc_height(self):
     h = 0
-    for row in xrange(0,self.layout().rowCount()):
+    for row in range(0,self.layout().rowCount()):
       h += self.layout().rowMinimumHeight(row)
     return h
 
@@ -291,11 +295,11 @@ class Layout(QtGui.QWidget):
   def _rebaseline(self):
     self.status("".join(["rebaselining ", self._current, "..."]))
     baseline = mode_specific(self._baseline)
-    print "moving", self._current, "on top of", baseline
+    print("moving", self._current, "on top of", baseline)
     # We might be creating the first mode specific baseline for that test.  If
     # so, it'll be missing the baseline specific dir.
     if not os.path.exists(real_dirname(baseline)):
-      print real_dirname(baseline), "does not exist, creating..."
+      print(real_dirname(baseline), "does not exist, creating...")
       os.mkdir(real_dirname(baseline))
     shutil.move(self._current, baseline) # do the rebaseline!
     self._next_set_of_images()
@@ -324,7 +328,7 @@ class Layout(QtGui.QWidget):
 
     if self._baseline is None:  # first call, build list.
       self._imagelist = []
-      print "Building initial file list... please wait."
+      print("Building initial file list... please wait.")
       self.status("Building initial file list... please wait.")
       for root, dirs, files in os.walk("baseline"):
         for f in files:
@@ -354,29 +358,35 @@ class Layout(QtGui.QWidget):
         try:
           filename = os.path.split(self._baseline)
           filename = filename[1]
-        except AttributeError, e:
+        except AttributeError as e:
           self.status("No slash!")
           break
         current_url = uri + "/c_" + filename
-        f,info = urllib.urlretrieve(current_url, "local_current.png")
+        if (sys.version_info > (3, 0)):
+            f,info = urllib.request.urlretrieve(current_url, "local_current.png")
+        else:
+            f,info = urllib.urlretrieve(current_url, "local_current.png")
         self.status("".join(["Checking ", current_url, "..."]))
 
         if info.getheader("Content-Type").startswith("text/html"):
-          # then it's a 404 or other error; skip this image.
-          continue
+            # then it's a 404 or other error; skip this image.
+            continue
         else:
-          # We found the next image.
-          self._current = "local_current.png"
-          diff_url = uri + "/d_" + filename
-          f,info = urllib.urlretrieve(diff_url, "local_diff.png")
-          if info.getheader("Content-Type").startswith("text/html"):
-            raise Exception("Could not download diff image.")
-          self._diff = "local_diff.png"
-          self.status("Waiting for input on " + filename)
-          break
-    except KeyError, e:
-      print e
-      print "No more images!"
+            # We found the next image.
+            self._current = "local_current.png"
+            diff_url = uri + "/d_" + filename
+            if (sys.version_info > (3, 0)):
+                f,info = urllib.request.urlretrieve(diff_url, "local_diff.png")
+            else:
+                f,info = urllib.urlretrieve(diff_url, "local_diff.png")
+            if info.getheader("Content-Type").startswith("text/html"):
+                raise Exception("Could not download diff image.")
+            self._diff = "local_diff.png"
+            self.status("Waiting for input on " + filename)
+            break
+    except KeyError as e:
+      print(e)
+      print("No more images!")
       self.emit(QtCore.SIGNAL('closeApp()'))
 
   def _init_signals(self):
@@ -399,7 +409,7 @@ if __name__ == '__main__':
   suite = unittest.TestLoader().loadTestsFromTestCase(RebaselinePTests)
   results = unittest.TextTestRunner(verbosity=2).run(suite)
   if not results.wasSuccessful():
-    print "Tests failed, bailing."
+    print("Tests failed, bailing.")
     sys.exit(1)
 
   app = QtGui.QApplication(sys.argv)

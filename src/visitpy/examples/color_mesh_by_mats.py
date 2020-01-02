@@ -52,7 +52,7 @@ def ColorMeshByMats():
     # If we can't find an active, non-hidden mesh plot, return early
     #
     if plot == 0:
-        print "ColorMeshByMats requires an active, non-hidden mesh plot to work from"
+        print("ColorMeshByMats requires an active, non-hidden mesh plot to work from")
         return
 
     #

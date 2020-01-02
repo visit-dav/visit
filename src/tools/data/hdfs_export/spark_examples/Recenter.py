@@ -35,7 +35,7 @@ def ParitionByBlockKeyField(key):
 #
 if __name__ == "__main__":
   if len(sys.argv) < 4:
-    print >> sys.stderr, "Usage: Recenter <dbfile> <mesh> <nodal-var>"
+    print("Usage: Recenter <dbfile> <mesh> <nodal-var>", file=sys.stderr)
     exit(-1)
 
   sc = SparkContext()
@@ -69,11 +69,10 @@ if __name__ == "__main__":
   # .values() does producing an RDD of (zoneKey value) pairs. Then we use combineByKey producing a
   # new RDD, (zoneKey, (sum,count)) and finally a map producing (zoneKey, sum/cnt).
   #
-  zones_with_vals = zones.join(var_kv)\
-                         .values()\
+  zones_with_vals = list(zones.join(var_kv).values())\
                          .combineByKey(lambda value: (value, 1),\
                                        lambda x, value: (x[0] + value, x[1] + 1),\
                                        lambda x, y: (x[0] + y[0], x[1] + y[1]))\
-                         .map(lambda (label, (value_sum, count)): (label, value_sum / count))\
+                         .map(lambda label_value_sum_count: (label_value_sum_count[0], label_value_sum_count[1][0] / label_value_sum_count[1][1]))\
                          .partitionBy(nblocks,ParitionByBlockKeyField)
   zones_with_vals.saveAsTextFile("Recenter_%s.txt"%sys.argv[3]) 

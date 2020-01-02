@@ -35,9 +35,9 @@ output_dir  = pjoin(os.path.split(__file__)[0],"_output")
 class TestUlt(unittest.TestCase):
     def test_gen(self):
         crvs = []
-        for i in xrange(10):
+        for i in range(10):
             crv = ult.Curve(name="random_crv_%03d" % i)
-            for j in xrange(100):
+            for j in range(100):
                 crv.add_sample(j,random.random() * i)
             crvs.append(crv)
         self.assertEqual(10,len(crvs))

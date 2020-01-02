@@ -495,6 +495,8 @@ class CMakeGeneratorPlugin : public Plugin
         {
         out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
         out << endl;
+        out << "ADD_PLOT_CODE_GEN_TARGETS(" << name << ")" << endl;
+        out << endl;
         }
         out << "SET(COMMON_SOURCES" << endl;
         out << name << "PluginInfo.C" << endl;
@@ -735,6 +737,8 @@ class CMakeGeneratorPlugin : public Plugin
         {
         out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
         out << endl;
+        out << "ADD_OPERATOR_CODE_GEN_TARGETS(" << name << ")" << endl;
+        out << endl;
         }
         out << "SET(COMMON_SOURCES" << endl;
         out << name << "PluginInfo.C" << endl;
@@ -961,6 +965,8 @@ class CMakeGeneratorPlugin : public Plugin
         if (using_dev)
         {
         out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
+        out << endl;
+        out << "ADD_DATABASE_CODE_GEN_TARGETS(" << name << ")" << endl;
         out << endl;
         }
         out << "SET(COMMON_SOURCES" << endl;

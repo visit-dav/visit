@@ -32,11 +32,11 @@ def MyRender(fn):
     SaveWindow()
 
 def DeleteAddRender(p, v):
-    print "Rendering ", p, ":", v
+    print("Rendering ", p, ":", v)
     DeleteAllPlots()
     AddPlot(p, v)
     if p is "Pseudocolor":
-        print "Setting 60% transparency ..."
+        print("Setting 60% transparency ...")
         pcAtts = PseudocolorAttributes()
         pcAtts.opacity = 0.60
         SetPlotOptions(pcAtts)

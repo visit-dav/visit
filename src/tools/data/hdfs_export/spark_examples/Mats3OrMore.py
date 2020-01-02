@@ -43,7 +43,7 @@ def count_mats(volfracs):
 #
 if __name__ == "__main__":
   if len(sys.argv) < 2:
-    print >> sys.stderr, "Usage: Mats3OrMore <dbfile-pattern> "
+    print("Usage: Mats3OrMore <dbfile-pattern> ", file=sys.stderr)
     exit(-1)
 
   sc = SparkContext()
@@ -88,4 +88,4 @@ if __name__ == "__main__":
           if blockIdx == b[0][8:]:
               blockStr = b[1]
       zoneIdx = AsciiKeyToIndex(zone[0][12:]) / 8
-      print "user=%s, db=%s, state=%s, mesh=%s, block=%s, zone=%d has %d materials"%(userStr,dbStr,stateStr,meshStr,blockStr,zoneIdx,zone[1])
+      print("user=%s, db=%s, state=%s, mesh=%s, block=%s, zone=%d has %d materials"%(userStr,dbStr,stateStr,meshStr,blockStr,zoneIdx,zone[1]))
