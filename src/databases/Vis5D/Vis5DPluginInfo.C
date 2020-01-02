@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: Vis5DPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <Vis5DPluginInfo.h>
 

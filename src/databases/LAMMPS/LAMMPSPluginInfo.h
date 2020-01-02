@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               LAMMPSPluginInfo.h
+//  LAMMPSPluginInfo.h
 // ****************************************************************************
 
 #ifndef LAMMPS_PLUGIN_INFO_H

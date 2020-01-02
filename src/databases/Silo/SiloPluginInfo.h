@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               SiloPluginInfo.h
+//  SiloPluginInfo.h
 // ****************************************************************************
 
 #ifndef SILO_PLUGIN_INFO_H
@@ -48,9 +48,9 @@ class SiloCommonPluginInfo : public virtual CommonDatabasePluginInfo, public vir
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
-    virtual void                 SetReadOptions(DBOptionsAttributes *);
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
+    virtual void                          SetReadOptions(DBOptionsAttributes *);
 };
 
 class SiloMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual SiloCommonPluginInfo

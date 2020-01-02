@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <Boxlib3DPluginInfo.h>
-#include <avtBoxlibFileFormat.h>
+#include <avtBoxlib3DFileFormat.h>
 #include <avtSTMDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
 
@@ -45,11 +45,11 @@ Boxlib3DCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
     avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
-    for (int i = 0 ; i < nList ; i++)
+    for (int i = 0; i < nList; i++)
     {
         ffl[i] = new avtBoxlib3DFileFormat(list[i]);
     }
-    avtSTMDFileFormatInterface *inter 
+    avtSTMDFileFormatInterface *inter
            = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }

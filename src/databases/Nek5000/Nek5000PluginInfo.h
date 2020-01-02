@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               Nek5000PluginInfo.h
+//  Nek5000PluginInfo.h
 // ****************************************************************************
 
 #ifndef NEK5000_PLUGIN_INFO_H
@@ -48,8 +48,8 @@ class Nek5000CommonPluginInfo : public virtual CommonDatabasePluginInfo, public 
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class Nek5000MDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual Nek5000CommonPluginInfo

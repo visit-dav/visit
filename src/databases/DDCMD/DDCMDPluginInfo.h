@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               DDCMDPluginInfo.h
+//  DDCMDPluginInfo.h
 // ****************************************************************************
 
 #ifndef DDCMD_PLUGIN_INFO_H

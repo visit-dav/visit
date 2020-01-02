@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               WavefrontOBJPluginInfo.h
+//  WavefrontOBJPluginInfo.h
 // ****************************************************************************
 
 #ifndef WAVEFRONTOBJ_PLUGIN_INFO_H

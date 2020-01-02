@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               VsPluginInfo.h
+//  VsPluginInfo.h
 // ****************************************************************************
 
 #ifndef VS_PLUGIN_INFO_H
@@ -48,8 +48,8 @@ class VsCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtu
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class VsMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual VsCommonPluginInfo

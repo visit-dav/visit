@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               TCGAPluginInfo.h
+//  TCGAPluginInfo.h
 // ****************************************************************************
 
 #ifndef TCGA_PLUGIN_INFO_H
