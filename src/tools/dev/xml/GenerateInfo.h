@@ -10,7 +10,6 @@
 #include <visitstream.h>
 #include "Plugin.h"
 
-#define WRITE_LICENSE
 
 // ****************************************************************************
 //  File:  GenerateInfo
@@ -61,10 +60,10 @@
 //    Hank Childs, Fri Aug  1 10:39:50 PDT 2003
 //    Added support for curves.
 //
-//    Kathleen Bonnell, Thu Sep 11 10:29:34 PDT 2003 
+//    Kathleen Bonnell, Thu Sep 11 10:29:34 PDT 2003
 //    Added bool argument to InitializeOperatorAtts, and modified the code
 //    to initialize from the default atts or client atts based on the value
-//    of the flag. 
+//    of the flag.
 //
 //    Jeremy Meredith, Tue Sep 23 17:03:25 PDT 2003
 //    Made haswriter be a bool.  Added a missing semicolon in the outpus.
@@ -121,7 +120,7 @@
 //
 //   Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
 //   Renamed GetDefaultExtensions GetDfltExtsFromGen and moved from
-//   CommonPluginInfo to GeneralPluginInfo. Renamed GetFilenames to 
+//   CommonPluginInfo to GeneralPluginInfo. Renamed GetFilenames to
 //   GetFilenamesFromGen and moved to GeneralPluginInfo. This is to support
 //   matching plugin by extension/filename without having loaded all the
 //   plugins.
@@ -134,7 +133,7 @@
 //
 //   Brad Whitlock, Fri Apr 25 10:43:46 PDT 2008
 //   Changed code generation to better support internationalization. I also
-//   added support for putting user functions in the .code file and having 
+//   added support for putting user functions in the .code file and having
 //   them take effect here.
 //
 //   Cyrus Harrison, Tue Jul 22 10:27:10 PDT 2008
@@ -163,7 +162,7 @@
 //
 //   Jeremy Meredith, Tue Dec 29 11:21:30 EST 2009
 //   Replaced "Extensions" and "Filenames" with "FilePatterns".  Added
-//   filePatternsStrict and opensWholeDirectory. 
+//   filePatternsStrict and opensWholeDirectory.
 //
 //   Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
 //   MTSD files can now be grouped not just into a faux MD format by having
@@ -203,6 +202,9 @@
 //   Modified InitializeGlobalObjects to eliminate a memory leak if it is
 //   called more than once.
 //
+//   Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
+//   Added hl arg, for haslicense.
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -212,8 +214,8 @@ class InfoGeneratorPlugin : public Plugin
 
     InfoGeneratorPlugin(const QString &n,const QString &l,const QString &t,
         const QString &vt,const QString &dt, const QString &v, const QString &ifile,
-        bool hw, bool ho, bool onlyengine, bool noengine) : 
-        Plugin(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine), generatorName("xml2info")
+        bool hw, bool ho, bool hl, bool onlyengine, bool noengine) :
+        Plugin(n,l,t,vt,dt,v,ifile,hw,ho,hl,onlyengine,noengine), generatorName("xml2info")
     {
     }
 
@@ -233,7 +235,7 @@ class InfoGeneratorPlugin : public Plugin
         return retval;
     }
 
-    // Returns true if we're replacing a required built-in function and write 
+    // Returns true if we're replacing a required built-in function and write
     // the definition.
     bool ReplaceBuiltin(QTextStream &c, const QString &funcName)
     {
@@ -244,7 +246,7 @@ class InfoGeneratorPlugin : public Plugin
         for (unsigned int n=0; n<atts->functions.size(); n++)
         {
             Function *f = atts->functions[n];
-            if (!f->user && 
+            if (!f->user &&
                 f->member &&
                 f->target == generatorName &&
                 f->name == funcName)
@@ -253,7 +255,7 @@ class InfoGeneratorPlugin : public Plugin
                 retval = true;
                 break;
             }
-        } 
+        }
         return retval;
     }
 
@@ -308,7 +310,7 @@ class InfoGeneratorPlugin : public Plugin
             if(functionInfoClass != infoClass)
                 continue;
 
-            if (atts->functions[i]->user && 
+            if (atts->functions[i]->user &&
                 atts->functions[i]->member &&
                 atts->functions[i]->target == generatorName)
             {
@@ -378,9 +380,9 @@ class InfoGeneratorPlugin : public Plugin
         if (type=="operator")
         {
             h << copyright_str << endl;
-            h << "// ************************************************************************* //" << endl;
+            h << "// ****************************************************************************" << endl;
             h << "//  File: "<<name<<"PluginInfo.h" << endl;
-            h << "// ************************************************************************* //" << endl;
+            h << "// ****************************************************************************" << endl;
             h << endl;
             h << "#ifndef "<<name.toUpper()<<"_PLUGIN_INFO_H" << endl;
             h << "#define "<<name.toUpper()<<"_PLUGIN_INFO_H" << endl;
@@ -534,7 +536,7 @@ class InfoGeneratorPlugin : public Plugin
         {
             h << copyright_str << endl;
             h << "// ************************************************************************* //" << endl;
-            h << "//                               "<<name<<"PluginInfo.h                            //" << endl;
+            h << "//  "<<name<<"PluginInfo.h" << endl;
             h << "// ************************************************************************* //" << endl;
             h << endl;
             h << "#ifndef "<<name.toUpper()<<"_PLUGIN_INFO_H" << endl;
@@ -596,7 +598,7 @@ class InfoGeneratorPlugin : public Plugin
             {
                 h << "    virtual QvisWizard *CreatePluginWizard(AttributeSubject *attr, QWidget *parent," << endl;
                 h << "        const std::string &varName, const avtDatabaseMetaData *md," << endl;
-                h << "        const ExpressionList *expList); " << endl;
+                h << "        const ExpressionList *expList);" << endl;
             }
             if(iconFile.length() > 0)
                 h << "    virtual const char **XPMIconData() const;" << endl;
@@ -699,7 +701,7 @@ class InfoGeneratorPlugin : public Plugin
         {
             h << copyright_str << endl;
             h << "// ****************************************************************************" << endl;
-            h << "//                               "<<name<<"PluginInfo.h" << endl;
+            h << "//  "<<name<<"PluginInfo.h" << endl;
             h << "// ****************************************************************************" << endl;
             h << "" << endl;
             h << "#ifndef "<<name.toUpper()<<"_PLUGIN_INFO_H" << endl;
@@ -746,17 +748,18 @@ class InfoGeneratorPlugin : public Plugin
             h << "                                                    int nList, int nBlock);" << endl;
             if (hasoptions)
             {
-                h << "    virtual DBOptionsAttributes *GetReadOptions() const;"
+                h << "    virtual DBOptionsAttributes      *GetReadOptions() const;"
                   << endl;
-                h << "    virtual DBOptionsAttributes *GetWriteOptions() const;"
+                h << "    virtual DBOptionsAttributes      *GetWriteOptions() const;"
                   << endl;
                 QString infoName = name + "CommonPluginInfo";
                 if(OverrideBuiltin(infoName + "::SetReadOptions"))
-                    h << "    virtual void                 SetReadOptions(DBOptionsAttributes *);" << endl;
+                    h << "    virtual void                          SetReadOptions(DBOptionsAttributes *);" << endl;
             }
-#ifdef WRITE_LICENSE
-            h << "    virtual std::string               GetLicense() const;" << endl;
-#endif
+            if (haslicense)
+            {
+                h << "    virtual std::string               GetLicense() const;" << endl;
+            }
             h << "};" << endl;
             h << "" << endl;
             QString infoName = name + "MDServerPluginInfo";
@@ -796,9 +799,9 @@ class InfoGeneratorPlugin : public Plugin
     void WriteInfoSource(QTextStream &c)
     {
         c << copyright_str << endl;
-        c << "// ************************************************************************* //" << endl;
+        c << "// ****************************************************************************" << endl;
         c << "//  File: "<<name<<"PluginInfo.C" << endl;
-        c << "// ************************************************************************* //" << endl;
+        c << "// ****************************************************************************" << endl;
         c << endl;
         c << "#include <"<<name<<"PluginInfo.h>" << endl;
         if (type!="database")
@@ -991,7 +994,7 @@ class InfoGeneratorPlugin : public Plugin
     void AddExpressionFromMD(QTextStream &c, QString opName, std::vector<QString> outtypes, QString typeToLookForS, QString typeToLookForP)
     {
         c << "    int num" << typeToLookForP << " = md->GetNum" << typeToLookForP << "();" << endl;
-        c << "    for (i = 0 ; i < num" << typeToLookForP << " ; i++)" << endl;
+        c << "    for (int i = 0; i < num" << typeToLookForP << "; i++)" << endl;
         c << "    {" << endl;
         c << "        const avt" << typeToLookForS << "MetaData *mmd = md->Get" << typeToLookForS << "(i);" << endl;
         c << "        if (mmd->hideFromGUI || !mmd->validVariable)" << endl;
@@ -1075,8 +1078,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << "    return DB_TYPE_"<<dbtype.toUpper()<<";" << endl;
                 c << "}" << endl;
             }
-            c << "" << endl;
-
+            c << endl;
             // Write SetupDatabase
             funcName = name + "CommonPluginInfo::SetupDatabase";
             if(!ReplaceBuiltin(c, funcName))
@@ -1110,10 +1112,10 @@ class InfoGeneratorPlugin : public Plugin
                 {
                     c << "    int nTimestep = nList / nBlock;" << endl;
                     c << "    avtSTSDFileFormat ***ffl = new avtSTSDFileFormat**[nTimestep];" << endl;
-                    c << "    for (int i = 0 ; i < nTimestep ; i++)" << endl;
+                    c << "    for (int i = 0; i < nTimestep; i++)" << endl;
                     c << "    {" << endl;
                     c << "        ffl[i] = new avtSTSDFileFormat*[nBlock];" << endl;
-                    c << "        for (int j = 0 ; j < nBlock ; j++)" << endl;
+                    c << "        for (int j = 0; j < nBlock; j++)" << endl;
                     c << "        {" << endl;
                     if (hasoptions)
                         c << "            ffl[i][j] = new avt"<<name<<"FileFormat(list[i*nBlock + j], readOptions);" << endl;
@@ -1121,21 +1123,21 @@ class InfoGeneratorPlugin : public Plugin
                         c << "            ffl[i][j] = new avt"<<name<<"FileFormat(list[i*nBlock + j]);" << endl;
                     c << "        }" << endl;
                     c << "    }" << endl;
-                    c << "    avtSTSDFileFormatInterface *inter " << endl;
+                    c << "    avtSTSDFileFormatInterface *inter" << endl;
                     c << "           = new avtSTSDFileFormatInterface(ffl, nTimestep, nBlock);" << endl;
                     c << "    return new avtGenericDatabase(inter);" << endl;
                 }
                 else if (dbtype == "STMD")
                 {
                     c << "    avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];" << endl;
-                    c << "    for (int i = 0 ; i < nList ; i++)" << endl;
+                    c << "    for (int i = 0; i < nList; i++)" << endl;
                     c << "    {" << endl;
                     if (hasoptions)
                         c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i], readOptions);" << endl;
                     else
                         c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i]);" << endl;
                     c << "    }" << endl;
-                    c << "    avtSTMDFileFormatInterface *inter " << endl;
+                    c << "    avtSTMDFileFormatInterface *inter" << endl;
                     c << "           = new avtSTMDFileFormatInterface(ffl, nList);" << endl;
                     c << "    return new avtGenericDatabase(inter);" << endl;
                 }
@@ -1143,10 +1145,10 @@ class InfoGeneratorPlugin : public Plugin
                 {
                     c << "    int nTimestepGroups = nList / nBlock;" << endl;
                     c << "    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];" << endl;
-                    c << "    for (int i = 0 ; i < nTimestepGroups ; i++)" << endl;
+                    c << "    for (int i = 0; i < nTimestepGroups; i++)" << endl;
                     c << "    {" << endl;
                     c << "        ffl[i] = new avtMTSDFileFormat*[nBlock];" << endl;
-                    c << "        for (int j = 0 ; j < nBlock ; j++)" << endl;
+                    c << "        for (int j = 0; j < nBlock; j++)" << endl;
                     c << "        {" << endl;
                     if (hasoptions)
                         c << "            ffl[i][j] = new avt"<<name<<"FileFormat(list[i*nBlock + j], readOptions);" << endl;
@@ -1154,7 +1156,7 @@ class InfoGeneratorPlugin : public Plugin
                         c << "            ffl[i][j] = new avt"<<name<<"FileFormat(list[i*nBlock + j]);" << endl;
                     c << "        }" << endl;
                     c << "    }" << endl;
-                    c << "    avtMTSDFileFormatInterface *inter " << endl;
+                    c << "    avtMTSDFileFormatInterface *inter" << endl;
                     c << "           = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);" << endl;
                     c << "    return new avtGenericDatabase(inter);" << endl;
                 }
@@ -1163,14 +1165,14 @@ class InfoGeneratorPlugin : public Plugin
                     c << "    // ignore any nBlocks past 1" << endl;
                     c << "    int nTimestepGroups = nList / nBlock;" << endl;
                     c << "    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];" << endl;
-                    c << "    for (int i = 0 ; i < nTimestepGroups ; i++)" << endl;
+                    c << "    for (int i = 0; i < nTimestepGroups; i++)" << endl;
                     c << "    {" << endl;
                     if (hasoptions)
                         c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i*nBlock], readOptions);" << endl;
                     else
                         c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i*nBlock]);" << endl;
                     c << "    }" << endl;
-                    c << "    avtMTMDFileFormatInterface *inter " << endl;
+                    c << "    avtMTMDFileFormatInterface *inter" << endl;
                     c << "           = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);" << endl;
                     c << "    return new avtGenericDatabase(inter);" << endl;
                 }
@@ -1187,7 +1189,7 @@ class InfoGeneratorPlugin : public Plugin
                 funcName = name + "CommonPluginInfo::GetReadOptions";
                 if(!ReplaceBuiltin(c, funcName))
                 {
-                    c << "" << endl;
+                    c << endl;
                     c << "// ****************************************************************************" << endl;
                     c << "//  Method: "<<funcName << endl;
                     c << "//" << endl;
@@ -1208,6 +1210,7 @@ class InfoGeneratorPlugin : public Plugin
                 funcName = name + "CommonPluginInfo::GetWriteOptions";
                 if(!ReplaceBuiltin(c, funcName))
                 {
+                    c << endl;
                     c << "// ****************************************************************************" << endl;
                     c << "//  Method: "<<funcName << endl;
                     c << "//" << endl;
@@ -1225,38 +1228,23 @@ class InfoGeneratorPlugin : public Plugin
                     c << "    return Get"<<name<<"WriteOptions();" << endl;
                     c << "}" << endl;
                 }
+                c << endl;
                 funcName = name + "CommonPluginInfo::SetReadOptions";
                 ReplaceBuiltin(c, funcName);
             }
-#ifdef WRITE_LICENSE
-            funcName = name + "CommonPluginInfo::GetLicense";
-            if(!ReplaceBuiltin(c, funcName))
+            if(haslicense)
             {
-                c << "// ****************************************************************************" << endl;
-                c << "//  Method: "<<funcName << endl;
-                c << "//" << endl;
-                c << "//  Purpose:" << endl;
-                c << "//      Gets the write options." << endl;
-                c << "//" << endl;
-                c << "//  Programmer: generated by xml2info" << endl;
-                c << "//  Creation:   omitted"<< endl;
-                c << "//" << endl;
-                c << "// ****************************************************************************" << endl;
                 c << endl;
-                c << "std::string" << endl;
-                c << funcName << "() const" << endl;
-                c << "{" << endl;
-                c << "    return std::string();" << endl;
-                c << "}" << endl;
+                funcName = name + "CommonPluginInfo::GetLicense";
+                ReplaceBuiltin(c, funcName);
             }
-#endif
         }
         else
         {
             c << copyright_str << endl;
-            c << "// ************************************************************************* //" << endl;
+            c << "// ****************************************************************************" << endl;
             c << "//  File: "<<name<<"CommonPluginInfo.C" << endl;
-            c << "// ************************************************************************* //" << endl;
+            c << "// ****************************************************************************" << endl;
             c << endl;
             c << "#include <"<<name<<"PluginInfo.h>" << endl;
             c << "#include <"<<atts->name<<".h>" << endl;
@@ -1266,18 +1254,32 @@ class InfoGeneratorPlugin : public Plugin
                 c << "#include <Expression.h>" << endl;
                 c << "#include <ExpressionList.h>" << endl;
                 c << "#include <avtDatabaseMetaData.h>" << endl;
-                c << "#include <avtMeshMetaData.h>" << endl;
-                c << "#include <avtSubsetsMetaData.h>" << endl;
-                c << "#include <avtScalarMetaData.h>" << endl;
-                c << "#include <avtVectorMetaData.h>" << endl;
-                c << "#include <avtTensorMetaData.h>" << endl;
-                c << "#include <avtSymmetricTensorMetaData.h>" << endl;
-                c << "#include <avtArrayMetaData.h>" << endl;
-                c << "#include <avtMaterialMetaData.h>" << endl;
-                c << "#include <avtSpeciesMetaData.h>" << endl;
-                c << "#include <avtCurveMetaData.h>" << endl;
-                c << "#include <avtLabelMetaData.h>" << endl;
-
+                std::vector<QString> intypes = SplitValues(exprInType);
+                for (size_t i = 0; i < intypes.size(); i++)
+                {
+                    if (intypes[i] == "mesh")
+                        c << "#include <avtMeshMetaData.h>" << endl;
+                    else if (intypes[i] == "scalar")
+                        c << "#include <avtScalarMetaData.h>" << endl;
+                    else if (intypes[i] == "vector")
+                        c << "#include <avtVectorMetaData.h>" << endl;
+                    else if (intypes[i] == "material")
+                        c << "#include <avtMaterialMetaData.h>" << endl;
+                    else if (intypes[i] == "subset")
+                        c << "#include <avtSubsetsMetaData.h>" << endl;
+                    else if (intypes[i] == "species")
+                        c << "#include <avtSpeciesMetaData.h>" << endl;
+                    else if (intypes[i] == "curve")
+                        c << "#include <avtCurveMetaData.h>" << endl;
+                    else if (intypes[i] == "tensor")
+                        c << "#include <avtTensorMetaData.h>" << endl;
+                    else if (intypes[i] == "symmetrictensor")
+                        c << "#include <avtSymmetricTensorMetaData.h>" << endl;
+                    else if (intypes[i] == "label")
+                        c << "#include <avtLabelMetaData.h>" << endl;
+                    else if (intypes[i] == "array")
+                        c << "#include <avtArrayMetaData.h>" << endl;
+                }
                 c << endl;
             }
             QString funcName = name + "CommonPluginInfo::AllocAttributes";
@@ -1321,7 +1323,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << "//" << endl;
                 c << "// ****************************************************************************" << endl;
                 c << endl;
-                c << "void " << endl;
+                c << "void" << endl;
                 c << funcName<<"(AttributeSubject *to," << endl;
                 c << "    AttributeSubject *from)" << endl;
                 c << "{" << endl;
@@ -1350,7 +1352,7 @@ class InfoGeneratorPlugin : public Plugin
                 bool doMesh = false, doScalar = false, doVector = false, doTensor = false, doMaterial = false;
                 bool doSubset = false, doSpecies = false, doCurve = false, doSymmTensor = false;
                 bool doLabel = false, doArray = false;
-                for (size_t i = 0 ; i < intypes.size() ; i++)
+                for (size_t i = 0; i < intypes.size(); i++)
                 {
                     if (intypes[i] == "mesh")
                         doMesh = true;
@@ -1378,7 +1380,7 @@ class InfoGeneratorPlugin : public Plugin
                 std::vector<QString> outtypes = SplitValues(exprOutType);
                 std::vector<QString> outExprTypes;
                 bool haveScalar = false, haveTensor = false;
-                for (size_t i = 0 ; i < outtypes.size() ; i++)
+                for (size_t i = 0; i < outtypes.size(); i++)
                 {
                     if (outtypes[i] == "mesh")
                         cerr << "Mesh expressions not currently supported." << endl;
@@ -1419,7 +1421,6 @@ class InfoGeneratorPlugin : public Plugin
                     if (outtypes[i] == "array")
                         outExprTypes.push_back("ArrayMeshVar");
                 }
-                c << "    int i;" << endl;
                 c << "    char name[1024], defn[1024];" << endl;
                 c << "    ExpressionList *el = new ExpressionList;" << endl;
                 if (doMesh)
@@ -1432,11 +1433,11 @@ class InfoGeneratorPlugin : public Plugin
                     AddExpressionFromMD(c, name, outExprTypes, QString("Tensor"), QString("Tensors"));
                 if (doMaterial || doSubset || doSpecies || doCurve || doLabel || doArray)
                     cerr << "Unsupported variable type for creating an expression.  Contact a VisIt developer." << endl;
-               
+
                 if (doScalar || doVector || doTensor || doSymmTensor)
-                { 
+                {
                     c << "    const ExpressionList &oldEL = md->GetExprList();" << endl;
-                    c << "    for (i = 0 ; i < oldEL.GetNumExpressions() ; i++)" << endl;
+                    c << "    for (int i = 0; i < oldEL.GetNumExpressions(); i++)" << endl;
                     c << "    {" << endl;
                     c << "        const Expression &e = oldEL.GetExpressions(i);" << endl;
                     if (doScalar)
@@ -1446,7 +1447,7 @@ class InfoGeneratorPlugin : public Plugin
                     if (doTensor || doSymmTensor)
                         AddExpressionFromExpr(c, name, outExprTypes, QString("TensorMeshVar"));
                     c << "    }" << endl;
-                } 
+                }
                 c << "    return el;" << endl;
                 c << "}" << endl;
                 c << endl;
@@ -1457,10 +1458,11 @@ class InfoGeneratorPlugin : public Plugin
                 funcName = name + "CommonPluginInfo::GetVariableTypes";
                 if(!ReplaceBuiltin(c, funcName))
                 {
+                    c << endl;
                     c << "// ****************************************************************************" << endl;
                     c << "// Method: "<<funcName << endl;
                     c << "//" << endl;
-                    c << "// Purpose: " << endl;
+                    c << "// Purpose:" << endl;
                     c << "//   Returns a flag indicating the types of variables that can be put in the" << endl;
                     c << "//   plot's variable list." << endl;
                     c << "//" << endl;
@@ -1471,7 +1473,7 @@ class InfoGeneratorPlugin : public Plugin
                     c << "//  Creation:   omitted"<< endl;
                     c << "//" << endl;
                     c << "// Modifications:" << endl;
-                    c << "//   " << endl;
+                    c << "//" << endl;
                     c << "// ****************************************************************************" << endl;
                     c << endl;
                     c << "int" << endl;
@@ -1527,9 +1529,9 @@ class InfoGeneratorPlugin : public Plugin
             return;
 
         c << copyright_str << endl;
-        c << "// ************************************************************************* //" << endl;
+        c << "// ****************************************************************************" << endl;
         c << "//  File: "<<name<<"GUIPluginInfo.C" << endl;
-        c << "// ************************************************************************* //" << endl;
+        c << "// ****************************************************************************" << endl;
         c << endl;
         c << "#include <"<<name<<"PluginInfo.h>" << endl;
         c << "#include <"<<atts->name<<".h>" << endl;
@@ -1629,7 +1631,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << "#include <" << iconFile << ">" << endl;
                 c << "const char **" << endl;
                 c << funcName << "() const" << endl;
-                c << "{" << endl;        
+                c << "{" << endl;
                 c << "    return " << iconFile.left(iconFile.length() - 4) << "_xpm;" << endl;
                 c << "}" << endl;
             }
@@ -1645,9 +1647,9 @@ class InfoGeneratorPlugin : public Plugin
             return;
 
         c << copyright_str << endl;
-        c << "// ************************************************************************* //" << endl;
+        c << "// ****************************************************************************" << endl;
         c << "//  File: "<<name<<"ViewerPluginInfo.C" << endl;
-        c << "// ************************************************************************* //" << endl;
+        c << "// ****************************************************************************" << endl;
         c << endl;
         c << "#include <"<<name<<"PluginInfo.h>" << endl;
         if (type=="operator")
@@ -1682,7 +1684,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << "#include <" << iconFile << ">" << endl;
                 c << "const char **" << endl;
                 c << funcName<<"() const" << endl;
-                c << "{" << endl;        
+                c << "{" << endl;
                 c << "    return " << iconFile.left(iconFile.length() - 4) << "_xpm;" << endl;
                 c << "}" << endl;
             }
@@ -1709,9 +1711,9 @@ class InfoGeneratorPlugin : public Plugin
             return;
 
         c << copyright_str << endl;
-        c << "// ************************************************************************* //" << endl;
+        c << "// ****************************************************************************" << endl;
         c << "//  File: "<<name<<"ViewerEnginePluginInfo.C" << endl;
-        c << "// ************************************************************************* //" << endl;
+        c << "// ****************************************************************************" << endl;
         c << endl;
         c << "#include <"<<name<<"PluginInfo.h>" << endl;
         if (type=="plot")
@@ -2090,7 +2092,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << "{" << endl;
                 if (haswriter)
                     if (hasoptions)
-                        c << "    return new avt"<<name<<"Writer(writeOptions);" 
+                        c << "    return new avt"<<name<<"Writer(writeOptions);"
                           << endl;
                     else
                         c << "    return new avt"<<name<<"Writer;" << endl;
@@ -2103,9 +2105,9 @@ class InfoGeneratorPlugin : public Plugin
         else
         {
             c << copyright_str << endl;
-            c << "// ************************************************************************* //" << endl;
+            c << "// ****************************************************************************" << endl;
             c << "//  File: "<<name<<"EnginePluginInfo.C" << endl;
-            c << "// ************************************************************************* //" << endl;
+            c << "// ****************************************************************************" << endl;
             c << endl;
             c << "#include <"<<name<<"PluginInfo.h>" << endl;
             if (type=="operator")
@@ -2155,7 +2157,7 @@ class InfoGeneratorPlugin : public Plugin
 
         c << copyright_str << endl;
         c << "// ************************************************************************* //" << endl;
-        c << "//                        "<<name<<"ScriptingPluginInfo.C" << endl;
+        c << "//  "<<name<<"ScriptingPluginInfo.C" << endl;
         c << "// ************************************************************************* //" << endl;
         c << "#include <Py"<<atts->name<<".h>" << endl;
         c << "#include <"<<name<<"PluginInfo.h>" << endl;
@@ -2172,7 +2174,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "// ****************************************************************************" << endl;
             c << "// Method: "<<funcName << endl;
             c << "//" << endl;
-            c << "// Purpose: " << endl;
+            c << "// Purpose:" << endl;
             c << "//   Calls the initialization function for the plugin." << endl;
             c << "//" << endl;
             c << "// Arguments:" << endl;
@@ -2183,7 +2185,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "//  Creation:   omitted"<< endl;
             c << "//" << endl;
             c << "// Modifications:" << endl;
-            c << "//   " << endl;
+            c << "//" << endl;
             c << "// ****************************************************************************" << endl;
             c << "" << endl;
             c << "void" << endl;
@@ -2200,7 +2202,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "// ****************************************************************************" << endl;
             c << "// Method: "<<funcName << endl;
             c << "//" << endl;
-            c << "// Purpose: " << endl;
+            c << "// Purpose:" << endl;
             c << "//   Returns a pointer to the plugin's Python method table. These methods are" << endl;
             c << "//   added to the top-level visit module's methods." << endl;
             c << "//" << endl;
@@ -2213,7 +2215,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "//  Creation:   omitted"<< endl;
             c << "//" << endl;
             c << "// Modifications:" << endl;
-            c << "//   " << endl;
+            c << "//" << endl;
             c << "// ****************************************************************************" << endl;
             c << "" << endl;
             c << "void *" << endl;
@@ -2229,7 +2231,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "// ****************************************************************************" << endl;
             c << "// Method: " << funcName << endl;
             c << "//" << endl;
-            c << "// Purpose: " << endl;
+            c << "// Purpose:" << endl;
             c << "//   Returns whether or not the input PyObject is "<<name<<" plot attributes." << endl;
             c << "//" << endl;
             c << "// Arguments:" << endl;
@@ -2239,7 +2241,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "//  Creation:   omitted"<< endl;
             c << "//" << endl;
             c << "// Modifications:" << endl;
-            c << "//   " << endl;
+            c << "//" << endl;
             c << "// ****************************************************************************" << endl;
             c << "" << endl;
             c << "bool" << endl;
@@ -2255,7 +2257,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "// ****************************************************************************" << endl;
             c << "// Method: " << funcName << endl;
             c << "//" << endl;
-            c << "// Purpose: " << endl;
+            c << "// Purpose:" << endl;
             c << "//   Gets a string representation of the current attributes." << endl;
             c << "//" << endl;
             c << "// Arguments:" << endl;
@@ -2265,7 +2267,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "//  Creation:   omitted"<< endl;
             c << "//" << endl;
             c << "// Modifications:" << endl;
-            c << "//   " << endl;
+            c << "//" << endl;
             c << "// ****************************************************************************" << endl;
             c << endl;
             c << "char *" << endl;
@@ -2284,7 +2286,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "// ****************************************************************************" << endl;
             c << "// Method: " << funcName << endl;
             c << "//" << endl;
-            c << "// Purpose: " << endl;
+            c << "// Purpose:" << endl;
             c << "//   Used to set the default values for a plugin's state object." << endl;
             c << "//" << endl;
             c << "// Arguments:" << endl;
@@ -2294,7 +2296,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "//  Creation:   omitted"<< endl;
             c << "//" << endl;
             c << "// Modifications:" << endl;
-            c << "//   " << endl;
+            c << "//" << endl;
             c << "// ****************************************************************************" << endl;
             c << endl;
             c << "void" << endl;

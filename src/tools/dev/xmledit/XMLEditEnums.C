@@ -33,7 +33,7 @@ XMLEditEnums::XMLEditEnums(QWidget *p)
     : QFrame(p)
 {
     QHBoxLayout *hLayout = new QHBoxLayout(this);
-    
+
     QGridLayout *listLayout = new QGridLayout;
 
     enumlist = new QListWidget(this);
@@ -44,8 +44,8 @@ XMLEditEnums::XMLEditEnums(QWidget *p)
 
     delButton = new QPushButton(tr("Del"), this);
     listLayout->addWidget(delButton, 1,1);
-    
-    hLayout->addLayout(listLayout); 
+
+    hLayout->addLayout(listLayout);
     hLayout->addSpacing(10);
 
     QGridLayout *topLayout = new QGridLayout();
@@ -69,7 +69,7 @@ XMLEditEnums::XMLEditEnums(QWidget *p)
 
     topLayout->setRowMinimumHeight(row, 20);
     row++;
-    hLayout->addLayout(topLayout); 
+    hLayout->addLayout(topLayout);
 
     // ------------------------------------------------------------
 
@@ -79,7 +79,7 @@ XMLEditEnums::XMLEditEnums(QWidget *p)
             this, SLOT(nameTextChanged(const QString&)));
     connect(valuelist, SIGNAL(textChanged()),
             this, SLOT(valuelistChanged()));
-    
+
     connect(newButton, SIGNAL(pressed()),
             this, SLOT(enumlistNew()));
     connect(delButton, SIGNAL(pressed()),
@@ -355,7 +355,7 @@ XMLEditEnums::enumlistNew()
         if (!okay)
             newid++;
     }
-    
+
     EnumType *e = new EnumType(newtype);
     EnumType::enums.push_back(e);
     UpdateWindowContents();

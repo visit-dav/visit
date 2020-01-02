@@ -13,14 +13,14 @@
 // ****************************************************************************
 // Method: XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:24:29 PST 2008
@@ -35,7 +35,7 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent) :
     QDialog(parent)
 {
     QVBoxLayout *topLayout = new QVBoxLayout(this);
-    
+
     QHBoxLayout *hLayout = new QHBoxLayout();
     hLayout->setSpacing(10);
 
@@ -74,7 +74,7 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent) :
     hLayout->addWidget(pluginGroup);
 
     topLayout->addLayout(hLayout);
-    
+
     // Add some buttons
     QHBoxLayout *bLayout = new QHBoxLayout();
     bLayout->setSpacing(5);
@@ -83,9 +83,9 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent) :
     QPushButton *cancel = new QPushButton(tr("Cancel"), this);
     bLayout->addWidget(cancel);
     bLayout->addWidget(okay);
-// 
+//
     topLayout->addLayout(bLayout);
-    
+
     connect(okay, SIGNAL(clicked()), this, SLOT(accept()));
     connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
 }
@@ -93,20 +93,20 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent) :
 // ****************************************************************************
 // Method: XMLEditCodeSelectionDialog::~XMLEditCodeSelectionDialog
 //
-// Purpose: 
+// Purpose:
 //   Destructor.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:24:40 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 XMLEditCodeSelectionDialog::~XMLEditCodeSelectionDialog()
@@ -116,7 +116,7 @@ XMLEditCodeSelectionDialog::~XMLEditCodeSelectionDialog()
 // ****************************************************************************
 // Method: XMLEditCodeSelectionDialog::selectTools
 //
-// Purpose: 
+// Purpose:
 //   Static function that lets the user select the tools to invoke.
 //
 // Arguments:
@@ -124,19 +124,19 @@ XMLEditCodeSelectionDialog::~XMLEditCodeSelectionDialog()
 //   useTools    : The tools that will be used. Input/Output arg.
 //   toolEnabled : Which tools will be enabled.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:24:48 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
-XMLEditCodeSelectionDialog::selectTools(const QString &caption, 
+XMLEditCodeSelectionDialog::selectTools(const QString &caption,
     bool *_useTools, const bool *_toolEnabled)
 {
     XMLEditCodeSelectionDialog *inst = new XMLEditCodeSelectionDialog(0);
