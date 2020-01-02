@@ -19,7 +19,7 @@ import re
 import imp
 import datetime
 
-from property_tree import PropertyTree
+from .property_tree import PropertyTree
 
 try:
     import visit
@@ -112,7 +112,7 @@ def lsearch(l,pattern):
 def sexe(cmd,ret_output=False,echo = False):
     """ Helper for executing shell commands. """
     if echo:
-        print "[exe: %s]" % cmd
+        print("[exe: %s]" % cmd)
     if ret_output:
         p = subprocess.Popen(cmd,
                              shell=True,

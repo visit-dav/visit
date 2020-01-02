@@ -91,7 +91,7 @@ def test1():
         elif expr.type == expr.ArrayMeshVar:
             AddPlot("Label", expr.name)
         else:
-            print "Add support for plotting expression: ", expr
+            print("Add support for plotting expression: ", expr)
         DrawPlots()
         ResetView()
         testName = "metadata_1_expr_" + MakeSafe(expr.name)

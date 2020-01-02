@@ -2,9 +2,17 @@
 #   The Parser class is the Python Source Parser
 #   taken from http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/52298
 #############################################################################
-
+from __future__ import print_function
 # Imports
-import cgi, string, sys, cStringIO
+import sys
+import cgi
+import string
+
+if (sys.version_info > (3, 0)):
+    import io
+else:
+    import cStringIO as io
+
 import keyword, token, tokenize
 
 from os.path import join as pjoin
@@ -47,23 +55,25 @@ class Parser:
 
         # parse the source and write it
         self.pos = 0
-        text = cStringIO.StringIO(self.raw)
+        text = io.StringIO(self.raw)
         self.out.write('<html><body bgcolor="#e0e0e0"><head><title>%s</title></head><pre><font face="Lucida,Courier New">'%title)
         try:
             tokenize.tokenize(text.readline, self)
-        except tokenize.TokenError, ex:
+        except tokenize.TokenError as ex:
             msg = ex[0]
             line = ex[1][0]
             self.out.write("<h3>ERROR: %s</h3>%s\n" % (
                 msg, self.raw[self.lines[line]:]))
         self.out.write('</font></pre></body></html>')
 
-    def __call__(self, toktype, toktext, (srow,scol), (erow,ecol), line):
+    def __call__(self, toktype, toktext, tok_start, tok_end, line):
         """ Token handler.
         """
+        (srow,scol) = tok_start
+        (erow,ecol) = tok_end
         if 0:
-            print "type", toktype, token.tok_name[toktype], "text", toktext,
-            print "start", srow,scol, "end", erow,ecol, "<br>"
+            print("type", toktype, token.tok_name[toktype], "text", toktext, end=' ')
+            print("start", srow,scol, "end", erow,ecol, "<br>")
 
         # calculate new positions
         oldpos = self.pos

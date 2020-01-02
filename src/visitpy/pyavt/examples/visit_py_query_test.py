@@ -16,11 +16,11 @@ if __name__ == "__main__":
     AddPlot("Pseudocolor","d")
     DrawPlots()
     if not PythonQuery(file=script_path()):
-        print "Error Executing Python Query!"
+        print("Error Executing Python Query!")
     else:
-        print "Python Query Results:"
-        print " ", GetQueryOutputString()
-        print " ", GetQueryOutputValue()
+        print("Python Query Results:")
+        print(" ", GetQueryOutputString())
+        print(" ", GetQueryOutputValue())
     sys.exit(0)
 
 

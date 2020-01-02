@@ -80,10 +80,6 @@ QvisLCSWindow::~QvisLCSWindow()
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
-// Modifications:
-//   Kathleen Biagas, Fri Nov  8 08:08:13 PST 2019
-//   Added sourceTab to hold Source and Field widgets.
-//
 // ****************************************************************************
 
 void
@@ -93,18 +89,18 @@ QvisLCSWindow::CreateWindowContents()
     topLayout->addWidget(propertyTabs);
 
     // ----------------------------------------------------------------------
-    // Source/Field tab
-    // ----------------------------------------------------------------------
-    QWidget *sourceTab = new QWidget();
-    propertyTabs->addTab(sourceTab, tr("Source"));
-    CreateSourceTab(sourceTab);
-
-    // ----------------------------------------------------------------------
     // Integration tab
     // ----------------------------------------------------------------------
     QWidget *integrationTab = new QWidget();
     propertyTabs->addTab(integrationTab, tr("Integration"));
     CreateIntegrationTab(integrationTab);
+
+    // ----------------------------------------------------------------------
+    // LCS tab
+    // ----------------------------------------------------------------------
+    QWidget *LCSTab = new QWidget();
+    propertyTabs->addTab(LCSTab, tr("LCS"));
+    CreateLCSTab(LCSTab);
 
     // ----------------------------------------------------------------------
     // Appearance tab
@@ -123,43 +119,35 @@ QvisLCSWindow::CreateWindowContents()
 
 
 // ****************************************************************************
-// Method: QvisLCSWindow::CreateSourceTab
+// Method: QvisLCSWindow::CreateIntegrationTab
 //
 // Purpose:
-//   Populates the source tab.
+//   Populates the integration tab.
 //
 // Programmer: Dave Pugmire
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
-// Modifications:
-//    Kathleen Biagas, Fri Nov  8 08:09:13 PST 2019
-//    Content moved from Integration tab.
-//
 // ****************************************************************************
 
 void
-QvisLCSWindow::CreateSourceTab(QWidget *pageSource)
+QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
 {
-    QVBoxLayout *sLayout = new QVBoxLayout(pageSource);
-
-    QGridLayout *mainLayout = new QGridLayout();
+    QGridLayout *mainLayout = new QGridLayout(pageIntegration);
     mainLayout->setMargin(5);
     mainLayout->setSpacing(10);
 
-    sLayout->addLayout(mainLayout);
-    sLayout->addStretch(1);
-
     // Create the source group box.
-    QGroupBox *sourceGroup = new QGroupBox();
+    QGroupBox *sourceGroup = new QGroupBox(central);
     sourceGroup->setTitle(tr("Source"));
     mainLayout->addWidget(sourceGroup, 0, 0, 5, 2);
+//    mainLayout->setStretchFactor(sourceGroup, 100);
     QGridLayout *sourceLayout = new QGridLayout(sourceGroup);
     sourceLayout->setMargin(5);
     sourceLayout->setSpacing(10);
 
     // Create the source type combo box.
-    sourceLayout->addWidget(new QLabel(tr("Source type")), 0, 0);
-    sourceType = new QComboBox();
+    sourceLayout->addWidget(new QLabel(tr("Source type"), sourceGroup), 0, 0);
+    sourceType = new QComboBox(sourceGroup);
     sourceType->addItem(tr("Native Mesh"));
     sourceType->addItem(tr("Regular Grid"));
     connect(sourceType, SIGNAL(activated(int)),
@@ -304,30 +292,6 @@ QvisLCSWindow::CreateSourceTab(QWidget *pageSource)
     // forceNodal = new QCheckBox(tr("Force node centering"));
     // connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
     // fieldLayout->addWidget(forceNodal, 2, 0);
-}
-
-
-// ****************************************************************************
-// Method: QvisLCSWindow::IntegrationTab
-//
-// Purpose:
-//   Populates the integration tab.
-//
-// Programmer: Dave Pugmire
-// Creation:   Tue Dec 29 14:37:53 EST 2009
-//
-// Modifications:
-//    Kathleen Biagas, Fri Nov  8 08:09:41 PST 2019
-//    Moved Source and Field widgets to Source tab.
-//
-// ****************************************************************************
-
-void
-QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
-{
-    QGridLayout *mainLayout = new QGridLayout(pageIntegration);
-    mainLayout->setMargin(5);
-    mainLayout->setSpacing(10);
 
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);
@@ -407,11 +371,31 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     absTolSizeType->addItem(tr("Fraction of Bounding Box"), 1);
     connect(absTolSizeType, SIGNAL(activated(int)), this, SLOT(absTolSizeTypeChanged(int)));
     toleranceLayout->addWidget(absTolSizeType, 1, 2);
+}
+
+
+// ****************************************************************************
+// Method: QvisLCSWindow::LCSTab
+//
+// Purpose:
+//   Populates the lcs tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// ****************************************************************************
+
+void
+QvisLCSWindow::CreateLCSTab(QWidget *pageLCS)
+{
+    QGridLayout *mainLayout = new QGridLayout(pageLCS);
+    mainLayout->setMargin(5);
+    mainLayout->setSpacing(10);
 
     // Create the termination group box.
     QGroupBox *terminationGroup = new QGroupBox(central);
     terminationGroup->setTitle(tr("Termination"));
-    mainLayout->addWidget(terminationGroup, 12, 0, 2, 2);
+    mainLayout->addWidget(terminationGroup, 0, 0, 2, 2);
 //    mainLayout->setStretchFactor(terminationGroup, 100);
     QGridLayout *terminationLayout = new QGridLayout(terminationGroup);
     terminationLayout->setMargin(5);
@@ -423,7 +407,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // termination.
     terminationTypeButtonGroup = new QButtonGroup(terminationGroup);
 
-    // Create the operation of integration.
+    // Create the operation of lcs.
     terminationLayout->addWidget(new QLabel(tr("Operation type"),
                                             central), 0, 0);
 
@@ -550,36 +534,12 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     connect(maxSteps, SIGNAL(returnPressed()),
             this, SLOT(maxStepsProcessText()));
     terminationLayout->addWidget(maxSteps, 5, 2);
-}
 
-
-// ****************************************************************************
-// Method: QvisLCSWindow::CreateAppearanceTab
-//
-// Purpose:
-//   Populates the appearance tab.
-//
-// Programmer: Dave Pugmire
-// Creation:   Tue Dec 29 14:37:53 EST 2009
-//
-// Modifications:
-//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
-//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
-//   signal will only emit when 'enter' is pressed or spinbox loses focus.
-//
-// ****************************************************************************
-
-void
-QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
-{
-    QGridLayout *mainLayout = new QGridLayout(pageAppearance);
-    mainLayout->setMargin(5);
-    mainLayout->setSpacing(10);
 
     // Seed generation group.
-    QGroupBox *seedGroup = new QGroupBox(pageAppearance);
+    QGroupBox *seedGroup = new QGroupBox(pageLCS);
     seedGroup->setTitle(tr("Seed generation"));
-    mainLayout->addWidget(seedGroup, 0, 0);
+    mainLayout->addWidget(seedGroup, 6, 0, 4, 2);
 
     QGridLayout *seedGroupLayout = new QGridLayout(seedGroup);
     seedGroupLayout->setSpacing(10);
@@ -621,6 +581,31 @@ QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
     connect(seedLimit, SIGNAL(valueChanged(int)),
             this, SLOT(seedLimitChanged(int)));
     seedGroupLayout->addWidget( seedLimit, 3, 1);
+}
+
+
+// ****************************************************************************
+// Method: QvisLCSWindow::CreateAppearanceTab
+//
+// Purpose:
+//   Populates the appearance tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
+// ****************************************************************************
+
+void
+QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
+{
+    QGridLayout *mainLayout = new QGridLayout(pageAppearance);
+    mainLayout->setMargin(5);
+    mainLayout->setSpacing(10);
 
     // Streamlines/Pathline Group.
     QGroupBox *icGrp = new QGroupBox(pageAppearance);

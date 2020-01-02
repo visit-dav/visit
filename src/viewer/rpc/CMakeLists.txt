@@ -5,7 +5,24 @@
 #****************************************************************************
 # Modifications:
 #
+#    Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
+#    Add xml tools code gen targets
+#
 #****************************************************************************
+
+
+# Add XML Code Gen Targets
+
+set(VIEWER_RPC_GEN_OBJECTS 
+    ViewerRPC
+    PostponedAction)
+
+# Viewer Core Objects
+foreach(obj_name ${VIEWER_RPC_GEN_OBJECTS})
+    ADD_CPP_GEN_TARGET(${obj_name}
+                       ${CMAKE_CURRENT_SOURCE_DIR}
+                       ${CMAKE_CURRENT_SOURCE_DIR})
+endforeach()
 
 SET(VIEWERRPC_SOURCES
 PostponedAction.C

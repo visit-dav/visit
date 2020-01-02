@@ -10,7 +10,7 @@
 #
 # Mark C. Miller, 01Apr17
 #
-import sys, string
+import sys, string, atexit
 import argparse
 from os import path as ospath
 
@@ -279,7 +279,7 @@ def checkSILsInDatabase(md):
         ResetView()
         silr = SILRestriction()
         cats = silr.Categories()
-        print cats
+        print(cats)
         for c in cats:
             catSets = silr.SetsInCategory(c)
             if len(catSets) <= 1:
@@ -407,7 +407,7 @@ def checkDatabase(dbName, timeStates):
 #
 # Main
 #
-sys.exitfunc = OutputLog
+atexit.register(OutputLog)
 
 clParser = argparse.ArgumentParser(description="VisIt Database Consistency Check.")
 

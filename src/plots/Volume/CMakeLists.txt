@@ -3,6 +3,8 @@ PROJECT(Volume_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Volume)
+
 SET(COMMON_SOURCES
 VolumePluginInfo.C
 VolumeCommonPluginInfo.C

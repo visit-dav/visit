@@ -20,7 +20,7 @@ def main():
             break
 
     if visitcinema == "":
-        print "The visitcinemamain script could not locate the visitcinema script!"
+        print("The visitcinemamain script could not locate the visitcinema script!")
         sys.exit(-1)
     else:
         # Source the visitcinema.py script, which contains all of the 

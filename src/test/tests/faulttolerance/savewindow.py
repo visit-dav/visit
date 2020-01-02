@@ -37,7 +37,7 @@ for i in range(6):
         os.system("kill -9 %d"%enginePid)
     try:
         SaveWindow()
-    except Exception, inst:
+    except Exception as inst:
 	s = s + "save %d had exception \"%s\"\n"%(i,inst);
     else:
 	s = s + "save %d succeeded\n"%i;

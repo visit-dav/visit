@@ -17,5 +17,5 @@ for c in cases:
     dname = "/p/lscratchv/%s/%d_%d" % (os.getenv("USER"), c[0], c[1])
     os.mkdir(dname)
     srun = "srun -N %d -n %d -A sspwork -p %s --chdir=%s mandelbulb_par -nr 100 -ntheta 100 -nphi 100 -rdoms %d -thetadoms %d -phidoms %d" % (c[0], c[1], c[5], dname, c[2], c[3], c[4])
-    print srun
+    print(srun)
     s =os.system(srun)

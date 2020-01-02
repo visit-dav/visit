@@ -127,9 +127,9 @@ def ultra_file(t):
 
 def ultra_singleton(t):
     if t.cmd == 'menu' and menuList.curves != []:
-        print menuList 
+        print(menuList) 
     elif t.cmd == 'lst' and selectedList.curves != []:
-        print selectedList
+        print(selectedList)
     elif t.cmd == 'erase' and selectedList.curves != []:
         DeleteAllPlots() 
         for curve in selectedList.curves:
@@ -312,7 +312,7 @@ def ultra_doOp_percurve(curve, t):
 #-----------------------------------------------------------------------------
 def ultra_docmfemath(cl, t):
     if len(cl) < 2:
-        print "Usage error: %s curve-list" % t.cmd
+        print("Usage error: %s curve-list" % t.cmd)
         return 
     curve1 = cl[0]
     # when building the cmfe, we want the first curve to be the active DB
@@ -421,7 +421,7 @@ def ultra_plotControl_toggleOps(t):
     if t.cmd == "axis":
         a = GetAnnotationAttributes()
         if not t.arg:
-            print "  %d" % a.axes2D.visible
+            print("  %d" % a.axes2D.visible)
         elif t.arg == "on" or t.arg == "off":
             a.axes2D.visible = toggleToInt(t.arg)
             SetAnnotationAttributes(a)
@@ -429,7 +429,7 @@ def ultra_plotControl_toggleOps(t):
     elif t.cmd == "grid":
         a = GetAnnotationAttributes()
         if not t.arg:
-            print "  %d" % a.axes2D.xAxis.grid 
+            print("  %d" % a.axes2D.xAxis.grid) 
         elif t.arg == "on" or t.arg == "off":
             a.axes2D.xAxis.grid = toggleToInt(t.arg)
             a.axes2D.yAxis.grid = toggleToInt(t.arg)
@@ -438,7 +438,7 @@ def ultra_plotControl_toggleOps(t):
     elif t.cmd == "x-log-scale":
         v = GetViewCurve()
         if not t.arg:
-            print "  %d" % v.domainScale
+            print("  %d" % v.domainScale)
         elif t.arg == "on":
             v.domainScale = v.LOG
             SetViewCurve(v)
@@ -449,7 +449,7 @@ def ultra_plotControl_toggleOps(t):
     elif t.cmd == "y-log-scale":
         v = GetViewCurve()
         if not t.arg:
-            print "  %d" % v.rangeScale
+            print("  %d" % v.rangeScale)
         elif t.arg == "on":
             v.rangeScale = v.LOG
             SetViewCurve(v)
@@ -459,7 +459,7 @@ def ultra_plotControl_toggleOps(t):
 
     elif t.cmd == "data-id":
         if not t.arg:
-            print "  %d" % selectedList.__class__.data_id
+            print("  %d" % selectedList.__class__.data_id)
             return
         elif t.arg != "on" and t.arg != "off":
             return
@@ -585,7 +585,7 @@ def runUltraWrapper():
             cmd = "runscript %s" %GetUltraScript()
             SetUltraScript("")
         else: 
-            cmd = raw_input('U-> ')
+            cmd = input('U-> ')
         
         if cmd != '': 
             if cmd.split()[0] == 'runscript':
@@ -593,10 +593,10 @@ def runUltraWrapper():
                 continue
             try:
                 ulRes = ultracommand.parseString(cmd)
-            except ParseException, err: 
+            except ParseException as err: 
                 # the actual exception is not useful for users 
                 #print 'Exception (%s) while parsing command: %s' %(err,cmd)
-                print 'Exception while parsing command: %s' %(cmd)
+                print('Exception while parsing command: %s' %(cmd))
                 UltraUsage(cmd.split()[0])
                 continue
 

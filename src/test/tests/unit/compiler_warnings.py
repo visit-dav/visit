@@ -167,7 +167,7 @@ if len(improved_counts):
 # Generate the (sorted) warning counts data
 #
 counts_txt = "{\n"
-keys = worsened_counts.keys()
+keys = list(worsened_counts.keys())
 keys.sort()
 for k in keys:
     counts_txt += "\"%s\": %d,\n"%(k,worsened_counts[k])

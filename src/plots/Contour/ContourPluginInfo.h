@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                            ContourPluginInfo.h                            //
+//                               ContourPluginInfo.h                            //
 // ************************************************************************* //
 
 #ifndef CONTOUR_PLUGIN_INFO_H

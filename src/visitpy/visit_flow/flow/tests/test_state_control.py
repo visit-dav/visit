@@ -21,7 +21,7 @@ from visit_flow import *
 
 class TestStateControl(unittest.TestCase):
     def setUp(self):
-        print ""
+        print("")
     def test_01_full_walk(self):
         space = StateSpace({"a":2,"b":3})
         sgen = StateVectorGenerator(space)
@@ -40,7 +40,7 @@ class TestStateControl(unittest.TestCase):
         space = StateSpace({"a":3,"b":2,"c":3})
         sgen = StateVectorGenerator(space)
         for svec in sgen:
-            print svec
+            print(svec)
 
 if __name__ == '__main__':
     unittest.main()

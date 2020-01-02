@@ -229,6 +229,9 @@
 #    Add test for highlighting a zone picked by global id. 
 #
 # ----------------------------------------------------------------------------
+from __future__ import print_function
+
+
 RequiredDatabasePlugin(("Boxlib2D","SAMRAI","Mili"))
 defaultAtts = GetPickAttributes()
 
@@ -1145,7 +1148,7 @@ def PickBigSilMat():
 def PickOnionPeel2():
     #From defect VisIt00003981, onionpeel and window ACTUAL_EXTENTS 
     #pick not working
-    print tests_path("queries","pickonionpeel.session"), 0,silo_data_path("curv3d.silo")
+    print(tests_path("queries","pickonionpeel.session"), 0,silo_data_path("curv3d.silo"))
     RestoreSessionWithDifferentSources(tests_path("queries","pickonionpeel.session"), 0,
                                        silo_data_path("curv3d.silo"))
     vars = "default"
@@ -1499,13 +1502,13 @@ def PickAfterEngineCrashed():
 
             # Kill all of the engines in the pid list.
             if len(pids) < 1:
-                print >>sys.stderr, "Killing all engines because we could not get a list of pids"
+                print("Killing all engines because we could not get a list of pids", file=sys.stderr)
                 # TODO_WINDOWS THIS WONT WORK ON WINDOWS
                 os.system("killall engine_ser")
                 os.system("killall engine_par")
             else:
                 for pid in pids:
-                    print >>sys.stderr, "Killing engine %s" % pid
+                    print("Killing engine %s" % pid, file=sys.stderr)
                     # TODO_WINDOWS THIS WONT WORK ON WINDOWS
                     os.system("kill -9 %s" % pid)
         except:

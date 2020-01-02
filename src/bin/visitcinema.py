@@ -64,7 +64,7 @@ class VisItCinema(object):
                 try:
                     self.debug_real[i] = open(debug_name, "wt")
                 except IOError: 
-                    print "Could not open debug log %s" % debug_name
+                    print("Could not open debug log %s" % debug_name)
                     pass
 
     ###########################################################################
@@ -108,58 +108,58 @@ class VisItCinema(object):
     ###########################################################################
 
     def PrintUsage(self):
-        print "Usage: visit -cinema [-output dbname] [-format fmt] [-geometry size]"
-        print "                     [-start index] [-end index] [-stride step]"
-        print "                     [-theta n] [-phi n] [-camera mode]"
-        print "                     [-sessionfile name | -scriptfile name] "
+        print("Usage: visit -cinema [-output dbname] [-format fmt] [-geometry size]")
+        print("                     [-start index] [-end index] [-stride step]")
+        print("                     [-theta n] [-phi n] [-camera mode]")
+        print("                     [-sessionfile name | -scriptfile name] ")
         # disable C specification and composite until C-spec is fixed.
         #print "                     [-specification A|C|D] [-docomposite] [-var varname]"
-        print "                     [-specification A|D]"
-        print ""
-        print "OPTIONS"
-        print "    The following options are recognized by visit -cinema"
-        print ""
-        print "-output dbname       The name of the output Cinema database. If the"
-        print "                     name does not end in .cdb then that suffix will"
-        print "                     be added. A directory with this name will be"
-        print "                     created and files will be saved in it."
-        print ""
-        print "-format fmt          The file format to use when saving images."
+        print("                     [-specification A|D]")
+        print("")
+        print("OPTIONS")
+        print("    The following options are recognized by visit -cinema")
+        print("")
+        print("-output dbname       The name of the output Cinema database. If the")
+        print("                     name does not end in .cdb then that suffix will")
+        print("                     be added. A directory with this name will be")
+        print("                     created and files will be saved in it.")
+        print("")
+        print("-format fmt          The file format to use when saving images.")
         s = ""
-        for fmt in self.formatInfo.keys():
+        for fmt in list(self.formatInfo.keys()):
             s = s + " " + fmt
-        print "                      (" + s + ")"
-        print "-geometry wxh        Set the size of the output images."
-        print ""
-        print "-start index         The starting index in the input database."
-        print ""
-        print "-end   index         The ending index in the input database."
-        print ""
-        print "-stride  incr        The number of frame indices to increment to "
-        print "                     go to the next time step."
-        print ""      
-        print "-camera mode         Set the mode for the Cinema database. The mode"
-        print "                     value must be one of: ",str(self.cameraModes)[1:-1]
-        print ""
-        print "-theta n             The number of theta divisions for a phi-theta camera."
-        print ""
-        print "-phi n               The number of phi divisions for a phi-theta camera."
-        print ""
-        print "-sessionfile name    The sessionfile option lets you pick the name"
-        print "                     of the VisIt session to use as input for setting"
-        print "                     up plots. The VisIt session is a file that describes"
-        print "                     the movie that you want to make and it is created"
-        print "                     when you save your session from within VisIt's "
-        print "                     GUI after you set up your plots how you want them."
-        print ""
-        print "-scriptfile name     The scriptfile option lets you pick the name"
-        print "                     of a VisIt Python script to use as input for your"
-        print "                     movie."
-        print ""
+        print("                      (" + s + ")")
+        print("-geometry wxh        Set the size of the output images.")
+        print("")
+        print("-start index         The starting index in the input database.")
+        print("")
+        print("-end   index         The ending index in the input database.")
+        print("")
+        print("-stride  incr        The number of frame indices to increment to ")
+        print("                     go to the next time step.")
+        print("")      
+        print("-camera mode         Set the mode for the Cinema database. The mode")
+        print("                     value must be one of: ",str(self.cameraModes)[1:-1])
+        print("")
+        print("-theta n             The number of theta divisions for a phi-theta camera.")
+        print("")
+        print("-phi n               The number of phi divisions for a phi-theta camera.")
+        print("")
+        print("-sessionfile name    The sessionfile option lets you pick the name")
+        print("                     of the VisIt session to use as input for setting")
+        print("                     up plots. The VisIt session is a file that describes")
+        print("                     the movie that you want to make and it is created")
+        print("                     when you save your session from within VisIt's ")
+        print("                     GUI after you set up your plots how you want them.")
+        print("")
+        print("-scriptfile name     The scriptfile option lets you pick the name")
+        print("                     of a VisIt Python script to use as input for your")
+        print("                     movie.")
+        print("")
         # disable C specification and composite until C-spec is fixed.
         #print "-specification spec  Set the database specification to A, C, D"
-        print "-specification spec  Set the database specification to A, D"
-        print ""
+        print("-specification spec  Set the database specification to A, D")
+        print("")
         #print "-docomposite         Tell the script to produce composite images."
         #print "                     In composite mode, images that store luminance, Z, "
         #print "                     and value images are produced."
@@ -237,7 +237,7 @@ class VisItCinema(object):
         if self.sendClientFeedback:
             ClientMethod("MessageBoxOk", str(s))
         else:
-            print str(s)
+            print(str(s))
 
     ###########################################################################
     # Method: ProcessArguments
@@ -278,7 +278,7 @@ class VisItCinema(object):
                 if((i+1) < len(commandLine)):
                     # Look up the format.
                     fmt = commandLine[i+1]
-                    for f in self.formatInfo.keys():
+                    for f in list(self.formatInfo.keys()):
                         if fmt in self.formatInfo[f]:
                             self.format = f
                             break
@@ -314,7 +314,7 @@ class VisItCinema(object):
                             self.frameStart = 0
                     except ValueError:
                         self.frameStart = 0
-                        print "A bad value was provided for frame start. Using a frame start of 0."
+                        print("A bad value was provided for frame start. Using a frame start of 0.")
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -327,7 +327,7 @@ class VisItCinema(object):
                             self.frameEnd = 0
                     except ValueError:
                         self.frameEnd = 0
-                        print "A bad value was provided for frame end. Using a frame end of 0."
+                        print("A bad value was provided for frame end. Using a frame end of 0.")
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -340,7 +340,7 @@ class VisItCinema(object):
                             self.frameStride = 1
                     except ValueError:
                         self.frameStride = 1
-                        print "A bad value was provided for frame step. Using a frame stride of 1."
+                        print("A bad value was provided for frame step. Using a frame stride of 1.")
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -352,7 +352,7 @@ class VisItCinema(object):
                         if(self.theta < 1):
                             self.theta = 1
                     except ValueError:
-                        print "A bad value was provided for theta. ", commandLine[i+1]
+                        print("A bad value was provided for theta. ", commandLine[i+1])
                     i = i + 1
             elif(commandLine[i] == "-phi"):
                 if((i+1) < len(commandLine)):
@@ -361,14 +361,14 @@ class VisItCinema(object):
                         if(self.phi < 1):
                             self.phi = 1
                     except ValueError:
-                        print "A bad value was provided for phi. ", commandLine[i+1]
+                        print("A bad value was provided for phi. ", commandLine[i+1])
                     i = i + 1
             elif(commandLine[i] == "-camera"):
                 if((i+1) < len(commandLine)):
                     if commandLine[i+1] in self.cameraModes:
                         self.cameraMode = commandLine[i+1]
                     else:
-                        print "A bad value was provided for camera. Using camera ", self.cameraMode
+                        print("A bad value was provided for camera. Using camera ", self.cameraMode)
                     i = i + 1
             elif(commandLine[i] == "-sessionfile"):
                 if((i+1) < len(commandLine)):
@@ -563,7 +563,7 @@ class VisItCinema(object):
     def JSONList(self, slist):
         s = "["
         n = len(slist)
-        for i in xrange(n):
+        for i in range(n):
             if type(slist[i]) == type(""):
                 s = s + "\"%s\"" % slist[i]
             else:
@@ -656,26 +656,26 @@ class VisItCinema(object):
     ###########################################################################
 
     def PrintState(self):
-        print "====================================="
-        print "VisIt Cinema Script"
-        print "====================================="
-        print "Specification:  ", self.specification
-        print "Camera Mode:    ", self.cameraMode
-        print "Format:         ", self.format
-        print "Theta:          ", self.theta
-        print "Phi:            ", self.phi
-        print "Width:          ", self.width
-        print "Height:         ", self.height
+        print("=====================================")
+        print("VisIt Cinema Script")
+        print("=====================================")
+        print("Specification:  ", self.specification)
+        print("Camera Mode:    ", self.cameraMode)
+        print("Format:         ", self.format)
+        print("Theta:          ", self.theta)
+        print("Phi:            ", self.phi)
+        print("Width:          ", self.width)
+        print("Height:         ", self.height)
         # disable Composite, which can only be used with C specification,
         # until C spec is fixed.
         #print "Composite:      ", self.composite
-        print "Screen Capture: ", self.screenCaptureImages
-        print "Filename:       ", self.fileName
-        print "Frame Start:    ", self.frameStart
-        print "Frame End:      ", self.frameEnd
-        print "Frame Stride:   ", self.frameStride
-        print "Variables:      ", self.vars
-        print "====================================="
+        print("Screen Capture: ", self.screenCaptureImages)
+        print("Filename:       ", self.fileName)
+        print("Frame Start:    ", self.frameStart)
+        print("Frame End:      ", self.frameEnd)
+        print("Frame Stride:   ", self.frameStride)
+        print("Variables:      ", self.vars)
+        print("=====================================")
 
     ###########################################################################
     # Method: Execute
@@ -791,12 +791,12 @@ class VisItCinema(object):
             # Make sure we draw the plots.
             if(SetTimeSliderState(i) == 0):
                 drawThePlots = 1
-                print "There was an error when trying to set the "\
-"time slider state to %d. VisIt will now try to redraw the plots." % i
+                print("There was an error when trying to set the "\
+"time slider state to %d. VisIt will now try to redraw the plots." % i)
             if(drawThePlots):
                 if(DrawPlots() == 0):
-                    print "VisIt could not draw plots for time slider "\
-"state %d. You should investigate the files used for that state." % i
+                    print("VisIt could not draw plots for time slider "\
+"state %d. You should investigate the files used for that state." % i)
                 else:
                     drawThePlots = 0
 
@@ -815,16 +815,16 @@ class VisItCinema(object):
 
             # Save the output image.
             if saveFunc(outputDir, numFrames, currentTime) == 0:
-                print "There was an error when trying to save the window "\
+                print("There was an error when trying to save the window "\
 "for time slider state %d. VisIt will now try to redraw the plots and re-save "\
-"the window." % i
+"the window." % i)
                 if(DrawPlots() == 0):
-                    print "VisIt could not draw plots for time slider "\
-"state %d. You should investigate the files used for that state." % i
+                    print("VisIt could not draw plots for time slider "\
+"state %d. You should investigate the files used for that state." % i)
                 else:
                     if saveFunc(outputDir, numFrames, currentTime) == 0:
-                        print "VisIt could not re-save the window for "\
-"time slider state %d. You should investigate the files used for that state." % i
+                        print("VisIt could not re-save the window for "\
+"time slider state %d. You should investigate the files used for that state." % i)
 
             numFrames = numFrames + 1
             i = i + self.frameStride
@@ -884,7 +884,7 @@ class VisItCinema(object):
             filename = os.path.join(cdbDir, "data.csv")
             f = open(filename, "wt")
             f.write("time,FILE\n")
-            for i in xrange(len(timeAtts)):
+            for i in range(len(timeAtts)):
                 f.write("%s,image/time_%s.%s\n" % (timeAtts[i], timeAtts[i], self.format))
             f.close()
         else:
@@ -920,7 +920,7 @@ class VisItCinema(object):
     def GetUsablePlots(self):
         pL = GetPlotList()
         usablePlots = []
-        for i in xrange(pL.GetNumPlots()):
+        for i in range(pL.GetNumPlots()):
             plot = pL.GetPlots(i)
             if plot.stateType == plot.Completed:
                 usablePlots = usablePlots + [i]
@@ -939,14 +939,14 @@ class VisItCinema(object):
     def WriteCompositeJSONFile(self, outputDir, params, np, plotVarRanges):
         filename = os.path.join(outputDir, "info.json")
         f = open(filename, "wt")
-        plot1toN = ["plot%d"%p for p in xrange(1,np+1)]
+        plot1toN = ["plot%d"%p for p in range(1,np+1)]
         json_plot1toN = str(self.JSONList(plot1toN))
         f.write('{\n')
         f.write('  "constraints": {\n')
         f.write('     "image": {\n')
         f.write('        "vis": %s\n' % json_plot1toN)
         f.write('     },\n')
-        for i in xrange(len(plot1toN)):
+        for i in range(len(plot1toN)):
             f.write('     "%s": {\n' % plot1toN[i])
             f.write('        "vis": "%s"\n' % plot1toN[i])
             f.write('     }')
@@ -997,14 +997,14 @@ class VisItCinema(object):
         f.write('       "types": [\n')
         f.write('          "luminance",\n')
         f.write('          "depth",\n')
-        for i in xrange(len(keys)):
+        for i in range(len(keys)):
             f.write('          "value"')
             if i < len(keys)-1:
                 f.write(',')
             f.write('\n')
         f.write('       ],\n')
         f.write('       "valueRanges": {\n')
-        for i in xrange(len(keys)):
+        for i in range(len(keys)):
             f.write('          "%s": [%g, %g]' % (keys[i], plotVarRanges[keys[i]][0], plotVarRanges[keys[i]][1]))
             if i < len(keys)-1:
                 f.write(',')
@@ -1013,7 +1013,7 @@ class VisItCinema(object):
         f.write('       "values": [\n')
         f.write('          "luminance",\n')
         f.write('          "depth",\n')
-        for i in xrange(len(keys)):
+        for i in range(len(keys)):
             f.write('          "%s"' % keys[i])
             if i < len(keys)-1:
                 f.write(',')
@@ -1047,7 +1047,7 @@ class VisItCinema(object):
         pL = GetPlotList()
         activePlots = []
         visible = []
-        for i in xrange(pL.GetNumPlots()):
+        for i in range(pL.GetNumPlots()):
             plot = pL.GetPlots(i)
             visible = visible + [plot.hiddenFlag == 0]
             if plot.activeFlag:
@@ -1065,7 +1065,7 @@ class VisItCinema(object):
         for plotId in usablePlots:
             # Figure out which plots must be turned off so only plotId is visible.
             turnoff = []
-            for i in xrange(len(currentVisible)):
+            for i in range(len(currentVisible)):
                 if currentVisible[i] and i != plotId:
                     turnoff = turnoff + [i]
                     currentVisible[i] = 0
@@ -1088,7 +1088,7 @@ class VisItCinema(object):
         # Now, only usablePlots[-1] will be visible. It had to start out that way.
         # Turn on the rest of the plots that need to be visible.
         turnon = []
-        for i in xrange(len(visible)):
+        for i in range(len(visible)):
             if visible[i] == 1 and i != usablePlots[-1]:
                 turnon = turnon + [i]
         if len(turnon) > 0:
@@ -1124,7 +1124,7 @@ class VisItCinema(object):
 
             # Iterate over variables.
             ioffset = 0
-            for i in xrange(len(self.vars)):
+            for i in range(len(self.vars)):
                 # Change to the right var if needed.
                 ChangeActivePlotsVar(self.vars[i])
 
@@ -1223,13 +1223,13 @@ class VisItCinema(object):
         # Compute the theta/phi values we use.
         theta = [0]*ntheta
         phi   = [0]*nphi
-        for itheta in xrange(ntheta):
+        for itheta in range(ntheta):
             if ntheta > 1:
                 tt = float(itheta) / float(ntheta-1)
             else:
                 tt = 0.
             theta[itheta] = ((1.-tt) * -math.pi/2.) + (tt*math.pi/2.)
-        for iphi in xrange(nphi):
+        for iphi in range(nphi):
             if nphi > 1:
                 tp = float(iphi) / float(nphi-1)
             else:
@@ -1257,9 +1257,9 @@ class VisItCinema(object):
         def phi_theta_save(outputDir, timestep, currentTime):
             view = GetView3D()
 
-            for iphi in xrange(len(phi)):
+            for iphi in range(len(phi)):
                 phiDir="phi_%d"%ideg(phi[iphi])
-                for itheta in xrange(len(theta)):
+                for itheta in range(len(theta)):
                     thetaDir="theta_%d"%ideg(theta[itheta])
 
                     # Create the directory we need.
@@ -1301,9 +1301,9 @@ class VisItCinema(object):
             filename = os.path.join(cdbDir, "data.csv")
             f = open(filename, "wt")
             f.write("time,phi,theta,FILE\n")
-            for i in xrange(len(timeAtts)):
-                for iphi in xrange(self.phi):
-                    for itheta in xrange(self.theta):
+            for i in range(len(timeAtts)):
+                for iphi in range(self.phi):
+                    for itheta in range(self.theta):
                         fn = "image/phi_%d/theta_%d/time_%s.%s" % (ideg(phi[iphi]), ideg(theta[itheta]), timeAtts[i], self.format)
                         f.write("%s,%g,%g,%s\n" % (timeAtts[i], ideg(phi[iphi]), ideg(theta[itheta]), fn))
             f.close()
@@ -1322,7 +1322,7 @@ class VisItCinema(object):
             f.write('       "label":"Theta",\n')
             f.write('       "type":"range",\n')
             f.write('       "values":[')
-            for i in xrange(len(theta)):
+            for i in range(len(theta)):
                 f.write("%d" % ideg(theta[i]))
                 if i < len(theta)-1:
                     f.write(", ")
@@ -1334,7 +1334,7 @@ class VisItCinema(object):
             f.write('       "label":"Phi",\n')
             f.write('       "type":"range",\n')
             f.write('       "values":[')
-            for i in xrange(len(phi)):
+            for i in range(len(phi)):
                 f.write("%d" % ideg(phi[i]))
                 if i < len(phi)-1:
                     f.write(", ")
@@ -1377,7 +1377,7 @@ class VisItCinema(object):
 
             # Iterate over variables.
             ioffset = 0
-            for i in xrange(len(self.vars)):
+            for i in range(len(self.vars)):
                 # Change to the right var if needed.
                 ChangeActivePlotsVar(self.vars[i])
 
@@ -1390,9 +1390,9 @@ class VisItCinema(object):
                     plotVarRanges[self.vars[i]][1] = plotRange[1]
 
                 # Iterate over theta,phi
-                for itheta in xrange(len(theta)):
+                for itheta in range(len(theta)):
                     thetaDir="theta=%d"%itheta
-                    for iphi in xrange(len(phi)):
+                    for iphi in range(len(phi)):
                         phiDir="phi=%d"%iphi
                         # Create the directory we need.
                         imgDir = self.CreateDirectory(outputDir, (phiDir, thetaDir, timeDir, visDir))

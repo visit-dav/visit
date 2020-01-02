@@ -275,10 +275,10 @@ Kernels = {
 }
 
 # fill in set defaults
-for k,v in Kernels.items():
-    if not v.has_key("out_type"):
+for k,v in list(Kernels.items()):
+    if "out_type" not in v:
         v["out_type"] = "float"
-    if not v.has_key("in_types"):
+    if "in_types" not in v:
         v["in_types"] = [ "fetch" for ipt in v["input_ports"]]
 
 def create_stub(filter,inputs):

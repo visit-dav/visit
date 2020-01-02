@@ -324,7 +324,7 @@ def TestVolumeSampling():
     v.sampling = v.KernelBased
     ct = GetColorTable("hot_desaturated")
     v.GetColorControlPoints().ClearControlPoints()
-    for i in xrange(ct.GetNumControlPoints()):
+    for i in range(ct.GetNumControlPoints()):
         v.GetColorControlPoints().AddControlPoints(ct.GetControlPoints(i))
     SetPlotOptions(v)
 

@@ -26,7 +26,7 @@ def simcommand(sim, com):
     keepGoing = True
     while keepGoing:
         buf = sim.p.stderr.readline()
-        print buf
+        print(buf)
         if "Command '%s'"%com in buf:
             keepGoing = False
 

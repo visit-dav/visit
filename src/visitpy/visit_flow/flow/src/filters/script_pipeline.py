@@ -187,6 +187,6 @@ filters = [ScriptPipelineRegistrySource,
            ScriptPipelineSink,
            ScriptPipelineNDArrayFilter]
 def register_scripts(scripts):
-    for filter_name,filter_info in scripts.items():
+    for filter_name,filter_info in list(scripts.items()):
         filters.append(ScriptFilter(filter_name,filter_info))
 

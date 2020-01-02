@@ -167,7 +167,7 @@ class MovieGenerator:
             self.WriteScriptRestart(self.stage, "done", nframes)
 
         if(self.stage == "Done"):
-            print "The movies are done."
+            print("The movies are done.")
 
     ##########################################################################
     # Method: SetupVisualization
@@ -238,7 +238,7 @@ class MovieGenerator:
                 t = float(startFile) / float(len(times) - 1)
             else:
                 t = 1.
-            print "Initial t value=%g" % t
+            print("Initial t value=%g" % t)
 
             # Determine the initial image frame that we should save.
             startImageIndex = int(lastImageIndex) + 1
@@ -254,9 +254,9 @@ class MovieGenerator:
                         key = line[:eloc]
                         val = int(line[eloc+1:])
                         self.flags[key] = val
-                        print "Read flag \"%s\" from restart. Its value is %d" % (key,val)
+                        print("Read flag \"%s\" from restart. Its value is %d" % (key,val))
         elif(len(restart) > 0):
-            print "The restart file has an error. We're not going to use it."
+            print("The restart file has an error. We're not going to use it.")
 
         # Set the file index, which is used to create names for saved images,
         # from the value stored in the restart file.
@@ -357,9 +357,9 @@ class MovieGenerator:
             # less likely to crash and stall the script.
             timeStepsProcessed = timeStepsProcessed + 1
             if(self.preventativeClose and (timeStepsProcessed == timeStepsPerEngine)):
-                print "**\n**\n**\n** We're shutting down the compute engine!**\n**\n**\n"
+                print("**\n**\n**\n** We're shutting down the compute engine!**\n**\n**\n")
                 self.CloseComputeEngine()
-                print "**\n**\n**\n** We're restarting the compute engine!**\n**\n**\n"
+                print("**\n**\n**\n** We're restarting the compute engine!**\n**\n**\n")
                 self.LaunchComputeEngine()
                 timeStepsProcessed = 0
     
@@ -452,12 +452,12 @@ class MovieGenerator:
             f.write("%s\n" % lastDataFile)
             f.write("%d\n" % lastImageFile)
             # Write the flags so we can keep a little program state
-            for key in self.flags.keys():
+            for key in list(self.flags.keys()):
                 if(key != "invalid"):
                     f.write("%s=%d\n" % (key, self.flags[key]))
             f.close()
         except IOError:
-            print "Could not write the script restart file"
+            print("Could not write the script restart file")
 
     ##########################################################################
     # Method: WriteImageOps
@@ -496,7 +496,7 @@ class MovieGenerator:
     ##########################################################################
 
     def RemoveRestartFiles(self):
-        print "Removing the restart file"
+        print("Removing the restart file")
         restartName = "%s-restart" % self.movieBase
         imageOpsName = "%s-imageops" % self.movieBase
         command = "rm -f %s %s" % (restartName, imageOpsName)
@@ -581,7 +581,7 @@ class MovieGenerator:
             if not self.DrawPlots():
                  self.LaunchComputeEngine()
                  if not self.DrawPlots():
-                     print "DrawPlots failed"
+                     print("DrawPlots failed")
 
     ##########################################################################
     # Method: PackageMovies

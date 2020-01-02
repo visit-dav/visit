@@ -85,3 +85,113 @@ MACRO(VISIT_PLUGIN_TARGET_FOLDER type pname)
     SET_TARGET_PROPERTIES(${ARGN} PROPERTIES FOLDER "plugins/${type}/${pname}")
 ENDMACRO(VISIT_PLUGIN_TARGET_FOLDER)
 
+
+##############################################################################
+# Function that adds all Code Gen Targets for a plugin
+##############################################################################
+FUNCTION(ADD_PLUGIN_CODE_GEN_TARGETS gen_name)
+    ####
+    # only create code gen targets if:
+    #  we aren't on windows 
+    #  our cmake for gen targets option is on
+    ####
+    if(NOT WIN32 AND VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
+        set(gen_target_name "gen_plugin_${gen_name}")
+
+        MESSAGE(STATUS "Adding xml tools plugin generation target: ${gen_target_name}")
+
+        ADD_CPP_GEN_TARGET(${gen_name} 
+                           ${CMAKE_CURRENT_SOURCE_DIR} 
+                           ${CMAKE_CURRENT_SOURCE_DIR})
+
+        ADD_PYTHON_GEN_TARGET(${gen_name} 
+                              ${CMAKE_CURRENT_SOURCE_DIR} 
+                              ${CMAKE_CURRENT_SOURCE_DIR})
+
+
+        ADD_JAVA_GEN_TARGET(${gen_name} 
+                            ${CMAKE_CURRENT_SOURCE_DIR} 
+                            ${CMAKE_CURRENT_SOURCE_DIR})
+
+        ADD_INFO_GEN_TARGET(${gen_name}
+                            ${CMAKE_CURRENT_SOURCE_DIR}
+                            ${CMAKE_CURRENT_SOURCE_DIR})
+
+        ADD_CMAKE_GEN_TARGET(${gen_name}
+                             ${CMAKE_CURRENT_SOURCE_DIR}
+                             ${CMAKE_CURRENT_SOURCE_DIR})
+
+        add_custom_target(${gen_target_name})
+
+        set(gen_plugin_deps "")
+        list(APPEND gen_plugin_deps "gen_cpp_${gen_name}")
+        list(APPEND gen_plugin_deps "gen_python_${gen_name}")
+        list(APPEND gen_plugin_deps "gen_java_${gen_name}")
+        list(APPEND gen_plugin_deps "gen_info_${gen_name}")
+        # we don't wan't to directly wire up xml2cmake
+
+        add_dependencies(${gen_target_name} ${gen_plugin_deps})
+
+        # connect this target to roll up target for plugin gen
+        if(NOT TARGET gen_plugin_all)
+            add_custom_target("gen_plugin_all")
+        endif()
+
+        add_dependencies(gen_plugin_all ${gen_target_name})
+    endif()
+ENDFUNCTION(ADD_PLUGIN_CODE_GEN_TARGETS)
+
+##############################################################################
+# Function that adds all Code Gen Targets for a plot plugin
+##############################################################################
+FUNCTION(ADD_PLOT_CODE_GEN_TARGETS gen_name)
+    ADD_PLUGIN_CODE_GEN_TARGETS(${gen_name})
+ENDFUNCTION(ADD_PLOT_CODE_GEN_TARGETS)
+
+##############################################################################
+# Function that adds all Code Gen Targets for an operator plugin
+##############################################################################
+FUNCTION(ADD_OPERATOR_CODE_GEN_TARGETS gen_name)
+    ADD_PLUGIN_CODE_GEN_TARGETS(${gen_name})
+ENDFUNCTION(ADD_OPERATOR_CODE_GEN_TARGETS)
+
+##############################################################################
+# Function that adds all Code Gen Targets for a database plugin
+##############################################################################
+FUNCTION(ADD_DATABASE_CODE_GEN_TARGETS gen_name)
+    ####
+    # only create code gen targets if:
+    #  we aren't on windows 
+    #  our cmake for gen targets option is on
+    ####
+    if(NOT WIN32 AND VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
+        set(gen_target_name "gen_plugin_${gen_name}")
+
+        MESSAGE(STATUS "Adding xml tools plugin generation target: ${gen_target_name}")
+
+        add_custom_target(${gen_target_name})
+
+        # only xml2info and xml2cmake for db plugins
+        ADD_INFO_GEN_TARGET(${gen_name}
+                            ${CMAKE_CURRENT_SOURCE_DIR}
+                            ${CMAKE_CURRENT_SOURCE_DIR})
+
+        ADD_CMAKE_GEN_TARGET(${gen_name}
+                             ${CMAKE_CURRENT_SOURCE_DIR}
+                             ${CMAKE_CURRENT_SOURCE_DIR})
+
+        set(gen_plugin_deps "")
+        list(APPEND gen_plugin_deps "gen_info_${gen_name}")
+        # we don't wan't to directly wire up xml2cmake
+
+        add_dependencies(${gen_target_name} ${gen_plugin_deps})
+
+        # connect this target to roll up target for plugin gen
+        if(NOT TARGET gen_plugin_all)
+         add_custom_target("gen_plugin_all")
+        endif()
+
+        add_dependencies(gen_plugin_all ${gen_target_name})
+    endif()
+ENDFUNCTION(ADD_DATABASE_CODE_GEN_TARGETS)
+

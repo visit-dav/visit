@@ -16,9 +16,9 @@
 import sys
 import os
 import math
-from host_profile import *
+from .host_profile import *
 
-from common import VisItException, hostname, require_visit
+from .common import VisItException, hostname, require_visit
 
 
 try:
@@ -30,22 +30,22 @@ __all__ = [ "open","close","supported_hosts"]
 
 def supported_hosts():
     """ Returns a list of the names of supported hosts. """
-    res = hosts().keys()
+    res = list(hosts().keys())
     res.sort()
     return res
 
 def open(**kwargs):
     """ Launch VisIt compute engine on the current host. """
     args = {"ppn":1,"part":None,"bank":None,"rtime":None,"vdir":None}
-    if not kwargs.has_key("method"):
+    if "method" not in kwargs:
         hname = hostname(False)
         # when the visit module is imported (vs used in the CLI), 
         # VISITHOME won't be set, allow user to pass vdir argument 
         # here to locate the host profiles
         vdir = None
-        if kwargs.has_key("vdir"):
+        if "vdir" in kwargs:
             vdir = kwargs["vdir"]
-        if not hosts(vdir=vdir).has_key(hname):
+        if hname not in hosts(vdir=vdir):
             raise VisItException("Unsupported host: '%s'" % hname)
         host = hosts(vdir=vdir)[hname]
         # prep args for launch
@@ -55,7 +55,7 @@ def open(**kwargs):
         args["method"] = host.launch_method(args["part"])
     elif kwargs["method"] == "slurm":
         args["host"] = hostname(False)
-        if os.environ.has_key("SLURM_JOB_NUM_NODES"):
+        if "SLURM_JOB_NUM_NODES" in os.environ:
             nnodes = int(os.environ["SLURM_JOB_NUM_NODES"])
             ppn    = int(os.environ["SLURM_CPUS_ON_NODE"])
             nprocs = ppn * nnodes
@@ -87,7 +87,7 @@ def launch(host,nprocs,ppn,method,part,bank,rtime,vdir,extra_args=None):
     if not part is None:
         msg+= " on %s" % part
     msg +="]"
-    print  msg
+    print(msg)
     nnodes = int(math.ceil(float(nprocs) / float(ppn)))
     ehost = host
     if host == hostname(False):

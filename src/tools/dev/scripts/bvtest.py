@@ -225,7 +225,7 @@ def main():
     libcmds = sys.argv[2:]
     bt = BuildTest(odir,libcmds,"./build_visit")
     bt.execute()
-    print bt.result_xml()
+    print(bt.result_xml())
     
 
 if __name__ == "__main__":

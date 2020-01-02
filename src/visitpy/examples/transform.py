@@ -19,7 +19,7 @@ import os
 # Check the version.
 ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
-    print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
+    print("This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version()))
 
 def transform():
     # Prevent redraws
@@ -149,6 +149,6 @@ def transform():
 
 
 if(not os.path.isfile("../../data/globe.silo")):
-    print "This script requires the file globe.silo to be built in the data directory"
+    print("This script requires the file globe.silo to be built in the data directory")
 else:
     transform()

@@ -19,7 +19,7 @@
 
 """
 
-from common import VisItException, require_visit
+from .common import VisItException, require_visit
 
 try:
     import visit
@@ -50,7 +50,7 @@ def define(ename,edef,etype ='scalar',echo = False):
     elif etype == "tensor":
         visit.DefineTensorExpression(ename,edef)
     if echo:
-        print "[Expression: %s = '%s']" % (ename, edef)
+        print("[Expression: %s = '%s']" % (ename, edef))
 
 @require_visit
 def define_python(ename,args,source=None,file=None,etype ='scalar',echo = False):
@@ -72,7 +72,7 @@ def define_python(ename,args,source=None,file=None,etype ='scalar',echo = False)
         kwargs["file"] = file
     visit.DefinePythonExpression(**kwargs)
     if echo:
-        print "[Created Python Expression: %s ]" % ename
+        print("[Created Python Expression: %s ]" % ename)
 
 
 @require_visit
