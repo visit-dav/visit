@@ -125,6 +125,8 @@ function build_mfem
         fi
     fi
 
+    CXXFLAGS="-std=c++11 ${CXXFLAGS}"
+
     #
     # Call configure
     #
@@ -138,9 +140,8 @@ function build_mfem
     #
     # Build mfem
     #
-
     info "Building mfem . . . (~2 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
+    $MAKE serial $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "mfem build failed.  Giving up"
         return 1
