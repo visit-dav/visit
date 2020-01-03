@@ -30,8 +30,6 @@ function bv_mfem_info
     export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
     export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
     export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-0"}
-    #export MFEM_MD5_CHECKSUM="59aff55ba3d7d7816cb3efbf84af7724"
-    #export MFEM_SHA256_CHECKSUM="4e73e4fe0482636de3c5dc983cd395839a83cb16f6f509bd88b053e8b3858e05"
 }
 
 function bv_mfem_print
@@ -125,6 +123,7 @@ function build_mfem
         fi
     fi
 
+    # Version 4.0 now requires c++11
     CXXFLAGS="-std=c++11 ${CXXFLAGS}"
 
     #
