@@ -390,3 +390,22 @@ avtPickByZoneQuery::SetTransform(const avtMatrix *m)
     transform = m;
 }
 
+
+// ****************************************************************************
+//  Method: avtPickByZoneQuery::SetInvTransform
+//
+//  Purpose:
+//      Sets the inverse transform.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Wed Dec  4 11:41:24 MST 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPickByZoneQuery::SetInvTransform(const avtMatrix *m)
+{
+    invTransform = m;
+}
