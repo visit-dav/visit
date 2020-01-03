@@ -2,15 +2,16 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: FieldViewXDBPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <FieldViewXDBPluginInfo.h>
 
 #include <visit-config.h>
 VISIT_PLUGIN_VERSION(FieldViewXDB,DBP_EXPORT)
-VISIT_DATABASE_PLUGIN_ENTRY(FieldViewXDB,General);
+
+VISIT_DATABASE_PLUGIN_ENTRY(FieldViewXDB,General)
 
 // ****************************************************************************
 //  Method: FieldViewXDBGeneralPluginInfo::GetName
