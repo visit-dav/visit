@@ -66,7 +66,7 @@ LimitCycleCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //
 // ****************************************************************************
 
-ExpressionList * 
+ExpressionList *
 LimitCycleCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
     char name[1024], defn[1024];

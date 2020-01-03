@@ -66,7 +66,7 @@ LCSCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //
 // ****************************************************************************
 
-ExpressionList * 
+ExpressionList *
 LCSCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
     char name[1024], defn[1024];

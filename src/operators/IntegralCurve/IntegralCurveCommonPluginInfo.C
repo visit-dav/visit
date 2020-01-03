@@ -66,7 +66,7 @@ IntegralCurveCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //
 // ****************************************************************************
 
-ExpressionList * 
+ExpressionList *
 IntegralCurveCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
     char name[1024], defn[1024];

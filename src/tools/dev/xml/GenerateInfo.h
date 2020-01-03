@@ -1345,7 +1345,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << "//" << endl;
                 c << "// ****************************************************************************" << endl;
                 c << endl;
-                c << "ExpressionList * " << endl;
+                c << "ExpressionList *" << endl;
                 c << funcName<<"(const avtDatabaseMetaData *md) const" << endl;
                 c << "{" << endl;
                 std::vector<QString> intypes = SplitValues(exprInType);
