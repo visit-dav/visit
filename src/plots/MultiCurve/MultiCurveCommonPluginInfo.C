@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: MultiCurveCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <MultiCurvePluginInfo.h>
 #include <MultiCurveAttributes.h>
@@ -43,16 +43,17 @@ MultiCurveCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 MultiCurveCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((MultiCurveAttributes *) to) = *((MultiCurveAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: MultiCurveCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ MultiCurveCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

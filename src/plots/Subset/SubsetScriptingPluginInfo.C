@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        SubsetScriptingPluginInfo.C
+//  SubsetScriptingPluginInfo.C
 // ************************************************************************* //
 #include <PySubsetAttributes.h>
 #include <SubsetPluginInfo.h>
@@ -13,7 +13,7 @@ VISIT_PLOT_PLUGIN_ENTRY(Subset,Scripting)
 // ****************************************************************************
 // Method: SubsetScriptingPluginInfo::InitializePlugin
 //
-// Purpose: 
+// Purpose:
 //   Calls the initialization function for the plugin.
 //
 // Arguments:
@@ -24,7 +24,7 @@ VISIT_PLOT_PLUGIN_ENTRY(Subset,Scripting)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -37,7 +37,7 @@ SubsetScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 // ****************************************************************************
 // Method: SubsetScriptingPluginInfo::GetMethodTable
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the plugin's Python method table. These methods are
 //   added to the top-level visit module's methods.
 //
@@ -50,7 +50,7 @@ SubsetScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -62,7 +62,7 @@ SubsetScriptingPluginInfo::GetMethodTable(int *nMethods)
 // ****************************************************************************
 // Method: SubsetScriptingPluginInfo::TypesMatch
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the input PyObject is Subset plot attributes.
 //
 // Arguments:
@@ -72,7 +72,7 @@ SubsetScriptingPluginInfo::GetMethodTable(int *nMethods)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -84,7 +84,7 @@ SubsetScriptingPluginInfo::TypesMatch(void *pyobject)
 // ****************************************************************************
 // Method: SubsetScriptingPluginInfo::GetLogString
 //
-// Purpose: 
+// Purpose:
 //   Gets a string representation of the current attributes.
 //
 // Arguments:
@@ -94,7 +94,7 @@ SubsetScriptingPluginInfo::TypesMatch(void *pyobject)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 char *
@@ -109,7 +109,7 @@ SubsetScriptingPluginInfo::GetLogString()
 // ****************************************************************************
 // Method: SubsetScriptingPluginInfo::SetDefaults
 //
-// Purpose: 
+// Purpose:
 //   Used to set the default values for a plugin's state object.
 //
 // Arguments:
@@ -119,7 +119,7 @@ SubsetScriptingPluginInfo::GetLogString()
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

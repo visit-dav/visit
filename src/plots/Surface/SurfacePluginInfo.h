@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                            SurfacePluginInfo.h                            //
+//  SurfacePluginInfo.h
 // ************************************************************************* //
 
 #ifndef SURFACE_PLUGIN_INFO_H

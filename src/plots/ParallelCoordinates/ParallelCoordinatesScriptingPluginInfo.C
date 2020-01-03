@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        ParallelCoordinatesScriptingPluginInfo.C
+//  ParallelCoordinatesScriptingPluginInfo.C
 // ************************************************************************* //
 #include <PyParallelCoordinatesAttributes.h>
 #include <ParallelCoordinatesPluginInfo.h>
@@ -13,7 +13,7 @@ VISIT_PLOT_PLUGIN_ENTRY(ParallelCoordinates,Scripting)
 // ****************************************************************************
 // Method: ParallelCoordinatesScriptingPluginInfo::InitializePlugin
 //
-// Purpose: 
+// Purpose:
 //   Calls the initialization function for the plugin.
 //
 // Arguments:
@@ -24,7 +24,7 @@ VISIT_PLOT_PLUGIN_ENTRY(ParallelCoordinates,Scripting)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -37,7 +37,7 @@ ParallelCoordinatesScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 // ****************************************************************************
 // Method: ParallelCoordinatesScriptingPluginInfo::GetMethodTable
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the plugin's Python method table. These methods are
 //   added to the top-level visit module's methods.
 //
@@ -50,7 +50,7 @@ ParallelCoordinatesScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -62,7 +62,7 @@ ParallelCoordinatesScriptingPluginInfo::GetMethodTable(int *nMethods)
 // ****************************************************************************
 // Method: ParallelCoordinatesScriptingPluginInfo::TypesMatch
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the input PyObject is ParallelCoordinates plot attributes.
 //
 // Arguments:
@@ -72,7 +72,7 @@ ParallelCoordinatesScriptingPluginInfo::GetMethodTable(int *nMethods)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -84,7 +84,7 @@ ParallelCoordinatesScriptingPluginInfo::TypesMatch(void *pyobject)
 // ****************************************************************************
 // Method: ParallelCoordinatesScriptingPluginInfo::GetLogString
 //
-// Purpose: 
+// Purpose:
 //   Gets a string representation of the current attributes.
 //
 // Arguments:
@@ -94,7 +94,7 @@ ParallelCoordinatesScriptingPluginInfo::TypesMatch(void *pyobject)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 char *
@@ -109,7 +109,7 @@ ParallelCoordinatesScriptingPluginInfo::GetLogString()
 // ****************************************************************************
 // Method: ParallelCoordinatesScriptingPluginInfo::SetDefaults
 //
-// Purpose: 
+// Purpose:
 //   Used to set the default values for a plugin's state object.
 //
 // Arguments:
@@ -119,7 +119,7 @@ ParallelCoordinatesScriptingPluginInfo::GetLogString()
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                             VolumePluginInfo.h                            //
+//  VolumePluginInfo.h
 // ************************************************************************* //
 
 #ifndef VOLUME_PLUGIN_INFO_H

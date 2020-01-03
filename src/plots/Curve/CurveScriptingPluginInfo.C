@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        CurveScriptingPluginInfo.C
+//  CurveScriptingPluginInfo.C
 // ************************************************************************* //
 #include <PyCurveAttributes.h>
 #include <CurvePluginInfo.h>
@@ -13,7 +13,7 @@ VISIT_PLOT_PLUGIN_ENTRY(Curve,Scripting)
 // ****************************************************************************
 // Method: CurveScriptingPluginInfo::InitializePlugin
 //
-// Purpose: 
+// Purpose:
 //   Calls the initialization function for the plugin.
 //
 // Arguments:
@@ -24,7 +24,7 @@ VISIT_PLOT_PLUGIN_ENTRY(Curve,Scripting)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -37,7 +37,7 @@ CurveScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 // ****************************************************************************
 // Method: CurveScriptingPluginInfo::GetMethodTable
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the plugin's Python method table. These methods are
 //   added to the top-level visit module's methods.
 //
@@ -50,7 +50,7 @@ CurveScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -62,7 +62,7 @@ CurveScriptingPluginInfo::GetMethodTable(int *nMethods)
 // ****************************************************************************
 // Method: CurveScriptingPluginInfo::TypesMatch
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the input PyObject is Curve plot attributes.
 //
 // Arguments:
@@ -72,7 +72,7 @@ CurveScriptingPluginInfo::GetMethodTable(int *nMethods)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -84,7 +84,7 @@ CurveScriptingPluginInfo::TypesMatch(void *pyobject)
 // ****************************************************************************
 // Method: CurveScriptingPluginInfo::GetLogString
 //
-// Purpose: 
+// Purpose:
 //   Gets a string representation of the current attributes.
 //
 // Arguments:
@@ -94,7 +94,7 @@ CurveScriptingPluginInfo::TypesMatch(void *pyobject)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 char *
@@ -109,7 +109,7 @@ CurveScriptingPluginInfo::GetLogString()
 // ****************************************************************************
 // Method: CurveScriptingPluginInfo::SetDefaults
 //
-// Purpose: 
+// Purpose:
 //   Used to set the default values for a plugin's state object.
 //
 // Arguments:
@@ -119,7 +119,7 @@ CurveScriptingPluginInfo::GetLogString()
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

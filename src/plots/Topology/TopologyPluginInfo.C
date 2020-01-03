@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TopologyPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <TopologyPluginInfo.h>
 #include <TopologyAttributes.h>

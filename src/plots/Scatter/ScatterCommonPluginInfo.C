@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ScatterCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ScatterPluginInfo.h>
 #include <ScatterAttributes.h>
@@ -43,16 +43,17 @@ ScatterCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 ScatterCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((ScatterAttributes *) to) = *((ScatterAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: ScatterCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ ScatterCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

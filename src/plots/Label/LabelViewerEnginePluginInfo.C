@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: LabelViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <LabelPluginInfo.h>
 #include <avtLabelPlot.h>
@@ -244,7 +244,7 @@ LabelViewerEnginePluginInfo::GetMenuName() const
 // ****************************************************************************
 // Method: LabelViewerEnginePluginInfo::PrivateSetPlotAtts
 //
-// Purpose: 
+// Purpose:
 //   Initializes the plot's varType attribute using the metadata.
 //
 // Arguments:
@@ -270,7 +270,7 @@ LabelViewerEnginePluginInfo::GetMenuName() const
 #include <DebugStream.h>
 #include <avtPlotMetaData.h>
 void
-LabelViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
+LabelViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     const avtPlotMetaData &plot)
 {
     LabelAttributes *labelAtts = (LabelAttributes *)atts;

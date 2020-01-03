@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: CurveCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <CurvePluginInfo.h>
 #include <CurveAttributes.h>
@@ -43,16 +43,17 @@ CurveCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 CurveCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((CurveAttributes *) to) = *((CurveAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: CurveCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ CurveCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
