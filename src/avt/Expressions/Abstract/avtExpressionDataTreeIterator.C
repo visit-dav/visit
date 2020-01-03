@@ -63,7 +63,7 @@ avtExpressionDataTreeIterator::avtExpressionDataTreeIterator()
 
 avtExpressionDataTreeIterator::~avtExpressionDataTreeIterator()
 {
-    ;
+    volumeDependent->Delete();
 }
 
 
