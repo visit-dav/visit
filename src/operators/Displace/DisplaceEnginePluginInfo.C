@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: DisplaceEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <DisplacePluginInfo.h>
 #include <avtDisplaceFilter.h>
@@ -25,7 +25,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY_EV(Displace,Engine)
 //  Modifications:
 //
 //    Hank Childs, Fri May 18 16:01:06 PDT 2007
-//    Forced to hand-edit return of avtDisplacePluginFilter ... not 
+//    Forced to hand-edit return of avtDisplacePluginFilter ... not
 //    avtDisplaceFilter.
 //
 // ****************************************************************************

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: RadialResampleCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <RadialResamplePluginInfo.h>
 #include <RadialResampleAttributes.h>
@@ -43,7 +43,7 @@ RadialResampleCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 RadialResampleCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

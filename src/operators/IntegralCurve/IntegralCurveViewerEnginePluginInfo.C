@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: IntegralCurveViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <IntegralCurvePluginInfo.h>
 #include <IntegralCurveAttributes.h>
@@ -202,7 +202,7 @@ IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject 
 
       var = justTheVar;
     }
-    
+
     else if( strncmp(var.c_str(), "operators/LCS/",
                      strlen("operators/LCS/")) == 0)
     {
@@ -214,7 +214,7 @@ IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject 
     var += std::string(" - ") +
         std::string(typeString[atts_in->GetDataValue()]);
 
-    if( atts_in->GetDataValue() == IntegralCurveAttributes::Variable ) 
+    if( atts_in->GetDataValue() == IntegralCurveAttributes::Variable )
     {
         var += std::string(": ") + atts_in->GetDataVariable();
     }

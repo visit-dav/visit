@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: RemoveCellsCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <RemoveCellsPluginInfo.h>
 #include <RemoveCellsAttributes.h>
@@ -43,7 +43,7 @@ RemoveCellsCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 RemoveCellsCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

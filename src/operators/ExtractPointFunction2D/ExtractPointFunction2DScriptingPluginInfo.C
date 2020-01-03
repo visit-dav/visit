@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        ExtractPointFunction2DScriptingPluginInfo.C
+//  ExtractPointFunction2DScriptingPluginInfo.C
 // ************************************************************************* //
 #include <PyExtractPointFunction2DAttributes.h>
 #include <ExtractPointFunction2DPluginInfo.h>
@@ -13,7 +13,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(ExtractPointFunction2D,Scripting)
 // ****************************************************************************
 // Method: ExtractPointFunction2DScriptingPluginInfo::InitializePlugin
 //
-// Purpose: 
+// Purpose:
 //   Calls the initialization function for the plugin.
 //
 // Arguments:
@@ -24,7 +24,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(ExtractPointFunction2D,Scripting)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -37,7 +37,7 @@ ExtractPointFunction2DScriptingPluginInfo::InitializePlugin(AttributeSubject *su
 // ****************************************************************************
 // Method: ExtractPointFunction2DScriptingPluginInfo::GetMethodTable
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the plugin's Python method table. These methods are
 //   added to the top-level visit module's methods.
 //
@@ -50,7 +50,7 @@ ExtractPointFunction2DScriptingPluginInfo::InitializePlugin(AttributeSubject *su
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -62,7 +62,7 @@ ExtractPointFunction2DScriptingPluginInfo::GetMethodTable(int *nMethods)
 // ****************************************************************************
 // Method: ExtractPointFunction2DScriptingPluginInfo::TypesMatch
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the input PyObject is ExtractPointFunction2D plot attributes.
 //
 // Arguments:
@@ -72,7 +72,7 @@ ExtractPointFunction2DScriptingPluginInfo::GetMethodTable(int *nMethods)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -84,7 +84,7 @@ ExtractPointFunction2DScriptingPluginInfo::TypesMatch(void *pyobject)
 // ****************************************************************************
 // Method: ExtractPointFunction2DScriptingPluginInfo::GetLogString
 //
-// Purpose: 
+// Purpose:
 //   Gets a string representation of the current attributes.
 //
 // Arguments:
@@ -94,7 +94,7 @@ ExtractPointFunction2DScriptingPluginInfo::TypesMatch(void *pyobject)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 char *
@@ -109,7 +109,7 @@ ExtractPointFunction2DScriptingPluginInfo::GetLogString()
 // ****************************************************************************
 // Method: ExtractPointFunction2DScriptingPluginInfo::SetDefaults
 //
-// Purpose: 
+// Purpose:
 //   Used to set the default values for a plugin's state object.
 //
 // Arguments:
@@ -119,7 +119,7 @@ ExtractPointFunction2DScriptingPluginInfo::GetLogString()
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

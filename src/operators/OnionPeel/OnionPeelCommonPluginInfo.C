@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: OnionPeelCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <OnionPeelPluginInfo.h>
 #include <OnionPeelAttributes.h>
@@ -43,7 +43,7 @@ OnionPeelCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 OnionPeelCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

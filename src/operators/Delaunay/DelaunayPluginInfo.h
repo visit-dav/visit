@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: DelaunayPluginInfo.h
-// ************************************************************************* //
+// ****************************************************************************
 
 #ifndef DELAUNAY_PLUGIN_INFO_H
 #define DELAUNAY_PLUGIN_INFO_H

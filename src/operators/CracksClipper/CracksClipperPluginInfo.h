@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: CracksClipperPluginInfo.h
-// ************************************************************************* //
+// ****************************************************************************
 
 #ifndef CRACKSCLIPPER_PLUGIN_INFO_H
 #define CRACKSCLIPPER_PLUGIN_INFO_H

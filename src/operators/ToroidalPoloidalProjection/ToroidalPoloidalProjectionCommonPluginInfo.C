@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ToroidalPoloidalProjectionCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ToroidalPoloidalProjectionPluginInfo.h>
 #include <ToroidalPoloidalProjection.h>
@@ -43,7 +43,7 @@ ToroidalPoloidalProjectionCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 ToroidalPoloidalProjectionCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

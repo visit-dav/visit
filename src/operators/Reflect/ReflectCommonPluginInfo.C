@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ReflectCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ReflectPluginInfo.h>
 #include <ReflectAttributes.h>
@@ -43,7 +43,7 @@ ReflectCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 ReflectCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

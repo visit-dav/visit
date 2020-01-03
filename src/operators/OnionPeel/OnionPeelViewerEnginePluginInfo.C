@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: OnionPeelViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <OnionPeelPluginInfo.h>
 #include <OnionPeelAttributes.h>
@@ -128,10 +128,10 @@ OnionPeelViewerEnginePluginInfo::GetClientAtts(AttributeSubject *atts)
 //
 //  Modifications:
 //    Added code to set the category name and subset name from the plot's
-//    SILRestriction. 
+//    SILRestriction.
 //
-//    Kathleen Bonnell, Thu Jan 26 07:33:29 PST 2006 
-//    Add silTopSet to argslist for GetCollectionIndex. 
+//    Kathleen Bonnell, Thu Jan 26 07:33:29 PST 2006
+//    Add silTopSet to argslist for GetCollectionIndex.
 //
 //    Brad Whitlock, Fri Feb 15 15:32:57 PST 2008
 //    Delete silAtts.
@@ -171,10 +171,10 @@ OnionPeelViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
     avtSILRestriction_p restriction = plot.GetSILRestriction();
     int silTopSet = restriction->GetTopSet();
 
-    // 
+    //
     // Determine the first valid category name, and determine if
-    // currently set category name is valid. 
-    // 
+    // currently set category name is valid.
+    //
     avtSILSet_p current = restriction->GetSILSet(silTopSet);
     const std::vector<int> &mapsOut = current->GetMapsOut();
     for (size_t j = 0; j < mapsOut.size() && !categoryNameValid; ++j)
@@ -182,7 +182,7 @@ OnionPeelViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
         int cIndex = mapsOut[j];
         avtSILCollection_p collection =restriction->GetSILCollection(cIndex);
         if ((collection->GetRole() == SIL_DOMAIN) ||
-            (collection->GetRole() == SIL_BLOCK)) 
+            (collection->GetRole() == SIL_BLOCK))
         {
             if (collection->GetCategory() == categoryName)
             {
@@ -192,7 +192,7 @@ OnionPeelViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
             {
                 firstCategoryName = collection->GetCategory();
             }
-            CompactSILRestrictionAttributes *silAtts = 
+            CompactSILRestrictionAttributes *silAtts =
                 restriction->MakeCompactAttributes();
             const unsignedCharVector &useSet =  silAtts->GetUseSet();
             //
@@ -202,7 +202,7 @@ OnionPeelViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
             int colIndex = restriction->GetCollectionIndex(
                            collection->GetCategory(), silTopSet);
             avtSILCollection_p collection =
-                           restriction->GetSILCollection(colIndex); 
+                           restriction->GetSILCollection(colIndex);
             if (*collection != NULL)
             {
                 int nSets = collection->GetNumberOfSubsets();
@@ -234,19 +234,19 @@ OnionPeelViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
             }
 
             delete silAtts;
-        } 
+        }
     }
 
-    // 
+    //
     // Use the currently set category and subsets name only if they
     // have they are valid.
-    // 
+    //
     if (subsetNameValid)
     {
         opAtts->SetSubsetName(subsetName);
         defaultAtts->SetSubsetName(subsetName);
     }
-    else 
+    else
     {
         opAtts->SetSubsetName(firstSubsetName);
         defaultAtts->SetSubsetName(firstSubsetName);
@@ -256,7 +256,7 @@ OnionPeelViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
        opAtts->SetCategoryName(categoryName);
        defaultAtts->SetCategoryName(categoryName);
     }
-    else 
+    else
     {
         opAtts->SetCategoryName(firstCategoryName);
         defaultAtts->SetCategoryName(firstCategoryName);
