@@ -366,6 +366,10 @@ avtPickQuery::PostExecute(void)
 //    Provide secondary vars and request Node/Zones on all procs, to prevent
 //    engine crash/hang on pipeline re-execution.
 //
+//    Alister Maguire, Fri Jan  3 13:38:26 PST 2020
+//    We use both transform and inverse transform now. Check both of them
+//    when deciding the transform message.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -382,7 +386,11 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
 
     Preparation(inAtts);
 
-    if (needTransform && (transform == NULL))
+    //
+    // If we have one of the transforms, let's assume for now that it's
+    // the one we need.
+    //
+    if (needTransform && (transform == NULL && invTransform == NULL))
     {
         pickAtts.SetNeedTransformMessage(true);
     }
