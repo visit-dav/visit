@@ -187,8 +187,8 @@ function bv_python_info
     export PYTHON3_MD5_CHECKSUM="1cd071f78ff6d9c7524c95303a3057aa"
 
     export PACKAGING_URL=${PACKAGING_URL:-""}
-    export PACKAGING_FILE=${PACKAGING_FILE:-"packaging-1.1.0.tar.gz"}
-    export PACKAGING_BUILD_DIR=${PACKAGING_BUILD_DIR:-"packaging-1.1.0"}
+    export PACKAGING_FILE=${PACKAGING_FILE:-"packaging-19.2.tar.gz"}
+    export PACKAGING_BUILD_DIR=${PACKAGING_BUILD_DIR:-"packaging-19.2"}
     export PACKAGING_MD5_CHECKSUM="867ce70984dc7b89bbbc3cac2a72b171"
     export PACKAGING_SHA256_CHECKSUM="28b924174df7a2fa32c1953825ff29c61e2f5e082343165438812f00d3a7fc47"
 
@@ -201,14 +201,14 @@ function bv_python_info
     export ALABASTER_URL=${ALABASTER_URL:-""}
     export ALABASTER_FILE=${ALABASTER_FILE:-"alabaster-0.7.12.tar.gz"}
     export ALABASTER_BUILD_DIR=${ALABASTER_BUILD_DIR:-"alabaster-0.7.12"}
-    export ALABASTER_MD5_CHECKSUM=""
-    export ALABASTER_SHA256_CHECKSUM=""
+    export ALABASTER_MD5_CHECKSUM="3591827fde96d1dd23970fb05410ed04"
+    export ALABASTER_SHA256_CHECKSUM="a661d72d58e6ea8a57f7a86e37d86716863ee5e92788398526d58b26a4e4dc02"
 
     export BABEL_URL=${BABEL_URL:-""}
     export BABEL_FILE=${BABEL_FILE:-"Babel-2.7.0.tar.gz"}
     export BABEL_BUILD_DIR=${BABEL_BUILD_DIR:-"Babel-2.7.0"}
-    export BABEL_MD5_CHECKSUM=""
-    export BABEL_SHA256_CHECKSUM=""
+    export BABEL_MD5_CHECKSUM="83c158b7dae9135750a7cf204e6e2eea"
+    export BABEL_SHA256_CHECKSUM="e86135ae101e31e2c8ec20a4e0c5220f4eed12487d5cf3f78be7e98d3a57fc28"
 
     export SNOWBALLSTEMMER_URL=${SNOWBALLSTEMMER_URL:-""}
     export SNOWBALLSTEMMER_FILE=${SNOWBALLSTEMMER_FILE:-"snowballstemmer-2.0.0.tar.gz"}
@@ -233,6 +233,42 @@ function bv_python_info
     export JINJA2_BUILD_DIR=${JINJA2_BUILD_DIR:-"Jinja2-2.10.3"}
     export JINJA2_MD5_CHECKSUM=""
     export JINJA2_SHA256_CHECKSUM=""
+
+    export SPINXCONTRIB-QTHELP_URL=${SPINXCONTRIB-QTHELP_URL:-""}
+    export SPINXCONTRIB-QTHELP_FILE=${SPINXCONTRIB-QTHELP_FILE:-"sphinxcontrib-qthelp-1.0.2.tar.gz"}
+    export SPINXCONTRIB-QTHELP_BUILD_DIR=${SPINXCONTRIB-QTHELP_BUILD_DIR:-"sphinxcontrib-qthelp-1.0.2"}
+    export SPINXCONTRIB-QTHELP_MD5_CHECKSUM=""
+    export SPINXCONTRIB-QTHELP_SHA256_CHECKSUM=""
+
+    export SPINXCONTRIB-SERIALIZINGHTML_URL=${SPINXCONTRIB-SERIALIZINGHTML_URL:-""}
+    export SPINXCONTRIB-SERIALIZINGHTML_FILE=${SPINXCONTRIB-SERIALIZINGHTML_FILE:-"sphinxcontrib-serializinghtml-1.1.3.tar.gz"}
+    export SPINXCONTRIB-SERIALIZINGHTML_BUILD_DIR=${SPINXCONTRIB-SERIALIZINGHTML_BUILD_DIR:-"sphinxcontrib-serializinghtml-1.1.3"}
+    export SPINXCONTRIB-SERIALIZINGHTML_MD5_CHECKSUM=""
+    export SPINXCONTRIB-SERIALIZINGHTML_SHA256_CHECKSUM=""
+
+    export SPINXCONTRIB-HTMLHELP_URL=${SPINXCONTRIB-HTMLHELP_URL:-""}
+    export SPINXCONTRIB-HTMLHELP_FILE=${SPINXCONTRIB-HTMLHELP_FILE:-"sphinxcontrib-htmlhelp-1.0.2.tar.gz"}
+    export SPINXCONTRIB-HTMLHELP_BUILD_DIR=${SPINXCONTRIB-HTMLHELP_BUILD_DIR:-"sphinxcontrib-htmlhelp-1.0.2"}
+    export SPINXCONTRIB-HTMLHELP_MD5_CHECKSUM=""
+    export SPINXCONTRIB-HTMLHELP_SHA256_CHECKSUM=""
+
+    export SPINXCONTRIB-JSMATH_URL=${SPINXCONTRIB-JSMATH_URL:-""}
+    export SPINXCONTRIB-JSMATH_FILE=${SPINXCONTRIB-JSMATH_FILE:-"sphinxcontrib-jsmath-1.0.1.tar.gz"}
+    export SPINXCONTRIB-JSMATH_BUILD_DIR=${SPINXCONTRIB-JSMATH_BUILD_DIR:-"sphinxcontrib-jsmath-1.0.1"}
+    export SPINXCONTRIB-JSMATH_MD5_CHECKSUM=""
+    export SPINXCONTRIB-JSMATH_SHA256_CHECKSUM=""
+
+    export SPINXCONTRIB-DEVHELP_URL=${SPINXCONTRIB-DEVHELP_URL:-"sphinxcontrib-devhelp-1.0.1.tar.gz"}
+    export SPINXCONTRIB-DEVHELP_FILE=${SPINXCONTRIB-DEVHELP_FILE:-"sphinxcontrib-devhelp-1.0.1"}
+    export SPINXCONTRIB-DEVHELP_BUILD_DIR=${SPINXCONTRIB-DEVHELP_BUILD_DIR:-""}
+    export SPINXCONTRIB-DEVHELP_MD5_CHECKSUM=""
+    export SPINXCONTRIB-DEVHELP_SHA256_CHECKSUM=""
+
+    export SPINXCONTRIB-APPLEHELP_URL=${SPINXCONTRIB-APPLEHELP_URL:-"sphinxcontrib-applehelp-1.0.1.tar.gz"}
+    export SPINXCONTRIB-APPLEHELP_FILE=${SPINXCONTRIB-APPLEHELP_FILE:-"sphinxcontrib-applehelp-1.0.1"}
+    export SPINXCONTRIB-APPLEHELP_BUILD_DIR=${SPINXCONTRIB-APPLEHELP_BUILD_DIR:-""}
+    export SPINXCONTRIB-APPLEHELP_MD5_CHECKSUM=""
+    export SPINXCONTRIB-APPLEHELP_SHA256_CHECKSUM=""
 
     export SIX_URL=${SIX_URL:-""}
     export SIX_FILE=${SIX_FILE:-"six-1.13.0.tar.gz"}
@@ -1135,6 +1171,54 @@ function build_sphinx
         fi
     fi
 
+    if ! test -f ${SPINXCONTRIB-QTHELP_FILE} ; then
+        download_file ${SPINXCONTRIB-QTHELP_FILE} "${SPINXCONTRIB-QTHELP_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPINXCONTRIB-QTHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SPINXCONTRIB-SERIALIZINGHTML_FILE} ; then
+        download_file ${SPINXCONTRIB-SERIALIZINGHTML_FILE} "${SPINXCONTRIB-SERIALIZINGHTML_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPINXCONTRIB-SERIALIZINGHTML_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SPINXCONTRIB-HTMLHELP_FILE} ; then
+        download_file ${SPINXCONTRIB-HTMLHELP_FILE} "${SPINXCONTRIB-HTMLHELP_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPINXCONTRIB-HTMLHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SPINXCONTRIB-JSMATH_FILE} ; then
+        download_file ${SPINXCONTRIB-JSMATH_FILE} "${SPINXCONTRIB-JSMATH_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPINXCONTRIB-JSMATH_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SPINXCONTRIB-DEVHELP_FILE} ; then
+        download_file ${SPINXCONTRIB-DEVHELP_FILE} "${SPINXCONTRIB-DEVHELP_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPINXCONTRIB-DEVHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SPINXCONTRIB-APPLEHELP_FILE} ; then
+        download_file ${SPINXCONTRIB-APPLEHELP_FILE} "${SPINXCONTRIB-APPLEHELP_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPINXCONTRIB-APPLEHELP_FILE}"
+            return 1
+        fi
+    fi
+
     if ! test -f ${SIX_FILE} ; then
         download_file ${SIX_FILE} "${SIX_URL}"
         if [[ $? != 0 ]] ; then
@@ -1201,7 +1285,7 @@ function build_sphinx
 
     # extract
     if ! test -d ${PACKAGING_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting packaging ..."
         uncompress_untar ${PACKAGING_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${PACKAGING_FILE}"
@@ -1210,7 +1294,7 @@ function build_sphinx
     fi
 
     if ! test -d ${IMAGESIZE_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting imagesize ..."
         uncompress_untar ${IMAGESIZE_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${IMAGESIZE_FILE}"
@@ -1219,7 +1303,7 @@ function build_sphinx
     fi
 
     if ! test -d ${ALABASTER_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting alabastor ..."
         uncompress_untar ${ALABASTER_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${ALABASTER_FILE}"
@@ -1228,7 +1312,7 @@ function build_sphinx
     fi
 
     if ! test -d ${BABEL_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting babel ..."
         uncompress_untar ${BABEL_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${BABEL_FILE}"
@@ -1237,7 +1321,7 @@ function build_sphinx
     fi
 
     if ! test -d ${SNOWBALLSTEMMER_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting snowballstemmer ..."
         uncompress_untar ${SNOWBALLSTEMMER_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${SNOWBALLSTEMMER_FILE}"
@@ -1246,7 +1330,7 @@ function build_sphinx
     fi
 
     if ! test -d ${DOCUTILS_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting docutils ..."
         uncompress_untar ${DOCUTILS_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${DOCUTILS_FILE}"
@@ -1255,7 +1339,7 @@ function build_sphinx
     fi
 
     if ! test -d ${PYGMENTS_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting pygments ..."
         uncompress_untar ${PYGMENTS_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${PYGMENTS_FILE}"
@@ -1264,7 +1348,7 @@ function build_sphinx
     fi
 
     if ! test -d ${JINJA2_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting jinja2 ..."
         uncompress_untar ${JINJA2_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${JINJA2_FILE}"
@@ -1272,8 +1356,62 @@ function build_sphinx
         fi
     fi
 
+    if ! test -d ${SPINXCONTRIB-QTHELP_BUILD_DIR} ; then
+        info "Extracting sphinxcontrib-qthelp ..."
+        uncompress_untar ${SPINXCONTRIB-QTHELP_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPINXCONTRIB-QTHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SPINXCONTRIB-SERIALIZINGHTML_BUILD_DIR} ; then
+        info "Extracting sphinxcontrib-serializinghtml ..."
+        uncompress_untar ${SPINXCONTRIB-SERIALIZINGHTML_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPINXCONTRIB-SERIALIZINGHTML_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SPINXCONTRIB-HTMLHELP_BUILD_DIR} ; then
+        info "Extracting sphinxcontrib-htmlhelp ..."
+        uncompress_untar ${SPINXCONTRIB-HTMLHELP_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPINXCONTRIB-HTMLHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SPINXCONTRIB-JSMATH_BUILD_DIR} ; then
+        info "Extracting sphinxcontrib-jsmath ..."
+        uncompress_untar ${SPINXCONTRIB-JSMATH_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPINXCONTRIB-JSMATH_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SPINXCONTRIB-DEVHELP_BUILD_DIR} ; then
+        info "Extracting sphinxcontrib-devhelp ..."
+        uncompress_untar ${SPINXCONTRIB-DEVHELP_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPINXCONTRIB-DEVHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SPINXCONTRIB-APPLEHELP_BUILD_DIR} ; then
+        info "Extracting sphinxcontrib-applehelp ..."
+        uncompress_untar ${SPINXCONTRIB-APPLEHELP_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPINXCONTRIB-APPLEHELP_FILE}"
+            return 1
+        fi
+    fi
+
     if ! test -d ${SIX_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting six ..."
         uncompress_untar ${SIX_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${SIX_FILE}"
@@ -1282,7 +1420,7 @@ function build_sphinx
     fi
 
     if ! test -d ${URLLIB3_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting urllib3 ..."
         uncompress_untar ${URLLIB3_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${URLLIB3_FILE}"
@@ -1291,7 +1429,7 @@ function build_sphinx
     fi
 
     if ! test -d ${IDNA_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting idna ..."
         uncompress_untar ${IDNA_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${IDNA_FILE}"
@@ -1300,7 +1438,7 @@ function build_sphinx
     fi
 
     if ! test -d ${CHARDET_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting chardet ..."
         uncompress_untar ${CHARDET_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${CHARDET_FILE}"
@@ -1309,7 +1447,7 @@ function build_sphinx
     fi
 
     if ! test -d ${CERTIFI_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting certifi ..."
         uncompress_untar ${CERTIFI_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${CERTIFI_FILE}"
@@ -1318,7 +1456,7 @@ function build_sphinx
     fi
 
     if ! test -d ${PYTZ_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting pytz ..."
         uncompress_untar ${PYTZ_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${PYTZ_FILE}"
@@ -1327,7 +1465,7 @@ function build_sphinx
     fi
 
     if ! test -d ${MARKUPSAFE_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting markupsafe ..."
         uncompress_untar ${MARKUPSAFE_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${MARKUPSAFE_FILE}"
