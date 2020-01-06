@@ -1448,7 +1448,7 @@ function build_sphinx
     fi
 
     if ! test -d ${PYPARSING_BUILD_DIR} ; then
-        info "Extracting six ..."
+        info "Extracting pyparsing ..."
         uncompress_untar ${PYPARSING_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${PYPARSING_FILE}"
@@ -1661,46 +1661,6 @@ function build_sphinx
     fi
     popd > /dev/null
 
-    pushd $URLLIB3_BUILD_DIR > /dev/null
-    info "Installing urllib3 ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
-    if test $? -ne 0 ; then
-        popd > /dev/null
-        warn "Could not install urllib3"
-        return 1
-    fi
-    popd > /dev/null
-
-    pushd $IDNA_BUILD_DIR > /dev/null
-    info "Installing idna ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
-    if test $? -ne 0 ; then
-        popd > /dev/null
-        warn "Could not install idna"
-        return 1
-    fi
-    popd > /dev/null
-
-    pushd $CHARDET_BUILD_DIR > /dev/null
-    info "Installing chardet ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
-    if test $? -ne 0 ; then
-        popd > /dev/null
-        warn "Could not install chardet"
-        return 1
-    fi
-    popd > /dev/null
-
-    pushd $CERTIFI_BUILD_DIR > /dev/null
-    info "Installing certifi ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
-    if test $? -ne 0 ; then
-        popd > /dev/null
-        warn "Could not install certifi"
-        return 1
-    fi
-    popd > /dev/null
-
     pushd $SPHINXCONTRIB-QTHELP_BUILD_DIR > /dev/null
     info "Installing sphinxcontrib-qthelp ..."
     ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
@@ -1757,6 +1717,46 @@ function build_sphinx
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install sphinxcontrib-applehelp"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $URLLIB3_BUILD_DIR > /dev/null
+    info "Installing urllib3 ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install urllib3"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $IDNA_BUILD_DIR > /dev/null
+    info "Installing idna ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install idna"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $CHARDET_BUILD_DIR > /dev/null
+    info "Installing chardet ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install chardet"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $CERTIFI_BUILD_DIR > /dev/null
+    info "Installing certifi ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install certifi"
         return 1
     fi
     popd > /dev/null
