@@ -384,6 +384,9 @@ QvisCMFEWizard::validateCurrentPage()
 //   Cyrus Harrison, Mon Aug 30 13:53:32 PDT 2010
 //   Proper enable/disable for exprDiffVar button.
 //
+//   Alister Maguire, Mon Dec 16 09:01:32 PST 2019
+//   Fixed bug with cycleTxt being continuously blocked.
+//
 // ****************************************************************************
 
 void
@@ -458,7 +461,7 @@ QvisCMFEWizard::initializePage(int pageId)
         cycleTxt->setText(tr(buff));
         cycleTxt->setEnabled(decision_timeType == TIME_TYPE_SIMCYCLE);
         cycleTxt->blockSignals(false);
-        cycleTxt->blockSignals(true);
+        indexTxt->blockSignals(true);
         snprintf(buff, 1024, "%d", decision_index);
         indexTxt->setText(tr(buff));
         indexTxt->setEnabled(decision_timeType == TIME_TYPE_INDEX);
