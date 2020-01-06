@@ -9,6 +9,8 @@
 #ifndef AVT_EXPRESSION_DATA_TREE_ITERATOR_H
 #define AVT_EXPRESSION_DATA_TREE_ITERATOR_H
 
+#include <vtkBitArray.h>
+
 #include <expression_exports.h>
 
 #include <avtExpressionFilter.h>
@@ -46,6 +48,10 @@ class vtkmDataSet;
 //    Eric Brugger, Wed Aug 20 16:24:51 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Eddie Rusu, Mon Dec 30 20:41:07 PST 2019
+//    Added volumeDependent array that tracks if a generated expression is
+//    volume-dependent.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionDataTreeIterator 
@@ -67,6 +73,9 @@ class EXPRESSION_API avtExpressionDataTreeIterator
                                                       int currentDomainsIndex,
                                                       const std::string &activeVar,
                                                       const std::string &outputVar);
+
+    // Track if the created array is volume-dependent.
+    vtkBitArray              *volumeDependent;
 };
 
 #endif
