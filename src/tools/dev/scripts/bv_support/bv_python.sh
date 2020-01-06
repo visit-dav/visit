@@ -192,6 +192,12 @@ function bv_python_info
     export PACKAGING_MD5_CHECKSUM="867ce70984dc7b89bbbc3cac2a72b171"
     export PACKAGING_SHA256_CHECKSUM="28b924174df7a2fa32c1953825ff29c61e2f5e082343165438812f00d3a7fc47"
 
+    export REQUESTS_URL=${REQUESTS_URL:-""}
+    export REQUESTS_FILE=${REQUESTS_FILE:-"requests-2.22.0.tar.gz"}
+    export REQUESTS_BUILD_DIR=${REQUESTS_BUILD_DIR:-"requests-2.22.0"}
+    export REQUESTS_MD5_CHECKSUM=""
+    export REQUESTS_SHA256_CHECKSUM=""
+
     export IMAGESIZE_URL=${IMAGESIZE_URL:-""}
     export IMAGESIZE_FILE=${IMAGESIZE_FILE:-"imagesize-1.1.0.tar.gz"}
     export IMAGESIZE_BUILD_DIR=${IMAGESIZE_BUILD_DIR:-"imagesize-1.1.0"}
@@ -234,47 +240,53 @@ function bv_python_info
     export JINJA2_MD5_CHECKSUM=""
     export JINJA2_SHA256_CHECKSUM=""
 
-    export SPINXCONTRIB-QTHELP_URL=${SPINXCONTRIB-QTHELP_URL:-""}
-    export SPINXCONTRIB-QTHELP_FILE=${SPINXCONTRIB-QTHELP_FILE:-"sphinxcontrib-qthelp-1.0.2.tar.gz"}
-    export SPINXCONTRIB-QTHELP_BUILD_DIR=${SPINXCONTRIB-QTHELP_BUILD_DIR:-"sphinxcontrib-qthelp-1.0.2"}
-    export SPINXCONTRIB-QTHELP_MD5_CHECKSUM=""
-    export SPINXCONTRIB-QTHELP_SHA256_CHECKSUM=""
+    export SPHINXCONTRIB-QTHELP_URL=${SPHINXCONTRIB-QTHELP_URL:-""}
+    export SPHINXCONTRIB-QTHELP_FILE=${SPHINXCONTRIB-QTHELP_FILE:-"sphinxcontrib-qthelp-1.0.2.tar.gz"}
+    export SPHINXCONTRIB-QTHELP_BUILD_DIR=${SPHINXCONTRIB-QTHELP_BUILD_DIR:-"sphinxcontrib-qthelp-1.0.2"}
+    export SPHINXCONTRIB-QTHELP_MD5_CHECKSUM=""
+    export SPHINXCONTRIB-QTHELP_SHA256_CHECKSUM=""
 
-    export SPINXCONTRIB-SERIALIZINGHTML_URL=${SPINXCONTRIB-SERIALIZINGHTML_URL:-""}
-    export SPINXCONTRIB-SERIALIZINGHTML_FILE=${SPINXCONTRIB-SERIALIZINGHTML_FILE:-"sphinxcontrib-serializinghtml-1.1.3.tar.gz"}
-    export SPINXCONTRIB-SERIALIZINGHTML_BUILD_DIR=${SPINXCONTRIB-SERIALIZINGHTML_BUILD_DIR:-"sphinxcontrib-serializinghtml-1.1.3"}
-    export SPINXCONTRIB-SERIALIZINGHTML_MD5_CHECKSUM=""
-    export SPINXCONTRIB-SERIALIZINGHTML_SHA256_CHECKSUM=""
+    export SPHINXCONTRIB-SERIALIZINGHTML_URL=${SPHINXCONTRIB-SERIALIZINGHTML_URL:-""}
+    export SPHINXCONTRIB-SERIALIZINGHTML_FILE=${SPHINXCONTRIB-SERIALIZINGHTML_FILE:-"sphinxcontrib-serializinghtml-1.1.3.tar.gz"}
+    export SPHINXCONTRIB-SERIALIZINGHTML_BUILD_DIR=${SPHINXCONTRIB-SERIALIZINGHTML_BUILD_DIR:-"sphinxcontrib-serializinghtml-1.1.3"}
+    export SPHINXCONTRIB-SERIALIZINGHTML_MD5_CHECKSUM=""
+    export SPHINXCONTRIB-SERIALIZINGHTML_SHA256_CHECKSUM=""
 
-    export SPINXCONTRIB-HTMLHELP_URL=${SPINXCONTRIB-HTMLHELP_URL:-""}
-    export SPINXCONTRIB-HTMLHELP_FILE=${SPINXCONTRIB-HTMLHELP_FILE:-"sphinxcontrib-htmlhelp-1.0.2.tar.gz"}
-    export SPINXCONTRIB-HTMLHELP_BUILD_DIR=${SPINXCONTRIB-HTMLHELP_BUILD_DIR:-"sphinxcontrib-htmlhelp-1.0.2"}
-    export SPINXCONTRIB-HTMLHELP_MD5_CHECKSUM=""
-    export SPINXCONTRIB-HTMLHELP_SHA256_CHECKSUM=""
+    export SPHINXCONTRIB-HTMLHELP_URL=${SPHINXCONTRIB-HTMLHELP_URL:-""}
+    export SPHINXCONTRIB-HTMLHELP_FILE=${SPHINXCONTRIB-HTMLHELP_FILE:-"sphinxcontrib-htmlhelp-1.0.2.tar.gz"}
+    export SPHINXCONTRIB-HTMLHELP_BUILD_DIR=${SPHINXCONTRIB-HTMLHELP_BUILD_DIR:-"sphinxcontrib-htmlhelp-1.0.2"}
+    export SPHINXCONTRIB-HTMLHELP_MD5_CHECKSUM=""
+    export SPHINXCONTRIB-HTMLHELP_SHA256_CHECKSUM=""
 
-    export SPINXCONTRIB-JSMATH_URL=${SPINXCONTRIB-JSMATH_URL:-""}
-    export SPINXCONTRIB-JSMATH_FILE=${SPINXCONTRIB-JSMATH_FILE:-"sphinxcontrib-jsmath-1.0.1.tar.gz"}
-    export SPINXCONTRIB-JSMATH_BUILD_DIR=${SPINXCONTRIB-JSMATH_BUILD_DIR:-"sphinxcontrib-jsmath-1.0.1"}
-    export SPINXCONTRIB-JSMATH_MD5_CHECKSUM=""
-    export SPINXCONTRIB-JSMATH_SHA256_CHECKSUM=""
+    export SPHINXCONTRIB-JSMATH_URL=${SPHINXCONTRIB-JSMATH_URL:-""}
+    export SPHINXCONTRIB-JSMATH_FILE=${SPHINXCONTRIB-JSMATH_FILE:-"sphinxcontrib-jsmath-1.0.1.tar.gz"}
+    export SPHINXCONTRIB-JSMATH_BUILD_DIR=${SPHINXCONTRIB-JSMATH_BUILD_DIR:-"sphinxcontrib-jsmath-1.0.1"}
+    export SPHINXCONTRIB-JSMATH_MD5_CHECKSUM=""
+    export SPHINXCONTRIB-JSMATH_SHA256_CHECKSUM=""
 
-    export SPINXCONTRIB-DEVHELP_URL=${SPINXCONTRIB-DEVHELP_URL:-"sphinxcontrib-devhelp-1.0.1.tar.gz"}
-    export SPINXCONTRIB-DEVHELP_FILE=${SPINXCONTRIB-DEVHELP_FILE:-"sphinxcontrib-devhelp-1.0.1"}
-    export SPINXCONTRIB-DEVHELP_BUILD_DIR=${SPINXCONTRIB-DEVHELP_BUILD_DIR:-""}
-    export SPINXCONTRIB-DEVHELP_MD5_CHECKSUM=""
-    export SPINXCONTRIB-DEVHELP_SHA256_CHECKSUM=""
+    export SPHINXCONTRIB-DEVHELP_URL=${SPHINXCONTRIB-DEVHELP_URL:-""}
+    export SPHINXCONTRIB-DEVHELP_FILE=${SPHINXCONTRIB-DEVHELP_FILE:-"sphinxcontrib-devhelp-1.0.1.tar.gz"}
+    export SPHINXCONTRIB-DEVHELP_BUILD_DIR=${SPHINXCONTRIB-DEVHELP_BUILD_DIR:-""}
+    export SPHINXCONTRIB-DEVHELP_MD5_CHECKSUM=""
+    export SPHINXCONTRIB-DEVHELP_SHA256_CHECKSUM=""
 
-    export SPINXCONTRIB-APPLEHELP_URL=${SPINXCONTRIB-APPLEHELP_URL:-"sphinxcontrib-applehelp-1.0.1.tar.gz"}
-    export SPINXCONTRIB-APPLEHELP_FILE=${SPINXCONTRIB-APPLEHELP_FILE:-"sphinxcontrib-applehelp-1.0.1"}
-    export SPINXCONTRIB-APPLEHELP_BUILD_DIR=${SPINXCONTRIB-APPLEHELP_BUILD_DIR:-""}
-    export SPINXCONTRIB-APPLEHELP_MD5_CHECKSUM=""
-    export SPINXCONTRIB-APPLEHELP_SHA256_CHECKSUM=""
+    export SPHINXCONTRIB-APPLEHELP_URL=${SPHINXCONTRIB-APPLEHELP_URL:-""}
+    export SPHINXCONTRIB-APPLEHELP_FILE=${SPHINXCONTRIB-APPLEHELP_FILE:-"sphinxcontrib-applehelp-1.0.1.tar.gz"}
+    export SPHINXCONTRIB-APPLEHELP_BUILD_DIR=${SPHINXCONTRIB-APPLEHELP_BUILD_DIR:-""}
+    export SPHINXCONTRIB-APPLEHELP_MD5_CHECKSUM=""
+    export SPHINXCONTRIB-APPLEHELP_SHA256_CHECKSUM=""
 
     export SIX_URL=${SIX_URL:-""}
     export SIX_FILE=${SIX_FILE:-"six-1.13.0.tar.gz"}
     export SIX_BUILD_DIR=${SIX_BUILD_DIR:-"six-1.13.0"}
     export SIX_MD5_CHECKSUM=""
     export SIX_SHA256_CHECKSUM=""
+
+    export PYPARSING_URL=${PYPARSING_URL:-""}
+    export PYPARSING_FILE=${PYPARSING_FILE:-"pyparsing-2.4.6.tar.gz"}
+    export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-2.4.6"}
+    export PYPARSING_MD5_CHECKSUM=""
+    export PYPARSING_SHA256_CHECKSUM=""
 
     export URLLIB3_URL=${URLLIB3_URL:-""}
     export URLLIB3_FILE=${URLLIB3_FILE:-"urllib3-1.25.7.tar.gz"}
@@ -1115,6 +1127,14 @@ function build_sphinx
         fi
     fi
 
+    if ! test -f ${REQUESTS_FILE} ; then
+        download_file ${REQUESTS_FILE} "${REQUESTS_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${REQUESTS_FILE}"
+            return 1
+        fi
+    fi
+
     if ! test -f ${IMAGESIZE_FILE} ; then
         download_file ${IMAGESIZE_FILE} "${IMAGESIZE_URL}"
         if [[ $? != 0 ]] ; then
@@ -1171,50 +1191,50 @@ function build_sphinx
         fi
     fi
 
-    if ! test -f ${SPINXCONTRIB-QTHELP_FILE} ; then
-        download_file ${SPINXCONTRIB-QTHELP_FILE} "${SPINXCONTRIB-QTHELP_URL}"
+    if ! test -f ${SPHINXCONTRIB-QTHELP_FILE} ; then
+        download_file ${SPHINXCONTRIB-QTHELP_FILE} "${SPHINXCONTRIB-QTHELP_URL}"
         if [[ $? != 0 ]] ; then
-            warn "Could not download ${SPINXCONTRIB-QTHELP_FILE}"
+            warn "Could not download ${SPHINXCONTRIB-QTHELP_FILE}"
             return 1
         fi
     fi
 
-    if ! test -f ${SPINXCONTRIB-SERIALIZINGHTML_FILE} ; then
-        download_file ${SPINXCONTRIB-SERIALIZINGHTML_FILE} "${SPINXCONTRIB-SERIALIZINGHTML_URL}"
+    if ! test -f ${SPHINXCONTRIB-SERIALIZINGHTML_FILE} ; then
+        download_file ${SPHINXCONTRIB-SERIALIZINGHTML_FILE} "${SPHINXCONTRIB-SERIALIZINGHTML_URL}"
         if [[ $? != 0 ]] ; then
-            warn "Could not download ${SPINXCONTRIB-SERIALIZINGHTML_FILE}"
+            warn "Could not download ${SPHINXCONTRIB-SERIALIZINGHTML_FILE}"
             return 1
         fi
     fi
 
-    if ! test -f ${SPINXCONTRIB-HTMLHELP_FILE} ; then
-        download_file ${SPINXCONTRIB-HTMLHELP_FILE} "${SPINXCONTRIB-HTMLHELP_URL}"
+    if ! test -f ${SPHINXCONTRIB-HTMLHELP_FILE} ; then
+        download_file ${SPHINXCONTRIB-HTMLHELP_FILE} "${SPHINXCONTRIB-HTMLHELP_URL}"
         if [[ $? != 0 ]] ; then
-            warn "Could not download ${SPINXCONTRIB-HTMLHELP_FILE}"
+            warn "Could not download ${SPHINXCONTRIB-HTMLHELP_FILE}"
             return 1
         fi
     fi
 
-    if ! test -f ${SPINXCONTRIB-JSMATH_FILE} ; then
-        download_file ${SPINXCONTRIB-JSMATH_FILE} "${SPINXCONTRIB-JSMATH_URL}"
+    if ! test -f ${SPHINXCONTRIB-JSMATH_FILE} ; then
+        download_file ${SPHINXCONTRIB-JSMATH_FILE} "${SPHINXCONTRIB-JSMATH_URL}"
         if [[ $? != 0 ]] ; then
-            warn "Could not download ${SPINXCONTRIB-JSMATH_FILE}"
+            warn "Could not download ${SPHINXCONTRIB-JSMATH_FILE}"
             return 1
         fi
     fi
 
-    if ! test -f ${SPINXCONTRIB-DEVHELP_FILE} ; then
-        download_file ${SPINXCONTRIB-DEVHELP_FILE} "${SPINXCONTRIB-DEVHELP_URL}"
+    if ! test -f ${SPHINXCONTRIB-DEVHELP_FILE} ; then
+        download_file ${SPHINXCONTRIB-DEVHELP_FILE} "${SPHINXCONTRIB-DEVHELP_URL}"
         if [[ $? != 0 ]] ; then
-            warn "Could not download ${SPINXCONTRIB-DEVHELP_FILE}"
+            warn "Could not download ${SPHINXCONTRIB-DEVHELP_FILE}"
             return 1
         fi
     fi
 
-    if ! test -f ${SPINXCONTRIB-APPLEHELP_FILE} ; then
-        download_file ${SPINXCONTRIB-APPLEHELP_FILE} "${SPINXCONTRIB-APPLEHELP_URL}"
+    if ! test -f ${SPHINXCONTRIB-APPLEHELP_FILE} ; then
+        download_file ${SPHINXCONTRIB-APPLEHELP_FILE} "${SPHINXCONTRIB-APPLEHELP_URL}"
         if [[ $? != 0 ]] ; then
-            warn "Could not download ${SPINXCONTRIB-APPLEHELP_FILE}"
+            warn "Could not download ${SPHINXCONTRIB-APPLEHELP_FILE}"
             return 1
         fi
     fi
@@ -1223,6 +1243,14 @@ function build_sphinx
         download_file ${SIX_FILE} "${SIX_URL}"
         if [[ $? != 0 ]] ; then
             warn "Could not download ${SIX_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${PYPARSING_FILE} ; then
+        download_file ${PYPARSING_FILE} "${PYPARSING_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${PYPARSING_FILE}"
             return 1
         fi
     fi
@@ -1356,56 +1384,56 @@ function build_sphinx
         fi
     fi
 
-    if ! test -d ${SPINXCONTRIB-QTHELP_BUILD_DIR} ; then
+    if ! test -d ${SPHINXCONTRIB-QTHELP_BUILD_DIR} ; then
         info "Extracting sphinxcontrib-qthelp ..."
-        uncompress_untar ${SPINXCONTRIB-QTHELP_FILE}
+        uncompress_untar ${SPHINXCONTRIB-QTHELP_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${SPINXCONTRIB-QTHELP_FILE}"
+            warn "Could not extract ${SPHINXCONTRIB-QTHELP_FILE}"
             return 1
         fi
     fi
 
-    if ! test -d ${SPINXCONTRIB-SERIALIZINGHTML_BUILD_DIR} ; then
+    if ! test -d ${SPHINXCONTRIB-SERIALIZINGHTML_BUILD_DIR} ; then
         info "Extracting sphinxcontrib-serializinghtml ..."
-        uncompress_untar ${SPINXCONTRIB-SERIALIZINGHTML_FILE}
+        uncompress_untar ${SPHINXCONTRIB-SERIALIZINGHTML_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${SPINXCONTRIB-SERIALIZINGHTML_FILE}"
+            warn "Could not extract ${SPHINXCONTRIB-SERIALIZINGHTML_FILE}"
             return 1
         fi
     fi
 
-    if ! test -d ${SPINXCONTRIB-HTMLHELP_BUILD_DIR} ; then
+    if ! test -d ${SPHINXCONTRIB-HTMLHELP_BUILD_DIR} ; then
         info "Extracting sphinxcontrib-htmlhelp ..."
-        uncompress_untar ${SPINXCONTRIB-HTMLHELP_FILE}
+        uncompress_untar ${SPHINXCONTRIB-HTMLHELP_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${SPINXCONTRIB-HTMLHELP_FILE}"
+            warn "Could not extract ${SPHINXCONTRIB-HTMLHELP_FILE}"
             return 1
         fi
     fi
 
-    if ! test -d ${SPINXCONTRIB-JSMATH_BUILD_DIR} ; then
+    if ! test -d ${SPHINXCONTRIB-JSMATH_BUILD_DIR} ; then
         info "Extracting sphinxcontrib-jsmath ..."
-        uncompress_untar ${SPINXCONTRIB-JSMATH_FILE}
+        uncompress_untar ${SPHINXCONTRIB-JSMATH_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${SPINXCONTRIB-JSMATH_FILE}"
+            warn "Could not extract ${SPHINXCONTRIB-JSMATH_FILE}"
             return 1
         fi
     fi
 
-    if ! test -d ${SPINXCONTRIB-DEVHELP_BUILD_DIR} ; then
+    if ! test -d ${SPHINXCONTRIB-DEVHELP_BUILD_DIR} ; then
         info "Extracting sphinxcontrib-devhelp ..."
-        uncompress_untar ${SPINXCONTRIB-DEVHELP_FILE}
+        uncompress_untar ${SPHINXCONTRIB-DEVHELP_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${SPINXCONTRIB-DEVHELP_FILE}"
+            warn "Could not extract ${SPHINXCONTRIB-DEVHELP_FILE}"
             return 1
         fi
     fi
 
-    if ! test -d ${SPINXCONTRIB-APPLEHELP_BUILD_DIR} ; then
+    if ! test -d ${SPHINXCONTRIB-APPLEHELP_BUILD_DIR} ; then
         info "Extracting sphinxcontrib-applehelp ..."
-        uncompress_untar ${SPINXCONTRIB-APPLEHELP_FILE}
+        uncompress_untar ${SPHINXCONTRIB-APPLEHELP_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${SPINXCONTRIB-APPLEHELP_FILE}"
+            warn "Could not extract ${SPHINXCONTRIB-APPLEHELP_FILE}"
             return 1
         fi
     fi
@@ -1415,6 +1443,15 @@ function build_sphinx
         uncompress_untar ${SIX_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${SIX_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${PYPARSING_BUILD_DIR} ; then
+        info "Extracting six ..."
+        uncompress_untar ${PYPARSING_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${PYPARSING_FILE}"
             return 1
         fi
     fi
@@ -1504,12 +1541,32 @@ function build_sphinx
     fi
     popd > /dev/null
 
+    pushd $PYPARSING_BUILD_DIR > /dev/null
+    info "Installing pyparsing ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install pyparsing"
+        return 1
+    fi
+    popd > /dev/null
+
     pushd $PACKAGING_BUILD_DIR > /dev/null
     info "Installing packaging ..."
     ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install packaging"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $REQUESTS_BUILD_DIR > /dev/null
+    info "Installing requests ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install requests"
         return 1
     fi
     popd > /dev/null
