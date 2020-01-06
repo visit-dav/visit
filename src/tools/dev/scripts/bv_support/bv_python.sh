@@ -192,6 +192,12 @@ function bv_python_info
     export PACKAGING_MD5_CHECKSUM="867ce70984dc7b89bbbc3cac2a72b171"
     export PACKAGING_SHA256_CHECKSUM="28b924174df7a2fa32c1953825ff29c61e2f5e082343165438812f00d3a7fc47"
 
+    export SETUPTOOLS_URL=${SETUPTOOLS_URL:-""}
+    export SETUPTOOLS_FILE=${SETUPTOOLS_FILE:-"setuptools-44.0.0.zip"}
+    export SETUPTOOLS_BUILD_DIR=${SETUPTOOLS_BUILD_DIR:-"setuptools-44.0.0"}
+    export SETUPTOOLS_MD5_CHECKSUM=""
+    export SETUPTOOLS_SHA256_CHECKSUM=""
+
     export REQUESTS_URL=${REQUESTS_URL:-""}
     export REQUESTS_FILE=${REQUESTS_FILE:-"requests-2.22.0.tar.gz"}
     export REQUESTS_BUILD_DIR=${REQUESTS_BUILD_DIR:-"requests-2.22.0"}
@@ -1127,6 +1133,14 @@ function build_sphinx
         fi
     fi
 
+    if ! test -f ${SETUPTOOLS_FILE} ; then
+        download_file ${SETUPTOOLS_FILE} "${SETUPTOOLS_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SETUPTOOLS_FILE}"
+            return 1
+        fi
+    fi
+
     if ! test -f ${REQUESTS_FILE} ; then
         download_file ${REQUESTS_FILE} "${REQUESTS_URL}"
         if [[ $? != 0 ]] ; then
@@ -1317,6 +1331,24 @@ function build_sphinx
         uncompress_untar ${PACKAGING_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${PACKAGING_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SETUPTOOLS_BUILD_DIR} ; then
+        info "Extracting setuptools ..."
+        uncompress_untar ${SETUPTOOLS_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SETUPTOOLS_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${REQUESTS_BUILD_DIR} ; then
+        info "Extracting requests ..."
+        uncompress_untar ${REQUESTS_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${REQUESTS_FILE}"
             return 1
         fi
     fi
