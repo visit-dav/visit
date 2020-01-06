@@ -1593,7 +1593,7 @@ function build_sphinx
     fi
     popd > /dev/null
 
-    pushd $SETUPTOOLS_BUILD_DIR > /dev/null
+    pushd $SETUPTOOLS44_0_0_BUILD_DIR > /dev/null
     info "Installing setuptools ..."
     ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
     if test $? -ne 0 ; then
