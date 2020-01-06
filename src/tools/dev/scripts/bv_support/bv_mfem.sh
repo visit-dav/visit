@@ -140,7 +140,7 @@ function build_mfem
     # Build mfem
     #
     info "Building mfem . . . (~2 minutes)"
-    $MAKE serial $MAKE_OPT_FLAGS
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "mfem build failed.  Giving up"
         return 1
