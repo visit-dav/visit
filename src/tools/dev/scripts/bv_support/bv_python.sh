@@ -1494,6 +1494,16 @@ function build_sphinx
 
     PY3HOME="${VISITDIR}/python/${PYTHON3_VERSION}/${VISITARCH}"
     # install
+    pushd $SIX_BUILD_DIR > /dev/null
+    info "Installing six ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install six"
+        return 1
+    fi
+    popd > /dev/null
+
     pushd $PACKAGING_BUILD_DIR > /dev/null
     info "Installing packaging ..."
     ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
@@ -1520,6 +1530,16 @@ function build_sphinx
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install alabaster"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $PYTZ_BUILD_DIR > /dev/null
+    info "Installing pytz ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install pytz"
         return 1
     fi
     popd > /dev/null
@@ -1564,22 +1584,22 @@ function build_sphinx
     fi
     popd > /dev/null
 
+    pushd $MARKUPSAFE_BUILD_DIR > /dev/null
+    info "Installing markupsafe ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install markupsafe"
+        return 1
+    fi
+    popd > /dev/null
+
     pushd $JINJA2_BUILD_DIR > /dev/null
     info "Installing jinja2 ..."
     ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install jinja2"
-        return 1
-    fi
-    popd > /dev/null
-
-    pushd $SIX_BUILD_DIR > /dev/null
-    info "Installing six ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
-    if test $? -ne 0 ; then
-        popd > /dev/null
-        warn "Could not install six"
         return 1
     fi
     popd > /dev/null
@@ -1624,22 +1644,62 @@ function build_sphinx
     fi
     popd > /dev/null
 
-    pushd $PYTZ_BUILD_DIR > /dev/null
-    info "Installing pytz ..."
+    pushd $SPHINXCONTRIB-QTHELP_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-qthelp ..."
     ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
-        warn "Could not install pytz"
+        warn "Could not install sphinxcontrib-qthelp"
         return 1
     fi
     popd > /dev/null
 
-    pushd $MARKUPSAFE_BUILD_DIR > /dev/null
-    info "Installing markupsafe ..."
+    pushd $SPHINXCONTRIB-SERIALIZING_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-serializing ..."
     ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
-        warn "Could not install markupsafe"
+        warn "Could not install sphinxcontrib-serializing"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SPHINXCONTRIB-HTMLHELP_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-htmlhelp ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinxcontrib-htmlhelp"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SPHINXCONTRIB-JSMATH_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-jsmath ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinxcontrib-jsmath"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SPHINXCONTRIB-DEVHELP_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-devhelp ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinxcontrib-devhelp"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SPHINXCONTRIB-APPLEHELP_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-applehelp ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinxcontrib-applehelp"
         return 1
     fi
     popd > /dev/null
