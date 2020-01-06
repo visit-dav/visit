@@ -366,6 +366,10 @@ avtPickQuery::PostExecute(void)
 //    Provide secondary vars and request Node/Zones on all procs, to prevent
 //    engine crash/hang on pipeline re-execution.
 //
+//    Alister Maguire, Fri Jan  3 13:38:26 PST 2020
+//    We use both transform and inverse transform now. Check both of them
+//    when deciding the transform message.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -382,7 +386,11 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
 
     Preparation(inAtts);
 
-    if (needTransform && (transform == NULL))
+    //
+    // If we have one of the transforms, let's assume for now that it's
+    // the one we need.
+    //
+    if (needTransform && (transform == NULL && invTransform == NULL))
     {
         pickAtts.SetNeedTransformMessage(true);
     }
@@ -1856,6 +1864,14 @@ avtPickQuery::SetPickAttsForTimeQuery(const PickAttributes *pa)
 //  Programmer: Matt Larsen
 //  Creation:   July 8, 2016
 //
+//  Modifications:
+//
+//      Alister Maguire, Tue Oct 22 14:16:52 MST 2019
+//      Apply our transformation if we have it.
+//
+//      Alister Maguire, Wed Dec  4 09:00:28 MST 2019
+//      Make sure that we have a transform if it's needed. If not, bail.
+//
 // ****************************************************************************
 
 void
@@ -1863,10 +1879,29 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
                                         vtkDataSet *ds,
                                         const int &dom)
 {
+   //
+   // If we have a transform, we need to apply this
+   // to the extracted edges.
+   //
+   bool haveTransform = (transform == NULL) ? false : true;
+
    // Clear anything left over
    pickAtts.ClearLines();
    // Bail if highlights are not on
    if(!pickAtts.GetShowPickHighlight()) return;
+
+   //
+   // If we don't have a required transform, the highlight will
+   // be invalid.
+   //
+   if (needTransform && !haveTransform)
+   {
+      pickAtts.SetErrorMessage("The requested zone highlight was unable to be "
+         "performed due to a missing transform. Try picking without the zone "
+         "highlight enabled.");
+      pickAtts.SetError(true);
+      return;
+   }
 
    // Check to see if the cells were decomposed in some way
     vtkDataArray* origCellsArr = ds->GetCellData()->
@@ -1889,6 +1924,23 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
             double p2[3];
             edgePoints->GetPoint(0, p1);
             edgePoints->GetPoint(1, p2);
+
+            if (haveTransform)
+            {
+                avtVector tv1(p1);
+                avtVector tv2(p2);
+
+                tv1 = (*transform) * tv1;
+                tv2 = (*transform) * tv2;
+
+                p1[0] = tv1.x;
+                p1[1] = tv1.y;
+                p1[2] = tv1.z;
+                p2[0] = tv2.x;
+                p2[1] = tv2.y;
+                p2[2] = tv2.z;
+            }
+
             pickAtts.AddLine(p1, p2,i);
         }
         return;
@@ -1947,6 +1999,23 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
             double p1[3],p2[3];
             ds->GetPoint(p1Id, p1);
             ds->GetPoint(p2Id, p2);
+
+            if (haveTransform)
+            {
+                avtVector tv1(p1);
+                avtVector tv2(p2);
+
+                tv1 = (*transform) * tv1;
+                tv2 = (*transform) * tv2;
+
+                p1[0] = tv1.x;
+                p1[1] = tv1.y;
+                p1[2] = tv1.z;
+                p2[0] = tv2.x;
+                p2[1] = tv2.y;
+                p2[2] = tv2.z;
+            }
+
             pickAtts.AddLine(p1, p2,i);
         }
     }

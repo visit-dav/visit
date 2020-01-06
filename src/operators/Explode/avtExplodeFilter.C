@@ -1566,11 +1566,22 @@ avtExplodeFilter::PostExecute(void)
 // 
 //  Modifications:
 //
+//      Alister Maguire, Wed Dec  4 09:00:28 MST 2019
+//      Updating transform information.
+//
 // ****************************************************************************
 
 void
 avtExplodeFilter::UpdateDataObjectInfo(void)
 {
+    GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
+
+    //
+    // This filter invalidates any transform matrix in the pipeline.
+    //
+    GetOutput()->GetInfo().GetAttributes().SetCanUseInvTransform(false);
+    GetOutput()->GetInfo().GetAttributes().SetCanUseTransform(false);
+
     GetOutput()->GetInfo().GetValidity().InvalidateDataMetaData();
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
 
