@@ -5,7 +5,6 @@
 #include <VTKPluginInfo.h>
 #include <avtVTKFileFormat.h>
 #include <avtSTMDFileFormatInterface.h>
-#include <avtSTSDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
 #include <avtVTKOptions.h>
 
@@ -31,6 +30,7 @@ VTKCommonPluginInfo::GetDatabaseType()
     return dbType;
 }
 
+
 // ****************************************************************************
 //  Method: VTKCommonPluginInfo::SetupDatabase
 //
@@ -53,6 +53,9 @@ VTKCommonPluginInfo::GetDatabaseType()
 //    are present in the 1st file.
 //
 // ****************************************************************************
+
+#include <avtSTSDFileFormatInterface.h>
+
 avtDatabase *
 VTKCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
@@ -80,14 +83,14 @@ VTKCommonPluginInfo::SetupDatabase(const char *const *list,
 
         // STMD case
         avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
-        for (int i = 0 ; i < nList ; i++)
+        for (int i = 0; i < nList; i++)
         {
             if(i == 0)
                 ffl[i] = new avtVTK_STMDFileFormat(list[i], readOptions, reader);
             else
                 ffl[i] = new avtVTK_STMDFileFormat(list[i], readOptions);
         }
-        avtSTMDFileFormatInterface *inter 
+        avtSTMDFileFormatInterface *inter
            = new avtSTMDFileFormatInterface(ffl, nList);
         db = new avtGenericDatabase(inter);
     }
@@ -98,24 +101,25 @@ VTKCommonPluginInfo::SetupDatabase(const char *const *list,
         // STSD case
         int nTimestep = nList / nBlock;
         avtSTSDFileFormat ***ffl = new avtSTSDFileFormat**[nTimestep];
-        for (int i = 0 ; i < nTimestep ; i++)
+        for (int i = 0; i < nTimestep; i++)
         {
             ffl[i] = new avtSTSDFileFormat*[nBlock];
-            for (int j = 0 ; j < nBlock ; j++)
+            for (int j = 0; j < nBlock; j++)
             {
                 if(i == 0 && j == 0)
                     ffl[i][j] = new avtVTK_STSDFileFormat(list[i*nBlock + j], readOptions, reader);
-                else 
+                else
                     ffl[i][j] = new avtVTK_STSDFileFormat(list[i*nBlock + j], readOptions);
             }
         }
-        avtSTSDFileFormatInterface *inter 
+        avtSTSDFileFormatInterface *inter
             = new avtSTSDFileFormatInterface(ffl, nTimestep, nBlock);
         db = new avtGenericDatabase(inter);
     }
 
     return db;
 }
+
 
 // ****************************************************************************
 //  Method: VTKCommonPluginInfo::GetReadOptions
@@ -150,3 +154,4 @@ VTKCommonPluginInfo::GetWriteOptions() const
 {
     return GetVTKWriteOptions();
 }
+

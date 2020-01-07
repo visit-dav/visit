@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: VolumeCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <VolumePluginInfo.h>
 #include <VolumeAttributes.h>
@@ -43,16 +43,17 @@ VolumeCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 VolumeCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((VolumeAttributes *) to) = *((VolumeAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: VolumeCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ VolumeCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

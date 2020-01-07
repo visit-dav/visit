@@ -46,15 +46,15 @@ VelodyneCommonPluginInfo::SetupDatabase(const char *const *list,
 {
     int nTimestep = nList / nBlock;
     avtSTSDFileFormat ***ffl = new avtSTSDFileFormat**[nTimestep];
-    for (int i = 0 ; i < nTimestep ; i++)
+    for (int i = 0; i < nTimestep; i++)
     {
         ffl[i] = new avtSTSDFileFormat*[nBlock];
-        for (int j = 0 ; j < nBlock ; j++)
+        for (int j = 0; j < nBlock; j++)
         {
             ffl[i][j] = new avtVelodyneFileFormat(list[i*nBlock + j]);
         }
     }
-    avtSTSDFileFormatInterface *inter 
+    avtSTSDFileFormatInterface *inter
            = new avtSTSDFileFormatInterface(ffl, nTimestep, nBlock);
     return new avtGenericDatabase(inter);
 }

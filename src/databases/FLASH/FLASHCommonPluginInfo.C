@@ -46,11 +46,11 @@ FLASHCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
     avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
-    for (int i = 0 ; i < nList ; i++)
+    for (int i = 0; i < nList; i++)
     {
         ffl[i] = new avtFLASHFileFormat(list[i], readOptions);
     }
-    avtSTMDFileFormatInterface *inter 
+    avtSTMDFileFormatInterface *inter
            = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }
@@ -71,6 +71,7 @@ FLASHCommonPluginInfo::GetReadOptions() const
 {
     return GetFLASHReadOptions();
 }
+
 // ****************************************************************************
 //  Method: FLASHCommonPluginInfo::GetWriteOptions
 //
@@ -87,3 +88,4 @@ FLASHCommonPluginInfo::GetWriteOptions() const
 {
     return GetFLASHWriteOptions();
 }
+

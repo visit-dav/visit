@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               MM5PluginInfo.h
+//  MM5PluginInfo.h
 // ****************************************************************************
 
 #ifndef MM5_PLUGIN_INFO_H

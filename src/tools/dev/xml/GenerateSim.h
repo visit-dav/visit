@@ -17,7 +17,7 @@
 #define GENERATOR_NAME "xml2sim"
 
 QString
-pad(const QString &s, int len) 
+pad(const QString &s, int len)
 {
     QString p(s);
     while(p.length() < len)
@@ -124,11 +124,11 @@ class AttsGeneratorField : public virtual Field
     virtual void WriteVisItFortranMacro(QTextStream &h, const QString &classname)
     {
         QString mName(FortranName(classname, "SET"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = QString(FortranName(classname, "GET"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
     }
 
@@ -164,7 +164,7 @@ class AttsGeneratorField : public virtual Field
     {
         h << "    " << pad(GetCPPName(), maxLen) << " " << name << ";" << endl;
     }
-  
+
     virtual void WriteSimV2Ctor(QTextStream &h)
     {
     }
@@ -342,15 +342,15 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
     virtual void WriteVisItFortranMacro(QTextStream &h, const QString &classname)
     {
         QString mName(FortranName(classname, "ADD"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = FortranName(classname, "GETNUM");
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = FortranName(classname, "GET");
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
     }
 
@@ -459,7 +459,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
 };
 
 
-// 
+//
 // ----------------------------------- Bool -----------------------------------
 //
 class AttsGeneratorBool : public virtual Bool , public virtual AttsGeneratorField
@@ -864,15 +864,15 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual A
     virtual void WriteVisItFortranMacro(QTextStream &h, const QString &classname)
     {
         QString mName(FortranName(classname, "ADD"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = QString(FortranName(classname, "GETNUM"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = QString(FortranName(classname, "GET"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
     }
 
@@ -1136,15 +1136,15 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     virtual void WriteVisItFortranMacro(QTextStream &h, const QString &classname)
     {
         QString mName(FortranName(classname, "ADD"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = QString(FortranName(classname, "GETNUM"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = QString(FortranName(classname, "GET"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
     }
 
@@ -1723,7 +1723,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         // Write user-defined methods
         for (size_t i=0; i<functions.size(); i++)
         {
-            if (functions[i]->user && 
+            if (functions[i]->user &&
                 functions[i]->target == generatorName)
             {
                 h << functions[i]->decl << endl;
@@ -1835,7 +1835,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         // Write user-defined methods
         for (size_t i=0; i<functions.size(); i++)
         {
-            if (functions[i]->user && 
+            if (functions[i]->user &&
                 functions[i]->target == generatorName)
             {
                 h << functions[i]->def << endl;
@@ -1855,6 +1855,8 @@ private:
 
 // ----------------------------------------------------------------------------
 // Modifications:
+//   Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
+//   Added hl arg, for haslicense.
 //
 // ----------------------------------------------------------------------------
 #include <PluginBase.h>
@@ -1866,8 +1868,8 @@ class AttsGeneratorPlugin : public PluginBase
   public:
     AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,
         const QString &vt,const QString &dt, const QString &v, const QString &ifile,
-        bool hw, bool ho, bool onlyengine, bool noengine) : 
-        PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine), atts(NULL)
+        bool hw, bool ho, bool hl, bool onlyengine, bool noengine) :
+        PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,hl,onlyengine,noengine), atts(NULL)
     {
     }
 

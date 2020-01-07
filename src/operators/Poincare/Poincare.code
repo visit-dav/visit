@@ -5,7 +5,7 @@ Definition:
 // ****************************************************************************
 // Method: PoincareAttributes::CopyAttributes
 //
-// Purpose: 
+// Purpose:
 //   CopyAttributes method for the PoincareAttributes class.
 //
 // Programmer: Dave Pugmire
@@ -50,7 +50,7 @@ Definition:
 // ****************************************************************************
 // Method: PoincareAttributes::CreateCompatible
 //
-// Purpose: 
+// Purpose:
 //   Creates a new state object of the desired type.
 //
 // Programmer: Dave Pugmire
@@ -92,7 +92,7 @@ Definition:
 // ****************************************************************************
 // Method: PoincareAttributes::ChangesRequireRecalculation
 //
-// Purpose: 
+// Purpose:
 //   Determine if attribute changes require recalculation.
 //
 // Programmer: Dave Pugmire
@@ -105,9 +105,9 @@ Definition:
 bool
 PoincareAttributes::ChangesRequireRecalculation(const PoincareAttributes &obj) const
 {
-    std::cerr << IntegralCurveAttsRequireRecalculation(obj) << "  " 
+    std::cerr << IntegralCurveAttsRequireRecalculation(obj) << "  "
               << PoincareAttsRequireRecalculation(obj) << std::endl;
-              
+
     return IntegralCurveAttsRequireRecalculation(obj) ||
            PoincareAttsRequireRecalculation(obj);
 }
@@ -119,7 +119,7 @@ Definition:
 // ****************************************************************************
 // Method: PoincareAttributes::IntegralCurveAttsRequireRecalculation
 //
-// Purpose: 
+// Purpose:
 //   Determine if integral curve attribute changes require recalculation.
 //
 // Programmer: Dave Pugmire
@@ -191,7 +191,7 @@ Definition:
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttsRequireRecalculation
 //
-// Purpose: 
+// Purpose:
 //   Determine if poincare attribute changes require recalculation.
 //
 // Programmer: Dave Pugmire
@@ -205,7 +205,7 @@ bool
 PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &obj) const
 {
     return coordinateSystem != obj.coordinateSystem ||
- 
+
            analysis != obj.analysis ||
 
            maximumToroidalWinding != obj.maximumToroidalWinding ||
@@ -230,7 +230,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            show1DPlots != obj.show1DPlots ||
            showChaotic != obj.showChaotic ||
            verboseFlag != obj.verboseFlag ||
- 
+
            dataValue != obj.dataValue ||
 
            meshType != obj.meshType ||
@@ -286,7 +286,7 @@ PoincareViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts
 
       var = justTheVar;
     }
-    
+
     var += std::string(" - ") +
         std::string(typeString[atts_in->GetDataValue()]);
 

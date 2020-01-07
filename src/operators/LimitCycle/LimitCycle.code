@@ -38,7 +38,7 @@ LimitCycleAttributes::ProcessOldVersions(DataNode *parentNode,
             return;
 
         std::string mode = sourceNode->AsString();
-        
+
         if (mode == "Line_")
         {
           searchNode->RemoveNode(sourceNode, true);
@@ -59,7 +59,7 @@ Definition:
 // ****************************************************************************
 // Method: LimitCycleAttributes::CopyAttributes
 //
-// Purpose: 
+// Purpose:
 //   CopyAttributes method for the LimitCycleAttributes class.
 //
 // Programmer: Brad Whitlock
@@ -197,7 +197,7 @@ Definition:
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options.
 //
-//   Christoph Garth, Wed Jan 13 17:14:21 PST 2010 
+//   Christoph Garth, Wed Jan 13 17:14:21 PST 2010
 //   Add support for circle source.
 //
 //   Hank Childs, Fri Oct  1 20:43:34 PDT 2010
@@ -255,7 +255,7 @@ LimitCycleAttributes::ChangesRequireRecalculation(const LimitCycleAttributes &ob
 
         return true;
     }
-         
+
     // If they say they don't want warnings, then don't re-execute.  If they say they do,
     // then we better re-execute so we can give them that warning.
     if (issueTerminationWarnings != obj.issueTerminationWarnings &&
@@ -345,7 +345,7 @@ LimitCycleViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *at
 
       var = justTheVar;
     }
-    
+
     else if( strncmp(var.c_str(), "operators/LCS/",
                      strlen("operators/LCS/")) == 0)
     {
@@ -357,7 +357,7 @@ LimitCycleViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *at
     var += std::string(" - ") +
         std::string(typeString[atts_in->GetDataValue()]);
 
-    if( atts_in->GetDataValue() == LimitCycleAttributes::Variable ) 
+    if( atts_in->GetDataValue() == LimitCycleAttributes::Variable )
     {
         var += std::string(": ") + atts_in->GetDataVariable();
     }

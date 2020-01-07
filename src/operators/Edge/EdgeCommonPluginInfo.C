@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: EdgeCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <EdgePluginInfo.h>
 #include <EdgeAttributes.h>
@@ -43,7 +43,7 @@ EdgeCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 EdgeCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

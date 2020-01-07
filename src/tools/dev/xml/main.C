@@ -27,8 +27,8 @@ void ProcessFile(QString file);
 
 // ***************************************************************************
 //  Function: Die
-//  Purpose: 
-//   When a fatal error occurs we need to flush cErr & cOut manually before 
+//  Purpose:
+//   When a fatal error occurs we need to flush cErr & cOut manually before
 //   calling exit().
 //
 // ***************************************************************************
@@ -56,9 +56,9 @@ PrintUsage(const char *prog)
     cErr << "    options:" << Endl;
     cErr << "        -clobber       overwrite old files if possible" << Endl;
     cErr << "        -noprint       no debug output" << Endl;
-    cErr << "        -public        (xml2cmake only) install publicly" 
+    cErr << "        -public        (xml2cmake only) install publicly"
          << Endl;
-    cErr << "        -private       (xml2cmake only) install privately" 
+    cErr << "        -private       (xml2cmake only) install privately"
          << Endl;
     cErr << "        -outputtoinputdir  store results in same location as "
          << ".xml file" << Endl;
@@ -185,15 +185,15 @@ Open(const QString &name_withoutpath)
 }
 
 // ****************************************************************************
-//  Function:  FileContentsChecksum 
+//  Function:  FileContentsChecksum
 //
 //  Purpose:   Return a checksum of a file's contents given its pathname
 //
 //  Arguments:
 //    name           the pathname
 //
-//  Programmer:  Mark C. Miller 
-//  Creation:    April 9, 2008 
+//  Programmer:  Mark C. Miller
+//  Creation:    April 9, 2008
 //
 //  Modifications:
 //    Brad Whitlock, Thu May  8 13:40:53 PDT 2008
@@ -238,8 +238,8 @@ FileContentsChecksum(const QString &name, unsigned int *sum)
 //    file           the header file stream to close
 //    pre_name_withoutpath the (pre) of the file without pathname
 //
-//  Programmer:  Mark C. Miller 
-//  Creation:    April 9, 2008 
+//  Programmer:  Mark C. Miller
+//  Creation:    April 9, 2008
 //
 //  Modifications:
 //    Brad Whitlock, Thu May  8 13:48:35 PDT 2008
@@ -309,7 +309,7 @@ CloseHeader(QTextStream &file, const QString &pre_name_withoutpath)
 //    Added Common plugin info.
 //
 //    Jeremy Meredith, Wed Feb  6 16:53:39 PST 2002
-//    Added code so it will not clobber existing files unless the 
+//    Added code so it will not clobber existing files unless the
 //    "-clobber" flag is given, and so it will not print if
 //    the "-noprint" option is given.
 //
@@ -489,18 +489,18 @@ int main(int argc, char *argv[])
 
 // ****************************************************************************
 //
-//    Kathleen Bonnell, Thu Jul  5 17:58:22 PDT 2007 
+//    Kathleen Bonnell, Thu Jul  5 17:58:22 PDT 2007
 //    For GeneratePython, if plugin, call plugin->WriteHeader instead of
 //    attribute->WriteHeader.  There is a flag that needs to be turned off
 //    for plugins.  The plugin->WriteHeader will turn off the flag then call
 //    the WriteHeader for the atts.
-//    
+//
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Made it re-write header file only when header file has changed
 //
 //    Kathleen Bonnell, Thu Apr 17 09:55:07 PDT 2008
 //    Added code to retrieve the full path for this executable when
-//    generating project files on windows. 
+//    generating project files on windows.
 //
 //    Brad Whitlock, Thu May  8 11:53:18 PDT 2008
 //    Qt 4. Use QTextStream.
@@ -540,7 +540,7 @@ ProcessFile(QString file)
         QXmlInputSource   source(&xmlFile);
         QXmlSimpleReader  reader;
         ErrorHandler      errorhandler;
-        
+
         reader.setFeature(
            "http://qt-project.org/xml/features/report-whitespace-only-CharData",
            false);

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: VectorCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <VectorPluginInfo.h>
 #include <VectorAttributes.h>
@@ -43,16 +43,17 @@ VectorCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 VectorCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((VectorAttributes *) to) = *((VectorAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: VectorCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ VectorCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

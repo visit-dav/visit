@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: IsovolumeCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <IsovolumePluginInfo.h>
 #include <IsovolumeAttributes.h>
@@ -43,7 +43,7 @@ IsovolumeCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 IsovolumeCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

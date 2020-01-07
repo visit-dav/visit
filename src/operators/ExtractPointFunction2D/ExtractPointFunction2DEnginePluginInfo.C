@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ExtractPointFunction2DEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ExtractPointFunction2DPluginInfo.h>
 #include <avtExtractPointFunction2DFilter.h>

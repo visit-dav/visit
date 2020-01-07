@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: DeferExpressionCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <DeferExpressionPluginInfo.h>
 #include <DeferExpressionAttributes.h>
@@ -43,7 +43,7 @@ DeferExpressionCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 DeferExpressionCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

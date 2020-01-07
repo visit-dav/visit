@@ -47,15 +47,15 @@ M3DC1CommonPluginInfo::SetupDatabase(const char *const *list,
 {
     int nTimestepGroups = nList / nBlock;
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
-    for (int i = 0 ; i < nTimestepGroups ; i++)
+    for (int i = 0; i < nTimestepGroups; i++)
     {
         ffl[i] = new avtMTSDFileFormat*[nBlock];
-        for (int j = 0 ; j < nBlock ; j++)
+        for (int j = 0; j < nBlock; j++)
         {
             ffl[i][j] = new avtM3DC1FileFormat(list[i*nBlock + j], readOptions);
         }
     }
-    avtMTSDFileFormatInterface *inter 
+    avtMTSDFileFormatInterface *inter
            = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
     return new avtGenericDatabase(inter);
 }
@@ -76,6 +76,7 @@ M3DC1CommonPluginInfo::GetReadOptions() const
 {
     return GetM3DC1ReadOptions();
 }
+
 // ****************************************************************************
 //  Method: M3DC1CommonPluginInfo::GetWriteOptions
 //
@@ -92,3 +93,4 @@ M3DC1CommonPluginInfo::GetWriteOptions() const
 {
     return GetM3DC1WriteOptions();
 }
+

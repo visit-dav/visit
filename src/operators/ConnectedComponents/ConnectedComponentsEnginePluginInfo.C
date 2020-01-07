@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ConnectedComponentsEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ConnectedComponentsPluginInfo.h>
 #include <avtConnectedComponentsFilter.h>

@@ -48,7 +48,7 @@ inline std::vector<QString>
 SplitValues(const QString &buff_input)
 {
     std::vector<QString> output;
-    
+
     QString buff(buff_input.trimmed());
     QString tmp="";
     int len = buff.length();
@@ -78,7 +78,7 @@ inline QString
 JoinValues(const std::vector<QString> &strs, char j)
 {
     QString output;
-    
+
     for (size_t i=0; i<strs.size(); i++)
     {
         output += strs[i];
@@ -93,7 +93,7 @@ inline QString
 JoinValues(const std::vector<QString> &strs, QString &j)
 {
     QString output;
-    
+
     for (size_t i=0; i<strs.size(); i++)
     {
         output += strs[i];
@@ -142,7 +142,7 @@ inline QString
 FilePath(const QString &buff)
 {
     QString output;
-    
+
     QString tmp="";
     int len = buff.length();
     for (int i=0; i<len; i++)

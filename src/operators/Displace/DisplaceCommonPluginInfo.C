@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: DisplaceCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <DisplacePluginInfo.h>
 #include <DisplaceAttributes.h>
@@ -43,7 +43,7 @@ DisplaceCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 DisplaceCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               ANALYZEPluginInfo.h
+//  ANALYZEPluginInfo.h
 // ****************************************************************************
 
 #ifndef ANALYZE_PLUGIN_INFO_H

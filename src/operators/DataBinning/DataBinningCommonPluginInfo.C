@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: DataBinningCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <DataBinningPluginInfo.h>
 #include <DataBinningAttributes.h>
@@ -13,16 +13,6 @@
 #include <ExpressionList.h>
 #include <avtDatabaseMetaData.h>
 #include <avtMeshMetaData.h>
-#include <avtSubsetsMetaData.h>
-#include <avtScalarMetaData.h>
-#include <avtVectorMetaData.h>
-#include <avtTensorMetaData.h>
-#include <avtSymmetricTensorMetaData.h>
-#include <avtArrayMetaData.h>
-#include <avtMaterialMetaData.h>
-#include <avtSpeciesMetaData.h>
-#include <avtCurveMetaData.h>
-#include <avtLabelMetaData.h>
 
 // ****************************************************************************
 //  Method: DataBinningCommonPluginInfo::AllocAttributes
@@ -58,7 +48,7 @@ DataBinningCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 DataBinningCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
@@ -79,7 +69,7 @@ DataBinningCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md
         if (md->GetMeshes(i).hideFromGUI || !md->GetMeshes(i).validVariable)
             continue;
 
-        Expression e2; 
+        Expression e2;
         sprintf(name, "operators/DataBinning/1D/%s", mesh);
         e2.SetName(name);
         e2.SetType(Expression::CurveMeshVar);
@@ -88,8 +78,8 @@ DataBinningCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md
         sprintf(defn, "cell_constant(<%s>, 0)", mesh);
         e2.SetDefinition(defn);
         el->AddExpressions(e2);
-    
-        Expression e; 
+
+        Expression e;
         sprintf(name, "operators/DataBinning/2D/%s", mesh);
         e.SetName(name);
         e.SetType(Expression::ScalarMeshVar);
@@ -98,8 +88,8 @@ DataBinningCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md
         sprintf(defn, "cell_constant(<%s>, 0)", mesh);
         e.SetDefinition(defn);
         el->AddExpressions(e);
-    
-        Expression e3; 
+
+        Expression e3;
         sprintf(name, "operators/DataBinning/3D/%s", mesh);
         e3.SetName(name);
         e3.SetType(Expression::ScalarMeshVar);
@@ -109,7 +99,7 @@ DataBinningCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md
         e3.SetDefinition(defn);
         el->AddExpressions(e3);
     }
-   
+
     return el;
 }
 

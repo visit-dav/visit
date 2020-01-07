@@ -4,15 +4,15 @@ Definition:
 // ****************************************************************************
 // Method: SphereSliceAttributes::CopyAttributes
 //
-// Purpose: 
+// Purpose:
 //   CopyAttributes method for the SphereSliceAttributes class.
 //
 // Notes:
 //   Copied from old .C file so that it will always be regenerated correctly
 //   when xml2atts is run.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 16, 2002 
+// Programmer: Kathleen Bonnell
+// Creation:   December 16, 2002
 //
 // Modifications:
 //
@@ -47,15 +47,15 @@ Definition:
 // ****************************************************************************
 // Method: SphereSliceAttributes::CreateCompatible
 //
-// Purpose: 
+// Purpose:
 //   CreateCompatible method for the SphereSliceAttributes class.
 //
 // Notes:
 //   Copied from old .C file so that it will always be regenerated correctly
 //   when xml2atts is run.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 16, 2002 
+// Programmer: Kathleen Bonnell
+// Creation:   December 16, 2002
 //
 // Modifications:
 //

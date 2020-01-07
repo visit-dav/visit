@@ -56,7 +56,7 @@ class EnumType
     std::vector<int>     ivalues;
   public:
     EnumType(const QString &s) : type(s), values(), ivalues()
-    { 
+    {
     }
     void AddValue(const QString &s)
     {

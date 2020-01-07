@@ -25,7 +25,7 @@
 //   various code generation tools instead of adding the new members in a central
 //   base class.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 5 11:37:27 PDT 2008
@@ -40,7 +40,7 @@
 //    Cyrus Harrison, Fri Sep 19 13:46:16 PDT 2008
 //    Added support for custom libs for gui,engine, mdserver, viewer
 //
-//    Kathleen Bonnell, Wed May 26 9:03:27 MST 2009 
+//    Kathleen Bonnell, Wed May 26 9:03:27 MST 2009
 //    Added support for custom windows files for mdserver and engine.
 //
 //    Jeremy Meredith, Tue Sep  8 15:11:35 EDT 2009
@@ -59,6 +59,9 @@
 //    Kathleen Biagas, Thu Nov  6 11:24:21 PST 2014
 //    Add support for DEFINES tag.
 //
+//    Kathleen Biagas, Thu Jan  2 09:31:08 PST 2020
+//    Added hasLicense.
+//
 // ****************************************************************************
 
 class PluginBase
@@ -75,6 +78,7 @@ public:
 
     bool    haswriter;
     bool    hasoptions;
+    bool    haslicense;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
     bool    hasEngineSpecificCode;
@@ -106,7 +110,7 @@ public:
     std::vector<QString> mfiles;     // mdserver files
     bool customwmfiles;
     std::vector<QString> wmfiles;    // mdserver files for windows
-    bool custommlibs; 
+    bool custommlibs;
     std::vector<QString> mlibs;      // mdserver libs
     bool customefiles;
     std::vector<QString> efiles;     // engine files
@@ -127,16 +131,17 @@ public:
     PluginBase(const QString &n,const QString &l,const QString &t,
                const QString &vt,const QString &dt,
                const QString &v, const QString &ifile,
-               bool hw, bool ho, bool onlyengine, bool noengine)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), 
+               bool hw, bool ho, bool hl, bool onlyengine, bool noengine)
+        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt),
           iconFile(ifile),
           category(),
           haswriter(hw),
           hasoptions(ho),
+          haslicense(hl),
           enabledByDefault(true),
           has_MDS_specific_code(false),
           hasEngineSpecificCode(false),
-          onlyEnginePlugin(onlyengine), 
+          onlyEnginePlugin(onlyengine),
           noEnginePlugin(noengine),
           createExpression(false),
           exprInType(),

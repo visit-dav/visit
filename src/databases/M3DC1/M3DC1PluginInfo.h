@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               M3DC1PluginInfo.h
+//  M3DC1PluginInfo.h
 // ****************************************************************************
 
 #ifndef M3DC1_PLUGIN_INFO_H
@@ -48,8 +48,8 @@ class M3DC1CommonPluginInfo : public virtual CommonDatabasePluginInfo, public vi
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class M3DC1MDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual M3DC1CommonPluginInfo

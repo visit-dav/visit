@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               WPPImagePluginInfo.h
+//  WPPImagePluginInfo.h
 // ****************************************************************************
 
 #ifndef WPPIMAGE_PLUGIN_INFO_H

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TriangulateRegularPointsCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <TriangulateRegularPointsPluginInfo.h>
 #include <TriangulateRegularPointsAttributes.h>
@@ -43,7 +43,7 @@ TriangulateRegularPointsCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 TriangulateRegularPointsCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

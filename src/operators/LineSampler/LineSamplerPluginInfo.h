@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: LineSamplerPluginInfo.h
-// ************************************************************************* //
+// ****************************************************************************
 
 #ifndef LINESAMPLER_PLUGIN_INFO_H
 #define LINESAMPLER_PLUGIN_INFO_H

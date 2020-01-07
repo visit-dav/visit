@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               RAGEPluginInfo.h
+//  RAGEPluginInfo.h
 // ****************************************************************************
 
 #ifndef RAGE_PLUGIN_INFO_H

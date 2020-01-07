@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SubsetGUIPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <SubsetPluginInfo.h>
 #include <SubsetAttributes.h>

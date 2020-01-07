@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               GHOSTPluginInfo.h
+//  GHOSTPluginInfo.h
 // ****************************************************************************
 
 #ifndef GHOST_PLUGIN_INFO_H

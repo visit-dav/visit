@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: LCSCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <LCSPluginInfo.h>
 #include <LCSAttributes.h>
@@ -12,17 +12,7 @@
 #include <Expression.h>
 #include <ExpressionList.h>
 #include <avtDatabaseMetaData.h>
-#include <avtMeshMetaData.h>
-#include <avtSubsetsMetaData.h>
-#include <avtScalarMetaData.h>
 #include <avtVectorMetaData.h>
-#include <avtTensorMetaData.h>
-#include <avtSymmetricTensorMetaData.h>
-#include <avtArrayMetaData.h>
-#include <avtMaterialMetaData.h>
-#include <avtSpeciesMetaData.h>
-#include <avtCurveMetaData.h>
-#include <avtLabelMetaData.h>
 
 // ****************************************************************************
 //  Method: LCSCommonPluginInfo::AllocAttributes
@@ -58,7 +48,7 @@ LCSCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 LCSCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
@@ -76,14 +66,13 @@ LCSCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //
 // ****************************************************************************
 
-ExpressionList * 
+ExpressionList *
 LCSCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
-    int i;
     char name[1024], defn[1024];
     ExpressionList *el = new ExpressionList;
     int numVectors = md->GetNumVectors();
-    for (i = 0 ; i < numVectors ; i++)
+    for (int i = 0; i < numVectors; i++)
     {
         const avtVectorMetaData *mmd = md->GetVector(i);
         if (mmd->hideFromGUI || !mmd->validVariable)
@@ -112,7 +101,7 @@ LCSCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
         }
     }
     const ExpressionList &oldEL = md->GetExprList();
-    for (i = 0 ; i < oldEL.GetNumExpressions() ; i++)
+    for (int i = 0; i < oldEL.GetNumExpressions(); i++)
     {
         const Expression &e = oldEL.GetExpressions(i);
         if (e.GetType() == Expression::VectorMeshVar)

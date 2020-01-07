@@ -166,8 +166,8 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             0 );
 
     //
-    // If we've switched to an opacity mode that contains transparency, we 
-    // need to re-compute the face and ghost removal. 
+    // If we've switched to an opacity mode that contains transparency, we
+    // need to re-compute the face and ghost removal.
     //
     OpacityType newOpacType = obj.GetOpacityType();
     bool alteringOpacChange = ((newOpacType != FullyOpaque &&

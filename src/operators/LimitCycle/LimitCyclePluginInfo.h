@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: LimitCyclePluginInfo.h
-// ************************************************************************* //
+// ****************************************************************************
 
 #ifndef LIMITCYCLE_PLUGIN_INFO_H
 #define LIMITCYCLE_PLUGIN_INFO_H

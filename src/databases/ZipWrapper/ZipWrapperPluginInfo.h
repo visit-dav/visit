@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               ZipWrapperPluginInfo.h
+//  ZipWrapperPluginInfo.h
 // ****************************************************************************
 
 #ifndef ZIPWRAPPER_PLUGIN_INFO_H
@@ -48,8 +48,8 @@ class ZipWrapperCommonPluginInfo : public virtual CommonDatabasePluginInfo, publ
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class ZipWrapperMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual ZipWrapperCommonPluginInfo
