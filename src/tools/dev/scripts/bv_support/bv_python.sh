@@ -1583,6 +1583,7 @@ function build_sphinx
     fi
     popd > /dev/null
 
+    # Packaging depends on six, pyparsing.
     pushd $PACKAGING_BUILD_DIR > /dev/null
     info "Installing packaging ..."
     ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
@@ -1623,6 +1624,17 @@ function build_sphinx
     fi
     popd > /dev/null
 
+    pushd $IDNA_BUILD_DIR > /dev/null
+    info "Installing idna ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install idna"
+        return 1
+    fi
+    popd > /dev/null
+
+    # Requests depends on certifi, urllib3, idna
     pushd $REQUESTS_BUILD_DIR > /dev/null
     info "Installing requests ..."
     ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
@@ -1779,16 +1791,6 @@ function build_sphinx
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install sphinxcontrib-applehelp"
-        return 1
-    fi
-    popd > /dev/null
-
-    pushd $IDNA_BUILD_DIR > /dev/null
-    info "Installing idna ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
-    if test $? -ne 0 ; then
-        popd > /dev/null
-        warn "Could not install idna"
         return 1
     fi
     popd > /dev/null
