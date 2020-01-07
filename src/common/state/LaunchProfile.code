@@ -4,7 +4,7 @@ Definition:
 // ****************************************************************************
 // Method: LaunchProfile::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   This method creates a DataNode representation of the object so it can
 //   be saved to a config file.
 //

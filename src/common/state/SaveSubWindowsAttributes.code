@@ -5,13 +5,13 @@ Definition:
 //  Method: SaveSubWindowAttributes::GetAttsForWindow
 //
 //  Purpose:
-//      There are 16 window attributes in this class, each 
+//      There are 16 window attributes in this class, each
 //      with their own name.  This is an easy way to access
 //      them according to index.
 //
 //  Programmer: Hank Childs
 //  Creation:   July 21, 2010
-// 
+//
 // *************************************************************
 
 SaveSubWindowAttributes &
@@ -74,7 +74,7 @@ SaveSubWindowsAttributes::GetAttsForWindow(int win)
 }
 
 Target: xml2python
-Code: PySaveSubWindowsAttributes_ToString 
+Code: PySaveSubWindowsAttributes_ToString
 Prefix:
     // To squelch a warning
     (void)tmpStr;

@@ -343,7 +343,7 @@ class Field
         out << "// ****************************************************************************" << endl;
         out << "// Method: " << className << "::" << methodName << endl;
         out << "//" << endl;
-        out << "// Purpose: " << endl;
+        out << "// Purpose:" << endl;
         if(!purposeString.isEmpty())
             out << "//   " << purposeString << endl;
         out << "//" << endl;

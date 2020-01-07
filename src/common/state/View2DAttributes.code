@@ -39,7 +39,7 @@ static PyNumberMethods View2DAttributes_as_number = {
     0,            /*nb_inplace_and*/
     0,            /*nb_inplace_xor*/
     0,            /*nb_inplace_or*/
-}; 
+};
 Postfix:
 
 Target: xml2atts
@@ -85,7 +85,7 @@ View2DAttributes::GetUseFullFrame(const double *limits) const
 
     if (limits == 0)
         return false;
-        
+
     // if the limits are not initialized then doing math
     // with them will cause an error so check them first.
     if ( (limits[1] == -DBL_MAX  && limits[0] == DBL_MAX) ||
@@ -93,7 +93,7 @@ View2DAttributes::GetUseFullFrame(const double *limits) const
     {
         return false;
     }
-    
+
     double dlimit1 = limits[1] - limits[0];
     double dlimit2 = limits[3] - limits[2];
     double aspect;
@@ -152,7 +152,7 @@ Definition:
 // ****************************************************************************
 // Method: View2DAttributes::ResetView
 //
-// Purpose: 
+// Purpose:
 //   Resets the view to something that can accommodate the bbox.
 //
 // Arguments:
@@ -162,7 +162,7 @@ Definition:
 // Creation:   Tue Mar  3 16:21:14 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 View2DAttributes::ResetView(const double *bbox)
@@ -227,7 +227,7 @@ View2DAttributes_Add(PyObject *v, PyObject *w)
         c->SetFullFrameActivationMode(View2DAttributes::Off);
     }
     else
-        c->SetFullFrameActivationMode(View2DAttributes::Auto); 
+        c->SetFullFrameActivationMode(View2DAttributes::Auto);
 
     return retval;
 }
@@ -283,7 +283,7 @@ View2DAttributes_Mul(PyObject *v, PyObject *w)
 
 
         c->GetWindowCoords()[0] = a->GetWindowCoords()[0] * val;
-        c->GetWindowCoords()[1] = a->GetWindowCoords()[1] * val; 
+        c->GetWindowCoords()[1] = a->GetWindowCoords()[1] * val;
         c->GetWindowCoords()[2] = a->GetWindowCoords()[2] * val;
         c->GetWindowCoords()[3] = a->GetWindowCoords()[3] * val;
 
