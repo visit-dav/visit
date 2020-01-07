@@ -228,6 +228,9 @@
 #    Alister Maguire, Thu Sep 12 15:54:36 PDT 2019
 #    Add test for highlighting a zone picked by global id. 
 #
+#    Alister Maguire, Thu Jan  2 15:16:53 PST 2020
+#    Added test for translated zone highlights.
+#
 # ----------------------------------------------------------------------------
 from __future__ import print_function
 
@@ -3106,6 +3109,41 @@ def TestNodeHighlight():
     ResetPickLetter()
 
 
+def TestTranslatedHighlight():
+    ResetPickAttributes()
+    ClearPickPoints() 
+    DeleteAllPlots()
+    ResetPickLetter()
+    ResetView()
+
+    OpenDatabase(silo_data_path("globe.silo"))
+    TurnOffAllAnnotations()
+    AddPlot("Pseudocolor", "v")
+    AddOperator("Transform")
+
+    TransformAtts = TransformAttributes()
+    TransformAtts.doScale = 1
+    TransformAtts.scaleOrigin = (0, 0, 0)
+    TransformAtts.scaleX = 1
+    TransformAtts.scaleY = 2
+    TransformAtts.scaleZ = 1
+    TransformAtts.doTranslate = 1
+    TransformAtts.translateX = 100
+    SetOperatorOptions(TransformAtts)
+    
+    DrawPlots()
+
+    pAtts = GetPickAttributes()
+    pAtts.showPickHighlight = 1
+    SetPickAttributes(pAtts)
+
+    PickByZone(element=580)     
+    Test("TranslatedHighlight_00")
+    
+    ClearPickPoints() 
+    DeleteAllPlots()
+    ResetPickLetter()
+
 
 def PickMain():
     Pick3DTo2D()
@@ -3148,6 +3186,7 @@ def PickMain():
     PickRangeLabel()
     TestSwivelHighlight()
     TestNodeHighlight()
+    TestTranslatedHighlight()
 
 # Call the main function
 TurnOnAllAnnotations()

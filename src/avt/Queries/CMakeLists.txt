@@ -23,7 +23,21 @@
 #    Alister Maguire, Tue Sep 24 13:46:56 MST 2019
 #    Added avtDirectDatabaseQOTFilter and avtTimeLoopQOTFilter.
 #
+#    Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
+#    Add xml tools code gen targets
 #****************************************************************************/
+
+
+# Add XML Code Gen Targets
+
+set(QUERIES_GEN_OBJECTS MinMaxInfo)
+
+# Metadata Objects
+foreach(obj_name ${QUERIES_GEN_OBJECTS})
+    ADD_CPP_GEN_TARGET(${obj_name}
+                       ${CMAKE_CURRENT_SOURCE_DIR}/Queries/
+                       ${CMAKE_CURRENT_SOURCE_DIR}/Queries/)
+endforeach()
 
 SET(ABSTRACT_SOURCES
 Abstract/avtCurveQuery.C

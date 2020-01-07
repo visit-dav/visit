@@ -1,7 +1,7 @@
 #/usr/workspace/visit/visit/thirdparty_shared/3.1.0/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake
 ##
 ## ./build_visit3_1_0 generated host.cmake
-## created: Thu Nov 14 14:32:00 PST 2019
+## created: Wed Dec 18 14:43:04 PST 2019
 ## system: Linux rzansel61 4.14.0-115.10.1.1chaos.ch6a.ppc64le #1 SMP Thu Aug 8 15:51:58 PDT 2019 ppc64le ppc64le ppc64le GNU/Linux
 ## by: brugger
 
@@ -69,6 +69,7 @@ VISIT_OPTION_DEFAULT(VISIT_OPENSSL_DIR ${VISITHOME}/openssl/1.0.2j/${VISITARCH})
 ## Python
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.14/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_PYTHON3_DIR ${VISITHOME}/python/3.7.5/${VISITARCH})
 
 ##
 ## LLVM

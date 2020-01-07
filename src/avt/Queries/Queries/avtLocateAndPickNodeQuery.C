@@ -155,6 +155,9 @@ avtLocateAndPickNodeQuery::SetInputParams(const MapNode &params)
 //    Kathleen Biagas, Tue Jun 21 10:51:24 PDT 2011
 //    Domain, Node, RayPoints and variables retrieved during SetInputParams.
 //
+//    Alister Maguire, Fri Jan  3 13:21:29 PST 2020
+//    Setting the transform in case the highlight needs it.
+//
 // ****************************************************************************
 
 void
@@ -192,6 +195,8 @@ avtLocateAndPickNodeQuery::PerformQuery(QueryAttributes *qa)
         npq->SetNeedTransform(inVal.GetPointsWereTransformed());
         if (inAtts.HasInvTransform() && inAtts.GetCanUseInvTransform())
             npq->SetInvTransform(inAtts.GetInvTransform());
+        if (inAtts.HasTransform() && inAtts.GetCanUseTransform())
+            npq->SetTransform(inAtts.GetTransform());
         npq->PerformQuery(qa);
 
         SetPickAtts(npq->GetPickAtts());

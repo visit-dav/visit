@@ -37,6 +37,8 @@ RUN apt-get update && apt-get install -y \
     cpio \
  && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y libffi-dev && rm -rf /var/lib/apt/lists/*
+
 RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
@@ -51,7 +53,9 @@ WORKDIR /home/visit
 RUN mkdir third-party
 # Copy build_visit and the script to run it
 COPY build_visit3_1_0 /home/visit
-COPY run_build_visit_centos8.sh /home/visit
+COPY run_build_visit.sh /home/visit
 COPY build_visit_docker_cleanup.py /home/visit
+COPY build_test_visit.sh /home/visit
+COPY test_visit.py /home/visit
 # Build the third party libraries.
-RUN /bin/bash run_build_visit_centos8.sh
+RUN /bin/bash run_build_visit.sh

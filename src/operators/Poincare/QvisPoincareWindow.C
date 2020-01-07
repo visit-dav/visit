@@ -84,17 +84,6 @@ QvisPoincareWindow::~QvisPoincareWindow()
 // Programmer: xml2window
 // Creation:   omitted
 //
-// Modifications:
-//
-//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
-//   Change layout of window for 2.0 interface changes.
-//
-//   Jeremy Meredith, Fri Apr 30 13:05:20 EDT 2010
-//   Fixed all the parents.
-//
-//   Kathleen Biagas, Fri Nov  8 10:07:39 PST 2019
-//   Add source tab, to reduce window height.
-//
 // ****************************************************************************
 
 void
@@ -102,13 +91,6 @@ QvisPoincareWindow::CreateWindowContents()
 {
     QTabWidget *propertyTabs = new QTabWidget(central);
     topLayout->addWidget(propertyTabs);
-
-    // ----------------------------------------------------------------------
-    // Source tab
-    // ----------------------------------------------------------------------
-    QWidget *sourceTab = new QWidget(central);
-    propertyTabs->addTab(sourceTab, tr("Source"));
-    CreateSourceTab(sourceTab);
 
     // ----------------------------------------------------------------------
     // Integration tab
@@ -140,10 +122,10 @@ QvisPoincareWindow::CreateWindowContents()
 }
 
 // ****************************************************************************
-// Method: QvisPoincareWindow::CreateSourceTab
+// Method: QvisPoincareWindow::CreateIntegrationTab
 //
 // Purpose:
-//   Populates the source tab.
+//   Populates the integration tab.
 //
 // Programmer: Dave Pugmire
 // Creation:   Tue Dec 29 14:37:53 EST 2009
@@ -153,24 +135,16 @@ QvisPoincareWindow::CreateWindowContents()
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
-//   Kathleen Biagas, Fri Nov  8 10:09:30 PST 2019
-//   Source and field widgets moved from Integration tab.
-//
 // ****************************************************************************
 
 void
-QvisPoincareWindow::CreateSourceTab(QWidget *pageSource)
+QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
 {
-    QVBoxLayout *sLayout = new QVBoxLayout(pageSource);
-
-    QGridLayout *mainLayout = new QGridLayout();
+    QGridLayout *mainLayout = new QGridLayout(pageIntegration);
     mainLayout->setMargin(5);
     mainLayout->setSpacing(10);
 
-    sLayout->addLayout(mainLayout);
-    sLayout->addStretch(1);
-
-   // Create the source group box.
+    // Create the source group box.
     QGroupBox *sourceGroup = new QGroupBox(central);
     sourceGroup->setTitle(tr("Source"));
     mainLayout->addWidget(sourceGroup, 0, 0);
@@ -179,9 +153,7 @@ QvisPoincareWindow::CreateSourceTab(QWidget *pageSource)
     sourceLayout->setMargin(5);
     sourceLayout->setSpacing(10);
 
-    sourceTypeLabel = new QLabel(tr("Source Type"), sourceGroup);
-    sourceLayout->addWidget(sourceTypeLabel, 0, 0);
-
+    sourceLayout->addWidget(new QLabel(tr("Source type"), sourceGroup), 0, 0);
     sourceTypeCombo = new QComboBox(sourceGroup);
     sourceTypeCombo->addItem(tr("Point"));
     sourceTypeCombo->addItem(tr("PointList"));
@@ -294,34 +266,7 @@ QvisPoincareWindow::CreateSourceTab(QWidget *pageSource)
     // forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
     // connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
     // fieldLayout->addWidget(forceNodal, 2, 0);
-}
 
-
-// ****************************************************************************
-// Method: QvisPoincareWindow::CreateIntegrationTab
-//
-// Purpose:
-//   Populates the integration tab.
-//
-// Programmer: Dave Pugmire
-// Creation:   Tue Dec 29 14:37:53 EST 2009
-//
-// Modifications:
-//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
-//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
-//   signal will only emit when 'enter' is pressed or spinbox loses focus.
-//
-//   Kathleen Biagas, Fri Nov  8 10:08:49 PST 2019
-//   Source and field widgets moved to Source tab to reduce window height.
-//
-// ****************************************************************************
-
-void
-QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
-{
-    QGridLayout *mainLayout = new QGridLayout(pageIntegration);
-    mainLayout->setMargin(5);
-    mainLayout->setSpacing(10);
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);
     integrationGroup->setTitle(tr("Integration"));

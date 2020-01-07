@@ -5,11 +5,30 @@
 #****************************************************************************
 # Modifications:
 #
+#    Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
+#    Add xml tools code gen targets
+#
 #****************************************************************************
 
 #
 # NOTE: This library is not allowed to have *any* Qt dependencies!
 #
+
+
+# Add XML Code Gen Targets
+
+set(VIEWER_CORE_GEN_OBJECTS 
+    ViewerWindowManagerAttributes
+    ViewerProperties
+    ActionGroupDescription)
+
+# Viewer Core Objects
+foreach(obj_name ${VIEWER_CORE_GEN_OBJECTS})
+    ADD_CPP_GEN_TARGET(${obj_name}
+                       ${CMAKE_CURRENT_SOURCE_DIR}
+                       ${CMAKE_CURRENT_SOURCE_DIR})
+endforeach()
+
 
 set(VIEWERCORE_SOURCES
 ActionGroupDescription.C
