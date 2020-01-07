@@ -1613,6 +1613,16 @@ function build_sphinx
     fi
     popd > /dev/null
 
+    pushd $URLLIB3_BUILD_DIR > /dev/null
+    info "Installing urllib3 ..."
+    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install urllib3"
+        return 1
+    fi
+    popd > /dev/null
+
     pushd $REQUESTS_BUILD_DIR > /dev/null
     info "Installing requests ..."
     ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
@@ -1769,16 +1779,6 @@ function build_sphinx
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install sphinxcontrib-applehelp"
-        return 1
-    fi
-    popd > /dev/null
-
-    pushd $URLLIB3_BUILD_DIR > /dev/null
-    info "Installing urllib3 ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
-    if test $? -ne 0 ; then
-        popd > /dev/null
-        warn "Could not install urllib3"
         return 1
     fi
     popd > /dev/null
