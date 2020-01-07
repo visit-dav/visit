@@ -1755,12 +1755,12 @@ function build_sphinx
     fi
     popd > /dev/null
 
-    pushd $SPHINXCONTRIB_SERIALIZING_BUILD_DIR > /dev/null
-    info "Installing sphinxcontrib-serializing ..."
+    pushd $SPHINXCONTRIB_SERIALIZINGHTML_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-serializinghtml ..."
     ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
-        warn "Could not install sphinxcontrib-serializing"
+        warn "Could not install sphinxcontrib-serializinghtml"
         return 1
     fi
     popd > /dev/null
