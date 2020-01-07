@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               VelodynePluginInfo.h
+//  VelodynePluginInfo.h
 // ****************************************************************************
 
 #ifndef VELODYNE_PLUGIN_INFO_H

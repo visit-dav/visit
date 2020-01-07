@@ -46,15 +46,15 @@ Vis5DCommonPluginInfo::SetupDatabase(const char *const *list,
 {
     int nTimestepGroups = nList / nBlock;
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
-    for (int i = 0 ; i < nTimestepGroups ; i++)
+    for (int i = 0; i < nTimestepGroups; i++)
     {
         ffl[i] = new avtMTSDFileFormat*[nBlock];
-        for (int j = 0 ; j < nBlock ; j++)
+        for (int j = 0; j < nBlock; j++)
         {
             ffl[i][j] = new avtVis5DFileFormat(list[i*nBlock + j]);
         }
     }
-    avtMTSDFileFormatInterface *inter 
+    avtMTSDFileFormatInterface *inter
            = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
     return new avtGenericDatabase(inter);
 }

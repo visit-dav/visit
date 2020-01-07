@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               FieldViewXDBPluginInfo.h
+//  FieldViewXDBPluginInfo.h
 // ****************************************************************************
 
 #ifndef FIELDVIEWXDB_PLUGIN_INFO_H
@@ -48,8 +48,8 @@ class FieldViewXDBCommonPluginInfo : public virtual CommonDatabasePluginInfo, pu
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
     virtual std::string               GetLicense() const;
 };
 

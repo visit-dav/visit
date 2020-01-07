@@ -47,15 +47,15 @@ CubeCommonPluginInfo::SetupDatabase(const char *const *list,
 {
     int nTimestepGroups = nList / nBlock;
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
-    for (int i = 0 ; i < nTimestepGroups ; i++)
+    for (int i = 0; i < nTimestepGroups; i++)
     {
         ffl[i] = new avtMTSDFileFormat*[nBlock];
-        for (int j = 0 ; j < nBlock ; j++)
+        for (int j = 0; j < nBlock; j++)
         {
             ffl[i][j] = new avtCubeFileFormat(list[i*nBlock + j], readOptions);
         }
     }
-    avtMTSDFileFormatInterface *inter 
+    avtMTSDFileFormatInterface *inter
            = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
     return new avtGenericDatabase(inter);
 }
@@ -76,6 +76,7 @@ CubeCommonPluginInfo::GetReadOptions() const
 {
     return GetCubeReadOptions();
 }
+
 // ****************************************************************************
 //  Method: CubeCommonPluginInfo::GetWriteOptions
 //
@@ -92,3 +93,4 @@ CubeCommonPluginInfo::GetWriteOptions() const
 {
     return GetCubeWriteOptions();
 }
+

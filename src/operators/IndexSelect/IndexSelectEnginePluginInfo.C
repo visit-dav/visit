@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: IndexSelectEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <IndexSelectPluginInfo.h>
 #include <avtIndexSelectFilter.h>

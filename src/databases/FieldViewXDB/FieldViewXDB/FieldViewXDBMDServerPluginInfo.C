@@ -4,7 +4,7 @@
 
 #include <FieldViewXDBPluginInfo.h>
 
-VISIT_DATABASE_PLUGIN_ENTRY(FieldViewXDB,MDServer);
+VISIT_DATABASE_PLUGIN_ENTRY(FieldViewXDB,MDServer)
 
 // this makes compilers happy... remove if we ever have functions here
 void FieldViewXDBMDServerPluginInfo::dummy()

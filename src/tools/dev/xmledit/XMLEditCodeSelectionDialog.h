@@ -12,14 +12,14 @@ class QCheckBox;
 // ****************************************************************************
 // Class: XMLEditCodeSelectionDialog
 //
-// Purpose: 
+// Purpose:
 //   Dialog that lets you select the code tools that you want to run.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:17:39 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class XMLEditCodeSelectionDialog : public QDialog
@@ -29,7 +29,7 @@ public:
     XMLEditCodeSelectionDialog(QWidget *parent);
     virtual ~XMLEditCodeSelectionDialog();
 
-    static bool selectTools(const QString &caption, bool *useTools, 
+    static bool selectTools(const QString &caption, bool *useTools,
                             const bool *toolEnabled);
 private:
     QCheckBox *buttons[ID_XML_MAX];

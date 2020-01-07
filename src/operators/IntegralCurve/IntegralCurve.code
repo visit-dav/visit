@@ -4,7 +4,7 @@ Definition:
 // ****************************************************************************
 // Method: IntegralCurveAttributes::CopyAttributes
 //
-// Purpose: 
+// Purpose:
 //   CopyAttributes method for the IntegralCurveAttributes class.
 //
 // Programmer: Brad Whitlock
@@ -42,7 +42,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
             SetPointSource(p->GetPoint());
             retval = true;
         }
-    } 
+    }
     else if(atts->TypeName() == "Line")
     {
         if(sourceType == SpecifiedLine)
@@ -75,7 +75,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
             SetRadius(sphere->GetRadius());
             retval = true;
         }
-    }   
+    }
     else if(atts->TypeName() == "BoxExtents")
     {
         if(sourceType == SpecifiedBox)
@@ -200,7 +200,7 @@ Definition:
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options.
 //
-//   Christoph Garth, Wed Jan 13 17:14:21 PST 2010 
+//   Christoph Garth, Wed Jan 13 17:14:21 PST 2010
 //   Add support for circle source.
 //
 //   Hank Childs, Fri Oct  1 20:43:34 PDT 2010
@@ -262,7 +262,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
 
         return true;
     }
-         
+
     // If they say they don't want warnings, then don't re-execute.  If they say they do,
     // then we better re-execute so we can give them that warning.
     if (issueTerminationWarnings != obj.issueTerminationWarnings &&
@@ -363,7 +363,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
             return true;
         }
     }
-    
+
     if (sourceType == PointList || sourceType == FieldData)
     {
         if (pointList.size() != obj.pointList.size())
@@ -428,7 +428,7 @@ IntegralCurveAttributes::ProcessOldVersions(DataNode *parentNode,
             return;
 
         std::string mode = sourceNode->AsString();
-        
+
         if (mode == "Point")
         {
           searchNode->RemoveNode(sourceNode, true);
@@ -499,7 +499,7 @@ IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject 
 
       var = justTheVar;
     }
-    
+
     else if( strncmp(var.c_str(), "operators/LCS/",
                      strlen("operators/LCS/")) == 0)
     {
@@ -511,7 +511,7 @@ IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject 
     var += std::string(" - ") +
         std::string(typeString[atts_in->GetDataValue()]);
 
-    if( atts_in->GetDataValue() == IntegralCurveAttributes::Variable ) 
+    if( atts_in->GetDataValue() == IntegralCurveAttributes::Variable )
     {
         var += std::string(": ") + atts_in->GetDataVariable();
     }

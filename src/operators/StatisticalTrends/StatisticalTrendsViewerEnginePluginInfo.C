@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: StatisticalTrendsViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <StatisticalTrendsPluginInfo.h>
 #include <StatisticalTrendsAttributes.h>
@@ -180,7 +180,7 @@ StatisticalTrendsViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *at
           var.substr(strlen("operators/StatisticalTrends/"));
 
       for (int t = 0; t < numTypes; ++t)
-      { 
+      {
         if( strncmp(operatorWithVar.c_str(), typeString[t],
                     strlen(typeString[t])) == 0)
         {
@@ -235,7 +235,7 @@ StatisticalTrendsViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubj
           var.substr(strlen("operators/StatisticalTrends/"));
 
       for (int t = 0; t < numTypes; ++t)
-      { 
+      {
         if( strncmp(operatorWithVar.c_str(), typeString[t],
                     strlen(typeString[t])) == 0)
         {

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        ToroidalPoloidalProjectionScriptingPluginInfo.C
+//  ToroidalPoloidalProjectionScriptingPluginInfo.C
 // ************************************************************************* //
 #include <PyToroidalPoloidalProjection.h>
 #include <ToroidalPoloidalProjectionPluginInfo.h>
@@ -13,7 +13,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(ToroidalPoloidalProjection,Scripting)
 // ****************************************************************************
 // Method: ToroidalPoloidalProjectionScriptingPluginInfo::InitializePlugin
 //
-// Purpose: 
+// Purpose:
 //   Calls the initialization function for the plugin.
 //
 // Arguments:
@@ -24,7 +24,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(ToroidalPoloidalProjection,Scripting)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -37,7 +37,7 @@ ToroidalPoloidalProjectionScriptingPluginInfo::InitializePlugin(AttributeSubject
 // ****************************************************************************
 // Method: ToroidalPoloidalProjectionScriptingPluginInfo::GetMethodTable
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the plugin's Python method table. These methods are
 //   added to the top-level visit module's methods.
 //
@@ -50,7 +50,7 @@ ToroidalPoloidalProjectionScriptingPluginInfo::InitializePlugin(AttributeSubject
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -62,7 +62,7 @@ ToroidalPoloidalProjectionScriptingPluginInfo::GetMethodTable(int *nMethods)
 // ****************************************************************************
 // Method: ToroidalPoloidalProjectionScriptingPluginInfo::TypesMatch
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the input PyObject is ToroidalPoloidalProjection plot attributes.
 //
 // Arguments:
@@ -72,7 +72,7 @@ ToroidalPoloidalProjectionScriptingPluginInfo::GetMethodTable(int *nMethods)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -84,7 +84,7 @@ ToroidalPoloidalProjectionScriptingPluginInfo::TypesMatch(void *pyobject)
 // ****************************************************************************
 // Method: ToroidalPoloidalProjectionScriptingPluginInfo::GetLogString
 //
-// Purpose: 
+// Purpose:
 //   Gets a string representation of the current attributes.
 //
 // Arguments:
@@ -94,7 +94,7 @@ ToroidalPoloidalProjectionScriptingPluginInfo::TypesMatch(void *pyobject)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 char *
@@ -109,7 +109,7 @@ ToroidalPoloidalProjectionScriptingPluginInfo::GetLogString()
 // ****************************************************************************
 // Method: ToroidalPoloidalProjectionScriptingPluginInfo::SetDefaults
 //
-// Purpose: 
+// Purpose:
 //   Used to set the default values for a plugin's state object.
 //
 // Arguments:
@@ -119,7 +119,7 @@ ToroidalPoloidalProjectionScriptingPluginInfo::GetLogString()
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

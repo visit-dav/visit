@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               ALSPluginInfo.h
+//  ALSPluginInfo.h
 // ****************************************************************************
 
 #ifndef ALS_PLUGIN_INFO_H

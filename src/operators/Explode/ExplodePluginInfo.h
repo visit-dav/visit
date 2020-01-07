@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ExplodePluginInfo.h
-// ************************************************************************* //
+// ****************************************************************************
 
 #ifndef EXPLODE_PLUGIN_INFO_H
 #define EXPLODE_PLUGIN_INFO_H
@@ -65,14 +65,15 @@ class ExplodeViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginI
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
                                     const avtPlotMetaData &plot);
-    void         PrivateSetOperatorAtts(AttributeSubject *atts,
-                                        const avtPlotMetaData &plot);
     virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
     static ExplodeAttributes *defaultAtts;
     static ExplodeAttributes *clientAtts;
+    // User-defined functions
+  public:
+    void PrivateSetOperatorAtts(AttributeSubject *, const avtPlotMetaData &);
 };
 
 class ExplodeViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ExplodeViewerEnginePluginInfo

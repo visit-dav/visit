@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               SARPluginInfo.h
+//  SARPluginInfo.h
 // ****************************************************************************
 
 #ifndef SAR_PLUGIN_INFO_H

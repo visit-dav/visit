@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ProjectCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ProjectPluginInfo.h>
 #include <ProjectAttributes.h>
@@ -43,7 +43,7 @@ ProjectCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 ProjectCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

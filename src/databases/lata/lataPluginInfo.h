@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               lataPluginInfo.h
+//  lataPluginInfo.h
 // ****************************************************************************
 
 #ifndef LATA_PLUGIN_INFO_H

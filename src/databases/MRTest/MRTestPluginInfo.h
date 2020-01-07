@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               MRTestPluginInfo.h
+//  MRTestPluginInfo.h
 // ****************************************************************************
 
 #ifndef MRTEST_PLUGIN_INFO_H

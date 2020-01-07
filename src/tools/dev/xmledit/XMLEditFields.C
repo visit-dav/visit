@@ -78,7 +78,7 @@ class QNarrowLineEdit : public QLineEdit
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
-//    Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011 
+//    Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011
 //    Added persistent checkbox.
 //
 // ****************************************************************************
@@ -87,7 +87,7 @@ XMLEditFields::XMLEditFields(QWidget *p)
     : QFrame(p)
 {
     QHBoxLayout *hLayout = new QHBoxLayout(this);
-    
+
     QGridLayout *listLayout = new QGridLayout();
 
     fieldlist = new QListWidget(this);
@@ -106,7 +106,7 @@ XMLEditFields::XMLEditFields(QWidget *p)
 
     delButton = new QPushButton(tr("Del"), this);
     listLayout->addWidget(delButton, 2,1);
-    
+
     hLayout->addLayout(listLayout);
     hLayout->addSpacing(10);
 
@@ -134,14 +134,14 @@ XMLEditFields::XMLEditFields(QWidget *p)
     type->setMinimumWidth(150);
     topLayout->addWidget(new QLabel(tr("Type"), this), row,0);
     topLayout->addWidget(type, row,1, 1,3);
-    
+
     QHBoxLayout *lengthHBox = new QHBoxLayout();
-    lengthHBox->addWidget(new QLabel(tr("Length"), this)); 
+    lengthHBox->addWidget(new QLabel(tr("Length"), this));
     length = new QNarrowLineEdit(this);
     lengthHBox->addWidget(length);
     topLayout->addLayout(lengthHBox, row, 4);
     row++;
-    
+
     subtype = new QLineEdit(this);
     topLayout->addWidget(new QLabel(tr("Subtype"), this), row,0);
     topLayout->addWidget(subtype, row,1, 1,5);
@@ -155,7 +155,7 @@ XMLEditFields::XMLEditFields(QWidget *p)
 
     enableval = new QLineEdit(this);
     topLayout->addWidget(new QLabel(tr("Values"), this), row,1, 1,1);
-    topLayout->addWidget(enableval, row,2, 1,3); 
+    topLayout->addWidget(enableval, row,2, 1,3);
     row++;
 
     internal = new QCheckBox(tr("Internal use only"), this);
@@ -169,7 +169,7 @@ XMLEditFields::XMLEditFields(QWidget *p)
     // types that will be accepted by a variablename object.
     variableNameGroup = new QGroupBox(this);
     variableNameGroup->setTitle(tr("Accepted variable types"));
-    
+
     QHBoxLayout *innerVarNameLayout = new QHBoxLayout(variableNameGroup);
     innerVarNameLayout->setMargin(10);
     QGridLayout *vnLayout = new QGridLayout();
@@ -214,7 +214,7 @@ XMLEditFields::XMLEditFields(QWidget *p)
     varNameButtons->addButton(cb,8);
     vnLayout->addWidget(cb, 2, 2);
     innerVarNameLayout->addLayout(vnLayout);
-    
+
     topLayout->addWidget(variableNameGroup, row,3,3,2);
     row++;
 
@@ -223,23 +223,23 @@ XMLEditFields::XMLEditFields(QWidget *p)
     row++;
 
     accessGroup = new QGroupBox(tr("Access"),this);
-    
+
     access = new QButtonGroup(accessGroup);
     QRadioButton *access_private   = new QRadioButton(tr("private"), accessGroup);
     QRadioButton *access_protected = new QRadioButton(tr("protected"), accessGroup);
     QRadioButton *access_public    = new QRadioButton(tr("public"), accessGroup);
-    
+
     access->addButton(access_private,0);
     access->addButton(access_protected,1);
     access->addButton(access_public,2);
-    
+
     // create a vbox layout for the access group box
     QVBoxLayout *access_layout= new QVBoxLayout(accessGroup);
     accessGroup->setLayout(access_layout);
     access_layout->addWidget(access_private);
     access_layout->addWidget(access_protected);
     access_layout->addWidget(access_public);
-        
+
     topLayout->addWidget(accessGroup, row,0, 1,3);
     row++;
 
@@ -256,7 +256,7 @@ XMLEditFields::XMLEditFields(QWidget *p)
     values->setWordWrapMode(QTextOption::NoWrap);
     topLayout->addWidget(values, row,1, 1,4);
     hLayout->addLayout(topLayout);
-    
+
     connect(fieldlist, SIGNAL(currentRowChanged(int)),
             this, SLOT(UpdateWindowSingleItem()));
     connect(name, SIGNAL(textChanged(const QString&)),
@@ -344,7 +344,7 @@ XMLEditFields::UpdateWindowContents()
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
-//    Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011 
+//    Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011
 //    Added persistent checkbox.
 //
 // ****************************************************************************
@@ -399,7 +399,7 @@ XMLEditFields::UpdateWindowSensitivity()
 //     Jeremy Meredith, Thu Mar 19 12:01:02 EDT 2009
 //     Finish Qt4 port -- ids for variable type buttons weren't used.
 //
-//     Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011 
+//     Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011
 //     Added persistent checkbox.
 //
 // ****************************************************************************
@@ -462,7 +462,7 @@ XMLEditFields::UpdateWindowSingleItem()
         if (f->type.right(5) == "Array")
         {
             QString str;
-            str.sprintf("%d",f->length); 
+            str.sprintf("%d",f->length);
             length->setText(str);
         }
         else
@@ -641,7 +641,7 @@ XMLEditFields::UpdateEnablerList()
 //    Brad Whitlock, Wed Feb 28 18:49:38 PST 2007
 //    Added access.
 //
-//    Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011 
+//    Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011
 //    Added persistent checkbox.
 //
 // ****************************************************************************
@@ -831,7 +831,7 @@ XMLEditFields::enablerChanged(int enablerindex)
     // appear at the top.  Thus, the mapping of list index to field index is
     // shifted up one because of the first entry, and then shifted back down
     // one after the index of the current field because it is skipped.
-    int enablerfieldindex = (enablerindex <= index) ? 
+    int enablerfieldindex = (enablerindex <= index) ?
                                                 enablerindex-1 : enablerindex;
     if (enablerfieldindex == -1)
     {
@@ -919,7 +919,7 @@ XMLEditFields::internalChanged()
 // ****************************************************************************
 //  Method:  XMLEditFields::persistentChanged
 //
-//  Programmer:  Kathleen Biagas 
+//  Programmer:  Kathleen Biagas
 //  Creation:    August 25, 2011
 //
 //  Modifications:
@@ -991,7 +991,7 @@ XMLEditFields::accessChanged(int btn)
 // ****************************************************************************
 // Method: XMLEditFields::variableTypeClicked
 //
-// Purpose: 
+// Purpose:
 //   This slot function is called when one of the vartype checkboxes is
 //   clicked.
 //
@@ -1155,9 +1155,9 @@ XMLEditFields::fieldlistNew()
         if (!okay)
             newid++;
     }
-    
+
     Field *f = FieldFactory::createField(newname,"int","","",newname);
-    
+
     a->fields.push_back(f);
     UpdateWindowContents();
     for (int i=0; i<fieldlist->count(); i++)

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               EnzoPluginInfo.h
+//  EnzoPluginInfo.h
 // ****************************************************************************
 
 #ifndef ENZO_PLUGIN_INFO_H

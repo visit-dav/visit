@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               GULPPluginInfo.h
+//  GULPPluginInfo.h
 // ****************************************************************************
 
 #ifndef GULP_PLUGIN_INFO_H

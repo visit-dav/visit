@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               Boxlib2DPluginInfo.h
+//  Boxlib2DPluginInfo.h
 // ****************************************************************************
 
 #ifndef BOXLIB2D_PLUGIN_INFO_H

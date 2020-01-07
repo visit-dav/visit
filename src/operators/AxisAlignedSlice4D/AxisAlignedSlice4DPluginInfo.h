@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: AxisAlignedSlice4DPluginInfo.h
-// ************************************************************************* //
+// ****************************************************************************
 
 #ifndef AXISALIGNEDSLICE4D_PLUGIN_INFO_H
 #define AXISALIGNEDSLICE4D_PLUGIN_INFO_H

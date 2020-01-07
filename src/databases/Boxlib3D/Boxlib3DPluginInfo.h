@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               Boxlib3DPluginInfo.h
+//  Boxlib3DPluginInfo.h
 // ****************************************************************************
 
 #ifndef BOXLIB3D_PLUGIN_INFO_H

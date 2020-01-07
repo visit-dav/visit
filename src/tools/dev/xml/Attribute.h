@@ -68,7 +68,7 @@
 //    Qt 4. Use QTextStream.
 //
 //    Cyrus Harrison, Mon Sep 29 08:42:39 PDT 2008
-//    Fixed attempt to open the code file twice. 
+//    Fixed attempt to open the code file twice.
 //
 //    Mark C. Miller, Wed Aug 26 10:57:41 PDT 2009
 //    Added custom base class for derived state objects.
@@ -295,7 +295,7 @@ class Attribute : public AttributeBase
         for (i=0; i<fields.size(); i++)
         {
             Field *f = fields[i];
-            
+
             for(std::map<QString,QString>::const_iterator it = f->initcode.begin();
                 it != f->initcode.end(); ++it)
             {

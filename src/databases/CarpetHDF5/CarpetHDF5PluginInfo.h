@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               CarpetHDF5PluginInfo.h
+//  CarpetHDF5PluginInfo.h
 // ****************************************************************************
 
 #ifndef CARPETHDF5_PLUGIN_INFO_H

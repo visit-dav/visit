@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ScatterGUIPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ScatterPluginInfo.h>
 #include <ScatterAttributes.h>
@@ -61,7 +61,7 @@ ScatterGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject *attr,
 // ****************************************************************************
 // Method: ScatterGUIPluginInfo::CreatePluginWizard
 //
-// Purpose: 
+// Purpose:
 //   Creates a Scatter plot wizard and returns a pointer to it.
 //
 // Arguments:
@@ -71,7 +71,7 @@ ScatterGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject *attr,
 //
 // Returns:    A pointer to the new wizard.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 14 09:48:06 PDT 2004

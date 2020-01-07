@@ -14,7 +14,7 @@ Definition:
 // Modifications:
 //    Jeremy Meredith, Fri Feb  1 17:55:14 EST 2008
 //    Made it use float min/max for non-limiting extents values.
-//   
+//
 //    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
 //    Remove the axis extents; they were unusued.
 //
@@ -38,7 +38,7 @@ ParallelCoordinatesAttributes::InsertAxis(const std::string &axisName_)
     stringVector::iterator vaxisNamesIt;
     doubleVector::iterator extentMinIt;
     doubleVector::iterator extentMaxIt;
-    
+
     for (axisOrdinal = 0; axisOrdinal < curAxisCount; axisOrdinal++)
     {
         if (scalarAxisNames[axisOrdinal] == newAxisName) break;
@@ -76,7 +76,7 @@ ParallelCoordinatesAttributes::InsertAxis(const std::string &axisName_)
     visualAxisNames.insert(vaxisNamesIt, newAxisName);
     extentMinima.insert(extentMinIt, saveExtentMin);
     extentMaxima.insert(extentMaxIt, saveExtentMax);
-    
+
     SelectAll();
 }
 
@@ -96,13 +96,13 @@ Definition:
 // Modifications:
 //    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
 //    Remove the axis extents; they were unusued.
-//   
+//
 //    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
 //    Renamed orderedAxisNames to scalarAxisNames to distinguish these
 //    as names of actual scalars instead of just display names.  Added
 //    visualAxisNames.
 //
-//    Kathleen Bonnell, Wed Jun 4 07:54:16 PDT 2008 
+//    Kathleen Bonnell, Wed Jun 4 07:54:16 PDT 2008
 //    Removed unused variables leftSelectedAxisID, rightSelectedAxisID.
 //
 // ****************************************************************************
@@ -129,7 +129,7 @@ ParallelCoordinatesAttributes::DeleteAxis(const std::string &axisName_,
         scalarAxisNames.erase(scalarAxisNames.begin() + axisOrdinal);
         extentMinima.erase(extentMinima.begin() + axisOrdinal);
         extentMaxima.erase(extentMaxima.begin() + axisOrdinal);
-        
+
         SelectAll();
     }
 }
@@ -152,7 +152,7 @@ Definition:
 // Modifications:
 //    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
 //    Remove the axis extents; they were unusued.
-//   
+//
 //    Jeremy Meredith, Thu Feb  7 17:45:11 EST 2008
 //    Allow empty axis name list; this happens for array variables.
 //
@@ -169,7 +169,7 @@ ParallelCoordinatesAttributes::AttributesAreConsistent() const
     size_t axisNamesSize = scalarAxisNames.size();
     size_t axisNum, axis2Num;
     std::string axisName;
-    
+
     if (axisNamesSize == 0)
     {
         if (extentMinima.size() != extentMaxima.size())
@@ -177,7 +177,7 @@ ParallelCoordinatesAttributes::AttributesAreConsistent() const
 
         return true;
     }
-    
+
     if (axisNamesSize == 1)
         return false;
 
@@ -186,7 +186,7 @@ ParallelCoordinatesAttributes::AttributesAreConsistent() const
     {
         return false;
     }
-    
+
     for (axisNum = 0; axisNum < axisNamesSize - 1; axisNum++)
     {
         axisName = scalarAxisNames[axisNum];
@@ -197,7 +197,7 @@ ParallelCoordinatesAttributes::AttributesAreConsistent() const
                 return false;
         }
     }
-    
+
     return true;
 }
 
@@ -277,7 +277,7 @@ Definition:
 // Modifications:
 //    Jeremy Meredith, Fri Feb  1 17:56:21 EST 2008
 //    Added support for axis restrictions.
-//   
+//
 //    Jeremy Meredith, Thu Feb  7 17:45:11 EST 2008
 //    Allow empty axis name list; this happens for array variables.
 //
@@ -417,7 +417,7 @@ ParallelCoordinatesAttributes::ResetAxes()
     visualAxisNames.clear();
     extentMinima.clear();
     extentMaxima.clear();
-    
+
     SelectAll();
 }
 

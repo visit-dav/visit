@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               CTRLPluginInfo.h
+//  CTRLPluginInfo.h
 // ****************************************************************************
 
 #ifndef CTRL_PLUGIN_INFO_H

@@ -13,10 +13,10 @@ class QTextEdit;
 // Class: XMLEditCodeGeneratorWindow
 //
 // Purpose:
-//   This class is a window that invokes various code generation tools and 
+//   This class is a window that invokes various code generation tools and
 //   prints their output to the window.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:27:04 PST 2008

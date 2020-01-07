@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               Curve2DPluginInfo.h
+//  Curve2DPluginInfo.h
 // ****************************************************************************
 
 #ifndef CURVE2D_PLUGIN_INFO_H
@@ -48,9 +48,8 @@ class Curve2DCommonPluginInfo : public virtual CommonDatabasePluginInfo, public 
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
-    virtual std::string               GetLicense() const;
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class Curve2DMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual Curve2DCommonPluginInfo

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               MeshPluginInfo.h                            //
+//  MeshPluginInfo.h
 // ************************************************************************* //
 
 #ifndef MESH_PLUGIN_INFO_H

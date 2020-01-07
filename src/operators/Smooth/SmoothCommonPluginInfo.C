@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SmoothCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <SmoothPluginInfo.h>
 #include <SmoothOperatorAttributes.h>
@@ -43,7 +43,7 @@ SmoothCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 SmoothCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

@@ -46,11 +46,11 @@ SiloCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
     avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
-    for (int i = 0 ; i < nList ; i++)
+    for (int i = 0; i < nList; i++)
     {
         ffl[i] = new avtSiloFileFormat(list[i], readOptions);
     }
-    avtSTMDFileFormatInterface *inter 
+    avtSTMDFileFormatInterface *inter
            = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }
@@ -71,6 +71,7 @@ SiloCommonPluginInfo::GetReadOptions() const
 {
     return GetSiloReadOptions();
 }
+
 // ****************************************************************************
 //  Method: SiloCommonPluginInfo::GetWriteOptions
 //
@@ -87,6 +88,7 @@ SiloCommonPluginInfo::GetWriteOptions() const
 {
     return GetSiloWriteOptions();
 }
+
 // ****************************************************************************
 //  Method: SiloCommonPluginInfo::SetReadOptions
 //
@@ -142,7 +144,7 @@ SiloCommonPluginInfo::SetReadOptions(DBOptionsAttributes *opts)
                 else
                 {
                     debug1 << "\" to Never" << endl;
-                    opts->SetEnum(SILO_RDOPT_IGNORE_SEXTS, 2); // Never 
+                    opts->SetEnum(SILO_RDOPT_IGNORE_SEXTS, 2); // Never
                 }
                 opts->SetEnumStrings(SILO_RDOPT_IGNORE_SEXTS, defaultReadOptions->GetEnumStrings(SILO_RDOPT_IGNORE_SEXTS));
             }
@@ -170,7 +172,7 @@ SiloCommonPluginInfo::SetReadOptions(DBOptionsAttributes *opts)
                 else
                 {
                     debug1 << "\" to Never" << endl;
-                    opts->SetEnum(SILO_RDOPT_IGNORE_DEXTS, 2); // Never 
+                    opts->SetEnum(SILO_RDOPT_IGNORE_DEXTS, 2); // Never
                 }
                 opts->SetEnumStrings(SILO_RDOPT_IGNORE_DEXTS, defaultReadOptions->GetEnumStrings(SILO_RDOPT_IGNORE_DEXTS));
             }

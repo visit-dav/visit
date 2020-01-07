@@ -108,21 +108,21 @@ XMLEditCode::XMLEditCode(QWidget *p)
 // ****************************************************************************
 // Method: XMLEditCode::CountCodes
 //
-// Purpose: 
+// Purpose:
 //   Return the number of codes having a given name.
 //
 // Arguments:
 //  name : The name of the code that we're interested in.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 6 15:53:04 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -162,7 +162,7 @@ XMLEditCode::UpdateWindowContents()
     for (size_t i=0; i<a->codes.size(); i++)
     {
         if(CountCodes(a->codes[i]->name) > 1)
-        { 
+        {
            QString id = QString("%1 [%2]").arg(a->codes[i]->name).arg(a->codes[i]->target);
             codelist->addItem(id);
         }
@@ -421,9 +421,9 @@ XMLEditCode::codelistNew()
         if (!okay)
             newid++;
     }
-    
+
     Code *c = new Code(newname,"","", "xml2atts");
-    
+
     a->codes.push_back(c);
     UpdateWindowContents();
     for (int i=0; i<codelist->count(); i++)

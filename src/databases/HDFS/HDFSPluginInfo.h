@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               HDFSPluginInfo.h
+//  HDFSPluginInfo.h
 // ****************************************************************************
 
 #ifndef HDFS_PLUGIN_INFO_H
@@ -48,7 +48,6 @@ class HDFSCommonPluginInfo : public virtual CommonDatabasePluginInfo, public vir
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual std::string               GetLicense() const;
 };
 
 class HDFSMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual HDFSCommonPluginInfo

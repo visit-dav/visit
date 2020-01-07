@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: FilledBoundaryCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <FilledBoundaryPluginInfo.h>
 #include <FilledBoundaryAttributes.h>
@@ -43,16 +43,17 @@ FilledBoundaryCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 FilledBoundaryCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((FilledBoundaryAttributes *) to) = *((FilledBoundaryAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: FilledBoundaryCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ FilledBoundaryCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: OVERFLOWPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <OVERFLOWPluginInfo.h>
 
@@ -14,6 +14,7 @@
 #undef OVERFLOW
 #endif
 VISIT_PLUGIN_VERSION(OVERFLOW,DBP_EXPORT)
+
 VISIT_DATABASE_PLUGIN_ENTRY(OVERFLOW,General)
 
 // ****************************************************************************
