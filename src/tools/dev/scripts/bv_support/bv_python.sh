@@ -1840,7 +1840,7 @@ function build_sphinx_rtd
 
     # extract
     if ! test -d ${SPHINX_RTD_BUILD_DIR} ; then
-        info "Extracting sphinx ..."
+        info "Extracting sphinx_rtd ..."
         uncompress_untar ${SPHINX_RTD_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${SPHINX_RTD_FILE}"
@@ -1851,11 +1851,11 @@ function build_sphinx_rtd
     PY3HOME="${VISITDIR}/python/${PYTHON3_VERSION}/${VISITARCH}"
     # install
     pushd $SPHINX_RTD_BUILD_DIR > /dev/null
-    info "Installing sphinx ..."
+    info "Installing sphinx_rtd ..."
     ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
-        warn "Could not install sphinx"
+        warn "Could not install sphinx_rtd"
         return 1
     fi
     popd > /dev/null
