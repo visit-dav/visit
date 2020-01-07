@@ -7,14 +7,14 @@
 // *******************************************************************
 // Method: SimpleObserver::SimpleObserver
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the Observer class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 1 11:31:06 PDT 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 SimpleObserver::SimpleObserver()
@@ -25,14 +25,14 @@ SimpleObserver::SimpleObserver()
 // *******************************************************************
 // Method: SimpleObserver::~SimpleObserver
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the Observer class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 1 11:31:39 PDT 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 SimpleObserver::~SimpleObserver()
@@ -43,7 +43,7 @@ SimpleObserver::~SimpleObserver()
 // *******************************************************************
 // Method: SimpleObserver::SetUpdate
 //
-// Purpose: 
+// Purpose:
 //   Sets a flag that indicates whether or not the Observer's Update
 //   method should be called by the Observer's subject.
 //
@@ -51,15 +51,15 @@ SimpleObserver::~SimpleObserver()
 //    update : Tells the subject we're observing if the observer's
 //             Update method needs to be called during a Notify.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 1 11:32:17 PDT 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 void
@@ -71,20 +71,20 @@ SimpleObserver::SetUpdate(bool update)
 // *******************************************************************
 // Method: SimpleObserver::GetUpdate
 //
-// Purpose: 
+// Purpose:
 //   Gets the value of the update flag.
 //
 // Arguments:
 //
 // Returns:    The value of the update flag.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 1 11:32:23 PDT 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 bool
@@ -96,7 +96,7 @@ SimpleObserver::GetUpdate()
 // *******************************************************************
 // Method: SimpleObserver::SubjectRemoved
 //
-// Purpose: 
+// Purpose:
 //   Tells the observer that it should not try and detach from the
 //   subject.
 //
@@ -104,7 +104,7 @@ SimpleObserver::GetUpdate()
 // Creation:   Thu Aug 31 15:19:49 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 void

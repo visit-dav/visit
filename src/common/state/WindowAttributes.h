@@ -28,7 +28,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API WindowAttributes : public AttributeSubject

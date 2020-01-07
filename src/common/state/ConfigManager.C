@@ -1392,8 +1392,8 @@ ConfigManager::ReadField(std::istream& in,
 //   mn:             The MapNode node whose data will be written.
 //   indentLevel:    The indent level to use.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   November 28, 2018 
+// Programmer: Kathleen Biagas
+// Creation:   November 28, 2018
 //
 // Modifications:
 //
@@ -1430,8 +1430,8 @@ ConfigManager::WriteMapNode(std::ostream &out, const MapNode &mn, int indentLeve
 //   tagLength: The length of the field.
 //   noEndTag:  Flag
 //
-// Programmer: Kathleen Biagas 
-// Creation:   November 28, 2018 
+// Programmer: Kathleen Biagas
+// Creation:   November 28, 2018
 //
 // Modifications:
 //
@@ -1652,8 +1652,8 @@ ConfigManager::ReadMapNodeFieldData(std::istream& in, MapNode &mn,
 //   mn:        The MapNode used to store the field.
 //   te:        Indicates tag is and end tag.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   November 28, 2018 
+// Programmer: Kathleen Biagas
+// Creation:   November 28, 2018
 //
 // Modifications:
 //

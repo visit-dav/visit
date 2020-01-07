@@ -21,7 +21,7 @@ class Plot;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API PlotList : public AttributeSubject

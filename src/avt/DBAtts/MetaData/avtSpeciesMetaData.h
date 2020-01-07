@@ -22,7 +22,7 @@ class avtMatSpeciesMetaData;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class DBATTS_API avtSpeciesMetaData : public AttributeSubject

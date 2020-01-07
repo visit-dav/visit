@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                                 avtTypes.h                                //
-// ************************************************************************* //
+// ****************************************************************************
+//  avtTypes.h
+// ****************************************************************************
 
 #ifndef AVT_TYPES_H
 #define AVT_TYPES_H
@@ -119,7 +119,7 @@ enum SetState
     AllUsed,           /* 2 */
     SomeUsedOtherProc, /* 3 */
     AllUsedOtherProc   /* 4 */
-}; 
+};
 
 
 enum LoadBalanceScheme

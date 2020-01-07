@@ -19,7 +19,7 @@
 // Creation:   Tue Jun 6 10:38:47 PDT 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class STATE_API Observer : public SimpleObserver

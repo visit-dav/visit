@@ -27,7 +27,7 @@ bool Run_Test1(bool verbose, int *subtest, int *nsubtests);
 // Creation:   Mon Dec 11 12:01:58 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -77,13 +77,13 @@ ostream &operator <<(ostream &os, const ColorAttributeList &cal)
 //               executed.
 //   nsubtests : The number of subtests.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Dec 11 12:01:58 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool

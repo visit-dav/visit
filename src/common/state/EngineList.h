@@ -22,7 +22,7 @@ class EngineProperties;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API EngineList : public AttributeSubject

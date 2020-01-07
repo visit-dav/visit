@@ -8,7 +8,7 @@
 // ****************************************************************************
 //  Constructor: QuitRPC::QuitRPC
 //
-//  Purpose: 
+//  Purpose:
 //    This is the constructor.
 //
 //  Arguments:
@@ -30,7 +30,7 @@ QuitRPC::QuitRPC() : NonBlockingRPC("b",NULL)
 // ****************************************************************************
 //  Destructor: QuitRPC::~QuitRPC
 //
-//  Purpose: 
+//  Purpose:
 //    This is the destructor.
 //
 //  Arguments:
@@ -47,7 +47,7 @@ QuitRPC::~QuitRPC()
 // ****************************************************************************
 //  Method: QuitRPC::operator()
 //
-//  Purpose: 
+//  Purpose:
 //    This is the RPC's invocation method.
 //
 //  Arguments:
@@ -65,7 +65,7 @@ QuitRPC::~QuitRPC()
 void
 QuitRPC::operator()(bool q)
 {
-    debug3 << "Executing quit RPC" 
+    debug3 << "Executing quit RPC"
            << "\n\t quit='" << q << "'"
            << endl;
 
@@ -76,7 +76,7 @@ QuitRPC::operator()(bool q)
 // ****************************************************************************
 //  Method: QuitRPC::SelectAll
 //
-//  Purpose: 
+//  Purpose:
 //    This selects all variables for sending.
 //
 //  Arguments:
@@ -95,7 +95,7 @@ QuitRPC::SelectAll()
 // ****************************************************************************
 //  Method: QuitRPC::SetQuit
 //
-//  Purpose: 
+//  Purpose:
 //    This sets the quit state.
 //
 //  Arguments:
@@ -115,7 +115,7 @@ QuitRPC::SetQuit(bool q)
 // ****************************************************************************
 //  Method: QuitRPC::GetQuit
 //
-//  Purpose: 
+//  Purpose:
 //    This returns the quit state.
 //
 //  Arguments:
@@ -134,14 +134,14 @@ QuitRPC::GetQuit() const
 // ****************************************************************************
 // Method: QuitRPC::TypeName
 //
-// Purpose: 
+// Purpose:
 //   Returns the RPC name.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Dec  7 11:09:23 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const std::string

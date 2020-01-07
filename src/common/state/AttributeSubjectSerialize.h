@@ -15,10 +15,10 @@ class AttributeSubject;
 // Class: AttributeSubjectSerialize
 //
 // Purpose:
-//   Serializes an AttributeSubject to a connection in binary or ascii JSON 
+//   Serializes an AttributeSubject to a connection in binary or ascii JSON
 //   formats.
 //
-// Notes:    
+// Notes:
 //
 // Programmer: Hari Krishnan
 // Creation:   Tue Oct 14 13:10:41 PDT 2014

@@ -23,7 +23,7 @@ class PickVarInfo;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API PickAttributes : public AttributeSubject

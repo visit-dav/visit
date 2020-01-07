@@ -26,7 +26,7 @@ bool Run_Test2(bool verbose, int *subtest, int *nsubtests);
 // Creation:   Thu Aug 10 15:34:38 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 int
@@ -43,7 +43,7 @@ main(int argc, char *argv[])
     // Test the Plot class.
     test[1] = Run_Test2(util.verbose, &subtest, &nsubtests);
     util.PrintTestResult(2, subtest, nsubtests, test[1]);
-    
+
     return util.PassFail(test, N_TESTS);
 }
 
@@ -87,13 +87,13 @@ operator << (ostream &os, const Plot &p)
 //               executed.
 //   nsubtests : The number of subtests.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 10 16:09:30 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 bool
@@ -205,13 +205,13 @@ Run_Test1(bool verbose, int *subtest, int *nsubtests)
 //   This observer class prints out the fields that have changed in a
 //   PlotList.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 11 13:31:16 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class PlotListPrinter : public Observer
@@ -258,13 +258,13 @@ public:
 // Purpose:
 //   Writes a PlotList to an ostream.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 11 13:30:43 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 ostream &
@@ -282,7 +282,7 @@ operator << (ostream &os, const PlotList &p)
 // Function: Run_Test2
 //
 // Purpose:
-//   This function runs this program's test case #2 which tests the 
+//   This function runs this program's test case #2 which tests the
 //   PlotList class.
 //
 // Arguments:
@@ -295,7 +295,7 @@ operator << (ostream &os, const PlotList &p)
 // Creation:   Fri Aug 11 13:30:06 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 bool
