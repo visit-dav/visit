@@ -23,7 +23,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class ContourAttributes : public AttributeSubject

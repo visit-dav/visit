@@ -19,7 +19,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class DecimateAttributes : public AttributeSubject

@@ -16,7 +16,7 @@ class DataNode;
 // Purpose:
 //   Reads and writes single attributes to/from files.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Jeremy Meredith
 // Creation:   January  2, 2009

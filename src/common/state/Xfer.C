@@ -13,7 +13,7 @@
 // ****************************************************************************
 // Method: Xfer::Xfer
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the Xfer class.
 //
 // Programmer: Brad Whitlock
@@ -41,14 +41,14 @@ Xfer::Xfer() : SimpleObserver(), subjectList()
 // ****************************************************************************
 // Method: Xfer::~Xfer
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the Xfer class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 13 11:17:24 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 Xfer::~Xfer()
@@ -65,22 +65,22 @@ Xfer::~Xfer()
 // ****************************************************************************
 // Method: Xfer::Add
 //
-// Purpose: 
+// Purpose:
 //   Adds a new AttributeSubject to the list of subjects it is
 //   observing.
 //
 // Arguments:
 //   subject: The subject that will be added to the list.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 13 11:19:07 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -97,15 +97,15 @@ Xfer::Add(AttributeSubject *subject)
 // ****************************************************************************
 // Method: Xfer::Add
 //
-// Purpose: 
+// Purpose:
 //   Adds a new RPC to the list of subjects it is observing.
 //
 // Arguments:
 //   rpc: The rpc that will be added to the list.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Jeremy Meredith
 // Creation:   Fri Aug 11 13:47:56 PDT 2000
@@ -126,22 +126,22 @@ Xfer::Add(VisItRPC *rpc)
 // ****************************************************************************
 // Method: Xfer::Remove
 //
-// Purpose: 
+// Purpose:
 //   Removes a subject from the list of subjects the Xfer object is
 //   observing.
 //
 // Arguments:
 //   subject : The subject that is being removed from the list.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 13 11:20:12 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -165,7 +165,7 @@ Xfer::Remove(AttributeSubject *subject)
 // ****************************************************************************
 // Method: Xfer::Update
 //
-// Purpose: 
+// Purpose:
 //   Writes a subject to the Xfer object's output connection.
 //   Depending on the type of output connection, this is mainly
 //   used to send subjects to other processes.
@@ -173,9 +173,9 @@ Xfer::Remove(AttributeSubject *subject)
 // Arguments:
 //    TheChangedSubject : The subject to write on the output connection.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 13 11:21:40 PDT 2000
@@ -226,7 +226,7 @@ Xfer::SendInterruption(int)
 // ****************************************************************************
 // Method: Xfer::SubjectRemoved
 //
-// Purpose: 
+// Purpose:
 //   Removes a subject from the list of subjects that the Xfer object
 //   is watching. This is called when the subject is destroyed. It
 //   is a precaution against the Xfer trying to detach from a subject
@@ -239,7 +239,7 @@ Xfer::SendInterruption(int)
 // Creation:   Thu Aug 31 15:28:41 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -260,7 +260,7 @@ Xfer::SubjectRemoved(Subject *TheRemovedSubject)
 // ****************************************************************************
 // Method: Xfer::ReadPendingMessages
 //
-// Purpose: 
+// Purpose:
 //   This method reads messages encoded on the Xfer object's
 //   input connection and copies them to another buffer.  It also
 //   checks for pending Abort commands.
@@ -323,16 +323,16 @@ Xfer::ReadPendingMessages()
 // ****************************************************************************
 // Method: Xfer::Process
 //
-// Purpose: 
+// Purpose:
 //   This method processes messages encoded on the Xfer object's
 //   input connection. It keeps going while there are complete
 //   messages.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 13 11:23:57 PDT 2000
@@ -340,7 +340,7 @@ Xfer::ReadPendingMessages()
 // Modifications:
 //    Jeremy Meredith, Tue Jul  3 15:02:12 PDT 2001
 //    Made it read from the new buffer instead of the input connection.
-//   
+//
 //    Jeremy Meredith, Tue Mar  4 13:10:25 PST 2003
 //    Added length to the new buffer because MPIXfer needs it.
 //
@@ -398,14 +398,14 @@ Xfer::Process()
 // *************************************************************************************
 // Method: Xfer::ListObjects
 //
-// Purpose: 
+// Purpose:
 //   Lists the names of the objects that are hooked up.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 22 16:48:28 PST 2002
 //
 // Modifications:
-//   
+//
 // *************************************************************************************
 
 void
@@ -420,14 +420,14 @@ Xfer::ListObjects()
 // ****************************************************************************
 // Method: Xfer::ReadHeader
 //
-// Purpose: 
+// Purpose:
 //   Checks the input connection to see if there is an entire message
 //   waiting to be read. If there is, it strips the header and returns
 //   true. Otherwise, don't strip the header and return false.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //   true if the message can be read
 //   false if the message cannot be read.
 //
@@ -437,7 +437,7 @@ Xfer::ListObjects()
 // Modifications:
 //    Jeremy Meredith, Tue Jul  3 15:17:24 PDT 2001
 //    Changed check to allow empty messages.
-//   
+//
 // ****************************************************************************
 
 bool
@@ -473,22 +473,22 @@ Xfer::ReadHeader()
 // ****************************************************************************
 // Method: Xfer::SetInputConnection
 //
-// Purpose: 
+// Purpose:
 //   Sets the object's input connection. This is the connection used
 //   to read messages for the Process method.
 //
 // Arguments:
 //   conn : The connection to use for the input connection.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 13 11:26:01 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -500,22 +500,22 @@ Xfer::SetInputConnection(Connection *conn)
 // ****************************************************************************
 // Method: Xfer::SetOutputConnection
 //
-// Purpose: 
+// Purpose:
 //   Sets the object's output connection. This is the connection used
 //   by the Update method that writes an object onto the connection.
 //
 // Arguments:
 //   conn : The connection to use for the output connection.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 13 11:26:53 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -527,7 +527,7 @@ Xfer::SetOutputConnection(Connection *conn)
 // ****************************************************************************
 // Method: Xfer::GetInputConnection
 //
-// Purpose: 
+// Purpose:
 //   Gets the object's input connection. This is the connection used
 //   to read messages for the Process method.
 //
@@ -535,13 +535,13 @@ Xfer::SetOutputConnection(Connection *conn)
 //
 // Returns:    Connection*
 //
-// Note:       
+// Note:
 //
 // Programmer: Jeremy Meredith
 // Creation:   Fri Aug 11 14:55:38 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 Connection *
@@ -553,7 +553,7 @@ Xfer::GetInputConnection() const
 // ****************************************************************************
 // Method: Xfer::GetOutputConnection
 //
-// Purpose: 
+// Purpose:
 //   Gets the object's output connection. This is the connection used
 //   by the Update method that writes an object onto the connection.
 //
@@ -561,13 +561,13 @@ Xfer::GetInputConnection() const
 //
 // Returns:    Connection*
 //
-// Note:       
+// Note:
 //
 // Programmer: Jeremy Meredith
 // Creation:   Fri Aug 11 14:55:26 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 Connection *
@@ -579,7 +579,7 @@ Xfer::GetOutputConnection() const
 // ****************************************************************************
 // Method: Xfer::GetBufferedInputConnection
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the buffered input connection.
 //
 // Returns:    Connection*
@@ -588,7 +588,7 @@ Xfer::GetOutputConnection() const
 // Creation:   Thu Apr 14 16:39:09 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 Connection *
@@ -600,7 +600,7 @@ Xfer::GetBufferedInputConnection()
 // ****************************************************************************
 // Method: Xfer::GetNextGuido
 //
-// Purpose: 
+// Purpose:
 //   Returns the next unique object identifier.
 //
 // Returns:    The index of the next object.
@@ -609,7 +609,7 @@ Xfer::GetBufferedInputConnection()
 // Creation:   Thu Jul 13 11:16:23 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -621,7 +621,7 @@ Xfer::GetNextGuido()
 // ****************************************************************************
 // Method: Xfer::CreateNewSpecialOpcode
 //
-// Purpose: 
+// Purpose:
 //   Returns a new special opcode.
 //
 // Returns:    A new special opcode.
@@ -630,7 +630,7 @@ Xfer::GetNextGuido()
 // Creation:   Thu Feb 27 11:13:28 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -642,7 +642,7 @@ Xfer::CreateNewSpecialOpcode()
 // ****************************************************************************
 // Method: Xfer::SendSpecialOpcode
 //
-// Purpose: 
+// Purpose:
 //   Sends a special opcode to the remote process.
 //
 // Arguments:
@@ -652,7 +652,7 @@ Xfer::CreateNewSpecialOpcode()
 // Creation:   Thu Feb 27 11:14:01 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -673,7 +673,7 @@ Xfer::SendSpecialOpcode(int opcode)
 // ****************************************************************************
 // Method: Xfer::SetupSpecialOpcodeHandler
 //
-// Purpose: 
+// Purpose:
 //   Sets up a callback function to handle special opcodes.
 //
 // Arguments:
@@ -684,7 +684,7 @@ Xfer::SendSpecialOpcode(int opcode)
 // Creation:   Thu Feb 27 11:14:54 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -697,7 +697,7 @@ Xfer::SetupSpecialOpcodeHandler(void (*cb)(int, void *), void *data)
 // ****************************************************************************
 // Method: Xfer::GetSubject
 //
-// Purpose: 
+// Purpose:
 //   Return the i'th subject in the Xfer.
 //
 // Arguments:
@@ -711,7 +711,7 @@ Xfer::SetupSpecialOpcodeHandler(void (*cb)(int, void *), void *data)
 // Creation:   Fri Dec  7 17:03:55 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const AttributeSubject *
@@ -723,7 +723,7 @@ Xfer::GetSubject(int index) const
 // ****************************************************************************
 // Method: Xfer::GetNumSubjects
 //
-// Purpose: 
+// Purpose:
 //   Return the number of subjects in the Xfer.
 //
 // Arguments:
@@ -736,7 +736,7 @@ Xfer::GetSubject(int index) const
 // Creation:   Fri Dec  7 17:03:55 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

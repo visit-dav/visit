@@ -1,6 +1,6 @@
 Code: SetFromNode
 Prefix:
-    
+
     //
     // Make sure the formats stored in the data node are valid
     // before we attempt to use the data from them.

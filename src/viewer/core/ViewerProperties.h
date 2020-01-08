@@ -21,7 +21,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerProperties : public AttributeSubject

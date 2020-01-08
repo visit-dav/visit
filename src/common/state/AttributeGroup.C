@@ -56,7 +56,7 @@ static const unsigned char msgTypeMapNode              = 0x1c;
 static const char *typeNames[] = {
 "None",
 "char", "unsigned char", "int", "long", "float", "double", "string", "AttributeGroup", "bool",
-"ListChar", "ListUnsignedChar", "ListInt", "ListLong", "ListFloat", 
+"ListChar", "ListUnsignedChar", "ListInt", "ListLong", "ListFloat",
 "ListDouble", "ListString", "ListAttributeGroup", "ListBool",
 "VectorChar", "VectorUnsignedChar", "VectorInt", "VectorLong", "VectorFloat",
 "VectorDouble", "VectorString", "VectorAttributeGroup", "VectorBool", "MapNode"
@@ -66,8 +66,8 @@ static const char *typeNames[] = {
 // ****************************************************************************
 // Method: AttributeGroup::AttributeGroup
 //
-// Purpose: 
-//   This is the constructor for the AttributeGroup class. It is 
+// Purpose:
+//   This is the constructor for the AttributeGroup class. It is
 //   responsible for creating the type map that will allow the
 //   sub class to be serialized onto a Connection object.
 //
@@ -87,9 +87,9 @@ static const char *typeNames[] = {
 //                  b = bool,           B = list of bool
 //                  m = mapnode
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 4 16:15:57 PST 2000
@@ -97,7 +97,7 @@ static const char *typeNames[] = {
 // Modifications:
 //    Jeremy Meredith, Mon Feb 26 16:02:50 PST 2001
 //    Added unsigned chars.
-//   
+//
 // ****************************************************************************
 
 AttributeGroup::AttributeGroup(const char *formatString) : typeMap()
@@ -110,14 +110,14 @@ AttributeGroup::AttributeGroup(const char *formatString) : typeMap()
 // ****************************************************************************
 // Method: AttributeGroup::~AttributeGroup
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the AttributeGroup class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 4 16:30:26 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AttributeGroup::~AttributeGroup()
@@ -128,7 +128,7 @@ AttributeGroup::~AttributeGroup()
 // ****************************************************************************
 // Method: AttributeGroup::NumAttributes
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of attributes in the AttributeGroup. This is
 //   useful for iteration over the AttributeGroup.
 //
@@ -136,7 +136,7 @@ AttributeGroup::~AttributeGroup()
 // Creation:   Fri Aug 4 16:30:47 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -148,26 +148,26 @@ AttributeGroup::NumAttributes() const
 // ****************************************************************************
 // Method: AttributeGroup::IsSelected
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not a particular attribute is selected. If it
 //   is selected, then a value has been changed recently, or the
 //   object is being prepared for transmission across a Connection.
 //
 // Arguments:
-//   i : The index of the attribute that is to be checked. 
+//   i : The index of the attribute that is to be checked.
 //
-// Returns:    
+// Returns:
 //   If it is not in the range [0..NumAttributes()-1], the return value
 //   is false. Otherwise, the value returned is whether or no the
 //   attribute is selected.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 4 16:31:38 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -187,7 +187,7 @@ AttributeGroup::IsSelected(int i) const
 // ****************************************************************************
 // Method: AttributeGroup::CopyAttributes
 //
-// Purpose: 
+// Purpose:
 //   Copies the attributes into the current object and returns whether or not
 //   the attributes were copied.
 //
@@ -198,7 +198,7 @@ AttributeGroup::IsSelected(int i) const
 // Creation:   Tue Oct 9 15:40:55 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -234,8 +234,8 @@ AttributeGroup::CopyAttributes(const AttributeGroup *atts)
 //    Brad Whitlock, Thu Dec 9 15:07:10 PST 2004
 //    Added variablename type.
 //
-//    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007 
-//    Added scalemode type. 
+//    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007
+//    Added scalemode type.
 //
 //    Brad Whitlock, Tue Jan  6 14:04:08 PST 2009
 //    Added MapNode.
@@ -244,7 +244,7 @@ AttributeGroup::CopyAttributes(const AttributeGroup *atts)
 //    Added glyphtype.
 //
 // ****************************************************************************
- 
+
 void
 AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
                                  const AttributeGroup *atts2, double f)
@@ -405,8 +405,8 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
 //    Fix crash that can come when this method is called and attributes have
 //    not been fully initialized.
 //
-//    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007 
-//    Added scalemode type. 
+//    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007
+//    Added scalemode type.
 //
 //    Brad Whitlock, Tue Jan  6 13:58:42 PST 2009
 //    Added MapNode.
@@ -415,7 +415,7 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
 //    Added glyphtype.
 //
 // ****************************************************************************
- 
+
 void
 AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
                                   const AttributeGroup *atts2, double f)
@@ -554,20 +554,20 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
 // Purpose:
 //   Determine if 'this' attribute group is equal to the one passed in
 //
-// Programmer: Mark C. Miller 
-// Creation:   06May03 
+// Programmer: Mark C. Miller
+// Creation:   06May03
 //
 // Modified:
 //    Jeremy Meredith, Wed May 21 12:59:48 PDT 2003
 //    Added missing break statements.  Added code to make sure
-//    we're the same type of object before attempting any 
+//    we're the same type of object before attempting any
 //    comparisons.
 //
 //    Brad Whitlock, Thu Dec 9 15:08:23 PST 2004
 //    Added variablename type.
 //
-//    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007 
-//    Added scalemode type. 
+//    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007
+//    Added scalemode type.
 //
 //    Hank Childs, Mon Oct  8 13:44:09 PDT 2007
 //    Make sure the method works for nested attribute groups.
@@ -727,7 +727,7 @@ AttributeGroup::EqualTo(const AttributeGroup *atts) const
 // ****************************************************************************
 // Method: AttributeGroup::TypeName
 //
-// Purpose: 
+// Purpose:
 //   Returns the name of the type.
 //
 // Returns:    The name of the type.
@@ -736,7 +736,7 @@ AttributeGroup::EqualTo(const AttributeGroup *atts) const
 // Creation:   Tue Oct 9 15:42:05 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const std::string
@@ -748,7 +748,7 @@ AttributeGroup::TypeName() const
 // ****************************************************************************
 // Method: AttributeGroup::WriteType
 //
-// Purpose: 
+// Purpose:
 //   Writes an attribute to the Connection.
 //
 // Arguments:
@@ -1697,7 +1697,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
             conn.WriteChar(1);
         else
             conn.WriteChar(0);
-       
+
         break;
     case msgTypeListChar:
         { // new scope
@@ -1888,19 +1888,19 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
     case msgTypeMapNode:
         { // new scope
           MapNode *m = (MapNode *)(info.address);
-          m->Write(conn); 
+          m->Write(conn);
         }
         break;
     case msgTypeNone:
     default:
         ; // nothing.
-    }            
+    }
 }
 
 // ****************************************************************************
 // Method: AttributeGroup::ReadType
 //
-// Purpose: 
+// Purpose:
 //   Reads an attribute from the connection.
 //
 // Arguments:
@@ -2248,19 +2248,19 @@ AttributeGroup::ReadType(Connection &conn, int attrId, AttributeGroup::typeInfo 
     case msgTypeMapNode:
         { // new scope
           MapNode *m = (MapNode *)(info.address);
-          m->Read(conn); 
+          m->Read(conn);
         }
         break;
     case msgTypeNone:
     default:
         ; // nothing.
-    }  
+    }
 }
 
 // ****************************************************************************
 // Method: AttributeGroup::CreateSubAttributeGroup
 //
-// Purpose: 
+// Purpose:
 //   This method returns a pointer to a new AttributeGroup object.
 //   Subclasses that contain an AttributeGroupVector must override
 //   this method. This method is used when allocating storage for an
@@ -2270,16 +2270,16 @@ AttributeGroup::ReadType(Connection &conn, int attrId, AttributeGroup::typeInfo 
 //   attrId : This argument tells which kind of AttributeGroup to
 //            instantiate and return.
 //
-// Returns:    
+// Returns:
 //   A pointer to a new AttributeGroup object. The default is 0.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 8 13:35:52 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AttributeGroup *
@@ -2291,7 +2291,7 @@ AttributeGroup::CreateSubAttributeGroup(int)
 // ****************************************************************************
 // Method: AttributeGroup::Select
 //
-// Purpose: 
+// Purpose:
 //   Selects an attribute so it can be transmitted. It also associates
 //   a real memory address with the attribute in the type map. This is
 //   required in order to write or read the attribute.
@@ -2306,7 +2306,7 @@ AttributeGroup::CreateSubAttributeGroup(int)
 // Creation:   Fri Aug 4 16:56:22 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2323,7 +2323,7 @@ AttributeGroup::Select(int index, void *address, int length)
 // ****************************************************************************
 // Method: AttributeGroup::SelectField
 //
-// Purpose: 
+// Purpose:
 //   Lets the user select a field.
 //
 // Arguments:
@@ -2333,7 +2333,7 @@ AttributeGroup::Select(int index, void *address, int length)
 // Creation:   Tue May 3 11:11:08 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2349,7 +2349,7 @@ AttributeGroup::SelectField(int index)
 // ****************************************************************************
 // Method: AttributeGroup::SelectFields
 //
-// Purpose: 
+// Purpose:
 //   Lets the user select multiple fields.
 //
 // Arguments:
@@ -2384,7 +2384,7 @@ AttributeGroup::SelectFields(const std::vector<int> &indices)
 // ****************************************************************************
 // Method: AttributeGroup::UnSelectAll
 //
-// Purpose: 
+// Purpose:
 //   Unselects all the attributes in the typemap. This indicates that
 //   they have not changed.
 //
@@ -2392,7 +2392,7 @@ AttributeGroup::SelectFields(const std::vector<int> &indices)
 // Creation:   Tue Aug 8 13:48:17 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2409,8 +2409,8 @@ AttributeGroup::UnSelectAll()
 // ****************************************************************************
 // Method: AttributeGroup::CreateNode
 //
-// Purpose: 
-//   Creates a DataNode representation of the AttributeGroup and 
+// Purpose:
+//   Creates a DataNode representation of the AttributeGroup and
 //   adds it to the node that is passed in. Unless a subclass, overrides
 //   this method, no DataNode is created.
 //
@@ -2438,8 +2438,8 @@ AttributeGroup::CreateNode(DataNode *, bool, bool)
 // ****************************************************************************
 // Method: AttributeGroup::SetFromNode
 //
-// Purpose: 
-//   Reads the values in the DataNode and sets attributes in the 
+// Purpose:
+//   Reads the values in the DataNode and sets attributes in the
 //   AttributeGroup from those values. Unless this method is overridden
 //   in subclasses, it does nothing.
 //
@@ -2447,7 +2447,7 @@ AttributeGroup::CreateNode(DataNode *, bool, bool)
 // Creation:   Thu Sep 28 12:40:58 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2459,7 +2459,7 @@ AttributeGroup::SetFromNode(DataNode *)
 // ****************************************************************************
 // Method: AttributeGroup::ProcessOldVersions
 //
-// Purpose: 
+// Purpose:
 //   Processes old versions of the DataNode so that it is up to date when
 //   we call SetFromNode.
 //
@@ -2471,7 +2471,7 @@ AttributeGroup::SetFromNode(DataNode *)
 // Creation:   Fri Mar 21 09:50:31 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2483,7 +2483,7 @@ AttributeGroup::ProcessOldVersions(DataNode *, const char *)
 // ****************************************************************************
 // Method: AttributeGroup::VersionLessThan
 //
-// Purpose: 
+// Purpose:
 //   Compares version strings to determine if the configVersion is less than
 //   the current version.
 //
@@ -2507,7 +2507,7 @@ AttributeGroup::ProcessOldVersions(DataNode *, const char *)
 
 bool
 AttributeGroup::VersionLessThan(const char *configVersion, const char *version)
-{ 
+{
     int versions[2][3] = {{0,0,0}, {0,0,0}};
     int betas[2] = {0, 0};
     const char *versionStrings[] = {configVersion, version};
@@ -2523,7 +2523,7 @@ AttributeGroup::VersionLessThan(const char *configVersion, const char *version)
     for(int i = 0; i < 2; ++i)
     {
         // Go to the first space and copy the version number string into
-        // the buffer. 
+        // the buffer.
         char *buf = storage;
         strncpy(buf, versionStrings[i], 30);
 
@@ -2558,14 +2558,14 @@ AttributeGroup::VersionLessThan(const char *configVersion, const char *version)
 // ****************************************************************************
 // Method: AttributeGroup::Write
 //
-// Purpose: 
+// Purpose:
 //   Writes the selected attributes of the AttributeGroup onto a
 //   Connection object.
 //
 // Arguments:
 //   conn : The connection object to which we're writing.
 //
-// Note:       
+// Note:
 //   If no attributes are selected, SelectAll is called so all the
 //   attributes are written.
 //
@@ -2575,7 +2575,7 @@ AttributeGroup::VersionLessThan(const char *configVersion, const char *version)
 // Modifications:
 //    Jeremy Meredith, Mon Feb 26 16:05:36 PST 2001
 //    Made length write using unsigned chars.
-//   
+//
 // ****************************************************************************
 
 void
@@ -2719,7 +2719,7 @@ AttributeGroup::Write(Connection &conn)
 // ****************************************************************************
 // Method: AttributeGroup::Read
 //
-// Purpose: 
+// Purpose:
 //   Reads the AttributeGroup from a Connection object. Once the read
 //   has happened, only attributes that have changed are selected.
 //
@@ -2732,7 +2732,7 @@ AttributeGroup::Write(Connection &conn)
 // Modifications:
 //    Jeremy Meredith, Mon Feb 26 16:05:36 PST 2001
 //    Made length read using unsigned chars.
-//   
+//
 // ****************************************************************************
 
 void
@@ -2783,17 +2783,17 @@ AttributeGroup::Read(Connection &conn)
 // ****************************************************************************
 // Method: AttributeGroup::NumAttributesSelected
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of attributes that are selected.
 //
-// Returns:    
+// Returns:
 //   The number of attributes that are selected.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 4 17:04:23 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -2816,7 +2816,7 @@ AttributeGroup::NumAttributesSelected() const
 // ****************************************************************************
 // Method: AttributeGroup::CalculateMessageSize
 //
-// Purpose: 
+// Purpose:
 //   Calculates the predicted messages size in bytes for the
 //   attributes which are currently selected.
 //
@@ -2825,7 +2825,7 @@ AttributeGroup::NumAttributesSelected() const
 //          written. This is relevant because the connection knows
 //          how the sizes of the destination machine's built-in types.
 //
-// Returns:    
+// Returns:
 //   The number of bytes in the message that will be written.
 //
 // Programmer: Brad Whitlock
@@ -3062,31 +3062,31 @@ AttributeGroup::DeclareLong()
 void
 AttributeGroup::DeclareFloat()
 {
-    typeMap.push_back(msgTypeFloat); 
+    typeMap.push_back(msgTypeFloat);
 }
 
 void
 AttributeGroup::DeclareDouble()
 {
-    typeMap.push_back(msgTypeDouble); 
+    typeMap.push_back(msgTypeDouble);
 }
 
 void
 AttributeGroup::DeclareString()
 {
-    typeMap.push_back(msgTypeString); 
+    typeMap.push_back(msgTypeString);
 }
 
 void
 AttributeGroup::DeclareAttributeGroup()
 {
-    typeMap.push_back(msgTypeAttributeGroup); 
+    typeMap.push_back(msgTypeAttributeGroup);
 }
 
 void
 AttributeGroup::DeclareBool()
 {
-    typeMap.push_back(msgTypeBool); 
+    typeMap.push_back(msgTypeBool);
 }
 
 void
@@ -3134,13 +3134,13 @@ AttributeGroup::DeclareListString()
 void
 AttributeGroup::DeclareListAttributeGroup()
 {
-    typeMap.push_back(msgTypeListAttributeGroup); 
+    typeMap.push_back(msgTypeListAttributeGroup);
 }
 
 void
 AttributeGroup::DeclareListBool()
 {
-    typeMap.push_back(msgTypeListBool); 
+    typeMap.push_back(msgTypeListBool);
 }
 
 void
@@ -3206,7 +3206,7 @@ AttributeGroup::DeclareMapNode()
 // ****************************************************************************
 // Method: AttributeGroup::CreateTypeMap
 //
-// Purpose: 
+// Purpose:
 //   This is a convenience function that takes a format string and
 //   adds the appropriate types to the type map.
 //
@@ -3429,7 +3429,7 @@ AttributeGroup::GetFieldType(int index) const
 // ****************************************************************************
 // Method: AttributeGroup::GetFieldTypeName
 //
-// Purpose: 
+// Purpose:
 //   Returns the field type name based on information available in the type map.
 //
 // Arguments:
@@ -3437,8 +3437,8 @@ AttributeGroup::GetFieldType(int index) const
 //
 // Returns:    The name of the type.
 //
-// Note:       This base implementation does not account for types such as 
-//             line width, scale mode, etc that are built on top of 
+// Note:       This base implementation does not account for types such as
+//             line width, scale mode, etc that are built on top of
 //             regular AttributeGroup field types. We provide this method
 //             for objects that did not provide a GetFieldTypeName method.
 //
@@ -3462,7 +3462,7 @@ AttributeGroup::GetFieldTypeName(int index) const
     };
     std::string retval("<UNKNOWN type>");
     if(index >= 0 && (size_t)index < typeMap.size())
-    { 
+    {
         // Get around calling some non-const methods for now.
         AttributeGroup *THIS = const_cast<AttributeGroup *>(this);
 
@@ -3519,12 +3519,12 @@ AttributeGroup::FieldsEqual(int index, const AttributeGroup *rhs) const
 
 static int indentLevel = 0;
 // ****************************************************************************
-// Operator: << 
+// Operator: <<
 //
 // Purpose: stream out a reasonably well formatted attribute group
 //
-// Programmer: Mark C. Miller 
-// Creation:   Tue Nov 26 08:57:53 PST 2002 
+// Programmer: Mark C. Miller
+// Creation:   Tue Nov 26 08:57:53 PST 2002
 //
 // Modifications:
 //   Brad Whitlock, Wed Dec 11 12:36:41 PDT 2002
@@ -3652,7 +3652,7 @@ operator << (ostream& os, const AttributeGroup& atts)
             os << (*((bool *)(pos->address)) ? "true" : "false");
             break;
 
-        // lists of primitive types 
+        // lists of primitive types
         case msgTypeListChar:
             {   char *cptr = (char *) (pos->address);
                 for(i = 0; i < pos->length; ++i)
@@ -3662,31 +3662,31 @@ operator << (ostream& os, const AttributeGroup& atts)
         case msgTypeListUnsignedChar:
             {   unsigned char *ucptr = (unsigned char *) (pos->address);
                 for(i = 0; i < pos->length; ++i)
-                    os << ", " << int(ucptr[i]); 
+                    os << ", " << int(ucptr[i]);
             }
             break;
         case msgTypeListInt:
             {   int *iptr = (int *) (pos->address);
                 for(i = 0; i < pos->length; ++i)
-                    os << ", " << iptr[i]; 
+                    os << ", " << iptr[i];
             }
             break;
         case msgTypeListLong:
             {   long *lptr = (long *) (pos->address);
                 for(i = 0; i < pos->length; ++i)
-                    os << ", " << lptr[i]; 
+                    os << ", " << lptr[i];
             }
             break;
         case msgTypeListFloat:
             {   float *fptr = (float *) (pos->address);
                 for(i = 0; i < pos->length; ++i)
-                    os << ", " << fptr[i]; 
+                    os << ", " << fptr[i];
             }
             break;
         case msgTypeListDouble:
             {   double *dptr = (double *) (pos->address);
                 for(i = 0; i < pos->length; ++i)
-                    os << ", " << dptr[i]; 
+                    os << ", " << dptr[i];
             }
             break;
         case msgTypeListString:
@@ -3714,7 +3714,7 @@ operator << (ostream& os, const AttributeGroup& atts)
             }
             break;
 
-        // vectors of primitive types 
+        // vectors of primitive types
         case msgTypeVectorBool:
             {   boolVector *vb = (boolVector *)(pos->address);
                 boolVector::iterator bpos;
@@ -3733,42 +3733,42 @@ operator << (ostream& os, const AttributeGroup& atts)
             {   unsignedCharVector *vc = (unsignedCharVector *)(pos->address);
                 unsignedCharVector::iterator cpos;
                 for(cpos = vc->begin(); cpos != vc->end(); ++cpos)
-                    os << ", " << int(*cpos); 
+                    os << ", " << int(*cpos);
             }
             break;
         case msgTypeVectorInt:
             {   intVector *vi = (intVector *)(pos->address);
                 intVector::iterator ipos;
                 for(ipos = vi->begin(); ipos != vi->end(); ++ipos)
-                    os << ", " << *ipos; 
+                    os << ", " << *ipos;
             }
             break;
         case msgTypeVectorLong:
             {   longVector *vl = (longVector *)(pos->address);
                 longVector::iterator lpos;
                 for(lpos = vl->begin(); lpos != vl->end(); ++lpos)
-                    os << ", " << *lpos; 
+                    os << ", " << *lpos;
             }
             break;
         case msgTypeVectorFloat:
             {   floatVector *vf = (floatVector *)(pos->address);
                 floatVector::iterator fpos;
                 for(fpos = vf->begin(); fpos != vf->end(); ++fpos)
-                    os << ", " << *fpos; 
+                    os << ", " << *fpos;
             }
             break;
         case msgTypeVectorDouble:
             {   doubleVector *vd = (doubleVector *)(pos->address);
                 doubleVector::iterator dpos;
                 for(dpos = vd->begin(); dpos != vd->end(); ++dpos)
-                    os << ", " << *dpos; 
+                    os << ", " << *dpos;
             }
             break;
         case msgTypeVectorString:
             {   stringVector *vs = (stringVector *)(pos->address);
                 stringVector::iterator spos;
                 for(spos = vs->begin(); spos != vs->end(); ++spos)
-                    os << ", " << spos->c_str(); 
+                    os << ", " << spos->c_str();
             }
             break;
         case msgTypeVectorAttributeGroup:
@@ -3781,7 +3781,7 @@ operator << (ostream& os, const AttributeGroup& atts)
             {   AttributeGroupVector *va = (AttributeGroupVector *)(pos->address);
                 AttributeGroupVector::iterator apos;
                 for(apos = va->begin(); apos != va->end(); ++apos)
-                    os << *apos; 
+                    os << *apos;
             }
             break;
         case msgTypeMapNode:
@@ -3792,13 +3792,13 @@ operator << (ostream& os, const AttributeGroup& atts)
         case msgTypeNone:
         default:
             ; // nothing.
-        }            
+        }
 
         os << endl;
 
         k++;
     }
-   
+
     indentLevel--;
 
     return os;
@@ -3807,7 +3807,7 @@ operator << (ostream& os, const AttributeGroup& atts)
 // ****************************************************************************
 // Method: AttributeGroup::FieldNameToIndex
 //
-// Purpose: 
+// Purpose:
 //   Converts a field name into a field index.
 //
 // Arguments:
@@ -3815,13 +3815,13 @@ operator << (ostream& os, const AttributeGroup& atts)
 //
 // Returns:    The field index or -1 on failure.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Aug 20 10:40:23 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

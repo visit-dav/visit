@@ -19,7 +19,7 @@ Definition:
 //    Brad Whitlock, Tue Jul 20 13:44:42 PST 2004
 //    Added units.
 //
-//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004
 //    Initialized treatAsASCII.
 //
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
@@ -64,7 +64,7 @@ Definition:
 //    Brad Whitlock, Tue Jul 20 13:45:12 PST 2004
 //    Added units.
 //
-//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004
 //    Initialized treatAsASCII.
 //
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
@@ -154,7 +154,7 @@ Definition:
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Print out validVariable.
 //
-//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004
 //    Print out treatAsASCII.
 //
 //    Brad Whitlock, Tue Jul 20 13:47:04 PST 2004
@@ -212,7 +212,7 @@ avtVarMetaData::Print(ostream &out, int indent) const
     if (hasDataExtents)
     {
         Indent(out, indent);
-        out << "Extents are: (" << minDataExtents << ", " 
+        out << "Extents are: (" << minDataExtents << ", "
             << maxDataExtents << ")" << endl;
     }
     else

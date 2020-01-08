@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                              GlyphTypes.h                                 //
-// ************************************************************************* //
+// ****************************************************************************
+//   GlyphTypes.h
+// ****************************************************************************
 
 #ifndef GLYPH_TYPES_H
 #define GLYPH_TYPES_H

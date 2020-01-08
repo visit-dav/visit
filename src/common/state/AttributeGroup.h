@@ -25,7 +25,7 @@ class DataNode;
 //   This is the base class for state objects that can be transmitted
 //   across a connection.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 4 16:37:48 PST 2000
@@ -71,8 +71,8 @@ class DataNode;
 //    Brad Whitlock, Tue May 3 11:05:15 PDT 2005
 //    I added SelectField, SelectFields and made Select private.
 //
-//    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007 
-//    Added FieldType_scalemode. 
+//    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007
+//    Added FieldType_scalemode.
 //
 //    Brad Whitlock, Tue Jan  6 13:47:25 PST 2009
 //    I added support for including MapNode objects as fields.

@@ -22,7 +22,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class HistogramAttributes : public AttributeSubject

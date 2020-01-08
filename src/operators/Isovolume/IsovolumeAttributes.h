@@ -20,7 +20,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class IsovolumeAttributes : public AttributeSubject

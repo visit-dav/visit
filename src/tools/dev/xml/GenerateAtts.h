@@ -1203,7 +1203,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "{" << Endl;
         c << "    AttributeGroupVector::iterator pos = " << name << ".begin();" << Endl;
         c << Endl;
-        c << "    // Iterate through the vector \"index\" times. " << Endl;
+        c << "    // Iterate through the vector \"index\" times." << Endl;
         c << "    for(int i = 0; i < index; ++i)" << Endl;
         c << "        if(pos != " << name << ".end()) ++pos;" << Endl;
         c << Endl;

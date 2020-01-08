@@ -12,7 +12,7 @@ Definition:
 // ****************************************************************************
 // Method: PluginManagerAttributes::GetIndexByID
 //
-// Purpose: 
+// Purpose:
 //   Find the index of a plugin by its ID, or -1 if it does not exist
 //
 // Programmer: Jeremy Meredith
@@ -38,7 +38,7 @@ Definition:
 // ****************************************************************************
 // Method: PluginManagerAttributes::AddPlugin
 //
-// Purpose: 
+// Purpose:
 //   Add a new plugin.
 //
 // Programmer: Jeremy Meredith
@@ -53,7 +53,7 @@ Definition:
 //
 // ****************************************************************************
 
-void 
+void
 PluginManagerAttributes::AddPlugin(const std::string &n,
                                    const std::string &t,
                                    const std::string &v,
@@ -75,7 +75,7 @@ Definition:
 // ****************************************************************************
 // Method: PluginManagerAttributes::RemovePlugin
 //
-// Purpose: 
+// Purpose:
 //   Add a new plugin.
 //
 // Programmer: Jeremy Meredith
@@ -87,7 +87,7 @@ Definition:
 //
 // ****************************************************************************
 
-void 
+void
 PluginManagerAttributes::RemovePlugin(const std::string &s)
 {
     int index = GetIndexByID(s);
@@ -109,7 +109,7 @@ Definition:
 // ****************************************************************************
 // Method: PluginManagerAttributes::UniqueCategories
 //
-// Purpose: 
+// Purpose:
 //   Get the list of unique category names for a given plugin type.
 //
 // Programmer: Brad Whitlock
@@ -119,7 +119,7 @@ Definition:
 //
 // ****************************************************************************
 #include <algorithm>
-void 
+void
 PluginManagerAttributes::UniqueCategories(const std::string &t, stringVector &c) const
 {
     c.clear();
@@ -142,7 +142,7 @@ Definition:
 // ****************************************************************************
 // Method: PluginManagerAttributes::GetPluginCategoryName
 //
-// Purpose: 
+// Purpose:
 //   Get the category name for the specified plugin.
 //
 // Programmer: Brad Whitlock
@@ -170,7 +170,7 @@ Definition:
 // ****************************************************************************
 // Method: PluginManagerAttributes::SetPluginCategoryName
 //
-// Purpose: 
+// Purpose:
 //   Sets the category name for the specified plugin.
 //
 // Programmer: Brad Whitlock
@@ -197,7 +197,7 @@ Definition:
 // ****************************************************************************
 // Method: PluginManagerAttributes::PluginCategoryNameNotSet
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the category name has been set.
 //
 // Programmer: Brad Whitlock

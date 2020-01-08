@@ -22,7 +22,7 @@ class Expression;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API ExpressionList : public AttributeSubject
@@ -103,7 +103,7 @@ private:
     AttributeGroupVector expressions;
 
     void SortNameHash(void) const;
-    void resetMe(void) const; 
+    void resetMe(void) const;
     // Accleration structures can change in const methods
     mutable std::vector<std::pair<unsigned int, size_t> > sortedNameHash;
     mutable bool sortedNameHashNeedsSorting;

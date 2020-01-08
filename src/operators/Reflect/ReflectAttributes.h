@@ -20,7 +20,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class ReflectAttributes : public AttributeSubject

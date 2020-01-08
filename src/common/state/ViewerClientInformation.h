@@ -22,7 +22,7 @@ class ViewerClientInformationElement;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API ViewerClientInformation : public AttributeSubject

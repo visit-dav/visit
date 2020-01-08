@@ -21,7 +21,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API AnimationAttributes : public AttributeSubject

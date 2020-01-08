@@ -21,7 +21,7 @@ class VisualCueInfo;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API VisualCueList : public AttributeSubject

@@ -5,11 +5,10 @@
 #ifndef MINMAXINFO_H
 #define MINMAXINFO_H
 #include <query_exports.h>
+#include <string>
 #include <AttributeSubject.h>
 
 #include <avtMatrix.h>
-
-#include <string>
 
 // ****************************************************************************
 // Class: MinMaxInfo
@@ -23,13 +22,11 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class QUERY_API MinMaxInfo : public AttributeSubject
 {
-    using AttributeSubject::SetValue;
-    using AttributeSubject::GetValue;
 public:
     // These constructors are for objects of this class
     MinMaxInfo();
@@ -63,7 +60,7 @@ public:
     // Property setting methods
     void SetElementNum(int elementNum_);
     void SetDomain(int domain_);
-    void SetValue(double value_);
+    void SetMvalue(double mvalue_);
     void SetCoord(const double *coord_);
     void SetType(const std::string &type_);
     void SetMatName(const std::string &matName_);
@@ -71,7 +68,7 @@ public:
     // Property getting methods
     int               GetElementNum() const;
     int               GetDomain() const;
-    double            GetValue() const;
+    double            GetMvalue() const;
     const double      *GetCoord() const;
           double      *GetCoord();
     const std::string &GetType() const;
@@ -95,7 +92,7 @@ public:
     enum {
         ID_elementNum = 0,
         ID_domain,
-        ID_value,
+        ID_mvalue,
         ID_coord,
         ID_type,
         ID_matName,
@@ -105,7 +102,7 @@ public:
 private:
     int         elementNum;
     int         domain;
-    double      value;
+    double      mvalue;
     double      coord[3];
     std::string type;
     std::string matName;

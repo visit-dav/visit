@@ -21,7 +21,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class LabelAttributes : public AttributeSubject

@@ -17,7 +17,7 @@ class DataNode;
 // Purpose:
 //   Reads and writes ColorControlPointLists to/from files.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 3 17:49:53 PST 2003

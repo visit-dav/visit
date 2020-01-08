@@ -14,55 +14,55 @@ Definition:
 //
 //    Kevin Griffin, Wed Feb 15 11:50:13 PDT 2017
 //    Added boundsRange field.
-//   
+//
 // ****************************************************************************
 
 void
 ThresholdOpAttributes::SupplyMissingDefaultsIfAppropriate()
 {
     size_t totalEntryCount = 0;
-    
+
     if (listedVarNames.size() > 1) return;
     totalEntryCount += listedVarNames.size();
-        
+
     if (zonePortions.size() > 1) return;
     totalEntryCount += zonePortions.size();
-        
+
     if (lowerBounds.size() > 1) return;
     totalEntryCount += lowerBounds.size();
-        
+
     if (upperBounds.size() > 1) return;
     totalEntryCount += upperBounds.size();
-    
+
     if (boundsRange.size() > 1) return;
     totalEntryCount += boundsRange.size();
 
     if ((totalEntryCount & 3) == 0) return;
-    
+
     stringVector singleVarName;
     intVector    singleZonePortion;
     doubleVector singleLowerBound;
     doubleVector singleUpperBound;
     stringVector singleBoundsRange;
-    
+
     if (listedVarNames.size() == 0)
     {
         singleVarName.push_back(std::string("default"));
         SetListedVarNames(singleVarName);
     }
-        
+
     if (zonePortions.size() == 0)
     {
         singleZonePortion.push_back((int)PartOfZone);
         SetZonePortions(singleZonePortion);
     }
-        
+
     if (lowerBounds.size() == 0)
     {
         singleLowerBound.push_back(-1e+37);
         SetLowerBounds(singleLowerBound);
     }
-        
+
     if (upperBounds.size() == 0)
     {
         singleUpperBound.push_back(+1e+37);
@@ -91,7 +91,7 @@ Definition:
 // Creation:   Tue Mar  7 13:25:00 PST 2006
 //
 // Modifications:
-//   
+//
 //   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
 //   Now accommodates an empty list of threshold variables.
 //
@@ -107,7 +107,7 @@ bool
 ThresholdOpAttributes::AttributesAreConsistent() const
 {
     size_t varListSize = listedVarNames.size();
-    
+
     if ((zonePortions.size() != varListSize) ||
         (lowerBounds.size()  != varListSize) ||
         (upperBounds.size()  != varListSize) ||
@@ -115,7 +115,7 @@ ThresholdOpAttributes::AttributesAreConsistent() const
     {
         return false;
     }
-    
+
     return true;
 }
 
@@ -137,7 +137,7 @@ Definition:
 //
 //   Kevin Griffin, Wed Feb 15 11:50:13 PDT 2017
 //   Added boundsRange
-//   
+//
 // ****************************************************************************
 #include <DebugStream.h>
 void
@@ -150,7 +150,7 @@ ThresholdOpAttributes::ForceAttributeConsistency()
                        ( lowerBounds.size() == varListSize) &&
                        ( upperBounds.size() == varListSize) &&
                        ( boundsRange.size() == varListSize));
-                       
+
     if (!consistent)
     {
         if (zonePortions.size() > varListSize) zonePortions.resize(varListSize);
@@ -176,13 +176,13 @@ ThresholdOpAttributes::ForceAttributeConsistency()
         if (lowerBounds[varNum] > upperBounds[varNum])
         {
             consistent = false;
-                
+
             boundValue          = lowerBounds[varNum];
             lowerBounds[varNum] = upperBounds[varNum];
             upperBounds[varNum] = boundValue;
         }
     }
-    
+
     if (!consistent && (varListSize > 0))
     {
         if (defaultVarName == std::string("default"))
@@ -210,7 +210,7 @@ Definition:
 // Creation:   Tue Mar  7 13:25:00 PST 2006
 //
 // Modifications:
-//   
+//
 //   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
 //   Deletes default variable from threshold variable list if not scalar.
 //
@@ -239,9 +239,9 @@ ThresholdOpAttributes::SwitchDefaultVariableNameToTrueName()
             if (listedVarName == std::string("default")) break;
             if (listedVarName == defaultVarName) break;
         }
-        
+
         changedTheList = false;
-    
+
         if (varPosition < listedVarNames.size())
         {
             if (listedVarName == std::string("default"))
