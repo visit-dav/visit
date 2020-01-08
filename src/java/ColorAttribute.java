@@ -17,7 +17,7 @@ package llnl.visit;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class ColorAttribute extends AttributeSubject
@@ -147,25 +147,25 @@ public class ColorAttribute extends AttributeSubject
     }
 
     public int Red()
-    { 
+    {
        int mask = 0xff;
        return mask & color[0];
     }
 
     public int Green()
-    { 
+    {
        int mask = 0xff;
        return mask & color[1];
     }
 
     public int Blue()
-    { 
+    {
        int mask = 0xff;
        return mask & color[2];
     }
 
     public int Alpha()
-    { 
+    {
        int mask = 0xff;
        return mask & color[3];
     }

@@ -21,7 +21,7 @@ import llnl.visit.ColorAttribute;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class TensorAttributes extends AttributeSubject implements Plugin

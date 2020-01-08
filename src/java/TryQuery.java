@@ -14,7 +14,7 @@ import llnl.visit.QueryAttributes;
 // Purpose:
 //   This example program does a plot and queries some values in it.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Oct 1 12:51:29 PDT 2002

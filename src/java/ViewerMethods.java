@@ -26,7 +26,7 @@ public class ViewerMethods
     }
 
     //
-    // Map function calls to ViewerRPC calls. The order is the same as in 
+    // Map function calls to ViewerRPC calls. The order is the same as in
     // ViewerMethods.C
     //
 
@@ -43,7 +43,7 @@ public class ViewerMethods
     }
 
     /**
-     * Tells the viewer to detach this client. This can be useful when you have 
+     * Tells the viewer to detach this client. This can be useful when you have
      * multiple clients attached to the same viewer and this one wants to detach
      * itself while not disturbing the other clients.
      *
@@ -199,7 +199,7 @@ public class ViewerMethods
     }
 
     /**
-     * Tells the viewer to tell the metadata server to connect back to this client. A 
+     * Tells the viewer to tell the metadata server to connect back to this client. A
      * Metadata server browses remote file systems and opens files to get their metadata.
      *
      * NOTE: This method is not fully supported since the Java client has no MDServerProxy.
@@ -259,7 +259,7 @@ public class ViewerMethods
     }
 
     /**
-     * Opens a database at a given time state, with the opportunity for 
+     * Opens a database at a given time state, with the opportunity for
      * setting additional options related to the addition of default plots
      * or a forced file type.
      *
@@ -348,7 +348,7 @@ public class ViewerMethods
     /**
      * Reopens a database that has been opened before, adding new time states if
      * they exist and causing all plots to be regenerated using the new data.
-     * This method can be useful when you overwrite a database that VisIt was 
+     * This method can be useful when you overwrite a database that VisIt was
      * plotting and you want to plot the new data.
      *
      * @param database The name of the database to open -- a filename. If the
@@ -413,8 +413,8 @@ public class ViewerMethods
     /**
      * Requests metadata for the specified database at a particular time state.
      * You can use the metadata to determine information such as which variables
-     * are in the database. The metadata comes back in the avtDatabaseMetaData 
-     * object in ViewerState.This method does not disrupt the active database. 
+     * are in the database. The metadata comes back in the avtDatabaseMetaData
+     * object in ViewerState.This method does not disrupt the active database.
      *
      * @param database The name of the database to open -- a filename. If the
      *                 file exists on a remote computer, then you can supply a
@@ -640,7 +640,7 @@ public class ViewerMethods
     }
 
     /**
-     * Tell VisIt to construct a data binning, which is often a 
+     * Tell VisIt to construct a data binning, which is often a
      * statistical variable derived from your data after binning.
      * You should first set the options in the ConstructDataBinningAttributes in ViewerState
      * before calling this method.
@@ -667,7 +667,7 @@ public class ViewerMethods
      * that have processed many complex requests.
      *
      * @param hostName The name of the computer where the compute engine is running.
-     * @param simName The name of the simulation. If you're not running a 
+     * @param simName The name of the simulation. If you're not running a
      *                simulation, pass "".
      * @return true on success; false otherwise.
      */
@@ -695,7 +695,7 @@ public class ViewerMethods
     }
 
     /**
-     * Tell VisIt to send the database plugin information for the specified 
+     * Tell VisIt to send the database plugin information for the specified
      * host. This method lets us determine which database plugins are available
      * various computers.
      *
@@ -712,7 +712,7 @@ public class ViewerMethods
     }
 
     /**
-     * Create a database correlation, which is a mapping that relates 
+     * Create a database correlation, which is a mapping that relates
      * several time-varying databases so they can be controlled by a single
      * time slider. Creating a database correlation causes a new time slider
      * to be created.
@@ -771,7 +771,7 @@ public class ViewerMethods
     }
 
     /**
-     * Tells VisIt's viewer to launch a compute engine on the specified host using 
+     * Tells VisIt's viewer to launch a compute engine on the specified host using
      * the designated command line arguments that affect how the compute engine
      * is launched.
      *
@@ -811,7 +811,7 @@ public class ViewerMethods
 
     /**
      * Interrupt the compute engine that is processing data for a plot. This stops
-     * the compute engine from completing its work and the plot is put into the 
+     * the compute engine from completing its work and the plot is put into the
      * error state. DrawPlots() must be called for the plot to be processed again.
      *
      */
@@ -821,7 +821,7 @@ public class ViewerMethods
     }
 
     /**
-     * Tells VisIt's viewer to launch a metadata server on the specified host using 
+     * Tells VisIt's viewer to launch a metadata server on the specified host using
      * the designated command line arguments that affect how the metadata server
      * is launched. A metadata server is used to browse file systems and return
      * file metadata.
@@ -872,7 +872,7 @@ public class ViewerMethods
 
     /**
      * Animate through the time states for the visualization of a time-varying database
-     * in reverse order. Only plots that are affected by the active time slider 
+     * in reverse order. Only plots that are affected by the active time slider
      * are animated.
      *
      * @return true on success; false otherwise.
@@ -940,7 +940,7 @@ public class ViewerMethods
     }
 
     /**
-     * Set the name of the active time slider. This is the name of a database 
+     * Set the name of the active time slider. This is the name of a database
      * correlation, which is often a host-and-path qualified database name.
      * The valid time slider names for a visualization window are given in the
      * timeSliders member in the WindowInformation state object in ViewerState.
@@ -957,7 +957,7 @@ public class ViewerMethods
     }
 
     /**
-     * Save the active visualization window as an image file or in some cases as 
+     * Save the active visualization window as an image file or in some cases as
      * a geometry file. You can set window-saving options by calling SetSaveWindowAttributes()
      * before calling SaveWindow().
      *
@@ -971,7 +971,7 @@ public class ViewerMethods
     }
 
     /**
-     * Prints the active visualization window. You can set printer options beforehand 
+     * Prints the active visualization window. You can set printer options beforehand
      * like this:
      *
      * PrinterAttributes atts = proxy.GetViewerState().GetPrinterAttributes();
@@ -1080,7 +1080,7 @@ public class ViewerMethods
      * Hide the toolbars in a visualization window.
      *
      * @param forAllWindows True to hide the toolbars in all visualization windows.
-     *                      false to hide the toolbars only in the active 
+     *                      false to hide the toolbars only in the active
      *                      visualization window.
      * @return true on success; false otherwise.
      */
@@ -1098,7 +1098,7 @@ public class ViewerMethods
      * Show the toolbars in a visualization window.
      *
      * @param forAllWindows True to show the toolbars in all visualization windows.
-     *                      false to show the toolbars only in the active 
+     *                      false to show the toolbars only in the active
      *                      visualization window.
      * @return true on success; false otherwise.
      */
@@ -1118,7 +1118,7 @@ public class ViewerMethods
      * @param type The index of the plot type to be created.
      * @param var The variable to be plotted. The variable must exist in the active
      *            database and it must be a type that is compatible with the plot
-     *            type (i.e. Pseudocolor plots get scalar variables -- not mesh 
+     *            type (i.e. Pseudocolor plots get scalar variables -- not mesh
      *            variables).
      * @return true on success; false otherwise.
      */
@@ -1137,7 +1137,7 @@ public class ViewerMethods
      * @param plotName The name of the plot type to be created.
      * @param var The variable to be plotted. The variable must exist in the active
      *            database and it must be a type that is compatible with the plot
-     *            type (i.e. Pseudocolor plots get scalar variables -- not mesh 
+     *            type (i.e. Pseudocolor plots get scalar variables -- not mesh
      *            variables).
      * @return true on success; false otherwise.
      */
@@ -1266,7 +1266,7 @@ public class ViewerMethods
         GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPLOTFOLLOWSTIMERPC);
         GetViewerState().GetViewerRPC().SetBoolFlag(val);
         GetViewerState().GetViewerRPC().Notify();
-        return Synchronize();    
+        return Synchronize();
     }
 
     /**
@@ -1302,7 +1302,7 @@ public class ViewerMethods
     /**
      * Makes a list of plots in the plot list active.
      *
-     * @param ids Vector of Integer objects containing the ids of the new active 
+     * @param ids Vector of Integer objects containing the ids of the new active
      *            plots in the plot list. Plot list indices begin at 0.
      * @return true on success; false otherwise.
      */
@@ -1319,13 +1319,13 @@ public class ViewerMethods
      * Makes a list of plots in the plot list active while also setting the
      * active operators for each plot and also setting which plots are expanded.
      *
-     * @param activePlots Vector of Integer objects containing the ids of the 
+     * @param activePlots Vector of Integer objects containing the ids of the
      *                    new active plots in the plot list. Plot list indices
      *                    begin at 0.
      * @param activeOperators Vector of Integer objects containing the ids of the
      *                        active operators for all plots in the plot list.
      * @param expandedPlots Vector of Bool objects (1 for each plot in the plot
-     *                      list) each containing a flag indicating whether a 
+     *                      list) each containing a flag indicating whether a
      *                      plot is expanded.
      * @return true on success; false otherwise.
      */
@@ -1462,7 +1462,7 @@ public class ViewerMethods
     /**
      * Adds an operator to the active plots.
      *
-     * @param oper Type of the operator to be added, which is an index in the 
+     * @param oper Type of the operator to be added, which is an index in the
      *             operator plugin manager.
      * @return true on success; false otherwise.
      */
@@ -1478,7 +1478,7 @@ public class ViewerMethods
     /**
      * Adds an operator to the active plots.
      *
-     * @param oper Type of the operator to be added, which is an index in the 
+     * @param oper Type of the operator to be added, which is an index in the
      *             operator plugin manager.
      * @param fromDefault True to initilize the operator from the default operator
      *                    attributes.
@@ -1512,7 +1512,7 @@ public class ViewerMethods
     /**
      * Adds an operator to the active plots.
      *
-     * @param oper Type of the operator to be added, which is an index in the 
+     * @param oper Type of the operator to be added, which is an index in the
      *             operator plugin manager.
      * @return true on success; false otherwise.
      */
@@ -1595,7 +1595,7 @@ public class ViewerMethods
      * of that plot type will be initialized with the attributes that have been
      * set for it. The plot attributes state object must have been set before calling
      * this method.
-     * 
+     *
      * Example:<br>
      *   <p class="example">
      *   int type = proxy.GetPlotIndex("Pseudocolor");<br>
@@ -1616,9 +1616,9 @@ public class ViewerMethods
     }
 
     /**
-     * Sets the plot options for the specified plot type. The plot attributes state 
+     * Sets the plot options for the specified plot type. The plot attributes state
      * object must have been set before calling this method.
-     * 
+     *
      * Example:<br>
      *   <p class="example">
      *   int type = proxy.GetPlotIndex("Pseudocolor");<br>
@@ -1642,7 +1642,7 @@ public class ViewerMethods
         }
         else
         {
-            proxy.PrintMessage("SetPlotOptions: " + type + 
+            proxy.PrintMessage("SetPlotOptions: " + type +
                                " is an invalid plot index.");
         }
 
@@ -1650,9 +1650,9 @@ public class ViewerMethods
     }
 
     /**
-     * Sets the plot options for the specified plot type. The plot attributes state 
+     * Sets the plot options for the specified plot type. The plot attributes state
      * object must have been set before calling this method.
-     * 
+     *
      * Example:<br>
      *   <p class="example">
      *   int type = proxy.GetPlotIndex("Pseudocolor");<br>
@@ -1672,7 +1672,7 @@ public class ViewerMethods
     /**
      * Resets the active plot's attributes to the default settings for the
      * plot's type.
-     * 
+     *
      * @param type Type of the plot for which we're resetting plot options (an index)
      * @return true on success; false otherwise.
      */
@@ -1689,7 +1689,7 @@ public class ViewerMethods
      * of that operator type will be initialized with the attributes that have been
      * set for it. The operator attributes state object must have been set before calling
      * this method.
-     * 
+     *
      * Example:<br>
      *   <p class="example">
      *   int type = proxy.GetOperatorIndex("Slice");<br>
@@ -1710,9 +1710,9 @@ public class ViewerMethods
     }
 
     /**
-     * Sets the operator options for the specified operator type. The operator 
+     * Sets the operator options for the specified operator type. The operator
      * attributes state object must have been set before calling this method.
-     * 
+     *
      * Example:<br>
      *   <p class="example">
      *   int type = proxy.GetOperatorIndex("Slice");<br>
@@ -1736,7 +1736,7 @@ public class ViewerMethods
         }
         else
         {
-            proxy.PrintMessage("SetOperatorOptions: " + type + 
+            proxy.PrintMessage("SetOperatorOptions: " + type +
                                " is an invalid operator index.");
         }
 
@@ -1744,9 +1744,9 @@ public class ViewerMethods
     }
 
     /**
-     * Sets the operator options for the specified operator type. The operator 
+     * Sets the operator options for the specified operator type. The operator
      * attributes state object must have been set before calling this method.
-     * 
+     *
      * Example:<br>
      *   <p class="example">
      *   int type = proxy.GetOperatorIndex("Slice");<br>
@@ -1766,7 +1766,7 @@ public class ViewerMethods
     /**
      * Resets the operator attributes for the active plot to the default settings
      * for the operator's type.
-     * 
+     *
      * @param type Type of the operator for which we're resetting operator options
      *             (an index)
      * @return true on success; false otherwise.
@@ -1820,7 +1820,7 @@ public class ViewerMethods
 
     /**
      * Tell VisIt to use the current annotation attributes as the default annotation
-     * attributes, which will be the defaults for new visualization windows or the 
+     * attributes, which will be the defaults for new visualization windows or the
      * saved defaults when settings are saved.
      *
      * Example:<br>
@@ -1922,7 +1922,7 @@ public class ViewerMethods
 
     /**
      * Tell VisIt to apply the annotation object attributes that were previously sent.
-     * Annotation object options set properties for user-created annotations such as 
+     * Annotation object options set properties for user-created annotations such as
      * time sliders, text, etc.
      *
      * Example:<br>
@@ -1943,7 +1943,7 @@ public class ViewerMethods
     }
 
     /**
-     * Tell VisIt to apply the annotation object attributes that were previously sent as 
+     * Tell VisIt to apply the annotation object attributes that were previously sent as
      * the default annotation object list, which will be used for future visualization windows
      * and for saving settings.
      *
@@ -1970,7 +1970,7 @@ public class ViewerMethods
 
     /**
      * Tell VisIt to apply the material attributes that were previously sent.
-     * Material attributes control material interface reconstruction, which is 
+     * Material attributes control material interface reconstruction, which is
      * the process of recreating material boundaries from material mass fractions
      * that some databases provide.
      *
@@ -2016,7 +2016,7 @@ public class ViewerMethods
     }
 
     /**
-     * Tell VisIt to apply the mesh management attributes that were previously sent. 
+     * Tell VisIt to apply the mesh management attributes that were previously sent.
      * Mesh management attributes control algorithms such as CSG discretization.
      *
      * Example:<br>
@@ -2036,8 +2036,8 @@ public class ViewerMethods
     }
 
     /**
-     * Tell VisIt to apply the mesh management attributes that were previously 
-     * sent as the default mesh management options, which will be used when 
+     * Tell VisIt to apply the mesh management attributes that were previously
+     * sent as the default mesh management options, which will be used when
      * saving settings.
      *
      * @return true on success; false otherwise.
@@ -2172,7 +2172,7 @@ public class ViewerMethods
     /**
      * Set the active continuous color table, which is the color table to be used
      * in plots such as Pseudocolor and Surface when their plot attributes are set
-     * to use the "default" color table. A continuous color table is one that 
+     * to use the "default" color table. A continuous color table is one that
      * interpolates between the small set of colors that make up its definition to
      * create smooth transitions between colors.
      *
@@ -2225,8 +2225,8 @@ public class ViewerMethods
     /**
      * Delete the named color table.
      *
-     * @param colorTableName The name of the color table to delete. The name must 
-     *                       be present in the names stored in the ColorTableAttributes 
+     * @param colorTableName The name of the color table to delete. The name must
+     *                       be present in the names stored in the ColorTableAttributes
      *                       state object.
      * @return true on success; false otherwise.
      */
@@ -2266,8 +2266,8 @@ public class ViewerMethods
      *    atts.Notify();<br>
      *    proxy.GetViewerMethods().UpdateColorTable("hot");</p>
      *
-     * @param colorTableName The name of the color table to update. The name must 
-     *                       be present in the names stored in the ColorTableAttributes 
+     * @param colorTableName The name of the color table to update. The name must
+     *                       be present in the names stored in the ColorTableAttributes
      *                       state object.
      * @return true on success; false otherwise.
      */
@@ -2285,8 +2285,8 @@ public class ViewerMethods
      * When color table (*.ct) files are located in the user's .visit directory,
      * the color tables are loaded when VisIt starts up.
      *
-     * @param colorTableName The name of the color table to update. The name must 
-     *                       be present in the names stored in the ColorTableAttributes 
+     * @param colorTableName The name of the color table to update. The name must
+     *                       be present in the names stored in the ColorTableAttributes
      *                       state object.
      * @return true on success; false otherwise.
      */
@@ -2311,7 +2311,7 @@ public class ViewerMethods
     }
 
     /**
-     * Applies the default file opening options which were previously sent. The 
+     * Applies the default file opening options which were previously sent. The
      * file opening options allow the user to provide options that are used
      * by database plugins when opening files.
      *
@@ -2431,7 +2431,7 @@ public class ViewerMethods
     }
 
     /**
-     * Sets the center of rotation, which is the point about which VisIt rotates 
+     * Sets the center of rotation, which is the point about which VisIt rotates
      * plots when you interactively rotate using the mouse. This option is especially
      * useful when you have zoomed into a small area and want to rotate the plots.
      *
@@ -2453,8 +2453,8 @@ public class ViewerMethods
     }
 
     /**
-     * Lets the user interactively choose a center of rotation using pick. The center 
-     * of rotation is the point about which VisIt rotates plots when you interactively 
+     * Lets the user interactively choose a center of rotation using pick. The center
+     * of rotation is the point about which VisIt rotates plots when you interactively
      * rotate using the mouse
      *
      * @return true on success; false otherwise.
@@ -2468,7 +2468,7 @@ public class ViewerMethods
     }
 
     /**
-     * Sets the center of rotation as the 3D point that is under the 2D screen 
+     * Sets the center of rotation as the 3D point that is under the 2D screen
      * coordinate that specifies a location within the visualization window.
      *
      * @param sx The x location in the visualization window
@@ -2490,7 +2490,7 @@ public class ViewerMethods
 
     /**
      * Applies the view axis array view object which was previously sent. This
-     * type of view is strictly for controlling the view in the 
+     * type of view is strictly for controlling the view in the
      * ParallelCoordinates plot.
      *
      * Example:<br>
@@ -2601,7 +2601,7 @@ public class ViewerMethods
     }
 
     /**
-     * Recalculates a suitable default view for the visualization window and 
+     * Recalculates a suitable default view for the visualization window and
      * applies that view.
      *
      * @return true on success; false otherwise.
@@ -2664,7 +2664,7 @@ public class ViewerMethods
     }
 
     /**
-     * Toggles full frame mode, which is a 1D/2D window mode that exagerrates scale 
+     * Toggles full frame mode, which is a 1D/2D window mode that exagerrates scale
      * in one or more dimensions to ensure that plots take up most of the visualization
      * window viewport.
      *
@@ -2717,8 +2717,8 @@ public class ViewerMethods
 
     /**
      * Toggles the lock time mode. When visualization windows have their time sliders
-     * locked, changing the time slider in one window will cause other time-locked 
-     * windows that have compatible database correlations to also update in time. 
+     * locked, changing the time slider in one window will cause other time-locked
+     * windows that have compatible database correlations to also update in time.
      *
      * @return true on success; false otherwise.
      */
@@ -2738,7 +2738,7 @@ public class ViewerMethods
     {
         GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_TURNOFFALLLOCKSRPC);
         GetViewerState().GetViewerRPC().Notify();
-        return Synchronize();    
+        return Synchronize();
     }
 
     /**
@@ -2771,7 +2771,7 @@ public class ViewerMethods
     }
 
     /**
-     * Toggles camera view mode, which indicates that the camera should be copied 
+     * Toggles camera view mode, which indicates that the camera should be copied
      * into the view during keyframe animations.
      *
      * @return true on success; false otherwise.
@@ -2892,10 +2892,10 @@ public class ViewerMethods
     }
 
     /**
-     * Sets the SIL restriction that was previously sent. A SIL is a data structure 
+     * Sets the SIL restriction that was previously sent. A SIL is a data structure
      * that describes how a dataset is put together, with sets as leaves, A SIL restriction
-     * is a SIL that is augmented with a list of boolean values indicating which sets 
-     * are on and which are off. VisIt uses the SIL restriction to turn off domains, 
+     * is a SIL that is augmented with a list of boolean values indicating which sets
+     * are on and which are off. VisIt uses the SIL restriction to turn off domains,
      * materials, etc. Note -- The SIL restriction would have to be sent to the viewer
      * in its compacted form since no avtSILRestriction object yet exists in the Java API.
      *
@@ -2929,7 +2929,7 @@ public class ViewerMethods
     }
 
     /**
-     * Applies the appearance attributes that were previously sent. This method 
+     * Applies the appearance attributes that were previously sent. This method
      * is called after you make changes to the appearance attributes, an object
      * that allows you to set GUI properties such as color and font.
      *
@@ -3168,7 +3168,7 @@ public class ViewerMethods
     }
 
     /**
-     * Applies the query over time attributes that were previously sent. The 
+     * Applies the query over time attributes that were previously sent. The
      * query over time attributes affect VisIt's behavior when performing
      * queries that can be made over time to yield curves, etc.
      *
@@ -3204,9 +3204,9 @@ public class ViewerMethods
     }
 
     /**
-     * Sets whether VisIt should treat all time-varying databases as having 
+     * Sets whether VisIt should treat all time-varying databases as having
      * dynamic metadata. This option forces the variable lists to be refreshed
-     * each time the user changes the time state for the active database. This 
+     * each time the user changes the time state for the active database. This
      * option can often have a negative performance impact but it allows you
      * to acquire variables that appear later in the file sequence that makes
      * up the database.
@@ -3259,8 +3259,8 @@ public class ViewerMethods
     }
 
     /**
-     * Applies the interactor attributes that were previously sent. The 
-     * interactor attributes govern the behavior of VisIt's navigation 
+     * Applies the interactor attributes that were previously sent. The
+     * interactor attributes govern the behavior of VisIt's navigation
      * and zoom window modes.
      *
      * <br>Examples:<br>
@@ -3364,7 +3364,7 @@ public class ViewerMethods
     }
 
     /**
-     * Sets the format string used for floating point numbers when creating 
+     * Sets the format string used for floating point numbers when creating
      * query output strings. This method allows you to control the precision.
      *
      * @param format A valid C-style format string for floating point numbers.
@@ -3450,7 +3450,7 @@ public class ViewerMethods
 
 
     /**
-     * Sets whether VisIt will automatically remove duplicate nodes from 
+     * Sets whether VisIt will automatically remove duplicate nodes from
      * fully disconnected unstructured grids.
      *
      * @param flag  true means that duplicate nodes will be removed
@@ -3465,7 +3465,7 @@ public class ViewerMethods
     }
 
     /**
-     * Sets whether VisIt will will suppress messages that would ordinarily 
+     * Sets whether VisIt will will suppress messages that would ordinarily
      * be sent to clients.
      *
      * @param flag true means that the messages will be suppressed and remain suppressed

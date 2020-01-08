@@ -20,7 +20,7 @@ import llnl.visit.Plugin;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class DualMeshAttributes extends AttributeSubject implements Plugin

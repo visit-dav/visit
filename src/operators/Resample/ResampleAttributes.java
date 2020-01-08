@@ -20,7 +20,7 @@ import llnl.visit.Plugin;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class ResampleAttributes extends AttributeSubject implements Plugin

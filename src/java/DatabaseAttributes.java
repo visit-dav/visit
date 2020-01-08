@@ -17,7 +17,7 @@ package llnl.visit;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class DatabaseAttributes extends AttributeSubject

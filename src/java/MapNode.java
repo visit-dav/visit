@@ -18,7 +18,7 @@ import java.util.Vector;
 // Creation:   Thu Feb  2 10:26:33 PST 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class MapNode extends Variant
@@ -123,7 +123,7 @@ public class MapNode extends Variant
 
                 pair.key = buf.ReadString();
                 pair.value.Read(buf);
-                
+
                 entries.addElement(pair);
             }
         }

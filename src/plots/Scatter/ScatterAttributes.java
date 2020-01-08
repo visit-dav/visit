@@ -21,7 +21,7 @@ import llnl.visit.ColorAttribute;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class ScatterAttributes extends AttributeSubject implements Plugin

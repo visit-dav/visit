@@ -16,7 +16,7 @@ import java.io.IOException;
 //   viewer. When the viewer sends a state object to Java, Xfer makes sure
 //   the state object reads itself and that it notifies all of its observers.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 8 12:38:47 PDT 2002

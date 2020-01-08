@@ -12,10 +12,10 @@ import java.util.Vector;
 // Class: MakeHostProfile
 //
 // Purpose:
-//   This class implements an example program that shows how to use the 
+//   This class implements an example program that shows how to use the
 //   ViewerProxy class and control VisIt's viewer from Java.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 10 13:40:40 PDT 2009
@@ -47,7 +47,7 @@ public class MakeHostProfile extends RunViewer
         LaunchProfile example = new LaunchProfile();
         example.SetProfileName("example");
         example.SetActive(true);
-        
+
         // Create a new machine profile object and the serial launch profile.
         MachineProfile profile = new MachineProfile();
         profile.SetHost(host);
@@ -62,7 +62,7 @@ public class MakeHostProfile extends RunViewer
         viewer.GetViewerState().GetHostProfileList().ClearMachines();
         viewer.GetViewerState().GetHostProfileList().AddMachines(profile);
         viewer.GetViewerState().GetHostProfileList().Notify();
-        System.out.println("HostProfileList = \n" + 
+        System.out.println("HostProfileList = \n" +
             viewer.GetViewerState().GetHostProfileList().toString(""));
 
         // Do a plot of the remote data.
