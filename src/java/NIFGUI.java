@@ -24,7 +24,7 @@ import llnl.visit.plots.CurveAttributes;
 //   create images that can be imported as GUI elements into a Java
 //   application.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Apr 8 08:51:58 PDT 2005
@@ -135,7 +135,7 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
 
     //
     // Creates the menu bar options.
-    // 
+    //
     public JMenuBar createMenuBar()
     {
         JMenuBar menuBar;
@@ -464,7 +464,7 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
             viewer.GetViewerMethods().SetActiveWindow(2);
 
             // Set the Curve plot attributes
-            CurveAttributes curveAtts = (CurveAttributes)viewer.GetPlotAttributes("Curve"); 
+            CurveAttributes curveAtts = (CurveAttributes)viewer.GetPlotAttributes("Curve");
             curveAtts.SetLineWidth(2);
             curveAtts.SetShowPoints(true);
             curveAtts.SetCurveColor(new ColorAttribute(0,0,255,255));
@@ -476,7 +476,7 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
             // Delete all of the plots.
             addOutput("Could not get the Curve plot attributes.");
         }
- 
+
         viewer.GetViewerMethods().DrawPlots();
     }
 

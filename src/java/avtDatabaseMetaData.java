@@ -20,7 +20,7 @@ import java.lang.Double;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class avtDatabaseMetaData extends AttributeSubject

@@ -22,7 +22,7 @@ import java.util.Vector;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class ExtractPointFunction2DAttributes extends AttributeSubject implements Plugin

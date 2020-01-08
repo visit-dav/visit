@@ -23,7 +23,7 @@ import java.util.Vector;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class BoundaryAttributes extends AttributeSubject implements Plugin

@@ -12,10 +12,10 @@ import llnl.visit.AnnotationAttributes;
 // Class: RunViewer
 //
 // Purpose:
-//   This class implements an example program that shows how to use the 
+//   This class implements an example program that shows how to use the
 //   ViewerProxy class and control VisIt's viewer from Java.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 8 12:47:31 PDT 2002

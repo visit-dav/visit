@@ -9,10 +9,10 @@ import java.util.Vector;
 // Class: OpenGUI
 //
 // Purpose:
-//   This class implements an example program that shows how to use the 
+//   This class implements an example program that shows how to use the
 //   ViewerProxy class and control VisIt's viewer from Java.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 17 13:40:40 PDT 2009

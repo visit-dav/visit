@@ -21,7 +21,7 @@ import llnl.visit.FontAttributes;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class LabelAttributes extends AttributeSubject implements Plugin

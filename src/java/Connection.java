@@ -16,10 +16,10 @@ import java.net.UnknownHostException;
 // Class: Connection
 //
 // Purpose:
-//   This class sets up socket communication with VisIt's viewer and makes 
+//   This class sets up socket communication with VisIt's viewer and makes
 //   sure that the viewer is compatible.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 8 12:53:55 PDT 2002
@@ -113,7 +113,7 @@ class Connection
         }
 
         serverSocketCreated = false;
-        socketsCreated = false;   
+        socketsCreated = false;
     }
 
     private boolean OrderConnections() throws IOException

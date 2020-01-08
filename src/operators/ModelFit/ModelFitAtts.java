@@ -24,7 +24,7 @@ import java.lang.Byte;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class ModelFitAtts extends AttributeSubject implements Plugin
