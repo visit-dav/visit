@@ -47,6 +47,9 @@
 #  Alister Maguire, Tue Oct 15 10:09:02 PDT 2019
 #  Copy over the makemili_driver to the exe directory. 
 #
+#  Eric Brugger, Thu Dec 19 14:57:28 PST 2019
+#  I added mcurvit.
+#
 #****************************************************************************
 
 #-----------------------------------------------------------------------------
@@ -59,6 +62,7 @@ SET(VISIT_BIN_FILES
         frontendlauncher
         frontendlauncher.py
         makemili_driver
+        mcurvit
         mkgrdbl
         mpeg2encode
         regen-ajp

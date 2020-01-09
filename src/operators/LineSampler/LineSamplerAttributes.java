@@ -22,7 +22,7 @@ import java.util.Vector;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class LineSamplerAttributes extends AttributeSubject implements Plugin

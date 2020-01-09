@@ -23,7 +23,7 @@ import llnl.visit.ColorAttribute;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class ParallelCoordinatesAttributes extends AttributeSubject implements Plugin

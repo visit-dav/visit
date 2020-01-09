@@ -22,7 +22,7 @@ Definition:
 //
 // ****************************************************************************
 
-avtTensorMetaData::avtTensorMetaData(std::string n, std::string mn, 
+avtTensorMetaData::avtTensorMetaData(std::string n, std::string mn,
                                      avtCentering c, int vd)
     : avtVarMetaData(avtTensorMetaData::TmfsStruct, n, mn, c)
 {

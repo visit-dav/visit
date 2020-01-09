@@ -21,7 +21,7 @@ import java.lang.Double;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class MovieAttributes extends AttributeSubject

@@ -43,12 +43,12 @@ Definition:
 //
 //  Purpose: constructor that includes material colors
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   July 12, 2006
 //
 // ****************************************************************************
 
-avtMaterialMetaData::avtMaterialMetaData(const std::string &n, 
+avtMaterialMetaData::avtMaterialMetaData(const std::string &n,
     const std::string &mesh, int nm, const stringVector &names,
     const stringVector &colors)
     : avtBaseVarMetaData(avtMaterialMetaData::TmfsStruct, n, mesh)
@@ -65,13 +65,13 @@ Definition:
 // ****************************************************************************
 //  Method: avtMaterialMetaData constructor
 //
-//  Purpose: constructor that uses only material count 
+//  Purpose: constructor that uses only material count
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   Wed May 13 14:05:26 PDT 2009
 // ****************************************************************************
 
-avtMaterialMetaData::avtMaterialMetaData(const std::string &n, 
+avtMaterialMetaData::avtMaterialMetaData(const std::string &n,
     const std::string &mesh, int nm)
     : avtBaseVarMetaData(avtMaterialMetaData::TmfsStruct, n, mesh)
 {

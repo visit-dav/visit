@@ -10,13 +10,13 @@ package llnl.visit;
 // Purpose:
 //   This class is just for storage inside of MapNode.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb  2 11:52:44 PST 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class MapNodePair extends java.lang.Object

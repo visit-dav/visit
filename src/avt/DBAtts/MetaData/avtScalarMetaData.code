@@ -27,7 +27,7 @@ Definition:
 //    Brad Whitlock, Tue Jul 20 13:44:42 PST 2004
 //    Added units.
 //
-//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004
 //    Initialized treatAsASCII.
 //
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
@@ -42,7 +42,7 @@ Definition:
 //
 // ****************************************************************************
 
-avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn, 
+avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
                                      avtCentering c)
     : avtVarMetaData(avtScalarMetaData::TmfsStruct, n, mn, c)
 {
@@ -72,7 +72,7 @@ Definition:
 //    Brad Whitlock, Tue Jul 20 13:45:12 PST 2004
 //    Added units.
 //
-//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004
 //    Initialized treatAsASCII.
 //
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
@@ -114,7 +114,7 @@ Definition:
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Print out validVariable.
 //
-//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004
 //    Print out treatAsASCII.
 //
 //    Brad Whitlock, Tue Jul 20 13:47:04 PST 2004
@@ -192,7 +192,7 @@ void
 avtScalarMetaData::AddEnumGraphEdge(int head, int tail, std::string edgeName)
 {
     enumGraphEdges.push_back(head);
-    enumGraphEdges.push_back(tail);   
+    enumGraphEdges.push_back(tail);
 
     // No edge name so default index is -1.
     if( edgeName.empty() )
@@ -210,7 +210,7 @@ avtScalarMetaData::AddEnumGraphEdge(int head, int tail, std::string edgeName)
         }
 
         enumGraphEdgeNameIndexs.push_back(enumGraphEdgeNameMap[edgeName]);
-    }                
+    }
 }
 
 Function: AddEnumNameValue
@@ -406,7 +406,7 @@ Definition:
 // ****************************************************************************
 //  Function: ComboValFromDigits
 //
-//  Purpose: Internal function to compute NChooseR value from list of 
+//  Purpose: Internal function to compute NChooseR value from list of
 //  ids (digits representing enum set membership)
 //
 //  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008

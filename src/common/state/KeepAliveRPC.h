@@ -14,7 +14,7 @@
 //   This is an RPC that is sent periodically to keep the sockets to remote
 //   computers alive.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 11 12:32:22 PDT 2004

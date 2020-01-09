@@ -4,14 +4,14 @@ Definition:
 // ****************************************************************************
 // Method: ColorControlPoint::ColorControlPoint
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the ColorControlPoint class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jun 12 16:51:24 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ColorControlPoint::ColorControlPoint(float pos, unsigned char r,

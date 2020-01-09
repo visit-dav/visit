@@ -21,7 +21,7 @@ class GaussianControlPoint;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API GaussianControlPointList : public AttributeSubject

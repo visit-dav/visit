@@ -30,7 +30,7 @@ typedef enum
 //   This class contains a tree structure that is the basis of the
 //   configuration file when it is in memory.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Sep 28 10:14:49 PDT 2000

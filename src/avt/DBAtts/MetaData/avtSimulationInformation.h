@@ -23,7 +23,7 @@ class avtSimulationCommandSpecification;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class DBATTS_API avtSimulationInformation : public AttributeSubject

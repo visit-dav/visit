@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                                avtTypes.C                                 //
-// ************************************************************************* //
+// ****************************************************************************
+//  avtTypes.C
+// ****************************************************************************
 
 #include <avtTypes.h>
 
@@ -19,11 +19,11 @@ const char *AUXILIARY_DATA_SPECIES = "SPECIES";
 const char *AUXILIARY_DATA_SPATIAL_EXTENTS = "SPATIAL_EXTENTS";
 const char *AUXILIARY_DATA_MIXED_VARIABLE = "MIXED_VARIABLE";
 const char *AUXILIARY_DATA_POST_GHOST_MIXED_VARIABLE = "POST_GHOST_MIXED_VARIABLE";
-const char *AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION 
+const char *AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION
                                                = "DOMAIN_BOUNDARY_INFORMATION";
-const char *AUXILIARY_DATA_STREAMING_GHOST_GENERATION 
+const char *AUXILIARY_DATA_STREAMING_GHOST_GENERATION
                                                =  "STREAMING_GHOST_GENERATION";
-const char *AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION 
+const char *AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION
                                                = "DOMAIN_NESTING_INFORMATION";
 const char * AUXILIARY_DATA_GLOBAL_NODE_IDS = "GLOBAL_NODE_IDS";
 const char * AUXILIARY_DATA_GLOBAL_ZONE_IDS = "GLOBAL_ZONE_IDS";
@@ -199,10 +199,10 @@ avtBackendTypeToString(avtBackendType v)
 // Function: GuessVarTypeFromNumDimsAndComps
 //
 // Purpose:
-//   Guesses the avt variable type from spatial dimensions and component count 
+//   Guesses the avt variable type from spatial dimensions and component count
 //
-// Programmer: Mark C. Miller 
-// Creation:  Tue May 18 15:31:37 PDT 2004 
+// Programmer: Mark C. Miller
+// Creation:  Tue May 18 15:31:37 PDT 2004
 //
 // ****************************************************************************
 avtVarType

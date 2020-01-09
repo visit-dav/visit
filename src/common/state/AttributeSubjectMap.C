@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                           AttributeSubjectMap.C                           //
-// ************************************************************************* //
+// **************************************************************************
+//  AttributeSubjectMap.C
+// **************************************************************************
 
 #include <AttributeSubject.h>
 #include <AttributeSubjectMap.h>
@@ -38,7 +38,7 @@ AttributeSubjectMap::AttributeSubjectMap()
 // ****************************************************************************
 // Method: AttributeSubjectMap::AttributeSubjectMap
 //
-// Purpose: 
+// Purpose:
 //   Copy constructor.
 //
 // Arguments:
@@ -48,7 +48,7 @@ AttributeSubjectMap::AttributeSubjectMap()
 // Creation:   Tue Dec 30 17:05:04 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AttributeSubjectMap::AttributeSubjectMap(const AttributeSubjectMap &obj)
@@ -99,7 +99,7 @@ AttributeSubjectMap::~AttributeSubjectMap()
 // ****************************************************************************
 // Method: AttributeSubjectMap::operator =
 //
-// Purpose: 
+// Purpose:
 //   Assignment operator.
 //
 // Arguments:
@@ -109,7 +109,7 @@ AttributeSubjectMap::~AttributeSubjectMap()
 // Creation:   Tue Dec 30 17:05:42 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -214,8 +214,8 @@ AttributeSubjectMap::SetAtts(const int index, const AttributeSubject *attr)
 //    index     The given index
 //    attr      The attribute subject to store.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   March 25, 2004 
+//  Programmer: Mark C. Miller
+//  Creation:   March 25, 2004
 //
 // ****************************************************************************
 
@@ -261,9 +261,9 @@ AttributeSubjectMap::SetAtts(const int index, const AttributeSubject *attr,
                              int &i0, int &i1)
 {
     int i;
- 
+
     for (i = 0; i < nIndices && indices[i] < index; ++i) ;
- 
+
     //
     // If the index matches an existing index exactly then replace
     // the attributes for it, otherwise insert it in the list.
@@ -418,10 +418,10 @@ AttributeSubjectMap::DeleteAtts(const int index, int &i0, int &i1)
     //
     int i;
     for (i = 0; i < nIndices && indices[i] < index; ++i) ;
- 
+
     //
     // If we found a match, then delete the attribute subject at
-    // the index and compress the list. 
+    // the index and compress the list.
     //
     if (i < nIndices && indices[i] == index)
     {
@@ -495,7 +495,7 @@ AttributeSubjectMap::MoveAtts(int oldIndex, int newIndex, int &i0, int &i1)
     //
     int i;
     for (i = 0; i < nIndices && indices[i] < oldIndex; ++i) ;
- 
+
     //
     // If we found a match, then delete the attribute subject at
     // the index, compress the list, and set the attributes at
@@ -530,7 +530,7 @@ AttributeSubjectMap::MoveAtts(int oldIndex, int newIndex, int &i0, int &i1)
         //
         int i2, i3;
         SetAtts(newIndex, attr, i2, i3);
-        
+
         //
         // Update the range of attributes invalidated.
         //
@@ -734,7 +734,7 @@ AttributeSubjectMap::ResizeMap(const int newSize)
 // ****************************************************************************
 // Method: AttributeSubjectMap::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   Saves the AttributeSubjectMap to a DataNode.
 //
 // Arguments:
@@ -784,7 +784,7 @@ AttributeSubjectMap::CreateNode(DataNode *parentNode)
 // ****************************************************************************
 // Method: AttributeSubjectMap::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   Initializes the map using the data in the config file.
 //
 // Arguments:
@@ -795,7 +795,7 @@ AttributeSubjectMap::CreateNode(DataNode *parentNode)
 // Creation:   Tue Jul 22 11:33:21 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -855,7 +855,7 @@ AttributeSubjectMap::SetFromNode(DataNode *parentNode,
 // ****************************************************************************
 // Method: AttributeSubjectMap::ProcessOldVersions
 //
-// Purpose: 
+// Purpose:
 //   Initializes the map using the data in the config file.
 //
 // Arguments:
@@ -867,7 +867,7 @@ AttributeSubjectMap::SetFromNode(DataNode *parentNode,
 // Creation:   Wed Feb 13 14:43:42 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

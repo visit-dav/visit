@@ -47,6 +47,4 @@
     </Function>
     <Function name="GetTypeId" user="true" member="true">
     </Function>
-    <Function name="AddMeshName" user="true" member="true">
-    </Function>
   </Attribute>

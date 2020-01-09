@@ -28,7 +28,7 @@ class VisItRPC;
 //    Added SubjectRemoved.
 //
 //    Jeremy Meredith, Tue Jul  3 15:02:57 PDT 2001
-//    Added ReadPendingMessages and SendInterruption. 
+//    Added ReadPendingMessages and SendInterruption.
 //    Added buffered input.
 //
 //    Brad Whitlock, Fri Mar 22 16:47:23 PST 2002

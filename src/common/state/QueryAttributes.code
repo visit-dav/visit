@@ -25,7 +25,7 @@ Function: GetName2
 Declaration: std::string &GetName();
 Definition:
 std::string &
-QueryAttributes::GetName() 
+QueryAttributes::GetName()
 {
     if (queryInputParams.HasEntry("query_name"))
         return queryInputParams.GetEntry("query_name")->AsString();
@@ -47,7 +47,7 @@ Function: GetVariables2
 Declaration: stringVector &GetVariables();
 Definition:
 stringVector &
-QueryAttributes::GetVariables() 
+QueryAttributes::GetVariables()
 {
     if (queryInputParams.HasEntry("vars"))
         return queryInputParams.GetEntry("vars")->AsStringVector();
@@ -75,7 +75,7 @@ QueryAttributes::Reset()
     pipeIndex = -1;
 
     queryInputParams.Reset();
- 
+
     SelectAll();
 }
 
@@ -100,7 +100,7 @@ Definition:
 void
 QueryAttributes::SetResultsValue(const double val)
 {
-    resultsValue[0] = val;    
+    resultsValue[0] = val;
 }
 
 Function: SetResultsValues

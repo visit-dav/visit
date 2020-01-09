@@ -312,7 +312,7 @@ MapNode::HasEntry(const string &key) const
 //  Purpose:
 //     Checks if the map has a numeric entry for the given key.
 //
-//  Programmer:  Kathleen Biagas 
+//  Programmer:  Kathleen Biagas
 //  Creation:    January 9, 2012
 //
 // ****************************************************************************
@@ -332,7 +332,7 @@ MapNode::HasNumericEntry(const string &key) const
 //  Purpose:
 //     Checks if the map has a numeric vector entry for the given key.
 //
-//  Programmer:  Kathleen Biagas 
+//  Programmer:  Kathleen Biagas
 //  Creation:    January 9, 2012
 //
 // ****************************************************************************
@@ -369,14 +369,14 @@ MapNode::GetEntryNames(stringVector &result) const
 // ****************************************************************************
 // Method: MapNode::Reset
 //
-// Purpose: 
+// Purpose:
 //   Reset the mapnode.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jan  9 10:14:09 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -431,13 +431,13 @@ MapNode::ToXMLNode(bool encodeString) const
         {
             XMLNode *child = node.AddChild(itr->second.ToXMLNode(encodeString));
             child->Attribute("key") = itr->first;
-        }    
+        }
     }
     else // save value, if we have a value
     {
         node.AddChild(Variant::ToXMLNode(encodeString));
     }
-    
+
     return node;
 }
 
@@ -512,11 +512,11 @@ MapNode::ToJSONNodeMetaData(bool id) const
 //    Remove an unused variable.
 //
 // ****************************************************************************
-void 
+void
 MapNode::SetXValue(const XMLNode &node,bool decodeString)
 {
     entries.clear();
-    int nchildren = node.GetNumChildren();    
+    int nchildren = node.GetNumChildren();
     if(node.Name()!="map_node" || nchildren == 0)
         return; // error
 
@@ -532,7 +532,7 @@ MapNode::SetXValue(const XMLNode &node,bool decodeString)
             XMLNode *child = node.GetChild(i);
             // children should have a key ....
             entries[child->Attribute("key")] = MapNode(child,decodeString);
-        }   
+        }
     }
 }
 
@@ -654,7 +654,7 @@ MapNode::SetJValue(const JSONNode* data, const JSONNode* metadata, bool decodeSt
 // ****************************************************************************
 // Method: MapNode::operator ==
 //
-// Purpose: 
+// Purpose:
 //   Compares 2 MapNode objects.
 //
 // Arguments:
@@ -662,13 +662,13 @@ MapNode::SetJValue(const JSONNode* data, const JSONNode* metadata, bool decodeSt
 //
 // Returns:    True if the objects are equal; false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jan  6 15:33:24 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -693,7 +693,7 @@ MapNode::operator ==(const MapNode &obj) const
             // maps are different.
             if(it1->first != it2->first)
                 return false;
-        
+
             // recurse
             if(!(it1->second == it2->second))
                 return false;
@@ -712,7 +712,7 @@ MapNode::operator ==(const MapNode &obj) const
 // ****************************************************************************
 // Method: MapNode::CalculateMessageSize
 //
-// Purpose: 
+// Purpose:
 //   Calculates the size of the message needed to store the serialized MapNode.
 //
 // Arguments:
@@ -720,13 +720,13 @@ MapNode::operator ==(const MapNode &obj) const
 //
 // Returns:    The message size.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jan  6 15:35:48 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 int
 MapNode::CalculateMessageSize(Connection &conn) const
@@ -759,7 +759,7 @@ MapNode::CalculateMessageSize(Connection *conn) const
 // ****************************************************************************
 // Method: MapNode::Write
 //
-// Purpose: 
+// Purpose:
 //   Write a MapNode to a Connection.
 //
 // Arguments:
@@ -769,7 +769,7 @@ MapNode::CalculateMessageSize(Connection *conn) const
 // Creation:   Tue Jan  6 15:36:19 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 MapNode::Write(Connection &conn) const
@@ -806,7 +806,7 @@ MapNode::Write(Connection *conn) const
 // ****************************************************************************
 // Method: MapNode::Read
 //
-// Purpose: 
+// Purpose:
 //   Reads the MapNode from the connection.
 //
 // Arguments:
@@ -816,7 +816,7 @@ MapNode::Write(Connection *conn) const
 // Creation:   Tue Jan  6 15:36:46 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -853,22 +853,22 @@ MapNode::Read(Connection &conn)
 // ****************************************************************************
 // Method: MapNode::Merge
 //
-// Purpose: 
+// Purpose:
 //   This method merges 2 MapNodes together so that missing fields from one
 //   MapNode will get added to this MapNode.
 //
 // Arguments:
 //   obj  : The MapNode to add to this MapNode.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jan 16 12:01:50 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -878,7 +878,7 @@ MapNode::Merge(const MapNode &obj)
         return;
 
     if(Type() == EMPTY_TYPE)
-    { 
+    {
         if(obj.Type() == EMPTY_TYPE)
         {
             map<string,MapNode>::const_iterator itr, itr2;
@@ -933,7 +933,7 @@ MapNode::Merge(const MapNode &obj)
 // ****************************************************************************
 // Method: MapNode::Remove
 //
-// Purpose: 
+// Purpose:
 //   This method removes the entry for the given key.
 //
 // Arguments:
@@ -943,7 +943,7 @@ MapNode::Merge(const MapNode &obj)
 // Creation:   January 12, 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

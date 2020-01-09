@@ -26,7 +26,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API AnnotationAttributes : public AttributeSubject

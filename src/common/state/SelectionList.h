@@ -22,7 +22,7 @@ class SelectionSummary;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API SelectionList : public AttributeSubject

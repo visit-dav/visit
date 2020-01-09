@@ -23,7 +23,7 @@ import java.lang.Double;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class CreateBondsAttributes extends AttributeSubject implements Plugin
