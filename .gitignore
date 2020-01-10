@@ -12,7 +12,3 @@ build_branch_*/
 visit.masonry.docker.src.tar
 build-mb-*
 _logs
-*.tar.gz
-*.zip
-*.tar.xz
-*.tgz
