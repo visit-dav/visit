@@ -290,7 +290,7 @@ of a mesh, again, working with "noise2d.silo".
     * Note that VisIt_'s expression system always numbers its array indices starting from zero.
 
   5. Click *Apply*.
-  6. Now, repeat these steps to define a "Y" expression for the "Y" coordinates.
+  6. Now, repeat these steps to define a "Y" expression for the "Y" coordinates as "Coords[1]".
 
 9. Finally, we'll define the "distance" expression
 
