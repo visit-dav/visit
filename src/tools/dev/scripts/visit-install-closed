@@ -71,6 +71,9 @@
 #   Eric Brugger, Thu Sep 26 17:32:41 PDT 2019
 #   I removed special logic for installing on toss3 systems.
 #
+#   Eric Brugger, Mon Jan 13 15:24:51 PST 2020
+#   I removed shark.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -82,7 +85,6 @@ user=`whoami`
 #
 winnipeg=true
 jade=true
-shark=true
 sierra=true
 trinity=true
 
@@ -99,7 +101,6 @@ do
       -none)
          winnipeg=false
          jade=false
-         shark=false
          sierra=false
          trinity=false
          shift
@@ -118,14 +119,6 @@ do
          ;;
       +jade)
          jade=true
-         shift
-         ;;
-      -shark)
-         shark=false
-         shift
-         ;;
-      +shark)
-         shark=true
          shift
          ;;
       -sierra)
@@ -247,43 +240,6 @@ then
 fi
 
 #
-# Install on shark.
-#
-rm -f shark
-cat <<EOF > shark
-#!/bin/sh
-./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-intel-shark /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo ""                                              > resultlog 2>&1
-echo "        install of visit on shark"             >> resultlog 2>&1
-echo "       ---------------------------"            >> resultlog 2>&1
-echo ""                                              >> resultlog 2>&1
-df -k /usr/gapps/visit                               >> resultlog 2>&1
-echo ""                                              >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-intel/bin         >> resultlog 2>&1
-echo ""                                              >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                              >> resultlog 2>&1
-echo "The database plugins:"                         >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mv resultlog resultlog.shark
-EOF
-
-if [ $shark = true ]
-then
-   if [ $test = no ]
-   then
-      scp shark23:/usr/tmp/$user/shark/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-intel-shark.tar.gz
-      scp visit$ver2.linux-intel-shark.tar.gz shark:
-      scp visit-install shark:
-      scp shark shark:shark_install
-      ssh shark "chmod 750 shark_install;./shark_install"
-   fi
-fi
-
-#
 # Install on sierra
 #
 rm -f sierra
@@ -360,5 +316,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f winnipeg jade shark sierra trinity
+   rm -f winnipeg jade sierra trinity
 fi
