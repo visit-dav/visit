@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               CGNSPluginInfo.h
+//  CGNSPluginInfo.h
 // ****************************************************************************
 
 #ifndef CGNS_PLUGIN_INFO_H

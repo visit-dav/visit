@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               ImagePluginInfo.h
+//  ImagePluginInfo.h
 // ****************************************************************************
 
 #ifndef IMAGE_PLUGIN_INFO_H
@@ -48,8 +48,8 @@ class ImageCommonPluginInfo : public virtual CommonDatabasePluginInfo, public vi
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class ImageMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual ImageCommonPluginInfo

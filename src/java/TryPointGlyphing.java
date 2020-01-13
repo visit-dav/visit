@@ -15,8 +15,8 @@ import llnl.visit.plots.MeshAttributes;
 //
 // Notes:      Based on threshold.py of test-suite.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   March 31, 2017 
+// Programmer: Kathleen Biagas
+// Creation:   March 31, 2017
 //
 // Modifications:
 //
@@ -39,8 +39,8 @@ public class TryPointGlyphing extends RunViewer
 
             // Set the pseudocolor attributes
             MeshAttributes m = (MeshAttributes)viewer.GetPlotAttributes("Mesh");
-            m.SetPointSize(1.0); 
-            m.SetPointSizePixels(5); 
+            m.SetPointSize(1.0);
+            m.SetPointSizePixels(5);
 
             m.SetMeshColorSource(1);
             m.SetMeshColor(new ColorAttribute(204,153,255,0));

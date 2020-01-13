@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               CMATPluginInfo.h
+//  CMATPluginInfo.h
 // ****************************************************************************
 
 #ifndef CMAT_PLUGIN_INFO_H

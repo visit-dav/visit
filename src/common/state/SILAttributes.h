@@ -24,7 +24,7 @@ class SILArrayAttributes;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API SILAttributes : public AttributeSubject

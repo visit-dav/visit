@@ -10,9 +10,9 @@ import llnl.visit.avtDatabaseMetaData;
 //
 // Purpose:
 //   This example program opens a database and gets the metadata, printing
-//   it to the console. 
+//   it to the console.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Feb 25 12:01:43 PDT 2008
@@ -34,7 +34,7 @@ public class GetMetaData extends RunViewer
         if(viewer.GetViewerMethods().RequestMetaData(viewer.GetDataPath() + "noise.silo",0))
         {
             avtDatabaseMetaData md = viewer.GetViewerState().GetDatabaseMetaData();
-            System.out.print(md.toString());  
+            System.out.print(md.toString());
         }
         else
             System.out.println("Could not get the metadata for the database!");

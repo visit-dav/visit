@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: LineSamplerViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <LineSamplerPluginInfo.h>
 #include <LineSamplerAttributes.h>
@@ -169,7 +169,7 @@ LineSamplerViewerEnginePluginInfo::GetClientAtts(AttributeSubject *atts,
       LineSamplerAttributes::ViewGeometry newViewGeom =
         (*clientAtts).GetViewGeometry();
 
-      if( activeOperator && 
+      if( activeOperator &&
           (newViewDim != oldViewDim ||
            newViewGeom != oldViewGeom) )
       {

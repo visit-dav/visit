@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               EnSightPluginInfo.h
+//  EnSightPluginInfo.h
 // ****************************************************************************
 
 #ifndef ENSIGHT_PLUGIN_INFO_H

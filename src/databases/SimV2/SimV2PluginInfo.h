@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               SimV2PluginInfo.h
+//  SimV2PluginInfo.h
 // ****************************************************************************
 
 #ifndef SIMV2_PLUGIN_INFO_H

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               OVERFLOWPluginInfo.h
+//  OVERFLOWPluginInfo.h
 // ****************************************************************************
 
 #ifndef OVERFLOW_PLUGIN_INFO_H

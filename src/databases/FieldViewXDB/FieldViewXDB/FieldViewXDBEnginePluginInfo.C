@@ -5,7 +5,7 @@
 #include <FieldViewXDBPluginInfo.h>
 #include <avtFieldViewXDBWriter.h>
 
-VISIT_DATABASE_PLUGIN_ENTRY(FieldViewXDB,Engine);
+VISIT_DATABASE_PLUGIN_ENTRY(FieldViewXDB,Engine)
 
 // ****************************************************************************
 //  Method: FieldViewXDBEnginePluginInfo::GetWriter

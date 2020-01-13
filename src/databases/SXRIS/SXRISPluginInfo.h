@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               SXRISPluginInfo.h
+//  SXRISPluginInfo.h
 // ****************************************************************************
 
 #ifndef SXRIS_PLUGIN_INFO_H

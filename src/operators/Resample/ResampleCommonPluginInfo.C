@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ResampleCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ResamplePluginInfo.h>
 #include <ResampleAttributes.h>
@@ -43,7 +43,7 @@ ResampleCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 ResampleCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

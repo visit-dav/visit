@@ -79,7 +79,7 @@ ParseCharacters(const QString &buff_input)
 //  Purpose:
 //    Parse a plugin/attributesubject.
 //
-//  Note:   
+//  Note:
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 28, 2001
@@ -167,7 +167,7 @@ ParseCharacters(const QString &buff_input)
 //    Jeremy Meredith, Mon Feb 23 17:37:33 EST 2009
 //    Don't just check if init is nonnull, check if it's true.
 //
-//    Kathleen Bonnell, Wed May 27 9:01:52 MST 2009 
+//    Kathleen Bonnell, Wed May 27 9:01:52 MST 2009
 //    Added support for windows-only mdserver and engine files (WM, WE).
 //
 //    Mark C. Miller, Wed Aug 26 11:03:19 PDT 2009
@@ -183,11 +183,14 @@ ParseCharacters(const QString &buff_input)
 //    Hank Childs, Thu Dec 30 13:33:19 PST 2010
 //    Added support for expression-creating operators.
 //
-//    Kathleen Biagas, Thu Aug 25 13:23:07 MST 2011 
+//    Kathleen Biagas, Thu Aug 25 13:23:07 MST 2011
 //    Added persistent flag for fields.
 //
 //    Kathleen Biagas, Thu Nov  6 11:24:21 PST 2014
 //    Add support for DEFINES tag.
+//
+//    Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
+//    Added haslicense.
 //
 // ****************************************************************************
 
@@ -199,7 +202,7 @@ class XMLParser : public QXmlDefaultHandler
     Attribute *attribute;
     QString    filepath;
   public:
-    XMLParser(FieldFactory *fieldFactory_, QString filename) 
+    XMLParser(FieldFactory *fieldFactory_, QString filename)
     {
         filepath = FilePath(filename);
         currentPlugin = NULL;
@@ -305,6 +308,7 @@ class XMLParser : public QXmlDefaultHandler
             QString dbtype    = atts.value("dbtype");
             QString haswriter = atts.value("haswriter");
             QString hasoptions= atts.value("hasoptions");
+            QString haslicense= atts.value("haslicense");
             QString version   = atts.value("version");
             QString iconFile  = atts.value("iconFile");
             QString enabled   = atts.value("enabled");
@@ -319,9 +323,10 @@ class XMLParser : public QXmlDefaultHandler
             QString exprInType = atts.value("exprInType");
             QString exprOutType = atts.value("exprOutType");
             currentPlugin = new Plugin(name, label, type, vartype,
-                                       dbtype, version, iconFile, 
+                                       dbtype, version, iconFile,
                                        haswriter.isNull() ? false : Text2Bool(haswriter),
                                        hasoptions.isNull() ? false : Text2Bool(hasoptions),
+                                       haslicense.isNull() ? false : Text2Bool(haslicense),
                                        onlyengine.isNull() ? false : Text2Bool(onlyengine),
                                        noengine.isNull() ? false : Text2Bool(noengine));
             if (!enabled.isNull())
@@ -418,9 +423,9 @@ class XMLParser : public QXmlDefaultHandler
             QString quoted = atts.value("quoted");
             QString target = atts.value("target");
             bool    quote = false;
-            if (!quoted.isNull()) 
+            if (!quoted.isNull())
                 quote = Text2Bool(quoted);
-            if (target.isNull()) 
+            if (target.isNull())
                 target = "xml2atts";
 
             currentInclude = new Include(file, quote, target);
@@ -577,8 +582,8 @@ class XMLParser : public QXmlDefaultHandler
         else if (tag == "LIBS")
         {
             currentLibComponents = COMP_NONE;
-            // if we have a "components" attribute, we need to find out 
-            // which component the libs are for.        
+            // if we have a "components" attribute, we need to find out
+            // which component the libs are for.
             // if not, we have libs for all comps
             if(atts.index("components") == -1)
             {
@@ -622,7 +627,7 @@ class XMLParser : public QXmlDefaultHandler
                         comps_current |= COMP_ENGINEPAR;
                         currentPlugin->customelibsPar = true;
                     }
-                    else    
+                    else
                         throw QString("invalid file '%1' for components attribute of LIBS tag").arg(comps_split[i]);
                 }
                 currentLibComponents = comps_current;
@@ -731,13 +736,13 @@ class XMLParser : public QXmlDefaultHandler
         }
         currentTag = tag;
         tagStack.push_back(currentTag);
-        return true;        
+        return true;
     }
     bool endElement( const QString&, const QString&, const QString &tag)
     {
         // NOTE: If you need to add a new tag, make sure you add a case here (even if empty)
         // so the parser will except it. Default behavior is to throw an exception.
-    
+
         if (tagStack.back() != tag)
             throw QString("ending tag (%1) does not match latest tag started (%2)").arg(tagStack.back()).arg(tag);
         tagStack.pop_back();

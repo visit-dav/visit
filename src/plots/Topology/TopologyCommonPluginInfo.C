@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TopologyCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <TopologyPluginInfo.h>
 #include <TopologyAttributes.h>
@@ -43,16 +43,17 @@ TopologyCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 TopologyCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((TopologyAttributes *) to) = *((TopologyAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: TopologyCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ TopologyCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

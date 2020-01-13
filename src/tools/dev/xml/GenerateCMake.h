@@ -20,7 +20,7 @@
 //  Note: This file overrides --
 //    Plugin
 //
-//  Programmer:  Brad Whitlock, 
+//  Programmer:  Brad Whitlock,
 //  Creation:    Thu Jan 29 13:44:46 PST 2009
 //
 //  Modifications:
@@ -32,7 +32,7 @@
 //
 //    David Camp, Thu Jan 14 17:56:29 PST 2010
 //    Added the ADD_TARGET_DEFINITIONS function to define ENGINE for plots.
-//    
+//
 //    Kathleen Bonnell, Tue Jan 26 20:32:55 MST 2010
 //    Remove setting of LIBRARY_OUTPUT_PATH, (set by parent instead). Add
 //    call to VISIT_PLUGIN_TARGET_PREFIX macro.
@@ -51,29 +51,29 @@
 //    the database plugins to also treat all flags in CXXFLAGS that start
 //    with "-I" as include paths.
 //
-//    Kathleen Bonnell, Fri May 21 14:15:23 MST 2010 
-//    Add DLL_NETCDF, _CGNSDLL EXODUSII_BUILD_SHARED_LIBS defines for 
+//    Kathleen Bonnell, Fri May 21 14:15:23 MST 2010
+//    Add DLL_NETCDF, _CGNSDLL EXODUSII_BUILD_SHARED_LIBS defines for
 //    windows projects linking with NETCDF, CGNS or EXODUSII.
 //
-//    Kathleen Bonnell, Thu May 27 14:59:13 MST 2010 
+//    Kathleen Bonnell, Thu May 27 14:59:13 MST 2010
 //    Add some more defines for HDF4, discovered as necessary when compiling
 //    with Visual Studio 9.
 //
-//    Kathleen Bonnell, Fri Sep 24 11:25:32 MST 2010 
-//    Add ENGINE target definition for operators if they contain 
+//    Kathleen Bonnell, Fri Sep 24 11:25:32 MST 2010
+//    Add ENGINE target definition for operators if they contain
 //    engine-specific code.
 //
 //    Kathleen Bonnell, Tue Nov 16 16:26:47 PST 2010
-//    Remove logic for mesa.  Add newline after each extraInclude for 
+//    Remove logic for mesa.  Add newline after each extraInclude for
 //    legibility in the CMakeLists.txt files.
 //
 //    David Camp, Wed Nov 17 14:54:02 PST 2010
 //    Added the LIBS libraries to the Plot and Operators, did the samething
 //    the database code was doing. Also added the link dirs from the ldflags.
 //
-//    Kathleen Bonnell, Fri Sep 24 11:25:32 MST 2010 
-//    Fix windows issues with viewer and gui libs building against an 
-//    installed version of VisIt.  Convert Windows paths to CMake paths 
+//    Kathleen Bonnell, Fri Sep 24 11:25:32 MST 2010
+//    Fix windows issues with viewer and gui libs building against an
+//    installed version of VisIt.  Convert Windows paths to CMake paths
 //    since we are creating a CMake file.
 //
 //    Kathleen Bonnell, Tue Jan  4 08:38:03 PST 2011
@@ -83,7 +83,7 @@
 //    Eric Brugger, Fri Jan  7 13:38:59 PST 2011
 //    I replaced the BOXLIB2D and BOXLIB3D variables with just BOXLIB.
 //
-//    Kathleen Bonnell, Tue Jan 11 17:06:21 MST 2011 
+//    Kathleen Bonnell, Tue Jan 11 17:06:21 MST 2011
 //    Removed setting EXODUSII_BUILD_SHARED_LIBS definition.
 //
 //    Kathleen Bonnell, Thu Jan 13 17:54:38 MST 2011
@@ -109,11 +109,11 @@
 //    is now predefined in an hdf5 header.
 //
 //    Kathleen Biagas, Wed Oct  9 10:01:15 PDT 2013
-//    Added handling of 'Code' and 'Condition' keywords in codefile. 
+//    Added handling of 'Code' and 'Condition' keywords in codefile.
 //    'Condition' allows for conditional includes, definitions and links.
 //
 //    Kathleen Biagas, Tue Oct 29 16:04:19 MST 2013
-//    For extraIncludes specified in CXXFLAGS, check for use of 
+//    For extraIncludes specified in CXXFLAGS, check for use of
 //    ${VISIT_INCLUDE_DIR} and correct it if building against public VisIt.
 //
 //    Eric Brugger, Wed May 21 14:48:11 PDT 2014
@@ -148,6 +148,9 @@
 //    Kathleen Biagas, Wed Jan 30 10:44:21 PST 2019
 //    Removed support for EAVL.
 //
+//    Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
+//    Added hl arg, for haslicense.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -155,8 +158,8 @@ class CMakeGeneratorPlugin : public Plugin
   public:
     CMakeGeneratorPlugin(const QString &n,const QString &l,const QString &t,
         const QString &vt,const QString &dt, const QString &v, const QString &ifile,
-        bool hw, bool ho, bool onlyengine, bool noengine) : 
-        Plugin(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine)
+        bool hw, bool ho, bool hl, bool onlyengine, bool noengine) :
+        Plugin(n,l,t,vt,dt,v,ifile,hw,ho,hl,onlyengine,noengine)
     {
         defaultgfiles.clear();
         defaultsfiles.clear();
@@ -198,7 +201,7 @@ class CMakeGeneratorPlugin : public Plugin
     }
 
     void
-    GetFilesWith(const QString &name, const std::vector<QString> &input, 
+    GetFilesWith(const QString &name, const std::vector<QString> &input,
                  std::set<QString> &output)
     {
          for(size_t i = 0; i < input.size(); ++i)
@@ -226,7 +229,7 @@ class CMakeGeneratorPlugin : public Plugin
             for(size_t i = 0; i < vec.size(); ++i)
                 s += (ConvertDollarParenthesis(vec[i]) + "\n");
         }
-        else 
+        else
         {
             for(size_t i = 0; i < vec.size(); ++i)
                 s += (ConvertDollarParenthesis(vec[i]) + " ");
@@ -272,7 +275,7 @@ class CMakeGeneratorPlugin : public Plugin
         ExpandEnvironmentStrings(s.toStdString().c_str(), exppath, MAX_PATH);
         QString retval(exppath);
         retval = retval.replace("\\", "/");
-        return retval; 
+        return retval;
     }
 #endif
 
@@ -381,7 +384,7 @@ class CMakeGeneratorPlugin : public Plugin
 
     void WriteCMake_PlotOperator_Includes(QTextStream &out, bool isOperator)
     {
-        // take any ${} from the CXXFLAGS to mean a variable that contains 
+        // take any ${} from the CXXFLAGS to mean a variable that contains
         // include directories.
         std::vector<QString> extraIncludes;
         for (size_t i=0; i<cxxflags.size(); i++)
@@ -470,7 +473,7 @@ class CMakeGeneratorPlugin : public Plugin
 
     bool CustomFilesUseFortran(const std::vector<QString> &files) const
     {
-        const char *ext[] = {".f", ".f77", ".f90", ".f95", ".for", 
+        const char *ext[] = {".f", ".f77", ".f90", ".f95", ".for",
                              ".F", ".F77", ".F90", ".F95", ".FOR"};
         for(size_t i = 0; i < files.size(); ++i)
         {
@@ -483,8 +486,8 @@ class CMakeGeneratorPlugin : public Plugin
         return false;
     }
 
-    void WriteCMake_Plot(QTextStream &out, 
-                         const QString &guilibname, 
+    void WriteCMake_Plot(QTextStream &out,
+                         const QString &guilibname,
                          const QString &viewerlibname)
     {
         bool useFortran = false;
@@ -638,7 +641,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "    QT_WRAP_CPP(G" << name << "Plot LIBG_SOURCES ${LIBG_MOC_SOURCES})" << endl;
         out << "    ADD_LIBRARY(G"<<name<<"Plot ${LIBG_SOURCES})" << endl;
         out << "    TARGET_LINK_LIBRARIES(G" << name << "Plot visitcommon "
-            << guilibname << " " << ToString(libs) << ToString(glibs) 
+            << guilibname << " " << ToString(libs) << ToString(glibs)
             << ")" << endl;
         WriteCMake_ConditionalTargetLinks(out, name, "G", "Plot", "    ");
         out << endl;
@@ -647,7 +650,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << "    QT_WRAP_CPP(V" << name << "Plot LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
         out << "    ADD_LIBRARY(V"<<name<<"Plot ${LIBV_SOURCES})" << endl;
         out << "    TARGET_LINK_LIBRARIES(V" << name << "Plot visitcommon "
-            << viewerlibname << " " << ToString(libs) << ToString(vlibs) 
+            << viewerlibname << " " << ToString(libs) << ToString(vlibs)
             << ")" << endl;
         WriteCMake_ConditionalTargetLinks(out, name, "V", "Plot", "    ");
         out << endl;
@@ -713,20 +716,20 @@ class CMakeGeneratorPlugin : public Plugin
         out << "VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})" << endl;
         out << "VISIT_PLUGIN_TARGET_RTOD(plots ${INSTALLTARGETS})" << endl;
         if (using_dev)
-          out << "VISIT_PLUGIN_TARGET_FOLDER(plots " << name  
+          out << "VISIT_PLUGIN_TARGET_FOLDER(plots " << name
               << " ${INSTALLTARGETS})" << endl;
         out << endl;
 #ifdef _WIN32
         if (!using_dev)
         {
           out << "MESSAGE(STATUS \"Plugin will be installed to: ${VISIT_PLUGIN_DIR}\")" << endl;
-          
+
         }
 #endif
     }
 
-    void WriteCMake_Operator(QTextStream &out, 
-                             const QString guilibname, 
+    void WriteCMake_Operator(QTextStream &out,
+                             const QString guilibname,
                              const QString viewerlibname)
     {
         bool useFortran = false;
@@ -878,7 +881,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "    QT_WRAP_CPP(G"<<name<<"Operator LIBG_SOURCES ${LIBG_MOC_SOURCES})" << endl;
         out << "    ADD_LIBRARY(G"<<name<<"Operator ${LIBG_SOURCES})" << endl;
         out << "    TARGET_LINK_LIBRARIES(G" << name << "Operator visitcommon "
-            << guilibname << " " << ToString(libs) << ToString(glibs) 
+            << guilibname << " " << ToString(libs) << ToString(glibs)
             << ")" << endl;
         WriteCMake_ConditionalTargetLinks(out, name, "G", "Operator", "    ");
         out << endl;
@@ -886,7 +889,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << "    QT_WRAP_CPP(V"<<name<<"Operator LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
         out << "    ADD_LIBRARY(V"<<name<<"Operator ${LIBV_SOURCES})" << endl;
         out << "    TARGET_LINK_LIBRARIES(V" << name << "Operator visitcommon "
-            << viewerlibname << " " << ToString(libs) << ToString(vlibs) 
+            << viewerlibname << " " << ToString(libs) << ToString(vlibs)
             << ")" << endl;
         WriteCMake_ConditionalTargetLinks(out, name, "V", "Operator", "    ");
         out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} G"<<name<<"Operator V"<<name<<"Operator)" << endl;
@@ -951,7 +954,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "VISIT_INSTALL_OPERATOR_PLUGINS(${INSTALLTARGETS})" << endl;
         out << "VISIT_PLUGIN_TARGET_RTOD(operators ${INSTALLTARGETS})" << endl;
         if (using_dev)
-          out << "VISIT_PLUGIN_TARGET_FOLDER(operators " << name 
+          out << "VISIT_PLUGIN_TARGET_FOLDER(operators " << name
               << " ${INSTALLTARGETS})" << endl;
         out << endl;
     }
@@ -1054,7 +1057,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << endl;
         }
 
-        // take any ${} from the CXXFLAGS to mean a variable that contains 
+        // take any ${} from the CXXFLAGS to mean a variable that contains
         // include directories.
         std::vector<QString> extraIncludes;
         for (size_t i=0; i<cxxflags.size(); i++)
@@ -1216,7 +1219,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << endl;
         out << "VISIT_PLUGIN_TARGET_RTOD(databases ${INSTALLTARGETS})" << endl;
         if (using_dev)
-          out << "VISIT_PLUGIN_TARGET_FOLDER(databases " << name 
+          out << "VISIT_PLUGIN_TARGET_FOLDER(databases " << name
               << " ${INSTALLTARGETS})" << endl;
         out << endl;
     }
@@ -1258,7 +1261,7 @@ class CMakeGeneratorPlugin : public Plugin
         qvisitplugdirpub = ToCMakePath(qvisitplugdirpub);
         qvisitplugdirpri = ToCMakePath(qvisitplugdirpri);
 #endif
-        // If we're not using a development version then we need to always 
+        // If we're not using a development version then we need to always
         // include something in the generated output.
         if(!using_dev)
         {
@@ -1271,24 +1274,24 @@ class CMakeGeneratorPlugin : public Plugin
             out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)" << endl;
             if(installpublic)
             {
-                out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub 
+                out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub
                     << "\")" << endl;
             }
             else // installprivate or default
             {
-                out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpri 
+                out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpri
                     << "\")" << endl;
             }
 
-            out << "INCLUDE(\"" << qvisithome 
+            out << "INCLUDE(\"" << qvisithome
                 << "/include/PluginVsInstall.cmake\")" << endl;
-            out << "INCLUDE(\"" << qvisithome 
+            out << "INCLUDE(\"" << qvisithome
                 << "/include/VisItLibraryDependencies.cmake\")" << endl;
             out << endl;
         }
         else
         {
-            // We're using a development version but we're installing public 
+            // We're using a development version but we're installing public
             // or private.
             if(installpublic)
             {
@@ -1308,7 +1311,7 @@ class CMakeGeneratorPlugin : public Plugin
         {
             // when calling from an installed version, cmake doesn't know that
             // the gui and viewer lib targets have been renamed to guilib and
-            // viewer lib (to prevent conflicts with the exe targets), so they 
+            // viewer lib (to prevent conflicts with the exe targets), so they
             // must be explictily listed by the name of the actual lib created.
             guilibname    = "guilib";
             viewerlibname = "viewerlib";

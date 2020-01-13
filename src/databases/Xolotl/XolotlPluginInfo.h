@@ -1,9 +1,9 @@
 // Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
-// Project developers. See the top-level LICENSE file for dates and other
-// details. No copyright assignment is required to contribute to VisIt.
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               XolotlPluginInfo.h
+//  XolotlPluginInfo.h
 // ****************************************************************************
 
 #ifndef XOLOTL_PLUGIN_INFO_H
@@ -48,9 +48,8 @@ class XolotlCommonPluginInfo : public virtual CommonDatabasePluginInfo, public v
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
-    virtual std::string               GetLicense() const;
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class XolotlMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual XolotlCommonPluginInfo

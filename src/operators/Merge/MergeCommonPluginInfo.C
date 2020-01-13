@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: MergeCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <MergePluginInfo.h>
 #include <MergeOperatorAttributes.h>
@@ -43,7 +43,7 @@ MergeCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 MergeCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

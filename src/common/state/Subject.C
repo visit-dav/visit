@@ -8,14 +8,14 @@
 // *******************************************************************
 // Method: Subject::Subject
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the Subject class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Aug 9 16:00:53 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 Subject::Subject()
@@ -25,7 +25,7 @@ Subject::Subject()
 // *******************************************************************
 // Method: Subject::~Subject
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the Subject class.
 //
 // Programmer: Brad Whitlock
@@ -53,7 +53,7 @@ Subject::~Subject()
 // *******************************************************************
 // Method: Subject::Attach
 //
-// Purpose: 
+// Purpose:
 //   Adds an Observer to the list of Observers that are watching the
 //   Subject. When the subject changes, the new Observer will also
 //   be called.
@@ -91,7 +91,7 @@ Subject::Attach(SimpleObserver *o)
 // *******************************************************************
 // Method: Subject::Detach
 //
-// Purpose: 
+// Purpose:
 //   Removes an Observer from the list of Observers that is maintained
 //   by the subject. The detached observer will no longer be notified
 //   when the subject changes.
@@ -103,7 +103,7 @@ Subject::Attach(SimpleObserver *o)
 // Creation:   Wed Aug 9 16:03:29 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 void
@@ -124,11 +124,11 @@ Subject::Detach(SimpleObserver *o)
 // *******************************************************************
 // Method: Subject::Notify
 //
-// Purpose: 
+// Purpose:
 //   Notifies all Observers that are watching the subject that the
 //   subject has changed.
 //
-// Note:       
+// Note:
 //   If an Observer's update state is false, that Observer is not
 //   notified of the update because, presumeably, it was the Observer
 //   that caused the subject to change.
@@ -153,7 +153,7 @@ Subject::Notify()
     for(pos = obs.begin(); pos != obs.end(); ++pos)
     {
         // Update the observer if it wants to be updated. If it didn't
-        // want to be updated, set its update to true so it will be 
+        // want to be updated, set its update to true so it will be
         // updated next time.
         if((*pos)->GetUpdate())
            (*pos)->Update(this);

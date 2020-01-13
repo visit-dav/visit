@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                               MultiCurvePluginInfo.h                      //
+//  MultiCurvePluginInfo.h
 // ************************************************************************* //
 
 #ifndef MULTICURVE_PLUGIN_INFO_H

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               GDALPluginInfo.h
+//  GDALPluginInfo.h
 // ****************************************************************************
 
 #ifndef GDAL_PLUGIN_INFO_H

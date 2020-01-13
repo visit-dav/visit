@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        CartographicProjectionScriptingPluginInfo.C
+//  CartographicProjectionScriptingPluginInfo.C
 // ************************************************************************* //
 #include <PyCartographicProjectionAttributes.h>
 #include <CartographicProjectionPluginInfo.h>
@@ -13,7 +13,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(CartographicProjection,Scripting)
 // ****************************************************************************
 // Method: CartographicProjectionScriptingPluginInfo::InitializePlugin
 //
-// Purpose: 
+// Purpose:
 //   Calls the initialization function for the plugin.
 //
 // Arguments:
@@ -24,7 +24,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(CartographicProjection,Scripting)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -37,7 +37,7 @@ CartographicProjectionScriptingPluginInfo::InitializePlugin(AttributeSubject *su
 // ****************************************************************************
 // Method: CartographicProjectionScriptingPluginInfo::GetMethodTable
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the plugin's Python method table. These methods are
 //   added to the top-level visit module's methods.
 //
@@ -50,7 +50,7 @@ CartographicProjectionScriptingPluginInfo::InitializePlugin(AttributeSubject *su
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -62,7 +62,7 @@ CartographicProjectionScriptingPluginInfo::GetMethodTable(int *nMethods)
 // ****************************************************************************
 // Method: CartographicProjectionScriptingPluginInfo::TypesMatch
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the input PyObject is CartographicProjection plot attributes.
 //
 // Arguments:
@@ -72,7 +72,7 @@ CartographicProjectionScriptingPluginInfo::GetMethodTable(int *nMethods)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -84,7 +84,7 @@ CartographicProjectionScriptingPluginInfo::TypesMatch(void *pyobject)
 // ****************************************************************************
 // Method: CartographicProjectionScriptingPluginInfo::GetLogString
 //
-// Purpose: 
+// Purpose:
 //   Gets a string representation of the current attributes.
 //
 // Arguments:
@@ -94,7 +94,7 @@ CartographicProjectionScriptingPluginInfo::TypesMatch(void *pyobject)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 char *
@@ -109,7 +109,7 @@ CartographicProjectionScriptingPluginInfo::GetLogString()
 // ****************************************************************************
 // Method: CartographicProjectionScriptingPluginInfo::SetDefaults
 //
-// Purpose: 
+// Purpose:
 //   Used to set the default values for a plugin's state object.
 //
 // Arguments:
@@ -119,7 +119,7 @@ CartographicProjectionScriptingPluginInfo::GetLogString()
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

@@ -8,14 +8,14 @@
 // ****************************************************************************
 // Method: KeepAliveRPC::KeepAliveRPC
 //
-// Purpose: 
+// Purpose:
 //   Constructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 12 10:05:46 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 KeepAliveRPC::KeepAliveRPC() : BlockingRPC("i", NULL)
@@ -26,14 +26,14 @@ KeepAliveRPC::KeepAliveRPC() : BlockingRPC("i", NULL)
 // ****************************************************************************
 // Method: KeepAliveRPC::~KeepAliveRPC
 //
-// Purpose: 
+// Purpose:
 //   Destructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 12 10:05:57 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 KeepAliveRPC::~KeepAliveRPC()
@@ -43,7 +43,7 @@ KeepAliveRPC::~KeepAliveRPC()
 // ****************************************************************************
 // Method: KeepAliveRPC::operator()
 //
-// Purpose: 
+// Purpose:
 //   Invocation method for the RPC.
 //
 // Arguments:
@@ -53,7 +53,7 @@ KeepAliveRPC::~KeepAliveRPC()
 // Creation:   Fri Mar 12 10:06:15 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -69,20 +69,20 @@ KeepAliveRPC::operator()()
 // ****************************************************************************
 // Method: KeepAliveRPC::SelectAll
 //
-// Purpose: 
+// Purpose:
 //   Selects the value that we received.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 12 10:07:30 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -94,7 +94,7 @@ KeepAliveRPC::SelectAll()
 // ****************************************************************************
 // Method: KeepAliveRPC::SetValue
 //
-// Purpose: 
+// Purpose:
 //   Sets the RPC's value.
 //
 // Arguments:
@@ -104,7 +104,7 @@ KeepAliveRPC::SelectAll()
 // Creation:   Fri Mar 12 10:08:19 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -117,7 +117,7 @@ KeepAliveRPC::SetValue(int v)
 // ****************************************************************************
 // Method: KeepAliveRPC::GetValue
 //
-// Purpose: 
+// Purpose:
 //   Returns the value for the RPC's value field.
 //
 // Returns:    The RPC's value field.
@@ -126,7 +126,7 @@ KeepAliveRPC::SetValue(int v)
 // Creation:   Fri Mar 12 10:09:02 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -138,14 +138,14 @@ KeepAliveRPC::GetValue() const
 // ****************************************************************************
 // Method: KeepAliveRPC::TypeName
 //
-// Purpose: 
+// Purpose:
 //   Returns the RPC name.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Dec  7 11:09:23 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const std::string

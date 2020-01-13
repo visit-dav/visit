@@ -49,7 +49,7 @@ class Function
     AccessType accessType;
   public:
     Function(const QString &n, const QString &dc, const QString &df, bool u,
-        bool m, const QString &t) : name(n), decl(dc), def(df), user(u), 
+        bool m, const QString &t) : name(n), decl(dc), def(df), user(u),
         member(m), target(t), accessType(AccessPublic)
     {
         usedThisFunction = false;

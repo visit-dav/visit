@@ -183,11 +183,12 @@ function qt_license_prompt
             the GNU General Public License (GPL) version 3. Visit \
             http://www.qt.io/qt-licensing-terms to view these licenses."
 
-    QT_CONFIRM_MSG="VisIt requires Qt: Please respond with \"yes\" to accept\
+    QT_CONFIRM_MSG="VisIt requires Qt: Do you accept\
                 Qt licensing under the terms of the Lesser GNU General \
                 Public License (LGPL) version 2.1 or \
-                the GNU General Public License (GPL) version 3"
+                the GNU General Public License (GPL) version 3? [yes/no]"
     info $QT_LIC_MSG
+    info $QT_CONFIRM_MSG
     read RESPONSE
     if [[ "$RESPONSE" != "yes" ]] ; then
         info $QT_CONFIRM_MSG

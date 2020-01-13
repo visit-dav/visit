@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SphereSliceCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <SphereSlicePluginInfo.h>
 #include <SphereSliceAttributes.h>
@@ -43,7 +43,7 @@ SphereSliceCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 SphereSliceCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

@@ -21,7 +21,7 @@ class ClientInformation;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API ClientInformationList : public AttributeSubject

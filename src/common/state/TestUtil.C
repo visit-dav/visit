@@ -8,7 +8,7 @@
 // *******************************************************************
 // Method: TestUtil::TestUtil
 //
-// Purpose: 
+// Purpose:
 //   Creates a TestUtil object.
 //
 // Arguments:
@@ -20,7 +20,7 @@
 // Creation:   Thu Aug 10 16:05:18 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 TestUtil::TestUtil(int argc, char *argv[],
@@ -56,7 +56,7 @@ TestUtil::TestUtil(int argc, char *argv[],
 // *******************************************************************
 // Method: TestUtil::PrintTestResult
 //
-// Purpose: 
+// Purpose:
 //   Prints a result from a test case in a standard way... At some
 //   point the output might be HTML.
 //
@@ -70,7 +70,7 @@ TestUtil::TestUtil(int argc, char *argv[],
 // Creation:   Thu Aug 10 16:06:21 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 void
@@ -79,7 +79,7 @@ TestUtil::PrintTestResult(int testnum, int subtest, int nsubtests,
 {
     char *pf[] = {"fail", "pass"};
 
-    cout << "Test " << programNumber << "." << testnum << ": " 
+    cout << "Test " << programNumber << "." << testnum << ": "
          << pf[(result ? 1 : 0)];
 
     if(result)
@@ -92,7 +92,7 @@ TestUtil::PrintTestResult(int testnum, int subtest, int nsubtests,
 // *******************************************************************
 // Method: TestUtil::PassFail
 //
-// Purpose: 
+// Purpose:
 //   Looks through the test results array and determines if all tests
 //   passed.
 //
@@ -100,15 +100,15 @@ TestUtil::PrintTestResult(int testnum, int subtest, int nsubtests,
 //   test    : An array of bool values that are the test results.
 //   n_tests : The length of the test array.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 10 16:17:39 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 int

@@ -23,7 +23,7 @@ class DBOptionsAttributes;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API DBPluginInfoAttributes : public AttributeSubject

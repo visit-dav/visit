@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        PseudocolorScriptingPluginInfo.C
+//  PseudocolorScriptingPluginInfo.C
 // ************************************************************************* //
 #include <PyPseudocolorAttributes.h>
 #include <PseudocolorPluginInfo.h>

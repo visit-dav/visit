@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               SpheralPluginInfo.h
+//  SpheralPluginInfo.h
 // ****************************************************************************
 
 #ifndef SPHERAL_PLUGIN_INFO_H

@@ -15,7 +15,7 @@ Definition:
 //
 // ****************************************************************************
 
-avtDefaultPlotMetaData::avtDefaultPlotMetaData(const std::string &p, 
+avtDefaultPlotMetaData::avtDefaultPlotMetaData(const std::string &p,
     const std::string &v) : AttributeSubject(avtDefaultPlotMetaData::TypeMapFormatString)
 {
     // Initialize all

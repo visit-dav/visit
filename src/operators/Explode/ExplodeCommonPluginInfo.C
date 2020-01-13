@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ExplodeCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ExplodePluginInfo.h>
 #include <ExplodeAttributes.h>
@@ -43,7 +43,7 @@ ExplodeCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 ExplodeCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

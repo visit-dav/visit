@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               paraDIS_tecplotPluginInfo.h
+//  paraDIS_tecplotPluginInfo.h
 // ****************************************************************************
 
 #ifndef PARADIS_TECPLOT_PLUGIN_INFO_H

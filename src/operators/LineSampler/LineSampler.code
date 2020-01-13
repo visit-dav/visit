@@ -79,7 +79,7 @@ LineSamplerViewerEnginePluginInfo::GetClientAtts(AttributeSubject *atts,
       LineSamplerAttributes::ViewGeometry newViewGeom =
         (*clientAtts).GetViewGeometry();
 
-      if( activeOperator && 
+      if( activeOperator &&
           (newViewDim != oldViewDim ||
            newViewGeom != oldViewGeom) )
       {

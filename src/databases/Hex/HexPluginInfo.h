@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               HexPluginInfo.h
+//  HexPluginInfo.h
 // ****************************************************************************
 
 #ifndef HEX_PLUGIN_INFO_H

@@ -64,7 +64,7 @@ TecplotCommonPluginInfo::SetupDatabase(const char *const *list,
         else
             ffl[i] = new avtTecplotFileFormat(list[i], readOptions);
     }
-    avtSTMDFileFormatInterface *inter 
+    avtSTMDFileFormatInterface *inter
            = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }
@@ -86,6 +86,7 @@ TecplotCommonPluginInfo::GetReadOptions() const
 {
     return GetTecplotReadOptions();
 }
+
 // ****************************************************************************
 //  Method: TecplotCommonPluginInfo::GetWriteOptions
 //
@@ -102,3 +103,4 @@ TecplotCommonPluginInfo::GetWriteOptions() const
 {
     return GetTecplotWriteOptions();
 }
+

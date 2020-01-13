@@ -10,13 +10,13 @@ package llnl.visit;
 // Purpose:
 //   This interface is implemented by plot and operator plugin classes.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Aug 14 13:46:57 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 /**
  * Defines part of the interface that the ViewerProxy must provide.

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               PFLOTRANPluginInfo.h
+//  PFLOTRANPluginInfo.h
 // ****************************************************************************
 
 #ifndef PFLOTRAN_PLUGIN_INFO_H

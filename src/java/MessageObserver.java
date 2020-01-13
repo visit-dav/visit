@@ -12,13 +12,13 @@ package llnl.visit;
 //   used to detect messages coming from the viewer and print them out if
 //   desired.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 8 12:50:24 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class MessageObserver implements SimpleObserver
@@ -74,7 +74,7 @@ class MessageObserver implements SimpleObserver
 
     public String  GetLastError() { return lastError; }
     public boolean GetErrorFlag() { return errorFlag; }
-  
+
     private boolean           doUpdate;
     private MessageAttributes messageAtts;
     private boolean           errorFlag;

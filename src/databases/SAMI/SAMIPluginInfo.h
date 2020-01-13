@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               SAMIPluginInfo.h
+//  SAMIPluginInfo.h
 // ****************************************************************************
 
 #ifndef SAMI_PLUGIN_INFO_H

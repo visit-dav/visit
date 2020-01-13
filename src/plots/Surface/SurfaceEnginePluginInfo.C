@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SurfaceEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <SurfacePluginInfo.h>
 #include <avtSurfacePlot.h>

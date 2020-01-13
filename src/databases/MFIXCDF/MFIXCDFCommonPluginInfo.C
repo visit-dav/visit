@@ -46,11 +46,11 @@ MFIXCDFCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
     avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
-    for (int i = 0 ; i < nList ; i++)
+    for (int i = 0; i < nList; i++)
     {
         ffl[i] = new avtMFIXCDFFileFormat(list[i], readOptions);
     }
-    avtSTMDFileFormatInterface *inter 
+    avtSTMDFileFormatInterface *inter
            = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }
@@ -71,6 +71,7 @@ MFIXCDFCommonPluginInfo::GetReadOptions() const
 {
     return GetMFIXCDFReadOptions();
 }
+
 // ****************************************************************************
 //  Method: MFIXCDFCommonPluginInfo::GetWriteOptions
 //
@@ -87,3 +88,4 @@ MFIXCDFCommonPluginInfo::GetWriteOptions() const
 {
     return GetMFIXCDFWriteOptions();
 }
+

@@ -45,11 +45,11 @@ GHOSTCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
     avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
-    for (int i = 0 ; i < nList ; i++)
+    for (int i = 0; i < nList; i++)
     {
         ffl[i] = new avtGHOSTFileFormat(list[i]);
     }
-    avtSTMDFileFormatInterface *inter 
+    avtSTMDFileFormatInterface *inter
            = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }

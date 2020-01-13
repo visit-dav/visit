@@ -45,7 +45,7 @@ Postfix:
         if (new_args)
         {
             obj = ScatterAttributes_SetColorType(self, new_args);
-     
+
             Py_DECREF(new_args);
         }
     }
@@ -106,7 +106,7 @@ ScatterAttributes::ChangesRequireRecalculation(const ScatterAttributes &obj) con
             var1Min != obj.var1Min ||
             var1Max != obj.var1Max;
 
-        bool scalingChanged = 
+        bool scalingChanged =
             var1Scaling != obj.var1Scaling ||
             (var1Scaling == Skew && var1SkewFactor != obj.var1SkewFactor);
 
@@ -126,7 +126,7 @@ ScatterAttributes::ChangesRequireRecalculation(const ScatterAttributes &obj) con
                 var2Min != obj.var2Min ||
                 var2Max != obj.var2Max;
 
-            bool scalingChanged = 
+            bool scalingChanged =
                 var2Scaling != obj.var2Scaling ||
                 (var2Scaling == Skew && var2SkewFactor != obj.var2SkewFactor);
 
@@ -147,7 +147,7 @@ ScatterAttributes::ChangesRequireRecalculation(const ScatterAttributes &obj) con
                 var3Min != obj.var3Min ||
                 var3Max != obj.var3Max;
 
-            bool scalingChanged = 
+            bool scalingChanged =
                 var3Scaling != obj.var3Scaling ||
                 (var3Scaling == Skew && var3SkewFactor != obj.var3SkewFactor);
 
@@ -168,7 +168,7 @@ ScatterAttributes::ChangesRequireRecalculation(const ScatterAttributes &obj) con
                 var4Min != obj.var4Min ||
                 var4Max != obj.var4Max;
 
-            bool scalingChanged = 
+            bool scalingChanged =
                 var4Scaling != obj.var4Scaling ||
                 (var4Scaling == Skew && var4SkewFactor != obj.var4SkewFactor);
 
@@ -197,7 +197,7 @@ Definition:
 // ****************************************************************************
 // Method: ScatterGUIPluginInfo::CreatePluginWizard
 //
-// Purpose: 
+// Purpose:
 //   Creates a Scatter plot wizard and returns a pointer to it.
 //
 // Arguments:
@@ -207,7 +207,7 @@ Definition:
 //
 // Returns:    A pointer to the new wizard.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 14 09:48:06 PDT 2004

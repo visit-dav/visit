@@ -19,7 +19,7 @@ import java.lang.Integer;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class PluginManagerAttributes extends AttributeSubject

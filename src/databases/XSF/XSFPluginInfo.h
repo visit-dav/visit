@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               XSFPluginInfo.h
+//  XSFPluginInfo.h
 // ****************************************************************************
 
 #ifndef XSF_PLUGIN_INFO_H

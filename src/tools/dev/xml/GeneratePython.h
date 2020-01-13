@@ -65,7 +65,7 @@ inline char toupper(char c)
 //    I fixed a bug in the code generation for setattr that caused bad code
 //    to be generated when the first field is internal.
 //
-//    Kathleen Bonnell, Fri Jun 27 14:49:20 PDT 2003 
+//    Kathleen Bonnell, Fri Jun 27 14:49:20 PDT 2003
 //    I made code generation for Enum's getattr obey the internal flag.
 //
 //    Brad Whitlock, Thu Sep 11 11:24:28 PDT 2003
@@ -118,10 +118,10 @@ inline char toupper(char c)
 //    Brad Whitlock, Thu Feb 28 16:29:56 PST 2008
 //    Made use of base classes. Added support for code file.
 //
-//    Kathleen Bonnell, Mon Mar 10 16:27:24 PDT 2008 
+//    Kathleen Bonnell, Mon Mar 10 16:27:24 PDT 2008
 //    For enum fields, to get around Windows compiler limitations for nested
-//    blocks and string-literals, modified: 
-//    StringRepresentation ==> to use case instead of if-else, to use 
+//    blocks and string-literals, modified:
+//    StringRepresentation ==> to use case instead of if-else, to use
 //    adjacent strings instead of single long string;
 //    WriteGetAttr =>  changed else-if to simple if as 'then' is a return;
 //    WriteSetMethodBody ==> use adjacent strings instead of single long string
@@ -134,7 +134,7 @@ inline char toupper(char c)
 //    Added logic to count methods WITHOUT writing them.
 //
 //    Cyrus Harrison, Tue Mar  9 14:43:34 PST 2010
-//    Added better error message when a yser trys to set non existant 
+//    Added better error message when a yser trys to set non existant
 //    attribute.
 //
 //    Kathleen Biagas, Tue Jun 21 10:53:31 PDT 2011
@@ -194,7 +194,7 @@ class PythonGeneratorField : public virtual Field
         c << "    PyObject *retval = NULL;" << Endl;
     }
 
-    // Whether a Set method should be created. Most objects will allow the set 
+    // Whether a Set method should be created. Most objects will allow the set
     // method to be created but att and attVector do not allow it for all types.
     virtual bool ProvidesSetMethod() const { return true; }
 
@@ -553,7 +553,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
 };
 
 
-// 
+//
 // ----------------------------------- Bool -----------------------------------
 //
 class AttsGeneratorBool : public virtual Bool , public virtual PythonGeneratorField
@@ -2175,7 +2175,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "    PyObject *element = NULL;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"O\", &element))" << Endl;
         c << "        return NULL;" << Endl;
-        c << "    if(!Py" << attType << "_Check(element))" << Endl; 
+        c << "    if(!Py" << attType << "_Check(element))" << Endl;
         c << "    {" << Endl;
         c << "        char msg[400] = {'\\0'};" << Endl;
         c << "        snprintf(msg, 400, \"The " << className << "::Add" << Name << " method only accepts " << attType << " objects.\");" << Endl;
@@ -2208,7 +2208,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         else
             c << "    AttributeGroupVector &atts = obj->data->Get" << Name << "();" << Endl;
         c << "    AttributeGroupVector::iterator pos = atts.begin();" << Endl;
-        c << "    // Iterate through the vector \"index\" times. " << Endl;
+        c << "    // Iterate through the vector \"index\" times." << Endl;
         c << "    for(int i = 0; i < index; ++i)" << Endl;
         c << "        ++pos;" << Endl;
         c << Endl;
@@ -2259,7 +2259,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         if(accessType == Field::AccessPublic)
             c << "    int n = obj->data->" << name << ".size();" << Endl;
         else
-            c << "    int n = obj->data->GetNum" << Name << plural << "();" << Endl; 
+            c << "    int n = obj->data->GetNum" << Name << plural << "();" << Endl;
         c << "    for(int i = 0; i < n; ++i)" << Endl;
         c << "    {" << Endl;
         c << "        " << className << "_Remove_One_" << Name << "(self, 0);" << Endl;
@@ -2337,11 +2337,11 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             c << MethodNameSet() << "(" << GetCPPName(true,className) << "(ival));" << Endl;
         c << "    else" << Endl;
         c << "    {" << Endl;
-        c << "        fprintf(stderr, \"An invalid " << name 
+        c << "        fprintf(stderr, \"An invalid " << name
           << " value was given. \"" << Endl;
-        c << "                        \"Valid values are in the range of [0," 
+        c << "                        \"Valid values are in the range of [0,"
           << enumType->values.size()-1 << "]. \"" << Endl;
-        c << "                        \"You can also use the following names: \"" 
+        c << "                        \"You can also use the following names: \""
           << Endl;
         c << "                        \"";
         for(size_t i = 0; i < enumType->values.size(); ++i)
@@ -2393,8 +2393,8 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
         for(size_t i = 0; i < enumType->values.size(); ++i)
         {
             c << "      case " << classname << "::" << enumType->values[i] << ":\n";
-            c << "          snprintf(tmpStr, 1000, \"%s" << name << " = %s" 
-              << enumType->values[i] << "  # %s\\n\", prefix, prefix, " 
+            c << "          snprintf(tmpStr, 1000, \"%s" << name << " = %s"
+              << enumType->values[i] << "  # %s\\n\", prefix, prefix, "
               << name << "_names);" << Endl;
             c << "          str += tmpStr;" << Endl;
             c << "          break;" << Endl;
@@ -2411,7 +2411,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             return;
 
         c << "    if(strcmp(name, \"" << name << "\") == 0)" << Endl;
-        c << "        return " << classname << "_" << MethodNameGet() 
+        c << "        return " << classname << "_" << MethodNameGet()
           << "(self, NULL);" << Endl;
 
         for(size_t i = 0; i < enumType->values.size(); ++i)
@@ -2655,7 +2655,7 @@ class AttsGeneratorLoadBalanceScheme : public virtual PythonGeneratorField, publ
 //
 // --------------------------------- ScaleMode --------------------------------
 //
-class AttsGeneratorScaleMode : public virtual PythonGeneratorField, public virtual ScaleMode 
+class AttsGeneratorScaleMode : public virtual PythonGeneratorField, public virtual ScaleMode
 {
   public:
     AttsGeneratorScaleMode(const QString &n, const QString &l)
@@ -2792,8 +2792,8 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonG
         for(int i = 0; i < values_size; ++i)
         {
             c << "      case " << values[i] << ":\n";
-            c << "          snprintf(tmpStr, 1000, \"%s" << name << " = %s" 
-              << values[i] << "  # %s\\n\", prefix, prefix, " 
+            c << "          snprintf(tmpStr, 1000, \"%s" << name << " = %s"
+              << values[i] << "  # %s\\n\", prefix, prefix, "
               << name << "_names);" << Endl;
             c << "          str += tmpStr;" << Endl;
             c << "          break;" << Endl;
@@ -2802,7 +2802,7 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonG
         c << "          break;\n    }" << Endl;
 
         c << Endl;
-           
+
     }
     virtual void WriteGetAttr(QTextStream &c, const QString &classname)
     {
@@ -2833,7 +2833,7 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonG
 //    Brad Whitlock, Wed Dec 8 15:55:08 PST 2004
 //    Added support for variable names.
 //
-//    Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007 
+//    Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007
 //    Added scalemode.
 //
 // ----------------------------------------------------------------------------
@@ -2967,7 +2967,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         h << "#include <"<<name<<".h>" << Endl;
         if (custombase)
             h << "#include <Py"<<baseClass<<".h>" << Endl;
-        QString api(""); 
+        QString api("");
         // only need visitpy_api if we are exporting the api in the first place
         // (eg anyplace other than plugins, which don't define an export api).
         if(!exportAPI.isEmpty())
@@ -3028,13 +3028,14 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "// ****************************************************************************" << Endl;
         c << "// Module: Py" << name << Endl;
         c << "//" << Endl;
-        c << "// Purpose: " << Endl;
-        c << "//   " << purpose << Endl;
+        c << "// Purpose:" << Endl;
+        if (!purpose.isEmpty())
+            c << "//   " << purpose << Endl;
         c << "//" << Endl;
         c << "// Note:       Autogenerated by xml2python. Do not modify by hand!" << Endl;
         c << "//" << Endl;
         c << "// Programmer: xml2python" << Endl;
-        c << "// Creation:   omitted" << Endl;       
+        c << "// Creation:   omitted" << Endl;
         c << "//" << Endl;
         c << "// ****************************************************************************" << Endl;
         c << Endl;
@@ -3111,7 +3112,7 @@ class PythonGeneratorAttribute : public GeneratorBase
     }
 
     void WriteUserDefinedFunctions(QTextStream &c)
-    { 
+    {
         for(size_t i = 0; i < functions.size(); ++i)
         {
             if(functions[i]->target == generatorName &&
@@ -3141,7 +3142,7 @@ class PythonGeneratorAttribute : public GeneratorBase
             {
                 QString pyMethName = functions[i]->decl;
                 if (functions[i]->decl.startsWith(name + "_"))
-                    pyMethName = functions[i]->decl.right(functions[i]->decl.length()-name.length()-1); 
+                    pyMethName = functions[i]->decl.right(functions[i]->decl.length()-name.length()-1);
                 if (!countOnly)
                     c << "    {\"" << pyMethName << "\", " << functions[i]->decl << ", METH_VARARGS}," << Endl;
                 methCnt++;
@@ -3500,7 +3501,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         if(HasFunction(GetLogString))
             PrintFunction(c, GetLogString);
         else
-        { 
+        {
             c << "std::string" << Endl;
             c << "Py" << name << "_GetLogString()" << Endl;
             c << "{" << Endl;
@@ -3516,7 +3517,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         if(HasFunction(CallLogRoutine))
             PrintFunction(c, CallLogRoutine);
         else
-        { 
+        {
             c << "static void" << Endl;
             c << CallLogRoutine << "(Subject *subj, void *data)" << Endl;
             c << "{" << Endl;
@@ -3550,7 +3551,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         if(HasFunction(Py_new))
             PrintFunction(c, Py_new);
         else
-        { 
+        {
             c << "PyObject *" << Endl;
             c << Py_new << "(PyObject *self, PyObject *args)" << Endl;
             c << "{" << Endl;
@@ -3589,7 +3590,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         if(HasFunction(StartUp))
             PrintFunction(c, StartUp);
         else
-        { 
+        {
             c << "void" << Endl;
             c << StartUp << "("<<name<<" *subj, void *data)" << Endl;
             c << "{" << Endl;
@@ -3620,7 +3621,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         if(HasFunction(CloseDown))
             PrintFunction(c, CloseDown);
         else
-        { 
+        {
             c << "void" << Endl;
             c << CloseDown << "()" << Endl;
             c << "{" << Endl;
@@ -3654,7 +3655,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         if(HasFunction(FromPyObject))
             PrintFunction(c, FromPyObject);
         else
-        { 
+        {
             c << name << " *" << Endl;
             c << FromPyObject << "(PyObject *obj)" << Endl;
             c << "{" << Endl;
@@ -3668,7 +3669,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         if(HasFunction(PyNew))
             PrintFunction(c, PyNew);
         else
-        { 
+        {
             c << "PyObject *" << Endl;
             c << PyNew << "()" << Endl;
             c << "{" << Endl;
@@ -3681,7 +3682,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         if(HasFunction(Wrap))
             PrintFunction(c, Wrap);
         else
-        { 
+        {
             c << "PyObject *" << Endl;
             c << Wrap << "(const " << name << " *attr)" << Endl;
             c << "{" << Endl;
@@ -3694,7 +3695,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         if(HasFunction(SetParent))
             PrintFunction(c, SetParent);
         else
-        { 
+        {
             c << "void" << Endl;
             c << SetParent << "(PyObject *obj, PyObject *parent)" << Endl;
             c << "{" << Endl;
@@ -3707,12 +3708,12 @@ class PythonGeneratorAttribute : public GeneratorBase
             c << "}" << Endl;
         }
         c << Endl;
-        
+
         QString SetDefaults(QString("Py") + name + "_SetDefaults");
         if(HasFunction(SetDefaults))
             PrintFunction(c, SetDefaults);
         else
-        {    
+        {
             c << "void" << Endl;
             c << SetDefaults << "(const " << name << " *atts)" << Endl;
             c << "{" << Endl;
@@ -3762,6 +3763,9 @@ class PythonGeneratorAttribute : public GeneratorBase
 //   Brad Whitlock, Thu Feb 28 16:26:46 PST 2008
 //   Made it use a base class.
 //
+//   Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
+//   Added hl arg, for haslicense.
+//
 // ----------------------------------------------------------------------------
 #include <PluginBase.h>
 
@@ -3772,8 +3776,8 @@ class PythonGeneratorPlugin : public PluginBase
   public:
     PythonGeneratorPlugin(const QString &n,const QString &l,const QString &t,
         const QString &vt,const QString &dt, const QString &v, const QString &ifile,
-        bool hw, bool ho, bool onlyengine, bool noengine) : 
-        PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine), atts(NULL)
+        bool hw, bool ho, bool hl, bool onlyengine, bool noengine) :
+        PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,hl,onlyengine,noengine), atts(NULL)
     {
     }
 

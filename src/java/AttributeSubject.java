@@ -12,10 +12,10 @@ import java.util.Vector;
 // Purpose:
 //   This is the base class for all state objects. It contains the basics of
 //   determining which attributes in a state object are selected and it also
-//   contains the logic to notify observers of the state object when the 
+//   contains the logic to notify observers of the state object when the
 //   contents of the state object change.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 8 12:59:37 PDT 2002
@@ -78,7 +78,7 @@ public abstract class AttributeSubject
     }
 
     /**
-     * Removes an observer from the list of observers to be called 
+     * Removes an observer from the list of observers to be called
      * when this object's Notify() method is called.
      * @param o The observer to be removed.
      */
@@ -202,7 +202,7 @@ public abstract class AttributeSubject
     }
 
     /**
-     * Writes the object to a communication buffer, which is usually a 
+     * Writes the object to a communication buffer, which is usually a
      * socket headed for the remote process.
      * @param buf The communication buffer to which the object will be written.
      */
@@ -219,7 +219,7 @@ public abstract class AttributeSubject
     }
 
     /**
-     * Reads the object from a communication buffer, which is usually a 
+     * Reads the object from a communication buffer, which is usually a
      * socket containing input from the remote process.
      * @param buf The communication buffer from which the object will be read.
      */

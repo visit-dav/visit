@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: WellBoreCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <WellBorePluginInfo.h>
 #include <WellBoreAttributes.h>
@@ -43,16 +43,17 @@ WellBoreCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 WellBoreCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((WellBoreAttributes *) to) = *((WellBoreAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: WellBoreCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ WellBoreCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

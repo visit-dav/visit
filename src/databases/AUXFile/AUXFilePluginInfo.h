@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               AUXFilePluginInfo.h
+//  AUXFilePluginInfo.h
 // ****************************************************************************
 
 #ifndef AUXFILE_PLUGIN_INFO_H

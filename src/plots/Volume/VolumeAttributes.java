@@ -22,7 +22,7 @@ import llnl.visit.GaussianControlPointList;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class VolumeAttributes extends AttributeSubject implements Plugin

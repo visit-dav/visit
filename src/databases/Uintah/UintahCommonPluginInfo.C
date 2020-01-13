@@ -48,11 +48,11 @@ UintahCommonPluginInfo::SetupDatabase(const char *const *list,
     // ignore any nBlocks past 1
     int nTimestepGroups = nList / nBlock;
     avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
-    for (int i = 0 ; i < nTimestepGroups ; i++)
+    for (int i = 0; i < nTimestepGroups; i++)
     {
         ffl[i] = new avtUintahFileFormat(list[i*nBlock], readOptions);
     }
-    avtMTMDFileFormatInterface *inter 
+    avtMTMDFileFormatInterface *inter
            = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
     return new avtGenericDatabase(inter);
 }
@@ -73,6 +73,7 @@ UintahCommonPluginInfo::GetReadOptions() const
 {
     return GetUintahReadOptions();
 }
+
 // ****************************************************************************
 //  Method: UintahCommonPluginInfo::GetWriteOptions
 //
@@ -89,3 +90,4 @@ UintahCommonPluginInfo::GetWriteOptions() const
 {
     return GetUintahWriteOptions();
 }
+

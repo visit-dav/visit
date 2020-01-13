@@ -15,20 +15,20 @@ Definition:
 //    Hank Childs, Thu Oct  2 13:40:16 PDT 2003
 //    Add number of inputs.
 //
-//    Kathleen Bonnell,  Tue Nov 18 08:20:36 PST 2003 
-//    Set default window type based on query type. 
+//    Kathleen Bonnell,  Tue Nov 18 08:20:36 PST 2003
+//    Set default window type based on query type.
 //
-//    Kathleen Bonnell,  Sat Sep  4 11:41:18 PDT 2004 
-//    Made all parameters required, added Groups. 
+//    Kathleen Bonnell,  Sat Sep  4 11:41:18 PDT 2004
+//    Made all parameters required, added Groups.
 //
-//    Kathleen Bonnell, Fri Sep 28 14:43:50 PDT 2007 
-//    Add 'canBePublic' which defaults to '1'. 
+//    Kathleen Bonnell, Fri Sep 28 14:43:50 PDT 2007
+//    Add 'canBePublic' which defaults to '1'.
 //
 //    Kathleen Bonnell, Fri Jun 17 16:42:22 PDT 2011
 //    Add 'reqVars' which defaults to '0'.
 //
 // ****************************************************************************
- 
+
 void
 QueryList::AddQuery(const std::string &name, QueryType t, Groups g, WindowType w, int num_input, int allowedVars, QueryMode qMode, int num_vars, int reqVars)
 {
@@ -51,17 +51,17 @@ Definition:
 //  Method:  QueryExists
 //
 //  Purpose:
-//    Checks if a query matches the passed parameters. 
+//    Checks if a query matches the passed parameters.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    July 11, 2003 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    July 11, 2003
 //
 //  Modifications:
 //    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
 //    Use case insensitive equal test.
 //
 // ****************************************************************************
- 
+
 bool
 QueryList::QueryExists(const std::string &name, QueryType t)
 {
@@ -97,7 +97,7 @@ Definition:
 //    Use case insensitive equal test.
 //
 // ****************************************************************************
- 
+
 int
 QueryList::NumberOfInputsForQuery(const std::string &name)
 {
@@ -120,15 +120,15 @@ Definition:
 //  Purpose:
 //      Returns the number of inputs for a query.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    November 18, 2003 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    November 18, 2003
 //
 //  Modifications:
 //    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
 //    Use case insensitive equal test.
 //
 // ****************************************************************************
- 
+
 int
 QueryList::AllowedVarsForQuery(const std::string &name)
 {
@@ -149,17 +149,17 @@ Definition:
 //  Method:  TimeQueryAvailable
 //
 //  Purpose:
-//    Checks if a query matches the passed parameters. 
+//    Checks if a query matches the passed parameters.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    March 23, 2004 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    March 23, 2004
 //
 //  Modifications:
 //    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
 //    Use case insensitive equal test.
 //
 // ****************************************************************************
- 
+
 bool
 QueryList::TimeQueryAvailable(const std::string &name)
 {
@@ -182,21 +182,21 @@ Definition:
 //  Method:  GetWindowType
 //
 //  Purpose:
-//    Returns the window type for the named query. 
+//    Returns the window type for the named query.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    March 15, 2005 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    March 15, 2005
 //
 //  Modifications:
 //    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
 //    Use case insensitive equal test.
 //
 // ****************************************************************************
- 
+
 int
 QueryList::GetWindowType(const std::string &name)
 {
-    int wt = -1; 
+    int wt = -1;
     for (size_t i = 0; i < names.size(); i++)
     {
         if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
@@ -217,15 +217,15 @@ Definition:
 //  Purpose:
 //      Returns the number of variables required for a query.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    November 1, 2005 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    November 1, 2005
 //
 //  Modifications:
 //    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
 //    Use case insensitive equal test.
 //
 // ****************************************************************************
- 
+
 int
 QueryList::NumberOfVarsForQuery(const std::string &name)
 {
@@ -246,17 +246,17 @@ Definition:
 //  Method:  RegularQueryAvailable
 //
 //  Purpose:
-//    Checks if a regular query (non-time) matches the passed parameters. 
+//    Checks if a regular query (non-time) matches the passed parameters.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    November 9, 2005 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    November 9, 2005
 //
 //  Modifications:
 //    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
 //    Use case insensitive equal test.
 //
 // ****************************************************************************
- 
+
 bool
 QueryList::RegularQueryAvailable(const std::string &name)
 {
@@ -279,21 +279,21 @@ Definition:
 //  Method:  GetQueryType
 //
 //  Purpose:
-//    Returns the query type for the named query. 
+//    Returns the query type for the named query.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    June 27, 2011 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    June 27, 2011
 //
 //  Modifications:
 //    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
 //    Use case insensitive equal test.
 //
 // ****************************************************************************
- 
+
 int
 QueryList::GetQueryType(const std::string &name)
 {
-    int qt = -1; 
+    int qt = -1;
     for (size_t i = 0; i < names.size(); i++)
     {
         if (StringHelpers::CaseInsenstiveEqual(name,names[i]))

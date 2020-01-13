@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SliceCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <SlicePluginInfo.h>
 #include <SliceAttributes.h>
@@ -43,7 +43,7 @@ SliceCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 SliceCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

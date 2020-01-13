@@ -22,7 +22,7 @@ class ActionGroupDescription;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindowManagerAttributes : public AttributeSubject
