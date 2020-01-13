@@ -30,6 +30,8 @@ function bv_mfem_info
     export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
     export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
     export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-0"}
+    export MFEM_MD5_CHECKSUM="acbc9ca4398f3cc19762abdc47654607"
+    export MFEM_SHA256_CHECKSUM="df5bdac798ea84a263979f6fbf79de9013e1c55562f95f98644c3edcacfbc727"
 }
 
 function bv_mfem_print
