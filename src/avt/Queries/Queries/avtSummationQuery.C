@@ -479,15 +479,7 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
     vtkIntArray *originalNodes = NULL;
 
     // Determine if the variable begin summed is volume dependent.
-    vtkBitArray *volumeDependent = NULL; // Tracks if the cell is volume dependent.
-    if (pointData)
-    {
-        volumeDependent = vtkBitArray::SafeDownCast(ds->GetPointData()->GetArray("VolumeDependent"));
-    }
-    else
-    {
-        volumeDependent = vtkBitArray::SafeDownCast(ds->GetCellData()->GetArray("VolumeDependent"));
-    }
+    vtkBitArray *volumeDependent = vtkBitArray::SafeDownCast(ds->GetFieldData()->GetArray("VolumeDependent"));
     bool volumeDependentBool = volumeDependent ? volumeDependent->GetValue(0) : false;
 
     if (sumFromOriginalElement && !volumeDependentBool)

@@ -287,8 +287,6 @@ avtExpressionDataTreeIterator::ExecuteData_VTK(avtDataRepresentation *in_dr)
             rv->GetPointData()->SetActiveVectors(outputVariableName);
         else if (vardim == 9)
             rv->GetPointData()->SetActiveTensors(outputVariableName);
-        
-        rv->GetPointData()->AddArray(this->volumeDependent);
     }
     else
     {
@@ -299,14 +297,14 @@ avtExpressionDataTreeIterator::ExecuteData_VTK(avtDataRepresentation *in_dr)
             rv->GetCellData()->SetActiveVectors(outputVariableName);
         else if (vardim == 9)
             rv->GetCellData()->SetActiveTensors(outputVariableName);
-        
-        rv->GetCellData()->AddArray(this->volumeDependent);
     }
 
     //
     // Make sure that we don't have any memory leaks.
     //
     dat->Delete();
+
+    rv->GetFieldData()->AddArray(this->volumeDependent);
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
         in_dr->GetDomain(), in_dr->GetLabel());
