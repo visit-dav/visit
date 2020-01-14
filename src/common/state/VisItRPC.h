@@ -141,7 +141,7 @@ public:
 
         void SetReplyData(AttributeSubject *rd)
                    { replyData = rd; if(replyData) Select(5,replyData); };
- 
+
         AttributeSubject *GetReplyData() const { return replyData; };
 
         void SelectAll()

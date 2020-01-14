@@ -113,7 +113,7 @@ XMLNode::~XMLNode()
 //  Method:  XMLNode::Attribute
 //
 //  Purpose:
-//     Gets attribute in a const safe way. If attribute is not set, 
+//     Gets attribute in a const safe way. If attribute is not set,
 //     returns "[unset]".
 //
 //  Programmer:  Cyrus Harrison
@@ -142,7 +142,7 @@ XMLNode::Attribute(const string &att_name) const
 //
 // ****************************************************************************
 
-bool 
+bool
 XMLNode::HasAttribute(const string &name) const
 {
     return attributes.find(name) != attributes.end();
@@ -160,7 +160,7 @@ XMLNode::HasAttribute(const string &name) const
 //
 // ****************************************************************************
 
-bool 
+bool
 XMLNode::DeleteAttribute(const string &name)
 {
     map<string,string>::iterator itr = attributes.find(name);
@@ -186,7 +186,7 @@ XMLNode::DeleteAttribute(const string &name)
 //
 // ****************************************************************************
 
-void 
+void
 XMLNode::GetAttributeNames(stringVector &result) const
 {
     result.clear();
@@ -238,7 +238,7 @@ XMLNode::AddChild(const string &name)
 //  Method:  XMLNode::AddChild
 //
 //  Purpose:
-//     Creates copy of the passed node, adds it as a child and returns 
+//     Creates copy of the passed node, adds it as a child and returns
 //     the new child's pointer.
 //
 //  Programmer:  Cyrus Harrison
@@ -271,7 +271,7 @@ XMLNode::TakeChild(int index)
 {
     if(index < 0 || (size_t)index >= children.size())
         return 0;
-        
+
     XMLNode *child = children[index];
     children.erase(children.begin()+index);
     return child;
@@ -288,12 +288,12 @@ XMLNode::TakeChild(int index)
 //
 // ****************************************************************************
 
-bool 
+bool
 XMLNode::DeleteChild(int index)
 {
     if(index < 0 || (size_t)index >= children.size())
         return false;
-        
+
     XMLNode *child = children[index];
     delete child;
     children.erase(children.begin()+index);
@@ -316,14 +316,14 @@ XMLNode::DeleteChild(int index)
 //
 // ****************************************************************************
 
-int 
+int
 XMLNode::FindIndex(const string &name, int start) const
 {
     if(start < 0)
         start = 0;
     if((size_t)start > children.size())
         return -1;
-        
+
     for(size_t i=start; i<children.size(); i++)
     {
         if(name == children[i]->Name())
@@ -352,7 +352,7 @@ XMLNode::ToString(const string &indent) const
     map<string,string>::const_iterator itr;
     for(itr = attributes.begin(); itr != attributes.end(); ++itr)
     {
-        oss << " " << EscapeString(itr->first) << "=\"" 
+        oss << " " << EscapeString(itr->first) << "=\""
             << EscapeString(itr->second) << "\"";
     }
     oss << ">";
@@ -369,14 +369,14 @@ XMLNode::ToString(const string &indent) const
         // if we have a text value, save it out as a "text" child
         // since nested & text xml nodes are not supposed to mix
         if(text != "")
-            oss << child_indent << "<text>" << EscapeString(text) 
+            oss << child_indent << "<text>" << EscapeString(text)
                 << "</text>" <<endl;
-        
+
         for(size_t i=0;i<nchildren;i++)
             oss << children[i]->ToString(child_indent);
         oss << indent << "</" << esc_name << ">" << endl;
     }
-    
+
     return oss.str();
 }
 
@@ -392,7 +392,7 @@ XMLNode::ToString(const string &indent) const
 //
 // ****************************************************************************
 
-void 
+void
 XMLNode::Parse(const string &xml_data)
 {
     if(xml_data == "")
@@ -413,7 +413,7 @@ XMLNode::Parse(const string &xml_data)
 //
 // ****************************************************************************
 
-void 
+void
 XMLNode::Parse(istream &iss)
 {
     if(iss.eof())
@@ -436,7 +436,7 @@ XMLNode::Parse(istream &iss)
     Eat(">",iss);
     // dont keep white space at beginning of new tag
     iss >> ws;
-   
+
     if(!Check("</",iss)) // only continue if node isnt empty
     {
         if(Check("<",iss)) // get child nodes
@@ -469,7 +469,7 @@ XMLNode::Parse(istream &iss)
 //
 // ****************************************************************************
 
-bool 
+bool
 XMLNode::Check(const string&str,istream &iss)
 {
     // see of first part of the string buffer == the input string
@@ -486,7 +486,7 @@ XMLNode::Check(const string&str,istream &iss)
         iss.putback(buff.top());
         buff.pop();
     }
-        
+
     return i == str_len;
 }
 
@@ -501,7 +501,7 @@ XMLNode::Check(const string&str,istream &iss)
 //
 // ****************************************************************************
 
-void 
+void
 XMLNode::Eat(const string &str,istream &iss)
 {
     // eat string from stream
@@ -530,7 +530,7 @@ XMLNode::GrabName(istream &iss)
 {
     string res = "";
     unsigned char c = iss.get();
-    while( !iss.eof() && 
+    while( !iss.eof() &&
            c != ' ' && c != '\t' && c != '\n' &&
            c != '=' && c != '<'  && c != '>'  )
     {
@@ -553,7 +553,7 @@ XMLNode::GrabName(istream &iss)
 //
 // ****************************************************************************
 
-string 
+string
 XMLNode::GrabString(unsigned char term,istream &iss)
 {
     string res = "";
@@ -577,7 +577,7 @@ XMLNode::GrabString(unsigned char term,istream &iss)
 //  Method:  XMLNode::GrabEntityValue
 //
 //  Purpose:
-//     Reads in special xml encoded values. Assumes '&' has already been 
+//     Reads in special xml encoded values. Assumes '&' has already been
 //     removed.
 //
 //  Programmer:  Cyrus Harrison
@@ -595,7 +595,7 @@ XMLNode::GrabEntityValue(istream &iss)
     // &apos;  '
     // $quot;  "
 
-    string val = "";    
+    string val = "";
     unsigned char c = iss.get();
     while( !iss.eof() && c != ';')
     {
@@ -622,7 +622,7 @@ XMLNode::GrabEntityValue(istream &iss)
 //  Method:  XMLNode::EscapeString
 //
 //  Purpose:
-//     Removes invalid xml characters and replaces them with proper xml 
+//     Removes invalid xml characters and replaces them with proper xml
 //     entities values.
 //
 //  Programmer:  Cyrus Harrison
@@ -638,12 +638,12 @@ string
 XMLNode::EscapeString(const string &val)
 {
     // replace with standard xml entities:
-    // < &lt;    
-    // > &gt;    
+    // < &lt;
+    // > &gt;
     // & &amp;
     // ' &apos;
     // " $quot;
-    
+
     string res="";
     size_t ssize = val.size();
     for(size_t i=0;i<ssize;i++)
@@ -659,7 +659,7 @@ XMLNode::EscapeString(const string &val)
         else if(val[i] == '"')
         {res += string("&quot;");}
         else
-        {res.push_back(val[i]);} 
+        {res.push_back(val[i]);}
     }
     return res;
 }
@@ -676,16 +676,16 @@ XMLNode::EscapeString(const string &val)
 //
 // ****************************************************************************
 
-void 
+void
 XMLNode::Init(const XMLNode &node)
 {
     if(children.size() > 0 || attributes.size() >0)
         Cleanup();
-        
+
     name = node.name;
     text = node.text;
     attributes = node.attributes;
-    
+
     int nchildren = node.GetNumChildren();
     for(int i=0;i<nchildren;i++)
         children.push_back(new XMLNode(*node.children[i]));
@@ -704,7 +704,7 @@ XMLNode::Init(const XMLNode &node)
 //
 // ****************************************************************************
 
-void 
+void
 XMLNode::Cleanup()
 {
     int nchildren = GetNumChildren();

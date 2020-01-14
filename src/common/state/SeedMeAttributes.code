@@ -4,15 +4,15 @@ Definition:
 // ****************************************************************************
 // Method: SeedMeAttributes::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   This method sets attributes in this object from values in a DataNode
 //   representation of the object.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   August 14, 2017 
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2017
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -25,9 +25,9 @@ SeedMeAttributes::SetFromNode(DataNode *parentNode)
     if(searchNode == 0)
         return;
 
-    // Prior to the Aug 14, 2017, SeedMeAttributes were not saved to config 
+    // Prior to the Aug 14, 2017, SeedMeAttributes were not saved to config
     // file.  This was changed so that the new att, ClearAllTabsOnClose
-    // could be saved, but we don't necessarily want all the rest of 
+    // could be saved, but we don't necessarily want all the rest of
     // the atts saved.
 
     DataNode *node;
@@ -41,11 +41,11 @@ Definition:
 // ****************************************************************************
 // Method: SeedMeAttributes::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   This method creates a DataNode representation of the object so it can be
 //   saved to a config file.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 14, 2017
 //
 // Modifications:
@@ -64,9 +64,9 @@ SeedMeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     // Create a node for SeedMeAttributes.
     DataNode *node = new DataNode("SeedMeAttributes");
 
-    // Prior to the Aug 14, 2017, SeedMeAttributes were not saved to config 
+    // Prior to the Aug 14, 2017, SeedMeAttributes were not saved to config
     // file.  This was changed so that the new att, ClearAllTabsOnClose
-    // could be saved, but we don't necessarily want all the rest of 
+    // could be saved, but we don't necessarily want all the rest of
     // the atts saved.
 
     if(completeSave || !FieldsEqual(ID_clearAllTabsOnClose, &defaultObject))

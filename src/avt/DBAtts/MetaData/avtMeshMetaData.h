@@ -23,7 +23,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class DBATTS_API avtMeshMetaData : public AttributeSubject

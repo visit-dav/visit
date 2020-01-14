@@ -13,7 +13,7 @@
 // ****************************************************************************
 // Method: ColorTableManager::ColorTableManager
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the ColorTableManager class.
 //
 // Programmer: Brad Whitlock
@@ -34,14 +34,14 @@ ColorTableManager::ColorTableManager() : ccpl()
 // ****************************************************************************
 // Method: ColorTableManager::~ColorTableManager
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the ColorTableManager class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 3 18:23:39 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ColorTableManager::~ColorTableManager()
@@ -51,7 +51,7 @@ ColorTableManager::~ColorTableManager()
 // ****************************************************************************
 // Method: ColorTableManager::Export
 //
-// Purpose: 
+// Purpose:
 //   Exports a color table to the named file.
 //
 // Arguments:
@@ -80,7 +80,7 @@ ColorTableManager::Export(const std::string &ctName,
     ccpl = ccpl_;
 
     //
-    // Make sure that if the color table already contains the colortable 
+    // Make sure that if the color table already contains the colortable
     // directory that we don't decorate the name.
     //
     std::string ctDir(GetUserVisItDirectory());
@@ -106,7 +106,7 @@ ColorTableManager::Export(const std::string &ctName,
 // ****************************************************************************
 // Method: ColorTableManager::ImportColorTables
 //
-// Purpose: 
+// Purpose:
 //   Imports VisIt's external color tables.
 //
 // Programmer: Brad Whitlock
@@ -143,7 +143,7 @@ ColorTableManager::ImportColorTables(ColorTableAttributes *cta)
 // ****************************************************************************
 // Method: ColorTableManager::WriteConfigFile
 //
-// Purpose: 
+// Purpose:
 //   Writes a the color table to a file.
 //
 // Arguments:
@@ -181,8 +181,8 @@ ColorTableManager::WriteConfigFile(std::ostream& out)
     // if necessary.
     if (ctNode->GetNode("ColorControlPointList")->GetNode("category"))
     {
-        // if the category is Standard 
-        std::string category = 
+        // if the category is Standard
+        std::string category =
             ctNode->GetNode("ColorControlPointList")->GetNode("category")->AsString();
         if (category == std::string("Standard"))
         {
@@ -222,7 +222,7 @@ ColorTableManager::WriteConfigFile(const char *filename)
 // ****************************************************************************
 // Method: ColorTableManager::ReadConfigFile
 //
-// Purpose: 
+// Purpose:
 //   Reads a color table from a file.
 //
 // Arguments:
@@ -232,7 +232,7 @@ ColorTableManager::WriteConfigFile(const char *filename)
 // Creation:   Thu Jul 3 18:27:57 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 DataNode *
 ColorTableManager::ReadConfigFile(std::istream& in)
@@ -269,18 +269,18 @@ ColorTableManager::ReadConfigFile(const char *filename)
 // ****************************************************************************
 // Method: ColorTableManager::ImportHelper
 //
-// Purpose: 
+// Purpose:
 //   Static callback function for ReadAndProcessDirectory.
 //
 // Arguments:
 //   data       : Callback data.
 //   ctFileName : The name of the color table file to open.
-//   
+//
 // Programmer: Brad Whitlock
 // Creation:   Mon Jul 7 15:42:51 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -294,7 +294,7 @@ ColorTableManager::ImportHelper(void *data, const std::string &ctFileName,
 // ****************************************************************************
 // Method: ColorTableManager::ImportColorTable
 //
-// Purpose: 
+// Purpose:
 //   Tries to import the named file as a color table.
 //
 // Arguments:
@@ -338,8 +338,8 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
                 ctName = ctFileName;
             else
                 ctName = ctFileName.substr(pos + 1, ctFileName.size() - pos - 1 - 3);
-            
-            // Look for the ColorTable node.           
+
+            // Look for the ColorTable node.
             DataNode *node2 = node->SearchForNode("ColorTable");
             if(node2 == 0)
                 return;
@@ -351,10 +351,10 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
             {
                 if (importingPersonal)
                     ccpl2.SetCategoryName("UserDefined");
-                else 
+                else
                     ccpl2.SetCategoryName("Standard");
             }
-            
+
             // Check for errors that would break code down the line
             int ii;
             bool broken = false;
@@ -383,7 +383,7 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
             else
             {
                 ctAtts->AddColorTable(ctName, ccpl2);
-            
+
                 debug4 << "Imported color table " << ctFileName.c_str()
                        << " as " << ctName.c_str() << endl;
             }

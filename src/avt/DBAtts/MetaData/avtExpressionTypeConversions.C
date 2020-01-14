@@ -6,7 +6,7 @@
 // ****************************************************************************
 // Method: ExprType_To_avtVarType
 //
-// Purpose: 
+// Purpose:
 //   Returns the avtVarType for the expression type.
 //
 // Arguments:
@@ -15,7 +15,7 @@
 // Returns:    The avtVarType of the expression or AVT_UNKNOWN_TYPE if the type
 //             cannot be determined.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 18 14:45:25 PST 2002
@@ -26,11 +26,11 @@
 //
 //      Sean Ahern, Mon Mar 17 23:01:02 America/Los_Angeles 2003
 //      Changed the expression type names.
-//   
+//
 //      Hank Childs, Tue Jul 19 13:39:12 PDT 2005
 //      Added array expression.
 //
-//      Kathleen Bonnell, Wed Aug  2 17:20:11 PDT 2006 
+//      Kathleen Bonnell, Wed Aug  2 17:20:11 PDT 2006
 //      Added curve expression.
 //
 // ****************************************************************************
@@ -81,7 +81,7 @@ ExprType_To_avtVarType(const Expression::ExprType type)
 // ****************************************************************************
 // Method: avtVarType_To_ExprType
 //
-// Purpose: 
+// Purpose:
 //   Returns the expression type for the AVT variable type.
 //
 // Arguments:
@@ -89,7 +89,7 @@ ExprType_To_avtVarType(const Expression::ExprType type)
 //
 // Returns:    The expression type or UNKNOWN if the type cannot be determined.
 //
-// Note:       
+// Note:
 //
 // Programmer: Hank Childs
 // Creation:   January 8, 2007

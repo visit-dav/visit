@@ -36,20 +36,11 @@
 //  Programmer: Hank Childs
 //  Creation:   December 27, 2004
 //
-//  Modifications:
-//
-//    Eddie Rusu, Mon Dec 30 20:41:07 PST 2019
-//    Initialize the volumeDependent array. Default dependency to false.
-//
 // ****************************************************************************
 
 avtExpressionDataTreeIterator::avtExpressionDataTreeIterator()
 {
-    volumeDependent = vtkBitArray::New();
-    volumeDependent->SetName("VolumeDependent");
-    volumeDependent->SetNumberOfComponents(1);
-    volumeDependent->SetNumberOfTuples(1);
-    volumeDependent->SetComponent(0, 0, false); // Default volume dependency to false
+    ;
 }
 
 
@@ -63,7 +54,7 @@ avtExpressionDataTreeIterator::avtExpressionDataTreeIterator()
 
 avtExpressionDataTreeIterator::~avtExpressionDataTreeIterator()
 {
-    volumeDependent->Delete();
+    ;
 }
 
 
@@ -164,9 +155,6 @@ avtExpressionDataTreeIterator::~avtExpressionDataTreeIterator()
 //
 //    Eric Brugger, Wed Aug 20 16:25:34 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
-//
-//    Eddie Rusu, Mon Dec 30 20:41:07 PST 2019
-//    Add the volumeDependent tracking array to the vtkDataSet.
 //
 // ****************************************************************************
 

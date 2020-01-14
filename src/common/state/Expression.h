@@ -21,7 +21,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API Expression : public AttributeSubject
@@ -122,7 +122,6 @@ public:
     static int GetNumTypes();
     static const char * GetTypeString(const Expression::ExprType t);
     static Expression::ExprType GetTypeId(const std::string s);
-    
 
     // IDs that can be used to identify fields in case statements
     enum {

@@ -15,7 +15,7 @@
 //  Class:  MapNode
 //
 //  Purpose:
-//    Provides a nested map type. 
+//    Provides a nested map type.
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    December 14, 2007
@@ -73,7 +73,7 @@ class STATE_API MapNode : public Variant
     const MapNode       *GetEntry(const std::string &) const;
 
     void                 Merge(const MapNode &);
-    
+
     void                 RemoveEntry(const std::string &);
     bool                 HasEntry(const std::string &) const;
     bool                 HasNumericEntry(const std::string &) const;

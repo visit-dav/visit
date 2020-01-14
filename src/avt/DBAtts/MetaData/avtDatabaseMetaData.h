@@ -50,7 +50,7 @@ class avtDefaultPlotMetaData;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
@@ -377,9 +377,9 @@ public:
     void ClearGhostTypesPresent(std::string name);
     void AddGhostZoneTypePresent(std::string name, avtGhostsZonesPresent v);
     int GetTotalVarCount(void) const;
-    char const * GetSEGEnvVarName() const;
-    char const * GetSEGWarningString() const;
-    void IssueSEGWarningMessage() const;
+    char const *GetSEGEnvVarName(void) const;
+    char const *GetSEGWarningString(void) const;
+    void IssueSEGWarningMessage(void) const;
     bool ShouldDisableSEG(bool envOverride=false) const;
 
     // IDs that can be used to identify fields in case statements

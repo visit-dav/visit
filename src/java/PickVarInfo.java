@@ -20,7 +20,7 @@ import java.lang.Integer;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class PickVarInfo extends AttributeSubject

@@ -19,13 +19,13 @@ typedef void (ObserverCallback)(Subject *subj, void *data);
 //   This is a special observer subclass that can be used to call a callback
 //   function when its subject does a Notify().
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 24 17:13:46 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API ObserverToCallback : public Observer

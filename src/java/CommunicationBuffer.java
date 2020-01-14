@@ -16,10 +16,10 @@ import java.nio.ByteBuffer;
 //
 // Purpose:
 //   This class implements a buffer into which we write variables. It also
-//   makes sure that the variables are translated into the format of the 
+//   makes sure that the variables are translated into the format of the
 //   destination platform. We can also read variables out of the buffer.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 8 12:56:51 PDT 2002
@@ -146,7 +146,7 @@ public class CommunicationBuffer
             nAlloc = newAlloc;
             buf = newBuf;
         }
-        
+
         // Add the length if we are writing it.
         if(writeLength)
             WriteInt(b.length);
@@ -489,7 +489,7 @@ public class CommunicationBuffer
             nAlloc = newAlloc;
             buf = newBuf;
         }
-        
+
         // Add the byte
         buf[length] = b;
         ++length;

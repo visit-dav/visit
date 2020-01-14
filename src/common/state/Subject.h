@@ -18,13 +18,13 @@ class SimpleObserver;
 //   object that is watched by the observers. When the subject changes,
 //   all of its obsevers are notified.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Aug 9 15:59:45 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class STATE_API Subject

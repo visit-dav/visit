@@ -21,7 +21,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerRPC : public AttributeSubject

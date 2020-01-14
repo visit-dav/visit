@@ -24,7 +24,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class DBATTS_API avtScalarMetaData : public avtVarMetaData

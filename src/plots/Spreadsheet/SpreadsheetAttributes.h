@@ -24,7 +24,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class SpreadsheetAttributes : public AttributeSubject

@@ -8,7 +8,7 @@
 // *******************************************************************
 // Method: Observer::Observer
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the Observer class. It registers the observer
 //   with the subject that is passed in.
 //
@@ -19,7 +19,7 @@
 // Creation:   Tue Jun 6 10:43:37 PDT 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 Observer::Observer(Subject *s) : SimpleObserver()
@@ -31,7 +31,7 @@ Observer::Observer(Subject *s) : SimpleObserver()
 // *******************************************************************
 // Method: Observer::~Observer
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the Observer class. Detaches this observer from
 //   the subject that it is watching.
 //
@@ -57,7 +57,7 @@ Observer::~Observer()
 // *******************************************************************
 // Method: Observer::SubjectRemoved
 //
-// Purpose: 
+// Purpose:
 //   Indicates that the subject that the Observer was watching is
 //   not around anymore.
 //
@@ -65,7 +65,7 @@ Observer::~Observer()
 // Creation:   Thu Aug 31 15:20:45 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 void

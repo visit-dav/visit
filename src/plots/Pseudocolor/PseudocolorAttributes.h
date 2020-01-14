@@ -23,7 +23,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class PseudocolorAttributes : public AttributeSubject
