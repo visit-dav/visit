@@ -292,6 +292,8 @@ avtExpressionDataTreeIterator::ExecuteData_VTK(avtDataRepresentation *in_dr)
     //
     dat->Delete();
 
+    rv->GetFieldData()->AddArray(this->volumeDependent);
+
     avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
         in_dr->GetDomain(), in_dr->GetLabel());
 
