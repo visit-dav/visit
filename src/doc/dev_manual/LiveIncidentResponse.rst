@@ -1,13 +1,14 @@
 Live Incident Response
 ======================
 
-VisIt_ software developers also have to serve in customer support roles taking
-hotline calls, replying to emails, responding to drop-ins, etc. Customer support
-is about the *operations* side of VisIt_ software. That is the side associated
-with users *running* the software to get their work done. Apart from the VisIt_
-software itself, *operations* involves many other things including the computing
-hardware, file systems and networks upon which VisIt_ software runs as well as
-the security enviornment and any third party software dependencies involved.
+VisIt_ software developers also have to serve in incident response roles taking
+hotline calls, replying to emails, responding to drop-ins, etc. Incident
+response is about the *operations* side of VisIt_ software. That is the side
+associated with users *running* the software to get their work done. Apart from
+the VisIt_ software itself, *operations* involves many other things including
+the computing hardware, file systems and networks upon which VisIt_ software
+runs as well as the security enviornment and any third party software
+dependencies involved.
 
 Most of those aspects of *operations* are typically out of the purview of the
 VisIt_ team. In most cases the extent of the VisIt_ team's involvement in
@@ -21,21 +22,21 @@ is more commonly referred to as *DevOps*. There is a pretty good
 `video <https://youtu.be/XoXeHdN2Ayc>`_ that introduces these concepts.
 
 This document explains our procedures for how VisIt_ software developers handle
-active customer support calls. Some of the goals of this proccess are...
+active incidence response calls. Some of the goals of this proccess are...
 
   * To try to *load balance* the work of incident response in an equitable way
     across the development team.
   * To achieve a 1-hour response time.
   * To reduce incident response interruptions for the team as a whole.
+  * Identify and document escalation paths for major incidents.
 
 For the VisIt_ project, normal business hours are 8am-12pm and 1-5pm, Monday
-through Friday excluding LLNL holidays. The work of *live* customer support is
+through Friday excluding LLNL holidays. The work of *live* incidence response is
 allocated in one-week intervals. During a week, one developer is assigned
-as the *primary* customer support contact and a second developer is assigned
-as a *backup*. Live customer support issues will be logged and tracked in a
+as the *primary* incidence response contact and a second developer is assigned
+as a *backup*. Live incidence response issues will be logged and tracked in a
 separate GitHub respository within the
 `visit-dav GitHub organization. <https://github.com/visit-dav>`_
-
 
 The Primary's Role
 ------------------
@@ -75,10 +76,10 @@ reveals incorrect or missing documentation, the primary should work to fix such
 issues. As a rule of thumb, low-hanging fruit is considered to be anything that
 primary believes is fixable within a half-day's (4 hours) worth or effort. 
 
-When primary has challenges with incident diagnosis, s/he should feel free but
-should otherwise sparingly engage other developers with help starting with the
-*backup*. When developer expertise other than *backup* is needed, primary should
-arrange mutually agreeable times to engage those developers.
+When primary has challenges with incident diagnosis, s/he should feel free to
+engage other developers with help starting with the *backup*. When developer
+expertise other than *backup* is needed, primary should arrange mutually
+agreeable times to engage those developers.
 
 There shall be no expectation that a developer serving as *primary* can get any
 other work done beyond their incidence response obligations. In slow weeks, its
