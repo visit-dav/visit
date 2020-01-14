@@ -38,12 +38,16 @@ void Copy3(double coords[][3], double a[], int i)
 //    Added useVerdictHex flag, so that volume of hex can be calculated
 //    differently if desired.
 //
+//    Eddie Rusu, Tue Jan 14 13:41:26 PST 2020
+//    Set volume dependency to true for this metric.
+//
 // ****************************************************************************
 
 avtVMetricVolume::avtVMetricVolume()
 {
     useOnlyPositiveVolumes = false;
     useVerdictHex = true;
+    volumeDependent->SetComponent(0, 0, true); // Set volume dependency to true
 }
 
 

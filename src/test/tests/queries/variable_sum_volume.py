@@ -4,10 +4,8 @@
 #  Test Case:  volume.py
 #  Tests:      queries     - volumes of various material selected regions
 #
-#  Defect ID:  VisIt00006077
-#
 #  Programmer: Eddie Rusu
-#  Date:       December 30, 2019
+#  Date:       January 14, 2020
 # ----------------------------------------------------------------------------
 
 OpenDatabase(data_path("silo_pdb_test_data/ucd3d.silo"))
