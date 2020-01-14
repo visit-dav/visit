@@ -48,7 +48,7 @@ class vtkmDataSet;
 //    Eric Brugger, Wed Aug 20 16:24:51 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
-//    Eddie Rusu, Mon Dec 30 20:41:07 PST 2019
+//    Eddie Rusu, Tue Jan 14 13:56:24 PST 2020
 //    Added volumeDependent array that tracks if a generated expression is
 //    volume-dependent.
 //
