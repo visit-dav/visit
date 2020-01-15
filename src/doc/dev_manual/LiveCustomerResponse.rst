@@ -181,3 +181,11 @@ the SCF, the primary should
     handled in the following week by a new primary/backup pair.
   * If customer indicates immediate response required, primary should inquire
     the whole team to arrange another developer who can handle it.
+
+To Do
+-----
+
+  * Decide when to switch to this new process
+  * Where do we keep weekly "calendar"?
+    * maybe a wiki page or issue on live issues repo?
+  * Mark to get telephone forwarding procedure
