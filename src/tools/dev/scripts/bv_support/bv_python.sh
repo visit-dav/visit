@@ -695,11 +695,23 @@ function build_pil
 
     PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $PIL_BUILD_DIR > /dev/null
-    info "Building PIL ...\n" \
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        info "Building PIL ...\n" \
+         "CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS}" \
+         " CPPFLAGS=-I/opt/X11/include" \
+         "  ${PYHOME}/bin/python ./setup.py build "
+        CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} \ 
+         CPPFLAGS="-I/opt/X11/include" \
+        ${PYHOME}/bin/python ./setup.py build
+    else
+        info "Building PIL ...\n" \
          "CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS}" \
          "  ${PYHOME}/bin/python ./setup.py build "
-    CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} \
-      ${PYHOME}/bin/python ./setup.py build 
+        CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} \ 
+        ${PYHOME}/bin/python ./setup.py build
+    fi
+ 
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not build PIL"
