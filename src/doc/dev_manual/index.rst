@@ -16,7 +16,7 @@ VisIt_ Developer Manual
     CreateRelease
     MemoryLeaks
     Docker
-    LiveIncidentResponse 
+    LiveCustomerResponse
 
 .. Indices and tables
 .. ==================
