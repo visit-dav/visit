@@ -182,6 +182,18 @@ the SCF, the primary should
   * If customer indicates immediate response required, primary should inquire
     the whole team to arrange another developer who can handle it.
 
+Relation to Programmatic Work
+-----------------------------
+
+When developers are faced with many development tasks, its easy to think of
+customer response work as an *interruption* to those tasks. However, customer
+response *is* indeed a critical aspect to programmatic work. It is part of what
+is involved in keeping VisIt_ a working and useful tool in our customer's
+workflows not only here at LLNL, though that is VisIt_'s biggest customer, but
+wherever in DOE/DOD and elsewhere in the world VisIt_ is used. Often the issues
+users at large encounter and report are relevant to the use of VisIt_ here at
+LLNL.
+
 To Do
 -----
 
