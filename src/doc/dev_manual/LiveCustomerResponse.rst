@@ -169,9 +169,6 @@ On the one hand, customers on SCF are accustomed to longer response times.
 On the other hand, often work on the SCF is a high priority and requires
 rapid response from a developer that is on site with access to SCF.
 
-The primary should first attempt to determine the customer's needed response
-time. If the customer indicates 
-
 Our current plan is to handle this on a case-by-case basis. If neither the
 primary nor backup are able to handle a customer response incident requiring
 the SCF, the primary should
