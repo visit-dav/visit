@@ -74,7 +74,7 @@ Another role of the primary is to use their time during the week to fix any
 *low-hanging fruit* issues revealed by an incident. For example, if an incident
 reveals incorrect or missing documentation, the primary should work to fix such
 issues. As a rule of thumb, low-hanging fruit is considered to be anything that
-primary believes is fixable within a half-day's (4 hours) worth or effort. 
+primary believes is fixable within a half-day's (4 hours) worth of effort. 
 
 When primary has challenges with incident diagnosis, s/he should feel free to
 engage other developers with help starting with the *backup*. When developer
@@ -105,7 +105,7 @@ achieve this is to selectivley *watch* the visit-live-indicents repository.
 In cases where *primary* needs help in resolving an incident, the *backup*
 shall serve as the first line of defense. In addition, the *backup* should be
 ready to step up to the *primary* role in the (hopefully rare) occurance that
-*primary* is unable maintain the one-hour response time goal. To the extent
+*primary* is unable to maintain the one-hour response time goal. To the extent
 possible, the transition from *backup* to *primary* should be managed formally.
 Otherwise, the *backup* should not engage in incident response activities.
 
