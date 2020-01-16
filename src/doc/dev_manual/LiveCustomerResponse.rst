@@ -38,9 +38,26 @@ active customer response incidents. Some of the goals of this process are...
 
   * To try to *load balance* the work of customer response in an equitable way
     across the development team.
-  * To achieve a 1-hour response time.
+  * To achieve a one-hour response time.
   * To reduce incident response interruptions for the team as a whole.
   * To identify and document escalation paths for major incidents.
+
+Meeting the one-hour response time goal
+---------------------------------------
+This is a desirable but challenging goal. We agree as a team to try to meet it.
+But, we recognize that our schedules might not always permit strict adherence to
+this goal. So, as an absolute, last resort, *bare minimum*, we expect issues
+occurring 8am-3pm to be responded to by COB the same day. Issues occurring after
+3pm but prior to start of next business day shall be responded to by noon of
+that next day.
+
+Note that *responding* to a customer inquiry does not necessarily
+mean *resolving* it. Sometimes, the only response possible is to acknowledge the
+customer's inquiry and let them know we intend to allocate resources to address
+it as soon as practical. In many cases, an immediate response to acknowledge
+even just the receipt of a customer's inquiry with no progress towards
+actual resolution goes a long way towards creating the goodwill necessary to
+negotiate a day or more of time to respond more fully.
 
 One Week Cycles
 ---------------
@@ -208,7 +225,7 @@ When developers are faced with many development tasks, its easy to think of
 customer response work as an *interruption* to those tasks. However, customer
 response *is* indeed a critical aspect of programmatic work. It is part of what
 is involved in keeping VisIt_ a working and useful tool in our customer's
-workflows not only here at LLNL, though that is VisIt_'s biggest customer, but
+workflows not only here at LLNL, likely VisIt_'s biggest customer, but
 wherever in DOE/DOD and elsewhere in the world VisIt_ is used. Often the issues
 users at large encounter and report are relevant to the use of VisIt_ here at
 LLNL.
