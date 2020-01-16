@@ -239,13 +239,13 @@ function apply_qt_patch
                 return 1
             fi
         fi
-    fi
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        if [[ `sw_vers -productVersion` == 10.14.[0-9]* ]]; then
-            apply_qt_5101_macos_mojave_patch
-            if [[ $? != 0 ]] ; then
-                return 1
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            if [[ `sw_vers -productVersion` == 10.14.[0-9]* ]]; then
+                apply_qt_5101_macos_mojave_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
             fi
         fi
     fi
