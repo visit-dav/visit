@@ -42,6 +42,9 @@ active customer response incidents. Some of the goals of this process are...
   * To reduce incident response interruptions for the team as a whole.
   * To identify and document escalation paths for major incidents.
 
+One Week Cycles
+---------------
+
 For the VisIt_ project, normal business hours are 8am-12pm and 1-5pm, Monday
 through Friday excluding LLNL holidays. The work of *live* customer response is
 allocated in one-week intervals. During a week, one developer is assigned
@@ -49,6 +52,18 @@ as the **Primary** customer response contact and a second developer is assigned
 as a **Backup**. Live customer response incidents will be logged and tracked in
 a separate GitHub repository within the
 `visit-dav GitHub organization. <https://github.com/visit-dav>`_
+
+A schedule, showing the primary and backup assignments going out several months
+will be posted on a
+[wiki page](https://github.com/visit-dav/live-customer-response/wiki/VisIt-Customer-Response-Primary-and-Backup-Schedule).
+Ideally, on a team of 8, each developer will serve as primary only one week out
+of every two months. This leads to fair load by head-count but isn't weighted by
+project assignments. From a project development perspective, it would be more
+appropriate for a developer that is only 50% time on VisIt_ to serve as the
+primary only half as often as a 100% time developer.
+
+In the short term, it will help to pair veteran backups with a *primary*
+who may have less experience with live customer response.
 
 The Primary's Role
 ------------------
@@ -62,7 +77,7 @@ gets handed-off to next week's primary. Handoff's are managed formally with an
 email to customer and the next week's primary and backup contact information.
 
 For each new incident, the primary should file an issue ticket in the
-`visit-live-incidents <https://github.com/visit-dav/visit-live-incidents/issues>`_
+`live-customer-response <https://github.com/visit-dav/live-customer-response/issues>`_
 repository and assign themselves. When the incident is resolved, the associated
 issue should be closed. Primary should endeavor to capture all relevant
 information and communications involving the incident in this issue. For users
@@ -97,11 +112,10 @@ issues within his/her week. As a rule of thumb, low-hanging fruit is considered
 to be anything that primary believes is fixable within a half-day's (4 hours)
 worth of effort. 
 
-When primary has challenges any of the paths to resolution of an incident, s/he
+When primary has challenges with any of the paths to resolution above, s/he
 should feel free to engage other developers with help. But primary should first
-enlist the backup. When developer expertise other than backup is needed,
-primary should arrange mutually agreeable times to engage those other
-developers.
+enlist the backup. When developer expertise other than backup is needed, primary
+should arrange mutually agreeable times to engage those other developers.
 
 There shall be no expectation that a developer serving as primary can get any
 other work done beyond their customer response obligations. In slow weeks, its
@@ -130,10 +144,16 @@ shall serve as the first line of defense. In addition, the backup should be
 ready to step up to the primary role in the (hopefully rare) occurrence that the
 primary is unable to maintain the one-hour response time goal. To the extent
 possible, the transition from backup to primary should be managed formally.
-Otherwise, the backup should not engage in customer response activities.
+Otherwise, the backup should simply listen in but otherwise not engage.
 
-In the short term, it will help to pair veteran backups with a *primary*
-who may have less experience with live customer response.
+Other Developer's Role
+----------------------
+
+In the ideal, the primary is able to handle all customer response activity and
+no other developers are interrupted. Thus, other developers should feel free to
+ignore customer inquiries and/or redirect customers who may contact them directly.
+One option to reduce visit-user traffic is to switch to receiving a daily digest.
+Other options might be email client side filters.
 
 Escalation
 ----------
@@ -186,7 +206,7 @@ Relation to Programmatic Work
 
 When developers are faced with many development tasks, its easy to think of
 customer response work as an *interruption* to those tasks. However, customer
-response *is* indeed a critical aspect to programmatic work. It is part of what
+response *is* indeed a critical aspect of programmatic work. It is part of what
 is involved in keeping VisIt_ a working and useful tool in our customer's
 workflows not only here at LLNL, though that is VisIt_'s biggest customer, but
 wherever in DOE/DOD and elsewhere in the world VisIt_ is used. Often the issues
