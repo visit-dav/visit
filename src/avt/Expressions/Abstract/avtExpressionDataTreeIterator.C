@@ -36,11 +36,20 @@
 //  Programmer: Hank Childs
 //  Creation:   December 27, 2004
 //
+//  Modifications:
+//
+//    Eddie Rusu, Tue Jan 14 13:41:26 PST 2020
+//    Initialize the volumeDependent array. Default dependency to false.
+//
 // ****************************************************************************
 
 avtExpressionDataTreeIterator::avtExpressionDataTreeIterator()
 {
-    ;
+    volumeDependent = vtkBitArray::New();
+    volumeDependent->SetName("VolumeDependent");
+    volumeDependent->SetNumberOfComponents(1);
+    volumeDependent->SetNumberOfTuples(1);
+    volumeDependent->SetComponent(0, 0, false); // Default volume dependency to false
 }
 
 
@@ -50,11 +59,16 @@ avtExpressionDataTreeIterator::avtExpressionDataTreeIterator()
 //  Programmer: Hank Childs
 //  Creation:   December 27, 2004
 //
+//  Modifications:
+//
+//    Eddie Rusu, Tue Jan 14 13:41:26 PST 2020
+//    Delete the volumeDependent array to keep memory clean.
+//
 // ****************************************************************************
 
 avtExpressionDataTreeIterator::~avtExpressionDataTreeIterator()
 {
-    ;
+    volumeDependent->Delete();
 }
 
 
@@ -155,6 +169,9 @@ avtExpressionDataTreeIterator::~avtExpressionDataTreeIterator()
 //
 //    Eric Brugger, Wed Aug 20 16:25:34 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
+//
+//    Eddie Rusu, Tue Jan 14 13:41:26 PST 2020
+//    Add the volumeDependent tracking array to the vtkDataSet's field data.
 //
 // ****************************************************************************
 
@@ -291,6 +308,8 @@ avtExpressionDataTreeIterator::ExecuteData_VTK(avtDataRepresentation *in_dr)
     // Make sure that we don't have any memory leaks.
     //
     dat->Delete();
+
+    rv->GetFieldData()->AddArray(this->volumeDependent);
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
         in_dr->GetDomain(), in_dr->GetLabel());
