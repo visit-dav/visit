@@ -55,7 +55,7 @@ a separate GitHub repository within the
 
 A schedule, showing the primary and backup assignments going out several months
 will be posted on a
-[wiki page](https://github.com/visit-dav/live-customer-response/wiki/VisIt-Customer-Response-Primary-and-Backup-Schedule).
+`wiki page <https://github.com/visit-dav/live-customer-response/wiki/VisIt-Customer-Response-Primary-and-Backup-Schedule)>`_.
 Ideally, on a team of 8, each developer will serve as primary only one week out
 of every two months. This leads to fair load by head-count but isn't weighted by
 project assignments. From a project development perspective, it would be more
