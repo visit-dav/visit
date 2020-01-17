@@ -630,7 +630,7 @@ QvisExpressionsWindow::CreateWindowContents()
     connect(nameEdit, SIGNAL(textEdited(const QString&)),
             this, SLOT(nameTextChanged(const QString&)));
     connect(nameEdit, SIGNAL(editingFinished()),
-            this, SLOT(UpdateExpressionBox()));
+            this, SLOT(FinalizeExpressionNameChange()));
 
     connect(newButton, SIGNAL(pressed()),
             this, SLOT(addExpression()));
@@ -1267,63 +1267,83 @@ void
 QvisExpressionsWindow::nameTextChanged(const QString &text)
 {
     std::cout << "Entering QvisExpressionWindow::nameTextChanged(const QString&)" << std::endl;
-    this->name_changed = true;
-    this->newname = text.trimmed();
+    // this->new_expr_name = text.trimmed();
 
-    if (newname.isEmpty())
+    // if (this->new_expr_name.isEmpty())
+    // {
+    //     int newid = 1;
+    //     bool okay = false;
+    //     while (!okay)
+    //     {
+    //         this->new_expr_name = tr("unnamed%1").arg(newid);
+    //         if ((*exprList)[this->new_expr_name.toStdString().c_str()])
+    //             newid++;
+    //         else
+    //             okay = true;
+    //     }
+    // }
+
+    // if (this->new_expr_name != this->current_expr_name)
+    // {
+    //     this->name_changed = true;
+    // }
+    std::cout << "Exiting  QvisExpressionWindow::nameTextChanged(const QString&)" << std::endl;
+}
+
+void QvisExpressionsWindow::FinalizeExpressionNameChange()
+{
+    std::cout << "Entering QvisExpressionWindow::FinalizeExpressionNameChange()" << std::endl;
+    // Get the text from the currently selected item in the expression box
+    int index = exprListBox->currentRow();
+    if (index <  0)
+        return;
+    QString text_from_expr_list = exprListBox->item(index)->text();
+
+    // Get the text from the nameEdit field, automatically converting empty text to unnamed%1.
+    QString text_from_line_edit = nameEdit->text();
+    if (text_from_line_edit.isEmpty())
     {
         int newid = 1;
         bool okay = false;
         while (!okay)
         {
-            this->newname = tr("unnamed%1").arg(newid);
-            if ((*exprList)[this->newname.toStdString().c_str()])
+            text_from_line_edit = tr("unnamed%1").arg(newid);
+            if ((*exprList)[text_from_line_edit.toStdString().c_str()])
                 newid++;
             else
                 okay = true;
         }
     }
-    std::cout << "Exiting  QvisExpressionWindow::nameTextChanged(const QString&)" << std::endl;
-}
 
-void QvisExpressionsWindow::UpdateExpressionBox()
-{
-    std::cout << "Entering QvisExpressionWindow::UpdateExpressionBox()" << std::endl;
-
-    if (this->name_changed)
+    // If the name has indeed changed, then update the list
+    if (text_from_expr_list != text_from_line_edit)
     {
         std::cout << "The name has actually been changed." << std::endl;
         
         // Need to make sure that the new name is not already taken. If it is, then append a number
         // on the end. Increment that number however many times is necessary until we get a unique
         // name.
-        std::string new_name_string = this->newname.toStdString();
+        std::string new_name_string = text_from_line_edit.toStdString();
         int newid = 1;
         bool okay = (*exprList)[new_name_string.c_str()] ? false : true;
         while (!okay)
         {
-            this->newname = tr((new_name_string + "%1").c_str()).arg(newid);
-            if ((*exprList)[this->newname.toStdString().c_str()])
+            text_from_line_edit = tr((new_name_string + "%1").c_str()).arg(newid);
+            if ((*exprList)[text_from_line_edit.toStdString().c_str()])
                 newid++;
             else
                 okay = true;
         }
 
-        int index = exprListBox->currentRow();
-
-        if (index <  0)
-            return;
-
         Expression &e = (*exprList)[indexMap[index]];
 
-        e.SetName(this->newname.toStdString());
+        e.SetName(text_from_line_edit.toStdString());
         BlockAllSignals(true);
-        exprListBox->item(index)->setText(this->newname);
+        exprListBox->item(index)->setText(text_from_line_edit);
         BlockAllSignals(false);
     }
-    this->name_changed = false;
 
-    std::cout << "Exiting  QvisExpressionWindow::UpdateExpressionBox()" << std::endl;
+    std::cout << "Exiting  QvisExpressionWindow::FinalizeExpressionNameChange()" << std::endl;
 }
 
 // ****************************************************************************
