@@ -158,6 +158,10 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     bool                    stdExprActive;
     bool                    pyExprActive;
 
+    // Helper information
+    QString newname;
+    bool name_changed;
+
 };
 
 #endif
