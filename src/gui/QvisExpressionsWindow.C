@@ -1275,31 +1275,19 @@ QvisExpressionsWindow::nameTextChanged(const QString &text)
     this->name_changed = true;
     this->newname = text.trimmed();
 
-    int index = exprListBox->currentRow();
-
-    if (index <  0)
-        return;
-
-    Expression &e = (*exprList)[indexMap[index]];
-
     if (newname.isEmpty())
     {
         int newid = 1;
         bool okay = false;
         while (!okay)
         {
-            newname = tr("unnamed%1").arg(newid);
-            if ((*exprList)[newname.toStdString().c_str()])
+            this->newname = tr("unnamed%1").arg(newid);
+            if ((*exprList)[this->newname.toStdString().c_str()])
                 newid++;
             else
                 okay = true;
         }
     }
-
-    e.SetName(newname.toStdString());
-    BlockAllSignals(true);
-    exprListBox->item(index)->setText(newname);
-    BlockAllSignals(false);
     std::cout << "Exiting  QvisExpressionWindow::nameTextChanged(const QString&)" << std::endl;
 }
 
@@ -1309,10 +1297,22 @@ void QvisExpressionsWindow::UpdateExpressionBox()
 
     if (this->name_changed)
     {
-        std::cout << "The name has been changed." << std::endl;
+        std::cout << "The name has actually been changed." << std::endl;
+
+        int index = exprListBox->currentRow();
+
+        if (index <  0)
+            return;
+
+        Expression &e = (*exprList)[indexMap[index]];
+
+        e.SetName(newname.toStdString());
+        BlockAllSignals(true);
+        exprListBox->item(index)->setText(newname);
+        BlockAllSignals(false);
     }
     this->name_changed = false;
-    
+
     std::cout << "Exiting  QvisExpressionWindow::UpdateExpressionBox()" << std::endl;
 }
 
