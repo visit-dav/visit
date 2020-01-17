@@ -79,6 +79,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     void    addExpression();
     void    delExpression();
     void    nameTextChanged(const QString&);
+    void    UpdateExpressionBox();
 
     void    typeChanged(int);
     void    displayAllVarsChanged();
@@ -100,6 +101,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
 
     void    UpdateWindowSingleItem();
     void    UpdateWindowSensitivity();
+
 
   private:
 
@@ -155,6 +157,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     std::map<int,int>       indexMap;
     bool                    stdExprActive;
     bool                    pyExprActive;
+
 };
 
 #endif
