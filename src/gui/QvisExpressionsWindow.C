@@ -627,8 +627,10 @@ QvisExpressionsWindow::CreateWindowContents()
 
     connect(exprListBox, SIGNAL(itemSelectionChanged()),
             this, SLOT(UpdateWindowSingleItem()));
-    connect(nameEdit, SIGNAL(textChanged(const QString&)),
+    connect(nameEdit, SIGNAL(textEdited(const QString&)),
             this, SLOT(nameTextChanged(const QString&)));
+    connect(nameEdit, SIGNAL(editingFinished()),
+            this, SLOT(UpdateExpressionBox()));
 
     connect(newButton, SIGNAL(pressed()),
             this, SLOT(addExpression()));
@@ -1269,6 +1271,7 @@ QvisExpressionsWindow::pyFilterSourceChanged()
 void
 QvisExpressionsWindow::nameTextChanged(const QString &text)
 {
+    std::cout << "Entering QvisExpressionWindow::nameTextChanged(const QString&)" << std::endl;
     int index = exprListBox->currentRow();
 
     if (index <  0)
@@ -1296,6 +1299,12 @@ QvisExpressionsWindow::nameTextChanged(const QString &text)
     BlockAllSignals(true);
     exprListBox->item(index)->setText(newname);
     BlockAllSignals(false);
+    std::cout << "Exiting  QvisExpressionWindow::nameTextChanged(const QString&)" << std::endl;
+}
+
+void QvisExpressionsWindow::UpdateExpressionBox()
+{
+    std::cout << "UpdateExpressionBox" << std::endl;
 }
 
 // ****************************************************************************
