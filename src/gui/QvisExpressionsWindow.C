@@ -1272,14 +1272,15 @@ void
 QvisExpressionsWindow::nameTextChanged(const QString &text)
 {
     std::cout << "Entering QvisExpressionWindow::nameTextChanged(const QString&)" << std::endl;
+    this->name_changed = true;
+    this->newname = text.trimmed();
+
     int index = exprListBox->currentRow();
 
     if (index <  0)
         return;
 
     Expression &e = (*exprList)[indexMap[index]];
-
-    QString newname = text.trimmed();
 
     if (newname.isEmpty())
     {
@@ -1304,7 +1305,15 @@ QvisExpressionsWindow::nameTextChanged(const QString &text)
 
 void QvisExpressionsWindow::UpdateExpressionBox()
 {
-    std::cout << "UpdateExpressionBox" << std::endl;
+    std::cout << "Entering QvisExpressionWindow::UpdateExpressionBox()" << std::endl;
+
+    if (this->name_changed)
+    {
+        std::cout << "The name has been changed." << std::endl;
+    }
+    this->name_changed = false;
+    
+    std::cout << "Exiting  QvisExpressionWindow::UpdateExpressionBox()" << std::endl;
 }
 
 // ****************************************************************************
