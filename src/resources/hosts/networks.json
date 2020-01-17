@@ -108,6 +108,12 @@
              {"name": "host_llnl_rzgw_rztrona.xml"}
          ]
        },
+       { "network": "lrz",
+         "files" : [
+             {"name": "host_lrz_supermuc_ng.xml"},
+             {"name": "host_lrz_linux_cluster.xml"}
+         ]
+       },
        { "network": "lsu",
          "files" : [
              {"name": "customlauncher"},
