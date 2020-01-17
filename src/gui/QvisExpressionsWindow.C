@@ -1298,6 +1298,21 @@ void QvisExpressionsWindow::UpdateExpressionBox()
     if (this->name_changed)
     {
         std::cout << "The name has actually been changed." << std::endl;
+        
+        // Need to make sure that the new name is not already taken. If it is, then append a number
+        // on the end. Increment that number however many times is necessary until we get a unique
+        // name.
+        std::string new_name_string = this->newname.toStdString();
+        int newid = 1;
+        bool okay = (*exprList)[new_name_string.c_str()] ? false : true;
+        while (!okay)
+        {
+            this->newname = tr((new_name_string + "%1").c_str()).arg(newid);
+            if ((*exprList)[this->newname.toStdString().c_str()])
+                newid++;
+            else
+                okay = true;
+        }
 
         int index = exprListBox->currentRow();
 
@@ -1306,9 +1321,9 @@ void QvisExpressionsWindow::UpdateExpressionBox()
 
         Expression &e = (*exprList)[indexMap[index]];
 
-        e.SetName(newname.toStdString());
+        e.SetName(this->newname.toStdString());
         BlockAllSignals(true);
-        exprListBox->item(index)->setText(newname);
+        exprListBox->item(index)->setText(this->newname);
         BlockAllSignals(false);
     }
     this->name_changed = false;
