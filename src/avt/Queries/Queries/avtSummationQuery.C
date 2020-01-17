@@ -11,6 +11,7 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkIdList.h>
+#include <vtkBitArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkUnsignedCharArray.h>
@@ -423,6 +424,9 @@ avtSummationQuery::PostExecute(void)
 //    Cyrus Harrison, Mon Aug 16 15:34:12 PDT 2010
 //    Added support for the sum of each component of an array variable.
 //
+//    Eddie Rusu, Tue Jan 14 13:41:26 PST 2020
+//    Added extra checking for volume dependency.
+//
 // ****************************************************************************
 
 void
@@ -473,7 +477,12 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
     int comp =0;
     vtkIntArray *originalCells = NULL;
     vtkIntArray *originalNodes = NULL;
-    if (sumFromOriginalElement)
+
+    // Determine if the variable begin summed is volume dependent.
+    vtkBitArray *volumeDependent = vtkBitArray::SafeDownCast(ds->GetFieldData()->GetArray("VolumeDependent"));
+    bool volumeDependentBool = volumeDependent ? volumeDependent->GetValue(0) : false;
+
+    if (sumFromOriginalElement && !volumeDependentBool)
     {
         if (pointData)
         {
