@@ -77,7 +77,12 @@ Ideally, on a team of 8, each developer will serve as primary only one week out
 of every two months. This leads to fair load by head-count but isn't weighted by
 project assignments. From a project development perspective, it would be more
 appropriate for a developer that is only 50% time on VisIt_ to serve as the
-primary only half as often as a 100% time developer.
+primary only half as often as a 100% time developer. On the other hand, few
+developers are 100% time on VisIt. The majority of VisIt_ developers
+divide their time across multiple projects. Using 50% as the sort of *nominal*
+VisIt_ allocation, we expect to load balance weeks of customer response work
+equally across all developers but infrequently have those with more than 50%
+time on VisIt_ doing an extra week.
 
 In the short term, it will help to pair veteran backups with a *primary*
 who may have less experience with live customer response.
