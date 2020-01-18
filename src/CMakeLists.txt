@@ -737,6 +737,7 @@ OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third 
 OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
 OPTION(VISIT_CREATE_APPBUNDLE_PACKAGE "Create DMG file with Mac App bundle with make package" OFF)
 IF(WIN32)
+  OPTION(VISIT_MESA_REPLACE_OPENGL "Use mesa as a drop-in replacment for opengl when system opengl is insufficient." OFF)
   OPTION(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS" OFF)
   OPTION(VISIT_WINDOWS_APPLICATION "Create Windows-style applications with no console" ON)
   IF(VISIT_WINDOWS_APPLICATION)

@@ -13,8 +13,6 @@
 #include <vtkVersion.h>
 
 
-#include <vtk/InitVTKRenderingConfig.h>
-
 #include <avtCallback.h>
 #include <DebugStream.h>
 

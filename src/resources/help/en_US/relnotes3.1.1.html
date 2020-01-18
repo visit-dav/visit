@@ -28,6 +28,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected a bug where the Data level comparison wizard would always enter zero for the simulation cycle.</li>
   <li>Corrected a bug where zone pick highlights were incorrect after transforms were applied.</li>
   <li>Summing mesh_quality/volume in a sub-material setting will now return the correct volume.</li>
+  <li>Corrected a bug where VisIt crashes on start-up on some Windows systems when the system OpenGL version is too old.  Added a test of the OpenGL version during install, and use Mesa3D as a drop-in replacement if needed, with a warning on the installer pages to notify user that graphics cards / drivers should be updated. </li>
 </ul>
 
 <a name="Enhancements"></a>
