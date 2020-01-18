@@ -62,7 +62,7 @@
 #   compiling VisIt even if not listed, but not when building the plugins.
 #
 #   Kathleen Biagas, Wed Jan  8 11:22:17 MST 2020
-#   Removed IniVTKRenderingConfig.h.in, it only defined VISIT_MANTA which is
+#   Removed InitVTKRenderingConfig.h.in, it only defined VISIT_MANTA which is
 #   no longer used.
 #
 #****************************************************************************/
