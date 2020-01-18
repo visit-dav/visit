@@ -1,7 +1,7 @@
 .. _DeveloperManual:
 
-VisIt Developer Manual
-======================
+VisIt_ Developer Manual
+=======================
 
 .. toctree::
     :maxdepth: 1
@@ -16,6 +16,7 @@ VisIt Developer Manual
     CreateRelease
     MemoryLeaks
     Docker
+    LiveCustomerResponse
 
 .. Indices and tables
 .. ==================
