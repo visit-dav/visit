@@ -100,7 +100,7 @@ static const char usage[] =
 /*
  * Prototypes
  */
-string GetVisItEnvironment(stringVector &, bool, bool &);
+string GetVisItEnvironment(stringVector &, bool, bool &, bool &);
 
 void   SetVisItEnvironment(const stringVector &);
 string AddPath(char *, const char *, const char*);
@@ -282,6 +282,13 @@ static bool EndsWith(const char *s, const char *suffix)
  *   Removed usage of shortname (8dot3name). This utility may be disabled on
  *   Windows systems, so it shouldn't be relied upon any more.  Added spawnv
  *   error message if debuglaunch specified.
+ *
+ *   Kathleen Biagas, Friday Jan 17, 2020
+ *   Added flag to GetVisItEnvironment for needsMesaOverride. It checks for
+ *   a RegKey 'VISITNEEDSMESA', and if found sets in the environment for
+ *   engine and viewer 'MESA_GL_VERSION_OVERRIDE=3.3', needed for proper
+ *   operation of VisIt when Mesa3D (17.3.0) is used as a drop-in replacment
+ *   for system OpenGL.
  *
  *****************************************************************************/
 
@@ -631,10 +638,19 @@ VisItLauncherMain(int argc, char *argv[])
     // Add some stuff to the environment.
     //
     stringVector visitEnv;
-    bool usingDev;
-    string visitpath = GetVisItEnvironment(visitEnv, addPluginVars, usingDev);
+    bool usingDev = false;
+    bool needsMesaOverride = false;
+    string visitpath = GetVisItEnvironment(visitEnv, addPluginVars,
+                                           usingDev, needsMesaOverride);
     if (usingDev)
         componentArgs.push_back("-dv");
+    if(!usingDev && needsMesaOverride &&  (
+        component == "engine_par" ||
+        component == "engine_ser" ||
+        component == "viewer"))
+    {
+        visitEnv.push_back("MESA_GL_VERSION_OVERRIDE=3.3");
+    }
     SetVisItEnvironment(visitEnv);
 #ifdef VISIT_WINDOWS_APPLICATION
     if(debugLaunch)
@@ -1027,7 +1043,8 @@ ReadKey(const char *key, char **keyval)
  *****************************************************************************/
 
 std::string 
-GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev)
+GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
+    bool &needsMesaOverride)
 {
     char *tmp, *visitpath = NULL;
     char *visitdevdir = NULL;
@@ -1346,6 +1363,11 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev)
             }
             free(sshargs);
         }
+    }
+
+    if(!usingdev)
+    {
+        needsMesaOverride = ReadKey("VISITNEEDSMESA", &tmp);
     }
 
     free(tmp);
