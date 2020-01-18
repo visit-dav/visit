@@ -1375,7 +1375,7 @@ function run_build_visit()
                           "Bailing out."
                 fi
             else
-                info "The third party library location does not exist. Create it?"
+                info "The third party library location does not exist. Create it? [yes/no]"
                 read RESPONSE
                 if [[ "$RESPONSE" != "yes" ]] ; then
                     error "The third party library location does not exist." \

@@ -2138,6 +2138,8 @@ class DebugArguments(object):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Mon Jan  6 16:49:51 PST 2020
+#   Added mcurvit to the list of component names.
 #
 ###############################################################################
 
@@ -2168,7 +2170,7 @@ class MainLauncher(object):
         self.loggedComponents = ("mdserver",)
         self.plugincategories = ("plots", "operators", "databases")
         self.clientPrograms = ("gui", "cli", "viewer")
-        self.componentNames = ("gui", "cli", "viewer", "mdserver", "vcl", "engine_ser", "engine_par", "xmledit")
+        self.componentNames = ("gui", "cli", "viewer", "mdserver", "vcl", "engine_ser", "engine_par", "xmledit", "mcurvit")
         self.xterm = ["xterm"]
         self.hosttoip = False
 

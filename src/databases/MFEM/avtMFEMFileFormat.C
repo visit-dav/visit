@@ -655,6 +655,12 @@ avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
 //
+//  Modifications:
+//
+//    Alister Maguire, Thu Jan  2 15:23:13 MST 2020
+//    Casting int to Geom::Type where appropriate. This is required after the
+//    upgrade to mfem 4.0.
+//
 // ****************************************************************************
 vtkDataSet *
 avtMFEMFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int lod)
@@ -680,7 +686,7 @@ avtMFEMFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int 
     {
         int geom = mesh->GetElementBaseGeometry(i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         npts  += refined_geo->RefPts.GetNPoints();
         neles += refined_geo->RefGeoms.Size() / ele_nverts;
     }
@@ -694,7 +700,7 @@ avtMFEMFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int 
     for (int i = 0; i < mesh->GetNE(); i++)
     {
         int geom = mesh->GetElementBaseGeometry(i);
-        refined_geo = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         // refined points
         mesh->GetElementTransformation(i)->Transform(refined_geo->RefPts, pmat);
         for (int j = 0; j < pmat.Width(); j++)
@@ -720,7 +726,7 @@ avtMFEMFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int 
     {
         int geom       = mesh->GetElementBaseGeometry(i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo    = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
 
         Array<int> &rg_idxs = refined_geo->RefGeoms;
 
@@ -767,8 +773,15 @@ avtMFEMFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int 
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
 //
-//  Mark C. Miller, Mon Dec 11 15:49:34 PST 2017
-//  Add support for mfem_cat file
+//  Modifications:
+//
+//    Mark C. Miller, Mon Dec 11 15:49:34 PST 2017
+//    Add support for mfem_cat file
+//
+//    Alister Maguire, Thu Jan  2 15:23:13 MST 2020
+//    Casting int to Geom::Type where appropriate. This is required after the
+//    upgrade to mfem 4.0.
+//
 // ****************************************************************************
 vtkDataArray *
 avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
@@ -860,7 +873,7 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
     {
         int geom = mesh->GetElementBaseGeometry(i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo    = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         npts  += refined_geo->RefPts.GetNPoints();
         neles += refined_geo->RefGeoms.Size() / ele_nverts;
     }
@@ -880,7 +893,7 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
     for (int i = 0; i <  mesh->GetNE(); i++)
     {
         int geom       = mesh->GetElementBaseGeometry(i);
-        refined_geo    = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         if(ncomps == 1)
         {
             gf->GetValues(i, refined_geo->RefPts, scalar_vals, pmat);
@@ -933,6 +946,10 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
 //   Seed rng with domain id for predictable coloring results
 //   (See: http://visitbugs.ornl.gov/issues/2747)
 //
+//   Alister Maguire, Thu Jan  2 15:23:13 MST 2020
+//   Casting int to Geom::Type where appropriate. This is required after the
+//   upgrade to mfem 4.0.
+//
 // ****************************************************************************
 vtkDataArray *
 avtMFEMFileFormat::GetRefinedElementColoring(const std::string &mesh_name,
@@ -957,7 +974,7 @@ avtMFEMFileFormat::GetRefinedElementColoring(const std::string &mesh_name,
     {
         int geom = mesh->GetElementBaseGeometry(i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo    = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         npts  += refined_geo->RefPts.GetNPoints();
         neles += refined_geo->RefGeoms.Size() / ele_nverts;
     }
@@ -983,7 +1000,7 @@ avtMFEMFileFormat::GetRefinedElementColoring(const std::string &mesh_name,
     {
         int geom = mesh->GetElementBaseGeometry(i);
         int nv = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo= GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo= GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         for (int j = 0; j < refined_geo->RefGeoms.Size(); j += nv)
         {
              rv->SetTuple1(ref_idx,coloring[i]+1);
@@ -1012,6 +1029,12 @@ avtMFEMFileFormat::GetRefinedElementColoring(const std::string &mesh_name,
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
 //
+//  Modifications:
+//
+//    Alister Maguire, Thu Jan  2 15:23:13 MST 2020
+//    Casting int to Geom::Type where appropriate. This is required after the
+//    upgrade to mfem 4.0.
+//
 // ****************************************************************************
 vtkDataArray *
 avtMFEMFileFormat::GetRefinedElementAttribute(const std::string &mesh_name, 
@@ -1036,7 +1059,7 @@ avtMFEMFileFormat::GetRefinedElementAttribute(const std::string &mesh_name,
     {
         int geom = mesh->GetElementBaseGeometry(i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo    = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         npts  += refined_geo->RefPts.GetNPoints();
         neles += refined_geo->RefGeoms.Size() / ele_nverts;
     }
@@ -1051,7 +1074,7 @@ avtMFEMFileFormat::GetRefinedElementAttribute(const std::string &mesh_name,
     {
         int geom = mesh->GetElementBaseGeometry(i);
         int nv = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo= GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo= GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         int attr = mesh->GetAttribute(i);
         for (int j = 0; j < refined_geo->RefGeoms.Size(); j += nv)
         {
