@@ -240,6 +240,15 @@ function apply_qt_patch
                 return 1
             fi
         fi
+
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            if [[ `sw_vers -productVersion` == 10.14.[0-9]* ]]; then
+                apply_qt_5101_macos_mojave_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        fi
     fi
 
     return 0
@@ -347,6 +356,39 @@ function apply_qt_5101_blueos_patch
     sed -i "s/PNG_ARM_NEON_OPT=0/PNG_ARM_NEON_OPT=0 PNG_POWERPC_VSX_OPT=0/" qtbase/src/3rdparty/libpng/libpng.pro
     if [[ $? != 0 ]] ; then
         warn "qt 5.10.1 blueos patch failed."
+        return 1
+    fi
+    
+    return 0;
+}
+
+function apply_qt_5101_macos_mojave_patch
+{
+    info "Patching qt 5.10.1 for macOS 10.14 (Mojave)..."
+    patch -p0 <<EOF
+diff -c qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm.orig qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm
+*** qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm.orig	2020-01-16 11:06:12.000000000 -0800
+--- qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm	2020-01-16 11:06:38.000000000 -0800
+***************
+*** 830,836 ****
+  
+  QFixed QCoreTextFontEngine::emSquareSize() const
+  {
+!     return QFixed::QFixed(int(CTFontGetUnitsPerEm(ctfont)));
+  }
+  
+  QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
+--- 830,836 ----
+  
+  QFixed QCoreTextFontEngine::emSquareSize() const
+  {
+!     return QFixed(int(CTFontGetUnitsPerEm(ctfont)));
+  }
+  
+  QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 macOS 10.14 patch failed."
         return 1
     fi
     
