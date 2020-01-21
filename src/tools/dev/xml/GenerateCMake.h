@@ -151,6 +151,10 @@
 //    Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
 //    Added hl arg, for haslicense.
 //
+//    Kathleen Biagas, Tue Jan 21 10:53:18 PST 2020
+//    Removed VTKh and VTKm includes. Will be added via CXXFLAGS in .xml files
+//    by plugins requiring the includes. (See Slice operator for example).
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -460,9 +464,6 @@ class CMakeGeneratorPlugin : public Plugin
             out << "${QT_QTGUI_INCLUDE_DIR}" << endl;
             out << "${QT_QTWIDGETS_INCLUDE_DIR}" << endl;
         }
-        out << "${VTKh_INCLUDE_DIRS}" << endl;
-        out << "${VTKM_DIR}/include/vtkm-1.2" << endl;
-        out << "${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple" << endl;
         out << "${VTK_INCLUDE_DIRS}" << endl;
         out << "${PYINCLUDES}" << endl;
         if(extraIncludes.size() > 0)
@@ -1093,9 +1094,6 @@ class CMakeGeneratorPlugin : public Plugin
         out << VisItIncludeDir() << "/avt/VisWindow/VisWindow" << endl;
         out << VisItIncludeDir() << "/visit_vtk/full" << endl;
         out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
-        out << "${VTKh_INCLUDE_DIRS}" << endl;
-        out << "${VTKM_DIR}/include/vtkm-1.2" << endl;
-        out << "${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple" << endl;
         out << "${VTK_INCLUDE_DIRS}" << endl;
         out << ")" << endl;
         out << endl;
