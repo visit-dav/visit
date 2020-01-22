@@ -5,7 +5,7 @@ We deliberately use the term **Customer Response** as an amalgamation of the
 terms **Customer Support** and **Incident Response** to represent the fact that
 both activities are involved here. **Customer Support** involves responding to
 inquiries about the *use* of VisIt_. *How do I do X? Y is not working for me,*
-*can you help? I am having trouble getting VisIt_ to work in client/server*.
+*can you help? I am having trouble getting VisIt to work in client/server*.
 These are examples of typical **Customer Support** inquiries VisIt_ developers
 are routinely enlisted to answer.
 
@@ -22,7 +22,7 @@ As is typical of most DOE software project teams, VisIt_ developers wind up
 having to serve in both the roles of **Customer Support** and
 **Incident Response**. So, we call this activity **Customer Response**.
 While some aspects of **Customer Response** are under the direct control of
-VisIt_ developers, many aspects are not and involve collaborations with other
+VisIt_ developers, many aspects are not and involve collaboration with other
 teams in resolving. In most cases the extent of the VisIt_ team's involvement in
 *operations* is confined primarly to the VisIt_ software itself; its
 development, testing, release and deployment which includes installations we
@@ -41,6 +41,37 @@ active customer response incidents. Some of the goals of this process are...
   * To achieve a one-hour response time.
   * To reduce incident response interruptions for the team as a whole.
   * To identify and document escalation paths for major incidents.
+  * To log, track and evolve a database of customer response activity.
+  * To develop a practice of rapid response to and routine housekeeping
+    fixes for low-hanging-fruit type issues impacting customer productivity.
+
+One Week Cycles
+---------------
+
+For the VisIt_ project, normal business hours are 8am-12pm and 1-5pm (GMT-8,
+San Francisco time zone), Monday through Friday excluding
+`LLNL holidays <https://supplychain.llnl.gov/poattach/pdf/llnl_holidays.pdf>`_.
+The work of *live* customer response is allocated in one-week intervals. During
+a week, one developer is assigned as the **Primary** customer response contact
+and a second developer is assigned as a **Backup**. Live customer response
+incidents will be logged and tracked in a separate GitHub repository within the
+`visit-dav GitHub organization. <https://github.com/visit-dav>`_
+
+A schedule, showing the primary and backup assignments going out several months
+will be posted on a
+`wiki page <https://github.com/visit-dav/live-customer-response/wiki/VisIt-Customer-Response-Primary-and-Backup-Schedule)>`_.
+Ideally, on a team of 8, each developer will serve as primary only one week out
+of every two months. This leads to fair load by head-count but isn't weighted by
+project assignments. From a project development perspective, it might be more
+appropriate for a developer that is only 50% time on VisIt_ to serve as the
+primary only half as often as a 100% time developer. On the other hand, since
+a majority of VisIt_ developers divide their time across multiple projects, we
+use 50% as the sort of *nominal* developer assignment. We will load balance
+weeks of customer response work equally across all developers but occasionally,
+those with more than 50% time on VisIt_ will do an extra week.
+
+In the short term, it will help to pair a veteran backup with a primary who may
+have less experience with live customer response.
 
 Meeting the one-hour response time goal
 ---------------------------------------
@@ -58,34 +89,6 @@ it as soon as practical. In many cases, an immediate response to acknowledge
 even just the receipt of a customer's inquiry with no progress towards
 actual resolution goes a long way towards creating the goodwill necessary to
 negotiate a day or more of time to respond more fully.
-
-One Week Cycles
----------------
-
-For the VisIt_ project, normal business hours are 8am-12pm and 1-5pm, Monday
-through Friday excluding LLNL holidays. The work of *live* customer response is
-allocated in one-week intervals. During a week, one developer is assigned
-as the **Primary** customer response contact and a second developer is assigned
-as a **Backup**. Live customer response incidents will be logged and tracked in
-a separate GitHub repository within the
-`visit-dav GitHub organization. <https://github.com/visit-dav>`_
-
-A schedule, showing the primary and backup assignments going out several months
-will be posted on a
-`wiki page <https://github.com/visit-dav/live-customer-response/wiki/VisIt-Customer-Response-Primary-and-Backup-Schedule)>`_.
-Ideally, on a team of 8, each developer will serve as primary only one week out
-of every two months. This leads to fair load by head-count but isn't weighted by
-project assignments. From a project development perspective, it would be more
-appropriate for a developer that is only 50% time on VisIt_ to serve as the
-primary only half as often as a 100% time developer. On the other hand, few
-developers are 100% time on VisIt. The majority of VisIt_ developers
-divide their time across multiple projects. Using 50% as the sort of *nominal*
-VisIt_ allocation, we expect to load balance weeks of customer response work
-equally across all developers but infrequently have those with more than 50%
-time on VisIt_ doing an extra week.
-
-In the short term, it will help to pair veteran backups with a *primary*
-who may have less experience with live customer response.
 
 The Primary's Role
 ------------------
@@ -118,21 +121,23 @@ often involves one or more of the following activities.
   * Identifying and subsequently fixing any *low-hanging fruit*.
   * Developing a reproducer for developers.
   * Developing a work-around for users.
-  * Identifying and filing a *new* coding issue in the main source repository.
+  * Identifying and filing a *new* issue ticket.
 
 In particular, please take note that *resolution* does not always mean a
-customer's incident is able to be addressed favorably within the constraints of
+customer's incident can be addressed favorably within the constraints of
 our customer response processes. Sometimes, the best that can be achieved is
 the filing of a highly informative issue ticket to be prioritized, scheduled
-and ultimately resolved as part of normal weekly development meetings.
+and ultimately resolved as part of normal weekly development activities.
 
-Another role of the primary is to use any time not working active incidents to
+Another role of the primary is to use any time not working active inquiries to
 fix *low-hanging fruit* issues; either those the primary is currently managing
-or those left undone from previous incidents. For example, if an incident
+or those left undone from previous weeks. For example, if an incident
 reveals incorrect or missing documentation, the primary should work to fix such
 issues within his/her week. As a rule of thumb, low-hanging fruit is considered
 to be anything that primary believes is fixable within a half-day's (4 hours)
-worth of effort. 
+worth of effort. When there are many such tasks in the system to work on, the
+primary is free to use his/her judgement to decide which are most productive
+to address.
 
 When primary has challenges with any of the paths to resolution above, s/he
 should feel free to engage other developers with help. But primary should first
@@ -150,8 +155,8 @@ During their communication's with the customer, the primary should avoid
 reply-all-type communications.
 
 For applicable incidents, the primary should prepare a set of bullets to
-form an outline of a *post-mortem* for the incident to be reviewed at VisIt_
-project meetings.
+form an outline of a *post-mortem* for the incident to be reviewed at the next
+VisIt_ project meeting.
 
 The Backup's Role
 -----------------
@@ -168,7 +173,7 @@ primary is unable to maintain the one-hour response time goal. To the extent
 possible, the transition from backup to primary should be managed formally.
 Otherwise, the backup should simply listen in but otherwise not engage.
 
-Other Developer's Role
+Other Developers' Role
 ----------------------
 
 In the ideal, the primary is able to handle all customer response activity and
@@ -203,9 +208,9 @@ issue to the main repository issues.
 Special Considerations for SCF
 ------------------------------
 
-Occasionally, incidents arise that may be handled only on the SCF. This is
-not too common but does happen and it presents problems for a geographically
-distributed team.
+Occasionally, incidents arise that may be handled only in the Secure Computing
+Facility (SCF). This is not too common but does happen and it presents problems
+for a geographically distributed team.
 
 On the one hand, customers on SCF are accustomed to longer response times.
 On the other hand, often work on the SCF is a high priority and requires
@@ -234,11 +239,3 @@ workflows not only here at LLNL, likely VisIt_'s biggest customer, but
 wherever in DOE/DOD and elsewhere in the world VisIt_ is used. Often the issues
 users at large encounter and report are relevant to the use of VisIt_ here at
 LLNL.
-
-To Do
------
-
-  * Decide when to switch to this new process
-  * Where do we keep weekly "calendar"?
-    * maybe a wiki page or issue on live issues repo?
-  * Mark to get telephone forwarding procedure
