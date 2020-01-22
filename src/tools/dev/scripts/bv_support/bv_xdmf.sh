@@ -119,7 +119,7 @@ EOF
 
 function apply_xdmf_osx_patch
 {
-    info "Patching Xdmf 2.1.1 for Xcode 9 . . ."
+    info "Patching Xdmf 2.1.1 for Xcode 9 and up . . ."
     patch -p0 << \EOF
 diff -c Xdmf/libsrc/orig/XdmfDsmComm.cxx Xdmf/libsrc/XdmfDsmComm.cxx 
 *** Xdmf/libsrc/orig/XdmfDsmComm.cxx	Thu Aug 23 22:05:42 2018
@@ -172,7 +172,8 @@ function apply_xdmf1_patch
     if [[ ${XDMF_VERSION} == 2.1.1 ]] ; then
         if [[ "$OPSYS" == "Darwin" ]] ; then
                 XCODE_VERSION="$(/usr/bin/xcodebuild -version)"
-                if [[ "$XCODE_VERSION" == "Xcode 9"* ]] ; then
+                if [[ "$XCODE_VERSION" == "Xcode 9"* ||
+                      "$XCODE_VERSION" == "Xcode 10"* ]] ; then
                     apply_xdmf_osx_patch
                 fi
         fi
