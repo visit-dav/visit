@@ -6,11 +6,11 @@ import os
 import json
 
 h = {"hosts" : [] } 
-for x in os.listdir("."):
+for x in sorted(os.listdir(".")):
   if os.path.isdir(x):
       d = {'network' :os.path.basename(x)}
       d["files"] = []
-      for y in os.listdir(x):
+      for y in sorted(os.listdir(x)):
           d["files"].append({'name' : os.path.basename(y)})
       h["hosts"].append(d)
           
