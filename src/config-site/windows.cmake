@@ -39,7 +39,16 @@ VISIT_OPTION_DEFAULT(VISIT_SPHINX true TYPE BOOL)
 ##
 VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISITHOME}/boost_minimal_headers/1.67.0)
 
+##
+## Tell VisIt we want to use mesagl as the drop-in replacement for opengl
+## if the system doesn't have correct OpenGL Version (3.2)
+##
+VISIT_OPTION_DEFAULT(VISIT_MESA_REPLACE_OPENGL true TYPE BOOL)
 
+##
+## MESAGL (for opengl-dropin-replacement purposes only
+##
+VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR  ${VISITHOME}/mesa/17.3.0)
 
 ##
 ## ISPC
@@ -200,7 +209,7 @@ VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP
 ##
 ## MFEM
 ##
-VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR     ${VISITHOME}/mfem/3.4)
+VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR     ${VISITHOME}/mfem/4.0)
 VISIT_OPTION_DEFAULT(VISIT_MFEM_INCDEP ZLIB_INCLUDE_DIR CONDUIT_INCLUDE_DIR TYPE STRING)
 
 ##
