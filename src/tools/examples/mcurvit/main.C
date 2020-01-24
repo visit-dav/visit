@@ -117,6 +117,7 @@ MCVMain(int argc, char *argv[])
 
         //
         // Setting the default QSurfaceFormat required with QVTKOpenGLwidget.
+        // This causes Qt to create an OpenGL 3.2 context.
         //
         auto surfaceFormat = QVTKOpenGLWidget::defaultFormat();
         surfaceFormat.setSamples(0);
