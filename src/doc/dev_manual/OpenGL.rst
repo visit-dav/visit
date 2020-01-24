@@ -58,7 +58,7 @@ Good documentation on GLX can be found at:
 
 https://www.khronos.org/registry/OpenGL/specs/gl/glx1.4.pdf
 
-GLX functions all start with "glX" and GLX constants all start with "GLX_".
+GLX functions all start with "glX" and GLX constants all start with "GLX".
 
 Here is a link to some documentation about creating an OpenGL 3.0 context. It is the source of the test in build_visit to determine if the OpenGL on a system supports creating a 3.2 context.
 
