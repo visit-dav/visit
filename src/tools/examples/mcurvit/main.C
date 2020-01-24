@@ -5,6 +5,8 @@
 #include <QApplication>
 #include <QDir>
 
+#include <QVTKOpenGLWidget.h>
+
 #include <visitstream.h>
 #include <VisItViewer.h>
 #include <VisItException.h>
@@ -26,6 +28,10 @@
 //  Creation:   Mon Aug 18 16:49:40 PDT 2008
 //
 //  Modifications:
+//    Eric Brugger, Fri Jan 24 10:04:53 PST 2020
+//    I added QSurfaceFormat initialization so that Qt will create an
+//    OpenGL 3.2 context. I also added support for "-debug" on the command
+//    line.
 //
 // ****************************************************************************
 
@@ -41,6 +47,8 @@ MCVMain(int argc, char *argv[])
     char *commandFile = NULL;
     char *dataFile = NULL;
 
+    // The length of argv2 assumes that each option is only specified once. 
+    // If not, then it can overflow.
     char **argv2 = new char*[5];
     argv2[0] = argv[0];
     int argc2 = 1;
@@ -55,6 +63,12 @@ MCVMain(int argc, char *argv[])
         else if (strcmp(argv[i], "-f") == 0)
         {
             commandFile = argv[i+1];
+            i++;
+        }
+        else if (strcmp(argv[i], "-debug") == 0)
+        {
+            argv2[argc2++] = argv[i];
+            argv2[argc2++] = argv[i+1];
             i++;
         }
         else
@@ -100,6 +114,14 @@ MCVMain(int argc, char *argv[])
         // by QApplication::QApplication.
         //
         viewer.ProcessCommandLine(argc2, argv2);
+
+        //
+        // Setting the default QSurfaceFormat required with QVTKOpenGLwidget.
+        //
+        auto surfaceFormat = QVTKOpenGLWidget::defaultFormat();
+        surfaceFormat.setSamples(0);
+        surfaceFormat.setAlphaBufferSize(0);
+        QSurfaceFormat::setDefaultFormat(surfaceFormat);
 
         //
         // Create the QApplication. This sets the qApp pointer.
