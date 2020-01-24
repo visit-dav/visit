@@ -11,6 +11,7 @@ VisIt Developer Manual
     RCDevelopment
     CreateRelease
     Docker
+    OpenGL
 
 .. Indices and tables
 .. ==================
