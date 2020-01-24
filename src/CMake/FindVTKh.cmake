@@ -38,8 +38,8 @@ IF (DEFINED VISIT_VTKH_DIR)
    MESSAGE(STATUS "  VTKm_VERSION_FULL = ${VTKm_VERSION_FULL}")
    MESSAGE(STATUS "  VTKm_VERSION = ${VTKm_VERSION}")
 
-   set(VTKm_INCLUDE_DIRS "${VTKM_DIR}/include/${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}"
-                         "${VTKM_DIR}/include/${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}/vtkm/thirdparty/taotuple"
+   set(VTKm_INCLUDE_DIRS "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}"
+                         "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}/vtkm/thirdparty/taotuple"
        CACHE STRING "VTKm include directories")
 
    include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
