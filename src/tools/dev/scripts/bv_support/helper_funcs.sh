@@ -486,8 +486,8 @@ function download_file
 
     # It must be a third party library, handle that now.
     #
-    # First try GitHub. We only update the third party libraries on
-    # when doing a major release, so the patch is always 0. The fancy
+    # First try GitHub. We only update the third party libraries when
+    # doing a major release, so the patch is always 0. The fancy
     # parsing below grabs the major and minor version numbers.
     IFS="." read -r -a vers <<< "$VISIT_VERSION"
     major=${vers[0]}
