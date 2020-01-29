@@ -71,7 +71,8 @@ export bv_PREFIX=$bv_PATH/bv_support/
 export build_version=""
 export webroot="http://visit.ilight.com/svn/visit/"
 export webaddr="${webroot}/trunk/src/tools/dev/scripts/bv_support/"
-export nerscroot="https://portal.nersc.gov/project/visit/releases"
+export visitroot="https://github.com/visit-dav/visit/releases/download/"
+export thirdpartyroot="https://github.com/visit-dav/third-party/releases/download/"
 
 #state = "disabled", "enabled", "installed"
 declare -a reqlibs
@@ -406,7 +407,8 @@ function bv_write_unified_file
     echo "export build_version=\"\"" >> $OUTPUT_bv_FILE
     echo "export webroot=\"http://visit.ilight.com/svn/visit/\"" >> $OUTPUT_bv_FILE
     echo "export webaddr=\"\${webroot}/trunk/src/tools/dev/scripts/bv_support/\"" >> $OUTPUT_bv_FILE
-    echo "export nerscroot=\"https://portal.nersc.gov/project/visit/releases\"" >> $OUTPUT_bv_FILE
+    echo "export visitroot=\"https://github.com/visit-dav/visit/releases/download/\"" >> $OUTPUT_bv_FILE
+    echo "export thirdpartyroot=\"https://github.com/visit-dav/third-party/releases/download/\"" >> $OUTPUT_bv_FILE
 
     echo "declare -a reqlibs" >> $OUTPUT_bv_FILE
     echo "declare -a optlibs" >> $OUTPUT_bv_FILE
