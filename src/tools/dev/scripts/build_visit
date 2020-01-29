@@ -36,7 +36,6 @@
 #5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
 #6. bv_<module>_build builds the module
 
-export VISIT_MAJOR_VERSION=${VISIT_VERSION:-"3.1.0"}
 export VISIT_VERSION=${VISIT_VERSION:-"3.1.0"}
 
 ####
@@ -394,7 +393,6 @@ function bv_write_unified_file
     cd $INITIAL_PWD
 
     echo "#!/bin/bash" > $OUTPUT_bv_FILE
-    echo "export VISIT_MAJOR_VERSION=\${VISIT_MAJOR_VERSION:-\"$VISIT_MAJOR_VERSION\"}" >> $OUTPUT_bv_FILE
     echo "export VISIT_VERSION=\${VISIT_VERSION:-\"$VISIT_VERSION\"}" >> $OUTPUT_bv_FILE
 
     echo "export TRUNK_BUILD=\"$TRUNK_BUILD\"" >> $OUTPUT_bv_FILE

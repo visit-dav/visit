@@ -486,8 +486,13 @@ function download_file
 
     # It must be a third party library, handle that now.
     #
-    # First try GitHub.
-    site="${thirdpartyroot}v${VISIT_MAJOR_VERSION}"
+    # First try GitHub. We only update the third party libraries on
+    # when doing a major release, so the patch is always 0. The fancy
+    # parsing below grabs the major and minor version numbers.
+    IFS="." read -r -a vers <<< "$VISIT_VERSION"
+    major=${vers[0]}
+    minor=${vers[1]}
+    site="${thirdpartyroot}v${major}.${minor}.0"
     try_download_file $site/$dfile $dfile
     if [[ $? == 0 ]] ; then
         return 0
