@@ -20,13 +20,8 @@ function bv_visit_depends_on
 
 function bv_visit_info
 {
-    if [[ "$USE_VISIT_FILE" == "yes" ]] ; then
-        export VISIT_MD5_CHECKSUM=""
-        export VISIT_SHA256_CHECKSUM=""
-    else
-        export VISIT_MD5_CHECKSUM="edccd6d6c289356ac1462b1606b10ef9"
-        export VISIT_SHA256_CHECKSUM="40c33f08de7a048fb436b8a72156b9e5303434e8e52d5d8590c7dc3ce8ac607d"
-    fi
+    export VISIT_MD5_CHECKSUM=""
+    export VISIT_SHA256_CHECKSUM=""
 }
 
 function bv_visit_print
