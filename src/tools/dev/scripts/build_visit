@@ -36,6 +36,7 @@
 #5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
 #6. bv_<module>_build builds the module
 
+export VISIT_MAJOR_VERSION=${VISIT_VERSION:-"3.1.0"}
 export VISIT_VERSION=${VISIT_VERSION:-"3.1.0"}
 
 ####
@@ -71,7 +72,8 @@ export bv_PREFIX=$bv_PATH/bv_support/
 export build_version=""
 export webroot="http://visit.ilight.com/svn/visit/"
 export webaddr="${webroot}/trunk/src/tools/dev/scripts/bv_support/"
-export nerscroot="http://portal.nersc.gov/project/visit/releases"
+export visitroot="https://github.com/visit-dav/visit/releases/download/"
+export thirdpartyroot="https://github.com/visit-dav/third-party/releases/download/"
 
 #state = "disabled", "enabled", "installed"
 declare -a reqlibs
@@ -392,6 +394,7 @@ function bv_write_unified_file
     cd $INITIAL_PWD
 
     echo "#!/bin/bash" > $OUTPUT_bv_FILE
+    echo "export VISIT_MAJOR_VERSION=\${VISIT_MAJOR_VERSION:-\"$VISIT_MAJOR_VERSION\"}" >> $OUTPUT_bv_FILE
     echo "export VISIT_VERSION=\${VISIT_VERSION:-\"$VISIT_VERSION\"}" >> $OUTPUT_bv_FILE
 
     echo "export TRUNK_BUILD=\"$TRUNK_BUILD\"" >> $OUTPUT_bv_FILE
@@ -406,7 +409,8 @@ function bv_write_unified_file
     echo "export build_version=\"\"" >> $OUTPUT_bv_FILE
     echo "export webroot=\"http://visit.ilight.com/svn/visit/\"" >> $OUTPUT_bv_FILE
     echo "export webaddr=\"\${webroot}/trunk/src/tools/dev/scripts/bv_support/\"" >> $OUTPUT_bv_FILE
-    echo "export nerscroot=\"http://portal.nersc.gov/project/visit/releases\"" >> $OUTPUT_bv_FILE
+    echo "export visitroot=\"https://github.com/visit-dav/visit/releases/download/\"" >> $OUTPUT_bv_FILE
+    echo "export thirdpartyroot=\"https://github.com/visit-dav/third-party/releases/download/\"" >> $OUTPUT_bv_FILE
 
     echo "declare -a reqlibs" >> $OUTPUT_bv_FILE
     echo "declare -a optlibs" >> $OUTPUT_bv_FILE

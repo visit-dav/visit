@@ -460,6 +460,10 @@ function verify_checksum_by_lookup
 #   Alister Maguire, Thu Jan  2 11:45:44 MST 2020                             #
 #   Added download attempt for links that exclude the file name.              #
 #                                                                             #
+#   Eric Brugger, Wed Jan 29 09:52:20 PST 2020                                #
+#   I modified the routine to download the visit tar file and third party     #
+#   libraries from github.                                                    #
+#                                                                             #
 # *************************************************************************** #
 
 function download_file
@@ -472,7 +476,7 @@ function download_file
     shift
 
     # If the visit source code is requested, handle that now.
-    site="${nerscroot}/${VISIT_VERSION}"
+    site="${visitroot}v${VISIT_VERSION}"
     if [[ "$dfile" == "$VISIT_FILE" ]] ; then
         try_download_file $site/$dfile $dfile
         if [[ $? == 0 ]] ; then
@@ -482,8 +486,8 @@ function download_file
 
     # It must be a third party library, handle that now.
     #
-    # First try NERSC.
-    site="${nerscroot}/${VISIT_VERSION}/third_party"
+    # First try GitHub.
+    site="${thirdpartyroot}v${VISIT_MAJOR_VERSION}"
     try_download_file $site/$dfile $dfile
     if [[ $? == 0 ]] ; then
         return 0
