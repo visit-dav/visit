@@ -1,65 +1,102 @@
 Customer Response
 =================
 
-We deliberately use the term **Customer Response** as an amalgamation of the
-terms **Customer Support** and **Incident Response** to represent the fact that
-both activities are involved here. **Customer Support** involves responding to
-inquiries about the *use* of VisIt_. *How do I do X? Y is not working for me,*
-*can you help? I am having trouble getting VisIt to work in client/server*.
-These are examples of typical **Customer Support** inquiries VisIt_ developers
-are routinely enlisted to answer.
+The IT world is full of terms for services with similar sounding purposes such as
+*Technical Support*, *Help Desk*, *Customer Support*, *Incident Response*,
+*Service Desk*, *Incident Management*, *Cusomter Care*, etc.
+`Specific meanings <https://www.atlassian.com/itsm/service-request-management/help-desk-vs-service-desk-vs-itsm>`_
+of these terms are often driven by the software products IT companies use to
+support the
+`associated services <https://www.bmc.com/blogs/help-desk-vs-service-desk-whats-difference/>`_.
 
-In some cases, user's inquiries reveal a deeper, systemic, recently occurring
-*operational* issue which may involve either an issue with the VisIt_ software
-itself (e.g. a botched VisIt_ installation, an incompatability in client/server
-protocol, a missing database reader plugin, etc.) or an issue with underlying
-computational infrastructure upon which VisIt_ depends (incompatible grahics
-drivers, a downed file system or network, a security environment trigger).
-These latter issues are typical of **Incident Response** services and require
-rapid response in diagnosing and enlisting resources to correct.
+In The VisIt_ project,
+*Customer Support* involves responding to inquiries about the *use* of VisIt_
+such as
+
+  * How do I do a surface plot?
+  * Stereo viewing is not working for me, can you help?
+  * I am having trouble getting VisIt to work in client/server.
+
+These are examples of typical *Customer Support* inquiries VisIt_ developers
+are routinely enlisted to answer whereas *Incident Response* involves responding
+to incidents about *operational* aspects of either
+
+  * The VisIt_ software itself such as
+
+    * A botched *managed* VisIt installation.
+    * An inadvertent incompatability introduced in client/server protocol.
+    * A missing database reader plugin.
+
+or
+
+  * The underlying computing infrastructure upon which VisIt_ depends such
+    as
+
+    * An incompatible grahics driver.
+    * A downed file system or network.
+    * A trip in the security environment.
 
 As is typical of most DOE software project teams, VisIt_ developers wind up
-having to serve in both the roles of **Customer Support** and
-**Incident Response**. So, we call this activity **Customer Response**.
-While some aspects of **Customer Response** are under the direct control of
-VisIt_ developers, many aspects are not and involve collaboration with other
-teams in resolving. In most cases the extent of the VisIt_ team's involvement in
-*operations* is confined primarly to the VisIt_ software itself; its
-development, testing, release and deployment which includes installations we
-directly support on systems where we have accounts, hosted binary downloads for
-common platforms and the tools to build from sources.
+having to respond to all such inquiries. So, we combine the terms
+*Customer Support* and *Incident Response* to define our
+**Customer Response** service.
 
 The practice of having software development staff *integrated* with *operations*
 is more commonly referred to as *DevOps*. There is a pretty good
 `video <https://youtu.be/XoXeHdN2Ayc>`_ that introduces these concepts.
-
 This document explains our procedures for how VisIt_ software developers handle
-active customer response incidents. Some of the goals of this process are...
+active customer response inquiries. Some of the goals of this process are...
 
   * To try to *load balance* the work of customer response in an equitable way
     across the development team.
-  * To achieve a one-hour response time.
+  * To aim for a one-hour response time.
   * To reduce incident response interruptions for the team as a whole.
   * To identify and document escalation paths for major incidents.
-  * To log, track and evolve a database of customer response activity.
+  * To log, track and evolve a database of customer response effort.
   * To develop a practice of rapid response to and routine housekeeping
-    fixes for low-hanging-fruit type issues impacting customer productivity.
+    fixes for low-hanging-fruit type issues impacting productivity.
 
-One Week Cycles
----------------
+While many aspects of **Customer Response** are under the direct control of
+VisIt_ developers, some are not and involve collaboration with other teams in
+resolving. In most cases the extent of the VisIt_ team's involvement in
+*operations* is confined primarly to the VisIt_ software itself; its
+development, testing, release and deployment which includes installations we
+directly manage, hosted binary downloads for common platforms and the tools to
+build from sources.
 
-For the VisIt_ project, normal business hours are 8am-12pm and 1-5pm (GMT-8,
-San Francisco time zone), Monday through Friday excluding
+In the IT world with companies like Google, Apple and Amazon, coverage is 24/7
+and response times are measured in *minutes*. There is a lot of money at stake.
+For a DOE project like VisIt_, contributing to productivity of science in the
+national interest, which may be not as profit oriented but no less important,
+causes us to aim for coverage of regular, U.S. west-coast business hours and a
+response time of about an hour. 
+
+One Week Allocations
+--------------------
+
+For the VisIt_ project, the majority of funded development takes place at
+at Lawrence Livermore National Lab. The VisIt_ team's normal *business* hours
+are 8am-12pm and 1-5pm (GMT-8, San Francisco time zone), Monday through Friday
+excluding
 `LLNL holidays <https://supplychain.llnl.gov/poattach/pdf/llnl_holidays.pdf>`_.
 The work of *live* customer response is allocated in one-week intervals. During
 a week, one developer is assigned as the **Primary** customer response contact
 and a second developer is assigned as a **Backup**. Live customer response
-incidents will be logged and tracked in a separate GitHub repository within the
+inquiries will be logged and tracked in a separate GitHub repository within the
 `visit-dav GitHub organization. <https://github.com/visit-dav>`_
 
 A schedule, showing the primary and backup assignments going out several months
-will be posted on a
-`wiki page <https://github.com/visit-dav/live-customer-response/wiki/VisIt-Customer-Response-Primary-and-Backup-Schedule)>`_.
+is negotiated by the team and posted, primarily for team awareness, on a
+`wiki page (for example purposes only) <https://github.com/visit-dav/live-customer-response/wiki/VisIt-Customer-Response-Primary-and-Backup-Schedule)>`_.
+
+Primary and backup responsibilities are rotated so as to balance the load among
+team members. However, a variety of factors complicate a *simple* round-robin
+style load balance. These complications are discussed
+in THAT SECTION.
+
+
+
+
 Ideally, on a team of 8, each developer will serve as primary only one week out
 of every two months. This leads to fair load by head-count but isn't weighted by
 project assignments. From a project development perspective, it might be more
@@ -73,14 +110,31 @@ those with more than 50% time on VisIt_ will do an extra week.
 In the short term, it will help to pair a veteran backup with a primary who may
 have less experience with live customer response.
 
+
+
+
 Meeting the one-hour response time goal
 ---------------------------------------
-This is a desirable but challenging goal. We agree as a team to try to meet it.
+This is a desirable but also challenging goal. Certainly LLNL users as well as
+their direct collaborators have an expectation of this level of 
+
+hotline, walk-ins
+
+users often expect. As an aside,
+Following recent efforts to improve response times in the past year, there has
+been a noticeable up-tick in utilization of 
+
+the VisIt_ team has noticed
+an increase in 
+
+We agree as a team to try to meet it.
 But, we recognize that our schedules might not always permit strict adherence to
 this goal. So, as an absolute, last resort, *bare minimum*, we expect issues
 occurring 8am-3pm to be responded to by COB the same day. Issues occurring after
 3pm but prior to start of next business day shall be responded to by noon of
 that next day.
+
+WE REALLY SHOULD BE THIS RESPONSIVE FOR LLNL CUSTOMERS
 
 Note that *responding* to a customer inquiry does not necessarily
 mean *resolving* it. Sometimes, the only response possible is to acknowledge the
@@ -131,13 +185,11 @@ and ultimately resolved as part of normal weekly development activities.
 
 Another role of the primary is to use any time not working active inquiries to
 fix *low-hanging fruit* issues; either those the primary is currently managing
-or those left undone from previous weeks. For example, if an incident
-reveals incorrect or missing documentation, the primary should work to fix such
-issues within his/her week. As a rule of thumb, low-hanging fruit is considered
-to be anything that primary believes is fixable within a half-day's (4 hours)
-worth of effort. When there are many such tasks in the system to work on, the
-primary is free to use his/her judgement to decide which are most productive
-to address.
+or those from the backlog. As a rule of thumb, low-hanging fruit is considered
+to be anything that the primary believes is fixable within a half-day's
+(4 hours) worth of effort. When there are many such tasks in the system to work
+on, the primary is free to use his/her judgement to decide which are most
+productive to address.
 
 When primary has challenges with any of the paths to resolution above, s/he
 should feel free to engage other developers with help. But primary should first
@@ -179,8 +231,10 @@ Other Developers' Role
 In the ideal, the primary is able to handle all customer response activity and
 no other developers are interrupted. Thus, other developers should feel free to
 ignore customer inquiries and/or redirect customers who may contact them directly.
-One option to reduce visit-user traffic is to switch to receiving a daily digest.
-Other options might be email client side filters.
+One option to reduce communication traffic is to either to switch to receiving a
+daily digest during off weeks and/or UNwatch the 
+`live-customer-response <https://github.com/visit-dav/live-customer-response/issues>`_
+repository.
 
 Escalation
 ----------
@@ -204,6 +258,19 @@ additional information to that known issue about this new customer response
 incident (and perhaps remove the *reviewed* tag from the issue to cause the
 issue to be re-reviewed at the next VisIt_ project meeting) or submit a *new*
 issue to the main repository issues.
+
+Complicating Factors
+--------------------
+
+A number of factors threaten
+
+* SCF
+* Part-time
+* Travel
+* AWS
+* Experience level
+* Direct interactions
+* Hotline, walk-ins 
 
 Special Considerations for SCF
 ------------------------------
@@ -239,3 +306,5 @@ workflows not only here at LLNL, likely VisIt_'s biggest customer, but
 wherever in DOE/DOD and elsewhere in the world VisIt_ is used. Often the issues
 users at large encounter and report are relevant to the use of VisIt_ here at
 LLNL.
+
+Add notes from email about what developers learn from this work
