@@ -3692,6 +3692,10 @@ ViewerPlot::CreateActor(bool createNew,
 //    Added a check of the retval to make sure the pointer is not NULL.
 //    The engine could crash and the viewer received NULL.
 //
+//    Kathleen Biagas, Thu Jan 30 10:05:42 PST 2020
+//    Don't re-apply operators to a cloned network, they were applied during
+//    the cloning operation.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -3711,6 +3715,7 @@ ViewerPlot::GetDataObjectReader()
 
     TRY
     {
+        bool success = true;
         //
         // Only do this if plot isn't using a cloned network.
         //
@@ -3755,15 +3760,14 @@ ViewerPlot::GetDataObjectReader()
                                    ignoreExtents,
                                    this->GetNamedSelection(),
                                    this->GetWindowId());
-        }
 
-        //
-        // Apply any operators.
-        //
-        bool success = true;
-        for (int o=0; o < this->GetNOperators() && success; o++)
-        {
-            success &= this->GetOperator(o)->ExecuteEngineRPC();
+            //
+            // Apply any operators.
+            //
+            for (int o=0; o < this->GetNOperators() && success; o++)
+            {
+                success &= this->GetOperator(o)->ExecuteEngineRPC();
+            }
         }
 
         //
