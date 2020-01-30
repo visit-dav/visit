@@ -78,7 +78,11 @@
 #    Added TestDirectDatabaseRoute. I also updated several tests to
 #    use actual data so that they continue to test the old QOT route. 
 #
+#    Kathleen Biagas, Thu Jan 30 13:37:50 MST 2020
+#    Added TestOperatorCreatedVar. (github bugs #2842, #3489).
+#
 # ----------------------------------------------------------------------------
+
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
 
 def InitAnnotation():
@@ -901,6 +905,52 @@ def TestDirectDatabaseRoute():
     SetActiveWindow(1)
     DeleteAllPlots()
 
+def TestOperatorCreatedVar():
+    OpenDatabase(silo_data_path("wave.visit"))
+    DefineVectorExpression("normals", "cell_surface_normal(quadmesh)")
+
+    AddPlot("Pseudocolor", "operators/Flux/quadmesh")
+
+    fluxAtts = FluxAttributes()
+    fluxAtts.flowField = "direction"
+    SetOperatorOptions(fluxAtts)
+
+    AddOperator("Slice")
+    sliceAtts = SliceAttributes()
+    sliceAtts.axisType = sliceAtts.Arbitrary
+    sliceAtts.normal = (0, 1, 0)
+    sliceAtts.originType = sliceAtts.Percent
+    sliceAtts.originPercent = 50
+    sliceAtts.project2d = 0
+    SetOperatorOptions(sliceAtts)
+
+    AddOperator("DeferExpression")
+    deferAtts = DeferExpressionAttributes()
+    deferAtts.exprs = ("normals")
+    SetOperatorOptions(deferAtts)
+
+    # we want slice before flux, so demote it
+    DemoteOperator(1)
+
+    DrawPlots()
+
+    qt = GetQueryOverTimeAttributes()
+    qt.timeType = qt.Cycle
+    SetQueryOverTimeAttributes(qt)
+
+    QueryOverTime("Weighted Variable Sum")
+
+    SetActiveWindow(2)
+    InitAnnotation()
+    Test("OperatorCreatedVar_01")
+
+    DeleteAllPlots()
+
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
+    DeleteExpression("normals")
+    CloseDatabase(silo_data_path("wave.visit"))
  
 def TimeQueryMain():
     TestAllTimeQueries()
@@ -916,6 +966,7 @@ def TimeQueryMain():
     TestPickRangeTimeQuery()
     TestReturnValue()
     TestDirectDatabaseRoute()
+    TestOperatorCreatedVar()
 
 # main
 InitAnnotation()
