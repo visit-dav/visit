@@ -131,7 +131,45 @@ diff -c configure.ac.orig configure.ac
           if test "x$llvm_have_one_so" = xyes; then
 EOF
     if [[ $? != 0 ]] ; then
-        warn "MesaGL patch failed."
+        warn "MesaGL patch 1 failed."
+        return 1
+    fi
+
+    patch -p0 << \EOF
+diff -c src/gallium/winsys/sw/xlib/xlib_sw_winsys.c.orig src/gallium/winsys/sw/xlib/xlib_sw_winsys.c
+*** src/gallium/winsys/sw/xlib/xlib_sw_winsys.c.orig	Fri Jan 31 12:07:54 2020
+--- src/gallium/winsys/sw/xlib/xlib_sw_winsys.c	Fri Jan 31 12:09:24 2020
+***************
+*** 396,401 ****
+--- 396,402 ----
+  {
+     struct xlib_displaytarget *xlib_dt;
+     unsigned nblocksy, size;
++    int ignore;
+  
+     xlib_dt = CALLOC_STRUCT(xlib_displaytarget);
+     if (!xlib_dt)
+***************
+*** 410,416 ****
+     xlib_dt->stride = align(util_format_get_stride(format, width), alignment);
+     size = xlib_dt->stride * nblocksy;
+  
+!    if (!debug_get_option_xlib_no_shm()) {
+        xlib_dt->data = alloc_shm(xlib_dt, size);
+        if (xlib_dt->data) {
+           xlib_dt->shm = True;
+--- 411,418 ----
+     xlib_dt->stride = align(util_format_get_stride(format, width), alignment);
+     size = xlib_dt->stride * nblocksy;
+  
+!    if (!debug_get_option_xlib_no_shm() &&
+!        XQueryExtension(xlib_dt->display, "MIT-SHM", &ignore, &ignore, &ignore)) {
+        xlib_dt->data = alloc_shm(xlib_dt, size);
+        if (xlib_dt->data) {
+           xlib_dt->shm = True;
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch 2 failed."
         return 1
     fi
 
