@@ -53,6 +53,7 @@ using namespace std;
 typedef void (*trmeshp_t)(int *np, double *xp, double *yp, double *zp,
     int *list, int *lptr, int *lend, int *lnew, int *near, int *next,
     double *dist, int *ier);
+
 typedef void (*trlistp_t)(int *np, int *list, int *lptr, int *lend, int *nrow,
     int *nt, int *ltri, int *ier);
 
@@ -92,11 +93,13 @@ static int InitLibStripack()
    if (!_trlistp)
         _trlistp = (trlistp_t) dlsym(libh, "TRLIST_");
 
+    // We can't ever close it or we loose access to the functions
     //dlclose(libh);
 
     return 0;
 }
 
+// Forces initialization at plugin load time
 static const int dummy = InitLibStripack();
 
 static void mytrmesh(int *np, double *xp, double *yp, double *zp,
@@ -121,14 +124,6 @@ static void mytrlist(int *np, int *list, int *lptr, int *lend,
         return;
     }
 }
-
-#if 0
-extern "C" {
-    void trmesh_(int *np, double *xp, double *yp, double *zp, int *list, int *lptr, int *lend, int *lnew, int *near, int * next, double * dist, int *ier) ;
-    void trlist_(int *np, int *list, int *lptr, int *lend, int *nrow, int *nt, int *ltri, int *ier) ;
-    void mystripack_(int *np, int *nt, double *xp, double *yp, double *zp, int *ltri) ;
-}
-#endif
 
 // ****************************************************************************
 //  Method: avtffpFileFormat constructor
