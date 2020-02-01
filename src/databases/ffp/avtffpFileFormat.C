@@ -59,18 +59,18 @@ typedef void (*trlistp_t)(int *np, int *list, int *lptr, int *lend, int *nrow,
 static trmeshp_t _trmeshp = 0;
 static trlistp_t _trlistp = 0;
 
-#ifdef ENGINE
 static int InitLibStripack()
 {
     static char const * const envar = "VISIT_FFP_STRIPACK_PATH";
+    int const dlmode = RTLD_LAZY|RTLD_LOCAL;
     void *libh = 0;
 
     if (Environment::exists(envar))
-        libh = dlopen(Environment::get(envar).c_str(), RTLD_LAZY);
+        libh = dlopen(Environment::get(envar).c_str(), dlmode);
     if (!libh)
-        libh = dlopen("libstripack.so", RTLD_LAZY);
+        libh = dlopen("libstripack.so", dlmode);
     if (!libh)
-        libh = dlopen("libstripack.dylib", RTLD_LAZY);
+        libh = dlopen("libstripack.dylib", dlmode);
     if (!libh)
         return 1;
 
@@ -92,19 +92,17 @@ static int InitLibStripack()
    if (!_trlistp)
         _trlistp = (trlistp_t) dlsym(libh, "TRLIST_");
 
-    dlclose(libh);
+    //dlclose(libh);
 
     return 0;
 }
 
 static const int dummy = InitLibStripack();
-#endif
 
-static void trmesh(int *np, double *xp, double *yp, double *zp,
+static void mytrmesh(int *np, double *xp, double *yp, double *zp,
     int *list, int *lptr, int *lend, int *lnew, int *near, int *next,
     double *dist, int *ier)
 {
-
     if (_trmeshp)
     {
         (*_trmeshp)(np, xp, yp, zp, list, lptr, lend, lnew, near, next, dist, ier);
@@ -114,7 +112,7 @@ static void trmesh(int *np, double *xp, double *yp, double *zp,
     return;
 }
 
-static void trlist(int *np, int *list, int *lptr, int *lend,
+static void mytrlist(int *np, int *list, int *lptr, int *lend,
     int *nrow, int *nt, int *ltri, int *ier)
 {
     if (_trlistp)
@@ -1960,7 +1958,7 @@ avtffpFileFormat::ReadFile(void)
                             }
                         }
 #endif 
-                        trmesh( &np, xp, yp, zp, list, lptr, lend, &lnew, near, next, dist, &ier ) ;
+                        mytrmesh( &np, xp, yp, zp, list, lptr, lend, &lnew, near, next, dist, &ier ) ;
 #if INTERACTIVEREAD
                         if (debuglevel >= 0)
                             fprintf(stdout,"Error code=%d, lnew=%d\n",ier,lnew);
@@ -1977,7 +1975,7 @@ avtffpFileFormat::ReadFile(void)
                         }
 
                         // Create the triangle list.
-                        trlist( &np, list, lptr, lend, &nrow, &nt, ltri, &ier ) ;
+                        mytrlist( &np, list, lptr, lend, &nrow, &nt, ltri, &ier ) ;
                         fprintf(stdout,"Built #triangles=%d\n",nt);
                         // Release intermediate memory between trmesh and trlist
                         free(dist); free(lend); free(list); free(lptr); free(near); free(next) ;
