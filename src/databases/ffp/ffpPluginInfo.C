@@ -1,11 +1,3 @@
-// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
-// Project developers.  See the top-level LICENSE file for dates and other
-// details.  No copyright assignment is required to contribute to VisIt.
-
-// ************************************************************************* //
-//  File: ffpPluginInfo.C
-// ************************************************************************* //
-
 #include <ffpPluginInfo.h>
 
 #include <visit-config.h>
@@ -61,7 +53,7 @@ ffpGeneralPluginInfo::GetName() const
 const char *
 ffpGeneralPluginInfo::GetVersion() const
 {
-    return "1.0";
+    return "";
 }
 
 // ****************************************************************************
@@ -80,7 +72,7 @@ ffpGeneralPluginInfo::GetVersion() const
 const char *
 ffpGeneralPluginInfo::GetID() const
 {
-    return "ffp_1.0";
+    return "ffp_";
 }
 // ****************************************************************************
 //  Method: ffpGeneralPluginInfo::EnabledByDefault
