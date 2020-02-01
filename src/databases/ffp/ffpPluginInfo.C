@@ -53,7 +53,7 @@ ffpGeneralPluginInfo::GetName() const
 const char *
 ffpGeneralPluginInfo::GetVersion() const
 {
-    return "";
+    return "1.0";
 }
 
 // ****************************************************************************
@@ -72,7 +72,7 @@ ffpGeneralPluginInfo::GetVersion() const
 const char *
 ffpGeneralPluginInfo::GetID() const
 {
-    return "ffp_";
+    return "ffp_1.0";
 }
 // ****************************************************************************
 //  Method: ffpGeneralPluginInfo::EnabledByDefault

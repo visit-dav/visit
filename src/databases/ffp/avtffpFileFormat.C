@@ -28,6 +28,7 @@
 #include <vtkPoints.h>
 #include <vtkCellType.h>
 
+#include <avtCallback.h>
 #include <avtIntervalTree.h>
 #include <avtMaterial.h>
 
@@ -111,6 +112,24 @@ static void mytrmesh(int *np, double *xp, double *yp, double *zp,
         (*_trmeshp)(np, xp, yp, zp, list, lptr, lend, lnew, near, next, dist, ier);
         return;
     }
+
+    static bool first = true;
+#ifdef PARALLEL
+    if (first && PAR_Rank() == 0)
+#else
+    if (first)
+#endif
+    {
+        char msg[1024];
+        snprintf(msg, sizeof(msg), "\n\n"
+            "trmesh method and/or libstripack not available.\n"
+            "Please install libstripack to the VisIt installation lib dir or set\n"
+            "VISIT_FFP_STRIPACK_PATH enviornment variable to specify its location.\n");
+        if (!avtCallback::IssueWarning(msg))
+            std::cerr << msg << std::endl;
+        first = false;
+    }
+
     *ier = -4;
     return;
 }
