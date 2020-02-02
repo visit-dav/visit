@@ -66,6 +66,10 @@ public:
     const std::string &GetWeightField() const;
           std::string &GetWeightField();
 
+    // Persistence methods
+    virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
+    virtual void SetFromNode(DataNode *node);
+
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
