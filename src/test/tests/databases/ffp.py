@@ -149,4 +149,107 @@ SaveWindowAtts.advancedMultiWindowSave = 0
 SetSaveWindowAttributes(SaveWindowAtts)
 Test("ffp_01", SaveWindowAtts)
 
+DeleteAllPlots()
+CloseDatabase(data_path("ffp_test_data/sphereMie.ffp"))
+OpenDatabase(data_path("ffp_test_data/mksn10.ffp"))
+AddPlot("Pseudocolor", "sffp", 1, 1)
+AddPlot("Mesh", "sphere", 1, 1)
+DrawPlots()
+
+# Begin spontaneous state
+View3DAtts = View3DAttributes()
+View3DAtts.viewNormal = (0.382511, -0.663647, 0.642852)
+View3DAtts.focus = (0, 0, 0)
+View3DAtts.viewUp = (-0.146698, 0.643316, 0.751415)
+View3DAtts.viewAngle = 30
+View3DAtts.parallelScale = 1.73205
+View3DAtts.nearPlane = -3.4641
+View3DAtts.farPlane = 3.4641
+View3DAtts.imagePan = (0, 0)
+View3DAtts.imageZoom = 1
+View3DAtts.perspective = 1
+View3DAtts.eyeAngle = 2
+View3DAtts.centerOfRotationSet = 0
+View3DAtts.centerOfRotation = (0, 0, 0)
+View3DAtts.axis3DScaleFlag = 0
+View3DAtts.axis3DScales = (1, 1, 1)
+View3DAtts.shear = (0, 0, 1)
+View3DAtts.windowValid = 1
+SetView3D(View3DAtts)
+# End spontaneous state
+
+SaveWindowAtts = SaveWindowAttributes()
+SaveWindowAtts.outputToCurrentDirectory = 1
+SaveWindowAtts.outputDirectory = "."
+SaveWindowAtts.fileName = "mksn10"
+SaveWindowAtts.family = 1
+SaveWindowAtts.format = SaveWindowAtts.PNG  # BMP, CURVE, JPEG, OBJ, PNG, POSTSCRIPT, POVRAY, PPM, RGB, STL, TIFF, ULTRA, VTK, PLY
+SaveWindowAtts.width = 1024
+SaveWindowAtts.height = 1024
+SaveWindowAtts.screenCapture = 0
+SaveWindowAtts.saveTiled = 0
+SaveWindowAtts.quality = 80
+SaveWindowAtts.progressive = 0
+SaveWindowAtts.binary = 0
+SaveWindowAtts.stereo = 0
+SaveWindowAtts.compression = SaveWindowAtts.PackBits  # None, PackBits, Jpeg, Deflate
+SaveWindowAtts.forceMerge = 0
+SaveWindowAtts.resConstraint = SaveWindowAtts.ScreenProportions  # NoConstraint, EqualWidthHeight, ScreenProportions
+SaveWindowAtts.advancedMultiWindowSave = 0
+SetSaveWindowAttributes(SaveWindowAtts)
+Test("ffp_02", SaveWindowAtts)
+
+DeleteAllPlots()
+CloseDatabase(data_path("ffp_test_data/mksn10.ffp"))
+OpenDatabase(data_path("ffp_test_data/mksn20.ffp"))
+AddPlot("Pseudocolor", "cffp", 1, 1)
+AddPlot("Mesh", "cphere", 1, 1)
+DrawPlots()
+
+# Begin spontaneous state
+View3DAtts = View3DAttributes()
+View3DAtts.viewNormal = (-0.187617, -0.963273, 0.192107)
+View3DAtts.focus = (0, 0, 0)
+View3DAtts.viewUp = (0.0378766, 0.188339, 0.981373)
+View3DAtts.viewAngle = 30
+View3DAtts.parallelScale = 3.4641
+View3DAtts.nearPlane = -6.9282
+View3DAtts.farPlane = 6.9282
+View3DAtts.imagePan = (0, 0)
+View3DAtts.imageZoom = 1
+View3DAtts.perspective = 1
+View3DAtts.eyeAngle = 2
+View3DAtts.centerOfRotationSet = 0
+View3DAtts.centerOfRotation = (0, 0, 0)
+View3DAtts.axis3DScaleFlag = 0
+View3DAtts.axis3DScales = (1, 1, 1)
+View3DAtts.shear = (0, 0, 1)
+View3DAtts.windowValid = 1
+SetView3D(View3DAtts)
+# End spontaneous state
+
+SaveWindowAtts = SaveWindowAttributes()
+SaveWindowAtts.outputToCurrentDirectory = 1
+SaveWindowAtts.outputDirectory = "."
+SaveWindowAtts.fileName = "mksn20"
+SaveWindowAtts.family = 1
+SaveWindowAtts.format = SaveWindowAtts.PNG  # BMP, CURVE, JPEG, OBJ, PNG, POSTSCRIPT, POVRAY, PPM, RGB, STL, TIFF, ULTRA, VTK, PLY
+SaveWindowAtts.width = 1024
+SaveWindowAtts.height = 1024
+SaveWindowAtts.screenCapture = 0
+SaveWindowAtts.saveTiled = 0
+SaveWindowAtts.quality = 80
+SaveWindowAtts.progressive = 0
+SaveWindowAtts.binary = 0
+SaveWindowAtts.stereo = 0
+SaveWindowAtts.compression = SaveWindowAtts.PackBits  # None, PackBits, Jpeg, Deflate
+SaveWindowAtts.forceMerge = 0
+SaveWindowAtts.resConstraint = SaveWindowAtts.ScreenProportions  # NoConstraint, EqualWidthHeight, ScreenProportions
+SaveWindowAtts.advancedMultiWindowSave = 0
+SetSaveWindowAttributes(SaveWindowAtts)
+Test("ffp_03", SaveWindowAtts)
+
+DeleteAllPlots()
+CloseDatabase(data_path("ffp_test_data/mksn20.ffp"))
+
 Exit()
