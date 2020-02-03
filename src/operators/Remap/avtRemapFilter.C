@@ -678,7 +678,7 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
     int nCells = in_ds->GetNumberOfCells();
     
     // Setup the volumeArray
-    if (name != "")
+    if (name != std::string(""))
     {
         volumeArray->SetName(name);
     }
