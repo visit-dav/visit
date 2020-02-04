@@ -7,7 +7,6 @@
 
 #include <avtFileFormatInterface.h>
 #include <avtMTSDFileFormat.h>
-#include <visitstream.h>
 #include <string>
 #include <vector>
 
