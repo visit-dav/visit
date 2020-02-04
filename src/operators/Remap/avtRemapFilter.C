@@ -678,10 +678,7 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
     int nCells = in_ds->GetNumberOfCells();
     
     // Setup the volumeArray
-    if (name != nullptr && *name != '\0')
-    {
-        volumeArray->SetName(name);
-    }
+    volumeArray->SetName(name);
     volumeArray->SetNumberOfComponents(1);
     volumeArray->SetNumberOfTuples(nCells);
     
