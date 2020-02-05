@@ -141,6 +141,10 @@ avtShiftCenteringFilter::~avtShiftCenteringFilter()
 //    Eric Brugger, Tue Jul 22 08:01:18 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kevin Griffin, Tue Feb  4 17:03:46 PST 2020
+//    Removed code converting Int arrays to Float arrays and back. This
+//    doesn't appear to be needed anymore.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -150,227 +154,57 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
     // Get the VTK data set.
     //
     vtkDataSet *inDS = inDR->GetDataVTK();
-
-    vtkDataSet *newDS = (vtkDataSet *) inDS->NewInstance();
-    newDS->ShallowCopy(inDS);
-    vtkDataSet *outDS = newDS;
-
+    vtkDataSet *outDS = (vtkDataSet *) inDS->NewInstance();
+    outDS->ShallowCopy(inDS);
+    
     if (centeringTarget == AVT_NODECENT)
     {
-        int nArray = inDS->GetCellData()->GetNumberOfArrays();
-        std::vector<std::string> arraysToSwap;
-        
-        for (int i = 0 ; i < nArray ; i++)
-        {
-            vtkDataArray *arr = inDS->GetCellData()->GetArray(i);
-            int dt = arr->GetDataType();
-            if (dt == VTK_UNSIGNED_CHAR || dt == VTK_INT ||
-                dt == VTK_UNSIGNED_INT)
-            {
-                std::string arr_name(arr->GetName());
-                if(arr_name != "avtGhostZones" && 
-                   arr_name != "avtGhostNodes" && 
-                   arr_name != "avtOriginalCellNumbers")
-                    arraysToSwap.push_back(arr_name);
-            }
-        }
-
-        vtkDataSet *dsToShift = inDS;
-        if (arraysToSwap.size() > 0)
-        {
-            dsToShift = (vtkDataSet *) inDS->NewInstance();
-            dsToShift->ShallowCopy(inDS);
-            for (int k = 0 ; k < (int)arraysToSwap.size() ; k++) 
-            {
-                int index = (int)arraysToSwap.size()-k-1;
-                vtkDataArray *arr = inDS->GetCellData()->GetArray(arraysToSwap[index].c_str());
-                vtkDataArray *fa = arr->NewInstance();
-                int ntups  = arr->GetNumberOfTuples();
-                int ncomps = arr->GetNumberOfComponents();
-                fa->SetNumberOfComponents(ncomps);
-                fa->SetNumberOfTuples(ntups);
-                for (int i = 0 ; i < ntups ; i++)
-                    for (int j = 0 ; j < ncomps ; j++)
-                        fa->SetComponent(i, j, arr->GetComponent(i, j));
-                fa->SetName(arr->GetName());
-                dsToShift->GetCellData()->RemoveArray(arr->GetName());
-                dsToShift->GetCellData()->AddArray(fa);
-                fa->Delete();
-            }
-        }
-
         //
         //  User requested node-centered but our data is zone-centered,
         //  create the point data from cell data.
         //
         vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
-        cd2pd->SetInputData(dsToShift);
+        cd2pd->SetInputData(inDS);
         cd2pd->GetExecutive()->SetOutputData(0, outDS);
         cd2pd->Update();
         cd2pd->Delete();
-
+        
         // We want to preserve knowledge of ghost zones
-        vtkDataArray *ghosts = inDS->GetCellData()->GetArray("avtGhostZones");
-        if (ghosts)
+        vtkDataArray *ghostZones = inDS->GetCellData()->GetArray("avtGhostZones");
+        if (ghostZones)
         {
-            outDS->GetCellData()->AddArray(ghosts);
+            outDS->GetCellData()->AddArray(ghostZones);
             // Only want ghost cell-data, not ghost point-data.
             outDS->GetPointData()->RemoveArray("avtGhostZones");
         }
-        if (inDS->GetPointData()->GetArray("avtGhostNodes") != NULL)
-        {
-            outDS->GetPointData()->AddArray(
-                              inDS->GetPointData()->GetArray("avtGhostNodes"));
-        }
-        // We want to preserve knowledge of original cells 
-        vtkDataArray *origCells = 
-                       inDS->GetCellData()->GetArray("avtOriginalCellNumbers");
+        
+        // We want to preserve knowledge of original cells
+        vtkDataArray *origCells = inDS->GetCellData()->GetArray("avtOriginalCellNumbers");
         if (origCells)
         {
             outDS->GetCellData()->AddArray(origCells);
             // Only want origCells cell-data, not origCells point-data.
             outDS->GetPointData()->RemoveArray("avtOriginalCellNumbers");
         }
-
-        // Convert the former int arrays back to int.
-        if (arraysToSwap.size() > 0)
-        {
-            for (size_t k = 0 ; k < arraysToSwap.size() ; k++)
-            {
-                vtkDataArray *arr_in  = inDS->GetCellData()
-                                            ->GetArray(arraysToSwap[k].c_str());
-                vtkDataArray *new_arr = vtkDataArray::CreateDataArray(
-                                                         arr_in->GetDataType());
-                vtkDataArray *arr_out = outDS->GetPointData()
-                                            ->GetArray(arraysToSwap[k].c_str());
-                
-                int ntups  = arr_out->GetNumberOfTuples();
-                int ncomps = arr_out->GetNumberOfComponents();
-                new_arr->SetNumberOfComponents(ncomps);
-                new_arr->SetNumberOfTuples(ntups);
-                for (int i = 0 ; i < ntups ; i++)
-                    for (int j = 0 ; j < ncomps ; j++)
-                        new_arr->SetComponent(i, j, 
-                                           arr_out->GetComponent(i, j)+0.001);
-                new_arr->SetName(arr_out->GetName());
-                bool isActiveScalar = 
-                                 (inDS->GetCellData()->GetScalars() == arr_in);
-                bool isActiveVector = 
-                                 (inDS->GetCellData()->GetVectors() == arr_in);
-                outDS->GetPointData()->RemoveArray(arr_out->GetName());
-                outDS->GetPointData()->AddArray(new_arr);
-                if (isActiveScalar)
-                    outDS->GetPointData()->SetActiveScalars(new_arr->GetName());
-                if (isActiveVector)
-                    outDS->GetPointData()->SetActiveVectors(new_arr->GetName());
-                new_arr->Delete();
-            }
-            dsToShift->Delete();
-        }
     }
     else if (centeringTarget == AVT_ZONECENT)
     {
-        // Detect if there are any integer type arrays and make them be floats for
-        // recenting.
-        int nArray = inDS->GetPointData()->GetNumberOfArrays();
-        std::vector<std::string> arraysToSwap;
-        
-        for (int i = 0 ; i < nArray ; i++)
-        {
-            vtkDataArray *arr = inDS->GetPointData()->GetArray(i);
-            int dt = arr->GetDataType();
-            if (dt == VTK_UNSIGNED_CHAR || dt == VTK_INT ||
-                dt == VTK_UNSIGNED_INT)
-            {
-                std::string arr_name(arr->GetName());
-                if(arr_name != "avtGhostZones" && 
-                   arr_name != "avtGhostNodes" )
-                    arraysToSwap.push_back(arr_name);
-            }
-        }
-
-        vtkDataSet *dsToShift = inDS;
-        if (arraysToSwap.size() > 0)
-        {
-            dsToShift = (vtkDataSet *) inDS->NewInstance();
-            dsToShift->ShallowCopy(inDS);
-            for (size_t k = 0 ; k < arraysToSwap.size() ; k++)
-            {
-                vtkDataArray *arr = inDS->GetPointData()->GetArray(arraysToSwap[k].c_str());
-                vtkDataArray *fa = arr->NewInstance();
-                int ntups  = arr->GetNumberOfTuples();
-                int ncomps = arr->GetNumberOfComponents();
-                fa->SetNumberOfComponents(ncomps);
-                fa->SetNumberOfTuples(ntups);
-                for (int i = 0 ; i < ntups ; i++)
-                    for (int j = 0 ; j < ncomps ; j++)
-                        fa->SetComponent(i, j, arr->GetComponent(i, j));
-                fa->SetName(arr->GetName());
-                dsToShift->GetPointData()->RemoveArray(arr->GetName());
-                dsToShift->GetPointData()->AddArray(fa);
-                fa->Delete();
-            }
-        }
-
         //
         //  User requested zone-centered but our data is node-centered,
         //  create the cell data from point data.
         //
         vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
      
-        pd2cd->SetInputData(dsToShift);
+        pd2cd->SetInputData(inDS);
         pd2cd->GetExecutive()->SetOutputData(0, outDS);
         pd2cd->Update();
         pd2cd->Delete();
 
-        // We want to preserve knowledge of ghost zones
-        vtkDataArray *ghosts = inDS->GetCellData()->GetArray("avtGhostZones");
-        if (ghosts)
+        vtkDataArray *ghostNodes = inDS->GetPointData()->GetArray("avtGhostNodes");
+        if (ghostNodes)
         {
-            outDS->GetCellData()->AddArray(ghosts);
-        }
-        vtkDataArray *gn = inDS->GetPointData()->GetArray("avtGhostNodes");
-        if (gn != NULL)
-        {
-            outDS->GetPointData()->AddArray(gn);
+            outDS->GetPointData()->AddArray(ghostNodes);
             outDS->GetCellData()->RemoveArray("avtGhostNodes");
-        }
-        
-
-        // Convert the former int arrays back to int.
-        if (arraysToSwap.size() > 0)
-        {
-            for (size_t k = 0 ; k < arraysToSwap.size() ; k++)
-            {
-                vtkDataArray *arr_in  = inDS->GetPointData()
-                                            ->GetArray(arraysToSwap[k].c_str());
-                vtkDataArray *new_arr = vtkDataArray::CreateDataArray(
-                                                         arr_in->GetDataType());
-
-                vtkDataArray *arr_out = outDS->GetCellData()
-                                            ->GetArray(arraysToSwap[k].c_str());
-                int ntups  = arr_out->GetNumberOfTuples();
-                int ncomps = arr_out->GetNumberOfComponents();
-                new_arr->SetNumberOfComponents(ncomps);
-                new_arr->SetNumberOfTuples(ntups);
-                for (int i = 0 ; i < ntups ; i++)
-                    for (int j = 0 ; j < ncomps ; j++)
-                        new_arr->SetComponent(i, j, 
-                                             arr_out->GetComponent(i, j)+0.001);
-                new_arr->SetName(arr_out->GetName());
-                bool isActiveScalar = 
-                                 (inDS->GetPointData()->GetScalars() == arr_in);
-                bool isActiveVector = 
-                                 (inDS->GetPointData()->GetVectors() == arr_in);
-                outDS->GetCellData()->RemoveArray(arr_out->GetName());
-                outDS->GetCellData()->AddArray(new_arr);
-                if (isActiveScalar)
-                    outDS->GetCellData()->SetActiveScalars(new_arr->GetName());
-                if (isActiveVector)
-                    outDS->GetCellData()->SetActiveVectors(new_arr->GetName());
-                new_arr->Delete();
-            }
-            dsToShift->Delete();
         }
     }
     else
@@ -381,10 +215,8 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
         outDS = inDS;
     }
 
-    avtDataRepresentation *outDR = new avtDataRepresentation(outDS,
-        inDR->GetDomain(), inDR->GetLabel());
-
-    newDS->Delete();
+    avtDataRepresentation *outDR = new avtDataRepresentation(outDS, inDR->GetDomain(), inDR->GetLabel());
+    outDS->Delete();
 
     return outDR;
 }
@@ -436,14 +268,19 @@ avtShiftCenteringFilter::UpdateDataObjectInfo(void)
 //  Programmer: Hank Childs
 //  Creation:   August 11, 2004
 //
+//  Modifications:
+//
+//    Kevin Griffin, Wed Feb  5 08:15:32 PST 2020
+//    Removed explicit request for ghost zones since there are cases where
+//    ghost nodes are needed. The desired ghost data type should already
+//    be set by other filters in the pipeline.
+//
 // ****************************************************************************
 
 avtContract_p
 avtShiftCenteringFilter::ModifyContract(avtContract_p in_spec)
 {
-    avtContract_p spec = new avtContract(in_spec);
-    spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
-    return spec;
+    return in_spec;
 }
 
 
