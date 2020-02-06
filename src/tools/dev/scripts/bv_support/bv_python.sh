@@ -4,10 +4,12 @@ function bv_python_initialize
     export FORCE_PYTHON="no"
     export USE_SYSTEM_PYTHON="no"
     export BUILD_MPI4PY="no"
+    export BUILD_SPHINX="yes"
     export VISIT_PYTHON_DIR=${VISIT_PYTHON_DIR:-""}
     add_extra_commandline_args "python" "system-python" 0 "Using system python"
     add_extra_commandline_args "python" "alt-python-dir" 1 "Using alternate python directory"
     add_extra_commandline_args "python" "mpi4py" 0 "Build mpi4py"
+    add_extra_commandline_args "python" "no-sphinx" 0 "Disable building sphinx"
 }
 
 function bv_python_enable
@@ -98,6 +100,12 @@ function bv_python_mpi4py
 {
     echo "configuring for building mpi4py"
     export BUILD_MPI4PY="yes"
+}
+
+function bv_python_no_sphinx
+{
+    echo "Disabling building sphinx"
+    export BUILD_SPHINX="no"
 }
 
 function bv_python_alt_python_dir
@@ -357,6 +365,7 @@ function bv_python_print_usage
     printf "%-20s %s [%s]\n" "--system-python" "Use the system installed Python"
     printf "%-20s %s [%s]\n" "--alt-python-dir" "Use Python from an alternative directory"
     printf "%-20s %s [%s]\n" "--mpi4py" "Build mpi4py with Python"
+    printf "%-20s %s [%s]\n" "--sphinx" "Build sphinx with Python"
 }
 
 function bv_python_host_profile
@@ -1966,26 +1975,28 @@ function bv_python_build
             fi
             info "Done building the seedme python module."
 
-            #
-            # Currently, we only need python3 for sphinx.
-            #
-            build_python3
-            if [[ $? != 0 ]] ; then
-                error "python3 build failed. Bailing out."
-            fi
-            info "Done building python3."
+            if [[ "$BUILD_SPHINX" == "yes" ]]; then
+                #
+                # Currently, we only need python3 for sphinx.
+                #
+                build_python3
+                if [[ $? != 0 ]] ; then
+                    error "python3 build failed. Bailing out."
+                fi
+                info "Done building python3."
 
-            build_sphinx
-            if [[ $? != 0 ]] ; then
-                error "sphinx python module build failed. Bailing out."
-            fi
-            info "Done building the sphinx python module."
+                build_sphinx
+                if [[ $? != 0 ]] ; then
+                    error "sphinx python module build failed. Bailing out."
+                fi
+                info "Done building the sphinx python module."
 
-            build_sphinx_rtd
-            if [[ $? != 0 ]] ; then
-                error "sphinx rtd python theme build failed. Bailing out."
+                build_sphinx_rtd
+                if [[ $? != 0 ]] ; then
+                    error "sphinx rtd python theme build failed. Bailing out."
+                fi
+                info "Done building the sphinx rtd python theme."
             fi
-            info "Done building the sphinx rtd python theme."
 
         fi
     fi
