@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+  <Plugin name="AVSucd" type="database" label="AVSucd" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" filePatternsStrict="true" opensWholeDirectory="false">
+    <FilePatterns>
+      *.inp
+    </FilePatterns>
+    <Files components="M">
+      avtAVSucdFileFormat.C
+      VisItAVSucdReader.C
+    </Files>
+    <Files components="E">
+      avtAVSucdFileFormat.C
+      VisItAVSucdReader.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true" keyframe="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
