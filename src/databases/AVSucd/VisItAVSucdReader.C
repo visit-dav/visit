@@ -930,7 +930,7 @@ void VisItAVSucdReader::ReadASCIIData(const int numTuples, int &numComp,
                                       DataInfo *&dataInfo , const idMapping &idMap)
 {
   vtkDebugMacro( << "Start of ReadASCIIData()\n");
-  char c='\0';
+
   *(this->FileStream) >> numComp;
   dataInfo = new DataInfo[numComp];
 
@@ -938,10 +938,11 @@ void VisItAVSucdReader::ReadASCIIData(const int numTuples, int &numComp,
   {
     *(this->FileStream) >> dataInfo[i].veclen;
   }
-  this->FileStream->get(c); // one more newline to catch
-
   string name;
   string units;
+  // one more newline to catch (use getline instead of get(c) as there may be whitespace)
+  std::getline(*(this->FileStream), name);
+
   for(int i=0; i < numComp; ++i)
   {
     std::getline(*(this->FileStream), name, ',');
