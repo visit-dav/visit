@@ -419,6 +419,9 @@
 #    Eric Brugger, Thu Jan 16 14:15:04 PST 2020
 #    I added host profiles for LRZ.
 #
+#    Eric Brugger, Thus Feb  6 07:01:40 PST 2020
+#    I removed the rzgw from the rz host profile names.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -670,14 +673,6 @@ if [ "$test" = "true" ]; then
     rm -rf $dir
     $0 -c eth_zurich $version $platform $dir > /dev/null 2>&1
     files=`ls $dir/$version/bin/customlauncher` 
-    if [ "$files" == "" ]; then
-       echo "failed"
-       exit 1
-    fi
-    echo "Testing llnl_open configuration..."
-    rm -rf $dir
-    $0 -c llnl_open $version $platform $dir > /dev/null 2>&1
-    files=`ls $dir/$version/.visit/hosts/host_llnl_rzgw*` 
     if [ "$files" == "" ]; then
        echo "failed"
        exit 1
@@ -1104,7 +1099,7 @@ elif [ "$config" = "cscs" ]; then
 elif [ "$config" = "eth_zurich" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "llnl_open" ]; then
-   # Install both cz hosts and rzgw hosts. We're most likely in a client
+   # Install both cz hosts and rz hosts. We're most likely in a client
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/*.xml                  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
@@ -1114,7 +1109,7 @@ elif [ "$config" = "llnl_open_rz" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
 elif [ "$config" = "llnl_open_cz" ]; then
-   # Copy the files explicitly to avoid the rzgw hosts. We're most likely installing on a cz machine.
+   # Copy the files explicitly to avoid the rz hosts. We're most likely installing on a cz machine.
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_ansel.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_borax.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_lassen.xml    "$dir"/$version+/.visit/hosts/
