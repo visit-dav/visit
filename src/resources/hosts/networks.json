@@ -141,22 +141,22 @@
           "name": "host_llnl_quartz.xml"
         }, 
         {
-          "name": "host_llnl_rzgw_rzalastor.xml"
+          "name": "host_llnl_rzalastor.xml"
         }, 
         {
-          "name": "host_llnl_rzgw_rzansel.xml"
+          "name": "host_llnl_rzansel.xml"
         }, 
         {
-          "name": "host_llnl_rzgw_rzgenie.xml"
+          "name": "host_llnl_rzgenie.xml"
         }, 
         {
-          "name": "host_llnl_rzgw_rzhasgpu.xml"
+          "name": "host_llnl_rzhasgpu.xml"
         }, 
         {
-          "name": "host_llnl_rzgw_rztopaz.xml"
+          "name": "host_llnl_rztopaz.xml"
         }, 
         {
-          "name": "host_llnl_rzgw_rztrona.xml"
+          "name": "host_llnl_rztrona.xml"
         }, 
         {
           "name": "host_llnl_surface.xml"
