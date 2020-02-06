@@ -365,7 +365,7 @@ function bv_python_print_usage
     printf "%-20s %s [%s]\n" "--system-python" "Use the system installed Python"
     printf "%-20s %s [%s]\n" "--alt-python-dir" "Use Python from an alternative directory"
     printf "%-20s %s [%s]\n" "--mpi4py" "Build mpi4py with Python"
-    printf "%-20s %s [%s]\n" "--sphinx" "Build sphinx with Python"
+    printf "%-20s %s [%s]\n" "--no-sphinx" "Disable building sphinx"
 }
 
 function bv_python_host_profile
