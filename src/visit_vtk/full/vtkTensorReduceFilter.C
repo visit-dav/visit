@@ -24,6 +24,7 @@ vtkTensorReduceFilter::vtkTensorReduceFilter()
 {
   stride = 10;
   numEls = -1;
+  origOnly = true;
 }
 
 void
@@ -38,6 +39,12 @@ vtkTensorReduceFilter::SetNumberOfElements(int n)
 {
   stride = -1;
   numEls = n;
+}
+
+void
+vtkTensorReduceFilter::SetLimitToOriginal(bool lto)
+{
+  origOnly = lto;
 }
 
 // ****************************************************************************
@@ -80,20 +87,20 @@ vtkTensorReduceFilter::RequestData(
   vtkCellData *outCd = output->GetCellData();
   vtkPointData *outPd = output->GetPointData();
 
-  vtkDataArray *inCtensors = inCd->GetTensors();
-  vtkDataArray *inPtensors = inPd->GetTensors();
+  vtkDataArray *inCTensors = inCd->GetTensors();
+  vtkDataArray *inPTensors = inPd->GetTensors();
 
   int npts = input->GetNumberOfPoints();
   int ncells = input->GetNumberOfCells();
 
-  if (inPtensors == NULL && inCtensors == NULL)
+  if (inPTensors == NULL && inCTensors == NULL)
     {
     vtkErrorMacro(<<"No tensors to reduce");
     return 1;
     }
 
-  int inPType = (inPtensors ? inPtensors->GetDataType() : VTK_FLOAT);
-  int inCType = (inCtensors ? inCtensors->GetDataType() : VTK_FLOAT);
+  int inPType = (inPTensors ? inPTensors->GetDataType() : VTK_FLOAT);
+  int inCType = (inCTensors ? inCTensors->GetDataType() : VTK_FLOAT);
 
   // Determine what the stride is.
   if (stride <= 0 && numEls <= 0)
@@ -106,11 +113,11 @@ vtkTensorReduceFilter::RequestData(
   if (actingStride <= 0)
     {
     int totalTensors = 0;
-    if (inPtensors != NULL)
+    if (inPTensors != NULL)
     {
         totalTensors += npts;
     }
-    if (inCtensors != NULL)
+    if (inCTensors != NULL)
     {
         totalTensors += ncells;
     }
@@ -123,63 +130,168 @@ vtkTensorReduceFilter::RequestData(
       outTensors = vtkDoubleArray::New();
   else 
       outTensors = vtkFloatArray::New();
-  outTensors->SetNumberOfComponents(9);
+
+  int nComponents = 9;
+  
+  if (inPTensors != NULL)
+    nComponents = inPTensors->GetNumberOfComponents();
+  else if (inCTensors != NULL)
+    nComponents = inCTensors->GetNumberOfComponents();
+
+  outTensors->SetNumberOfComponents(nComponents);
 
   float nextToTake = 0.;
   int count = 0;
-  if (inPtensors != NULL)
+  if (inPTensors != NULL)
     {
+    bool *foundcell = NULL;
+    vtkDataArray *origCellArr =
+      input->GetPointData()->GetArray("avtOriginalCellNumbers");
+    vtkDataArray *origNodeArr =
+      input->GetPointData()->GetArray("avtOriginalNodeNumbers");
+    int ccmp = origCellArr ? origCellArr->GetNumberOfComponents() - 1 : -1;
+    int ncmp = origNodeArr ? origNodeArr->GetNumberOfComponents() - 1 : -1;
+
+    if (origOnly && origCellArr)
+      {
+      // Find needed size, allocate, and initialize the "found" array
+      int max = 0;
+      for (int i=0; i<npts; i++)
+        if ((int)origCellArr->GetComponent(i,ccmp) > max)
+          max = (int)origCellArr->GetComponent(i,ccmp);
+      foundcell = new bool[max+1];
+      for (int i=0; i<max+1; i++)
+        foundcell[i] = false;
+      }
+
     outPd->CopyAllocate(inPd, npts);
-    outTensors->SetName(inPtensors->GetName());
+    outTensors->SetName(inPTensors->GetName());
+    int index = 0;
     for (int i = 0 ; i < npts ; i++)
       {
-      if (i >= nextToTake)
+      int orignode = i;
+      int origcell = -1;
+      if (origNodeArr)
+        orignode = (int)origNodeArr->GetComponent(i,ncmp);
+      if (origCellArr)
+        origcell = (int)origCellArr->GetComponent(i,ccmp);
+
+      if (origOnly && orignode<0)
+        continue;
+
+      if (foundcell && (origcell<0 || foundcell[origcell]))
+        continue;
+
+      if (index >= nextToTake)
         {
         nextToTake += actingStride;
 
-        double pt[3];
-        input->GetPoint(i, pt);
-        outpts->InsertNextPoint(pt);
-
         double v[9];
-        inPtensors->GetTuple(i, v);
-        outTensors->InsertNextTuple(v);
-        outPd->CopyData(inPd, i, count++);
+        inPTensors->GetTuple(i, v);
+
+	int c;
+	for( c=0; c<nComponents; ++c )
+	{
+	  if (v[c] != 0.)
+	    break;
+	}
+	
+        if (c < nComponents )
+          {
+            double pt[3];
+            input->GetPoint(i, pt);
+            outpts->InsertNextPoint(pt);
+    
+            if (inCType == VTK_DOUBLE || inPType == VTK_DOUBLE)
+            {
+                outTensors->InsertNextTuple(v);
+            }
+            else
+            {
+                float fv[9];
+		for( c=0; c<nComponents; ++c )
+		  fv[c] = vtkVisItUtility::SafeDoubleToFloat(v[c]);
+
+                outTensors->InsertNextTuple(fv);
+            }
+            outPd->CopyData(inPd, i, count++);
+          }
         }
+
+      if (foundcell)
+        foundcell[origcell] = true;
+
+      index++;
       }
       outPd->Squeeze();
     }
 
   nextToTake = 0.;
   count = 0;
-  if (inCtensors != NULL)
+  if (inCTensors != NULL && inPTensors == NULL)
     {
+    bool *foundcell = NULL;
+    vtkDataArray *origCellArr =
+      input->GetCellData()->GetArray("avtOriginalCellNumbers");
+    int ccmp = origCellArr ? origCellArr->GetNumberOfComponents() - 1 : -1;
+
+    if (origOnly && origCellArr)
+    {
+      // Find needed size, allocate, and initialize the "found" array
+      int max = 0;
+      for (int i=0; i<npts; i++)
+        if ((int)origCellArr->GetComponent(i,ccmp) > max)
+          max = (int)origCellArr->GetComponent(i,ccmp);
+      foundcell = new bool[max+1];
+      for (int i=0; i<max+1; i++)
+        foundcell[i] = false;
+    }
+
     outCd->CopyAllocate(inCd, ncells);
-    outTensors->SetName(inCtensors->GetName());
+    outTensors->SetName(inCTensors->GetName());
+    int index = 0;
     for (int i = 0 ; i < ncells ; i++)
       {
-      if (i >= nextToTake)
+      int origcell = i;
+      if (origCellArr)
+        origcell = (int)origCellArr->GetComponent(i,ccmp);
+
+      if (foundcell && (origcell<0 || foundcell[origcell]))
+        continue;
+
+      if (index >= nextToTake)
         {
         nextToTake += actingStride;
 
         vtkCell *cell = input->GetCell(i);
         double pt[3];
-        cell->GetParametricCenter(pt);
+        vtkVisItUtility::GetCellCenter(cell,pt);
         outpts->InsertNextPoint(pt);
 
         double v[9];
-        inCtensors->GetTuple(i, v);
+        inCTensors->GetTuple(i, v);
         outTensors->InsertNextTuple(v);
         outCd->CopyData(inCd, i, count++);
         }
+
+      if (foundcell)
+        foundcell[origcell] = true;
+
+      index++;
       }
       outCd->Squeeze();
+
+    if (foundcell)
+      delete[] foundcell;
     }
 
   int nOutPts = outpts->GetNumberOfPoints();
   output->SetPoints(outpts);
   outpts->Delete();
-  output->GetPointData()->SetTensors(outTensors);
+  if (inPTensors)
+    output->GetPointData()->SetTensors(outTensors);
+  else
+    output->GetCellData()->SetTensors(outTensors);
   outTensors->Delete();
 
   output->Allocate(nOutPts);
@@ -189,6 +301,7 @@ vtkTensorReduceFilter::RequestData(
     onevertex[0] = i;
     output->InsertNextCell(VTK_VERTEX, 1, onevertex);
     }
+
   return 1;
 }
 
@@ -215,4 +328,5 @@ vtkTensorReduceFilter::PrintSelf(ostream &os, vtkIndent indent)
    this->Superclass::PrintSelf(os, indent);
    os << indent << "Stride: " << this->stride << "\n";
    os << indent << "Target number of tensors: " << this->numEls << "\n";
+   os << indent << "Limit to original cell/point: " << this->origOnly << "\n";
 }

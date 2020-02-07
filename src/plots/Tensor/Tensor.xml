@@ -21,6 +21,9 @@
       <Field name="stride" label="Stride" type="int" enabler="glyphLocation:AdaptsToMeshResolution">
         1
       </Field>
+      <Field name="origOnly" label="Limit to original node/cell" type="bool">
+        true
+      </Field>
       <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
         OriginalData
       </Field>

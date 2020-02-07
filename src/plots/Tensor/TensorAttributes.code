@@ -7,7 +7,8 @@ TensorAttributes::ChangesRequireRecalculation(const TensorAttributes &obj)
     return ((glyphLocation != obj.glyphLocation) ||
             (useStride != obj.useStride) ||
             (stride != obj.stride) ||
-            (nTensors != obj.nTensors));
+            (nTensors != obj.nTensors)||
+            (origOnly != obj.origOnly));
 }
 
 Function: GetAnimationScale

@@ -69,46 +69,38 @@ protected:
     void Apply(bool ignore = false);
 
 private slots:
-    void tensorColorChanged(const QColor &color);
-    void processScaleText();
-    void scaleByMagnitudeToggled(bool on);
-    void autoScaleToggled(bool on);
-    void reduceMethodChanged(int index);
     void locationMethodChanged(int index);
+    void reduceMethodChanged(int index);
     void processNTensorsText();
     void processStrideText();
-    void legendToggled(bool on);
-    void colorModeChanged(int);
-    void colorTableClicked(bool useDefault, const QString &ctName);
-    void invertColorTableToggled(bool val);
+    void limitToOrigToggled(bool);
 
+    void limitsSelectChanged(int);
     void minToggled(bool on);
     void maxToggled(bool on);
     void processMaxLimitText();
     void processMinLimitText();
-    void limitsSelectChanged(int);
+
+    void tensorColorChanged(const QColor &color);
+    void colorModeChanged(int);
+    void colorTableClicked(bool useDefault, const QString &ctName);
+    void invertColorTableToggled(bool val);
+    void legendToggled(bool);
+
+    void processScaleText();
+    void scaleByMagnitudeToggled(bool);
+    void autoScaleToggled(bool);
 
 private:
     int                  plotType;
     TensorAttributes     *tensorAtts;
-
-    QvisColorButton      *tensorColor;
-    QButtonGroup         *colorButtonGroup; 
-    QvisColorTableWidget *colorTableWidget;
-
-    QLineEdit            *scaleLineEdit;
-    QCheckBox            *scaleByMagnitudeToggle;
-    QCheckBox            *autoScaleToggle;
 
     QButtonGroup         *locationButtonGroup;
     QButtonGroup         *reduceButtonGroup;
     QLineEdit            *nTensorsLineEdit;
     QLineEdit            *strideLineEdit;
     QRadioButton         *strideRB;
-
-    QCheckBox            *legendToggle;
-
-    QButtonGroup         *originButtonGroup;
+    QCheckBox            *limitToOrigToggle;
 
     QGroupBox            *limitsGroup;
     QCheckBox            *minToggle;
@@ -116,6 +108,15 @@ private:
     QComboBox            *limitsSelect;
     QLineEdit            *maxLineEdit;
     QLineEdit            *minLineEdit;
+
+    QvisColorButton      *tensorColor;
+    QButtonGroup         *colorButtonGroup; 
+    QvisColorTableWidget *colorTableWidget;
+    QCheckBox            *legendToggle;
+
+    QLineEdit            *scaleLineEdit;
+    QCheckBox            *scaleByMagnitudeToggle;
+    QCheckBox            *autoScaleToggle;
 };
 
 #endif

@@ -1336,6 +1336,26 @@ QvisVectorPlotWindow::processStrideText()
 }
 
 // ****************************************************************************
+// Method: QvisVectorPlotWindow::limitToOrigToggled
+//
+// Purpose:
+//   This is a Qt slot function that is called when the user toggles the
+//   window's limit to original node/cell toggle button.
+//
+// Programmer: Jeremy Meredith
+// Creation:   July  8, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisVectorPlotWindow::limitToOrigToggled(bool val)
+{
+    vectorAtts->SetOrigOnly(val);
+    Apply();
+}
+
+// ****************************************************************************
 // Method: QvisVectorPlotWindow::legendToggled
 //
 // Purpose: 
@@ -1646,25 +1666,5 @@ void
 QvisVectorPlotWindow::processStemWidthText()
 {
     GetCurrentValues(VectorAttributes::ID_stemWidth);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisVectorPlotWindow::limitToOrigToggled
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the user toggles the
-//   window's limit to original node/cell toggle button.
-//
-// Programmer: Jeremy Meredith
-// Creation:   July  8, 2008
-//
-// Modifications:
-//   
-// ****************************************************************************
-void
-QvisVectorPlotWindow::limitToOrigToggled(bool val)
-{
-    vectorAtts->SetOrigOnly(val);
     Apply();
 }

@@ -10,7 +10,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define TENSORATTRIBUTES_NMETH 38
+#define TENSORATTRIBUTES_NMETH 40
 void           PyTensorAttributes_StartUp(TensorAttributes *subj, void *data);
 void           PyTensorAttributes_CloseDown();
 PyMethodDef *  PyTensorAttributes_GetMethodTable(int *nMethods);

@@ -100,6 +100,7 @@ void TensorAttributes::Init()
     useStride = false;
     nTensors = 400;
     stride = 1;
+    origOnly = true;
     limitsMode = OriginalData;
     minFlag = false;
     min = 0;
@@ -137,6 +138,7 @@ void TensorAttributes::Copy(const TensorAttributes &obj)
     useStride = obj.useStride;
     nTensors = obj.nTensors;
     stride = obj.stride;
+    origOnly = obj.origOnly;
     limitsMode = obj.limitsMode;
     minFlag = obj.minFlag;
     min = obj.min;
@@ -314,6 +316,7 @@ TensorAttributes::operator == (const TensorAttributes &obj) const
             (useStride == obj.useStride) &&
             (nTensors == obj.nTensors) &&
             (stride == obj.stride) &&
+            (origOnly == obj.origOnly) &&
             (limitsMode == obj.limitsMode) &&
             (minFlag == obj.minFlag) &&
             (min == obj.min) &&
@@ -475,6 +478,7 @@ TensorAttributes::SelectAll()
     Select(ID_useStride,          (void *)&useStride);
     Select(ID_nTensors,           (void *)&nTensors);
     Select(ID_stride,             (void *)&stride);
+    Select(ID_origOnly,           (void *)&origOnly);
     Select(ID_limitsMode,         (void *)&limitsMode);
     Select(ID_minFlag,            (void *)&minFlag);
     Select(ID_min,                (void *)&min);
@@ -543,6 +547,12 @@ TensorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     {
         addToParent = true;
         node->AddNode(new DataNode("stride", stride));
+    }
+
+    if(completeSave || !FieldsEqual(ID_origOnly, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("origOnly", origOnly));
     }
 
     if(completeSave || !FieldsEqual(ID_limitsMode, &defaultObject))
@@ -689,6 +699,8 @@ TensorAttributes::SetFromNode(DataNode *parentNode)
         SetNTensors(node->AsInt());
     if((node = searchNode->GetNode("stride")) != 0)
         SetStride(node->AsInt());
+    if((node = searchNode->GetNode("origOnly")) != 0)
+        SetOrigOnly(node->AsBool());
     if((node = searchNode->GetNode("limitsMode")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -763,6 +775,13 @@ TensorAttributes::SetStride(int stride_)
 {
     stride = stride_;
     Select(ID_stride, (void *)&stride);
+}
+
+void
+TensorAttributes::SetOrigOnly(bool origOnly_)
+{
+    origOnly = origOnly_;
+    Select(ID_origOnly, (void *)&origOnly);
 }
 
 void
@@ -889,6 +908,12 @@ int
 TensorAttributes::GetStride() const
 {
     return stride;
+}
+
+bool
+TensorAttributes::GetOrigOnly() const
+{
+    return origOnly;
 }
 
 TensorAttributes::LimitsMode
@@ -1031,6 +1056,7 @@ TensorAttributes::GetFieldName(int index) const
     case ID_useStride:          return "useStride";
     case ID_nTensors:           return "nTensors";
     case ID_stride:             return "stride";
+    case ID_origOnly:           return "origOnly";
     case ID_limitsMode:         return "limitsMode";
     case ID_minFlag:            return "minFlag";
     case ID_min:                return "min";
@@ -1073,6 +1099,7 @@ TensorAttributes::GetFieldType(int index) const
     case ID_useStride:          return FieldType_bool;
     case ID_nTensors:           return FieldType_int;
     case ID_stride:             return FieldType_int;
+    case ID_origOnly:           return FieldType_bool;
     case ID_limitsMode:         return FieldType_enum;
     case ID_minFlag:            return FieldType_bool;
     case ID_min:                return FieldType_double;
@@ -1115,6 +1142,7 @@ TensorAttributes::GetFieldTypeName(int index) const
     case ID_useStride:          return "bool";
     case ID_nTensors:           return "int";
     case ID_stride:             return "int";
+    case ID_origOnly:           return "bool";
     case ID_limitsMode:         return "enum";
     case ID_minFlag:            return "bool";
     case ID_min:                return "double";
@@ -1173,6 +1201,11 @@ TensorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_stride:
         {  // new scope
         retval = (stride == obj.stride);
+        }
+        break;
+    case ID_origOnly:
+        {  // new scope
+        retval = (origOnly == obj.origOnly);
         }
         break;
     case ID_limitsMode:
@@ -1261,7 +1294,8 @@ TensorAttributes::ChangesRequireRecalculation(const TensorAttributes &obj)
     return ((glyphLocation != obj.glyphLocation) ||
             (useStride != obj.useStride) ||
             (stride != obj.stride) ||
-            (nTensors != obj.nTensors));
+            (nTensors != obj.nTensors)||
+            (origOnly != obj.origOnly));
 }
 
 #include <math.h>

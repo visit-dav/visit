@@ -101,34 +101,35 @@ protected:
     void UpdateLineStem();
 
 private slots:
-    void lineWidthChanged(int newWidth);
-    void vectorColorChanged(const QColor &color);
-    void processScaleText();
-    void scaleByMagnitudeToggled(bool);
-    void autoScaleToggled(bool);
-    void processHeadSizeText();
-    void reduceMethodChanged(int index);
     void locationMethodChanged(int index);
+    void reduceMethodChanged(int index);
     void processNVectorsText();
     void processStrideText();
-    void legendToggled(bool);
-    void drawHeadToggled(bool);
-    void colorModeChanged(int);
-    void colorTableClicked(bool useDefault, const QString &ctName);
-    void invertColorTableToggled(bool val);
-    void originTypeChanged(int);
-    void glyphTypeChanged(int newType);
-    void lineStemChanged(int newType);
+    void limitToOrigToggled(bool);
 
+    void limitsSelectChanged(int);
     void minToggled(bool on);
     void maxToggled(bool on);
     void processMaxLimitText();
     void processMinLimitText();
-    void limitsSelectChanged(int);
 
+    void vectorColorChanged(const QColor &color);
+    void colorModeChanged(int);
+    void colorTableClicked(bool useDefault, const QString &ctName);
+    void invertColorTableToggled(bool val);
+    void legendToggled(bool);
+
+    void processScaleText();
+    void scaleByMagnitudeToggled(bool);
+    void autoScaleToggled(bool);
+
+    void glyphTypeChanged(int newType);
+    void processHeadSizeText();
+    void lineWidthChanged(int newWidth);
+    void drawHeadToggled(bool);
+    void originTypeChanged(int);
+    void lineStemChanged(int newType);
     void processStemWidthText();
-
-    void limitToOrigToggled(bool);
 
     void geometryQualityChanged(int index);
 
@@ -136,23 +137,28 @@ private:
     int                  plotType;
     VectorAttributes     *vectorAtts;
 
-    QvisColorButton      *vectorColor;
-    QButtonGroup         *colorButtonGroup; 
-    QvisColorTableWidget *colorTableWidget;
-
-    QLineEdit            *scaleLineEdit;
-    QCheckBox            *scaleByMagnitudeToggle;
-    QCheckBox            *autoScaleToggle;
-
     QButtonGroup         *locationButtonGroup;
     QButtonGroup         *reduceButtonGroup;
     QLineEdit            *nVectorsLineEdit;
     QLineEdit            *strideLineEdit;
     QRadioButton         *strideRB;
+    QCheckBox            *limitToOrigToggle;
 
-    QButtonGroup         *geometryQualityButtons;
+    QGroupBox            *limitsGroup;
+    QCheckBox            *minToggle;
+    QCheckBox            *maxToggle;
+    QComboBox            *limitsSelect;
+    QLineEdit            *maxLineEdit;
+    QLineEdit            *minLineEdit;
+
+    QvisColorButton      *vectorColor;
+    QButtonGroup         *colorButtonGroup; 
+    QvisColorTableWidget *colorTableWidget;
     QCheckBox            *legendToggle;
 
+    QLineEdit            *scaleLineEdit;
+    QCheckBox            *scaleByMagnitudeToggle;
+    QCheckBox            *autoScaleToggle;
 
     QvisLineWidthWidget  *lineWidth;
     QLabel               *glyphTypeLabel;
@@ -165,16 +171,10 @@ private:
     QLabel               *headSizeLabel;
     QLineEdit            *headSizeLineEdit;
     QCheckBox            *drawHeadToggle;
-
     QButtonGroup         *originButtonGroup;
 
-    QGroupBox            *limitsGroup;
-    QCheckBox            *minToggle;
-    QCheckBox            *maxToggle;
-    QComboBox            *limitsSelect;
-    QLineEdit            *maxLineEdit;
-    QLineEdit            *minLineEdit;
-    QCheckBox            *limitToOrigToggle;
+    QButtonGroup         *geometryQualityButtons;
+
 };
 
 #endif

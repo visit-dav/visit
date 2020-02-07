@@ -78,17 +78,17 @@ class avtVectorFilter : public avtDataTreeIterator
     bool                      useStride;
     int                       stride;
     int                       nVectors;
+    bool                      origOnly;
+
     std::string               magVarName;
     bool                      keepNodeZone;
-    bool                      origOnly;
     int                       approxDomains;
 
     virtual void              PreExecute(void);
     virtual void              PostExecute(void);
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void              UpdateDataObjectInfo(void);
-    virtual avtContract_p
-                              ModifyContract(avtContract_p);
+    virtual avtContract_p     ModifyContract(avtContract_p);
 };
 
 

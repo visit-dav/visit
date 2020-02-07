@@ -104,10 +104,10 @@ vtkVectorReduceFilter::RequestData(
   vtkPolyData *output = vtkPolyData::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  vtkCellData *inCd = input->GetCellData();
-  vtkPointData *inPd = input->GetPointData();
+  vtkCellData   *inCd =  input->GetCellData();
+  vtkPointData  *inPd =  input->GetPointData();
+  vtkCellData  *outCd = output->GetCellData();
   vtkPointData *outPd = output->GetPointData();
-  vtkCellData *outCd = output->GetCellData();
 
   vtkDataArray *inCvecs = inCd->GetVectors();
   vtkDataArray *inPvecs = inPd->GetVectors();
@@ -152,7 +152,15 @@ vtkVectorReduceFilter::RequestData(
       outVecs = vtkDoubleArray::New();
   else 
       outVecs = vtkFloatArray::New();
-  outVecs->SetNumberOfComponents(3);
+
+  int nComponents = 9;
+  
+  if (inPvecs != NULL)
+    nComponents = inPvecs->GetNumberOfComponents();
+  else if (inCvecs != NULL)
+    nComponents = inCvecs->GetNumberOfComponents();
+
+  outVecs->SetNumberOfComponents(nComponents);
 
   float nextToTake = 0.;
   int count = 0;
@@ -203,7 +211,14 @@ vtkVectorReduceFilter::RequestData(
         double v[3];
         inPvecs->GetTuple(i, v);
 
-        if (v[0] != 0. || v[1] != 0. || v[2] != 0.)
+	int c;
+	for( c=0; c<nComponents; ++c )
+	{
+	  if (v[c] != 0.)
+	    break;
+	}
+	
+        if (c < nComponents )
           {
             double pt[3];
             input->GetPoint(i, pt);
@@ -216,9 +231,9 @@ vtkVectorReduceFilter::RequestData(
             else
             {
                 float fv[3];
-                fv[0] = vtkVisItUtility::SafeDoubleToFloat(v[0]);
-                fv[1] = vtkVisItUtility::SafeDoubleToFloat(v[1]);
-                fv[2] = vtkVisItUtility::SafeDoubleToFloat(v[2]);
+		for( c=0; c<nComponents; ++c )
+		  fv[c] = vtkVisItUtility::SafeDoubleToFloat(v[c]);
+
                 outVecs->InsertNextTuple(fv);
             }
             outPd->CopyData(inPd, i, count++);

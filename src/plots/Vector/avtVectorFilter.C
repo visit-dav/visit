@@ -67,8 +67,8 @@ avtVectorFilter::avtVectorFilter(bool us, int red)
         SetNVectors(red);
     }
 
-    keepNodeZone = false;
     origOnly = false;
+    keepNodeZone = false;
     approxDomains = 1;
 }
 
@@ -276,13 +276,17 @@ avtVectorFilter::ExecuteData(avtDataRepresentation *inDR)
 
     vtkVectorReduceFilter *reduce = vtkVectorReduceFilter::New();
     vtkVertexFilter       *vertex = vtkVertexFilter::New();
+
     if (useStride)
+    {
         reduce->SetStride(stride);
+    }
     else
     {
         int nPerDomain = nVectors / approxDomains;
         if (nPerDomain < 1)
             nPerDomain = 1;
+
         reduce->SetNumberOfElements(nPerDomain);
     }
 
@@ -294,6 +298,7 @@ avtVectorFilter::ExecuteData(avtDataRepresentation *inDR)
     {
         vertex->VertexAtPointsOff();
     }
+
     reduce->SetLimitToOriginal(origOnly);
 
     vertex->SetInputData(inDS);
@@ -438,12 +443,13 @@ avtVectorFilter::ModifyContract(avtContract_p contract)
     if (!useStride)
         rv->NoStreaming();
 
-    avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
     if (contract->GetDataRequest()->MayRequireZones() || 
         contract->GetDataRequest()->MayRequireNodes() ||
         origOnly)
     {
+        avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();	
         keepNodeZone = true;
+
         if (data.ValidActiveVariable())
         {
             if (data.GetCentering() == AVT_NODECENT)

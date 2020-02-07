@@ -323,6 +323,7 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
     {
         TensorFilter->SetNTensors(atts.GetNTensors());
     }
+    TensorFilter->SetLimitToOriginal(0);//atts.GetOrigOnly());
 
     // If the resample filter is not NULL, then we are calling SetAtts
     // for a second consecutive time.  The second call must be for SR

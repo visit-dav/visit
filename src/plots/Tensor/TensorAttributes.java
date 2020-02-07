@@ -26,7 +26,7 @@ import llnl.visit.ColorAttribute;
 
 public class TensorAttributes extends AttributeSubject implements Plugin
 {
-    private static int TensorAttributes_numAdditionalAtts = 18;
+    private static int TensorAttributes_numAdditionalAtts = 19;
 
     // Enum values
     public final static int LIMITSMODE_ORIGINALDATA = 0;
@@ -44,6 +44,7 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         useStride = false;
         nTensors = 400;
         stride = 1;
+        origOnly = true;
         limitsMode = LIMITSMODE_ORIGINALDATA;
         minFlag = false;
         min = 0;
@@ -68,6 +69,7 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         useStride = false;
         nTensors = 400;
         stride = 1;
+        origOnly = true;
         limitsMode = LIMITSMODE_ORIGINALDATA;
         minFlag = false;
         min = 0;
@@ -92,6 +94,7 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         useStride = obj.useStride;
         nTensors = obj.nTensors;
         stride = obj.stride;
+        origOnly = obj.origOnly;
         limitsMode = obj.limitsMode;
         minFlag = obj.minFlag;
         min = obj.min;
@@ -127,6 +130,7 @@ public class TensorAttributes extends AttributeSubject implements Plugin
                 (useStride == obj.useStride) &&
                 (nTensors == obj.nTensors) &&
                 (stride == obj.stride) &&
+                (origOnly == obj.origOnly) &&
                 (limitsMode == obj.limitsMode) &&
                 (minFlag == obj.minFlag) &&
                 (min == obj.min) &&
@@ -171,88 +175,94 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         Select(3);
     }
 
+    public void SetOrigOnly(boolean origOnly_)
+    {
+        origOnly = origOnly_;
+        Select(4);
+    }
+
     public void SetLimitsMode(int limitsMode_)
     {
         limitsMode = limitsMode_;
-        Select(4);
+        Select(5);
     }
 
     public void SetMinFlag(boolean minFlag_)
     {
         minFlag = minFlag_;
-        Select(5);
+        Select(6);
     }
 
     public void SetMin(double min_)
     {
         min = min_;
-        Select(6);
+        Select(7);
     }
 
     public void SetMaxFlag(boolean maxFlag_)
     {
         maxFlag = maxFlag_;
-        Select(7);
+        Select(8);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(8);
+        Select(9);
     }
 
     public void SetColorByEigenValues(boolean colorByEigenValues_)
     {
         colorByEigenValues = colorByEigenValues_;
-        Select(9);
+        Select(10);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(10);
+        Select(11);
     }
 
     public void SetInvertColorTable(boolean invertColorTable_)
     {
         invertColorTable = invertColorTable_;
-        Select(11);
+        Select(12);
     }
 
     public void SetTensorColor(ColorAttribute tensorColor_)
     {
         tensorColor = tensorColor_;
-        Select(12);
+        Select(13);
     }
 
     public void SetUseLegend(boolean useLegend_)
     {
         useLegend = useLegend_;
-        Select(13);
+        Select(14);
     }
 
     public void SetScale(double scale_)
     {
         scale = scale_;
-        Select(14);
+        Select(15);
     }
 
     public void SetScaleByMagnitude(boolean scaleByMagnitude_)
     {
         scaleByMagnitude = scaleByMagnitude_;
-        Select(15);
+        Select(16);
     }
 
     public void SetAutoScale(boolean autoScale_)
     {
         autoScale = autoScale_;
-        Select(16);
+        Select(17);
     }
 
     public void SetAnimationStep(int animationStep_)
     {
         animationStep = animationStep_;
-        Select(17);
+        Select(18);
     }
 
     // Property getting methods
@@ -260,6 +270,7 @@ public class TensorAttributes extends AttributeSubject implements Plugin
     public boolean        GetUseStride() { return useStride; }
     public int            GetNTensors() { return nTensors; }
     public int            GetStride() { return stride; }
+    public boolean        GetOrigOnly() { return origOnly; }
     public int            GetLimitsMode() { return limitsMode; }
     public boolean        GetMinFlag() { return minFlag; }
     public double         GetMin() { return min; }
@@ -287,32 +298,34 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(3, buf))
             buf.WriteInt(stride);
         if(WriteSelect(4, buf))
-            buf.WriteInt(limitsMode);
+            buf.WriteBool(origOnly);
         if(WriteSelect(5, buf))
-            buf.WriteBool(minFlag);
+            buf.WriteInt(limitsMode);
         if(WriteSelect(6, buf))
-            buf.WriteDouble(min);
+            buf.WriteBool(minFlag);
         if(WriteSelect(7, buf))
-            buf.WriteBool(maxFlag);
+            buf.WriteDouble(min);
         if(WriteSelect(8, buf))
-            buf.WriteDouble(max);
+            buf.WriteBool(maxFlag);
         if(WriteSelect(9, buf))
-            buf.WriteBool(colorByEigenValues);
+            buf.WriteDouble(max);
         if(WriteSelect(10, buf))
-            buf.WriteString(colorTableName);
+            buf.WriteBool(colorByEigenValues);
         if(WriteSelect(11, buf))
-            buf.WriteBool(invertColorTable);
+            buf.WriteString(colorTableName);
         if(WriteSelect(12, buf))
-            tensorColor.Write(buf);
+            buf.WriteBool(invertColorTable);
         if(WriteSelect(13, buf))
-            buf.WriteBool(useLegend);
+            tensorColor.Write(buf);
         if(WriteSelect(14, buf))
-            buf.WriteDouble(scale);
+            buf.WriteBool(useLegend);
         if(WriteSelect(15, buf))
-            buf.WriteBool(scaleByMagnitude);
+            buf.WriteDouble(scale);
         if(WriteSelect(16, buf))
-            buf.WriteBool(autoScale);
+            buf.WriteBool(scaleByMagnitude);
         if(WriteSelect(17, buf))
+            buf.WriteBool(autoScale);
+        if(WriteSelect(18, buf))
             buf.WriteInt(animationStep);
     }
 
@@ -333,46 +346,49 @@ public class TensorAttributes extends AttributeSubject implements Plugin
             SetStride(buf.ReadInt());
             break;
         case 4:
-            SetLimitsMode(buf.ReadInt());
+            SetOrigOnly(buf.ReadBool());
             break;
         case 5:
-            SetMinFlag(buf.ReadBool());
+            SetLimitsMode(buf.ReadInt());
             break;
         case 6:
-            SetMin(buf.ReadDouble());
+            SetMinFlag(buf.ReadBool());
             break;
         case 7:
-            SetMaxFlag(buf.ReadBool());
+            SetMin(buf.ReadDouble());
             break;
         case 8:
-            SetMax(buf.ReadDouble());
+            SetMaxFlag(buf.ReadBool());
             break;
         case 9:
-            SetColorByEigenValues(buf.ReadBool());
+            SetMax(buf.ReadDouble());
             break;
         case 10:
-            SetColorTableName(buf.ReadString());
+            SetColorByEigenValues(buf.ReadBool());
             break;
         case 11:
-            SetInvertColorTable(buf.ReadBool());
+            SetColorTableName(buf.ReadString());
             break;
         case 12:
-            tensorColor.Read(buf);
-            Select(12);
+            SetInvertColorTable(buf.ReadBool());
             break;
         case 13:
-            SetUseLegend(buf.ReadBool());
+            tensorColor.Read(buf);
+            Select(13);
             break;
         case 14:
-            SetScale(buf.ReadDouble());
+            SetUseLegend(buf.ReadBool());
             break;
         case 15:
-            SetScaleByMagnitude(buf.ReadBool());
+            SetScale(buf.ReadDouble());
             break;
         case 16:
-            SetAutoScale(buf.ReadBool());
+            SetScaleByMagnitude(buf.ReadBool());
             break;
         case 17:
+            SetAutoScale(buf.ReadBool());
+            break;
+        case 18:
             SetAnimationStep(buf.ReadInt());
             break;
         }
@@ -390,6 +406,7 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("useStride", useStride, indent) + "\n";
         str = str + intToString("nTensors", nTensors, indent) + "\n";
         str = str + intToString("stride", stride, indent) + "\n";
+        str = str + boolToString("origOnly", origOnly, indent) + "\n";
         str = str + indent + "limitsMode = ";
         if(limitsMode == LIMITSMODE_ORIGINALDATA)
             str = str + "LIMITSMODE_ORIGINALDATA";
@@ -418,6 +435,7 @@ public class TensorAttributes extends AttributeSubject implements Plugin
     private boolean        useStride;
     private int            nTensors;
     private int            stride;
+    private boolean        origOnly;
     private int            limitsMode;
     private boolean        minFlag;
     private double         min;

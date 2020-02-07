@@ -66,6 +66,11 @@ PyTensorAttributes_ToString(const TensorAttributes *atts, const char *prefix)
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
     str += tmpStr;
+    if(atts->GetOrigOnly())
+        snprintf(tmpStr, 1000, "%sorigOnly = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sorigOnly = 0\n", prefix);
+    str += tmpStr;
     const char *limitsMode_names = "OriginalData, CurrentPlot";
     switch (atts->GetLimitsMode())
     {
@@ -243,6 +248,30 @@ TensorAttributes_GetStride(PyObject *self, PyObject *args)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStride()));
+    return retval;
+}
+
+/*static*/ PyObject *
+TensorAttributes_SetOrigOnly(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the origOnly in the object.
+    obj->data->SetOrigOnly(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TensorAttributes_GetOrigOnly(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetOrigOnly()?1L:0L);
     return retval;
 }
 
@@ -656,6 +685,8 @@ PyMethodDef PyTensorAttributes_methods[TENSORATTRIBUTES_NMETH] = {
     {"GetNTensors", TensorAttributes_GetNTensors, METH_VARARGS},
     {"SetStride", TensorAttributes_SetStride, METH_VARARGS},
     {"GetStride", TensorAttributes_GetStride, METH_VARARGS},
+    {"SetOrigOnly", TensorAttributes_SetOrigOnly, METH_VARARGS},
+    {"GetOrigOnly", TensorAttributes_GetOrigOnly, METH_VARARGS},
     {"SetLimitsMode", TensorAttributes_SetLimitsMode, METH_VARARGS},
     {"GetLimitsMode", TensorAttributes_GetLimitsMode, METH_VARARGS},
     {"SetMinFlag", TensorAttributes_SetMinFlag, METH_VARARGS},
@@ -725,6 +756,8 @@ PyTensorAttributes_getattr(PyObject *self, char *name)
         return TensorAttributes_GetNTensors(self, NULL);
     if(strcmp(name, "stride") == 0)
         return TensorAttributes_GetStride(self, NULL);
+    if(strcmp(name, "origOnly") == 0)
+        return TensorAttributes_GetOrigOnly(self, NULL);
     if(strcmp(name, "limitsMode") == 0)
         return TensorAttributes_GetLimitsMode(self, NULL);
     if(strcmp(name, "OriginalData") == 0)
@@ -780,6 +813,8 @@ PyTensorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = TensorAttributes_SetNTensors(self, tuple);
     else if(strcmp(name, "stride") == 0)
         obj = TensorAttributes_SetStride(self, tuple);
+    else if(strcmp(name, "origOnly") == 0)
+        obj = TensorAttributes_SetOrigOnly(self, tuple);
     else if(strcmp(name, "limitsMode") == 0)
         obj = TensorAttributes_SetLimitsMode(self, tuple);
     else if(strcmp(name, "minFlag") == 0)

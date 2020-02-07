@@ -71,6 +71,7 @@ public:
     void SetUseStride(bool useStride_);
     void SetNTensors(int nTensors_);
     void SetStride(int stride_);
+    void SetOrigOnly(bool origOnly_);
     void SetLimitsMode(LimitsMode limitsMode_);
     void SetMinFlag(bool minFlag_);
     void SetMin(double min_);
@@ -91,6 +92,7 @@ public:
     bool                 GetUseStride() const;
     int                  GetNTensors() const;
     int                  GetStride() const;
+    bool                 GetOrigOnly() const;
     LimitsMode           GetLimitsMode() const;
     bool                 GetMinFlag() const;
     double               GetMin() const;
@@ -140,6 +142,7 @@ public:
         ID_useStride,
         ID_nTensors,
         ID_stride,
+        ID_origOnly,
         ID_limitsMode,
         ID_minFlag,
         ID_min,
@@ -162,6 +165,7 @@ private:
     bool           useStride;
     int            nTensors;
     int            stride;
+    bool           origOnly;
     int            limitsMode;
     bool           minFlag;
     double         min;
@@ -181,6 +185,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define TENSORATTRIBUTES_TMFS "ibiiibdbdbsbabdbbi"
+#define TENSORATTRIBUTES_TMFS "ibiibibdbdbsbabdbbi"
 
 #endif

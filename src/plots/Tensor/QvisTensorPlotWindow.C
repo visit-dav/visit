@@ -204,6 +204,14 @@ QvisTensorPlotWindow::CreateTensorTab(QWidget *pageTensor)
     QFrame *hline2 = new QFrame(reduceGroupBox);
     hline2->setFrameStyle(QFrame::HLine | QFrame::Sunken);
     rgLayout->addWidget(hline2, 6, 0, 1, 4);
+
+    // Add the toggle to limit to one vector per original cell/node
+    limitToOrigToggle =
+      new QCheckBox(tr("Only show tensors on original nodes/cells"),
+                    reduceGroupBox);
+    connect(limitToOrigToggle, SIGNAL(toggled(bool)),
+            this, SLOT(limitToOrigToggled(bool)));
+    rgLayout->addWidget(limitToOrigToggle, 7, 0, 1, 4);
 }
 
 // ****************************************************************************
@@ -440,6 +448,7 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
             locationButtonGroup->blockSignals(true);
             locationButtonGroup->button(tensorAtts->GetGlyphLocation() == TensorAttributes::AdaptsToMeshResolution ? 0 : 1);
             strideRB->setEnabled(tensorAtts->GetGlyphLocation() == TensorAttributes::AdaptsToMeshResolution);
+            limitToOrigToggle->setEnabled(tensorAtts->GetGlyphLocation() == TensorAttributes::AdaptsToMeshResolution);
             locationButtonGroup->blockSignals(false);
           case TensorAttributes::ID_useStride:
             reduceButtonGroup->blockSignals(true);
@@ -454,6 +463,11 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
             break;
           case TensorAttributes::ID_nTensors:
             nTensorsLineEdit->setText(IntToQString(tensorAtts->GetNTensors()));
+            break;
+          case TensorAttributes::ID_origOnly:
+            limitToOrigToggle->blockSignals(true);
+            limitToOrigToggle->setChecked(tensorAtts->GetOrigOnly());
+            limitToOrigToggle->blockSignals(false);
             break;
 
           case TensorAttributes::ID_limitsMode:
@@ -885,6 +899,26 @@ void
 QvisTensorPlotWindow::processStrideText()
 {
     GetCurrentValues(TensorAttributes::ID_stride);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisTensorPlotWindow::limitToOrigToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's limit to original node/cell toggle button.
+//
+// Programmer: Jeremy Meredith
+// Creation:   July  8, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisTensorPlotWindow::limitToOrigToggled(bool val)
+{
+    tensorAtts->SetOrigOnly(val);
     Apply();
 }
 

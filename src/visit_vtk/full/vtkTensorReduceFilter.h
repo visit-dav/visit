@@ -41,6 +41,7 @@ public:
 
   void SetStride(int);
   void SetNumberOfElements(int);
+  void SetLimitToOriginal(bool);
 
 protected:
   vtkTensorReduceFilter();
@@ -53,6 +54,7 @@ protected:
 
   int stride;
   int numEls;
+  bool origOnly;
 
 private:
   vtkTensorReduceFilter(const vtkTensorReduceFilter&);
