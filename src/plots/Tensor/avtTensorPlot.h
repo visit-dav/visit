@@ -82,7 +82,10 @@ class avtTensorPlot : public avtPointDataPlot
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
     virtual void                CustomizeBehavior(void);
     virtual void                CustomizeMapper(avtDataObjectInformation &);
+
     bool                        SetColorTable(const char *);
+    void                        SetLimitsMode(int);
+    void                        SetMapperColors(void);
 
     virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; };
     void                        SetLegend(bool);

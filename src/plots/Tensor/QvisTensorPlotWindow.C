@@ -229,42 +229,42 @@ QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
     //
     // Create the Limits stuff
     //
-    // limitsGroup = new QGroupBox(central);
-    // limitsGroup->setTitle(tr("Limits"));
-    // topLayout->addWidget(limitsGroup);
+    limitsGroup = new QGroupBox(central);
+    limitsGroup->setTitle(tr("Limits"));
+    topLayout->addWidget(limitsGroup);
 
-    // QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    // limitsLayout->setMargin(5);
-    // limitsLayout->setSpacing(10);
+    QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setMargin(5);
+    limitsLayout->setSpacing(10);
 
-    // limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
+    limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
 
-    // limitsSelect = new QComboBox(central);
-    // limitsSelect->addItem(tr("Use Original Data"));
-    // limitsSelect->addItem(tr("Use Current Plot"));
-    // connect(limitsSelect, SIGNAL(activated(int)),
-    //         this, SLOT(limitsSelectChanged(int))); 
-    // limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
+    limitsSelect = new QComboBox(central);
+    limitsSelect->addItem(tr("Use Original Data"));
+    limitsSelect->addItem(tr("Use Current Plot"));
+    connect(limitsSelect, SIGNAL(activated(int)),
+            this, SLOT(limitsSelectChanged(int))); 
+    limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
 
-    // // Create the min toggle and line edit
-    // minToggle = new QCheckBox(tr("Minimum"), central);
-    // limitsLayout->addWidget(minToggle, 1, 0);
-    // connect(minToggle, SIGNAL(toggled(bool)),
-    //         this, SLOT(minToggled(bool)));
-    // minLineEdit = new QLineEdit(central);
-    // connect(minLineEdit, SIGNAL(returnPressed()),
-    //         this, SLOT(processMinLimitText())); 
-    // limitsLayout->addWidget(minLineEdit, 1, 1);
+    // Create the min toggle and line edit
+    minToggle = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(minToggle, 1, 0);
+    connect(minToggle, SIGNAL(toggled(bool)),
+            this, SLOT(minToggled(bool)));
+    minLineEdit = new QLineEdit(central);
+    connect(minLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMinLimitText())); 
+    limitsLayout->addWidget(minLineEdit, 1, 1);
 
-    // // Create the max toggle and line edit
-    // maxToggle = new QCheckBox(tr("Maximum"), central);
-    // limitsLayout->addWidget(maxToggle, 1, 2);
-    // connect(maxToggle, SIGNAL(toggled(bool)),
-    //         this, SLOT(maxToggled(bool)));
-    // maxLineEdit = new QLineEdit(central);
-    // connect(maxLineEdit, SIGNAL(returnPressed()),
-    //         this, SLOT(processMaxLimitText())); 
-    // limitsLayout->addWidget(maxLineEdit, 1, 3);
+    // Create the max toggle and line edit
+    maxToggle = new QCheckBox(tr("Maximum"), central);
+    limitsLayout->addWidget(maxToggle, 1, 2);
+    connect(maxToggle, SIGNAL(toggled(bool)),
+            this, SLOT(maxToggled(bool)));
+    maxLineEdit = new QLineEdit(central);
+    connect(maxLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMaxLimitText())); 
+    limitsLayout->addWidget(maxLineEdit, 1, 3);
 
     //
     // Create the color-related widgets.
@@ -456,37 +456,37 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
             nTensorsLineEdit->setText(IntToQString(tensorAtts->GetNTensors()));
             break;
 
-          // case TensorAttributes::ID_limitsMode:
-          //   limitsSelect->blockSignals(true);
-          //   limitsSelect->setCurrentIndex(tensorAtts->GetLimitsMode());
-          //   limitsSelect->blockSignals(false);
-          //   break;
-          // case TensorAttributes::ID_minFlag:
-          //   // Disconnect the slot before setting the toggle and
-          //   // reconnect it after. This prevents multiple updates.
-          //   disconnect(minToggle, SIGNAL(toggled(bool)),
-          //              this, SLOT(minToggled(bool)));
-          //   minToggle->setChecked(tensorAtts->GetMinFlag());
-          //   minLineEdit->setEnabled(tensorAtts->GetMinFlag());
-          //   connect(minToggle, SIGNAL(toggled(bool)),
-          //           this, SLOT(minToggled(bool)));
-          //   break;
-          // case TensorAttributes::ID_maxFlag:
-          //   // Disconnect the slot before setting the toggle and
-          //   // reconnect it after. This prevents multiple updates.
-          //   disconnect(maxToggle, SIGNAL(toggled(bool)),
-          //              this, SLOT(maxToggled(bool)));
-          //   maxToggle->setChecked(tensorAtts->GetMaxFlag());
-          //   maxLineEdit->setEnabled(tensorAtts->GetMaxFlag());
-          //   connect(maxToggle, SIGNAL(toggled(bool)),
-          //           this, SLOT(maxToggled(bool)));
-          //  break;
-          // case TensorAttributes::ID_min:
-          //   minLineEdit->setText(DoubleToQString(tensorAtts->GetMin()));
-          //   break;
-          // case TensorAttributes::ID_max:
-          //   maxLineEdit->setText(DoubleToQString(tensorAtts->GetMax()));
-          //   break;
+          case TensorAttributes::ID_limitsMode:
+            limitsSelect->blockSignals(true);
+            limitsSelect->setCurrentIndex(tensorAtts->GetLimitsMode());
+            limitsSelect->blockSignals(false);
+            break;
+          case TensorAttributes::ID_minFlag:
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(minToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(minToggled(bool)));
+            minToggle->setChecked(tensorAtts->GetMinFlag());
+            minLineEdit->setEnabled(tensorAtts->GetMinFlag());
+            connect(minToggle, SIGNAL(toggled(bool)),
+                    this, SLOT(minToggled(bool)));
+            break;
+          case TensorAttributes::ID_maxFlag:
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(maxToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(maxToggled(bool)));
+            maxToggle->setChecked(tensorAtts->GetMaxFlag());
+            maxLineEdit->setEnabled(tensorAtts->GetMaxFlag());
+            connect(maxToggle, SIGNAL(toggled(bool)),
+                    this, SLOT(maxToggled(bool)));
+           break;
+          case TensorAttributes::ID_min:
+            minLineEdit->setText(DoubleToQString(tensorAtts->GetMin()));
+            break;
+          case TensorAttributes::ID_max:
+            maxLineEdit->setText(DoubleToQString(tensorAtts->GetMax()));
+            break;
 
 	  case TensorAttributes::ID_colorByEigenValues:
             colorButtonGroup->blockSignals(true);
@@ -596,32 +596,32 @@ QvisTensorPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do the minimum value.
-    // if(which_widget == TensorAttributes::ID_minFlag || doAll)
-    // {
-    //     double val;
-    //     if(LineEditGetDouble(minLineEdit, val))
-    //         tensorAtts->SetMin(val);
-    //     else
-    //     {
-    //         ResettingError(tr("minimum value"),
-    //             DoubleToQString(tensorAtts->GetMin()));
-    //         tensorAtts->SetMin(tensorAtts->GetMin());
-    //     }
-    // }
+    if(which_widget == TensorAttributes::ID_minFlag || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(minLineEdit, val))
+            tensorAtts->SetMin(val);
+        else
+        {
+            ResettingError(tr("minimum value"),
+                DoubleToQString(tensorAtts->GetMin()));
+            tensorAtts->SetMin(tensorAtts->GetMin());
+        }
+    }
 
     // Do the maximum value
-    // if(which_widget == TensorAttributes::ID_maxFlag || doAll)
-    // {
-    //     double val;
-    //     if(LineEditGetDouble(maxLineEdit, val))
-    //         tensorAtts->SetMax(val);
-    //     else
-    //     {
-    //         ResettingError(tr("maximum value"),
-    //             DoubleToQString(tensorAtts->GetMax()));
-    //         tensorAtts->SetMax(tensorAtts->GetMax());
-    //     }
-    // }
+    if(which_widget == TensorAttributes::ID_maxFlag || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(maxLineEdit, val))
+            tensorAtts->SetMax(val);
+        else
+        {
+            ResettingError(tr("maximum value"),
+                DoubleToQString(tensorAtts->GetMax()));
+            tensorAtts->SetMax(tensorAtts->GetMax());
+        }
+    }
 
     // Do the scale value.
     if(which_widget == TensorAttributes::ID_scale || doAll)

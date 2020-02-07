@@ -239,6 +239,7 @@ avtTensorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 void
 avtTensorPlot::CustomizeBehavior(void)
 {
+    SetLimitsMode(atts.GetLimitsMode());
     behavior->SetLegend(varLegendRefPtr);
 }
 
@@ -264,6 +265,8 @@ avtTensorPlot::CustomizeBehavior(void)
 void
 avtTensorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 {
+    SetMapperColors();
+
     behavior->SetRenderOrder(DOES_NOT_MATTER);
     behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
 
@@ -339,17 +342,9 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
 
     tensorMapper->SetScaleByMagnitude(atts.GetScaleByMagnitude());
     tensorMapper->SetAutoScale(atts.GetAutoScale());
-    tensorMapper->SetScale(atts.GetScale());
+    tensorMapper->SetScale(atts.GetScale() * atts.GetAnimationScale());
 
-    if (atts.GetColorByEigenValues())
-    {
-        tensorMapper->ColorByMagOn();
-    }
-    else
-    {
-        const unsigned char *col = atts.GetTensorColor().GetColor();
-        tensorMapper->ColorByMagOff(col);
-    }
+    SetMapperColors();
 
     // Update the plot's colors if needed.
     if (atts.GetColorByEigenValues() &&
@@ -358,6 +353,8 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
         colorsInitialized = true;
         SetColorTable(atts.GetColorTableName().c_str());
     }
+
+    SetLimitsMode(atts.GetLimitsMode());
 
     //
     // Update the legend.
@@ -502,6 +499,113 @@ avtTensorPlot::ReleaseData(void)
     {
         ghostFilter->ReleaseData();
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorPlot::SetMapperColors
+//
+//  Purpose:
+//    Tells the tensorMapper how to color the data. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 12, 2004 
+//
+// ****************************************************************************
+
+void
+avtTensorPlot::SetMapperColors()
+{
+    if (atts.GetColorByEigenValues())
+    {
+        tensorMapper->ColorByMagOn();
+    }
+    else
+    {
+        const unsigned char *col = atts.GetTensorColor().GetColor();
+        avtLUT->SetLUTColors(col, 1);
+        tensorMapper->ColorByMagOff(col);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorPlot::SetLimitsMode
+//
+//  Purpose:  To determine the proper limits the mapper should be using.
+//
+//  Arguments:
+//    limitsMode  Specifies which type of limits.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     December 22, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtTensorPlot::SetLimitsMode(int limitsMode)
+{
+    double min, max;
+    //
+    //  Retrieve the actual range of the data
+    //
+    tensorMapper->GetVarRange(min, max);
+
+    float userMin = atts.GetMinFlag() ? atts.GetMin() : min;
+    float userMax = atts.GetMaxFlag() ? atts.GetMax() : max;
+      
+    if (dataExtents.size() == 2)
+    {
+        tensorMapper->SetMin(dataExtents[0]);
+        tensorMapper->SetMax(dataExtents[1]);
+    }
+    else if (atts.GetMinFlag() && atts.GetMaxFlag())
+    {
+        if (userMin >= userMax)
+        {
+            EXCEPTION1(InvalidLimitsException, false); 
+        }
+        else
+        {
+            tensorMapper->SetMin(userMin);
+            tensorMapper->SetMax(userMax);
+        }
+    } 
+    else if (atts.GetMinFlag())
+    {
+        tensorMapper->SetMin(userMin);
+        if (userMin > userMax)
+        {
+            tensorMapper->SetMax(userMin);
+        }
+        else
+        {
+            tensorMapper->SetMaxOff();
+        }
+    }
+    else if (atts.GetMaxFlag())
+    {
+        tensorMapper->SetMax(userMax);
+        if (userMin > userMax)
+        {
+            tensorMapper->SetMin(userMax);
+        }
+        else
+        {
+            tensorMapper->SetMinOff();
+        }
+    }
+    else
+    {
+        tensorMapper->SetMinOff();
+        tensorMapper->SetMaxOff();
+    }
+
+    tensorMapper->SetLimitsMode(limitsMode);
+
+    SetLegendRanges();
 }
 
 

@@ -87,9 +87,6 @@ class avtVectorPlot : public avtPointDataPlot
     static avtPlot             *Create();
 
     virtual void                SetAtts(const AttributeGroup*);
-    virtual bool                SetColorTable(const char *ctName);
-
-    void                        SetLimitsMode(int);
     virtual bool                NeedZBufferToCompositeEvenIn2D(void)
                                                           { return true; };
 
@@ -115,12 +112,15 @@ class avtVectorPlot : public avtPointDataPlot
     virtual void                CustomizeBehavior(void);
     virtual void                CustomizeMapper(avtDataObjectInformation &);
 
+    void                        SetLimitsMode(int);
+    virtual bool                SetColorTable(const char *ctName);
+    void                        SetMapperColors(void);
+    void                        ComputeMagVarName(const std::string &);
+    std::string                 magVarName;
+
     virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; };
     void                        SetLegend(bool);
     void                        SetLegendRanges();
-    void                        ComputeMagVarName(const std::string &);
-    void                        SetMapperColors(void);
-    std::string                 magVarName;
 
     virtual void                SetCellCountMultiplierForSRThreshold(const avtDataObject_p);
 };

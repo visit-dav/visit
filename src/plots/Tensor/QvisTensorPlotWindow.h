@@ -110,12 +110,12 @@ private:
 
     QButtonGroup         *originButtonGroup;
 
-    // QGroupBox            *limitsGroup;
-    // QCheckBox            *minToggle;
-    // QCheckBox            *maxToggle;
-    // QComboBox            *limitsSelect;
-    // QLineEdit            *maxLineEdit;
-    // QLineEdit            *minLineEdit;
+    QGroupBox            *limitsGroup;
+    QCheckBox            *minToggle;
+    QCheckBox            *maxToggle;
+    QComboBox            *limitsSelect;
+    QLineEdit            *maxLineEdit;
+    QLineEdit            *minLineEdit;
 };
 
 #endif

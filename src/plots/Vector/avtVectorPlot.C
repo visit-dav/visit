@@ -365,6 +365,7 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 {
     ComputeMagVarName(varname);
     SetMapperColors();
+    
     int dim = doi.GetAttributes().GetSpatialDimension();
     if (dim == 2)
     {
@@ -528,13 +529,13 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
     }
     vectorGlyph->SetOriginOffset(offset);
 
+    vectorMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
+
     vectorMapper->SetScaleByMagnitude(atts.GetScaleByMagnitude());
     vectorMapper->SetAutoScale(atts.GetAutoScale());
     vectorMapper->SetScale(atts.GetScale() * atts.GetAnimationScale());
 
     SetMapperColors();
-
-    vectorMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
 
     // Update the plot's colors if needed.
     if (atts.GetColorByMagnitude() &&
@@ -843,6 +844,7 @@ avtVectorPlot::SetLimitsMode(int limitsMode)
         vectorMapper->SetMinOff();
         vectorMapper->SetMaxOff();
     }
+
     vectorMapper->SetLimitsMode(limitsMode);
 
     SetLegendRanges();
