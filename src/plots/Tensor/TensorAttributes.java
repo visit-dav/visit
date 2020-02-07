@@ -26,57 +26,86 @@ import llnl.visit.ColorAttribute;
 
 public class TensorAttributes extends AttributeSubject implements Plugin
 {
-    private static int TensorAttributes_numAdditionalAtts = 11;
+    private static int TensorAttributes_numAdditionalAtts = 18;
+
+    // Enum values
+    public final static int LIMITSMODE_ORIGINALDATA = 0;
+    public final static int LIMITSMODE_CURRENTPLOT = 1;
+
+    public final static int GLYPHLOCATION_ADAPTSTOMESHRESOLUTION = 0;
+    public final static int GLYPHLOCATION_UNIFORMINSPACE = 1;
+
 
     public TensorAttributes()
     {
         super(TensorAttributes_numAdditionalAtts);
 
+        glyphLocation = GLYPHLOCATION_ADAPTSTOMESHRESOLUTION;
         useStride = false;
-        stride = 1;
         nTensors = 400;
+        stride = 1;
+        limitsMode = LIMITSMODE_ORIGINALDATA;
+        minFlag = false;
+        min = 0;
+        maxFlag = false;
+        max = 1;
+        colorByEigenValues = true;
+        colorTableName = new String("Default");
+        invertColorTable = false;
+        tensorColor = new ColorAttribute(0, 0, 0);
+        useLegend = true;
         scale = 0.25;
         scaleByMagnitude = true;
         autoScale = true;
-        colorByEigenvalues = true;
-        useLegend = true;
-        tensorColor = new ColorAttribute(0, 0, 0);
-        colorTableName = new String("Default");
-        invertColorTable = false;
+        animationStep = 0;
     }
 
     public TensorAttributes(int nMoreFields)
     {
         super(TensorAttributes_numAdditionalAtts + nMoreFields);
 
+        glyphLocation = GLYPHLOCATION_ADAPTSTOMESHRESOLUTION;
         useStride = false;
-        stride = 1;
         nTensors = 400;
+        stride = 1;
+        limitsMode = LIMITSMODE_ORIGINALDATA;
+        minFlag = false;
+        min = 0;
+        maxFlag = false;
+        max = 1;
+        colorByEigenValues = true;
+        colorTableName = new String("Default");
+        invertColorTable = false;
+        tensorColor = new ColorAttribute(0, 0, 0);
+        useLegend = true;
         scale = 0.25;
         scaleByMagnitude = true;
         autoScale = true;
-        colorByEigenvalues = true;
-        useLegend = true;
-        tensorColor = new ColorAttribute(0, 0, 0);
-        colorTableName = new String("Default");
-        invertColorTable = false;
+        animationStep = 0;
     }
 
     public TensorAttributes(TensorAttributes obj)
     {
         super(obj);
 
+        glyphLocation = obj.glyphLocation;
         useStride = obj.useStride;
-        stride = obj.stride;
         nTensors = obj.nTensors;
+        stride = obj.stride;
+        limitsMode = obj.limitsMode;
+        minFlag = obj.minFlag;
+        min = obj.min;
+        maxFlag = obj.maxFlag;
+        max = obj.max;
+        colorByEigenValues = obj.colorByEigenValues;
+        colorTableName = new String(obj.colorTableName);
+        invertColorTable = obj.invertColorTable;
+        tensorColor = new ColorAttribute(obj.tensorColor);
+        useLegend = obj.useLegend;
         scale = obj.scale;
         scaleByMagnitude = obj.scaleByMagnitude;
         autoScale = obj.autoScale;
-        colorByEigenvalues = obj.colorByEigenvalues;
-        useLegend = obj.useLegend;
-        tensorColor = new ColorAttribute(obj.tensorColor);
-        colorTableName = new String(obj.colorTableName);
-        invertColorTable = obj.invertColorTable;
+        animationStep = obj.animationStep;
 
         SelectAll();
     }
@@ -94,32 +123,39 @@ public class TensorAttributes extends AttributeSubject implements Plugin
     public boolean equals(TensorAttributes obj)
     {
         // Create the return value
-        return ((useStride == obj.useStride) &&
-                (stride == obj.stride) &&
+        return ((glyphLocation == obj.glyphLocation) &&
+                (useStride == obj.useStride) &&
                 (nTensors == obj.nTensors) &&
+                (stride == obj.stride) &&
+                (limitsMode == obj.limitsMode) &&
+                (minFlag == obj.minFlag) &&
+                (min == obj.min) &&
+                (maxFlag == obj.maxFlag) &&
+                (max == obj.max) &&
+                (colorByEigenValues == obj.colorByEigenValues) &&
+                (colorTableName.equals(obj.colorTableName)) &&
+                (invertColorTable == obj.invertColorTable) &&
+                (tensorColor == obj.tensorColor) &&
+                (useLegend == obj.useLegend) &&
                 (scale == obj.scale) &&
                 (scaleByMagnitude == obj.scaleByMagnitude) &&
                 (autoScale == obj.autoScale) &&
-                (colorByEigenvalues == obj.colorByEigenvalues) &&
-                (useLegend == obj.useLegend) &&
-                (tensorColor == obj.tensorColor) &&
-                (colorTableName.equals(obj.colorTableName)) &&
-                (invertColorTable == obj.invertColorTable));
+                (animationStep == obj.animationStep));
     }
 
     public String GetName() { return "Tensor"; }
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
-    public void SetUseStride(boolean useStride_)
+    public void SetGlyphLocation(int glyphLocation_)
     {
-        useStride = useStride_;
+        glyphLocation = glyphLocation_;
         Select(0);
     }
 
-    public void SetStride(int stride_)
+    public void SetUseStride(boolean useStride_)
     {
-        stride = stride_;
+        useStride = useStride_;
         Select(1);
     }
 
@@ -129,92 +165,155 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         Select(2);
     }
 
-    public void SetScale(double scale_)
+    public void SetStride(int stride_)
     {
-        scale = scale_;
+        stride = stride_;
         Select(3);
     }
 
-    public void SetScaleByMagnitude(boolean scaleByMagnitude_)
+    public void SetLimitsMode(int limitsMode_)
     {
-        scaleByMagnitude = scaleByMagnitude_;
+        limitsMode = limitsMode_;
         Select(4);
     }
 
-    public void SetAutoScale(boolean autoScale_)
+    public void SetMinFlag(boolean minFlag_)
     {
-        autoScale = autoScale_;
+        minFlag = minFlag_;
         Select(5);
     }
 
-    public void SetColorByEigenvalues(boolean colorByEigenvalues_)
+    public void SetMin(double min_)
     {
-        colorByEigenvalues = colorByEigenvalues_;
+        min = min_;
         Select(6);
     }
 
-    public void SetUseLegend(boolean useLegend_)
+    public void SetMaxFlag(boolean maxFlag_)
     {
-        useLegend = useLegend_;
+        maxFlag = maxFlag_;
         Select(7);
     }
 
-    public void SetTensorColor(ColorAttribute tensorColor_)
+    public void SetMax(double max_)
     {
-        tensorColor = tensorColor_;
+        max = max_;
         Select(8);
+    }
+
+    public void SetColorByEigenValues(boolean colorByEigenValues_)
+    {
+        colorByEigenValues = colorByEigenValues_;
+        Select(9);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(9);
+        Select(10);
     }
 
     public void SetInvertColorTable(boolean invertColorTable_)
     {
         invertColorTable = invertColorTable_;
-        Select(10);
+        Select(11);
+    }
+
+    public void SetTensorColor(ColorAttribute tensorColor_)
+    {
+        tensorColor = tensorColor_;
+        Select(12);
+    }
+
+    public void SetUseLegend(boolean useLegend_)
+    {
+        useLegend = useLegend_;
+        Select(13);
+    }
+
+    public void SetScale(double scale_)
+    {
+        scale = scale_;
+        Select(14);
+    }
+
+    public void SetScaleByMagnitude(boolean scaleByMagnitude_)
+    {
+        scaleByMagnitude = scaleByMagnitude_;
+        Select(15);
+    }
+
+    public void SetAutoScale(boolean autoScale_)
+    {
+        autoScale = autoScale_;
+        Select(16);
+    }
+
+    public void SetAnimationStep(int animationStep_)
+    {
+        animationStep = animationStep_;
+        Select(17);
     }
 
     // Property getting methods
+    public int            GetGlyphLocation() { return glyphLocation; }
     public boolean        GetUseStride() { return useStride; }
-    public int            GetStride() { return stride; }
     public int            GetNTensors() { return nTensors; }
+    public int            GetStride() { return stride; }
+    public int            GetLimitsMode() { return limitsMode; }
+    public boolean        GetMinFlag() { return minFlag; }
+    public double         GetMin() { return min; }
+    public boolean        GetMaxFlag() { return maxFlag; }
+    public double         GetMax() { return max; }
+    public boolean        GetColorByEigenValues() { return colorByEigenValues; }
+    public String         GetColorTableName() { return colorTableName; }
+    public boolean        GetInvertColorTable() { return invertColorTable; }
+    public ColorAttribute GetTensorColor() { return tensorColor; }
+    public boolean        GetUseLegend() { return useLegend; }
     public double         GetScale() { return scale; }
     public boolean        GetScaleByMagnitude() { return scaleByMagnitude; }
     public boolean        GetAutoScale() { return autoScale; }
-    public boolean        GetColorByEigenvalues() { return colorByEigenvalues; }
-    public boolean        GetUseLegend() { return useLegend; }
-    public ColorAttribute GetTensorColor() { return tensorColor; }
-    public String         GetColorTableName() { return colorTableName; }
-    public boolean        GetInvertColorTable() { return invertColorTable; }
+    public int            GetAnimationStep() { return animationStep; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteBool(useStride);
+            buf.WriteInt(glyphLocation);
         if(WriteSelect(1, buf))
-            buf.WriteInt(stride);
+            buf.WriteBool(useStride);
         if(WriteSelect(2, buf))
             buf.WriteInt(nTensors);
         if(WriteSelect(3, buf))
-            buf.WriteDouble(scale);
+            buf.WriteInt(stride);
         if(WriteSelect(4, buf))
-            buf.WriteBool(scaleByMagnitude);
+            buf.WriteInt(limitsMode);
         if(WriteSelect(5, buf))
-            buf.WriteBool(autoScale);
+            buf.WriteBool(minFlag);
         if(WriteSelect(6, buf))
-            buf.WriteBool(colorByEigenvalues);
+            buf.WriteDouble(min);
         if(WriteSelect(7, buf))
-            buf.WriteBool(useLegend);
+            buf.WriteBool(maxFlag);
         if(WriteSelect(8, buf))
-            tensorColor.Write(buf);
+            buf.WriteDouble(max);
         if(WriteSelect(9, buf))
-            buf.WriteString(colorTableName);
+            buf.WriteBool(colorByEigenValues);
         if(WriteSelect(10, buf))
+            buf.WriteString(colorTableName);
+        if(WriteSelect(11, buf))
             buf.WriteBool(invertColorTable);
+        if(WriteSelect(12, buf))
+            tensorColor.Write(buf);
+        if(WriteSelect(13, buf))
+            buf.WriteBool(useLegend);
+        if(WriteSelect(14, buf))
+            buf.WriteDouble(scale);
+        if(WriteSelect(15, buf))
+            buf.WriteBool(scaleByMagnitude);
+        if(WriteSelect(16, buf))
+            buf.WriteBool(autoScale);
+        if(WriteSelect(17, buf))
+            buf.WriteInt(animationStep);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -222,38 +321,59 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         switch(index)
         {
         case 0:
-            SetUseStride(buf.ReadBool());
+            SetGlyphLocation(buf.ReadInt());
             break;
         case 1:
-            SetStride(buf.ReadInt());
+            SetUseStride(buf.ReadBool());
             break;
         case 2:
             SetNTensors(buf.ReadInt());
             break;
         case 3:
-            SetScale(buf.ReadDouble());
+            SetStride(buf.ReadInt());
             break;
         case 4:
-            SetScaleByMagnitude(buf.ReadBool());
+            SetLimitsMode(buf.ReadInt());
             break;
         case 5:
-            SetAutoScale(buf.ReadBool());
+            SetMinFlag(buf.ReadBool());
             break;
         case 6:
-            SetColorByEigenvalues(buf.ReadBool());
+            SetMin(buf.ReadDouble());
             break;
         case 7:
-            SetUseLegend(buf.ReadBool());
+            SetMaxFlag(buf.ReadBool());
             break;
         case 8:
-            tensorColor.Read(buf);
-            Select(8);
+            SetMax(buf.ReadDouble());
             break;
         case 9:
-            SetColorTableName(buf.ReadString());
+            SetColorByEigenValues(buf.ReadBool());
             break;
         case 10:
+            SetColorTableName(buf.ReadString());
+            break;
+        case 11:
             SetInvertColorTable(buf.ReadBool());
+            break;
+        case 12:
+            tensorColor.Read(buf);
+            Select(12);
+            break;
+        case 13:
+            SetUseLegend(buf.ReadBool());
+            break;
+        case 14:
+            SetScale(buf.ReadDouble());
+            break;
+        case 15:
+            SetScaleByMagnitude(buf.ReadBool());
+            break;
+        case 16:
+            SetAutoScale(buf.ReadBool());
+            break;
+        case 17:
+            SetAnimationStep(buf.ReadInt());
             break;
         }
     }
@@ -261,32 +381,56 @@ public class TensorAttributes extends AttributeSubject implements Plugin
     public String toString(String indent)
     {
         String str = new String();
+        str = str + indent + "glyphLocation = ";
+        if(glyphLocation == GLYPHLOCATION_ADAPTSTOMESHRESOLUTION)
+            str = str + "GLYPHLOCATION_ADAPTSTOMESHRESOLUTION";
+        if(glyphLocation == GLYPHLOCATION_UNIFORMINSPACE)
+            str = str + "GLYPHLOCATION_UNIFORMINSPACE";
+        str = str + "\n";
         str = str + boolToString("useStride", useStride, indent) + "\n";
-        str = str + intToString("stride", stride, indent) + "\n";
         str = str + intToString("nTensors", nTensors, indent) + "\n";
+        str = str + intToString("stride", stride, indent) + "\n";
+        str = str + indent + "limitsMode = ";
+        if(limitsMode == LIMITSMODE_ORIGINALDATA)
+            str = str + "LIMITSMODE_ORIGINALDATA";
+        if(limitsMode == LIMITSMODE_CURRENTPLOT)
+            str = str + "LIMITSMODE_CURRENTPLOT";
+        str = str + "\n";
+        str = str + boolToString("minFlag", minFlag, indent) + "\n";
+        str = str + doubleToString("min", min, indent) + "\n";
+        str = str + boolToString("maxFlag", maxFlag, indent) + "\n";
+        str = str + doubleToString("max", max, indent) + "\n";
+        str = str + boolToString("colorByEigenValues", colorByEigenValues, indent) + "\n";
+        str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
+        str = str + boolToString("invertColorTable", invertColorTable, indent) + "\n";
+        str = str + indent + "tensorColor = {" + tensorColor.Red() + ", " + tensorColor.Green() + ", " + tensorColor.Blue() + ", " + tensorColor.Alpha() + "}\n";
+        str = str + boolToString("useLegend", useLegend, indent) + "\n";
         str = str + doubleToString("scale", scale, indent) + "\n";
         str = str + boolToString("scaleByMagnitude", scaleByMagnitude, indent) + "\n";
         str = str + boolToString("autoScale", autoScale, indent) + "\n";
-        str = str + boolToString("colorByEigenvalues", colorByEigenvalues, indent) + "\n";
-        str = str + boolToString("useLegend", useLegend, indent) + "\n";
-        str = str + indent + "tensorColor = {" + tensorColor.Red() + ", " + tensorColor.Green() + ", " + tensorColor.Blue() + ", " + tensorColor.Alpha() + "}\n";
-        str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
-        str = str + boolToString("invertColorTable", invertColorTable, indent) + "\n";
+        str = str + intToString("animationStep", animationStep, indent) + "\n";
         return str;
     }
 
 
     // Attributes
+    private int            glyphLocation;
     private boolean        useStride;
-    private int            stride;
     private int            nTensors;
+    private int            stride;
+    private int            limitsMode;
+    private boolean        minFlag;
+    private double         min;
+    private boolean        maxFlag;
+    private double         max;
+    private boolean        colorByEigenValues;
+    private String         colorTableName;
+    private boolean        invertColorTable;
+    private ColorAttribute tensorColor;
+    private boolean        useLegend;
     private double         scale;
     private boolean        scaleByMagnitude;
     private boolean        autoScale;
-    private boolean        colorByEigenvalues;
-    private boolean        useLegend;
-    private ColorAttribute tensorColor;
-    private String         colorTableName;
-    private boolean        invertColorTable;
+    private int            animationStep;
 }
 

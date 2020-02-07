@@ -17,6 +17,7 @@ class QRadioButton;
 class QvisColorButton;
 class QvisColorTableWidget;
 class QvisLineWidthWidget;
+
 class VectorAttributes;
 
 // ****************************************************************************
@@ -86,8 +87,8 @@ public slots:
     virtual void apply();
     virtual void makeDefault();
     virtual void reset();
-protected:
 
+protected:
     void CreateVectorTab(QWidget *);
     void CreateDataTab(QWidget *);
     void CreateGlyphTab(QWidget *);

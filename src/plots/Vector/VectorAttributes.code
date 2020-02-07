@@ -77,7 +77,8 @@ Definition:
 bool
 VectorAttributes::ChangesRequireRecalculation(const VectorAttributes &obj)
 {
-    return ((useStride != obj.useStride) ||
+    return ((glyphLocation != obj.glyphLocation) ||
+            (useStride != obj.useStride) ||
             (stride != obj.stride) ||
             (glyphLocation != obj.glyphLocation) ||
             (nVectors != obj.nVectors) ||

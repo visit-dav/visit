@@ -8,10 +8,16 @@
 
 // Forward declarations
 class QButtonGroup;
+class QGroupBox;
 class QCheckBox;
+class QComboBox;
+class QLabel;
 class QLineEdit;
+class QRadioButton;
 class QvisColorButton;
 class QvisColorTableWidget;
+class QvisLineWidthWidget;
+
 class TensorAttributes;
 
 // ****************************************************************************
@@ -52,22 +58,36 @@ public slots:
     virtual void apply();
     virtual void makeDefault();
     virtual void reset();
+
 protected:
+    void CreateTensorTab(QWidget *);
+    void CreateDataTab(QWidget *);
+    void CreateGlyphTab(QWidget *);
+
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
+
 private slots:
     void tensorColorChanged(const QColor &color);
     void processScaleText();
     void scaleByMagnitudeToggled(bool on);
     void autoScaleToggled(bool on);
     void reduceMethodChanged(int index);
+    void locationMethodChanged(int index);
     void processNTensorsText();
     void processStrideText();
     void legendToggled(bool on);
     void colorModeChanged(int);
     void colorTableClicked(bool useDefault, const QString &ctName);
     void invertColorTableToggled(bool val);
+
+    void minToggled(bool on);
+    void maxToggled(bool on);
+    void processMaxLimitText();
+    void processMinLimitText();
+    void limitsSelectChanged(int);
+
 private:
     int                  plotType;
     TensorAttributes     *tensorAtts;
@@ -80,11 +100,22 @@ private:
     QCheckBox            *scaleByMagnitudeToggle;
     QCheckBox            *autoScaleToggle;
 
+    QButtonGroup         *locationButtonGroup;
     QButtonGroup         *reduceButtonGroup;
     QLineEdit            *nTensorsLineEdit;
     QLineEdit            *strideLineEdit;
+    QRadioButton         *strideRB;
 
     QCheckBox            *legendToggle;
+
+    QButtonGroup         *originButtonGroup;
+
+    // QGroupBox            *limitsGroup;
+    // QCheckBox            *minToggle;
+    // QCheckBox            *maxToggle;
+    // QComboBox            *limitsSelect;
+    // QLineEdit            *maxLineEdit;
+    // QLineEdit            *minLineEdit;
 };
 
 #endif

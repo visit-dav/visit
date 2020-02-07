@@ -4,8 +4,107 @@ Definition:
 bool
 TensorAttributes::ChangesRequireRecalculation(const TensorAttributes &obj)
 {
-    return ((useStride != obj.useStride) ||
+    return ((glyphLocation != obj.glyphLocation) ||
+            (useStride != obj.useStride) ||
             (stride != obj.stride) ||
             (nTensors != obj.nTensors));
+}
+
+Function: GetAnimationScale
+Declaration: double GetAnimationScale() const;
+Definition:
+#include <math.h>
+double
+TensorAttributes::GetAnimationScale() const
+{
+    const int nsteps = 100;
+    double angle = 2.* M_PI * (double(animationStep % nsteps) / double(nsteps-1));
+    return 0.75 + 0.25 * cos(angle);
+}
+
+Target: xml2info
+Function: TensorViewerEnginePluginInfo::SupportsAnimation
+Declaration: virtual bool SupportsAnimation() const;
+Definition:
+// ****************************************************************************
+// Method: TensorViewerEnginePluginInfo::SupportsAnimation
+//
+// Purpose:
+//   Tell VisIt that this plot supports animation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+TensorViewerEnginePluginInfo::SupportsAnimation() const
+{
+    return true;
+}
+
+
+Function: TensorViewerEnginePluginInfo::AnimationReset
+Declaration: virtual bool AnimationReset(AttributeSubject *atts, const avtPlotMetaData &plot);
+Definition:
+// ****************************************************************************
+// Method: TensorViewerEnginePluginInfo::AnimationReset
+//
+// Purpose:
+//   Resets the plot's animation.
+//
+// Arguments:
+//   atts : The attribute subject that we may modify.
+//   plot : The plot that we're animating.
+//
+// Returns:  True if the plot attributes changed as a result of reset.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <avtPlotMetaData.h>
+
+bool
+TensorViewerEnginePluginInfo::AnimationReset(AttributeSubject *atts, const avtPlotMetaData &)
+{
+    TensorAttributes *cAtts = (TensorAttributes *)atts;
+    cAtts->SetAnimationStep(0);
+    return true;
+}
+
+
+Function: TensorViewerEnginePluginInfo::AnimationStep
+Declaration: virtual bool AnimationStep(AttributeSubject *atts, const avtPlotMetaData &plot);
+Definition:
+// ****************************************************************************
+// Method: TensorViewerEnginePluginInfo::AnimationStep
+//
+// Purpose:
+//   Take an animation step.
+//
+// Arguments:
+//   atts : The attribute subject that we may modify.
+//   plot : The plot that we're animating.
+//
+// Returns:  True if the plot attributes changed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+TensorViewerEnginePluginInfo::AnimationStep(AttributeSubject *atts, const avtPlotMetaData &)
+{
+    TensorAttributes *cAtts = (TensorAttributes *)atts;
+    cAtts->SetAnimationStep(cAtts->GetAnimationStep()+1);
+    return true;
 }
 

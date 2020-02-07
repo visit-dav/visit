@@ -99,7 +99,7 @@ class avtVectorPlot : public avtPointDataPlot
     VectorAttributes            atts;
     bool                        colorsInitialized;
 
-    avtVectorGlyphMapper       *glyphMapper;
+    avtVectorGlyphMapper       *vectorMapper;
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
     avtVectorFilter            *vectorFilter;
@@ -107,7 +107,7 @@ class avtVectorPlot : public avtPointDataPlot
     avtGhostZoneFilter         *ghostFilter;
     avtLookupTable             *avtLUT;
 
-    vtkVectorGlyph             *glyph;
+    vtkVectorGlyph             *vectorGlyph;
 
     virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);

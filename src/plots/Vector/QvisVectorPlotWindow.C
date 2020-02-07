@@ -175,7 +175,6 @@ QvisVectorPlotWindow::CreateWindowContents()
     propertyTabs->addTab(glyphTab, tr("Glyphs"));
     CreateGlyphTab(glyphTab);
 
-
     // ----------------------------------------------------------------------
     // Extras tab
     // ----------------------------------------------------------------------
@@ -186,7 +185,7 @@ QvisVectorPlotWindow::CreateWindowContents()
 
 
 // ****************************************************************************
-// Method: QvisVectorPlotWindow::CreateExtrasTab
+// Method: QvisVectorPlotWindow::CreateVectorTab
 //
 // Purpose: 
 //   Populates the vector tab.
@@ -357,7 +356,7 @@ QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
     colorButtonGroup->addButton(rb, 1);
     cgLayout->addWidget(rb, 1, 0);
 
-    // Create the color-by-eigenvalues button.
+    // Create the color-by-magnitude button.
     colorTableWidget = new QvisColorTableWidget(colorGroupBox, true);
     connect(colorTableWidget, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
@@ -710,37 +709,49 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
           case VectorAttributes::ID_nVectors:
             nVectorsLineEdit->setText(IntToQString(vectorAtts->GetNVectors()));
             break;
-          case VectorAttributes::ID_lineWidth:
-            lineWidth->blockSignals(true);
-            lineWidth->SetLineWidth(vectorAtts->GetLineWidth());
-            lineWidth->blockSignals(false);
+          case VectorAttributes::ID_origOnly:
+            limitToOrigToggle->blockSignals(true);
+            limitToOrigToggle->setChecked(vectorAtts->GetOrigOnly());
+            limitToOrigToggle->blockSignals(false);
             break;
-          case VectorAttributes::ID_scale:
-            scaleLineEdit->setText(DoubleToQString(vectorAtts->GetScale()));
+
+          case VectorAttributes::ID_limitsMode:
+            limitsSelect->blockSignals(true);
+            limitsSelect->setCurrentIndex(vectorAtts->GetLimitsMode());
+            limitsSelect->blockSignals(false);
             break;
-          case VectorAttributes::ID_scaleByMagnitude:
-            scaleByMagnitudeToggle->blockSignals(true);
-            scaleByMagnitudeToggle->setChecked(vectorAtts->GetScaleByMagnitude());
-            scaleByMagnitudeToggle->blockSignals(false);
+	  case VectorAttributes::ID_minFlag:
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(minToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(minToggled(bool)));
+            minToggle->setChecked(vectorAtts->GetMinFlag());
+            minLineEdit->setEnabled(vectorAtts->GetMinFlag());
+            connect(minToggle, SIGNAL(toggled(bool)),
+                    this, SLOT(minToggled(bool)));
             break;
-          case VectorAttributes::ID_autoScale:
-            autoScaleToggle->blockSignals(true);
-            autoScaleToggle->setChecked(vectorAtts->GetAutoScale());
-            autoScaleToggle->blockSignals(false);
+          case VectorAttributes::ID_maxFlag:
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(maxToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(maxToggled(bool)));
+            maxToggle->setChecked(vectorAtts->GetMaxFlag());
+            maxLineEdit->setEnabled(vectorAtts->GetMaxFlag());
+            connect(maxToggle, SIGNAL(toggled(bool)),
+                    this, SLOT(maxToggled(bool)));
+           break;
+          case VectorAttributes::ID_min:
+            minLineEdit->setText(DoubleToQString(vectorAtts->GetMin()));
             break;
-          case VectorAttributes::ID_headSize:
-            headSizeLineEdit->setText(DoubleToQString(vectorAtts->GetHeadSize()));
+          case VectorAttributes::ID_max:
+            maxLineEdit->setText(DoubleToQString(vectorAtts->GetMax()));
             break;
-          case VectorAttributes::ID_headOn:
-            drawHeadToggle->blockSignals(true);
-            drawHeadToggle->setChecked(vectorAtts->GetHeadOn());
-            drawHeadToggle->blockSignals(false);
-            break;
-          case VectorAttributes::ID_colorByMag:
+
+          case VectorAttributes::ID_colorByMagnitude:
             colorButtonGroup->blockSignals(true);
-            colorButtonGroup->button(vectorAtts->GetColorByMag() ? 0 : 1)->setChecked(true);
+            colorButtonGroup->button(vectorAtts->GetColorByMagnitude() ? 0 : 1)->setChecked(true);
             colorButtonGroup->blockSignals(false);
-//            limitsGroup->setEnabled(vectorAtts->GetColorByMag());
+//            limitsGroup->setEnabled(vectorAtts->GetColorByMagnitude());
             break;
           case VectorAttributes::ID_useLegend:
             legendToggle->blockSignals(true);
@@ -762,7 +773,52 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
           case VectorAttributes::ID_invertColorTable:
             colorTableWidget->setInvertColorTable(vectorAtts->GetInvertColorTable());
             break;
-          case VectorAttributes::ID_vectorOrigin:
+
+          case VectorAttributes::ID_scale:
+            scaleLineEdit->setText(DoubleToQString(vectorAtts->GetScale()));
+            break;
+          case VectorAttributes::ID_scaleByMagnitude:
+            scaleByMagnitudeToggle->blockSignals(true);
+            scaleByMagnitudeToggle->setChecked(vectorAtts->GetScaleByMagnitude());
+            scaleByMagnitudeToggle->blockSignals(false);
+            break;
+          case VectorAttributes::ID_autoScale:
+            autoScaleToggle->blockSignals(true);
+            autoScaleToggle->setChecked(vectorAtts->GetAutoScale());
+            autoScaleToggle->blockSignals(false);
+            break;
+
+	  case VectorAttributes::ID_glyphType:
+            glyphType->blockSignals(true);
+            glyphType->setCurrentIndex(int(vectorAtts->GetGlyphType()));
+            glyphType->blockSignals(false);
+            
+            UpdateLineStem();
+            break;
+          case VectorAttributes::ID_headOn:
+            drawHeadToggle->blockSignals(true);
+            drawHeadToggle->setChecked(vectorAtts->GetHeadOn());
+            drawHeadToggle->blockSignals(false);
+            break;
+	  case VectorAttributes::ID_headSize:
+            headSizeLineEdit->setText(DoubleToQString(vectorAtts->GetHeadSize()));
+            break;
+          case VectorAttributes::ID_lineStem:
+            lineStem->blockSignals(true);
+            lineStem->setCurrentIndex(int(vectorAtts->GetLineStem()));
+            lineStem->blockSignals(false);
+
+            UpdateLineStem();
+            break;
+ 	  case VectorAttributes::ID_lineWidth:
+            lineWidth->blockSignals(true);
+            lineWidth->SetLineWidth(vectorAtts->GetLineWidth());
+            lineWidth->blockSignals(false);
+            break;
+          case VectorAttributes::ID_stemWidth:
+            stemWidthEdit->setText(DoubleToQString(vectorAtts->GetStemWidth()));
+            break;
+	  case VectorAttributes::ID_vectorOrigin:
             originButtonGroup->blockSignals(true);
             switch (vectorAtts->GetVectorOrigin())
             {
@@ -778,65 +834,10 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             }
             originButtonGroup->blockSignals(false);
           break;
-          case VectorAttributes::ID_minFlag:
-            // Disconnect the slot before setting the toggle and
-            // reconnect it after. This prevents multiple updates.
-            disconnect(minToggle, SIGNAL(toggled(bool)),
-                       this, SLOT(minToggled(bool)));
-            minToggle->setChecked(vectorAtts->GetMinFlag());
-            minLineEdit->setEnabled(vectorAtts->GetMinFlag());
-            connect(minToggle, SIGNAL(toggled(bool)),
-                    this, SLOT(minToggled(bool)));
-            break;
-          case VectorAttributes::ID_maxFlag:
-            // Disconnect the slot before setting the toggle and
-            // reconnect it after. This prevents multiple updates.
-            disconnect(maxToggle, SIGNAL(toggled(bool)),
-                       this, SLOT(maxToggled(bool)));
-            maxToggle->setChecked(vectorAtts->GetMaxFlag());
-            maxLineEdit->setEnabled(vectorAtts->GetMaxFlag());
-            connect(maxToggle, SIGNAL(toggled(bool)),
-                    this, SLOT(maxToggled(bool)));
-           break;
-          case VectorAttributes::ID_limitsMode:
-            limitsSelect->blockSignals(true);
-            limitsSelect->setCurrentIndex(vectorAtts->GetLimitsMode());
-            limitsSelect->blockSignals(false);
-            break;
-          case VectorAttributes::ID_min:
-            minLineEdit->setText(DoubleToQString(vectorAtts->GetMin()));
-            break;
-          case VectorAttributes::ID_max:
-            maxLineEdit->setText(DoubleToQString(vectorAtts->GetMax()));
-            break;
-          case VectorAttributes::ID_lineStem:
-            lineStem->blockSignals(true);
-            lineStem->setCurrentIndex(int(vectorAtts->GetLineStem()));
-            lineStem->blockSignals(false);
-
-            UpdateLineStem();
-
-            break;
-          case VectorAttributes::ID_geometryQuality:
+	  case VectorAttributes::ID_geometryQuality:
             geometryQualityButtons->blockSignals(true);
             geometryQualityButtons->button(vectorAtts->GetGeometryQuality())->setChecked(true);
             geometryQualityButtons->blockSignals(false);
-            break;
-          case VectorAttributes::ID_stemWidth:
-            stemWidthEdit->setText(DoubleToQString(vectorAtts->GetStemWidth()));
-            break;
-          case VectorAttributes::ID_origOnly:
-            limitToOrigToggle->blockSignals(true);
-            limitToOrigToggle->setChecked(vectorAtts->GetOrigOnly());
-            limitToOrigToggle->blockSignals(false);
-            break;
-
-          case VectorAttributes::ID_glyphType:
-            glyphType->blockSignals(true);
-            glyphType->setCurrentIndex(int(vectorAtts->GetGlyphType()));
-            glyphType->blockSignals(false);
-            
-            UpdateLineStem();
             break;
         }
     } // end for
@@ -936,36 +937,8 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
     bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
-    // Do the scale value.
-    if(which_widget == 0 || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(scaleLineEdit, val))
-            vectorAtts->SetScale(val);
-        else
-        {
-            ResettingError(tr("scale value"),
-                DoubleToQString(vectorAtts->GetScale()));
-            vectorAtts->SetScale(vectorAtts->GetScale());
-        }
-    }
-
-    // Do the head size value.
-    if(which_widget == 1 || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(headSizeLineEdit, val))
-            vectorAtts->SetHeadSize(val);
-        else
-        {
-            ResettingError(tr("head size"),
-                DoubleToQString(vectorAtts->GetHeadSize()));
-            vectorAtts->SetHeadSize(vectorAtts->GetHeadSize());
-        }
-    }
-
     // Do the N vectors value.
-    if(which_widget == 2 || doAll)
+    if(which_widget == VectorAttributes::ID_nVectors || doAll)
     {
         int val;
         if(LineEditGetInt(nVectorsLineEdit, val))
@@ -979,7 +952,7 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do the stride value.
-    if(which_widget == 3 || doAll)
+    if(which_widget == VectorAttributes::ID_stride || doAll)
     {
         int val;
         if(LineEditGetInt(strideLineEdit, val))
@@ -992,7 +965,7 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
         }
     }
         // Do the minimum value.
-    if(which_widget == 4 || doAll)
+    if(which_widget == VectorAttributes::ID_min || doAll)
     {
         double val;
         if(LineEditGetDouble(minLineEdit, val))
@@ -1006,7 +979,7 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do the maximum value
-    if(which_widget == 5 || doAll)
+    if(which_widget == VectorAttributes::ID_max || doAll)
     {
         double val;
         if(LineEditGetDouble(maxLineEdit, val))
@@ -1019,8 +992,36 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do the scale value.
+    if(which_widget == VectorAttributes::ID_scale || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(scaleLineEdit, val))
+            vectorAtts->SetScale(val);
+        else
+        {
+            ResettingError(tr("scale value"),
+                DoubleToQString(vectorAtts->GetScale()));
+            vectorAtts->SetScale(vectorAtts->GetScale());
+        }
+    }
+
+    // Do the head size value.
+    if(which_widget == VectorAttributes::ID_headSize || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(headSizeLineEdit, val))
+            vectorAtts->SetHeadSize(val);
+        else
+        {
+            ResettingError(tr("head size"),
+                DoubleToQString(vectorAtts->GetHeadSize()));
+            vectorAtts->SetHeadSize(vectorAtts->GetHeadSize());
+        }
+    }
+
     // Do the stem width value.
-    if(which_widget == 22 || doAll)
+    if(which_widget == VectorAttributes::ID_stemWidth || doAll)
     {
         double val;
         if((okay = LineEditGetDouble(stemWidthEdit, val)) == true)
@@ -1152,7 +1153,7 @@ QvisVectorPlotWindow::vectorColorChanged(const QColor &color)
 {
     ColorAttribute temp(color.red(), color.green(), color.blue());
     vectorAtts->SetVectorColor(temp);
-    vectorAtts->SetColorByMag(false);
+    vectorAtts->SetColorByMagnitude(false);
     Apply();
 }
 
@@ -1173,7 +1174,7 @@ QvisVectorPlotWindow::vectorColorChanged(const QColor &color)
 void
 QvisVectorPlotWindow::processScaleText()
 {
-    GetCurrentValues(0);
+    GetCurrentValues(VectorAttributes::ID_scale);
     Apply();
 }
 
@@ -1236,7 +1237,7 @@ QvisVectorPlotWindow::autoScaleToggled(bool)
 void
 QvisVectorPlotWindow::processHeadSizeText()
 {
-    GetCurrentValues(1);
+    GetCurrentValues(VectorAttributes::ID_headSize);
     Apply();
 }
 
@@ -1309,7 +1310,7 @@ QvisVectorPlotWindow::locationMethodChanged(int index)
 void
 QvisVectorPlotWindow::processNVectorsText()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(VectorAttributes::ID_nVectors);
     Apply();
 }
 
@@ -1330,7 +1331,7 @@ QvisVectorPlotWindow::processNVectorsText()
 void
 QvisVectorPlotWindow::processStrideText()
 {
-    GetCurrentValues(3);
+    GetCurrentValues(VectorAttributes::ID_stride);
     Apply();
 }
 
@@ -1398,8 +1399,8 @@ QvisVectorPlotWindow::drawHeadToggled(bool val)
 void
 QvisVectorPlotWindow::colorModeChanged(int index)
 {
-    vectorAtts->SetColorByMag(index == 0);
-//    limitsGroup->setEnabled(vectorAtts->GetColorByMag());
+    vectorAtts->SetColorByMagnitude(index == 0);
+//    limitsGroup->setEnabled(vectorAtts->GetColorByMagnitude());
     Apply();
 }
 
@@ -1426,7 +1427,7 @@ void
 QvisVectorPlotWindow::colorTableClicked(bool useDefault,
     const QString &ctName)
 {
-    vectorAtts->SetColorByMag(true);
+    vectorAtts->SetColorByMagnitude(true);
     vectorAtts->SetColorTableName(ctName.toStdString());
     Apply();
 }
@@ -1523,7 +1524,7 @@ QvisVectorPlotWindow::limitsSelectChanged(int mode)
 void
 QvisVectorPlotWindow::processMinLimitText()
 {
-    GetCurrentValues(4);
+    GetCurrentValues(VectorAttributes::ID_min);
     Apply();
 }
 
@@ -1543,7 +1544,7 @@ QvisVectorPlotWindow::processMinLimitText()
 void
 QvisVectorPlotWindow::processMaxLimitText()
 {
-    GetCurrentValues(5);
+    GetCurrentValues(VectorAttributes::ID_max);
     Apply();
 }
 
@@ -1644,7 +1645,7 @@ QvisVectorPlotWindow::geometryQualityChanged(int val)
 void
 QvisVectorPlotWindow::processStemWidthText()
 {
-    GetCurrentValues(22);
+    GetCurrentValues(VectorAttributes::ID_stemWidth);
     Apply();
 }
 

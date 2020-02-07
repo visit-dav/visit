@@ -62,11 +62,63 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
     else
         snprintf(tmpStr, 1000, "%suseStride = 0\n", prefix);
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
-    str += tmpStr;
     snprintf(tmpStr, 1000, "%snVectors = %d\n", prefix, atts->GetNVectors());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    snprintf(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
+    str += tmpStr;
+    if(atts->GetOrigOnly())
+        snprintf(tmpStr, 1000, "%sorigOnly = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sorigOnly = 0\n", prefix);
+    str += tmpStr;
+    const char *limitsMode_names = "OriginalData, CurrentPlot";
+    switch (atts->GetLimitsMode())
+    {
+      case VectorAttributes::OriginalData:
+          snprintf(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
+          str += tmpStr;
+          break;
+      case VectorAttributes::CurrentPlot:
+          snprintf(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    if(atts->GetMinFlag())
+        snprintf(tmpStr, 1000, "%sminFlag = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sminFlag = 0\n", prefix);
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
+    str += tmpStr;
+    if(atts->GetMaxFlag())
+        snprintf(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
+    str += tmpStr;
+    if(atts->GetColorByMagnitude())
+        snprintf(tmpStr, 1000, "%scolorByMagnitude = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%scolorByMagnitude = 0\n", prefix);
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
+    str += tmpStr;
+    if(atts->GetInvertColorTable())
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+    str += tmpStr;
+    const unsigned char *vectorColor = atts->GetVectorColor().GetColor();
+    snprintf(tmpStr, 1000, "%svectorColor = (%d, %d, %d, %d)\n", prefix, int(vectorColor[0]), int(vectorColor[1]), int(vectorColor[2]), int(vectorColor[3]));
+    str += tmpStr;
+    if(atts->GetUseLegend())
+        snprintf(tmpStr, 1000, "%suseLegend = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%suseLegend = 0\n", prefix);
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sscale = %g\n", prefix, atts->GetScale());
     str += tmpStr;
@@ -80,32 +132,46 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
     else
         snprintf(tmpStr, 1000, "%sautoScale = 0\n", prefix);
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%sheadSize = %g\n", prefix, atts->GetHeadSize());
-    str += tmpStr;
+    const char *glyphType_names = "Arrow, Ellipsoid";
+    switch (atts->GetGlyphType())
+    {
+      case VectorAttributes::Arrow:
+          snprintf(tmpStr, 1000, "%sglyphType = %sArrow  # %s\n", prefix, prefix, glyphType_names);
+          str += tmpStr;
+          break;
+      case VectorAttributes::Ellipsoid:
+          snprintf(tmpStr, 1000, "%sglyphType = %sEllipsoid  # %s\n", prefix, prefix, glyphType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     if(atts->GetHeadOn())
         snprintf(tmpStr, 1000, "%sheadOn = 1\n", prefix);
     else
         snprintf(tmpStr, 1000, "%sheadOn = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetColorByMag())
-        snprintf(tmpStr, 1000, "%scolorByMag = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%scolorByMag = 0\n", prefix);
+    snprintf(tmpStr, 1000, "%sheadSize = %g\n", prefix, atts->GetHeadSize());
     str += tmpStr;
-    if(atts->GetUseLegend())
-        snprintf(tmpStr, 1000, "%suseLegend = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%suseLegend = 0\n", prefix);
+    const char *lineStem_names = "Cylinder, Line";
+    switch (atts->GetLineStem())
+    {
+      case VectorAttributes::Cylinder:
+          snprintf(tmpStr, 1000, "%slineStem = %sCylinder  # %s\n", prefix, prefix, lineStem_names);
+          str += tmpStr;
+          break;
+      case VectorAttributes::Line:
+          snprintf(tmpStr, 1000, "%slineStem = %sLine  # %s\n", prefix, prefix, lineStem_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
-    const unsigned char *vectorColor = atts->GetVectorColor().GetColor();
-    snprintf(tmpStr, 1000, "%svectorColor = (%d, %d, %d, %d)\n", prefix, int(vectorColor[0]), int(vectorColor[1]), int(vectorColor[2]), int(vectorColor[3]));
-    str += tmpStr;
-    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
-    str += tmpStr;
-    if(atts->GetInvertColorTable())
-        snprintf(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+    snprintf(tmpStr, 1000, "%sstemWidth = %g\n", prefix, atts->GetStemWidth());
     str += tmpStr;
     const char *vectorOrigin_names = "Head, Middle, Tail";
     switch (atts->GetVectorOrigin())
@@ -126,50 +192,6 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
           break;
     }
 
-    if(atts->GetMinFlag())
-        snprintf(tmpStr, 1000, "%sminFlag = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%sminFlag = 0\n", prefix);
-    str += tmpStr;
-    if(atts->GetMaxFlag())
-        snprintf(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
-    str += tmpStr;
-    const char *limitsMode_names = "OriginalData, CurrentPlot";
-    switch (atts->GetLimitsMode())
-    {
-      case VectorAttributes::OriginalData:
-          snprintf(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
-          str += tmpStr;
-          break;
-      case VectorAttributes::CurrentPlot:
-          snprintf(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
-    snprintf(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
-    str += tmpStr;
-    snprintf(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
-    str += tmpStr;
-    const char *lineStem_names = "Cylinder, Line";
-    switch (atts->GetLineStem())
-    {
-      case VectorAttributes::Cylinder:
-          snprintf(tmpStr, 1000, "%slineStem = %sCylinder  # %s\n", prefix, prefix, lineStem_names);
-          str += tmpStr;
-          break;
-      case VectorAttributes::Line:
-          snprintf(tmpStr, 1000, "%slineStem = %sLine  # %s\n", prefix, prefix, lineStem_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
     const char *geometryQuality_names = "Fast, High";
     switch (atts->GetGeometryQuality())
     {
@@ -179,28 +201,6 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
           break;
       case VectorAttributes::High:
           snprintf(tmpStr, 1000, "%sgeometryQuality = %sHigh  # %s\n", prefix, prefix, geometryQuality_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
-    snprintf(tmpStr, 1000, "%sstemWidth = %g\n", prefix, atts->GetStemWidth());
-    str += tmpStr;
-    if(atts->GetOrigOnly())
-        snprintf(tmpStr, 1000, "%sorigOnly = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%sorigOnly = 0\n", prefix);
-    str += tmpStr;
-    const char *glyphType_names = "Arrow, Ellipsoid";
-    switch (atts->GetGlyphType())
-    {
-      case VectorAttributes::Arrow:
-          snprintf(tmpStr, 1000, "%sglyphType = %sArrow  # %s\n", prefix, prefix, glyphType_names);
-          str += tmpStr;
-          break;
-      case VectorAttributes::Ellipsoid:
-          snprintf(tmpStr, 1000, "%sglyphType = %sEllipsoid  # %s\n", prefix, prefix, glyphType_names);
           str += tmpStr;
           break;
       default:
@@ -279,30 +279,6 @@ VectorAttributes_GetUseStride(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-VectorAttributes_SetStride(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the stride in the object.
-    obj->data->SetStride((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VectorAttributes_GetStride(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetStride()));
-    return retval;
-}
-
-/*static*/ PyObject *
 VectorAttributes_SetNVectors(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
@@ -327,7 +303,7 @@ VectorAttributes_GetNVectors(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-VectorAttributes_SetLineWidth(PyObject *self, PyObject *args)
+VectorAttributes_SetStride(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
@@ -335,23 +311,104 @@ VectorAttributes_SetLineWidth(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
+    // Set the stride in the object.
+    obj->data->SetStride((int)ival);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VectorAttributes_GetLineWidth(PyObject *self, PyObject *args)
+VectorAttributes_GetStride(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetStride()));
     return retval;
 }
 
 /*static*/ PyObject *
-VectorAttributes_SetScale(PyObject *self, PyObject *args)
+VectorAttributes_SetOrigOnly(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the origOnly in the object.
+    obj->data->SetOrigOnly(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetOrigOnly(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetOrigOnly()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+VectorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the limitsMode in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetLimitsMode(VectorAttributes::LimitsMode(ival));
+    else
+    {
+        fprintf(stderr, "An invalid limitsMode value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "OriginalData, CurrentPlot.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetLimitsMode(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetLimitsMode()));
+    return retval;
+}
+
+/*static*/ PyObject *
+VectorAttributes_SetMinFlag(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the minFlag in the object.
+    obj->data->SetMinFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetMinFlag(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+VectorAttributes_SetMin(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
@@ -359,23 +416,23 @@ VectorAttributes_SetScale(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the scale in the object.
-    obj->data->SetScale(dval);
+    // Set the min in the object.
+    obj->data->SetMin(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VectorAttributes_GetScale(PyObject *self, PyObject *args)
+VectorAttributes_GetMin(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetScale());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetMin());
     return retval;
 }
 
 /*static*/ PyObject *
-VectorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
+VectorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
@@ -383,47 +440,23 @@ VectorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the scaleByMagnitude in the object.
-    obj->data->SetScaleByMagnitude(ival != 0);
+    // Set the maxFlag in the object.
+    obj->data->SetMaxFlag(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VectorAttributes_GetScaleByMagnitude(PyObject *self, PyObject *args)
+VectorAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetScaleByMagnitude()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VectorAttributes_SetAutoScale(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the autoScale in the object.
-    obj->data->SetAutoScale(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VectorAttributes_GetAutoScale(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetAutoScale()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-VectorAttributes_SetHeadSize(PyObject *self, PyObject *args)
+VectorAttributes_SetMax(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
@@ -431,23 +464,23 @@ VectorAttributes_SetHeadSize(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the headSize in the object.
-    obj->data->SetHeadSize(dval);
+    // Set the max in the object.
+    obj->data->SetMax(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VectorAttributes_GetHeadSize(PyObject *self, PyObject *args)
+VectorAttributes_GetMax(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetHeadSize());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetMax());
     return retval;
 }
 
 /*static*/ PyObject *
-VectorAttributes_SetHeadOn(PyObject *self, PyObject *args)
+VectorAttributes_SetColorByMagnitude(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
@@ -455,23 +488,47 @@ VectorAttributes_SetHeadOn(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the headOn in the object.
-    obj->data->SetHeadOn(ival != 0);
+    // Set the colorByMagnitude in the object.
+    obj->data->SetColorByMagnitude(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VectorAttributes_GetHeadOn(PyObject *self, PyObject *args)
+VectorAttributes_GetColorByMagnitude(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetHeadOn()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetColorByMagnitude()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VectorAttributes_SetColorByMag(PyObject *self, PyObject *args)
+VectorAttributes_SetColorTableName(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the colorTableName in the object.
+    obj->data->SetColorTableName(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetColorTableName(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+VectorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
@@ -479,42 +536,18 @@ VectorAttributes_SetColorByMag(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the colorByMag in the object.
-    obj->data->SetColorByMag(ival != 0);
+    // Set the invertColorTable in the object.
+    obj->data->SetInvertColorTable(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VectorAttributes_GetColorByMag(PyObject *self, PyObject *args)
+VectorAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetColorByMag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-VectorAttributes_SetUseLegend(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the useLegend in the object.
-    obj->data->SetUseLegend(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VectorAttributes_GetUseLegend(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetUseLegend()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
     return retval;
 }
 
@@ -596,31 +629,7 @@ VectorAttributes_GetVectorColor(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-VectorAttributes_SetColorTableName(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
-
-    // Set the colorTableName in the object.
-    obj->data->SetColorTableName(std::string(str));
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VectorAttributes_GetColorTableName(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-VectorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
+VectorAttributes_SetUseLegend(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
@@ -628,137 +637,23 @@ VectorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the invertColorTable in the object.
-    obj->data->SetInvertColorTable(ival != 0);
+    // Set the useLegend in the object.
+    obj->data->SetUseLegend(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VectorAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
+VectorAttributes_GetUseLegend(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetUseLegend()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VectorAttributes_SetVectorOrigin(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the vectorOrigin in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetVectorOrigin(VectorAttributes::OriginType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid vectorOrigin value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Head, Middle, Tail.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VectorAttributes_GetVectorOrigin(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetVectorOrigin()));
-    return retval;
-}
-
-/*static*/ PyObject *
-VectorAttributes_SetMinFlag(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the minFlag in the object.
-    obj->data->SetMinFlag(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VectorAttributes_GetMinFlag(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-VectorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the maxFlag in the object.
-    obj->data->SetMaxFlag(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VectorAttributes_GetMaxFlag(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-VectorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the limitsMode in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetLimitsMode(VectorAttributes::LimitsMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid limitsMode value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "OriginalData, CurrentPlot.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VectorAttributes_GetLimitsMode(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetLimitsMode()));
-    return retval;
-}
-
-/*static*/ PyObject *
-VectorAttributes_SetMin(PyObject *self, PyObject *args)
+VectorAttributes_SetScale(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
@@ -766,47 +661,23 @@ VectorAttributes_SetMin(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the min in the object.
-    obj->data->SetMin(dval);
+    // Set the scale in the object.
+    obj->data->SetScale(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VectorAttributes_GetMin(PyObject *self, PyObject *args)
+VectorAttributes_GetScale(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetMin());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetScale());
     return retval;
 }
 
 /*static*/ PyObject *
-VectorAttributes_SetMax(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the max in the object.
-    obj->data->SetMax(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VectorAttributes_GetMax(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetMax());
-    return retval;
-}
-
-/*static*/ PyObject *
-VectorAttributes_SetLineStem(PyObject *self, PyObject *args)
+VectorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
@@ -814,32 +685,23 @@ VectorAttributes_SetLineStem(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the lineStem in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetLineStem(VectorAttributes::LineStem(ival));
-    else
-    {
-        fprintf(stderr, "An invalid lineStem value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Cylinder, Line.");
-        return NULL;
-    }
+    // Set the scaleByMagnitude in the object.
+    obj->data->SetScaleByMagnitude(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VectorAttributes_GetLineStem(PyObject *self, PyObject *args)
+VectorAttributes_GetScaleByMagnitude(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStem()));
+    PyObject *retval = PyInt_FromLong(obj->data->GetScaleByMagnitude()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VectorAttributes_SetGeometryQuality(PyObject *self, PyObject *args)
+VectorAttributes_SetAutoScale(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
@@ -847,75 +709,18 @@ VectorAttributes_SetGeometryQuality(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the geometryQuality in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetGeometryQuality(VectorAttributes::Quality(ival));
-    else
-    {
-        fprintf(stderr, "An invalid geometryQuality value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Fast, High.");
-        return NULL;
-    }
+    // Set the autoScale in the object.
+    obj->data->SetAutoScale(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VectorAttributes_GetGeometryQuality(PyObject *self, PyObject *args)
+VectorAttributes_GetAutoScale(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetGeometryQuality()));
-    return retval;
-}
-
-/*static*/ PyObject *
-VectorAttributes_SetStemWidth(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the stemWidth in the object.
-    obj->data->SetStemWidth(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VectorAttributes_GetStemWidth(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetStemWidth());
-    return retval;
-}
-
-/*static*/ PyObject *
-VectorAttributes_SetOrigOnly(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the origOnly in the object.
-    obj->data->SetOrigOnly(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VectorAttributes_GetOrigOnly(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOrigOnly()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetAutoScale()?1L:0L);
     return retval;
 }
 
@@ -953,6 +758,201 @@ VectorAttributes_GetGlyphType(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+VectorAttributes_SetHeadOn(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the headOn in the object.
+    obj->data->SetHeadOn(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetHeadOn(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetHeadOn()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+VectorAttributes_SetHeadSize(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the headSize in the object.
+    obj->data->SetHeadSize(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetHeadSize(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetHeadSize());
+    return retval;
+}
+
+/*static*/ PyObject *
+VectorAttributes_SetLineStem(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the lineStem in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetLineStem(VectorAttributes::LineStem(ival));
+    else
+    {
+        fprintf(stderr, "An invalid lineStem value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Cylinder, Line.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetLineStem(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStem()));
+    return retval;
+}
+
+/*static*/ PyObject *
+VectorAttributes_SetLineWidth(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the lineWidth in the object.
+    obj->data->SetLineWidth(ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetLineWidth(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
+    return retval;
+}
+
+/*static*/ PyObject *
+VectorAttributes_SetStemWidth(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the stemWidth in the object.
+    obj->data->SetStemWidth(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetStemWidth(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetStemWidth());
+    return retval;
+}
+
+/*static*/ PyObject *
+VectorAttributes_SetVectorOrigin(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the vectorOrigin in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetVectorOrigin(VectorAttributes::OriginType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid vectorOrigin value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "Head, Middle, Tail.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetVectorOrigin(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetVectorOrigin()));
+    return retval;
+}
+
+/*static*/ PyObject *
+VectorAttributes_SetGeometryQuality(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the geometryQuality in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetGeometryQuality(VectorAttributes::Quality(ival));
+    else
+    {
+        fprintf(stderr, "An invalid geometryQuality value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Fast, High.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetGeometryQuality(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetGeometryQuality()));
+    return retval;
+}
+
+/*static*/ PyObject *
 VectorAttributes_SetAnimationStep(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
@@ -984,54 +984,54 @@ PyMethodDef PyVectorAttributes_methods[VECTORATTRIBUTES_NMETH] = {
     {"GetGlyphLocation", VectorAttributes_GetGlyphLocation, METH_VARARGS},
     {"SetUseStride", VectorAttributes_SetUseStride, METH_VARARGS},
     {"GetUseStride", VectorAttributes_GetUseStride, METH_VARARGS},
-    {"SetStride", VectorAttributes_SetStride, METH_VARARGS},
-    {"GetStride", VectorAttributes_GetStride, METH_VARARGS},
     {"SetNVectors", VectorAttributes_SetNVectors, METH_VARARGS},
     {"GetNVectors", VectorAttributes_GetNVectors, METH_VARARGS},
-    {"SetLineWidth", VectorAttributes_SetLineWidth, METH_VARARGS},
-    {"GetLineWidth", VectorAttributes_GetLineWidth, METH_VARARGS},
+    {"SetStride", VectorAttributes_SetStride, METH_VARARGS},
+    {"GetStride", VectorAttributes_GetStride, METH_VARARGS},
+    {"SetOrigOnly", VectorAttributes_SetOrigOnly, METH_VARARGS},
+    {"GetOrigOnly", VectorAttributes_GetOrigOnly, METH_VARARGS},
+    {"SetLimitsMode", VectorAttributes_SetLimitsMode, METH_VARARGS},
+    {"GetLimitsMode", VectorAttributes_GetLimitsMode, METH_VARARGS},
+    {"SetMinFlag", VectorAttributes_SetMinFlag, METH_VARARGS},
+    {"GetMinFlag", VectorAttributes_GetMinFlag, METH_VARARGS},
+    {"SetMin", VectorAttributes_SetMin, METH_VARARGS},
+    {"GetMin", VectorAttributes_GetMin, METH_VARARGS},
+    {"SetMaxFlag", VectorAttributes_SetMaxFlag, METH_VARARGS},
+    {"GetMaxFlag", VectorAttributes_GetMaxFlag, METH_VARARGS},
+    {"SetMax", VectorAttributes_SetMax, METH_VARARGS},
+    {"GetMax", VectorAttributes_GetMax, METH_VARARGS},
+    {"SetColorByMagnitude", VectorAttributes_SetColorByMagnitude, METH_VARARGS},
+    {"GetColorByMagnitude", VectorAttributes_GetColorByMagnitude, METH_VARARGS},
+    {"SetColorTableName", VectorAttributes_SetColorTableName, METH_VARARGS},
+    {"GetColorTableName", VectorAttributes_GetColorTableName, METH_VARARGS},
+    {"SetInvertColorTable", VectorAttributes_SetInvertColorTable, METH_VARARGS},
+    {"GetInvertColorTable", VectorAttributes_GetInvertColorTable, METH_VARARGS},
+    {"SetVectorColor", VectorAttributes_SetVectorColor, METH_VARARGS},
+    {"GetVectorColor", VectorAttributes_GetVectorColor, METH_VARARGS},
+    {"SetUseLegend", VectorAttributes_SetUseLegend, METH_VARARGS},
+    {"GetUseLegend", VectorAttributes_GetUseLegend, METH_VARARGS},
     {"SetScale", VectorAttributes_SetScale, METH_VARARGS},
     {"GetScale", VectorAttributes_GetScale, METH_VARARGS},
     {"SetScaleByMagnitude", VectorAttributes_SetScaleByMagnitude, METH_VARARGS},
     {"GetScaleByMagnitude", VectorAttributes_GetScaleByMagnitude, METH_VARARGS},
     {"SetAutoScale", VectorAttributes_SetAutoScale, METH_VARARGS},
     {"GetAutoScale", VectorAttributes_GetAutoScale, METH_VARARGS},
-    {"SetHeadSize", VectorAttributes_SetHeadSize, METH_VARARGS},
-    {"GetHeadSize", VectorAttributes_GetHeadSize, METH_VARARGS},
-    {"SetHeadOn", VectorAttributes_SetHeadOn, METH_VARARGS},
-    {"GetHeadOn", VectorAttributes_GetHeadOn, METH_VARARGS},
-    {"SetColorByMag", VectorAttributes_SetColorByMag, METH_VARARGS},
-    {"GetColorByMag", VectorAttributes_GetColorByMag, METH_VARARGS},
-    {"SetUseLegend", VectorAttributes_SetUseLegend, METH_VARARGS},
-    {"GetUseLegend", VectorAttributes_GetUseLegend, METH_VARARGS},
-    {"SetVectorColor", VectorAttributes_SetVectorColor, METH_VARARGS},
-    {"GetVectorColor", VectorAttributes_GetVectorColor, METH_VARARGS},
-    {"SetColorTableName", VectorAttributes_SetColorTableName, METH_VARARGS},
-    {"GetColorTableName", VectorAttributes_GetColorTableName, METH_VARARGS},
-    {"SetInvertColorTable", VectorAttributes_SetInvertColorTable, METH_VARARGS},
-    {"GetInvertColorTable", VectorAttributes_GetInvertColorTable, METH_VARARGS},
-    {"SetVectorOrigin", VectorAttributes_SetVectorOrigin, METH_VARARGS},
-    {"GetVectorOrigin", VectorAttributes_GetVectorOrigin, METH_VARARGS},
-    {"SetMinFlag", VectorAttributes_SetMinFlag, METH_VARARGS},
-    {"GetMinFlag", VectorAttributes_GetMinFlag, METH_VARARGS},
-    {"SetMaxFlag", VectorAttributes_SetMaxFlag, METH_VARARGS},
-    {"GetMaxFlag", VectorAttributes_GetMaxFlag, METH_VARARGS},
-    {"SetLimitsMode", VectorAttributes_SetLimitsMode, METH_VARARGS},
-    {"GetLimitsMode", VectorAttributes_GetLimitsMode, METH_VARARGS},
-    {"SetMin", VectorAttributes_SetMin, METH_VARARGS},
-    {"GetMin", VectorAttributes_GetMin, METH_VARARGS},
-    {"SetMax", VectorAttributes_SetMax, METH_VARARGS},
-    {"GetMax", VectorAttributes_GetMax, METH_VARARGS},
-    {"SetLineStem", VectorAttributes_SetLineStem, METH_VARARGS},
-    {"GetLineStem", VectorAttributes_GetLineStem, METH_VARARGS},
-    {"SetGeometryQuality", VectorAttributes_SetGeometryQuality, METH_VARARGS},
-    {"GetGeometryQuality", VectorAttributes_GetGeometryQuality, METH_VARARGS},
-    {"SetStemWidth", VectorAttributes_SetStemWidth, METH_VARARGS},
-    {"GetStemWidth", VectorAttributes_GetStemWidth, METH_VARARGS},
-    {"SetOrigOnly", VectorAttributes_SetOrigOnly, METH_VARARGS},
-    {"GetOrigOnly", VectorAttributes_GetOrigOnly, METH_VARARGS},
     {"SetGlyphType", VectorAttributes_SetGlyphType, METH_VARARGS},
     {"GetGlyphType", VectorAttributes_GetGlyphType, METH_VARARGS},
+    {"SetHeadOn", VectorAttributes_SetHeadOn, METH_VARARGS},
+    {"GetHeadOn", VectorAttributes_GetHeadOn, METH_VARARGS},
+    {"SetHeadSize", VectorAttributes_SetHeadSize, METH_VARARGS},
+    {"GetHeadSize", VectorAttributes_GetHeadSize, METH_VARARGS},
+    {"SetLineStem", VectorAttributes_SetLineStem, METH_VARARGS},
+    {"GetLineStem", VectorAttributes_GetLineStem, METH_VARARGS},
+    {"SetLineWidth", VectorAttributes_SetLineWidth, METH_VARARGS},
+    {"GetLineWidth", VectorAttributes_GetLineWidth, METH_VARARGS},
+    {"SetStemWidth", VectorAttributes_SetStemWidth, METH_VARARGS},
+    {"GetStemWidth", VectorAttributes_GetStemWidth, METH_VARARGS},
+    {"SetVectorOrigin", VectorAttributes_SetVectorOrigin, METH_VARARGS},
+    {"GetVectorOrigin", VectorAttributes_GetVectorOrigin, METH_VARARGS},
+    {"SetGeometryQuality", VectorAttributes_SetGeometryQuality, METH_VARARGS},
+    {"GetGeometryQuality", VectorAttributes_GetGeometryQuality, METH_VARARGS},
     {"SetAnimationStep", VectorAttributes_SetAnimationStep, METH_VARARGS},
     {"GetAnimationStep", VectorAttributes_GetAnimationStep, METH_VARARGS},
     {NULL, NULL}
@@ -1071,32 +1071,65 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "useStride") == 0)
         return VectorAttributes_GetUseStride(self, NULL);
-    if(strcmp(name, "stride") == 0)
-        return VectorAttributes_GetStride(self, NULL);
     if(strcmp(name, "nVectors") == 0)
         return VectorAttributes_GetNVectors(self, NULL);
-    if(strcmp(name, "lineWidth") == 0)
-        return VectorAttributes_GetLineWidth(self, NULL);
+    if(strcmp(name, "stride") == 0)
+        return VectorAttributes_GetStride(self, NULL);
+    if(strcmp(name, "origOnly") == 0)
+        return VectorAttributes_GetOrigOnly(self, NULL);
+    if(strcmp(name, "limitsMode") == 0)
+        return VectorAttributes_GetLimitsMode(self, NULL);
+    if(strcmp(name, "OriginalData") == 0)
+        return PyInt_FromLong(long(VectorAttributes::OriginalData));
+    if(strcmp(name, "CurrentPlot") == 0)
+        return PyInt_FromLong(long(VectorAttributes::CurrentPlot));
+
+    if(strcmp(name, "minFlag") == 0)
+        return VectorAttributes_GetMinFlag(self, NULL);
+    if(strcmp(name, "min") == 0)
+        return VectorAttributes_GetMin(self, NULL);
+    if(strcmp(name, "maxFlag") == 0)
+        return VectorAttributes_GetMaxFlag(self, NULL);
+    if(strcmp(name, "max") == 0)
+        return VectorAttributes_GetMax(self, NULL);
+    if(strcmp(name, "colorByMagnitude") == 0)
+        return VectorAttributes_GetColorByMagnitude(self, NULL);
+    if(strcmp(name, "colorTableName") == 0)
+        return VectorAttributes_GetColorTableName(self, NULL);
+    if(strcmp(name, "invertColorTable") == 0)
+        return VectorAttributes_GetInvertColorTable(self, NULL);
+    if(strcmp(name, "vectorColor") == 0)
+        return VectorAttributes_GetVectorColor(self, NULL);
+    if(strcmp(name, "useLegend") == 0)
+        return VectorAttributes_GetUseLegend(self, NULL);
     if(strcmp(name, "scale") == 0)
         return VectorAttributes_GetScale(self, NULL);
     if(strcmp(name, "scaleByMagnitude") == 0)
         return VectorAttributes_GetScaleByMagnitude(self, NULL);
     if(strcmp(name, "autoScale") == 0)
         return VectorAttributes_GetAutoScale(self, NULL);
-    if(strcmp(name, "headSize") == 0)
-        return VectorAttributes_GetHeadSize(self, NULL);
+    if(strcmp(name, "glyphType") == 0)
+        return VectorAttributes_GetGlyphType(self, NULL);
+    if(strcmp(name, "Arrow") == 0)
+        return PyInt_FromLong(long(VectorAttributes::Arrow));
+    if(strcmp(name, "Ellipsoid") == 0)
+        return PyInt_FromLong(long(VectorAttributes::Ellipsoid));
+
     if(strcmp(name, "headOn") == 0)
         return VectorAttributes_GetHeadOn(self, NULL);
-    if(strcmp(name, "colorByMag") == 0)
-        return VectorAttributes_GetColorByMag(self, NULL);
-    if(strcmp(name, "useLegend") == 0)
-        return VectorAttributes_GetUseLegend(self, NULL);
-    if(strcmp(name, "vectorColor") == 0)
-        return VectorAttributes_GetVectorColor(self, NULL);
-    if(strcmp(name, "colorTableName") == 0)
-        return VectorAttributes_GetColorTableName(self, NULL);
-    if(strcmp(name, "invertColorTable") == 0)
-        return VectorAttributes_GetInvertColorTable(self, NULL);
+    if(strcmp(name, "headSize") == 0)
+        return VectorAttributes_GetHeadSize(self, NULL);
+    if(strcmp(name, "lineStem") == 0)
+        return VectorAttributes_GetLineStem(self, NULL);
+    if(strcmp(name, "Cylinder") == 0)
+        return PyInt_FromLong(long(VectorAttributes::Cylinder));
+    if(strcmp(name, "Line") == 0)
+        return PyInt_FromLong(long(VectorAttributes::Line));
+
+    if(strcmp(name, "lineWidth") == 0)
+        return VectorAttributes_GetLineWidth(self, NULL);
+    if(strcmp(name, "stemWidth") == 0)
+        return VectorAttributes_GetStemWidth(self, NULL);
     if(strcmp(name, "vectorOrigin") == 0)
         return VectorAttributes_GetVectorOrigin(self, NULL);
     if(strcmp(name, "Head") == 0)
@@ -1106,45 +1139,12 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Tail") == 0)
         return PyInt_FromLong(long(VectorAttributes::Tail));
 
-    if(strcmp(name, "minFlag") == 0)
-        return VectorAttributes_GetMinFlag(self, NULL);
-    if(strcmp(name, "maxFlag") == 0)
-        return VectorAttributes_GetMaxFlag(self, NULL);
-    if(strcmp(name, "limitsMode") == 0)
-        return VectorAttributes_GetLimitsMode(self, NULL);
-    if(strcmp(name, "OriginalData") == 0)
-        return PyInt_FromLong(long(VectorAttributes::OriginalData));
-    if(strcmp(name, "CurrentPlot") == 0)
-        return PyInt_FromLong(long(VectorAttributes::CurrentPlot));
-
-    if(strcmp(name, "min") == 0)
-        return VectorAttributes_GetMin(self, NULL);
-    if(strcmp(name, "max") == 0)
-        return VectorAttributes_GetMax(self, NULL);
-    if(strcmp(name, "lineStem") == 0)
-        return VectorAttributes_GetLineStem(self, NULL);
-    if(strcmp(name, "Cylinder") == 0)
-        return PyInt_FromLong(long(VectorAttributes::Cylinder));
-    if(strcmp(name, "Line") == 0)
-        return PyInt_FromLong(long(VectorAttributes::Line));
-
     if(strcmp(name, "geometryQuality") == 0)
         return VectorAttributes_GetGeometryQuality(self, NULL);
     if(strcmp(name, "Fast") == 0)
         return PyInt_FromLong(long(VectorAttributes::Fast));
     if(strcmp(name, "High") == 0)
         return PyInt_FromLong(long(VectorAttributes::High));
-
-    if(strcmp(name, "stemWidth") == 0)
-        return VectorAttributes_GetStemWidth(self, NULL);
-    if(strcmp(name, "origOnly") == 0)
-        return VectorAttributes_GetOrigOnly(self, NULL);
-    if(strcmp(name, "glyphType") == 0)
-        return VectorAttributes_GetGlyphType(self, NULL);
-    if(strcmp(name, "Arrow") == 0)
-        return PyInt_FromLong(long(VectorAttributes::Arrow));
-    if(strcmp(name, "Ellipsoid") == 0)
-        return PyInt_FromLong(long(VectorAttributes::Ellipsoid));
 
     if(strcmp(name, "animationStep") == 0)
         return VectorAttributes_GetAnimationStep(self, NULL);
@@ -1203,54 +1203,54 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VectorAttributes_SetGlyphLocation(self, tuple);
     else if(strcmp(name, "useStride") == 0)
         obj = VectorAttributes_SetUseStride(self, tuple);
-    else if(strcmp(name, "stride") == 0)
-        obj = VectorAttributes_SetStride(self, tuple);
     else if(strcmp(name, "nVectors") == 0)
         obj = VectorAttributes_SetNVectors(self, tuple);
-    else if(strcmp(name, "lineWidth") == 0)
-        obj = VectorAttributes_SetLineWidth(self, tuple);
+    else if(strcmp(name, "stride") == 0)
+        obj = VectorAttributes_SetStride(self, tuple);
+    else if(strcmp(name, "origOnly") == 0)
+        obj = VectorAttributes_SetOrigOnly(self, tuple);
+    else if(strcmp(name, "limitsMode") == 0)
+        obj = VectorAttributes_SetLimitsMode(self, tuple);
+    else if(strcmp(name, "minFlag") == 0)
+        obj = VectorAttributes_SetMinFlag(self, tuple);
+    else if(strcmp(name, "min") == 0)
+        obj = VectorAttributes_SetMin(self, tuple);
+    else if(strcmp(name, "maxFlag") == 0)
+        obj = VectorAttributes_SetMaxFlag(self, tuple);
+    else if(strcmp(name, "max") == 0)
+        obj = VectorAttributes_SetMax(self, tuple);
+    else if(strcmp(name, "colorByMagnitude") == 0)
+        obj = VectorAttributes_SetColorByMagnitude(self, tuple);
+    else if(strcmp(name, "colorTableName") == 0)
+        obj = VectorAttributes_SetColorTableName(self, tuple);
+    else if(strcmp(name, "invertColorTable") == 0)
+        obj = VectorAttributes_SetInvertColorTable(self, tuple);
+    else if(strcmp(name, "vectorColor") == 0)
+        obj = VectorAttributes_SetVectorColor(self, tuple);
+    else if(strcmp(name, "useLegend") == 0)
+        obj = VectorAttributes_SetUseLegend(self, tuple);
     else if(strcmp(name, "scale") == 0)
         obj = VectorAttributes_SetScale(self, tuple);
     else if(strcmp(name, "scaleByMagnitude") == 0)
         obj = VectorAttributes_SetScaleByMagnitude(self, tuple);
     else if(strcmp(name, "autoScale") == 0)
         obj = VectorAttributes_SetAutoScale(self, tuple);
-    else if(strcmp(name, "headSize") == 0)
-        obj = VectorAttributes_SetHeadSize(self, tuple);
-    else if(strcmp(name, "headOn") == 0)
-        obj = VectorAttributes_SetHeadOn(self, tuple);
-    else if(strcmp(name, "colorByMag") == 0)
-        obj = VectorAttributes_SetColorByMag(self, tuple);
-    else if(strcmp(name, "useLegend") == 0)
-        obj = VectorAttributes_SetUseLegend(self, tuple);
-    else if(strcmp(name, "vectorColor") == 0)
-        obj = VectorAttributes_SetVectorColor(self, tuple);
-    else if(strcmp(name, "colorTableName") == 0)
-        obj = VectorAttributes_SetColorTableName(self, tuple);
-    else if(strcmp(name, "invertColorTable") == 0)
-        obj = VectorAttributes_SetInvertColorTable(self, tuple);
-    else if(strcmp(name, "vectorOrigin") == 0)
-        obj = VectorAttributes_SetVectorOrigin(self, tuple);
-    else if(strcmp(name, "minFlag") == 0)
-        obj = VectorAttributes_SetMinFlag(self, tuple);
-    else if(strcmp(name, "maxFlag") == 0)
-        obj = VectorAttributes_SetMaxFlag(self, tuple);
-    else if(strcmp(name, "limitsMode") == 0)
-        obj = VectorAttributes_SetLimitsMode(self, tuple);
-    else if(strcmp(name, "min") == 0)
-        obj = VectorAttributes_SetMin(self, tuple);
-    else if(strcmp(name, "max") == 0)
-        obj = VectorAttributes_SetMax(self, tuple);
-    else if(strcmp(name, "lineStem") == 0)
-        obj = VectorAttributes_SetLineStem(self, tuple);
-    else if(strcmp(name, "geometryQuality") == 0)
-        obj = VectorAttributes_SetGeometryQuality(self, tuple);
-    else if(strcmp(name, "stemWidth") == 0)
-        obj = VectorAttributes_SetStemWidth(self, tuple);
-    else if(strcmp(name, "origOnly") == 0)
-        obj = VectorAttributes_SetOrigOnly(self, tuple);
     else if(strcmp(name, "glyphType") == 0)
         obj = VectorAttributes_SetGlyphType(self, tuple);
+    else if(strcmp(name, "headOn") == 0)
+        obj = VectorAttributes_SetHeadOn(self, tuple);
+    else if(strcmp(name, "headSize") == 0)
+        obj = VectorAttributes_SetHeadSize(self, tuple);
+    else if(strcmp(name, "lineStem") == 0)
+        obj = VectorAttributes_SetLineStem(self, tuple);
+    else if(strcmp(name, "lineWidth") == 0)
+        obj = VectorAttributes_SetLineWidth(self, tuple);
+    else if(strcmp(name, "stemWidth") == 0)
+        obj = VectorAttributes_SetStemWidth(self, tuple);
+    else if(strcmp(name, "vectorOrigin") == 0)
+        obj = VectorAttributes_SetVectorOrigin(self, tuple);
+    else if(strcmp(name, "geometryQuality") == 0)
+        obj = VectorAttributes_SetGeometryQuality(self, tuple);
     else if(strcmp(name, "animationStep") == 0)
         obj = VectorAttributes_SetAnimationStep(self, tuple);
 

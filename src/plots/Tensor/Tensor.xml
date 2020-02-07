@@ -1,14 +1,58 @@
 <?xml version="1.0"?>
-  <Plugin name="Tensor" type="plot" label="Tensor" version="1.0" vartype="tensor,symmetrictensor" iconFile="Tensor.xpm">
-    <Attribute name="TensorAttributes" purpose="Attributes for the tensor plot" persistent="true" codefile="TensorAttributes.code">
-      <Field name="useStride" label="Use stride" type="bool">
-        false
+  <Plugin name="Tensor" type="plot" label="Tensor" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="tensor" iconFile="Tensor.xpm">
+    <Attribute name="TensorAttributes" purpose="Attributes for the tensor plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="TensorAttributes.code">
+      <Enum name="LimitsMode">
+        OriginalData
+        CurrentPlot
+      </Enum>
+      <Enum name="GlyphLocation">
+        AdaptsToMeshResolution
+        UniformInSpace
+      </Enum>
+      <Field name="glyphLocation" label="Glyph Location" type="enum" subtype="GlyphLocation">
+        AdaptsToMeshResolution
       </Field>
-      <Field name="stride" label="Stride" type="int">
-        1
+      <Field name="useStride" label="Use stride" type="bool" enabler="glyphLocation:AdaptsToMeshResolution">
+        false
       </Field>
       <Field name="nTensors" label="Num tensors" type="int">
         400
+      </Field>
+      <Field name="stride" label="Stride" type="int" enabler="glyphLocation:AdaptsToMeshResolution">
+        1
+      </Field>
+      <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
+        OriginalData
+      </Field>
+      <Field name="minFlag" label="Use min" type="bool">
+        false
+      </Field>
+      <Field name="min" label="Min" type="double" enabler="minFlag:true">
+        0.000000
+      </Field>
+      <Field name="maxFlag" label="Use max" type="bool">
+        false
+      </Field>
+      <Field name="max" label="Max" type="double" enabler="maxFlag:true">
+        1.000000
+      </Field>
+      <Field name="colorByEigenValues" label="color by Eigen Values" type="bool">
+        true
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
+      </Field>
+      <Field name="invertColorTable" label="Invert Color table" type="bool">
+        false
+      </Field>
+      <Field name="tensorColor" label="color" type="color" length="4">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="useLegend" label="Legend" type="bool">
+        true
       </Field>
       <Field name="scale" label="Scale" type="double">
         0.250000
@@ -19,25 +63,18 @@
       <Field name="autoScale" label="Auto scale" type="bool">
         true
       </Field>
-      <Field name="colorByEigenvalues" label="color by eigenvalues" type="bool">
-        true
-      </Field>
-      <Field name="useLegend" label="Legend" type="bool">
-        true
-      </Field>
-      <Field name="tensorColor" label="color" type="color">
+      <Field name="animationStep" label="Animation step" type="int">
         0
-        0
-        0
-        255
-      </Field>
-      <Field name="colorTableName" label="Color table" type="colortable">
-        Default
-      </Field>
-      <Field name="invertColorTable" label="Invert Color table" type="bool">
-        false
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="GetAnimationScale" user="true" member="true">
+      </Function>
+      <Function name="TensorViewerEnginePluginInfo::SupportsAnimation" user="false" member="true">
+      </Function>
+      <Function name="TensorViewerEnginePluginInfo::AnimationReset" user="false" member="true">
+      </Function>
+      <Function name="TensorViewerEnginePluginInfo::AnimationStep" user="false" member="true">
       </Function>
     </Attribute>
   </Plugin>

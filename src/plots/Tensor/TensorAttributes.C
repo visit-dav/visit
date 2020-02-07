@@ -5,6 +5,80 @@
 #include <TensorAttributes.h>
 #include <DataNode.h>
 
+//
+// Enum conversion methods for TensorAttributes::LimitsMode
+//
+
+static const char *LimitsMode_strings[] = {
+"OriginalData", "CurrentPlot"};
+
+std::string
+TensorAttributes::LimitsMode_ToString(TensorAttributes::LimitsMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return LimitsMode_strings[index];
+}
+
+std::string
+TensorAttributes::LimitsMode_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return LimitsMode_strings[index];
+}
+
+bool
+TensorAttributes::LimitsMode_FromString(const std::string &s, TensorAttributes::LimitsMode &val)
+{
+    val = TensorAttributes::OriginalData;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == LimitsMode_strings[i])
+        {
+            val = (LimitsMode)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for TensorAttributes::GlyphLocation
+//
+
+static const char *GlyphLocation_strings[] = {
+"AdaptsToMeshResolution", "UniformInSpace"};
+
+std::string
+TensorAttributes::GlyphLocation_ToString(TensorAttributes::GlyphLocation t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return GlyphLocation_strings[index];
+}
+
+std::string
+TensorAttributes::GlyphLocation_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return GlyphLocation_strings[index];
+}
+
+bool
+TensorAttributes::GlyphLocation_FromString(const std::string &s, TensorAttributes::GlyphLocation &val)
+{
+    val = TensorAttributes::AdaptsToMeshResolution;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == GlyphLocation_strings[i])
+        {
+            val = (GlyphLocation)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: TensorAttributes::TensorAttributes
 //
@@ -22,15 +96,22 @@
 
 void TensorAttributes::Init()
 {
+    glyphLocation = AdaptsToMeshResolution;
     useStride = false;
-    stride = 1;
     nTensors = 400;
+    stride = 1;
+    limitsMode = OriginalData;
+    minFlag = false;
+    min = 0;
+    maxFlag = false;
+    max = 1;
+    colorByEigenValues = true;
+    invertColorTable = false;
+    useLegend = true;
     scale = 0.25;
     scaleByMagnitude = true;
     autoScale = true;
-    colorByEigenvalues = true;
-    useLegend = true;
-    invertColorTable = false;
+    animationStep = 0;
 
     TensorAttributes::SelectAll();
 }
@@ -52,17 +133,24 @@ void TensorAttributes::Init()
 
 void TensorAttributes::Copy(const TensorAttributes &obj)
 {
+    glyphLocation = obj.glyphLocation;
     useStride = obj.useStride;
-    stride = obj.stride;
     nTensors = obj.nTensors;
+    stride = obj.stride;
+    limitsMode = obj.limitsMode;
+    minFlag = obj.minFlag;
+    min = obj.min;
+    maxFlag = obj.maxFlag;
+    max = obj.max;
+    colorByEigenValues = obj.colorByEigenValues;
+    colorTableName = obj.colorTableName;
+    invertColorTable = obj.invertColorTable;
+    tensorColor = obj.tensorColor;
+    useLegend = obj.useLegend;
     scale = obj.scale;
     scaleByMagnitude = obj.scaleByMagnitude;
     autoScale = obj.autoScale;
-    colorByEigenvalues = obj.colorByEigenvalues;
-    useLegend = obj.useLegend;
-    tensorColor = obj.tensorColor;
-    colorTableName = obj.colorTableName;
-    invertColorTable = obj.invertColorTable;
+    animationStep = obj.animationStep;
 
     TensorAttributes::SelectAll();
 }
@@ -89,7 +177,7 @@ const AttributeGroup::private_tmfs_t TensorAttributes::TmfsStruct = {TENSORATTRI
 
 TensorAttributes::TensorAttributes() :
     AttributeSubject(TensorAttributes::TypeMapFormatString),
-    tensorColor(0, 0, 0), colorTableName("Default")
+    colorTableName("Default"), tensorColor(0, 0, 0)
 {
     TensorAttributes::Init();
 }
@@ -111,7 +199,7 @@ TensorAttributes::TensorAttributes() :
 
 TensorAttributes::TensorAttributes(private_tmfs_t tmfs) :
     AttributeSubject(tmfs.tmfs),
-    tensorColor(0, 0, 0), colorTableName("Default")
+    colorTableName("Default"), tensorColor(0, 0, 0)
 {
     TensorAttributes::Init();
 }
@@ -222,17 +310,24 @@ bool
 TensorAttributes::operator == (const TensorAttributes &obj) const
 {
     // Create the return value
-    return ((useStride == obj.useStride) &&
-            (stride == obj.stride) &&
+    return ((glyphLocation == obj.glyphLocation) &&
+            (useStride == obj.useStride) &&
             (nTensors == obj.nTensors) &&
+            (stride == obj.stride) &&
+            (limitsMode == obj.limitsMode) &&
+            (minFlag == obj.minFlag) &&
+            (min == obj.min) &&
+            (maxFlag == obj.maxFlag) &&
+            (max == obj.max) &&
+            (colorByEigenValues == obj.colorByEigenValues) &&
+            (colorTableName == obj.colorTableName) &&
+            (invertColorTable == obj.invertColorTable) &&
+            (tensorColor == obj.tensorColor) &&
+            (useLegend == obj.useLegend) &&
             (scale == obj.scale) &&
             (scaleByMagnitude == obj.scaleByMagnitude) &&
             (autoScale == obj.autoScale) &&
-            (colorByEigenvalues == obj.colorByEigenvalues) &&
-            (useLegend == obj.useLegend) &&
-            (tensorColor == obj.tensorColor) &&
-            (colorTableName == obj.colorTableName) &&
-            (invertColorTable == obj.invertColorTable));
+            (animationStep == obj.animationStep));
 }
 
 // ****************************************************************************
@@ -376,17 +471,24 @@ TensorAttributes::NewInstance(bool copy) const
 void
 TensorAttributes::SelectAll()
 {
+    Select(ID_glyphLocation,      (void *)&glyphLocation);
     Select(ID_useStride,          (void *)&useStride);
-    Select(ID_stride,             (void *)&stride);
     Select(ID_nTensors,           (void *)&nTensors);
+    Select(ID_stride,             (void *)&stride);
+    Select(ID_limitsMode,         (void *)&limitsMode);
+    Select(ID_minFlag,            (void *)&minFlag);
+    Select(ID_min,                (void *)&min);
+    Select(ID_maxFlag,            (void *)&maxFlag);
+    Select(ID_max,                (void *)&max);
+    Select(ID_colorByEigenValues, (void *)&colorByEigenValues);
+    Select(ID_colorTableName,     (void *)&colorTableName);
+    Select(ID_invertColorTable,   (void *)&invertColorTable);
+    Select(ID_tensorColor,        (void *)&tensorColor);
+    Select(ID_useLegend,          (void *)&useLegend);
     Select(ID_scale,              (void *)&scale);
     Select(ID_scaleByMagnitude,   (void *)&scaleByMagnitude);
     Select(ID_autoScale,          (void *)&autoScale);
-    Select(ID_colorByEigenvalues, (void *)&colorByEigenvalues);
-    Select(ID_useLegend,          (void *)&useLegend);
-    Select(ID_tensorColor,        (void *)&tensorColor);
-    Select(ID_colorTableName,     (void *)&colorTableName);
-    Select(ID_invertColorTable,   (void *)&invertColorTable);
+    Select(ID_animationStep,      (void *)&animationStep);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -419,10 +521,22 @@ TensorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     // Create a node for TensorAttributes.
     DataNode *node = new DataNode("TensorAttributes");
 
+    if(completeSave || !FieldsEqual(ID_glyphLocation, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("glyphLocation", GlyphLocation_ToString(glyphLocation)));
+    }
+
     if(completeSave || !FieldsEqual(ID_useStride, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("useStride", useStride));
+    }
+
+    if(completeSave || !FieldsEqual(ID_nTensors, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("nTensors", nTensors));
     }
 
     if(completeSave || !FieldsEqual(ID_stride, &defaultObject))
@@ -431,10 +545,66 @@ TensorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("stride", stride));
     }
 
-    if(completeSave || !FieldsEqual(ID_nTensors, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_limitsMode, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("nTensors", nTensors));
+        node->AddNode(new DataNode("limitsMode", LimitsMode_ToString(limitsMode)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_minFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("minFlag", minFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_min, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("min", min));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxFlag", maxFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_max, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("max", max));
+    }
+
+    if(completeSave || !FieldsEqual(ID_colorByEigenValues, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("colorByEigenValues", colorByEigenValues));
+    }
+
+    if(completeSave || !FieldsEqual(ID_colorTableName, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("colorTableName", colorTableName));
+    }
+
+    if(completeSave || !FieldsEqual(ID_invertColorTable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("invertColorTable", invertColorTable));
+    }
+
+        DataNode *tensorColorNode = new DataNode("tensorColor");
+        if(tensorColor.CreateNode(tensorColorNode, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(tensorColorNode);
+        }
+        else
+            delete tensorColorNode;
+    if(completeSave || !FieldsEqual(ID_useLegend, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useLegend", useLegend));
     }
 
     if(completeSave || !FieldsEqual(ID_scale, &defaultObject))
@@ -455,36 +625,10 @@ TensorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("autoScale", autoScale));
     }
 
-    if(completeSave || !FieldsEqual(ID_colorByEigenvalues, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_animationStep, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("colorByEigenvalues", colorByEigenvalues));
-    }
-
-    if(completeSave || !FieldsEqual(ID_useLegend, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("useLegend", useLegend));
-    }
-
-        DataNode *tensorColorNode = new DataNode("tensorColor");
-        if(tensorColor.CreateNode(tensorColorNode, completeSave, true))
-        {
-            addToParent = true;
-            node->AddNode(tensorColorNode);
-        }
-        else
-            delete tensorColorNode;
-    if(completeSave || !FieldsEqual(ID_colorTableName, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("colorTableName", colorTableName));
-    }
-
-    if(completeSave || !FieldsEqual(ID_invertColorTable, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("invertColorTable", invertColorTable));
+        node->AddNode(new DataNode("animationStep", animationStep));
     }
 
 
@@ -523,28 +667,70 @@ TensorAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+    if((node = searchNode->GetNode("glyphLocation")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetGlyphLocation(GlyphLocation(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            GlyphLocation value;
+            if(GlyphLocation_FromString(node->AsString(), value))
+                SetGlyphLocation(value);
+        }
+    }
     if((node = searchNode->GetNode("useStride")) != 0)
         SetUseStride(node->AsBool());
-    if((node = searchNode->GetNode("stride")) != 0)
-        SetStride(node->AsInt());
     if((node = searchNode->GetNode("nTensors")) != 0)
         SetNTensors(node->AsInt());
+    if((node = searchNode->GetNode("stride")) != 0)
+        SetStride(node->AsInt());
+    if((node = searchNode->GetNode("limitsMode")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetLimitsMode(LimitsMode(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            LimitsMode value;
+            if(LimitsMode_FromString(node->AsString(), value))
+                SetLimitsMode(value);
+        }
+    }
+    if((node = searchNode->GetNode("minFlag")) != 0)
+        SetMinFlag(node->AsBool());
+    if((node = searchNode->GetNode("min")) != 0)
+        SetMin(node->AsDouble());
+    if((node = searchNode->GetNode("maxFlag")) != 0)
+        SetMaxFlag(node->AsBool());
+    if((node = searchNode->GetNode("max")) != 0)
+        SetMax(node->AsDouble());
+    if((node = searchNode->GetNode("colorByEigenValues")) != 0)
+        SetColorByEigenValues(node->AsBool());
+    if((node = searchNode->GetNode("colorTableName")) != 0)
+        SetColorTableName(node->AsString());
+    if((node = searchNode->GetNode("invertColorTable")) != 0)
+        SetInvertColorTable(node->AsBool());
+    if((node = searchNode->GetNode("tensorColor")) != 0)
+        tensorColor.SetFromNode(node);
+    if((node = searchNode->GetNode("useLegend")) != 0)
+        SetUseLegend(node->AsBool());
     if((node = searchNode->GetNode("scale")) != 0)
         SetScale(node->AsDouble());
     if((node = searchNode->GetNode("scaleByMagnitude")) != 0)
         SetScaleByMagnitude(node->AsBool());
     if((node = searchNode->GetNode("autoScale")) != 0)
         SetAutoScale(node->AsBool());
-    if((node = searchNode->GetNode("colorByEigenvalues")) != 0)
-        SetColorByEigenvalues(node->AsBool());
-    if((node = searchNode->GetNode("useLegend")) != 0)
-        SetUseLegend(node->AsBool());
-    if((node = searchNode->GetNode("tensorColor")) != 0)
-        tensorColor.SetFromNode(node);
-    if((node = searchNode->GetNode("colorTableName")) != 0)
-        SetColorTableName(node->AsString());
-    if((node = searchNode->GetNode("invertColorTable")) != 0)
-        SetInvertColorTable(node->AsBool());
+    if((node = searchNode->GetNode("animationStep")) != 0)
+        SetAnimationStep(node->AsInt());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -552,10 +738,24 @@ TensorAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
+TensorAttributes::SetGlyphLocation(TensorAttributes::GlyphLocation glyphLocation_)
+{
+    glyphLocation = glyphLocation_;
+    Select(ID_glyphLocation, (void *)&glyphLocation);
+}
+
+void
 TensorAttributes::SetUseStride(bool useStride_)
 {
     useStride = useStride_;
     Select(ID_useStride, (void *)&useStride);
+}
+
+void
+TensorAttributes::SetNTensors(int nTensors_)
+{
+    nTensors = nTensors_;
+    Select(ID_nTensors, (void *)&nTensors);
 }
 
 void
@@ -566,10 +766,73 @@ TensorAttributes::SetStride(int stride_)
 }
 
 void
-TensorAttributes::SetNTensors(int nTensors_)
+TensorAttributes::SetLimitsMode(TensorAttributes::LimitsMode limitsMode_)
 {
-    nTensors = nTensors_;
-    Select(ID_nTensors, (void *)&nTensors);
+    limitsMode = limitsMode_;
+    Select(ID_limitsMode, (void *)&limitsMode);
+}
+
+void
+TensorAttributes::SetMinFlag(bool minFlag_)
+{
+    minFlag = minFlag_;
+    Select(ID_minFlag, (void *)&minFlag);
+}
+
+void
+TensorAttributes::SetMin(double min_)
+{
+    min = min_;
+    Select(ID_min, (void *)&min);
+}
+
+void
+TensorAttributes::SetMaxFlag(bool maxFlag_)
+{
+    maxFlag = maxFlag_;
+    Select(ID_maxFlag, (void *)&maxFlag);
+}
+
+void
+TensorAttributes::SetMax(double max_)
+{
+    max = max_;
+    Select(ID_max, (void *)&max);
+}
+
+void
+TensorAttributes::SetColorByEigenValues(bool colorByEigenValues_)
+{
+    colorByEigenValues = colorByEigenValues_;
+    Select(ID_colorByEigenValues, (void *)&colorByEigenValues);
+}
+
+void
+TensorAttributes::SetColorTableName(const std::string &colorTableName_)
+{
+    colorTableName = colorTableName_;
+    Select(ID_colorTableName, (void *)&colorTableName);
+}
+
+void
+TensorAttributes::SetInvertColorTable(bool invertColorTable_)
+{
+    invertColorTable = invertColorTable_;
+    Select(ID_invertColorTable, (void *)&invertColorTable);
+}
+
+void
+TensorAttributes::SetTensorColor(const ColorAttribute &tensorColor_)
+{
+    tensorColor = tensorColor_;
+    Select(ID_tensorColor, (void *)&tensorColor);
+}
+
+void
+TensorAttributes::SetUseLegend(bool useLegend_)
+{
+    useLegend = useLegend_;
+    Select(ID_useLegend, (void *)&useLegend);
 }
 
 void
@@ -594,43 +857,21 @@ TensorAttributes::SetAutoScale(bool autoScale_)
 }
 
 void
-TensorAttributes::SetColorByEigenvalues(bool colorByEigenvalues_)
+TensorAttributes::SetAnimationStep(int animationStep_)
 {
-    colorByEigenvalues = colorByEigenvalues_;
-    Select(ID_colorByEigenvalues, (void *)&colorByEigenvalues);
-}
-
-void
-TensorAttributes::SetUseLegend(bool useLegend_)
-{
-    useLegend = useLegend_;
-    Select(ID_useLegend, (void *)&useLegend);
-}
-
-void
-TensorAttributes::SetTensorColor(const ColorAttribute &tensorColor_)
-{
-    tensorColor = tensorColor_;
-    Select(ID_tensorColor, (void *)&tensorColor);
-}
-
-void
-TensorAttributes::SetColorTableName(const std::string &colorTableName_)
-{
-    colorTableName = colorTableName_;
-    Select(ID_colorTableName, (void *)&colorTableName);
-}
-
-void
-TensorAttributes::SetInvertColorTable(bool invertColorTable_)
-{
-    invertColorTable = invertColorTable_;
-    Select(ID_invertColorTable, (void *)&invertColorTable);
+    animationStep = animationStep_;
+    Select(ID_animationStep, (void *)&animationStep);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+TensorAttributes::GlyphLocation
+TensorAttributes::GetGlyphLocation() const
+{
+    return GlyphLocation(glyphLocation);
+}
 
 bool
 TensorAttributes::GetUseStride() const
@@ -639,57 +880,51 @@ TensorAttributes::GetUseStride() const
 }
 
 int
-TensorAttributes::GetStride() const
-{
-    return stride;
-}
-
-int
 TensorAttributes::GetNTensors() const
 {
     return nTensors;
 }
 
+int
+TensorAttributes::GetStride() const
+{
+    return stride;
+}
+
+TensorAttributes::LimitsMode
+TensorAttributes::GetLimitsMode() const
+{
+    return LimitsMode(limitsMode);
+}
+
+bool
+TensorAttributes::GetMinFlag() const
+{
+    return minFlag;
+}
+
 double
-TensorAttributes::GetScale() const
+TensorAttributes::GetMin() const
 {
-    return scale;
+    return min;
 }
 
 bool
-TensorAttributes::GetScaleByMagnitude() const
+TensorAttributes::GetMaxFlag() const
 {
-    return scaleByMagnitude;
+    return maxFlag;
+}
+
+double
+TensorAttributes::GetMax() const
+{
+    return max;
 }
 
 bool
-TensorAttributes::GetAutoScale() const
+TensorAttributes::GetColorByEigenValues() const
 {
-    return autoScale;
-}
-
-bool
-TensorAttributes::GetColorByEigenvalues() const
-{
-    return colorByEigenvalues;
-}
-
-bool
-TensorAttributes::GetUseLegend() const
-{
-    return useLegend;
-}
-
-const ColorAttribute &
-TensorAttributes::GetTensorColor() const
-{
-    return tensorColor;
-}
-
-ColorAttribute &
-TensorAttributes::GetTensorColor()
-{
-    return tensorColor;
+    return colorByEigenValues;
 }
 
 const std::string &
@@ -710,20 +945,62 @@ TensorAttributes::GetInvertColorTable() const
     return invertColorTable;
 }
 
+const ColorAttribute &
+TensorAttributes::GetTensorColor() const
+{
+    return tensorColor;
+}
+
+ColorAttribute &
+TensorAttributes::GetTensorColor()
+{
+    return tensorColor;
+}
+
+bool
+TensorAttributes::GetUseLegend() const
+{
+    return useLegend;
+}
+
+double
+TensorAttributes::GetScale() const
+{
+    return scale;
+}
+
+bool
+TensorAttributes::GetScaleByMagnitude() const
+{
+    return scaleByMagnitude;
+}
+
+bool
+TensorAttributes::GetAutoScale() const
+{
+    return autoScale;
+}
+
+int
+TensorAttributes::GetAnimationStep() const
+{
+    return animationStep;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-TensorAttributes::SelectTensorColor()
-{
-    Select(ID_tensorColor, (void *)&tensorColor);
-}
-
-void
 TensorAttributes::SelectColorTableName()
 {
     Select(ID_colorTableName, (void *)&colorTableName);
+}
+
+void
+TensorAttributes::SelectTensorColor()
+{
+    Select(ID_tensorColor, (void *)&tensorColor);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -750,17 +1027,24 @@ TensorAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
+    case ID_glyphLocation:      return "glyphLocation";
     case ID_useStride:          return "useStride";
-    case ID_stride:             return "stride";
     case ID_nTensors:           return "nTensors";
+    case ID_stride:             return "stride";
+    case ID_limitsMode:         return "limitsMode";
+    case ID_minFlag:            return "minFlag";
+    case ID_min:                return "min";
+    case ID_maxFlag:            return "maxFlag";
+    case ID_max:                return "max";
+    case ID_colorByEigenValues: return "colorByEigenValues";
+    case ID_colorTableName:     return "colorTableName";
+    case ID_invertColorTable:   return "invertColorTable";
+    case ID_tensorColor:        return "tensorColor";
+    case ID_useLegend:          return "useLegend";
     case ID_scale:              return "scale";
     case ID_scaleByMagnitude:   return "scaleByMagnitude";
     case ID_autoScale:          return "autoScale";
-    case ID_colorByEigenvalues: return "colorByEigenvalues";
-    case ID_useLegend:          return "useLegend";
-    case ID_tensorColor:        return "tensorColor";
-    case ID_colorTableName:     return "colorTableName";
-    case ID_invertColorTable:   return "invertColorTable";
+    case ID_animationStep:      return "animationStep";
     default:  return "invalid index";
     }
 }
@@ -785,17 +1069,24 @@ TensorAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
+    case ID_glyphLocation:      return FieldType_enum;
     case ID_useStride:          return FieldType_bool;
-    case ID_stride:             return FieldType_int;
     case ID_nTensors:           return FieldType_int;
+    case ID_stride:             return FieldType_int;
+    case ID_limitsMode:         return FieldType_enum;
+    case ID_minFlag:            return FieldType_bool;
+    case ID_min:                return FieldType_double;
+    case ID_maxFlag:            return FieldType_bool;
+    case ID_max:                return FieldType_double;
+    case ID_colorByEigenValues: return FieldType_bool;
+    case ID_colorTableName:     return FieldType_colortable;
+    case ID_invertColorTable:   return FieldType_bool;
+    case ID_tensorColor:        return FieldType_color;
+    case ID_useLegend:          return FieldType_bool;
     case ID_scale:              return FieldType_double;
     case ID_scaleByMagnitude:   return FieldType_bool;
     case ID_autoScale:          return FieldType_bool;
-    case ID_colorByEigenvalues: return FieldType_bool;
-    case ID_useLegend:          return FieldType_bool;
-    case ID_tensorColor:        return FieldType_color;
-    case ID_colorTableName:     return FieldType_colortable;
-    case ID_invertColorTable:   return FieldType_bool;
+    case ID_animationStep:      return FieldType_int;
     default:  return FieldType_unknown;
     }
 }
@@ -820,17 +1111,24 @@ TensorAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
+    case ID_glyphLocation:      return "enum";
     case ID_useStride:          return "bool";
-    case ID_stride:             return "int";
     case ID_nTensors:           return "int";
+    case ID_stride:             return "int";
+    case ID_limitsMode:         return "enum";
+    case ID_minFlag:            return "bool";
+    case ID_min:                return "double";
+    case ID_maxFlag:            return "bool";
+    case ID_max:                return "double";
+    case ID_colorByEigenValues: return "bool";
+    case ID_colorTableName:     return "colortable";
+    case ID_invertColorTable:   return "bool";
+    case ID_tensorColor:        return "color";
+    case ID_useLegend:          return "bool";
     case ID_scale:              return "double";
     case ID_scaleByMagnitude:   return "bool";
     case ID_autoScale:          return "bool";
-    case ID_colorByEigenvalues: return "bool";
-    case ID_useLegend:          return "bool";
-    case ID_tensorColor:        return "color";
-    case ID_colorTableName:     return "colortable";
-    case ID_invertColorTable:   return "bool";
+    case ID_animationStep:      return "int";
     default:  return "invalid index";
     }
 }
@@ -857,9 +1155,19 @@ TensorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
+    case ID_glyphLocation:
+        {  // new scope
+        retval = (glyphLocation == obj.glyphLocation);
+        }
+        break;
     case ID_useStride:
         {  // new scope
         retval = (useStride == obj.useStride);
+        }
+        break;
+    case ID_nTensors:
+        {  // new scope
+        retval = (nTensors == obj.nTensors);
         }
         break;
     case ID_stride:
@@ -867,9 +1175,54 @@ TensorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (stride == obj.stride);
         }
         break;
-    case ID_nTensors:
+    case ID_limitsMode:
         {  // new scope
-        retval = (nTensors == obj.nTensors);
+        retval = (limitsMode == obj.limitsMode);
+        }
+        break;
+    case ID_minFlag:
+        {  // new scope
+        retval = (minFlag == obj.minFlag);
+        }
+        break;
+    case ID_min:
+        {  // new scope
+        retval = (min == obj.min);
+        }
+        break;
+    case ID_maxFlag:
+        {  // new scope
+        retval = (maxFlag == obj.maxFlag);
+        }
+        break;
+    case ID_max:
+        {  // new scope
+        retval = (max == obj.max);
+        }
+        break;
+    case ID_colorByEigenValues:
+        {  // new scope
+        retval = (colorByEigenValues == obj.colorByEigenValues);
+        }
+        break;
+    case ID_colorTableName:
+        {  // new scope
+        retval = (colorTableName == obj.colorTableName);
+        }
+        break;
+    case ID_invertColorTable:
+        {  // new scope
+        retval = (invertColorTable == obj.invertColorTable);
+        }
+        break;
+    case ID_tensorColor:
+        {  // new scope
+        retval = (tensorColor == obj.tensorColor);
+        }
+        break;
+    case ID_useLegend:
+        {  // new scope
+        retval = (useLegend == obj.useLegend);
         }
         break;
     case ID_scale:
@@ -887,29 +1240,9 @@ TensorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (autoScale == obj.autoScale);
         }
         break;
-    case ID_colorByEigenvalues:
+    case ID_animationStep:
         {  // new scope
-        retval = (colorByEigenvalues == obj.colorByEigenvalues);
-        }
-        break;
-    case ID_useLegend:
-        {  // new scope
-        retval = (useLegend == obj.useLegend);
-        }
-        break;
-    case ID_tensorColor:
-        {  // new scope
-        retval = (tensorColor == obj.tensorColor);
-        }
-        break;
-    case ID_colorTableName:
-        {  // new scope
-        retval = (colorTableName == obj.colorTableName);
-        }
-        break;
-    case ID_invertColorTable:
-        {  // new scope
-        retval = (invertColorTable == obj.invertColorTable);
+        retval = (animationStep == obj.animationStep);
         }
         break;
     default: retval = false;
@@ -925,8 +1258,18 @@ TensorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 bool
 TensorAttributes::ChangesRequireRecalculation(const TensorAttributes &obj)
 {
-    return ((useStride != obj.useStride) ||
+    return ((glyphLocation != obj.glyphLocation) ||
+            (useStride != obj.useStride) ||
             (stride != obj.stride) ||
             (nTensors != obj.nTensors));
+}
+
+#include <math.h>
+double
+TensorAttributes::GetAnimationScale() const
+{
+    const int nsteps = 100;
+    double angle = 2.* M_PI * (double(animationStep % nsteps) / double(nsteps-1));
+    return 0.75 + 0.25 * cos(angle);
 }
 

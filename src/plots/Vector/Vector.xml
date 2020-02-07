@@ -32,14 +32,47 @@
       <Field name="useStride" label="Use stride" type="bool" enabler="glyphLocation:AdaptsToMeshResolution">
         false
       </Field>
-      <Field name="stride" label="Stride" type="int" enabler="glyphLocation:AdaptsToMeshResolution">
-        1
-      </Field>
       <Field name="nVectors" label="Num vectors" type="int">
         400
       </Field>
-      <Field name="lineWidth" label="Line Width" type="linewidth">
+      <Field name="stride" label="Stride" type="int" enabler="glyphLocation:AdaptsToMeshResolution">
+        1
+      </Field>
+      <Field name="origOnly" label="Limit to original node/cell" type="bool">
+        true
+      </Field>
+      <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
+        OriginalData
+      </Field>
+      <Field name="minFlag" label="Use min" type="bool">
+        false
+      </Field>
+      <Field name="min" label="Min" type="double" enabler="minFlag:true">
+        0.000000
+      </Field>
+      <Field name="maxFlag" label="Use max" type="bool">
+        false
+      </Field>
+      <Field name="max" label="Max" type="double" enabler="maxFlag:true">
+        1.000000
+      </Field>
+      <Field name="colorByMagnitude" label="color by magnitude" type="bool">
+        true
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
+      </Field>
+      <Field name="invertColorTable" label="Invert Color table" type="bool">
+        false
+      </Field>
+      <Field name="vectorColor" label="color" type="color" length="4">
         0
+        0
+        0
+        255
+      </Field>
+      <Field name="useLegend" label="Legend" type="bool">
+        true
       </Field>
       <Field name="scale" label="Scale" type="double">
         0.250000
@@ -50,62 +83,29 @@
       <Field name="autoScale" label="Auto scale" type="bool">
         true
       </Field>
-      <Field name="headSize" label="Head size" type="double">
-        0.250000
+      <Field name="glyphType" label="glyphType" type="enum" subtype="GlyphType">
+        Arrow
       </Field>
       <Field name="headOn" label="Draw head" type="bool">
         true
       </Field>
-      <Field name="colorByMag" label="color by magnitude" type="bool">
-        true
-      </Field>
-      <Field name="useLegend" label="Legend" type="bool">
-        true
-      </Field>
-      <Field name="vectorColor" label="color" type="color" length="4">
-        0
-        0
-        0
-        255
-      </Field>
-      <Field name="colorTableName" label="Color table" type="colortable">
-        Default
-      </Field>
-      <Field name="invertColorTable" label="Invert Color table" type="bool">
-        false
-      </Field>
-      <Field name="vectorOrigin" label="Vector Origin" type="enum" subtype="OriginType">
-        Tail
-      </Field>
-      <Field name="minFlag" label="Use min" type="bool">
-        false
-      </Field>
-      <Field name="maxFlag" label="Use max" type="bool">
-        false
-      </Field>
-      <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
-        OriginalData
-      </Field>
-      <Field name="min" label="Min" type="double" enabler="minFlag:true">
-        0.000000
-      </Field>
-      <Field name="max" label="Max" type="double" enabler="maxFlag:true">
-        1.000000
+      <Field name="headSize" label="Head size" type="double">
+        0.250000
       </Field>
       <Field name="lineStem" label="Draw stem as line" type="enum" subtype="LineStem">
         Line
       </Field>
-      <Field name="geometryQuality" label="Geometry quality" type="enum" subtype="Quality">
-        Fast
+      <Field name="lineWidth" label="Line Width" type="linewidth">
+        0
       </Field>
       <Field name="stemWidth" label="Stem width" type="double">
         0.080000
       </Field>
-      <Field name="origOnly" label="Limit to original node/cell" type="bool">
-        true
+      <Field name="vectorOrigin" label="Vector Origin" type="enum" subtype="OriginType">
+        Tail
       </Field>
-      <Field name="glyphType" label="glyphType" type="enum" subtype="GlyphType">
-        Arrow
+      <Field name="geometryQuality" label="Geometry quality" type="enum" subtype="Quality">
+        Fast
       </Field>
       <Field name="animationStep" label="Animation step" type="int">
         0

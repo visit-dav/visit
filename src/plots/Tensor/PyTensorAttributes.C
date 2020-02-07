@@ -42,14 +42,78 @@ PyTensorAttributes_ToString(const TensorAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
+    const char *glyphLocation_names = "AdaptsToMeshResolution, UniformInSpace";
+    switch (atts->GetGlyphLocation())
+    {
+      case TensorAttributes::AdaptsToMeshResolution:
+          snprintf(tmpStr, 1000, "%sglyphLocation = %sAdaptsToMeshResolution  # %s\n", prefix, prefix, glyphLocation_names);
+          str += tmpStr;
+          break;
+      case TensorAttributes::UniformInSpace:
+          snprintf(tmpStr, 1000, "%sglyphLocation = %sUniformInSpace  # %s\n", prefix, prefix, glyphLocation_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     if(atts->GetUseStride())
         snprintf(tmpStr, 1000, "%suseStride = 1\n", prefix);
     else
         snprintf(tmpStr, 1000, "%suseStride = 0\n", prefix);
     str += tmpStr;
+    snprintf(tmpStr, 1000, "%snTensors = %d\n", prefix, atts->GetNTensors());
+    str += tmpStr;
     snprintf(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%snTensors = %d\n", prefix, atts->GetNTensors());
+    const char *limitsMode_names = "OriginalData, CurrentPlot";
+    switch (atts->GetLimitsMode())
+    {
+      case TensorAttributes::OriginalData:
+          snprintf(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
+          str += tmpStr;
+          break;
+      case TensorAttributes::CurrentPlot:
+          snprintf(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    if(atts->GetMinFlag())
+        snprintf(tmpStr, 1000, "%sminFlag = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sminFlag = 0\n", prefix);
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
+    str += tmpStr;
+    if(atts->GetMaxFlag())
+        snprintf(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
+    str += tmpStr;
+    if(atts->GetColorByEigenValues())
+        snprintf(tmpStr, 1000, "%scolorByEigenValues = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%scolorByEigenValues = 0\n", prefix);
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
+    str += tmpStr;
+    if(atts->GetInvertColorTable())
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+    str += tmpStr;
+    const unsigned char *tensorColor = atts->GetTensorColor().GetColor();
+    snprintf(tmpStr, 1000, "%stensorColor = (%d, %d, %d, %d)\n", prefix, int(tensorColor[0]), int(tensorColor[1]), int(tensorColor[2]), int(tensorColor[3]));
+    str += tmpStr;
+    if(atts->GetUseLegend())
+        snprintf(tmpStr, 1000, "%suseLegend = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%suseLegend = 0\n", prefix);
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sscale = %g\n", prefix, atts->GetScale());
     str += tmpStr;
@@ -63,25 +127,7 @@ PyTensorAttributes_ToString(const TensorAttributes *atts, const char *prefix)
     else
         snprintf(tmpStr, 1000, "%sautoScale = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetColorByEigenvalues())
-        snprintf(tmpStr, 1000, "%scolorByEigenvalues = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%scolorByEigenvalues = 0\n", prefix);
-    str += tmpStr;
-    if(atts->GetUseLegend())
-        snprintf(tmpStr, 1000, "%suseLegend = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%suseLegend = 0\n", prefix);
-    str += tmpStr;
-    const unsigned char *tensorColor = atts->GetTensorColor().GetColor();
-    snprintf(tmpStr, 1000, "%stensorColor = (%d, %d, %d, %d)\n", prefix, int(tensorColor[0]), int(tensorColor[1]), int(tensorColor[2]), int(tensorColor[3]));
-    str += tmpStr;
-    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
-    str += tmpStr;
-    if(atts->GetInvertColorTable())
-        snprintf(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+    snprintf(tmpStr, 1000, "%sanimationStep = %d\n", prefix, atts->GetAnimationStep());
     str += tmpStr;
     return str;
 }
@@ -93,6 +139,39 @@ TensorAttributes_Notify(PyObject *self, PyObject *args)
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+/*static*/ PyObject *
+TensorAttributes_SetGlyphLocation(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the glyphLocation in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetGlyphLocation(TensorAttributes::GlyphLocation(ival));
+    else
+    {
+        fprintf(stderr, "An invalid glyphLocation value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "AdaptsToMeshResolution, UniformInSpace.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TensorAttributes_GetGlyphLocation(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetGlyphLocation()));
+    return retval;
 }
 
 /*static*/ PyObject *
@@ -116,30 +195,6 @@ TensorAttributes_GetUseStride(PyObject *self, PyObject *args)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseStride()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-TensorAttributes_SetStride(PyObject *self, PyObject *args)
-{
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the stride in the object.
-    obj->data->SetStride((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-TensorAttributes_GetStride(PyObject *self, PyObject *args)
-{
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetStride()));
     return retval;
 }
 
@@ -168,7 +223,88 @@ TensorAttributes_GetNTensors(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-TensorAttributes_SetScale(PyObject *self, PyObject *args)
+TensorAttributes_SetStride(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the stride in the object.
+    obj->data->SetStride((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TensorAttributes_GetStride(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetStride()));
+    return retval;
+}
+
+/*static*/ PyObject *
+TensorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the limitsMode in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetLimitsMode(TensorAttributes::LimitsMode(ival));
+    else
+    {
+        fprintf(stderr, "An invalid limitsMode value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "OriginalData, CurrentPlot.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TensorAttributes_GetLimitsMode(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetLimitsMode()));
+    return retval;
+}
+
+/*static*/ PyObject *
+TensorAttributes_SetMinFlag(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the minFlag in the object.
+    obj->data->SetMinFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TensorAttributes_GetMinFlag(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+TensorAttributes_SetMin(PyObject *self, PyObject *args)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)self;
 
@@ -176,23 +312,23 @@ TensorAttributes_SetScale(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the scale in the object.
-    obj->data->SetScale(dval);
+    // Set the min in the object.
+    obj->data->SetMin(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-TensorAttributes_GetScale(PyObject *self, PyObject *args)
+TensorAttributes_GetMin(PyObject *self, PyObject *args)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetScale());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetMin());
     return retval;
 }
 
 /*static*/ PyObject *
-TensorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
+TensorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)self;
 
@@ -200,23 +336,47 @@ TensorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the scaleByMagnitude in the object.
-    obj->data->SetScaleByMagnitude(ival != 0);
+    // Set the maxFlag in the object.
+    obj->data->SetMaxFlag(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-TensorAttributes_GetScaleByMagnitude(PyObject *self, PyObject *args)
+TensorAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetScaleByMagnitude()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-TensorAttributes_SetAutoScale(PyObject *self, PyObject *args)
+TensorAttributes_SetMax(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the max in the object.
+    obj->data->SetMax(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TensorAttributes_GetMax(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetMax());
+    return retval;
+}
+
+/*static*/ PyObject *
+TensorAttributes_SetColorByEigenValues(PyObject *self, PyObject *args)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)self;
 
@@ -224,23 +384,47 @@ TensorAttributes_SetAutoScale(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the autoScale in the object.
-    obj->data->SetAutoScale(ival != 0);
+    // Set the colorByEigenValues in the object.
+    obj->data->SetColorByEigenValues(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-TensorAttributes_GetAutoScale(PyObject *self, PyObject *args)
+TensorAttributes_GetColorByEigenValues(PyObject *self, PyObject *args)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetAutoScale()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetColorByEigenValues()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-TensorAttributes_SetColorByEigenvalues(PyObject *self, PyObject *args)
+TensorAttributes_SetColorTableName(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the colorTableName in the object.
+    obj->data->SetColorTableName(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TensorAttributes_GetColorTableName(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+TensorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)self;
 
@@ -248,42 +432,18 @@ TensorAttributes_SetColorByEigenvalues(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the colorByEigenvalues in the object.
-    obj->data->SetColorByEigenvalues(ival != 0);
+    // Set the invertColorTable in the object.
+    obj->data->SetInvertColorTable(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-TensorAttributes_GetColorByEigenvalues(PyObject *self, PyObject *args)
+TensorAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetColorByEigenvalues()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-TensorAttributes_SetUseLegend(PyObject *self, PyObject *args)
-{
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the useLegend in the object.
-    obj->data->SetUseLegend(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-TensorAttributes_GetUseLegend(PyObject *self, PyObject *args)
-{
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetUseLegend()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
     return retval;
 }
 
@@ -365,31 +525,7 @@ TensorAttributes_GetTensorColor(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-TensorAttributes_SetColorTableName(PyObject *self, PyObject *args)
-{
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
-
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
-
-    // Set the colorTableName in the object.
-    obj->data->SetColorTableName(std::string(str));
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-TensorAttributes_GetColorTableName(PyObject *self, PyObject *args)
-{
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-TensorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
+TensorAttributes_SetUseLegend(PyObject *self, PyObject *args)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)self;
 
@@ -397,18 +533,114 @@ TensorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the invertColorTable in the object.
-    obj->data->SetInvertColorTable(ival != 0);
+    // Set the useLegend in the object.
+    obj->data->SetUseLegend(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-TensorAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
+TensorAttributes_GetUseLegend(PyObject *self, PyObject *args)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetUseLegend()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+TensorAttributes_SetScale(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the scale in the object.
+    obj->data->SetScale(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TensorAttributes_GetScale(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetScale());
+    return retval;
+}
+
+/*static*/ PyObject *
+TensorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the scaleByMagnitude in the object.
+    obj->data->SetScaleByMagnitude(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TensorAttributes_GetScaleByMagnitude(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetScaleByMagnitude()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+TensorAttributes_SetAutoScale(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the autoScale in the object.
+    obj->data->SetAutoScale(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TensorAttributes_GetAutoScale(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetAutoScale()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+TensorAttributes_SetAnimationStep(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the animationStep in the object.
+    obj->data->SetAnimationStep((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TensorAttributes_GetAnimationStep(PyObject *self, PyObject *args)
+{
+    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAnimationStep()));
     return retval;
 }
 
@@ -416,28 +648,42 @@ TensorAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 
 PyMethodDef PyTensorAttributes_methods[TENSORATTRIBUTES_NMETH] = {
     {"Notify", TensorAttributes_Notify, METH_VARARGS},
+    {"SetGlyphLocation", TensorAttributes_SetGlyphLocation, METH_VARARGS},
+    {"GetGlyphLocation", TensorAttributes_GetGlyphLocation, METH_VARARGS},
     {"SetUseStride", TensorAttributes_SetUseStride, METH_VARARGS},
     {"GetUseStride", TensorAttributes_GetUseStride, METH_VARARGS},
-    {"SetStride", TensorAttributes_SetStride, METH_VARARGS},
-    {"GetStride", TensorAttributes_GetStride, METH_VARARGS},
     {"SetNTensors", TensorAttributes_SetNTensors, METH_VARARGS},
     {"GetNTensors", TensorAttributes_GetNTensors, METH_VARARGS},
+    {"SetStride", TensorAttributes_SetStride, METH_VARARGS},
+    {"GetStride", TensorAttributes_GetStride, METH_VARARGS},
+    {"SetLimitsMode", TensorAttributes_SetLimitsMode, METH_VARARGS},
+    {"GetLimitsMode", TensorAttributes_GetLimitsMode, METH_VARARGS},
+    {"SetMinFlag", TensorAttributes_SetMinFlag, METH_VARARGS},
+    {"GetMinFlag", TensorAttributes_GetMinFlag, METH_VARARGS},
+    {"SetMin", TensorAttributes_SetMin, METH_VARARGS},
+    {"GetMin", TensorAttributes_GetMin, METH_VARARGS},
+    {"SetMaxFlag", TensorAttributes_SetMaxFlag, METH_VARARGS},
+    {"GetMaxFlag", TensorAttributes_GetMaxFlag, METH_VARARGS},
+    {"SetMax", TensorAttributes_SetMax, METH_VARARGS},
+    {"GetMax", TensorAttributes_GetMax, METH_VARARGS},
+    {"SetColorByEigenValues", TensorAttributes_SetColorByEigenValues, METH_VARARGS},
+    {"GetColorByEigenValues", TensorAttributes_GetColorByEigenValues, METH_VARARGS},
+    {"SetColorTableName", TensorAttributes_SetColorTableName, METH_VARARGS},
+    {"GetColorTableName", TensorAttributes_GetColorTableName, METH_VARARGS},
+    {"SetInvertColorTable", TensorAttributes_SetInvertColorTable, METH_VARARGS},
+    {"GetInvertColorTable", TensorAttributes_GetInvertColorTable, METH_VARARGS},
+    {"SetTensorColor", TensorAttributes_SetTensorColor, METH_VARARGS},
+    {"GetTensorColor", TensorAttributes_GetTensorColor, METH_VARARGS},
+    {"SetUseLegend", TensorAttributes_SetUseLegend, METH_VARARGS},
+    {"GetUseLegend", TensorAttributes_GetUseLegend, METH_VARARGS},
     {"SetScale", TensorAttributes_SetScale, METH_VARARGS},
     {"GetScale", TensorAttributes_GetScale, METH_VARARGS},
     {"SetScaleByMagnitude", TensorAttributes_SetScaleByMagnitude, METH_VARARGS},
     {"GetScaleByMagnitude", TensorAttributes_GetScaleByMagnitude, METH_VARARGS},
     {"SetAutoScale", TensorAttributes_SetAutoScale, METH_VARARGS},
     {"GetAutoScale", TensorAttributes_GetAutoScale, METH_VARARGS},
-    {"SetColorByEigenvalues", TensorAttributes_SetColorByEigenvalues, METH_VARARGS},
-    {"GetColorByEigenvalues", TensorAttributes_GetColorByEigenvalues, METH_VARARGS},
-    {"SetUseLegend", TensorAttributes_SetUseLegend, METH_VARARGS},
-    {"GetUseLegend", TensorAttributes_GetUseLegend, METH_VARARGS},
-    {"SetTensorColor", TensorAttributes_SetTensorColor, METH_VARARGS},
-    {"GetTensorColor", TensorAttributes_GetTensorColor, METH_VARARGS},
-    {"SetColorTableName", TensorAttributes_SetColorTableName, METH_VARARGS},
-    {"GetColorTableName", TensorAttributes_GetColorTableName, METH_VARARGS},
-    {"SetInvertColorTable", TensorAttributes_SetInvertColorTable, METH_VARARGS},
-    {"GetInvertColorTable", TensorAttributes_GetInvertColorTable, METH_VARARGS},
+    {"SetAnimationStep", TensorAttributes_SetAnimationStep, METH_VARARGS},
+    {"GetAnimationStep", TensorAttributes_GetAnimationStep, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -466,28 +712,52 @@ TensorAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyTensorAttributes_getattr(PyObject *self, char *name)
 {
+    if(strcmp(name, "glyphLocation") == 0)
+        return TensorAttributes_GetGlyphLocation(self, NULL);
+    if(strcmp(name, "AdaptsToMeshResolution") == 0)
+        return PyInt_FromLong(long(TensorAttributes::AdaptsToMeshResolution));
+    if(strcmp(name, "UniformInSpace") == 0)
+        return PyInt_FromLong(long(TensorAttributes::UniformInSpace));
+
     if(strcmp(name, "useStride") == 0)
         return TensorAttributes_GetUseStride(self, NULL);
-    if(strcmp(name, "stride") == 0)
-        return TensorAttributes_GetStride(self, NULL);
     if(strcmp(name, "nTensors") == 0)
         return TensorAttributes_GetNTensors(self, NULL);
+    if(strcmp(name, "stride") == 0)
+        return TensorAttributes_GetStride(self, NULL);
+    if(strcmp(name, "limitsMode") == 0)
+        return TensorAttributes_GetLimitsMode(self, NULL);
+    if(strcmp(name, "OriginalData") == 0)
+        return PyInt_FromLong(long(TensorAttributes::OriginalData));
+    if(strcmp(name, "CurrentPlot") == 0)
+        return PyInt_FromLong(long(TensorAttributes::CurrentPlot));
+
+    if(strcmp(name, "minFlag") == 0)
+        return TensorAttributes_GetMinFlag(self, NULL);
+    if(strcmp(name, "min") == 0)
+        return TensorAttributes_GetMin(self, NULL);
+    if(strcmp(name, "maxFlag") == 0)
+        return TensorAttributes_GetMaxFlag(self, NULL);
+    if(strcmp(name, "max") == 0)
+        return TensorAttributes_GetMax(self, NULL);
+    if(strcmp(name, "colorByEigenValues") == 0)
+        return TensorAttributes_GetColorByEigenValues(self, NULL);
+    if(strcmp(name, "colorTableName") == 0)
+        return TensorAttributes_GetColorTableName(self, NULL);
+    if(strcmp(name, "invertColorTable") == 0)
+        return TensorAttributes_GetInvertColorTable(self, NULL);
+    if(strcmp(name, "tensorColor") == 0)
+        return TensorAttributes_GetTensorColor(self, NULL);
+    if(strcmp(name, "useLegend") == 0)
+        return TensorAttributes_GetUseLegend(self, NULL);
     if(strcmp(name, "scale") == 0)
         return TensorAttributes_GetScale(self, NULL);
     if(strcmp(name, "scaleByMagnitude") == 0)
         return TensorAttributes_GetScaleByMagnitude(self, NULL);
     if(strcmp(name, "autoScale") == 0)
         return TensorAttributes_GetAutoScale(self, NULL);
-    if(strcmp(name, "colorByEigenvalues") == 0)
-        return TensorAttributes_GetColorByEigenvalues(self, NULL);
-    if(strcmp(name, "useLegend") == 0)
-        return TensorAttributes_GetUseLegend(self, NULL);
-    if(strcmp(name, "tensorColor") == 0)
-        return TensorAttributes_GetTensorColor(self, NULL);
-    if(strcmp(name, "colorTableName") == 0)
-        return TensorAttributes_GetColorTableName(self, NULL);
-    if(strcmp(name, "invertColorTable") == 0)
-        return TensorAttributes_GetInvertColorTable(self, NULL);
+    if(strcmp(name, "animationStep") == 0)
+        return TensorAttributes_GetAnimationStep(self, NULL);
 
     return Py_FindMethod(PyTensorAttributes_methods, self, name);
 }
@@ -502,28 +772,42 @@ PyTensorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "useStride") == 0)
+    if(strcmp(name, "glyphLocation") == 0)
+        obj = TensorAttributes_SetGlyphLocation(self, tuple);
+    else if(strcmp(name, "useStride") == 0)
         obj = TensorAttributes_SetUseStride(self, tuple);
-    else if(strcmp(name, "stride") == 0)
-        obj = TensorAttributes_SetStride(self, tuple);
     else if(strcmp(name, "nTensors") == 0)
         obj = TensorAttributes_SetNTensors(self, tuple);
+    else if(strcmp(name, "stride") == 0)
+        obj = TensorAttributes_SetStride(self, tuple);
+    else if(strcmp(name, "limitsMode") == 0)
+        obj = TensorAttributes_SetLimitsMode(self, tuple);
+    else if(strcmp(name, "minFlag") == 0)
+        obj = TensorAttributes_SetMinFlag(self, tuple);
+    else if(strcmp(name, "min") == 0)
+        obj = TensorAttributes_SetMin(self, tuple);
+    else if(strcmp(name, "maxFlag") == 0)
+        obj = TensorAttributes_SetMaxFlag(self, tuple);
+    else if(strcmp(name, "max") == 0)
+        obj = TensorAttributes_SetMax(self, tuple);
+    else if(strcmp(name, "colorByEigenValues") == 0)
+        obj = TensorAttributes_SetColorByEigenValues(self, tuple);
+    else if(strcmp(name, "colorTableName") == 0)
+        obj = TensorAttributes_SetColorTableName(self, tuple);
+    else if(strcmp(name, "invertColorTable") == 0)
+        obj = TensorAttributes_SetInvertColorTable(self, tuple);
+    else if(strcmp(name, "tensorColor") == 0)
+        obj = TensorAttributes_SetTensorColor(self, tuple);
+    else if(strcmp(name, "useLegend") == 0)
+        obj = TensorAttributes_SetUseLegend(self, tuple);
     else if(strcmp(name, "scale") == 0)
         obj = TensorAttributes_SetScale(self, tuple);
     else if(strcmp(name, "scaleByMagnitude") == 0)
         obj = TensorAttributes_SetScaleByMagnitude(self, tuple);
     else if(strcmp(name, "autoScale") == 0)
         obj = TensorAttributes_SetAutoScale(self, tuple);
-    else if(strcmp(name, "colorByEigenvalues") == 0)
-        obj = TensorAttributes_SetColorByEigenvalues(self, tuple);
-    else if(strcmp(name, "useLegend") == 0)
-        obj = TensorAttributes_SetUseLegend(self, tuple);
-    else if(strcmp(name, "tensorColor") == 0)
-        obj = TensorAttributes_SetTensorColor(self, tuple);
-    else if(strcmp(name, "colorTableName") == 0)
-        obj = TensorAttributes_SetColorTableName(self, tuple);
-    else if(strcmp(name, "invertColorTable") == 0)
-        obj = TensorAttributes_SetInvertColorTable(self, tuple);
+    else if(strcmp(name, "animationStep") == 0)
+        obj = TensorAttributes_SetAnimationStep(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

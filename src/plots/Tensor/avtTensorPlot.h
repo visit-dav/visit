@@ -9,7 +9,6 @@
 #ifndef AVT_Tensor_PLOT_H
 #define AVT_Tensor_PLOT_H
 
-
 #include <avtLegend.h>
 #include <avtPlot.h>
 
@@ -18,6 +17,7 @@
 class     avtTensorFilter;
 class     avtTensorGlyphMapper;
 class     avtGhostZoneFilter;
+class     avtResampleFilter;
 class     avtVariableLegend;
 class     avtLookupTable;
 
@@ -74,8 +74,8 @@ class avtTensorPlot : public avtPointDataPlot
     avtLegend_p                   varLegendRefPtr;
     avtTensorFilter              *TensorFilter;
     avtGhostZoneFilter           *ghostFilter;
+    avtResampleFilter            *resampleFilter;
     avtLookupTable               *avtLUT;
-
 
     virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
@@ -92,7 +92,4 @@ class avtTensorPlot : public avtPointDataPlot
                                     { cellCountMultiplierForSRThreshold = 96.0; }; 
 };
 
-
 #endif
-
-

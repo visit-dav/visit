@@ -10,12 +10,17 @@
 
 #include <vtkSphereSource.h>
 
+#include <avtCallback.h>
 #include <avtGhostZoneFilter.h>
 #include <avtTensorGlyphMapper.h>
 #include <avtLookupTable.h>
+#include <avtResampleFilter.h>
 #include <avtTensorFilter.h>
 #include <avtVariableLegend.h>
 
+#include <InvalidLimitsException.h>
+
+#include <string>
 
 // ****************************************************************************
 //  Method: avtTensorPlot constructor
@@ -34,6 +39,7 @@ avtTensorPlot::avtTensorPlot()
 {
     colorsInitialized = false;
     TensorFilter = new avtTensorFilter(true, 10);
+    resampleFilter = NULL;
     ghostFilter  = new avtGhostZoneFilter();
     avtLUT       = new avtLookupTable();
 
@@ -41,11 +47,11 @@ avtTensorPlot::avtTensorPlot()
     // The tensor glyph mapper does funny things with normals.  Its best
     // just to remove the normals from the sphere source altogether.
     //
-    vtkSphereSource *src = vtkSphereSource::New();
-    tensorMapper  = new avtTensorGlyphMapper(src->GetOutputPort());
+    vtkSphereSource *sphere = vtkSphereSource::New();
+    tensorMapper  = new avtTensorGlyphMapper(sphere->GetOutputPort());
     // bump up the reference count
-    src->Register(NULL);
-    src->Delete();
+    sphere->Register(NULL);
+    sphere->Delete();
 
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Tensor");
@@ -79,6 +85,11 @@ avtTensorPlot::~avtTensorPlot()
     {
         delete TensorFilter;
         TensorFilter = NULL;
+    }
+    if (resampleFilter != NULL)
+    {
+        delete resampleFilter;
+        resampleFilter = NULL;
     }
     if (ghostFilter != NULL)
     {
@@ -187,7 +198,28 @@ avtDataObject_p
 avtTensorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     ghostFilter->SetInput(input);
-    TensorFilter->SetInput(ghostFilter->GetOutput());
+
+    avtDataObject_p dob = ghostFilter->GetOutput();
+
+    if (atts.GetGlyphLocation() == TensorAttributes::UniformInSpace)
+    {
+        avtDataAttributes &atts = dob->GetInfo().GetAttributes();
+        if (atts.GetTopologicalDimension() < atts.GetSpatialDimension())
+        {
+            avtCallback::IssueWarning("The option to place tensor glyphs "
+              "uniformly in space only works when the spatial dimension "
+              "matches the topological dimension.  The glyph locations will "
+              "instead be a function of mesh resolution.");
+        }
+        else
+        {
+            resampleFilter->SetInput(dob);
+            dob = resampleFilter->GetOutput();
+        }
+    }
+    
+    TensorFilter->SetInput(dob);
+
     return TensorFilter->GetOutput();
 }
 
@@ -289,11 +321,27 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
         TensorFilter->SetNTensors(atts.GetNTensors());
     }
 
+    // If the resample filter is not NULL, then we are calling SetAtts
+    // for a second consecutive time.  The second call must be for SR
+    // mode.  If we ever allow for pipeline re-execution, this code
+    // will need to be changed and the resample filter will need to
+    // have a new method added that allows for its atts to be set.
+    // (They can only be set in the constructor right now.)
+    if (resampleFilter == NULL)
+    {
+        InternalResampleAttributes resatts;
+        resatts.SetUseTargetVal(true);
+        resatts.SetDefaultVal(0.);
+        resatts.SetDistributedResample(true);
+        resatts.SetTargetVal(atts.GetNTensors());
+        resampleFilter = new avtResampleFilter(&resatts);
+    }
+
     tensorMapper->SetScaleByMagnitude(atts.GetScaleByMagnitude());
     tensorMapper->SetAutoScale(atts.GetAutoScale());
     tensorMapper->SetScale(atts.GetScale());
 
-    if (atts.GetColorByEigenvalues())
+    if (atts.GetColorByEigenValues())
     {
         tensorMapper->ColorByMagOn();
     }
@@ -304,7 +352,7 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
     }
 
     // Update the plot's colors if needed.
-    if (atts.GetColorByEigenvalues() &&
+    if (atts.GetColorByEigenValues() &&
        (updateColors || atts.GetColorTableName() == "Default"))
     {
         colorsInitialized = true;
@@ -343,7 +391,7 @@ bool
 avtTensorPlot::SetColorTable(const char *ctName)
 {
     bool retval = false;
-    if (atts.GetColorByEigenvalues())
+    if (atts.GetColorByEigenValues())
     {
         bool namesMatch = (atts.GetColorTableName() == std::string(ctName));
         bool invert = atts.GetInvertColorTable();
@@ -445,6 +493,10 @@ avtTensorPlot::ReleaseData(void)
     if (TensorFilter != NULL)
     {
         TensorFilter->ReleaseData();
+    }
+    if (resampleFilter != NULL)
+    {
+        resampleFilter->ReleaseData();
     }
     if (ghostFilter != NULL)
     {
