@@ -368,6 +368,12 @@ function build_visit
     # Build VisIt
     #
     info "Building VisIt . . . (~50 minutes)"
+    if [[ "${BUILD_SPHINX}" == "yes" ]] ; then
+        $MAKE $MAKE_OPT_FLAGS manuals
+        if [[ $? != 0 ]] ; then
+            warn "Building the VisIt manuals failed.  Continuing"
+        fi
+    fi
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "VisIt build failed.  Giving up"
