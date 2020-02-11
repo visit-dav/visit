@@ -442,6 +442,8 @@ function build_nektarpp
             export DYLD_LIBRARY_PATH="$VISITDIR/boost/$BOOST_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
         else
             export LD_LIBRARY_PATH="$VISITDIR/boost/$BOOST_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+
+            CXXFLAGS="-fext-numeric-literals ${CXXFLAGS}"
         fi
     fi
 
