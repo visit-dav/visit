@@ -14,10 +14,10 @@
 
 #include <avtffpFileFormat.h>
 
-#ifndef WIN32
-#include <dlfcn.h>
-#else
+#ifdef WIN32
 #include <windows.h>
+#else
+#include <dlfcn.h>
 #endif
 
 #include <math.h>
@@ -69,7 +69,34 @@ static trlistp_t _trlistp = 0;
 static int InitLibStripack()
 {
     static char const * const envar = "VISIT_FFP_STRIPACK_PATH";
-#ifndef WIN32
+#ifdef WIN32
+    HINSTANCE libh;
+    if (Environment::exists(envar))
+        libh = LoadLibrary(Environment::get(envar).c_str());
+    if (!libh)
+        libh = LoadLibrary("libstripack.dll");
+    if (!libh)
+        return 1;
+
+    _trmeshp = (trmeshp_t) GetProcAddress(libh, "trmesh");
+   if (!_trmeshp)
+        _trmeshp = (trmeshp_t) GetProcAddress(libh, "trmesh_");
+   if (!_trmeshp)
+        _trmeshp = (trmeshp_t) GetProcAddress(libh, "TRMESH");
+   if (!_trmeshp)
+        _trmeshp = (trmeshp_t) GetProcAddress(libh, "TRMESH_");
+
+    _trlistp = (trlistp_t) GetProcAddress(libh, "trlist");
+   if (!_trlistp)
+        _trlistp = (trlistp_t) GetProcAddress(libh, "trlist_");
+   if (!_trlistp)
+        _trlistp = (trlistp_t) GetProcAddress(libh, "TRLIST");
+   if (!_trlistp)
+        _trlistp = (trlistp_t) GetProcAddress(libh, "TRLIST_");
+
+    // We can't ever close it or we loose access to the functions
+    //FreeLibrary(libh);
+#else
     int const dlmode = RTLD_LAZY|RTLD_LOCAL;
     void *libh = 0;
     if (Environment::exists(envar))
@@ -102,30 +129,6 @@ static int InitLibStripack()
 
     // We can't ever close it or we loose access to the functions
     //dlclose(libh);
-#else
-    HINSTANCE libh;
-    if (Environment::exists(envar))
-        libh = LoadLibrary(Environment::get(envar).c_str());
-    if (!libh)
-        libh = LoadLibrary("libstripack.dll");
-    if (!libh)
-        return 1;
-
-    _trmeshp = (trmeshp_t) GetProcAddress(libh, "trmesh");
-   if (!_trmeshp)
-        _trmeshp = (trmeshp_t) GetProcAddress(libh, "trmesh_");
-   if (!_trmeshp)
-        _trmeshp = (trmeshp_t) GetProcAddress(libh, "TRMESH");
-   if (!_trmeshp)
-        _trmeshp = (trmeshp_t) GetProcAddress(libh, "TRMESH_");
-
-    _trlistp = (trlistp_t) GetProcAddress(libh, "trlist");
-   if (!_trlistp)
-        _trlistp = (trlistp_t) GetProcAddress(libh, "trlist_");
-   if (!_trlistp)
-        _trlistp = (trlistp_t) GetProcAddress(libh, "TRLIST");
-   if (!_trlistp)
-        _trlistp = (trlistp_t) GetProcAddress(libh, "TRLIST_");
 #endif
 
     return 0;
@@ -1791,8 +1794,8 @@ avtffpFileFormat::ReadFile(void)
                     gzFile unvgandle ;
                     unvhandle = fopen(unvfile.c_str(), "r");
                     bool flipflop = false ;
-                    int len = 2048; // Longest line length
-                    char buf[2048]; // A line length
+                    const int len = 2048; // Longest line length
+                    char buf[len]; // A line length
                     int label ; 
                     if (unvhandle == NULL)
                     {
