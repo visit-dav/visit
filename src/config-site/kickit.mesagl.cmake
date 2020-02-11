@@ -1,14 +1,14 @@
-#/usr/gapps/visit/thirdparty_shared/3.1.1/opengl/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake
+#/usr/gapps/visit/thirdparty_shared/3.1.1/mesagl/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake
 ##
 ## ./build_visit3_1_1 generated host.cmake
-## created: Mon Feb 10 12:45:12 PST 2020
+## created: Mon Feb 10 15:35:25 PST 2020
 ## system: Linux kickit 5.4.6-1.el7.elrepo.x86_64 #1 SMP Sat Dec 21 08:15:20 EST 2019 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger1
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/gapps/visit/thirdparty_shared/3.1.1/opengl)
+SET(VISITHOME /usr/gapps/visit/thirdparty_shared/3.1.1/mesagl)
 SET(VISITARCH linux-x86_64_gcc-4.8)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
@@ -25,7 +25,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-std=c++11  -m64 -fPIC -fvisibility=hidden
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/gapps/visit/thirdparty_shared/3.1.1/opengl/mpich/3.3.1/linux-x86_64_gcc-4.8/bin/mpicc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/gapps/visit/thirdparty_shared/3.1.1/mesagl/mpich/3.3.1/linux-x86_64_gcc-4.8/bin/mpicc TYPE FILEPATH)
 
 ##
 ## VisIt Thread Option
@@ -61,6 +61,16 @@ VISIT_OPTION_DEFAULT(VISIT_OPENSSL_DIR ${VISITHOME}/openssl/1.0.2j/${VISITARCH})
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.14/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_PYTHON3_DIR ${VISITHOME}/python/3.7.5/${VISITARCH})
+
+##
+## LLVM
+##
+VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR ${VISITHOME}/llvm/5.0.0/${VISITARCH})
+
+##
+## MesaGL
+##
+VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.2.8/${VISITARCH})
 
 ##
 ## Qt
@@ -202,11 +212,6 @@ VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ## Ice-T
 ##
 VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/77c708f9090236b576669b74c53e9f105eedbd7e/${VISITARCH})
-
-##
-## LLVM
-##
-VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR ${VISITHOME}/llvm/5.0.0/${VISITARCH})
 
 ##
 ## MFEM 
