@@ -6,7 +6,7 @@ The IT world is full of terms for services with similar sounding purposes such a
 *Service Desk*, *Incident Management*, *Cusomter Care*, etc.
 `Specific meanings <https://www.atlassian.com/itsm/service-request-management/help-desk-vs-service-desk-vs-itsm>`_
 of these terms are often driven by the software products IT companies use to
-support the
+support their
 `associated services <https://www.bmc.com/blogs/help-desk-vs-service-desk-whats-difference/>`_.
 
 In The VisIt_ project,
@@ -27,9 +27,7 @@ to incidents about *operational* aspects of either
     * An inadvertent incompatability introduced in client/server protocol.
     * A missing database reader plugin.
 
-or
-
-  * The underlying computing infrastructure upon which VisIt_ depends such
+  * Or, the underlying computing infrastructure upon which VisIt_ depends such
     as
 
     * An incompatible grahics driver.
