@@ -21,11 +21,16 @@ NOTE: Using a specific MPI implementation (mvapich2/2.2g49-c7) which the release
 If you are a *developer*, it's very likely I've chosen the wrong MPI implementation; you might have to hack internallauncher to load the module you need.\n"""
 #        print msg
 
+        SETENV("MV2_ENABLE_AFFINITY", "0")
+
         sys.path.insert(0,"/uufs/chpc.utah.edu/sys/installdir/lmod/lmod-c7/init")
         from env_modules_python import module
 
         module("purge")
-        module("load","visit/3.0.0b gcc/4.9.2 mvapich2/2.2 libxml2")
+        module("load","visit/3.1.0")
+        module("load","gcc/4.9.2")
+        module("load","mvapich2/2.2")
+        module("load","libxml2/2.9.1")
 
 
 # Launcher creation function
