@@ -2241,8 +2241,10 @@ ELSE (NOT WIN32)
     ENDIF(VISIT_MAKE_NSIS_INSTALLER)
 ENDIF (NOT WIN32)
 
+if(VISIT_PYTHON3_DIR)
 add_custom_target(manuals
                   COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build -b html ${VISIT_SOURCE_DIR}/doc ${VISIT_SOURCE_DIR}/resources/help/en_US/manual -a)
+endif()
 
 #CMake add subdirectory forces this action to go last
 #todo: find way for this function to execute as last
