@@ -51,10 +51,11 @@
 #  I added mcurvit.
 #
 #  Eric Brugger, Wed Feb 12 15:37:23 PST 2020
-#  I replaced the copying of makemili_driver to the exe directory with
-#  installing it in VISIT_INSTALLED_VERSION_BIN. I also renamed it to
-#  makemili_driver_ser since that is what the frontendlauncher is expecting
-#  it to be named.
+#  I renamed makemili_driver to makemili_driver_ser since that is what
+#  the frontendlauncher is expecting it to be named. I also explicitly
+#  create the exe directory before copying it the directory, since the
+#  creation of the directory is non deterministic with regards to different
+#  operating systems and versions.
 #
 #****************************************************************************
 
