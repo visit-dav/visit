@@ -190,6 +190,7 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
     bool ChangesRequireRecalculation(const VectorAttributes &obj);
     double GetAnimationScale() const;
 

@@ -205,6 +205,7 @@ VectorViewerEnginePluginInfo::AnimationStep(AttributeSubject *atts, const avtPlo
     return true;
 }
 
+Target: xml2atts
 Function: ProcessOldVersions
 Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 Definition:
@@ -244,8 +245,8 @@ VectorAttributes::ProcessOldVersions(DataNode *parentNode,
         DataNode *k = 0;
         if((k = searchNode->GetNode("colorByMag")) != 0)
 	{
+            searchNode->AddNode(new DataNode("colorByMagnitude", k->AsBool()));
             searchNode->RemoveNode(k, true);
-            searchNode->AddNode(new DataNode("colorByMagnitude", k->AsBool());
 	}
     }
 }
