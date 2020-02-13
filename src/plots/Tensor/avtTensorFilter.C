@@ -157,8 +157,8 @@ avtTensorFilter::SetLimitToOriginal(bool orig)
 //  Arguments:
 //    none
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    July 14, 2008
+//  Programmer:  Allen Sanderson - copied from avtVectorFilter::PreExecute
+//  Creation:    Jan 14, 2020
 //
 // ****************************************************************************
 
@@ -389,6 +389,3 @@ avtTensorFilter::ModifyContract(avtContract_p contract)
 
     return rv;
 }
-
-
-
