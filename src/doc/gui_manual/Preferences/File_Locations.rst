@@ -108,13 +108,13 @@ Color Table Files
 * Location(s): ``VUSER_HOME/<color-table-name>.ct``
 * Purpose: Store a single color table for easy sharing with other users.
 * Written when the user hits the **Export** button in the
-  `color table window <fig-MakingItPretty-ColorTables>` from
+  :ref:`color table window <fig-MakingItPretty-ColorTables>` from
   :menuselection:`Controls -> Color table...`.
 * All color table files in ``VUSER_HOME/*.ct`` are read and loaded into
   VisIt_ upon VisIt_ startup. However, this behavior is disabled if
   ``-noconfig`` is used.
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_ specifying the
-  `colors and color control points for the color table <Color_tables>`.
+  :ref:`colors and color control points for the color table <Color_tables>`.
 
 Crash Recovery Files
 """"""""""""""""""""
