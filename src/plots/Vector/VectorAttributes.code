@@ -3,6 +3,12 @@ Code: PyVectorAttributes_getattr
 Prefix:
 Postfix:
     // Try and handle legacy fields in VectorAttributes
+    if(strcmp(name, "colorByMag") == 0)
+    {
+        VectorAttributesObject *vectorObj = (VectorAttributesObject *)self;
+        bool colorByMagnitude = vectorObj->data->GetColorByMagnitude();
+        return PyInt_FromLong(colorByMagnitude?1L:0L);
+    }
     if(strcmp(name, "highQuality") == 0)
     {
         VectorAttributesObject *vectorObj = (VectorAttributesObject *)self;
@@ -47,6 +53,22 @@ Postfix:
     if(obj == NULL)
     {
         VectorAttributesObject *VectorObj = (VectorAttributesObject *)self;
+        if(strcmp(name, "colorByMag") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+                VectorObj->data->SetColorByMagnitude(false);
+            else
+                VectorObj->data->SetColorByMagnitude(true);
+
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
         if(strcmp(name, "highQuality") == 0)
         {
             int ival;
@@ -216,6 +238,14 @@ VectorAttributes::ProcessOldVersions(DataNode *parentNode,
         if (searchNode->GetNode("lineStyle") != 0)
             searchNode->RemoveNode("lineStyle");
     }
+
+    if (VersionLessThan(configVersion, "3.2.0"))
+    {
+        DataNode *k = 0;
+        if((k = searchNode->GetNode("colorByMag")) != 0)
+	{
+            searchNode->RemoveNode(k, true);
+            searchNode->AddNode(new DataNode("colorByMagnitude", k->AsBool());
+	}
+    }
 }
-
-

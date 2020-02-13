@@ -1150,6 +1150,12 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
         return VectorAttributes_GetAnimationStep(self, NULL);
 
     // Try and handle legacy fields in VectorAttributes
+    if(strcmp(name, "colorByMag") == 0)
+    {
+        VectorAttributesObject *vectorObj = (VectorAttributesObject *)self;
+        bool colorByMagnitude = vectorObj->data->GetColorByMagnitude();
+        return PyInt_FromLong(colorByMagnitude?1L:0L);
+    }
     if(strcmp(name, "highQuality") == 0)
     {
         VectorAttributesObject *vectorObj = (VectorAttributesObject *)self;
@@ -1258,6 +1264,22 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if(obj == NULL)
     {
         VectorAttributesObject *VectorObj = (VectorAttributesObject *)self;
+        if(strcmp(name, "colorByMag") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+                VectorObj->data->SetColorByMagnitude(false);
+            else
+                VectorObj->data->SetColorByMagnitude(true);
+
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
         if(strcmp(name, "highQuality") == 0)
         {
             int ival;
