@@ -34,6 +34,9 @@ exec perl -x $0 ${1+"$@"};
 #   Eric Brugger, Mon Jan 28 14:39:03 PST 2019
 #   Modify to work with git.
 #
+#   Eric Brugger, Wed Feb 12 16:10:16 PST 2020
+#   I removed the exe directory.
+#
 # ----------------------------------------------------------------------------
 
 if  (! -d "src")
@@ -117,7 +120,6 @@ if ($ARGV[0] eq "-dbio-only")
     push @files, get_git_recursive    "./src/tools/data/convert";
     push @files, get_git_recursive    "./src/include";
     push @files, get_git_norecursive  "./src/bin";
-    push @files, get_git_recursive    "./src/exe";
     push @files, get_git_norecursive  "./src/lib";
     push @files, get_git_recursive    "./src/plugins";
     push @files, get_git_recursive    "./src/tools/dev/scripts";
@@ -148,7 +150,6 @@ else
     push @files, get_git_recursive    "./src/sim";
     push @files, get_git_recursive    "./src/include";
     push @files, get_git_recursive    "./src/bin";
-    push @files, get_git_recursive    "./src/exe";
     push @files, get_git_norecursive  "./src/lib";
     push @files, get_git_recursive    "./src/archives";
     push @files, get_git_recursive    "./src/plugins";
