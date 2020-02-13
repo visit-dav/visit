@@ -68,7 +68,6 @@ SET(VISIT_BIN_FILES
         frontendlauncher
         frontendlauncher.py
         makemili_driver
-        makemili_driver_ser
         mcurvit
         mkgrdbl
         mpeg2encode
