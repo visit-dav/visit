@@ -50,6 +50,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Updated build_visit to work on macOS 10.14</li>
   <li>Modified build_visit to download the visit source code and third party libraries from GitHub instead of NERSC."</li>
   <li>Updated build_visit to allow the user to disable the building of Sphinx. To disable building Sphinx specify "--no-sphinx".</li>
+  <li>Enhanced build_visit to also package VisIt into a tar file after building it so that VisIt is ready to install.</li>
+  <li>Enhanced build_visit to also build the VisIt manuals when building VisIt.</li>
+  <li>Enhanced build_visit to add checksums for the VisIt source tar file when writing a unified file. It assumes that the tar file containing the VisIt source file is in the current directory. If any errors are encountered and it can't add the checksums a warning is printed.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

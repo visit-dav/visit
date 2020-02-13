@@ -40,13 +40,13 @@ function bv_nektarpp_initialize_vars
 
 function bv_nektarpp_info
 {
-    export NEKTAR_PLUS_PLUS_VERSION=${NEKTAR_PLUS_PLUS_VERSION:-"4.4.1"}
+    export NEKTAR_PLUS_PLUS_VERSION=${NEKTAR_PLUS_PLUS_VERSION:-"5.0.0"}
     export NEKTAR_PLUS_PLUS_FILE=${NEKTAR_PLUS_PLUS_FILE:-"nektar-${NEKTAR_PLUS_PLUS_VERSION}.tar.gz"}
-    export NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION=${NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION:-"4.4"}
-    export NEKTAR_PLUS_PLUS_URL=${NEKTAR_PLUS_PLUS_URL:-"https://www.nektar.info/wp-content/uploads/2017/03/"}
+    export NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION=${NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION:-"5.0"}
+    export NEKTAR_PLUS_PLUS_URL=${NEKTAR_PLUS_PLUS_URL:-"https://www.nektar.info/wp-content/uploads/2019/12/"}
     export NEKTAR_PLUS_PLUS_BUILD_DIR=${NEKTAR_PLUS_PLUS_BUILD_DIR:-"nektar++-${NEKTAR_PLUS_PLUS_VERSION}"}
-    export NEKTAR_PLUS_PLUS_MD5_CHECKSUM="9ebf2d418052c697851bc17746d4a153"
-    export NEKTAR_PLUS_PLUS_SHA256_CHECKSUM="47a42ef738313f01c342114df5c9e75cf04001a59034d604e6b834342601207d"
+    export NEKTAR_PLUS_PLUS_MD5_CHECKSUM="59d2c84368269016081bb19c640fb98e"
+    export NEKTAR_PLUS_PLUS_SHA256_CHECKSUM="6e759541ecba1e814856b89ae1e788c2d266f757f5149b13d7dd1d71ed1215b2"
 }
 
 function bv_nektarpp_print
@@ -71,16 +71,16 @@ function bv_nektarpp_host_profile
         echo "## Nektar++" >> $HOSTCONF
         echo "##" >> $HOSTCONF
 
-        echo "SETUP_APP_VERSION(NEKTAR++ $NEKTAR_PLUS_PLUS_VERSION)" >> $HOSTCONF 
+        echo "SETUP_APP_VERSION(NEKTAR++ $NEKTAR_PLUS_PLUS_VERSION)" >> $HOSTCONF
 
         if [[ "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "yes" ]]; then
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR $NEKTAR_PLUS_PLUS_INSTALL_DIR)" \
-                >> $HOSTCONF 
+                >> $HOSTCONF
         else
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR \${VISITHOME}/nektar++/\${NEKTAR++_VERSION}/\${VISITARCH})" \
-                >> $HOSTCONF 
+                >> $HOSTCONF
 
             ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
 
@@ -94,7 +94,7 @@ function bv_nektarpp_host_profile
 function bv_nektarpp_ensure
 {
     if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" && "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "no" ]] ; then
-        ensure_built_or_ready "nektar++" $NEKTAR_PLUS_PLUS_VERSION $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_FILE $NEKTAR_PLUS_PLUS_URL 
+        ensure_built_or_ready "nektar++" $NEKTAR_PLUS_PLUS_VERSION $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_FILE $NEKTAR_PLUS_PLUS_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_NEKTAR_PLUS_PLUS="no"
@@ -142,43 +142,43 @@ diff -rcN nektar++-4.4.0/library/LibUtilities/Communication/CommDataType_orig.h 
   namespace LibUtilities
   {
 ! typedef int CommDataType;
-! 
+!
 ! #ifndef MPI_INT
 !     #define MPI_INT            ((CommDataType)0x4c000405)
 ! #endif
-! 
+!
 ! #ifndef MPI_UNSIGNED
 !     #define MPI_UNSIGNED       ((CommDataType)0x4c000406)
 ! #endif
-! 
+!
 ! #ifndef MPI_LONG
 !     #define MPI_LONG           ((CommDataType)0x4c000807)
 ! #endif
-! 
+!
 ! #ifndef MPI_UNSIGNED_LONG
 !     #define MPI_UNSIGNED_LONG  ((CommDataType)0x4c000808)
 ! #endif
-! 
+!
 ! #ifndef MPI_LONG_LONG
 !     #define MPI_LONG_LONG      ((CommDataType)0x4c000809)
 ! #endif
-! 
+!
 ! #ifndef MPI_UNSIGNED_LONG_LONG
 !     #define MPI_UNSIGNED_LONG_LONG ((CommDataType)0x4c000819)
 ! #endif
-! 
+!
 ! #ifndef MPI_FLOAT
 !     #define MPI_FLOAT          ((CommDataType)0x4c00040a)
 ! #endif
-! 
+!
 ! #ifndef MPI_DOUBLE
 !     #define MPI_DOUBLE         ((CommDataType)0x4c00080b)
 ! #endif
-! 
+!
 ! #ifndef MPI_LONG_DOUBLE
 !     #define MPI_LONG_DOUBLE    ((CommDataType)0x4c00100c)
 ! #endif
-! 
+!
   }
   }
   #endif
@@ -217,43 +217,122 @@ diff -rcN nektar++-4.4.1/library/LibUtilities/Communication/CommDataType_orig.h 
   namespace LibUtilities
   {
 ! typedef int CommDataType;
-! 
+!
 ! #ifndef MPI_INT
 !     #define MPI_INT            ((CommDataType)0x4c000405)
 ! #endif
-! 
+!
 ! #ifndef MPI_UNSIGNED
 !     #define MPI_UNSIGNED       ((CommDataType)0x4c000406)
 ! #endif
-! 
+!
 ! #ifndef MPI_LONG
 !     #define MPI_LONG           ((CommDataType)0x4c000807)
 ! #endif
-! 
+!
 ! #ifndef MPI_UNSIGNED_LONG
 !     #define MPI_UNSIGNED_LONG  ((CommDataType)0x4c000808)
 ! #endif
-! 
+!
 ! #ifndef MPI_LONG_LONG
 !     #define MPI_LONG_LONG      ((CommDataType)0x4c000809)
 ! #endif
-! 
+!
 ! #ifndef MPI_UNSIGNED_LONG_LONG
 !     #define MPI_UNSIGNED_LONG_LONG ((CommDataType)0x4c000819)
 ! #endif
-! 
+!
 ! #ifndef MPI_FLOAT
 !     #define MPI_FLOAT          ((CommDataType)0x4c00040a)
 ! #endif
-! 
+!
 ! #ifndef MPI_DOUBLE
 !     #define MPI_DOUBLE         ((CommDataType)0x4c00080b)
 ! #endif
-! 
+!
 ! #ifndef MPI_LONG_DOUBLE
 !     #define MPI_LONG_DOUBLE    ((CommDataType)0x4c00100c)
 ! #endif
-! 
+!
+  }
+  }
+  #endif
+EOF
+}
+
+function apply_nektarpp_5_0_0_patch
+{
+    info "Patching Nektar++ 5.0.0"
+    patch -p0 << \EOF
+diff -rcN nektar++-5.0.0/library/LibUtilities/Communication/CommDataType_orig.h nektar++-5.0.0/library/LibUtilities/Communication/CommDataType.h
+*** nektar++-5.0.0/library/LibUtilities/Communication/CommDataType_orig.h	2020-02-10 17:12:37.037503006 -0700
+--- nektar++-5.0.0/library/LibUtilities/Communication/CommDataType.h	2020-02-10 17:14:00.179539468 -0700
+***************
+*** 67,85 ****
+  {
+  namespace LibUtilities
+  {
+! enum CommDataType
+! {
+!     MPI_CHAR,
+!     MPI_INT,
+!     MPI_UNSIGNED,
+!     MPI_LONG,
+!     MPI_UNSIGNED_LONG,
+!     MPI_LONG_LONG,
+!     MPI_UNSIGNED_LONG_LONG,
+!     MPI_FLOAT,
+!     MPI_DOUBLE,
+!     MPI_LONG_DOUBLE
+! };
+  }
+  }
+  #endif
+--- 67,113 ----
+  {
+  namespace LibUtilities
+  {
+! typedef int CommDataType;
+!
+! #ifndef MPI_CHAR
+!     #define MPI_CHAR            ((CommDataType)0x4c000101)
+! #endif
+!
+! #ifndef MPI_INT
+!     #define MPI_INT            ((CommDataType)0x4c000405)
+! #endif
+!
+! #ifndef MPI_UNSIGNED
+!     #define MPI_UNSIGNED       ((CommDataType)0x4c000406)
+! #endif
+!
+! #ifndef MPI_LONG
+!     #define MPI_LONG           ((CommDataType)0x4c000807)
+! #endif
+!
+! #ifndef MPI_UNSIGNED_LONG
+!     #define MPI_UNSIGNED_LONG  ((CommDataType)0x4c000808)
+! #endif
+!
+! #ifndef MPI_LONG_LONG
+!     #define MPI_LONG_LONG      ((CommDataType)0x4c000809)
+! #endif
+!
+! #ifndef MPI_UNSIGNED_LONG_LONG
+!     #define MPI_UNSIGNED_LONG_LONG ((CommDataType)0x4c000819)
+! #endif
+!
+! #ifndef MPI_FLOAT
+!     #define MPI_FLOAT          ((CommDataType)0x4c00040a)
+! #endif
+!
+! #ifndef MPI_DOUBLE
+!     #define MPI_DOUBLE         ((CommDataType)0x4c00080b)
+! #endif
+!
+! #ifndef MPI_LONG_DOUBLE
+!     #define MPI_LONG_DOUBLE    ((CommDataType)0x4c00100c)
+! #endif
   }
   }
   #endif
@@ -264,12 +343,12 @@ function apply_nektarpp_4_4_0_OSX_patch
 {
     info "Patching Nektar++ 4.4.0 for OS X"
     patch -p0 << \EOF
-diff -rcN nektar++-4.4.0/CMakeLists_orig.txt  nektar++-4.4.0/CMakeLists.txt 
+diff -rcN nektar++-4.4.0/CMakeLists_orig.txt  nektar++-4.4.0/CMakeLists.txt
 *** nektar++-4.4.0/CMakeLists_orig.txt	2017-03-06 11:04:22.000000000 -0700
 --- nektar++-4.4.0/CMakeLists.txt	2017-09-05 14:47:37.000000000 -0600
 ***************
 *** 326,333 ****
-  
+
   # Build active components
   IF (NEKTAR_BUILD_LIBRARY)
 !     SET(NEKTAR++_LIBRARIES SolverUtils LibUtilities StdRegions SpatialDomains LocalRegions
@@ -278,7 +357,7 @@ diff -rcN nektar++-4.4.0/CMakeLists_orig.txt  nektar++-4.4.0/CMakeLists.txt
       ADD_SUBDIRECTORY(library)
       INSTALL(EXPORT Nektar++Libraries DESTINATION ${LIB_DIR}/cmake COMPONENT dev)
 --- 326,333 ----
-  
+
   # Build active components
   IF (NEKTAR_BUILD_LIBRARY)
 !     SET(NEKTAR++_LIBRARIES LibUtilities StdRegions SpatialDomains LocalRegions
@@ -293,12 +372,12 @@ function apply_nektarpp_4_4_1_OSX_patch
 {
     info "Patching Nektar++ 4.4.1 for OS X"
     patch -p0 << \EOF
-diff -rcN nektar++-4.4.1/CMakeLists.orig.txt  nektar++-4.4.1/CMakeLists.txt 
+diff -rcN nektar++-4.4.1/CMakeLists.orig.txt  nektar++-4.4.1/CMakeLists.txt
 *** nektar++-4.4.1/CMakeLists.orig.txt	2018-11-06 08:03:29.000000000 -0700
 --- nektar++-4.4.1/CMakeLists.txt	2018-11-06 08:04:33.000000000 -0700
 ***************
 *** 326,333 ****
-  
+
   # Build active components
   IF (NEKTAR_BUILD_LIBRARY)
 !     SET(NEKTAR++_LIBRARIES SolverUtils LibUtilities StdRegions SpatialDomains LocalRegions
@@ -307,7 +386,7 @@ diff -rcN nektar++-4.4.1/CMakeLists.orig.txt  nektar++-4.4.1/CMakeLists.txt
       ADD_SUBDIRECTORY(library)
       INSTALL(EXPORT Nektar++Libraries DESTINATION ${LIB_DIR}/cmake COMPONENT dev)
 --- 326,333 ----
-  
+
   # Build active components
   IF (NEKTAR_BUILD_LIBRARY)
 !     SET(NEKTAR++_LIBRARIES LibUtilities StdRegions SpatialDomains LocalRegions
@@ -331,7 +410,7 @@ function apply_nektarpp_patch
             if [[ $? != 0 ]]; then
 		return 1
             fi
-#	fi	
+#	fi
 
     elif [[ "${NEKTAR_PLUS_PLUS_VERSION}" == 4.4.1 ]] ; then
         apply_nektarpp_4_4_1_patch
@@ -344,7 +423,12 @@ function apply_nektarpp_patch
             if [[ $? != 0 ]]; then
 		return 1
             fi
-#	fi	
+#	fi
+    elif [[ "${NEKTAR_PLUS_PLUS_VERSION}" == 5.0.0 ]] ; then
+        apply_nektarpp_5_0_0_patch
+        if [[ $? != 0 ]]; then
+           return 1
+        fi
     fi
 
     return 0
@@ -398,9 +482,9 @@ function build_nektarpp
                  "failing harmlessly on a second application."
         fi
     fi
- 
+
     #
-    cd $NEKTAR_PLUS_PLUS_BUILD_DIR || error "Can't cd to Nektar++ build dir." $NEKTAR_PLUS_PLUS_BUILD_DIR 
+    cd $NEKTAR_PLUS_PLUS_BUILD_DIR || error "Can't cd to Nektar++ build dir." $NEKTAR_PLUS_PLUS_BUILD_DIR
 
     #
     # Configure Nektar++
@@ -539,7 +623,7 @@ function build_nektarpp
 function bv_nektarpp_is_enabled
 {
     if [[ $DO_NEKTAR_PLUS_PLUS == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }

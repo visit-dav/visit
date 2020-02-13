@@ -173,6 +173,9 @@
 #    James Kress, Tue Aug 27; 15:21:30 EDT 2019
 #    Add Xolotl plugin
 #
+#    Kathleen Biagas, Thu Feb  6 10:55:13 PST 2020
+#    Added AVSucd plugin.
+#
 #****************************************************************************
 
 IF(NOT WIN32)
@@ -388,6 +391,7 @@ ANALYZE
 ANSYS
 AUXFile
 AugDecomp
+AVSucd
 BOV
 CEAucd
 Claw

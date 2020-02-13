@@ -207,13 +207,6 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
             outDS->GetCellData()->RemoveArray("avtGhostNodes");
         }
     }
-    else
-    {
-        //
-        //  We don't need to do anything to our data. 
-        //
-        outDS = inDS;
-    }
 
     avtDataRepresentation *outDR = new avtDataRepresentation(outDS, inDR->GetDomain(), inDR->GetLabel());
     outDS->Delete();
@@ -271,15 +264,27 @@ avtShiftCenteringFilter::UpdateDataObjectInfo(void)
 //  Modifications:
 //
 //    Kevin Griffin, Wed Feb  5 08:15:32 PST 2020
-//    Removed explicit request for ghost zones since there are cases where
-//    ghost nodes are needed. The desired ghost data type should already
-//    be set by other filters in the pipeline.
+//    Added request for ghost nodes or ghost zones based on the data centering.
 //
 // ****************************************************************************
 
 avtContract_p
 avtShiftCenteringFilter::ModifyContract(avtContract_p in_spec)
 {
+    avtContract_p spec = new avtContract(in_spec);
+    avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
+    
+    if(inAtts.ValidActiveVariable())
+    {
+        if(inAtts.GetCentering() == AVT_NODECENT)
+        {
+            spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_NODE_DATA);
+        }
+        else {
+            spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+        }
+    }
+    
     return in_spec;
 }
 
