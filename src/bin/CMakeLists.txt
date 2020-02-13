@@ -50,6 +50,12 @@
 #  Eric Brugger, Thu Dec 19 14:57:28 PST 2019
 #  I added mcurvit.
 #
+#  Eric Brugger, Wed Feb 12 15:37:23 PST 2020
+#  I replaced the copying of makemili_driver to the exe directory with
+#  installing it in VISIT_INSTALLED_VERSION_BIN. I also renamed it to
+#  makemili_driver_ser since that is what the frontendlauncher is expecting
+#  it to be named.
+#
 #****************************************************************************
 
 #-----------------------------------------------------------------------------
@@ -62,6 +68,7 @@ SET(VISIT_BIN_FILES
         frontendlauncher
         frontendlauncher.py
         makemili_driver
+        makemili_driver_ser
         mcurvit
         mkgrdbl
         mpeg2encode
@@ -88,7 +95,7 @@ SET(VISIT_BIN_FILES
         xmltest)
 
 IF (NOT WIN32)
-    FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py)
+    FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py visitdiff.py)
         EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
                                 ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM}
                                 ${CMAKE_CURRENT_BINARY_DIR}/${VISIT_BIN_ITEM})
@@ -113,7 +120,17 @@ IF (NOT WIN32)
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
                     WORLD_READ             WORLD_EXECUTE)
 
-    CONFIGURE_FILE(makemili_driver ${VISIT_EXECUTABLE_DIR} COPYONLY)
+    INSTALL(FILES makemili_driver_ser
+        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                    WORLD_READ             WORLD_EXECUTE)
+
+    INSTALL(FILES makemili_driver_ser
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                    WORLD_READ             WORLD_EXECUTE)
 
 ELSE (NOT WIN32)
 
