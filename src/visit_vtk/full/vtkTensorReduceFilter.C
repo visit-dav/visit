@@ -60,6 +60,9 @@ vtkTensorReduceFilter::SetLimitToOriginal(bool lto)
 //    Eric Brugger, Thu Jan 10 12:05:20 PST 2013
 //    Modified to inherit from vtkPolyDataAlgorithm.
 //
+//    Allen Sanderson, Thu Jan 13 12:05:20 PST 2020
+//    Copied from vtkVectorReduceFilter::RequestData(
+//
 // ****************************************************************************
 
 int
@@ -134,9 +137,9 @@ vtkTensorReduceFilter::RequestData(
   int nComponents = 9;
   
   if (inPTensors != NULL)
-    nComponents = inPTensors->GetNumberOfComponents();
+    nComponents = std::min(nComponents, inPTensors->GetNumberOfComponents());
   else if (inCTensors != NULL)
-    nComponents = inCTensors->GetNumberOfComponents();
+    nComponents = std::min(nComponents, inCTensors->GetNumberOfComponents());
 
   outTensors->SetNumberOfComponents(nComponents);
 

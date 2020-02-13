@@ -153,12 +153,12 @@ vtkVectorReduceFilter::RequestData(
   else 
       outVecs = vtkFloatArray::New();
 
-  int nComponents = 9;
+  int nComponents = 3;
   
   if (inPvecs != NULL)
-    nComponents = inPvecs->GetNumberOfComponents();
+    nComponents = std::min(nComponents, inPvecs->GetNumberOfComponents());
   else if (inCvecs != NULL)
-    nComponents = inCvecs->GetNumberOfComponents();
+    nComponents = std::min(nComponents, inCvecs->GetNumberOfComponents());
 
   outVecs->SetNumberOfComponents(nComponents);
 
