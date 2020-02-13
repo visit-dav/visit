@@ -94,13 +94,23 @@ SET(VISIT_BIN_FILES
         xmltest)
 
 IF (NOT WIN32)
+    #
+    # Copy files to the bin and exe directories. We have to explicitly
+    # create the exe directory since we can't control when it gets created
+    # otherwiese.
+    #
     FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py visitdiff.py)
         EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
                                 ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM}
                                 ${CMAKE_CURRENT_BINARY_DIR}/${VISIT_BIN_ITEM})
     ENDFOREACH(VISIT_BIN_ITEM)
 
+    FILE(MAKE_DIRECTORY ${VISIT_EXECUTABLE_DIR})
+    CONFIGURE_FILE(makemili_driver_ser ${VISIT_EXECUTABLE_DIR} COPYONLY)
 
+    #
+    # Install the files. This happens with make install or make package.
+    #
     INSTALL(FILES ${VISIT_BIN_FILES}
             DESTINATION bin
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
@@ -121,12 +131,6 @@ IF (NOT WIN32)
 
     INSTALL(FILES makemili_driver_ser
         DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                    WORLD_READ             WORLD_EXECUTE)
-
-    INSTALL(FILES makemili_driver_ser
-        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
                     WORLD_READ             WORLD_EXECUTE)
