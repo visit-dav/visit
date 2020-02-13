@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
   <Plugin name="NektarPP" type="database" label="avtNektarPP" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
+      -fext-numeric-literals
       ${NEKTAR++_INCLUDE_DIR}
       ${NEKTAR++_INCLUDE_DIRS}
       ${NEKTAR++_TP_INCLUDE_DIRS})
