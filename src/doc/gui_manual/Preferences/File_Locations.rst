@@ -135,41 +135,54 @@ Crash Recovery Files
 Files In Other Locations
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-VisIt Debug Log Files
-"""""""""""""""""""""
-
-VisIt_ debug log (``.vlog``) files are written by many different VisIt_
-components; the engine, the viewer, the mdserver, the gui, etc. When running
-client/server, some logs are written on the client and some on the server.
-The logs on the client are written to whatever the current working directory
-was when VisIt_ was started. If started from an icon, this is most likely
-the ``VUSER_HOME`` directory. If started from a command-line, it is whatever
-the shell's current working directory for that command-line was. On the server,
-the logs are written to ``VUSER_HOME``. In a typical client/server scenario,
-the user gets gui and viewer logs locally in current working directory and
-mdserver and engine logs on the remote system in ``VUSER_HOME``.
-
 Session Files
 """""""""""""
 When saving or restoring session files, the user is always prompted with a
-file browser to allow the user to indicate where the files are.
+file browser to select where the files are stored.
+* Purpose: Save and load the state of VisIt_ so that VisIt_ can be easily
+  restarted and returned to a previously saved state.
 
-databases
+Attributes Files
+""""""""""""""""
+Most plot and operator attribute windows have a **Save** and **Load** buttons
+to save the specific attributes.
 
-xml files for attributes
+VisIt Debug Log Files
+"""""""""""""""""""""
+* Location(s): Can vary depending on a few factors.
+  VisIt_ debug log (``.vlog``) files are written by many different VisIt_
+  components; the engine, the viewer, the mdserver, the gui, etc. When running
+  client/server, some logs are written on the client and some on the server.
+  The logs on the client are written to whatever the current working directory
+  was when VisIt_ was started. If started from an icon, this is most likely
+  the ``VUSER_HOME`` directory. If started from a command-line, it is whatever
+  the shell's current working directory for that command-line was. On the server,
+  the logs are written to ``VUSER_HOME``. In a typical client/server scenario,
+  the user gets gui and viewer logs locally in current working directory and
+  mdserver and engine logs on the remote system in ``VUSER_HOME``. In a purley
+  local scenario, all logs are written to the current working directory.
+* Purpose: Capture streaming debugging messages from various VisIt_ components.
+* Written continuously by VisIt if ``-debug L`` where ``L`` is the debug *level*
+  and is an integer in the range ``[1...5]`` is given on the command-line that
+  starts VisIt_ or buffered if a ``b`` is given immediately afte the debug level
+  integer. In addition, VisIt_ maintains the 5 most recently written logs from
+  the 5 most recent component executions each beginning with the letters ``A``
+  through ``E``, ``A`` being the most recent.
+* Format: Various, ad-hoc ASCII, mostly human readable.
 
-Save Window vs. Export Database
-"""""""""""""""""""""""""""""""
+Save Window vs. Export Database Files
+"""""""""""""""""""""""""""""""""""""
 
 As far as file locations are concerned, the key issue for users to keep in 
 mind regarding **Save Window** operations and **Export Database** operations
-have to do with client/server operation. In client/server **Save Window**
-happens always on the client whereas **Export Database** happens always on
-the server.
+has to do with client/server operation. In client/server mode, **Save Window**
+produces files always on the client whereas **Export Database** produces files
+always on the server.
 
 The **Save Window** and **Export Database** operations can in some circumstances
-be highly similar. In general, the **Save Window** operation is to save an
-*image* whereas the **Export Database** operation is to output a wholly new
-*database* file. The cases where these two operations are blurred is when non-image
-formats are used by **Save Window**
+be highly similar and confusing to decide which to use. In general, the
+**Save Window** operation is to save an *image* file whereas the **Export Database**
+operation is to output a wholly new VisIt_ *database* file. The cases where
+these two operations are blurred is when non-image formats are used by
+**Save Window** such as STL, VTK, OBJ, PLY (3D formats) and Curve or Ultra
+(2D, xy curve formats) formats.
