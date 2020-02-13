@@ -363,10 +363,6 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 //    Replace polylineAddEndPointsFilter, polylineToRibbonFilter,
 //    polylineToTubeFilter with geoFilter.
 //
-//    Kevin Griffin, Tue Feb  4 11:26:37 PST 2020
-//    Added logic to only call avtShifCenteringFilter if the current centering
-//    is different than the requested centering.
-//
 // ****************************************************************************
 
 avtDataObject_p
@@ -377,31 +373,25 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 
     if ((atts.GetCentering() == PseudocolorAttributes::Nodal) || (atts.GetCentering() == PseudocolorAttributes::Zonal))
     {
-        avtCentering currentCentering = dob->GetInfo().GetAttributes().GetCentering();
-        avtCentering requestedCentering = atts.GetCentering() == PseudocolorAttributes::Nodal ? AVT_NODECENT : AVT_ZONECENT;
-
-        if(currentCentering != requestedCentering)
+        //
+        // It was requested that we shift centering.  If we asked for zonal
+        // data and the data is already zonal, then this will effectively
+        // be a no-op.
+        //
+        if (shiftFilter != NULL)
         {
-            //
-            // It was requested that we shift centering.  If we asked for zonal
-            // data and the data is already zonal, then this will effectively
-            // be a no-op.
-            //
-            if (shiftFilter != NULL)
-            {
-                delete shiftFilter;
-            }
-
-            PseudocolorAttributes::Centering c = atts.GetCentering();
-
-            if (c == PseudocolorAttributes::Nodal)
-                shiftFilter = new avtShiftCenteringFilter(AVT_NODECENT);
-            else if (c == PseudocolorAttributes::Zonal)
-                shiftFilter = new avtShiftCenteringFilter(AVT_ZONECENT);
-
-            shiftFilter->SetInput(dob);
-            dob = shiftFilter->GetOutput();
+            delete shiftFilter;
         }
+
+        PseudocolorAttributes::Centering c = atts.GetCentering();
+
+        if (c == PseudocolorAttributes::Nodal)
+            shiftFilter = new avtShiftCenteringFilter(AVT_NODECENT);
+        else if (c == PseudocolorAttributes::Zonal)
+            shiftFilter = new avtShiftCenteringFilter(AVT_ZONECENT);
+
+        shiftFilter->SetInput(dob);
+        dob = shiftFilter->GetOutput();
     }
 
     // PolylineCleanup Filter
