@@ -73,9 +73,7 @@ Selecting the output directory for saved files
 On most platforms, VisIt's default behavior is to save output files to the
 current directory, which is the directory where VisIt was started. On the
 Windows platform, VisIt saves images to the
-:ref:`location <file_locations>` ``VUSER_HOME/My images``
-directory, which
-is a directory under the VisIt installation directory. If you want to specify
+:ref:`location <file_locations>` ``VUSER_HOME/My images``. If you want to specify
 a special output directory for your output files, you can turn off the
 **Output files to current directory** check box and type in the path to the
 directory where you want VisIt to save your files in the **Output directory**
