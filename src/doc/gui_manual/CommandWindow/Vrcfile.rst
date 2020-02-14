@@ -4,7 +4,7 @@ VisIt Run Commands (RC) File
 ----------------------------
 
 VisIt_ supports a `run commands <https://en.wikipedia.org/wiki/Run_commands>`_
-or an *rc* file called the ``visitrc`` file typically
+or an *rc* file called the ``visitrc`` file which is typically
 :ref:`located <file_locations_visitrc>` in ``~/.visit``. The ``visitrc`` file
 is a Python source code file that contains Python scripting commands that VisIt_
 executes whenever the CLI is started either from the shell or from within the
