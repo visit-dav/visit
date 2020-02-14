@@ -33,9 +33,10 @@ Files in ``VUSER_HOME``
 ~~~~~~~~~~~~~~~~~~~~~~~
 Most of the files associated with VisIt_ configuration have their prescribed home
 in ``VUSER_HOME``. When running in client/server, it is the configuration files
-on the *local client* that effect behavior. This means they are always on the
+on the *local client* that effect behavior. This means they are always the
 files on the *local* machine and not the *remote* system. Any configuration
-files that might also be on the remote server do not play a role. 
+files that might also be on the remote server do not play a role in effecting
+behavior in client/server mode.
 
 Settings/Preferences File
 """""""""""""""""""""""""
@@ -164,7 +165,7 @@ Files In Other Locations
 There are several other kinds of files VisIt_ reads and writes to locations
 other than ``VUSER_HOME``. These are breifly described here.
 
-VisIt Debug Log (``.vlog) Files
+VisIt Debug Log (``.vlog``) Files
 """""""""""""""""""""""""""""""
 * Location and file name(s): The location of these files depends on whether
   VisIt_ is being run in :ref:`client/server mode <Client-Server Mode>`.
