@@ -45,8 +45,8 @@ Settings/Preferences File
   plus numerous other settings such as default attributes for operators and plots,
   default database read options, default color tables, as well as the
   enabled/disabled state of various plot, operator and database plugins.
-* Written: when user :ref:`saves settings <How to Save Settings>`.
-* Read: on VisIt_ startup but this can be overridden by the ``-noconfig``
+* Written: When user :ref:`saves settings <How to Save Settings>`.
+* Read: On VisIt_ startup but this can be overridden by the ``-noconfig``
   command-line :ref:`startup option <StartupOptions>`.
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_
 
@@ -57,17 +57,22 @@ GUI Configuration File
   recently used paths to open databases.
 * Otherwise operates identically to ``VUSER_HOME/config``.
 
-Host Profile Files
-""""""""""""""""""
+:ref:`Host Profile <host_profiles>` Files
+"""""""""""""""""""""""""""""""""""""""""
 * Location and file name(s): ``VUSER_HOME/hosts/host_<site-name>_<resource-name>.xml``
-* Purpose: Stores information on how to connect to and launch jobs on various
-  compute resources. In many cases, there are separate sets of host profile files
+  where ``<site-name>`` is something like ``ornl``, ``llnl``, ``anl`` etc. and
+  ``<resource-name>`` is a machine name such as ``summit``, ``sierra``, ``theta``.
+* Purpose: Stores information on how to connect to and launch jobs on a specific
+  compute resource. In many cases, there are separate sets of host profile files
   for all the compute resources at a commonly used site such as LLNL CZ or RZ,
   ANL, ORNL, etc. Often sites will *post* VisIt_ host profile files in places for
   users to easily find and *install* them. Installing them is just a matter of
-  copying them to ``VUSER_HOME``.
-* Written: when user :ref:`saves settings <How to Save Settings>`.
-* Read: on VisIt_ startup. All host profiles in ``VUSER_HOME/hosts/host*.xml`` are read
+  copying them to ``VUSER_HOME``. In addition, updated profiles can be downloaded
+  and installed automatically by VisIt_ from the :ref:`Host Profiles <host_profiles>`
+  window.
+* Written: When user :ref:`saves settings <How to Save Settings>` or when user
+  hits the **Export Host** button from the :ref:`Host Profile <host_profiles>` window.
+* Read: On VisIt_ startup. All host profiles in ``VUSER_HOME/hosts/host*.xml`` are read
   on VisIt_ startup but this can be overridden by ``-noconfig``. Users should be
   aware of this behavior. If the user passes ``-noconfig`` for the purposes of
   avoiding the loading of preferences, s/he will also be without any host profiles.
@@ -81,7 +86,7 @@ VisIt Run Commands (rc) File
 * Purpose: Holds Python code to be executed each time VisIt_ is launched.
 * Written: Whenever user hits the **Update Macros** button in the
   :ref:`Command Window <Command_Line_Window>`.
-* Read: on VisIt_ startup of the CLI.
+* Read: On VisIt_ startup of the CLI.
 * Format: Python source code. However, there is no ``.py`` file extension in the
   file name.
 
@@ -91,8 +96,8 @@ Command Window Tabs Script Files
   integer in the range [1...8].
 * Purpose: Hold the python code associated with each tab in the
   :ref:`Command Window <Command_Line_Window>`.
-* Written: when user :ref:`saves settings <How to Save Settings>`.
-* Read: on VisIt_ startup but this can be overridden by the ``-noconfig``
+* Written: When user :ref:`saves settings <How to Save Settings>`.
+* Read: On VisIt_ startup but this can be overridden by the ``-noconfig``
 * Format: Python source code.
 
 Color Table Files
@@ -102,7 +107,7 @@ Color Table Files
 * Written when the user hits the **Export** button in the
   :ref:`color table window <fig-MakingItPretty-ColorTables>` from
   :menuselection:`Controls -> Color table...`.
-* Read: on VisIt_ startup. All color table files in ``VUSER_HOME/*.ct``
+* Read: On VisIt_ startup. All color table files in ``VUSER_HOME/*.ct``
   are read and loaded into VisIt_. However, this behavior is overridden
   by ``-noconfig``.
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_ specifying the
@@ -136,9 +141,9 @@ State Tracking Files
 * Purpose: Holds a single ASCII integer indicating the number of times the
   associated VisIt_ version has been run. This is to facilitate suppression of
   the release notes and help upon the *first* run of a new version of VisIt_.
-* Written: each time VisIt_ is started, the integer value in the associated
+* Written: Each time VisIt_ is started, the integer value in the associated
   state tracking file is updated.
-* Read: each time VisIt_ is started, the value in the associated state tracking
+* Read: Each time VisIt_ is started, the value in the associated state tracking
   file is read.
 * Format: ASCII text
 
@@ -151,8 +156,8 @@ Crash Recovery Files
   to a crash. Disabled if the preference
   ``Periodically save a crash recovery file`` is unchecked in the
   **Preferences Window**.
-* Written: periodically from VisIt_ automatically.
-* Read: when user starts VisIt_ and answers ``yes`` when queried whether to
+* Written: Periodically from VisIt_ automatically.
+* Read: When user starts VisIt_ and answers ``yes`` when queried whether to
   start up from the most recent crash recovery file or when user explicitly
   specifies the crash recovery file as an argument to the ``-sessionfile``
   command-line :ref:`startup option <StartupOptions>`.
@@ -166,8 +171,9 @@ There are several other kinds of files VisIt_ reads and writes to locations
 other than ``VUSER_HOME``. These are breifly described here.
 
 VisIt Debug Log (``.vlog``) Files
-"""""""""""""""""""""""""""""""
-* Location and file name(s): The location of these files depends on whether
+"""""""""""""""""""""""""""""""""
+* Location and file name(s): On Windows, these files are always located in
+  ``VUSER_HOME``. On Unix/OSX the location of these files depends on whether
   VisIt_ is being run in :ref:`client/server mode <Client-Server Mode>`.
   When running client/server, some logs are written on the client and some on
   the server. The logs on the client are written to whatever the current working
