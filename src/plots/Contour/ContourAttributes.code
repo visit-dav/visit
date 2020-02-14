@@ -659,6 +659,7 @@ ContourViewerEnginePluginInfo::InitializeDefaultPalette(ContourAttributes *conto
     }
 }
 
+Target: xml2atts
 Function: ProcessOldVersions
 Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 Definition:
