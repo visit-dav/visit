@@ -154,8 +154,9 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
     // Get the VTK data set.
     //
     vtkDataSet *inDS = inDR->GetDataVTK();
-    vtkDataSet *outDS = (vtkDataSet *) inDS->NewInstance();
-    outDS->ShallowCopy(inDS);
+    vtkDataSet *newDS = (vtkDataSet *) inDS->NewInstance();
+    newDS->ShallowCopy(inDS);
+    vtkDataSet *outDS = newDS;
     
     if (centeringTarget == AVT_NODECENT)
     {
@@ -171,11 +172,17 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
         
         // We want to preserve knowledge of ghost zones
         vtkDataArray *ghostZones = inDS->GetCellData()->GetArray("avtGhostZones");
-        if (ghostZones)
+        if (ghostZones != NULL)
         {
             outDS->GetCellData()->AddArray(ghostZones);
             // Only want ghost cell-data, not ghost point-data.
             outDS->GetPointData()->RemoveArray("avtGhostZones");
+        }
+        
+        vtkDataArray *ghostNodes = inDS->GetPointData()->GetArray("avtGhostNodes");
+        if (ghostNodes != NULL)
+        {
+            outDS->GetPointData()->AddArray(ghostNodes);
         }
         
         // We want to preserve knowledge of original cells
@@ -199,17 +206,31 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
         pd2cd->GetExecutive()->SetOutputData(0, outDS);
         pd2cd->Update();
         pd2cd->Delete();
+        
+        // We want to preserve knowledge of ghost zones
+        vtkDataArray *ghostZones = inDS->GetCellData()->GetArray("avtGhostZones");
+        if (ghostZones != NULL)
+        {
+            outDS->GetCellData()->AddArray(ghostZones);
+        }
 
         vtkDataArray *ghostNodes = inDS->GetPointData()->GetArray("avtGhostNodes");
-        if (ghostNodes)
+        if (ghostNodes != NULL)
         {
             outDS->GetPointData()->AddArray(ghostNodes);
             outDS->GetCellData()->RemoveArray("avtGhostNodes");
         }
     }
+    else
+    {
+        //
+        //  We don't need to do anything to our data.
+        //
+        outDS = inDS;
+    }
 
     avtDataRepresentation *outDR = new avtDataRepresentation(outDS, inDR->GetDomain(), inDR->GetLabel());
-    outDS->Delete();
+    newDS->Delete();
 
     return outDR;
 }
@@ -251,7 +272,6 @@ avtShiftCenteringFilter::UpdateDataObjectInfo(void)
         out_atts.SetCentering(centeringTarget);
 }
 
-
 // ****************************************************************************
 //  Method: avtShiftCenteringFilter::ModifyContract
 //
@@ -264,28 +284,39 @@ avtShiftCenteringFilter::UpdateDataObjectInfo(void)
 //  Modifications:
 //
 //    Kevin Griffin, Wed Feb  5 08:15:32 PST 2020
-//    Added request for ghost nodes or ghost zones based on the data centering.
+//    Added request for ghost nodes or ghost zones based on the data centering
+//    and ghost attributes.
 //
 // ****************************************************************************
 
 avtContract_p
 avtShiftCenteringFilter::ModifyContract(avtContract_p in_spec)
 {
-    avtContract_p spec = new avtContract(in_spec);
+    avtContract_p spec = new avtContract(in_spec);    
     avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
     
     if(inAtts.ValidActiveVariable())
     {
-        if(inAtts.GetCentering() == AVT_NODECENT)
+        if(inAtts.GetCentering() == AVT_ZONECENT) // 1
         {
-            spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_NODE_DATA);
+            if(inAtts.GetGhostZoneTypesPresent() == 0 && inAtts.GetContainsGhostZones() == AVT_CREATED_GHOSTS)
+            {
+                spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_NODE_DATA);
+            }
+            else
+            {
+                spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+            }
         }
-        else {
+        else
+        {
             spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
         }
     }
+    else
+    {
+        spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    }
     
-    return in_spec;
+    return spec;
 }
-
-
