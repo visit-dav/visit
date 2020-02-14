@@ -2,7 +2,7 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// .NAME vtkVectorReduceFilter -- Reduce the number of vectors.
+// .NAME vtkReduceFilter -- Reduce the number of tensors.
 //
 // .SECTION Description
 // Allows a dataset to be reduced by keeping only one out of every N points.
@@ -14,56 +14,61 @@
 //  many to process for every one saved (SetStride).
 //
 
-
-#ifndef __vtkVectorReduceFilter_h
-#define __vtkVectorReduceFilter_h
+#ifndef __vtkReduceFilter_h
+#define __vtkReduceFilter_h
 #include <visit_vtk_exports.h>
 
 #include "vtkPolyDataAlgorithm.h"
 
 // ***************************************************************************
-//  Class: vtkVectorReduceFilter
+//  Class: vtkReduceFilter
 //
 //  Modifications:
-//    Jeremy Meredith, Tue Jul  8 11:07:57 EDT 2008
-//    Added ability to limit to only one output vector per original
-//    cell/point.  Also, fixed cell-based vector algorithm bugs.
-//
-//    Eric Brugger, Thu Jan 10 10:07:20 PST 2013
+//    Eric Brugger, Thu Jan 10 12:02:36 PST 2013
 //    Modified to inherit from vtkPolyDataAlgorithm.
 //
 // ***************************************************************************
 
-class VISIT_VTK_API vtkVectorReduceFilter : public vtkPolyDataAlgorithm
+class VISIT_VTK_API vtkReduceFilter : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkVectorReduceFilter, vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkReduceFilter, vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Instantiate a stride filter that throws away nine of every ten elements.
-  static vtkVectorReduceFilter *New();
+  static vtkReduceFilter *New();
 
+  void ReduceVectors();
+  void ReduceTensors();
   void SetStride(int);
   void SetNumberOfElements(int);
   void SetLimitToOriginal(bool);
 
 protected:
-  vtkVectorReduceFilter();
-  ~vtkVectorReduceFilter() {};
+  vtkReduceFilter();
+  ~vtkReduceFilter() {};
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
                           vtkInformationVector *) override;
   virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
+  enum ReduceType
+  {
+    rVectors,
+    rTensors,
+  };
+
+  ReduceType reduceType;
+
   int stride;
   int numEls;
   bool origOnly;
 
 private:
-  vtkVectorReduceFilter(const vtkVectorReduceFilter&);
-  void operator=(const vtkVectorReduceFilter&);
+  vtkReduceFilter(const vtkReduceFilter&);
+  void operator=(const vtkReduceFilter&);
 };
 
 #endif
