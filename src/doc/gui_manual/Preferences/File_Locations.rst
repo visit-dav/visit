@@ -59,7 +59,7 @@ GUI Configuration File
 
 Host Profile Files
 """"""""""""""""""
-* Location and file name(s): ``VUSER_HOME/host/host_<site-name>_<resource-name>.xml``
+* Location and file name(s): ``VUSER_HOME/hosts/host_<site-name>_<resource-name>.xml``
 * Purpose: Stores information on how to connect to and launch jobs on various
   compute resources. In many cases, there are separate sets of host profile files
   for all the compute resources at a commonly used site such as LLNL CZ or RZ,
@@ -67,7 +67,7 @@ Host Profile Files
   users to easily find and *install* them. Installing them is just a matter of
   copying them to ``VUSER_HOME``.
 * Written: when user :ref:`saves settings <How to Save Settings>`.
-* Read: on VisIt_ startup. All host profiles in ``VUSER_HOME/host*.xml`` are read
+* Read: on VisIt_ startup. All host profiles in ``VUSER_HOME/hosts/host*.xml`` are read
   on VisIt_ startup but this can be overridden by ``-noconfig``. Users should be
   aware of this behavior. If the user passes ``-noconfig`` for the purposes of
   avoiding the loading of preferences, s/he will also be without any host profiles.
@@ -80,7 +80,7 @@ VisIt Run Commands (rc) File
 * Location and file name: ``VUSER_HOME/visitrc``
 * Purpose: Holds Python code to be executed each time VisIt_ is launched.
 * Written: Whenever user hits the **Update Macros** button in the
-  :ref:`**Command Window** <Command_Line_Window>`.
+  :ref:`Command Window <Command_Line_Window>`.
 * Read: on VisIt_ startup of the CLI.
 * Format: Python source code. However, there is no ``.py`` file extension in the
   file name.
@@ -90,7 +90,7 @@ Command Window Tabs Script Files
 * Location and file name(s): ``VUSER_HOME/script<K>.py`` where ``K`` is an
   integer in the range [1...8].
 * Purpose: Hold the python code associated with each tab in the
-  :ref:`**Command Window** <Command_Line_Window>`.
+  :ref:`Command Window <Command_Line_Window>`.
 * Written: when user :ref:`saves settings <How to Save Settings>`.
 * Read: on VisIt_ startup but this can be overridden by the ``-noconfig``
 * Format: Python source code.
@@ -177,7 +177,7 @@ VisIt Debug Log (``.vlog``) Files
   the server, the logs are written to the user's login (home) directory. In a
   typical client/server scenario, the user gets gui and viewer logs locally in
   the current working directory and mdserver and engine logs on the remote
-  system in their login (home) directory. In a purley local scenario, all logs
+  system in their login (home) directory. In a purely local scenario, all logs
   are written to the current working directory.
 
   The names of the log files are of the form
@@ -198,6 +198,18 @@ VisIt Debug Log (``.vlog``) Files
   the 5 most recent component executions each beginning with the letters ``A``
   through ``E``, ``A`` being the most recent.
 * Format: Various, ad-hoc ASCII, mostly human readable.
+
+Plot and Operator Attribute Files
+"""""""""""""""""""""""""""""""""
+* Location and file name(s): User is prompted with a file browser to select
+  the name and location of these files.
+* Purpose: Hold the settings for a single, specific plot or operator for easy
+  sharing with other users
+* Written: Whenever user hits the **Save** button in a plot or operator
+  attributes window.
+* Read: Whenever user hits the **Load** button in a plot or operator attributes
+  window.
+* Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_.
 
 Session Files
 """""""""""""
