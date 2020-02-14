@@ -114,8 +114,8 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_ specifying the
   :ref:`colors and color control points <Color_tables>` for the color table.
 
-`Custom Plugins <http://visitusers.org/index.php?title=Building_plugins_using_CMake>`_
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+`Custom Plugin <http://visitusers.org/index.php?title=Building_plugins_using_CMake>`_ Files
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 * Location and file name(s): There are separate directories in ``VUSER_HOME``
   for *private*, user-specific operator, database and plot plugins. These are
 
@@ -245,33 +245,35 @@ Plot and Operator Attribute Files
 * Read: On demand when user selects :menuselection:`File --> Restor session...`
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_.
 
-:ref:`Database Files <Supported File Types>`
-""""""""""""""""""""""""""""""""""""""""""""
-* Location and file name(s): User uses the :menuselection:`File --> Open...`
-  file browser to select the location of these files. The ``-o`` 
-  command-line :ref:`startup option <StartupOptions>` can be used to select
-  a database file to open at startup.
-* Purpose: Database files store the data that VisIt_ is used to analyze and
-  visualize.
-* Written: VisIt_ *reads* over 130 different types of databases. Only about
-  20 of those types can be *written* by VisIt_. And some of those output
-  types support only limited kinds of data. A database can be written using
-  :menuselection:`File --> Export database...`
-* Read: On demand when user selects :menuselection:`File --> Open...`
-* Format: Varies by database type.
-
 :ref:`Save Window Files <saving_viz_window>`
 """"""""""""""""""""""""""""""""""""""""""""
-* Location and file name(s): User uses the :menuselection:`File --> Save Window...`
-  file browser to select the location of these files.
-  and :menuselection:`File -> Set save options...` to specify other properties.
-* Purpose: Save the data displayed in the currently active window usually but
-  not always to an image file.
-* Written: On demand user selects :menuselection:`File --> Save Window...` or
+* Location and file name(s): User uses the
+  :menuselection:`File --> Set save options...` to specify the name and location
+  of subsequent saved window files as well as many other properties of a saved
+  window.
+* Purpose: Save the *visually relevant* aspects of the data displayed in the
+  currently active window usually but not always to an image file.
+* Written: On demand when user selects :menuselection:`File --> Save Window` or
   hits the **Save** button in the **Set save options** window.
 * Read: Yes, saved images can be read into VisIt_ like any other database.
   On demand when user selects :menuselection:`File --> Open...`
 * Format: Various, see :ref:`Set save options <saving_viz_window>` window.
+
+:ref:`Exported Database Files <exporting_databases>`
+""""""""""""""""""""""""""""""""""""""""""""""""""""
+* Location and file name(s): User uses
+  :menuselection:`File --> Export database...` to bring up a
+  file browser to select the name and location of exported database files.
+* Purpose: Exported database files are often used to share computed results
+  among users, to convert among database formats, or to create a new
+  more convenient database to load back into VisIt_ for further analysis.
+* Written: On demand when user selects
+  :menuselection:`File --> Export database...`.
+  While VisIt_ *reads* over 130 different types of databases, only
+  about 20 of those types does it *write*. And some of those output types
+  support only limited kinds of data.
+* Read: On demand when user selects :menuselection:`File --> Open...`
+* Format: Varies by database type.
 
 Save Window vs. Export Database Files
 """""""""""""""""""""""""""""""""""""
