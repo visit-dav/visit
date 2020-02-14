@@ -70,7 +70,7 @@ static int InitLibStripack()
 {
     static char const * const envar = "VISIT_FFP_STRIPACK_PATH";
 #ifdef WIN32
-	HINSTANCE libh = NULL;
+    HINSTANCE libh = NULL;
     if (Environment::exists(envar))
         libh = LoadLibrary(Environment::get(envar).c_str());
     if (!libh)
