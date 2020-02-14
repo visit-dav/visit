@@ -36,14 +36,14 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public final static int ORIGINTYPE_MIDDLE = 1;
     public final static int ORIGINTYPE_TAIL = 2;
 
-    public final static int LIMITSMODE_ORIGINALDATA = 0;
-    public final static int LIMITSMODE_CURRENTPLOT = 1;
-
     public final static int GLYPHTYPE_ARROW = 0;
     public final static int GLYPHTYPE_ELLIPSOID = 1;
 
     public final static int LINESTEM_CYLINDER = 0;
     public final static int LINESTEM_LINE = 1;
+
+    public final static int LIMITSMODE_ORIGINALDATA = 0;
+    public final static int LIMITSMODE_CURRENTPLOT = 1;
 
     public final static int GLYPHLOCATION_ADAPTSTOMESHRESOLUTION = 0;
     public final static int GLYPHLOCATION_UNIFORMINSPACE = 1;

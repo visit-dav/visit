@@ -81,43 +81,6 @@ VectorAttributes::OriginType_FromString(const std::string &s, VectorAttributes::
 }
 
 //
-// Enum conversion methods for VectorAttributes::LimitsMode
-//
-
-static const char *LimitsMode_strings[] = {
-"OriginalData", "CurrentPlot"};
-
-std::string
-VectorAttributes::LimitsMode_ToString(VectorAttributes::LimitsMode t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return LimitsMode_strings[index];
-}
-
-std::string
-VectorAttributes::LimitsMode_ToString(int t)
-{
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return LimitsMode_strings[index];
-}
-
-bool
-VectorAttributes::LimitsMode_FromString(const std::string &s, VectorAttributes::LimitsMode &val)
-{
-    val = VectorAttributes::OriginalData;
-    for(int i = 0; i < 2; ++i)
-    {
-        if(s == LimitsMode_strings[i])
-        {
-            val = (LimitsMode)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for VectorAttributes::GlyphType
 //
 
@@ -185,6 +148,43 @@ VectorAttributes::LineStem_FromString(const std::string &s, VectorAttributes::Li
         if(s == LineStem_strings[i])
         {
             val = (LineStem)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for VectorAttributes::LimitsMode
+//
+
+static const char *LimitsMode_strings[] = {
+"OriginalData", "CurrentPlot"};
+
+std::string
+VectorAttributes::LimitsMode_ToString(VectorAttributes::LimitsMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return LimitsMode_strings[index];
+}
+
+std::string
+VectorAttributes::LimitsMode_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return LimitsMode_strings[index];
+}
+
+bool
+VectorAttributes::LimitsMode_FromString(const std::string &s, VectorAttributes::LimitsMode &val)
+{
+    val = VectorAttributes::OriginalData;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == LimitsMode_strings[i])
+        {
+            val = (LimitsMode)i;
             return true;
         }
     }

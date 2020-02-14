@@ -51,17 +51,17 @@
 //    Use glyph's output port when creating avtVectorGlyphMapper.
 //
 // ****************************************************************************
-
 avtVectorPlot::avtVectorPlot()
 {
     colorsInitialized = false;
-    vectorGlyph  = vtkVectorGlyph::New();
     vectorFilter = new avtVectorFilter(true, 10);
     resampleFilter = NULL;
     ghostFilter  = new avtGhostZoneFilter();
     ghostFilter->GhostDataMustBeRemoved();
-    vectorMapper = new avtVectorGlyphMapper(vectorGlyph->GetOutputPort());
     avtLUT       = new avtLookupTable();
+
+    vectorGlyph  = vtkVectorGlyph::New();
+    vectorMapper = new avtVectorGlyphMapper(vectorGlyph->GetOutputPort());
 
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Vector");
@@ -74,7 +74,6 @@ avtVectorPlot::avtVectorPlot()
     //
     varLegendRefPtr = varLegend;
 }
-
 
 // ****************************************************************************
 //  Method: avtVectorPlot destructor
@@ -91,7 +90,6 @@ avtVectorPlot::avtVectorPlot()
 //    Delete resample filter.
 //
 // ****************************************************************************
-
 avtVectorPlot::~avtVectorPlot()
 {
     if (vectorMapper != NULL)
@@ -114,18 +112,17 @@ avtVectorPlot::~avtVectorPlot()
         delete ghostFilter;
         ghostFilter = NULL;
     }
-    if (vectorGlyph != NULL)
-    {
-        vectorGlyph->Delete();
-        vectorGlyph = NULL;
-    }
     if (avtLUT != NULL)
     {
         delete avtLUT;
         avtLUT = NULL;
     }
+    if (vectorGlyph != NULL)
+    {
+        vectorGlyph->Delete();
+        vectorGlyph = NULL;
+    }
 }
-
 
 // ****************************************************************************
 //  Method:  avtVectorPlot::Create
@@ -137,13 +134,11 @@ avtVectorPlot::~avtVectorPlot()
 //  Creation:    March 21, 2001
 //
 // ****************************************************************************
-
-avtPlot*
+avtPlot *
 avtVectorPlot::Create()
 {
     return new avtVectorPlot;
 }
-
 
 // ****************************************************************************
 //  Method:  avtVectorPlot::SetCellCountMultiplierForSRThreshold
@@ -162,7 +157,6 @@ avtVectorPlot::Create()
 //    Changed to Set... (Get is now done in avtPlot.C)
 //
 // ****************************************************************************
-
 void
 avtVectorPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 {
@@ -189,7 +183,6 @@ avtVectorPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 //  Creation:   March 21, 2000
 //
 // ****************************************************************************
-
 avtMapperBase *
 avtVectorPlot::GetMapper(void)
 {
@@ -232,7 +225,6 @@ avtVectorPlot::GetMapper(void)
 //    (ApplyRenderingTransformation).
 //
 // ****************************************************************************
-
 avtDataObject_p
 avtVectorPlot::ApplyOperators(avtDataObject_p input)
 {
@@ -260,7 +252,6 @@ avtVectorPlot::ApplyOperators(avtDataObject_p input)
 //    "ApplyOperators".  Move those filters here.
 //
 // ****************************************************************************
-
 avtDataObject_p
 avtVectorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
@@ -318,7 +309,6 @@ avtVectorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Added call to SetLimitsMode. 
 //
 // ****************************************************************************
-
 void
 avtVectorPlot::CustomizeBehavior(void)
 {
@@ -327,7 +317,6 @@ avtVectorPlot::CustomizeBehavior(void)
     behavior->SetLegend(varLegendRefPtr);
     behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
 }
-
 
 // ****************************************************************************
 //  Method: avtVectorPlot::CustomizeMapper
@@ -359,7 +348,6 @@ avtVectorPlot::CustomizeBehavior(void)
 //    I added call to ComputeMagVarName and SetMapperColors.
 //
 // ****************************************************************************
-
 void
 avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 {
@@ -386,7 +374,6 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
     //
     SetLegendRanges();
 }
-
 
 // ****************************************************************************
 //  Method: avtVectorPlot::SetAtts
@@ -457,7 +444,6 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Consider InvertColorTable flag when setting updateColors.
 //
 // ****************************************************************************
-
 void
 avtVectorPlot::SetAtts(const AttributeGroup *a)
 {
@@ -588,7 +574,6 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
 //    Retrieve invertColorTable flag and send to avtLUT.
 //
 // ****************************************************************************
-
 bool
 avtVectorPlot::SetColorTable(const char *ctName)
 {
@@ -636,7 +621,6 @@ avtVectorPlot::SetColorTable(const char *ctName)
 //    Remove call to SetColorTable, as it is unnecessary here.
 //
 // ****************************************************************************
-
 void
 avtVectorPlot::SetLegend(bool legendOn)
 {
@@ -667,7 +651,6 @@ avtVectorPlot::SetLegend(bool legendOn)
 //    Account for user-set min and max or limitsMode.
 //
 // ****************************************************************************
-
 void
 avtVectorPlot::SetLegendRanges()
 {
@@ -705,7 +688,6 @@ avtVectorPlot::SetLegendRanges()
 //    Release data for resample filter.
 //
 // ****************************************************************************
- 
 void
 avtVectorPlot::ReleaseData(void)
 {
@@ -725,7 +707,6 @@ avtVectorPlot::ReleaseData(void)
     }
 }
 
-
 // ****************************************************************************
 //  Method: avtVectorPlot::ComputeMagVarName
 //
@@ -737,7 +718,6 @@ avtVectorPlot::ReleaseData(void)
 //  Creation:   August 9, 2004 
 //
 // ****************************************************************************
-
 void
 avtVectorPlot::ComputeMagVarName(const std::string &vn)
 {
@@ -754,7 +734,6 @@ avtVectorPlot::ComputeMagVarName(const std::string &vn)
 //  Creation:   August 12, 2004 
 //
 // ****************************************************************************
-
 void
 avtVectorPlot::SetMapperColors()
 {
@@ -770,7 +749,6 @@ avtVectorPlot::SetMapperColors()
     }
 }
 
-
 // ****************************************************************************
 //  Method: avtVectorPlot::SetLimitsMode
 //
@@ -785,7 +763,6 @@ avtVectorPlot::SetMapperColors()
 //  Modifications:
 //
 // ****************************************************************************
-
 void
 avtVectorPlot::SetLimitsMode(int limitsMode)
 {
@@ -850,7 +827,6 @@ avtVectorPlot::SetLimitsMode(int limitsMode)
     SetLegendRanges();
 }
 
-
 // ****************************************************************************
 //  Method: avtVectorPlot::GetExtraInfoForPick
 //
@@ -861,7 +837,6 @@ avtVectorPlot::SetLimitsMode(int limitsMode)
 //  Creation:   February 29, 2012
 //
 // ****************************************************************************
-
 const MapNode &
 avtVectorPlot::GetExtraInfoForPick()
 {
@@ -870,4 +845,3 @@ avtVectorPlot::GetExtraInfoForPick()
 
     return extraPickInfo;
 }
-

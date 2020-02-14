@@ -89,9 +89,9 @@ public slots:
     virtual void reset();
 
 protected:
-    void CreateVectorTab(QWidget *);
+    void CreateSamplingTab(QWidget *);
     void CreateDataTab(QWidget *);
-    void CreateGlyphTab(QWidget *);
+    void CreateGeometryTab(QWidget *);
     void CreateExtrasTab(QWidget *);
 
     void UpdateWindow(bool doAll);

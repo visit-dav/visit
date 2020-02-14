@@ -60,9 +60,10 @@ public slots:
     virtual void reset();
 
 protected:
-    void CreateTensorTab(QWidget *);
+    void CreateSamplingTab(QWidget *);
     void CreateDataTab(QWidget *);
-    void CreateGlyphTab(QWidget *);
+    void CreateGeometryTab(QWidget *);
+
 
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);

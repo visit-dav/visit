@@ -38,11 +38,6 @@ public:
         Middle,
         Tail
     };
-    enum LimitsMode
-    {
-        OriginalData,
-        CurrentPlot
-    };
     enum GlyphType
     {
         Arrow,
@@ -52,6 +47,11 @@ public:
     {
         Cylinder,
         Line
+    };
+    enum LimitsMode
+    {
+        OriginalData,
+        CurrentPlot
     };
     enum GlyphLocation
     {
@@ -162,11 +162,6 @@ public:
 protected:
     static std::string OriginType_ToString(int);
 public:
-    static std::string LimitsMode_ToString(LimitsMode);
-    static bool LimitsMode_FromString(const std::string &, LimitsMode &);
-protected:
-    static std::string LimitsMode_ToString(int);
-public:
     static std::string GlyphType_ToString(GlyphType);
     static bool GlyphType_FromString(const std::string &, GlyphType &);
 protected:
@@ -176,6 +171,11 @@ public:
     static bool LineStem_FromString(const std::string &, LineStem &);
 protected:
     static std::string LineStem_ToString(int);
+public:
+    static std::string LimitsMode_ToString(LimitsMode);
+    static bool LimitsMode_FromString(const std::string &, LimitsMode &);
+protected:
+    static std::string LimitsMode_ToString(int);
 public:
     static std::string GlyphLocation_ToString(GlyphLocation);
     static bool GlyphLocation_FromString(const std::string &, GlyphLocation &);

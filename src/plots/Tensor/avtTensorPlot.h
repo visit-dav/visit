@@ -21,7 +21,6 @@ class     avtResampleFilter;
 class     avtVariableLegend;
 class     avtLookupTable;
 
-
 // ****************************************************************************
 //  Class:  avtTensorPlot
 //
@@ -66,16 +65,16 @@ class avtTensorPlot : public avtPointDataPlot
     virtual const MapNode      &GetExtraInfoForPick(void);
 
   protected:
-    TensorAttributes              atts;
-    bool                          colorsInitialized;
+    TensorAttributes            atts;
+    bool                        colorsInitialized;
 
-    avtTensorGlyphMapper         *tensorMapper;
-    avtVariableLegend            *varLegend;
-    avtLegend_p                   varLegendRefPtr;
-    avtTensorFilter              *TensorFilter;
-    avtGhostZoneFilter           *ghostFilter;
-    avtResampleFilter            *resampleFilter;
-    avtLookupTable               *avtLUT;
+    avtTensorGlyphMapper       *tensorMapper;
+    avtVariableLegend          *varLegend;
+    avtLegend_p                 varLegendRefPtr;
+    avtTensorFilter            *TensorFilter;
+    avtGhostZoneFilter         *ghostFilter;
+    avtResampleFilter          *resampleFilter;
+    avtLookupTable             *avtLUT;
 
     virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
@@ -91,8 +90,7 @@ class avtTensorPlot : public avtPointDataPlot
     void                        SetLegend(bool);
     void                        SetLegendRanges();
 
-    virtual void                SetCellCountMultiplierForSRThreshold(const avtDataObject_p)
-                                    { cellCountMultiplierForSRThreshold = 96.0; }; 
+    virtual void                SetCellCountMultiplierForSRThreshold(const avtDataObject_p);
 };
 
 #endif

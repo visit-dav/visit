@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const TensorAttributes &obj);
 Definition:
@@ -45,7 +46,6 @@ TensorViewerEnginePluginInfo::SupportsAnimation() const
 {
     return true;
 }
-
 
 Function: TensorViewerEnginePluginInfo::AnimationReset
 Declaration: virtual bool AnimationReset(AttributeSubject *atts, const avtPlotMetaData &plot);

@@ -12,11 +12,11 @@
 
 #include <avtCallback.h>
 #include <avtGhostZoneFilter.h>
-#include <avtTensorGlyphMapper.h>
 #include <avtLookupTable.h>
 #include <avtResampleFilter.h>
-#include <avtTensorFilter.h>
 #include <avtVariableLegend.h>
+#include <avtTensorFilter.h>
+#include <avtTensorGlyphMapper.h>
 
 #include <InvalidLimitsException.h>
 
@@ -34,13 +34,13 @@
 //    pipeline connectivity with vtk-6.
 //
 // ****************************************************************************
-
 avtTensorPlot::avtTensorPlot()
 {
     colorsInitialized = false;
     TensorFilter = new avtTensorFilter(true, 10);
     resampleFilter = NULL;
     ghostFilter  = new avtGhostZoneFilter();
+    ghostFilter->GhostDataMustBeRemoved();
     avtLUT       = new avtLookupTable();
 
     //
@@ -65,7 +65,6 @@ avtTensorPlot::avtTensorPlot()
     varLegendRefPtr = varLegend;
 }
 
-
 // ****************************************************************************
 //  Method: avtTensorPlot destructor
 //
@@ -73,7 +72,6 @@ avtTensorPlot::avtTensorPlot()
 //  Creation:   Tue Sep 23 20:57:03 PST 2003
 //
 // ****************************************************************************
-
 avtTensorPlot::~avtTensorPlot()
 {
     if (tensorMapper != NULL)
@@ -103,7 +101,6 @@ avtTensorPlot::~avtTensorPlot()
     }
 }
 
-
 // ****************************************************************************
 //  Method:  avtTensorPlot::Create
 //
@@ -114,13 +111,34 @@ avtTensorPlot::~avtTensorPlot()
 //  Creation:   Tue Sep 23 20:57:03 PST 2003
 //
 // ****************************************************************************
-
-avtPlot*
+avtPlot *
 avtTensorPlot::Create()
 {
     return new avtTensorPlot;
 }
 
+// ****************************************************************************
+//  Method:  avtTensorPlot::SetCellCountMultiplierForSRThreshold
+//
+//  Purpose: Sets the number of polygons each point in the plot's output will
+//  be glyphed into.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    August 11, 2004 
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 12 14:15:55 PDT 2004
+//    Changed some code to get it to compile.
+//
+//    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
+//    Changed to Set... (Get is now done in avtPlot.C)
+//
+// ****************************************************************************
+void
+avtTensorPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
+{
+    cellCountMultiplierForSRThreshold = 96.0;
+}
 
 // ****************************************************************************
 //  Method: avtTensorPlot::GetMapper
@@ -134,13 +152,11 @@ avtTensorPlot::Create()
 //  Creation:   Tue Sep 23 20:57:03 PST 2003
 //
 // ****************************************************************************
-
 avtMapperBase *
 avtTensorPlot::GetMapper(void)
 {
     return tensorMapper;
 }
-
 
 // ****************************************************************************
 //  Method: avtTensorPlot::ApplyOperators
@@ -164,13 +180,11 @@ avtTensorPlot::GetMapper(void)
 //    transformation.  Move them to the ApplyRenderingTransformation method.
 //
 // ****************************************************************************
-
 avtDataObject_p
 avtTensorPlot::ApplyOperators(avtDataObject_p input)
 {
     return input;
 }
-
 
 // ****************************************************************************
 //  Method: avtTensorPlot::ApplyRenderingTransformation
@@ -193,7 +207,6 @@ avtTensorPlot::ApplyOperators(avtDataObject_p input)
 //    Put them here.
 //
 // ****************************************************************************
-
 avtDataObject_p
 avtTensorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
@@ -223,7 +236,6 @@ avtTensorPlot::ApplyRenderingTransformation(avtDataObject_p input)
     return TensorFilter->GetOutput();
 }
 
-
 // ****************************************************************************
 //  Method: avtTensorPlot::CustomizeBehavior
 //
@@ -235,14 +247,14 @@ avtTensorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //  Creation:   Tue Sep 23 20:57:03 PST 2003
 //
 // ****************************************************************************
-
 void
 avtTensorPlot::CustomizeBehavior(void)
 {
     SetLimitsMode(atts.GetLimitsMode());
+    behavior->SetShiftFactor(0.6);
     behavior->SetLegend(varLegendRefPtr);
+    behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
 }
-
 
 // ****************************************************************************
 //  Method: avtTensorPlot::CustomizeMapper
@@ -261,7 +273,6 @@ avtTensorPlot::CustomizeBehavior(void)
 //    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003
 //    Set antialiased render order.
 // ****************************************************************************
-
 void
 avtTensorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 {
@@ -275,7 +286,6 @@ avtTensorPlot::CustomizeMapper(avtDataObjectInformation &doi)
     //
     SetLegendRanges();
 }
-
 
 // ****************************************************************************
 //  Method: avtTensorPlot::SetAtts
@@ -297,7 +307,6 @@ avtTensorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Consider invertColorTable flag when setting updateColors.
 //
 // ****************************************************************************
-
 void
 avtTensorPlot::SetAtts(const AttributeGroup *a)
 {
@@ -306,7 +315,8 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
     // See if the colors will need to be updated.
     bool updateColors = (!colorsInitialized) ||
        (atts.GetColorTableName() != newAtts->GetColorTableName()) ||
-       (atts.GetInvertColorTable() != newAtts->GetInvertColorTable());
+       (atts.GetInvertColorTable() != newAtts->GetInvertColorTable() ||
+       (atts.GetColorByEigenValues() != newAtts->GetColorByEigenValues()));
 
     // See if any attributes that require the plot to be regenerated were
     // changed and copy the state object.
@@ -323,7 +333,7 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
     {
         TensorFilter->SetNTensors(atts.GetNTensors());
     }
-    TensorFilter->SetLimitToOriginal(0);//atts.GetOrigOnly());
+    TensorFilter->SetLimitToOriginal(atts.GetOrigOnly());
 
     // If the resample filter is not NULL, then we are calling SetAtts
     // for a second consecutive time.  The second call must be for SR
@@ -363,7 +373,6 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
     SetLegend(atts.GetUseLegend());
 }
 
-
 // ****************************************************************************
 //  Method: avtTensorPlot::SetColorTable
 //
@@ -384,7 +393,6 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
 //    Retrieve invertColorTable flag and pass to avtLUT.
 //
 // ****************************************************************************
-
 bool
 avtTensorPlot::SetColorTable(const char *ctName)
 {
@@ -415,7 +423,6 @@ avtTensorPlot::SetColorTable(const char *ctName)
     return retval;
 }
 
-
 // ****************************************************************************
 //  Method: avtTensorPlot::SetLegend
 //
@@ -429,7 +436,6 @@ avtTensorPlot::SetColorTable(const char *ctName)
 //  Creation:   September 23, 2003
 //
 // ****************************************************************************
-
 void
 avtTensorPlot::SetLegend(bool legendOn)
 {
@@ -446,7 +452,6 @@ avtTensorPlot::SetLegend(bool legendOn)
     }
 }
 
-
 // ****************************************************************************
 //  Method: avtTensorPlot::SetLegendRanges
 //
@@ -457,20 +462,27 @@ avtTensorPlot::SetLegend(bool legendOn)
 //  Date:       September 23, 2003
 //
 // ****************************************************************************
-
 void
 avtTensorPlot::SetLegendRanges()
 {
     double min = 0., max = 1.;
-    tensorMapper->GetRange(min, max);
+
+    if (atts.GetLimitsMode() == TensorAttributes::OriginalData)
+    {
+        tensorMapper->GetRange(min, max);
+    }
+    else
+    {
+        tensorMapper->GetCurrentRange(min, max);
+    }
+    varLegend->SetRange(min, max);
 
     //
     // Set the range for the legend's text and colors.
     //
+    tensorMapper->GetVarRange(min, max);
     varLegend->SetVarRange(min, max);
-    varLegend->SetRange(min, max);
 }
-
 
 // ****************************************************************************
 //  Method: avtTensorPlot::ReleaseData
@@ -482,7 +494,6 @@ avtTensorPlot::SetLegendRanges()
 //  Creation:   September 12, 2002
 //
 // ****************************************************************************
-
 void
 avtTensorPlot::ReleaseData(void)
 {
@@ -502,7 +513,6 @@ avtTensorPlot::ReleaseData(void)
     }
 }
 
-
 // ****************************************************************************
 //  Method: avtTensorPlot::SetMapperColors
 //
@@ -513,7 +523,6 @@ avtTensorPlot::ReleaseData(void)
 //  Creation:   August 12, 2004 
 //
 // ****************************************************************************
-
 void
 avtTensorPlot::SetMapperColors()
 {
@@ -529,7 +538,6 @@ avtTensorPlot::SetMapperColors()
     }
 }
 
-
 // ****************************************************************************
 //  Method: avtTensorPlot::SetLimitsMode
 //
@@ -544,7 +552,6 @@ avtTensorPlot::SetMapperColors()
 //  Modifications:
 //
 // ****************************************************************************
-
 void
 avtTensorPlot::SetLimitsMode(int limitsMode)
 {
@@ -609,7 +616,6 @@ avtTensorPlot::SetLimitsMode(int limitsMode)
     SetLegendRanges();
 }
 
-
 // ****************************************************************************
 //  Method: avtTensorPlot::GetExtraInfoForPick
 //
@@ -620,7 +626,6 @@ avtTensorPlot::SetLimitsMode(int limitsMode)
 //  Creation:   February 29, 2012
 //
 // ****************************************************************************
-
 const MapNode &
 avtTensorPlot::GetExtraInfoForPick()
 {
@@ -629,5 +634,3 @@ avtTensorPlot::GetExtraInfoForPick()
 
     return extraPickInfo;
 }
-
-

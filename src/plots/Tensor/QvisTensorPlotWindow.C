@@ -16,6 +16,7 @@
 
 #include <TensorAttributes.h>
 #include <ViewerProxy.h>
+
 #include <QvisColorButton.h>
 #include <QvisColorTableWidget.h>
 
@@ -68,7 +69,7 @@ QvisTensorPlotWindow::QvisTensorPlotWindow(const int type,
 
 QvisTensorPlotWindow::~QvisTensorPlotWindow()
 {
-    tensorAtts = 0;
+    tensorAtts = nullptr;
 }
 
 // ****************************************************************************
@@ -106,11 +107,11 @@ QvisTensorPlotWindow::CreateWindowContents()
     topLayout->addWidget(propertyTabs);
 
     // ----------------------------------------------------------------------
-    // Tensors tab
+    // Sampling tab
     // ----------------------------------------------------------------------
-    QWidget *tensorTab = new QWidget(central);
-    propertyTabs->addTab(tensorTab, tr("Tensors"));
-    CreateTensorTab(tensorTab);
+    QWidget *samplingTab = new QWidget(central);
+    propertyTabs->addTab(samplingTab, tr("Sampling"));
+    CreateSamplingTab(samplingTab);
 
     // ----------------------------------------------------------------------
     // Data tab
@@ -120,18 +121,18 @@ QvisTensorPlotWindow::CreateWindowContents()
     CreateDataTab(dataTab);
 
     // ----------------------------------------------------------------------
-    // Glyph tab
+    // Geometry tab
     // ----------------------------------------------------------------------
-    QWidget *glyphTab = new QWidget(central);
-    propertyTabs->addTab(glyphTab, tr("Glyphs"));
-    CreateGlyphTab(glyphTab);
+    QWidget *geometryTab = new QWidget(central);
+    propertyTabs->addTab(geometryTab, tr("Geometry"));
+    CreateGeometryTab(geometryTab);
 }
 
 // ****************************************************************************
-// Method: QvisTensorPlotWindow::CreateTensorTab
+// Method: QvisTensorPlotWindow::CreateSamplingTab
 //
 // Purpose: 
-//   Populates the tensor tab.
+//   Populates the sampling tab.
 //
 // Programmer: Allen Sanderson
 // Creation:   September 20 2013
@@ -141,7 +142,7 @@ QvisTensorPlotWindow::CreateWindowContents()
 // ****************************************************************************
 
 void
-QvisTensorPlotWindow::CreateTensorTab(QWidget *pageTensor)
+QvisTensorPlotWindow::CreateSamplingTab(QWidget *pageTensor)
 {
     QGridLayout *topLayout = new QGridLayout(pageTensor);
     topLayout->setMargin(5);
@@ -158,12 +159,12 @@ QvisTensorPlotWindow::CreateTensorTab(QWidget *pageTensor)
 //    rgLayout->setColumnStretch(1, 10);
 
     // Create the data location button group.
-    QLabel *locationLabel = new QLabel(tr("Tensor placement"), reduceGroupBox);
+    QLabel *locationLabel = new QLabel(tr("Placement"), reduceGroupBox);
     rgLayout->addWidget(locationLabel, 0, 0);
     locationButtonGroup = new QButtonGroup(reduceGroupBox);
     connect(locationButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(locationMethodChanged(int)));
-    QRadioButton *rb = new QRadioButton(tr("Adapted to resolution of mesh"), reduceGroupBox);
+    QRadioButton *rb = new QRadioButton(tr("Adapt to the mesh resolution"), reduceGroupBox);
     rb->setChecked(true);
     locationButtonGroup->addButton(rb, 0);
     rgLayout->addWidget(rb, 0, 1, 1, 3);
@@ -176,7 +177,7 @@ QvisTensorPlotWindow::CreateTensorTab(QWidget *pageTensor)
     rgLayout->addWidget(hline1, 3, 0, 1, 4);
 
     // Create the reduce button group.
-    QLabel *reduceLabel = new QLabel(tr("Tensor amount"), reduceGroupBox);
+    QLabel *reduceLabel = new QLabel(tr("Sampling"), reduceGroupBox);
     rgLayout->addWidget(reduceLabel, 4, 0);
     reduceButtonGroup = new QButtonGroup(reduceGroupBox);
     connect(reduceButtonGroup, SIGNAL(buttonClicked(int)),
@@ -266,13 +267,13 @@ QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
 
     // Create the max toggle and line edit
     maxToggle = new QCheckBox(tr("Maximum"), central);
-    limitsLayout->addWidget(maxToggle, 1, 2);
+    limitsLayout->addWidget(maxToggle, 2, 0);
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
     maxLineEdit = new QLineEdit(central);
     connect(maxLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMaxLimitText())); 
-    limitsLayout->addWidget(maxLineEdit, 1, 3);
+    limitsLayout->addWidget(maxLineEdit, 2, 1);
 
     //
     // Create the color-related widgets.
@@ -286,7 +287,7 @@ QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
     cgLayout->setSpacing(10);
     cgLayout->setColumnStretch(1, 10);
 
-    // Add the tensor color label.
+    // Add the color label.
     colorButtonGroup = new QButtonGroup(colorGroupBox);
     connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
@@ -335,10 +336,10 @@ QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
 
 
 // ****************************************************************************
-// Method: QvisTensorPlotWindow::CreateGlyphTab
+// Method: QvisTensorPlotWindow::CreateGeometryTab
 //
 // Purpose: 
-//   Populates the glyph tab.
+//   Populates the geometry tab.
 //
 // Programmer: Allen Sanderson
 // Creation:   September 20 2013
@@ -348,7 +349,7 @@ QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
 // ****************************************************************************
 
 void
-QvisTensorPlotWindow::CreateGlyphTab(QWidget *pageGlyphs)
+QvisTensorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
 {
     QGridLayout *topLayout = new QGridLayout(pageGlyphs);
     topLayout->setMargin(5);
@@ -502,7 +503,7 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
             maxLineEdit->setText(DoubleToQString(tensorAtts->GetMax()));
             break;
 
-	  case TensorAttributes::ID_colorByEigenValues:
+          case TensorAttributes::ID_colorByEigenValues:
             colorButtonGroup->blockSignals(true);
             colorButtonGroup->button(tensorAtts->GetColorByEigenValues() ? 0 : 1)->setChecked(true);
             colorButtonGroup->blockSignals(false);
@@ -529,7 +530,7 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
             legendToggle->blockSignals(false);
             break;
 
-	  case TensorAttributes::ID_scale:
+          case TensorAttributes::ID_scale:
             scaleLineEdit->setText(DoubleToQString(tensorAtts->GetScale()));
             break;
           case TensorAttributes::ID_scaleByMagnitude:
@@ -610,7 +611,7 @@ QvisTensorPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do the minimum value.
-    if(which_widget == TensorAttributes::ID_minFlag || doAll)
+    if(which_widget == TensorAttributes::ID_min || doAll)
     {
         double val;
         if(LineEditGetDouble(minLineEdit, val))
@@ -624,7 +625,7 @@ QvisTensorPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do the maximum value
-    if(which_widget == TensorAttributes::ID_maxFlag || doAll)
+    if(which_widget == TensorAttributes::ID_max || doAll)
     {
         double val;
         if(LineEditGetDouble(maxLineEdit, val))
@@ -1059,7 +1060,7 @@ QvisTensorPlotWindow::limitsSelectChanged(int mode)
 void
 QvisTensorPlotWindow::processMinLimitText()
 {
-    GetCurrentValues(TensorAttributes::ID_minFlag);
+    GetCurrentValues(TensorAttributes::ID_min);
     Apply();
 }
 
@@ -1079,7 +1080,7 @@ QvisTensorPlotWindow::processMinLimitText()
 void
 QvisTensorPlotWindow::processMaxLimitText()
 {
-    GetCurrentValues(TensorAttributes::ID_maxFlag);
+    GetCurrentValues(TensorAttributes::ID_max);
     Apply();
 }
 

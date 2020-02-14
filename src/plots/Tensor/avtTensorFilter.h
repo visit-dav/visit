@@ -44,8 +44,6 @@ class avtTensorFilter : public avtDataTreeIterator
     virtual const char       *GetDescription(void)
                                   { return "Creating tensors"; };
 
-    virtual void              ReleaseData(void);
-
     void                      SetStride(int);
     void                      SetNTensors(int);
     void                      SetLimitToOriginal(bool);
@@ -66,4 +64,3 @@ class avtTensorFilter : public avtDataTreeIterator
 };
 
 #endif
-

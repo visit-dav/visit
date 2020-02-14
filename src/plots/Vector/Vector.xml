@@ -10,10 +10,6 @@
         Middle
         Tail
       </Enum>
-      <Enum name="LimitsMode">
-        OriginalData
-        CurrentPlot
-      </Enum>
       <Enum name="GlyphType">
         Arrow
         Ellipsoid
@@ -21,6 +17,10 @@
       <Enum name="LineStem">
         Cylinder
         Line
+      </Enum>
+      <Enum name="LimitsMode">
+        OriginalData
+        CurrentPlot
       </Enum>
       <Enum name="GlyphLocation">
         AdaptsToMeshResolution

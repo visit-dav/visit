@@ -10,7 +10,7 @@
 
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
-#include <vtkVectorReduceFilter.h>
+#include <vtkReduceFilter.h>
 #include <vtkVertexFilter.h>
 #include <avtParallel.h>
 
@@ -274,8 +274,8 @@ avtVectorFilter::ExecuteData(avtDataRepresentation *inDR)
     //
     vtkDataSet *inDS = inDR->GetDataVTK();
 
-    vtkVectorReduceFilter *reduce = vtkVectorReduceFilter::New();
-    vtkVertexFilter       *vertex = vtkVertexFilter::New();
+    vtkReduceFilter *reduce = vtkReduceFilter::New();
+    vtkVertexFilter *vertex = vtkVertexFilter::New();
 
     if (useStride)
     {
@@ -299,6 +299,7 @@ avtVectorFilter::ExecuteData(avtDataRepresentation *inDR)
         vertex->VertexAtPointsOff();
     }
 
+    reduce->ReduceVectors();
     reduce->SetLimitToOriginal(origOnly);
 
     vertex->SetInputData(inDS);
@@ -447,7 +448,7 @@ avtVectorFilter::ModifyContract(avtContract_p contract)
         contract->GetDataRequest()->MayRequireNodes() ||
         origOnly)
     {
-        avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();	
+        avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();        
         keepNodeZone = true;
 
         if (data.ValidActiveVariable())

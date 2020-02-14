@@ -10,7 +10,7 @@
 
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
-#include <vtkTensorReduceFilter.h>
+#include <vtkReduceFilter.h>
 #include <vtkVertexFilter.h>
 #include <avtParallel.h>
 
@@ -223,8 +223,8 @@ avtTensorFilter::ExecuteData(avtDataRepresentation *inDR)
     //
     vtkDataSet *inDS = inDR->GetDataVTK();
 
-    vtkTensorReduceFilter *reduce = vtkTensorReduceFilter::New();
-    vtkVertexFilter       *vertex = vtkVertexFilter::New();
+    vtkReduceFilter *reduce = vtkReduceFilter::New();
+    vtkVertexFilter *vertex = vtkVertexFilter::New();
 
     if (useStride)
     {
@@ -248,6 +248,7 @@ avtTensorFilter::ExecuteData(avtDataRepresentation *inDR)
         vertex->VertexAtPointsOff();
     }
 
+    reduce->ReduceTensors();
     reduce->SetLimitToOriginal(origOnly);
 
     vertex->SetInputData(inDS);
@@ -298,37 +299,6 @@ avtTensorFilter::UpdateDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
     GetOutput()->GetInfo().GetAttributes().SetKeepNodeZoneArrays(keepNodeZone);
-}
-
-
-// ****************************************************************************
-//  Method: avtTensorFilter::ReleaseData
-//
-//  Purpose:
-//      Releases all problem size data associated with this filter.
-//
-//  Programmer: Hank Childs
-//  Creation:   September 10, 2002
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
-//    Do not set outputs of filters to NULL, since this will prevent them
-//    from re-executing correctly in DLB-mode.
-//
-//    Kathleen Bonnell, Wed May 18 15:07:05 PDT 2005 
-//    Fix memory leak. 
-//
-//    David Camp, Thu May 23 12:52:53 PDT 2013
-//    Removed the reduce and vertex variables from the class. They are now 
-//    created in the exectue method. This was done for threading VisIt.
-//
-// ****************************************************************************
-
-void
-avtTensorFilter::ReleaseData(void)
-{
-    avtDataTreeIterator::ReleaseData();
 }
 
 

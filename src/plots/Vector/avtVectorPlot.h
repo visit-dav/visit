@@ -18,11 +18,11 @@
 
 class     vtkVectorGlyph;
 
+class     avtVectorFilter;
+class     avtVectorGlyphMapper;
 class     avtGhostZoneFilter;
 class     avtResampleFilter;
-class     avtVectorGlyphMapper;
 class     avtVariableLegend;
-class     avtVectorFilter;
 class     avtLookupTable;
 
 // ****************************************************************************
@@ -90,7 +90,7 @@ class avtVectorPlot : public avtPointDataPlot
     virtual bool                NeedZBufferToCompositeEvenIn2D(void)
                                                           { return true; };
 
-    virtual const MapNode     &GetExtraInfoForPick(void);
+    virtual const MapNode      &GetExtraInfoForPick(void);
 
   protected:
     VectorAttributes            atts;
@@ -100,8 +100,8 @@ class avtVectorPlot : public avtPointDataPlot
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
     avtVectorFilter            *vectorFilter;
-    avtResampleFilter          *resampleFilter;
     avtGhostZoneFilter         *ghostFilter;
+    avtResampleFilter          *resampleFilter;
     avtLookupTable             *avtLUT;
 
     vtkVectorGlyph             *vectorGlyph;
@@ -112,20 +112,19 @@ class avtVectorPlot : public avtPointDataPlot
     virtual void                CustomizeBehavior(void);
     virtual void                CustomizeMapper(avtDataObjectInformation &);
 
+    bool                        SetColorTable(const char *);
     void                        SetLimitsMode(int);
-    virtual bool                SetColorTable(const char *ctName);
     void                        SetMapperColors(void);
-    void                        ComputeMagVarName(const std::string &);
-    std::string                 magVarName;
 
     virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; };
     void                        SetLegend(bool);
     void                        SetLegendRanges();
 
-    virtual void                SetCellCountMultiplierForSRThreshold(const avtDataObject_p);
+    virtual void                SetCellCountMultiplierForSRThreshold(const avtDataObject_p); 
+
+    void                        ComputeMagVarName(const std::string &);
+    std::string                 magVarName;
 };
 
 
 #endif
-
-
