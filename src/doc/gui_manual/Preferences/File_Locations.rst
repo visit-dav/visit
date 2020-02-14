@@ -187,7 +187,7 @@ VisIt Debug Log (``.vlog``) Files
   are written to the current working directory.
 
   The names of the log files are of the form
-  ``<letter>.<component-name>.<-mpi-rank-or-$pid>.<debug-level>.vlog`` where
+  ``<letter>.<component-name>.<mpi-rank-or-$pid>.<debug-level>.vlog`` where
   ``<letter>`` is one of ``A`` through ``E``, ``<component-name>`` is one of
   ``gui``, ``mdserver``, ``viewer``, ``engine_ser``, ``engine_par``,
   ``<mpi-rank-or-$pid>`` is the MPI rank for a prallel engine (``engine_par``)
@@ -197,7 +197,7 @@ VisIt Debug Log (``.vlog``) Files
   command-line :ref:`startup option <StartupOptions>`. For example the file
   names are ``A.mdserver.5.vlog`` or ``C.engine_par.123.2.vlog``.
 * Purpose: Capture streaming debugging messages from various VisIt_ components.
-* Written continuously by VisIt if ``-debug L`` where ``L`` is the debug *level*
+* Written: Continuously by VisIt if ``-debug L`` where ``L`` is the debug *level*
   and is an integer in the range ``[1...5]`` is given on the command-line that
   starts VisIt_ or buffered if a ``b`` is given immediately afte the debug level
   integer. In addition, VisIt_ maintains the 5 most recently written logs from
@@ -271,8 +271,16 @@ be highly similar and confusing to decide which to use. In general, the
 **Save Window** operation is to save an *image* file whereas the **Export Database**
 operation is to output a wholly new VisIt_ *database* file. The cases where
 these two operations are blurred is when non-image formats are used by
-**Save Window** such as STL, VTK, OBJ, PLY (3D formats) and Curve or Ultra
-(2D, xy curve formats) formats.
+**Save Window** such as `STL <https://en.wikipedia.org/wiki/STL_(file_format)>`_,
+`VTK <https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf>`_,
+`OBJ <https://en.wikipedia.org/wiki/Wavefront_.obj_file>`_,
+`PLY <https://en.wikipedia.org/wiki/PLY_(file_format)>`_ (3D formats) and Curve or
+Ultra (2D, xy curve formats) formats. These non-image formats support 3D and 2D
+objects often for input to other high end graphics tools such as for 3D printing
+or rendering engines. In particular, these formats often support aspects of the
+*rendering* process such as surface colors, textures, lighting, etc. This is the
+key to what makes a **Save Window** in these formats different from an
+**Export Database**.
 
 Temporarily Adjusting Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
