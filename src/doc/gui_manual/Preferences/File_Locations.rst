@@ -181,7 +181,7 @@ Files In Other Locations
 There are several other kinds of files VisIt_ reads and writes to locations
 other than ``VUSER_HOME``. These are breifly described here.
 
-`VisIt Debug Log (``.vlog``) Files <http://visitusers.org/index.php?title=Debug_logs>`_
+`VisIt Debug Log <http://visitusers.org/index.php?title=Debug_logs>`_ (``.vlog``) Files
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 * Location and file name(s): The location of these files depends on whether
   VisIt_ is being run in :ref:`client/server mode <Client-Server Mode>`.
