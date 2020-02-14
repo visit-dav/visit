@@ -143,8 +143,9 @@ State Tracking Files
 
 Crash Recovery Files
 """"""""""""""""""""
-* Location(s): ``VUSER_HOME/crash_recovery.$pid.session`` and
-  ``VUSER_HOME/crash_recovery.$pid.session.gui``
+* Location and file name(s): ``VUSER_HOME/crash_recovery.$pid.session`` and
+  ``VUSER_HOME/crash_recovery.$pid.session.gui`` where ``$pid`` is the process
+  id of the VisIt_ viewer component.
 * Purpose: Hold the most recently saved last good state of VisIt_ prior
   to a crash. Disabled if the preference
   ``Periodically save a crash recovery file`` is unchecked in the
@@ -152,7 +153,7 @@ Crash Recovery Files
 * Written: periodically from VisIt_ automatically.
 * Read: when user starts VisIt_ and answers ``yes`` when queried whether to
   start up from the most recent crash recovery file or when user explicitly
-  specifies the crash recover file as an argument to the ``-sessionfile``
+  specifies the crash recovery file as an argument to the ``-sessionfile``
   command-line :ref:`startup option <StartupOptions>`.
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_, same as any
   other VisIt_ :ref:`session files <Session files>`.
@@ -160,32 +161,34 @@ Crash Recovery Files
 Files In Other Locations
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Session Files
-"""""""""""""
-When saving or restoring session files, the user is always prompted with a
-file browser to select where the files are stored.
-* Purpose: Save and load the state of VisIt_ so that VisIt_ can be easily
-  restarted and returned to a previously saved state.
+There are several other kinds of files VisIt_ reads and writes to locations
+other than ``VUSER_HOME``. These are breifly described here.
 
-Attributes Files
-""""""""""""""""
-Most plot and operator attribute windows have a **Save** and **Load** buttons
-to save the specific attributes.
+VisIt Debug Log (``.vlog) Files
+"""""""""""""""""""""""""""""""
+* Location and file name(s): The location of these files depends on whether
+  VisIt_ is being run in :ref:`client/server mode <Client-Server Mode>`.
+  When running client/server, some logs are written on the client and some on
+  the server. The logs on the client are written to whatever the current working
+  directory was when VisIt_ was started. If started from an icon, this is most
+  likely the the user's home directory. If started from a command-line, it is
+  whatever the shell's current working directory for that command-line was. On
+  the server, the logs are written to the user's login (home) directory. In a
+  typical client/server scenario, the user gets gui and viewer logs locally in
+  the current working directory and mdserver and engine logs on the remote
+  system in their login (home) directory. In a purley local scenario, all logs
+  are written to the current working directory.
 
-VisIt Debug Log Files
-"""""""""""""""""""""
-* Location(s): Can vary depending on a few factors.
-  VisIt_ debug log (``.vlog``) files are written by many different VisIt_
-  components; the engine, the viewer, the mdserver, the gui, etc. When running
-  client/server, some logs are written on the client and some on the server.
-  The logs on the client are written to whatever the current working directory
-  was when VisIt_ was started. If started from an icon, this is most likely
-  the ``VUSER_HOME`` directory. If started from a command-line, it is whatever
-  the shell's current working directory for that command-line was. On the server,
-  the logs are written to ``VUSER_HOME``. In a typical client/server scenario,
-  the user gets gui and viewer logs locally in current working directory and
-  mdserver and engine logs on the remote system in ``VUSER_HOME``. In a purley
-  local scenario, all logs are written to the current working directory.
+  The names of the log files are of the form
+  ``<letter>.<component-name>.<-mpi-rank-or-$pid>.<debug-level>.vlog`` where
+  ``<letter>`` is one of ``A`` through ``E``, ``<component-name>`` is one of
+  ``gui``, ``mdserver``, ``viewer``, ``engine_ser``, ``engine_par``,
+  ``<mpi-rank-or-$pid>`` is the MPI rank for a prallel engine (``engine_par``)
+  or, optionally if ``-pid`` is given as a command-line
+  :ref:`startup option <StartupOptions>`) the component's process id,
+  and ``<debug-level>`` is the integer argument for the ``-debug``
+  command-line :ref:`startup option <StartupOptions>`. For example the file
+  names are ``A.mdserver.5.vlog`` or ``C.engine_par.123.2.vlog``.
 * Purpose: Capture streaming debugging messages from various VisIt_ components.
 * Written continuously by VisIt if ``-debug L`` where ``L`` is the debug *level*
   and is an integer in the range ``[1...5]`` is given on the command-line that
@@ -195,9 +198,49 @@ VisIt Debug Log Files
   through ``E``, ``A`` being the most recent.
 * Format: Various, ad-hoc ASCII, mostly human readable.
 
+Session Files
+"""""""""""""
+* Location and file name(s): User is prompted with a file browser to select
+  the name and location of these files. The ``-sessionfile`` 
+  command-line :ref:`startup option <StartupOptions>` can be used to select
+  a session file to open at startup.
+* Purpose: :ref:`Session files <Session files>` are used to save and restore the
+  entire state of a VisIt_ session.
+* Written: On demand when user selects :menuselection:`File --> Save session...`
+* Read: On demand when user selects :menuselection:`File --> Restor session...`
+* Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_.
+
+Database Files
+""""""""""""""
+* Location and file name(s): User uses the :menuselection:`File --> Open...`
+  file browser to select the location of these files. The ``-o`` 
+  command-line :ref:`startup option <StartupOptions>` can be used to select
+  a database file to open at startup.
+* Purpose: Database files store the data that VisIt_ is used to analyze and
+  visualize.
+* Written: VisIt_ *reads* over 130 different types of databases. Only about
+  20 of those types can be *written* by VisIt_. And some of those output
+  types support only limited kinds of data. A database can be written using
+  :menuselection:`File --> Export database...`
+* Read: On demand when user selects :menuselection:`File --> Open...`
+* Format: Varies by database type.
+
+Save Window Files
+"""""""""""""""""
+* Location and file name(s): User uses the :menuselection:`File --> Save Window...`
+  file browser to select the location of these files.
+  and :menuselection:`File -> Set save options...` to specify other properties.
+* Purpose: Save the data displayed in the currently active window usually but
+  not always to an image file.
+* Written: On demand user selects :menuselection:`File --> Save Window...` or
+  hits the **Save** button in the :ref:`Set save options <saving_viz_window>`
+  window.
+* Read: Yes, saved images can be read into VisIt_ like any other database.
+  On demand when user selects :menuselection:`File --> Open...`
+* Format: Various, see :ref:`Set save options <saving_viz_window>` window.
+
 Save Window vs. Export Database Files
 """""""""""""""""""""""""""""""""""""
-
 As far as file locations are concerned, the key issue for users to keep in 
 mind regarding **Save Window** operations and **Export Database** operations
 has to do with client/server operation. In client/server mode, **Save Window**
@@ -212,14 +255,16 @@ these two operations are blurred is when non-image formats are used by
 **Save Window** such as STL, VTK, OBJ, PLY (3D formats) and Curve or Ultra
 (2D, xy curve formats) formats.
 
-Connected Components Summary Query
-""""""""""""""""""""""""""""""""""
-
 Temporarily Adjusting Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-manually edit
-change file names
-move ~/.visit
-Many of the configuration files are ASCII `XML <https://en.wikipedia.org/wiki/XML>`_
-which means that often the files can be manually edited with a text editor to
-make quick adjustments without having to start the VisIt_ GUI.
+
+Sometimes, users need to temporarily change their configuration either to work
+around or diagnose an issue. Since the majority of content in these files is
+ASCII, it is possible to manually edit files without having to start VisIt_.
+
+The user can also move (or rename) files so that VisIt_ will either find or not
+find them. For example, a common trick is for users to change the name of
+``VUSER_HOME/config`` to ``VUSER_CONFIG/config.orig`` so that the majority of
+*settings/preferences* are not seen during VisIt_ startup. The most dramatic
+variation of this approach is to move the whole ``VUSER_HOME`` directory which
+on UNIX platforms would be a command like ``mv ~/.visit ~/.visit.old``.

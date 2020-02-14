@@ -1,3 +1,5 @@
+.. _saving_viz_window:
+
 Saving the Visualization Window
 -------------------------------
 
