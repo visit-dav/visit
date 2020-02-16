@@ -2,18 +2,27 @@
 
 File Locations
 --------------
+VisIt_ manages various files associated with its operation.  In most cases where
+VisIt_ saves or loads data from files, the user is presented with a file browser
+dialog and can explicitly choose arbitrary locations on the file system to look
+for or store files. However, this is not universally true. The locations and
+names of some files are *prescribed*. In this section we provide some additional
+details about various file locations and names involved with the operation of
+VisIt_.
 
-VisIt_ reads and writes information about aspects of its *configuration*
-and other information to various files. In most cases where VisIt_
-provides controls to either save or load some aspect of its configuration,
-the user is presented with a file browser dialog and can explicitly choose
-arbitrary locations on the file system to look for or store files. However,
-this is not universally true and VisIt_ does have *prescribed* locations for
-some configuration files. In this section we provide some additional details
-about these various files.
+Factors Effecting Prescribed File Location and Names
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To complicate matters, the *prescribed* location
+of these files depends on a few different factors including
 
-The locations of prescribed files may depend on the platform upon which VisIt_
-is running. Typically, on UNIX and OSX systems, prescribed configuration files
+   * Which platform is running VisIt_.
+   * How VisIt_ was launched.
+   * Whether VisIt_ is running in
+     :ref:`client/server mode <Client-Server Mode>`.
+
+The Platform and the User's *Home* Directory
+""""""""""""""""""""""""""""""""""""""""""""
+Typically, on UNIX and OSX systems, prescribed configuration files
 are stored in ``~/.visit`` whereas on Windows systems, they are, by default, in
 ``%USERPROFILE%\Documents\VisIt``, which may be something like
 ``C:\Users\<user-name>\Documents\VisIt``. Furthermore, on Windows, Visit_ honors
@@ -23,21 +32,38 @@ Depending on the how the system is configured, these might actually resolve to a
 networked drive, but most commonly, to the values described previously. Finally,
 Windows users can also set the ``VISITUSERHOME`` environment variable to point
 to whatever location they desire, and VisIt_ will use that location instead.
-In the descriptions below, we use the symbol ``VUSER_HOME`` as a way to refer to
-whatever this location happens to be on whatever platform the user is running.
+For the rest of this section, we use the symbol ``VUSER_HOME`` as a way to refer to
+whatever this location happens to be on whatever platform VisIt_ is running.
 
-In addition, when running VisIt in :ref:`client/server mode <Client-Server Mode>`,
-the user may need to be aware of the location of these files on either the client
-or the server or both.
+The Launch Method and the *Current Working Directory*
+"""""""""""""""""""""""""""""""""""""""""""""""""""""
+The launch method effects what VisIt_ uses as the
+`current working directory <https://en.wikipedia.org/wiki/Working_directory>`_
+or ``CWD``.
+On Windows and OSX it is most common to start VisIt_ by clicking an icon. In these
+cases, VisIt_ uses ``VUSER_HOME`` as the current working directory. In other words
+when VisIt_ is launched by clicking an icon, ``CWD`` resolves to the same directory
+as ``VUSER_HOME``.
+
+However, when VisIt_ is started by typing a command-line at a shell terminal
+prompt, then VisIt_ uses whatever that shell's ``CWD`` is at the time of
+launch.
+
+Client/Server Operation
+"""""""""""""""""""""""
+When running VisIt in :ref:`client/server mode <Client-Server Mode>`,
+the user will need to be aware of what VisIt_ uses as ``VUSER_HOME`` and ``CWD``
+on both the client and the server. These cases are pointed out in the 
+descriptions below.
 
 Files in ``VUSER_HOME``
 ~~~~~~~~~~~~~~~~~~~~~~~
-Most of the files associated with VisIt_ configuration have their prescribed home
+Most of the files associated with VisIt_ configuration are managed in 
 in ``VUSER_HOME``. When running in client/server, it is the configuration files
-on the *local client* that effect behavior. This means they are always the
-files on the *local* machine and not the *remote* system. Any configuration
-files that might also be on the remote server do not play a role in effecting
-behavior in client/server mode.
+on the *local client* that effect behavior. This means it is always the
+files on the *local* machine and not the *remote* system that effect behavior.
+Any configuration files that might also be on the remote server do not play a
+role in effecting behavior in client/server mode.
 
 :ref:`Settings/Preferences <Preferences Window>` File
 """""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -117,35 +143,40 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
 `Custom Plugin <http://visitusers.org/index.php?title=Building_plugins_using_CMake>`_ Files
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 * Location and file name(s): There are separate directories in ``VUSER_HOME``
-  for *private*, user-specific operator, database and plot plugins. These are
+  for *private*, user-specific operator, database and plot plugins. On UNIX/OSX,
+  these are
 
   * ``VUSER_HOME/<visit-version>/<visit-arch>/plugins/operators/``
   * ``VUSER_HOME/<visit-version>/<visit-arch>/plugins/databases/``
   * ``VUSER_HOME/<visit-version>/<visit-arch>/plugins/plots/``
 
   where ``<visit-version>`` and  ``<visit-arch>`` are the VisIt_ version number
-  and VisIt_ architecture moniker except on Windows where those sub-directories
-  are not present.
+  and VisIt_ architecture moniker. On Windows, these diretories are
+
+  * ``VUSER_HOME/operators/``
+  * ``VUSER_HOME/databases/``
+  * ``VUSER_HOME/plots/``
 
   If the ``-public`` command-line option to ``xml2cmake`` is used when building
-  a plugin and the user performing this operation has appropriate file
-  permissions, the plugin will instead be installed to the VisIt_ public
-  installation directory for *all* users that use that installation.
+  a plugin and the user performing this operation has appropriate permissions,
+  the plugin will instead be installed to the VisIt_ public installation
+  directory for *all* users of that installation. If a previous version of
+  this plugin exists, it will be overwritten by this operation.
 
-  A single plugin involves a set of related
-  files for the mdserver, engine and those common to both. For example, on UNIX
-  the files for the Silo database plugin are ``libESiloDatabase_par.so``,
+  A single plugin involves a set of related files for the mdserver, engine and
+  those common all VisIt_ components. For example, on UNIX the files for the
+  Silo database plugin are ``libESiloDatabase_par.so``,
   ``libESiloDatabase_ser.so``, ``libISiloDatabase.so``, and
-  ``libMSiloDatabase.so``
-* Purpose: Directories to hold custom (e.g. user-compiled and installed)
-  plugins.
+  ``libMSiloDatabase.so``.
+* Purpose: Directories to hold custom plugin shared library files.
 * Written: When the user makes and installs a custom plugin.
-* Read: On VisIt_ startup, all plugin *info* files are read. The remaining
-  parts of the plugin are read only when the plugin is actually used.
+* Read: On VisIt_ startup, all :ref:`enabled <Preferences_Enabling_Plugins>`
+  plugin *info* files are read. The remaining plugin files are read only when
+  the plugin is actually used.
 * Format: Binary shared library files in the machine format of the host
   architecture.
 
-State Tracking Files
+Usage Tracking Files
 """"""""""""""""""""
 * Location and file name(s): ``VUSER_HOME/stateA.B.C.txt`` where ``A``,
   ``B`` and ``C`` form a VisIt_ version number.
@@ -179,7 +210,25 @@ Files In Other Locations
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are several other kinds of files VisIt_ reads and writes to locations
-other than ``VUSER_HOME``. These are breifly described here.
+other than ``VUSER_HOME``. These are breifly described in this section.
+
+:ref:`Database Files <Supported File Types>`
+""""""""""""""""""""""""""""""""""""""""""""
+* Location and file name(s): User uses
+  :menuselection:`File --> Open...` to bring up a
+  file browser to select the name and location of database files.
+* Purpose: Database files store the data that VisIt_ is used to analyze and
+  visualize for scientific insights.
+* Written: By data producers, simulation codes or instruments, upstream of
+  VisIt_ in the scientific analysis workflow.
+* Read: On demand when user selects :menuselection:`File --> Open...`. The
+  ``-o`` command-line :ref:`startup option <StartupOptions>` can be used to
+  select a database file to open at startup. VisIt_ uses the
+  :ref:`file's extension <Supported File Types>` to decide what
+  `type of database <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_
+  the file is and then select the appropriate plugin to read it.
+* Format: Varies by 
+  `database type <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_.
 
 `VisIt Debug Log <http://visitusers.org/index.php?title=Debug_logs>`_ (``.vlog``) Files
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -188,15 +237,15 @@ other than ``VUSER_HOME``. These are breifly described here.
   When running client/server, some logs are written on the client and some on
   the server. On Windows, the logs on the client are always located in
   ``VUSER_HOME`` but on UNIX/OSX the logs on the client are written to whatever
-  the current working directory was when VisIt_ was started. If started by
+  the ``CWD`` was when VisIt_ was started. If started by
   clicking on an icon, this is most
   likely the the user's login directory. If started from a command-line, it is
-  whatever the shell's current working directory for that command-line was. On
+  whatever the shell's ``CWD`` for that command-line was. On
   the server, the logs are written to the user's login (home) directory. In a
   typical client/server scenario, the user gets gui and viewer logs locally in
-  the current working directory and mdserver and engine logs on the remote
+  the ``CWD`` and mdserver and engine logs on the remote
   system in their login (home) directory. In a purely local scenario, all logs
-  are written to the current working directory.
+  are written to the ``CWD``.
 
   On UNIX/OSX, the names of the log files are of the form
   ``<letter>.<component-name>.<mpi-rank-or-$pid>.<debug-level>.vlog`` where
@@ -210,8 +259,11 @@ other than ``VUSER_HOME``. These are breifly described here.
   names are ``A.mdserver.5.vlog`` or ``C.engine_par.123.2.vlog``.
 
   On Windows, the names of the log files are slightly different and are of the
-  form ``<component-name>.exe.<debug-level>.vlog`` or
-  ``<component-name>.exe.<mpi-rank>.<debug-level>.vlog`` for a parellel engine.
+  form ``<component-name>.exe.<$pid>.<debug-level>.vlog`` or
+  ``<component-name>.exe.<mpi-rank>.<$pid>.<debug-level>.vlog`` for a parellel
+  engine. On Windows, the ``-pid`` command-line 
+  :ref:`startup option <StartupOptions>`) is ignored and ``<$pid>`` is always
+  included in the file names.
 * Purpose: Capture streaming debugging messages from various VisIt_ components.
 * Written: Continuously by VisIt if ``-debug L`` where ``L`` is the debug *level*
   and is an integer in the range ``[1...5]`` is given on the command-line that
@@ -259,7 +311,7 @@ Plot and Operator Attribute Files
   On demand when user selects :menuselection:`File --> Open...`
 * Format: Various, see :ref:`Set save options <saving_viz_window>` window.
 
-:ref:`Exported Database Files <exporting_databases>`
+:ref:`Export Database Files <exporting_databases>`
 """"""""""""""""""""""""""""""""""""""""""""""""""""
 * Location and file name(s): User uses
   :menuselection:`File --> Export database...` to bring up a
@@ -269,11 +321,13 @@ Plot and Operator Attribute Files
   more convenient database to load back into VisIt_ for further analysis.
 * Written: On demand when user selects
   :menuselection:`File --> Export database...`.
-  While VisIt_ *reads* over 130 different types of databases, only
-  about 20 of those types does it *write*. And some of those output types
+  While VisIt_ *reads* over 130 different
+  `types of databases <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_,
+  only about 20 of those types does it *write*. And some of those output types
   support only limited kinds of data.
 * Read: On demand when user selects :menuselection:`File --> Open...`
-* Format: Varies by database type.
+* Format: Varies by
+  `database type <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_.
 
 Save Window vs. Export Database Files
 """""""""""""""""""""""""""""""""""""
@@ -285,7 +339,8 @@ always on the server.
 
 The **Save Window** and **Export Database** operations can in some circumstances
 be highly similar and confusing to decide which to use. In general, the
-**Save Window** operation is to save an *image* file whereas the **Export Database**
+**Save Window** operation is to save *visually relevant* aspects of the data
+most often to an *image* file whereas the **Export Database**
 operation is to output a wholly new VisIt_ *database* file. The cases where
 these two operations are blurred is when non-image formats are used by
 **Save Window** such as `STL <https://en.wikipedia.org/wiki/STL_(file_format)>`_,
@@ -294,13 +349,17 @@ these two operations are blurred is when non-image formats are used by
 `PLY <https://en.wikipedia.org/wiki/PLY_(file_format)>`_ (3D formats) and Curve or
 Ultra (2D, xy curve formats) formats. These non-image formats support 3D and 2D
 objects often for input to other high end graphics tools such as for 3D printing
-or rendering engines. In particular, these formats often support aspects of the
+or rendering engines. In particular, these formats typically support aspects of the
 *rendering* process such as surface colors, textures, lighting, etc. This is the
-key to what makes a **Save Window** in these formats different from an
+key to what makes a **Save Window** in these formats different from
 **Export Database**.
 
-Temporarily Adjusting Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Adjusting Configuration
+~~~~~~~~~~~~~~~~~~~~~~~
+Probably the easiest way to change VisIt_ configuration is to start a new VisIt_
+session, make the desired changes through the GUI and then
+:ref:`save settings <How to Save Settings>`. Sometimes starting the GUI to just
+adjust configuration is inconvenient.
 
 Sometimes, users need to temporarily change their configuration either to work
 around or diagnose an issue. Since the majority of content in these files is
