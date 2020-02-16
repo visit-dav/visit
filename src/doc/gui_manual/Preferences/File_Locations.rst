@@ -201,7 +201,8 @@ Crash Recovery Files
   GUI windows prior to a crash.
 * Written: Periodically from VisIt_ automatically. Disabled if the preference
   ``Periodically save a crash recovery file`` is unchecked in the
-  **Preferences Window**.
+  **Preferences Window**. In client/server mode, crash recovery files are always
+  written on the client.
 * Read: When user starts VisIt_ and answers ``yes`` when queried whether to
   start up from the most recent crash recovery file or when user explicitly
   specifies the crash recovery file as an argument to the ``-sessionfile``
