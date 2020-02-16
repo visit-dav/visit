@@ -173,7 +173,9 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
   a custom plugin.
 * Read: On VisIt_ startup, all :ref:`enabled <Preferences_Enabling_Plugins>`
   plugin *info* files are read. The remaining plugin files are read only when
-  the plugin is actually used.
+  the plugin is actually used. In client/server mode, it is important to ensure
+  that the same plugin files have been installed on *both* the client and the
+  server.
 * Format: Binary shared library files in the machine format of the host
   architecture.
 
@@ -308,7 +310,8 @@ Plot and Operator Attribute Files
 * Purpose: Save the *visually relevant* aspects of the data displayed in the
   currently active window usually but not always to an image file.
 * Written: On demand when user selects :menuselection:`File --> Save Window` or
-  hits the **Save** button in the **Set save options** window.
+  hits the **Save** button in the **Set save options** window. In client/server
+  mode, keep in mind that the files are written only on the *client*.
 * Read: Yes, saved images can be read into VisIt_ like any other database.
   On demand when user selects :menuselection:`File --> Open...`
 * Format: Various, see :ref:`Set save options <saving_viz_window>` window.
@@ -326,7 +329,8 @@ Plot and Operator Attribute Files
   While VisIt_ *reads* over 130 different
   `types of databases <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_,
   only about 20 of those types does it *write*. And some of those output types
-  support only limited kinds of data.
+  support only limited kinds of data. In client/server mode, keep in mind that
+  the files are saved only on the server.
 * Read: On demand when user selects :menuselection:`File --> Open...`
 * Format: Varies by
   `database type <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_.
