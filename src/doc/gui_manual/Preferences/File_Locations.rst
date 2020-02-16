@@ -268,9 +268,9 @@ other than ``VUSER_HOME``. These are breifly described in this section.
 * Written: Continuously by VisIt if ``-debug L`` where ``L`` is the debug *level*
   and is an integer in the range ``[1...5]`` is given on the command-line that
   starts VisIt_ or buffered if a ``b`` is given immediately afte the debug level
-  integer. In addition, VisIt_ maintains the 5 most recently written logs from
-  the 5 most recent component executions each beginning with the letters ``A``
-  through ``E``, ``A`` being the most recent.
+  integer. In addition, on UNIX/OSX VisIt_ maintains the 5 most recently written
+  logs from the 5 most recent component executions each beginning with the letters
+  ``A`` through ``E``, ``A`` being the most recent.
 * Format: Various, ad-hoc ASCII, mostly human readable.
 
 Plot and Operator Attribute Files
