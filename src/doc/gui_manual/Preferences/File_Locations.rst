@@ -159,9 +159,9 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
 
   If the ``-public`` command-line option to ``xml2cmake`` is used when building
   a plugin and the user performing this operation has appropriate permissions,
-  the plugin will instead be installed to the VisIt_ public installation
+  the plugin will instead be installed to the VisIt_ *public* installation
   directory for *all* users of that installation. If a previous version of
-  this plugin exists, it will be overwritten by this operation.
+  this plugin exists there, it will be overwritten by this operation.
 
   A single plugin involves a set of related files for the mdserver, engine and
   those common all VisIt_ components. For example, on UNIX the files for the
@@ -169,7 +169,8 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
   ``libESiloDatabase_ser.so``, ``libISiloDatabase.so``, and
   ``libMSiloDatabase.so``.
 * Purpose: Directories to hold custom plugin shared library files.
-* Written: When the user makes and installs a custom plugin.
+* Written: When the user makes and installs or copies the shared libraries for
+  a custom plugin.
 * Read: On VisIt_ startup, all :ref:`enabled <Preferences_Enabling_Plugins>`
   plugin *info* files are read. The remaining plugin files are read only when
   the plugin is actually used.
@@ -182,7 +183,7 @@ Usage Tracking Files
   ``B`` and ``C`` form a VisIt_ version number.
 * Purpose: Holds a single ASCII integer indicating the number of times the
   associated VisIt_ version has been run. This is to facilitate suppression of
-  the release notes and help upon the *first* run of a new version of VisIt_.
+  the release notes and help after the *first* run of a new version of VisIt_.
 * Written: Each time VisIt_ is started, the integer value in the associated
   state tracking file is updated.
 * Read: Each time VisIt_ is started, the value in the associated state tracking
@@ -194,11 +195,11 @@ Crash Recovery Files
 * Location and file name(s): ``VUSER_HOME/crash_recovery.$pid.session`` and
   ``VUSER_HOME/crash_recovery.$pid.session.gui`` where ``$pid`` is the process
   id of the VisIt_ viewer component.
-* Purpose: Hold the most recently saved last good state of VisIt_ prior
-  to a crash. Disabled if the preference
+* Purpose: Hold the most recently saved last good state of VisIt_ and VisIt_'s
+  GUI windows prior to a crash.
+* Written: Periodically from VisIt_ automatically. Disabled if the preference
   ``Periodically save a crash recovery file`` is unchecked in the
   **Preferences Window**.
-* Written: Periodically from VisIt_ automatically.
 * Read: When user starts VisIt_ and answers ``yes`` when queried whether to
   start up from the most recent crash recovery file or when user explicitly
   specifies the crash recovery file as an argument to the ``-sessionfile``
@@ -278,7 +279,7 @@ Plot and Operator Attribute Files
 * Location and file name(s): User is prompted with a file browser to select
   the name and location of these files.
 * Purpose: Hold the settings for a single, specific plot or operator for easy
-  sharing with other users
+  sharing with other users.
 * Written: Whenever user hits the **Save** button in a plot or operator
   attributes window.
 * Read: Whenever user hits the **Load** button in a plot or operator attributes
@@ -288,13 +289,14 @@ Plot and Operator Attribute Files
 :ref:`Session Files <Session files>`
 """"""""""""""""""""""""""""""""""""
 * Location and file name(s): User is prompted with a file browser to select
-  the name and location of these files. The ``-sessionfile`` 
-  command-line :ref:`startup option <StartupOptions>` can be used to select
-  a session file to open at startup.
+  the name and location of these files.
 * Purpose: :ref:`Session files <Session files>` are used to save and restore the
   entire state of a VisIt_ session.
 * Written: On demand when user selects :menuselection:`File --> Save session...`
 * Read: On demand when user selects :menuselection:`File --> Restor session...`
+  or when the ``-sessionfile`` 
+  command-line :ref:`startup option <StartupOptions>` is used to specify
+  a session file to open at startup.
 * Format: ASCII `XML <https://en.wikipedia.org/wiki/XML>`_.
 
 :ref:`Save Window Files <saving_viz_window>`
@@ -331,28 +333,31 @@ Plot and Operator Attribute Files
 
 Save Window vs. Export Database Files
 """""""""""""""""""""""""""""""""""""
-As far as file locations are concerned, the key issue for users to keep in 
-mind regarding **Save Window** operations and **Export Database** operations
+As far as file location are concerned, the key issue for users to keep in 
+mind regarding **Save Window** and **Export Database** operations
 has to do with client/server operation. In client/server mode, **Save Window**
 produces files always on the client whereas **Export Database** produces files
 always on the server.
 
-The **Save Window** and **Export Database** operations can in some circumstances
-be highly similar and confusing to decide which to use. In general, the
-**Save Window** operation is to save *visually relevant* aspects of the data
+Apart from file locations, another key issue is understanding when to use
+**Save Window** vs. **Export Database**. In some circumstances, these
+operations can be highly similar and confusing to decide which to use.
+
+In general, the
+**Save Window** operation is used to save *visually relevant* aspects of the data
 most often to an *image* file whereas the **Export Database**
 operation is to output a wholly new VisIt_ *database* file. The cases where
-these two operations are blurred is when non-image formats are used by
+these two operations can get confused is when non-image formats are used by
 **Save Window** such as `STL <https://en.wikipedia.org/wiki/STL_(file_format)>`_,
 `VTK <https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf>`_,
 `OBJ <https://en.wikipedia.org/wiki/Wavefront_.obj_file>`_,
 `PLY <https://en.wikipedia.org/wiki/PLY_(file_format)>`_ (3D formats) and Curve or
-Ultra (2D, xy curve formats) formats. These non-image formats support 3D and 2D
-objects often for input to other high end graphics tools such as for 3D printing
-or rendering engines. In particular, these formats typically support aspects of the
-*rendering* process such as surface colors, textures, lighting, etc. This is the
-key to what makes a **Save Window** in these formats different from
-**Export Database**.
+Ultra (2D, xy curve formats) formats. These non-image formats support object
+and visually relevant object attributes in 2 and 3 dimensions for input to other
+high end graphics tools such as for 3D printing or rendering engines. In particular,
+these formats typically support aspects of the *rendering* process such as object
+colors, textures, lighting and view. This is the key to what makes a **Save Window**
+in these formats different from **Export Database**.
 
 Adjusting Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -366,8 +371,9 @@ around or diagnose an issue. Since the majority of content in these files is
 ASCII, it is possible to manually edit files without having to start VisIt_.
 
 The user can also move (or rename) files so that VisIt_ will either find or not
-find them. For example, a common trick is for users to change the name of
+find them. For example, a common trick is to change the name of
 ``VUSER_HOME/config`` to ``VUSER_HOME/config.orig`` so that the majority of
-*settings/preferences* are not seen during VisIt_ startup. The most dramatic
+*settings/preferences* are not seen during VisIt_ startup but other things
+such as host profiles still work. The most dramatic
 variation of this approach is to move the whole ``VUSER_HOME`` directory which
-on UNIX platforms would be a command like ``mv ~/.visit ~/.visit.old``.
+on UNIX platforms might be a command like ``mv ~/.visit ~/.visit.old``.
