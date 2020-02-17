@@ -741,6 +741,8 @@ avtIntegralCurveFilter::PostExecute(void)
         dataValue == IntegralCurveAttributes::TimeAbsolute ||
         dataValue == IntegralCurveAttributes::TimeRelative ||
         dataValue == IntegralCurveAttributes::AverageDistanceFromSeed ||
+        dataValue == IntegralCurveAttributes::CorrelationDistance ||
+        dataValue == IntegralCurveAttributes::ClosedCurve ||
         dataValue == IntegralCurveAttributes::Difference ||
         dataValue == IntegralCurveAttributes::Variable)
     {
@@ -2601,8 +2603,8 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     }
 
     //Make a polydata.
-    vtkPoints     *points   = vtkPoints::New();
-    vtkCellArray  *lines    = vtkCellArray::New();
+    vtkPoints      *points   = vtkPoints::New();
+    vtkCellArray   *lines    = vtkCellArray::New();
     vtkDoubleArray *scalars  = vtkDoubleArray::New();
     vtkDoubleArray *tangents = vtkDoubleArray::New();
     vtkDoubleArray *thetas   = NULL;
@@ -2656,21 +2658,24 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         tubeVariableIndex >= 0)
       ProcessVaryTubeRadiusByScalar(ics);
 
-    double correlationDistMinDistToUse = correlationDistanceMinDist;
+    double correlationDistMinDistToUse = 0.0;
     double correlationDistAngTolToUse = 0.0;
 
     if (dataValue == IntegralCurveAttributes::CorrelationDistance)
     {
+        correlationDistMinDistToUse = correlationDistanceMinDist;
+        
         if (correlationDistanceDoBBox)
             correlationDistMinDistToUse *= GetLengthScale();
+
         correlationDistAngTolToUse = cos(correlationDistanceAngTol *M_PI/180.0);
     }
-
+    
     vtkIdType pIdx = 0;
 
-    double cropBeginFlag  = atts.GetCropBeginFlag();
+    bool   cropBeginFlag  = atts.GetCropBeginFlag();
     double cropBeginValue = atts.GetCropBegin();
-    double cropEndFlag    = atts.GetCropEndFlag();
+    bool   cropEndFlag    = atts.GetCropEndFlag();
     double cropEndValue   = atts.GetCropEnd();
 
     for (int i = 0; i < numICs; i++)
@@ -2681,6 +2686,22 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         size_t nSamples = (ic ? ic->GetNumberOfSamples() : 0);
         if (nSamples <= 1)
             continue;
+
+        unsigned int closedCurve;
+        
+        if (dataValue == IntegralCurveAttributes::ClosedCurve)
+        {
+            cropEndFlag = atts.GetCropEndFlag();
+            
+            closedCurve = CheckForClosedCurve( ic );
+
+            if( closedCurve && cropBeginFlag == false && cropEndFlag == false )
+            {
+              cropValue = IntegralCurveAttributes::StepNumber;
+              cropEndFlag = true;
+              cropEndValue = closedCurve;
+            }
+        }
 
         // When cropping save off whether one needs to interpolate and
         // the parameter values at the end points. The beginning and
@@ -2722,16 +2743,22 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                     break; 
                 }
 
-                // Beginning or end point matches the crop value so
+                // Beginning point matches the crop value so
                 // take those indexes.  In these cases no
                 // interpolation will be needed.
-                if( cropBeginValue == crop_value )
+                if( beginIndex < 0 && cropBeginValue == crop_value )
                 {
-                  if( cropBeginFlag && beginIndex < 0 )
                     beginIndex = (int)j;
+                    cropBeginInterpolate = false;
+                }
 
-                  if( cropEndFlag )
+                // End point matches the crop value so
+                // take those indexes.  In these cases no
+                // interpolation will be needed.
+                else if( cropEndFlag && cropEndValue == crop_value )
+                {
                     endIndex = (int)j;
+                    cropEndInterpolate = false;
                 }
 
                 // Within range so take those indexes - this is an
@@ -2740,7 +2767,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                 else if( cropBeginValue < crop_value &&
                          crop_value < cropEndValue )
                 {
-                  if( cropBeginFlag && beginIndex < 0 )
+                  if( beginIndex < 0 )
                   {
                     // If not the first point interpolation will be needed.
                     if( 0 < j )
@@ -2928,6 +2955,9 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                   ComputeCorrelationDistance(j, ic,
                                              correlationDistAngTolToUse,
                                              correlationDistMinDistToUse);
+                break;
+              case IntegralCurveAttributes::ClosedCurve:
+                data_value = closedCurve;
                 break;
               case IntegralCurveAttributes::Difference:
                 data_value = distance;
@@ -3202,6 +3232,89 @@ avtIntegralCurveFilter::ComputeCorrelationDistance(int idx,
     return val;
 }
 
+// ****************************************************************************
+// Method:  avtIntegralCurveFilter::CheckForClosedCurve
+//
+// Purpose: Compute the correlation distance at this point. Defined as
+//   the arc length distance from the current point to the next point
+//   (greater than minDist away) along the streamilne where the
+//   velocity direction is the same (to angTol).
+//
+// Arguments:
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    February 21, 2011
+//
+// ****************************************************************************
+
+#define SIGN(x) ((x) < 0.0 ? (int) -1 : (int) 1)
+
+unsigned int
+avtIntegralCurveFilter::CheckForClosedCurve(avtStateRecorderIntegralCurve *ic)
+{
+    bool doBBox = (atts.GetCorrelationDistanceMinDistType() ==
+                   IntegralCurveAttributes::FractionOfBBox);
+    
+    double tolerance = (doBBox ?
+                        atts.GetCorrelationDistanceMinDistBBox() * GetLengthScale():
+                        atts.GetCorrelationDistanceMinDistAbsolute());
+
+    unsigned int nSamples = ic->GetNumberOfSamples();
+    avtVector basePt = ic->GetSample(0).position;
+    
+    // Set up the plane equation.
+    avtVector planeN = (ic->GetSample(1).position -
+                        ic->GetSample(0).position).normalized();    
+    avtVector planePt(0,0,0);
+    double plane[4];
+            
+    plane[0] = planeN.x;
+    plane[1] = planeN.y;
+    plane[2] = planeN.z;
+    plane[3] = planePt.dot(planeN);
+    
+    // Start with the first point being the last point so to not get
+    // an intersection immediately.
+    avtVector lastPt, currPt = ic->GetSample(1).position;
+    double lastDist, currDist = planeN.dot( currPt ) - plane[3];
+
+    for (unsigned int i=2; i<nSamples; ++i)
+    {
+        lastPt = currPt;
+        currPt = avtVector(ic->GetSample(i).position);
+                
+        lastDist = currDist;
+        currDist = Dot( planeN, currPt ) - plane[3];
+    
+        // First look at only points that intersect the plane.
+        if( SIGN(lastDist) != SIGN(currDist) ) 
+        {
+            avtVector dir(currPt-lastPt);
+                    
+            double dot = Dot(planeN, dir);
+            
+            // If the segment is in the same direction as the plane then
+            // find where it intersects the plane.
+            if( dot > 0.0 )
+            {
+                avtVector w = lastPt - planePt;
+        
+                double t = -Dot(planeN, w ) / dot;
+        
+                avtVector point = avtVector(lastPt + dir * t);
+
+		// Now see if the intersected points is within the tolerance.
+                if( (point - basePt).length() < tolerance)
+                {
+                    return i;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
 
 // ****************************************************************************
 // Method:  avtIntegralCurveFilter::ProcessVaryTubeRadiusByScalar
