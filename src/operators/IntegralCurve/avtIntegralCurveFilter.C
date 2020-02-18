@@ -3235,16 +3235,15 @@ avtIntegralCurveFilter::ComputeCorrelationDistance(int idx,
 // ****************************************************************************
 // Method:  avtIntegralCurveFilter::CheckForClosedCurve
 //
-// Purpose: Compute the correlation distance at this point. Defined as
-//   the arc length distance from the current point to the next point
-//   (greater than minDist away) along the streamilne where the
-//   velocity direction is the same (to angTol).
+// Purpose: Loop through the integral curve checking to see if it is
+// closed which is defined as when a subsequent point is within a user
+// defined tolerance of the initial seed point.
 //
-// Arguments:
+// Arguments: da curve
 //   
 //
-// Programmer:  Dave Pugmire
-// Creation:    February 21, 2011
+// Programmer:  Allen Sasnderson
+// Creation:    February 17, 2020
 //
 // ****************************************************************************
 
@@ -3253,6 +3252,8 @@ avtIntegralCurveFilter::ComputeCorrelationDistance(int idx,
 unsigned int
 avtIntegralCurveFilter::CheckForClosedCurve(avtStateRecorderIntegralCurve *ic)
 {
+    // Get the tolerance value set by the user. It may absolute or
+    // from the boxing box.
     bool doBBox = (atts.GetCorrelationDistanceMinDistType() ==
                    IntegralCurveAttributes::FractionOfBBox);
     
@@ -3260,9 +3261,6 @@ avtIntegralCurveFilter::CheckForClosedCurve(avtStateRecorderIntegralCurve *ic)
                         atts.GetCorrelationDistanceMinDistBBox() * GetLengthScale():
                         atts.GetCorrelationDistanceMinDistAbsolute());
 
-    unsigned int nSamples = ic->GetNumberOfSamples();
-    avtVector basePt = ic->GetSample(0).position;
-    
     // Set up the plane equation.
     avtVector planeN = (ic->GetSample(1).position -
                         ic->GetSample(0).position).normalized();    
@@ -3274,10 +3272,13 @@ avtIntegralCurveFilter::CheckForClosedCurve(avtStateRecorderIntegralCurve *ic)
     plane[2] = planeN.z;
     plane[3] = planePt.dot(planeN);
     
-    // Start with the first point being the last point so to not get
-    // an intersection immediately.
+    // Start with the first point being the current point so to not
+    // get an intersection immediately.
+    avtVector basePt = ic->GetSample(0).position;   
     avtVector lastPt, currPt = ic->GetSample(1).position;
     double lastDist, currDist = planeN.dot( currPt ) - plane[3];
+
+    unsigned int nSamples = ic->GetNumberOfSamples();
 
     for (unsigned int i=2; i<nSamples; ++i)
     {
