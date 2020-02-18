@@ -62,10 +62,10 @@ function bv_tcmalloc_ensure
             warn "Unable to build google perftools.  ${TCMALLOC_FILE} not found."
             ANY_ERRORS="yes"
             DO_TCMALLOC="no"
-            if [[ "$DO_SVN" != "yes" ]] ; then
+            if [[ "$DO_GIT" != "yes" ]] ; then
                 warn "You have requested to build the google perftools library."
-                warn "This is not currently available for download from the VisIt website and" 
-                warn "is only available through Subversion access."
+                warn "This is not currently available for download from the VisIt" 
+                warn "project pages."
             fi
             error
         fi
