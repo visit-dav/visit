@@ -177,6 +177,8 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
                                      double angTol,
                                      double minDist);
     
+    unsigned int CheckForClosedCurve(avtStateRecorderIntegralCurve *ic);
+
     void  ProcessVaryTubeRadiusByScalar(std::vector<avtIntegralCurve *> &ics);
 
     std::string outVarName;
