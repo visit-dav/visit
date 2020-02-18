@@ -55,7 +55,7 @@ function bv_stripack_ensure
     if [[ "$DO_STRIPACK" == "yes" ]] ; then
         ensure_built_or_ready "stripack" $STRIPACK_VERSION $STRIPACK_BUILD_DIR $STRIPACK_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build google perftools.  ${STRIPACK_FILE} not found."
+            warn "Unable to build stripack.  ${STRIPACK_FILE} not found."
             ANY_ERRORS="yes"
             DO_STRIPACK="no"
         fi
