@@ -1,3 +1,7 @@
+#
+# Example build_visit command line to build stripack
+# env FCFLAGS="-fdefault-real-8 -fdefault-double-8 -shared -fPIC" STRIPACK_INSTALL_DIR=<visit-install-home-dir>/lib ../build_visit --fortran --no-visit --no-thirdparty --thirdparty-path /dev/null --no-zlib --stripack
+#
 function bv_stripack_initialize
 {
     export DO_STRIPACK="no"
@@ -72,15 +76,10 @@ function stripack_license_prompt
             https://www.acm.org/publications/policies/software-copyright-notice\
             and respond either \"yes\" to accept the terms or \"no\" to decline\
             the terms."
-    STRIPACK_CONFIRM_MSG=$STRIPACK_LIC_MSG
     info $STRIPACK_LIC_MSG
     read RESPONSE
     if [[ "$RESPONSE" != "yes" ]] ; then
-        info $STRIPACK_CONFIRM_MSG
-        read RESPONSE
-        if [[ $RESPONSE != "yes" ]] ; then
-            return 1
-        fi
+        error "Stripack requires compliance with ACM License terms."
     fi
 
     return 0
@@ -92,6 +91,8 @@ function stripack_license_prompt
 
 function build_stripack
 {
+    stripack_license_prompt
+
     if [[ "$FC_COMPILER" = "no" ]] ; then
         error "FC_COMPILER env. variable must be set to a fortran compiler for stripack."
     fi
