@@ -41,9 +41,8 @@ The launch method effects what VisIt_ uses as the
 `current working directory <https://en.wikipedia.org/wiki/Working_directory>`_
 or ``CWD``.
 On Windows and OSX it is most common to start VisIt_ by clicking an icon. In these
-cases, VisIt_ uses ``VUSER_HOME`` as the current working directory. In other words
-when VisIt_ is launched by clicking an icon, ``CWD`` resolves to the same directory
-as ``VUSER_HOME``.
+cases, VisIt_ uses the user's ``$HOME`` or login directory as the current working
+directory.
 
 However, when VisIt_ is started by typing a command-line at a shell terminal
 prompt, then VisIt_ uses whatever that shell's ``CWD`` is at the time of
