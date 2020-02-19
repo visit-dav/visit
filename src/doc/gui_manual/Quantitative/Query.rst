@@ -83,15 +83,25 @@ Built-in queries
 Database Queries
 """"""""""""""""
 
-2D area
+2D Area
     The 2D area query calculates the area of the 2D plot highlighted in the
     **Plot list** and prints the result to the **Query results**. VisIt can
     produce a Curve plot of this query with respect to time.
 
-3D surfacea area
+3D Surface Area
     The 3D surface area calculates the area of the plot highlighted in the
     **Plot list** and prints the result to the **Query results**. VisIt can
     produce a Curve plot of this query with respect to time.
+
+Connected Component Area
+    Performs the same operation as either 2/3D area query except individually
+    for each *component* of a disconnected mesh. The query result is a list of
+    values, one for each component.
+
+Connected Component Length
+    Performs an operation similar to *Connected Component Area* except that it
+    works only for 1D components and returns their length. The query result is
+    a list of values, one for each component.
 
 Area Between Curves
     The Area Between Curves query calculates the area between 2 curve plots.
@@ -106,6 +116,11 @@ Centroid
     will be assumed to be density. If the query is performed on a plot such as
     a Mesh plot or FilledBoundary plot, uniform density will be used. The
     results are print to the **Query results**. 
+
+Connected Component Centroid
+    Performs the same operation as either *Centroid* query except individually
+    for each *component* of a disconnected mesh. The query result is a list of
+    values, one for each component.
 
 Chord Length Distribution
     The Chord Length Distribution query calculates a probability density
@@ -280,11 +295,21 @@ Variable Sum
     **Query results**. VisIt can produce a Curve plot of this query with
     respect to time.
 
+Connected Component Variable Sum
+    Performs the same operation as *Variable Sum* query except individually for
+    each *component* of a disconnected mesh. The query result is a list of
+    values, one for each component.
+
 Volume
     The Volume query calculates the volume of the mesh used by the plot
     highlighted in the **Plot list** and prints the value to the
     **Query results**. VisIt can use this query to produce a Curve plot of
     volume with respect to time.
+
+Connected Component Volume
+    Performs the same operation as *Volume* query except individually for each
+    *component* of a disconnected mesh. The query result is a list of values,
+    one for each component.
 
 Watertight
     The Watertight query determines if a three-dimensional surface mesh, of the
@@ -296,9 +321,15 @@ Watertight
 
 Weighted Variable Sum
     The Weighted Variable Sum query adds up the variable values, weighted by
-    cell size, for all cells using the plot highlighted in the **Plot list**
-    and prints the results to the **Query results**. VisIt can produce a Curve
-    plot of this query with respect to time.
+    cell size (volume in 3D, area in 2D, length in 1D), for all cells using the
+    plot highlighted in the **Plot list** and prints the results to the
+    **Query results**. VisIt can produce a Curve plot of this query with respect
+    to time.
+
+Connected Component Weighted Variable Sum
+    Performs the same operation as *Weighted Variable Sum* query except
+    individually for each *component* of a disconnected mesh. The query
+    result is a list of values, one for each component.
 
 ZoneCenter
     The ZoneCenter query calculates the zone center for a certain cell in the
