@@ -41,17 +41,23 @@
 
 double avtVMetricArea::Metric (double coords[][3], int type)
 {
+    double out_value = 0.0;
 #ifdef HAVE_VERDICT
     switch(type)
     {
         case VTK_TRIANGLE:
-            return v_tri_area(3, coords);
-        
+            out_value = v_tri_area(3, coords);
+            break;
         case VTK_QUAD:
-            return v_quad_area(4, coords);
+            out_value = v_quad_area(4, coords);
+            break;
+        default:
+            std::cout << "Not triangle or quad" << std::endl;
+            out_value = 0.;
     }
 #endif
-    return -1;
+    std::cout << "Outvalue " << out_value << std::endl;
+    return out_value;
 }
 
 
