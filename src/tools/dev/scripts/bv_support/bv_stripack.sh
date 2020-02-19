@@ -102,7 +102,7 @@ function build_stripack
     if [[ "$STRIPACK_INSTALL_DIR" = "" ]] ; then
         error "STRIPACK_INSTALL_DIR env. variable must be set"
     fi
-    if [[ ! -dwx $STRIPACK_INSTALL_DIR ]]; then
+    if [ ! -d $STRIPACK_INSTALL_DIR -o ! -w $STRIPACK_INSTALL_DIR -o ! -x $STRIPACK_INSTALL_DIR ]; then
         error "$STRIPACK_INSTALL_DIR either does not exist, is not writeable or is not executable."
     fi 
 
