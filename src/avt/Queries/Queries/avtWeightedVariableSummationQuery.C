@@ -155,6 +155,7 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 avtDataObject_p
 avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
 {
+    std::cout << "Entering avtWeightedVariableSummationQuery::ApplyFilters" << std::endl;
     //
     // Create an artificial pipeline.
     //
@@ -187,7 +188,7 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     }
     else if (topo == 1)
     {
-        debug5 << "WeightedVariableSum using length" << endl;
+        std::cout << "WeightedVariableSum using length" << endl;
         length->SetInput(dob);
         dob = length->GetOutput();
     }
@@ -195,20 +196,20 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     {
         if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType() == AVT_XY)
         {
-            debug5 << "WeightedVariableSum using Area" << endl;
+            std::cout << "WeightedVariableSum using Area" << endl;
             area->SetInput(dob);
             dob = area->GetOutput();
         }
         else 
         {
-            debug5 << "WeightedVariableSum using RevolvedVolume" << endl;
+            std::cout << "WeightedVariableSum using RevolvedVolume" << endl;
             revolvedVolume->SetInput(dob);
             dob = revolvedVolume->GetOutput();
         }
     }
     else
     {
-        debug5 << "WeightedVariableSum using Volume" << endl;
+        std::cout << "WeightedVariableSum using Volume" << endl;
         volume->SetInput(dob);
         dob = volume->GetOutput();
     }
@@ -249,6 +250,8 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     }
 
     multiply->GetOutput()->Update(contract);
+
+    std::cout << "Exiting  avtWeightedVariableSummationQuery::ApplyFilters" << std::endl;
     return multiply->GetOutput();
 }
 
