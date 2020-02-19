@@ -217,7 +217,7 @@ function apply_qt_patch
     if [[ ${QT_VERSION} == 5.10.1 ]] ; then
         if [[ -f /etc/centos-release ]] ; then
             VER=`cat /etc/centos-release | cut -d' ' -f 4`
-            if [[ "${VER:0:3}" == "8.0" ]] ; then
+            if [[ "${VER:0:2}" == "8." ]] ; then
                 apply_qt_5101_centos8_patch
                 if [[ $? != 0 ]] ; then
                     return 1
