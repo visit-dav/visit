@@ -18,3 +18,4 @@ those settings are saved and how to modify them.
     Plugin_Manager_Window
     Rendering_Options_Window
     Preferences_Window
+    File_Locations
