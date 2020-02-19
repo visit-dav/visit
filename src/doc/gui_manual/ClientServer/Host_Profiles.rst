@@ -1,3 +1,5 @@
+.. _host_profiles:
+
 Host Profiles
 -------------
 
