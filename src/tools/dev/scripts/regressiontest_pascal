@@ -337,6 +337,9 @@ cat ../make.err >> ../../buildlog
 
 echo "Source build completed at: \`date\`"
 
+# Copy stripack lib for ffp plugin tests
+cp /usr/workspace/visit/miller86/stripack/libstripack.so ./lib/.
+
 # Update the test baselines
 cd ../test
 git lfs pull >> ../../../buildlog 2>&1
