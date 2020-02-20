@@ -52,11 +52,9 @@ double avtVMetricArea::Metric (double coords[][3], int type)
             out_value = v_quad_area(4, coords);
             break;
         default:
-            std::cout << "Not triangle or quad" << std::endl;
             out_value = 0.;
     }
 #endif
-    std::cout << "Outvalue " << out_value << std::endl;
     return out_value;
 }
 
