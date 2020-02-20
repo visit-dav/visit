@@ -84,6 +84,9 @@ avtVMetricVolume::avtVMetricVolume()
 //
 //    Kathleen Bonnell, Fri Sep 15 09:55:55 PDT 2006 
 //    Use different hex volume caluclation if useVerdictHex is false.
+//
+//    Eddie Rusu, Wed Feb 19 16:33:46 PST 2020
+//    Returns 0 instead of -1 if no verdict or unchecked cell.
 //    
 // ****************************************************************************
 
