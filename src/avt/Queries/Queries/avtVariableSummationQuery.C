@@ -144,7 +144,6 @@ avtVariableSummationQuery::VerifyInput(void)
 avtDataObject_p
 avtVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
 {
-    std::cout << "Entering avtVariableSummationQuery::ApplyFilters()" << std::endl;
     avtDataValidity &dval = GetInput()->GetInfo().GetValidity();
     avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
     bool cellData = false;
@@ -216,6 +215,4 @@ avtVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     {
         return avtSummationQuery::ApplyFilters(inData);
     }
-
-    std::cout << "Exiting avtVariableSummationQuery::ApplyFilters()" << std::endl;
 }
