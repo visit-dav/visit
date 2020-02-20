@@ -62,12 +62,6 @@ function bv_mili_ensure
             warn "Unable to build Mili.  ${MILI_FILE} not found."
             ANY_ERRORS="yes"
             DO_MILI="no"
-            if [[ "$DO_SVN" != "yes" ]] ; then
-                warn "Note: You have requested to build the Mili library." 
-                warn "Mili is not available for public download and" 
-                warn "is only available through Subversion access." 
-            fi
-            error
         fi
     fi
 }
