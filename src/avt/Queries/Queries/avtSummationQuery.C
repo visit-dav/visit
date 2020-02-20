@@ -432,7 +432,6 @@ avtSummationQuery::PostExecute(void)
 void
 avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
 {
-    std::cout << "Entering avtSummationQuery::Execute" << std::endl;
     bool pointData = true;
     vtkDataArray *arr = ds->GetPointData()->GetArray(variableName.c_str());
     if (arr == NULL)
@@ -603,8 +602,6 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
             denomSum += arr2->GetTuple1(i);
     }
     list->Delete();
-
-    std::cout << "Exiting  avtSummationQuery::Execute" << std::endl;
 }
 
 
