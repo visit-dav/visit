@@ -37,6 +37,9 @@
 //    Hank Childs, Thu Oct 17 08:07:53 PDT 2002
 //    Update for new verdict interface.
 //
+//    Eddie Rusu, Wed Feb 19 16:33:46 PST 2020
+//    Returns 0 instead of -1 if no verdict or unchecked cell.
+//
 // ****************************************************************************
 
 double avtVMetricArea::Metric (double coords[][3], int type)
