@@ -61,10 +61,16 @@
           <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.1/visit3.1.1_x64.exe">Download</a></td>
         </tr>
         <tr>
+          <td>macOS Mojave 10.14.6 - Intel 64 bit<br />
+          Darwin 10.14, Darwin Kernel Version 18.7.0, clang-1000.11.45.5, MPICH<br />
+          <i>(Works on Mac OS X 10.14 and later.)</i></td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.1/visit3.1.1.darwin-x86_64-10_14.dmg">Download</a></td>
+        </tr>
+        <tr>
           <td>Mac OS X 10.13 - Intel 64 bit<br />
           Darwin 10.13, Darwin Kernel Version 17.7.0, clang-900.39.2, MPICH<br />
           <i>(Works on Mac OS X 10.13 and later.)</i></td>
-          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.1/visit3.1.1.darwin-x86_64-10_13.dmg">Download</a></td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.1/visit3.1.1.darwin-x86_64-10.13.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
