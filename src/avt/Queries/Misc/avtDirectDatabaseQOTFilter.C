@@ -420,6 +420,8 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
         outPts->Delete();
     }
 
+    delete [] tupleTemp;
+
     return outPolyData;
 }
 
