@@ -81,6 +81,9 @@
 #    Kathleen Biagas, Thu Jan 30 13:37:50 MST 2020
 #    Added TestOperatorCreatedVar. (github bugs #2842, #3489).
 #
+#    Alister Maguire, Tue Feb 25 13:46:24 PST 2020
+#    Added tests for handling vectors in the direct database route.
+#
 # ----------------------------------------------------------------------------
 
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
@@ -901,6 +904,26 @@ def TestDirectDatabaseRoute():
     SetActiveWindow(2)
     InitAnnotation()
     Test("Direct_Database_Route_07")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
+    #
+    # Next, let's test a vector plot. The vectors should be reduced
+    # to their magnitudes.
+    #
+    AddPlot("Vector", "direction")
+    DrawPlots()
+
+    pick = GetPickAttributes()
+    pick.doTimeCurve = 1
+    pick.timePreserveCoord = 0
+    SetPickAttributes(pick)
+    PickByNode(element=10, use_actual_data=0)
+
+    SetActiveWindow(2)
+    InitAnnotation()
+    Test("Direct_Database_Route_08")
     DeleteAllPlots()
     SetActiveWindow(1)
     DeleteAllPlots()
