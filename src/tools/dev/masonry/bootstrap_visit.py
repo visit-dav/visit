@@ -208,6 +208,15 @@ def steps_build(opts,build_type,ctx):
                                  working_dir=build_dir)
     ctx.triggers["build"].append(a_vbuild)
 
+def steps_manuals(opts,build_type,ctx):
+    build_dir      = pjoin(opts["build_dir"],"build.%s" % build_type.lower())
+    a_make_manuals = "manuals_" + build_type.lower()
+    ctx.actions[a_make_manuals] = make(description="creating manuals",
+                                   nthreads=opts["make_nthreads"],
+                                   working_dir=build_dir,
+                                   target="manuals")
+    ctx.triggers["build"].append(a_make_manuals)
+
 def steps_install(opts,build_type,ctx):
     build_dir      = pjoin(opts["build_dir"],"build.%s" % build_type.lower())
     a_make_install = "install_" + build_type.lower()
@@ -298,6 +307,7 @@ def steps_visit(opts,ctx):
     for build_type in opts["build_types"]:
         steps_configure(opts,build_type,ctx)
         steps_build(opts,build_type,ctx)
+        steps_manuals(opts,build_type,ctx)
         steps_install(opts,build_type,ctx)
         steps_package(opts,build_type,ctx)
         steps_sanity_checks(opts,build_type,ctx)
