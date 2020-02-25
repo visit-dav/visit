@@ -72,8 +72,9 @@ The ffp plugin can optionally use the
 to improve its behavior and performance. It will do so by loading the STRIPACK library as
 a dynamicaly loaded shared library *when* VisIt_ can find it. VisIt_ will find the
 STRIPACK library if it is available in the VisIt_ installation's top-level ``lib``
-directory (typically something like) or if the enviornment variable 
-``VISIT_FFP_STRIPACK_PATH`` is set specifying a path to the shared library as in
+directory (typically something like ``/foo/bar/visit/3.1.1/linux-x86_64/lib``) or
+if the enviornment variable ``VISIT_FFP_STRIPACK_PATH`` is set specifying a path to the
+shared library as in
 
 .. code-block:: shell
 
