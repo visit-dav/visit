@@ -18,6 +18,7 @@ using the :ref:`File Information Window`.
 
     Supported_File_Types
     File_Open_Window
+    Read_Options
     Sources_Pane
     Time_Pane
     File_Information_Window
