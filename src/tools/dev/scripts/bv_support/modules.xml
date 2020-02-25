@@ -47,6 +47,7 @@
             <lib name="p7zip"/>
             <lib name="pidx"/>
             <lib name="silo"/>
+            <lib name="stripack"/>
             <lib name="szip"/>
             <lib name="tbb"/>
             <lib name="tcmalloc"/>
