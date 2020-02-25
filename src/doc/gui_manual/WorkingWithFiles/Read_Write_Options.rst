@@ -2,12 +2,14 @@
 
 Database Read and Write Options
 -------------------------------
-Several database plugins have options that effect reading and/or writing with that
+Several database plugins have options that affect reading and/or writing with that
 format. These are described in this section. Alternatively, in some cases, the
-behavior of a database plugin may be effected by enviornment variables.
+behavior of a database plugin may be affected by enviornment variables.
 
 Chombo
 ~~~~~~
+
+This section incomplete.
 
 Exodus
 ~~~~~~
@@ -87,12 +89,14 @@ for csh (and friends) or for sh (and friends)...
 In client/server mode, the STRIPACK library must be installed on both the client
 and the server.
 
-The `build_visit <Building>` tool can be used to download, build and install the
+The :ref:`build_visit <Building>` tool can be used to download, build and install the
 STRIPACK library. Here is an example bash shell ``build_visit`` command-line...
 
 .. code-block:: shell
 
-    env FCFLAGS="-fdefault-real-8 -fdefault-double-8 -shared -fPIC" STRIPACK_INSTALL_DIR=/usr/local/visit/lib ./build_visit --fortran --no-visit --no-thirdparty --thirdparty-path /dev/null --no-zlib --stripack
+    env FCFLAGS="-fdefault-real-8 -fdefault-double-8 -shared -fPIC" \
+    STRIPACK_INSTALL_DIR=/usr/local/visit/lib ./build_visit --fortran \
+    --no-visit --no-thirdparty --thirdparty-path /dev/null --no-zlib --stripack
 
 Because STRIPACK is non-BSD licensed software, part of the ``build_visit``
 process for installing it is to accept the STRIPACK license terms.
@@ -100,20 +104,32 @@ process for installing it is to accept the STRIPACK license terms.
 H5Part
 ~~~~~~
 
+This section incomplete.
+
 IDX
 ~~~
+
+This section incomplete.
 
 M3DC1
 ~~~~~
 
+This section incomplete.
+
 MDSplus
 ~~~~~~~
+
+This section incomplete.
 
 MFIX
 ~~~~
 
+This section incomplete.
+
 MFIXCDF
 ~~~~~~~
+
+This section incomplete.
 
 NASTRAN
 ~~~~~~~
@@ -124,15 +140,19 @@ should look for and try to define a material object. If the user knows the
 because that will avert the plugin having to read all lines of the input before
 understanding the material configuration. However, if the user does not know
 the number of materials, enter ``-1`` here and the plugin will search for
-all information related the material configuration during the *open*. This will
+all information related to the material configuration during the *open*. This will
 lead to longer open times. A value of ``0`` here means to ignore any material
 information if present.
 
 Nektar++
 ~~~~~~~~
 
+This section incomplete.
+
 Pixie
 ~~~~~
+
+This section incomplete.
 
 Silo
 ~~~~
@@ -151,7 +171,7 @@ read options to disable spatial and data extents. The options for each are
 ``Never`` mean to always *ignore* or never *ignore* the extents data and
 ``Auto`` means to ignore extents data for files written by data producers known
 to have issues with extents data in the past. The ``Undef`` setting is to deal
-with cases where users may have `saved settings <How to Save Settings>` with
+with cases where users may have :ref:`saved settings <How to Save Settings>` with
 very old versions of these options.
 
 Force Single
@@ -174,11 +194,18 @@ this option can result in much slower database *open* times.
 Shapefile
 ~~~~~~~~~
 
+This section incomplete.
+
 Uintah
 ~~~~~~
+
+This section incomplete.
 
 Vs
 ~~
 
 Database Write Options
 ----------------------
+
+This section incomplete.
+
