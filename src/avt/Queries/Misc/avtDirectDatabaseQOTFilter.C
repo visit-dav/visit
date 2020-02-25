@@ -255,11 +255,11 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
     // We need to check if any of the arrays have multiple
     // components. If so, these require special treatment.
     //
-    int numComp = 0; 
+    int maxComp = 0; 
     for (int c = 0; c < numCurves; ++c)
     {
         int ncTemp = inPtData->GetArray(c)->GetNumberOfComponents();
-        numComp    = ncTemp > numComp ? ncTemp : numComp;
+        maxComp    = ncTemp > maxComp ? ncTemp : maxComp;
     }
 
     //
@@ -274,9 +274,9 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
     isValid.resize(numPts, true);
 
     double coord[] = {0.0, 0.0, 0.0};
-    double *tupleTemp = new double[numComp];
+    double *tupleTemp = new double[maxComp];
 
-    for (int i = 0; i < numComp; ++i)
+    for (int i = 0; i < maxComp; ++i)
     {
         tupleTemp[i] = 0.0;
     }
@@ -317,7 +317,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
     //     2. We have vectors, tensors, or arrays that need to be reduced
     //        to a single scalar.
     //
-    if (missingData || numComp > 1)
+    if (missingData || maxComp > 1)
     {
         int numInvalid = invalidStateList.size();
         int numValid   = numPts - numInvalid;
@@ -383,15 +383,20 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
                 if (isValid[i])
                 {
                     inCurve->GetTuple(i, tupleTemp);
+                    int numComp = inCurve->GetNumberOfComponents();
 
                     //
                     // We handle scalars, vectors, arrays, and tensors
                     // differently.
-                    //     Scalars: use the raw value (handled earlier by copy).
+                    //     Scalars: use the raw value.
                     //     Vectors: use the magnitude.
                     //     Tensors/Arrays: use the major eigenvalue.
                     //
-                    if (numComp < 9)
+                    if (numComp == 1)
+                    {
+                        outCurve->SetTuple1(vIdx++, tupleTemp[0]);
+                    }
+                    else if (numComp < 9)
                     {
                         float mag = 0.0;
                         for (int ti = 0; ti < numComp; ++ti)
