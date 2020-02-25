@@ -247,10 +247,20 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
     }
 
     const int numPts  = inPtData->GetNumberOfTuples();
-    const int numComp = inPtData->GetNumberOfComponents();
     const int stride  = atts.GetStride();
     const int startT  = atts.GetStartTime();
     const int stopT   = atts.GetEndTime();
+
+    //
+    // We need to check if any of the arrays have multiple
+    // components. If so, these require special treatment.
+    //
+    int numComp = 0; 
+    for (int c = 0; c < numCurves; ++c)
+    {
+        int ncTemp = inPtData->GetArray(c)->GetNumberOfComponents();
+        numComp    = ncTemp > numComp ? ncTemp : numComp;
+    }
 
     //
     // First pass: look for invalid data and mark their locations
