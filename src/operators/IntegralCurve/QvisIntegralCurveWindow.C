@@ -746,6 +746,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataValueComboBox->addItem(tr("Relative time"), IntegralCurveAttributes::TimeRelative);
     dataValueComboBox->addItem(tr("Ave. dist. from seed"), IntegralCurveAttributes::AverageDistanceFromSeed);
     dataValueComboBox->addItem(tr("Correlation distance"), IntegralCurveAttributes::CorrelationDistance);
+    dataValueComboBox->addItem(tr("Closed Curve"), IntegralCurveAttributes::ClosedCurve);
     dataValueComboBox->addItem(tr("Difference"), IntegralCurveAttributes::Difference);
     dataValueComboBox->addItem(tr("Variable"), IntegralCurveAttributes::Variable);
     connect(dataValueComboBox, SIGNAL(activated(int)),
@@ -1389,16 +1390,24 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             if (atts->GetDataValue() == IntegralCurveAttributes::CorrelationDistance)
             {
                 TurnOn(correlationDistanceAngTolLabel);
-                TurnOn(correlationDistanceMinDistLabel);
                 TurnOn(correlationDistanceAngTolEdit);
+            }
+            else
+            {
+                TurnOff(correlationDistanceAngTolLabel);
+                TurnOff(correlationDistanceAngTolEdit);
+            }
+
+            if (atts->GetDataValue() == IntegralCurveAttributes::CorrelationDistance ||
+                atts->GetDataValue() == IntegralCurveAttributes::ClosedCurve)
+            {
+                TurnOn(correlationDistanceMinDistLabel);
                 TurnOn(correlationDistanceMinDistEdit);
                 TurnOn(correlationDistanceMinDistType);
             }
             else
             {
-                TurnOff(correlationDistanceAngTolLabel);
                 TurnOff(correlationDistanceMinDistLabel);
-                TurnOff(correlationDistanceAngTolEdit);
                 TurnOff(correlationDistanceMinDistEdit);
                 TurnOff(correlationDistanceMinDistType);
             }

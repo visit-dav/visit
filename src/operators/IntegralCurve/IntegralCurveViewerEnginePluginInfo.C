@@ -187,11 +187,11 @@ IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject 
 {
     IntegralCurveAttributes *atts_in = (IntegralCurveAttributes *)atts;
 
-    const char *typeString[11] =
+    const char *typeString[12] =
       { "None", "Seed Point ID", "Speed", "Vorticity", "Arc Length",
          "Absolute Time", "Relative Time",
-         "Ave. dist. from seed", "Correlation Distance", "Difference",
-         "Variable" };
+         "Ave. dist. from seed", "Correlation Distance", "Closed Curve",
+         "Difference", "Variable" };
 
     std::string var = plot.GetVariableName();
 
