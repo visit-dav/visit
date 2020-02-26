@@ -279,6 +279,11 @@ function build_cgns
             LIBEXT="so"
         fi
     fi
+
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        cf_build_type="$cf_build_type --enable-debug"
+    fi
+
     # optionally add HDF5 and szip to the configure.
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then

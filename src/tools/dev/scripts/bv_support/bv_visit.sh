@@ -467,4 +467,9 @@ function bv_visit_build
             info "Finished with Errors"
         fi
     fi
+
+    if [[ $VISIT_BUILD_MODE == "Debug" ]]; then
+        info "Debug build mode was specified. The default build mode for VisIt is Release."
+        info "To build VisIt in Debug mode, pass -DCMAKE_BUILD_TYPE:STRING=Debug to VisIt's cmake configure command."
+    fi
 }
