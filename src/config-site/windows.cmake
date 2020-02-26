@@ -26,8 +26,6 @@ set(VISITHOME ${VISIT_WINDOWS_DIR}/${VISIT_MSVC_VERSION})
 option(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS." ON)
 VISIT_OPTION_DEFAULT(VISIT_USE_7ZIP true TYPE BOOL)
 
-VISIT_OPTION_DEFAULT(VISIT_SPHINX true TYPE BOOL)
-
 ##############################################################
 ##
 ## Required libraries
@@ -95,6 +93,7 @@ VISIT_OPTION_DEFAULT(VISIT_QWT_DIR     ${VISITHOME}/Qwt/6.1.2)
 ## PYTHON
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.14)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON3_DIR ${VISITHOME}/python/3.7.5)
 
 ##
 ## PYSIDE
