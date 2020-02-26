@@ -2,8 +2,8 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#ifndef VISIT_ZIPSTREAM_H
-#define VISIT_ZIPSTREAM_H
+#ifndef VISIT_GZSTREAM_H
+#define VISIT_GZSTREAM_H
 
 #include "visit-config.h"
 
