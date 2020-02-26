@@ -427,7 +427,6 @@ utility/GeometricHelpers.C
 utility/Namescheme.C
 utility/StringHelpers.C
 utility/Utility.C
-utility/visit_gzstream.C
 utility/void_ref_ptr.C
 )
 IF(WIN32)
