@@ -390,6 +390,9 @@ CloseHeader(QTextStream &file, const QString &pre_name_withoutpath)
 //    I added -dv so we can have it behave differently when installed vs
 //    not installed.
 //
+//    Kathleen Biagas, Tue Feb 25 2020
+//    Skip -forceversion and it's version number when searching for files.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -467,13 +470,18 @@ int main(int argc, char *argv[])
     std::back_insert_iterator<std::vector<std::string> > fi(files);
     for (int f = 1 ; f < argc ; f++)
     {
-        if(QFile(argv[f]).exists())
+        if (strcmp(argv[f], "-forceversion") == 0)
+        {
+            // skip the version number
+            ++f;
+        }
+        else if(QFile(argv[f]).exists())
         {
             *fi = std::string(argv[f]);
         }
         else if(argv[f][0] != '-') // don't warn for arguments.
         {
-            cErr << "File '" << argv[1] << "' doesn't exist!\n";
+            cErr << "File '" << argv[f] << "' doesn't exist!\n";
         }
     }
 

@@ -637,6 +637,11 @@ function build_hdf5
         cf_build_thread="--enable-threadsafe --with-pthread"
     fi
 
+    build_mode=""
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        build_mode="--disable-production"
+    fi
+
     par_build_types="serial"
     if [[ -n "$PAR_COMPILER" && "$DO_MOAB" == "yes" ]]; then
         par_build_types="$par_build_types parallel"
@@ -677,12 +682,12 @@ function build_hdf5
             CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
             ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
-            ${cf_build_parallel} ${extra_ac_flags}"
+            ${cf_build_parallel} ${extra_ac_flags} $build_mode"
         sh -c "../configure CC=\"$cf_c_compiler\" \
             CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
             ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
-            ${cf_build_parallel} ${extra_ac_flags}"
+            ${cf_build_parallel} ${extra_ac_flags} $build_mode"
         if [[ $? != 0 ]] ; then
             warn "$bt HDF5 configure failed.  Giving up"
             return 1
