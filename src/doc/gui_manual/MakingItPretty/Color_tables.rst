@@ -181,29 +181,30 @@ in the ``[0...1]`` range.
 Sometimes, users want specific numerical values to map to specific colors.
 There is no way to achieve this through VisIt_'s color table GUI. The only
 solution is to edit a color table manually or, if there are a large number
-of color control points to write a script that produces the color table.
+of color control points to edit, to create a script that produces the color
+table.
 
-For example, a user wanted to color a variable using the following logic and
-colors...
+For example, a user wanted a smoothly graded coloring of a variable using
+the following logic and colors...
 
 ====================   =========
 Variable Value Range   Hex Color
 ====================   =========
--inf...0               cccccc
-0...3                  66ccff
-3...10                 66ff66
-10...25                ffffcc
-25...50                ffff00
-50...100               ff9900
-100...1000             ff0000
-1000...5000            9900cc
+<0                      cccccc
+3                       66ccff
+10                      66ff66
+25                      ffffcc
+50                      ffff00
+100                     ff9900
+1000                    ff0000
+>=5000                  9900cc
 ====================   =========
 
 The above table has 8 colors. The input variable has range ``[0...5000]``.
 The first step is to *normalize* the variable's value transitions to the
 ``[0...1]`` interval and convert the hexadecimal values to rgb colors
 using a
-`color conversion tool <https://www.w3schools.com/colors/colors_converter.asp>`_
+`color conversion tool <https://www.w3schools.com/colors/colors_converter.asp>`_.
 This information is in the table below.
 
 =========================   =============
@@ -216,40 +217,40 @@ Normalized Variable Value     RGB Color
  0.01    (50/5000)          255  255  000
  0.02   (100/5000)          255  153  000
  0.2   (1000/5000)          255  000  000
- 1.0   (5000/5000)          153  000  204
+>=1.0  (5000/5000)          153  000  204
 =========================   =============
 
-The steps involved in creating this VisIt_ color table are...
+To create this color table, start VisIt_'s GUI and go to
+:menuselection:`Controls --> Color table ...` . There, enter a name for the
+color table in the **Name** text box. Lets say it is named ``my8colors``.
+Clicking the **New** button adds the named table to the list of color
+tables, copying the settings of the currently active color table. For the
+example above, we wan the **Number of colors** to be set to 8 and the
+**Color table type** to be **Continuous**. To create a file for this color
+table that can be edited with a text editor, it needs to be exported by
+clicking the **Export** button. This will create an XML file in
+:ref:`VUSER_HOME/my8colors.ct <color_table_files>` with 8 color control point
+entries in it. At this point, the user should exit VisIt_. With a text editor,
+the user can now edit the file ``my8colors.ct``. Starting at the *top* of the
+file where the *first* color control point is defined (e.g. the one closest to
+the *zero* end of the ``[0...1]`` range), edit the *position* and *rgb color*
+of the first control point to match the values in the above table. Note that
+there is a 4th entry for each rgb color. This is for setting *transparency* of
+that color in the range ``[0...255]`` where ``0`` is fully transparent and
+``255`` is fully opaque. If *transparancy* effects are not needed, this 4th
+entry can be ignored and just always set equal to ``255``.
 
-#. Start VisIt_'s GUI and go to :menuselection:`Controls --> Color table ...` 
-#. Enter a name for the color table in the ``Name`` text box. Lets say you
-   named it ``my8colors``.
-#. Hit the **New** button. This adds the named table to the list of color
-   tables, copying the settings of the currently active color table.
-#. Set the number of colors to 8.
-#. Ensure the **Continuous** radio button is selected.
-#. Hit the **Export** button. This will create a file in
-   :ref:`VUSER_HOME/my8colors.ct <color_table_files>` with 8 color
-   control point entries in it.
-#. Edit the file ``my8colors.ct`` using a text editor starting at the
-   *top* of the file where the *first* color control point is defined
-   (e.g. the one closest to the *zero* end of the ``[0...1]`` range.
-#. Set the *position* and *rgb color* of the first control point to
-   the values in the above table. Note that you will see a 4th entry
-   for each rgb color. This is for setting *transparency* of that
-   color in the range ``[0...255]`` where ``0`` is fully transparent and
-   ``255`` is fully opaque.
-#. Repeat the steps above for each of the 8 color control points and
-   save the file.
-#. When you restart VisIt_ it will load this color table.
+When VisIt_ is restarted, it will load this color table file. The user can then
+set this color table as the one to be used in various plots.
 
 One final issue to deal with in this example is how to handle the
 user's goal of having all *negative* values in the input variable map
-to the first color in the color table. To do this, the user will have
-to define a :ref:`conditional expression <If_Expression_Function>`
-of the form ``if(lt(var,0),0,var)`` where ``var`` is the variable and
-then use this new *expression variable* in place of ``var`` for the
-desired behavior.
+to the first color in the color table and all values greater or equal to 5000
+to the last color. To do this, the user will have to define a new variable to
+plot using a :ref:`conditional expression <If_Expression_Function>` of the form
+``if(lt(var,0),0,if(ge(var,5000),5000,var))`` where ``var`` is the variable and
+then use this new *expression variable* in place of ``var`` for the desired
+behavior.
 
 .. container:: collapsible
 
@@ -298,6 +299,67 @@ desired behavior.
                <Field name="category" type="string">UserDefined</Field>
            </Object>
        </Object>
+
+
+Numerically Controlled Banded Coloring
+""""""""""""""""""""""""""""""""""""""
+
+Sometimes it is convenient to create numerically controlled *banded*
+coloring of smoothly varying data. A **Discrete** color table does indeed
+wind up *banding* smoothly varying data. However, the band boundaries are
+uniformly spaced in the variable's *range* and this may not always be
+desirable. Sometimes, it is desirable to have finely tuned banding around
+specific portions of the variable's range. This requires the coordination of
+a **Discrete** color table and an appropriately constructed
+:ref:`conditional expression <If_Expression_Function>`.
+
+For example, given the a smoothly varying variable, ``u``, in the range
+``[-1...+1]`` shown in normal (e.g. ``hot``) **Pseudocolor** plot in
+:numref:`Fig. %s <fig-MakingItPretty-smooth-coloring>`.
+
+.. _fig-MakingItPretty-smooth-coloring:
+
+.. figure:: images/MakingItPretty-smooth-coloring.png
+
+   Smoothly colored variable using ``hot`` color table.
+
+
+we would like to produce a 4-color banded plot using the coloring logic in
+the table below...
+
+===============   =====================
+Values in Range   Map to this Hex Color
+===============   =====================
+-inf...-0.95           red
+-0.95...0              green
+0...+0.95              blue
++0.95...+inf           cyan
+===============   =====================
+
+Using a 4-color **Discrete** color table alone, only the plot in
+:numref:`Fig. %s <fig-MakingItPretty-uniform-banded-coloring>` is produced.
+
+.. _fig-MakingItPretty-uniform-banded-coloring:
+
+.. figure:: images/MakingItPretty-uniform-banded-coloring.png
+
+   A 4-color **Discrete** color table coloring alone
+
+This is because the colors in a **Discrete** color table are always uniformly
+spaced over the variable's value range. To produce the desired coloring
+we need to use a :ref:`conditional expression <If_Expression_Function>` that
+maps the input variable into 4 distinct values using the range logic from
+the table. In this case, the correct expression would be
+``if(lt(u,-0.95),0, if(lt(u,0),1, if(lt(u,0.95),2,3)))``. Then, plotting this
+expression using the 4-color **Discrete** color table, the desired coloring is
+produced as shown in 
+
+.. _fig-MakingItPretty-numerically-banded-coloring:
+
+.. figure:: images/MakingItPretty-numerically-banded-coloring.png
+
+   A 4-color **Discrete** color table coloring combined with a
+   conditional expression
 
 Converting color table types
 """"""""""""""""""""""""""""
