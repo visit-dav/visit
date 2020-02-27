@@ -144,7 +144,7 @@ used to store mesh-specific data using Silo's
 `compound array <https://wci.llnl.gov/codes/silo/media/pdf/LLNL-SM-453191.pdf?#page=260>`_.
 However, because there is no multi-block analog for Silo compound arrays, in
 order to handle them VisIt_ needs to be forced to go searching for their
-existence in all the files comprising a multi-block database. Thus, enabling
+existance in all the files comprising a multi-block database. Thus, enabling
 this option can result in much slower database *open* times.
 
 ZipWrapper
@@ -161,7 +161,7 @@ and finally ``$HOME`` environment variable.
 Don't atexit()
 """"""""""""""
 Ordinarily, when VisIt_ exits, it will remove any decompressed files it
-left around from invokations of ZipWrapper's decompression logic. This
+left around from invocations of ZipWrapper's decompression logic. This
 disables removal of decompressed files upon exit from VisIt_.
 
 Max. # decompressed files
