@@ -236,10 +236,10 @@ The steps involved in creating this VisIt_ color table are...
    (e.g. the one closest to the *zero* end of the ``[0...1]`` range.
 #. Set the *position* and *rgb color* of the first control point to
    the values in the above table. Note that you will see a 4th entry
-   for each color control point. This is for setting *transparency*
-   in the range ``[0...255]`` where ``0`` is fully transparent and
+   for each rgb color. This is for setting *transparency* of that
+   color in the range ``[0...255]`` where ``0`` is fully transparent and
    ``255`` is fully opaque.
-#. Repeat the step above for each of the 8 color control points and
+#. Repeat the steps above for each of the 8 color control points and
    save the file.
 #. When you restart VisIt_ it will load this color table.
 
@@ -250,8 +250,6 @@ to define a :ref:`conditional expression <If_Expression_Function>`
 of the form ``if(lt(var,0),0,var)`` where ``var`` is the variable and
 then use this new *expression variable* in place of ``var`` for the
 desired behavior.
-
-To reveal the resulting VisIt_ color table file,
 
 .. container:: collapsible
 
