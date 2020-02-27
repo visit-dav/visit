@@ -219,6 +219,10 @@ avtDirectDatabaseQOTFilter::Execute(void)
 //
 //  Modifications:
 //
+//    Alister Maguire, Mon Feb 24 13:23:22 MST 2020
+//    Modified to handle vectors, arrays, and tensors in the same manner
+//    that the TimeLoopQOTFilter works.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -230,23 +234,33 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
     vtkPointData *inPtData = inPolyData->GetPointData();
     vtkPoints *inPts       = inPolyData->GetPoints();
 
-    if (inPtData ==  NULL || inPts == NULL ||
-        inPtData->GetScalars() == NULL)
+    if (inPtData ==  NULL || inPts == NULL)
     {
         return outPolyData;
     }
 
     int numCurves = inPtData->GetNumberOfArrays();
-    int numPts    = inPtData->GetScalars()->GetNumberOfTuples();
 
     if (numCurves == 0)
     { 
         return outPolyData;
     }
 
-    int stride = atts.GetStride();
-    int startT = atts.GetStartTime();
-    int stopT  = atts.GetEndTime();
+    const int numPts  = inPtData->GetNumberOfTuples();
+    const int stride  = atts.GetStride();
+    const int startT  = atts.GetStartTime();
+    const int stopT   = atts.GetEndTime();
+
+    //
+    // We need to check if any of the arrays have multiple
+    // components. If so, these require special treatment.
+    //
+    int maxComp = 0; 
+    for (int c = 0; c < numCurves; ++c)
+    {
+        int ncTemp = inPtData->GetArray(c)->GetNumberOfComponents();
+        maxComp    = ncTemp > maxComp ? ncTemp : maxComp;
+    }
 
     //
     // First pass: look for invalid data and mark their locations
@@ -260,6 +274,12 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
     isValid.resize(numPts, true);
 
     double coord[] = {0.0, 0.0, 0.0};
+    double *tupleTemp = new double[maxComp];
+
+    for (int i = 0; i < maxComp; ++i)
+    {
+        tupleTemp[i] = 0.0;
+    }
 
     //
     // In cases with multiple variables, only time states that 
@@ -273,10 +293,12 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
         int ts = startT;
         for (int i = 0; i < numPts; ++i, ts += stride)
         {
+            inCurve->GetTuple(i, tupleTemp);
+
             //
             // Invalid states will contain NaN values. 
             //
-            if (visitIsNan(inCurve->GetTuple1(i)))
+            if (visitIsNan(tupleTemp[0]))
             {
                 missingData = true;
  
@@ -290,29 +312,34 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
     }
 
     //
-    // If we found missing data, we have more work to do. Otherwise, 
-    // we're done. 
+    // There are two cases that require more work:
+    //     1. We have missing data that needs to be handled and reported.
+    //     2. We have vectors, tensors, or arrays that need to be reduced
+    //        to a single scalar.
     //
-    if (missingData)
+    if (missingData || maxComp > 1)
     {
         int numInvalid = invalidStateList.size();
         int numValid   = numPts - numInvalid;
 
-        //
-        // Report the missing timesteps. 
-        //
-        std::ostringstream osm;
-        osm << "\nQueryOverTime (" << atts.GetQueryAtts().GetName().c_str()
-            << ") experienced\n"
-            << "problems with the following timesteps and \n"
-            << "skipped them while generating the curve:\n   ";
-        
-        for (int j = 0; j < numInvalid; j++)
+        if (missingData)
         {
-            osm << invalidStateList[j] << " ";
+            //
+            // Report the missing timesteps. 
+            //
+            std::ostringstream osm;
+            osm << "\nQueryOverTime (" << atts.GetQueryAtts().GetName().c_str()
+                << ") experienced\n"
+                << "problems with the following timesteps and \n"
+                << "skipped them while generating the curve:\n   ";
+            
+            for (int j = 0; j < numInvalid; j++)
+            {
+                osm << invalidStateList[j] << " ";
+            }
+            debug4 << osm.str() << endl;
+            avtCallback::IssueWarning(osm.str().c_str());
         }
-        debug4 << osm.str() << endl;
-        avtCallback::IssueWarning(osm.str().c_str());
 
         if (numValid == 0)
         {
@@ -355,8 +382,34 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
             {
                 if (isValid[i])
                 {
-                    outCurve->SetTuple1(vIdx++, inCurve->GetTuple1(i));
+                    inCurve->GetTuple(i, tupleTemp);
+                    int numComp = inCurve->GetNumberOfComponents();
 
+                    //
+                    // We handle scalars, vectors, arrays, and tensors
+                    // differently.
+                    //     Scalars: use the raw value.
+                    //     Vectors: use the magnitude.
+                    //     Tensors/Arrays: use the major eigenvalue.
+                    //
+                    if (numComp == 1)
+                    {
+                        outCurve->SetTuple1(vIdx++, tupleTemp[0]);
+                    }
+                    else if (numComp < 9)
+                    {
+                        float mag = 0.0;
+                        for (int ti = 0; ti < numComp; ++ti)
+                        {
+                            mag += tupleTemp[ti] * tupleTemp[ti];
+                        }
+                        outCurve->SetTuple1(vIdx++, sqrt(mag));
+                    }
+                    else if (numComp >= 9)
+                    {
+                        outCurve->SetTuple1(vIdx++, MajorEigenvalue(tupleTemp));
+                    }
+                    
                     if (c == 0) 
                     {
                         inPts->GetPoint(i, coord);        
@@ -381,6 +434,8 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
         outPolyData->SetPoints(outPts);
         outPts->Delete();
     }
+
+    delete [] tupleTemp;
 
     return outPolyData;
 }

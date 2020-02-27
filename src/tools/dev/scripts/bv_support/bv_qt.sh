@@ -543,6 +543,10 @@ function build_qt
         qt_flags="${qt_flags} -qt-xcb -qt-xkbcommon"
     fi
 
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]] ; then
+        qt_flags="${qt_flags} -debug"
+    fi
+
     info "Configuring ${QT_VER_MSG}: " \
          "CFLAGS=${QT_CFLAGS} CXXFLAGS=${QT_CXXFLAGS}" \
          "./configure -prefix ${QT_INSTALL_DIR}" \
