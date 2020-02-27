@@ -1,19 +1,13 @@
 .. _Read_Write_Options:
 
-Database Read and Write Options
--------------------------------
+Database Read Options
+---------------------
 Several database plugins have options that affect reading and/or writing with that
 format. These are described in this section. Alternatively, in some cases, the
 behavior of a database plugin may be affected by enviornment variables.
 
-Chombo
-~~~~~~
-
-This section incomplete.
-
 Exodus
 ~~~~~~
-   
 
 Detect Compound Variables
 """""""""""""""""""""""""
@@ -26,7 +20,6 @@ combine three scalar variables with names such as ``velx``, ``vely`` and ``velz`
 into a *vector* expression ``vel`` defined as ``{velx, vely, velz}``. Note that
 this is just a convenience to free users from having to define expressions
 manally within their VisIt_ session.
-
 
 Use Material Convention
 """""""""""""""""""""""
@@ -102,40 +95,12 @@ STRIPACK library. Here is an example bash shell ``build_visit`` command-line...
 Because STRIPACK is non-BSD licensed software, part of the ``build_visit``
 process for installing it is to accept the STRIPACK license terms.
 
-H5Part
-~~~~~~
-
-This section incomplete.
-
-IDX
-~~~
-
-This section incomplete.
-
-M3DC1
-~~~~~
-
-This section incomplete.
-
-MDSplus
-~~~~~~~
-
-This section incomplete.
-
-MFIX
-~~~~
-
-This section incomplete.
-
-MFIXCDF
-~~~~~~~
-
-This section incomplete.
-
 NASTRAN
 ~~~~~~~
 
-The ``Num Materials`` option allows the user to indicate that the NASTRAN plugin
+Num Materials
+"""""""""""""
+This option allows the user to indicate that the NASTRAN plugin
 should look for and try to define a material object. If the user knows the
 *number* of materials in the input database, it is best to specify it here
 because that will avert the plugin having to read all lines of the input before
@@ -145,19 +110,9 @@ all information related to the material configuration during the *open*. This wi
 lead to longer open times. A value of ``0`` here means to ignore any material
 information if present.
 
-Nektar++
-~~~~~~~~
-
-This section incomplete.
-
-Pixie
-~~~~~
-
-This section incomplete.
-
 Silo
 ~~~~
-   
+
 Ignore Extents
 """"""""""""""
 
@@ -192,21 +147,46 @@ order to handle them VisIt_ needs to be forced to go searching for their
 existence in all the files comprising a multi-block database. Thus, enabling
 this option can result in much slower database *open* times.
 
-Shapefile
-~~~~~~~~~
+ZipWrapper
+~~~~~~~~~~
 
-This section incomplete.
+TMPDIR
+""""""
+Specifies the directory to be used for temporary, decompressed files.
+Defaults to ``$TMPDIR`` which will then resolve to the ``$TMPDIR``
+environment variable which if either not defined or not a writable
+directory will then default to either ``/usr/tmp`` or ``/var/tmp``
+and finally ``$HOME`` environment variable.
 
-Uintah
-~~~~~~
+Don't atexit()
+""""""""""""""
+Ordinarily, when VisIt_ exits, it will remove any decompressed files it
+left around from invokations of ZipWrapper's decompression logic. This
+disables removal of decompressed files upon exit from VisIt_.
 
-This section incomplete.
+Max. # decompressed files
+"""""""""""""""""""""""""
+Specifies the maximum number of decompressed files that can be in existance
+at any one time. Default is 50. In parallel, this is a total summed over
+all processors unless a negative number is specified in which case it is the
+total per processor (useful for processor local tmp directories).
 
-Vs
-~~
+Unique moniker for dirs made in $TMPDIR
+"""""""""""""""""""""""""""""""""""""""
+An arbitrary string designed to be highly *unique* among all possible
+processes that can write to ``TMPDIR``. Defaults to ``$USER`` which
+will then resolve to the ``$USER`` enviornment variable.
 
-Database Write Options
-----------------------
+Decompression command
+"""""""""""""""""""""
+Specifies the decompression command to use to decompress files. Default is
+to use file extension to determine command according to table below
 
-This section incomplete.
-
+==============   =====================
+File Extension   Decompression Command
+==============   =====================
+.gz              gunzip -f
+.bz              bunzip -f
+.bz2             bunzip2 -f
+.zip             unzip -o
+==============   =====================
