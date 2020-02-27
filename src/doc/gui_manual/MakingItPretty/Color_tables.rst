@@ -201,7 +201,7 @@ Variable Value Range   Hex Color
 
 The above table has 8 colors. The input variable has range ``[0...5000]``.
 The first step is to *normalize* the variable's value transitions to the
-``[0...1]]`` interval and convert the hexadecimal values to rgb colors
+``[0...1]`` interval and convert the hexadecimal values to rgb colors
 using a
 `color conversion tool <https://www.w3schools.com/colors/colors_converter.asp>`_
 This information is in the table below.
