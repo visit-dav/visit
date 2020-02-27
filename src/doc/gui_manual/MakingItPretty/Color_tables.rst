@@ -167,6 +167,140 @@ and **Blue** sliders to change the color. You can also right click on
 a color to select it and open the **Popup color** menu to choose a new
 color.
 
+Editing color control point positions numerically
+"""""""""""""""""""""""""""""""""""""""""""""""""
+In both of the sections above, the color control points are *positioned*
+graphically using the GUI rather than specifying explicit numerical values.
+
+When a variable is plotted, the variable's values are mapped to the range
+``[0...1]`` to determine the colors to associate with the variable's values.
+A color table defines a 1:1 association of that range with a set of color
+control points. Each control point in a color table is assigned a *position*
+in the ``[0...1]`` range.
+
+Sometimes, users want specific numerical values to map to specific colors.
+There is no way to achieve this through VisIt_'s color table GUI. The only
+solution is to edit a color table manually or, if there are a large number
+of color control points to write a script that produces the color table.
+
+For example, a user wanted to color a variable using the following logic and
+colors...
+
+====================   =========
+Variable Value Range   Hex Color
+====================   =========
+-inf...0               cccccc
+0...3                  66ccff
+3...10                 66ff66
+10...25                ffffcc
+25...50                ffff00
+50...100               ff9900
+100...1000             ff0000
+1000...5000            9900cc
+====================   =========
+
+The above table has 8 colors. The input variable has range ``[0...5000]``.
+The first step is to *normalize* the variable's value transitions to the
+``[0...1]]`` interval and convert the hexadecimal values to rgb colors
+using a
+`color conversion tool <https://www.w3schools.com/colors/colors_converter.asp>`_
+This information is in the table below.
+
+=========================   =============
+Normalized Variable Value     RGB Color
+=========================   =============
+<0.0      (0/5000)          204  204  204
+ 0.0006   (3/5000)          102  204  255
+ 0.002   (10/5000)          102  255  102
+ 0.005   (25/5000)          255  255  204
+ 0.01    (50/5000)          255  255  000
+ 0.02   (100/5000)          255  153  000
+ 0.2   (1000/5000)          255  000  000
+ 1.0   (5000/5000)          153  000  204
+=========================   =============
+
+The steps involved in creating this VisIt_ color table are...
+
+#. Start VisIt_'s GUI and go to :menuselection:`Controls --> Color table ...` 
+#. Enter a name for the color table in the ``Name`` text box. Lets say you
+   named it ``my8colors``.
+#. Hit the **New** button. This adds the named table to the list of color
+   tables, copying the settings of the currently active color table.
+#. Set the number of colors to 8.
+#. Ensure the **Continuous** radio button is selected.
+#. Hit the **Export** button. This will create a file in
+   :ref:`VUSER_HOME/my8colors.ct <color_table_files>` with 8 color
+   control point entries in it.
+#. Edit the file ``my8colors.ct`` using a text editor starting at the
+   *top* of the file where the *first* color control point is defined
+   (e.g. the one closest to the *zero* end of the ``[0...1]`` range.
+#. Set the *position* and *rgb color* of the first control point to
+   the values in the above table. Note that you will see a 4th entry
+   for each color control point. This is for setting *transparency*
+   in the range ``[0...255]`` where ``0`` is fully transparent and
+   ``255`` is fully opaque.
+#. Repeat the step above for each of the 8 color control points and
+   save the file.
+#. When you restart VisIt_ it will load this color table.
+
+One final issue to deal with in this example is how to handle the
+user's goal of having all *negative* values in the input variable map
+to the first color in the color table. To do this, the user will have
+to define a :ref:`conditional expression <If_Expression_Function>`
+of the form ``if(lt(var,0),0,var)`` where ``var`` is the variable and
+then use this new *expression variable* in place of ``var`` for the
+desired behavior.
+
+To reveal the resulting VisIt_ color table file,
+
+.. container:: collapsible
+
+    .. container:: header
+
+        **Show/Hide XML color table file**
+
+    .. code-block:: XML
+
+       <?xml version="1.0"?>
+       <Object name="ColorTable">
+           <Field name="Version" type="string">3.0.1</Field>
+           <Object name="ColorControlPointList">
+               <Object name="ColorControlPoint">
+                   <Field name="colors" type="unsignedCharArray" length="4">204 204 204 255 </Field>
+                   <Field name="position" type="float">0.0</Field>
+               </Object>
+               <Object name="ColorControlPoint">
+                   <Field name="colors" type="unsignedCharArray" length="4">102 204 255 255 </Field>
+                   <Field name="position" type="float">0.0006</Field>
+               </Object>
+               <Object name="ColorControlPoint">
+                   <Field name="colors" type="unsignedCharArray" length="4">102 255 102 255 </Field>
+                   <Field name="position" type="float">0.002</Field>
+               </Object>
+               <Object name="ColorControlPoint">
+                   <Field name="colors" type="unsignedCharArray" length="4">255 255 204 255 </Field>
+                   <Field name="position" type="float">0.005</Field>
+               </Object>
+               <Object name="ColorControlPoint">
+                   <Field name="colors" type="unsignedCharArray" length="4">255 255 0 255 </Field>
+                   <Field name="position" type="float">0.01</Field>
+               </Object>
+               <Object name="ColorControlPoint">
+                   <Field name="colors" type="unsignedCharArray" length="4">255 153 0 255 </Field>
+                   <Field name="position" type="float">0.02</Field>
+               </Object>
+               <Object name="ColorControlPoint">
+                   <Field name="colors" type="unsignedCharArray" length="4">255 0 0 255 </Field>
+                   <Field name="position" type="float">0.2</Field>
+               </Object>
+               <Object name="ColorControlPoint">
+                   <Field name="colors" type="unsignedCharArray" length="4">153 0 204 255 </Field>
+                   <Field name="position" type="float">1</Field>
+               </Object>
+               <Field name="category" type="string">UserDefined</Field>
+           </Object>
+       </Object>
+
 Converting color table types
 """"""""""""""""""""""""""""
 
