@@ -778,9 +778,9 @@ OPTION(VISIT_ENABLE_DATAGEN "Enable generation of sample data files" ON)
 OPTION(VISIT_ENABLE_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
 OPTION(VISIT_ENABLE_DIAGNOSTICS  "Enable building of diagnostices" ON)
 OPTION(VISIT_ENABLE_EXAMPLES  "Enable building of examples" ON)
-OPTION(VISIT_ENABLE_LIBSIM "Enable generation libsim." ON)
+OPTION(VISIT_ENABLE_LIBSIM "Enable building of libsim." ON)
 OPTION(VISIT_ENABLE_MANUALS  "Enable building of manuals (requires python3)" ON)
-OPTION(VISIT_ENABLE_SILO_TOOLS "Enable generation of silo tools (mrgtree2dot, add_visit_searchpath)" ON)
+OPTION(VISIT_ENABLE_SILO_TOOLS "Enable building of silo tools (mrgtree2dot, add_visit_searchpath)" ON)
 OPTION(VISIT_ENABLE_XDB "Enable Intelligent Light XDB database plugin." OFF) # OFF for now
 
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
