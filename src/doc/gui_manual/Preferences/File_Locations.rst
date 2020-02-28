@@ -126,6 +126,8 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
 * Read: On VisIt_ startup but this can be overridden by ``-noconfig``.
 * Format: Python source code.
 
+.. _color_table_files:
+
 :ref:`Color Table <Color_tables>` Files
 """""""""""""""""""""""""""""""""""""""
 * Location and file name(s): ``VUSER_HOME/<color-table-name>.ct``
