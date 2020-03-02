@@ -18,7 +18,7 @@
 //   fit into the rest of the pipeline while taking advantage of Qt's
 //   printing capabilities.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Feb 20 15:46:31 PST 2002

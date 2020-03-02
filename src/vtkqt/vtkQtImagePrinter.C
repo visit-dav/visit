@@ -15,7 +15,7 @@
 // ****************************************************************************
 // Method: vtkQtImagePrinter::New
 //
-// Purpose: 
+// Purpose:
 //   Creates a new instance of a vtkQtImagePrinter object.
 //
 // Returns:    A pointer to a new instance of a vtkQtImagePrinter object.
@@ -24,7 +24,7 @@
 // Creation:   Thu Feb 21 15:57:48 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkQtImagePrinter *
@@ -44,7 +44,7 @@ vtkQtImagePrinter::New()
 // ****************************************************************************
 // Method: vtkQtImagePrinter::vtkQtImagePrinter
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the vtkQtImagePrinter class.
 //
 // Programmer: Brad Whitlock
@@ -62,7 +62,7 @@ vtkQtImagePrinter::vtkQtImagePrinter() : print()
 // ****************************************************************************
 // Method: vtkQtImagePrinter::WriteFile
 //
-// Purpose: 
+// Purpose:
 //   Extracts the pixels from the image data and sends them to a Qt printer
 //   object where they go to a file or a network printer.
 //
@@ -83,8 +83,8 @@ vtkQtImagePrinter::vtkQtImagePrinter() : print()
 //   Brad Whitlock, Fri May 12 14:49:52 PST 2006
 //   Check for data == NULL just in case.
 //
-//   Kathleen Bonnell, Wed Aug 22 17:40:34 PDT 2007 
-//   Made scaling of viewport coords specific to WIN32 and QT version 3.0.2. 
+//   Kathleen Bonnell, Wed Aug 22 17:40:34 PDT 2007
+//   Made scaling of viewport coords specific to WIN32 and QT version 3.0.2.
 //
 //   Brad Whitlock, Fri May  9 10:21:26 PDT 2008
 //   Qt 4.
@@ -112,7 +112,7 @@ vtkQtImagePrinter::WriteFile(ostream *, vtkImageData *data, int extent[6], int [
     if(data->GetScalarType() != VTK_UNSIGNED_CHAR)
     {
         vtkErrorMacro("vtkQtImagePrinter only accepts unsigned char scalars!");
-        return; 
+        return;
     }
 
     // Try and start drawing on the printer.
