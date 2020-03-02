@@ -92,7 +92,7 @@ vtkQtImagePrinter::vtkQtImagePrinter() : print()
 // ****************************************************************************
 
 void
-vtkQtImagePrinter::WriteFile(ofstream *, vtkImageData *data, int extent[6], int [6])
+vtkQtImagePrinter::WriteFile(ostream *, vtkImageData *data, int extent[6], int [6])
 {
     // Make sure that data is not NULL.
     if(data == NULL)

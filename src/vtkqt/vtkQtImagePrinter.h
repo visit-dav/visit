@@ -42,8 +42,8 @@ protected:
   vtkQtImagePrinter(const vtkQtImagePrinter&); // not implemented
   void operator=(const vtkQtImagePrinter&); // not implemented
 
-  virtual void WriteFile(ofstream *file, vtkImageData *data, int ext[6], int wext[6]);
-  virtual void WriteFileHeader(ofstream *, vtkImageData *, int [6]) { };
+  void WriteFile(ostream *file, vtkImageData *data, int ext[6], int wext[6]) override;
+  void WriteFileHeader(ostream *, vtkImageData *, int [6]) override { };
 private:
   QPrinter print;
 };
