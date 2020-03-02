@@ -1328,6 +1328,11 @@ function build_hdf4
         FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
     fi
 
+    hdf4_build_mode=""
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        hdf4_build_mode="--disable-production"
+    fi
+
     #
     # Configure HDF4
     #
@@ -1343,7 +1348,7 @@ function build_hdf4
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
         CPPFLAGS=\"-I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION} \
         -I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\" \
-        $FORTRANARGS \
+        $FORTRANARGS $hdf4_build_mode \
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\",\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib\" \
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
@@ -1363,7 +1368,7 @@ function build_hdf4
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" LIBS=\"-lm\" \
         CPPFLAGS=\"-I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION} \
         -I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\" \
-        $FORTRANARGS \
+        $FORTRANARGS $hdf4_build_mode \
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\",\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib\" \
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \

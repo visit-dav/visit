@@ -57,8 +57,11 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 )
 
-ADD_DEFINITIONS(-fext-numeric-literals)
 ADD_DEFINITIONS(${NEKTAR++_DEFINITIONS})
+
+if(LINUX)
+    add_definitions(-fext-numeric-literals)
+endif()
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS} ${ACCELERATE_FRAMEWORK_LINK_FLAGS} )
 
