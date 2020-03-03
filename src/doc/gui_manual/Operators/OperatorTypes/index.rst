@@ -29,6 +29,7 @@ operators that you rarely use.
     Lineout_operator
     Merge_operator
     OnionPeel_operator
+    PICS/index
     Project_operator
     Reflect_operator
     Resample_operator
