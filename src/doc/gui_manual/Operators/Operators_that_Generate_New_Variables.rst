@@ -28,16 +28,16 @@ Operators that generate Scalars:
 #.  Connected Components
 #.  DataBinning
 #.  Flux
-#.  IntegralCurve
-#.  LCS
-#.  LimitCycle
+#.  :ref:`Integral Curve operator`
+#.  :ref:`LCS operator`
+#.  :ref:`Limit Cycle operator`
 #.  ModelFit
-#.  Poincare
+#.  :ref:`Poincare operator`
 #.  StatisticalTrends
 
 Operators that generate Vectors:
 
-#.  LCS
+#.  :ref:`LCS operator`
 #.  SurfaceNormal
 
 Operators that generate Curves:
