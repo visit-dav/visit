@@ -2287,6 +2287,10 @@ IF (APPLE AND FIXUP_OSX)
     ADD_SUBDIRECTORY(osxfixup)
 ENDIF ()
 
+if(WIN32 AND VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
+    message("\nCreation of code gen targets has been turned on. If you don't want the xmltools to be run during the buid, build using the ALL_BUILD project.")
+endif()
+
 IF (NOT WIN32)
     MESSAGE(STATUS "\n\nUse recmake_visit.sh or search for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
 ELSE (NOT WIN32)
