@@ -32,6 +32,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Removed the pbatch launch profile from the Lawrence Livermore National Laboratory's Max host profile.</li>
   <li>Enhanced the Pick Through Time to handle vectors, tensors, and arrays when picking original data. For vectors, the magnitude is used. For tensors and arrays, the major eigenvalue is used.</li>
+  <li>Enhanced the ".visit" file reader to support grouping multiple single-block CGNS files into a multi-block file. The reader requires that each CGNS file contain a single domain. The ".visit" file will need a "!NBLOCKS ###" directive as the first line in the file, followed by all the CGNS filenames, one filename per line. You may also need to specify the file type as CGNS when opening the file if the filenames don't contain the "cgns" file extension.</li>
 </ul>
 
 <a name="Dev_changes"></a>
