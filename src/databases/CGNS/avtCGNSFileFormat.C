@@ -9,6 +9,11 @@
 #include <avtCGNSFileFormat.h>
 
 #include <avtCGNSFileReader.h>
+#include <avtDatabaseMetaData.h>
+
+#include <InvalidFilesException.h>
+
+#include <string.h>
 
 // ****************************************************************************
 //  Method: avtCGNS_MTMDFileReader constructor
@@ -252,6 +257,9 @@ avtCGNS_MTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 avtCGNS_MTSDFileFormat::avtCGNS_MTSDFileFormat(const char *filename) :
     avtMTSDFileFormat(&filename, 1)
 {
+    cgnsFileName = new char[strlen(filename) + 1];
+    strcpy(cgnsFileName, filename);
+
     reader = new avtCGNSFileReader(filename);
 }
 
@@ -270,6 +278,8 @@ avtCGNS_MTSDFileFormat::avtCGNS_MTSDFileFormat(const char *filename) :
 
 avtCGNS_MTSDFileFormat::~avtCGNS_MTSDFileFormat()
 {
+    delete [] cgnsFileName;
+
     delete reader;
 }
 
@@ -457,4 +467,13 @@ avtCGNS_MTSDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int timestate)
 {
     reader->PopulateDatabaseMetaData(md, timestate);
+
+    //
+    // Check that there is a single mesh.
+    //
+    stringVector names = md->GetAllMeshNames();
+    if (names.size() != 1)
+        EXCEPTION1(InvalidFilesException, cgnsFileName);
+    if (md->GetNDomains(names[0]) != 1)
+        EXCEPTION1(InvalidFilesException, cgnsFileName);
 }

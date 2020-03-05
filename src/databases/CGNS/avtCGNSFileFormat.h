@@ -53,7 +53,7 @@ public:
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
 protected:
-    avtCGNSFileReader *reader;
+    avtCGNSFileReader     *reader;
 };
 
 class avtCGNS_MTSDFileFormat : public avtMTSDFileFormat
@@ -77,7 +77,9 @@ public:
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
 protected:
-    avtCGNSFileReader *reader;
+    char                  *cgnsFileName;
+
+    avtCGNSFileReader     *reader;
 };
 
 #endif
