@@ -23,7 +23,7 @@ typedef struct {
 
 typedef struct {
   image_hdr      header;        // header read from/written to disk
-  ofstream       *file;         // stuff used in core only
+  ostream        *file;         // stuff used in core only
   unsigned char  *rowstart;
   unsigned char  *rowsize;
   unsigned char  *rle_buf;
@@ -63,7 +63,7 @@ static void rgbfile_writefile(rgbfile_t *);
 
 //------------------------------------------------------------------------------
 // Modifications:
-//   Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002 
+//   Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002
 //   Replace 'New' method with Macro to match VTK 4.0 API.
 //------------------------------------------------------------------------------
 vtkStandardNewMacro(vtkRGBWriter);
@@ -73,7 +73,7 @@ vtkRGBWriter::vtkRGBWriter()
   this->FileLowerLeft = 1;
 }
 
-void vtkRGBWriter::WriteFileHeader(ofstream *, vtkImageData *, int wExt[6])
+void vtkRGBWriter::WriteFileHeader(ostream *, vtkImageData *, int wExt[6])
 {
     // Do nothing since we need to actually compress the data BEFORE
     // writing the file. It does not look possible to rewind the file
@@ -81,11 +81,11 @@ void vtkRGBWriter::WriteFileHeader(ofstream *, vtkImageData *, int wExt[6])
 }
 
 
-void vtkRGBWriter::WriteFile(ofstream *file, vtkImageData *data,
+void vtkRGBWriter::WriteFile(ostream *file, vtkImageData *data,
                  int extent[6], int wExt[6])
 {
     int i, bpp = data->GetNumberOfScalarComponents();
-  
+
     // Make sure we actually have data.
     if(!data->GetPointData()->GetScalars())
     {
@@ -97,13 +97,13 @@ void vtkRGBWriter::WriteFile(ofstream *file, vtkImageData *data,
     if(data->GetScalarType() != VTK_UNSIGNED_CHAR)
     {
         vtkErrorMacro("RGBWriter only accepts unsigned char scalars!");
-        return; 
+        return;
     }
 
     // Create a rgb "object"
     rgbfile_t rgb;
     memset(&rgb, 0, sizeof(rgbfile_t));
- 
+
     int xsize = extent[1] - extent[0] + 1;
     int ysize = extent[3] - extent[2] + 1;
     int zsize = 3;
@@ -120,7 +120,7 @@ void vtkRGBWriter::WriteFile(ofstream *file, vtkImageData *data,
     WriteInt  (rgb.header.max, 255);
     WriteInt  (rgb.header.wastebytes, 0);
     strcpy    (rgb.header.name, "SGI rgb file");
-    
+
     int table_size = ysize * zsize * 4;
     rgb.rowstart = new unsigned char[table_size];
     rgb.rowsize = new unsigned char[table_size];
@@ -164,10 +164,10 @@ void vtkRGBWriter::WriteFile(ofstream *file, vtkImageData *data,
     float progress = this->Progress;
     float area;
     area = ((extent[5] - extent[4] + 1)*(extent[3] - extent[2] + 1)*
-            (extent[1] - extent[0] + 1)) / 
+            (extent[1] - extent[0] + 1)) /
            ((wExt[5] -wExt[4] + 1)*(wExt[3] -wExt[2] + 1)*
             (wExt[1] -wExt[0] + 1));
-    
+
     target = (unsigned long)((extent[5]-extent[4]+1)*
               (extent[3]-extent[2]+1)/(50.0*area));
     ++target;
@@ -213,7 +213,7 @@ void vtkRGBWriter::WriteFile(ofstream *file, vtkImageData *data,
                 grn_row[i] = *cptr++;
                 blu_row[i] = *cptr++;
             }
-        } 
+        }
         else if(bpp == 4)
         {
             for(i = 0; i < xsize; ++i, ++cptr)
@@ -287,7 +287,7 @@ rgbfile_writefile(rgbfile_t *rgb)
             for(i = 0; i < rowWidth; ++i)
                 rgb->file->put(rgb->blu_list[y][i]);
         }
-    }    
+    }
 }
 
 static void
@@ -305,7 +305,7 @@ rgbfile_writeheader(rgbfile_t *rgb)
         rgb->file->put((unsigned char)0);
 
     // Compute the size of the rowstart and rowsize tables.
-    int table_size = ReadShort(rgb->header.ysize) * 
+    int table_size = ReadShort(rgb->header.ysize) *
                      ReadShort(rgb->header.zsize) * 4;
 
     // Write the rowstart table and rowsize table.
@@ -318,17 +318,17 @@ rgbfile_writeheader(rgbfile_t *rgb)
         rgb->file->put(*cptr);
 }
 
-static void 
-rgbfile_putrow(rgbfile_t *rgb, unsigned char *buffer, int y, int channel) 
+static void
+rgbfile_putrow(rgbfile_t *rgb, unsigned char *buffer, int y, int channel)
 {
     unsigned char *temp_ptr = NULL;
 
     // Extract height information.
     int height = (int)ReadShort(rgb->header.ysize);
 
-    if(y >= 0 && y < height && 
-       rgb->file != NULL && 
-       channel >= 0 && channel < 3) 
+    if(y >= 0 && y < height &&
+       rgb->file != NULL &&
+       channel >= 0 && channel < 3)
     {
         int index = channel * height + y;
 
@@ -338,7 +338,7 @@ rgbfile_putrow(rgbfile_t *rgb, unsigned char *buffer, int y, int channel)
         // Allocate enough memory to hold the compressed buffer.
         unsigned char *compress = new unsigned char[size];
         memcpy((void *)compress, (void *)rgb->rle_buf, size);
-       
+
         // Assign the compressed buffer to the right channel.
         if(channel == 0)
             rgb->red_list[y] = compress;
@@ -353,7 +353,7 @@ rgbfile_putrow(rgbfile_t *rgb, unsigned char *buffer, int y, int channel)
         temp_ptr = rgb->rowsize + (4 * index);
         WriteInt(temp_ptr, size);
         rgb->current_offset += size;
-    }  
+    }
 }
 
 static int
@@ -370,7 +370,7 @@ rgbfile_rle_encode(rgbfile_t *rgb,
     width = (int)ReadShort(rgb->header.xsize);
     ibufend = iptr + width;
     optr    = (unsigned char *)outbuf;
-     
+
     while(iptr < ibufend)
     {
         sptr = iptr;
@@ -389,7 +389,7 @@ rgbfile_rle_encode(rgbfile_t *rgb,
         }
         sptr = iptr;
         cc = *iptr++;
-        while((iptr < ibufend) && (*iptr == cc)) 
+        while((iptr < ibufend) && (*iptr == cc))
             iptr++;
         count = iptr-sptr;
         while(count)
