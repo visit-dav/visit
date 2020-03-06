@@ -57,11 +57,11 @@ public:
 
     virtual void           GetCycles(std::vector<int> &);
     virtual void           GetTimes(std::vector<double> &);
-    
+
     virtual int            GetNTimesteps(void);
 
     virtual const char    *GetType(void)   { return "CGNS"; };
-    virtual void           FreeUpResources(void); 
+    virtual void           FreeUpResources(void);
 
     virtual vtkDataSet    *GetMesh(int, int, const char *);
     virtual vtkDataArray  *GetVar(int, int, const char *);
@@ -106,12 +106,12 @@ protected:
     void                   AddReferenceStateExpressions(avtDatabaseMetaData *md,
                                      int base, int nBases, const std::string &baseName,
                                      const std::string &meshName);
-    void                   AddVectorExpressions(avtDatabaseMetaData *md, 
+    void                   AddVectorExpressions(avtDatabaseMetaData *md,
                                bool *haveVelocity, bool *haveMomentum, int nBases,
                                const std::string &baseName);
-    void                   AddVectorExpression(avtDatabaseMetaData *md, 
-                               bool *haveComponent, int nBases, 
-                               const std::string &baseName, 
+    void                   AddVectorExpression(avtDatabaseMetaData *md,
+                               bool *haveComponent, int nBases,
+                               const std::string &baseName,
                                const std::string &vecName);
     bool                   GetVariablesForBase(int base, BaseInformation &baseInfo);
     bool                   BaseContainsUnits(int base);
