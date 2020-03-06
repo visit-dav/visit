@@ -10,6 +10,7 @@
 #include <visit-config.h>
 
 #include <cerrno>
+#include <climits>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -149,7 +150,7 @@ avtDatabaseFactory::SetBackendType(const int bType)
 //      filelistN    The number of files in `filelist'.
 //      timestep     The timestep to open to.
 //      plugins      The plugins types that were tried (output argument)
-//      format       The format to try first.
+//      format_in    The format to try first.
 //
 //  Returns:    An avtDatabase object that is correctly typed for the filelist.
 //
@@ -338,16 +339,23 @@ avtDatabaseFactory::SetBackendType(const int bType)
 //    Allow file permission check to be bypassed. We don't want it for batch
 //    in situ.
 //
+//    Eric Brugger, Fri Mar  6 10:41:43 PST 2020
+//    Modified the routine to recognize the file list as a multi-file,
+//    multi-block CGNS file when all the filenames in the list match
+//    "basename.cgns.nblocks.iblock" where basename is an arbitrary
+//    basename, cgns is the string "cgns", nblocks is the number of
+//    blocks, and iblock is the block index.
+//
 // ****************************************************************************
 
 avtDatabase *
 avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                              const char * const * filelist, int filelistN,
                              int timestep, vector<string> &plugins,
-                             const char *format,
+                             const char *format_in,
                              bool forceReadAllCyclesAndTimes,
                              bool treatAllDBsAsTimeVarying,
-                             int bang_nblocks)
+                             int bang_nblocks_in)
 {
     vector<string> noncompliantPlugins;
     vector<string> noncompliantErrors;
@@ -355,6 +363,86 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     if (filelistN <= 0)
     {
         EXCEPTION1(InvalidFilesException, filelistN);
+    }
+
+    //
+    // Look through the file list and see if it corresponds to a
+    // multi-block collection of CGNS files.
+    //
+    bool cgnsFile = true;
+    int  cgnsNBlocks = -1;
+    for (int f = 0 ; cgnsFile && f < filelistN; f++)
+    {
+        //
+        // Eliminate the path information to get just the filename.
+        //
+#if defined _WIN32      
+        const char *file = strrchr(filelist[f], '\\');
+#else
+        const char *file = strrchr(filelist[f], '/');
+#endif
+        if (file == NULL) file = filelist[f];
+
+        //
+        // Determine if the filename matches "basename.cgns.nblocks.iblock"
+        // where basename is an arbitrary basename, cgns is the literal
+        // string "cgns", nblocks is the number of blocks, and iblock is
+        // the block index. Furthermore, nblocks must evenly divide the
+        // number of files in the list and iblock must be monotonically
+        // increasing with no gaps in the numbering.
+        //
+        const char *str = strstr(file, "cgns");
+        if (str == NULL)
+        {
+            cgnsFile = false;
+            break;
+        }
+        if (str[4] != '.')
+        {
+            cgnsFile = false;
+            break;
+        }
+        char *str2;
+        long int nBlock = strtol(&str[5], &str2, 10);
+        if (nBlock == 0 || nBlock == LONG_MAX || nBlock == LONG_MIN ||
+            nBlock < 0 || nBlock > filelistN ||
+            filelistN % nBlock != 0 || str2[0] != '.')
+        {
+            cgnsFile = false;
+            break;
+        }
+        if (f == 0) cgnsNBlocks = nBlock;
+        if (nBlock != cgnsNBlocks)
+        {
+            cgnsFile = false;
+            break;
+        }
+        char *str3;
+        long int iBlock = strtol(&str2[1], &str3, 10);
+        if (iBlock == LONG_MAX || iBlock == LONG_MIN ||
+            iBlock < 0 || iBlock >= nBlock ||
+            iBlock != f % nBlock || str3[0] != '\0')
+        {
+            cgnsFile = false;
+            break;
+        }
+    }
+    int bang_nblocks;
+    char *format = NULL;
+    if (cgnsFile)
+    {
+        bang_nblocks = cgnsNBlocks;
+        format = new char[strlen("CGNS_1.0") + 1];
+        strcpy(format, "CGNS_1.0");
+    }
+    else
+    {
+        bang_nblocks = bang_nblocks_in;
+        if (format_in != NULL)
+        {
+            format = new char[strlen(format_in) + 1];
+            strcpy(format, format_in);
+        }
     }
 
     avtDatabase *rv = NULL;
@@ -449,6 +537,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                     "The DB factory was told to open a file of type %s, "
                     "but the engine had no plugin of that type.",
                     format);
+            delete [] format;
             EXCEPTION1(ImproperUseException, msg);
         }
 
@@ -460,6 +549,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                     "The DB factory was told to open a file of type %s, "
                     "but that format's plugin could not be loaded.",
                     format);
+            delete [] format;
             EXCEPTION1(ImproperUseException, msg);
         }
         CommonDatabasePluginInfo *info = 
@@ -495,8 +585,15 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                     "The DB factory was told to open a file of type %s, but "
                     "that format is not a match for file %s",
                     format, filelist[0]);
+            delete [] format;
             EXCEPTION1(ImproperUseException, msg);
         }
+    }
+
+    if (format != NULL)
+    {
+        delete [] format;
+        format = NULL;
     }
  
     //
