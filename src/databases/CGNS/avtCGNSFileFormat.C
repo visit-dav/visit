@@ -35,7 +35,7 @@ avtCGNS_MTMDFileFormat::avtCGNS_MTMDFileFormat(const char *filename) :
 //  Method: avtCGNS_MTMDFileReader::~avtCGNS_MTMDFileReader
 //
 //  Purpose:
-//    Destructor for the avtCGNS_MTMDFileReader class. 
+//    Destructor for the avtCGNS_MTMDFileReader class.
 //
 //  Programmer: Eric Brugger
 //  Creation:   Fri Feb 28 13:48:04 PST 2020
@@ -267,7 +267,7 @@ avtCGNS_MTSDFileFormat::avtCGNS_MTSDFileFormat(const char *filename) :
 //  Method: avtCGNS_MTSDFileReader::~avtCGNS_MTMDFileReader
 //
 //  Purpose:
-//    Destructor for the avtCGNS_MTMDFileReader class. 
+//    Destructor for the avtCGNS_MTMDFileReader class.
 //
 //  Programmer: Eric Brugger
 //  Creation:   Fri Feb 28 13:48:04 PST 2020
