@@ -5,7 +5,25 @@
 #include <CGNSPluginInfo.h>
 #include <avtCGNSFileFormat.h>
 #include <avtMTMDFileFormatInterface.h>
+#include <avtMTSDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
+#include <DebugStream.h>
+
+// ****************************************************************************
+//  Method: CGNSCommonPluginInfo constructor
+//
+//  Programmer: Eric Brugger
+//  Creation:   Fri Feb 28 13:40:33 PST 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+CGNSCommonPluginInfo::CGNSCommonPluginInfo() : CommonDatabasePluginInfo(), CGNSGeneralPluginInfo()
+{
+    // Assume MD by default.
+    dbType = DB_TYPE_MTMD;
+}
 
 // ****************************************************************************
 //  Method:  CGNSCommonPluginInfo::GetDatabaseType
@@ -20,7 +38,7 @@
 DatabaseType
 CGNSCommonPluginInfo::GetDatabaseType()
 {
-    return DB_TYPE_MTMD;
+    return dbType;
 }
 
 // ****************************************************************************
@@ -44,14 +62,42 @@ avtDatabase *
 CGNSCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
+    avtDatabase *db = NULL;
+
     // ignore any nBlocks past 1
     int nTimestepGroups = nList / nBlock;
-    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
-    for (int i = 0; i < nTimestepGroups; i++)
+    if (nBlock > 1)
     {
-        ffl[i] = new avtCGNSFileFormat(list[i*nBlock]);
+        dbType = DB_TYPE_MTSD;
+
+        avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+        for (int i = 0 ; i < nTimestepGroups ; i++)
+        {
+            ffl[i] = new avtMTSDFileFormat*[nBlock];
+            for (int j = 0 ; j < nBlock ; j++)
+            {
+                 ffl[i][j] = new avtCGNS_MTSDFileFormat(list[i*nBlock+j]);
+            }
+        }
+        avtMTSDFileFormatInterface *inter =
+            new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
+        db = new avtGenericDatabase(inter);
+        debug5 << "CGNSCommonPluginInfo::SetupDatabase MTSD" << endl;
     }
-    avtMTMDFileFormatInterface *inter
-           = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
-    return new avtGenericDatabase(inter);
+    else
+    {
+        dbType = DB_TYPE_MTMD;
+
+        avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
+        for (int i = 0 ; i < nTimestepGroups ; i++)
+        {
+            ffl[i] = new avtCGNS_MTMDFileFormat(list[i]);
+        }
+        avtMTMDFileFormatInterface *inter =
+            new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
+        db = new avtGenericDatabase(inter);
+        debug5 << "CGNSCommonPluginInfo::SetupDatabase MTMD" << endl;
+    }
+
+    return db;
 }
