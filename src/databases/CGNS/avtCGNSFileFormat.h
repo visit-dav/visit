@@ -40,11 +40,11 @@ public:
 
     virtual void           GetCycles(std::vector<int> &);
     virtual void           GetTimes(std::vector<double> &);
-    
+
     virtual int            GetNTimesteps(void);
 
     virtual const char    *GetType(void)   { return "CGNS"; };
-    virtual void           FreeUpResources(void); 
+    virtual void           FreeUpResources(void);
 
     virtual vtkDataSet    *GetMesh(int, int, const char *);
     virtual vtkDataArray  *GetVar(int, int, const char *);
@@ -64,11 +64,11 @@ public:
 
     virtual void           GetCycles(std::vector<int> &);
     virtual void           GetTimes(std::vector<double> &);
-    
+
     virtual int            GetNTimesteps(void);
 
     virtual const char    *GetType(void)   { return "CGNS"; };
-    virtual void           FreeUpResources(void); 
+    virtual void           FreeUpResources(void);
 
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
