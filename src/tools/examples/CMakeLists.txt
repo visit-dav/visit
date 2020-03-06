@@ -4,6 +4,10 @@
 
 #****************************************************************************
 # Modifications:
+#  Kathleen Biagas, Thu Feb 27 2020
+#  Remove if test that is handled by the parent dir's CMakeLists.txt
+#  (VISIT_DBIO_ONLY, VISIT_ENGINE_ONLY, AND VISIT_SERVER_COMPONENTS_ONLY),
+#  VISIT_ENABLE_AVTEXAMPLES.
 #
 #****************************************************************************
 
@@ -15,17 +19,16 @@ macro(VISIT_EXAMPLES_ADD_FOLDER type)
     endif()
 endmacro()
 
+if (NOT VISIT_STATIC)
+    add_subdirectory(avtexamples)
+    
+    if(VISIT_PYTHON_SCRIPTING)
+        add_subdirectory(dataserver)
+    endif()
+endif()
 
-IF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-ELSE(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-    IF(VISIT_BUILD_AVTEXAMPLES AND NOT VISIT_STATIC)
-        ADD_SUBDIRECTORY(avtexamples)
-    ENDIF(VISIT_BUILD_AVTEXAMPLES AND NOT VISIT_STATIC)
-    ADD_SUBDIRECTORY(embedviewer)
-    IF(NOT WIN32)
-        ADD_SUBDIRECTORY(mcurvit)
-    ENDIF(NOT WIN32)
-    IF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
-        ADD_SUBDIRECTORY(dataserver)
-    ENDIF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
-ENDIF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
+add_subdirectory(embedviewer)
+
+if(NOT WIN32)
+    add_subdirectory(mcurvit)
+endif()
