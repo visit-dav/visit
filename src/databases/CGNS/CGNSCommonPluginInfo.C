@@ -3,6 +3,9 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <CGNSPluginInfo.h>
+
+#include <climits>
+
 #include <avtCGNSFileFormat.h>
 #include <avtMTMDFileFormatInterface.h>
 #include <avtMTSDFileFormatInterface.h>
@@ -63,6 +66,75 @@ CGNSCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
     avtDatabase *db = NULL;
+
+    //
+    // If the number of blocks is 1, see if the names follow the
+    // conventions for a multi-file multi-block file.
+    //
+    if (nBlock == 1)
+    {
+        bool multiblockFile = true;
+        int  globalNBlocks = -1;
+        for (int f = 0 ; multiblockFile && f < nList; f++)
+        {
+            //
+            // Eliminate the path information to get just the filename.
+            //
+#if defined _WIN32      
+            const char *file = strrchr(list[f], '\\');
+#else
+            const char *file = strrchr(list[f], '/');
+#endif
+            if (file == NULL) file = list[f];
+
+            //
+            // Determine if the filename matches "basename.cgns.nblocks.iblock"
+            // where basename is an any string, cgns is the string "cgns",
+            // nblocks is the number of blocks, and iblock is the block
+            // index. Furthermore, nblocks must evenly divide the number of
+            // files in the list and iblock must be monotonically increasing
+            // with no gaps in the numbering.
+            //
+            const char *str = strstr(file, "cgns");
+            if (str == NULL)
+            {
+                multiblockFile = false;
+                break;
+            }
+            if (str[4] != '.')
+            {
+                multiblockFile = false;
+                break;
+            }
+            char *str2;
+            long int nBlocks = strtol(&str[5], &str2, 10);
+            if (nBlocks == 0 || nBlocks == LONG_MAX ||
+                nBlocks == LONG_MIN || nBlocks < 0 ||
+                nBlocks > nList ||
+                nList % nBlocks != 0 || str2[0] != '.')
+            {
+                multiblockFile = false;
+                break;
+            }
+            if (f == 0) globalNBlocks = nBlocks;
+            if (nBlocks != globalNBlocks)
+            {
+                multiblockFile = false;
+                break;
+            }
+            char *str3;
+            long int iBlock = strtol(&str2[1], &str3, 10);
+            if (iBlock == LONG_MAX || iBlock == LONG_MIN ||
+                iBlock < 0 || iBlock >= nBlocks ||
+                iBlock != f % nBlocks || str3[0] != '\0')
+            {
+                multiblockFile = false;
+                break;
+            }
+        }
+        if (multiblockFile)
+            nBlock = globalNBlocks;
+    }
 
     // ignore any nBlocks past 1
     int nTimestepGroups = nList / nBlock;

@@ -33,7 +33,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Removed the pbatch launch profile from the Lawrence Livermore National Laboratory's Max host profile.</li>
   <li>Enhanced the Pick Through Time to handle vectors, tensors, and arrays when picking original data. For vectors, the magnitude is used. For tensors and arrays, the major eigenvalue is used.</li>
-  <li>Enhanced the CGNS plugin to support a mesh decomposed across multiple CGNS files, one block per file as might be typical of file-per-processor parallel I/O. This requires that each file contain just a single CGNS mesh block. In addition, if all files do not also contain the same number of time steps, results will be indeterminate. Finally, the ensemble of CGNS files must be grouped together into a .visit file.</li>
+  <li>Enhanced the CGNS plugin to support a mesh decomposed across multiple CGNS files, one block per file as might be typical of file-per-processor parallel I/O. This requires that each file contain just a single CGNS mesh block. In addition, if all files do not also contain the same number of time steps, results will be indeterminate. The collection of CGNS files can be grouped together into a .visit file or follow the naming convention "basename.cgns.nblocks.iblock", where basename is any string, cgns is the string "cgns", nblocks is the number of blocks, and iblock is the block index.</li>
 </ul>
 
 <a name="Dev_changes"></a>
