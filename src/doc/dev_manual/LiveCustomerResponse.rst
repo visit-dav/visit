@@ -3,7 +3,7 @@ Software Reliability Engineering
 
 The IT world has many terms for services with similar sounding purposes such as
 *Technical Support*, *Help Desk*, *Customer Support*, *Incident Response*,
-*Service Desk*, *Incident Management*, *Cusomter Care*, etc.
+*Service Desk*, *Incident Management*, *Customer Care*, etc.
 `Specific meanings <https://www.atlassian.com/itsm/service-request-management/help-desk-vs-service-desk-vs-itsm>`_
 of these terms are often driven by the software products IT companies sell to
 support their
@@ -28,7 +28,7 @@ aspects of either
   * Or, the underlying computing infrastructure upon which VisIt_ depends such
     as
 
-    * An incompatible grahics driver.
+    * An incompatible graphics driver.
     * A downed file system or network.
     * A trip in the security environment.
 
@@ -100,13 +100,13 @@ of the week are formally *handed off* to the next **Primary**.
 `issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
 resolution of *serious* incidents, the **Primary** will prepare a brief
-*post-mortem* to inform a discussion of possible changes in practices at the
+*postmortem* to inform a discussion of possible changes in practices at the
 next project meeting.
 
 Because customer response work tends to be interrupt driven, there is always
 the chance that the **Primary** will have no *active* issues. At these times, the
 **Primary** shall use their time to address general *housekeeping* or other
-*low-hanging fruit* type work. In prticular, there shall be no expectation that
+*low-hanging fruit* type work. In particular, there shall be no expectation that
 a developer serving as **Primary** can get any other work done beyond their
 customer response and housekeeping obligations. In slow weeks, its conceivable
 they can. But, there can be no implied assumption or expectation that this will
@@ -190,6 +190,8 @@ GitHub issue in response to the *initial* email, the less likely this can occur.
 In addition, boilerplate guidance in an issue template will help to mitigate
 this by informing ``visit-users`` members of this behavior.
 
+For any work the **Primary** is engaged in, there should be an associated issue.
+
 **WARNING:** What about ``visit-help-asc``?
 **WARNING:** What about ``visit-help-asc``?
 **WARNING:** What about ``visit-help-asc``?
@@ -215,7 +217,7 @@ more user interactions.
 
 It is also important to distinguish between *response* and *resolution* here.
 A key goal in this process is to ensure that customer inquires do not go left
-unresponded for a long time. However, *responding* to a customer inquiry does
+unanswered for a long time. However, *responding* to a customer inquiry does
 not necessarily mean *resolving* it. Sometimes, the only response possible is to
 acknowledge the customer's inquiry and let them know that the resources to
 address it will be allocated as soon as practical. In many cases, an *immediate*
@@ -229,7 +231,7 @@ following activities...
   * Answering a question or referring a user to documentation.
   * Determining if the user's issue is known (e.g. an issue ticket already exists).
   * Updating a known issue with new information from this user, perhaps
-    reprioritizing the issue or putting the issue ticket back into the
+    re-prioritizing the issue or putting the issue ticket back into the
     UN-reviewed state for further discussion at a VisIt_ project meeting.
   * Diagnosing the incident.
   * Developing a reproducer for developers.
@@ -257,7 +259,7 @@ from one week's **Primary** to the next.
 To handle customer redirection handoffs, it is a best practice to use a three-way
 handoff giving the customer some assurance that their initial contact with someone
 is successfully handed off to the **Primary**. For example, for a call-in, it
-is a best practice to try a three-way call tranfer. For developers with long
+is a best practice to try a three-way call transfer. For developers with long
 standing relationships with key customers, such handoffs may be initially
 uncomfortable but an essential part of achieving the goals of this process.
 
@@ -275,7 +277,7 @@ technical expertise or authority required may be beyond the **Primary**'s
 abilities or other difficulties may arise. For issues that the **Primary** does
 not quickly see a path to resolution, the **Backup** should be enlisted first.
 When developer expertise other than **Backup** is needed, the **Primary** should
-try to engage other developers usin the ``@`` mention feature in the associated
+try to engage other developers using the ``@`` mention feature in the associated
 GitHub issue. However, where a **Primary** is responsible for maintaining the 
 response time goal, other developers so enlisted are free to either delay or even
 decline to respond (but nonetheless inform the **Primary** of this need) if their
@@ -317,7 +319,7 @@ the SCF, the primary should
 Housekeeping and Low-hanging Fruit
 ----------------------------------
 
-Part of the reason for developing this process is the acknowledgement of the
+Part of the reason for developing this process is the acknowledgment of the
 existence of a different category of work,
 `Software Reliability Engineering (SRE) <https://en.wikipedia.org/wiki/Site_Reliability_Engineering>`_,
 that is an essential part of maintaining the overall quality of a software
@@ -339,10 +341,10 @@ low-hanging fruit type issues arising from **Customer Response** inquiries.
 
 Consequently, another key role of the **Primary** is to use any time not working
 active inquiries to fix *low-hanging fruit* issues; either those the **Primary**
-is currently managing or those from the backlog. As a rule of thumb, low-hanging
+is currently managing or those from the *backlog*. As a rule of thumb, low-hanging
 fruit is considered to be anything that the **Primary** believes is fixable
 within a half-day's (4 hours) worth of effort. When there are many such tasks in
-the system to work on, the **Primary** is free to use his/her judgement to decide
+the system to work on, the **Primary** is free to use his/her judgment to decide
 which s/he can most productively address.
 
 Scheduling and Load Balancing
@@ -356,93 +358,47 @@ this simple approach including percent-time assignments of team members,
 alternate work schedules, working remotely, travel, vacations, trainings,
 meetings, etc.
 
-On the one hand, it might make some sense to have developers that are 100% time
-on the project serve as **Primary** twice as often as developers that are only
-50% time. When the mix of such assignments are relatively well balanced, this
-approach might make some sense. Because of all the factors that effect
-scheduling, the VisIt_ project has opted to manage scheduling by periodically
+Round-robin assignment leads to fair load by head-count but isn't weighted by
+percent-time assignments. From a percent-time assignment perspective, it might be
+more appropriate for a developer that is only 50% time on VisIt_ to serve as the
+**Primary** only half as often as a 100% time developer. On the other hand, since
+a majority of VisIt_ developers divide their time across multiple projects, we
+use 50% as the *nominal* developer assignment. Because of all the factors that can
+effect scheduling, the VisIt_ project has opted to manage scheduling by periodically
 negotiating assignments 1-3 months into the future and capturing the assignments
-on a shared Outlook calendar. Either **Primary** or **Backup** can make last
-minute changes to the schedule by finding a willing replacement and informing
-the rest of the team of the change.
+on a shared calendar. Either **Primary** or **Backup** can make last minute changes
+to the schedule by finding a willing replacement and informing the rest of the team
+of the change.
 
-Whenever possible, an experienced **Backup** will be paired with a less
+Whenever possible, an experienced **Backup** will be scheduled with a less
 experienced **Primary**.
 
 A Common Misconception: Customer Response is an Interruption to Programmatic Work
 ---------------------------------------------------------------------------------
 When faced with a long backlog of development tasks, team members can all too
 easily perceive **Customer Response** work as an *interruption* to those tasks.
-This is a common misconception; one which project managers must continualy work
+This is a common misconception; one which project managers must continually work
 to correct. **Customer Response** is an important aspect to a successful product
-and project on par with any other major develpment work. It is part of what is
+and project on par with any other major development work. It is part of what is
 involved in keeping the software working and useful tool in our customer's
 workflows not only here at LLNL, likely VisIt_'s biggest customer, but wherever
 in DOE/DOD and elsewhere in the world VisIt_ is used.
 
 Indeed, there are several advantages in having developers involved with
-**Customer Response** activities.
+**Customer Response** activities. These include..
 
-   * Learn how users think
-   * Learn how users use the tool
-   * Learn what problem users apply the tool too
-   * Learn what is easy and what is hard for users to do with tool
-   * Learn where there is weak documentation
-   * Learn weake
+  * Learning what problems users are using the tool to solve.
+  * Learning how users use the tool.
+  * Learning what users find easy and what users find hard about the tool.
+  * Learning where documentation needs improvement.
+  * Learning where the user interface needs improvement.
+  * Learning operational aspects of user's work that the tool can impact.
+  * Building collaborative relationships with other members of the organization.
+  * Learning how users operate in performing their programmatic work for the
+    organization which helps to inform planning for future needs.
 
-You identify user interface issues. You experience the ways in which VisIt can be hard to use and identify possible improvements.
-You make connections with other people in the organization (which might be more useful to some of the newer team members)
-In debugging issues, you wind up learning more about how to use VisIt
-You learn more about the kinds of problems and issues our users face and how they operate and this can help inform many of your future activities with respect to capability and performance requirements.
-
-The practice of having software development staff *integrated* with *operations*
-is more commonly referred to as *DevOps*. There is a pretty good
-`video <https://youtu.be/XoXeHdN2Ayc>`_ that introduces these concepts.
-
------------------------------
-
-
-Ideally, on a team of 8, each developer will serve as primary only one week out
-of every two months. This leads to fair load by head-count but isn't weighted by
-project assignments. From a project development perspective, it might be more
-appropriate for a developer that is only 50% time on VisIt_ to serve as the
-primary only half as often as a 100% time developer. On the other hand, since
-a majority of VisIt_ developers divide their time across multiple projects, we
-use 50% as the sort of *nominal* developer assignment. We will load balance
-weeks of customer response work equally across all developers but occasionally,
-those with more than 50% time on VisIt_ will do an extra week.
-
-
-
-
-
-I think this approach has a number of drawbacks
- 
-Unless you have the schedule memorized, its hard to know who is responsible for which incoming emails/calls and maybe nudge them if they missed something.
-Customer support calls often unfold over the course of several conversations spanning several days and it makes the most sense for the initial developer POC to carry it all the way through when that is practical.
-A lot of stuff piles up F pm through M am and so that Monday am slot is often a biggie.
-We all travel, are split between multiple projects and wind up having the occasional fire drills that is doesn't mesh well with adherence to such a regular, fine-grained schedule.
- 
-In addition and FWIW...I've been making an effort to try to respond to customer support emails/calls as quickly as possible and whenever they have come in for a few reasons...
-I'd like to see us be as responsive as possible
-My time is so divided among projects sometimes I feel I am most useful to the VisIt project by unburdening others of these interruptions.
-Many of the calls come up off-hours and I happen to be at my email.
-I actually enjoy it (most of the time)
- 
- 
-OTOH, customer support work is interrupt driven and gets in the way of your programmatic work too.
- 
-I think it would be better to have a primary and backup that cover a period of time of length a week or two or maybe even a whole month and then have this responsibility rotate. Someone else steps up to primary, primary steps to backup and backup along with everyone else is there only to the extent primary or backup require any further assistance which we hope will not occur very often or ever. An activity to include in our weekly meetings is any important stuff that primary/back up are dealing with as well as planning calendar for next primary/backup switchover.
- 
-
-
-Represents a reallocation of resources ~10% housekeeping activity
-Work always associated with an issue
-two classes of issues product development and devops
-
-
-Software Reliability Engineeering / Site Reliability Engineering (SRE) Link to the google doc about this from Kevin.
-
-In a real sense, the adoption of this process represents an adjustment in the
-VisIt_ project's resource allocations.
-
+In short, the work involved in ensuring productivity of both user and developers
+of VisIt_ *is* programmatic work. The practice of having software development
+staff *integrated* with *operations* is more commonly referred to as *DevOps*.
+There is a pretty good `video <https://youtu.be/XoXeHdN2Ayc>`_ that introduces
+these concepts.
