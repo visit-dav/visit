@@ -191,11 +191,11 @@ GitHub issue in response to the *initial* email, the less likely this can occur.
 In addition, boilerplate guidance in an issue template will help to mitigate
 this by informing ``visit-users`` members of this behavior.
 
-For any work the **Primary** is engaged in, there should be an associated issue.
+For any work the **Primary** engages in, there should be an associated issue.
 
-**WARNING:** What about ``visit-help-asc``?
-**WARNING:** What about ``visit-help-asc``?
-**WARNING:** What about ``visit-help-asc``?
+.. danger::
+   What about ``visit-help-asc`` email list? Should we handle similarly? If not,
+   what do we do about it?
 
 Response Time and Response vs. Resolution
 -----------------------------------------
@@ -252,7 +252,7 @@ original **Customer Response** issue that initiated the work.
 Handoffs
 --------
 
-Our **Customer Response** processes involves two kinds of *handoffs*. One is the
+Our **Customer Response** processes involve two kinds of *handoffs*. One is the
 redirection of a customer who makes contact with a developer not serving as the
 **Primary**. The other is the handoff of unresolved **Customer Response** issues
 from one week's **Primary** to the next.
@@ -295,7 +295,7 @@ issue to be re-reviewed at the next VisIt_ project meeting) or submit a *new*
 issue to the main repository issues.
 
 Special Considerations for Classified Computing
------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Occasionally, incidents arise that may be handled only in the Secure Computing
 Facility (SCF). This is not too common but does happen and it presents problems
@@ -317,8 +317,8 @@ the SCF, the primary should
   * If customer indicates immediate response required, primary should inquire
     the whole team to arrange another developer who can handle it.
 
-Housekeeping and Low-hanging Fruit
-----------------------------------
+Housekeeping and Low-hanging Fruit Type Issues
+----------------------------------------------
 
 Part of the reason for developing this process is the acknowledgment of the
 existence of a different category of work,
@@ -331,9 +331,9 @@ Issues that impact one user's productivity often impact others. Likewise for
 developer productivity issues. Often, these kinds of issues can wind up falling
 through the cracks of traditional software project management and planning
 processes. However, such issues also often represent low cost high benefit
-improvements in quality of either the software itself or the DevOps processes
-supporting it. We refer to issues of this nature as general *housekeeping*
-or *low-hanging fruit* type issues.
+improvements in quality of either the software itself or the development
+processes supporting it. We refer to issues of this nature as general
+*housekeeping* or *low-hanging fruit* type issues.
 
 Apart from acknowledging their existence, a key part of this process is the
 reallocation of resources for the sole purpose of **Customer Response** and
@@ -370,14 +370,17 @@ meetings, etc.
 Round-robin assignment leads to fair load by head-count but isn't weighted by
 percent-time assignments. From a percent-time assignment perspective, it might be
 more appropriate for a developer that is only 50% time on VisIt_ to serve as the
-**Primary** only half as often as a 100% time developer. On the other hand, since
-a majority of VisIt_ developers divide their time across multiple projects, we
-use 50% as the *nominal* developer assignment. Because of all the factors that can
-effect scheduling, the VisIt_ project has opted to manage scheduling by periodically
-negotiating assignments 1-3 months into the future and capturing the assignments
-on a shared calendar. Either **Primary** or **Backup** can make last minute changes
-to the schedule by finding a willing replacement and informing the rest of the team
-of the change.
+**Primary** only half as often as a 100% time developer.
+
+Since a majority of VisIt_ developers divide their time across multiple projects,
+we use 50% as the *nominal* developer assignment. Because of all the factors that
+can effect scheduling, the VisIt_ project has opted to manage scheduling by
+periodically negotiating assignments 1-3 months into the future and capturing the
+assignments on a shared calendar. The aim is an approximately round-robin load
+balancing where contributors who are more than 50% time on VisIt_ are occasionally
+assigned an extra week. Either **Primary** or **Backup** can make last minute
+changes to the schedule by finding a willing replacement and informing the rest of
+the team of the change.
 
 Whenever possible, an experienced **Backup** will be scheduled with a less
 experienced **Primary**.
@@ -406,7 +409,7 @@ Indeed, there are several advantages in having developers involved with
   * Learning how users operate in performing their programmatic work for the
     organization which helps to inform planning for future needs.
 
-In short, the work involved in ensuring productivity of both user and developers
+In short, the work involved in ensuring productivity of both users and developers
 of VisIt_ *is* programmatic work. The practice of having software development
 staff *integrated* with *operations* is more commonly referred to as *DevOps*.
 There is a pretty good `video <https://youtu.be/XoXeHdN2Ayc>`_ that introduces
