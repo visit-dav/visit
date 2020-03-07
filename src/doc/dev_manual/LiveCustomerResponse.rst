@@ -1,5 +1,5 @@
-Customer Response
-=================
+Software Reliability Engineering
+================================
 
 The IT world has many terms for services with similar sounding purposes such as
 *Technical Support*, *Help Desk*, *Customer Support*, *Incident Response*,
@@ -34,30 +34,33 @@ aspects of either
 
 In this document, we use the term **Customer Response** (an amalgamation of
 *Customer Support* and *Incident Response*) to characterize the resources,
-processes and activities the VisIt_ team employs to manage such inquiries.
+processes and activities the VisIt_ team employs to manage the work associated
+with such inquiries.
 
 As is typical of most DOE software projects, VisIt_ has no dedicated resources
 for this purpose. Instead, developers themselves must also handle
-**Customer Response** work. Managing this activity effectively is an essential
-part of maintaining the overall quality software as well as the productivity of
-both developers and users of the software alike.
+**Customer Response** work. For many DOE software projects, managing this
+activity effectively and efficiently is an essential part of maintaining the
+overall quality of their software as well as the productivity of both developers
+and users of the software alike.
 
-Customer Response Process Goals
--------------------------------
+Goals
+-----
 
-This document describes the process for how the VisIt_ project manages
-customer response activities. Some of the goals of this process are...
+This document describes how the VisIt_ project manages **Customer Response**
+activities. Some of the goals are...
 
-  * To try to *load balance* the work of customer response in an equitable way
-    across the development team.
-  * To aim for a four-hour response time goal. **Note**: *response* does not
-    necessarily mean resolution (see below).
-  * To reduce customer response interruptions for the team as a whole.
-  * To log, track and evolve a database of customer response activity and effort.
+  * To develop a practice of routine *housekeeping* quality improvements to the
+    VisIt_ software and associated processes and artifacts impacting user and/or
+    developer productivity.
   * To maintain a reputation for timely and quality response to customer needs.
-  * To develop a practice of routine housekeeping fixes for
-    low-hanging-fruit type issues impacting user and/or developer productivity.
+  * To *load balance* the work of customer response in an equitable way across
+    the development team.
+  * To reduce customer response interruptions for the team as a whole.
+  * To log, track and evolve a database of customer response activity and effort
+    to help inform ongoing development plans and resource allocation.
   * To identify and document escalation paths for major incidents.
+  * To aim for a four hour response time.
 
 While many aspects of **Customer Response** are under the direct control of
 VisIt_ developers, some are not and involve collaboration with other teams in
@@ -65,8 +68,9 @@ resolving. In most cases the extent of the VisIt_ team's involvement in
 *operations* is confined primarly to the VisIt_ software itself; its
 development, testing, release and deployment which includes installations the
 VisIt_ team directly manages, hosted binary downloads for common platforms and
-the tools to build from sources. Operational issues impacting VisIt_ but outside
-of this scope are typically delegated to other teams.
+the tools and resources to build from sources. Operational issues impacting
+VisIt_ but outside of this scope are typically delegated to other teams who
+are responsible for the associated processes and resources.
 
 In the IT world where companies like Google, Apple and Amazon have whole teams
 dedicated to such activity, coverage is 24/7 and response time is measured in
@@ -75,121 +79,209 @@ place at Lawrence Livermore National Lab, coverage is during normal West Coast
 *business* hours, 8am-12pm and 1-5pm (GMT-8, San Francisco time zone), Monday
 through Friday excluding
 `LLNL holidays <https://supplychain.llnl.gov/poattach/pdf/llnl_holidays.pdf>`_
-and response time is realistically about four hours due to team members having
-to multi-task among many responsibilities.
+and response time may be as much as four hours due to team members having to
+multi-task among many responsibilities.
 
-One Week Rotations
-------------------
-The work of customer response is assigned and rotated among developers in
+The Basic Process
+-----------------
+
+The work of customer response is allocated and rotated among developers in
 one-week intervals. During a week, one developer is assigned as the **Primary**
 customer response contact and a second developer is assigned as a **Backup**.
 
-Live customer response inquiries will be logged and tracked in a separate GitHub
-repository within the
-`visit-dav GitHub organization. <https://github.com/visit-dav>`_
+The role of the **Primary** is to *respond* within the response time goal, to
+each inquiry. Ideally, all customer response activity during the week is handled
+and *resolved* solely by the **Primary**. However, *escalations*, which we hope
+are rare, will wind up engaging the **Backup** and may even engage other
+developers. In addition, any *active* issues that remain unresolved at the end
+of the week are formally *handed off* to the next **Primary**.
 
-A schedule of the primary and backup assignments going out several months is
+*Active* customer response issues will be logged and tracked in a separate GitHub,
+`issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
+within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
+resolution of *serious* incidents, the **Primary** will prepare a brief
+*post-mortem* to inform a discussion of possible changes in practices at the
+next project meeting.
+
+Because customer response work tends to be interrupt driven, there is always
+the chance that the **Primary** will have no *active* issues. At these times, the
+**Primary** shall use their time to address general *housekeeping* or other
+*low-hanging fruit* type work. In prticular, there shall be no expectation that
+a developer serving as **Primary** can get any other work done beyond their
+customer response and housekeeping obligations. In slow weeks, its conceivable
+they can. But, there can be no implied assumption or expectation that this will
+be the case.
+
+A *schedule* of the primary and backup assignments going out several months is
 periodically negotiated by the team and posted in the form of a shared Outlook
-calendar.
+calendar. Primary and backup responsibilities are *rotated* so as to balance the
+load among team members.
 
-Primary and backup responsibilities are rotated so as to balance the load among
-team members.
+The preceding paragraphs describe VisIt_'s **Customer Response** processes at a
+basic level and in the ideal. Aspects of this process were inspired in part by
+`Google's Site Reliability Engineering book <https://landing.google.com/sre/sre-book/toc/>`_.
+Nonetheless, several terms here (those in *italics*) require elaboration. In
+addition, there are also many practical matters which can serve to complicate
+the basic process. These details are addressed in the remaining sections.
 
-In the short term, it will help to pair an experienced backup with a primary who may
-have less experience with live customer response.
+Roles
+-----
 
-The Primary's Role
-------------------
-
-The primary's role is to respond, within the response time goal, to each incident
+The primary's role is to respond, within the response time goal, to each inquiry 
 that occurs during that week including those that came in during the preceding
-weekend/holiday. Other developers who may be contacted directly by customers
-should redirect such inquires to the primary. The primary's goal is to *wrap-up*
-all incidents by the end of their week. If an issue cannot be wrapped-up, it
-gets handed-off to next week's primary. Handoff's are managed formally with an
-email to the customer and the next week's primary and backup contact information.
+weekend/holiday. The primary's goal is to *wrap-up* all inquiries by the end of
+their week.
 
-For each new incident, the primary will file an issue ticket in the
-`live-customer-response <https://github.com/visit-dav/live-customer-response/issues>`_
-repository and assign themselves. When the incident is resolved, the associated
-issue is closed. The primary will endeavor to capture all relevant information
-and communications involving the incident in this issue. For users who do not
-have GitHub accounts, this may require the primary to do a modest amount of
-cutting and pasting between email and GitHub issues. However, 
+The **Primary** has the sole responsibility for responding to inquiries and
+deciding next steps. The **Backup** is called into action only by explicit
+request of the **Primary**. The **Primary** may temporarily delegate his/her
+responsibilities to the **Backup** or enlist the **Backup** for help as
+part of an escalation. To the extent possible, temporary delegation from
+**Primary** to **Backup** should be handled formally and by mutual agreement.
+For these reasons, the **Backup** is asked to at least maintain awareness of the
+issues the **Primary** is handling.
 
-The goal of the primary is to reach a *resolution* of each incident. Resolution
-often involves one or more of the following activities.
+In the ideal, the **Primary** is able to handle all customer response activity
+and no other developers are engaged. However, this situation can change for
+significant *escalations* (see below). Thus, other developers should feel free
+to ignore customer inquiries as well as redirect customers who may contact them
+directly via email, phone or walk-in. It is a best practice to handle such
+redirections with a formal hand-off confirming that the customer makes contact
+with the **Primary**.
 
-  * Answering a question or referring user to documentation.
-  * Determining if user's issue is known (e.g. an issue ticket already exists).
-  * Updating a known issue with additional information from this user, perhaps
+Response Time and Response vs. Resolution
+-----------------------------------------
+The response time goal of four hours was chosen to reflect the worst case
+practicalities of team member's schedules and responsibilities. For example, if
+the **Primary** has meetings just before and just after the lunch hour break,
+there can easily be a four hour period of time where inquiries go unattended.
+Typically, we anticipate response times to be far less than four hours and
+certainly, when able, the **Primary** should respond as quickly as practical and
+not use the four hour goal as an excuse to delay a prompt response.
+
+Since a majority of funding for VisIt_ is from LLNL and since VisIt_ developers
+are co-located with many of its LLNL users, certainly these users as well as
+their direct collaborators have an expectation of rapid response times. For
+these reasons, the VisIt_ project operates a telephone hotline and also
+frequently handles walk-ins. As an aside, after a recent small test effort to
+maintain a rapid response time, a noticeable up-tick in user email inquiries was
+observed suggesting that a faster response time has the effect of encouraging
+more user interactions.
+
+It is also important to distinguish between *response* and *resolution* here.
+A key goal in this process is to ensure that customer inquires do not go left
+unresponded for a long time. However, *responding* to a customer inquiry does
+not necessarily mean *resolving* it. Sometimes, the only response possible is to
+acknowledge the customer's inquiry and let them know that the resources to
+address it will be allocated as soon as practical. In many cases, an *immediate*
+response to acknowledge even just the receipt of a customer's inquiry with no
+progress towards actual resolution goes a long way towards creating the goodwill
+necessary to negotiate a day or more of time to respond more fully.
+
+*Resolution* of a **Customer Response** issue often involves one or more of the
+following activities...
+
+  * Answering a question or referring a user to documentation.
+  * Determining if the user's issue is known (e.g. an issue ticket already exists).
+  * Updating a known issue with new information from this user, perhaps
     reprioritizing the issue or putting the issue ticket back into the
     UN-reviewed state for further discussion at a VisIt_ project meeting.
   * Diagnosing the incident.
-  * Identifying and subsequently fixing any *low-hanging fruit*.
   * Developing a reproducer for developers.
   * Developing a work-around for users.
-  * Identifying and filing a *new* issue ticket.
+  * Identifying a *low-hanging fruit* type issue and subsequently engaging
+    in the *housekeeping* work to resolve it.
+  * Identifying and filing a new *product development* type issue ticket.
 
-In particular, please take note that *resolution* does not always mean a
-customer's incident can be addressed favorably within the constraints of
-our customer response processes. Sometimes, the best that can be achieved is
-the filing of a highly informative issue ticket to be prioritized, scheduled
-and ultimately resolved as part of normal weekly development activities.
+To emphasize the last bullet above, *resolution* of a **Customer Response**
+issue does not always mean a customer's issue can be addressed to *satisfaction*
+within the constraints of our the processes defined here. Sometimes, the most
+that can be achieved is filing a highly informative issue ticket to be
+prioritized, scheduled and ultimately resolved as part of normal VisIt_ product
+development activities. Nonetheless, doing so does serve to *resolve* the
+original **Customer Response** issue that initiated the work.
+
+Scheduling and Load Balancing
+-----------------------------
+
+To balance the work load of **Customer Response**, the responsibilities of the
+**Primary** and **Backup** are rotated, round-robin among team members. For
+example, on a team of eight developers, each would serve as **Primary** only one
+week in eight or 12.5% of their time. However, a number of factors complicate
+this simple approach including percent-time assignments of team members,
+alternate work schedules, working remotely, travel, vacations, trainings,
+meetings, etc.
+
+On the one hand, it might make some sense to have developers that are 100% time
+on the project serve as **Primary** twice as often as developers that are only
+50% time. When the mix of such assignments are relatively well balanced, this
+approach might make some sense. Because of all the factors that effect
+scheduling, the VisIt_ project has opted to manage scheduling by periodically
+negotiating assignments 1-3 months into the future and capturing the assignments
+on a shared Outlook calendar. Either **Primary** or **Backup** can make last
+minute changes to the schedule by finding a willing replacement and informing
+the rest of the team of the change.
+
+Whenever possible, an experienced **Backup** will be paired with a less
+experienced **Primary**.
+
+Handoffs
+--------
+
+If an active **Customer Response** issue cannot be resolved within the week of
+a **Primary**'s assignment, it gets handed off to the next week's **Primary**.
+Such handoffs shall be managed formally with an email to the customer(s) and the
+next week's **Primary** and **Backup** 
+
+Active Customer Response Issues Repo
+------------------------------------
+
+*Active* customer response issues will be logged and tracked in a separate GitHub,
+`issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
+within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. 
+For each new inquiry, the primary will file an issue ticket and assign themselves.
+When the incident is resolved, the associated issue is closed. The primary will
+endeavor to capture all relevant information and communications in this issue.
+The use of GitHub issues for this purpose has a number of advantages over other
+options such as email.
+
+A number of steps have been taken to integrate the ``visit-users@elist.ornl.gov``
+email list with this repository.
+
+  * A new GitHub user account was created to serve as a proxy for the
+    ``visit-users`` email list with name ``markcmiller86-visit``.
+  * Added two-factor authentication to the GitHub proxy account. 
+  * The ``visit-users`` email list configuration was adjusted in minor ways...
+    * Added ``noreply@github.com`` and ``notifications@github.com`` to
+      auto-accepted senders filter.
+    * Turned off list setting ``require_explicit_destination`` because GitHub
+      notifications can be sent in BCC field.
+    * Turned off setting ``bounce_unrecognized_goes_to_list_owner`` to avoid
+      some funky bounces from Outlook.com.
+
+The procedure is for the **Primary** to cut-n-paste the initial email on
+``visit-users`` to a new GitHub issue and from then on handle all communication
+through the GitHub *conversation* associated with that issue. Each comment there
+winds up generating an email to ``visit-users``. In addition, any reply from a
+``visit-users`` email list member to any of the GitHub generated emails will
+result in a new comment added to the GitHub issues. However, any replies to the
+*initial* email (which is not generated by GitHub) will not route to the GitHub
+issue conversation. The more quickly the **Primary** creates the associated
+GitHub issue in response to the *initial* email, the less likely this will occur. 
+In addition, boilerplate guidance in an issue template will help to mitigate
+this.
+
+Housekeeping and Low-hanging Fruit
+----------------------------------
 
 Another role of the primary is to use any time not working active inquiries to
 fix *low-hanging fruit* issues; either those the primary is currently managing
 or those from the backlog. As a rule of thumb, low-hanging fruit is considered
 to be anything that the primary believes is fixable within a half-day's
 (4 hours) worth of effort. When there are many such tasks in the system to work
-on, the primary is free to use his/her judgement to decide which are most
-productive to address.
+on, the primary is free to use his/her judgement to decide which s/he can most
+productively address.
 
-When primary has challenges with any of the paths to resolution above, s/he
-should feel free to engage other developers with help. But primary should first
-enlist the backup. When developer expertise other than backup is needed, primary
-should arrange mutually agreeable times to engage those other developers.
-
-There shall be no expectation that a developer serving as primary can get any
-other work done beyond their customer response obligations. In slow weeks, its
-conceivable they can. But, there can be no implied assumption or expectation
-that this will be the case. Furthermore, even in a slow week, the primary may
-likely be able to find plenty of *low-hanging-fruit-type* tasks in the main
-repository issues to tackle and fix.
-
-During their communication's with the customer, the primary should avoid
-reply-all-type communications.
-
-For applicable incidents, the primary should prepare a set of bullets to
-form an outline of a *post-mortem* for the incident to be reviewed at the next
-VisIt_ project meeting.
-
-The Backup's Role
------------------
-
-Ideally, like the rest of the development team, the backup is never called into
-action for customer response. However, there are cases where the backup may be
-needed. For this reason, the backup is asked to at least track and maintain
-knowledge and awareness of the issues the primary is handling. A good way to
-achieve this is to selectively *watch* the visit-live-incidents repository.
-In cases where primary needs help in resolving an incident, the backup
-shall serve as the first line of defense. In addition, the backup should be
-ready to step up to the primary role in the (hopefully rare) occurrence that the
-primary is unable to maintain the one-hour response time goal. To the extent
-possible, the transition from backup to primary should be managed formally.
-Otherwise, the backup should simply track but otherwise not engage in related
-communications.
-
-Other Developers' Role
-----------------------
-
-In the ideal, the primary is able to handle all customer response activity and
-no other developers are interrupted. Thus, other developers should feel free to
-ignore customer inquiries and/or redirect customers who may contact them directly.
-One option to reduce communication traffic is either to switch to receiving a
-daily digest during off weeks and/or UNwatch the 
-`live-customer-response <https://github.com/visit-dav/live-customer-response/issues>`_
-repository.
 
 Dealing with a Common Misconception: Customer Response is an *Interruption*.
 ----------------------------------------------------------------------------
@@ -211,6 +303,7 @@ customer response activities.
    * Learn what is easy and what is hard for users to do with tool
    * Learn where there is weak documentation
    * Learn weake
+
 You identify user interface issues. You experience the ways in which VisIt can be hard to use and identify possible improvements.
 You make connections with other people in the organization (which might be more useful to some of the newer team members)
 In debugging issues, you wind up learning more about how to use VisIt
@@ -220,39 +313,12 @@ The practice of having software development staff *integrated* with *operations*
 is more commonly referred to as *DevOps*. There is a pretty good
 `video <https://youtu.be/XoXeHdN2Ayc>`_ that introduces these concepts.
 
-Meeting the one-hour response time goal
----------------------------------------
-This is a desirable but also challenging goal. Certainly LLNL users as well as
-their direct collaborators have an expectation of rapid response times. The
-VisIt_ project is co-located with many its 
-
-operates a telephone hotline as well as walk-ins in part to
-support rapid response. As an aside, 
-Following recent efforts to improve response times in the past year, there has
-been a noticeable up-tick in utilization of 
-
-the VisIt_ team has noticed
-an increase in 
-
-We agree as a team to try to meet it.
-But, we recognize that our schedules might not always permit strict adherence to
-this goal. So, as an absolute, last resort, *bare minimum*, we expect issues
-occurring 8am-3pm to be responded to by COB the same day. Issues occurring after
-3pm but prior to start of next business day shall be responded to by noon of
-that next day.
-
-WE REALLY SHOULD BE THIS RESPONSIVE FOR LLNL CUSTOMERS
-
-Note that *responding* to a customer inquiry does not necessarily
-mean *resolving* it. Sometimes, the only response possible is to acknowledge the
-customer's inquiry and let them know we intend to allocate resources to address
-it as soon as practical. In many cases, an immediate response to acknowledge
-even just the receipt of a customer's inquiry with no progress towards
-actual resolution goes a long way towards creating the goodwill necessary to
-negotiate a day or more of time to respond more fully.
-
 Escalation
 ----------
+When primary has challenges with any of the paths to resolution above, s/he
+should feel free to engage other developers with help. But primary should first
+enlist the backup. When developer expertise other than backup is needed, primary
+should arrange mutually agreeable times to engage with other developers.
 
 Customer response incidents may escalate for a variety of reasons. The 
 technical expertise or authority required may be beyond the primary's abilities.
@@ -273,19 +339,6 @@ additional information to that known issue about this new customer response
 incident (and perhaps remove the *reviewed* tag from the issue to cause the
 issue to be re-reviewed at the next VisIt_ project meeting) or submit a *new*
 issue to the main repository issues.
-
-Complicating Factors
---------------------
-
-A number of factors threaten
-
-* SCF
-* Part-time
-* Travel
-* AWS
-* Experience level
-* Direct interactions
-* Hotline, walk-ins 
 
 Special Considerations for SCF
 ------------------------------
@@ -351,3 +404,15 @@ OTOH, customer support work is interrupt driven and gets in the way of your prog
  
 I think it would be better to have a primary and backup that cover a period of time of length a week or two or maybe even a whole month and then have this responsibility rotate. Someone else steps up to primary, primary steps to backup and backup along with everyone else is there only to the extent primary or backup require any further assistance which we hope will not occur very often or ever. An activity to include in our weekly meetings is any important stuff that primary/back up are dealing with as well as planning calendar for next primary/backup switchover.
  
+
+
+Represents a reallocation of resources ~10% housekeeping activity
+Work always associated with an issue
+two classes of issues product development and devops
+
+
+Software Reliability Engineeering / Site Reliability Engineering (SRE) Link to the google doc about this from Kevin.
+
+In a real sense, the adoption of this process represents an adjustment in the
+VisIt_ project's resource allocations.
+
