@@ -100,8 +100,8 @@ of the week are formally *handed off* to the next **Primary**.
 `issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
 resolution of *serious* incidents, the **Primary** will prepare a brief
-*postmortem* to inform a discussion of possible changes in practices at the
-next project meeting.
+*postmortem* to inform a discussion of possible changes in practices to avoid
+such major incidents at the next project meeting.
 
 Because customer response work tends to be interrupt driven, there is always
 the chance that the **Primary** will have no *active* issues. At these times, the
@@ -114,8 +114,8 @@ be the case.
 
 A *schedule* of the **Primary** and **Backup** assignments going out several
 months is periodically negotiated by the team and posted in the form of a shared
-Outlook calendar. **Primary** and **Backup** responsibilities are *rotated* so
-as to balance the load among team members.
+calendar. **Primary** and **Backup** responsibilities are *rotated* so as to
+balance the load among team members.
 
 The preceding paragraphs describe VisIt_'s **Customer Response** processes at a
 basic level and in the ideal. Aspects of this process were inspired in part by
@@ -168,6 +168,7 @@ integrate the ``visit-users@elist.ornl.gov`` email list with this repository.
     ``visit-users`` email list with name ``markcmiller86-visit``.
   * Two-factor authentication was added to the GitHub proxy account. 
   * The ``visit-users`` email list configuration was adjusted in minor ways...
+
     * Added ``noreply@github.com`` and ``notifications@github.com`` to
       auto-accepted senders filter.
     * Turned off list setting ``require_explicit_destination`` because GitHub
@@ -216,7 +217,7 @@ observed suggesting that a faster response time has the effect of encouraging
 more user interactions.
 
 It is also important to distinguish between *response* and *resolution* here.
-A key goal in this process is to ensure that customer inquires do not go left
+A key goal in this process is to ensure that customer inquires do not go
 unanswered for a long time. However, *responding* to a customer inquiry does
 not necessarily mean *resolving* it. Sometimes, the only response possible is to
 acknowledge the customer's inquiry and let them know that the resources to
@@ -346,6 +347,14 @@ fruit is considered to be anything that the **Primary** believes is fixable
 within a half-day's (4 hours) worth of effort. When there are many such tasks in
 the system to work on, the **Primary** is free to use his/her judgment to decide
 which s/he can most productively address.
+
+Part of the acknowledgment of this new category of work is the new issue tracker
+for tracking it. *New* **Customer Response** activity will start with an issue 
+being added in this new issue tracker. However, there are likely a number of
+issues of this same kind already mixed in with our *normal* product development
+issues backlog. These should probably be audited for whether or not they are
+an issue of the *general housekeeping* or *low-hanging fruit* type here and
+then appropriately re-labeled.
 
 Scheduling and Load Balancing
 -----------------------------
