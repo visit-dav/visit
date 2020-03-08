@@ -160,9 +160,10 @@ For each new inquiry, the primary will file an issue ticket and assign themselve
 When the incident is resolved, the associated issue is closed. The primary will
 endeavor to capture all relevant information and communications in this issue.
 The use of GitHub issues for this purpose has a number of advantages over other
-options such as email including better handling of cyber-security filtering
-and attachment size. For this reason, a number of steps have been taken to
-integrate the ``visit-users@elist.ornl.gov`` email list with this repository.
+options such as email including avoiding the need for cyber-security filtering
+and better support for attachments. For this reason, a number of steps have been
+taken to integrate the ``visit-users@elist.ornl.gov`` email list with this
+repository.
 
   * A new GitHub user account was created to serve as a proxy for the
     ``visit-users`` email list with name ``markcmiller86-visit``.
@@ -177,7 +178,7 @@ integrate the ``visit-users@elist.ornl.gov`` email list with this repository.
       some funky bounces related to LLNL's email service provider.
 
 Upon receiving a *new* inquiry on the ``visit-users`` email list (or a telephone
-hotline call or walk-in with the exception those involving classified information),
+hotline call or walk-in with the exception of those involving classified information),
 the procedure is for the **Primary** to cut-n-paste the initial email to a new GitHub
 `Customer Response issue <https://github.com/visit-dav/live-customer-response/issues>`_
 and from then on handle all communication
@@ -194,8 +195,8 @@ this by informing ``visit-users`` members of this behavior.
 For any work the **Primary** engages in, there should be an associated issue.
 
 .. danger::
-   What about ``visit-help-asc`` email list? Should we handle similarly? If not,
-   what do we do about it?
+   What about ``visit-help-asc`` email list? Should we handle similarly?
+   Can we just foward to ``visit-users``?  If no to either, what do we do?
 
 Response Time and Response vs. Resolution
 -----------------------------------------
@@ -299,23 +300,23 @@ Special Considerations for Classified Computing
 
 Occasionally, incidents arise that may be handled only in the Secure Computing
 Facility (SCF). This is not too common but does happen and it presents problems
-for a geographically distributed team.
+for a geographically distributed team. In many ways, an SCF-only incident is just
+a different form of *escalation*.
 
 On the one hand, customers on SCF are accustomed to longer response times.
 On the other hand, often work on the SCF is a high priority and requires
 rapid response from a developer that is on site with access to SCF.
 
-In many ways, an SCF-only incident is just a different form of *escalation*.
-
 Our current plan is to handle this on a case-by-case basis. If neither the
-primary nor backup are able to handle a customer response incident requiring
-the SCF, the primary should
+**Primary** nor **Backup** are able to handle a customer response incident
+requiring the SCF, the **Primary** should
 
   * First determine the customer's required response time. It may be hours
     or it may be days. If it is days. Its conceivable the issue could be
-    handled in the following week by a new primary/backup pair.
-  * If customer indicates immediate response required, primary should inquire
-    the whole team to arrange another developer who can handle it.
+    handled in the following week by a new **Primary/Backup** pair.
+  * If customer indicates immediate response is required, the **Primary**
+    should inquire the whole team to arrange another developer who can
+    handle it.
 
 Housekeeping and Low-hanging Fruit Type Issues
 ----------------------------------------------
@@ -356,6 +357,11 @@ issues backlog. These should probably be audited for whether or not they are
 an issue of the *general housekeeping* or *low-hanging fruit* type here and
 then appropriately re-labeled.
 
+.. danger::
+   The whole team should engage in a label-palooza to sift through existing
+   issues in tracker and identify those of this type. With ~1600 issues and
+   eight people, we each can take about 200 issues in the tracker.
+
 Scheduling and Load Balancing
 -----------------------------
 
@@ -389,12 +395,11 @@ A Common Misconception: Customer Response is an Interruption to Programmatic Wor
 ---------------------------------------------------------------------------------
 When faced with a long backlog of development tasks, team members can all too
 easily perceive **Customer Response** work as an *interruption* to those tasks.
-This is a common misconception; one which project managers must continually work
-to correct. **Customer Response** is an important aspect to a successful product
-and project on par with any other major development work. It is part of what is
-involved in keeping the software working and useful tool in our customer's
-workflows not only here at LLNL, likely VisIt_'s biggest customer, but wherever
-in DOE/DOD and elsewhere in the world VisIt_ is used.
+This is a common misconception. **Customer Response** is an important aspect to
+a successful product and project on par with any other major development work.
+It is part of what is involved in keeping the software working and useful tool
+in our customer's workflows not only here at LLNL, likely VisIt_'s biggest
+customer, but wherever in DOE/DOD and elsewhere in the world VisIt_ is used.
 
 Indeed, there are several advantages in having developers involved with
 **Customer Response** activities. These include..
