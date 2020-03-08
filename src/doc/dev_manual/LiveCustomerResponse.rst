@@ -275,12 +275,13 @@ only remaining course of action for the **Primary** to *resolve* the issue is to
 file a product development issue as discussed at the end of the preceding section.
 
 If the work required to resolve a customer response incident is either not
-known or not believed to be a *low-hanging-fruit* type task, the primary should
-search the issue system to see if this is a known issue and, if so, add
-additional information to that known issue about this new customer response
+known or not believed to be a *low-hanging-fruit* type task, the **Primary**
+should search the issue system to see if this is a known issue and, if so, add
+additional information to that known issue about this new **Customer Response**
 incident (and perhaps remove the *reviewed* tag from the issue to cause the
 issue to be re-reviewed at the next VisIt_ project meeting) or submit a *new*
-issue to the main repository issues.
+issue to the product development issue tracker. Such action then *resolves*
+the original **Customer Response** issue.
 
 Special Considerations for Classified Computing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
