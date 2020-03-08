@@ -100,8 +100,8 @@ of the week are formally *handed off* to the next **Primary**.
 `issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
 resolution of *serious* incidents, the **Primary** will prepare a brief
-*postmortem* to inform a discussion of possible changes in practices to avoid
-such major incidents at the next project meeting.
+*postmortem* to inform a discussion at the next project meeting of possible changes
+in practices to avoid such major incidents.
 
 Because customer response work tends to be interrupt driven, there is always
 the chance that the **Primary** will have no *active* issues. At these times, the
@@ -160,22 +160,9 @@ For each new inquiry, the primary will file an issue ticket and assign themselve
 When the incident is resolved, the associated issue is closed. The primary will
 endeavor to capture all relevant information and communications in this issue.
 The use of GitHub issues for this purpose has a number of advantages over other
-options such as email including avoiding the need for cyber-security filtering
-and better support for attachments. For this reason, a number of steps have been
-taken to integrate the ``visit-users@elist.ornl.gov`` email list with this
-repository.
-
-  * A new GitHub user account was created to serve as a proxy for the
-    ``visit-users`` email list with name ``markcmiller86-visit``.
-  * Two-factor authentication was added to the GitHub proxy account. 
-  * The ``visit-users`` email list configuration was adjusted in minor ways...
-
-    * Added ``noreply@github.com`` and ``notifications@github.com`` to
-      auto-accepted senders filter.
-    * Turned off list setting ``require_explicit_destination`` because GitHub
-      notifications can be sent in BCC field.
-    * Turned off setting ``bounce_unrecognized_goes_to_list_owner`` to avoid
-      some funky bounces related to LLNL's email service provider.
+options such as email including better support for attachments. For this reason,
+a number of steps were taken to integrate the ``visit-users@elist.ornl.gov`` email
+list with this repository.
 
 Upon receiving a *new* inquiry on the ``visit-users`` email list (or a telephone
 hotline call or walk-in with the exception of those involving classified information),
@@ -333,13 +320,14 @@ developer productivity issues. Often, these kinds of issues can wind up falling
 through the cracks of traditional software project management and planning
 processes. However, such issues also often represent low cost high benefit
 improvements in quality of either the software itself or the development
-processes supporting it. We refer to issues of this nature as general
-*housekeeping* or *low-hanging fruit* type issues.
+or deployment processes supporting it. We refer to issues of this nature
+as general *housekeeping* or *low-hanging fruit* type issues.
 
 Apart from acknowledging their existence, a key part of this process is the
-reallocation of resources for the sole purpose of **Customer Response** and
-developing a practice of continuously resolving general housekeeping or
-low-hanging fruit type issues arising from **Customer Response** inquiries.
+allocation of resources for the sole purpose of supporting
+**Customer Response** and developing a practice of continuously resolving
+general housekeeping or low-hanging fruit type issues arising from
+**Customer Response** inquiries.
 
 Consequently, another key role of the **Primary** is to use any time not working
 active inquiries to fix *low-hanging fruit* issues; either those the **Primary**
@@ -414,8 +402,8 @@ Indeed, there are several advantages in having developers involved with
   * Learning how users operate in performing their programmatic work for the
     organization which helps to inform planning for future needs.
 
-In short, the work involved in ensuring productivity of both users and developers
-of VisIt_ *is* programmatic work. The practice of having software development
-staff *integrated* with *operations* is more commonly referred to as *DevOps*.
-There is a pretty good `video <https://youtu.be/XoXeHdN2Ayc>`_ that introduces
-these concepts.
+In short, the work involved in Software Reliability Engineering (SRE) and
+ensuring productivity of both users and developers of VisIt_ *is* programmatic
+work. The practice of having software development staff *integrated* with
+*operations* is more commonly referred to as *DevOps*. There is a pretty good
+`video <https://youtu.be/XoXeHdN2Ayc>`_ that introduces these concepts.
