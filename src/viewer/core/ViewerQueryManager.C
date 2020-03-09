@@ -1103,6 +1103,15 @@ ViewerQueryManager::DatabaseQuery(const MapNode &in_queryParams)
     // ensure we are all on the same page
     queryParams["use_actual_data"] = useActualData;
 
+    //
+    // This isn't a pick through time, so we need to be careful
+    // about using the direct route.
+    //
+    if (useActualData == 1)
+    {
+        timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+    }
+
     if (qName == "SpatialExtents")
     {
         //
@@ -3871,6 +3880,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         if (queryParams.HasNumericEntry("element"))
             element = queryParams.GetEntry("element")->ToInt();
 
+
         bool preserveCoord = false; // is this really the default we want?
         if (queryParams.HasNumericEntry("preserve_coord"))
           preserveCoord = queryParams.GetEntry("preserve_coord")->ToBool();
@@ -5128,12 +5138,6 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
         }
     }
 
-    if (qParams.HasNumericEntry("use_actual_data") &&
-        qParams.GetEntry("use_actual_data")->ToInt() == 1)
-    {
-        timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
-    }
-
     //
     //  Grab information from the originating window.
     //
@@ -5437,6 +5441,10 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
 //    Added warning if curvePlotType is 'Multiple y axes' when only using
 //    1 variable, and revert to 'Single y axis' for the Time pick.
 //
+//    Alister Maguire, Mon Mar  9 13:31:50 PDT 2020
+//    Turn off "use actual data" here as it's usually not needed. It will be
+//    checked again downstream in case it actually is needed.
+//
 // ****************************************************************************
 
 void
@@ -5592,6 +5600,13 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
         }
         const MapNode &timeOpts = pickAtts->GetTimeOptions();
         params.Merge(timeOpts);
+
+        //
+        // By default, a pick through time doesn't need actual data.
+        // This will be double-checked later on.
+        //
+        params["use_actual_data"] = 0;
+
         qatts.SetQueryInputParams(params);
         DoTimeQuery(origWin, &qatts);
     }
