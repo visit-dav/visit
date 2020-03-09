@@ -80,11 +80,7 @@ CGNSCommonPluginInfo::SetupDatabase(const char *const *list,
             //
             // Eliminate the path information to get just the filename.
             //
-#if defined _WIN32      
-            const char *file = strrchr(list[f], '\\');
-#else
-            const char *file = strrchr(list[f], '/');
-#endif
+            const char *file = strrchr(list[f], VISIT_SLASH_CHAR);
             if (file == NULL) file = list[f];
 
             //
