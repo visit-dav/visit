@@ -118,13 +118,33 @@ blueprint_plugin_error_handler(const std::string &msg,
 }
 
 // ****************************************************************************
+//  Method: avtBlueprintFileFormat::FetchMeshAndTopoNames
+//
+//  Purpose: Maps the full mesh name, registered with visit to is
+//           blueprint mesh and topo components. 
+//
+//  Programmer: cyrush
+//  Creation:   Mon Mar  9 12:24:16 PDT 2020
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
 void
-split_mesh_and_topo(const std::string &name_name_full,
-                    std::string &mesh_name,
-                    std::string &topo_name)
+avtBlueprintFileFormat::FetchMeshAndTopoNames(const std::string &name_name_full,
+                                              std::string &mesh_name,
+                                              std::string &topo_name)
 {
     string mesh_base = FileFunctions::Basename(name_name_full);
-    conduit::utils::rsplit_string(mesh_base,"_",topo_name,mesh_name);
+
+    if(!m_mesh_and_topo_info.has_child(mesh_base))
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "Unknown mesh name " << mesh_name);
+    }
+
+    mesh_name = m_mesh_and_topo_info[mesh_base]["mesh"].as_string();
+    topo_name = m_mesh_and_topo_info[mesh_base]["topo"].as_string();
 }
 
 
@@ -207,13 +227,13 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
     BP_PLUGIN_INFO("ReadBlueprintMesh: " << abs_meshname
                     << " [domain " << domain << "]");
     string mesh_name;
-    string mesh_topo_name;
-    split_mesh_and_topo(std::string(abs_meshname),
-                        mesh_name,
-                        mesh_topo_name);
+    string topo_name;
+    FetchMeshAndTopoNames(std::string(abs_meshname),
+                          mesh_name,
+                          topo_name);
 
-    BP_PLUGIN_INFO("mesh name and topology name: "
-                    << mesh_name << " " << mesh_topo_name);
+    BP_PLUGIN_INFO("mesh name: " << mesh_name);
+    BP_PLUGIN_INFO("topo name: " << topo_name);
 
     if (!m_root_node["blueprint_index"].has_child(mesh_name))
     {
@@ -227,7 +247,7 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
     string tree_pattern = m_root_node["tree_pattern"].as_string();
 
     const Node &bp_index_mesh_node = m_root_node["blueprint_index"][mesh_name];
-    const Node &bp_index_topo_node = bp_index_mesh_node["topologies"][mesh_topo_name];
+    const Node &bp_index_topo_node = bp_index_mesh_node["topologies"][topo_name];
 
     string coordset_name = bp_index_topo_node["coordset"].as_string();
     string topo_path     = bp_index_topo_node["path"].as_string();
@@ -243,13 +263,13 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 
     m_tree_cache->FetchBlueprintTree(domain,
                                      topo_path,
-                                     out["topologies"][mesh_topo_name]);
+                                     out["topologies"][topo_name]);
 
     BP_PLUGIN_INFO("GetMesh: done loading conduit data for "
                     << abs_meshname << " [domain " <<domain << "]");
 
     // check for mfem case
-    Node &topo_data_node = out["topologies"][mesh_topo_name];
+    Node &topo_data_node = out["topologies"][topo_name];
 
 
     bool has_bndry_topo = topo_data_node.has_child("boundary_topology");
@@ -353,7 +373,7 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
                 // the boundary topo
                 string fld_topo_name = fld["topology"].as_string();
 
-                if(fld_topo_name == mesh_topo_name)
+                if(fld_topo_name == topo_name)
                 {
                     mesh_att_path = bp_index_fields_node[cld_name]["path"].as_string();
                 }
@@ -395,6 +415,10 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 //  Programmer: Cyrus Harrison and Mark Miller
 //  Creation:   Fri Aug 12 13:45:34 PDT 2016
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Mar  9 15:45:17 PDT 2020
+//    Use explicit map from registered mesh name to bp mesh and topo names.
+//
 // ****************************************************************************
 
 void
@@ -412,10 +436,13 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
     BP_PLUGIN_INFO("field " << abs_varname << " is defined on mesh " << abs_meshname);
 
     string mesh_name;
-    string mesh_topo_name;
-    split_mesh_and_topo(std::string(abs_meshname),
-                        mesh_name,
-                        mesh_topo_name);
+    string topo_name;
+    FetchMeshAndTopoNames(std::string(abs_meshname),
+                          mesh_name,
+                          topo_name);
+
+    BP_PLUGIN_INFO("mesh name: " << mesh_name);
+    BP_PLUGIN_INFO("topo name: " << topo_name);
 
     string varname  = FileFunctions::Basename(abs_varname);
 
@@ -461,6 +488,11 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
 // ****************************************************************************
 // helper method used to add the meta data for a blueprint mesh.
 // ****************************************************************************
+//  Modifications:
+//    Cyrus Harrison, Mon Mar  9 15:45:17 PDT 2020
+//    Use explicit map from registered mesh name to bp mesh and topo names.
+//
+// ****************************************************************************
 void
 avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md,
                                                          string const &mesh_name,
@@ -498,8 +530,12 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         const Node &n_topo = topos_itr.next();
         string topo_name = topos_itr.name();
 
+        // add info that we an use the map the full name
+        // to the mesh and topology names
         string mesh_topo_name = mesh_name + "_" + topo_name;
 
+        m_mesh_and_topo_info[mesh_topo_name]["mesh"] = mesh_name;
+        m_mesh_and_topo_info[mesh_topo_name]["topo"] = topo_name;
 
         bool is_mfem_mesh = false;
 
@@ -668,6 +704,16 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 //
 //  Programmer: Cyrus Harrison,
 //  Creation:  Fri Aug 24 14:01:50 PDT 2018
+//
+//  Modifications:
+//    Cyrus Harrison, Fri Aug 24 14:01:50 PDT 2018
+//    Add extra check for valid HDF5 file and allow plugin to be used if
+//    any valid mesh index is found.
+//
+//    Cyrus Harrison, Mon Mar  9 15:37:28 PDT 2020
+//    Change to use H5F_ACC_RDONLY since that is compatible with our
+//    other H5Fopen calls.
+//    
 // ****************************************************************************
 bool
 is_hdf5_file(const std::string &file_path)
@@ -689,7 +735,7 @@ is_hdf5_file(const std::string &file_path)
     bool res = false;
     // open the hdf5 file for read + write
     hid_t h5_file_id = H5Fopen(file_path.c_str(),
-                               H5F_ACC_RDWR,
+                               H5F_ACC_RDONLY,
                                H5P_DEFAULT);
 
     if( h5_file_id >= 0)
@@ -706,6 +752,7 @@ is_hdf5_file(const std::string &file_path)
     return res;
 }
 
+
 // ****************************************************************************
 //  Method: avtBlueprintFileFormat::ReadRootFile
 //
@@ -719,12 +766,19 @@ is_hdf5_file(const std::string &file_path)
 //    Add extra check for valid HDF5 file and allow plugin to be used if
 //    any valid mesh index is found.
 //
+//    Cyrus Harrison, Mon Mar  9 15:15:55 PDT 2020
+//    Refactor how index info is read to reduce I/O.
+//
 // ****************************************************************************
 void
 avtBlueprintFileFormat::ReadRootFile()
 {
         //
         // Read root file using conduit::relay
+        //
+        // Note:
+        // we only want to read the metadata portions
+        // since folks can pack meshes into the root file as well :-)
         //
 
         string root_fname = GetFilename();
@@ -733,7 +787,11 @@ avtBlueprintFileFormat::ReadRootFile()
 
         int error = 0;
 
-        // assume hdf5, but check for json file
+        // first figure out the protocol of the root file
+        // this may be different than the protocol of the actual data files
+
+        // assume hdf5, but check json file
+
         std::string root_protocol = "hdf5";
         std::string error_msg = "";
 
@@ -761,6 +819,8 @@ avtBlueprintFileFormat::ReadRootFile()
             {
                root_protocol = "json";
             }
+            
+            // TODO Add YAML heuristic
 
             // note: ".root" may be associated with with binary files
             // that are not hdf5
@@ -818,16 +878,17 @@ avtBlueprintFileFormat::ReadRootFile()
        }
 
 #ifdef PARALLEL
+        // only read on rank 0 and broadcast to everyone else
         if (PAR_Rank() == 0)
         {
-            relay::io::load(root_fname, root_protocol, m_root_node);
+            ReadRootIndexItems(root_fname,root_protocol,m_root_node);
         }
 
         conduit::relay::mpi::broadcast_using_schema(m_root_node,
                                                     0,
                                                     VISIT_MPI_COMM);
 #else
-        relay::io::load(root_fname, root_protocol, m_root_node);
+        ReadRootIndexItems(root_fname,root_protocol,m_root_node);
 #endif
 
         if(!m_root_node.has_child("file_pattern"))
@@ -871,6 +932,83 @@ avtBlueprintFileFormat::ReadRootFile()
 }
 
 // ****************************************************************************
+//  Method: avtBlueprintFileFormat::ReadRootIndexItems
+//
+//  Purpose: Read only the metadata portions of the root file that VisIt needs.
+//
+//  Programmer: cyrush
+//  Creation:   Mon Mar  9 12:24:16 PDT 2020
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+void
+avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
+                                           const std::string &root_protocol,
+                                           conduit::Node &root_info)
+{
+    // list of names we want to read from the root file
+    conduit:Node index_names;
+    index_names.append() = "blueprint_index";
+    index_names.append() = "file_pattern";
+    index_names.append() = "tree_pattern";
+    index_names.append() = "number_of_trees";
+    index_names.append() = "number_of_files";
+    index_names.append() = "protocol";
+
+    if(root_protocol == "hdf5")
+    {
+        // we can't use relay::io::IOHandle here b/c it currently
+        // lacks an option to open the file in read only mode, and 
+        // by default opens in R/W.
+        //
+        // For the case where the data is also included in the root file,
+        // VisIt may have a read only hdf5 file handle open, trying 
+        // to open with R/W will throw an error.
+        // 
+        // we still want partial I/O, so we use the conduit interface
+        // the uses hdf5 handles directly
+        hid_t h5_id = relay::io::hdf5_open_file_for_read(root_fname);
+
+        // loop over all names and read them in
+        NodeConstIterator itr = index_names.children();
+        while(itr.has_next())
+        {
+            std::string curr_idx_name = itr.next().as_string();
+            relay::io::hdf5_read(h5_id,curr_idx_name,root_info[curr_idx_name]);
+        }
+
+        relay::io::hdf5_close_file(h5_id);
+    }
+    else 
+    {
+        //
+        // otherwise, for cases that don't support partial I/O will need to read everything
+        // relay::io::IOHandle supports this. 
+        // 
+        // We don't want return everything b/c the index meta data is broadcasted to 
+        // all ranks and is also printed in debug 5 logs 
+        // so we still filter what is pulled out here
+        relay::io::IOHandle root_hnd;
+        root_hnd.open(root_fname,root_protocol);
+
+        // loop over all names and copy them to the output node
+        NodeConstIterator itr = index_names.children();
+        while(itr.has_next())
+        {
+            std::string curr_idx_name = itr.next().as_string();
+            if(root_hnd.has_path(curr_idx_name))
+            {
+                root_hnd.read(curr_idx_name,root_info[curr_idx_name]);
+            }
+        }
+
+        root_hnd.close();
+    }
+}
+
+// ****************************************************************************
 //  Method: avtBlueprintFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
@@ -880,6 +1018,10 @@ avtBlueprintFileFormat::ReadRootFile()
 //
 //  Programmer: harrison37 -- generated by xml2avt
 //  Creation:   Wed Jun 15 16:25:28 PST 2016
+//
+//  Modifications:
+//    Cyrus Harrison, Mon Mar  9 15:45:17 PDT 2020
+//    Use explicit map from registered mesh name to bp mesh and topo names.
 //
 // ****************************************************************************
 
@@ -892,6 +1034,8 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     // clear any mfem mesh mappings
     m_mfem_mesh_map.clear();
+    // clear full mesh to bp mesh and topo name map
+    m_mesh_and_topo_info.reset();
 
     try
     {
@@ -1071,20 +1215,22 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
     // prepare result vtk dataset
     vtkDataSet *res = NULL;
 
+    
     string mesh_name;
-    string mesh_topo_name;
-    split_mesh_and_topo(std::string(abs_meshname),
-                        mesh_name,
-                        mesh_topo_name);
+    string topo_name;
+    
+    FetchMeshAndTopoNames(std::string(abs_meshname),
+                          mesh_name,
+                          topo_name);
 
-    BP_PLUGIN_INFO("mesh name and topology name: "
-                    << mesh_name << " " << mesh_topo_name);
+    BP_PLUGIN_INFO("mesh name: " << mesh_name);
+    BP_PLUGIN_INFO("topo name: " << topo_name);
 
 
     // check for the mfem case
-    if( m_mfem_mesh_map[mesh_topo_name] )
+    if( m_mfem_mesh_map[topo_name] )
     {
-        BP_PLUGIN_INFO("mesh  " << mesh_topo_name << " is a mfem mesh");
+        BP_PLUGIN_INFO("mesh  " << topo_name << " is a mfem mesh");
         // use mfem to refine and create a vtk dataset
         mfem::Mesh *mesh = avtBlueprintDataAdaptor::MFEM::MeshToMFEM(data);
         res = avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mesh, m_selected_lod+1);
@@ -1094,7 +1240,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
     }
     else
     {
-        BP_PLUGIN_INFO("mesh  " << mesh_topo_name << " is a standard mesh");
+        BP_PLUGIN_INFO("mesh  " << topo_name << " is a standard mesh");
         // construct a vtk dataset directly from blueprint data
         // in a conduit tree
         res = avtBlueprintDataAdaptor::VTK::MeshToVTK(data);
