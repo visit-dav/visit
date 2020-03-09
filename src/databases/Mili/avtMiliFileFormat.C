@@ -600,6 +600,9 @@ avtMiliFileFormat::GetNodePositions(int timestep,
 //
 //  Modifications:
 //
+//    Alister Maguire, Fri Mar  6 10:55:34 PST 2020
+//    Adding ghost zones to aid the pick operator.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -766,9 +769,24 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             avtGhostData::AddGhostNodeType(ghostNodePtr[i], 
                 NODE_NOT_APPLICABLE_TO_PROBLEM);
         }
+
+        vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
+        ghostZones->SetName("avtGhostZones");
+        ghostZones->SetNumberOfTuples(nCells);
+
+        unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
+
+        for (int i = 0; i < nNodes; ++i)
+        {
+            ghostNodePtr[i] = 0;
+            avtGhostData::AddGhostNodeType(ghostNodePtr[i],
+                NODE_NOT_APPLICABLE_TO_PROBLEM);
+        }
     
         for (int i = 0; i < nCells; ++i)
         {
+            ghostZonePtr[i] = 0;
+
             //
             // Element status > .5 is good. 
             //
@@ -789,12 +807,19 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                     }
                 }
             }
+            else
+            {
+                avtGhostData::AddGhostZoneType(ghostZonePtr[i],
+                    ZONE_NOT_APPLICABLE_TO_PROBLEM);
+            }
         }
     
         delete [] sandBuffer; 
 
         rv->GetPointData()->AddArray(ghostNodes);
+        rv->GetCellData()->AddArray(ghostZones);
         ghostNodes->Delete();
+        ghostZones->Delete();
     }
     
 
