@@ -35,7 +35,8 @@ aspects of either
 In this document, we use the term **Customer Response** (an amalgamation of
 *Customer Support* and *Incident Response*) to characterize the resources,
 processes and activities the VisIt_ team employs to manage the work associated
-with such inquiries.
+with such inquiries. Aspects of this process were inspired in part by
+`Google's Site Reliability Engineering book <https://landing.google.com/sre/sre-book/toc/>`_.
 
 As is typical of most DOE software projects, VisIt_ has no dedicated resources
 for this purpose. Instead, developers themselves must also handle
@@ -118,18 +119,16 @@ calendar. **Primary** and **Backup** responsibilities are *rotated* so as to
 balance the load among team members.
 
 The preceding paragraphs describe VisIt_'s **Customer Response** processes at a
-basic level and in the ideal. Aspects of this process were inspired in part by
-`Google's Site Reliability Engineering book <https://landing.google.com/sre/sre-book/toc/>`_.
-Nonetheless, several terms here (those in *italics* in the paragraphs above)
-require elaboration. In addition, there are also many practical matters which
-can serve to complicate the basic process. These details are addressed in the
-remaining sections.
+basic level and in the ideal. Nonetheless, several terms here (those in *italics*
+in the paragraphs above) require elaboration. In addition, there are also many
+practical matters which can serve to complicate the basic process. These details
+are addressed in the remaining sections.
 
 Roles
 -----
 
 The **Primary**'s role is to respond, within the response time goal, to each
-inquiry that occurs during that week including those that came in during the
+inquiry that occurs during that week including those that come in during the
 preceding weekend/holiday. The **Primary**'s goal is to *resolve* (see below)
 all inquiries by the end of their week.
 
@@ -218,15 +217,16 @@ necessary to negotiate a day or more of time to respond more fully.
 following activities...
 
   * Answering a question or referring a user to documentation.
-  * Determining if the user's issue is known (e.g. an issue ticket already exists).
-  * Updating a known issue with new information from this user, perhaps
-    re-prioritizing the issue or putting the issue ticket back into the
-    UN-reviewed state for further discussion at a VisIt_ project meeting.
-  * Diagnosing the incident.
-  * Developing a reproducer for developers.
+  * Diagnosing the issue.
   * Developing a work-around for users.
+  * Developing a reproducer for developers including any relevant user data
+    files as well as approval, where appropriate for world access to such data.
   * Identifying a *low-hanging fruit* type issue and subsequently engaging
     in the *housekeeping* work to resolve it.
+  * Determining if the user's issue is known (e.g. an issue ticket already exists).
+  * Updating a known issue with new information from this user, perhaps
+    adjusting labels on the issue or putting the issue back into the
+    UN-reviewed state for further discussion at a VisIt_ project meeting.
   * Identifying and filing a new *product development* type issue ticket.
 
 To emphasize the last bullet above, *resolution* of a **Customer Response**
@@ -248,20 +248,22 @@ from one week's **Primary** to the next.
 To handle customer redirection handoffs, it is a best practice to use a three-way
 handoff giving the customer some assurance that their initial contact with someone
 is successfully handed off to the **Primary**. For example, for a call-in, it
-is a best practice to try a three-way call transfer. For developers with long
-standing relationships with key customers, such handoffs may be initially
-uncomfortable but an essential part of achieving the goals of this process.
+is a best practice to try a three-way call transfer. The propspect of redirecting
+friends and colleagues with whome some developers may have long standing relatinships
+may be initially uncomfortable. But it is important to recognize that this an
+essential part of achieving the goals of this process.
 
 If an active **Customer Response** issue cannot be resolved within the week of
 a **Primary**'s assignment, it gets handed off to the next week's **Primary**.
-Such handoffs shall be managed formally with a comment to the customer(s) and the
-next week's **Primary** and **Backup**. The associated issue(s) in the
-**Customer Response** issues repository shall be re-assigned by the next week's
-**Primary** upon beginning their shift.
+Such handoffs shall be managed formally with a comment (or email) to the
+customer(s) and the next week's **Primary** and **Backup** in the associated
+GitHub issue. The associated issue(s) in the **Customer Response** issues
+repository shall be re-assigned by the next week's **Primary** upon beginning
+their shift.
 
 Escalation
 ----------
-Customer response inquiries may escalate for a variety of reasons. The 
+**Customer Response** inquiries may escalate for a variety of reasons. The 
 technical expertise or authority required may be beyond the **Primary**'s
 abilities or other difficulties may arise. For issues that the **Primary** does
 not quickly see a path to resolution, the **Backup** should be enlisted first.
@@ -272,7 +274,7 @@ response time goal, other developers so enlisted are free to either delay or eve
 decline to respond (but nonetheless inform the **Primary** of this need) if their
 schedule does not permit timely response. Such a situation could mean that the
 only remaining course of action for the **Primary** to *resolve* the issue is to
-file a product development issue as discussed at the end of the preceding section.
+file a product development issue as discussed at the end of a preceding section.
 
 If the work required to resolve a customer response incident is either not
 known or not believed to be a *low-hanging-fruit* type task, the **Primary**
