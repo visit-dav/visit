@@ -706,14 +706,11 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 //  Creation:  Fri Aug 24 14:01:50 PDT 2018
 //
 //  Modifications:
-//    Cyrus Harrison, Fri Aug 24 14:01:50 PDT 2018
-//    Add extra check for valid HDF5 file and allow plugin to be used if
-//    any valid mesh index is found.
 //
 //    Cyrus Harrison, Mon Mar  9 15:37:28 PDT 2020
 //    Change to use H5F_ACC_RDONLY since that is compatible with our
 //    other H5Fopen calls.
-//    
+//
 // ****************************************************************************
 bool
 is_hdf5_file(const std::string &file_path)
