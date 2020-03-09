@@ -3880,7 +3880,6 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         if (queryParams.HasNumericEntry("element"))
             element = queryParams.GetEntry("element")->ToInt();
 
-
         bool preserveCoord = false; // is this really the default we want?
         if (queryParams.HasNumericEntry("preserve_coord"))
           preserveCoord = queryParams.GetEntry("preserve_coord")->ToBool();
