@@ -34,6 +34,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Removed the pbatch launch profile from the Lawrence Livermore National Laboratory's Max host profile.</li>
   <li>Enhanced the CGNS plugin to support a mesh decomposed across multiple CGNS files, one block per file as might be typical of file-per-processor parallel I/O. This requires that each file contain just a single CGNS mesh block. In addition, if all files do not also contain the same number of time steps, results will be indeterminate. Finally, the ensemble of CGNS files must be grouped together into a .visit file.</li>
+  <li>Enhanced VTK plugin to support reading and writing VisIt expressions as non-specific FIELD variable named "VisItExpressions" of type string. To see an example, look at the example file named <code>higher_order_triangles.vtk</code> in <a href="https://github.com/visit-dav/visit/blob/develop/data/vtk_test_data.7z?raw=true">vtk_test_data.7z</a></li>
   <li>Enhanced the Pick Through Time to use a substantially faster algorithm by default. This algorithm will be enabled when preserving the picked element id. When preserving the picked coordinate, the original algorithm will be used instead.</li>
   <li>Enhanced the new default Pick Through Time algorithm to handle vectors, tensors, and arrays. For vectors, the magnitude is used. For tensors and arrays, the major eigenvalue is used.</li>
 </ul>
