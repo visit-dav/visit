@@ -1577,6 +1577,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     e->SetName(exp_name);
                     e->SetDefinition(exp_def);
                     md->AddExpression(e);
+                    delete e;
                 }
                 delete [] exp_name;
                 delete [] exp_def;
@@ -1674,6 +1675,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     e->SetName(exp_name);
                     e->SetDefinition(exp_def);
                     md->AddExpression(e);
+                    delete e;
                 }
                 delete [] exp_name;
                 delete [] exp_def;
