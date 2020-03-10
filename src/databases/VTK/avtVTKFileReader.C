@@ -1572,12 +1572,11 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 {
                     snprintf(exp_name, compnamelen, "%s/comp_%d", name, c);
                     snprintf(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
-                    Expression *e = new Expression;
-                    e->SetType(Expression::ScalarMeshVar);
-                    e->SetName(exp_name);
-                    e->SetDefinition(exp_def);
-                    md->AddExpression(e);
-                    delete e;
+                    Expression e;
+                    e.SetType(Expression::ScalarMeshVar);
+                    e.SetName(exp_name);
+                    e.SetDefinition(exp_def);
+                    md->AddExpression(&e);
                 }
                 delete [] exp_name;
                 delete [] exp_def;
@@ -1670,12 +1669,11 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 {
                     snprintf(exp_name, compnamelen, "%s/comp_%d", name, c);
                     snprintf(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
-                    Expression *e = new Expression;
-                    e->SetType(Expression::ScalarMeshVar);
-                    e->SetName(exp_name);
-                    e->SetDefinition(exp_def);
-                    md->AddExpression(e);
-                    delete e;
+                    Expression e;
+                    e.SetType(Expression::ScalarMeshVar);
+                    e.SetName(exp_name);
+                    e.SetDefinition(exp_def);
+                    md->AddExpression(&e);
                 }
                 delete [] exp_name;
                 delete [] exp_def;
