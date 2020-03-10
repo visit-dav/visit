@@ -399,7 +399,7 @@ EOF
     return 0;
 }
 
-function apply_qt_gcc_9_2_patch
+function apply_qt_5101_gcc_9_2_patch
 {
     info "Patching qt 5.10.1 for gcc 9.2"
     patch -p0 <<EOF
