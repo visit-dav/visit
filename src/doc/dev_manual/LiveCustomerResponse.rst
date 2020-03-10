@@ -256,7 +256,8 @@ is successfully handed off to the **Primary**. For example, for a call-in, it
 is a best practice to try a three-way call transfer. The propspect of redirecting
 friends and colleagues with whome some developers may have long standing relatinships
 may be initially uncomfortable. But it is important to recognize that this an
-essential part of achieving the goals of this process.
+essential part of achieving one the goals of this process, to reduce
+**Customer Response** interruptions for the team as a whole.
 
 If an active **Customer Response** issue cannot be resolved within the week of
 a **Primary**'s assignment, it gets handed off to the next week's **Primary**.
