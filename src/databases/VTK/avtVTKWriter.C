@@ -17,12 +17,15 @@
 #include <vtkStringArray.h>
 #include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
+#include <vtkStringArray.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLRectilinearGridWriter.h>
 #include <vtkXMLStructuredGridWriter.h>
 #include <vtkXMLUnstructuredGridWriter.h>
 
 #include <DebugStream.h>
+#include <Expression.h>
+#include <ExpressionList.h>
 #include <avtDatabaseMetaData.h>
 #include <avtParallelContext.h>
 #include <FileFunctions.h>
@@ -154,6 +157,8 @@ avtVTKWriter::OpenFile(const string &stemname, int nb)
 //    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
 //    Retrieve meshName.
 //
+//    Mark C. Miller, Mon Mar  9 19:51:45 PDT 2020
+//    Capture a copy of exprList.
 // ****************************************************************************
 
 void
@@ -165,6 +170,7 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
     meshName = GetMeshName(md);
     time     = GetTime();
     cycle    = GetCycle();
+    exprList = md->GetExprList();
 }
 
 
@@ -203,6 +209,9 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 //    Mark C. Miller, Tue Apr  9 18:45:38 PDT 2019
 //    Add tetrahedralize option (works in 2D and 3D).
+//
+//    Mark C. Miller, Mon Mar  9 19:50:57 PDT 2020
+//    Add output of expressions
 // ****************************************************************************
 
 void
@@ -242,6 +251,39 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
         mn->SetName("TIME");
         ds->GetFieldData()->AddArray(mn);
         mn->Delete();
+    }
+
+    // Write any non-operator, non-auto expressions
+    if (exprList.GetNumExpressions())
+    {
+        vtkStringArray *mn = vtkStringArray::New();
+        mn->SetNumberOfValues(exprList.GetNumExpressions());
+        int used = 0;
+        for (int i = 0; i < exprList.GetNumExpressions(); i++)
+        {
+            Expression const expr = exprList.GetExpressions(i);
+
+            if (expr.GetFromOperator()) continue;
+            if (expr.GetAutoExpression()) continue;
+
+            string vtypestr = "unknown";
+            switch (expr.GetType())
+            {
+                case Expression::CurveMeshVar:  vtypestr = "curve";    break;
+                case Expression::ScalarMeshVar: vtypestr = "scalar";   break;
+                case Expression::VectorMeshVar: vtypestr = "vector";   break;
+                case Expression::TensorMeshVar: vtypestr = "tensor";   break;
+                case Expression::ArrayMeshVar:  vtypestr = "array";    break;
+                case Expression::Material:      vtypestr = "material"; break;
+                case Expression::Species:       vtypestr = "species";  break;
+                default: break;
+            }
+
+            mn->SetValue(used++, expr.GetName() + ";" + vtypestr + ";" + expr.GetDefinition());
+        }
+        mn->SetNumberOfValues(used);
+        mn->SetName("VisItExpressions");
+        ds->GetFieldData()->AddArray(mn);
     }
 
     if (tetrahedralize)

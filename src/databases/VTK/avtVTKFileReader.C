@@ -10,6 +10,8 @@
 #include <float.h> // for DBL_MAX
 
 #include <avtDatabaseMetaData.h>
+#include <Expression.h>
+#include <ExpressionList.h>
 #include <avtGhostData.h>
 #include <avtMaterial.h>
 #include <avtVTKFileReader.h>
@@ -40,6 +42,7 @@
 #include <Expression.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
+#include <StringHelpers.h>
 
 #include <vtkVisItUtility.h>
 
@@ -513,6 +516,9 @@ avtVTKFileReader::ReadInFile(int _domain)
 //
 //    Edward Rusu, Mon Oct 1 09:24:24 PST 2018
 //    Added support for vtkGhostType.
+//
+//    Mark C. Miller, Mon Mar  9 19:53:06 PDT 2020
+//    Add logic to support VisIt expressions as vtkStringArrays
 // ****************************************************************************
 
 void
@@ -648,6 +654,39 @@ avtVTKFileReader::ReadInDataset(int domain)
             dataset->GetFieldData()->GetAbstractArray("MeshName"));
         if (mn)
             vtk_meshname = mn->GetValue(0);
+    }
+    vtk_exprs.ClearExpressions();
+    if (dataset->GetFieldData()->GetAbstractArray("VisItExpressions") != 0)
+    {
+        vtkStringArray *ve = vtkStringArray::SafeDownCast(
+            dataset->GetFieldData()->GetAbstractArray("VisItExpressions"));
+        for (int i = 0; i < ve->GetNumberOfTuples(); i++)
+        {
+            std::vector<std::string> expr_substrs = StringHelpers::split(ve->GetValue(i),';');
+            Expression::ExprType vtype = Expression::Unknown;
+
+            if (!strcasecmp(expr_substrs[1].c_str(),"curve"))
+                vtype = Expression::CurveMeshVar;
+            else if (!strcasecmp(expr_substrs[1].c_str(),"scalar"))
+                vtype = Expression::ScalarMeshVar;
+            else if (!strcasecmp(expr_substrs[1].c_str(),"vector"))
+                vtype = Expression::VectorMeshVar;
+            else if (!strcasecmp(expr_substrs[1].c_str(),"tensor"))
+                vtype = Expression::TensorMeshVar;
+            else if (!strcasecmp(expr_substrs[1].c_str(),"array"))
+                vtype = Expression::ArrayMeshVar;
+            else if (!strcasecmp(expr_substrs[1].c_str(),"material"))
+                vtype = Expression::Material;
+            else if (!strcasecmp(expr_substrs[1].c_str(),"species"))
+                vtype = Expression::Species;
+
+            Expression expr;
+            expr.SetName(expr_substrs[0]);
+            expr.SetType(vtype);
+            expr.SetDefinition(expr_substrs[2]);
+
+            vtk_exprs.AddExpressions(expr);
+        }
     }
 
     if (dataset->GetDataObjectType() == VTK_STRUCTURED_POINTS ||
@@ -1252,6 +1291,8 @@ avtVTKFileReader::GetVectorVar(int domain, const char *var)
 //    Kathleen Biagas, Thu Oct 31 12:26:22 PDT 2019
 //    Set mesh type to POINT_MESH when poly data contains only vertex cells.
 //
+//    Mark C. Miller, Mon Mar  9 19:53:47 PDT 2020
+//    Add logic to define any expressions we found to metadata.
 // ****************************************************************************
 
 void
@@ -1634,6 +1675,10 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         nvars++;
     }
+
+    // Add expressions from the database
+    for (int i = 0; i < vtk_exprs.GetNumExpressions(); i++)
+        md->AddExpression(&vtk_exprs.GetExpressions(i));
 
     // Don't hang on to all the data we've read. We might not even need it
     // if we're in mdserver or of on non-zero mpi-rank.
