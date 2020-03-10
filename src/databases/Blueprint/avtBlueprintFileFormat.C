@@ -120,7 +120,7 @@ blueprint_plugin_error_handler(const std::string &msg,
 // ****************************************************************************
 //  Method: avtBlueprintFileFormat::FetchMeshAndTopoNames
 //
-//  Purpose: Maps the full mesh name, registered with visit to is
+//  Purpose: Maps the full mesh name, registered with visit to its
 //           blueprint mesh and topo components. 
 //
 //  Programmer: cyrush
@@ -530,8 +530,8 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         const Node &n_topo = topos_itr.next();
         string topo_name = topos_itr.name();
 
-        // add info that we an use the map the full name
-        // to the mesh and topology names
+        // add info that maps the full mesh name registered with VisIt 
+        // to blueprint the mesh and topology names
         string mesh_topo_name = mesh_name + "_" + topo_name;
 
         m_mesh_and_topo_info[mesh_topo_name]["mesh"] = mesh_name;
@@ -816,7 +816,7 @@ avtBlueprintFileFormat::ReadRootFile()
             {
                root_protocol = "json";
             }
-            
+
             // TODO Add YAML heuristic
 
             // note: ".root" may be associated with with binary files
@@ -965,7 +965,7 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
         // to open with R/W will throw an error.
         // 
         // we still want partial I/O, so we use the conduit interface
-        // the uses hdf5 handles directly
+        // that uses hdf5 handles directly
         hid_t h5_id = relay::io::hdf5_open_file_for_read(root_fname);
 
         // loop over all names and read them in
@@ -973,7 +973,9 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
         while(itr.has_next())
         {
             std::string curr_idx_name = itr.next().as_string();
-            relay::io::hdf5_read(h5_id,curr_idx_name,root_info[curr_idx_name]);
+            relay::io::hdf5_read(h5_id,
+                                 curr_idx_name,
+                                 root_info[curr_idx_name]);
         }
 
         relay::io::hdf5_close_file(h5_id);
@@ -981,11 +983,11 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
     else 
     {
         //
-        // otherwise, for cases that don't support partial I/O will need to read everything
-        // relay::io::IOHandle supports this. 
+        // otherwise, for cases that don't support partial I/O will need
+        // to read everything relay::io::IOHandle supports this.
         // 
-        // We don't want return everything b/c the index meta data is broadcasted to 
-        // all ranks and is also printed in debug 5 logs 
+        // We don't want to return everything b/c the index meta data is
+        // broadcasted to  all ranks and is also printed in debug 5 logs
         // so we still filter what is pulled out here
         relay::io::IOHandle root_hnd;
         root_hnd.open(root_fname,root_protocol);
@@ -997,7 +999,8 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
             std::string curr_idx_name = itr.next().as_string();
             if(root_hnd.has_path(curr_idx_name))
             {
-                root_hnd.read(curr_idx_name,root_info[curr_idx_name]);
+                root_hnd.read(curr_idx_name,
+                              root_info[curr_idx_name]);
             }
         }
 
