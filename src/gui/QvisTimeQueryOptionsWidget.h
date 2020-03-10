@@ -42,9 +42,8 @@ class GUI_API QvisTimeQueryOptionsWidget : public QGroupBox, public GUIBase
 {
     Q_OBJECT
   public:
-    QvisTimeQueryOptionsWidget(QWidget *parent = 0, bool includeDataOrigin = true);
-    QvisTimeQueryOptionsWidget(const QString &title, QWidget *parent = 0,
-        bool includeDataOrigin = true);
+    QvisTimeQueryOptionsWidget(QWidget *parent = 0);
+    QvisTimeQueryOptionsWidget(const QString &title, QWidget *parent = 0);
     virtual ~QvisTimeQueryOptionsWidget();
 
     bool GetTimeQueryOptions(MapNode &options);
@@ -68,11 +67,7 @@ class GUI_API QvisTimeQueryOptionsWidget : public QGroupBox, public GUIBase
     QLabel        *startLabel;
     QLabel        *endLabel;
     QLabel        *strideLabel;
-    QLabel        *dataOriginLabel;
-    QButtonGroup  *dataOriginType;
-    QGroupBox     *dataOriginBox;
     int maxTime;
-    bool dataOriginAvail;
 };
 
 #endif
