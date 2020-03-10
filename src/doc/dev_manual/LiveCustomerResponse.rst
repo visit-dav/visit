@@ -2,8 +2,8 @@ Software Reliability Engineering (SRE)
 ======================================
 
 In the VisIt_ project, members of the development team are frequently called
-upon to respond to a variety of inquiries. Some of these may relate to the *use*
-of VisIt_ such as
+upon to respond to a variety of inquiries often originating directly from users.
+Some of these may relate to the *use* of VisIt_ such as
 
   * How do I do a surface plot?
   * How do I compute the mass in a given material?
@@ -24,24 +24,30 @@ and some may relate to an *operational* aspect of either
     * A downed file system or network.
     * A trip in the security environment.
 
-The work involved in handling such inquiries represents a wholly different kind
-of resource and effort than is typically invested in long established software
-product development activities. We call this kind of work *Software Reliability
-Engineering (SRE)*. This name was inspired inspired by
-`Google's Site Reliability Engineering (SRE) book <https://landing.google.com/sre/sre-book/toc/>`_.
+Typically such inquiries originate from users who are in the midst of trying
+to use the VisIt_ software and are encountering some kind of difficulty.
+However, for highly effective software projects, the work involved in handling
+such inquiries does not end with simply diagnosing the user's problem(s) and
+proposing solutions. Often the problems users encounter are suggestive of
+minor *improvements* to be made either to the software itself or its associated
+processes and artifacts. Investing the time to continually identify and
 
+appropriate improvements
 
+And, it is the constant vigilance 
 
-respond
-to characterize the resources,
-processes and activities the VisIt_ team employs to manage the work associated
+The work involved in handling such inquiries represents a wholly different
+kind of activity, resource and effort than is typical of many DOE software
+product planning and development processes. Inspired by Google's
+`Site Reliability Engineering (SRE) book <https://landing.google.com/sre/sre-book/toc/>`_,
+we call this kind of work *Software Reliability Engineering (SRE)*.
 
 As is typical of most DOE software projects, VisIt_ has no dedicated resources
-for this purpose. Instead, developers themselves must also handle
-**Customer Response** work. For many DOE software projects, managing this
-activity effectively and efficiently is an essential part of maintaining the
-overall quality of their software as well as the productivity of both developers
-and users of the software alike.
+for this purpose. Instead, developers themselves must also handle SRE work.
+For mature DOE software projects with many users, managing SRE work effectively
+and efficiently is an essential part of maintaining the overall quality of their
+software as well as the productivity of both developers and users of the
+software alike.
 
 Goals
 -----
