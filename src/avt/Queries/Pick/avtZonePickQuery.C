@@ -144,6 +144,9 @@ avtZonePickQuery::SetTransform(const avtMatrix *m)
 //    Changed the transform to invTransform (transform previously was
 //    set to be the inverse).
 //
+//    Alister Maguire, Mon Mar  9 11:01:24 PDT 2020
+//    Set the real element number so the direct database qot has access.
+//
 // ****************************************************************************
 
 void
@@ -295,6 +298,7 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
         pickAtts.SetIncidentElements(pickAtts.GetRealIncidentElements());
     }
 
+    pickAtts.SetRealElementNumber(pickAtts.GetElementNumber());
     pickAtts.SetElementNumber(pickAtts.GetElementNumber() + cellOrigin);
     //
     // If the points of this dataset have been transformed, and we know 
