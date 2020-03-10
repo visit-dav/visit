@@ -2761,6 +2761,10 @@ ViewerQueryManager::SetDDTPickCallback(void (*cb)(PickAttributes *, void*), void
 //   retrieved pick point. Also, don't update the designator
 //   if we are overriding the pick label.
 //
+//   Alister Maguire, Tue Mar 10 08:49:49 PDT 2020
+//   Make sure to disable the direct database QOT if preserve
+//   coords is requested.
+//
 // ****************************************************************************
 
 void
@@ -2788,6 +2792,15 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
 
     if (pickAtts->GetDoTimeCurve())
     {
+        if (pickAtts->GetTimePreserveCoord())
+        {
+            timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+        }
+        else
+        {
+            timeQueryAtts->SetCanUseDirectDatabaseRoute(true);
+        }
+
         PickThroughTime(ppi, pickAtts->GetTimeCurveType(), dom, el);
         return;
     }
