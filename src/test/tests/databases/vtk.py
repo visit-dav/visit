@@ -80,6 +80,7 @@ def TestMaterials():
 
     TurnMaterialsOn()
     DeleteAllPlots()
+    CloseDatabase(data_path("vtk_test_data/globe_mats.vtk"))
 
 def TestXML():
     TestSection("VTK XML-style data files")
@@ -102,6 +103,7 @@ def TestXML():
     DrawPlots()
     Test("vtk_08")
     DeleteActivePlots()
+    CloseDatabase(data_path("vtk_xml_test_data/curv2d.vts"))
 
     OpenDatabase(data_path("vtk_xml_test_data/curv3d.vts"))
 
@@ -128,7 +130,7 @@ def TestXML():
     DrawPlots()
     Test("vtk_15")
     DeleteActivePlots()
-
+    CloseDatabase(data_path("vtk_xml_test_data/curv3d.vts"))
 
     OpenDatabase(data_path("vtk_xml_test_data/rect3d.vtr"))
 
@@ -155,6 +157,7 @@ def TestXML():
     DrawPlots()
     Test("vtk_22")
     DeleteActivePlots()
+    CloseDatabase(data_path("vtk_xml_test_data/rect3d.vtr"))
 
     OpenDatabase(data_path("vtk_xml_test_data/ucd2d.vtu"))
 
@@ -176,6 +179,7 @@ def TestXML():
     Test("vtk_27")
 
     DeleteAllPlots()
+    CloseDatabase(data_path("vtk_xml_test_data/ucd2d.vtu"))
 
 def TestHigherOrder():
     TestSection("Quadratic triangles in VTK")
@@ -211,6 +215,7 @@ def TestHigherOrder():
     DrawPlots()
     Test("vtk_29")
     DeleteAllPlots()
+    CloseDatabase(data_path("vtk_test_data/higher_order_triangles.vtk"))
 
 def TestNBLOCKS():
     TestSection("!NBLOCKS in a .visit file")
@@ -241,6 +246,7 @@ def TestNBLOCKS():
         txt = txt + "Cycle: %d, Time: %g\n" % (cycle, time)
     TestText("vtk_33", txt)
     DeleteAllPlots()
+    CloseDatabase(data_path("vtk_test_data/visitfile/dbA.visit"))
 
 def TestPVTU():
     TestSection("PVTU files")
@@ -254,6 +260,7 @@ def TestPVTU():
     DrawPlots()
     Test("vtk_34a")
     DeleteAllPlots()
+    CloseDatabase(data_path("vtk_test_data/blocks.pvtu"))
 
 def TestPVTI():
     TestSection("PVTI files")
@@ -263,6 +270,7 @@ def TestPVTI():
     ResetView()
     Test("vtk_35")
     DeleteAllPlots()
+    CloseDatabase(data_path("vtk_xml_test_data/earth.pvti"))
     
 def TestMixedTopology():
     TestSection("2D Unstructured grids with lines")
@@ -272,6 +280,7 @@ def TestMixedTopology():
     ResetView()
     Test("vtk_36")
     DeleteAllPlots()
+    CloseDatabase(data_path("vtk_test_data/test_bound.vtk"))
 
 def TestVTM():
     TestSection("VTM files")
@@ -355,6 +364,29 @@ def TestVTKGhostType():
     DeleteAllPlots()
     CloseDatabase(data_path("vtk_test_data/vtkGhostType.vtk"))
 
+def TestDBExpressions():
+    TestSection("Database Expressions in VTK")
+    OpenDatabase(data_path("vtk_test_data/higher_order_triangles.vtk"))
+
+    AddPlot("Mesh", "highorder_triangles");
+    AddPlot("Pseudocolor", "x")
+    AddPlot("Vector", "posvec")
+    DrawPlots()
+
+    v = View3DAttributes()
+    v.viewNormal = (-0.429056, 0.759111, 0.489553)
+    v.viewUp = (-0.901832, -0.39065, -0.184638)
+    v.parallelScale = 1.73205
+    v.nearPlane = -3.4641
+    v.farPlane = 3.4641
+    v.imageZoom = 1.45106
+    SetView3D(v)
+
+    Test("vtk_46")
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_test_data/higher_order_triangles.vtk"))
+
+
 TestMaterials()
 TestXML()
 TestHigherOrder()
@@ -365,5 +397,6 @@ TestMixedTopology()
 TestVTM()
 TestPVTK()
 TestVTKGhostType()
+TestDBExpressions()
 
 Exit()
