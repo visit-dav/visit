@@ -13,6 +13,8 @@
 #include <string>
 #include <void_ref_ptr.h>
 
+#include <ExpressionList.h>
+
 class vtkDataArray;
 class vtkDataSet;
 class vtkRectilinearGrid;
@@ -20,7 +22,6 @@ class vtkStructuredPoints;
 class vtkVisItXMLPDataReader;
 
 class DBOptionsAttributes;
-
 
 // ****************************************************************************
 //  Class: avtVTKFileReader
@@ -84,6 +85,8 @@ class DBOptionsAttributes;
 //    from the first non empty database for a collection of STSD databases
 //    that have been grouped into a multi data version using a visit file.
 //
+//    Mark C. Miller, Mon Mar  9 19:52:43 PDT 2020
+//    Add vtk_exprs to support expressions from VTK files.
 // ****************************************************************************
 
 class avtVTKFileReader
@@ -138,6 +141,7 @@ class avtVTKFileReader
     double                vtk_time;
     int                   vtk_cycle;
     std::string           vtk_meshname;
+    ExpressionList        vtk_exprs;
 
     std::string           fileExtension;
     std::string           pieceExtension;
