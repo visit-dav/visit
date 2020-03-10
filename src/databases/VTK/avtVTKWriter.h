@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 
+#include <ExpressionList.h>
+
 class DBOptionsAttributes;
 
 // ****************************************************************************
@@ -48,6 +50,9 @@ class DBOptionsAttributes;
 //
 //    Mark C. Miller, Tue Apr  9 18:44:50 PDT 2019
 //    Add tetrahedralize option.
+//
+//    Mark C. Miller, Mon Mar  9 19:51:15 PDT 2020
+//    Add exprList
 // ****************************************************************************
 
 class
@@ -66,6 +71,7 @@ avtVTKWriter : public virtual avtDatabaseWriter
     std::string    mbDirName;
     double         time;
     int            cycle;
+    ExpressionList exprList;
     bool           doBinary;
     bool           doXML;
     bool           tetrahedralize;
