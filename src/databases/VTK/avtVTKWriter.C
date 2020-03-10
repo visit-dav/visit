@@ -284,6 +284,7 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
         mn->SetNumberOfValues(used);
         mn->SetName("VisItExpressions");
         ds->GetFieldData()->AddArray(mn);
+        mn->Delete();
     }
 
     if (tetrahedralize)
