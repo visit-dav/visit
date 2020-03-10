@@ -665,6 +665,12 @@ avtVTKFileReader::ReadInDataset(int domain)
             std::vector<std::string> expr_substrs = StringHelpers::split(ve->GetValue(i),';');
             Expression::ExprType vtype = Expression::Unknown;
 
+            if (expr_substrs.size() != 3)
+            {
+                debug2 << "Ignoring invalid VisItExpression entry at index " << i << endl;
+                continue;
+            }
+
             if (!strcasecmp(expr_substrs[1].c_str(),"curve"))
                 vtype = Expression::CurveMeshVar;
             else if (!strcasecmp(expr_substrs[1].c_str(),"scalar"))
