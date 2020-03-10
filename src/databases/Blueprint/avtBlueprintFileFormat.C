@@ -531,7 +531,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         string topo_name = topos_itr.name();
 
         // add info that maps the full mesh name registered with VisIt 
-        // to blueprint the mesh and topology names
+        // to the blueprint the mesh and topology names
         string mesh_topo_name = mesh_name + "_" + topo_name;
 
         m_mesh_and_topo_info[mesh_topo_name]["mesh"] = mesh_name;
@@ -987,7 +987,7 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
         // to read everything relay::io::IOHandle supports this.
         // 
         // We don't want to return everything b/c the index meta data is
-        // broadcasted to  all ranks and is also printed in debug 5 logs
+        // broadcasted to all ranks and is also printed in debug 5 logs
         // so we still filter what is pulled out here
         relay::io::IOHandle root_hnd;
         root_hnd.open(root_fname,root_protocol);
