@@ -1,23 +1,15 @@
-Software Reliability Engineering
-================================
+Software Reliability Engineering (SRE)
+======================================
 
-The IT world has many terms for services with similar sounding purposes such as
-*Technical Support*, *Help Desk*, *Customer Support*, *Incident Response*,
-*Service Desk*, *Incident Management*, *Customer Care*, etc.
-`Specific meanings <https://www.atlassian.com/itsm/service-request-management/help-desk-vs-service-desk-vs-itsm>`_
-of these terms are often driven by the software products IT companies sell to
-support their
-`management <https://www.bmc.com/blogs/help-desk-vs-service-desk-whats-difference/>`_.
-
-In The VisIt_ project, *Customer Support* involves responding to inquiries about
-the *use* of VisIt_ such as
+In the VisIt_ project, members of the development team are frequently called
+upon to respond to a variety of inquiries. Some of these may relate to the *use*
+of VisIt_ such as
 
   * How do I do a surface plot?
   * How do I compute the mass in a given material?
   * How do I get client/server to TACC working?
 
-whereas *Incident Response* involves responding to incidents about *operational*
-aspects of either
+and some may relate to an *operational* aspect of either
 
   * The VisIt_ software itself such as
 
@@ -32,11 +24,17 @@ aspects of either
     * A downed file system or network.
     * A trip in the security environment.
 
-In this document, we use the term **Customer Response** (an amalgamation of
-*Customer Support* and *Incident Response*) to characterize the resources,
+The work involved in handling such inquiries represents a wholly different kind
+of resource and effort than is typically invested in long established software
+product development activities. We call this kind of work *Software Reliability
+Engineering (SRE)*. This name was inspired inspired by
+`Google's Site Reliability Engineering (SRE) book <https://landing.google.com/sre/sre-book/toc/>`_.
+
+
+
+respond
+to characterize the resources,
 processes and activities the VisIt_ team employs to manage the work associated
-with such inquiries. Aspects of this process were inspired in part by
-`Google's Site Reliability Engineering book <https://landing.google.com/sre/sre-book/toc/>`_.
 
 As is typical of most DOE software projects, VisIt_ has no dedicated resources
 for this purpose. Instead, developers themselves must also handle
@@ -87,42 +85,54 @@ The Basic Process
 -----------------
 
 The work of customer response is allocated and rotated among developers in
-one-week intervals. During a week, one developer is assigned as the **Primary**
-customer response contact and a second developer is assigned as a **Backup**.
+one-week intervals. During a week, one developer's `role <sre_roles>` is to
+be the **Primary** customer response contact and a second developer's
+`role <sre_roles>` is to be a **Backup**.
 
-The role of the **Primary** is to *respond* within the response time goal, to
-each inquiry. Ideally, all customer response activity during the week is handled
-and *resolved* solely by the **Primary**. However, *escalations*, which we hope
-are rare, will wind up engaging the **Backup** and may even engage other
-developers. In addition, any *active* issues that remain unresolved at the end
-of the week are formally *handed off* to the next **Primary**.
+The `role <sre_role>` of the **Primary** is to `respond <sre_response_vs_resolution>`
+within the response time goal, to each inquiry. Ideally, all customer response
+activity during the week is handled and `resolved <sre_response_vs_resolution>`
+solely by the **Primary**. However, `escalations <sre_escalations>`, which we
+hope are rare, will wind up engaging the **Backup** and may even engage other
+developers. In addition, any `active issues <sre_active_issues>` that remain
+unresolved at the end of the week are formally `handed off <sre_handoffs>` to
+the next **Primary**.
 
-*Active* customer response issues will be logged and tracked in a separate GitHub,
+`Active <sre_active_issues>` customer response issues will be logged and tracked in
+a separate GitHub,
 `issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
 resolution of *serious* incidents, the **Primary** will prepare a brief
 *postmortem* to inform a discussion at the next project meeting of possible changes
 in practices to avoid such major incidents.
 
+.. danger::
+   * Lets define serious and postmortem
+
 Because customer response work tends to be interrupt driven, there is always
 the chance that the **Primary** will have no *active* issues. At these times, the
-**Primary** shall use their time to address general *housekeeping* or other
-*low-hanging fruit* type work. In particular, there shall be no expectation that
-a developer serving as **Primary** can get any other work done beyond their
+**Primary** shall use their time to address general `housekeeping <sre_housekeeping>`
+or other *low-hanging fruit* type work. In particular, there shall be no expectation
+that a developer serving as **Primary** can get any other work done beyond their
 customer response and housekeeping obligations. In slow weeks, its conceivable
 they can. But, there can be no implied assumption or expectation that this will
 be the case.
 
-A *schedule* of the **Primary** and **Backup** assignments going out several
-months is periodically negotiated by the team and posted in the form of a shared
-calendar. **Primary** and **Backup** responsibilities are *rotated* so as to
-balance the load among team members.
+A `schedule <sre_schedule>` of the **Primary** and **Backup** assignments going
+out several months is periodically negotiated by the team and posted in the form
+of a shared calendar. **Primary** and **Backup** responsibilities are *rotated*
+so as to balance the load among team members.
 
 The preceding paragraphs describe VisIt_'s **Customer Response** processes at a
-basic level and in the ideal. Nonetheless, several terms here (those in *italics*
-in the paragraphs above) require elaboration. In addition, there are also many
-practical matters which can serve to complicate the basic process. These details
-are addressed in the remaining sections.
+basic level and in the ideal. Nonetheless, several terms here (those that are 
+links or in *italics* in the paragraphs above) require elaboration. In addition,
+there are also many practical matters which can serve to complicate the basic
+process. These details are addressed in the remaining sections.
+
+.. danger::
+   * Did we introduce all the section headings
+
+.. _sre_roles:
 
 Roles
 -----
@@ -148,6 +158,8 @@ customer inquiries as well as redirect customers who may contact them directly
 via email, phone or walk-in. It is a best practice to handle such redirections
 with a formal, three-way handoff confirming that the customer indeed makes
 contact with the **Primary**.
+
+.. _sre_active_issues:
 
 Active Customer Response Issues Repo
 ------------------------------------
@@ -184,6 +196,8 @@ for tracking that work.
 .. danger::
    What about ``visit-help-asc`` email list? Should we handle similarly?
    Can we just foward to ``visit-users``?  If no to either, what do we do?
+
+.. _sre_response_vs_resolution:
 
 Response Time and Response vs. Resolution
 -----------------------------------------
@@ -242,6 +256,8 @@ prioritized, scheduled and ultimately resolved as part of normal VisIt_ product
 development activities. Nonetheless, doing so does serve to *resolve* the
 original **Customer Response** issue that initiated the work.
 
+.. _sre_handoffs:
+
 Handoffs
 --------
 
@@ -267,6 +283,8 @@ GitHub issue. The associated issue(s) in the **Customer Response** issues
 repository shall be re-assigned by the next week's **Primary** upon beginning
 their shift.
 
+.. _sre_escalation:
+
 Escalation
 ----------
 **Customer Response** inquiries may escalate for a variety of reasons. The 
@@ -291,6 +309,8 @@ issue about this new **Customer Response** incident (and perhaps remove the
 VisIt_ project meeting) or submit a *new* issue to the product development issue
 tracker. Such action then *resolves* the original **Customer Response** issue.
 
+.. _sre_scf_issues:
+
 Special Considerations for Classified Computing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -313,6 +333,8 @@ requiring the SCF, the **Primary** should
   * If customer indicates immediate response is required, the **Primary**
     should inquire the whole team to arrange another developer who can
     handle it.
+
+.. _sre_housekeeping:
 
 Housekeeping and Low-hanging Fruit Type Issues
 ----------------------------------------------
@@ -359,6 +381,8 @@ then appropriately re-labeled.
    issues in tracker and identify those of this type. With ~1600 issues and
    eight people, we each can take about 200 issues in the tracker.
 
+.. _sre_scheduling:
+
 Scheduling and Load Balancing
 -----------------------------
 
@@ -387,6 +411,8 @@ calendar and informing the rest of the team of the change.
 
 Whenever possible, an experienced **Backup** will be scheduled with a less
 experienced **Primary**.
+
+.. _sre_misconceptions:
 
 A Common Misconception: Customer Response is an Interruption to Programmatic Work
 ---------------------------------------------------------------------------------
