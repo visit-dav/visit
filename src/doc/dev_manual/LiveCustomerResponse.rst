@@ -195,8 +195,10 @@ the associated GitHub issue in response to the *initial* email, the less likely
 this can occur. In addition, boilerplate guidance in an issue template will help
 to mitigate this by informing ``visit-users`` members of this behavior.
 
-For any work the **Primary** engages in, there should be an associated issue
-for tracking that work.
+For any work the **Primary** performs, even if it is a rather trivial amount
+of work to resolve, there should be an associated issue for tracking that work.
+Tracking even the trivial issues can help identify patterns that we may be able
+to later mine to identify process improvements.
 
 .. danger::
    What about ``visit-help-asc`` email list? Should we handle similarly?
