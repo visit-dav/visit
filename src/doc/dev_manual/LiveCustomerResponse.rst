@@ -253,13 +253,15 @@ following activities...
     UN-reviewed state for further discussion at a VisIt_ project meeting.
   * Identifying and filing a new *product development* type issue ticket.
 
-To emphasize the last bullet above, *resolution* of an SRE
-issue does not always mean a customer's issue can be addressed to *satisfaction*
-within the constraints of the processes defined here. Sometimes, the most
-that can be achieved is filing a highly informative issue ticket to be
-prioritized, scheduled and ultimately resolved as part of normal VisIt_ product
-development activities. Nonetheless, doing so does serve to *resolve* the
-original SRE issue that initiated the work.
+To emphasize the last bullet, *resolution* does not always mean a customer's
+issue can be addressed to *satisfaction* within the constraints of the SRE
+process as it is defined here. Sometimes, the most that can be achieved is
+filing a highly informative issue ticket to be prioritized, scheduled and
+ultimately resolved as part of normal VisIt_ product development activities.
+The SRE issue gets *promoted* to a product development issue. It is closed
+in the SRE issue tracker and new issue is opened in the product development
+issue tracker including a reference to the original SRE issue. Doing so does
+serve to *resolve* the original SRE issue that initiated the work.
 
 .. _sre_handoffs:
 
@@ -319,18 +321,19 @@ tracker. Such action then *resolves* the original SRE issue.
 Special Considerations for Classified Computing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Occasionally, incidents arise that may be handled only in the Secure Computing
-Facility (SCF). This is not too common but does happen and it presents problems
-for a geographically distributed team. In many ways, an SCF-only incident is just
-a different form of *escalation*.
+Occasionally, incidents arise that may be specific to a classified computing
+environment. This is not too common but does happen and it presents problems
+for a geographically distributed team. In many ways, handling such an incident
+is just a different form of *escalation*.
 
-On the one hand, customers on SCF are accustomed to longer response times.
-On the other hand, often work on the SCF is a high priority and requires
-rapid response from a developer that is on site with access to SCF.
+On the one hand, customers working in a classified computing environment
+are accustomed to longer response times. On the other hand, such work is often
+a high priority and requires rapid response from a developer that is on site
+with classified computing access.
 
 Our current plan is to handle this on a case-by-case basis. If neither the
 **Primary** nor **Backup** are able to handle a customer response incident
-requiring the SCF, the **Primary** should
+requiring classified computing, the **Primary** should
 
   * First determine the customer's required response time. It may be hours
     or it may be days. If it is days. Its conceivable the issue could be
