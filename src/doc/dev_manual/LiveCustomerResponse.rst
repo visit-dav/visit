@@ -9,45 +9,44 @@ Some of these may relate to the *use* of VisIt_ such as
   * How do I compute the mass in a given material?
   * How do I get client/server to TACC working?
 
-and some may relate to an *operational* aspect of either
-
-  * The VisIt_ software itself such as
+and some may relate to an *operational* aspect of either the VisIt_ software
+itself such as
 
     * A botched *managed* VisIt installation.
     * An update to host profiles to address site access changes.
     * A missing database reader plugin.
 
-  * Or, the underlying computing infrastructure upon which VisIt_ depends such
-    as
+or, the underlying computing infrastructure upon which VisIt_ depends such as
 
     * An incompatible graphics driver.
     * A downed file system or network.
     * A trip in the security environment.
 
-Typically such inquiries originate from users who are in the midst of trying
-to use the VisIt_ software and are encountering some kind of difficulty.
-However, for highly effective software projects, the work involved in handling
-such inquiries does not end with simply diagnosing the user's problem(s) and
-proposing solutions. Often the problems users encounter are suggestive of
-deficiencies in either the software itself or its associated processes and
-artifacts. Continually investing the time to identify appropriate corrections
+Typically, such inquiries originate from users in the midst of using the VisIt_
+software and are encountering some kind of difficulty. In highly effective
+software projects, the work involved in handling such inquiries does not end
+with simply diagnosing the user's problem(s) and proposing solutions. Often the
+problems users encounter are suggestive of deficiencies in either the software
+itself or its associated processes and artifacts.
+
+Continually investing the time to identify appropriate corrective actions
 and carry them out in response to such inquiries is a *best practice* similar
 in many respects to Google's
 `Site Reliability Engineering (SRE) <https://landing.google.com/sre/sre-book/toc/>`_
 process sometimes
 `also called <https://www.cio.com/article/3192531/why-you-need-a-systems-reliability-engineer.html>`_
 *Systems Reliability Engineering* or *Services Reliability Engineering*.
-Because our primary focus here is on *software*, it might be appealing to
-call it *Software Reliability Engineering*. However that name already has a
-specific meaning in the software industry and it is in no way what we mean by
+Because our primary focus here is on *software*, a natural inclination might
+be to call this *Software Reliability Engineering*. However that name already
+has a specific meaning in the software industry and it is in no way what we mean by
 SRE here.
 
 For mature DOE software projects with long histories and many users, SRE activity
 represents a wholly different brand of effort than conventional software product
 development, planning and execution. Most DOE software projects, have no dedicated
-SRE resources. The VisIt_ is no exception. Instead, developers themselves must also
-handle SRE activities. Nonetheless, managing SRE work effectively and efficiently is
-an essential part of maintaining the overall quality of the software as well as the
+SRE resources. The VisIt_ project is no exception. Instead, developers themselves
+must also support SRE work. Nonetheless, managing SRE work effectively and efficiently
+is an essential part of maintaining the overall quality of the software as well as the
 productivity of both developers and users of the software alike.
 
 Goals
@@ -63,7 +62,7 @@ Some of the goals of this process are...
   * To *load balance* SRE work in an equitable way across the development team.
   * To reduce SRE interruptions for the team as a whole.
   * To log, track and evolve a database of SRE activity and effort to help inform
-     ongoing development plans and resource allocation.
+    ongoing development plans and resource allocation.
   * To identify and document escalation paths for major incidents.
   * To aim for a four hour response time.
 
@@ -78,7 +77,7 @@ VisIt_ but outside of this scope are typically delegated to other teams who
 are responsible for the associated processes and resources.
 
 In the IT world where companies like Google, Apple and Amazon have whole teams
-dedicated to such activity, coverage is 24/7 and response time is measured in
+dedicated to SRE activity, coverage is 24/7 and response time is measured in
 *minutes*. For the VisIt_ project where the majority of funded development takes
 place at Lawrence Livermore National Lab, coverage is during normal West Coast
 *business* hours, 8am-12pm and 1-5pm (GMT-8, San Francisco time zone), Monday
@@ -91,21 +90,22 @@ The Basic Process
 -----------------
 
 SRE work is allocated and rotated among developers in
-one-week intervals. During a week, one developer's `role <sre_roles>` is to
-be the **Primary** SRE contact and a second developer's `role <sre_roles>` is to
-be a **Backup**. Except for `escalations <sre_escalations>`, all other developers
-are free of SRE responsibilities for that week.
+one-week intervals. During a week, one developer's :ref:`role <sre_roles>` is to
+serve as the **Primary** SRE contact and a second developer's
+:ref:`role <sre_roles>` is to serve as a **Backup**. Except for
+:ref:`escalations <sre_escalations>`, all other developers are free of SRE
+responsibilities for that week.
 
-The `role <sre_role>` of the **Primary** is to `respond <sre_response_vs_resolution>`
+The :ref:`role <sre_role>` of the **Primary** is to :ref:`respond <sre_response_vs_resolution>`
 within the response time goal, to each inquiry. Ideally, all SRE
-activity during the week is handled and `resolved <sre_response_vs_resolution>`
-solely by the **Primary**. However, `escalations <sre_escalations>`, which we
+activity during the week is handled and :ref:`resolved <sre_response_vs_resolution>`
+solely by the **Primary**. However, :ref:`escalations <sre_escalations>`, which we
 hope are rare, will wind up engaging the **Backup** and may even engage other
-developers. In addition, any `active issues <sre_active_issues>` that remain
-unresolved at the end of the week are formally `handed off <sre_handoffs>` to
+developers. In addition, any :ref:`active issues <sre_active_issues>` that remain
+unresolved at the end of the week are formally :ref:`handedoff <sre_handoffs>` to
 the next **Primary**.
 
-`Active <sre_active_issues>` SRE issues will be logged and tracked in a separate GitHub,
+:ref:`Active <sre_active_issues>` SRE issues will be logged and tracked in a separate GitHub,
 `issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
 resolution of *serious* incidents, the **Primary** will prepare a brief
@@ -117,13 +117,13 @@ in practices to avoid such major incidents.
 
 Because SRE work tends to be interrupt driven, there is always
 the chance that the **Primary** will have no *active* issues. At these *idle* times, the
-**Primary** shall use their time to address general `housekeeping <sre_housekeeping>`
+**Primary** shall use their time to address general :ref:`housekeeping <sre_housekeeping>`
 or other *low-hanging fruit* type work. In particular, there shall be no expectation
 that a developer serving as **Primary** can get any other work done beyond their
 active or idle SRE obligations. In slow weeks, its conceivable they can. But, there
 can be no implied assumption or expectation that this will be the case.
 
-A `schedule <sre_schedule>` of the **Primary** and **Backup** assignments going
+A :ref:`schedule <sre_schedule>` of the **Primary** and **Backup** assignments going
 out several months is periodically negotiated by the team and posted in the form
 of a shared calendar. **Primary** and **Backup** responsibilities are rotated
 so as to balance the load among team members.
@@ -144,7 +144,7 @@ Roles
 
 The **Primary**'s role is to respond, within the response time goal, to each
 inquiry that occurs during that week including those that come in during the
-preceding weekend/holiday. The **Primary**'s goal is to *resolve* (see below)
+preceding weekend/holiday. The **Primary**'s goal is to :ref:`resolve <sre_resolve>`
 all inquiries by the end of their week.
 
 The **Primary** has the sole responsibility for responding to inquiries and
@@ -158,7 +158,7 @@ issues the **Primary** is handling.
 
 Ideally, the **Primary** is able to handle all SRE activity
 and no other developers are engaged. However, this situation can change for
-significant `escalations <sre_escalations>`. Thus, other developers are free to
+significant :ref:`escalations <sre_escalations>`. Thus, other developers are free to
 ignore customer inquiries as well as redirect customers who may contact them directly
 via email, phone or walk-in. It is a best practice to handle such redirections
 with a formal, three-way handoff confirming that the customer indeed makes
@@ -169,16 +169,16 @@ contact with the **Primary**.
 Active Customer Response Issues Repo
 ------------------------------------
 
-*Active* customer response issues will be logged and tracked in a separate GitHub,
+*Active* SRE issues will be logged and tracked in a separate GitHub,
 `issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. 
 For each new inquiry, the primary will file an issue ticket and assign themselves.
 When the inquiry is resolved, the associated issue is closed. The primary will
 endeavor to capture all relevant information and communications in this issue.
 The use of GitHub issues for this purpose has a number of advantages over other
-options such as email including better support for attachments. For this reason,
-a number of steps were taken to integrate the ``visit-users@elist.ornl.gov`` email
-list with this issues-only repository.
+options such as email including better search/browse as well as support for
+attachments. For this reason, a number of steps were taken to integrate the
+``visit-users@elist.ornl.gov`` email list with this issues-only repository.
 
 Upon receiving a *new* inquiry on the ``visit-users`` email list (or a telephone
 hotline call or walk-in with the exception of those involving classified information),
