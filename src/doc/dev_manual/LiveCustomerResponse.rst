@@ -29,9 +29,9 @@ with simply diagnosing the user's problem(s) and proposing solutions. Often the
 problems users encounter are suggestive of minor, easily fixed deficiencies
 in either the software itself or its associated processes and artifacts.
 
-Continually investing the time to identify small corrective actions and carry
-them out in response to such inquiries is a *best practice* similar in many
-respects to Google's
+Continually investing the time to identify small corrective actions to take
+in response to such inquiries and then carrying them through is a
+*best practice* similar in many respects to Google's
 `Site Reliability Engineering (SRE) <https://landing.google.com/sre/sre-book/toc/>`_
 process sometimes
 `also called <https://www.cio.com/article/3192531/why-you-need-a-systems-reliability-engineer.html>`_
