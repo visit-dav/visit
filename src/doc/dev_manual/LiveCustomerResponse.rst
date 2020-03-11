@@ -26,7 +26,7 @@ Typically, such inquiries originate from users in the midst of using the VisIt_
 software and are encountering some kind of difficulty. In highly effective
 software projects, the work involved in handling such inquiries does not end
 with simply diagnosing the user's problem(s) and proposing solutions. Often the
-problems users encounter are suggestive of minor and easily fixed deficiencies
+problems users encounter are suggestive of minor, easily fixed deficiencies
 in either the software itself or its associated processes and artifacts.
 
 Continually investing the time to identify small corrective actions and carry
@@ -38,7 +38,7 @@ process sometimes
 *Systems Reliability Engineering* or *Services Reliability Engineering*.
 As an aside, because our primary focus here is on *software* a natural
 inclination might be to call this *Software Reliability Engineering* also 
-abbreviated as *"SRE"*. However that name already has a specific meaning in the
+abbreviated as *SRE*. However that name already has a specific meaning in the
 software industry and it is in no way related the meaning of SRE used here.
 
 For mature DOE software projects with wide reach and many users, SRE activity
@@ -180,12 +180,12 @@ options such as email including better search/browse as well as support for
 attachments. For this reason, a number of steps were taken to integrate the
 ``visit-users@elist.ornl.gov`` email list with this issues-only repository.
 
-Upon receiving a *new* inquiry on the ``visit-users`` email list (or a telephone
-hotline call or walk-in with the exception of those involving classified information),
-the procedure is for the **Primary** to cut-n-paste the initial email to a new GitHub
-`SRE issue <https://github.com/visit-dav/live-customer-response/issues>`_
-and from then on handle all communication
-through the *conversation* associated with that issue. Each comment there
+Upon receiving a *new* inquiry on the ``visit-users`` email list, telephone hotline
+call, or walk-in (with the exception of walk-ins involving classified information),
+the procedure is for the **Primary** to cut-n-paste the initial email to a new
+GitHub `SRE issue <https://github.com/visit-dav/live-customer-response/issues>`_
+and from then on handle all communication through the *conversation* associated with
+that issue. Each comment there
 will generate an email to ``visit-users``. In addition, any reply to any
 GitHub generated emails will result in a new comment added to the GitHub issues
 as though it came from GitHub user account ``markcmiller86-visit``. However,
@@ -200,7 +200,7 @@ for tracking that work.
 
 .. danger::
    What about ``visit-help-asc`` email list? Should we handle similarly?
-   Can we just foward to ``visit-users``?  If no to either, what do we do?
+   Can we just forward to ``visit-users``?  If no to either, what do we do?
 
 .. _sre_response_vs_resolution:
 
@@ -220,11 +220,11 @@ their direct collaborators are accustomed to response times of less than four
 hours. For example, the VisIt_ project operates a telephone hotline and also
 frequently handles walk-ins. As an aside, after a recent small test effort to
 maintain a rapid response time, a noticeable up-tick in user email inquiries was
-observed suggesting that rapide response times have the effect of encouraging
+observed suggesting that rapid response times have the effect of encouraging
 more user interactions.
 
 It is also important to distinguish between *response* and *resolution* here.
-A key goal in this process is to ensure that customer inquires do not go
+A key goal in this process is to ensure that customer inquiries do not go
 unanswered for a long time. However, *responding* to a customer inquiry does
 not necessarily mean *resolving* it. Sometimes, the only response possible is to
 acknowledge the customer's inquiry and let them know that the resources to
@@ -245,8 +245,9 @@ following activities...
     * This may include any relevant user data files as well as approval, where
       appropriate for world read access to such data.
 
-  * Identifying a *low-hanging fruit* type issue and subsequently engaging
-    in the *housekeeping* work to resolve it.
+  * Identifying any *low-hanging fruit* type work that would address, even if
+    only in part, the original SRE inquiry and then engaging in the
+    *housekeeping* work to resolve it.
   * Determining if the user's issue is known (e.g. an issue ticket already exists).
   * Updating a known issue with new information from this user, perhaps
     adjusting labels on the issue or putting the issue back into the
@@ -277,8 +278,8 @@ To handle customer redirection handoffs, it is a best practice to use a three-wa
 handoff giving the customer some assurance that their initial contact with someone
 is successfully handed off to the **Primary**. For example, for a call-in, it
 is a best practice to try a three-way call transfer. For some developers, the
-propspect of redirecting friends and colleagues with whom they may have long
-standing relatinships may be initially uncomfortable. But it is important to
+prospect of redirecting friends and colleagues with whom they may have long
+standing relationships may be initially uncomfortable. But it is important to
 recognize that this an essential part of achieving one the goals of this process,
 to reduce SRE interruptions for the team as a whole.
 
@@ -339,7 +340,7 @@ requiring classified computing, the **Primary** should
     or it may be days. If it is days. Its conceivable the issue could be
     handled in the following week by a new **Primary/Backup** pair.
   * If customer indicates immediate response is required, the **Primary**
-    should inquire the whole team to arrange another developer who can
+    should query the whole team to arrange another developer who can
     handle it.
 
 .. _sre_housekeeping:
@@ -347,20 +348,20 @@ requiring classified computing, the **Primary** should
 Housekeeping and Low-hanging Fruit Type Issues
 ----------------------------------------------
 
-Part of the reason for developing this process is the acknowledgment of the
-existence of a different category of work,
+Part of the reason for developing this process is the recognition of a
+different category of work,
 `Site Reliability Engineering (SRE) <https://en.wikipedia.org/wiki/Site_Reliability_Engineering>`_,
-that is an essential part of maintaining the overall quality of a software
-product as well as the productivity of both developers and users of the
-software alike.
+that is nonetheless an essential part of maintaining the overall quality of
+a software product as well as the productivity of both developers and users
+of the software alike.
 
-Issues that impact one user's productivity often impact others. Likewise for
-developer productivity issues. Often, these kinds of issues can wind up falling
-through the cracks of traditional software project management and planning
-processes. However, such issues also often represent low cost high benefit
-improvements in quality of either the software itself or the development
-or deployment processes supporting it. We refer to issues of this nature
-as general *housekeeping* or *low-hanging fruit* type issues.
+Small, easily fixed issues that impact one user's productivity often impact
+others. Likewise for developer productivity issues. Often, these kinds of
+issues can wind up falling through the cracks of traditional software project
+management and planning processes. However, such issues also often represent
+low cost high benefit improvements in quality of either the software itself or
+the development or deployment processes supporting it. We refer to issues of
+this nature as general *housekeeping* or *low-hanging fruit* type issues.
 
 Apart from acknowledging their existence, a key part of this process is the
 allocation of resources for the sole purpose of supporting SRE activities
