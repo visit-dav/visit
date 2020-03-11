@@ -26,27 +26,27 @@ Typically, such inquiries originate from users in the midst of using the VisIt_
 software and are encountering some kind of difficulty. In highly effective
 software projects, the work involved in handling such inquiries does not end
 with simply diagnosing the user's problem(s) and proposing solutions. Often the
-problems users encounter are suggestive of deficiencies in either the software
-itself or its associated processes and artifacts.
+problems users encounter are suggestive of minor and easily fixed deficiencies
+in either the software itself or its associated processes and artifacts.
 
-Continually investing the time to identify appropriate corrective actions
-and carry them out in response to such inquiries is a *best practice* similar
-in many respects to Google's
+Continually investing the time to identify small corrective actions and carry
+them out in response to such inquiries is a *best practice* similar in many
+respects to Google's
 `Site Reliability Engineering (SRE) <https://landing.google.com/sre/sre-book/toc/>`_
 process sometimes
 `also called <https://www.cio.com/article/3192531/why-you-need-a-systems-reliability-engineer.html>`_
 *Systems Reliability Engineering* or *Services Reliability Engineering*.
-Because our primary focus here is on *software*, a natural inclination might
-be to call this *Software Reliability Engineering*. However that name already
-has a specific meaning in the software industry and it is in no way what we mean by
-SRE here.
+As an aside, because our primary focus here is on *software* a natural
+inclination might be to call this *Software Reliability Engineering* also 
+abbreviated as *"SRE"*. However that name already has a specific meaning in the
+software industry and it is in no way related the meaning of SRE used here.
 
-For mature DOE software projects with long histories and many users, SRE activity
-represents a wholly different brand of effort than conventional software product
-development, planning and execution. Most DOE software projects, have no dedicated
-SRE resources. The VisIt_ project is no exception. Instead, developers themselves
-must also support SRE work. Nonetheless, managing SRE work effectively and efficiently
-is an essential part of maintaining the overall quality of the software as well as the
+For mature DOE software projects with wide reach and many users, SRE activity
+represents a brand of effort wholly different from conventional software product
+development, planning and execution. Like most DOE software projects, VisIt_ has
+no dedicated SRE resources. Instead, developers themselves must also support SRE
+work. Nonetheless, managing SRE work effectively and efficiently is an essential
+part of maintaining the overall quality of the software as well as the
 productivity of both developers and users of the software alike.
 
 Goals
@@ -166,8 +166,8 @@ contact with the **Primary**.
 
 .. _sre_active_issues:
 
-Active Customer Response Issues Repo
-------------------------------------
+Active SRE Issues Repo
+----------------------
 
 *Active* SRE issues will be logged and tracked in a separate GitHub,
 `issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
@@ -425,7 +425,7 @@ When faced with a long backlog of development tasks, team members can all too
 easily perceive SRE work as an *interruption* to those tasks.
 This is a common misconception. SRE is an important aspect to
 a successful product and project on par with any other major development work.
-It is part of what is involved in keeping the software working and useful tool
+It is part of what is involved in keeping the software working and a useful tool
 in our customer's workflows not only here at LLNL, likely VisIt_'s biggest
 customer, but wherever in DOE/DOD and elsewhere in the world VisIt_ is used.
 
