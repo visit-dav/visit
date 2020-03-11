@@ -10,6 +10,7 @@
       ${CGNS_LIBRARY_DIR}
     </LDFLAGS>
     <FilePatterns>
+      *.cgns.*.*
       *.cgns
     </FilePatterns>
     <Files components="M">
