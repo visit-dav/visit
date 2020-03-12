@@ -8,21 +8,35 @@
 
 #include <avtIsovolumeFilter.h>
 
+#ifdef HAVE_LIBVTKH
+#include <vtkm/filter/ClipWithField.h>
+#include <vtkh/vtkh.hpp>
+#include <vtkh/DataSet.hpp>
+#include <vtkh/filters/IsoVolume.hpp>
+#include <vtkm/filter/CleanGrid.h>
+
+#include <vtkm/io/writer/VTKDataSetWriter.h>
+#endif
+
 #include <vtkVisItClipper.h>
 #include <vtkDataSet.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 #include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkStructuredGrid.h>
 #include <vtkCellDataToPointData.h>
 
 #include <avtAccessor.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
+#include <avtCallback.h>
 
 #include <DebugStream.h>
 #include <VisItException.h>
+#include <TimingsManager.h>
 
 #include <float.h>
 
@@ -92,7 +106,7 @@ avtIsovolumeFilter::SetAtts(const AttributeGroup *a)
 {
     atts = *(const IsovolumeAttributes*)a;
 
-    // We need to specify that we want a secondary variable as soon as 
+    // We need to specify that we want a secondary variable as soon as
     // possible.
     if (strcmp(atts.GetVariable().c_str(), "default") != 0)
     {
@@ -211,20 +225,20 @@ avtIsovolumeFilter::ExecuteSingleClip(vtkDataSet *in_ds, float val, bool flip)
 // ****************************************************************************
 // Method: IsovolumeMinMax
 //
-// Purpose: 
+// Purpose:
 //   Determine the min and max for the input data array using an accessor.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Sun Apr 22 01:21:24 PDT 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 template <typename Accessor>
@@ -352,77 +366,15 @@ avtIsovolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
     if ((atts.GetUbound() < 1e37) && (max > atts.GetUbound()))
         doMaxClip = true;
 
-    //
-    // Do the clipping!
-    //
-    vtkDataSet *out_ds = in_ds;
-    if(doMinClip && doMaxClip)
-    {
-        vtkDataSet *intermediate = NULL;
-        intermediate = ExecuteSingleClip(in_ds, atts.GetLbound(), true);
-        if(intermediate->GetNumberOfCells() > 0)
-        {
-            out_ds = ExecuteSingleClip(intermediate, atts.GetUbound(), false);
-            intermediate->Delete();
-        }
-        else
-            out_ds = intermediate;
-    }
-    else if(doMinClip)
-        out_ds = ExecuteSingleClip(in_ds, atts.GetLbound(), true);
-    else if(doMaxClip)
-        out_ds = ExecuteSingleClip(in_ds, atts.GetUbound(), false);
-    bool own = out_ds != in_ds;
-
-    //
-    // Make sure there's something there
-    //
-    if (out_ds->GetNumberOfCells() <= 0)
-    {
-        // We can't delete the out_ds unless we made it and own it. 
-        // Otherwise, we're deleting the reference out from under the in_ds.
-        if(own)
-            out_ds->Delete();
-        return NULL;
-    }
-
-    //
-    // If we had poly data input, we want poly data output.  The VTK filter
-    // only returns unstructured grids, so convert that now.  Note: we don't
-    // necessarily have a ugrid, since it might be that we didn't process the
-    // dataset.
-    //
-    if (in_ds->GetDataObjectType() == VTK_POLY_DATA &&
-        out_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
-    {
-        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) out_ds;
-        vtkPolyData *out_pd = vtkPolyData::New();
-        out_pd->SetPoints(ugrid->GetPoints());
-        out_pd->GetPointData()->ShallowCopy(ugrid->GetPointData());
-        out_pd->GetCellData()->ShallowCopy(ugrid->GetCellData());
-        vtkIdType ncells = ugrid->GetNumberOfCells();
-        out_pd->Allocate(ncells);
-        for (vtkIdType i = 0 ; i < ncells ; i++)
-        {
-            int celltype = ugrid->GetCellType(i);
-            vtkIdType *pts, npts;
-            ugrid->GetCellPoints(i, npts, pts);
-            out_pd->InsertNextCell(celltype, npts, pts);
-        }
-        if(own)
-            out_ds->Delete();
-        out_ds = out_pd;
-        own = true;
-    }
-
+    bool doVTKM = VTKmAble(in_dr);
     avtDataRepresentation *out_dr = NULL;
-    if (out_ds != NULL)
-        out_dr = new avtDataRepresentation(out_ds,
-            in_dr->GetDomain(), in_dr->GetLabel());
+    std::cout<<"VTKm= "<<doVTKM<<" "<<doMinClip<<" "<<doMaxClip<<std::endl;
+    if (doVTKM && doMinClip && doMaxClip)
+        out_dr = ExecuteData_VTKM(in_dr, {atts.GetLbound(), atts.GetUbound()}, {doMinClip, doMaxClip});
+    else
+        out_dr = ExecuteData_VTK(in_dr, {atts.GetLbound(), atts.GetUbound()}, {doMinClip, doMaxClip});
 
-    if (own && out_ds != NULL)
-        out_ds->Delete();
-
+    std::cout<<"out_dr= "<<out_dr<<std::endl;
     return out_dr;
 }
 
@@ -437,7 +389,7 @@ avtIsovolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
 //  Creation:   February 16, 2004
 //
 //  Modifications:
-//    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006 
+//    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006
 //    Set ZonesSplit.
 //
 //    Brad Whitlock, Mon Apr  7 15:55:02 PDT 2014
@@ -518,4 +470,226 @@ avtIsovolumeFilter::ModifyContract(avtContract_p in_spec)
     return spec;
 }
 
+bool
+avtIsovolumeFilter::VTKmAble(avtDataRepresentation *in_dr) const
+{
+    bool useVTKm = false;
+    if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
+        avtCallback::GetBackendType() == GlobalAttributes::VTKM)
+    {
+        useVTKm = true;
+        vtkDataSet *in_ds = in_dr->GetDataVTK();
+        char *var = (activeVariable != NULL ? activeVariable
+                                            : pipelineVariable);
+        vtkDataArray *pointData = in_ds->GetPointData()->GetArray(var);
+        if (pointData == NULL)
+            useVTKm = false;
+        else if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+            vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
 
+            int dims[3];
+            rgrid->GetDimensions(dims);
+            if (dims[2] == 1)
+                useVTKm = false;
+        }
+        else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+        {
+            vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
+            int dims[3];
+            sgrid->GetDimensions(dims);
+
+            if (dims[2] == 1)
+                useVTKm = false;
+        }
+        else if (in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+        {
+            vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) in_ds;
+            vtkIdType nCells = ugrid->GetCells()->GetNumberOfCells();
+            vtkUnsignedCharArray *cellTypes = ugrid->GetCellTypesArray();
+            unsigned char *ct = cellTypes->GetPointer(0);
+            vtkIdType iCell = 0;
+            for (; iCell < nCells; ++iCell)
+            {
+                if (*ct++ != VTK_HEXAHEDRON)
+                    break;
+            }
+            if (iCell != nCells)
+                useVTKm = false;
+        }
+    }
+
+    std::cout<<"VTKM-able= "<<useVTKm<<std::endl;
+    return useVTKm;
+}
+
+avtDataRepresentation *
+avtIsovolumeFilter::ExecuteData_VTK(avtDataRepresentation *in_dr, std::vector<double> bounds, std::vector<bool> clips)
+{
+    int timerHandle = visitTimer->StartTimer();
+    std::cout<<"Do VTK"<<std::endl;
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    //
+    // Do the clipping!
+    //
+    vtkDataSet *out_ds = in_ds;
+    if(clips[0] && clips[1])
+    {
+        vtkDataSet *intermediate = NULL;
+        intermediate = ExecuteSingleClip(in_ds, atts.GetLbound(), true);
+        if(intermediate->GetNumberOfCells() > 0)
+        {
+            out_ds = ExecuteSingleClip(intermediate, atts.GetUbound(), false);
+            intermediate->Delete();
+        }
+        else
+            out_ds = intermediate;
+    }
+    else if(clips[0])
+        out_ds = ExecuteSingleClip(in_ds, atts.GetLbound(), true);
+    else if(clips[1])
+        out_ds = ExecuteSingleClip(in_ds, atts.GetUbound(), false);
+    bool own = out_ds != in_ds;
+
+    //
+    // Make sure there's something there
+    //
+    if (out_ds->GetNumberOfCells() <= 0)
+    {
+        // We can't delete the out_ds unless we made it and own it.
+        // Otherwise, we're deleting the reference out from under the in_ds.
+        if(own)
+            out_ds->Delete();
+        return NULL;
+    }
+
+    //
+    // If we had poly data input, we want poly data output.  The VTK filter
+    // only returns unstructured grids, so convert that now.  Note: we don't
+    // necessarily have a ugrid, since it might be that we didn't process the
+    // dataset.
+    //
+    if (in_ds->GetDataObjectType() == VTK_POLY_DATA &&
+        out_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    {
+        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) out_ds;
+        vtkPolyData *out_pd = vtkPolyData::New();
+        out_pd->SetPoints(ugrid->GetPoints());
+        out_pd->GetPointData()->ShallowCopy(ugrid->GetPointData());
+        out_pd->GetCellData()->ShallowCopy(ugrid->GetCellData());
+        vtkIdType ncells = ugrid->GetNumberOfCells();
+        out_pd->Allocate(ncells);
+        for (vtkIdType i = 0 ; i < ncells ; i++)
+        {
+            int celltype = ugrid->GetCellType(i);
+            vtkIdType *pts, npts;
+            ugrid->GetCellPoints(i, npts, pts);
+            out_pd->InsertNextCell(celltype, npts, pts);
+        }
+        if(own)
+            out_ds->Delete();
+        out_ds = out_pd;
+        own = true;
+    }
+
+    avtDataRepresentation *out_dr = NULL;
+    if (out_ds != NULL)
+        out_dr = new avtDataRepresentation(out_ds,
+            in_dr->GetDomain(), in_dr->GetLabel());
+
+    if (own && out_ds != NULL)
+        out_ds->Delete();
+
+    visitTimer->StopTimer(timerHandle, "avtIsovolumeFilter::ExecuteDataTree_VTK");
+    return out_dr;
+}
+
+avtDataRepresentation *
+avtIsovolumeFilter::ExecuteData_VTKM(avtDataRepresentation *in_dr, std::vector<double> bounds, std::vector<bool> clips)
+{
+#ifndef HAVE_LIBVTKH
+    return NULL;
+#else
+    std::cout<<"Do VTKm"<<std::endl;
+
+    int timerHandle = visitTimer->StartTimer();
+    vtkh::DataSet *in_ds = in_dr->GetDataVTKm();
+    if (!in_ds || in_ds->GetNumberOfDomains() != 1)
+        return NULL;
+
+    std::string isoVar(activeVariable != NULL ? activeVariable
+                                              : pipelineVariable);
+
+    //VTKm version.
+#if 0
+    vtkm::cont::DataSet result;
+    vtkm::cont::DataSet ds = in_ds->GetDomain(0);
+
+    if (clips[0] && clips[1])
+    {
+        std::cout<<"Clip both: "<<bounds[0]<<" "<<bounds[1]<<" "<<isoVar<<std::endl;
+        vtkm::filter::ClipWithField clip1, clip2;
+        clip1.SetClipValue(4); //bounds[1]);
+        clip1.SetInvertClip(true);
+        clip1.SetActiveField(isoVar);
+        clip1.SetFieldsToPass(isoVar, vtkm::cont::Field::Association::POINTS);
+        auto tmp = clip1.Execute(ds);
+
+        clip2.SetClipValue(3); //bounds[0]);
+        clip2.SetActiveField(isoVar);
+        clip2.SetFieldsToPass(isoVar, vtkm::cont::Field::Association::POINTS);
+
+        result = clip2.Execute(tmp);
+    }
+    else if (clips[0])
+    {
+        std::cout<<"Clip 0: "<<bounds[0]<<" "<<bounds[1]<<std::endl;
+        vtkm::filter::ClipWithField clip;
+        clip.SetInvertClip(false);
+        clip.SetClipValue(bounds[0]);
+        clip.SetActiveField(isoVar);
+        clip.SetFieldsToPass(isoVar, vtkm::cont::Field::Association::POINTS);
+        result = clip.Execute(ds);
+    }
+    else if (clips[1])
+    {
+        std::cout<<"Clip 1: "<<bounds[0]<<" "<<bounds[1]<<std::endl;
+        vtkm::filter::ClipWithField clip;
+        clip.SetClipValue(bounds[1]);
+        clip.SetActiveField(isoVar);
+        clip.SetFieldsToPass(isoVar, vtkm::cont::Field::Association::POINTS);
+        result = clip.Execute(ds);
+    }
+
+    vtkm::filter::CleanGrid cleaner;
+    cleaner.SetFieldsToPass(isoVar);
+    result = cleaner.Execute(result);
+
+    vtkm::io::writer::VTKDataSetWriter writer("out.vtk");
+    writer.WriteDataSet(result);
+    std::cout<<"VTKm result: "<<std::endl;
+    result.PrintSummary(std::cout);
+
+    vtkh::DataSet *out_ds = new vtkh::DataSet();
+    out_ds->AddDomain(result, in_dr->GetDomain());
+    out_ds->PrintSummary(std::cout);
+
+#else
+
+    //VTKh version
+    vtkh::IsoVolume iso;
+
+    iso.SetRange(vtkm::Range(bounds[0], bounds[1]));
+    iso.SetField(isoVar);
+    iso.SetInput(in_ds);
+    iso.Update();
+    vtkh::DataSet *out_ds = iso.GetOutput();
+
+#endif
+
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds, in_dr->GetDomain(), in_dr->GetLabel());
+    visitTimer->StopTimer(timerHandle, "avtIsovolumeFilter::ExecuteDataTree_VTKM");
+
+    return out_dr;
+#endif
+}
