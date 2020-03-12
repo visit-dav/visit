@@ -368,13 +368,11 @@ avtIsovolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
 
     bool doVTKM = VTKmAble(in_dr);
     avtDataRepresentation *out_dr = NULL;
-    std::cout<<"VTKm= "<<doVTKM<<" "<<doMinClip<<" "<<doMaxClip<<std::endl;
     if (doVTKM && doMinClip && doMaxClip)
         out_dr = ExecuteData_VTKM(in_dr, {atts.GetLbound(), atts.GetUbound()}, {doMinClip, doMaxClip});
     else
         out_dr = ExecuteData_VTK(in_dr, {atts.GetLbound(), atts.GetUbound()}, {doMinClip, doMaxClip});
 
-    std::cout<<"out_dr= "<<out_dr<<std::endl;
     return out_dr;
 }
 
@@ -519,7 +517,6 @@ avtIsovolumeFilter::VTKmAble(avtDataRepresentation *in_dr) const
         }
     }
 
-    std::cout<<"VTKM-able= "<<useVTKm<<std::endl;
     return useVTKm;
 }
 
@@ -527,7 +524,6 @@ avtDataRepresentation *
 avtIsovolumeFilter::ExecuteData_VTK(avtDataRepresentation *in_dr, std::vector<double> bounds, std::vector<bool> clips)
 {
     int timerHandle = visitTimer->StartTimer();
-    std::cout<<"Do VTK"<<std::endl;
     vtkDataSet *in_ds = in_dr->GetDataVTK();
     //
     // Do the clipping!
@@ -610,8 +606,6 @@ avtIsovolumeFilter::ExecuteData_VTKM(avtDataRepresentation *in_dr, std::vector<d
 #ifndef HAVE_LIBVTKH
     return NULL;
 #else
-    std::cout<<"Do VTKm"<<std::endl;
-
     int timerHandle = visitTimer->StartTimer();
     vtkh::DataSet *in_ds = in_dr->GetDataVTKm();
     if (!in_ds || in_ds->GetNumberOfDomains() != 1)
@@ -665,14 +659,15 @@ avtIsovolumeFilter::ExecuteData_VTKM(avtDataRepresentation *in_dr, std::vector<d
     cleaner.SetFieldsToPass(isoVar);
     result = cleaner.Execute(result);
 
+    /*
     vtkm::io::writer::VTKDataSetWriter writer("out.vtk");
     writer.WriteDataSet(result);
     std::cout<<"VTKm result: "<<std::endl;
     result.PrintSummary(std::cout);
+    */
 
     vtkh::DataSet *out_ds = new vtkh::DataSet();
     out_ds->AddDomain(result, in_dr->GetDomain());
-    out_ds->PrintSummary(std::cout);
 
 #else
 
