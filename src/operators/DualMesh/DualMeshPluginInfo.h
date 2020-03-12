@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: DualMeshPluginInfo.h
-// ************************************************************************* //
+// ****************************************************************************
 
 #ifndef DUALMESH_PLUGIN_INFO_H
 #define DUALMESH_PLUGIN_INFO_H

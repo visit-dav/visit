@@ -21,7 +21,7 @@ class ColorAttribute;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API ColorAttributeList : public AttributeSubject

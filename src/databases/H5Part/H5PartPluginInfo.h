@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               H5PartPluginInfo.h
+//  H5PartPluginInfo.h
 // ****************************************************************************
 
 #ifndef H5PART_PLUGIN_INFO_H
@@ -48,9 +48,8 @@ class H5PartCommonPluginInfo : public virtual CommonDatabasePluginInfo, public v
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
-    virtual std::string               GetLicense() const;
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class H5PartMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual H5PartCommonPluginInfo

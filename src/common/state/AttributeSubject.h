@@ -16,7 +16,7 @@
 //   across a connection. It inherits an interface from Subject so it
 //   can tell its observers when it changes.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 7 12:52:00 PDT 2000
@@ -34,7 +34,7 @@
 //
 //   Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //   Added virtual method TypeName so that derived classes can have their
-//   names printed in log files. 
+//   names printed in log files.
 //
 //   Burlen Loring, Thu Sep 24 11:35:22 PDT 2015
 //   I removed a compiler warning.
@@ -47,7 +47,7 @@ public:
     AttributeSubject(const char *);
     virtual ~AttributeSubject();
     virtual void SelectAll() = 0;
-    virtual const std::string TypeName() const; 
+    virtual const std::string TypeName() const;
     virtual void Notify();
     virtual AttributeSubject *CreateCompatible(const std::string &) const;
     virtual AttributeSubject *NewInstance(bool) const { return 0; };

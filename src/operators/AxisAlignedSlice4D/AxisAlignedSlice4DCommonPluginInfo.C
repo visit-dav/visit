@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: AxisAlignedSlice4DCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <AxisAlignedSlice4DPluginInfo.h>
 #include <AxisAlignedSlice4DAttributes.h>
@@ -12,17 +12,7 @@
 #include <Expression.h>
 #include <ExpressionList.h>
 #include <avtDatabaseMetaData.h>
-#include <avtMeshMetaData.h>
-#include <avtSubsetsMetaData.h>
-#include <avtScalarMetaData.h>
-#include <avtVectorMetaData.h>
-#include <avtTensorMetaData.h>
-#include <avtSymmetricTensorMetaData.h>
 #include <avtArrayMetaData.h>
-#include <avtMaterialMetaData.h>
-#include <avtSpeciesMetaData.h>
-#include <avtCurveMetaData.h>
-#include <avtLabelMetaData.h>
 
 // ****************************************************************************
 //  Method: AxisAlignedSlice4DCommonPluginInfo::AllocAttributes
@@ -58,7 +48,7 @@ AxisAlignedSlice4DCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 AxisAlignedSlice4DCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

@@ -20,7 +20,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class IntegralCurveAttributes : public AttributeSubject
@@ -49,6 +49,7 @@ public:
         TimeRelative,
         AverageDistanceFromSeed,
         CorrelationDistance,
+        ClosedCurve,
         Difference,
         Variable
     };

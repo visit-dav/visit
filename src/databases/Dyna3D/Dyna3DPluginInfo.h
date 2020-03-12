@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               Dyna3DPluginInfo.h
+//  Dyna3DPluginInfo.h
 // ****************************************************************************
 
 #ifndef DYNA3D_PLUGIN_INFO_H

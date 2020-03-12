@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: BoundaryCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <BoundaryPluginInfo.h>
 #include <BoundaryAttributes.h>
@@ -43,16 +43,17 @@ BoundaryCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 BoundaryCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((BoundaryAttributes *) to) = *((BoundaryAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: BoundaryCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ BoundaryCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

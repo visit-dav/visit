@@ -24,7 +24,7 @@ Definition:
 //    Account for .EXODUS, .nemesis, and .NEMESIS.
 //
 //    Hank Childs, Thu Jul 22 11:29:31 PDT 2004
-//    Register the file list 
+//    Register the file list
 //
 //    Jeremy Meredith, Thu Jan 28 12:28:07 EST 2010
 //    MTSD now accepts grouping multiple files into longer sequences, so
@@ -39,6 +39,9 @@ Definition:
 //    I enabled this to work for cases in which we have timestep groups *and*
 //    many files as well as the most common case where nBlocks is number of
 //    files in the list.
+//
+//    Mark C. Miller, Thu Dec 18 12:59:32 PST 2014
+//    Added stuff to pass around zero index instance.
 // ****************************************************************************
 #include <string>
 
@@ -74,23 +77,26 @@ ExodusCommonPluginInfo::SetupDatabase(const char *const *list, int nList, int nB
     nTimestepGroups = nList / nBlock;
 
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
-    for (int i = 0 ; i < nTimestepGroups ; i++)
+    avtExodusFileFormat *zidx = 0;
+    for (int i = 0; i < nTimestepGroups; i++)
     {
         ffl[i] = new avtMTSDFileFormat*[nBlock];
-        for (int j = 0 ; j < nBlock ; j++)
+        for (int j = 0; j < nBlock; j++)
         {
-            avtExodusFileFormat *exo = new avtExodusFileFormat(list[i*nBlock+j]);
+            avtExodusFileFormat *exo = new avtExodusFileFormat(list[i*nBlock+j], readOptions);
+            if (zidx == 0) zidx = exo;
+            exo->SetZeroIndexInstance(zidx);
             exo->SetFileList(fileListId);
-            ffl[i][j] = exo; 
+            ffl[i][j] = exo;
         }
     }
 
-    avtMTSDFileFormatInterface *inter 
+    avtMTSDFileFormatInterface *inter
         = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
 
     if (reallist)
     {
-        for (int i = 0 ; i < listcount ; i++)
+        for (int i = 0; i < listcount; i++)
             delete [] reallist[i];
         delete [] reallist;
     }

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ContourCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ContourPluginInfo.h>
 #include <ContourAttributes.h>
@@ -43,16 +43,17 @@ ContourCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 ContourCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((ContourAttributes *) to) = *((ContourAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: ContourCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ ContourCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

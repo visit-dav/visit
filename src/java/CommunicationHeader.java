@@ -11,7 +11,7 @@ package llnl.visit;
 //   This class contains the initial message that VisIt clients communicate
 //   to VisIt. The platform type representations and the version are exchanged.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 8 12:55:24 PDT 2002
@@ -175,7 +175,7 @@ class CommunicationHeader
             if(sameChar && version[i] == '.')
                 dotCount++;
             same &= sameChar;
-            // Stop checking versions after the second dot. Our version numbers 
+            // Stop checking versions after the second dot. Our version numbers
             // are now A.B.C and patch releases are supposed to be compatible. So,
             // if the versions have been the same up to the second dot then
             // don't check the patch version. Just assume it is compatible.

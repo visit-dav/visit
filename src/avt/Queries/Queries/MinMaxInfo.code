@@ -5,10 +5,10 @@ Definition:
 //  Method: MinMaxInfo::Initialize
 //
 //  Purpose:
-//    Initialize the members.  
+//    Initialize the members.
 //
-//  Programmer:   Kathleen Bonnell 
-//  Creation:     July 1, 2004 
+//  Programmer:   Kathleen Bonnell
+//  Creation:     July 1, 2004
 //
 //  Modifications:
 //
@@ -19,7 +19,7 @@ MinMaxInfo::Initialize(const double val, const std::string &t)
 {
     elementNum = -1;
     domain = -1;
-    value = val;
+    mvalue = val;
     coord[0] = 0.;
     coord[1] = 0.;
     coord[2] = 0.;
@@ -34,10 +34,10 @@ Definition:
 //  Method: MinMaxInfo::TransformCoord
 //
 //  Purpose:
-//    Transform the coord using the given matrix. 
+//    Transform the coord using the given matrix.
 //
-//  Programmer:   Kathleen Bonnell 
-//  Creation:     July 1, 2004 
+//  Programmer:   Kathleen Bonnell
+//  Creation:     July 1, 2004
 //
 //  Modifications:
 //
@@ -63,10 +63,10 @@ Definition:
 //  Method: MinMaxInfo::EquivalentForOutput
 //
 //  Purpose:
-//    Determine equivalency for output purposes (matname not considered). 
+//    Determine equivalency for output purposes (matname not considered).
 //
-//  Programmer:   Kathleen Bonnell 
-//  Creation:     July 28, 2004 
+//  Programmer:   Kathleen Bonnell
+//  Creation:     July 28, 2004
 //
 //  Modifications:
 //
@@ -85,7 +85,7 @@ MinMaxInfo::EquivalentForOutput(const MinMaxInfo &obj) const
     // Create the return value
     return ((elementNum == obj.elementNum) &&
             (domain == obj.domain) &&
-            (value == obj.value) &&
+            (mvalue == obj.mvalue) &&
             coord_equal &&
             (type == obj.type));
 }

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ClipCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ClipPluginInfo.h>
 #include <ClipAttributes.h>
@@ -43,7 +43,7 @@ ClipCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 ClipCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

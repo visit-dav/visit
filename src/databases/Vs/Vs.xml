@@ -65,7 +65,7 @@
       ${HDF5_LIB}
     </LIBS>
     <FilePatterns>
-      *.vsh5
+      *vsh5
       *.h5
     </FilePatterns>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">

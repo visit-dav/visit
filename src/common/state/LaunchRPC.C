@@ -7,7 +7,7 @@
 // ****************************************************************************
 // Method: LaunchRPC::LaunchRPC
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the LaunchRPC class.
 //
 // Programmer: Brad Whitlock
@@ -24,14 +24,14 @@ LaunchRPC::LaunchRPC() : BlockingRPC("s*"), launchArgs()
 // ****************************************************************************
 // Method: LaunchRPC::~LaunchRPC
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the LaunchRPC class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 17 17:50:33 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 LaunchRPC::~LaunchRPC()
@@ -41,7 +41,7 @@ LaunchRPC::~LaunchRPC()
 // ****************************************************************************
 // Method: LaunchRPC::operator()
 //
-// Purpose: 
+// Purpose:
 //   This is the invokation method for this function object. It copies the
 //   arguments into local attributes and calls RPC's Execute method.
 //
@@ -52,7 +52,7 @@ LaunchRPC::~LaunchRPC()
 // Creation:   Fri May 2 16:30:59 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -65,7 +65,7 @@ LaunchRPC::operator()(const stringVector &args)
 // ****************************************************************************
 // Method: LaunchRPC::SelectAll
 //
-// Purpose: 
+// Purpose:
 //   Gets the addresses of the local attributes so the attributes can be
 //   transmitted over the network as AttributeGroups.
 //
@@ -85,7 +85,7 @@ LaunchRPC::SelectAll()
 // ****************************************************************************
 // Method: LaunchRPC::GetLaunchArgs
 //
-// Purpose: 
+// Purpose:
 //   Returns the launch arguments vector.
 //
 // Returns:    The launch arguments vector.
@@ -94,7 +94,7 @@ LaunchRPC::SelectAll()
 // Creation:   Fri May 2 16:44:29 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const stringVector &
@@ -106,14 +106,14 @@ LaunchRPC::GetLaunchArgs() const
 // ****************************************************************************
 // Method: LaunchRPC::TypeName
 //
-// Purpose: 
+// Purpose:
 //   Returns the RPC name.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Dec  7 13:27:02 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const std::string

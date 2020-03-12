@@ -3,11 +3,11 @@ Regression Testing
 
 Overview
 --------
-VisIt has a large and continually growing test suite. VisIt's test
+VisIt_ has a large and continually growing test suite. VisIt_'s test
 suite involves a combination python scripts
 in `src/test`, raw data and data generation sources in `src/testdata`
-and of course the VisIt sources themselves. Regression tests are
-run on a nightly basis. Testing exercises VisIt's viewer,
+and of course the VisIt_ sources themselves. Regression tests are
+run on a nightly basis. Testing exercises VisIt_'s viewer,
 mdserver, engine and cli but not the GUI.
 
 
@@ -18,16 +18,16 @@ Where nightly regression tests are run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The regression suite is run on `LLNL's Pascal Cluster <https://hpc.llnl.gov/hardware/platforms/pascal>`_. Pascal runs the TOSS3 operating system, which is a flavor of Linux. If you are going to run the regression suite yourself you should run on a similar system or there will be differences due to numeric precision issues.
 
-The regression suite is run on Pascal using a cron job that checks out VisIt source code, builds it, and then runs the tests.
+The regression suite is run on Pascal using a cron job that checks out VisIt_ source code, builds it, and then runs the tests.
 
 How to run the regression tests manually
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The regression suite relies on having a working VisIt build and test data available on your local computer.
+The regression suite relies on having a working VisIt_ build and test data available on your local computer.
 Our test data and baselines are stored using git lfs, so you need to setup git lfs and pull to have all the necessary files. 
 
 The test suite is written in python and to source is in `src/test`. 
-When you configure VisIt, a bash script is generated in the build directory that you can use to run the test
+When you configure VisIt_, a bash script is generated in the build directory that you can use to run the test
 suite out of source with all the proper data and baseline directory arguments. ::
 
     cd visit-build/test/
@@ -67,9 +67,9 @@ How regression testing works
 
 The workhorse script that manages the testing is `visit_test_suite.py` in 
 `src/test`. Tests can be run in a variety of ways called *modes*.
-For example, VisIt's nightly testing is run in `serial`, `parallel`
+For example, VisIt_'s nightly testing is run in `serial`, `parallel`
 and `scalable,parallel` modes. Each of these modes represents a fundamental and
-relatively global change in the way VisIt is doing business
+relatively global change in the way VisIt_ is doing business
 under the covers during its testing. For example, the difference
 between `parallel` and `scalable,parallel` modes is whether the scalable
 renderer is being used to render images. In the `parallel` mode,
@@ -92,7 +92,7 @@ filtering image differences.
 There are a number of different categories of tests. The test
 categories are the names of all the directories under
 `src/test/tests`. The .py files in this directory tree are all
-the actual test driver files that drive VisIt's CLI and
+the actual test driver files that drive VisIt_'s CLI and
 generate images and text to compare with baselines. In addition,
 the `src/test/visit_test_main.py` file defines a number of helper Python
 functions that facilitate testing including two key functions;
@@ -118,7 +118,7 @@ So, you don't have to do anything special other than adding the .py file.
 
 One subtlety about the current test modality is what we call
 `mode specific baselines`. In theory, it should not matter what
-mode VisIt is run in to produce an image. The image should be
+mode VisIt_ is run in to produce an image. The image should be
 identical across modes. In practice there is a long list of
 things that can contribute to a handful of pixel differences
 in the same test images run in different modes. This has lead
@@ -138,11 +138,11 @@ The default skip list file is `src/test/skip.json`.
 Filtering Image Differences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There are many ways of both compiling and running VisIt to produce image and textual outputs. In many cases, we expect the image or textual outputs to be about the same (though not always bit-wise exact matches) even if the manner in which they are generated varies dramatically. For example, we expect VisIt running on two different implementations of the GL library to produce by and large the same images. Or, we expect VisIt running in serial or parallel to produce the same images. Or we expect VisIt running on Ubuntu Linux to produce the same images as it would running on Mac OSX. We expect and therefore wish to ignore ''minor variations''. But, we want to be alerted to ''major variations''. So when any developer runs a test, we require some means of filtering out image differences we expect from those we are not expecting.
+There are many ways of both compiling and running VisIt_ to produce image and textual outputs. In many cases, we expect the image or textual outputs to be about the same (though not always bit-wise exact matches) even if the manner in which they are generated varies dramatically. For example, we expect VisIt_ running on two different implementations of the GL library to produce by and large the same images. Or, we expect VisIt_ running in serial or parallel to produce the same images. Or we expect VisIt_ running on Ubuntu Linux to produce the same images as it would running on Mac OSX. We expect and therefore wish to ignore ''minor variations''. But, we want to be alerted to ''major variations''. So when any developer runs a test, we require some means of filtering out image differences we expect from those we are not expecting.
 
-On the other hand, as we make changes to VisIt source code, we may either expect or not expect image outputs for specific testing scenarios to change in either minor or dramatic ways. For example, if we fix a bug leading to a serious image artifact that just happened to be overlooked when the original baseline image was committed, we could improve the image dramatically implying a large image difference and still expect such a difference. For example, maybe the Mesh plot had a bug where it doesn't obey the Mesh line color setting. If we fix that bug, the mesh line color will likely change dramatically. But, the resultant image is expected to change too. Therefore, have a set of baselines from which we compute exact differences is also important in tracking impact of code changes on VisIt behavior.
+On the other hand, as we make changes to VisIt_ source code, we may either expect or not expect image outputs for specific testing scenarios to change in either minor or dramatic ways. For example, if we fix a bug leading to a serious image artifact that just happened to be overlooked when the original baseline image was committed, we could improve the image dramatically implying a large image difference and still expect such a difference. For example, maybe the Mesh plot had a bug where it doesn't obey the Mesh line color setting. If we fix that bug, the mesh line color will likely change dramatically. But, the resultant image is expected to change too. Therefore, have a set of baselines from which we compute exact differences is also important in tracking impact of code changes on VisIt_ behavior.
 
-These two goals, running VisIt tests to confirm correct behavior in a wide variety of conditions where we expect minor but not major variations in outputs and running VisIt tests to confirm behavior as code is changed where we may or may not expect minor or major variations are somewhat complimentary.
+These two goals, running VisIt_ tests to confirm correct behavior in a wide variety of conditions where we expect minor but not major variations in outputs and running VisIt_ tests to confirm behavior as code is changed where we may or may not expect minor or major variations are somewhat complimentary.
 
 It may make sense for developers to generate (though not ever commit) a complete and valid set of baselines on their target development platform and then use those (uncommitted) baselines to enable them to run tests and track code changes using an exact match methodology.
 
@@ -173,9 +173,9 @@ Tips on writing regression tests
 
 * Except in cases where annotations are being specifically tested, remember to call TurnOffAllAnnotations() as one of the first actions in your test script. Otherwise, you can wind up producing images containing machine-specific annotations which will produce differences on other platforms.
 
-* When writing tests involving text differences and file pathnames, be sure that all pathnames in the text strings passed to `TestText()` are absolute. Internally, VisIt testing system will filter these out and replace the machine-specific part of the path with `VISIT_TOP_DIR` to facilitate comparison with baseline text. In fact, the .txt files that get generated in the `current` dir will have been filtered and all pathnames modified to have `VISIT_TOP_DIR` in them.
+* When writing tests involving text differences and file pathnames, be sure that all pathnames in the text strings passed to `TestText()` are absolute. Internally, VisIt_ testing system will filter these out and replace the machine-specific part of the path with `VISIT_TOP_DIR` to facilitate comparison with baseline text. In fact, the .txt files that get generated in the `current` dir will have been filtered and all pathnames modified to have `VISIT_TOP_DIR` in them.
 
-* Here is a table of python tests scripts which serve as examples of some interesting and lesser known VisIt/Python scripting practices:
+* Here is a table of python tests scripts which serve as examples of some interesting and lesser known VisIt_/Python scripting practices:
 
 +-----------------------------------+--------------------------------------------------------------------+
 | Script                            | What it demonstrates                                               |
@@ -197,14 +197,14 @@ Tips on writing regression tests
 
 Rebaselining Test Results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-A python script, `rebase.py`, at `src/tests` dir can be used to rebaseline large numbers of results. In particular, this script enables a developer to rebase test results without requiring access to the test platform where testing is performed. This is becase the PNG files uploaded (e.g. posted) to VisIt's test results dashboard are suitable for using as baseline results. To use this script, run `./rebase.py --help.` Once you've completed using rebase.py to update image baselines, don't forget to commit your changes back to the repository.
+A python script, `rebase.py`, at `src/tests` dir can be used to rebaseline large numbers of results. In particular, this script enables a developer to rebase test results without requiring access to the test platform where testing is performed. This is becase the PNG files uploaded (e.g. posted) to VisIt_'s test results dashboard are suitable for using as baseline results. To use this script, run `./rebase.py --help.` Once you've completed using rebase.py to update image baselines, don't forget to commit your changes back to the repository.
 
  
-Using VisIt Test Suite for Sim Code Testing
+Using VisIt_ Test Suite for Sim Code Testing
 ----------------------------------------------
-VisIt's testing infrastructure can also be used from a VisIt install by simulation codes 
+VisIt_'s testing infrastructure can also be used from a VisIt_ install by simulation codes 
 how want to write their own Visit-based tests.
-For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_ 
+For more details about this, see:  `Leveraging VisIt_ in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_ 
 
 
 .. CYRUS NOTE: This info seems to old to be relevant, but keeping here commented out just in case. 
@@ -212,9 +212,9 @@ For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesti
 .. == Troubleshooting ==
 ..
 .. === Mesa stub issue ===
-.. IMPORTANT NOTE: After the cmake transition, there is no mesa-stub issue because the viewer does not compile in a stub for mesa since doing so was non-portable. Thus, if you are using the svn trunk version of VisIt, you cannot run into this issue. This section is being preserved for 1.12.x versions of VisIt.
+.. IMPORTANT NOTE: After the cmake transition, there is no mesa-stub issue because the viewer does not compile in a stub for mesa since doing so was non-portable. Thus, if you are using the svn trunk version of VisIt_, you cannot run into this issue. This section is being preserved for 1.12.x versions of VisIt_.
 ..
-.. If all of your tests fail, you have likely run into the Mesa stub issue.  The regression suite is set up to do "screen captures", but default VisIt cannot do screen captures in "-nowin" mode.  If you run a test with the "-verbose" command and see:
+.. If all of your tests fail, you have likely run into the Mesa stub issue.  The regression suite is set up to do "screen captures", but default VisIt_ cannot do screen captures in "-nowin" mode.  If you run a test with the "-verbose" command and see:
 ..  Rendering window 1...
 ..  VisIt: Message - Rendering window 1...
 ..  VisIt: Warning - Currently, you cannot save images when in nowin mode using screen capture
@@ -241,7 +241,7 @@ For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesti
 ..  >>> SetSaveWindowAttributes(sw)
 ..  >>> SaveWindow()
 ..
-.. If VisIt complains about an empty window, you do *not* have a Mesa stub issue and you *can* run regression tests.  If it complain about Mesa stubs, then you *do* have the issue and you *can't* run regression tests.
+.. If VisIt_ complains about an empty window, you do *not* have a Mesa stub issue and you *can* run regression tests.  If it complain about Mesa stubs, then you *do* have the issue and you *can't* run regression tests.
 ..
 .. === PIL on MacOS X ===
 .. If you attempt to execute runtest and it gives errors indicating that it assumed the test crashed then you might have problems with your PIL installation. These manifest as an error with text like ''"The _imaging C module is not installed"'', which can be obtained if you add the '''-v''' argument to ''runtest''.
@@ -301,7 +301,7 @@ For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesti
 ..
 .. Here's how it works. A new unit test was added, <tt>test/tests/unit/compiler_warnings.py</tt>. That test checks for the existence of a file <tt>make.err</tt> just ''above'' the <tt>src, test and data</tt> dirs (thats because thats where the <tt>regressiontest_edge</tt> shell script puts it). If <tt>../make.err</tt> is not found, the test immediately exits with the ''skip'' error code indication. It is assumed that <tt>../make.err</tt> was produced from the ''current'' source code with compiler warnings dialed up (e.g. <tt>-Wall -Wextra -pedantic</tt>) and <tt>stderr</tt> output from an entire ''clean'' build of the source is captured with a version of make supporing the <tt>--output-sync=lines</tt> option (or make was not run with a -j option).
 ..
-.. The compiler_warnings.py python script examines make.err for lines containing warning. For each source file that produces a warning, a count of all warnings produced by the file is computed. A text string result suitable for input to the TestText method of VisIt's regression testing framework is assembled. Source filenames are sorted and then emitted along with their warning counts. The resulting text string is also a JSON string. It is this single text result that is checked for ''changes''. Note that any changes, up or down, in compiler warning counts for any source file, as well as introduction or elimination of a source file from compiler warning list, will result in a test failure.
+.. The compiler_warnings.py python script examines make.err for lines containing warning. For each source file that produces a warning, a count of all warnings produced by the file is computed. A text string result suitable for input to the TestText method of VisIt_'s regression testing framework is assembled. Source filenames are sorted and then emitted along with their warning counts. The resulting text string is also a JSON string. It is this single text result that is checked for ''changes''. Note that any changes, up or down, in compiler warning counts for any source file, as well as introduction or elimination of a source file from compiler warning list, will result in a test failure.
 ..
 .. If enough files were changed in the previous day's work, it's conceivable changes from multiple developer's commits will result in changes (some improvements and some not) to various lines of this text output. Improvements should be re-baselined. Non-improvements should be checked and ''fixed''.
 ..

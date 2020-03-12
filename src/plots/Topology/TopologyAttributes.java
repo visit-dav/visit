@@ -21,7 +21,7 @@ import llnl.visit.ColorAttributeList;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class TopologyAttributes extends AttributeSubject implements Plugin

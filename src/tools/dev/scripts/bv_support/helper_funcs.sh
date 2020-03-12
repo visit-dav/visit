@@ -454,9 +454,16 @@ function verify_checksum_by_lookup
 #   I made it use the anonymous svn site as the fallback download site        #
 #   instead of llnl's web site.                                               #
 #                                                                             #
-#   Eric Brugger, Fri Feb  1 14:56:58 PST 2019
-#   I modified it to work post git transition.
-#
+#   Eric Brugger, Fri Feb  1 14:56:58 PST 2019                                #
+#   I modified it to work post git transition.                                #
+#                                                                             #
+#   Alister Maguire, Thu Jan  2 11:45:44 MST 2020                             #
+#   Added download attempt for links that exclude the file name.              #
+#                                                                             #
+#   Eric Brugger, Wed Jan 29 09:52:20 PST 2020                                #
+#   I modified the routine to download the visit tar file and third party     #
+#   libraries from github.                                                    #
+#                                                                             #
 # *************************************************************************** #
 
 function download_file
@@ -469,7 +476,7 @@ function download_file
     shift
 
     # If the visit source code is requested, handle that now.
-    site="${nerscroot}/${VISIT_VERSION}"
+    site="${visitroot}v${VISIT_VERSION}"
     if [[ "$dfile" == "$VISIT_FILE" ]] ; then
         try_download_file $site/$dfile $dfile
         if [[ $? == 0 ]] ; then
@@ -479,8 +486,13 @@ function download_file
 
     # It must be a third party library, handle that now.
     #
-    # First try NERSC.
-    site="${nerscroot}/${VISIT_VERSION}/third_party"
+    # First try GitHub. We only update the third party libraries when
+    # doing a major release, so the patch is always 0. The fancy
+    # parsing below grabs the major and minor version numbers.
+    IFS="." read -r -a vers <<< "$VISIT_VERSION"
+    major=${vers[0]}
+    minor=${vers[1]}
+    site="${thirdpartyroot}v${major}.${minor}.0"
     try_download_file $site/$dfile $dfile
     if [[ $? == 0 ]] ; then
         return 0
@@ -500,6 +512,12 @@ function download_file
                 try_download_file $site/$dfile $dfile
                 if [[ $? == 0 ]] ; then
                     return 0
+                else
+                    # Some download links exclude the file name.
+                    try_download_file_from_shortened_url $site $dfile
+                    if [[ $? == 0 ]] ; then
+                        return 0
+                    fi
                 fi
             fi
         done
@@ -1450,7 +1468,6 @@ function usage
     printf "%-20s %s [%s]\n" "--cxxflags" "Explicitly set CXXFLAGS" "$CXXFLAGS"
     printf "%-20s %s [%s]\n" "--cc"  "Explicitly set C_COMPILER" "$C_COMPILER"
     printf "%-20s %s [%s]\n" "--cxx" "Explicitly set CXX_COMPILER" "$CXX_COMPILER"
-    printf "%-20s %s [%s]\n" "--debug" "Add '-g' to C[XX]FLAGS" "no"
     printf "%s <%s>  %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
     printf "%-20s %s [%s]\n" "--fortran" "Enable compilation of Fortran sources" "no"
     printf "%-20s %s\n"      "--fc" "Explicitly set FC_COMPILER"

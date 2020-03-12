@@ -32,7 +32,7 @@ import java.util.Vector;
 //
 // ****************************************************************************
 /**
- * ViewerState contains all of the state objects that make up the 
+ * ViewerState contains all of the state objects that make up the
  * client/viewer interface. One sends new state to the viewer by modifying
  * these objects and calling their Notify() method to send their new
  * values back to the viewer.

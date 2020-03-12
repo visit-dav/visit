@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               SASPluginInfo.h
+//  SASPluginInfo.h
 // ****************************************************************************
 
 #ifndef SAS_PLUGIN_INFO_H

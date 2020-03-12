@@ -63,13 +63,13 @@ XMLEdit::XMLEdit(const QString &file, QWidget *p)
 
     makefiletab = new XMLEditMakefile(this);
     tabs->addTab(makefiletab, tr("CMake"));
-   
+
     attributetab = new XMLEditAttribute(this);
     tabs->addTab(attributetab, tr("Attribute"));
-   
+
     enumstab = new XMLEditEnums(this);
     tabs->addTab(enumstab, tr("Enums"));
-    
+
     fieldstab = new XMLEditFields(this);
     tabs->addTab(fieldstab, tr("Fields"));
 
@@ -78,19 +78,19 @@ XMLEdit::XMLEdit(const QString &file, QWidget *p)
 
     constantstab = new XMLEditConstants(this);
     tabs->addTab(constantstab, tr("Constants"));
-   
+
     includestab = new XMLEditIncludes(this);
     tabs->addTab(includestab, tr("Includes"));
-    
+
     codetab = new XMLEditCode(this);
     tabs->addTab(codetab, tr("Code"));
-    
+
     connect(tabs, SIGNAL(currentChanged(int)),
             this, SLOT(updateTab(int)));
-            
+
     setCentralWidget(tabs);
     codeGenerationWindow = 0;
-    
+
     OpenFile(file);
 }
 
@@ -161,7 +161,7 @@ XMLEdit::saveAs()
 //  Method:  XMLEdit::save
 //
 //  Purpose:
-//    Menu callback: Save the file with its existing name, or prompt if 
+//    Menu callback: Save the file with its existing name, or prompt if
 //    it was still unnamed.
 //
 //  Programmer:  Jeremy Meredith
@@ -214,7 +214,7 @@ XMLEdit::OpenFile(const QString &file)
     constantstab->SetDocument(xmldoc);
     includestab->SetDocument(xmldoc);
     codetab->SetDocument(xmldoc);
-     
+
     plugintab->UpdateWindowContents();
     makefiletab->UpdateWindowContents();
     attributetab->UpdateWindowContents();
@@ -224,7 +224,7 @@ XMLEdit::OpenFile(const QString &file)
     constantstab->UpdateWindowContents();
     includestab->UpdateWindowContents();
     codetab->UpdateWindowContents();
-    
+
     setWindowTitle(tr("XMLEdit: %1").arg(file));
 }
 
@@ -298,8 +298,8 @@ XMLEdit::updateTab(int tab)
 // ****************************************************************************
 // Method: XMLEdit::generateCode
 //
-// Purpose: 
-//   Invokes the code generation window to call various XML tools on the 
+// Purpose:
+//   Invokes the code generation window to call various XML tools on the
 //   XML file that we saved.
 //
 // Programmer: Brad Whitlock

@@ -11,22 +11,22 @@ package llnl.visit;
 //   This class is used to yield the thread's cpu time until it ultimately
 //   starts sleeping and waking on a timeout.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 8 12:50:24 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 /**
- * Yield the thread's cpu time until it ultimately starts sleeping and 
+ * Yield the thread's cpu time until it ultimately starts sleeping and
  * waking on a timeout.
  *
  * @author Brad Whitlock
  */
 class Yielder
-{ 
+{
    /**
      * Constructor for the Yielder class.
      *

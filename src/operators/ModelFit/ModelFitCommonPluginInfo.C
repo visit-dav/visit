@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ModelFitCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ModelFitPluginInfo.h>
 #include <ModelFitAtts.h>
@@ -12,17 +12,7 @@
 #include <Expression.h>
 #include <ExpressionList.h>
 #include <avtDatabaseMetaData.h>
-#include <avtMeshMetaData.h>
-#include <avtSubsetsMetaData.h>
 #include <avtScalarMetaData.h>
-#include <avtVectorMetaData.h>
-#include <avtTensorMetaData.h>
-#include <avtSymmetricTensorMetaData.h>
-#include <avtArrayMetaData.h>
-#include <avtMaterialMetaData.h>
-#include <avtSpeciesMetaData.h>
-#include <avtCurveMetaData.h>
-#include <avtLabelMetaData.h>
 
 // ****************************************************************************
 //  Method: ModelFitCommonPluginInfo::AllocAttributes
@@ -58,7 +48,7 @@ ModelFitCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 ModelFitCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
@@ -80,7 +70,7 @@ ModelFitCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //   Jeremy Meredith, Thu Jan 12 13:28:49 EST 2012
 //   Some files, like curves, don't have expressions.  Don't assume
 //   we have any meshes in our file.
-//   
+//
 // ****************************************************************************
 #include <string.h>
 

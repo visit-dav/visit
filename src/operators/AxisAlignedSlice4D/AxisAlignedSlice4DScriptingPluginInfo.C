@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        AxisAlignedSlice4DScriptingPluginInfo.C
+//  AxisAlignedSlice4DScriptingPluginInfo.C
 // ************************************************************************* //
 #include <PyAxisAlignedSlice4DAttributes.h>
 #include <AxisAlignedSlice4DPluginInfo.h>
@@ -13,7 +13,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(AxisAlignedSlice4D,Scripting)
 // ****************************************************************************
 // Method: AxisAlignedSlice4DScriptingPluginInfo::InitializePlugin
 //
-// Purpose: 
+// Purpose:
 //   Calls the initialization function for the plugin.
 //
 // Arguments:
@@ -24,7 +24,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(AxisAlignedSlice4D,Scripting)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -37,7 +37,7 @@ AxisAlignedSlice4DScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 // ****************************************************************************
 // Method: AxisAlignedSlice4DScriptingPluginInfo::GetMethodTable
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the plugin's Python method table. These methods are
 //   added to the top-level visit module's methods.
 //
@@ -50,7 +50,7 @@ AxisAlignedSlice4DScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -62,7 +62,7 @@ AxisAlignedSlice4DScriptingPluginInfo::GetMethodTable(int *nMethods)
 // ****************************************************************************
 // Method: AxisAlignedSlice4DScriptingPluginInfo::TypesMatch
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the input PyObject is AxisAlignedSlice4D plot attributes.
 //
 // Arguments:
@@ -72,7 +72,7 @@ AxisAlignedSlice4DScriptingPluginInfo::GetMethodTable(int *nMethods)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -84,7 +84,7 @@ AxisAlignedSlice4DScriptingPluginInfo::TypesMatch(void *pyobject)
 // ****************************************************************************
 // Method: AxisAlignedSlice4DScriptingPluginInfo::GetLogString
 //
-// Purpose: 
+// Purpose:
 //   Gets a string representation of the current attributes.
 //
 // Arguments:
@@ -94,7 +94,7 @@ AxisAlignedSlice4DScriptingPluginInfo::TypesMatch(void *pyobject)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 char *
@@ -109,7 +109,7 @@ AxisAlignedSlice4DScriptingPluginInfo::GetLogString()
 // ****************************************************************************
 // Method: AxisAlignedSlice4DScriptingPluginInfo::SetDefaults
 //
-// Purpose: 
+// Purpose:
 //   Used to set the default values for a plugin's state object.
 //
 // Arguments:
@@ -119,7 +119,7 @@ AxisAlignedSlice4DScriptingPluginInfo::GetLogString()
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

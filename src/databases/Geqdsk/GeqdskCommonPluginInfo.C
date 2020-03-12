@@ -47,15 +47,15 @@ GeqdskCommonPluginInfo::SetupDatabase(const char *const *list,
 {
     int nTimestepGroups = nList / nBlock;
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
-    for (int i = 0 ; i < nTimestepGroups ; i++)
+    for (int i = 0; i < nTimestepGroups; i++)
     {
         ffl[i] = new avtMTSDFileFormat*[nBlock];
-        for (int j = 0 ; j < nBlock ; j++)
+        for (int j = 0; j < nBlock; j++)
         {
             ffl[i][j] = new avtGeqdskFileFormat(list[i*nBlock + j], readOptions);
         }
     }
-    avtMTSDFileFormatInterface *inter 
+    avtMTSDFileFormatInterface *inter
            = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
     return new avtGenericDatabase(inter);
 }
@@ -76,6 +76,7 @@ GeqdskCommonPluginInfo::GetReadOptions() const
 {
     return GetGeqdskReadOptions();
 }
+
 // ****************************************************************************
 //  Method: GeqdskCommonPluginInfo::GetWriteOptions
 //
@@ -92,3 +93,4 @@ GeqdskCommonPluginInfo::GetWriteOptions() const
 {
     return GetGeqdskWriteOptions();
 }
+

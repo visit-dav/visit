@@ -39,7 +39,7 @@ XMLEditConstants::XMLEditConstants(QWidget *p)
 {
     QHBoxLayout *hLayout = new QHBoxLayout(this);
     setLayout(hLayout);
-    
+
     QGridLayout *listLayout = new QGridLayout();
     constantlist = new QListWidget(this);
     listLayout->addWidget(constantlist, 0,0, 1,2);
@@ -54,7 +54,7 @@ XMLEditConstants::XMLEditConstants(QWidget *p)
     hLayout->addSpacing(10);
 
     QGridLayout *topLayout = new QGridLayout();
-    
+
     int row = 0;
 
     topLayout->addWidget(new QLabel(tr("Target"), this), row, 0);
@@ -90,7 +90,7 @@ XMLEditConstants::XMLEditConstants(QWidget *p)
     row++;
 
     hLayout->addLayout(topLayout);
-    
+
     connect(constantlist, SIGNAL(currentRowChanged(int)),
             this, SLOT(UpdateWindowSingleItem()));
     connect(target, SIGNAL(textChanged(const QString&)),
@@ -112,21 +112,21 @@ XMLEditConstants::XMLEditConstants(QWidget *p)
 // ****************************************************************************
 // Method: XMLEditConstants::CountConstants
 //
-// Purpose: 
+// Purpose:
 //   Return the number of constants having a given name.
 //
 // Arguments:
 //  name : The name of the constants that we're interested in.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 6 15:53:04 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -166,7 +166,7 @@ XMLEditConstants::UpdateWindowContents()
     for (size_t i=0; i<a->constants.size(); i++)
     {
         if(CountConstants(a->constants[i]->name) > 1)
-        { 
+        {
             QString id = QString("%1 [%2]").arg(a->constants[i]->name).arg(a->constants[i]->target);
             constantlist->addItem(id);
         }
@@ -451,9 +451,9 @@ XMLEditConstants::constantlistNew()
         if (!okay)
             newid++;
     }
-    
+
     Constant *c = new Constant(newname,"","",false, "xml2atts");
-    
+
     a->constants.push_back(c);
     UpdateWindowContents();
     for (int i=0; i<constantlist->count(); i++)

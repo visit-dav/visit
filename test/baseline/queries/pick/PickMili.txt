@@ -11,7 +11,7 @@ B:  m_plot.mili  timestep 77
 mesh1 
 Point: <7, 1.11111, -10>
 Node:  372
-Incident Zones:  5  6  508  510  
+Incident Zones:  5(ghost)  6(ghost)  508  510  
 Primal/brick/stress/sx:  <zonal> 
     (5) = nan
     (6) = nan

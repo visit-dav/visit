@@ -377,7 +377,7 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
   nProcs = (*queryProcessors)(archive);  
   cycleTimes = (*getCycleTimes)(archive);
   
-  // visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getCycleTimes");
+  // visitTimer->StopTimer(t2, "avtUintahFileFormat::avtUintahFileFormat getCycleTimes");
 
   // Haven't loaded any timestep data yet
   stepInfo = NULL;  
@@ -853,7 +853,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   
   AddExpressionsToMetadata(md);
 
-  // visitTimer->StopTimer(t1, "avtUintahFileFormat::ActivateTimestep");
+  // visitTimer->StopTimer(t1, "avtUintahFileFormat::ReadMetaData");
 }
 
 
@@ -1238,7 +1238,7 @@ avtUintahFileFormat::GetDomainBoundariesAndNesting(int timestate,
   if (*vrTmp == NULL || *vrTmp != *this->mesh_domains[meshname])
     throw InvalidFilesException("uda domain mesh not registered");
 
-  // visitTimer->StopTimer(t1, "avtUintahFileFormat::CalculateDomainNesting");
+  // visitTimer->StopTimer(t1, "avtUintahFileFormat::GetDomainBoundariesAndNesting");
 #endif
 }
 
@@ -1338,7 +1338,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     ParticleDataRaw *pd = (*getParticleData)(archive, grid, level, local_patch,
                                              posName, matlNo, timestate);
     
-    // visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh() getParticleData");
+    // visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh getParticleData");
     // Not all patches will have particle data.
     if( pd )
     {
@@ -1401,7 +1401,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
           debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
 
-          // visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh() getParticleData");
+          // visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh getParticleData");
         }
       
         //debug5 << "got particle data: "<<pd<<"\n";
@@ -1448,7 +1448,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
         }
       }
       
-      // visitTimer->StopTimer(t1, "avtUintahFileFormat::GetMesh() Particle Grid");
+      // visitTimer->StopTimer(t1, "avtUintahFileFormat::GetMesh Particle Grid");
       
       return ugrid;
     }
@@ -1505,7 +1505,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
       coords->Delete();
     }
 
-    // visitTimer->StopTimer(t1, "avtUintahFileFormat::GetMesh() Volume Grid");
+    // visitTimer->StopTimer(t1, "avtUintahFileFormat::GetMesh Volume Patch Grid");
 
     return rgrid;
   }
@@ -1628,7 +1628,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
       coords->Delete();
     }
 
-    // visitTimer->StopTimer(t1, "avtUintahFileFormat::GetMesh() Volume Grid");
+    // visitTimer->StopTimer(t1, "avtUintahFileFormat::GetMesh Volume Grid");
 
     return rgrid;
   }
@@ -1712,7 +1712,10 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     }
     else
     {
-      varType = "Patch_Mesh";
+      // Get the mesh type.
+      varName = std::string(varname);
+      found = varName.find_last_of("/");
+      varType = varName.substr(found + 1);
     }
   }
   // Grid variables
@@ -1866,7 +1869,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     // The region we're going to ask uintah for (from plow to phigh-1)
     int plow[3], phigh[3];
     patchInfo.getBounds(plow, phigh, varType);
-    
+
     // For node based meshes add one if there is a neighbor patch.
     bool nodeCentered = (varType.find("NC") != std::string::npos);
     
@@ -1923,7 +1926,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
         std::string meshname = std::string(varname);
         found = meshname.find_last_of("/");
         meshname = meshname.substr(found + 1);
-        
+
         patchInfo.getBounds(plow, phigh, meshname);
       
         int *value;
@@ -1963,6 +1966,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       // Patch based data node and ranks.
       else if( strncmp(varname, "Nodes/", 6) == 0 ||
                strncmp(varname, "Ranks/", 6) == 0 ) {
+
         // Using the patch mesh
         if (strcmp(&(varname[6]), "Patch_Mesh") == 0 )
           gd->num = 1;
@@ -1975,7 +1979,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
           gd->num = ((phigh[0] - plow[0]) *
                      (phigh[1] - plow[1]) *
                      (phigh[2] - plow[2]));
-        
+
         gd->components = 1;
         gd->data = new double[gd->num * gd->components];
 
@@ -2024,7 +2028,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
                           plow, phigh,
                           (nodeCentered ? 0 : loadExtraGeometry));
 
-      // visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh() getGridData");
+      // visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getGridData");
       
       // let the next read go
       if (next>=0)

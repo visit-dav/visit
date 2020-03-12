@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               FT2PluginInfo.h
+//  FT2PluginInfo.h
 // ****************************************************************************
 
 #ifndef FT2_PLUGIN_INFO_H

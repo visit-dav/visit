@@ -26,8 +26,6 @@ set(VISITHOME ${VISIT_WINDOWS_DIR}/${VISIT_MSVC_VERSION})
 option(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS." ON)
 VISIT_OPTION_DEFAULT(VISIT_USE_7ZIP true TYPE BOOL)
 
-VISIT_OPTION_DEFAULT(VISIT_SPHINX true TYPE BOOL)
-
 ##############################################################
 ##
 ## Required libraries
@@ -39,7 +37,16 @@ VISIT_OPTION_DEFAULT(VISIT_SPHINX true TYPE BOOL)
 ##
 VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISITHOME}/boost_minimal_headers/1.67.0)
 
+##
+## Tell VisIt we want to use mesagl as the drop-in replacement for opengl
+## if the system doesn't have correct OpenGL Version (3.2)
+##
+VISIT_OPTION_DEFAULT(VISIT_MESA_REPLACE_OPENGL true TYPE BOOL)
 
+##
+## MESAGL (for opengl-dropin-replacement purposes only
+##
+VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR  ${VISITHOME}/mesa/17.3.0)
 
 ##
 ## ISPC
@@ -86,6 +93,7 @@ VISIT_OPTION_DEFAULT(VISIT_QWT_DIR     ${VISITHOME}/Qwt/6.1.2)
 ## PYTHON
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.14)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON3_DIR ${VISITHOME}/python/3.7.5)
 
 ##
 ## PYSIDE
@@ -200,7 +208,7 @@ VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP
 ##
 ## MFEM
 ##
-VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR     ${VISITHOME}/mfem/3.4)
+VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR     ${VISITHOME}/mfem/4.0)
 VISIT_OPTION_DEFAULT(VISIT_MFEM_INCDEP ZLIB_INCLUDE_DIR CONDUIT_INCLUDE_DIR TYPE STRING)
 
 ##

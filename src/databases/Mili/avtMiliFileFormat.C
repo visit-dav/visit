@@ -301,9 +301,9 @@ avtMiliFileFormat::~avtMiliFileFormat()
             }
             delete [] datasets[i];
         }
-    }
 
-    delete [] datasets;
+        delete [] datasets;
+    }
 
     //
     // Clean up our material memory.
@@ -322,21 +322,25 @@ avtMiliFileFormat::~avtMiliFileFormat()
             }
             delete [] materials[i];
         }
+
+        delete [] materials;
     }
 
-    delete [] materials;
 
     //
     // Delete the mili meta data. 
     //
-    for (int i = 0; i < nMeshes; ++i)
+    if (miliMetaData != NULL)
     {
-        if (miliMetaData[i] != NULL)
+        for (int i = 0; i < nMeshes; ++i)
         {
-            delete miliMetaData[i];
+            if (miliMetaData[i] != NULL)
+            {
+                delete miliMetaData[i];
+            }
         }
+        delete [] miliMetaData;
     }
-    delete [] miliMetaData;
 
     if (famroot != NULL)
     {
@@ -596,6 +600,9 @@ avtMiliFileFormat::GetNodePositions(int timestep,
 //
 //  Modifications:
 //
+//    Alister Maguire, Fri Mar  6 10:55:34 PST 2020
+//    Adding ghost zones to aid the pick operator.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -682,9 +689,17 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
     if (!isSandMesh && miliMetaData[meshId]->ContainsSand())
     {
         SubrecInfo *SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
-        int numVars        = miliMetaData[meshId]->GetNumVariables();
-        int nCells         = miliMetaData[meshId]->GetNumCells(dom);
-        int nNodes         = miliMetaData[meshId]->GetNumNodes(dom);
+
+        if (SRInfo == NULL)
+        {
+            char msg[512];
+            snprintf(msg, 512, "Unable to retrieve sand info from mili.");
+            EXCEPTION1(ImproperUseException, msg);
+        }
+
+        int numVars = miliMetaData[meshId]->GetNumVariables();
+        int nCells  = miliMetaData[meshId]->GetNumCells(dom);
+        int nNodes  = miliMetaData[meshId]->GetNumNodes(dom);
         
         float *sandBuffer = new float[nCells];
 
@@ -754,9 +769,24 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             avtGhostData::AddGhostNodeType(ghostNodePtr[i], 
                 NODE_NOT_APPLICABLE_TO_PROBLEM);
         }
+
+        vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
+        ghostZones->SetName("avtGhostZones");
+        ghostZones->SetNumberOfTuples(nCells);
+
+        unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
+
+        for (int i = 0; i < nNodes; ++i)
+        {
+            ghostNodePtr[i] = 0;
+            avtGhostData::AddGhostNodeType(ghostNodePtr[i],
+                NODE_NOT_APPLICABLE_TO_PROBLEM);
+        }
     
         for (int i = 0; i < nCells; ++i)
         {
+            ghostZonePtr[i] = 0;
+
             //
             // Element status > .5 is good. 
             //
@@ -777,12 +807,19 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                     }
                 }
             }
+            else
+            {
+                avtGhostData::AddGhostZoneType(ghostZonePtr[i],
+                    ZONE_NOT_APPLICABLE_TO_PROBLEM);
+            }
         }
     
         delete [] sandBuffer; 
 
         rv->GetPointData()->AddArray(ghostNodes);
+        rv->GetCellData()->AddArray(ghostZones);
         ghostNodes->Delete();
+        ghostZones->Delete();
     }
     
 
@@ -883,7 +920,6 @@ avtMiliFileFormat::ReadMesh(int dom)
         // to be very expensive. We save that for when requested. 
         //
         RetrieveNodeLabelInfo(meshId, nodeSName, dom);
-
 
         //
         // Mili has its own definitions for cell types. The
@@ -1547,6 +1583,12 @@ avtMiliFileFormat::GetVar(int timestep,
     }
 
     SubrecInfo *SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
+
+    if (SRInfo == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varMD->GetLongName());
+    }
+
     intVector SRIds    = varMD->GetSubrecIds(dom);
     int nSRs           = SRIds.size();
     int vType          = varMD->GetNumType();
@@ -1665,7 +1707,10 @@ avtMiliFileFormat::GetVar(int timestep,
             }
         }
 
-        delete [] dataBuffer;
+        if (dataBuffer != NULL)
+        {
+            delete [] dataBuffer;
+        }
     }
 }
 
@@ -1974,7 +2019,10 @@ avtMiliFileFormat::GetVectorVar(int timestep,
             }
         }
 
-        delete [] dataBuffer;
+        if (dataBuffer != NULL)
+        {
+            delete [] dataBuffer;
+        }
     }
 }
 
@@ -2152,6 +2200,9 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
 //
 //  Modifications:
 //
+//      Alister Maguire, Thu Dec 19 11:13:35 MST 2019
+//      Make sure that we're not overriding the input start value.
+//
 // ****************************************************************************
 
 void
@@ -2185,7 +2236,7 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
                           nTargetEl,
                           nBlocks,
                           blockRanges);
-                          
+
         //
         // We only have one block to read. 
         //
@@ -2194,23 +2245,22 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
             //
             // Adjust the start.
             //
-            start         += blockRanges[0] - 1;
+            int curStart   = start + blockRanges[0] - 1;
             int resultSize = nTargetEl * varSize;
             float *dbPtr   = dataBuffer;
 
             ReadMiliResults(dbid[dom], ts, SRId,
                 1, &varName, vType, resultSize, 
-                dbPtr + (start * varSize));
+                dbPtr + (curStart * varSize));
         }
         else if (nBlocks > 1)
         {
-
             int totalBlocksSize = 0;
             for (int b = 0; b < nBlocks; ++b)
             {
-                int start = blockRanges[b * 2];
-                int stop  = blockRanges[b * 2 + 1]; 
-                totalBlocksSize += stop - start + 1;
+                int curStart = blockRanges[b * 2];
+                int stop     = blockRanges[b * 2 + 1];
+                totalBlocksSize += stop - curStart + 1;
             }
 
             float *MBBuffer = new float[totalBlocksSize * varSize];
@@ -3785,7 +3835,6 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId,
                                          char *shortName, 
                                          const int dom)
 {
-
     int nLabeledNodes = 0;
     int nNodes        = miliMetaData[meshId]->GetNumNodes(dom);
     int numBlocks     = 0; 

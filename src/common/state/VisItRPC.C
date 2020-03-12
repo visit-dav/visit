@@ -9,7 +9,7 @@
 using std::string;
 
 
-VisItRPC::RPCReply::RPCReply(int s, AttributeSubject *d) 
+VisItRPC::RPCReply::RPCReply(int s, AttributeSubject *d)
     : AttributeSubject("issa"),
       status(s),
       message(""),
@@ -19,7 +19,7 @@ VisItRPC::RPCReply::RPCReply(int s, AttributeSubject *d)
 {
 }
 
-VisItRPC::RPCReply::~RPCReply() 
+VisItRPC::RPCReply::~RPCReply()
 {
 }
 
@@ -95,16 +95,16 @@ VisItRPC::RPCReply::SetRPCName(const std::string &name)
 const std::string
 VisItRPC::RPCReply::TypeName() const
 {
-    std::string ret(data ? data->TypeName() : 
+    std::string ret(data ? data->TypeName() :
                     std::string("VisItRPC::RPCReply"));
     return ret + std::string(" (from ") + rpcName + std::string(")");
 }
 
 //-----------------------------------------------------------------------------
 
-VisItRPC::VisItRPC(const char *fmt, int s, AttributeSubject *d) 
+VisItRPC::VisItRPC(const char *fmt, int s, AttributeSubject *d)
     : AttributeSubject(fmt),
-      reply(s,d), 
+      reply(s,d),
       xfer(NULL)
 {
 }
@@ -149,7 +149,7 @@ VisItRPC::SetXfer(Xfer *x)
 // ****************************************************************************
 // Method: VisItRPC::RecvReply
 //
-// Purpose: 
+// Purpose:
 //   Receives an RPC result back from the server.
 //
 // Programmer: Jeremy Meredith
@@ -245,7 +245,7 @@ VisItRPC::SendWarning(const std::string &msg)
 
 //-----------------------------------------------------------------------------
 
-NonBlockingRPC::NonBlockingRPC(const char *fmt, AttributeSubject *rd) 
+NonBlockingRPC::NonBlockingRPC(const char *fmt, AttributeSubject *rd)
     : VisItRPC(fmt, none, &completion)
 {
     completion.SetReplyData(rd);
@@ -360,7 +360,7 @@ NonBlockingRPC::RecvReply()
 
 //-----------------------------------------------------------------------------
 
-BlockingRPC::BlockingRPC(const char *fmt, AttributeSubject *d) 
+BlockingRPC::BlockingRPC(const char *fmt, AttributeSubject *d)
     : VisItRPC(fmt,none,d)
 {
 }
@@ -380,7 +380,7 @@ BlockingRPC::SendReply(AttributeSubject *d)
 // ****************************************************************************
 // Method: BlockingRPC::Execute
 //
-// Purpose: 
+// Purpose:
 //   Executes the RPC and waits for the response.
 //
 // Programmer: Jeremy Meredith

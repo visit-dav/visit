@@ -12,7 +12,7 @@ import llnl.visit.avtDatabaseMetaData;
 //   This is an example program that shows how to determine which plots can
 //   accept variables from a file.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 28 09:21:06 PDT 2009

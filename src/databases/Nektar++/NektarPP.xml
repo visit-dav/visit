@@ -34,6 +34,6 @@
       avtNektarPPOptions.C
 <!--      avtNektar++Field.C -->
     </Files>
-    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="NektarPP.code">
     </Attribute>
   </Plugin>

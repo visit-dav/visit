@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: LineoutCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <LineoutPluginInfo.h>
 #include <LineoutAttributes.h>
@@ -12,17 +12,7 @@
 #include <Expression.h>
 #include <ExpressionList.h>
 #include <avtDatabaseMetaData.h>
-#include <avtMeshMetaData.h>
-#include <avtSubsetsMetaData.h>
 #include <avtScalarMetaData.h>
-#include <avtVectorMetaData.h>
-#include <avtTensorMetaData.h>
-#include <avtSymmetricTensorMetaData.h>
-#include <avtArrayMetaData.h>
-#include <avtMaterialMetaData.h>
-#include <avtSpeciesMetaData.h>
-#include <avtCurveMetaData.h>
-#include <avtLabelMetaData.h>
 
 // ****************************************************************************
 //  Method: LineoutCommonPluginInfo::AllocAttributes
@@ -58,7 +48,7 @@ LineoutCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 LineoutCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
@@ -80,7 +70,7 @@ LineoutCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //
 // ****************************************************************************
 
-ExpressionList * 
+ExpressionList *
 LineoutCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
     std::string opLineout("operators/Lineout/"),
@@ -128,7 +118,7 @@ LineoutCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) co
 // ****************************************************************************
 // Method: LineoutCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Indicates that if the Lineout operator is present in the selected plot
 //   then the GUI's variable menu should include scalars.
 //
@@ -138,7 +128,7 @@ LineoutCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) co
 // Creation:   Tue Apr 25 16:51:05 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -150,7 +140,7 @@ LineoutCommonPluginInfo::GetVariableTypes() const
 // ****************************************************************************
 // Method: LineoutCommonPluginInfo::GetVariableMask
 //
-// Purpose: 
+// Purpose:
 //   Returns a mask that lets the Lineout operator eliminate certain variable
 //   types from the variable menu.
 //
@@ -158,7 +148,7 @@ LineoutCommonPluginInfo::GetVariableTypes() const
 // Creation:   Tue Apr 25 16:52:08 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -170,14 +160,14 @@ LineoutCommonPluginInfo::GetVariableMask() const
 // ****************************************************************************
 // Method: LineoutCommonPluginInfo::GetUserSelectable
 //
-// Purpose: 
+// Purpose:
 //   Indicates that the Lineout operator cannot be selected in the GUI.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Apr 25 17:04:25 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool

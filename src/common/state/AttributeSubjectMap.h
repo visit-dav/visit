@@ -2,10 +2,10 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                           AttributeSubjectMap.h                           //
-// ************************************************************************* //
- 
+// ****************************************************************************
+//  AttributeSubjectMap.h
+// ****************************************************************************
+
 #ifndef ATTRIBUTE_SUBJECT_MAP_H
 #define ATTRIBUTE_SUBJECT_MAP_H
 
@@ -34,7 +34,7 @@ class DataNode;
 //   Added ProcessOldVersions.
 //
 // ****************************************************************************
- 
+
 class STATE_API AttributeSubjectMap
 {
 public:

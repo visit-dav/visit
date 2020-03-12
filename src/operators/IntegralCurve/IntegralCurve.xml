@@ -39,6 +39,7 @@
         TimeRelative
         AverageDistanceFromSeed
         CorrelationDistance
+        ClosedCurve
         Difference
         Variable
       </Enum>

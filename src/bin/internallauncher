@@ -2138,6 +2138,8 @@ class DebugArguments(object):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Mon Jan  6 16:49:51 PST 2020
+#   Added mcurvit to the list of component names.
 #
 ###############################################################################
 
@@ -2168,7 +2170,7 @@ class MainLauncher(object):
         self.loggedComponents = ("mdserver",)
         self.plugincategories = ("plots", "operators", "databases")
         self.clientPrograms = ("gui", "cli", "viewer")
-        self.componentNames = ("gui", "cli", "viewer", "mdserver", "vcl", "engine_ser", "engine_par", "xmledit")
+        self.componentNames = ("gui", "cli", "viewer", "mdserver", "vcl", "engine_ser", "engine_par", "xmledit", "mcurvit")
         self.xterm = ["xterm"]
         self.hosttoip = False
 
@@ -2813,17 +2815,20 @@ class MainLauncher(object):
     #   python filter env.
     #
     #   Kathleen Biagas, Wed Jan 31 15:12:42 PST 2018
-    #   If lib/mesgl/libGL.so exists, then add lib/mesgl to LD_LIBRARY_PATH
+    #   If lib/mesagl/libGL.so exists, then add lib/mesagl to LD_LIBRARY_PATH
     #   for gui and viewer running with a window.
     #
     #   Eric Brugger, Tue Dec 11 11:52:39 PST 2018
     #   I modified Kathleen's last change so that the logic is now if
-    #   lib/mesgl/libGL.so exists, then add lib/mesgl to LD_LIBRARY_PATH
+    #   lib/mesagl/libGL.so exists, then add lib/mesagl to LD_LIBRARY_PATH
     #   for the engine and the viewer running with a window. The gui doesn't
     #   use GL and saving images without screen capture now works.
     #
     #   Cyrus Harrison, Wed Feb 20 13:13:26 PST 2019
     #   Fixes for mesagl vs osmesa
+    #
+    #   Eric Brugger, Thu Jan  9 16:30:42 PST 2020
+    #   Add lib/mesagl to the LD_LIBRARY_PATH for mcurvit.
     #
     ############################################################################
 
@@ -2926,14 +2931,15 @@ class MainLauncher(object):
             SETENV("DISPLAY", self.generalArgs.viewerdisplay)
 
         #
-        # Use mesagl for opengl with the gui, engine or with the viewer running
-        # with a window.
+        # Use mesagl for opengl with the gui, engine, mcurvit or with the
+        # viewer running with a window.
         #
         mesa_gl_dir = os.path.join(self.visitlibdir,"mesagl")
         mesa_gl_lib = os.path.join(mesa_gl_dir,"libGL.so.1")
         if ( os.path.isfile(mesa_gl_lib) and
             ( self.generalArgs.exe_name.startswith("gui") or
               self.generalArgs.exe_name.startswith("engine") or
+              self.generalArgs.exe_name.startswith("mcurvit") or
               (self.generalArgs.exe_name == "viewer" and
                self.generalArgs.nowin == 0))):
             SETENV("LD_LIBRARY_PATH", self.joinpaths([mesa_gl_dir, GETENV("LD_LIBRARY_PATH")]))

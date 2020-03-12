@@ -4,7 +4,7 @@ Definition:
 // ****************************************************************************
 // Method: ClipAttributes::CopyAttributes
 //
-// Purpose: 
+// Purpose:
 //   CopyAttributes method for the ClipAttributes class.
 //
 // Programmer: Brad Whitlock
@@ -12,7 +12,7 @@ Definition:
 //
 // Modifications:
 //   Gunther H. Weber, Tue Aug 14 12:50:19 PDT 2007
-//   Plane tool can modify clip planes 
+//   Plane tool can modify clip planes
 //
 //   Jeremy Meredith, Thu Aug  7 15:34:07 EDT 2008
 //   Add missing case in switch to avoid warnings.
@@ -118,7 +118,7 @@ Definition:
 // ****************************************************************************
 // Method: ClipAttributes::CreateCompatible
 //
-// Purpose: 
+// Purpose:
 //   Creates an object of the specified type initialized with the attributes
 //   from this object.
 //
@@ -127,15 +127,15 @@ Definition:
 //
 // Returns:    A new object of the type specified by tname or 0.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Oct 29 08:57:46 PDT 2002
 //
 // Modifications:
 //   Gunther H. Weber, Tue Aug 14 12:50:19 PDT 2007
-//   Plane tool can modify clip planes 
-//   
+//   Plane tool can modify clip planes
+//
 //   Jeremy Meredith, Thu Aug  7 15:34:07 EDT 2008
 //   Add missing case in switch to avoid warnings.
 //
@@ -244,7 +244,7 @@ Definition:
 bool
 ClipAttributes::EqualTo(const AttributeGroup *atts) const
 {
-    if ((atts->TypeName() != "PlaneAttributes") || 
+    if ((atts->TypeName() != "PlaneAttributes") ||
         GetPlaneToolControlledClipPlane() == None)
         return AttributeSubject::EqualTo(atts);
 

@@ -26,7 +26,7 @@ CallGenerator(const QString &docType, Attribute *attribute, Plugin *plugin, cons
             {
                 plugin->WriteHeader(h);
             }
-            else 
+            else
             {
                 attribute->WriteHeader(h);
             }

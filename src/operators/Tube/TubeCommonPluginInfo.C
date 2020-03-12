@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TubeCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <TubePluginInfo.h>
 #include <TubeAttributes.h>
@@ -43,7 +43,7 @@ TubeCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 TubeCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

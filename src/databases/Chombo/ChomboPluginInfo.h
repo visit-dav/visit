@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               ChomboPluginInfo.h
+//  ChomboPluginInfo.h
 // ****************************************************************************
 
 #ifndef CHOMBO_PLUGIN_INFO_H
@@ -48,8 +48,8 @@ class ChomboCommonPluginInfo : public virtual CommonDatabasePluginInfo, public v
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class ChomboMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual ChomboCommonPluginInfo

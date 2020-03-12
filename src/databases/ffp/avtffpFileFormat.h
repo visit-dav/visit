@@ -1,11 +1,3 @@
-// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
-// Project developers.  See the top-level LICENSE file for dates and other
-// details.  No copyright assignment is required to contribute to VisIt.
-
-// ************************************************************************* //
-//                            avtffpFileFormat.h                           //
-// ************************************************************************* //
-
 #ifndef AVT_ffp_FILE_FORMAT_H
 #define AVT_ffp_FILE_FORMAT_H
 
@@ -25,6 +17,21 @@ class RealStuff {
         bool operator () (const RealStuff& n1, const RealStuff& n2) const
         {
             return (n1.valeur < n2.valeur);
+        };
+    };
+};
+class UnvElement { // Element class
+ public:
+    int number;
+    int label;
+    int typelt ;
+    mutable int matid ; // mutable
+    int* nodes ;
+    struct compare_UnvElement
+    {
+        bool operator () (const UnvElement& e1, const UnvElement& e2) const
+        {
+            return (e1.label < e2.label);
         };
     };
 };
@@ -95,6 +102,9 @@ class avtffpFileFormat : public avtSTSDFileFormat
     double * phis ;        // Stored phi angles
     double fac ;           // Sizing factor for mesh setting
     double phi0 ;          // phi start value
+    int imod ;             // 0: regular complete theta phi, 1: triangulation is provided (later on or in file .unv)
+    int np, nt ;           // Indicates the number of points and of triangles (or quads or whatever)
+    std::set<UnvElement, UnvElement::compare_UnvElement> meshUnvElements;  // Full mesh all types of elements
     double                 ffpTime;
     int                    ffpCycle;
 };

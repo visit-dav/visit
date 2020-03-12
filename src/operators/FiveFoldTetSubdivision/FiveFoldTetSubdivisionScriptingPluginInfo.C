@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        FiveFoldTetSubdivisionScriptingPluginInfo.C
+//  FiveFoldTetSubdivisionScriptingPluginInfo.C
 // ************************************************************************* //
 #include <PyFiveFoldTetSubdivisionAttributes.h>
 #include <FiveFoldTetSubdivisionPluginInfo.h>
@@ -13,7 +13,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(FiveFoldTetSubdivision,Scripting)
 // ****************************************************************************
 // Method: FiveFoldTetSubdivisionScriptingPluginInfo::InitializePlugin
 //
-// Purpose: 
+// Purpose:
 //   Calls the initialization function for the plugin.
 //
 // Arguments:
@@ -24,7 +24,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(FiveFoldTetSubdivision,Scripting)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -37,7 +37,7 @@ FiveFoldTetSubdivisionScriptingPluginInfo::InitializePlugin(AttributeSubject *su
 // ****************************************************************************
 // Method: FiveFoldTetSubdivisionScriptingPluginInfo::GetMethodTable
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the plugin's Python method table. These methods are
 //   added to the top-level visit module's methods.
 //
@@ -50,7 +50,7 @@ FiveFoldTetSubdivisionScriptingPluginInfo::InitializePlugin(AttributeSubject *su
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -62,7 +62,7 @@ FiveFoldTetSubdivisionScriptingPluginInfo::GetMethodTable(int *nMethods)
 // ****************************************************************************
 // Method: FiveFoldTetSubdivisionScriptingPluginInfo::TypesMatch
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the input PyObject is FiveFoldTetSubdivision plot attributes.
 //
 // Arguments:
@@ -72,7 +72,7 @@ FiveFoldTetSubdivisionScriptingPluginInfo::GetMethodTable(int *nMethods)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -84,7 +84,7 @@ FiveFoldTetSubdivisionScriptingPluginInfo::TypesMatch(void *pyobject)
 // ****************************************************************************
 // Method: FiveFoldTetSubdivisionScriptingPluginInfo::GetLogString
 //
-// Purpose: 
+// Purpose:
 //   Gets a string representation of the current attributes.
 //
 // Arguments:
@@ -94,7 +94,7 @@ FiveFoldTetSubdivisionScriptingPluginInfo::TypesMatch(void *pyobject)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 char *
@@ -109,7 +109,7 @@ FiveFoldTetSubdivisionScriptingPluginInfo::GetLogString()
 // ****************************************************************************
 // Method: FiveFoldTetSubdivisionScriptingPluginInfo::SetDefaults
 //
-// Purpose: 
+// Purpose:
 //   Used to set the default values for a plugin's state object.
 //
 // Arguments:
@@ -119,7 +119,7 @@ FiveFoldTetSubdivisionScriptingPluginInfo::GetLogString()
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

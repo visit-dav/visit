@@ -64,14 +64,38 @@ avtZonePickQuery::~avtZonePickQuery()
 //  Programmer: Kathleen Bonnell
 //  Creation:   May 20, 2004 
 //
+//  Modifications:
+//      Alister Maguire, Tue Oct 22 14:01:43 MST 2019
+//      Was setting transform to m instead of invTransform. Updated
+//      to set the invTransform.
+//
 // ****************************************************************************
 
 void
 avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 {
-    transform =  m;
+    invTransform = m;
 }
 
+
+// ****************************************************************************
+//  Method: avtZonePickQuery::SetTransform
+//
+//  Purpose:
+//      Sets the transform.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Oct 22 14:01:43 MST 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtZonePickQuery::SetTransform(const avtMatrix *m)
+{
+    transform = m;
+}
 
 
 // ****************************************************************************
@@ -115,6 +139,13 @@ avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 //
 //    Matt Larsen, Mon Sep 11 10:15:00 PDT 2016
 //    Fixed issue with the wrong cell being highlighted with Mili
+//
+//    Alister Maguire, Wed Dec  4 11:26:19 MST 2019
+//    Changed the transform to invTransform (transform previously was
+//    set to be the inverse).
+//
+//    Alister Maguire, Mon Mar  9 11:01:24 PDT 2020
+//    Set the real element number so the direct database qot has access.
 //
 // ****************************************************************************
 
@@ -267,16 +298,17 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
         pickAtts.SetIncidentElements(pickAtts.GetRealIncidentElements());
     }
 
+    pickAtts.SetRealElementNumber(pickAtts.GetElementNumber());
     pickAtts.SetElementNumber(pickAtts.GetElementNumber() + cellOrigin);
     //
     // If the points of this dataset have been transformed, and we know 
     // the inverse transform matrix, transform the pick point that will 
     // be displayed in the pick info window.
     //
-    if (transform != NULL)
+    if (invTransform != NULL)
     {
         avtVector v1(pickAtts.GetPickPoint());
-        v1 = (*transform) * v1;
+        v1 = (*invTransform) * v1;
         // 
         // PickPoint is used for placing the pick letter, so set
         // this tranformed point in CellPoint instead.
@@ -313,6 +345,10 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Added avtDatAttributes arg.
 //
+//    Alister Maguire, Wed Dec  4 11:26:19 MST 2019
+//    Changed the transform to invTransform (transform previously was
+//    set to be the inverse).
+//
 // ****************************************************************************
 
 void
@@ -322,13 +358,13 @@ avtZonePickQuery::Preparation(const avtDataAttributes &)
     // Transform the point that will be used in locating the cell. 
     //
     double *cellPoint  = pickAtts.GetCellPoint();
-    if (transform != NULL)
+    if (invTransform != NULL)
     {
         //
         // Transform the intersection point back to original space.
         //
         avtVector v1(cellPoint);
-        v1 = (*transform) * v1;
+        v1 = (*invTransform) * v1;
         cellPoint[0] = v1.x;
         cellPoint[1] = v1.y;
         cellPoint[2] = v1.z;

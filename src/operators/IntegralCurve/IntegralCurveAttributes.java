@@ -22,7 +22,7 @@ import java.util.Vector;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class IntegralCurveAttributes extends AttributeSubject implements Plugin
@@ -49,8 +49,9 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public final static int DATAVALUE_TIMERELATIVE = 6;
     public final static int DATAVALUE_AVERAGEDISTANCEFROMSEED = 7;
     public final static int DATAVALUE_CORRELATIONDISTANCE = 8;
-    public final static int DATAVALUE_DIFFERENCE = 9;
-    public final static int DATAVALUE_VARIABLE = 10;
+    public final static int DATAVALUE_CLOSEDCURVE = 9;
+    public final static int DATAVALUE_DIFFERENCE = 10;
+    public final static int DATAVALUE_VARIABLE = 11;
 
     public final static int CLEANUPMETHOD_NOCLEANUP = 0;
     public final static int CLEANUPMETHOD_MERGE = 1;
@@ -1618,6 +1619,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
             str = str + "DATAVALUE_AVERAGEDISTANCEFROMSEED";
         if(dataValue == DATAVALUE_CORRELATIONDISTANCE)
             str = str + "DATAVALUE_CORRELATIONDISTANCE";
+        if(dataValue == DATAVALUE_CLOSEDCURVE)
+            str = str + "DATAVALUE_CLOSEDCURVE";
         if(dataValue == DATAVALUE_DIFFERENCE)
             str = str + "DATAVALUE_DIFFERENCE";
         if(dataValue == DATAVALUE_VARIABLE)

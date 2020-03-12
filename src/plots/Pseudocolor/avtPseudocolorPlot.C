@@ -369,11 +369,9 @@ avtDataObject_p
 avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     avtDataObject_p dob = input;
-
     topoDim = dob->GetInfo().GetAttributes().GetTopologicalDimension();
 
-    if ((atts.GetCentering() == PseudocolorAttributes::Nodal) ||
-        (atts.GetCentering() == PseudocolorAttributes::Zonal))
+    if ((atts.GetCentering() == PseudocolorAttributes::Nodal) || (atts.GetCentering() == PseudocolorAttributes::Zonal))
     {
         //
         // It was requested that we shift centering.  If we asked for zonal
@@ -389,7 +387,7 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 
         if (c == PseudocolorAttributes::Nodal)
             shiftFilter = new avtShiftCenteringFilter(AVT_NODECENT);
-        if (c == PseudocolorAttributes::Zonal)
+        else if (c == PseudocolorAttributes::Zonal)
             shiftFilter = new avtShiftCenteringFilter(AVT_ZONECENT);
 
         shiftFilter->SetInput(dob);

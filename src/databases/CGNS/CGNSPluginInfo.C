@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: CGNSPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <CGNSPluginInfo.h>
 
@@ -119,6 +119,7 @@ std::vector<std::string>
 CGNSGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
+    defaultPatterns.push_back("*.cgns.*.*");
     defaultPatterns.push_back("*.cgns");
 
     return defaultPatterns;

@@ -41,9 +41,9 @@ export VISIT_VERSION=${VISIT_VERSION:-"3.1.0"}
 ####
 # Trunk:
 ####
-#export TRUNK_BUILD="yes"
-#export RC_BUILD="no"
-#export TAGGED_BUILD="no"
+export TRUNK_BUILD="yes"
+export RC_BUILD="no"
+export TAGGED_BUILD="no"
 
 ###
 # RC Branch:
@@ -56,9 +56,9 @@ export VISIT_VERSION=${VISIT_VERSION:-"3.1.0"}
 ###
 # Tagged Release:
 ###
-export TRUNK_BUILD="no"
-export RC_BUILD="no"
-export TAGGED_BUILD="yes"
+#export TRUNK_BUILD="no"
+#export RC_BUILD="no"
+#export TAGGED_BUILD="yes"
 
 export INITIAL_PWD=$PWD
 
@@ -71,7 +71,8 @@ export bv_PREFIX=$bv_PATH/bv_support/
 export build_version=""
 export webroot="http://visit.ilight.com/svn/visit/"
 export webaddr="${webroot}/trunk/src/tools/dev/scripts/bv_support/"
-export nerscroot="http://portal.nersc.gov/project/visit/releases"
+export visitroot="https://github.com/visit-dav/visit/releases/download/"
+export thirdpartyroot="https://github.com/visit-dav/third-party/releases/download/"
 
 #state = "disabled", "enabled", "installed"
 declare -a reqlibs
@@ -381,6 +382,29 @@ function bv_write_unified_file
 {
     OUTPUT_bv_FILE=$@
 
+    #
+    # Calculate the checksums for the visit tar file. They will be used
+    # in a sed command to add the checksums when bv_visit.sh is added to
+    # the output file.
+    #
+    tarfile="visit${VISIT_VERSION}.tar.gz"
+    md5sum=""
+    sha256sum=""
+    if [[ -f "$tarfile" ]]; then
+        if [[ $(type -P "md5sum") ]]; then
+            md5sum=`md5sum $tarfile | cut -d' ' -f 1`
+        else
+            echo "Warning md5sum is not in PATH, not adding md5sum for VisIt."
+        fi
+        if [[ $(type -P "sha256sum") ]]; then
+            sha256sum=`sha256sum $tarfile | cut -d' ' -f 1`
+        else
+            echo "Warning sha256sum is not in PATH, not adding sha256sum for VisIt."
+        fi
+    else
+        echo "Warning $tarfile doesn't exist, not adding checksums for VisIt."
+    fi
+
     echo "Writing to File: $OUTPUT_bv_FILE"
     #go up one directory so that if $bv_PREFIX was set to relative path it will work again..
     if [[ $OUTPUT_bv_FILE == "" ]]; then
@@ -406,7 +430,8 @@ function bv_write_unified_file
     echo "export build_version=\"\"" >> $OUTPUT_bv_FILE
     echo "export webroot=\"http://visit.ilight.com/svn/visit/\"" >> $OUTPUT_bv_FILE
     echo "export webaddr=\"\${webroot}/trunk/src/tools/dev/scripts/bv_support/\"" >> $OUTPUT_bv_FILE
-    echo "export nerscroot=\"http://portal.nersc.gov/project/visit/releases\"" >> $OUTPUT_bv_FILE
+    echo "export visitroot=\"https://github.com/visit-dav/visit/releases/download/\"" >> $OUTPUT_bv_FILE
+    echo "export thirdpartyroot=\"https://github.com/visit-dav/third-party/releases/download/\"" >> $OUTPUT_bv_FILE
 
     echo "declare -a reqlibs" >> $OUTPUT_bv_FILE
     echo "declare -a optlibs" >> $OUTPUT_bv_FILE
@@ -424,7 +449,7 @@ function bv_write_unified_file
     cat $bv_PREFIX/bv_main.sh >> $OUTPUT_bv_FILE
     cat $bv_PREFIX/helper_funcs.sh >> $OUTPUT_bv_FILE
     cat ${bv_PREFIX}/bv_xml_parser.sh >> $OUTPUT_bv_FILE
-    cat ${bv_PREFIX}/bv_visit.sh >> $OUTPUT_bv_FILE
+    cat ${bv_PREFIX}/bv_visit.sh | sed "s/VISIT_MD5_CHECKSUM=\"\"/VISIT_MD5_CHECKSUM=\"$md5sum\"/" | sed "s/VISIT_SHA256_CHECKSUM=\"\"/VISIT_SHA256_CHECKSUM=\"$sha256sum\"/" >> $OUTPUT_bv_FILE
 
     for (( i = 0; i < ${#xmlp_alllibs[*]}; ++i ))
     do

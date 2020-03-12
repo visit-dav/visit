@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        TriangulateRegularPointsScriptingPluginInfo.C
+//  TriangulateRegularPointsScriptingPluginInfo.C
 // ************************************************************************* //
 #include <PyTriangulateRegularPointsAttributes.h>
 #include <TriangulateRegularPointsPluginInfo.h>
@@ -13,7 +13,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(TriangulateRegularPoints,Scripting)
 // ****************************************************************************
 // Method: TriangulateRegularPointsScriptingPluginInfo::InitializePlugin
 //
-// Purpose: 
+// Purpose:
 //   Calls the initialization function for the plugin.
 //
 // Arguments:
@@ -24,7 +24,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(TriangulateRegularPoints,Scripting)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -37,7 +37,7 @@ TriangulateRegularPointsScriptingPluginInfo::InitializePlugin(AttributeSubject *
 // ****************************************************************************
 // Method: TriangulateRegularPointsScriptingPluginInfo::GetMethodTable
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the plugin's Python method table. These methods are
 //   added to the top-level visit module's methods.
 //
@@ -50,7 +50,7 @@ TriangulateRegularPointsScriptingPluginInfo::InitializePlugin(AttributeSubject *
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -62,7 +62,7 @@ TriangulateRegularPointsScriptingPluginInfo::GetMethodTable(int *nMethods)
 // ****************************************************************************
 // Method: TriangulateRegularPointsScriptingPluginInfo::TypesMatch
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the input PyObject is TriangulateRegularPoints plot attributes.
 //
 // Arguments:
@@ -72,7 +72,7 @@ TriangulateRegularPointsScriptingPluginInfo::GetMethodTable(int *nMethods)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -84,7 +84,7 @@ TriangulateRegularPointsScriptingPluginInfo::TypesMatch(void *pyobject)
 // ****************************************************************************
 // Method: TriangulateRegularPointsScriptingPluginInfo::GetLogString
 //
-// Purpose: 
+// Purpose:
 //   Gets a string representation of the current attributes.
 //
 // Arguments:
@@ -94,7 +94,7 @@ TriangulateRegularPointsScriptingPluginInfo::TypesMatch(void *pyobject)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 char *
@@ -109,7 +109,7 @@ TriangulateRegularPointsScriptingPluginInfo::GetLogString()
 // ****************************************************************************
 // Method: TriangulateRegularPointsScriptingPluginInfo::SetDefaults
 //
-// Purpose: 
+// Purpose:
 //   Used to set the default values for a plugin's state object.
 //
 // Arguments:
@@ -119,7 +119,7 @@ TriangulateRegularPointsScriptingPluginInfo::GetLogString()
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

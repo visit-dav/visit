@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               CosmosPPPluginInfo.h
+//  CosmosPPPluginInfo.h
 // ****************************************************************************
 
 #ifndef COSMOSPP_PLUGIN_INFO_H

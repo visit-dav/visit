@@ -571,7 +571,7 @@ QvisPickWindow::CreateTimeOptionsTab()
     QVBoxLayout *tLayout = new QVBoxLayout(pageTime);
 
     timeOpts = new QvisTimeQueryOptionsWidget(
-        tr("Do time curve with next pick"), pageTime, false);
+        tr("Do time curve with next pick"), pageTime);
     connect(timeOpts, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
     tLayout->addWidget(timeOpts);

@@ -316,7 +316,7 @@ XMLEditAttribute::exportIncludeTextChanged(const QString &text)
 void
 XMLEditAttribute::persistentChanged()
 {
-    xmldoc->attribute->persistent = persistent->isChecked();    
+    xmldoc->attribute->persistent = persistent->isChecked();
 }
 
 // ****************************************************************************
@@ -329,7 +329,7 @@ XMLEditAttribute::persistentChanged()
 void
 XMLEditAttribute::keyframeChanged()
 {
-    xmldoc->attribute->keyframe = keyframe->isChecked();    
+    xmldoc->attribute->keyframe = keyframe->isChecked();
 }
 
 // ****************************************************************************
@@ -342,7 +342,7 @@ XMLEditAttribute::keyframeChanged()
 void
 XMLEditAttribute::customBaseClassChanged()
 {
-    xmldoc->attribute->custombase = customBaseClass->isChecked();    
+    xmldoc->attribute->custombase = customBaseClass->isChecked();
     if (customBaseClass->isChecked())
     {
         baseClass->blockSignals(true);

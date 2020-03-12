@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               BlueprintPluginInfo.h
+//  BlueprintPluginInfo.h
 // ****************************************************************************
 
 #ifndef BLUEPRINT_PLUGIN_INFO_H
@@ -48,7 +48,6 @@ class BlueprintCommonPluginInfo : public virtual CommonDatabasePluginInfo, publi
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual std::string               GetLicense() const;
 };
 
 class BlueprintMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual BlueprintCommonPluginInfo

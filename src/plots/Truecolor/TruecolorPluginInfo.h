@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                          TruecolorPluginInfo.h                            //
+//  TruecolorPluginInfo.h
 // ************************************************************************* //
 
 #ifndef TRUECOLOR_PLUGIN_INFO_H

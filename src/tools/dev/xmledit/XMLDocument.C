@@ -109,6 +109,9 @@ class ErrorHandler : public QXmlErrorHandler
 //    Kathleen Biagas, Wed Nov 30 18:59:22 PST 2016
 //    Changed location for report whitespace feature, fixes problems with QT5.
 //
+//    Kathleen Biagas, Thu Jan  2 09:26:23 PST 2020
+//    Added new argument to plugin constructor, for hasLicense.
+//
 // ****************************************************************************
 
 void
@@ -124,7 +127,7 @@ XMLDocument::open(const QString &file)
     if (!test)
     {
         docType = "Plugin";
-        plugin = new Plugin("","","","","","", "", false, false, false, false);
+        plugin = new Plugin("","","","","","", "", false, false, false, false, false);
         attribute = new Attribute("","",QString(),"","","");
         plugin->atts = attribute;
         return;
@@ -141,7 +144,7 @@ XMLDocument::open(const QString &file)
         QXmlInputSource   source(&xmlFile);
         QXmlSimpleReader  reader;
         ErrorHandler      errorhandler;
-        
+
         reader.setFeature("http://qt-project.org/xml/features/report-whitespace-only-CharData", false);
         reader.setContentHandler(&parser);
         reader.setErrorHandler(&errorhandler);
@@ -256,7 +259,7 @@ XMLDocument::save(const QString &file)
             if (attribute->fields[i]->enabler &&
                 attribute->fields[i]->enableval.empty())
             {
-                
+
                 QMessageBox::warning(0,"Error",
                     QString("The enabler for field %1 must have at least one value.").arg(attribute->fields[i]->name));
                 return;
@@ -292,7 +295,7 @@ XMLDocument::save(const QString &file)
         }
     }
 
-    
+
     QFile outfile(file);
 
     if (!outfile.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -300,7 +303,7 @@ XMLDocument::save(const QString &file)
         QMessageBox::warning(0,"Error","Could not open xml file for saving!");
         return;
     }
-    
+
     QTextStream out(&outfile);
 
     out << "<?xml version=\"1.0\"?>\n";

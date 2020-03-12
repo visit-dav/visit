@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: VsPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <VsPluginInfo.h>
 
@@ -119,7 +119,6 @@ std::vector<std::string>
 VsGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-    // To include txvsh5 and possibly hvsh5 for tet and hex meshes
     defaultPatterns.push_back("*vsh5");
     defaultPatterns.push_back("*.h5");
 

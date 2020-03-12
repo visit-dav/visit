@@ -39,7 +39,7 @@ static PyNumberMethods View3DAttributes_as_number = {
     0,            /*nb_inplace_and*/
     0,            /*nb_inplace_xor*/
     0,            /*nb_inplace_or*/
-}; 
+};
 Postfix:
 
 Target: xml2atts
@@ -357,7 +357,7 @@ Definition:
 // ****************************************************************************
 // Method: View3DAttributes::ResetView
 //
-// Purpose: 
+// Purpose:
 //   Resets the view to something that can accommodate the bbox.
 //
 // Arguments:
@@ -369,7 +369,7 @@ Definition:
 // Modifications:
 //    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
 //    Add shear for oblique projection support.
-//   
+//
 // ****************************************************************************
 void
 View3DAttributes::ResetView(const double *bbox)
@@ -389,7 +389,7 @@ View3DAttributes::ResetView(const double *bbox)
                                (bbox[3] - bbox[2])) +
                               ((bbox[5] - bbox[4]) *
                                (bbox[5] - bbox[4])));
-    
+
     if( width == 0.0 )
       width = 0.001;
 

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               CGNSPluginInfo.h
+//  CGNSPluginInfo.h
 // ****************************************************************************
 
 #ifndef CGNS_PLUGIN_INFO_H
@@ -26,6 +26,8 @@ class avtDatabaseWriter;
 //  Creation:   omitted
 //
 //  Modifications:
+//    Eric Brugger, Wed Feb 26 11:32:22 PST 2020
+//    I added a dbType member to CGNSCommonPluginInfo.
 //
 // ****************************************************************************
 
@@ -45,9 +47,14 @@ class CGNSGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
 class CGNSCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual CGNSGeneralPluginInfo
 {
   public:
+    CGNSCommonPluginInfo();
+
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
+
+  private:
+    DatabaseType dbType;
 };
 
 class CGNSMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual CGNSCommonPluginInfo

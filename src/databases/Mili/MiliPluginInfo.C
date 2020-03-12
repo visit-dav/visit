@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: MiliPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <MiliPluginInfo.h>
 
@@ -48,7 +48,7 @@ MiliGeneralPluginInfo::GetName() const
 const char *
 MiliGeneralPluginInfo::GetVersion() const
 {
-    return "1.0";
+    return "2.0";
 }
 
 // ****************************************************************************
@@ -67,7 +67,7 @@ MiliGeneralPluginInfo::GetVersion() const
 const char *
 MiliGeneralPluginInfo::GetID() const
 {
-    return "Mili_1.0";
+    return "Mili_2.0";
 }
 // ****************************************************************************
 //  Method: MiliGeneralPluginInfo::EnabledByDefault

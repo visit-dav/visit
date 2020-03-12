@@ -26,7 +26,7 @@ import java.lang.Integer;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class WellBoreAttributes extends AttributeSubject implements Plugin

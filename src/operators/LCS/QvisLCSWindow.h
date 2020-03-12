@@ -47,8 +47,8 @@ class QvisLCSWindow : public QvisOperatorWindow
     virtual void CreateWindowContents();
 
   protected:
-    void CreateSourceTab(QWidget *);
     void CreateIntegrationTab(QWidget *);
+    void CreateLCSTab(QWidget *);
     void CreateAppearanceTab(QWidget *);
     void CreateAdvancedTab(QWidget *);
 

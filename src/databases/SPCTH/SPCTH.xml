@@ -9,6 +9,8 @@
       *spcth
       *.cth
     </FilePatterns>
-    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="SPCTH.code">
+      <Function name="SPCTHCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

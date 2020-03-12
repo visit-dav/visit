@@ -23,7 +23,7 @@ import llnl.visit.ColorAttribute;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class PoincareAttributes extends AttributeSubject implements Plugin

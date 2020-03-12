@@ -21,7 +21,7 @@ import llnl.visit.ColorAttribute;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class SurfaceAttributes extends AttributeSubject implements Plugin

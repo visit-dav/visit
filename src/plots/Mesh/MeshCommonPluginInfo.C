@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: MeshCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <MeshPluginInfo.h>
 #include <MeshAttributes.h>
@@ -43,16 +43,17 @@ MeshCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 MeshCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((MeshAttributes *) to) = *((MeshAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: MeshCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ MeshCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

@@ -12,6 +12,9 @@
 #   to be defined to execute it. Adjusted install logic to only consider
 #   libraries that started with vtkh or vtkm.
 #
+#   Kathleen Biagas, Tue Jan 21 10:46:31 PST 2020
+#   Set VTKm_INCLUDE_DIRS.
+#
 #****************************************************************************/
 
 IF (DEFINED VISIT_VTKH_DIR)
@@ -34,6 +37,10 @@ IF (DEFINED VISIT_VTKH_DIR)
    MESSAGE(STATUS "  VTKm_VERSION_PATCH = ${VTKm_VERSION_PATCH}")
    MESSAGE(STATUS "  VTKm_VERSION_FULL = ${VTKm_VERSION_FULL}")
    MESSAGE(STATUS "  VTKm_VERSION = ${VTKm_VERSION}")
+
+   set(VTKm_INCLUDE_DIRS "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}"
+                         "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}/vtkm/thirdparty/taotuple"
+       CACHE STRING "VTKm include directories")
 
    include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
    # use the vtkh and vtkm CMake properties to find locations and

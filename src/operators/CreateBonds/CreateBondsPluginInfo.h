@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: CreateBondsPluginInfo.h
-// ************************************************************************* //
+// ****************************************************************************
 
 #ifndef CREATEBONDS_PLUGIN_INFO_H
 #define CREATEBONDS_PLUGIN_INFO_H

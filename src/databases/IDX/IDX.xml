@@ -17,6 +17,8 @@
         avtIDXFileFormat.C
         avtIDXOptions.C
     </Files>
-    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="IDX.code">
+      <Function name="IDXCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

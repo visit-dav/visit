@@ -14,14 +14,14 @@
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:21:46 PST 2008
@@ -32,7 +32,7 @@
 //
 // ****************************************************************************
 
-XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow(QWidget *parent) 
+XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow(QWidget *parent)
 : QMainWindow(parent), xmlFile()
 {
     toolIndex = 0;
@@ -42,7 +42,7 @@ XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow(QWidget *parent)
 
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
-    
+
     QVBoxLayout *topLayout = new QVBoxLayout(central);
     topLayout->setSpacing(10);
     topLayout->setMargin(10);
@@ -59,21 +59,21 @@ XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow(QWidget *parent)
     QPushButton *dismiss = new QPushButton(tr("Dismiss"), central);
     buttonLayout->addWidget(dismiss);
     topLayout->addLayout(buttonLayout);
-    
+
     connect(dismiss, SIGNAL(clicked()), this, SLOT(hide()));
 }
 
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::~XMLEditCodeGeneratorWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:21:56 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 XMLEditCodeGeneratorWindow::~XMLEditCodeGeneratorWindow()
@@ -84,26 +84,26 @@ XMLEditCodeGeneratorWindow::~XMLEditCodeGeneratorWindow()
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::GenerateCode
 //
-// Purpose: 
+// Purpose:
 //   Invokes the xml tools on the specified file.
 //
 // Arguments:
 //   xml   : The XML file.
 //   tools : An array of bools indicating which tools to run.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:22:09 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
-XMLEditCodeGeneratorWindow::GenerateCode(const QString &xml, 
+XMLEditCodeGeneratorWindow::GenerateCode(const QString &xml,
     const bool *tools)
 {
     xmlFile = xml;
@@ -138,7 +138,7 @@ PathToVisIt()
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::generateOne
 //
-// Purpose: 
+// Purpose:
 //   Invokes 1 tool and sets it up so the next one will be called when this
 //   tool is done.
 //
@@ -164,10 +164,10 @@ XMLEditCodeGeneratorWindow::generateOne()
         // Create a new process.
         currentProcess = new QProcess(this);
         QString xmlTool(PathToVisIt() + xmlTools[toolIndex]);
-        
+
         QStringList arguments;
         arguments << "-clobber";
-        
+
         arguments << xmlFile;
 
         // Set the process's working directory.
@@ -182,9 +182,9 @@ XMLEditCodeGeneratorWindow::generateOne()
             currentProcess->setWorkingDirectory(dirName);
         }
 
-        connect(currentProcess, SIGNAL(readyReadStandardOutput()), 
+        connect(currentProcess, SIGNAL(readyReadStandardOutput()),
                 this, SLOT(readProcessStdout()));
-        connect(currentProcess, SIGNAL(readyReadStandardError()), 
+        connect(currentProcess, SIGNAL(readyReadStandardError()),
                 this, SLOT(readProcessStderr()));
         if(toolIndex < ID_XML2AVT)
         {
@@ -213,7 +213,7 @@ XMLEditCodeGeneratorWindow::generateOne()
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::readProcessStdout
 //
-// Purpose: 
+// Purpose:
 //   Reads stdout from the process.
 //
 // Programmer: Brad Whitlock
@@ -238,7 +238,7 @@ XMLEditCodeGeneratorWindow::readProcessStdout()
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::readProcessStderr
 //
-// Purpose: 
+// Purpose:
 //   Reads stderr from the process.
 //
 // Programmer: Brad Whitlock
@@ -263,7 +263,7 @@ XMLEditCodeGeneratorWindow::readProcessStderr()
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::cleanupProcess
 //
-// Purpose: 
+// Purpose:
 //   Cleans up the process.
 //
 // Programmer: Brad Whitlock

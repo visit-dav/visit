@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               TetradPluginInfo.h
+//  TetradPluginInfo.h
 // ****************************************************************************
 
 #ifndef TETRAD_PLUGIN_INFO_H

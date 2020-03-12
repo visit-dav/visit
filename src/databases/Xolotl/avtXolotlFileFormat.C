@@ -747,7 +747,6 @@ avtXolotlFileFormat::GetMesh(int timestate, const char *meshname)
 {
     if (dimension == 0)
     {
-
         // What mesh do we need?
         int meshSizeIndex[2];
         if (debug) cerr << "Getting mesh: " << meshname << endl;
@@ -865,6 +864,8 @@ avtXolotlFileFormat::GetMesh(int timestate, const char *meshname)
         zc->Delete();
         return rgrid;
     }
+
+    return nullptr;
 }
 
 // ****************************************************************************

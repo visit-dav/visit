@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               PATRANPluginInfo.h
+//  PATRANPluginInfo.h
 // ****************************************************************************
 
 #ifndef PATRAN_PLUGIN_INFO_H

@@ -47,6 +47,16 @@
 #  Alister Maguire, Tue Oct 15 10:09:02 PDT 2019
 #  Copy over the makemili_driver to the exe directory. 
 #
+#  Eric Brugger, Thu Dec 19 14:57:28 PST 2019
+#  I added mcurvit.
+#
+#  Eric Brugger, Wed Feb 12 15:37:23 PST 2020
+#  I renamed makemili_driver to makemili_driver_ser since that is what
+#  the frontendlauncher is expecting it to be named. I also explicitly
+#  create the exe directory before copying it the directory, since the
+#  creation of the directory is non deterministic with regards to different
+#  operating systems and versions.
+#
 #****************************************************************************
 
 #-----------------------------------------------------------------------------
@@ -59,6 +69,7 @@ SET(VISIT_BIN_FILES
         frontendlauncher
         frontendlauncher.py
         makemili_driver
+        mcurvit
         mkgrdbl
         mpeg2encode
         regen-ajp
@@ -84,13 +95,23 @@ SET(VISIT_BIN_FILES
         xmltest)
 
 IF (NOT WIN32)
-    FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py)
+    #
+    # Copy files to the bin and exe directories. We have to explicitly
+    # create the exe directory since we can't control when it gets created
+    # otherwiese.
+    #
+    FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py visitdiff.py)
         EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
                                 ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM}
                                 ${CMAKE_CURRENT_BINARY_DIR}/${VISIT_BIN_ITEM})
     ENDFOREACH(VISIT_BIN_ITEM)
 
+    FILE(MAKE_DIRECTORY ${VISIT_EXECUTABLE_DIR})
+    CONFIGURE_FILE(makemili_driver_ser ${VISIT_EXECUTABLE_DIR} COPYONLY)
 
+    #
+    # Install the files. This happens with make install or make package.
+    #
     INSTALL(FILES ${VISIT_BIN_FILES}
             DESTINATION bin
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
@@ -109,7 +130,11 @@ IF (NOT WIN32)
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
                     WORLD_READ             WORLD_EXECUTE)
 
-    CONFIGURE_FILE(makemili_driver ${VISIT_EXECUTABLE_DIR} COPYONLY)
+    INSTALL(FILES makemili_driver_ser
+        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                    WORLD_READ             WORLD_EXECUTE)
 
 ELSE (NOT WIN32)
 

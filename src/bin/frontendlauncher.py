@@ -412,7 +412,7 @@ else:
         if (sys.version_info > (3, 0)):
             exec(compile(open(customlauncher).read(), customlauncher, 'exec'))
         else:
-            execfile(launcher)
+            execfile(customlauncher)
         try:
             newlauncher = createlauncher()
             launcher = newlauncher

@@ -22,7 +22,7 @@ class ColorControlPoint;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API ColorControlPointList : public AttributeSubject

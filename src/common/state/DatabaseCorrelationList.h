@@ -23,7 +23,7 @@ class DatabaseCorrelation;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API DatabaseCorrelationList : public AttributeSubject
