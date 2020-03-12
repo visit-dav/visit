@@ -249,9 +249,13 @@ function apply_qt_patch
             fi
         fi
 
-        apply_qt_5101_gcc_9_2_patch
-        if [[ $? != 0 ]] ; then
-            return 1
+        if [[ "$OPSYS" == "Linux" ]]; then
+            if [[ "$C_COMPILER" == "gcc" ]]; then
+                apply_qt_5101_gcc_9_2_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
         fi
     fi
 
