@@ -25,20 +25,36 @@ or, the underlying computing infrastructure upon which VisIt_ depends such as
 Typically, such inquiries originate from users in the midst of using the VisIt_
 software and are encountering some kind of difficulty. In highly effective
 software projects, the work involved in handling such inquiries does not end
-with simply diagnosing the user's problem(s) and proposing solutions. Often the
-problems users encounter are suggestive of minor, easily fixed deficiencies
-in either the software itself or its associated processes and artifacts.
+with simply diagnosing and correcting a user's problem. Often the problems users
+encounter are suggestive of minor, easily fixed deficiencies in either the
+software itself or its associated processes and artifacts.
 
-Continually investing the time to identify small corrective actions to take
-in response to such inquiries and then carrying them through is a
-*best practice* similar in many respects to Google's
+The continuous investment of effort to craft and carry out small corrective
+actions in response to such inquiries is a *best practice*. It incorporates
+aspects of Google's
 `Site Reliability Engineering (SRE) <https://landing.google.com/sre/sre-book/toc/>`_
-process sometimes
-`also called <https://www.cio.com/article/3192531/why-you-need-a-systems-reliability-engineer.html>`_
-*Systems Reliability Engineering* or *Services Reliability Engineering*.
+process (sometimes also called
+`Systems Reliability Engineering or Services Reliability Engineering <https://www.cio.com/article/3192531/why-you-need-a-systems-reliability-engineer.html>`_)
+as well as aspects of `User Experience Driven Development (UXDD)
+
+https://medium.com/@aHev/why-ux-researchers-should-learn-sre-practices-a2b213e69a8a
+
+
+
+https://www.uxmatters.com/mt/archives/2019/04/reining-in-ux-regression.php
+
+
+ is a *best practice* similar in many
+respects to Google's
+
+
+
+almost like regression testing
+
+
 As an aside, because our primary focus here is on *software* a natural
-inclination might be to call this *Software Reliability Engineering* also 
-abbreviated as *SRE*. However that name already has a specific meaning in the
+inclination might be to call this *Software Reliability Engineering* (also
+abbreviated as *SRE*). However that name already has a specific meaning in the
 software industry and it is in no way related the meaning of SRE used here.
 
 For mature DOE software projects with wide reach and many users, SRE activity
@@ -55,7 +71,7 @@ Goals
 This document describes how the VisIt_ project manages SRE activities.
 Some of the goals of this process are...
 
-  * To maintain a reputation for timely and quality response to customer needs.
+  * To maintain a reputation for timely and quality response to customer inquiries.
   * To develop a practice of routine *housekeeping* quality improvements to the
     VisIt_ software and associated processes and artifacts impacting user and/or
     developer productivity.
