@@ -32,7 +32,7 @@
 #include <visit-hdf5.h>
 
 using namespace std;
-static const int debug = 0;
+static const int debug = 1;
 
 //
 // struct for reading the HDF compound type 'concentration'
@@ -491,6 +491,8 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
         {
             oneDGrid.push_back(data[i]);
         }
+
+        // cleanup and close
         delete [] data;
         H5Sclose(sid);
         H5Dclose(gridDataSet);
@@ -551,7 +553,7 @@ avtXolotlFileFormat::Initialize()
     PopulateConcentrationGroupMetaData();
 
 
-    if (dimension > 1)
+    if (dimension == 1)
     {
         //
         // Read the network
@@ -576,12 +578,17 @@ avtXolotlFileFormat::Initialize()
         int ndims = H5Sget_simple_extent_dims(networkSpace, dims, maxdims);
         if (debug) cerr << "NDIMS="<<ndims<<" dims="<<dims[0]<<","<<dims[1]<<endl;
 
+//TODO allocate on heap?
         networkSize = dims[0];
         networkParams = dims[1];
         network.resize(networkSize * networkParams);
         int err1 = H5Dread(networkDS, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL,
                           H5P_DEFAULT, (void*)(&(network[0])));
-        ///\todo: check for err1<0
+        if (err1 <0)
+        {
+            FreeUpResources();
+            EXCEPTION1(InvalidDBTypeException, "Unable to read 'network' dataset.");
+        }
         if (debug) cerr << "network[0]="<<network[0]<<endl;
         if (debug) cerr << "network[1]="<<network[1]<<endl;
         if (debug) cerr << "network[2]="<<network[2]<<endl;
@@ -590,9 +597,43 @@ avtXolotlFileFormat::Initialize()
         if (debug) cerr << "network[5]="<<network[5]<<endl;
         if (debug) cerr << "network[6]="<<network[6]<<endl;
 
+        // We need to stash the networkGroup attributes
+        hid_t normalSizeAttr = H5Aopen(networkGroup, "normalSize", H5P_DEFAULT);
+        if (normalSizeAttr < 0)
+        {
+            FreeUpResources();
+            EXCEPTION1(InvalidDBTypeException, "No 'normalSize' attribute.");
+        }
+
+        hid_t superSizeAttr = H5Aopen(networkGroup, "superSize", H5P_DEFAULT);
+        if (superSizeAttr < 0)
+        {
+            FreeUpResources();
+            EXCEPTION1(InvalidDBTypeException, "No 'superSize' attribute.");
+        }
+
+        int err2 = -1;
+        err2 = H5Aread(normalSizeAttr, H5T_NATIVE_INT, &normalSize);
+        if (err2 < 0)
+        {
+            FreeUpResources();
+            EXCEPTION1(InvalidDBTypeException, "cannot read 'normalSize' var.");
+        }
+        err2 = H5Aread(superSizeAttr, H5T_NATIVE_INT, &superSize);
+        if (err2 < 0)
+        {
+            FreeUpResources();
+            EXCEPTION1(InvalidDBTypeException, "cannot read 'superSize' var.");
+        }
+        if (debug) cerr << "normalSize="<<normalSize<<endl;
+        if (debug) cerr << "superSize="<<superSize<<endl;
+
+        // close and cleanup
         H5Sclose(networkSpace);
         H5Dclose(networkDS);
         H5Gclose(networkGroup);
+        H5Aclose(normalSizeAttr);
+        H5Aclose(superSizeAttr);
     }
 }
 
@@ -719,7 +760,7 @@ avtXolotlFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
     }
     else
     {
-        //TODO
+        EXCEPTION1(InvalidVariableException, "The number of 'dimensions' of this file not recognized");
     }
 }
 
