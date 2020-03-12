@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               StreamGhostTestPluginInfo.h
+//  StreamGhostTestPluginInfo.h
 // ****************************************************************************
 
 #ifndef STREAMGHOSTTEST_PLUGIN_INFO_H

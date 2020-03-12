@@ -2,14 +2,14 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#include <QWidget> 
-#include <QLayout> 
+#include <QWidget>
+#include <QLayout>
 #include <QGroupBox>
 #include <QRadioButton>
 #include <QButtonGroup>
 #include <QLabel>
 #include <QCheckBox>
-#include <QComboBox> 
+#include <QComboBox>
 #include <QLineEdit>
 #include <QSpinBox>
 
@@ -28,14 +28,14 @@
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::QvisPseudocolorPlotWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisPseudocolorPlotWindow class.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 1 17:05:42 PST 2000
@@ -43,7 +43,7 @@
 // Modifications:
 //    Eric Brugger, Wed Mar 14 06:59:33 PST 2001
 //    I added the argument type.
-//   
+//
 // ****************************************************************************
 
 QvisPseudocolorPlotWindow::QvisPseudocolorPlotWindow(const int type,
@@ -61,20 +61,20 @@ QvisPseudocolorPlotWindow::QvisPseudocolorPlotWindow(const int type,
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisPseudocolorPlotWindow class.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 1 17:06:01 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
@@ -85,15 +85,15 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   This method creates the widgets that are in the window and sets
 //   up their signals/slots.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 1 17:06:30 PST 2000
@@ -105,11 +105,11 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 //   Brad Whitlock, Sat Jun 16 12:43:40 PDT 2001
 //   Added the color table button.
 //
-//   Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001 
-//   Added the limits selection combo box. 
+//   Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001
+//   Added the limits selection combo box.
 //
-//   Kathleen Bonnell, Wed May 29 13:40:22 PDT 2002 
-//   Removed 'Specify' from limitsSelect. 
+//   Kathleen Bonnell, Wed May 29 13:40:22 PDT 2002
+//   Removed 'Specify' from limitsSelect.
 //
 //   Jeremy Meredith, Tue Dec 10 10:23:07 PST 2002
 //   Added smoothing options.
@@ -123,8 +123,8 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 //   Jeremy Meredith, Tue May  4 13:23:10 PDT 2004
 //   Added support for a new (Point) type of glyphing for point meshes.
 //
-//   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004 
-//   Replace individual point-size related widgets with QvisPointControl 
+//   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
+//   Replace individual point-size related widgets with QvisPointControl
 //
 //   Brad Whitlock, Wed Jul 20 14:27:00 PST 2005
 //   Added pointSizePixelsChanged slot.
@@ -177,15 +177,15 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     QWidget *geometryTab = new QWidget(central);
     propertyTabs->addTab(geometryTab, tr("Geometry"));
     CreateGeometryTab(geometryTab);
-    
+
     // ----------------------------------------------------------------------
     // Extras tab -- currently not used but setup for future use
     // ----------------------------------------------------------------------
     // QWidget *extrasTab = new QWidget(central);
     // propertyTabs->addTab(extrasTab, tr("Extras"));
     // CreateExtrasTab(extrasTab);
-    
-//     This code was used to create the accordion style layout 
+
+//     This code was used to create the accordion style layout
 
 //     propertyLayout = new QvisCollapsibleLayout(central);
 //     propertyLayout = new QvisCollapsibleLayout(central);
@@ -219,7 +219,7 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::CreateDataTab
 //
-// Purpose: 
+// Purpose:
 //   Populates the data tab.
 //
 // Programmer: Dave Pugmire
@@ -253,7 +253,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     // Create the scale radio buttons
     //
     dataLayout->addWidget( new QLabel(tr("Scale"), central), 0, 0);
-    
+
     // Create the radio buttons
     scalingButtons = new QButtonGroup(central);
 
@@ -272,7 +272,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     connect(scalingButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(scaleClicked(int)));
 
-    // Create the skew factor line edit    
+    // Create the skew factor line edit
     skewLineEdit = new QLineEdit(central);
     dataLayout->addWidget(skewLineEdit, 0, 4);
     connect(skewLineEdit, SIGNAL(returnPressed()),
@@ -295,7 +295,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     limitsSelect->addItem(tr("Use Original Data"));
     limitsSelect->addItem(tr("Use Current Plot"));
     connect(limitsSelect, SIGNAL(activated(int)),
-            this, SLOT(limitsSelectChanged(int))); 
+            this, SLOT(limitsSelectChanged(int)));
     limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
 
     // Create the min toggle and line edit, and color for values < min
@@ -305,7 +305,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
             this, SLOT(minToggled(bool)));
     minLineEdit = new QLineEdit(central);
     connect(minLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMinLimitText())); 
+            this, SLOT(processMinLimitText()));
     limitsLayout->addWidget(minLineEdit, 1, 1, 1, 1);
 
     belowMinToggle = new QCheckBox(tr("Color for values < min"), central);
@@ -326,7 +326,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
             this, SLOT(maxToggled(bool)));
     maxLineEdit = new QLineEdit(central);
     connect(maxLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMaxLimitText())); 
+            this, SLOT(processMaxLimitText()));
     limitsLayout->addWidget(maxLineEdit, 2, 1);
 
     aboveMaxToggle = new QCheckBox(tr("Color for values > max"), central);
@@ -346,7 +346,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
 
     // Create the centering label
     dataLayout->addWidget(new QLabel(tr("Centering"), central), 3, 0);
-    
+
     // Create the radio buttons
     centeringButtons = new QButtonGroup(central);
     rb = new QRadioButton(tr("Original"), central );
@@ -373,7 +373,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     QGridLayout *colorLayout = new QGridLayout(colorGroup);
     colorLayout->setMargin(5);
     colorLayout->setSpacing(10);
- 
+
     int gRow = 0;
 
     // Create the color table widgets
@@ -401,7 +401,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     // plot but it is currently not possible using the vtkMapper and
     // avtActor.
     // opacityType->addItem(tr("Variable range"),4);
-    
+
     connect(opacityType, SIGNAL(activated(int)),
             this, SLOT(opacityTypeChanged(int)));
     colorLayout->addWidget(new QLabel(tr("Opacity"), central), gRow,0);
@@ -494,7 +494,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
     miscLayout->setMargin(5);
     miscLayout->setSpacing(10);
- 
+
     // Create the legend toggle
     legendToggle = new QCheckBox(tr("Legend"), central);
     connect(legendToggle, SIGNAL(toggled(bool)),
@@ -505,14 +505,14 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     lightingToggle = new QCheckBox(tr("Lighting"), central);
     connect(lightingToggle, SIGNAL(toggled(bool)),
             this, SLOT(lightingToggled(bool)));
-    miscLayout->addWidget(lightingToggle, 0, 1); 
+    miscLayout->addWidget(lightingToggle, 0, 1);
 }
 
 
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::CreateGeometryTab
 //
-// Purpose: 
+// Purpose:
 //   Populates the geometry tab.
 //
 // Programmer: Dave Pugmire
@@ -563,7 +563,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     connect(lineType, SIGNAL(activated(int)), this, SLOT(lineTypeChanged(int)));
     lineLayout->addWidget(lineType, 0, 1);
 
-    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
+    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME
     // lineTypeLabel->hide();
     // lineType->hide();
 
@@ -675,7 +675,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     endPointRadiusVarEnabled = new QCheckBox(tr("Variable radius"), central);
     connect(endPointRadiusVarEnabled, SIGNAL(toggled(bool)), this, SLOT(endPointRadiusVarToggled(bool)));
     lineLayout->addWidget(endPointRadiusVarEnabled, 6, 0, 1, 2, Qt::AlignRight);
-    
+
     endPointRadiusVar = new QvisVariableButton(true, true, true,
                                                QvisVariableButton::Scalars, central);
     connect(endPointRadiusVar, SIGNAL(activated(const QString &)),
@@ -709,7 +709,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     QGridLayout *pointLayout = new QGridLayout(pointGroup);
     pointLayout->setMargin(5);
     pointLayout->setSpacing(10);
- 
+
     // Create the point control
     pointControl = new QvisPointControl(central);
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
@@ -787,7 +787,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::CreateExtrasTab
 //
-// Purpose: 
+// Purpose:
 //   Populates the extras tab.
 //
 // Programmer: Dave Pugmire
@@ -814,7 +814,7 @@ QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
     QGridLayout *blankLayout = new QGridLayout(blankGroup);
     blankLayout->setMargin(5);
     blankLayout->setSpacing(10);
- 
+
     blankLayout->addWidget(new QLabel(tr(""), central), 0,0);
     blankLayout->addWidget(new QLabel(tr(""), central), 1,0);
     blankLayout->addWidget(new QLabel(tr(""), central), 2,0);
@@ -834,7 +834,7 @@ QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the window's subject is changed. The
 //   subject tells this window what attributes changed and we put the
 //   new values into those widgets.
@@ -843,9 +843,9 @@ QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 //   doAll : If this flag is true, update all the widgets regardless
 //           of whether or not they are selected.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 1 17:07:27 PST 2000
@@ -857,8 +857,8 @@ QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 //   Brad Whitlock, Sat Jun 16 15:32:18 PST 2001
 //   Added code to set the color table.
 //
-//   Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001 
-//   Added code for limits selection. 
+//   Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001
+//   Added code for limits selection.
 //
 //   Brad Whitlock, Wed Nov 7 16:05:44 PST 2001
 //   Modified the code a little so it can use the generated attributes.
@@ -866,8 +866,8 @@ QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 //   Brad Whitlock, Fri Feb 15 09:37:51 PDT 2002
 //   Altered the code to set the opacity slider's opacity.
 //
-//   Kathleen Bonnell, Wed May 29 13:40:22 PDT 2002 
-//   Removed dependency of min/max upon LimitsMode. 
+//   Kathleen Bonnell, Wed May 29 13:40:22 PDT 2002
+//   Removed dependency of min/max upon LimitsMode.
 //
 //   Jeremy Meredith, Tue Dec 10 10:23:07 PST 2002
 //   Added smoothing options.
@@ -882,8 +882,8 @@ QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 //   Added support for a new (Point) type of glyphing for point meshes.
 //   When doing GL_POINT, we ignore point size, so also disable it.
 //
-//   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004 
-//   Replace point-size related cases with QvisPointControl 
+//   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
+//   Replace point-size related cases with QvisPointControl
 //
 //   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
 //   Replaced simple QString::sprintf's with a setNum because there seems
@@ -998,7 +998,7 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             belowMinColor->blockSignals(true);
             belowMinColor->setButtonColor(temp);
             belowMinColor->blockSignals(false);
-            } 
+            }
             break;
         case PseudocolorAttributes::ID_maxFlag:
             // Disconnect the slot before setting the toggle and
@@ -1028,7 +1028,7 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             aboveMaxColor->blockSignals(true);
             aboveMaxColor->setButtonColor(temp);
             aboveMaxColor->blockSignals(false);
-            } 
+            }
             break;
 
             // centering
@@ -1050,7 +1050,7 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
         case PseudocolorAttributes::ID_opacityVariable:
           opacityVar->setText(pcAtts->GetOpacityVariable().c_str());
           break;
-            
+
         case PseudocolorAttributes::ID_opacity:
             opacitySlider->blockSignals(true);
             opacitySlider->setValue(int((float)pcAtts->GetOpacity() * 255.f));
@@ -1064,7 +1064,7 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
         case PseudocolorAttributes::ID_opacityVarMax:
           opacityVarMax->setText(DoubleToQString(pcAtts->GetOpacityVarMax()));
           break;
-            
+
         case PseudocolorAttributes::ID_opacityType:
           if (pcAtts->GetOpacityType() == PseudocolorAttributes::FullyOpaque ||
               pcAtts->GetOpacityType() == PseudocolorAttributes::ColorTable)
@@ -1101,16 +1101,16 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             // opacityVarMax->show();
             opacityMinMaxGroup->show();
           }
-            
+
           opacityType->blockSignals(true);
           opacityType->setCurrentIndex(int(pcAtts->GetOpacityType()));
           opacityType->blockSignals(false);
           break;
-            
+
         case PseudocolorAttributes::ID_opacityVarMinFlag:
           opacityMinToggle->blockSignals(true);
           opacityMinToggle->setChecked(pcAtts->GetOpacityVarMinFlag());
-              
+
           opacityVarMin->setEnabled(pcAtts->GetOpacityVarMinFlag());
           opacityMinToggle->blockSignals(false);
           break;
@@ -1118,7 +1118,7 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
         case PseudocolorAttributes::ID_opacityVarMaxFlag:
           opacityMaxToggle->blockSignals(true);
           opacityMaxToggle->setChecked(pcAtts->GetOpacityVarMaxFlag());
-              
+
           opacityVarMax->setEnabled(pcAtts->GetOpacityVarMaxFlag());
           opacityMaxToggle->blockSignals(false);
           break;
@@ -1158,55 +1158,6 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             lineType->blockSignals(true);
             lineType->setCurrentIndex(int(pcAtts->GetLineType()));
             lineType->blockSignals(false);
-
-            if( pcAtts->GetLineType() == PseudocolorAttributes::Line )
-            {
-              lineWidthLabel->show();
-              lineWidth->show();
-            }
-            else
-            {
-              lineWidthLabel->hide();
-              lineWidth->hide();
-            }
-
-            if( pcAtts->GetLineType() == PseudocolorAttributes::Tube ||
-                pcAtts->GetLineType() == PseudocolorAttributes::Ribbon )
-            {
-              if( pcAtts->GetLineType() == PseudocolorAttributes::Tube )
-              {
-                  tubeResolutionLabel->show();
-                  tubeResolution->show();
-              }
-              else if( pcAtts->GetLineType() == PseudocolorAttributes::Ribbon )
-              {
-                  tubeResolutionLabel->hide();
-                  tubeResolution->hide();
-              }
-              
-              tubeRadiusLabel->show();
-              tubeRadius->show();
-              tubeRadiusSizeType->show();
-              tubeRadiusVarEnabled->show();
-              tubeRadiusVar->show();
-              tubeRadiusVar->show();
-              tubeRadiusVarRatioLabel->show();
-              tubeRadiusVarRatio->show();
-            }
-            else
-            {
-              tubeResolutionLabel->hide();
-              tubeResolution->hide();
-              tubeRadiusLabel->hide();
-              tubeRadius->hide();
-              tubeRadiusSizeType->hide();
-              tubeRadiusVarEnabled->hide();
-              tubeRadiusVar->hide();
-              tubeRadiusVar->hide();
-              tubeRadiusVarRatioLabel->hide();
-              tubeRadiusVarRatio->hide();
-            }
-
             break;
 
         case PseudocolorAttributes::ID_lineWidth:
@@ -1284,66 +1235,6 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             headStyle->blockSignals(true);
             headStyle->setCurrentIndex(int(pcAtts->GetHeadStyle()));
             headStyle->blockSignals(false);
-            
-            {
-            bool showEndPointAttributes =
-                pcAtts->GetTailStyle() != PseudocolorAttributes::None ||
-                pcAtts->GetHeadStyle() != PseudocolorAttributes::None;
-            if (showEndPointAttributes)
-            {
-                endPointRadiusLabel->show();
-                endPointRadius->show();
-                endPointRadiusSizeType->show();
-                endPointRatioLabel->show();
-                endPointRatio->show();
-
-                endPointRadiusVarEnabled->show();
-                endPointRadiusVar->show();
-                endPointRadiusVarRatioLabel->show();
-                endPointRadiusVarRatio->show();
-
-                endPointResolutionLabel->show();
-                endPointResolution->show();
-            }
-            else
-            {
-                endPointRadiusLabel->hide();
-                endPointRadius->hide();         
-                endPointRadiusSizeType->hide();
-                endPointRatioLabel->hide();
-                endPointRatio->hide();
-
-                endPointRadiusVarEnabled->hide();
-                endPointRadiusVar->hide();
-                endPointRadiusVarRatioLabel->hide();
-                endPointRadiusVarRatio->hide();
-
-                endPointResolutionLabel->hide();
-                endPointResolution->hide();
-            }
-
-            if (pcAtts->GetTailStyle() == PseudocolorAttributes::Cones ||
-                pcAtts->GetHeadStyle() == PseudocolorAttributes::Cones)
-            {
-                endPointRatioLabel->show();
-                endPointRatio->show();
-            }
-            else
-            {
-                endPointRatioLabel->hide();
-                endPointRatio->hide();
-            }
-
-            endPointRadiusLabel->setEnabled(showEndPointAttributes);
-            endPointRadius->setEnabled(showEndPointAttributes);
-            endPointRadiusSizeType->setEnabled(showEndPointAttributes);
-            endPointRatioLabel->setEnabled(showEndPointAttributes);
-            endPointRatio->setEnabled(showEndPointAttributes);
-
-            endPointResolutionLabel->setEnabled(showEndPointAttributes);
-            endPointResolution->setEnabled(showEndPointAttributes);
-            }
-
             break;
 
         case PseudocolorAttributes::ID_endPointRadiusSizeType:
@@ -1468,12 +1359,17 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             break;
         }
     } // end for
+
+    // change visibility of certain controls based on
+    // rendering type(s) in effect.
+    lineSettings();
+    endPointSettings();
 }
 
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values for one or all of the lineEdit widgets.
 //
 // Arguments:
@@ -1487,8 +1383,8 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
 //   Jeremy Meredith, Fri Dec 20 11:36:03 PST 2002
 //   Added scaling of point variables by a scalar field.
 //
-//   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004 
-//   Replace pointSizeLineEdit and pointSizeVarLineEdit with pointControl. 
+//   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
+//   Replace pointSizeLineEdit and pointSizeVarLineEdit with pointControl.
 //
 //   Brad Whitlock, Wed Jul 20 14:25:04 PST 2005
 //   Added PointSizePixels.
@@ -1519,7 +1415,7 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
             pcAtts->SetSkewFactor(pcAtts->GetSkewFactor());
         }
     }
-    
+
     // Do the minimum value.
     if(which_widget == PseudocolorAttributes::ID_min || doAll)
     {
@@ -1761,7 +1657,7 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   This method applies the pc attributes and optionally tells
 //   the viewer to apply them.
 //
@@ -1778,7 +1674,7 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
 //    I modified the routine to pass to the viewer proxy the plot
 //    type stored within the class instead of the one hardwired from
 //    an include file.
-//   
+//
 // ****************************************************************************
 
 void
@@ -1901,18 +1797,18 @@ QvisPseudocolorPlotWindow::aboveMaxToggled(bool val)
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::belowMinColorChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the belowMin color button's
 //   color changes.
 //
 // Arguments:
 //   color : The new color for values below minimum.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   December 26, 2018
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1926,18 +1822,18 @@ QvisPseudocolorPlotWindow::belowMinColorChanged(const QColor &color)
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::aboveMaxColorChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the aboveMax color button's
 //   color changes.
 //
 // Arguments:
 //   color : The new color for values above maximum.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   December 26, 2018
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1963,7 +1859,7 @@ QvisPseudocolorPlotWindow::centeringClicked(int button)
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::colorTableClicked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the desired color table into the
 //   pseudocolor plot attributes.
 //
@@ -1975,7 +1871,7 @@ QvisPseudocolorPlotWindow::centeringClicked(int button)
 // Creation:   Sat Jun 16 18:58:03 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1989,7 +1885,7 @@ QvisPseudocolorPlotWindow::colorTableClicked(bool useDefault,
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::invertColorTableToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the invert color table flag into the
 //   pseudocolor plot attributes.
 //
@@ -2000,7 +1896,7 @@ QvisPseudocolorPlotWindow::colorTableClicked(bool useDefault,
 // Creation:   January  17, 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2090,7 +1986,7 @@ QvisPseudocolorPlotWindow::pointTypeChanged(int type)
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::pointSizeVarToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the pointSizeVar toggle
 //   button is toggled.
 //
@@ -2099,7 +1995,7 @@ QvisPseudocolorPlotWindow::pointTypeChanged(int type)
 //
 // Programmer: Jeremy Meredith
 // Creation:   December 20, 2002
-//   
+//
 // ****************************************************************************
 
 void
@@ -2113,27 +2009,27 @@ QvisPseudocolorPlotWindow::pointSizeVarToggled(bool val)
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::pointSizeChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user changes the
 //   point size text and presses the Enter key.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   November 12, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   November 12, 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisPseudocolorPlotWindow::pointSizeChanged(double size)
 {
-    pcAtts->SetPointSize(size); 
+    pcAtts->SetPointSize(size);
     Apply();
 }
 
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::pointSizePixelsChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user changes the
 //   point size text and presses the Enter key.
 //
@@ -2141,19 +2037,19 @@ QvisPseudocolorPlotWindow::pointSizeChanged(double size)
 // Creation:   Wed Jul 20 14:25:58 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisPseudocolorPlotWindow::pointSizePixelsChanged(int size)
 {
-    pcAtts->SetPointSizePixels(size); 
+    pcAtts->SetPointSizePixels(size);
     Apply();
 }
 
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::pointSizeVarChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user changes the
 //   point size variable text and presses the Enter key.
 //
@@ -2161,7 +2057,7 @@ QvisPseudocolorPlotWindow::pointSizePixelsChanged(int size)
 // Creation:   December 20, 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2175,7 +2071,7 @@ QvisPseudocolorPlotWindow::pointSizeVarChanged(const QString &var)
 // ****************************************************************************
 // Method: QvisContourPlotWindow::lineTypeChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the window's
 //   line type is changed.
 //
@@ -2186,7 +2082,7 @@ QvisPseudocolorPlotWindow::pointSizeVarChanged(const QString &var)
 // Creation:   November 26, 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2200,7 +2096,7 @@ QvisPseudocolorPlotWindow::lineTypeChanged(int newType)
 // ****************************************************************************
 // Method: QvisContourPlotWindow::lineWidthChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the window's
 //   line width widget is changed.
 //
@@ -2211,7 +2107,7 @@ QvisPseudocolorPlotWindow::lineTypeChanged(int newType)
 // Creation:   November 26, 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2238,7 +2134,7 @@ QvisPseudocolorPlotWindow::tubeRadiusProcessText()
     Apply();
 }
 
-void 
+void
 QvisPseudocolorPlotWindow::tubeRadiusSizeTypeChanged(int v)
 {
     pcAtts->SetTubeRadiusSizeType((PseudocolorAttributes::SizeType) v);
@@ -2302,7 +2198,7 @@ QvisPseudocolorPlotWindow::endPointRatioProcessText()
     Apply();
 }
 
-void 
+void
 QvisPseudocolorPlotWindow::endPointRadiusSizeTypeChanged(int v)
 {
     pcAtts->SetEndPointRadiusSizeType((PseudocolorAttributes::SizeType) v);
@@ -2413,3 +2309,163 @@ QvisPseudocolorPlotWindow::pointColorChanged(const QColor &color)
     SetUpdate(false);
     Apply();
 }
+
+// change visibility of certain controls based on
+// rendering type(s) in effect.
+
+void
+QvisPseudocolorPlotWindow::lineSettings()
+{
+    bool canGlyphLines = pcAtts->GetRenderSurfaces();
+    lineType->setEnabled(canGlyphLines);
+    lineTypeLabel->setEnabled(canGlyphLines);
+    if (canGlyphLines)
+    {
+        if( pcAtts->GetLineType() == PseudocolorAttributes::Line )
+        {
+            lineWidthLabel->show();
+            lineWidth->show();
+
+            tubeResolutionLabel->hide();
+            tubeResolution->hide();
+            tubeRadiusLabel->hide();
+            tubeRadius->hide();
+            tubeRadiusSizeType->hide();
+            tubeRadiusVarEnabled->hide();
+            tubeRadiusVar->hide();
+            tubeRadiusVar->hide();
+            tubeRadiusVarRatioLabel->hide();
+            tubeRadiusVarRatio->hide();
+        }
+        else
+        {
+            lineWidthLabel->hide();
+            lineWidth->hide();
+
+            if( pcAtts->GetLineType() == PseudocolorAttributes::Tube )
+            {
+                tubeResolutionLabel->show();
+                tubeResolution->show();
+            }
+            else if( pcAtts->GetLineType() == PseudocolorAttributes::Ribbon )
+            {
+                tubeResolutionLabel->hide();
+                tubeResolution->hide();
+            }
+
+            tubeRadiusLabel->show();
+            tubeRadius->show();
+            tubeRadiusSizeType->show();
+            tubeRadiusVarEnabled->show();
+            tubeRadiusVar->show();
+            tubeRadiusVar->show();
+            tubeRadiusVarRatioLabel->show();
+            tubeRadiusVarRatio->show();
+        }
+    }
+    else
+    {
+        //if doing wireframe, only want linewidth
+        lineWidthLabel->show();
+        lineWidth->show();
+
+        tubeResolutionLabel->hide();
+        tubeResolution->hide();
+        tubeRadiusLabel->hide();
+        tubeRadius->hide();
+        tubeRadiusSizeType->hide();
+        tubeRadiusVarEnabled->hide();
+        tubeRadiusVar->hide();
+        tubeRadiusVar->hide();
+        tubeRadiusVarRatioLabel->hide();
+        tubeRadiusVarRatio->hide();
+    }
+}
+
+void
+QvisPseudocolorPlotWindow::endPointSettings()
+{
+    bool canGlyphPoints = pcAtts->GetRenderSurfaces();
+    headStyle->setEnabled(canGlyphPoints);
+    headStyleLabel->setEnabled(canGlyphPoints);
+    tailStyle->setEnabled(canGlyphPoints);
+    tailStyleLabel->setEnabled(canGlyphPoints);
+
+    if(canGlyphPoints)
+    {
+
+        bool showEndPointAttributes =
+            pcAtts->GetTailStyle() != PseudocolorAttributes::None ||
+            pcAtts->GetHeadStyle() != PseudocolorAttributes::None;
+        if (showEndPointAttributes)
+        {
+                endPointRadiusLabel->show();
+                endPointRadius->show();
+                endPointRadiusSizeType->show();
+                endPointRatioLabel->show();
+                endPointRatio->show();
+
+                endPointRadiusVarEnabled->show();
+                endPointRadiusVar->show();
+                endPointRadiusVarRatioLabel->show();
+                endPointRadiusVarRatio->show();
+
+                endPointResolutionLabel->show();
+                endPointResolution->show();
+        }
+        else
+        {
+                endPointRadiusLabel->hide();
+                endPointRadius->hide();
+                endPointRadiusSizeType->hide();
+                endPointRatioLabel->hide();
+                endPointRatio->hide();
+
+                endPointRadiusVarEnabled->hide();
+                endPointRadiusVar->hide();
+                endPointRadiusVarRatioLabel->hide();
+                endPointRadiusVarRatio->hide();
+
+                endPointResolutionLabel->hide();
+                endPointResolution->hide();
+        }
+
+        if (pcAtts->GetTailStyle() == PseudocolorAttributes::Cones ||
+            pcAtts->GetHeadStyle() == PseudocolorAttributes::Cones)
+        {
+                endPointRatioLabel->show();
+                endPointRatio->show();
+        }
+        else
+        {
+                endPointRatioLabel->hide();
+                endPointRatio->hide();
+        }
+
+        endPointRadiusLabel->setEnabled(showEndPointAttributes);
+        endPointRadius->setEnabled(showEndPointAttributes);
+        endPointRadiusSizeType->setEnabled(showEndPointAttributes);
+        endPointRatioLabel->setEnabled(showEndPointAttributes);
+        endPointRatio->setEnabled(showEndPointAttributes);
+
+        endPointResolutionLabel->setEnabled(showEndPointAttributes);
+        endPointResolution->setEnabled(showEndPointAttributes);
+    }
+    else
+    {
+        endPointRadiusLabel->hide();
+        endPointRadius->hide();
+        endPointRadiusSizeType->hide();
+        endPointRatioLabel->hide();
+        endPointRatio->hide();
+
+        endPointRadiusVarEnabled->hide();
+        endPointRadiusVar->hide();
+        endPointRadiusVarRatioLabel->hide();
+        endPointRadiusVarRatio->hide();
+
+        endPointResolutionLabel->hide();
+        endPointResolution->hide();
+    }
+}
+

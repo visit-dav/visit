@@ -3,6 +3,8 @@ PROJECT(Dyna3D_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(Dyna3D)
+
 SET(COMMON_SOURCES
 Dyna3DPluginInfo.C
 Dyna3DCommonPluginInfo.C

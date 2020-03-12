@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: IsovolumeViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <IsovolumePluginInfo.h>
 #include <IsovolumeAttributes.h>
@@ -28,8 +28,11 @@ IsovolumeAttributes *IsovolumeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 IsovolumeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    IsovolumeViewerEnginePluginInfo::clientAtts  = new IsovolumeAttributes;
-    IsovolumeViewerEnginePluginInfo::defaultAtts = new IsovolumeAttributes;
+    if (IsovolumeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        IsovolumeViewerEnginePluginInfo::clientAtts  = new IsovolumeAttributes;
+        IsovolumeViewerEnginePluginInfo::defaultAtts = new IsovolumeAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: CoordSwapViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <CoordSwapPluginInfo.h>
 #include <CoordSwapAttributes.h>
@@ -28,8 +28,11 @@ CoordSwapAttributes *CoordSwapViewerEnginePluginInfo::defaultAtts = NULL;
 void
 CoordSwapViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    CoordSwapViewerEnginePluginInfo::clientAtts  = new CoordSwapAttributes;
-    CoordSwapViewerEnginePluginInfo::defaultAtts = new CoordSwapAttributes;
+    if (CoordSwapViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        CoordSwapViewerEnginePluginInfo::clientAtts  = new CoordSwapAttributes;
+        CoordSwapViewerEnginePluginInfo::defaultAtts = new CoordSwapAttributes;
+    }
 }
 
 // ****************************************************************************

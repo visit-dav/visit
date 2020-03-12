@@ -114,6 +114,7 @@ PixieCommonPluginInfo::GetReadOptions() const
 {
     return GetPixieReadOptions();
 }
+
 // ****************************************************************************
 //  Method: PixieCommonPluginInfo::GetWriteOptions
 //
@@ -130,3 +131,4 @@ PixieCommonPluginInfo::GetWriteOptions() const
 {
     return GetPixieWriteOptions();
 }
+

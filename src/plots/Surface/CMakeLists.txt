@@ -3,6 +3,8 @@ PROJECT(Surface_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Surface)
+
 SET(COMMON_SOURCES
 SurfacePluginInfo.C
 SurfaceCommonPluginInfo.C

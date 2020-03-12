@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: EllipsoidSliceViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <EllipsoidSlicePluginInfo.h>
 #include <EllipsoidSliceAttributes.h>
@@ -28,8 +28,11 @@ EllipsoidSliceAttributes *EllipsoidSliceViewerEnginePluginInfo::defaultAtts = NU
 void
 EllipsoidSliceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    EllipsoidSliceViewerEnginePluginInfo::clientAtts  = new EllipsoidSliceAttributes;
-    EllipsoidSliceViewerEnginePluginInfo::defaultAtts = new EllipsoidSliceAttributes;
+    if (EllipsoidSliceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        EllipsoidSliceViewerEnginePluginInfo::clientAtts  = new EllipsoidSliceAttributes;
+        EllipsoidSliceViewerEnginePluginInfo::defaultAtts = new EllipsoidSliceAttributes;
+    }
 }
 
 // ****************************************************************************

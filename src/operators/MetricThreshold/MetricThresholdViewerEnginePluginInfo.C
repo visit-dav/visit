@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: MetricThresholdViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <MetricThresholdPluginInfo.h>
 #include <MetricThresholdAttributes.h>
@@ -28,8 +28,11 @@ MetricThresholdAttributes *MetricThresholdViewerEnginePluginInfo::defaultAtts = 
 void
 MetricThresholdViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MetricThresholdViewerEnginePluginInfo::clientAtts  = new MetricThresholdAttributes;
-    MetricThresholdViewerEnginePluginInfo::defaultAtts = new MetricThresholdAttributes;
+    if (MetricThresholdViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        MetricThresholdViewerEnginePluginInfo::clientAtts  = new MetricThresholdAttributes;
+        MetricThresholdViewerEnginePluginInfo::defaultAtts = new MetricThresholdAttributes;
+    }
 }
 
 // ****************************************************************************

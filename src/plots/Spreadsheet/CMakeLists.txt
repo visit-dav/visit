@@ -3,6 +3,8 @@ PROJECT(Spreadsheet_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Spreadsheet)
+
 SET(COMMON_SOURCES
 SpreadsheetPluginInfo.C
 SpreadsheetCommonPluginInfo.C

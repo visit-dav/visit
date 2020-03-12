@@ -198,4 +198,7 @@
     </Function>
     <Function name="SetAMRInfo" user="true" member="true">
     </Function>
+    <Include file="source" quoted="false">
+      algorithm
+    </Include>
   </Attribute>

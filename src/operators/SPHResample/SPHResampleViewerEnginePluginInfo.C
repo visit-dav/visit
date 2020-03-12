@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SPHResampleViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <SPHResamplePluginInfo.h>
 #include <SPHResampleAttributes.h>
@@ -28,8 +28,11 @@ SPHResampleAttributes *SPHResampleViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SPHResampleViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SPHResampleViewerEnginePluginInfo::clientAtts  = new SPHResampleAttributes;
-    SPHResampleViewerEnginePluginInfo::defaultAtts = new SPHResampleAttributes;
+    if (SPHResampleViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SPHResampleViewerEnginePluginInfo::clientAtts  = new SPHResampleAttributes;
+        SPHResampleViewerEnginePluginInfo::defaultAtts = new SPHResampleAttributes;
+    }
 }
 
 // ****************************************************************************

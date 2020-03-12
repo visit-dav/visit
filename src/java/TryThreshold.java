@@ -17,8 +17,8 @@ import llnl.visit.operators.ThresholdAttributes;
 //
 // Notes:      Based on threshold.py of test-suite.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   March 31, 2017 
+// Programmer: Kathleen Biagas
+// Creation:   March 31, 2017
 //
 // Modifications:
 //

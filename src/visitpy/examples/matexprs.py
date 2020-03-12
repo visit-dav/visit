@@ -211,11 +211,11 @@ SetDefaultPlotOptions(ca)
 # Iterate through all curve 'dirs', finding instances where
 # all essential variables exist. Create expressions and plot 'em
 #
-for k in dirMap.keys():
+for k in list(dirMap.keys()):
     if not ("Ec" in dirMap[k] and \
             "cEc" in dirMap[k] and \
             "cEc_fit" in dirMap[k]):
-        print "Ignoring %s because not all required vars are present."%k
+        print("Ignoring %s because not all required vars are present."%k)
         #del dirMap[k]
         continue
 

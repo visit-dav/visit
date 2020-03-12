@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import math
 import socket
@@ -754,7 +755,7 @@ output streams.
                 tfile.write(self.parallel.hw_postcmd + "\n")
 
             tfile.close()
-            os.chmod(tfilename, 0775)
+            os.chmod(tfilename, 0o775)
         except (OSError, IOError):
             exit("Could not create script file to launch %s job." % self.parallel.launcher, 0)
 
@@ -1107,7 +1108,7 @@ output streams.
                 tfile.write(self.parallel.hw_postcmd + "\n")
 
             tfile.close()
-            os.chmod(self.tfilename, 0775)
+            os.chmod(self.tfilename, 0o775)
         except (IOError, OSError):
             exit("Can't create the tfile.", 0)
 
@@ -1857,8 +1858,8 @@ class GeneralArguments(object):
             return hostname
         try:
             IP = socket.gethostbyname(hostname)
-        except socket.gaierror, err:
-            print "cannot resolve hostname: ", hostname, err
+        except socket.gaierror as err:
+            print("cannot resolve hostname: ", hostname, err)
             IP = hostname
         return IP
 
@@ -2137,6 +2138,8 @@ class DebugArguments(object):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Mon Jan  6 16:49:51 PST 2020
+#   Added mcurvit to the list of component names.
 #
 ###############################################################################
 
@@ -2167,7 +2170,7 @@ class MainLauncher(object):
         self.loggedComponents = ("mdserver",)
         self.plugincategories = ("plots", "operators", "databases")
         self.clientPrograms = ("gui", "cli", "viewer")
-        self.componentNames = ("gui", "cli", "viewer", "mdserver", "vcl", "engine_ser", "engine_par", "xmledit")
+        self.componentNames = ("gui", "cli", "viewer", "mdserver", "vcl", "engine_ser", "engine_par", "xmledit", "mcurvit")
         self.xterm = ["xterm"]
         self.hosttoip = False
 
@@ -2252,13 +2255,13 @@ class MainLauncher(object):
         return ret
 
     def message(self, msg, file=sys.stderr):
-        print >> file, msg
+        print(msg, file=file)
 
     def warning(self, msg):
-        print >> sys.stderr, "WARNING: ", msg
+        print("WARNING: ", msg, file=sys.stderr)
 
     def error(self, msg):
-        print >> sys.stderr, "ERROR: ", msg
+        print("ERROR: ", msg, file=sys.stderr)
 
     def iscomponent(self, name):
         return name in self.componentNames
@@ -2365,14 +2368,14 @@ class MainLauncher(object):
         usageplusfile = os.path.join(self.visitresourcedir, "usage", "visitusageplus.txt")
 
         if fullhelp:
-            print "\nUSAGE: visit [options]\n"
-            print filecontents(usagefile)
-            print filecontents(usageplusfile)
+            print("\nUSAGE: visit [options]\n")
+            print(filecontents(usagefile))
+            print(filecontents(usageplusfile))
         else:
-            print "\nUSAGE: visit [options]\n"
-            print helpnote
-            print filecontents(usagefile)
-            print helpnote
+            print("\nUSAGE: visit [options]\n")
+            print(helpnote)
+            print(filecontents(usagefile))
+            print(helpnote)
 
     ############################################################################
     # Method: ParseArguments
@@ -2643,9 +2646,9 @@ class MainLauncher(object):
         for k,v in env_pairs:
             # always set if all pairs is True, otherwise only
             # set the pairs that were created as a result of the script.
-            if all_pairs or not k in os.environ.keys():
+            if all_pairs or not k in list(os.environ.keys()):
                 # add new env pair to os.environ
-                print k,v
+                print(k,v)
                 SETENV(k,v)
 
 
@@ -2697,7 +2700,7 @@ class MainLauncher(object):
         for k,v in env_pairs:
             # always set if all pairs is True, otherwise only
             # set the pairs that were created as a result of the script.
-            if all_pairs or not k in os.environ.keys():
+            if all_pairs or not k in list(os.environ.keys()):
                 # add new env pair to os.environ
                 SETENV(k,v)
 
@@ -2809,17 +2812,20 @@ class MainLauncher(object):
     #   python filter env.
     #
     #   Kathleen Biagas, Wed Jan 31 15:12:42 PST 2018
-    #   If lib/mesgl/libGL.so exists, then add lib/mesgl to LD_LIBRARY_PATH
+    #   If lib/mesagl/libGL.so exists, then add lib/mesagl to LD_LIBRARY_PATH
     #   for gui and viewer running with a window.
     #
     #   Eric Brugger, Tue Dec 11 11:52:39 PST 2018
     #   I modified Kathleen's last change so that the logic is now if
-    #   lib/mesgl/libGL.so exists, then add lib/mesgl to LD_LIBRARY_PATH
+    #   lib/mesagl/libGL.so exists, then add lib/mesagl to LD_LIBRARY_PATH
     #   for the engine and the viewer running with a window. The gui doesn't
     #   use GL and saving images without screen capture now works.
     #
     #   Cyrus Harrison, Wed Feb 20 13:13:26 PST 2019
     #   Fixes for mesagl vs osmesa
+    #
+    #   Eric Brugger, Thu Jan  9 16:30:42 PST 2020
+    #   Add lib/mesagl to the LD_LIBRARY_PATH for mcurvit.
     #
     ############################################################################
 
@@ -2922,14 +2928,15 @@ class MainLauncher(object):
             SETENV("DISPLAY", self.generalArgs.viewerdisplay)
 
         #
-        # Use mesagl for opengl with the gui, engine or with the viewer running
-        # with a window.
+        # Use mesagl for opengl with the gui, engine, mcurvit or with the
+        # viewer running with a window.
         #
         mesa_gl_dir = os.path.join(self.visitlibdir,"mesagl")
         mesa_gl_lib = os.path.join(mesa_gl_dir,"libGL.so.1")
         if ( os.path.isfile(mesa_gl_lib) and
             ( self.generalArgs.exe_name.startswith("gui") or
               self.generalArgs.exe_name.startswith("engine") or
+              self.generalArgs.exe_name.startswith("mcurvit") or
               (self.generalArgs.exe_name == "viewer" and
                self.generalArgs.nowin == 0))):
             SETENV("LD_LIBRARY_PATH", self.joinpaths([mesa_gl_dir, GETENV("LD_LIBRARY_PATH")]))
@@ -2998,7 +3005,7 @@ class MainLauncher(object):
         varnames = {}
         for v in vars:
             varnames[v] = v
-        for v in diffvars.keys():
+        for v in list(diffvars.keys()):
             varnames[v] = diffvars[v]
 
         # Check each variable.
@@ -3343,7 +3350,7 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
         else:
             exe = self.generalArgs.exe_name
             exe_ser = self.generalArgs.norun + "_ser"
-            print self.generalArgs.norun, exe, exe_ser
+            print(self.generalArgs.norun, exe, exe_ser)
             if self.generalArgs.norun in (exe, exe_ser):
                 return 1
         return 0
@@ -3442,11 +3449,11 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                     #
                     env = os.environ.copy()
                     if self.parallelArgs.launch[:4] == "msub":
-                        if "PYTHONHOME" in os.environ.keys():
+                        if "PYTHONHOME" in list(os.environ.keys()):
                             del env["PYTHONHOME"]
-                        if "PYTHONPATH" in os.environ.keys():
+                        if "PYTHONPATH" in list(os.environ.keys()):
                             del env["PYTHONPATH"]
-                        if "LD_LIBRARY_PATH" in os.environ.keys():
+                        if "LD_LIBRARY_PATH" in list(os.environ.keys()):
                             del env["LD_LIBRARY_PATH"]
                     ret = self.call(args, stdinpipe=1, env=env)
 
@@ -3455,7 +3462,7 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                     if not submitter.HandledHardwareArguments():
                         if self.parallelArgs.hw_postcmd != None:
                             r = self.call([self.parallelArgs.hw_postcmd])
-                except OSError, e:
+                except OSError as e:
                     self.error("Can't launch using %s. %s" % (self.parallelArgs.launch, e.strerror))
         else:
             args = [os.path.join(self.visitbindir, self.generalArgs.exe_name)]
@@ -3495,7 +3502,7 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                         self.message(banner)
                     try:
                         ret = self.call(args)
-                    except OSError, e:
+                    except OSError as e:
                         self.error("Can't run %s. %s" % (args[0], e.strerror))
         return ret
 
@@ -3597,7 +3604,7 @@ def internallauncher(launcher, visitdir, visitprogram, visitver, visitpluginver,
         exit("This hardware platform is not supported by VisIt.", 1)
     # Print the architectures and exit.
     if launcher.generalArgs.arch:
-        print string.join(supportedarches, " ")
+        print(string.join(supportedarches, " "))
         return 0
 
     launcher.ConsistencyCheck()

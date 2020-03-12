@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: RevolveCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <RevolvePluginInfo.h>
 #include <RevolveAttributes.h>
@@ -43,7 +43,7 @@ RevolveCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 RevolveCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               ADIOSPluginInfo.h
+//  ADIOSPluginInfo.h
 // ****************************************************************************
 
 #ifndef ADIOS_PLUGIN_INFO_H

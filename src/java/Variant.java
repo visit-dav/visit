@@ -13,13 +13,13 @@ import java.lang.*;
 // Purpose:
 //   This class contains data of different types.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb  2 11:53:39 PST 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class Variant extends java.lang.Object

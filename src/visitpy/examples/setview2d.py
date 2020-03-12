@@ -20,7 +20,7 @@ from math import sin, cos, sqrt
 # Check the version.
 ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
-    print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
+    print("This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version()))
 
 def setview2d():
     # Disable redraw until we have things set up.
@@ -79,6 +79,6 @@ def setview2d():
 
 
 if(not os.path.isfile("../../data/curv2d.silo")):
-    print "This script requires the file curv2d.silo to be built in the data directory"
+    print("This script requires the file curv2d.silo to be built in the data directory")
 else:
     setview2d()

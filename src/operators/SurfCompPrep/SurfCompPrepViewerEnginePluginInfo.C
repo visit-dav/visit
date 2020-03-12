@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SurfCompPrepViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <SurfCompPrepPluginInfo.h>
 #include <SurfCompPrepAttributes.h>
@@ -28,8 +28,11 @@ SurfCompPrepAttributes *SurfCompPrepViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SurfCompPrepViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SurfCompPrepViewerEnginePluginInfo::clientAtts  = new SurfCompPrepAttributes;
-    SurfCompPrepViewerEnginePluginInfo::defaultAtts = new SurfCompPrepAttributes;
+    if (SurfCompPrepViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SurfCompPrepViewerEnginePluginInfo::clientAtts  = new SurfCompPrepAttributes;
+        SurfCompPrepViewerEnginePluginInfo::defaultAtts = new SurfCompPrepAttributes;
+    }
 }
 
 // ****************************************************************************

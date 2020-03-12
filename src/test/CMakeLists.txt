@@ -4,6 +4,8 @@
 
 #****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Wed Dec 18, 2019
+#   Added run_visit_test_suite.bat.in configure file for windows.
 #
 #****************************************************************************
 
@@ -25,6 +27,27 @@ IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
                     "run cmake on VisIt's \"src\" directory.")
 ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
 
+
+#
+# generate helper script that has params, like data dir, baseline dir, etc
+# populated to help run test suite out of source easily
+#
+if(NOT WIN32)
+    configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/run_visit_test_suite.sh.in"
+                    "${CMAKE_CURRENT_BINARY_DIR}/tmp/run_visit_test_suite.sh")
+
+    # make sure our script is executable
+    file(
+        COPY ${CMAKE_CURRENT_BINARY_DIR}/tmp/run_visit_test_suite.sh
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                         GROUP_READ GROUP_EXECUTE
+                         WORLD_READ WORLD_EXECUTE
+    )
+else()
+    configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/run_visit_test_suite.bat.in"
+                    "${CMAKE_CURRENT_BINARY_DIR}/run_visit_test_suite.bat")
+endif()
 
 MESSAGE(STATUS "Configuring VisIt Testing Python Module")
 

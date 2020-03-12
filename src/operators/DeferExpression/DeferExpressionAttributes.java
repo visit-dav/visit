@@ -21,7 +21,7 @@ import java.util.Vector;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class DeferExpressionAttributes extends AttributeSubject implements Plugin

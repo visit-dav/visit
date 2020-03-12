@@ -203,3 +203,4 @@ frame0202.png
 frame0203.png
 frame0204.png
 frame0205.png
+frame0206.png

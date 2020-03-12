@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               ANSYSPluginInfo.h
+//  ANSYSPluginInfo.h
 // ****************************************************************************
 
 #ifndef ANSYS_PLUGIN_INFO_H

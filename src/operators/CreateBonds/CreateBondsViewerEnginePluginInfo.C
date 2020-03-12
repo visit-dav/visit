@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: CreateBondsViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <CreateBondsPluginInfo.h>
 #include <CreateBondsAttributes.h>
@@ -28,8 +28,11 @@ CreateBondsAttributes *CreateBondsViewerEnginePluginInfo::defaultAtts = NULL;
 void
 CreateBondsViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    CreateBondsViewerEnginePluginInfo::clientAtts  = new CreateBondsAttributes;
-    CreateBondsViewerEnginePluginInfo::defaultAtts = new CreateBondsAttributes;
+    if (CreateBondsViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        CreateBondsViewerEnginePluginInfo::clientAtts  = new CreateBondsAttributes;
+        CreateBondsViewerEnginePluginInfo::defaultAtts = new CreateBondsAttributes;
+    }
 }
 
 // ****************************************************************************

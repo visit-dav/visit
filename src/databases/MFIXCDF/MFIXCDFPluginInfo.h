@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               MFIXCDFPluginInfo.h
+//  MFIXCDFPluginInfo.h
 // ****************************************************************************
 
 #ifndef MFIXCDF_PLUGIN_INFO_H
@@ -48,8 +48,8 @@ class MFIXCDFCommonPluginInfo : public virtual CommonDatabasePluginInfo, public 
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class MFIXCDFMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual MFIXCDFCommonPluginInfo

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: CylinderViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <CylinderPluginInfo.h>
 #include <CylinderAttributes.h>
@@ -28,8 +28,11 @@ CylinderAttributes *CylinderViewerEnginePluginInfo::defaultAtts = NULL;
 void
 CylinderViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    CylinderViewerEnginePluginInfo::clientAtts  = new CylinderAttributes;
-    CylinderViewerEnginePluginInfo::defaultAtts = new CylinderAttributes;
+    if (CylinderViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        CylinderViewerEnginePluginInfo::clientAtts  = new CylinderAttributes;
+        CylinderViewerEnginePluginInfo::defaultAtts = new CylinderAttributes;
+    }
 }
 
 // ****************************************************************************

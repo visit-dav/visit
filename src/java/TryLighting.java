@@ -20,7 +20,7 @@ import llnl.visit.plots.PseudocolorAttributes;
 //   also shows how to observe the viewer's state objects so actions can be
 //   performed when new state arrives.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 15 16:10:44 PST 2002

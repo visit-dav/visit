@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               GMVPluginInfo.h
+//  GMVPluginInfo.h
 // ****************************************************************************
 
 #ifndef GMV_PLUGIN_INFO_H

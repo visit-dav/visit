@@ -17,7 +17,7 @@
 #define GENERATOR_NAME "xml2java"
 
 // ****************************************************************************
-//  File:  GenerateAtts
+//  File:  GenerateJava
 //
 //  Purpose:
 //    Contains a set of classes which override the default implementation
@@ -190,7 +190,7 @@ class JavaGeneratorField : public virtual Field
         if (isArray)
         {
             c << "        // Compare the " << name << " arrays." << endl;
-            c << "        boolean " << name << "_equal = true;" << endl; 
+            c << "        boolean " << name << "_equal = true;" << endl;
             c << "        for(i = 0; i < " << length << " && "
               << name << "_equal; ++i)" << endl;
             c << "            " << name << "_equal = ("
@@ -200,7 +200,7 @@ class JavaGeneratorField : public virtual Field
         else if (isVector)
         {
             c << "        // Compare the elements in the " << name << " vector." << endl;
-            c << "        boolean " << name << "_equal = (obj." << name << ".size() == " << name << ".size());" << endl; 
+            c << "        boolean " << name << "_equal = (obj." << name << ".size() == " << name << ".size());" << endl;
             c << "        for(i = 0; (i < " << name << ".size()) && "
               << name << "_equal; ++i)" << endl;
             c << "        {" << endl;
@@ -261,7 +261,7 @@ class JavaGeneratorInt : public virtual Int , public virtual JavaGeneratorField
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
 };
 
@@ -275,7 +275,7 @@ class JavaGeneratorIntArray : public virtual IntArray , public virtual JavaGener
     JavaGeneratorIntArray(const QString &s, const QString &n, const QString &l)
         : Field("intArray",n,l), IntArray(s,n,l), JavaGeneratorField("intArray",n,l) { }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "int[]";
     }
@@ -300,7 +300,7 @@ class JavaGeneratorIntArray : public virtual IntArray , public virtual JavaGener
         c << "        " << name << " = new int[" << length << "];" << endl;
 
         if (length < 4)
-        { 
+        {
            for(int i = 0; i < length; ++i)
            {
                c << "        " << name << "[" << i << "] = "
@@ -348,7 +348,7 @@ class JavaGeneratorIntArray : public virtual IntArray , public virtual JavaGener
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + intArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + intArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
 };
 
@@ -362,13 +362,13 @@ class JavaGeneratorIntVector : public virtual IntVector , public virtual JavaGen
     JavaGeneratorIntVector(const QString &n, const QString &l)
         : Field("intVector",n,l), IntVector(n,l), JavaGeneratorField("intVector",n,l) { }
 
-    virtual void AddImports(UniqueStringList &sl) 
-    { 
+    virtual void AddImports(UniqueStringList &sl)
+    {
         sl.AddString("import java.lang.Integer;\n");
         sl.AddString("import java.util.Vector;\n");
     }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "Vector";
     }
@@ -410,7 +410,7 @@ class JavaGeneratorIntVector : public virtual IntVector , public virtual JavaGen
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + intVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + intVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
     virtual QString GetVectorStorageName() const
     {
@@ -419,7 +419,7 @@ class JavaGeneratorIntVector : public virtual IntVector , public virtual JavaGen
 };
 
 
-// 
+//
 // ----------------------------------- Bool -----------------------------------
 //
 class JavaGeneratorBool : public virtual Bool , public virtual JavaGeneratorField
@@ -428,7 +428,7 @@ class JavaGeneratorBool : public virtual Bool , public virtual JavaGeneratorFiel
     JavaGeneratorBool(const QString &n, const QString &l)
         : Field("boolean",n,l), Bool(n,l), JavaGeneratorField("boolean",n,l) { }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "boolean";
     }
@@ -450,7 +450,7 @@ class JavaGeneratorBool : public virtual Bool , public virtual JavaGeneratorFiel
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + boolToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + boolToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
 };
 
@@ -481,7 +481,7 @@ class JavaGeneratorFloat : public virtual Float , public virtual JavaGeneratorFi
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + floatToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + floatToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
 };
 
@@ -495,7 +495,7 @@ class JavaGeneratorFloatArray : public virtual FloatArray , public virtual JavaG
     JavaGeneratorFloatArray(const QString &s, const QString &n, const QString &l)
         : Field("floatArray",n,l), FloatArray(s,n,l), JavaGeneratorField("floatArray",n,l) { }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "float[]";
     }
@@ -520,7 +520,7 @@ class JavaGeneratorFloatArray : public virtual FloatArray , public virtual JavaG
         c << "        " << name << " = new float[" << length << "];" << endl;
 
         if (length < 4)
-        { 
+        {
            for(int i = 0; i < length; ++i)
            {
                c << "        " << name << "[" << i << "] = "
@@ -568,7 +568,7 @@ class JavaGeneratorFloatArray : public virtual FloatArray , public virtual JavaG
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + floatArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + floatArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
 };
 
@@ -581,13 +581,13 @@ class JavaGeneratorFloatVector : public virtual FloatVector , public virtual Jav
     JavaGeneratorFloatVector(const QString &n, const QString &l)
         : Field("floatVector",n,l), FloatVector(n,l), JavaGeneratorField("floatVector",n,l) { }
 
-    virtual void AddImports(UniqueStringList &sl) 
-    { 
+    virtual void AddImports(UniqueStringList &sl)
+    {
         sl.AddString("import java.lang.Float;\n");
         sl.AddString("import java.util.Vector;\n");
     }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "Vector";
     }
@@ -627,7 +627,7 @@ class JavaGeneratorFloatVector : public virtual FloatVector , public virtual Jav
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + floatVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + floatVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
     virtual QString GetVectorStorageName() const
     {
@@ -662,7 +662,7 @@ class JavaGeneratorDouble : public virtual Double , public virtual JavaGenerator
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + doubleToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + doubleToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
 };
 
@@ -676,7 +676,7 @@ class JavaGeneratorDoubleArray : public virtual DoubleArray , public virtual Jav
     JavaGeneratorDoubleArray(const QString &s, const QString &n, const QString &l)
         : Field("doubleArray",n,l), DoubleArray(s,n,l), JavaGeneratorField("doubleArray",n,l) { }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "double[]";
     }
@@ -702,7 +702,7 @@ class JavaGeneratorDoubleArray : public virtual DoubleArray , public virtual Jav
         c << "        " << name << " = new double[" << length << "];" << endl;
 
         if (length < 4)
-        { 
+        {
            for(int i = 0; i < length; ++i)
            {
                c << "        " << name << "[" << i << "] = "
@@ -750,7 +750,7 @@ class JavaGeneratorDoubleArray : public virtual DoubleArray , public virtual Jav
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + doubleArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + doubleArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
 };
 
@@ -763,13 +763,13 @@ class JavaGeneratorDoubleVector : public virtual DoubleVector , public virtual J
     JavaGeneratorDoubleVector(const QString &n, const QString &l)
         : Field("doubleVector",n,l), DoubleVector(n,l), JavaGeneratorField("doubleVector",n,l) { }
 
-    virtual void AddImports(UniqueStringList &sl) 
-    { 
+    virtual void AddImports(UniqueStringList &sl)
+    {
         sl.AddString("import java.lang.Double;\n");
         sl.AddString("import java.util.Vector;\n");
     }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "Vector";
     }
@@ -809,7 +809,7 @@ class JavaGeneratorDoubleVector : public virtual DoubleVector , public virtual J
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + doubleVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + doubleVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
     virtual QString GetVectorStorageName() const
     {
@@ -827,7 +827,7 @@ class JavaGeneratorUChar : public virtual UChar , public virtual JavaGeneratorFi
     JavaGeneratorUChar(const QString &n, const QString &l)
         : Field("uchar",n,l), UChar(n,l), JavaGeneratorField("uchar",n,l) { }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "byte";
     }
@@ -849,7 +849,7 @@ class JavaGeneratorUChar : public virtual UChar , public virtual JavaGeneratorFi
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + ucharToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + ucharToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
 };
 
@@ -863,7 +863,7 @@ class JavaGeneratorUCharArray : public virtual UCharArray , public virtual JavaG
     JavaGeneratorUCharArray(const QString &s, const QString &n, const QString &l)
         : Field("ucharArray",n,l), UCharArray(s,n,l), JavaGeneratorField("byte",n,l) { }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "byte[]";
     }
@@ -888,7 +888,7 @@ class JavaGeneratorUCharArray : public virtual UCharArray , public virtual JavaG
         c << "        " << name << " = new byte[" << length << "];" << endl;
 
         if (length < 4)
-        { 
+        {
            for(int i = 0; i < length; ++i)
            {
                c << "        " << name << "[" << i << "] = "
@@ -936,7 +936,7 @@ class JavaGeneratorUCharArray : public virtual UCharArray , public virtual JavaG
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + ucharArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + ucharArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
 };
 
@@ -950,13 +950,13 @@ class JavaGeneratorUCharVector : public virtual UCharVector , public virtual Jav
     JavaGeneratorUCharVector(const QString &n, const QString &l)
         : Field("ucharVector",n,l), UCharVector(n,l), JavaGeneratorField("ucharVector",n,l) { }
 
-    virtual void AddImports(UniqueStringList &sl) 
-    { 
+    virtual void AddImports(UniqueStringList &sl)
+    {
         sl.AddString("import java.lang.Byte;\n");
         sl.AddString("import java.util.Vector;\n");
     }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "Vector";
     }
@@ -996,7 +996,7 @@ class JavaGeneratorUCharVector : public virtual UCharVector , public virtual Jav
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + ucharVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + ucharVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
     virtual QString GetVectorStorageName() const
     {
@@ -1014,7 +1014,7 @@ class JavaGeneratorString : public virtual String , public virtual JavaGenerator
     JavaGeneratorString(const QString &n, const QString &l)
         : Field("string",n,l), String(n,l), JavaGeneratorField("string",n,l) { }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "String";
     }
@@ -1044,7 +1044,7 @@ class JavaGeneratorString : public virtual String , public virtual JavaGenerator
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
     virtual void WriteSourceComparison(QTextStream &c)
     {
@@ -1062,12 +1062,12 @@ class JavaGeneratorStringVector : public virtual StringVector , public virtual J
     JavaGeneratorStringVector(const QString &n, const QString &l)
         : Field("stringVector",n,l), StringVector(n,l), JavaGeneratorField("stringVector",n,l) { }
 
-    virtual void AddImports(UniqueStringList &sl) 
-    { 
+    virtual void AddImports(UniqueStringList &sl)
+    {
         sl.AddString("import java.util.Vector;\n");
     }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "Vector";
     }
@@ -1104,7 +1104,7 @@ class JavaGeneratorStringVector : public virtual StringVector , public virtual J
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + stringVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + stringVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
     virtual QString GetVectorStorageName() const
     {
@@ -1122,7 +1122,7 @@ class JavaGeneratorColorTable : public virtual ColorTable , public virtual JavaG
     JavaGeneratorColorTable(const QString &n, const QString &l)
         : Field("colortable",n,l), ColorTable(n,l), JavaGeneratorField("colortable",n,l) { }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "String";
     }
@@ -1149,7 +1149,7 @@ class JavaGeneratorColorTable : public virtual ColorTable , public virtual JavaG
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
     virtual void WriteSourceComparison(QTextStream &c)
     {
@@ -1167,13 +1167,13 @@ class JavaGeneratorColor : public virtual Color , public virtual JavaGeneratorFi
     JavaGeneratorColor(const QString &n, const QString &l)
         : Field("color",n,l), Color(n,l), JavaGeneratorField("color",n,l) { }
 
-    virtual void AddImports(UniqueStringList &sl) 
-    { 
+    virtual void AddImports(UniqueStringList &sl)
+    {
         if(generatePlugin)
             sl.AddString("import llnl.visit.ColorAttribute;\n");
     }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "ColorAttribute";
     }
@@ -1246,7 +1246,7 @@ class JavaGeneratorLineWidth : public virtual LineWidth , public virtual JavaGen
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
 };
 
@@ -1277,7 +1277,7 @@ class JavaGeneratorOpacity : public virtual Opacity , public virtual JavaGenerat
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + doubleToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + doubleToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
 };
 
@@ -1294,7 +1294,7 @@ class JavaGeneratorVariableName : public virtual VariableName,
           JavaGeneratorField("variablename",n,l)
            { }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "String";
     }
@@ -1324,7 +1324,7 @@ class JavaGeneratorVariableName : public virtual VariableName,
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+        c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
     }
     virtual void WriteSourceComparison(QTextStream &c)
     {
@@ -1342,8 +1342,8 @@ class JavaGeneratorAtt : public virtual Att , public virtual JavaGeneratorField
     JavaGeneratorAtt(const QString &t, const QString &n, const QString &l)
         : Field("att",n,l), Att(t,n,l), JavaGeneratorField("att",n,l) { }
 
-    virtual void AddImports(UniqueStringList &sl) 
-    { 
+    virtual void AddImports(UniqueStringList &sl)
+    {
         if(generatePlugin)
         {
             QString import(QString("import llnl.visit.%1;\n").arg(attType));
@@ -1391,8 +1391,8 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
     JavaGeneratorAttVector(const QString &t, const QString &n, const QString &l)
         : Field("attVector",n,l), AttVector(t,n,l), JavaGeneratorField("attVector",n,l) { }
 
-    virtual void AddImports(UniqueStringList &sl) 
-    { 
+    virtual void AddImports(UniqueStringList &sl)
+    {
         sl.AddString("import java.util.Vector;\n");
         if(generatePlugin)
         {
@@ -1401,7 +1401,7 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
         }
     }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "Vector";
     }
@@ -1532,7 +1532,7 @@ class JavaGeneratorMapNode : public virtual MapNode , public virtual JavaGenerat
     JavaGeneratorMapNode(const QString &n, const QString &l)
         : Field("MapNode",n,l), MapNode(n,l), JavaGeneratorField("MapNode",n,l) { }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "MapNode";
     }
@@ -1578,7 +1578,7 @@ class JavaGeneratorEnum : public virtual Enum , public virtual JavaGeneratorFiel
     JavaGeneratorEnum(const QString &t, const QString &n, const QString &l)
         : Field("enum",n,l), Enum(t,n,l), JavaGeneratorField("enum",n,l) { }
 
-    virtual QString GetCPPName(bool, const QString &) 
+    virtual QString GetCPPName(bool, const QString &)
     {
         return "int";
     }
@@ -1642,7 +1642,7 @@ class JavaGeneratorScaleMode : public virtual ScaleMode , public virtual JavaGen
     }
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
-        c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent);" << endl;       
+        c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent);" << endl;
     }
 };
 
@@ -1708,7 +1708,7 @@ class JavaGeneratorGlyphType : public virtual GlyphType , public virtual JavaGen
 //   Brad Whitlock, Wed Dec 8 15:52:11 PST 2004
 //   Added support for variable names.
 //
-//   Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007 
+//   Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007
 //   Added scalemode.
 //
 //   Brad Whitlock, Thu Feb  2 12:09:43 PST 2012
@@ -1937,7 +1937,7 @@ class JavaGeneratorAttribute : public GeneratorBase
         WriteSourceAGVectorFunctions(h, name);
 
         //
-        // Write user-defined functions 
+        // Write user-defined functions
         //
         WriteUserDefinedFunctions(h);
 
@@ -1999,7 +1999,7 @@ private:
             if (len > retval)
                 retval = len;
         }
- 
+
         return retval;
     }
 
@@ -2384,6 +2384,9 @@ private:
 //   Brad Whitlock, Thu Feb 28 16:26:46 PST 2008
 //   Made it use a base class.
 //
+//   Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
+//   Added hl arg, for haslicense.
+//
 // ----------------------------------------------------------------------------
 #include <PluginBase.h>
 
@@ -2394,8 +2397,8 @@ class JavaGeneratorPlugin : public PluginBase
   public:
     JavaGeneratorPlugin(const QString &n,const QString &l,const QString &t,
         const QString &vt,const QString &dt, const QString &v, const QString &ifile,
-        bool hw, bool ho, bool onlyengine, bool noengine) : 
-        PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine), atts(NULL)
+        bool hw, bool ho, bool hl, bool onlyengine, bool noengine) :
+        PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,hl,onlyengine,noengine), atts(NULL)
     {
     }
 

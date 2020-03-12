@@ -11,7 +11,7 @@
 // ****************************************************************************
 // Method: SingleAttributeConfigManager::SingleAttributeConfigManager
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the SingleAttributeConfigManager class.
 //
 // Programmer: Jeremy Meredith
@@ -20,7 +20,7 @@
 // Modifications:
 //   Jeremy Meredith, Thu Apr 29 12:14:13 EDT 2010
 //   Added ability to do a selective save.
-//   
+//
 // ****************************************************************************
 
 SingleAttributeConfigManager::SingleAttributeConfigManager(AttributeGroup *att)
@@ -32,14 +32,14 @@ SingleAttributeConfigManager::SingleAttributeConfigManager(AttributeGroup *att)
 // ****************************************************************************
 // Method: SingleAttributeConfigManager::~SingleAttributeConfigManager
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the SingleAttributeConfigManager class.
 //
 // Programmer: Jeremy Meredith
 // Creation:   January  2, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 SingleAttributeConfigManager::~SingleAttributeConfigManager()
@@ -49,7 +49,7 @@ SingleAttributeConfigManager::~SingleAttributeConfigManager()
 // ****************************************************************************
 // Method: SingleAttributeConfigManager::Export
 //
-// Purpose: 
+// Purpose:
 //   Exports the attribute to the named file.
 //
 // Returns:    true on success; false otherwise
@@ -81,7 +81,7 @@ SingleAttributeConfigManager::Export(const std::string &filename,
 // ****************************************************************************
 // Method: SingleAttributeConfigManager::Import
 //
-// Purpose: 
+// Purpose:
 //   Imports the atribute from the named file.
 //
 // Returns:    true on success; false otherwise
@@ -93,7 +93,10 @@ SingleAttributeConfigManager::Export(const std::string &filename,
 //
 //   Tom Fogal, Fri Mar  6 10:26:12 MST 2009
 //   Fix: function wasn't returning anything in the `success' case.
-//   
+//
+//   Eric Brugger, Tue Nov 26 14:16:07 PST 2019
+//   Added code to delete node to eliminate a memory leak.
+//
 // ****************************************************************************
 bool
 SingleAttributeConfigManager::Import(std::istream& in)
@@ -104,6 +107,9 @@ SingleAttributeConfigManager::Import(std::istream& in)
         return false;
 
     attribute->SetFromNode(node);
+
+    delete node;
+
     return true;
 }
 
@@ -116,13 +122,16 @@ SingleAttributeConfigManager::Import(const std::string &filename)
         return false;
 
     attribute->SetFromNode(node);
+
+    delete node;
+
     return true;
 }
 
 // ****************************************************************************
 // Method: SingleAttributeConfigManager::WriteConfigFile
 //
-// Purpose: 
+// Purpose:
 //   Writes the attribute to a file.
 //
 // Arguments:
@@ -176,7 +185,7 @@ SingleAttributeConfigManager::WriteConfigFile(const char *filename)
 // ****************************************************************************
 // Method: SingleAttributeConfigManager::ReadConfigFile
 //
-// Purpose: 
+// Purpose:
 //   Reads the attribute from a file.
 //
 // Arguments:
@@ -186,7 +195,7 @@ SingleAttributeConfigManager::WriteConfigFile(const char *filename)
 // Creation:   January  2, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 

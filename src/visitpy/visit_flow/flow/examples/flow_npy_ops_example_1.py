@@ -22,8 +22,8 @@ from flow.filters import *
 def main():
     w = Workspace()
     w.register_filters(npy_ops)
-    v_a = npy.array(range(10),dtype=npy.double)
-    v_b = npy.array(range(10),dtype=npy.double)
+    v_a = npy.array(list(range(10)),dtype=npy.double)
+    v_b = npy.array(list(range(10)),dtype=npy.double)
     w.registry_add(":src_a",v_a)
     w.registry_add(":src_b",v_b)
     w.add_filter("add","f1")
@@ -46,11 +46,11 @@ def main():
     # f5 = f4 + f3
     w.connect("f3","f5:in_a")
     w.connect("f4","f5:in_b")
-    print "Setting up Workspace"
-    print "v_a: ", v_a
-    print "v_b: ", v_a
-    print "Executing: (v_a + v_b)^2 + (v_a - v_b)^2"
-    print w.execute()
+    print("Setting up Workspace")
+    print("v_a: ", v_a)
+    print("v_b: ", v_a)
+    print("Executing: (v_a + v_b)^2 + (v_a - v_b)^2")
+    print(w.execute())
 
 if __name__ == "__main__":
     main()

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               CaleHDF5PluginInfo.h
+//  CaleHDF5PluginInfo.h
 // ****************************************************************************
 
 #ifndef CALEHDF5_PLUGIN_INFO_H

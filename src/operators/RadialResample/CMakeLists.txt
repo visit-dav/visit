@@ -3,6 +3,8 @@ PROJECT(RadialResample_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(RadialResample)
+
 SET(COMMON_SOURCES
 RadialResamplePluginInfo.C
 RadialResampleCommonPluginInfo.C

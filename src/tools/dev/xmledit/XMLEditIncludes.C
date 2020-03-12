@@ -54,18 +54,18 @@ XMLEditIncludes::XMLEditIncludes(QWidget *p)
     hLayout->addSpacing(10);
 
     QGridLayout *topLayout = new QGridLayout();
-    
+
     topLayout->setColumnMinimumWidth(1, 20);
     int row = 0;
 
     fileGroup = new QButtonGroup(this);
-    
+
     CButton = new QRadioButton(tr("Source (.C) file"), this);
     HButton = new QRadioButton(tr("Header (.h) file"), this);
     CButton->setChecked(true);
     fileGroup->addButton(CButton,0);
     fileGroup->addButton(HButton,1);
-    
+
     topLayout->addWidget(CButton, row, 0);
     topLayout->addWidget(HButton, row, 1);
     row++;
@@ -76,7 +76,7 @@ XMLEditIncludes::XMLEditIncludes(QWidget *p)
     quotesButton->setChecked(true);
     quotedGroup->addButton(quotesButton,0);
     quotedGroup->addButton(bracketsButton,1);
-    
+
     topLayout->addWidget(quotesButton, row, 0);
     topLayout->addWidget(bracketsButton, row, 1);
     row++;
@@ -93,7 +93,7 @@ XMLEditIncludes::XMLEditIncludes(QWidget *p)
 
     topLayout->setRowStretch(row, 100);
     row++;
-    
+
     hLayout->addLayout(topLayout);
 
     connect(includelist, SIGNAL(currentRowChanged(int)),
@@ -118,21 +118,21 @@ XMLEditIncludes::XMLEditIncludes(QWidget *p)
 // ****************************************************************************
 // Method: XMLEditIncludes::CountIncludes
 //
-// Purpose: 
+// Purpose:
 //   Return the number of include having a given name.
 //
 // Arguments:
 //  name : The name of the include that we're interested in.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 6 15:53:04 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -171,7 +171,7 @@ XMLEditIncludes::UpdateWindowContents()
     for (size_t i=0; i<a->includes.size(); i++)
     {
         if(CountIncludes(a->includes[i]->include) > 1)
-        { 
+        {
             QString id = QString("%1 [%2]").arg(a->includes[i]->include).arg(a->includes[i]->target);
             includelist->addItem(id);
         }
@@ -230,6 +230,9 @@ XMLEditIncludes::UpdateWindowSensitivity()
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Thu Jan  2 08:59:31 MST 2020
+//    Set fileGroup and quoteGroup checked buttons when index != -1.
+//
 // ****************************************************************************
 
 void
@@ -252,8 +255,8 @@ XMLEditIncludes::UpdateWindowSingleItem()
         Include *n = a->includes[index];
         target->setText(n->target);
         file->setText(n->include);
-        //fileGroup->setButton((n->destination == "source") ? 0 : 1);
-        //quotedGroup->setButton(n->quoted ? 0 : 1);
+        fileGroup->button((n->destination == "source") ? 0 : 1)->setChecked(true);
+        quotedGroup->button(n->quoted ? 0 : 1)->setChecked(true);
     }
 
     UpdateWindowSensitivity();
@@ -434,10 +437,10 @@ XMLEditIncludes::includelistNew()
         if (!okay)
             newid++;
     }
-    
+
     Include *n = new Include("header",false, "xml2atts");
     n->include = newname;
-    
+
     a->includes.push_back(n);
     UpdateWindowContents();
     for (int i=0; i<includelist->count(); i++)

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ParallelCoordinatesViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ParallelCoordinatesPluginInfo.h>
 #include <avtParallelCoordinatesPlot.h>
@@ -29,8 +29,11 @@ ParallelCoordinatesAttributes *ParallelCoordinatesViewerEnginePluginInfo::defaul
 void
 ParallelCoordinatesViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ParallelCoordinatesViewerEnginePluginInfo::clientAtts  = new ParallelCoordinatesAttributes;
-    ParallelCoordinatesViewerEnginePluginInfo::defaultAtts = new ParallelCoordinatesAttributes;
+    if (ParallelCoordinatesViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ParallelCoordinatesViewerEnginePluginInfo::clientAtts  = new ParallelCoordinatesAttributes;
+        ParallelCoordinatesViewerEnginePluginInfo::defaultAtts = new ParallelCoordinatesAttributes;
+    }
 }
 
 // ****************************************************************************

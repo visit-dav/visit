@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               unvPluginInfo.h
+//  unvPluginInfo.h
 // ****************************************************************************
 
 #ifndef UNV_PLUGIN_INFO_H

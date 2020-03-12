@@ -14,6 +14,13 @@ elseif(VISIT_OSMESA_DIR)
     include(${VISIT_SOURCE_DIR}/CMake/FindOSMesa.cmake)
 endif()
 
+if(WIN32 AND VISIT_MESA_REPLACE_OPENGL)
+    # Standard find of system GL, still needed in this instance.
+    include(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
+    set(OPENGL_LIBRARIES ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
+    return()
+endif()
+
 
 if(NOT VISIT_MESAGL_DIR)
     if(VISIT_OPENGL_DIR)

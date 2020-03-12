@@ -28,7 +28,7 @@ class TestFile(unittest.TestCase):
         odir = pjoin("tests","_test_output")
         if not os.path.isdir(odir):
             os.mkdir(odir)
-        print ""
+        print("")
     def test_01_workspace_setup(self):
         w = Workspace()
         w.register_filters(file_ops)
@@ -42,7 +42,7 @@ class TestFile(unittest.TestCase):
         mv = w.add_filter("file_rename","mv")
         mv["pattern"] = pjoin(odir,"result.%04d.txt")
         w.connect("finput","mv:in")
-        print w.graph
+        print(w.graph)
         sspace = StateSpace({"index":10})
         sgen = StateVectorGenerator(sspace)
         for svec in sgen:

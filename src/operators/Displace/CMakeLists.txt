@@ -3,6 +3,8 @@ PROJECT(Displace_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Displace)
+
 SET(COMMON_SOURCES
 DisplacePluginInfo.C
 DisplaceCommonPluginInfo.C

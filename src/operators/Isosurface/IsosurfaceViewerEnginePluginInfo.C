@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: IsosurfaceViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <IsosurfacePluginInfo.h>
 #include <IsosurfaceAttributes.h>
@@ -28,8 +28,11 @@ IsosurfaceAttributes *IsosurfaceViewerEnginePluginInfo::defaultAtts = NULL;
 void
 IsosurfaceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    IsosurfaceViewerEnginePluginInfo::clientAtts  = new IsosurfaceAttributes;
-    IsosurfaceViewerEnginePluginInfo::defaultAtts = new IsosurfaceAttributes;
+    if (IsosurfaceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        IsosurfaceViewerEnginePluginInfo::clientAtts  = new IsosurfaceAttributes;
+        IsosurfaceViewerEnginePluginInfo::defaultAtts = new IsosurfaceAttributes;
+    }
 }
 
 // ****************************************************************************

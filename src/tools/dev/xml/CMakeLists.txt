@@ -10,25 +10,10 @@
 #   Kathleen Bonnell, Mon Jan 10 07:59:28 MST 2010
 #   Remove PROGRAM9 (xml2projectfile), and PROGRAM5 (xml2makefile).
 #
+#   Cyrus Harrison, Mon Dec  9 13:39:19 PST 2019
+#   Rename main files to correspond to their actual use.
+#
 #****************************************************************************
-
-SET(PROGRAM1_SOURCES main1.C)
-
-SET(PROGRAM2_SOURCES main2.C)
-
-SET(PROGRAM3_SOURCES main3.C)
-
-SET(PROGRAM4_SOURCES main4.C)
-
-SET(PROGRAM6_SOURCES main6.C)
-
-SET(PROGRAM7_SOURCES main7.C)
-
-SET(PROGRAM8_SOURCES main8.C)
-
-SET(PROGRAM10_SOURCES main10.C)
-
-SET(XML2SIM_SOURCES xml2sim.C)
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
@@ -39,15 +24,15 @@ ${VISIT_SOURCE_DIR}/common/utility
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
-ADD_EXECUTABLE(xmltest         ${PROGRAM1_SOURCES})
-ADD_EXECUTABLE(xml2atts        ${PROGRAM2_SOURCES})
-ADD_EXECUTABLE(xml2window      ${PROGRAM3_SOURCES})
-ADD_EXECUTABLE(xml2info        ${PROGRAM4_SOURCES})
-ADD_EXECUTABLE(xml2avt         ${PROGRAM6_SOURCES})
-ADD_EXECUTABLE(xml2python      ${PROGRAM7_SOURCES})
-ADD_EXECUTABLE(xml2java        ${PROGRAM8_SOURCES})
-ADD_EXECUTABLE(xml2cmake       ${PROGRAM10_SOURCES})
-ADD_EXECUTABLE(xml2sim         ${XML2SIM_SOURCES})
+ADD_EXECUTABLE(xmltest         xmltest.C)
+ADD_EXECUTABLE(xml2atts        xml2atts.C)
+ADD_EXECUTABLE(xml2window      xml2window.C)
+ADD_EXECUTABLE(xml2info        xml2info.C)
+ADD_EXECUTABLE(xml2avt         xml2avt.C)
+ADD_EXECUTABLE(xml2python      xml2python.C)
+ADD_EXECUTABLE(xml2java        xml2java.C)
+ADD_EXECUTABLE(xml2cmake       xml2cmake.C)
+ADD_EXECUTABLE(xml2sim         xml2sim.C)
 
 SET(RELEVANT_QT_LIBS 
     ${QT_QTXML_LIBRARY}

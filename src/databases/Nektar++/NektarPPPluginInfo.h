@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               NektarPPPluginInfo.h
+//  NektarPPPluginInfo.h
 // ****************************************************************************
 
 #ifndef NEKTARPP_PLUGIN_INFO_H
@@ -48,8 +48,8 @@ class NektarPPCommonPluginInfo : public virtual CommonDatabasePluginInfo, public
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class NektarPPMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual NektarPPCommonPluginInfo

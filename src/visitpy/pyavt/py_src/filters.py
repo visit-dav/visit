@@ -97,7 +97,7 @@ class SimplePythonExpression(PythonExpression):
         """
         nsets = len(data_sets)
         res_sets = []
-        for i in xrange(nsets):
+        for i in range(nsets):
             res = self.derive_variable(data_sets[i],domain_ids[i])
             res.SetName(self.output_var_name)
             rset = data_sets[i].NewInstance()
@@ -172,7 +172,7 @@ class SimplePythonQuery(PythonQuery):
         execute_chunk is called on each dataset.
         """
         nsets = len(data_sets)
-        for i in xrange(nsets):
+        for i in range(nsets):
             self.execute_chunk(data_sets[i],domain_ids[i])
     def execute_chunk(self,ds_in,domain_id):
         """

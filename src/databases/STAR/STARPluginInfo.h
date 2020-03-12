@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               STARPluginInfo.h
+//  STARPluginInfo.h
 // ****************************************************************************
 
 #ifndef STAR_PLUGIN_INFO_H

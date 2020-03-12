@@ -332,7 +332,7 @@ class PyOpenCLContextManager(object):
             tbytes += e.nbytes
             tqte   += e.queued_to_end()
             tste   += e.start_to_end()
-            if e.tag in ttag.keys():
+            if e.tag in list(ttag.keys()):
                 t = ttag[e.tag]
                 t["nevents"] += 1
                 t["nbytes"] += e.nbytes
@@ -348,7 +348,7 @@ class PyOpenCLContextManager(object):
         tmbytes, tgbytes = nbytes_mb_gb(tbytes)
         res += cls.ctx_info
         res += "\nTag Totals:\n"
-        for k,v in ttag.items():
+        for k,v in list(ttag.items()):
             nevents = v["nevents"]
             etype   = v["etype"]
             nbytes  = v["nbytes"]

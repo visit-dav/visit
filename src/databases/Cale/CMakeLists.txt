@@ -3,6 +3,8 @@ PROJECT(Cale_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(Cale)
+
 SET(COMMON_SOURCES
 CalePluginInfo.C
 CaleCommonPluginInfo.C

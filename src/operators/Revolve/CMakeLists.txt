@@ -3,6 +3,8 @@ PROJECT(Revolve_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Revolve)
+
 SET(COMMON_SOURCES
 RevolvePluginInfo.C
 RevolveCommonPluginInfo.C

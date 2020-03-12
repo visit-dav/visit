@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: InverseGhostZoneViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <InverseGhostZonePluginInfo.h>
 #include <InverseGhostZoneAttributes.h>
@@ -28,8 +28,11 @@ InverseGhostZoneAttributes *InverseGhostZoneViewerEnginePluginInfo::defaultAtts 
 void
 InverseGhostZoneViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    InverseGhostZoneViewerEnginePluginInfo::clientAtts  = new InverseGhostZoneAttributes;
-    InverseGhostZoneViewerEnginePluginInfo::defaultAtts = new InverseGhostZoneAttributes;
+    if (InverseGhostZoneViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        InverseGhostZoneViewerEnginePluginInfo::clientAtts  = new InverseGhostZoneAttributes;
+        InverseGhostZoneViewerEnginePluginInfo::defaultAtts = new InverseGhostZoneAttributes;
+    }
 }
 
 // ****************************************************************************

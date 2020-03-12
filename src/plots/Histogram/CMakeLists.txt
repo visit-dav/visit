@@ -3,6 +3,8 @@ PROJECT(Histogram_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Histogram)
+
 SET(COMMON_SOURCES
 HistogramPluginInfo.C
 HistogramCommonPluginInfo.C

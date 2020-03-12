@@ -170,12 +170,12 @@ Definition:
 // ****************************************************************************
 // Method: LabelAttributes::ProcessOldVersions
 //
-// Purpose: 
+// Purpose:
 //   This method allows handling of older config/session files that may
 //   contain fields that are no longer present or have been modified/renamed.
 //
 // Programmer: Kathleen Biagas
-// Creation:   April 4, 2017 
+// Creation:   April 4, 2017
 //
 // Modifications:
 //
@@ -367,7 +367,7 @@ Definition:
 // ****************************************************************************
 // Method: LabelViewerEnginePluginInfo::PrivateSetPlotAtts
 //
-// Purpose: 
+// Purpose:
 //   Initializes the plot's varType attribute using the metadata.
 //
 // Arguments:
@@ -393,7 +393,7 @@ Definition:
 #include <DebugStream.h>
 #include <avtPlotMetaData.h>
 void
-LabelViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
+LabelViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     const avtPlotMetaData &plot)
 {
     LabelAttributes *labelAtts = (LabelAttributes *)atts;

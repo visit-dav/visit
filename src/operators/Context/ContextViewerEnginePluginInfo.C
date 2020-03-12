@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ContextViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ContextPluginInfo.h>
 #include <ContextAttributes.h>
@@ -28,8 +28,11 @@ ContextAttributes *ContextViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ContextViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ContextViewerEnginePluginInfo::clientAtts  = new ContextAttributes;
-    ContextViewerEnginePluginInfo::defaultAtts = new ContextAttributes;
+    if (ContextViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ContextViewerEnginePluginInfo::clientAtts  = new ContextAttributes;
+        ContextViewerEnginePluginInfo::defaultAtts = new ContextAttributes;
+    }
 }
 
 // ****************************************************************************

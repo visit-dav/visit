@@ -3,6 +3,8 @@ PROJECT(StreamGhostTest_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(StreamGhostTest)
+
 SET(COMMON_SOURCES
 StreamGhostTestPluginInfo.C
 StreamGhostTestCommonPluginInfo.C

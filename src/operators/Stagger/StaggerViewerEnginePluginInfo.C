@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: StaggerViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <StaggerPluginInfo.h>
 #include <StaggerAttributes.h>
@@ -28,8 +28,11 @@ StaggerAttributes *StaggerViewerEnginePluginInfo::defaultAtts = NULL;
 void
 StaggerViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    StaggerViewerEnginePluginInfo::clientAtts  = new StaggerAttributes;
-    StaggerViewerEnginePluginInfo::defaultAtts = new StaggerAttributes;
+    if (StaggerViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        StaggerViewerEnginePluginInfo::clientAtts  = new StaggerAttributes;
+        StaggerViewerEnginePluginInfo::defaultAtts = new StaggerAttributes;
+    }
 }
 
 // ****************************************************************************

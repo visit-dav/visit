@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SmoothViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <SmoothPluginInfo.h>
 #include <SmoothOperatorAttributes.h>
@@ -28,8 +28,11 @@ SmoothOperatorAttributes *SmoothViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SmoothViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SmoothViewerEnginePluginInfo::clientAtts  = new SmoothOperatorAttributes;
-    SmoothViewerEnginePluginInfo::defaultAtts = new SmoothOperatorAttributes;
+    if (SmoothViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SmoothViewerEnginePluginInfo::clientAtts  = new SmoothOperatorAttributes;
+        SmoothViewerEnginePluginInfo::defaultAtts = new SmoothOperatorAttributes;
+    }
 }
 
 // ****************************************************************************

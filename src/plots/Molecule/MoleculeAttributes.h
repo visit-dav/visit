@@ -21,7 +21,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class MoleculeAttributes : public AttributeSubject
@@ -181,6 +181,7 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
     bool ChangesRequireRecalculation(const MoleculeAttributes &);
 
     // IDs that can be used to identify fields in case statements

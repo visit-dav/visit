@@ -22,7 +22,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class HistogramAttributes : public AttributeSubject
@@ -168,6 +168,7 @@ public:
     // User-defined methods
     bool ChangesRequireRecalculation(const HistogramAttributes &) const;
     virtual bool VarChangeRequiresReset(void);
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {

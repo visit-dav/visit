@@ -18,8 +18,8 @@ protected:
   vtkRGBWriter();
   ~vtkRGBWriter() {};
 
-  virtual void WriteFile(ofstream *file, vtkImageData *data, int ext[6], int wExt[6]);
-  virtual void WriteFileHeader(ofstream *, vtkImageData *, int wExt[6]);
+  void WriteFile(ostream *file, vtkImageData *data, int ext[6], int wExt[6]) override;
+  void WriteFileHeader(ostream *, vtkImageData *, int wExt[6]) override;
 
 private:
   vtkRGBWriter(const vtkRGBWriter&);

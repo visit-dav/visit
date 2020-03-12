@@ -3,6 +3,8 @@ PROJECT(SPHResample_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(SPHResample)
+
 SET(COMMON_SOURCES
 SPHResamplePluginInfo.C
 SPHResampleCommonPluginInfo.C

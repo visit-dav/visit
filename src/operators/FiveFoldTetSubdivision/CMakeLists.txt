@@ -3,6 +3,8 @@ PROJECT(FiveFoldTetSubdivision_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(FiveFoldTetSubdivision)
+
 SET(COMMON_SOURCES
 FiveFoldTetSubdivisionPluginInfo.C
 FiveFoldTetSubdivisionCommonPluginInfo.C

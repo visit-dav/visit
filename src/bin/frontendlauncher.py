@@ -1,4 +1,8 @@
-import os, string, sys, subprocess
+from __future__ import print_function
+import os
+import string
+import sys
+import subprocess
 
 ###############################################################################
 #
@@ -76,7 +80,7 @@ def UNSETENV(var):
 
 def exit(msg, value):
     if msg != None:
-        print >> sys.stderr, msg
+        print(msg, file=sys.stderr)
     sys.exit(value)
 
 def ParseVersion(ver):
@@ -92,7 +96,7 @@ def ParseVersion(ver):
     v = string.split(ver, ".")
     if len(v) > 3:
         raise "Invalid version string"
-    for i in xrange(3):
+    for i in range(3):
         if len(v) > i:
             version[i] = int(v[i])
     return tuple(version)
@@ -201,10 +205,10 @@ while i < len(sys.argv):
         want_version = 1
     elif arg in programs:
         progname = arg[1:]
-        print >> sys.stderr, "NOTE:  Specifying tools as an argument to VisIt is "
-        print >> sys.stderr, "no longer necessary.\nIn the future, you should "
-        print >> sys.stderr, "just run '%s' instead.\n" % progname
-    elif arg in programsWithOtherNames.keys():
+        print("NOTE:  Specifying tools as an argument to VisIt is ", file=sys.stderr)
+        print("no longer necessary.\nIn the future, you should ", file=sys.stderr)
+        print("just run '%s' instead.\n" % progname, file=sys.stderr)
+    elif arg in list(programsWithOtherNames.keys()):
         progname = programsWithOtherNames[arg]
     else:
         visitargs.append(arg)
@@ -336,10 +340,10 @@ else:
 
     # Warn if we mixed public and private development versions.
     if using_dev:
-        print >> sys.stderr, "";
-        print >> sys.stderr, "WARNING: You are launching a public version of VisIt";
-        print >> sys.stderr, "         from within a development version!";
-        print >> sys.stderr, "";
+        print("", file=sys.stderr);
+        print("WARNING: You are launching a public version of VisIt", file=sys.stderr);
+        print("         from within a development version!", file=sys.stderr);
+        print("", file=sys.stderr);
         visitargs = ["-dv"] + visitargs
 
     # The actual visit directory is now version-specific
@@ -392,9 +396,10 @@ if version[0] <= 1 or (version[0] == 2 and version[1] < 6):
     except:
         exit("Can't execute visit launcher script: %s!" % launcher, -1)
 else:
-    # For 2.6 and later, load the internallauncher into this script and
-    # execute it.
-    execfile(launcher)
+    if (sys.version_info > (3, 0)):
+        exec(compile(open(launcher).read(), launcher, 'exec'))
+    else:
+        execfile(launcher)
     
     # Create a launcher object
     launcher = MainLauncher()
@@ -402,12 +407,15 @@ else:
     # Look for custom launcher code.
     customlauncher = visitdir + "bin" + os.path.sep + "customlauncher"
     if os.path.exists(customlauncher):
-        execfile(customlauncher)
+        if (sys.version_info > (3, 0)):
+            exec(compile(open(customlauncher).read(), customlauncher, 'exec'))
+        else:
+            execfile(customlauncher)
         try:
             newlauncher = createlauncher()
             launcher = newlauncher
         except:
-            print >> sys.stderr, "Could not create custom launcher"
+            print("Could not create custom launcher", file=sys.stderr)
 
     # Now, call the regular internallauncher function with the launcher
     # object that we created.

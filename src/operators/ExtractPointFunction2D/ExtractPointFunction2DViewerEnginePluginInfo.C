@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ExtractPointFunction2DViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ExtractPointFunction2DPluginInfo.h>
 #include <ExtractPointFunction2DAttributes.h>
@@ -28,8 +28,11 @@ ExtractPointFunction2DAttributes *ExtractPointFunction2DViewerEnginePluginInfo::
 void
 ExtractPointFunction2DViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ExtractPointFunction2DViewerEnginePluginInfo::clientAtts  = new ExtractPointFunction2DAttributes;
-    ExtractPointFunction2DViewerEnginePluginInfo::defaultAtts = new ExtractPointFunction2DAttributes;
+    if (ExtractPointFunction2DViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ExtractPointFunction2DViewerEnginePluginInfo::clientAtts  = new ExtractPointFunction2DAttributes;
+        ExtractPointFunction2DViewerEnginePluginInfo::defaultAtts = new ExtractPointFunction2DAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: EdgeViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <EdgePluginInfo.h>
 #include <EdgeAttributes.h>
@@ -28,8 +28,11 @@ EdgeAttributes *EdgeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 EdgeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    EdgeViewerEnginePluginInfo::clientAtts  = new EdgeAttributes;
-    EdgeViewerEnginePluginInfo::defaultAtts = new EdgeAttributes;
+    if (EdgeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        EdgeViewerEnginePluginInfo::clientAtts  = new EdgeAttributes;
+        EdgeViewerEnginePluginInfo::defaultAtts = new EdgeAttributes;
+    }
 }
 
 // ****************************************************************************

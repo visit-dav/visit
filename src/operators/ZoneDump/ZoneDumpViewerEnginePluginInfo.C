@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ZoneDumpViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ZoneDumpPluginInfo.h>
 #include <ZoneDumpAttributes.h>
@@ -28,8 +28,11 @@ ZoneDumpAttributes *ZoneDumpViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ZoneDumpViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ZoneDumpViewerEnginePluginInfo::clientAtts  = new ZoneDumpAttributes;
-    ZoneDumpViewerEnginePluginInfo::defaultAtts = new ZoneDumpAttributes;
+    if (ZoneDumpViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ZoneDumpViewerEnginePluginInfo::clientAtts  = new ZoneDumpAttributes;
+        ZoneDumpViewerEnginePluginInfo::defaultAtts = new ZoneDumpAttributes;
+    }
 }
 
 // ****************************************************************************

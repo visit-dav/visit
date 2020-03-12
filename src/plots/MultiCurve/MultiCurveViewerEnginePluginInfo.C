@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: MultiCurveViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <MultiCurvePluginInfo.h>
 #include <avtMultiCurvePlot.h>
@@ -31,8 +31,11 @@ MultiCurveAttributes *MultiCurveViewerEnginePluginInfo::defaultAtts = NULL;
 void
 MultiCurveViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MultiCurveViewerEnginePluginInfo::clientAtts  = new MultiCurveAttributes;
-    MultiCurveViewerEnginePluginInfo::defaultAtts = new MultiCurveAttributes;
+    if (MultiCurveViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        MultiCurveViewerEnginePluginInfo::clientAtts  = new MultiCurveAttributes;
+        MultiCurveViewerEnginePluginInfo::defaultAtts = new MultiCurveAttributes;
+    }
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);

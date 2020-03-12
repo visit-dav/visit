@@ -29,13 +29,13 @@ from decorators import pyocl_test
 
 class TestPyOpenCLCompile(unittest.TestCase):
     def setUp(self):
-        print ""
+        print("")
     @pyocl_test
     def test_01_simple_workspace(self):
         w = Workspace()
         w.register_filters(pyocl_compile)
-        v_a = npy.array(range(10),dtype=npy.float32)
-        v_b = npy.array(range(10),dtype=npy.float32)
+        v_a = npy.array(list(range(10)),dtype=npy.float32)
+        v_b = npy.array(list(range(10)),dtype=npy.float32)
         ctx  = w.add_context("pyocl_compile","root")
         # add our sources to the registry
         ctx.registry_add(":src_a",v_a)
@@ -62,16 +62,16 @@ class TestPyOpenCLCompile(unittest.TestCase):
         ctx.connect("f3","f5:in_a")
         ctx.connect("f4","f5:in_b")
         ctx.set_output_shape(v_a.shape)
-        print w.graph
-        print w.execution_plan()
+        print(w.graph)
+        print(w.execution_plan())
         w.execute()
-        print "Generated Kernel\n%s" % ctx.compile()
+        print("Generated Kernel\n%s" % ctx.compile())
         act_res  = ctx.run()
         test_res = npy.power((v_a + v_b),2.0)+ npy.power((v_a - v_b),2.0)
         dsum = npy.sum(act_res - test_res)
-        print "Filter Graph Result: %s" % str(act_res)
-        print "Test Result:         %s" % str(test_res)
-        print "Difference:          %s" % str(dsum)
+        print("Filter Graph Result: %s" % str(act_res))
+        print("Test Result:         %s" % str(test_res))
+        print("Difference:          %s" % str(dsum))
         self.assertTrue(dsum < 1e-6)
 
 

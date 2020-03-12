@@ -11,8 +11,8 @@
 
 """
 
-from core   import *
-from parser import *
+from .core   import *
+from .parser import *
 
-import filters
+from . import filters
 

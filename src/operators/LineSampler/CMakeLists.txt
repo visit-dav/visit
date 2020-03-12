@@ -3,6 +3,8 @@ PROJECT(LineSampler_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(LineSampler)
+
 SET(COMMON_SOURCES
 LineSamplerPluginInfo.C
 LineSamplerCommonPluginInfo.C

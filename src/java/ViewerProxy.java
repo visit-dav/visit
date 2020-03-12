@@ -17,7 +17,7 @@ import java.util.prefs.BackingStoreException;
 //   use in order to control VisIt from Java. This class provides methods to
 //   launch VisIt's viewer tell it to do things.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 8 12:43:40 PDT 2002
@@ -71,7 +71,7 @@ import java.util.prefs.BackingStoreException;
 //   time states.
 //
 //   Kathleen Bonnell, Tue Jul  1 10:11:37 PDT 2003
-//   I added SetPickAttributes, SetGlobalLineoutAttributes. 
+//   I added SetPickAttributes, SetGlobalLineoutAttributes.
 //
 //   Brad Whitlock, Tue Jul 1 16:49:48 PST 2003
 //   I added a method to tell the viewer to export a colortable.
@@ -95,12 +95,12 @@ import java.util.prefs.BackingStoreException;
 //   Brad Whitlock, Wed Oct 29 10:41:21 PDT 2003
 //   I added new RPCs to deal with setting up advanced annotations.
 //
-//   Kathleen Bonnell, Wed Nov 26 14:16:53 PST 2003 
+//   Kathleen Bonnell, Wed Nov 26 14:16:53 PST 2003
 //   Added ResetPickAttributes method. Added overloaded PointQuery and
 //   DatabaseQuery methods to handle optional arguments.
 //
-//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
-//   Added SetDefaultPickAttributes, ResetPickLetter. 
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003
+//   Added SetDefaultPickAttributes, ResetPickLetter.
 //
 //   Brad Whitlock, Mon Dec 29 09:24:20 PDT 2003
 //   Added methods for setting and choosing the center of rotation.
@@ -118,13 +118,13 @@ import java.util.prefs.BackingStoreException;
 //   Added support for a simulation name in addition to simply a host name
 //   when specifying engines (i.e. ClearCache and CloseComputeEngine).
 //
-//   Kathleen Bonnell, Wed Mar 31 07:35:25 PST 2004 
+//   Kathleen Bonnell, Wed Mar 31 07:35:25 PST 2004
 //   Added support for QueryOverTimeAttributes.
 //
 //   Brad Whitlock, Mon Jul 26 15:57:32 PST 2004
 //   Added CheckForNewStates.
 //
-//   Kathleen Bonnell, Wed Aug 18 09:19:25 PDT 2004 
+//   Kathleen Bonnell, Wed Aug 18 09:19:25 PDT 2004
 //   Added support for InteractorAttributes.
 //
 //   Brad Whitlock, Fri Jan 7 17:00:00 PST 2005
@@ -268,7 +268,7 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
         methods = new ViewerMethods(this);
 
         // Create the event loop.
-        eventLoop = new EventLoop(xfer, state.GetMessageAttributes(), 
+        eventLoop = new EventLoop(xfer, state.GetMessageAttributes(),
             state.GetSyncAttributes());
 
         // Create the plugin managers.
@@ -284,7 +284,7 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
         // with information from the Java preferences.
         try
         {
-            String visitHomeKey = new String("/llnl/visit");           
+            String visitHomeKey = new String("/llnl/visit");
             if(Preferences.userRoot().nodeExists(visitHomeKey))
             {
                 // Get the node
@@ -340,7 +340,7 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
     }
 
     /**
-     * Gets the data path directory, which is often a "data" directory 
+     * Gets the data path directory, which is often a "data" directory
      * peer to the "bin" directory provided via SetBinPath.
      *
      * @return The data path directory that you can use to access VisIt's
@@ -375,7 +375,7 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
     }
 
     /**
-     * Prints a message to the console if the ViewerProxy object is 
+     * Prints a message to the console if the ViewerProxy object is
      * in verbose mode.
      *
      * @param msg The message to print.
@@ -430,7 +430,7 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
 
     /**
      * Sets whether the ViewerProxy will force synchronization with the
-     * viewer after calling methods from the ViewerMethods object. Simple 
+     * viewer after calling methods from the ViewerMethods object. Simple
      * applications applications should perform synchronous processing since
      * it makes the values returned from ViewerMethods functions take into
      * account any errors that may have occurred while processing a request.
@@ -500,7 +500,7 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
     }
 
     /**
-     * Sends a synchronization message to the viewer and blocks until the 
+     * Sends a synchronization message to the viewer and blocks until the
      * viewer's reply to that message is read on the listener thread.
      *
      * @return true if there were no errors; false otherwise.
@@ -580,19 +580,19 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
      * @return The name of the plot in the plugin manager.
      */
     public String GetPlotName(int index) throws ArrayIndexOutOfBoundsException
-    { 
+    {
         return plotPlugins.GetPluginName(index);
     }
 
     /**
-     * Convenience method that returns the plot plugin version for the 
+     * Convenience method that returns the plot plugin version for the
      * specified plugin index.
      *
      * @param index The index of the plot.
      * @return The version of the plot in the plugin manager.
      */
     public String GetPlotVersion(int index) throws ArrayIndexOutOfBoundsException
-    { 
+    {
         return plotPlugins.GetPluginVersion(index);
     }
 
@@ -655,19 +655,19 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
      * @return The name of the operator in the plugin manager.
      */
     public String GetOperatorName(int index) throws ArrayIndexOutOfBoundsException
-    { 
+    {
         return operatorPlugins.GetPluginName(index);
     }
 
     /**
-     * Convenience methods that returns the Operator plugin version for the 
+     * Convenience methods that returns the Operator plugin version for the
      * specified plugin index.
      *
      * @param index The index of the Operator.
      * @return The version of the Operator in the plugin manager.
      */
     public String GetOperatorVersion(int index) throws ArrayIndexOutOfBoundsException
-    { 
+    {
         return operatorPlugins.GetPluginVersion(index);
     }
 
@@ -716,7 +716,7 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
 
     /**
      * This method implements the SimpleObserver interface and is called when
-     * an observed state object changes, in this case, the plugin manager 
+     * an observed state object changes, in this case, the plugin manager
      * attributes state object. We use this method to load plugins when we get
      * the list of loaded plugins from the viewer.
      *
@@ -761,7 +761,7 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
 
     /**
      * Loads VisIt's plugins according to the list specified in the plugin
-     * manager attributes. When the ViewerProxy calls this method, the 
+     * manager attributes. When the ViewerProxy calls this method, the
      * client/viewer state object interface is completed.
      *
      * @return True if have been loaded; false otherwise.

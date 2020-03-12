@@ -4,6 +4,10 @@
 
 #****************************************************************************
 # Modifications:
+#  Kathleen Biagas, Thu Feb 27 2020
+#  Remove if test that is handled by the parent dir's CMakeLists.txt
+#  (VISIT_DBIO_ONLY, VISIT_ENGINE_ONLY, AND VISIT_SERVER_COMPONENTS_ONLY)
+#  Add annotations only if VISIT_ENABLE_ANNOTATION_TOOLS is true (default).
 #
 #****************************************************************************
 
@@ -15,12 +19,11 @@ macro(VISIT_FX_ADD_FOLDER type)
     endif()
 endmacro()
 
+if(VISIT_ENABLE_ANNOTATION_TOOLS)
+    ADD_SUBDIRECTORY(annotations)
+endif()
 
-IF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-ELSE(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-    ADD_SUBDIRECTORY(annotations) # fx
-    ADD_SUBDIRECTORY(imagetools) # fx
-ENDIF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
+ADD_SUBDIRECTORY(imagetools)
 
 # These do not need to be built:
 # antialiased_shadows

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: PersistentParticlesViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <PersistentParticlesPluginInfo.h>
 #include <PersistentParticlesAttributes.h>
@@ -28,8 +28,11 @@ PersistentParticlesAttributes *PersistentParticlesViewerEnginePluginInfo::defaul
 void
 PersistentParticlesViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    PersistentParticlesViewerEnginePluginInfo::clientAtts  = new PersistentParticlesAttributes;
-    PersistentParticlesViewerEnginePluginInfo::defaultAtts = new PersistentParticlesAttributes;
+    if (PersistentParticlesViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        PersistentParticlesViewerEnginePluginInfo::clientAtts  = new PersistentParticlesAttributes;
+        PersistentParticlesViewerEnginePluginInfo::defaultAtts = new PersistentParticlesAttributes;
+    }
 }
 
 // ****************************************************************************

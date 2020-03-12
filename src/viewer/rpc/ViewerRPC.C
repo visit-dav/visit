@@ -10,75 +10,75 @@
 //
 
 static const char *ViewerRPCType_strings[] = {
-"CloseRPC", "DetachRPC", "AddWindowRPC", 
-"DeleteWindowRPC", "SetWindowLayoutRPC", "SetActiveWindowRPC", 
-"ClearWindowRPC", "ClearAllWindowsRPC", "OpenDatabaseRPC", 
-"CloseDatabaseRPC", "ActivateDatabaseRPC", "CheckForNewStatesRPC", 
-"CreateDatabaseCorrelationRPC", "AlterDatabaseCorrelationRPC", "DeleteDatabaseCorrelationRPC", 
-"ReOpenDatabaseRPC", "ReplaceDatabaseRPC", "OverlayDatabaseRPC", 
-"OpenComputeEngineRPC", "CloseComputeEngineRPC", "AnimationSetNFramesRPC", 
-"AnimationPlayRPC", "AnimationReversePlayRPC", "AnimationStopRPC", 
-"TimeSliderNextStateRPC", "TimeSliderPreviousStateRPC", "SetTimeSliderStateRPC", 
-"SetActiveTimeSliderRPC", "AddPlotRPC", "AddEmbeddedPlotRPC", 
-"SetPlotFrameRangeRPC", "DeletePlotKeyframeRPC", "MovePlotKeyframeRPC", 
-"DeleteActivePlotsRPC", "HideActivePlotsRPC", "DrawPlotsRPC", 
-"DisableRedrawRPC", "RedrawRPC", "SetActivePlotsRPC", 
-"ChangeActivePlotsVarRPC", "AddOperatorRPC", "AddInitializedOperatorRPC", 
-"PromoteOperatorRPC", "DemoteOperatorRPC", "RemoveOperatorRPC", 
-"RemoveLastOperatorRPC", "RemoveAllOperatorsRPC", "SaveWindowRPC", 
-"SetDefaultPlotOptionsRPC", "SetPlotOptionsRPC", "SetDefaultOperatorOptionsRPC", 
-"SetOperatorOptionsRPC", "WriteConfigFileRPC", "ConnectToMetaDataServerRPC", 
-"IconifyAllWindowsRPC", "DeIconifyAllWindowsRPC", "ShowAllWindowsRPC", 
-"HideAllWindowsRPC", "UpdateColorTableRPC", "SetAnnotationAttributesRPC", 
-"SetDefaultAnnotationAttributesRPC", "ResetAnnotationAttributesRPC", "SetKeyframeAttributesRPC", 
-"SetPlotSILRestrictionRPC", "SetViewAxisArrayRPC", "SetViewCurveRPC", 
-"SetView2DRPC", "SetView3DRPC", "ResetPlotOptionsRPC", 
-"ResetOperatorOptionsRPC", "SetAppearanceRPC", "ProcessExpressionsRPC", 
-"SetLightListRPC", "SetDefaultLightListRPC", "ResetLightListRPC", 
-"SetAnimationAttributesRPC", "SetWindowAreaRPC", "PrintWindowRPC", 
-"ResetViewRPC", "RecenterViewRPC", "ToggleAllowPopupRPC", 
-"ToggleMaintainViewModeRPC", "ToggleBoundingBoxModeRPC", "ToggleCameraViewModeRPC", 
-"TogglePerspectiveViewRPC", "ToggleSpinModeRPC", "ToggleLockTimeRPC", 
-"ToggleLockToolsRPC", "ToggleLockViewModeRPC", "ToggleFullFrameRPC", 
-"UndoViewRPC", "RedoViewRPC", "InvertBackgroundRPC", 
-"ClearPickPointsRPC", "RemovePicksRPC", "SetWindowModeRPC", 
-"EnableToolRPC", "SetToolUpdateModeRPC", "CopyViewToWindowRPC", 
-"CopyLightingToWindowRPC", "CopyAnnotationsToWindowRPC", "CopyPlotsToWindowRPC", 
-"ClearCacheRPC", "ClearCacheForAllEnginesRPC", "SetViewExtentsTypeRPC", 
-"ClearRefLinesRPC", "SetRenderingAttributesRPC", "QueryRPC", 
-"CloneWindowRPC", "SetMaterialAttributesRPC", "SetDefaultMaterialAttributesRPC", 
-"ResetMaterialAttributesRPC", "SetPlotDatabaseStateRPC", "DeletePlotDatabaseKeyframeRPC", 
-"MovePlotDatabaseKeyframeRPC", "ClearViewKeyframesRPC", "DeleteViewKeyframeRPC", 
-"MoveViewKeyframeRPC", "SetViewKeyframeRPC", "OpenMDServerRPC", 
-"EnableToolbarRPC", "HideToolbarsRPC", "HideToolbarsForAllWindowsRPC", 
-"ShowToolbarsRPC", "ShowToolbarsForAllWindowsRPC", "SetToolbarIconSizeRPC", 
-"SaveViewRPC", "SetGlobalLineoutAttributesRPC", "SetPickAttributesRPC", 
-"ExportColorTableRPC", "ExportEntireStateRPC", "ImportEntireStateRPC", 
-"ImportEntireStateWithDifferentSourcesRPC", "ResetPickAttributesRPC", "AddAnnotationObjectRPC", 
-"HideActiveAnnotationObjectsRPC", "DeleteActiveAnnotationObjectsRPC", "RaiseActiveAnnotationObjectsRPC", 
-"LowerActiveAnnotationObjectsRPC", "SetAnnotationObjectOptionsRPC", "SetDefaultAnnotationObjectListRPC", 
-"ResetAnnotationObjectListRPC", "ResetPickLetterRPC", "SetDefaultPickAttributesRPC", 
-"ChooseCenterOfRotationRPC", "SetCenterOfRotationRPC", "SetQueryOverTimeAttributesRPC", 
-"SetDefaultQueryOverTimeAttributesRPC", "ResetQueryOverTimeAttributesRPC", "ResetLineoutColorRPC", 
-"SetInteractorAttributesRPC", "SetDefaultInteractorAttributesRPC", "ResetInteractorAttributesRPC", 
-"GetProcInfoRPC", "SendSimulationCommandRPC", "UpdateDBPluginInfoRPC", 
-"ExportDBRPC", "SetTryHarderCyclesTimesRPC", "OpenClientRPC", 
-"OpenGUIClientRPC", "OpenCLIClientRPC", "SuppressQueryOutputRPC", 
-"SetQueryFloatFormatRPC", "SetMeshManagementAttributesRPC", "SetDefaultMeshManagementAttributesRPC", 
-"ResetMeshManagementAttributesRPC", "ResizeWindowRPC", "MoveWindowRPC", 
-"MoveAndResizeWindowRPC", "SetStateLoggingRPC", "ConstructDataBinningRPC", 
-"RequestMetaDataRPC", "SetTreatAllDBsAsTimeVaryingRPC", "SetCreateMeshQualityExpressionsRPC", 
-"SetCreateTimeDerivativeExpressionsRPC", "SetCreateVectorMagnitudeExpressionsRPC", "SetPrecisionTypeRPC", 
-"SetBackendTypeRPC", "CopyActivePlotsRPC", "SetPlotFollowsTimeRPC", 
-"TurnOffAllLocksRPC", "SetDefaultFileOpenOptionsRPC", "SetSuppressMessagesRPC", 
-"ApplyNamedSelectionRPC", "CreateNamedSelectionRPC", "DeleteNamedSelectionRPC", 
-"LoadNamedSelectionRPC", "SaveNamedSelectionRPC", "SetNamedSelectionAutoApplyRPC", 
-"UpdateNamedSelectionRPC", "InitializeNamedSelectionVariablesRPC", "MenuQuitRPC", 
-"SetPlotDescriptionRPC", "MovePlotOrderTowardFirstRPC", "MovePlotOrderTowardLastRPC", 
-"SetPlotOrderToFirstRPC", "SetPlotOrderToLastRPC", "RenamePickLabelRPC", 
-"GetQueryParametersRPC", "DDTConnectRPC", "DDTFocusRPC", 
-"ReleaseToDDTRPC", "PlotDDTVispointVariablesRPC", "ExportRPC", 
-"ExportHostProfileRPC", "StartPlotAnimationRPC", "StopPlotAnimationRPC", 
+"CloseRPC", "DetachRPC", "AddWindowRPC",
+"DeleteWindowRPC", "SetWindowLayoutRPC", "SetActiveWindowRPC",
+"ClearWindowRPC", "ClearAllWindowsRPC", "OpenDatabaseRPC",
+"CloseDatabaseRPC", "ActivateDatabaseRPC", "CheckForNewStatesRPC",
+"CreateDatabaseCorrelationRPC", "AlterDatabaseCorrelationRPC", "DeleteDatabaseCorrelationRPC",
+"ReOpenDatabaseRPC", "ReplaceDatabaseRPC", "OverlayDatabaseRPC",
+"OpenComputeEngineRPC", "CloseComputeEngineRPC", "AnimationSetNFramesRPC",
+"AnimationPlayRPC", "AnimationReversePlayRPC", "AnimationStopRPC",
+"TimeSliderNextStateRPC", "TimeSliderPreviousStateRPC", "SetTimeSliderStateRPC",
+"SetActiveTimeSliderRPC", "AddPlotRPC", "AddEmbeddedPlotRPC",
+"SetPlotFrameRangeRPC", "DeletePlotKeyframeRPC", "MovePlotKeyframeRPC",
+"DeleteActivePlotsRPC", "HideActivePlotsRPC", "DrawPlotsRPC",
+"DisableRedrawRPC", "RedrawRPC", "SetActivePlotsRPC",
+"ChangeActivePlotsVarRPC", "AddOperatorRPC", "AddInitializedOperatorRPC",
+"PromoteOperatorRPC", "DemoteOperatorRPC", "RemoveOperatorRPC",
+"RemoveLastOperatorRPC", "RemoveAllOperatorsRPC", "SaveWindowRPC",
+"SetDefaultPlotOptionsRPC", "SetPlotOptionsRPC", "SetDefaultOperatorOptionsRPC",
+"SetOperatorOptionsRPC", "WriteConfigFileRPC", "ConnectToMetaDataServerRPC",
+"IconifyAllWindowsRPC", "DeIconifyAllWindowsRPC", "ShowAllWindowsRPC",
+"HideAllWindowsRPC", "UpdateColorTableRPC", "SetAnnotationAttributesRPC",
+"SetDefaultAnnotationAttributesRPC", "ResetAnnotationAttributesRPC", "SetKeyframeAttributesRPC",
+"SetPlotSILRestrictionRPC", "SetViewAxisArrayRPC", "SetViewCurveRPC",
+"SetView2DRPC", "SetView3DRPC", "ResetPlotOptionsRPC",
+"ResetOperatorOptionsRPC", "SetAppearanceRPC", "ProcessExpressionsRPC",
+"SetLightListRPC", "SetDefaultLightListRPC", "ResetLightListRPC",
+"SetAnimationAttributesRPC", "SetWindowAreaRPC", "PrintWindowRPC",
+"ResetViewRPC", "RecenterViewRPC", "ToggleAllowPopupRPC",
+"ToggleMaintainViewModeRPC", "ToggleBoundingBoxModeRPC", "ToggleCameraViewModeRPC",
+"TogglePerspectiveViewRPC", "ToggleSpinModeRPC", "ToggleLockTimeRPC",
+"ToggleLockToolsRPC", "ToggleLockViewModeRPC", "ToggleFullFrameRPC",
+"UndoViewRPC", "RedoViewRPC", "InvertBackgroundRPC",
+"ClearPickPointsRPC", "RemovePicksRPC", "SetWindowModeRPC",
+"EnableToolRPC", "SetToolUpdateModeRPC", "CopyViewToWindowRPC",
+"CopyLightingToWindowRPC", "CopyAnnotationsToWindowRPC", "CopyPlotsToWindowRPC",
+"ClearCacheRPC", "ClearCacheForAllEnginesRPC", "SetViewExtentsTypeRPC",
+"ClearRefLinesRPC", "SetRenderingAttributesRPC", "QueryRPC",
+"CloneWindowRPC", "SetMaterialAttributesRPC", "SetDefaultMaterialAttributesRPC",
+"ResetMaterialAttributesRPC", "SetPlotDatabaseStateRPC", "DeletePlotDatabaseKeyframeRPC",
+"MovePlotDatabaseKeyframeRPC", "ClearViewKeyframesRPC", "DeleteViewKeyframeRPC",
+"MoveViewKeyframeRPC", "SetViewKeyframeRPC", "OpenMDServerRPC",
+"EnableToolbarRPC", "HideToolbarsRPC", "HideToolbarsForAllWindowsRPC",
+"ShowToolbarsRPC", "ShowToolbarsForAllWindowsRPC", "SetToolbarIconSizeRPC",
+"SaveViewRPC", "SetGlobalLineoutAttributesRPC", "SetPickAttributesRPC",
+"ExportColorTableRPC", "ExportEntireStateRPC", "ImportEntireStateRPC",
+"ImportEntireStateWithDifferentSourcesRPC", "ResetPickAttributesRPC", "AddAnnotationObjectRPC",
+"HideActiveAnnotationObjectsRPC", "DeleteActiveAnnotationObjectsRPC", "RaiseActiveAnnotationObjectsRPC",
+"LowerActiveAnnotationObjectsRPC", "SetAnnotationObjectOptionsRPC", "SetDefaultAnnotationObjectListRPC",
+"ResetAnnotationObjectListRPC", "ResetPickLetterRPC", "SetDefaultPickAttributesRPC",
+"ChooseCenterOfRotationRPC", "SetCenterOfRotationRPC", "SetQueryOverTimeAttributesRPC",
+"SetDefaultQueryOverTimeAttributesRPC", "ResetQueryOverTimeAttributesRPC", "ResetLineoutColorRPC",
+"SetInteractorAttributesRPC", "SetDefaultInteractorAttributesRPC", "ResetInteractorAttributesRPC",
+"GetProcInfoRPC", "SendSimulationCommandRPC", "UpdateDBPluginInfoRPC",
+"ExportDBRPC", "SetTryHarderCyclesTimesRPC", "OpenClientRPC",
+"OpenGUIClientRPC", "OpenCLIClientRPC", "SuppressQueryOutputRPC",
+"SetQueryFloatFormatRPC", "SetMeshManagementAttributesRPC", "SetDefaultMeshManagementAttributesRPC",
+"ResetMeshManagementAttributesRPC", "ResizeWindowRPC", "MoveWindowRPC",
+"MoveAndResizeWindowRPC", "SetStateLoggingRPC", "ConstructDataBinningRPC",
+"RequestMetaDataRPC", "SetTreatAllDBsAsTimeVaryingRPC", "SetCreateMeshQualityExpressionsRPC",
+"SetCreateTimeDerivativeExpressionsRPC", "SetCreateVectorMagnitudeExpressionsRPC", "SetPrecisionTypeRPC",
+"SetBackendTypeRPC", "CopyActivePlotsRPC", "SetPlotFollowsTimeRPC",
+"TurnOffAllLocksRPC", "SetDefaultFileOpenOptionsRPC", "SetSuppressMessagesRPC",
+"ApplyNamedSelectionRPC", "CreateNamedSelectionRPC", "DeleteNamedSelectionRPC",
+"LoadNamedSelectionRPC", "SaveNamedSelectionRPC", "SetNamedSelectionAutoApplyRPC",
+"UpdateNamedSelectionRPC", "InitializeNamedSelectionVariablesRPC", "MenuQuitRPC",
+"SetPlotDescriptionRPC", "MovePlotOrderTowardFirstRPC", "MovePlotOrderTowardLastRPC",
+"SetPlotOrderToFirstRPC", "SetPlotOrderToLastRPC", "RenamePickLabelRPC",
+"GetQueryParametersRPC", "DDTConnectRPC", "DDTFocusRPC",
+"ReleaseToDDTRPC", "PlotDDTVispointVariablesRPC", "ExportRPC",
+"ExportHostProfileRPC", "StartPlotAnimationRPC", "StopPlotAnimationRPC",
 "ReadHostProfilesFromDirectoryRPC", "SetRemoveDuplicateNodesRPC", "MaxRPC"
 };
 
@@ -115,7 +115,7 @@ ViewerRPC::ViewerRPCType_FromString(const std::string &s, ViewerRPC::ViewerRPCTy
 // ****************************************************************************
 // Method: ViewerRPC::ViewerRPC
 //
-// Purpose: 
+// Purpose:
 //   Init utility for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -124,7 +124,7 @@ ViewerRPC::ViewerRPCType_FromString(const std::string &s, ViewerRPC::ViewerRPCTy
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void ViewerRPC::Init()
@@ -157,7 +157,7 @@ void ViewerRPC::Init()
 // ****************************************************************************
 // Method: ViewerRPC::ViewerRPC
 //
-// Purpose: 
+// Purpose:
 //   Copy utility for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -166,7 +166,7 @@ void ViewerRPC::Init()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void ViewerRPC::Copy(const ViewerRPC &obj)
@@ -220,7 +220,7 @@ const AttributeGroup::private_tmfs_t ViewerRPC::TmfsStruct = {VIEWERRPC_TMFS};
 // ****************************************************************************
 // Method: ViewerRPC::ViewerRPC
 //
-// Purpose: 
+// Purpose:
 //   Default constructor for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -229,10 +229,10 @@ const AttributeGroup::private_tmfs_t ViewerRPC::TmfsStruct = {VIEWERRPC_TMFS};
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-ViewerRPC::ViewerRPC() : 
+ViewerRPC::ViewerRPC() :
     AttributeSubject(ViewerRPC::TypeMapFormatString)
 {
     ViewerRPC::Init();
@@ -241,7 +241,7 @@ ViewerRPC::ViewerRPC() :
 // ****************************************************************************
 // Method: ViewerRPC::ViewerRPC
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the derived classes of ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -250,10 +250,10 @@ ViewerRPC::ViewerRPC() :
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-ViewerRPC::ViewerRPC(private_tmfs_t tmfs) : 
+ViewerRPC::ViewerRPC(private_tmfs_t tmfs) :
     AttributeSubject(tmfs.tmfs)
 {
     ViewerRPC::Init();
@@ -262,7 +262,7 @@ ViewerRPC::ViewerRPC(private_tmfs_t tmfs) :
 // ****************************************************************************
 // Method: ViewerRPC::ViewerRPC
 //
-// Purpose: 
+// Purpose:
 //   Copy constructor for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -271,10 +271,10 @@ ViewerRPC::ViewerRPC(private_tmfs_t tmfs) :
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-ViewerRPC::ViewerRPC(const ViewerRPC &obj) : 
+ViewerRPC::ViewerRPC(const ViewerRPC &obj) :
     AttributeSubject(ViewerRPC::TypeMapFormatString)
 {
     ViewerRPC::Copy(obj);
@@ -283,7 +283,7 @@ ViewerRPC::ViewerRPC(const ViewerRPC &obj) :
 // ****************************************************************************
 // Method: ViewerRPC::ViewerRPC
 //
-// Purpose: 
+// Purpose:
 //   Copy constructor for derived classes of the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -292,10 +292,10 @@ ViewerRPC::ViewerRPC(const ViewerRPC &obj) :
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-ViewerRPC::ViewerRPC(const ViewerRPC &obj, private_tmfs_t tmfs) : 
+ViewerRPC::ViewerRPC(const ViewerRPC &obj, private_tmfs_t tmfs) :
     AttributeSubject(tmfs.tmfs)
 {
     ViewerRPC::Copy(obj);
@@ -304,7 +304,7 @@ ViewerRPC::ViewerRPC(const ViewerRPC &obj, private_tmfs_t tmfs) :
 // ****************************************************************************
 // Method: ViewerRPC::~ViewerRPC
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -313,7 +313,7 @@ ViewerRPC::ViewerRPC(const ViewerRPC &obj, private_tmfs_t tmfs) :
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ViewerRPC::~ViewerRPC()
@@ -322,9 +322,9 @@ ViewerRPC::~ViewerRPC()
 }
 
 // ****************************************************************************
-// Method: ViewerRPC::operator = 
+// Method: ViewerRPC::operator =
 //
-// Purpose: 
+// Purpose:
 //   Assignment operator for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -333,10 +333,10 @@ ViewerRPC::~ViewerRPC()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-ViewerRPC& 
+ViewerRPC&
 ViewerRPC::operator = (const ViewerRPC &obj)
 {
     if (this == &obj) return *this;
@@ -347,9 +347,9 @@ ViewerRPC::operator = (const ViewerRPC &obj)
 }
 
 // ****************************************************************************
-// Method: ViewerRPC::operator == 
+// Method: ViewerRPC::operator ==
 //
-// Purpose: 
+// Purpose:
 //   Comparison operator == for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -358,7 +358,7 @@ ViewerRPC::operator = (const ViewerRPC &obj)
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -410,9 +410,9 @@ ViewerRPC::operator == (const ViewerRPC &obj) const
 }
 
 // ****************************************************************************
-// Method: ViewerRPC::operator != 
+// Method: ViewerRPC::operator !=
 //
-// Purpose: 
+// Purpose:
 //   Comparison operator != for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -421,7 +421,7 @@ ViewerRPC::operator == (const ViewerRPC &obj) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -433,7 +433,7 @@ ViewerRPC::operator != (const ViewerRPC &obj) const
 // ****************************************************************************
 // Method: ViewerRPC::TypeName
 //
-// Purpose: 
+// Purpose:
 //   Type name method for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -442,7 +442,7 @@ ViewerRPC::operator != (const ViewerRPC &obj) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const std::string
@@ -454,7 +454,7 @@ ViewerRPC::TypeName() const
 // ****************************************************************************
 // Method: ViewerRPC::CopyAttributes
 //
-// Purpose: 
+// Purpose:
 //   CopyAttributes method for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -463,7 +463,7 @@ ViewerRPC::TypeName() const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -482,7 +482,7 @@ ViewerRPC::CopyAttributes(const AttributeGroup *atts)
 // ****************************************************************************
 // Method: ViewerRPC::CreateCompatible
 //
-// Purpose: 
+// Purpose:
 //   CreateCompatible method for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -491,7 +491,7 @@ ViewerRPC::CopyAttributes(const AttributeGroup *atts)
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AttributeSubject *
@@ -500,7 +500,7 @@ ViewerRPC::CreateCompatible(const std::string &tname) const
     AttributeSubject *retval = 0;
     if(TypeName() == tname)
         retval = new ViewerRPC(*this);
-    // Other cases could go here too. 
+    // Other cases could go here too.
 
     return retval;
 }
@@ -508,7 +508,7 @@ ViewerRPC::CreateCompatible(const std::string &tname) const
 // ****************************************************************************
 // Method: ViewerRPC::NewInstance
 //
-// Purpose: 
+// Purpose:
 //   NewInstance method for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -517,7 +517,7 @@ ViewerRPC::CreateCompatible(const std::string &tname) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AttributeSubject *
@@ -535,7 +535,7 @@ ViewerRPC::NewInstance(bool copy) const
 // ****************************************************************************
 // Method: ViewerRPC::SelectAll
 //
-// Purpose: 
+// Purpose:
 //   Selects all attributes.
 //
 // Note:       Autogenerated by xml2atts.
@@ -544,7 +544,7 @@ ViewerRPC::NewInstance(bool copy) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1214,7 +1214,7 @@ ViewerRPC::SelectQueryParams()
 // ****************************************************************************
 // Method: ViewerRPC::GetFieldName
 //
-// Purpose: 
+// Purpose:
 //   This method returns the name of a field given its index.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1223,7 +1223,7 @@ ViewerRPC::SelectQueryParams()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 std::string
@@ -1270,7 +1270,7 @@ ViewerRPC::GetFieldName(int index) const
 // ****************************************************************************
 // Method: ViewerRPC::GetFieldType
 //
-// Purpose: 
+// Purpose:
 //   This method returns the type of a field given its index.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1279,7 +1279,7 @@ ViewerRPC::GetFieldName(int index) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AttributeGroup::FieldType
@@ -1326,7 +1326,7 @@ ViewerRPC::GetFieldType(int index) const
 // ****************************************************************************
 // Method: ViewerRPC::GetFieldTypeName
 //
-// Purpose: 
+// Purpose:
 //   This method returns the name of a field type given its index.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1335,7 +1335,7 @@ ViewerRPC::GetFieldType(int index) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 std::string
@@ -1382,7 +1382,7 @@ ViewerRPC::GetFieldTypeName(int index) const
 // ****************************************************************************
 // Method: ViewerRPC::FieldsEqual
 //
-// Purpose: 
+// Purpose:
 //   This method compares two fields and return true if they are equal.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1391,7 +1391,7 @@ ViewerRPC::GetFieldTypeName(int index) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool

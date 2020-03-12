@@ -3,6 +3,8 @@ PROJECT(Transform_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Transform)
+
 SET(COMMON_SOURCES
 TransformPluginInfo.C
 TransformCommonPluginInfo.C

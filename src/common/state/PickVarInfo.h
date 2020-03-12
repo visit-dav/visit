@@ -9,7 +9,6 @@
 #include <AttributeSubject.h>
 
 
-
 // ****************************************************************************
 // Class: PickVarInfo
 //
@@ -22,7 +21,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API PickVarInfo : public AttributeSubject

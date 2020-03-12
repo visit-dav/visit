@@ -39,11 +39,11 @@ if connected:
 
     # Read the "VisIt connected" message.
     buf = sim.p.stderr.readline()
-    for i in xrange(12):
+    for i in range(12):
         sim.consolecommand("step")
         # Read from stderr to look for the echoed command.
         buf = sim.p.stderr.readline()
-        print buf
+        print(buf)
         time.sleep(1)
     # Update the data for the new time step.
     sim.consolecommand("update")

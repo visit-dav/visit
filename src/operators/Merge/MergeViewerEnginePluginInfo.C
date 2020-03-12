@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: MergeViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <MergePluginInfo.h>
 #include <MergeOperatorAttributes.h>
@@ -28,8 +28,11 @@ MergeOperatorAttributes *MergeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 MergeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MergeViewerEnginePluginInfo::clientAtts  = new MergeOperatorAttributes;
-    MergeViewerEnginePluginInfo::defaultAtts = new MergeOperatorAttributes;
+    if (MergeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        MergeViewerEnginePluginInfo::clientAtts  = new MergeOperatorAttributes;
+        MergeViewerEnginePluginInfo::defaultAtts = new MergeOperatorAttributes;
+    }
 }
 
 // ****************************************************************************

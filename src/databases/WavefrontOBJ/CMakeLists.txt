@@ -3,6 +3,8 @@ PROJECT(WavefrontOBJ_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(WavefrontOBJ)
+
 SET(COMMON_SOURCES
 WavefrontOBJPluginInfo.C
 WavefrontOBJCommonPluginInfo.C

@@ -3,6 +3,8 @@ PROJECT(EllipsoidSlice_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(EllipsoidSlice)
+
 SET(COMMON_SOURCES
 EllipsoidSlicePluginInfo.C
 EllipsoidSliceCommonPluginInfo.C

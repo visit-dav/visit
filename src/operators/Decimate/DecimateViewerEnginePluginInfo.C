@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: DecimateViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <DecimatePluginInfo.h>
 #include <DecimateAttributes.h>
@@ -28,8 +28,11 @@ DecimateAttributes *DecimateViewerEnginePluginInfo::defaultAtts = NULL;
 void
 DecimateViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    DecimateViewerEnginePluginInfo::clientAtts  = new DecimateAttributes;
-    DecimateViewerEnginePluginInfo::defaultAtts = new DecimateAttributes;
+    if (DecimateViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        DecimateViewerEnginePluginInfo::clientAtts  = new DecimateAttributes;
+        DecimateViewerEnginePluginInfo::defaultAtts = new DecimateAttributes;
+    }
 }
 
 // ****************************************************************************

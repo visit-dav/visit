@@ -31,9 +31,181 @@
 #   Kathleen Biagas, Fri Mar 31 12:56:33 PDT 2017
 #   Added TryThreshold and TryPointGlyphing examples.
 #
+#   Cyrus Harrison, Mon Dec  9 12:07:55 PST 2019
+#   Add code gen targets, change logic to guard java interface build.
+#
 #****************************************************************************
 
-PROJECT(JavaClient Java)
+PROJECT(JavaClient)
+
+
+#########################################################
+# BEGIN Logic for XML Code Gen Targets
+#########################################################
+
+#####################
+# Metadata Objects
+#####################
+SET(JAVA_GEN_METADATA_OBJECTS
+    avtArrayMetaData
+    avtBaseVarMetaData
+    avtCurveMetaData
+    avtDatabaseMetaData
+    avtDefaultPlotMetaData
+    avtLabelMetaData
+    avtMatSpeciesMetaData
+    avtMaterialMetaData
+    avtMeshMetaData
+    avtScalarMetaData
+    avtSimulationCommandSpecification
+    avtSimulationInformation
+    avtSpeciesMetaData
+    avtSubsetsMetaData
+    avtSymmetricTensorMetaData
+    avtTensorMetaData
+    avtVarMetaData
+    avtVectorMetaData
+    )
+
+#####################
+# State Objects
+#####################
+SET(JAVA_GEN_STATE_OBJECTS
+    AnimationAttributes 
+    AnnotationAttributes 
+    AnnotationObject 
+    AnnotationObjectList 
+    AppearanceAttributes 
+    Axes2D 
+    Axes3D 
+    AxesArray 
+    AxisAttributes 
+    AxisLabels 
+    AxisTickMarks 
+    AxisTitles 
+    BoxExtents 
+    CinemaAttributes
+    ClientInformation 
+    ClientInformationList 
+    ClientMethod 
+    ColorAttribute 
+    ColorAttributeList 
+    ColorControlPoint 
+    ColorControlPointList 
+    ColorTableAttributes 
+    ConstructDataBinningAttributes 
+    DBOptionsAttributes 
+    DBPluginInfoAttributes 
+    DatabaseCorrelation 
+    DatabaseCorrelationList 
+    EngineList 
+    EngineProperties 
+    ExportDBAttributes 
+    Expression 
+    ExpressionList 
+    FileOpenOptions 
+    FontAttributes 
+    GaussianControlPoint 
+    GaussianControlPointList 
+    GlobalAttributes 
+    GlobalLineoutAttributes 
+    HostProfileList 
+    InteractorAttributes 
+    KeyframeAttributes 
+    LaunchProfile
+    LightAttributes 
+    LightList 
+    MachineProfile
+    MapNode
+    MapNodePair
+    MaterialAttributes 
+    MeshManagementAttributes 
+    MessageAttributes
+    MovieAttributes 
+    NamespaceAttributes 
+    NameschemeAttributes
+    PickAttributes 
+    PickVarInfo 
+    Plot 
+    PlotInfoAttributes 
+    PlotList
+    PluginManagerAttributes 
+    PostponedAction 
+    PrinterAttributes 
+    ProcessAttributes 
+    QueryAttributes 
+    QueryList 
+    QueryOverTimeAttributes 
+    RenderingAttributes 
+    SILArrayAttributes 
+    SILAttributes 
+    SILMatrixAttributes 
+    SILRestrictionAttributes 
+    SimulationUIValues
+    SaveSubWindowAttributes
+    SaveSubWindowsAttributes
+    SaveWindowAttributes 
+    SeedMeAttributes
+    SelectionList
+    SelectionProperties
+    SelectionSummary
+    SelectionVariableSummary
+    StatusAttributes 
+    SyncAttributes 
+    ThresholdOpAttributes 
+    Variant
+    View2DAttributes 
+    View3DAttributes 
+    ViewAxisArrayAttributes 
+    ViewerClientAttributes
+    ViewerClientInformation
+    ViewerClientInformationElement
+    ViewCurveAttributes 
+    WindowInformation)
+
+#####################
+# RPC Objects
+#####################
+SET(JAVA_GEN_RPC_OBJECTS ViewerRPC)
+
+
+#########################################################
+# Add our code gen targets
+#########################################################
+# Metadata Objects
+foreach(obj_name ${JAVA_GEN_METADATA_OBJECTS})
+    ADD_JAVA_GEN_TARGET(${obj_name}
+                        ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
+                        ${CMAKE_CURRENT_SOURCE_DIR})
+endforeach()
+
+# State Objects
+foreach(obj_name ${JAVA_GEN_STATE_OBJECTS})
+    ADD_JAVA_GEN_TARGET(${obj_name}
+                        ${VISIT_SOURCE_DIR}/common/state/
+                        ${CMAKE_CURRENT_SOURCE_DIR})
+endforeach()
+
+# RPC Objects
+foreach(obj_name ${JAVA_GEN_RPC_OBJECTS})
+    ADD_JAVA_GEN_TARGET(${obj_name}
+                        ${VISIT_SOURCE_DIR}/viewer/rpcstate/
+                        ${CMAKE_CURRENT_SOURCE_DIR})
+endforeach()
+#########################################################
+# END Logic for XML Code Gen Targets
+#########################################################
+
+
+############################################
+# - Begin Java Interface CMake logic
+############################################
+# (only added if java support is enabled)
+############################################
+IF(VISIT_JAVA)
+############################################ 
+
+enable_language(Java)
 
 SET(METADATA_SOURCES
 avtArrayMetaData.java
@@ -274,3 +446,11 @@ ADD_CUSTOM_COMMAND(TARGET pack POST_BUILD
     WORKING_DIRECTORY ${JavaClient_BINARY_DIR}
     COMMENT "Creating jvisit${VISIT_VERSION}.tar.gz"
 )
+
+
+############################################
+# - End Java Interface CMake logic
+############################################
+ENDIF()
+############################################
+

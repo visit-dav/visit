@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ConnCompReduceViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ConnCompReducePluginInfo.h>
 #include <ConnCompReduceAttributes.h>
@@ -28,8 +28,11 @@ ConnCompReduceAttributes *ConnCompReduceViewerEnginePluginInfo::defaultAtts = NU
 void
 ConnCompReduceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ConnCompReduceViewerEnginePluginInfo::clientAtts  = new ConnCompReduceAttributes;
-    ConnCompReduceViewerEnginePluginInfo::defaultAtts = new ConnCompReduceAttributes;
+    if (ConnCompReduceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ConnCompReduceViewerEnginePluginInfo::clientAtts  = new ConnCompReduceAttributes;
+        ConnCompReduceViewerEnginePluginInfo::defaultAtts = new ConnCompReduceAttributes;
+    }
 }
 
 // ****************************************************************************

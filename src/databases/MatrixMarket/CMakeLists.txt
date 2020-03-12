@@ -3,6 +3,8 @@ PROJECT(MatrixMarket_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(MatrixMarket)
+
 SET(COMMON_SOURCES
 MatrixMarketPluginInfo.C
 MatrixMarketCommonPluginInfo.C

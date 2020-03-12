@@ -3,6 +3,8 @@ PROJECT(AxisAlignedSlice4D_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(AxisAlignedSlice4D)
+
 SET(COMMON_SOURCES
 AxisAlignedSlice4DPluginInfo.C
 AxisAlignedSlice4DCommonPluginInfo.C

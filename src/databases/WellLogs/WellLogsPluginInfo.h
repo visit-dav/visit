@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               WellLogsPluginInfo.h
+//  WellLogsPluginInfo.h
 // ****************************************************************************
 
 #ifndef WELLLOGS_PLUGIN_INFO_H

@@ -3,6 +3,8 @@ PROJECT(PDF_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(PDF)
+
 SET(COMMON_SOURCES
 PDFPluginInfo.C
 PDFCommonPluginInfo.C

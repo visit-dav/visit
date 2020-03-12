@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ConnCompReduceCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ConnCompReducePluginInfo.h>
 #include <ConnCompReduceAttributes.h>
@@ -43,7 +43,7 @@ ConnCompReduceCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 ConnCompReduceCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

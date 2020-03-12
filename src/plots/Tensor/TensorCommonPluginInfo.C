@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TensorCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <TensorPluginInfo.h>
 #include <TensorAttributes.h>
@@ -43,16 +43,17 @@ TensorCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 TensorCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((TensorAttributes *) to) = *((TensorAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: TensorCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ TensorCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

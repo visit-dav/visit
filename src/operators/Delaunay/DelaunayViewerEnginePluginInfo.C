@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: DelaunayViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <DelaunayPluginInfo.h>
 #include <DelaunayAttributes.h>
@@ -28,8 +28,11 @@ DelaunayAttributes *DelaunayViewerEnginePluginInfo::defaultAtts = NULL;
 void
 DelaunayViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    DelaunayViewerEnginePluginInfo::clientAtts  = new DelaunayAttributes;
-    DelaunayViewerEnginePluginInfo::defaultAtts = new DelaunayAttributes;
+    if (DelaunayViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        DelaunayViewerEnginePluginInfo::clientAtts  = new DelaunayAttributes;
+        DelaunayViewerEnginePluginInfo::defaultAtts = new DelaunayAttributes;
+    }
 }
 
 // ****************************************************************************

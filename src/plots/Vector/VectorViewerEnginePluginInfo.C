@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: VectorViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <VectorPluginInfo.h>
 #include <avtVectorPlot.h>
@@ -29,8 +29,11 @@ VectorAttributes *VectorViewerEnginePluginInfo::defaultAtts = NULL;
 void
 VectorViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    VectorViewerEnginePluginInfo::clientAtts  = new VectorAttributes;
-    VectorViewerEnginePluginInfo::defaultAtts = new VectorAttributes;
+    if (VectorViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        VectorViewerEnginePluginInfo::clientAtts  = new VectorAttributes;
+        VectorViewerEnginePluginInfo::defaultAtts = new VectorAttributes;
+    }
 }
 
 // ****************************************************************************

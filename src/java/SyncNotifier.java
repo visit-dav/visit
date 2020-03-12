@@ -14,13 +14,13 @@ import java.lang.Thread;
 //   notifies the thread that called ViewerProxy's Synchronize method that
 //   is doing a wait().
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 8 12:50:24 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class SyncNotifier implements SimpleObserver

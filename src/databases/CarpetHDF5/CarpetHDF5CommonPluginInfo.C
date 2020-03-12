@@ -54,11 +54,11 @@ CarpetHDF5CommonPluginInfo::SetupDatabase(const char *const *list,
     //    nTimestepGroups = 1.
     int nTimestepGroups = 1; //nList / nBlock;
     avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
-    for (int i = 0 ; i < nTimestepGroups ; i++)
+    for (int i = 0; i < nTimestepGroups; i++)
     {
         ffl[i] = new avtCarpetHDF5FileFormat(list[i*nBlock]);
     }
-    avtMTMDFileFormatInterface *inter 
+    avtMTMDFileFormatInterface *inter
            = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
     return new avtGenericDatabase(inter);
 }

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: M3DPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <M3DPluginInfo.h>
 

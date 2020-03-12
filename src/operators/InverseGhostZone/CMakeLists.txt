@@ -3,6 +3,8 @@ PROJECT(InverseGhostZone_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(InverseGhostZone)
+
 SET(COMMON_SOURCES
 InverseGhostZonePluginInfo.C
 InverseGhostZoneCommonPluginInfo.C

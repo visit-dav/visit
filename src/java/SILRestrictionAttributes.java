@@ -19,7 +19,7 @@ import java.util.Vector;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class SILRestrictionAttributes extends AttributeSubject

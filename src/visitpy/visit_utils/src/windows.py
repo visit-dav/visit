@@ -15,8 +15,8 @@
 import os
 import shutil
 
-from common import VisItException, require_visit, sexe
-from property_tree import PropertyTree
+from .common import VisItException, require_visit, sexe
+from .property_tree import PropertyTree
 
 try:
     import visit
@@ -43,7 +43,7 @@ class WindowManager(object):
     def remove_window(cls,win):
         win.clear_plots()
         # make sure we don't delete the last window
-        if len(cls.__windows.keys()) > 1:
+        if len(list(cls.__windows.keys())) > 1:
             prev_lvl = visit.SuppressMessages(2)
             visit.DeleteWindow()
             visit.SuppressMessages(prev_lvl)
@@ -51,7 +51,7 @@ class WindowManager(object):
         del cls.__windows[win.window_id]
     @classmethod
     def registered_windows(cls):
-        return cls.__windows.values()
+        return list(cls.__windows.values())
     @classmethod
     def cleanup_windows(cls):
         for win in cls.registered_windows():
@@ -97,7 +97,7 @@ class Window(object):
         if not ts is None:
             ofile = "%s%04d" %(ofile,ts)
         stargs = (format,str(vnames),odir,ofile)
-        print "[exporting format: %s vars: %s path: %s/%s ]" % stargs
+        print("[exporting format: %s vars: %s path: %s/%s ]" % stargs)
         eatts = visit.ExportDBAttributes()
         eatts.db_type = format
         eatts.filename = ofile
@@ -120,10 +120,10 @@ class Window(object):
         obase = os.path.abspath(obase)
         odir, ofile = os.path.split(obase)
         if ts is None:
-            print "[rendering %s/%s.png]" % (odir,ofile)
+            print("[rendering %s/%s.png]" % (odir,ofile))
             tmp_ofile = "%s___.tmp" % ofile
         else:
-            print "[rendering %s/%s%04d.png]" % (odir,ofile,ts)
+            print("[rendering %s/%s%04d.png]" % (odir,ofile,ts))
             tmp_ofile = "%s.%04d___.tmp" % (ofile,ts)
         sa = visit.SaveWindowAttributes()
         sa.outputToCurrentDirectory = 0
@@ -146,7 +146,7 @@ class Window(object):
         shutil.move(fname,des)
         if ores[0] != res[0] or ores[1] != res[1]:
             stargs = (res[0],res[1],ores[0],ores[1])
-            print "[resizing output (from %dx%d to %dx%d)]" % stargs
+            print("[resizing output (from %dx%d to %dx%d)]" % stargs)
             sexe("convert -resize %dx%d %s %s" % (ores[0],ores[1],des,des))
         visit.SuppressMessages(prev_lvl)
         return des

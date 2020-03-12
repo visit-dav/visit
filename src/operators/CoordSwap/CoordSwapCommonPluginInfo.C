@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: CoordSwapCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <CoordSwapPluginInfo.h>
 #include <CoordSwapAttributes.h>
@@ -43,7 +43,7 @@ CoordSwapCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 CoordSwapCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

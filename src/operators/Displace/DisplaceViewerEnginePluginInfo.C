@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: DisplaceViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <DisplacePluginInfo.h>
 #include <DisplaceAttributes.h>
@@ -28,8 +28,11 @@ DisplaceAttributes *DisplaceViewerEnginePluginInfo::defaultAtts = NULL;
 void
 DisplaceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    DisplaceViewerEnginePluginInfo::clientAtts  = new DisplaceAttributes;
-    DisplaceViewerEnginePluginInfo::defaultAtts = new DisplaceAttributes;
+    if (DisplaceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        DisplaceViewerEnginePluginInfo::clientAtts  = new DisplaceAttributes;
+        DisplaceViewerEnginePluginInfo::defaultAtts = new DisplaceAttributes;
+    }
 }
 
 // ****************************************************************************

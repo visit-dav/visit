@@ -18,7 +18,7 @@ import java.util.Vector;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class ColorTableAttributes extends AttributeSubject

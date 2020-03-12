@@ -569,8 +569,11 @@ Definition:
 void
 ContourViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ContourViewerEnginePluginInfo::clientAtts  = new ContourAttributes;
-    ContourViewerEnginePluginInfo::defaultAtts = new ContourAttributes;
+    if (ContourViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ContourViewerEnginePluginInfo::clientAtts  = new ContourAttributes;
+        ContourViewerEnginePluginInfo::defaultAtts = new ContourAttributes;
+    }
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);
@@ -656,6 +659,7 @@ ContourViewerEnginePluginInfo::InitializeDefaultPalette(ContourAttributes *conto
     }
 }
 
+Target: xml2atts
 Function: ProcessOldVersions
 Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 Definition:

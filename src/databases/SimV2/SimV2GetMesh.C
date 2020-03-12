@@ -331,13 +331,10 @@ AddGhostZonesFromArray(vtkDataSet *ds, visit_handle ghostCells)
                 ds->GetCellData()->AddArray(ghosts);
                 retval = true;
             }
-            else
-            {
-                ghosts->Delete();
-            }
         }
         else
         {
+            // Use the VTK type to iterate over the data to convert to int.
             int vtkType = SimV2_GetVTKType(dataType);
             vtkComponentDataArray<int> *src = vtkComponentDataArray<int>::New();
             src->SetNumberOfTuples(nTuples);
@@ -352,6 +349,7 @@ AddGhostZonesFromArray(vtkDataSet *ds, visit_handle ghostCells)
             ds->GetCellData()->AddArray(ghosts);
             retval = true;
         }
+        ghosts->Delete();
     }
 
     return retval;
@@ -445,13 +443,10 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
                 ds->GetPointData()->AddArray(ghosts);
                 retval = true;
             }
-            else
-            {
-                ghosts->Delete();
-            }
         }
         else
         {
+            // Use the VTK type to iterate over the data to convert to int.
             int vtkType = SimV2_GetVTKType(dataType);
             vtkComponentDataArray<int> *src = vtkComponentDataArray<int>::New();
             src->SetNumberOfTuples(nTuples);
@@ -474,6 +469,7 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
             ds->GetPointData()->AddArray(ghosts);
             retval = true;
         }
+        ghosts->Delete();
     }
 
     return retval;

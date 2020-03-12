@@ -22,7 +22,7 @@ class LaunchProfile;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API MachineProfile : public AttributeSubject

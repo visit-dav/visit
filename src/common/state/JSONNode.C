@@ -548,7 +548,7 @@ JSONNode::EscapeString(const std::string &val) const
      \t
      \u four-hex-digits
     */
-    
+
     std::string res="";
     size_t ssize = val.size();
     for(size_t i=0;i<ssize;i++)
@@ -570,7 +570,7 @@ JSONNode::EscapeString(const std::string &val) const
         else if(val[i] == '\t')
         {res += std::string("\\t");}
         else
-        {res.push_back(val[i]);} 
+        {res.push_back(val[i]);}
     }
     return res;
 }
@@ -587,7 +587,7 @@ JSONNode::EscapeString(const std::string &val) const
 //
 // ****************************************************************************
 
-void 
+void
 JSONNode::Init(const JSONNode &node)
 {
     JSONType type = node.type;
@@ -623,7 +623,7 @@ JSONNode::Init(const JSONNode &node)
 //
 // ****************************************************************************
 
-void 
+void
 JSONNode::Cleanup()
 {
     type = JSONNULLVALUE;

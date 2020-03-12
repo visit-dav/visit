@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ThresholdViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ThresholdPluginInfo.h>
 #include <ThresholdAttributes.h>
@@ -28,8 +28,11 @@ ThresholdAttributes *ThresholdViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ThresholdViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ThresholdViewerEnginePluginInfo::clientAtts  = new ThresholdAttributes;
-    ThresholdViewerEnginePluginInfo::defaultAtts = new ThresholdAttributes;
+    if (ThresholdViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ThresholdViewerEnginePluginInfo::clientAtts  = new ThresholdAttributes;
+        ThresholdViewerEnginePluginInfo::defaultAtts = new ThresholdAttributes;
+    }
 }
 
 // ****************************************************************************
@@ -126,7 +129,7 @@ ThresholdViewerEnginePluginInfo::GetClientAtts(AttributeSubject *atts)
 //  Creation:   Thu Mar 9 16:03:07 PST 2006
 //
 //   Modifications:
-//   
+//
 //     Mark Blair, Thu Mar  9 18:25:00 PST 2006
 //     Upgraded to support multiple threshold variables.
 //
@@ -156,11 +159,11 @@ ThresholdViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
         *(ThresholdAttributes *)atts = *defaultAtts;
     else
         *(ThresholdAttributes *)atts = *clientAtts;
-        
+
     ThresholdAttributes *initAtts = (ThresholdAttributes *)atts;
-        
+
     initAtts->SupplyMissingDefaultsIfAppropriate();
-    
+
     initAtts->SetDefaultVarName(plot.GetVariableName());
     initAtts->SetDefaultVarIsScalar(plot.GetVariableType() == AVT_SCALAR_VAR);
 

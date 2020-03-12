@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        PseudocolorPluginInfo.h                            //
+//  PseudocolorPluginInfo.h
 // ************************************************************************* //
 
 #ifndef PSEUDOCOLOR_PLUGIN_INFO_H

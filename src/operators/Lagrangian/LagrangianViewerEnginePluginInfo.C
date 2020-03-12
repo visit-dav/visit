@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: LagrangianViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <LagrangianPluginInfo.h>
 #include <LagrangianAttributes.h>
@@ -28,8 +28,11 @@ LagrangianAttributes *LagrangianViewerEnginePluginInfo::defaultAtts = NULL;
 void
 LagrangianViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    LagrangianViewerEnginePluginInfo::clientAtts  = new LagrangianAttributes;
-    LagrangianViewerEnginePluginInfo::defaultAtts = new LagrangianAttributes;
+    if (LagrangianViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        LagrangianViewerEnginePluginInfo::clientAtts  = new LagrangianAttributes;
+        LagrangianViewerEnginePluginInfo::defaultAtts = new LagrangianAttributes;
+    }
 }
 
 // ****************************************************************************

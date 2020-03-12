@@ -3,7 +3,7 @@
     <Files components="E">
       avtLineoutPluginFilter.C
     </Files>
-    <Attribute name="LineoutAttributes" purpose="Attributes for the Lineout operator " persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LineoutAttributes.code">
+    <Attribute name="LineoutAttributes" purpose="Attributes for the Lineout operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LineoutAttributes.code">
       <Field name="point1" label="Point 1" type="doubleArray" length="3">
         0.000000
         0.000000

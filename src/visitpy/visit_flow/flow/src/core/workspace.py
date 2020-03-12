@@ -16,13 +16,13 @@ import hashlib
 import imp
 import traceback
 
-from registry      import *
-from filter_graph  import *
-from state_control import *
+from .registry      import *
+from .filter_graph  import *
+from .state_control import *
 
 from ..parser      import *
 
-import log
+from . import log
 
 # logging helper for workspace
 def info(msg):
@@ -218,7 +218,7 @@ class Workspace(object):
         """
         Adds a context to the workspace.
         """
-        if context_type in self.context_types.keys():
+        if context_type in list(self.context_types.keys()):
             ccls = self.context_types[context_type]
             res = ccls(self,context_name,parent)
             self.contexts[context_name] = res
@@ -278,18 +278,18 @@ class Workspace(object):
         """
         Returns the names of the active filter nodes in the workspace.
         """
-        return self.graph.nodes.keys()
+        return list(self.graph.nodes.keys())
     def has_context(self,context_name):
         """
         Returns True if a context with the given name exists in
         the workspace.
         """
-        return context_name in self.contexts.keys()
+        return context_name in list(self.contexts.keys())
     def get_context(self,context_name):
         """
         Returns the names of the active filter nodes in the workspace.
         """
-        if context_name in self.contexts.keys():
+        if context_name in list(self.contexts.keys()):
             return self.contexts[context_name]
         return None
     def get_filter(self,filter_name):
@@ -317,7 +317,7 @@ class Workspace(object):
         Returns a list of keys of the active entires in the workspace's
         registry.
         """
-        return self.registry.keys()
+        return list(self.registry.keys())
     def execution_plan(self):
         """
         Generates a workspace execution plan.
@@ -373,8 +373,8 @@ class Workspace(object):
                     emsg = "".join(emsg)
                     info(msg)
                     info("\n<Traceback>\n" + emsg)
-                    print msg
-                    print "\n<Traceback>\n" + emsg
+                    print(msg)
+                    print("\n<Traceback>\n" + emsg)
                     raise e
                 # if output exists, place in registry
                 if not res is None:
@@ -409,9 +409,9 @@ class Workspace(object):
     def to_dict(self):
         res = {"context_types":{},
                "contexts":{}}
-        for k,v in self.context_types.items():
+        for k,v in list(self.context_types.items()):
             res["context_types"][k] = {"default_params":dict(v.default_parameters())}
-        for k,v in self.contexts.items():
+        for k,v in list(self.contexts.items()):
             ctx = {"type":v.context_type,
                    "params": v.parameters().properties(),
                    "parent": None}
@@ -424,12 +424,12 @@ class Workspace(object):
     def load_dict(self,wdict):
         # for now assume the filters and contexts are installed
         # just create and hook up the filters
-        for node_name, node in wdict["nodes"].items():
+        for node_name, node in list(wdict["nodes"].items()):
             params = None
             ctx    = None
-            if node.has_key("params"):
+            if "params" in node:
                 params = node["params"]
-            if node.has_key("context"):
+            if "context" in node:
                 ctx = self.get_context(node["context"])
             self.add_filter(node["type"],node_name,params,ctx)
         for edge in wdict["connections"]:
@@ -449,13 +449,13 @@ class ExecutionPlan(object):
         # find src & sink nodes
         snks = []
         srcs = []
-        for node in g.nodes.values():
+        for node in list(g.nodes.values()):
             if not node.output_port or len(g.edges_out[node.name]) == 0:
                 snks.append(node.name)
-            if node.output_port and not node.name in g.edges_in.keys():
+            if node.output_port and not node.name in list(g.edges_in.keys()):
                 srcs.append(node.name)
         tags = {}
-        for name in g.nodes.keys():
+        for name in list(g.nodes.keys()):
             tags[name] = 0
         # execute bf traversals from each snk
         for snk_name in snks:
@@ -464,7 +464,7 @@ class ExecutionPlan(object):
             if len(trav) > 0:
                 self.traversals.append(trav)
             self.untouched = []
-            for name, tag in tags.items():
+            for name, tag in list(tags.items()):
                 if tag == 0:
                     self.untouched.append(name)
     def __visit(self,g,node_name,tag,trav):
@@ -478,7 +478,7 @@ class ExecutionPlan(object):
         if node.output_port:
             uref = max(1,len(g.edges_out[node_name]))
         if node.number_of_input_ports() > 0:
-            for src_name in g.edges_in[node_name].values():
+            for src_name in list(g.edges_in[node_name].values()):
                     if not src_name is None:
                         self.__visit(g,src_name,tag,trav)
                     else: # dangle?

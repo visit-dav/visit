@@ -25,7 +25,7 @@ import os
 # Check the version.
 ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
-    print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
+    print("This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version()))
 
 def renderatts():
     OpenDatabase("localhost:../../data/globe.silo")
@@ -77,7 +77,7 @@ def renderatts():
 
     # Print out the extents for the plot.
     info = GetWindowInformation()
-    print "Plot extents are: (%g, %g) (%g, %g) (%g, %g)" % info.extents
+    print("Plot extents are: (%g, %g) (%g, %g) (%g, %g)" % info.extents)
 
     # Set the view centering mode to "actual"
     SetViewExtentsType("actual")
@@ -93,9 +93,9 @@ def renderatts():
 
     # Print out the extents for the plot.
     info = GetWindowInformation()
-    print "Plot extents after thesholding are: (%g, %g) (%g, %g) (%g, %g)" % info.extents
+    print("Plot extents after thesholding are: (%g, %g) (%g, %g) (%g, %g)" % info.extents)
 
 if(not os.path.isfile("../../data/globe.silo")):
-    print "This script requires the file globe.silo to be built in the data directory"
+    print("This script requires the file globe.silo to be built in the data directory")
 else:
     renderatts()

@@ -4,11 +4,11 @@ Definition:
 // ****************************************************************************
 // Method: QueryOverTimeAttributes::CreateNode
 //
-// Purpose: 
-//   This method creates a DataNode representation of the object so it can be 
+// Purpose:
+//   This method creates a DataNode representation of the object so it can be
 //   saved to a config file.
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   May 26, 2004
 //
 // Modifications:
@@ -91,15 +91,15 @@ Definition:
 // ****************************************************************************
 // Method: QueryOverTimeAttributes::SetFromNode
 //
-// Purpose: 
-//   This method sets attributes in this object from values in a DataNode 
+// Purpose:
+//   This method sets attributes in this object from values in a DataNode
 //   representation of the object.
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   May 26, 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

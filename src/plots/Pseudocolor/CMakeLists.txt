@@ -3,6 +3,8 @@ PROJECT(Pseudocolor_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Pseudocolor)
+
 SET(COMMON_SOURCES
 PseudocolorPluginInfo.C
 PseudocolorCommonPluginInfo.C
@@ -27,8 +29,9 @@ PseudocolorViewerEnginePluginInfo.C
 PseudocolorViewerPluginInfo.C
 avtPseudocolorPlot.C
 avtPseudocolorFilter.C
+avtPseudocolorGeometryFilter.C
 avtPseudocolorMapper.C
-vtkMultiRepMapper.C
+vtkExtractCellsByType.C
 ${COMMON_SOURCES}
 )
 
@@ -37,8 +40,9 @@ PseudocolorViewerEnginePluginInfo.C
 PseudocolorEnginePluginInfo.C
 avtPseudocolorPlot.C
 avtPseudocolorFilter.C
+avtPseudocolorGeometryFilter.C
 avtPseudocolorMapper.C
-vtkMultiRepMapper.C
+vtkExtractCellsByType.C
 ${COMMON_SOURCES}
 )
 
@@ -81,6 +85,7 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
+${VISIT_INCLUDE_DIR}/avt/Plotter/vtk
 )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )

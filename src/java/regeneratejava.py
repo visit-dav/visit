@@ -14,7 +14,7 @@ def GetFilenames(command):
 # Execute a command. It's wrapped for debugging.
 #
 def systemCommand(command):
-    print command
+    print(command)
     return os.system(command)
 
 ###############################################################################
@@ -62,5 +62,5 @@ def main(exeDir):
 if len(sys.argv) > 1:
     main(sys.argv[1])
 else:
-    print "usage: regeneratejava.py /path/to/xml2java"
+    print("usage: regeneratejava.py /path/to/xml2java")
 

@@ -11,13 +11,13 @@ package llnl.visit;
 //   This class serves as an event loop that can be used to read input from
 //   the viewer. It also provides a method for synchronization with the viewer.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jan 25 15:37:49 PST 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class EventLoop extends java.lang.Object implements SimpleObserver
@@ -134,7 +134,7 @@ public class EventLoop extends java.lang.Object implements SimpleObserver
 
         messageAtts.Detach(this);
         syncAtts.Detach(this);
- 
+
         return !errorFlag;
     }
 
@@ -159,7 +159,7 @@ public class EventLoop extends java.lang.Object implements SimpleObserver
 
     /**
      * Send a synchronize message to the viewer and process wait for it to come back.
-     * This method works when we are automatically reading viewer input on a 2nd 
+     * This method works when we are automatically reading viewer input on a 2nd
      * thread. In that case, we send the synchronization and block this thread until
      * thread 2 notifies this thread that the value has returned.
      *
@@ -175,7 +175,7 @@ public class EventLoop extends java.lang.Object implements SimpleObserver
         syncNotifier.NotifyThreadOnValue(Thread.currentThread(), waitValue);
         syncNotifier.SetUpdate(false);
         syncAtts.Attach(syncNotifier);
- 
+
         // Send the wait value to the viewer.
         syncAtts.SetSyncTag(waitValue);
         syncAtts.Notify();

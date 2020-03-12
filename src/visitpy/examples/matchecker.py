@@ -27,7 +27,7 @@ def MatChecker (matname, meshname):
     volume_defn = "volume(%s)" %(meshname)
     prod_name = "prod_%s" %(matname)
     prod_defn = "%s * %s" %(matvf_defn, volume_defn)
-    print "Prod = %s" %(prod_defn)
+    print("Prod = %s" %(prod_defn))
     DefineScalarExpression(prod_name, prod_defn)
     AddPlot("Pseudocolor", prod_name)
     sil = SILRestriction()
@@ -71,5 +71,5 @@ def MatChecker (matname, meshname):
         report += "\t\tRatio = %f\n" %(prod_interface/vol_interface)
     DeleteAllPlots()
     DeleteExpression(prod_name)
-  print report
+  print(report)
 

@@ -134,68 +134,68 @@ class CodeFile
     }
 
     bool HasCode(const QString &name) const
-    { 
-        return HasItem(code, name); 
+    {
+        return HasItem(code, name);
     }
-    bool GetCode(const QString &name, QStringList &targets, QStringList &first, 
+    bool GetCode(const QString &name, QStringList &targets, QStringList &first,
                  QStringList &second) const
     {
         return GetItem(code, name, targets, first, second);
     }
-    void GetAllCodes(QStringList &targets, QStringList &names, QStringList &first, 
+    void GetAllCodes(QStringList &targets, QStringList &names, QStringList &first,
                  QStringList &second) const
     {
         GetAllItems(code, targets, names, first, second);
     }
 
     bool HasFunction(const QString &name) const
-    { 
-        return HasItem(func, name); 
+    {
+        return HasItem(func, name);
     }
-    bool GetFunction(const QString &name, QStringList &targets, QStringList &first, 
+    bool GetFunction(const QString &name, QStringList &targets, QStringList &first,
                  QStringList &second) const
     {
         return GetItem(func, name, targets, first, second);
     }
-    void GetAllFunctions(QStringList &targets, QStringList &names, QStringList &first, 
+    void GetAllFunctions(QStringList &targets, QStringList &names, QStringList &first,
                  QStringList &second) const
     {
         GetAllItems(func, targets, names, first, second);
     }
 
     bool HasVariable(const QString &name) const
-    { 
-        return HasItem(var, name); 
+    {
+        return HasItem(var, name);
     }
-    bool GetVariable(const QString &name, QStringList &targets, QStringList &first, 
+    bool GetVariable(const QString &name, QStringList &targets, QStringList &first,
                  QStringList &second) const
     {
         return GetItem(var, name, targets, first, second);
     }
-    void GetAllVariables(QStringList &targets, QStringList &names, QStringList &first, 
+    void GetAllVariables(QStringList &targets, QStringList &names, QStringList &first,
                  QStringList &second) const
     {
         GetAllItems(var, targets, names, first, second);
     }
 
     bool HasConstant(const QString &name) const
-    { 
-        return HasItem(constant, name); 
+    {
+        return HasItem(constant, name);
     }
-    bool GetConstant(const QString &name, QStringList &language, QStringList &first, 
+    bool GetConstant(const QString &name, QStringList &language, QStringList &first,
                      QStringList &second) const
     {
         return GetItem(constant, name, language, first, second);
     }
-    void GetAllConstants(QStringList &targets, QStringList &names, QStringList &first, 
+    void GetAllConstants(QStringList &targets, QStringList &names, QStringList &first,
                  QStringList &second) const
     {
         GetAllItems(constant, targets, names, first, second);
     }
 
     bool HasInit(const QString &name) const
-    { 
-        return HasItem(init, name); 
+    {
+        return HasItem(init, name);
     }
     bool GetInit(const QString &name, QStringList &targets, QStringList &def) const
     {
@@ -215,7 +215,7 @@ class CodeFile
         {
             if(it->first == key)
             {
-                QStringPairVector sec = it->second;  
+                QStringPairVector sec = it->second;
                 for (size_t i = 0; i < sec.size(); ++i)
                 {
                     cond += sec[i].first;
@@ -419,7 +419,7 @@ private:
                         PVMit it;
                         std::pair<QString, QString> p(name, value);
                         for(it = condition.begin(); it != condition.end(); ++it)
-                        { 
+                        {
                             if (thisKey == it->first)
                                 break;
                         }
@@ -478,8 +478,8 @@ private:
         return false;
     }
 
-    bool GetItem(const QStringPairMap &m, const QString &name, 
-                 QStringList &targets, QStringList &first, 
+    bool GetItem(const QStringPairMap &m, const QString &name,
+                 QStringList &targets, QStringList &first,
                  QStringList &second) const
     {
         bool retval = false;
@@ -501,14 +501,14 @@ private:
     void GetAllItems(const QStringPairMap &m,
                      QStringList &targets,
                      QStringList &names,
-                     QStringList &first, 
+                     QStringList &first,
                      QStringList &second) const
     {
         for(QStringPairMap::const_iterator it = m.begin(); it != m.end(); ++it)
         {
             QString target, key;
             SplitKey(it->first, target, key);
-            
+
             targets += target;
             names += key;
             first += it->second.first;
@@ -525,7 +525,7 @@ private:
         {
             QString target, key;
             SplitKey(it->first, target, key);
-            
+
             targets += target;
             names += key;
             defs += it->second;
@@ -544,7 +544,7 @@ private:
         return false;
     }
 
-    bool GetItem(const QStringQStringMap &m, const QString &name, 
+    bool GetItem(const QStringQStringMap &m, const QString &name,
                  QStringList &targets, QStringList &first) const
     {
         bool retval = false;

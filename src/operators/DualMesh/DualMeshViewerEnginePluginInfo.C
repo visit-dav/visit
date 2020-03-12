@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: DualMeshViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <DualMeshPluginInfo.h>
 #include <DualMeshAttributes.h>
@@ -28,8 +28,11 @@ DualMeshAttributes *DualMeshViewerEnginePluginInfo::defaultAtts = NULL;
 void
 DualMeshViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    DualMeshViewerEnginePluginInfo::clientAtts  = new DualMeshAttributes;
-    DualMeshViewerEnginePluginInfo::defaultAtts = new DualMeshAttributes;
+    if (DualMeshViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        DualMeshViewerEnginePluginInfo::clientAtts  = new DualMeshAttributes;
+        DualMeshViewerEnginePluginInfo::defaultAtts = new DualMeshAttributes;
+    }
 }
 
 // ****************************************************************************

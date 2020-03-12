@@ -12,7 +12,7 @@ package llnl.visit;
 //   objects. This is important for classes that want to perform some action
 //   (like updating a GUI window) when the viewer sends new state.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 8 12:46:13 PDT 2002
@@ -51,7 +51,7 @@ public interface SimpleObserver
     public void SetUpdate(boolean val);
 
     /**
-     * Returns that flag indicating whether or not Update() should be 
+     * Returns that flag indicating whether or not Update() should be
      * called in response to a state object's Notify().
      * @return The flag indicating whether Update() should be called.
      */

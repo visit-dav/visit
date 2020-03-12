@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: HistogramViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <HistogramPluginInfo.h>
 #include <avtHistogramPlot.h>
@@ -29,8 +29,11 @@ HistogramAttributes *HistogramViewerEnginePluginInfo::defaultAtts = NULL;
 void
 HistogramViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    HistogramViewerEnginePluginInfo::clientAtts  = new HistogramAttributes;
-    HistogramViewerEnginePluginInfo::defaultAtts = new HistogramAttributes;
+    if (HistogramViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        HistogramViewerEnginePluginInfo::clientAtts  = new HistogramAttributes;
+        HistogramViewerEnginePluginInfo::defaultAtts = new HistogramAttributes;
+    }
 }
 
 // ****************************************************************************

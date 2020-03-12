@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TriangulateRegularPointsViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <TriangulateRegularPointsPluginInfo.h>
 #include <TriangulateRegularPointsAttributes.h>
@@ -28,8 +28,11 @@ TriangulateRegularPointsAttributes *TriangulateRegularPointsViewerEnginePluginIn
 void
 TriangulateRegularPointsViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    TriangulateRegularPointsViewerEnginePluginInfo::clientAtts  = new TriangulateRegularPointsAttributes;
-    TriangulateRegularPointsViewerEnginePluginInfo::defaultAtts = new TriangulateRegularPointsAttributes;
+    if (TriangulateRegularPointsViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        TriangulateRegularPointsViewerEnginePluginInfo::clientAtts  = new TriangulateRegularPointsAttributes;
+        TriangulateRegularPointsViewerEnginePluginInfo::defaultAtts = new TriangulateRegularPointsAttributes;
+    }
 }
 
 // ****************************************************************************

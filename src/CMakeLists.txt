@@ -421,6 +421,30 @@
 #    Eric Brugger, Wed Jun 26 10:06:57 PDT 2019
 #    Removed the CMM reader.
 #
+#    Alister Maguire, Thu Nov  7 16:22:47 PST 2019
+#    Build the sphinx documentation.
+#
+#    Kathleen Biagas, Wed Dec 18 08:51:04 PST 2019
+#    Remove VISIT_ZLIB as we no longer have an internal (third_party_builtin)
+#    zlib.
+#
+#    Kathleen Biagas, Thu Feb 20 14:45:33 MST 2020
+#    Fix sphinx docs build for Windows: sphinx-build executable is in a
+#    different directory, don't build them in-source. Add install command.
+#
+#    Kathleen Biagas, Thu Feb 27 2020
+#    Add a few CMake vars to control optional targets and reduce the number of
+#    build targets when turned off (all on by default):
+#        VISIT_ENABLE_ANNOTATION_TOOLS
+#        VISIT_ENABLE_DATAGEN
+#        VISIT_ENABLE_LIBSIM
+#        VISIT_ENABLE_MANUALS
+#        VISIT_ENABLE_SILO_TOOLS
+#    Rename a few CMake vars for consistency in naming:
+#      VISIT_DATA_MANUAL_EXAMPLES => VISIT_ENABLE_DATA_MANUAL_EXAMPLES
+#      VISIT_BUILD_DIAGNOSTICS    => VISIT_ENABLE_DIAGNOSTICS
+#      VISIT_BUILD_AVTEXAMPLES    => VISIT_ENABLE_EXAMPLES
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -706,7 +730,6 @@ ENDIF(VISIT_DDT)
 
 OPTION(VISIT_BUILD_ALL_PLUGINS     "Build all of VisIt's plugins." OFF)
 OPTION(VISIT_BUILD_MINIMAL_PLUGINS "Build a minimal set of VisIt's plugins." OFF)
-OPTION(VISIT_ZLIB "Use VisIt's internal libz" OFF)
 OPTION(VISIT_JAVA "Build the VisIt Java client interface" OFF)
 OPTION(VISIT_PARADIS "Build the VisIt paraDIS client interface" ON)
 OPTION(VISIT_SERVER_COMPONENTS_ONLY "Build only vcl, mdserver, engine and their plugins" OFF)
@@ -724,13 +747,13 @@ OPTION(VISIT_NOLINK_MPI_WITH_LIBRARIES "Do not link MPI with VisIt's parallel sh
 OPTION(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE "Create a separate executable that forwards VisIt's socket connection between engine and component launcher" ON)
 OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
-OPTION(VISIT_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
 OPTION(VISIT_SPHINX "Enable ability to build sphinx documentation" OFF)
 
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
 OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
 OPTION(VISIT_CREATE_APPBUNDLE_PACKAGE "Create DMG file with Mac App bundle with make package" OFF)
 IF(WIN32)
+  OPTION(VISIT_MESA_REPLACE_OPENGL "Use mesa as a drop-in replacment for opengl when system opengl is insufficient." OFF)
   OPTION(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS" OFF)
   OPTION(VISIT_WINDOWS_APPLICATION "Create Windows-style applications with no console" ON)
   IF(VISIT_WINDOWS_APPLICATION)
@@ -738,6 +761,7 @@ IF(WIN32)
   ENDIF(VISIT_WINDOWS_APPLICATION)
 ENDIF(WIN32)
 
+OPTION(VISIT_CREATE_XMLTOOLS_GEN_TARGETS "Create cmake targets to run xmltools code gen targets" ON)
 OPTION(VISIT_INSTALL_AS_BETA "Install as beta (symlink beta instead of current to installed version)." OFF)
 OPTION(VISIT_MPICH_INSTALL "Install MPICH into VisIt binary distribution" OFF)
 IF(APPLE OR WIN32)
@@ -747,9 +771,16 @@ ELSE(APPLE OR WIN32)
 ENDIF(APPLE OR WIN32)
 
 OPTION(VISIT_THREAD "Build VisIt with thread support." OFF)
-OPTION(VISIT_BUILD_AVTEXAMPLES  "Enable building of avtexamples" ON)
-OPTION(VISIT_BUILD_DIAGNOSTICS  "Enable building of diagnostices" ON)
 
+# some options that when turned off reduce the build targets
+OPTION(VISIT_ENABLE_ANNOTATION_TOOLS "Enable generation of annotation tools (text2polys, time_annotation)" ON)
+OPTION(VISIT_ENABLE_DATAGEN "Enable generation of sample data files" ON)
+OPTION(VISIT_ENABLE_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
+OPTION(VISIT_ENABLE_DIAGNOSTICS  "Enable building of diagnostices" ON)
+OPTION(VISIT_ENABLE_EXAMPLES  "Enable building of examples" ON)
+OPTION(VISIT_ENABLE_LIBSIM "Enable building of libsim." ON)
+OPTION(VISIT_ENABLE_MANUALS  "Enable building of manuals (requires python3)" ON)
+OPTION(VISIT_ENABLE_SILO_TOOLS "Enable building of silo tools (mrgtree2dot, add_visit_searchpath)" ON)
 OPTION(VISIT_ENABLE_XDB "Enable Intelligent Light XDB database plugin." OFF) # OFF for now
 
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
@@ -2006,7 +2037,9 @@ ADD_SUBDIRECTORY(visit_vtk)
 ADD_SUBDIRECTORY(avt)
 
 IF(NOT VISIT_DBIO_ONLY)
-    ADD_SUBDIRECTORY(sim)
+    if(VISIT_ENABLE_LIBSIM)
+      ADD_SUBDIRECTORY(sim)
+    endif()
     ADD_SUBDIRECTORY(viewer)   # sim depends on viewercore
     ADD_SUBDIRECTORY(engine)   # sim depends on engine
 
@@ -2025,9 +2058,9 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ADD_SUBDIRECTORY(visitpy)
         ENDIF(NOT VISIT_STATIC)
     ENDIF(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND)
-    IF(VISIT_JAVA)
-        ADD_SUBDIRECTORY(java)
-    ENDIF(VISIT_JAVA)
+    # always add java subdir, so code gen targets can be active even
+    # if java is not enabled
+    ADD_SUBDIRECTORY(java)
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 
@@ -2233,6 +2266,35 @@ ELSE (NOT WIN32)
     ENDIF(VISIT_MAKE_NSIS_INSTALLER)
 ENDIF (NOT WIN32)
 
+if(VISIT_PYTHON3_DIR AND VISIT_ENABLE_MANUALS)
+  if(WIN32)
+    # Need a different path for windows because sphinx-build
+    # is in a different location.
+
+    # don't pollute the src repo, build the docs in the binary dir.
+    # This doesn't allow the manuals to be found if running a dev build,
+    # so location may need to be rethought, but other than building them
+    # in exe/Release and in exe/Debug, thought this location was best.
+    add_custom_target(manuals
+        COMMAND ${VISIT_PYTHON3_DIR}/Scripts/sphinx-build.exe 
+        -b html ${VISIT_SOURCE_DIR}/doc 
+        ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
+    # Add command to ensure the manuals are installed to the correct location
+    install(DIRECTORY ${VISIT_BINARY_DIR}/resources/help/en_US/manual
+        DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}/help/en_US/
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                         GROUP_READ GROUP_WRITE
+                         WORLD_READ
+        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                              WORLD_READ             WORLD_EXECUTE
+        CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
+  else()
+    add_custom_target(manuals
+                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build -b html ${VISIT_SOURCE_DIR}/doc ${VISIT_SOURCE_DIR}/resources/help/en_US/manual -a)
+  endif()
+endif()
+
 #CMake add subdirectory forces this action to go last
 #todo: find way for this function to execute as last
 #step of make install process
@@ -2245,6 +2307,10 @@ SET(FIXUP_OSX TRUE CACHE BOOL "Whether to fix up osx.")
 IF (APPLE AND FIXUP_OSX)
     ADD_SUBDIRECTORY(osxfixup)
 ENDIF ()
+
+if(WIN32 AND VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
+    message("\nCreation of code gen targets has been turned on. If you don't want the xmltools to be run during the buid, build using the ALL_BUILD project.")
+endif()
 
 IF (NOT WIN32)
     MESSAGE(STATUS "\n\nUse recmake_visit.sh or search for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")

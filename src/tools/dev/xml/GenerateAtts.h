@@ -54,7 +54,7 @@
 //    Brad Whitlock, Tue May 14 10:23:57 PDT 2002
 //    Added support for exporting symbols.
 //
-//    Kathleen Bonnell, Fri Jun 28 09:32:26 PDT 2002 
+//    Kathleen Bonnell, Fri Jun 28 09:32:26 PDT 2002
 //    Implemented SetDefault for IntVector, DoubleVector, and StringVector.
 //
 //    Jeremy Meredith, Sat Aug  3 11:58:40 PDT 2002
@@ -128,9 +128,9 @@
 //    Hank Childs, Tue May 24 09:54:36 PDT 2005
 //    Added new argument to constructor for hasoptions.
 //
-//    Kathleen Bonnell, Mon Feb  6 16:23:30 PST 2006 
-//    Allow assignment operator and 'SetProperty' methods from codefile to 
-//    replace default generated methods. 
+//    Kathleen Bonnell, Mon Feb  6 16:23:30 PST 2006
+//    Allow assignment operator and 'SetProperty' methods from codefile to
+//    replace default generated methods.
 //
 //    Hank Childs, Thu Jun  8 16:52:47 PDT 2006
 //    Added copyright.
@@ -154,7 +154,7 @@
 //    error in Klockwork.
 //
 //    Brad Whitlock, Thu Feb 28 14:10:04 PST 2008
-//    Added generatorName and made it use HasCode,PrintCode instead of 
+//    Added generatorName and made it use HasCode,PrintCode instead of
 //    accessing the code file directly.
 //
 //    Jeremy Meredith, Thu Aug  7 14:34:01 EDT 2008
@@ -231,7 +231,7 @@ class AttsGeneratorField : public virtual Field
         if (CanHaveConst())
             h << "const ";
         h << GetCPPName(true) << " ";
-        if (isArray) 
+        if (isArray)
             h << "*";
         else if (CanHaveConst())
             h << "&";
@@ -417,7 +417,7 @@ class AttsGeneratorField : public virtual Field
             else
             {
                 c << "    for(int i = 0; i < " << length << "; ++i)" << Endl;
-                c << "        " << name << "[i] = " 
+                c << "        " << name << "[i] = "
                   <<     "obj." << name << "[i];" << Endl;
             }
             c << Endl;
@@ -448,7 +448,7 @@ class AttsGeneratorField : public virtual Field
         if (isArray)
         {
             c << indent << "// Compare the " << name << " arrays." << Endl;
-            c << indent << "bool " << name << "_equal = true;" << Endl; 
+            c << indent << "bool " << name << "_equal = true;" << Endl;
             c << indent << "for(int i = 0; i < " << length << " && "
               << name << "_equal; ++i)" << Endl;
             c << indent << "    " << name << "_equal = ("
@@ -540,7 +540,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
 };
 
 
-// 
+//
 // ----------------------------------- Bool -----------------------------------
 //
 class AttsGeneratorBool : public virtual Bool , public virtual AttsGeneratorField
@@ -791,8 +791,8 @@ class AttsGeneratorString : public virtual String , public virtual AttsGenerator
     AttsGeneratorString(const QString &n, const QString &l)
         : Field("string",n,l), String(n,l), AttsGeneratorField("string",n,l) { }
     virtual bool CanHaveConst() { return true; }
-    virtual void AddSystemIncludes(UniqueStringList &sl) 
-    { 
+    virtual void AddSystemIncludes(UniqueStringList &sl)
+    {
         sl.AddString("#include <string>\n");
     }
     virtual QString GetAttributeGroupID()
@@ -819,8 +819,8 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual A
     AttsGeneratorStringVector(const QString &n, const QString &l)
         : Field("stringVector",n,l), StringVector(n,l), AttsGeneratorField("stringVector",n,l) { }
     virtual bool CanHaveConst() { return true; }
-    virtual void AddSystemIncludes(UniqueStringList &sl) 
-    { 
+    virtual void AddSystemIncludes(UniqueStringList &sl)
+    {
         sl.AddString("#include <string>\n");
     }
     virtual QString GetAttributeGroupID()
@@ -848,8 +848,8 @@ class AttsGeneratorColorTable : public virtual ColorTable , public virtual AttsG
     AttsGeneratorColorTable(const QString &n, const QString &l)
         : Field("colortable",n,l), ColorTable(n,l), AttsGeneratorField("colortable",n,l) { }
     virtual bool CanHaveConst() { return true; }
-    virtual void AddSystemIncludes(UniqueStringList &sl) 
-    { 
+    virtual void AddSystemIncludes(UniqueStringList &sl)
+    {
         sl.AddString("#include <string>\n");
     }
     virtual QString GetAttributeGroupID()
@@ -981,8 +981,8 @@ class AttsGeneratorVariableName : public virtual VariableName , public virtual A
           AttsGeneratorField("variablename",n,l)
            { }
     virtual bool CanHaveConst() { return true; }
-    virtual void AddSystemIncludes(UniqueStringList &sl) 
-    { 
+    virtual void AddSystemIncludes(UniqueStringList &sl)
+    {
         sl.AddString("#include <string>\n");
     }
     virtual QString GetAttributeGroupID()
@@ -1135,7 +1135,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "    bool cleared" << Name << plural << " = false;" << Endl;
         c << "    // Go through all of the children and construct a new" << Endl;
         c << "    // " << attType << " for each one of them." << Endl;
-                  
+
         c << "    children = searchNode->GetChildren();" << Endl;
         c << "    if(children != 0)" << Endl;
         c << "    {" << Endl;
@@ -1203,7 +1203,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "{" << Endl;
         c << "    AttributeGroupVector::iterator pos = " << name << ".begin();" << Endl;
         c << Endl;
-        c << "    // Iterate through the vector \"index\" times. " << Endl;
+        c << "    // Iterate through the vector \"index\" times." << Endl;
         c << "    for(int i = 0; i < index; ++i)" << Endl;
         c << "        if(pos != " << name << ".end()) ++pos;" << Endl;
         c << Endl;
@@ -1283,7 +1283,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     virtual void WriteSourceComparisonPrecalc(QTextStream &c, const QString &indent)
     {
         QString s = attType;
-        c << indent << "bool " << name << "_equal = (obj." << name 
+        c << indent << "bool " << name << "_equal = (obj." << name
           << ".size() == " << name << ".size());" << Endl;
         c << indent << "for(size_t i = 0; (i < " << name
           << ".size()) && " << name << "_equal; ++i)" << Endl;
@@ -1344,8 +1344,8 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
         return "AsInt";
     }
 
-    virtual void AddSystemIncludes(UniqueStringList &sl) 
-    { 
+    virtual void AddSystemIncludes(UniqueStringList &sl)
+    {
         sl.AddString("#include <string>\n");
     }
 
@@ -1583,7 +1583,7 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual AttsGen
 //    Brad Whitlock, Thu Mar 1 14:17:10 PST 2007
 //    Added support for various avt enums.
 //
-//    Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007 
+//    Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007
 //    Added scalemode.
 //
 //    Kathleen Bonnell, Tue Mar  1 11:02:37 PST 2011
@@ -1681,7 +1681,7 @@ class AttsFieldFactory
 //
 //   Kathleen Biagas, Mon Sep 19 15:51:28 PDT 2011
 //   For atts with 'custombase', call baseClass' method instead of returning
-//   'FieldType_Unknown' or 'invalid index' in the default case for 
+//   'FieldType_Unknown' or 'invalid index' in the default case for
 //   GetFieldName, GetFieldType, GetFieldTypeName and FieldsEqual.
 //
 // ----------------------------------------------------------------------------
@@ -1915,7 +1915,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         bool wroteUserDefinedHeading = false;
         for (size_t i=0; i<functions.size(); i++)
         {
-            if (functions[i]->user && 
+            if (functions[i]->user &&
                 functions[i]->member &&
                 functions[i]->target == generatorName)
             {
@@ -1995,7 +1995,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         bool wroteUserDefinedFunctionsHeading = false;
         for (size_t i=0; i<functions.size(); i++)
         {
-            if (functions[i]->user && 
+            if (functions[i]->user &&
                 !functions[i]->member &&
                  functions[i]->target == generatorName)
             {
@@ -2158,7 +2158,7 @@ class AttsGeneratorAttribute : public GeneratorBase
             }
         }
 
-        for (size_t i=0; i<functions.size(); i++) 
+        for (size_t i=0; i<functions.size(); i++)
         {
             if (!functions[i]->user &&
                 functions[i]->target == generatorName)
@@ -2275,7 +2275,7 @@ private:
             if (len > retval)
                 retval = len;
         }
- 
+
         return retval;
     }
     bool SelectFunctionsNeeded()
@@ -2412,7 +2412,11 @@ private:
                     Endline = false;
                     fields[i]->WriteSourceInitializer(c);
                     if(j < nInitializers - 1)
-                        c << ", ";
+                    {
+                        c << ",";
+                        if (((j+1)%2) != 0)
+                            c << " ";
+                    }
                     if(((j + 1) % 2) == 0)
                     {
                         c << Endl;
@@ -2444,7 +2448,7 @@ private:
         QString purposeString("Default constructor for the ");
         purposeString += (name + " class.");
         WriteMethodComment(c, name, name, purposeString);
-        c << name << "::" << name << "() : \n    " << baseClass << "(" << name
+        c << name << "::" << name << "() :\n    " << baseClass << "(" << name
           << (custombase?"::TmfsStruct)":"::TypeMapFormatString)");
         WriteSourceInitializerList(c);
         c << "{" << Endl;
@@ -2456,7 +2460,7 @@ private:
         purposeString += (name + " class.");
         WriteMethodComment(c, name, name, purposeString);
 
-        c << name << "::" << name << "(private_tmfs_t tmfs) : \n    "
+        c << name << "::" << name << "(private_tmfs_t tmfs) :\n    "
           << baseClass << (custombase?"(tmfs)":"(tmfs.tmfs)");
         WriteSourceInitializerList(c);
         c << "{" << Endl;
@@ -2503,7 +2507,7 @@ private:
         WriteMethodComment(c, name, name, purposeString);
 
         c << name << "::" << name << "(const "
-          << name << " &obj) : \n    " << baseClass << (custombase?"(obj,":"(") << name
+          << name << " &obj) :\n    " << baseClass << (custombase?"(obj,":"(") << name
           << (custombase?"::TmfsStruct)":"::TypeMapFormatString)") << Endl;
 
         c << "{" << Endl;
@@ -2515,7 +2519,7 @@ private:
         WriteMethodComment(c, name, name, purposeString);
 
         c << name << "::" << name << "(const "
-          << name << " &obj, private_tmfs_t tmfs) : \n    "
+          << name << " &obj, private_tmfs_t tmfs) :\n    "
           << baseClass << (custombase?"(obj,tmfs)":"(tmfs.tmfs)") << Endl;
 
         c << "{" << Endl;
@@ -2547,7 +2551,7 @@ private:
                 c << "    // nothing here" << Endl;
             }
         }
-        else 
+        else
         {
             if (HaveAGVectors())
                 c << "    AttributeGroupVector::iterator pos;" << Endl;
@@ -2574,10 +2578,10 @@ private:
         // Write the method comment.
         QString purposeString("Assignment operator for the ");
         purposeString += (name + " class.");
-        QString methodName("operator = ");
+        QString methodName("operator =");
         WriteMethodComment(c, name, methodName, purposeString);
 
-        c << name << "& " << Endl;
+        c << name << "&" << Endl;
         c << name << "::operator = (const "
           << name << " &obj)" << Endl;
         c << "{" << Endl;
@@ -2684,7 +2688,7 @@ private:
         c << "    AttributeSubject *retval = 0;" << Endl;
         c << "    if(TypeName() == tname)" << Endl;
         c << "        retval = new " << name << "(*this);" << Endl;
-        c << "    // Other cases could go here too. " << Endl;
+        c << "    // Other cases could go here too." << Endl;
         c << Endl;
         c << "    return retval;" << Endl;
         c << "}" << Endl << Endl;
@@ -2693,7 +2697,7 @@ private:
     {
         QString purposeString("Comparison operator == for the ");
         purposeString += (name + " class.");
-        QString methodName("operator == ");
+        QString methodName("operator ==");
         WriteMethodComment(c, name, methodName, purposeString);
 
         c << "bool" << Endl;
@@ -2746,7 +2750,7 @@ private:
         // Write the != operator
         purposeString = "Comparison operator != for the ";
         purposeString += (name + " class.");
-        methodName = "operator != ";
+        methodName = "operator !=";
         WriteMethodComment(c, name, methodName, purposeString);
 
         c << "bool" << Endl;
@@ -2883,7 +2887,7 @@ private:
                 continue;
             }
 
-            QString forceAdd("false"); 
+            QString forceAdd("false");
             if(fields[i]->type != "color")
             {
                 c << "    if(completeSave || !FieldsEqual(" << fields[i]->FieldID() << ", &defaultObject))" << Endl;
@@ -2977,7 +2981,7 @@ private:
             c << "    DataNode *node;" << Endl;
         if (HavePersistentAGVectors())
             c << "    DataNode **children;" << Endl;
-        
+
         if(HasCode(mName, 0))
         {
             PrintCode(c, mName, 0);
@@ -3134,7 +3138,7 @@ private:
             }
             if (custombase)
                 c << "    default: retval = " << baseClass << "::FieldsEqual(index_, rhs);" << Endl;
-            else 
+            else
                 c << "    default: retval = false;" << Endl;
             c << "    }" << Endl << Endl;
         c << "    return retval;" << Endl;
@@ -3143,7 +3147,7 @@ private:
         {
             if (custombase)
                 c << "    return " << baseClass << "::FieldsEqual(index_, rhs);" << Endl;
-            else 
+            else
                 c << "    return false;" << Endl;
         }
         c << "}" << Endl << Endl;
@@ -3162,7 +3166,11 @@ private:
             {
                 c << "\"" << EnumType::enums[i]->values[j] << "\"";
                 if(j < EnumType::enums[i]->values.size() - 1)
-                    c << ", ";
+                {
+                    c << ",";
+                    if(((j+1)%3) != 0)
+                        c << " ";
+                }
                 if(((j+1) % 3) == 0)
                     c << Endl;
             }
@@ -3207,6 +3215,9 @@ private:
 //   Brad Whitlock, Thu Feb 28 13:54:04 PST 2008
 //   Made it use a base class for uniformity.
 //
+//    Kathleen Biagas, Thu Dec 26 14:30:18 MST 2019
+//    Added hl arg, for haslicense.
+//
 // ----------------------------------------------------------------------------
 #include <PluginBase.h>
 
@@ -3217,8 +3228,8 @@ class AttsGeneratorPlugin : public PluginBase
   public:
     AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,
         const QString &vt,const QString &dt, const QString &v, const QString &ifile,
-        bool hw, bool ho, bool onlyengine, bool noengine) : 
-        PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine), atts(NULL)
+        bool hw, bool ho, bool hl, bool onlyengine, bool noengine) :
+        PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,hl,onlyengine,noengine), atts(NULL)
     {
     }
 

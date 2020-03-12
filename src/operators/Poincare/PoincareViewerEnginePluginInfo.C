@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: PoincareViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <PoincarePluginInfo.h>
 #include <PoincareAttributes.h>
@@ -28,8 +28,11 @@ PoincareAttributes *PoincareViewerEnginePluginInfo::defaultAtts = NULL;
 void
 PoincareViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    PoincareViewerEnginePluginInfo::clientAtts  = new PoincareAttributes;
-    PoincareViewerEnginePluginInfo::defaultAtts = new PoincareAttributes;
+    if (PoincareViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        PoincareViewerEnginePluginInfo::clientAtts  = new PoincareAttributes;
+        PoincareViewerEnginePluginInfo::defaultAtts = new PoincareAttributes;
+    }
 }
 
 // ****************************************************************************
@@ -202,7 +205,7 @@ PoincareViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts
 
       var = justTheVar;
     }
-    
+
     var += std::string(" - ") +
         std::string(typeString[atts_in->GetDataValue()]);
 

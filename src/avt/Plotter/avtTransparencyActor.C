@@ -682,6 +682,9 @@ avtTransparencyActor::UsePerfectSort(bool perfect)
 //    Kathleen Biagas, Tue Jul 12 13:43:22 MST 2016
 //    Store actor's current visibility state.
 //
+//    Kathleen Biagas, Tue Nov  5 12:35:13 PST 2019
+//    Don't allow vtkPointGlyphMapper to participate in the sorting.
+//
 // ****************************************************************************
 
 int
@@ -690,23 +693,35 @@ avtTransparencyActor::AddInput(vector<vtkDataSet *> &d,
 {
     int index = (int)datasets.size();
 
-    datasets.push_back(d);
-    mappers.push_back(m);
-    actors.push_back(a);
+    vector<vtkDataSet *> d2; 
+    vector<vtkDataSetMapper *> m2;
+    vector<vtkActor *> a2;
+    for (size_t i = 0; i < d.size(); ++i)
+    {
+        if (m[i] != NULL && m[i]->IsA("vtkPointGlyphMapper"))
+            continue;
+
+        d2.push_back(d[i]);
+        m2.push_back(m[i]);
+        a2.push_back(a[i]);
+    }
+    datasets.push_back(d2);
+    mappers.push_back(m2);
+    actors.push_back(a2);
     useActor.push_back(true);
     visibility.push_back(true);
 
-    size_t size = d.size();
+    size_t size = d2.size();
     vector<vtkPolyData *> pd;
     for (size_t i = 0 ; i < size ; ++i)
         pd.push_back(NULL);
     preparedDataset.push_back(pd);
 
     vector<int> vis;
-    for (size_t i = 0 ; i < a.size(); ++i)
+    for (size_t i = 0 ; i < a2.size(); ++i)
     {
-        if (a[i] != NULL)
-            vis.push_back(a[i]->GetVisibility());
+        if (a2[i] != NULL)
+            vis.push_back(a2[i]->GetVisibility());
         else
             vis.push_back(1);
     }
@@ -740,6 +755,9 @@ avtTransparencyActor::AddInput(vector<vtkDataSet *> &d,
 //    Kathleen Biagas, Tue Jul 12 13:43:22 MST 2016
 //    Store actor's current visibility state.
 //
+//    Kathleen Biagas, Tue Nov  5 12:35:13 PST 2019
+//    Don't allow vtkPointGlyphMapper to participate in the sorting.
+//
 // ****************************************************************************
 
 void
@@ -751,15 +769,28 @@ avtTransparencyActor::ReplaceInput(int ind, vector<vtkDataSet *> &d,
         EXCEPTION2(BadIndexException, ind, (int)datasets.size());
     }
 
-    datasets[ind] = d;
-    mappers[ind]  = m;
-    actors[ind]   = a;
+    vector<vtkDataSet *> d2; 
+    vector<vtkDataSetMapper *> m2;
+    vector<vtkActor *> a2;
+    for (size_t i = 0; i < d.size(); ++i)
+    {
+        if (m[i] != NULL && m[i]->IsA("vtkPointGlyphMapper"))
+            continue;
+
+        d2.push_back(d[i]);
+        m2.push_back(m[i]);
+        a2.push_back(a[i]);
+    }
+
+    datasets[ind] = d2;
+    mappers[ind]  = m2;
+    actors[ind]   = a2;
 
     vector<int> vis;
-    for (size_t i = 0 ; i < a.size() ; i++)
+    for (size_t i = 0 ; i < a2.size() ; i++)
     {
-        if (a[i] != NULL)
-            vis.push_back(a[i]->GetVisibility());
+        if (a2[i] != NULL)
+            vis.push_back(a2[i]->GetVisibility());
         else
             vis.push_back(1);
     }
@@ -1432,6 +1463,9 @@ void avtTransparencyActor::SyncProps()
 //    with 22 doubles but the buffer was only 20 doubles long. I changed
 //    the broadcast to only send 20 doubles.
 //
+//    Kathleen Biagas, Tue Oct 29 12:14:42 PDT 2019
+//    Added EdgeColor.
+//
 // ****************************************************************************
 
 int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
@@ -1493,7 +1527,7 @@ int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
         return -1;
 
     // serialize the props into a buffer
-    double buf[20] = {0.0};
+    double buf[23] = {0.0};
     if ((rank == root) || (n_have == size))
     {
         buf[0] = source->GetInterpolation();
@@ -1519,12 +1553,16 @@ int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
         buf[17] = source->GetPointSize();
         buf[18] = source->GetBackfaceCulling();
         buf[19] = source->GetFrontfaceCulling();
+        c = source->GetEdgeColor();
+        buf[20] = c[0];
+        buf[21] = c[1];
+        buf[22] = c[2];
     }
 
 #ifdef PARALLEL
     // if any processes don't have valid props send
     if (n_have != size)
-        MPI_Bcast(buf, 20, MPI_DOUBLE, root, VISIT_MPI_COMM);
+        MPI_Bcast(buf, 23, MPI_DOUBLE, root, VISIT_MPI_COMM);
 #endif
 
     // deserialize
@@ -1544,6 +1582,7 @@ int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
     dest->SetPointSize(buf[17]);
     dest->SetBackfaceCulling(buf[18]);
     dest->SetFrontfaceCulling(buf[19]);
+    dest->SetEdgeColor(&buf[20]);
 
     return 0;
 }

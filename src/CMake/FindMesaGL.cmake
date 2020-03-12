@@ -12,6 +12,10 @@
 #   Added MESAGL_API_LIBRARY, to ensure it gets installed.
 #   Added includes to install.
 #
+#   Kathleen Biagas, Wed Jan  8 10:52:55 MST 2020
+#   Added a path for Windows when we want to use mesgl as a dropin replacement
+#   for opengl on systems without sufficient opengl version.
+#
 #****************************************************************************/
 
 #
@@ -25,6 +29,23 @@
 # This new lib path will be used to set LD_LIBRARY_PATH at run-time for gui
 # and viewer (running with window).
 #
+
+if(WIN32 AND VISIT_MESA_REPLACE_OPENGL AND VISIT_MESAGL_DIR)
+    # used as a replacement for system opengl32.dll on Windows systems without
+    # proper OpenGL version (3.2). Just need the dll, installed in
+    # VisIt's bin dir, mesagl subdir.  The installer script for Windows will
+    # handle testing the system and dropping in the mesa dll if needed.
+    if(EXISTS ${VISIT_MESAGL_DIR}/bin/opengl32.dll)
+        install(FILES ${VISIT_MESAGL_DIR}/bin/opengl32.dll
+                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/mesagl
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ WORLD_EXECUTE
+                CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
+                )
+    endif()
+    return()
+endif()
 
 if (VISIT_MESAGL_DIR)
 

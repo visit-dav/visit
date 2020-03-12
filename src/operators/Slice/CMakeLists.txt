@@ -3,6 +3,8 @@ PROJECT(Slice_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Slice)
+
 SET(COMMON_SOURCES
 SlicePluginInfo.C
 SliceCommonPluginInfo.C
@@ -84,11 +86,10 @@ ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VTKh_INCLUDE_DIRS}
-${VTKM_DIR}/include/vtkm-1.2
-${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
+${VTKh_INCLUDE_DIRS}
+${VTKm_INCLUDE_DIRS}
 )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )

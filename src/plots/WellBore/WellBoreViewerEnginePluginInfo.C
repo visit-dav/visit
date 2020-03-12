@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: WellBoreViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <WellBorePluginInfo.h>
 #include <avtWellBorePlot.h>
@@ -31,8 +31,11 @@ WellBoreAttributes *WellBoreViewerEnginePluginInfo::defaultAtts = NULL;
 void
 WellBoreViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    WellBoreViewerEnginePluginInfo::clientAtts  = new WellBoreAttributes;
-    WellBoreViewerEnginePluginInfo::defaultAtts = new WellBoreAttributes;
+    if (WellBoreViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        WellBoreViewerEnginePluginInfo::clientAtts  = new WellBoreAttributes;
+        WellBoreViewerEnginePluginInfo::defaultAtts = new WellBoreAttributes;
+    }
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);

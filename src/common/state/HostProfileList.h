@@ -22,7 +22,7 @@ class MachineProfile;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API HostProfileList : public AttributeSubject

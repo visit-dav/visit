@@ -21,7 +21,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class DBATTS_API avtMatSpeciesMetaData : public AttributeSubject

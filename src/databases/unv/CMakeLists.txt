@@ -3,6 +3,8 @@ PROJECT(unv_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(unv)
+
 SET(COMMON_SOURCES
 unvPluginInfo.C
 unvCommonPluginInfo.C

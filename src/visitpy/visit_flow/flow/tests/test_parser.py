@@ -25,9 +25,9 @@ class TestParser(unittest.TestCase):
     def test_01_simple_expr(self):
         Parser.init()
         stmts = Parser.parse("vel_mag = sqrt(vx^2 + vy^2 + vz^2)")
-        print ""
+        print("")
         for s in stmts:
-            print s
+            print(s)
 
 if __name__ == '__main__':
     unittest.main()

@@ -11,9 +11,9 @@
 
 """
 
-from filter_graph import Filter
-from errors import *
-import log
+from .filter_graph import Filter
+from .errors import *
+from . import log
 
 # logging helper for registry
 def info(msg):
@@ -58,7 +58,7 @@ class Registry(object):
         # get obj from dict using key.
         # dec uref & if it equals zero remove it from the dict.
         # note: negative uref will live forever.
-        if key in self.entries.keys():
+        if key in list(self.entries.keys()):
             res = self.entries[key]
             if res.uref > 0 and not direct_fetch:
                 res.uref +=-1
@@ -80,14 +80,14 @@ class Registry(object):
         """
         Returns a list of keys for all active entires.
         """
-        res = self.entries.keys()
+        res = list(self.entries.keys())
         res.sort()
         return res
     def __str__(self):
         """
         String pretty print.
         """
-        ekeys = self.entries.keys()
+        ekeys = list(self.entries.keys())
         ekeys.sort()
         res = "Registry Entries:\n"
         for ek in ekeys:

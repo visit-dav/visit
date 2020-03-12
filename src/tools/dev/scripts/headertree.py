@@ -37,7 +37,7 @@ def IndentedPrint(indent, astr):
     for i in range(indent):
         indentStr = indentStr + "    "
     indentStr = indentStr + astr
-    print indentStr
+    print(indentStr)
 
 
 def PrintHeaderTree(indent, filename, visitHeaders, vtkHeaders, QtHeaders):
@@ -85,7 +85,7 @@ def main():
 
     i = 0
     for arg in sys.argv[1:]:
-        print "arg[%d] = %s" % (i, arg)
+        print("arg[%d] = %s" % (i, arg))
 
         IndentedPrint(0, arg)
         PrintHeaderTree(0, arg, visitHeaders, vtkHeaders, QtHeaders)

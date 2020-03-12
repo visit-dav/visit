@@ -12,7 +12,6 @@
 #include <Namescheme.h>
 #include <vector>
 
-
 // ****************************************************************************
 // Class: NameschemeAttributes
 //
@@ -25,7 +24,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API NameschemeAttributes : public AttributeSubject

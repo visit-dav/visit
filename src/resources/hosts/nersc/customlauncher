@@ -41,7 +41,7 @@ class JobSubmitter_sbatch_NERSC(JobSubmitter_sbatch):
 class JobSubmitter_salloc_NERSC(JobSubmitter_sbatch_NERSC):
     def __init__(self, launcher):
         super(JobSubmitter_salloc_NERSC, self).__init__(launcher)
-        print "JobSubmitter_salloc_NERSC"
+        print("JobSubmitter_salloc_NERSC")
 
     def Executable(self):
         return ["salloc"]

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: LabelCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <LabelPluginInfo.h>
 #include <LabelAttributes.h>
@@ -43,16 +43,17 @@ LabelCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 LabelCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((LabelAttributes *) to) = *((LabelAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: LabelCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ LabelCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

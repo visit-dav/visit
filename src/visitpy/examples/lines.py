@@ -19,7 +19,7 @@ import os
 # Check the version.
 ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
-    print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
+    print("This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version()))
 
 def lines():
     SetWindowLayout(1)
@@ -47,8 +47,8 @@ def lines():
     RedrawWindow()
 
 if 'Tube' not in OperatorPlugins():
-    print "This script requires the Tube operator plugin!"
+    print("This script requires the Tube operator plugin!")
 elif (not os.path.isfile("../../data/spring.dat")):
-    print "This script requires the file spring.dat to exist in the data directory"
+    print("This script requires the file spring.dat to exist in the data directory")
 else:
     lines()

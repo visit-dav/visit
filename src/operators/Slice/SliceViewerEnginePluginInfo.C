@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SliceViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <SlicePluginInfo.h>
 #include <SliceAttributes.h>
@@ -28,8 +28,11 @@ SliceAttributes *SliceViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SliceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SliceViewerEnginePluginInfo::clientAtts  = new SliceAttributes;
-    SliceViewerEnginePluginInfo::defaultAtts = new SliceAttributes;
+    if (SliceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SliceViewerEnginePluginInfo::clientAtts  = new SliceAttributes;
+        SliceViewerEnginePluginInfo::defaultAtts = new SliceAttributes;
+    }
 }
 
 // ****************************************************************************

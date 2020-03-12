@@ -15,7 +15,7 @@ import java.lang.IllegalAccessException;
 //   This is a plugin manager that dynamically loads class files based on
 //   the plugins that are loaded in the viewer.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 8 17:02:52 PST 2002
@@ -120,7 +120,7 @@ class PluginManager
                 String name = (String)atts.GetName().elementAt(i);
 
                 // Look for a place in the array for the new item.
-                int place = -1;                
+                int place = -1;
                 for(int j = 0; j < nPlugins; ++j)
                 {
                     if(name.compareTo(loadList[j]) < 0)
@@ -144,7 +144,7 @@ class PluginManager
 
                 ++nPlugins;
             }
-        }        
+        }
     }
 
     public boolean LoadPlugins(PluginManagerAttributes atts)
@@ -178,7 +178,7 @@ class PluginManager
             pluginVersions[i] = new String("");
             pluginAtts[i] = null;
 
-            // Create a list of possible names for the 
+            // Create a list of possible names for the
             int nPossibleClassNames = 4;
             String[] classNames = new String[4];
             classNames[0] = new String("llnl.visit."+pluginType+"s."+name+"Attributes");

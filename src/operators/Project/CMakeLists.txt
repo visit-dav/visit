@@ -3,6 +3,8 @@ PROJECT(Project_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Project)
+
 SET(COMMON_SOURCES
 ProjectPluginInfo.C
 ProjectCommonPluginInfo.C

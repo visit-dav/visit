@@ -48,11 +48,11 @@ FieldViewXDBCommonPluginInfo::SetupDatabase(const char *const *list,
     // ignore any nBlocks past 1
     int nTimestepGroups = nList / nBlock;
     avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
-    for (int i = 0 ; i < nTimestepGroups ; i++)
+    for (int i = 0; i < nTimestepGroups; i++)
     {
         ffl[i] = new avtFieldViewXDBFileFormat(list[i*nBlock], readOptions);
     }
-    avtMTMDFileFormatInterface *inter 
+    avtMTMDFileFormatInterface *inter
            = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
     return new avtGenericDatabase(inter);
 }
@@ -73,6 +73,7 @@ FieldViewXDBCommonPluginInfo::GetReadOptions() const
 {
     return GetFieldViewXDBReadOptions();
 }
+
 // ****************************************************************************
 //  Method: FieldViewXDBCommonPluginInfo::GetWriteOptions
 //
@@ -89,6 +90,8 @@ FieldViewXDBCommonPluginInfo::GetWriteOptions() const
 {
     return GetFieldViewXDBWriteOptions();
 }
+
+
 // ****************************************************************************
 //  Method: FieldViewXDBCommonPluginInfo::GetLicense
 //

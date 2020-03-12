@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                             VectorPluginInfo.h                            //
+//  VectorPluginInfo.h
 // ************************************************************************* //
 
 #ifndef VECTOR_PLUGIN_INFO_H

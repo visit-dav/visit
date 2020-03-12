@@ -71,14 +71,14 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p)
     row++;
 
     typeGroup = new QButtonGroup(this);
-    
+
     newFunctionButton    = new QRadioButton(tr("New function"), this);
     replaceBuiltinButton = new QRadioButton(tr("Replaces builtin"), this);
     newFunctionButton->setChecked(true);
-    
+
     typeGroup->addButton(newFunctionButton,0);
     typeGroup->addButton(replaceBuiltinButton,1);
-    
+
     topLayout->addWidget(newFunctionButton,    row, 0);
     topLayout->addWidget(replaceBuiltinButton, row, 1);
     row++;
@@ -113,9 +113,9 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p)
 
     topLayout->setRowMinimumHeight(row, 20);
     row++;
-    
+
     hLayout->addLayout(topLayout);
-    
+
     connect(functionlist, SIGNAL(currentRowChanged(int)),
             this, SLOT(UpdateWindowSingleItem()));
     connect(name, SIGNAL(textChanged(const QString&)),
@@ -141,21 +141,21 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p)
 // ****************************************************************************
 // Method: XMLEditFunctions::CountFunctions
 //
-// Purpose: 
+// Purpose:
 //   Return the number of functions having a given name.
 //
 // Arguments:
 //  name : The name of the function that we're interested in.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 6 15:53:04 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -535,9 +535,9 @@ XMLEditFunctions::functionlistNew()
         if (!okay)
             newid++;
     }
-    
+
     Function *f = new Function(newname,"","",true,true,"xml2atts");
-    
+
     a->functions.push_back(f);
     UpdateWindowContents();
     for (int i=0; i<functionlist->count(); i++)

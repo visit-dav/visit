@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: PDFViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <PDFPluginInfo.h>
 #include <PDFAttributes.h>
@@ -28,8 +28,11 @@ PDFAttributes *PDFViewerEnginePluginInfo::defaultAtts = NULL;
 void
 PDFViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    PDFViewerEnginePluginInfo::clientAtts  = new PDFAttributes;
-    PDFViewerEnginePluginInfo::defaultAtts = new PDFAttributes;
+    if (PDFViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        PDFViewerEnginePluginInfo::clientAtts  = new PDFAttributes;
+        PDFViewerEnginePluginInfo::defaultAtts = new PDFAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ModelFitViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ModelFitPluginInfo.h>
 #include <ModelFitAtts.h>
@@ -28,8 +28,11 @@ ModelFitAtts *ModelFitViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ModelFitViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ModelFitViewerEnginePluginInfo::clientAtts  = new ModelFitAtts;
-    ModelFitViewerEnginePluginInfo::defaultAtts = new ModelFitAtts;
+    if (ModelFitViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ModelFitViewerEnginePluginInfo::clientAtts  = new ModelFitAtts;
+        ModelFitViewerEnginePluginInfo::defaultAtts = new ModelFitAtts;
+    }
 }
 
 // ****************************************************************************

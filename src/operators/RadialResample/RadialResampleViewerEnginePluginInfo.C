@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: RadialResampleViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <RadialResamplePluginInfo.h>
 #include <RadialResampleAttributes.h>
@@ -28,8 +28,11 @@ RadialResampleAttributes *RadialResampleViewerEnginePluginInfo::defaultAtts = NU
 void
 RadialResampleViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    RadialResampleViewerEnginePluginInfo::clientAtts  = new RadialResampleAttributes;
-    RadialResampleViewerEnginePluginInfo::defaultAtts = new RadialResampleAttributes;
+    if (RadialResampleViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        RadialResampleViewerEnginePluginInfo::clientAtts  = new RadialResampleAttributes;
+        RadialResampleViewerEnginePluginInfo::defaultAtts = new RadialResampleAttributes;
+    }
 }
 
 // ****************************************************************************

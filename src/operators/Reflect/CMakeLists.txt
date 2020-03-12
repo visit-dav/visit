@@ -3,6 +3,8 @@ PROJECT(Reflect_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Reflect)
+
 SET(COMMON_SOURCES
 ReflectPluginInfo.C
 ReflectCommonPluginInfo.C

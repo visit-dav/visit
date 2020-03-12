@@ -24,7 +24,7 @@ MapNode             DataNode::bogusMapNode;
 // ****************************************************************************
 // Method: DataNode::DataNode
 //
-// Purpose: 
+// Purpose:
 //   These are the constructors for the DataNode class. There is one
 //   constructor for each type of node.
 //
@@ -34,7 +34,7 @@ MapNode             DataNode::bogusMapNode;
 // Modifications:
 //    Jeremy Meredith, Mon Feb 26 16:01:24 PST 2001
 //    Added unsigned chars.
-//   
+//
 // ****************************************************************************
 
 DataNode::DataNode(const std::string &name) : Key(name)
@@ -185,7 +185,7 @@ DataNode::DataNode(const std::string &name, const std::string *vals, int len) : 
     if(len > 0)
     {
         std::string *sptr = new std::string[len];
-        Data = (void *)sptr;   
+        Data = (void *)sptr;
         for(int i = 0; i < len; ++i)
             sptr[i] = vals[i];
     }
@@ -265,7 +265,7 @@ DataNode::DataNode(const std::string &name, const MapNode &val) : Key(name)
 // ****************************************************************************
 // Method: DataNode::~DataNode
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the DataNode class. It frees any data that the node
 //   has based on the type of the node.
 //
@@ -289,7 +289,7 @@ DataNode::~DataNode()
 // ****************************************************************************
 // Method: DataNode::FreeData
 //
-// Purpose: 
+// Purpose:
 //   Frees the data in the DataNode and sets the Data pointer to 0.
 //
 // Programmer: Brad Whitlock
@@ -298,7 +298,7 @@ DataNode::~DataNode()
 // Modifications:
 //   Cyrus Harrison, Thu Apr 18 10:37:46 PDT 2019
 //   Added default case to switch.
-// 
+//
 // ****************************************************************************
 
 void
@@ -337,25 +337,25 @@ DataNode::FreeData()
             char *cptr = (char *)Data;
             delete cptr;
         }
-        break;        
+        break;
     case UNSIGNED_CHAR_NODE:
         { // new scope
             unsigned char *uptr = (unsigned char *)Data;
             delete uptr;
         }
-        break;        
+        break;
     case INT_NODE:
         { // new scope
             int *iptr = (int *)Data;
             delete iptr;
         }
-        break;        
+        break;
     case LONG_NODE:
         { // new scope
             long *lptr = (long *)Data;
             delete lptr;
         }
-        break;        
+        break;
     case FLOAT_NODE:
         { // new scope
             float *fptr = (float *)Data;
@@ -379,31 +379,31 @@ DataNode::FreeData()
             bool *bptr = (bool *)Data;
             delete bptr;
         }
-        break;        
+        break;
     case CHAR_ARRAY_NODE:
         { // new scope
             char *cptr = (char *)Data;
             delete [] cptr;
         }
-        break;        
+        break;
     case UNSIGNED_CHAR_ARRAY_NODE:
         { // new scope
             unsigned char *uptr = (unsigned char *)Data;
             delete [] uptr;
         }
-        break;        
+        break;
     case INT_ARRAY_NODE:
         { // new scope
             int *iptr = (int *)Data;
             delete [] iptr;
         }
-        break;        
+        break;
     case LONG_ARRAY_NODE:
         { // new scope
             long *lptr = (long *)Data;
             delete [] lptr;
         }
-        break;        
+        break;
     case FLOAT_ARRAY_NODE:
         { // new scope
             float *fptr = (float *)Data;
@@ -433,25 +433,25 @@ DataNode::FreeData()
             charVector *cptr = (charVector *)Data;
             delete cptr;
         }
-        break;        
+        break;
     case UNSIGNED_CHAR_VECTOR_NODE:
         { // new scope
             unsignedCharVector *uptr = (unsignedCharVector *)Data;
             delete uptr;
         }
-        break;        
+        break;
     case INT_VECTOR_NODE:
         { // new scope
             intVector *iptr = (intVector *)Data;
             delete iptr;
         }
-        break;        
+        break;
     case LONG_VECTOR_NODE:
         { // new scope
             longVector *lptr = (longVector *)Data;
             delete lptr;
         }
-        break;        
+        break;
     case FLOAT_VECTOR_NODE:
         { // new scope
             floatVector *fptr = (floatVector *)Data;
@@ -987,7 +987,7 @@ DataNode::SetStringArray(const std::string *vals, int len)
     if(len > 0)
     {
         std::string *sptr = new std::string[len];
-        Data = (void *)sptr;   
+        Data = (void *)sptr;
         for(int i = 0; i < len; ++i)
             sptr[i] = vals[i];
     }
@@ -1077,7 +1077,7 @@ DataNode::SetMapNode(const MapNode &val)
 // ****************************************************************************
 // Method: DataNode::GetNode
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the node having the specified key. If a
 //   parentNode is supplied, then only the children of that node are
 //   searched.
@@ -1085,7 +1085,7 @@ DataNode::SetMapNode(const MapNode &val)
 // Arguments:
 //   key : The name of the node to look for.
 //
-// Returns:    
+// Returns:
 //   A pointer to the node having the specified key, or 0 if the node
 //   is not found.
 //
@@ -1126,7 +1126,7 @@ DataNode::GetNode(const std::string &key)
                     break;
                 }
             }
-        }        
+        }
     }
 
     return retval;
@@ -1135,7 +1135,7 @@ DataNode::GetNode(const std::string &key)
 // ****************************************************************************
 // Method: DataNode::SearchForNode
 //
-// Purpose: 
+// Purpose:
 //   Recursively searches for the named node in the tree.
 //
 // Arguments:
@@ -1144,13 +1144,13 @@ DataNode::GetNode(const std::string &key)
 //
 // Returns:    A DataNode on success; NULL on failure.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 14 14:51:17 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 DataNode *
@@ -1158,7 +1158,7 @@ DataNode::SearchForNode(const std::string &key, DataNode *parentNode)
 {
     DataNode *searchNode, *intermediate, *retval = 0;
 
-    // Determine which node's children to search.        
+    // Determine which node's children to search.
     if(parentNode == 0)
         searchNode = this;
     else
@@ -1199,7 +1199,7 @@ DataNode::SearchForNode(const std::string &key, DataNode *parentNode)
 // ****************************************************************************
 // Method: DataNode::AddNode
 //
-// Purpose: 
+// Purpose:
 //   Adds a child node to the current node if the current node is of
 //   type INTERNAL_NODE.
 //
@@ -1251,7 +1251,7 @@ DataNode::AddNode(DataNode *node)
 // ****************************************************************************
 // Method: DataNode::RemoveNode
 //
-// Purpose: 
+// Purpose:
 //   Removes the specified node if it exists under the current node.
 //
 // Arguments:
@@ -1309,7 +1309,7 @@ DataNode::RemoveNode(DataNode *node, bool deleteNode)
                 DataNode *temp = nodeArray[0];
                 delete [] nodeArray;
                 Data = (void *)temp;
-            } 
+            }
         }
     }
 }
@@ -1317,8 +1317,8 @@ DataNode::RemoveNode(DataNode *node, bool deleteNode)
 // ****************************************************************************
 // Method: DataNode::RemoveNode
 //
-// Purpose: 
-//   Removes the node with the specified key if it exists under the 
+// Purpose:
+//   Removes the node with the specified key if it exists under the
 //   current node.
 //
 // Arguments:
@@ -1379,7 +1379,7 @@ DataNode::RemoveNode(const std::string &key, bool deleteNode)
                 DataNode *temp = nodeArray[0];
                 delete [] nodeArray;
                 Data = (void *)temp;
-            } 
+            }
         }
     }
 }
@@ -1421,14 +1421,14 @@ DataNode::GetNumChildren() const
 // ****************************************************************************
 // Method: DataNode::GetNumChildObjects
 //
-// Purpose: 
+// Purpose:
 //   Return the number of children that are of type INTERNAL_NODE
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 29 17:54:21 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -1458,7 +1458,7 @@ DataNode::GetNumChildObjects() const
 // ****************************************************************************
 // Method: DataNode::GetChildren
 //
-// Purpose: 
+// Purpose:
 //   Returns an array of DataNode pointers that point to the node's
 //   children. If there are no children, 0 is returned.
 //
@@ -1466,7 +1466,7 @@ DataNode::GetNumChildObjects() const
 // Creation:   Thu Sep 28 15:11:24 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 DataNode **
@@ -1507,7 +1507,7 @@ const char *NodeTypeName(int e)
 // ****************************************************************************
 // Function: GetNodeType
 //
-// Purpose: 
+// Purpose:
 //   Converts a named type to a NodeTypeEnum.
 //
 // Returns:    The NodeTypeEnum corresponding to the named type.
@@ -1516,7 +1516,7 @@ const char *NodeTypeName(int e)
 // Creation:   Mon Jun 18 23:30:52 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 NodeTypeEnum GetNodeType(const char *str)
@@ -1534,20 +1534,20 @@ NodeTypeEnum GetNodeType(const char *str)
 // ****************************************************************************
 // Method: DataNode::Print
 //
-// Purpose: 
+// Purpose:
 //   Print method so we can see the structure of the tree in debug logs.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Apr 22 12:16:19 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

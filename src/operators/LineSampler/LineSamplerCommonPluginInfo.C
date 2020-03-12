@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: LineSamplerCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <LineSamplerPluginInfo.h>
 #include <LineSamplerAttributes.h>
@@ -43,7 +43,7 @@ LineSamplerCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 LineSamplerCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

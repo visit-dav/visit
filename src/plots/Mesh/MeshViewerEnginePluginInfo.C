@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: MeshViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <MeshPluginInfo.h>
 #include <avtMeshPlot.h>
@@ -29,8 +29,11 @@ MeshAttributes *MeshViewerEnginePluginInfo::defaultAtts = NULL;
 void
 MeshViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MeshViewerEnginePluginInfo::clientAtts  = new MeshAttributes;
-    MeshViewerEnginePluginInfo::defaultAtts = new MeshAttributes;
+    if (MeshViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        MeshViewerEnginePluginInfo::clientAtts  = new MeshAttributes;
+        MeshViewerEnginePluginInfo::defaultAtts = new MeshAttributes;
+    }
 }
 
 // ****************************************************************************

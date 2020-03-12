@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ReflectViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ReflectPluginInfo.h>
 #include <ReflectAttributes.h>
@@ -28,8 +28,11 @@ ReflectAttributes *ReflectViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ReflectViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ReflectViewerEnginePluginInfo::clientAtts  = new ReflectAttributes;
-    ReflectViewerEnginePluginInfo::defaultAtts = new ReflectAttributes;
+    if (ReflectViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ReflectViewerEnginePluginInfo::clientAtts  = new ReflectAttributes;
+        ReflectViewerEnginePluginInfo::defaultAtts = new ReflectAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -34,12 +34,15 @@ class QListWidgetItem;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
 //   Dave Pugmire, Thu Jul  8 09:03:20 EDT 2010
 //   Add force node centering option.
+//
+//   Kathleen Biagas, Fri Nov  8 10:06:57 PST 2019
+//   Add CreateSourceTab, to reduce window height.
 //
 // ****************************************************************************
 
@@ -170,7 +173,6 @@ class QvisPoincareWindow : public QvisOperatorWindow
 
     // Fieldlines
     QWidget   *sourceType;
-    QLabel    *sourceTypeLabel;
     QComboBox *sourceTypeCombo;
     QLineEdit *velocitySource;
     QLabel    *velocitySourceLabel;

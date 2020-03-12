@@ -66,7 +66,7 @@ try:
 except:
     pass
 
-from common import VisItException, require_visit
+from .common import VisItException, require_visit
 
 @require_visit
 def plot(dbfile=None):
@@ -77,7 +77,7 @@ def plot(dbfile=None):
         dbfile = wi.activeSource
     md = visit.GetMetaData(dbfile)
     ncrvs = md.GetNumCurves()
-    cnames = [md.GetCurves(i).name for i in xrange(ncrvs)]
+    cnames = [md.GetCurves(i).name for i in range(ncrvs)]
     cnames.sort()
     for cname in cnames:
         visit.AddPlot("Curve",cname)
@@ -160,10 +160,10 @@ class Curve(object):
                 lshape = len(samples.shape)
                 if  lshape == 1:
                     r = samples.shape
-                    samples = [ Sample(i,samples[i]) for i in xrange(r)]
+                    samples = [ Sample(i,samples[i]) for i in range(r)]
                 elif lshape  == 2:
                     r,c = samples.shape
-                    samples = [ Sample(samples[i,0],samples[i,1]) for i in xrange(r)]
+                    samples = [ Sample(samples[i,0],samples[i,1]) for i in range(r)]
                 else:
                     # error
                     msg = "Cannot convert ndarry w/ shape %s to Curve " % str(lshape)
@@ -265,7 +265,7 @@ class Curve(object):
         Enables nice python syntatic sugar for slicing & accessing samples.
         """
         if isinstance(idx,slice):
-            return [ self[i] for i in xrange(*idx.indices(len(self)))]
+            return [ self[i] for i in range(*idx.indices(len(self)))]
         if not isinstance(idx,int):
             raise TypeError
         if idx < 0 or idx >= len(self):
@@ -302,7 +302,7 @@ class Curve(object):
         Saves a curve (or curves) to an ultra file.
         """
         if echo:
-            print "[Creating: %s ]" % fname
+            print("[Creating: %s ]" % fname)
         ocmd = "w"
         if append:
             ocmd += "a"
@@ -313,7 +313,7 @@ class Curve(object):
                 cls.__save_curve(f,c,"curve_%d" % cid)
                 cid +=1
         elif isinstance(data,dict):
-            for k, c in data.items():
+            for k, c in list(data.items()):
                 cls.__save_curve(f,c,k)
         else:
             cls.__save_curve(f,data)
@@ -330,7 +330,7 @@ class Curve(object):
             cname = "curve"
         fobj.write("# %s\n"  % cname)
         if isinstance(data,Curve):
-            for v in data.values():
+            for v in list(data.values()):
                 fobj.write("%s %s\n" % (str(v[0]),str(v[1])))
         elif using_numpy and isinstance(data,npy.ndarray):
             for i in range(data.shape[0]):
@@ -349,7 +349,7 @@ class Curve(object):
         lines = [l.strip() for l in f.readlines() if l.strip() != ""]
         nlines = len(lines)
         f.close()
-        for i in xrange(nlines):
+        for i in range(nlines):
             l = lines[i]
             if l[0] == "#" and (i == nlines-1 or lines[i+1][0] != "#"):
                 if curr is not None:
@@ -386,14 +386,14 @@ class Merger(object):
         # the first end point.
         pts = {}
         for c in curves:
-            if not c.first() in pts.keys():
+            if not c.first() in list(pts.keys()):
                 pts[c.first()] =  [0,c]
-            if not c.last() in pts.keys():
+            if not c.last() in list(pts.keys()):
                 pts[c.last()] =  [0,c]
             pts[c.first()][0] +=1
             pts[c.last()][0]  +=1
         curr = None
-        for k,v in pts.items():
+        for k,v in list(pts.items()):
             if v[0] == 1 and v[1].first() == k:
                 curr = v[1]
                 break

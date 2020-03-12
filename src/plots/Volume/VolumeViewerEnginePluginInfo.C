@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: VolumeViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <VolumePluginInfo.h>
 #include <avtVolumePlot.h>
@@ -41,8 +41,11 @@ static int volFactory_count = 0;
 void
 VolumeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    VolumeViewerEnginePluginInfo::clientAtts  = new VolumeAttributes;
-    VolumeViewerEnginePluginInfo::defaultAtts = new VolumeAttributes;
+    if (VolumeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        VolumeViewerEnginePluginInfo::clientAtts  = new VolumeAttributes;
+        VolumeViewerEnginePluginInfo::defaultAtts = new VolumeAttributes;
+    }
     // Want to ensure only 1 factory gets registered for this lib
     if (++volFactory_count == 1)
     {

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: AxisAlignedSlice4DViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <AxisAlignedSlice4DPluginInfo.h>
 #include <AxisAlignedSlice4DAttributes.h>
@@ -28,8 +28,11 @@ AxisAlignedSlice4DAttributes *AxisAlignedSlice4DViewerEnginePluginInfo::defaultA
 void
 AxisAlignedSlice4DViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    AxisAlignedSlice4DViewerEnginePluginInfo::clientAtts  = new AxisAlignedSlice4DAttributes;
-    AxisAlignedSlice4DViewerEnginePluginInfo::defaultAtts = new AxisAlignedSlice4DAttributes;
+    if (AxisAlignedSlice4DViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        AxisAlignedSlice4DViewerEnginePluginInfo::clientAtts  = new AxisAlignedSlice4DAttributes;
+        AxisAlignedSlice4DViewerEnginePluginInfo::defaultAtts = new AxisAlignedSlice4DAttributes;
+    }
 }
 
 // ****************************************************************************

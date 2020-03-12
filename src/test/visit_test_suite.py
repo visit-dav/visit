@@ -72,7 +72,7 @@ def check_skip(skip_list,test_modes,test_cat,test_file):
         if v['mode'] == test_modes:
             for test in v['tests']:
                 # check for platform restrictions
-                if test.has_key("platform"):
+                if "platform" in test:
                     tplat = test["platform"].lower()
                     splat = sys.platform.lower()
                     # win,linux,osx
@@ -81,9 +81,9 @@ def check_skip(skip_list,test_modes,test_cat,test_file):
                     if not splat.startswith(tplat):
                         continue
                 if test['category'] == test_cat:
-                    if test.has_key("file"):
+                    if "file" in test:
                         if test['file'] == test_file:
-                            if not test.has_key("cases"):
+                            if "cases" not in test:
                             # skip the entire file if
                             # there are no specific cases
                                 return True
@@ -295,7 +295,7 @@ def launch_visit_test(args):
         json_res_file = pjoin(opts["result_dir"],"json","%s_%s.json" %(test_cat,test_base))
         if os.path.isfile(json_res_file):
             results = json_load(json_res_file)
-            if results.has_key("result_code"):
+            if "result_code" in results:
                 rcode = results["result_code"]
             # os.mkdir(run_dir)
         if sexe_res["killed"]:
@@ -429,7 +429,9 @@ def default_suite_options():
     visit_exe_def   = abs_path(visit_root(),"src","bin","visit")
     src_dir_def     = abs_path(visit_root(),"src")
     skip_def        = pjoin(test_path(),"skip.json")
-    nprocs_def      = multiprocessing.cpu_count()
+    # Set nprocs_def to 1, since multi-proc test mode seems to result in
+    # crossed streams. In the past we have used: multiprocessing.cpu_count()
+    nprocs_def      = 1 
     opts_full_defs = {
                       "use_pil":True,
                       "threshold_diff":False,
@@ -483,7 +485,7 @@ def finalize_options(opts):
     opts["data_dir"]     = abs_path(opts["data_dir"])
     opts["tests_dir"]    = abs_path(opts["tests_dir"])
     opts["baseline_dir"] = abs_path(opts["baseline_dir"])
-    if isinstance(opts["classes"],basestring):
+    if isinstance(opts["classes"],str):
         opts["classes"]  = opts["classes"].split(",")
     opts["skip_list"]    = None
     if not opts["skip_file"] is None and os.path.isfile(opts["skip_file"]):
@@ -519,6 +521,10 @@ def finalize_options(opts):
 #    Kathleen Biagas, Thu Nov  8 10:34:27 PST 2018
 #    Added '--src' for specifying src_dir, and --cmake for specifying
 #    cmake_cmd, used for plugin-vs-install tests.
+#
+#    Kathleen Biagas, Wed Dec 18 17:22:59 MST 2019
+#    For windows, move the glob of '*.py' tests name to after full-path
+#    expansion in main.
 #
 # ----------------------------------------------------------------------------
 def parse_args():
@@ -743,17 +749,6 @@ def parse_args():
     opts, tests = parser.parse_args()
     # note: we want a dict b/c the values could be passed without using optparse
     opts = vars(opts)
-    if sys.platform.startswith("win"):
-        # use glob to match any *.py
-        expandedtests = []
-        for t in tests:
-           if not '*' in t:
-              expandedtests.append(t)
-           else:
-              for match in glob.iglob(t):
-                 expandedtests.append(match)
-        if len(expandedtests) > 0:
-            tests = expandedtests
     return opts, tests
 
 # ----------------------------------------------------------------------------
@@ -992,6 +987,9 @@ def rsync_post(src_dir,rsync_dest):
 #   into the ctest module so that I could track time spent
 #   in the sub test.
 #
+#   Kathleen Biagas, Wed Dec 18 17:22:59 MST 2019
+#   On windows, glob any '*.py' tests names.
+#
 # ----------------------------------------------------------------------------
 def main(opts,tests):
     """
@@ -1011,6 +1009,17 @@ def main(opts,tests):
     elif len(tests) == 0:
         tests = find_test_cases(opts["tests_dir"],opts["classes"]) 
     tests = [ abs_path(pjoin(opts["tests_dir"], "..",t)) for t in tests]
+    if sys.platform.startswith("win"):
+        # use glob to match any *.py
+        expandedtests = []
+        for t in tests:
+           if not '*' in t:
+              expandedtests.append(t)
+           else:
+              for match in glob.iglob(t):
+                 expandedtests.append(match)
+        if len(expandedtests) > 0:
+            tests = expandedtests
     prepare_result_dirs(opts["result_dir"])
     ststamp = timestamp(sep=":")
     stime   = time.time()
@@ -1105,7 +1114,7 @@ def run_visit_tests(tests,
     else:
         opts["nprocs"] = 1 # default to 1 for now
     opts["test_dir"] = os.path.split(os.path.abspath(__file__))[0]
-    print opts["test_dir"]
+    print(opts["test_dir"])
     res_file  = main(opts,tests)
     return JSONIndex.load_results(res_file,True)
 

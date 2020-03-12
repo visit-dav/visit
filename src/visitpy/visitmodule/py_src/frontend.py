@@ -55,13 +55,13 @@ def LaunchWithProxy(vdir=None,proxy=None):
 
 def LaunchPySide(vdir=None,args=None):
     VisItModuleState.add_argument("-pyuiembedded")
-    import pyside_support
+    from . import pyside_support
     ret = pyside_support.LaunchPyViewer(args)
     return VisItModuleState.launch(vdir,ret.GetViewerProxyPtr())
 
 def LaunchPyQt(vdir=None,args=None):
     VisItModuleState.add_argument("-pyuiembedded")
-    import pyqt_support
+    from . import pyqt_support
     ret = pyqt_support.LaunchPyViewer(args)
     return VisItModuleState.launch(vdir,ret.GetViewerProxyPtr())
 
@@ -88,7 +88,7 @@ class VisItModuleState(object):
             env  = cls.__read_visit_env(vcmd)
             mod  = cls.__visit_module_path(env["LIBPATH"])
             #print "Using visitmodule: %s" % mod
-            for k in env.keys():
+            for k in list(env.keys()):
                 if k != "LIBPATH" and k != "VISITARCHHOME":
                     os.environ[k] = env[k]
             mod = cls.__load_visitmodule(mod)
@@ -112,8 +112,8 @@ class VisItModuleState(object):
             # 'visit' module, there seems to be a 'visit' entry in
             # __main__. 
             main_mod = __import__("__main__")
-            if "SetDebugLevel" in main_mod.__dict__.keys():
-                for k,v in mod.__dict__.items():
+            if "SetDebugLevel" in list(main_mod.__dict__.keys()):
+                for k,v in list(mod.__dict__.items()):
                     # avoid hidden module vars
                     if not k.startswith("__"):
                         main_mod.__dict__[k] = v
@@ -121,8 +121,8 @@ class VisItModuleState(object):
                 # which helps it get command recording right.
                 mod.LocalNameSpace()
             launched = True
-        except Exception, e:
-            print "ERROR: %s" % e
+        except Exception as e:
+            print("ERROR: %s" % e)
         return launched
     @classmethod
     def __load_visitmodule(cls,mod_file):
@@ -234,7 +234,7 @@ class VisItModuleState(object):
                "VISITPLUGINDIR":"",
                "VISITARCHHOME":""}
         for l in pout:
-            for k in res.keys():
+            for k in list(res.keys()):
                 if l.startswith(k + "="):
                     r = l[len(k)+1:]
                     r = r.strip(":")

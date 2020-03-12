@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: HistogramCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <HistogramPluginInfo.h>
 #include <HistogramAttributes.h>
@@ -43,16 +43,17 @@ HistogramCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 HistogramCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((HistogramAttributes *) to) = *((HistogramAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: HistogramCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ HistogramCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

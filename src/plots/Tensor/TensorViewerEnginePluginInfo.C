@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TensorViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <TensorPluginInfo.h>
 #include <avtTensorPlot.h>
@@ -29,8 +29,11 @@ TensorAttributes *TensorViewerEnginePluginInfo::defaultAtts = NULL;
 void
 TensorViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    TensorViewerEnginePluginInfo::clientAtts  = new TensorAttributes;
-    TensorViewerEnginePluginInfo::defaultAtts = new TensorAttributes;
+    if (TensorViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        TensorViewerEnginePluginInfo::clientAtts  = new TensorAttributes;
+        TensorViewerEnginePluginInfo::defaultAtts = new TensorAttributes;
+    }
 }
 
 // ****************************************************************************

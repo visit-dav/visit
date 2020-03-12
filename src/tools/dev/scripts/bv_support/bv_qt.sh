@@ -183,11 +183,12 @@ function qt_license_prompt
             the GNU General Public License (GPL) version 3. Visit \
             http://www.qt.io/qt-licensing-terms to view these licenses."
 
-    QT_CONFIRM_MSG="VisIt requires Qt: Please respond with \"yes\" to accept\
+    QT_CONFIRM_MSG="VisIt requires Qt: Do you accept\
                 Qt licensing under the terms of the Lesser GNU General \
                 Public License (LGPL) version 2.1 or \
-                the GNU General Public License (GPL) version 3"
+                the GNU General Public License (GPL) version 3? [yes/no]"
     info $QT_LIC_MSG
+    info $QT_CONFIRM_MSG
     read RESPONSE
     if [[ "$RESPONSE" != "yes" ]] ; then
         info $QT_CONFIRM_MSG
@@ -217,8 +218,32 @@ function apply_qt_patch
     if [[ ${QT_VERSION} == 5.10.1 ]] ; then
         if [[ -f /etc/centos-release ]] ; then
             VER=`cat /etc/centos-release | cut -d' ' -f 4`
-            if [[ "${VER:0:3}" == "8.0" ]] ; then
+            if [[ "${VER:0:2}" == "8." ]] ; then
                 apply_qt_5101_centos8_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        elif [[ -f /etc/lsb-release ]] ; then
+            VER=`cat /etc/lsb-release | grep "DISTRIB_RELEASE" | cut -d'=' -f 2`
+            if [[ "${VER:0:3}" == "19." ]] ; then
+                apply_qt_5101_centos8_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        fi
+
+        if [[ "$OPSYS" == "Linux" ]]; then
+            apply_qt_5101_blueos_patch
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
+        fi
+
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            if [[ `sw_vers -productVersion` == 10.14.[0-9]* ]]; then
+                apply_qt_5101_macos_mojave_patch
                 if [[ $? != 0 ]] ; then
                     return 1
                 fi
@@ -258,6 +283,28 @@ EOF
         return 1
     fi
     
+    patch -p0 <<EOF
+diff -c qtbase/mkspecs/linux-icc-64/qmake.conf.orig qtbase/mkspecs/linux-icc-64/qmake.conf
+*** qtbase/mkspecs/linux-icc-64/qmake.conf.orig	Fri Nov 22 15:24:45 2019
+--- qtbase/mkspecs/linux-icc-64/qmake.conf	Fri Nov 22 15:25:11 2019
+***************
+*** 13,16 ****
+  # Change the all LIBDIR variables to use lib64 instead of lib
+  
+  QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
+--- 13,17 ----
+  # Change the all LIBDIR variables to use lib64 instead of lib
+  
+  QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_OPENGL=$MESAGL_LIB_DIR $LLVM_LIB_DIR
+! QMAKE_INCDIR_OPENGL=$MESAGL_INCLUDE_DIR
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 linux mesagl patch failed."
+        return 1
+    fi
+
     return 0;
 }
 
@@ -297,6 +344,51 @@ diff -c qtbase/src/corelib/io/qfilesystemengine_unix.cpp.orig qtbase/src/corelib
 EOF
     if [[ $? != 0 ]] ; then
         warn "qt 5.10.1 centos8 patch failed."
+        return 1
+    fi
+    
+    return 0;
+}
+
+function apply_qt_5101_blueos_patch
+{   
+    info "Patching qt 5.10.1 for Blueos"
+    sed -i "s/PNG_ARM_NEON_OPT=0/PNG_ARM_NEON_OPT=0 PNG_POWERPC_VSX_OPT=0/" qtbase/src/3rdparty/libpng/libpng.pro
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 blueos patch failed."
+        return 1
+    fi
+    
+    return 0;
+}
+
+function apply_qt_5101_macos_mojave_patch
+{
+    info "Patching qt 5.10.1 for macOS 10.14 (Mojave)..."
+    patch -p0 <<EOF
+diff -c qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm.orig qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm
+*** qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm.orig	2020-01-16 11:06:12.000000000 -0800
+--- qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm	2020-01-16 11:06:38.000000000 -0800
+***************
+*** 830,836 ****
+  
+  QFixed QCoreTextFontEngine::emSquareSize() const
+  {
+!     return QFixed::QFixed(int(CTFontGetUnitsPerEm(ctfont)));
+  }
+  
+  QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
+--- 830,836 ----
+  
+  QFixed QCoreTextFontEngine::emSquareSize() const
+  {
+!     return QFixed(int(CTFontGetUnitsPerEm(ctfont)));
+  }
+  
+  QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 macOS 10.14 patch failed."
         return 1
     fi
     
@@ -449,6 +541,10 @@ function build_qt
 
     if [[ "$OPSYS" == "Linux" ]] ; then
         qt_flags="${qt_flags} -qt-xcb -qt-xkbcommon"
+    fi
+
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]] ; then
+        qt_flags="${qt_flags} -debug"
     fi
 
     info "Configuring ${QT_VER_MSG}: " \

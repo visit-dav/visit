@@ -26,8 +26,8 @@ except ImportError:
     pass
 
 from ..core import Filter, Context, log
-import pyocl_env
-import pyocl_kernels
+from . import pyocl_env
+from . import pyocl_kernels
 
 def info(msg):
     log.info(msg,"filters.pyocl_batch")
@@ -148,7 +148,7 @@ filters = [PyOpenCLBatchSource,
            PyOpenCLBatchDecompose,
            PyOpenCLBatchConst]
 
-for k,v in pyocl_kernels.Kernels.items():
+for k,v in list(pyocl_kernels.Kernels.items()):
   filters.append(PyOpenCLBatchKernel(v))
 
 

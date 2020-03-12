@@ -3,6 +3,8 @@ PROJECT(Vis5D_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(Vis5D)
+
 SET(COMMON_SOURCES
 Vis5DPluginInfo.C
 Vis5DCommonPluginInfo.C

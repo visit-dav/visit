@@ -3,6 +3,8 @@ PROJECT(SubdivideQuads_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(SubdivideQuads)
+
 SET(COMMON_SOURCES
 SubdivideQuadsPluginInfo.C
 SubdivideQuadsCommonPluginInfo.C

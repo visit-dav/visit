@@ -19,7 +19,7 @@ class PyProcidExpression(SimplePythonExpression):
         res = vtk.vtkFloatArray()
         res.SetNumberOfComponents(1)
         res.SetNumberOfTuples(ncells)
-        for i in xrange(ncells):
+        for i in range(ncells):
             res.SetTuple1(i,float(mpicom.rank()))
         return res
 

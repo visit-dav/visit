@@ -158,6 +158,31 @@ EOF
         warn "llvm patch for include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h failed"
         return 1
     fi
+
+    # fixes a bug in LLVM 5.0.0
+    # where a static_assert fails with icc 19.0.4.227. This patch removes
+    # the static_assert since it isn't critical for it to run.
+
+    patch -p0 << \EOF
+diff -c lib/IR/Attributes.cpp.orig lib/IR/Attributes.cpp
+*** lib/IR/Attributes.cpp.orig	Fri Nov 22 12:13:23 2019
+--- lib/IR/Attributes.cpp	Fri Nov 22 12:13:45 2019
+***************
+*** 810,817 ****
+    static_assert(Attribute::EndAttrKinds <=
+                      sizeof(AvailableFunctionAttrs) * CHAR_BIT,
+                  "Too many attributes");
+-   static_assert(attrIdxToArrayIdx(AttributeList::FunctionIndex) == 0U,
+-                 "function should be stored in slot 0");
+    for (Attribute I : Sets[0]) {
+      if (!I.isStringAttribute())
+        AvailableFunctionAttrs |= 1ULL << I.getKindAsEnum();
+--- 810,815 ----
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "llvm patch for lib/IR/Attributes.cpp failed"
+        return 1
+    fi
 }
 
 function build_llvm

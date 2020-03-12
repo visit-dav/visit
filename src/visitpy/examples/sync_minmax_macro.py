@@ -35,7 +35,7 @@ def UnsyncMinMax():
     #
     # Iterate over all windows represented in plotsChangedSinceLastUnsync
     #
-    for winID in plotsChangedSinceLastUnsync.keys():
+    for winID in list(plotsChangedSinceLastUnsync.keys()):
         try:
             plotInfos = plotsChangedSinceLastUnsync[winID]
             SetActiveWindow(winID)

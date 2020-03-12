@@ -4,7 +4,7 @@ Definition:
 // ****************************************************************************
 // Method: DatabaseCorrelation::GetCorrelatedTimeStates
 //
-// Purpose: 
+// Purpose:
 //   Gets the correlated time states for all databases in the correlation at
 //   the specified time state.
 //
@@ -12,15 +12,15 @@ Definition:
 //   state : The state for which we want the correlated time states.
 //   states : The return vector for the correlated time states.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Jan 31 19:56:11 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -49,14 +49,14 @@ Definition:
 // ****************************************************************************
 // Method: DatabaseCorrelation::SetNumStates
 //
-// Purpose: 
+// Purpose:
 //    Sets the number of states in the correlation and adjusts the correlation
 //    indices.
-//   
+//
 // Arguments:
 //   nStates : The new number of states.
 //
-// Returns:    
+// Returns:
 //
 // Note:       NOTE -- This method is not done and probably won't work yet.
 //
@@ -64,7 +64,7 @@ Definition:
 // Creation:   Sat Jan 31 19:56:11 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -108,7 +108,7 @@ DatabaseCorrelation::SetNumStates(int nStates)
         int currentState = 0;
         int lastState = numStates - 1;
         for(size_t i = 0; i < databaseNames.size(); ++i)
-        {            
+        {
             for(int j = 0; j < nStates; ++j)
             {
                 if(j < numStates)
@@ -135,7 +135,7 @@ Definition:
 // ****************************************************************************
 // Method: DatabaseCorrelation::AddDatabase
 //
-// Purpose: 
+// Purpose:
 //   Adds a new database to the correlation.
 //
 // Arguments:
@@ -144,9 +144,9 @@ Definition:
 //   times    : The times for the states in the database.
 //   cycles   : The cycles for the states in the database.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Jan 31 19:56:11 PST 2004
@@ -194,7 +194,7 @@ DatabaseCorrelation::AddDatabase(const std::string &database, int nStates,
                 int state = (i < nStates) ? i : (nStates - 1);
                 indices.push_back(state);
             }
-        } 
+        }
         else
         {
             //
@@ -249,12 +249,12 @@ DatabaseCorrelation::AddDatabase(const std::string &database, int nStates,
             // The database being added has fewer states so we need to
             // repeat the last states.
             //
-            
-            // We'll have to pass in the user-defined indices and append them to the indices vector 
+
+            // We'll have to pass in the user-defined indices and append them to the indices vector
         }
         else
         {
-            
+
         }
     }
     else if(method == TimeCorrelation)
@@ -262,10 +262,10 @@ DatabaseCorrelation::AddDatabase(const std::string &database, int nStates,
         databaseNames.push_back(database);
         databaseNStates.push_back(nStates);
 
-        // Align time for all databases on the same time axis so we can count the 
+        // Align time for all databases on the same time axis so we can count the
         // number of times and make that be the new number of states.
         std::map<double, intVector> timeAlignmentMap;
-        int index = 0;         
+        int index = 0;
         for(size_t i = 0; i < databaseNames.size(); ++i)
             for(int j = 0; j < databaseNStates[i]; ++j, ++index)
                 timeAlignmentMap[databaseTimes[index]].push_back((int)i);
@@ -279,8 +279,8 @@ DatabaseCorrelation::AddDatabase(const std::string &database, int nStates,
         {
             condensedTimes.push_back(p->first);
         }
-        
-        // Now there is a map that has for each time in all of the databases 
+
+        // Now there is a map that has for each time in all of the databases
         // a list of the databases that contain that time.
         indices.clear();
         for(size_t i = 0; i < databaseNames.size(); ++i)
@@ -307,10 +307,10 @@ DatabaseCorrelation::AddDatabase(const std::string &database, int nStates,
         databaseNames.push_back(database);
         databaseNStates.push_back(nStates);
 
-        // Align cycle for all databases on the same time axis so we can count the 
+        // Align cycle for all databases on the same time axis so we can count the
         // number of cycles and make that be the new number of states.
         std::map<int, intVector> cycleAlignmentMap;
-        int index = 0;         
+        int index = 0;
         for(size_t i = 0; i < databaseNames.size(); ++i)
             for(int j = 0; j < databaseNStates[i]; ++j, ++index)
                 cycleAlignmentMap[databaseCycles[index]].push_back((int)i);
@@ -325,7 +325,7 @@ DatabaseCorrelation::AddDatabase(const std::string &database, int nStates,
             condensedCycles.push_back(p->first);
         }
 
-        // Now there is a map that has for each time in all of the databases 
+        // Now there is a map that has for each time in all of the databases
         // a list of the databases that contain that time.
         indices.clear();
         for(size_t i = 0; i < databaseNames.size(); ++i)
@@ -355,7 +355,7 @@ Definition:
 // ****************************************************************************
 // Method: DatabaseCorrelation::UsesDatabase
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not a database is used in the correlation.
 //
 // Arguments:
@@ -363,13 +363,13 @@ Definition:
 //
 // Returns:    True if database is used; false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Jan 31 19:56:11 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -385,14 +385,14 @@ Definition:
 // ****************************************************************************
 // Method: DatabaseCorrelation::GetNumDatabases
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of databases used in the correlation.
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Jan 31 19:56:11 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -407,7 +407,7 @@ Definition:
 // ****************************************************************************
 // Method: DatabaseCorrelation::GetCorrelatedTimeState
 //
-// Purpose: 
+// Purpose:
 //   Gets the correlated time state for the specified database at the given state.
 //
 // Arguments:
@@ -417,13 +417,13 @@ Definition:
 // Returns:    The correlated time state or -1 if no correlated time state
 //             exists.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Jan 31 19:56:11 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -452,7 +452,7 @@ Definition:
 // ****************************************************************************
 // Method: DatabaseCorrelation::GetInverseCorrelatedTimeState
 //
-// Purpose: 
+// Purpose:
 //   Gets the state in the correlation where the database "db" has a database
 //   state of "state".
 //
@@ -463,13 +463,13 @@ Definition:
 // Returns:    The inverse correlated time state or -1 if no inverse
 //             correlated time state exists.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Jan 31 19:56:11 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -503,16 +503,16 @@ Definition:
 // ****************************************************************************
 // Method: operator <<
 //
-// Purpose: 
+// Purpose:
 //   This is a print function for DatabaseCorrelation.
 //
 // Arguments:
 //   os          : The stream to print on.
 //   correlation : The correlation that we want to print.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Jan 31 19:56:11 PST 2004
@@ -559,7 +559,7 @@ operator << (ostream &os, const DatabaseCorrelation &correlation)
         os << "condensedTimes={";
         for(size_t j = 0; j < t.size(); ++j)
             os << t[j] << ", ";
-        os << "}" << endl;       
+        os << "}" << endl;
     }
 
     const intVector &c = correlation.GetCondensedCycles();
@@ -568,7 +568,7 @@ operator << (ostream &os, const DatabaseCorrelation &correlation)
         os << "condensedCycles={";
         for(size_t j = 0; j < c.size(); ++j)
             os << c[j] << ", ";
-        os << "}" << endl;       
+        os << "}" << endl;
     }
 
     return os;
@@ -580,7 +580,7 @@ Definition:
 // ****************************************************************************
 // Method: DatabaseCorrelation::GetCondensedCycleForState
 //
-// Purpose: 
+// Purpose:
 //   Returns the cycle for the specified state in a cycle correlation.
 //
 // Arguments:
@@ -588,13 +588,13 @@ Definition:
 //
 // Returns:    The cycle at the specified state.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Jan 31 19:56:11 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -613,7 +613,7 @@ Definition:
 // ****************************************************************************
 // Method: DatabaseCorrelation::GetCondensedTimeForState
 //
-// Purpose: 
+// Purpose:
 //   Returns the time for the specified state in a time correlation.
 //
 // Arguments:
@@ -621,13 +621,13 @@ Definition:
 //
 // Returns:    The time at the specified state.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Jan 31 19:56:11 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 double

@@ -3,6 +3,8 @@ PROJECT(Merge_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Merge)
+
 SET(COMMON_SOURCES
 MergePluginInfo.C
 MergeCommonPluginInfo.C

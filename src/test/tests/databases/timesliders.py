@@ -67,7 +67,7 @@ def SetTheView():
 
 # Print the dictionary so its keys are always sorted a particular way.
 def PrintDict(dict):
-    keys = dict.keys()
+    keys = list(dict.keys())
     keys.sort()
     s = "{"
     i = 0

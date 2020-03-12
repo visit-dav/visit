@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: FiveFoldTetSubdivisionViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <FiveFoldTetSubdivisionPluginInfo.h>
 #include <FiveFoldTetSubdivisionAttributes.h>
@@ -28,8 +28,11 @@ FiveFoldTetSubdivisionAttributes *FiveFoldTetSubdivisionViewerEnginePluginInfo::
 void
 FiveFoldTetSubdivisionViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    FiveFoldTetSubdivisionViewerEnginePluginInfo::clientAtts  = new FiveFoldTetSubdivisionAttributes;
-    FiveFoldTetSubdivisionViewerEnginePluginInfo::defaultAtts = new FiveFoldTetSubdivisionAttributes;
+    if (FiveFoldTetSubdivisionViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        FiveFoldTetSubdivisionViewerEnginePluginInfo::clientAtts  = new FiveFoldTetSubdivisionAttributes;
+        FiveFoldTetSubdivisionViewerEnginePluginInfo::defaultAtts = new FiveFoldTetSubdivisionAttributes;
+    }
 }
 
 // ****************************************************************************

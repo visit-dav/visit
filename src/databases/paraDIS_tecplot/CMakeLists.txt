@@ -3,6 +3,8 @@ PROJECT(paraDIS_tecplot_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(paraDIS_tecplot)
+
 SET(COMMON_SOURCES
 paraDIS_tecplotPluginInfo.C
 paraDIS_tecplotCommonPluginInfo.C

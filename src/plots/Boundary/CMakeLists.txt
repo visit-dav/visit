@@ -3,6 +3,8 @@ PROJECT(Boundary_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Boundary)
+
 SET(COMMON_SOURCES
 BoundaryPluginInfo.C
 BoundaryCommonPluginInfo.C

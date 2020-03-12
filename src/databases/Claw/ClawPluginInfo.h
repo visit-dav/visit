@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               ClawPluginInfo.h
+//  ClawPluginInfo.h
 // ****************************************************************************
 
 #ifndef CLAW_PLUGIN_INFO_H

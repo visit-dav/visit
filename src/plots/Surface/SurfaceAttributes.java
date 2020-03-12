@@ -21,7 +21,7 @@ import llnl.visit.ColorAttribute;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class SurfaceAttributes extends AttributeSubject implements Plugin
@@ -59,7 +59,7 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         skewFactor = 1;
         min = 0;
         max = 1;
-        colorTableName = new String("hot");
+        colorTableName = new String("Default");
         invertColorTable = false;
     }
 
@@ -82,7 +82,7 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         skewFactor = 1;
         min = 0;
         max = 1;
-        colorTableName = new String("hot");
+        colorTableName = new String("Default");
         invertColorTable = false;
     }
 

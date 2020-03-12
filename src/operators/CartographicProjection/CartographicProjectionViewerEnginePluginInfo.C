@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: CartographicProjectionViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <CartographicProjectionPluginInfo.h>
 #include <CartographicProjectionAttributes.h>
@@ -28,8 +28,11 @@ CartographicProjectionAttributes *CartographicProjectionViewerEnginePluginInfo::
 void
 CartographicProjectionViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    CartographicProjectionViewerEnginePluginInfo::clientAtts  = new CartographicProjectionAttributes;
-    CartographicProjectionViewerEnginePluginInfo::defaultAtts = new CartographicProjectionAttributes;
+    if (CartographicProjectionViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        CartographicProjectionViewerEnginePluginInfo::clientAtts  = new CartographicProjectionAttributes;
+        CartographicProjectionViewerEnginePluginInfo::defaultAtts = new CartographicProjectionAttributes;
+    }
 }
 
 // ****************************************************************************

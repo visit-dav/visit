@@ -227,8 +227,7 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VTKh_INCLUDE_DIRS}
-${VTKM_DIR}/include/vtkm-1.2
-${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
+${VTKm_INCLUDE_DIRS}
 ${VTK_INCLUDE_DIRS}
 ${ZLIB_INCLUDE_DIR}
 )

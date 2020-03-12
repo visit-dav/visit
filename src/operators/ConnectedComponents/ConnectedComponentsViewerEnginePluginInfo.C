@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ConnectedComponentsViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ConnectedComponentsPluginInfo.h>
 #include <ConnectedComponentsAttributes.h>
@@ -28,8 +28,11 @@ ConnectedComponentsAttributes *ConnectedComponentsViewerEnginePluginInfo::defaul
 void
 ConnectedComponentsViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ConnectedComponentsViewerEnginePluginInfo::clientAtts  = new ConnectedComponentsAttributes;
-    ConnectedComponentsViewerEnginePluginInfo::defaultAtts = new ConnectedComponentsAttributes;
+    if (ConnectedComponentsViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ConnectedComponentsViewerEnginePluginInfo::clientAtts  = new ConnectedComponentsAttributes;
+        ConnectedComponentsViewerEnginePluginInfo::defaultAtts = new ConnectedComponentsAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -48,6 +48,10 @@
 #   for this library, and CMake automagically pulls them in when compiling
 #   VisIt even if not listed, but not when building the plugins.
 #
+#   Kathleen Biagas, Tue Nov  5 08:12:29 PST 2019
+#   Remove avtPolylineToRibbonFilter, avtPolylineToTubeFilter,
+#   avtPolylineAddEndPointsFilter, avtPointToGlyphFilter.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -74,11 +78,7 @@ avtMeshLogFilter.C
 avtMissingDataFilter.C
 avtMultiresFilter.C
 avtNamedSelectionFilter.C
-avtPointToGlyphFilter.C
-avtPolylineAddEndPointsFilter.C
 avtPolylineCleanupFilter.C
-avtPolylineToRibbonFilter.C
-avtPolylineToTubeFilter.C
 avtRayCompositer.C
 avtRayTracerBase.C
 avtRayTracer.C
@@ -168,8 +168,7 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/engine/main
 ${VTKh_INCLUDE_DIRS}
-${VTKM_DIR}/include/vtkm-1.2
-${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
+${VTKm_INCLUDE_DIRS}
 ${VTK_INCLUDE_DIRS}
 )
 

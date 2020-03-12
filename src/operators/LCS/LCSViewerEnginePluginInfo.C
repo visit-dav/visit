@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: LCSViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <LCSPluginInfo.h>
 #include <LCSAttributes.h>
@@ -28,8 +28,11 @@ LCSAttributes *LCSViewerEnginePluginInfo::defaultAtts = NULL;
 void
 LCSViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    LCSViewerEnginePluginInfo::clientAtts  = new LCSAttributes;
-    LCSViewerEnginePluginInfo::defaultAtts = new LCSAttributes;
+    if (LCSViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        LCSViewerEnginePluginInfo::clientAtts  = new LCSAttributes;
+        LCSViewerEnginePluginInfo::defaultAtts = new LCSAttributes;
+    }
 }
 
 // ****************************************************************************
