@@ -73,6 +73,10 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
 
     void                   ReadRootFile();
 
+    void                   ReadRootIndexItems(const std::string &root_fname,
+                                              const std::string &root_protocol,
+                                              conduit::Node &root_info);
+
     void                   ReadBlueprintMesh(int domain,
                                              const std::string &abs_meshname,
                                              conduit::Node &out);
@@ -81,6 +85,11 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
                                               const std::string &abs_varname,
                                               conduit::Node &out);
 
+    void                   FetchMeshAndTopoNames(const std::string &name_name_full,
+                                                 std::string &mesh_name,
+                                                 std::string &topo_name);
+
+
     conduit::Node          m_root_node;
     
     std::string            m_protocol;
@@ -88,7 +97,9 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     avtBlueprintTreeCache  *m_tree_cache;
   
     int                    m_selected_lod;
-    
+
+    conduit::Node          m_mesh_and_topo_info;
+
     std::map<std::string,bool> m_mfem_mesh_map;
 
 };

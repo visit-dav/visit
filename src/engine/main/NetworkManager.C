@@ -5204,6 +5204,10 @@ NetworkManager::CloneNetwork(const int id)
 //    DirectDatabase route, create a psuedo clone by starting an entirely
 //    new network based off of the cloning target.
 //
+//    Alister Maguire, Mon Mar  9 13:31:50 PDT 2020
+//    Assume we can use the direct route if query atts say yes and there are
+//    no expressions. Also, we can use this route for screen picks.
+//
 // ****************************************************************************
 
 void
@@ -5225,9 +5229,9 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     if (qA->GetCanUseDirectDatabaseRoute())
     {
         //
-        // The query atts think that we can use this route, but only
-        // a subset of expressions are capable of being used with this
-        // path. We need to check them before proceeding. 
+        // The query atts think that we can use this route, but we
+        // we need to make sure that the current expressions are
+        // compatible.
         //
         avtExpressionEvaluatorFilter *eef = 
             dynamic_cast<avtExpressionEvaluatorFilter *> 
@@ -5236,6 +5240,13 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         if (eef != NULL)
         {
             useDirectDatabaseQOT = eef->CanApplyToDirectDatabaseQOT(); 
+        }
+        else
+        {
+            //
+            // Assume we're safe.
+            //
+            useDirectDatabaseQOT = true;
         }
     }
 
@@ -5250,16 +5261,6 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         {
             useDirectDatabaseQOT = false;
         }
-    }
-
-    //
-    // A screen pick requires that we use actual data.
-    //
-    if (qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
-        qA->GetQueryAtts().GetName() == "Locate and Pick Node")
-    {
-        useActualData = true;
-        useDirectDatabaseQOT = false;
     }
 
     qA->SetCanUseDirectDatabaseRoute(useDirectDatabaseQOT);
@@ -5305,6 +5306,15 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     }
     else
     {
+        //
+        // A screen pick requires that we use actual data.
+        //
+        if (qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
+            qA->GetQueryAtts().GetName() == "Locate and Pick Node")
+        {
+            useActualData = true;
+        }
+
         //
         // We're using the TimeLoop route. This means we need a true clone.
         //

@@ -4,22 +4,24 @@
 
 #****************************************************************************
 # Modifications:
+#  Kathleen Biagas, Thu Feb 27 2020
+#  Remove if test that is handled by the parent dir's CMakeLists.txt
+#  (VISIT_DBIO_ONLY, VISIT_ENGINE_ONLY, AND VISIT_SERVER_COMPONENTS_ONLY)
+#  VISIT_BUILD_DIAGNOSTICS renamed to VISIT_ENABLE_DIAGNOSTICS.
 #
 #****************************************************************************
 
-IF(VISIT_BUILD_DIAGNOSTICS)
-    ADD_SUBDIRECTORY(diagnostics) # dev
-ENDIF()
+if(VISIT_ENABLE_DIAGNOSTICS)
+    add_subdirectory(diagnostics)
+endif()
 
-IF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-ELSE(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-    IF(NOT WIN32)
-        ADD_SUBDIRECTORY(clipeditor) # dev
-    ENDIF(NOT WIN32)
-    ADD_SUBDIRECTORY(protocol) # dev
-    ADD_SUBDIRECTORY(xml) # dev
-    ADD_SUBDIRECTORY(xmledit) # dev
-ENDIF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
+if(NOT WIN32)
+    add_subdirectory(clipeditor)
+endif()
+
+add_subdirectory(protocol)
+add_subdirectory(xml)
+add_subdirectory(xmledit)
 
 # These do not need to be built:
 # avt_do_add

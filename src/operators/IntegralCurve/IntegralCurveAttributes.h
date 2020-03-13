@@ -49,6 +49,7 @@ public:
         TimeRelative,
         AverageDistanceFromSeed,
         CorrelationDistance,
+        ClosedCurve,
         Difference,
         Variable
     };
