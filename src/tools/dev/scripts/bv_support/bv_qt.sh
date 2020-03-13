@@ -217,7 +217,7 @@ function apply_qt_patch
     if [[ ${QT_VERSION} == 5.10.1 ]] ; then
         if [[ -f /etc/centos-release ]] ; then
             VER=`cat /etc/centos-release | cut -d' ' -f 4`
-            if [[ "${VER:0:3}" == "8.0" ]] ; then
+            if [[ "${VER:0:2}" == "8." ]] ; then
                 apply_qt_5101_centos8_patch
                 if [[ $? != 0 ]] ; then
                     return 1
@@ -237,6 +237,13 @@ function apply_qt_patch
             apply_qt_5101_blueos_patch
             if [[ $? != 0 ]] ; then
                 return 1
+            fi
+
+            if [[ "$C_COMPILER" == "gcc" ]]; then
+                apply_qt_5101_gcc_9_2_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
             fi
         fi
 
@@ -388,6 +395,32 @@ diff -c qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm.ori
 EOF
     if [[ $? != 0 ]] ; then
         warn "qt 5.10.1 macOS 10.14 patch failed."
+        return 1
+    fi
+    
+    return 0;
+}
+
+function apply_qt_5101_gcc_9_2_patch
+{
+    info "Patching qt 5.10.1 for gcc 9.2"
+    patch -p0 <<EOF
+diff -c qtbase/src/corelib/global/qrandom.cpp.orig qtbase/src/corelib/global/qrandom.cpp
+*** qtbase/src/corelib/global/qrandom.cpp.orig	Mon Mar  9 17:09:47 2020
+--- qtbase/src/corelib/global/qrandom.cpp	Mon Mar  9 17:10:42 2020
+***************
+*** 220,225 ****
+--- 220,226 ----
+  #endif // Q_OS_WINRT
+  
+      static SystemGenerator &self();
++     typedef quint32 result_type;
+      void generate(quint32 *begin, quint32 *end) Q_DECL_NOEXCEPT_EXPR(FillBufferNoexcept);
+  
+      // For std::mersenne_twister_engine implementations that use something
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 gcc 9.2 patch failed."
         return 1
     fi
     

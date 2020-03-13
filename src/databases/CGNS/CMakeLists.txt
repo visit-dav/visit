@@ -15,12 +15,14 @@ CGNSPluginInfo.C
 SET(LIBM_SOURCES
 CGNSMDServerPluginInfo.C
 ${COMMON_SOURCES}
+avtCGNSFileReader.C
 avtCGNSFileFormat.C
 )
 
 SET(LIBE_SOURCES
 CGNSEnginePluginInfo.C
 ${COMMON_SOURCES}
+avtCGNSFileReader.C
 avtCGNSFileFormat.C
 )
 
