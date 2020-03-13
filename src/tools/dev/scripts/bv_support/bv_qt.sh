@@ -238,20 +238,18 @@ function apply_qt_patch
             if [[ $? != 0 ]] ; then
                 return 1
             fi
-        fi
 
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            if [[ `sw_vers -productVersion` == 10.14.[0-9]* ]]; then
-                apply_qt_5101_macos_mojave_patch
+            if [[ "$C_COMPILER" == "gcc" ]]; then
+                apply_qt_5101_gcc_9_2_patch
                 if [[ $? != 0 ]] ; then
                     return 1
                 fi
             fi
         fi
 
-        if [[ "$OPSYS" == "Linux" ]]; then
-            if [[ "$C_COMPILER" == "gcc" ]]; then
-                apply_qt_5101_gcc_9_2_patch
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            if [[ `sw_vers -productVersion` == 10.14.[0-9]* ]]; then
+                apply_qt_5101_macos_mojave_patch
                 if [[ $? != 0 ]] ; then
                     return 1
                 fi
