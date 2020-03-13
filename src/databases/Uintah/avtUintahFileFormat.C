@@ -647,7 +647,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
         addParticleMesh( md, meshes_added, mesh_for_this_var, stepInfo );
 
         addMeshVariable( md, mesh_vars_added,
-                         newVarname, vartype, mesh_for_this_var, AVT_ZONECENT );
+                         newVarname, vartype, mesh_for_this_var, AVT_NODECENT );
       }
     }
     // Volume Data.
