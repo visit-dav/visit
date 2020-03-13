@@ -2406,7 +2406,8 @@ avtUintahFileFormat::addMeshNodeRankSIL( avtDatabaseMetaData *md,
   // Add a SIL for subsettng via the nodes and ranks.
   const unsigned int nRanksPerGroup = ceil((float) nProcs / 10.0);
   const unsigned int nRanks = nProcs;
-  const unsigned int nNodes = nRanksPerGroup > 5 ? nProcs/nRanksPerGroup : 1;
+  const unsigned int nNodes = nRanksPerGroup > 5 ?
+    ceil((float)nRanks/(float)nRanksPerGroup) : 1;
 
   int rank_enum_id[nRanks];
   int node_enum_id[nNodes];
@@ -2420,7 +2421,7 @@ avtUintahFileFormat::addMeshNodeRankSIL( avtDatabaseMetaData *md,
   smd->hideFromGUI = true;
 
   for( unsigned int i=0; i<nRanks; ++i ) {
-    char msg[12];
+    char msg[128];
     sprintf( msg, "Rank_%04d", i );
     rank_enum_id[i] = smd->AddEnumNameValue( msg, i);
   }
@@ -2428,8 +2429,10 @@ avtUintahFileFormat::addMeshNodeRankSIL( avtDatabaseMetaData *md,
   if( nNodes > 1 ) {
 
     for( unsigned int i=0, j=1; i<nNodes; ++i, ++j ) {
-      char msg[12];
-      sprintf( msg, "Ranks_%04d_%04d", i*nRanksPerGroup, j*nRanksPerGroup-1 );
+      char msg[128];
+      sprintf( msg, "Ranks_%04d_%04d",
+	       i*nRanksPerGroup,
+	       std::min(j*nRanksPerGroup, nProcs)-1 );
       node_enum_id[i] = smd->AddEnumNameValue( msg, nRanks+i);
     }
 
@@ -2440,8 +2443,6 @@ avtUintahFileFormat::addMeshNodeRankSIL( avtDatabaseMetaData *md,
 
   md->Add(smd);
 }
-
-
 
 // ****************************************************************************
 //  Method: avtUintahFileFormat::addMeshVariable
