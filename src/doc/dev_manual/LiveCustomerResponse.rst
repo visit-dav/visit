@@ -22,40 +22,26 @@ or, the underlying computing infrastructure upon which VisIt_ depends such as
     * A downed file system or network.
     * A trip in the security environment.
 
-Typically, such inquiries originate from users in the midst of using the VisIt_
-software and are encountering some kind of difficulty. In highly effective
-software projects, the work involved in handling such inquiries does not end
-with simply diagnosing and correcting a user's problem. Often the problems users
-encounter are suggestive of minor, easily fixed deficiencies in either the
-software itself or its associated processes and artifacts.
+Typically, such inquiries originate from users in the midst of using VisIt_
+and are encountering some kind of difficulty. In highly effective software
+projects, the work involved in handling such inquiries does not end
+with helping this one user's problem and sending them on their way. When one
+user encounters a problem, there are probably others who have encountered
+the same problem. Furthermore, often the problems users encounter are
+suggestive of minor, easily fixed deficiencies in either the software itself
+or its associated processes and artifacts.
 
 The continuous investment of effort to craft and carry out small corrective
-actions in response to such inquiries is a *best practice*. It incorporates
-aspects of Google's
+actions in response to such inquiries is a *best practice*. It is the
+`fusion <https://medium.com/@aHev/why-ux-researchers-should-learn-sre-practices-a2b213e69a8a>`_
+of aspects of Google's
 `Site Reliability Engineering (SRE) <https://landing.google.com/sre/sre-book/toc/>`_
 process (sometimes also called
 `Systems Reliability Engineering or Services Reliability Engineering <https://www.cio.com/article/3192531/why-you-need-a-systems-reliability-engineer.html>`_)
-as well as aspects of `User Experience Driven Development (UXDD)
-
-https://medium.com/@aHev/why-ux-researchers-should-learn-sre-practices-a2b213e69a8a
-
-
-
-https://www.uxmatters.com/mt/archives/2019/04/reining-in-ux-regression.php
-
-
- is a *best practice* similar in many
-respects to Google's
-
-
-
-almost like regression testing
-
-
-As an aside, because our primary focus here is on *software* a natural
-inclination might be to call this *Software Reliability Engineering* (also
-abbreviated as *SRE*). However that name already has a specific meaning in the
-software industry and it is in no way related the meaning of SRE used here.
+and maybe aspects of either
+`User Experience Regression Testing <https://www.uxmatters.com/mt/archives/2019/04/reining-in-ux-regression.php>`_
+or
+`User Experience Driven Development (UXDD) <https://docs.microsoft.com/en-us/archive/msdn-magazine/2016/february/cutting-edge-architecture-spinoffs-of-uxdd>`_.
 
 For mature DOE software projects with wide reach and many users, SRE activity
 represents a brand of effort wholly different from conventional software product
@@ -68,7 +54,7 @@ productivity of both developers and users of the software alike.
 Goals
 -----
 
-This document describes how the VisIt_ project manages SRE activities.
+This document describes how the VisIt_ project manages its SRE activities.
 Some of the goals of this process are...
 
   * To maintain a reputation for timely and quality response to customer inquiries.
@@ -118,7 +104,7 @@ activity during the week is handled and :ref:`resolved <sre_response_vs_resoluti
 solely by the **Primary**. However, :ref:`escalations <sre_escalations>`, which we
 hope are rare, will wind up engaging the **Backup** and may even engage other
 developers. In addition, any :ref:`active issues <sre_active_issues>` that remain
-unresolved at the end of the week are formally :ref:`handedoff <sre_handoffs>` to
+unresolved at the end of the week are formally :ref:`handed off <sre_handoffs>` to
 the next **Primary**.
 
 :ref:`Active <sre_active_issues>` SRE issues will be logged and tracked in a separate GitHub,
@@ -139,7 +125,7 @@ that a developer serving as **Primary** can get any other work done beyond their
 active or idle SRE obligations. In slow weeks, its conceivable they can. But, there
 can be no implied assumption or expectation that this will be the case.
 
-A :ref:`schedule <sre_schedule>` of the **Primary** and **Backup** assignments going
+A :ref:`schedule <sre_scheduling>` of the **Primary** and **Backup** assignments going
 out several months is periodically negotiated by the team and posted in the form
 of a shared calendar. **Primary** and **Backup** responsibilities are rotated
 so as to balance the load among team members.
@@ -173,8 +159,8 @@ For these reasons, the **Backup** is asked to at least maintain awareness of the
 issues the **Primary** is handling.
 
 Ideally, the **Primary** is able to handle all SRE activity
-and no other developers are engaged. However, this situation can change for
-significant :ref:`escalations <sre_escalations>`. Thus, other developers are free to
+and no other developers are engaged (However, this situation can change for
+significant :ref:`escalations <sre_escalations>`). Thus, other developers are free to
 ignore customer inquiries as well as redirect customers who may contact them directly
 via email, phone or walk-in. It is a best practice to handle such redirections
 with a formal, three-way handoff confirming that the customer indeed makes
@@ -469,3 +455,5 @@ ensuring productivity of both users and developers of VisIt_ *is* programmatic
 work. The practice of having software development staff *integrated* with
 *operations* is more commonly referred to as *DevOps*. There is a pretty good
 `video <https://youtu.be/XoXeHdN2Ayc>`_ that introduces these concepts.
+
+
