@@ -1049,5 +1049,5 @@ ExpressionList::SortExpressions(void)
         { return ((Expression *)lha)->GetName() < ((Expression *)rha)->GetName(); };
 
     sort(expressions.begin(), expressions.end(), comp);
-    sortedNameHashNeedsSorting = true;
+    resetMe();
 }
