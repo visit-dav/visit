@@ -108,3 +108,30 @@ ExpressionList::GetAllVarNames(const std::string &dbN) const
     }
     return vars;
 }
+
+Function: SortExpressions
+Declaration: virtual void SortExpressions(void);
+Definition:
+// ****************************************************************************
+// Method: ExpressionList::SortExpressions
+//
+// Purpose:
+//   Sort the list of expressions by name. This is mainly for use in the gui
+//   Expression list.
+//
+// Programmer: Alister Maguire
+// Creation:   Mon Mar 16 10:17:59 PDT 2020
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ExpressionList::SortExpressions(void)
+{
+    auto comp = [](const AttributeGroup *lha, const AttributeGroup *rha) -> bool
+        { return ((Expression *)lha)->GetName() < ((Expression *)rha)->GetName(); };
+
+    sort(expressions.begin(), expressions.end(), comp);
+    sortedNameHashNeedsSorting = true;
+}
