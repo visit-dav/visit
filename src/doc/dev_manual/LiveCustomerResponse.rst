@@ -111,12 +111,9 @@ the next **Primary**.
 :ref:`Active SRE issues <sre_active_issues>` will be logged and tracked in a separate GitHub,
 `issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
-resolution of *serious* incidents, the **Primary** will prepare a brief
+resolution of :ref:`serious incidents <sre_serious>`, the **Primary** will prepare a brief
 *postmortem* to inform a discussion at the next project meeting of possible changes
 in practices to avoid repeating such major incidents.
-
-.. danger::
-   * Lets define serious and postmortem
 
 Because SRE work tends to be :ref:`interrupt driven <sre_misconceptions>`, there is always
 the chance that the **Primary** will have no :ref:`active <sre_active_issues>` issues.
@@ -209,10 +206,6 @@ of work to resolve, there should be an associated issue for tracking that work.
 Tracking even the trivial issues can help identify patterns that we may be able
 to later mine to identify process improvements.
 
-.. danger::
-   What about ``visit-help-asc`` email list? Should we handle similarly?
-   Can we just forward to ``visit-users``?  If no to either, what do we do?
-
 .. _sre_response_vs_resolution:
 
 Response Time and Response vs. Resolution
@@ -275,6 +268,26 @@ The SRE issue gets *promoted* to a product development issue. It is closed
 in the SRE issue tracker and new issue is opened in the product development
 issue tracker including a reference to the original SRE issue. Doing so does
 serve to *resolve* the original SRE issue that initiated the work.
+
+.. _sre_serious:
+
+Serious Incidents and Postmortems
+---------------------------------
+
+Serious incidents are those that have significant productivity consequences for
+multiple users and/or require an inordinate amount of resources (either time or
+people or both) to diagnose, work-around and/or ultimately properly correct.
+
+When such incidents occur, it is a best practice to spend some time considering
+adjustments in processes that can help to avoid repeating similar issues in
+the future.
+
+When such incidents are resolved, the **Primary** will prepare a brief *postmortem*
+(often just a set of bullet points) explaining what happend and why, estimating the
+amount of resources that were needed to resolve the incident, describing key
+milestones in the work to resolve the incident and suggesting recommendations for
+changes in processes to prevent such incidents from being repeated. This *postmortem*
+will be used to guide team discussion during a subsequent weekly project meeting.
 
 .. _sre_handoffs:
 
@@ -402,11 +415,6 @@ issues of this same kind already mixed in with our *normal* product development
 issues backlog. These should probably be audited for whether or not they are
 an issue of the *low-hanging fruit* type here and then appropriately re-labeled.
 
-.. danger::
-   The whole team should engage in a label-palooza to sift through existing
-   issues in tracker and identify those of this type. With ~1600 issues and
-   eight people, we each can take about 200 issues in the tracker.
-
 .. _sre_scheduling:
 
 Scheduling and Load Balancing
@@ -468,5 +476,3 @@ ensuring productivity of both users and developers of VisIt_ *is* programmatic
 work. The practice of having software development staff *integrated* with
 *operations* is more commonly referred to as *DevOps*. There is a pretty good
 `video <https://youtu.be/XoXeHdN2Ayc>`_ that introduces these concepts.
-
-
