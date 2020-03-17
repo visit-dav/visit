@@ -15,127 +15,128 @@ However, when performing the calculate with Finite Space Lyapunov Exponents (FSL
 
 For more details see the following paper: `A Comparison of Finite-Time and Finite-Size Lyapunov Exponents by Ronald Peikert, Armin Pobitzer, Filip Sadlo and Benjamin Schindler, <http://www.scivis.ethz.ch/publications/pdf/2014/peikert2014comparison.pdf>`_
 
+
+
 Source
 ^^^^^^
 
 Source types
-    The user can seed the integral curves using the native mesh or define their own rectilinear grid.
-   
-* Native Mesh – create seeds at the nodes of the native mesh. 
-* Rectilinear Grid – create seeds at the nodes of a user defined rectilinear grid. 
+""""""""""""
 
-   * Resolution - Three cartesian values separated with a space defining the number of samples in each dimension.
-   * Data extents: specify the starting and ending extents, using either the native mesh's extents (Full) or user-defined extents (Subset)
+The user can seed the integral curves using the native mesh or define their own rectilinear grid.
+   
+Native Mesh
+    Create seeds at the nodes of the native mesh. 
+
+Regular Grid
+    Create seeds at the nodes of a user-defined rectilinear grid. Parameters are:
+
+    * Resolution - Three cartesian values separated with a space defining the number of samples in each dimension.
+    * Data extents - Specify the starting and ending extents, using either the native mesh's extents (Full) or user-defined extents (Subset).
+
 
 Auxilary Grid
-    When calculating the Jacobian for the Cauchy-Green tensor, one can use the neighboring points from the native mesh or one can specify an auxiliary grid that allows for the detection of finer features but at greater computational expense. Using an auxiliary grid is advantageous because it is independent of the native mesh. It gives more accurate results for higher order elements. Haller et al. found that for analytic flows (double gyre flow, ABC flow), the eigenvalues can be calculated from the native mesh. For simulation flows, using the auxiliary grid for eigenvalue calculations gives better results.
+"""""""""""""
 
-* None - no auxiliary grid
-* 2D - use a 2D auxiliary grid (i.e. X and Y directions). Can be used with 2D or 3D fields.
-* 3D - use a 3D auxiliary grid 
-* Spacing - the differential spacing between the node and auxiliary grid points. 
+When calculating the Jacobian for the Cauchy-Green tensor, one can use the neighboring points from the native mesh or one can specify an auxiliary grid that allows for the detection of finer features but at greater computational expense. Using an auxiliary grid is advantageous because it is independent of the native mesh. It gives more accurate results for higher order elements. Haller et al. found that for analytic flows (double gyre flow, ABC flow), the eigenvalues can be calculated from the native mesh. For simulation flows, using the auxiliary grid for eigenvalue calculations gives better results.
+
+None
+    No auxiliary grid
+
+2D
+    Use a 2D auxiliary grid (i.e. X and Y directions). Can be used with 2D or 3D fields.
+
+3D
+    Use a 3D auxiliary grid 
+
+Spacing
+    The differential spacing between the node and auxiliary grid points. 
+
 
 Field
-    See Field attributes that are common to all PICS operators.
+"""""
+
+See Field attributes that are common to all PICS operators.
+
+
 
 Integration
 ^^^^^^^^^^^
 
 Specify settings for numerical integrators. In addition to the Integration attributes common to all PICS operators, the LCS operator supports the following attributes.
 
+
 Integration Direction
-    Sets the integration direction through time. Options are:
+"""""""""""""""""""""
+
+Sets the integration direction through time. Options are:
     
-* Forward - Integrate forward in time.
-* Backward - Integrate backward in time.
+Forward
+    Integrate forward in time.
+
+Backward
+    Integrate backward in time.
     
 Integrator
-    See Integrator attributes that are common to all PICS operators.
+""""""""""
+
+See Integrator attributes that are common to all PICS operators.
     
 Step Length
-    See Step Length attributes that are common to all PICS operators.
-    
-Tolerances
-    See Tolerance attributes that are common to all PICS operators.
-   
-Termination
 """""""""""
 
-    LCS termination can be controlled in several different ways. The termination is based on the most conservative criteria, so only one criteria must be met for termination.
-
-Operation type
-    The user can specify various termination criteria determined by the type of termination operation. Each selection in Operation Type has different attributes and will change the interface.
+See Step Length attributes that are common to all PICS operators.
     
-    
-    
-    
-    
-    
-Lyapunov Exponent
-    
-    
-    
-    The user can visualization LCS via traditional techniques using FTLE or FSLE or via experimental techniques based on absolute dispersion; FLLE, the integration time, arc length, or average distance from the seed.
+Tolerances
+""""""""""
 
-* Lyapunov Exponent (default), Eigen Value, Eigen Vector 
-* Tensor - One may select the left or right Cauchy Green
-* Clamp exponent values - clamp the log values to be positive. 
-* Eigen Value (Lyapunov Exponent and Eigen Value)
-
-   * Smallest - also produces seed points for
-   * Intermediate (3D Only)
-   * Largest 
-
-* Eigen Value (Eigen Vector)
-
-   * Smallest - used to compute repelling hyperbolic LCSs (shrink lines) using seeds points (maximal regional values) from the largest Eigen value.
-   * Intermediate (3D Only)
-   * Largest - used to compute attracting hyperbolic LCSs (stretch lines) using seeds points (minimal regional values) from the smallest Eigen value.
-   * Shear Positive - experimental
-   * Shear Negative - experimental
-   * Lambda Shear Positive - used to compute elliptic LCSs as limit cycles.
-   * Lambda Shear Negative - used to compute elliptic LCSs as limit cycles.
-
-* Integration Time - calculate the total integration time using that value for immediate display or a gradient calculation.
-* Arc Length - calculate the total arc length using that value for immediate display or a gradient calculation.
-* Average distance from seed - calculate the average distance from the seed at each integration step using that value for immediate display or a gradient calculation. 
-
-   * Secondary operation for the integration time, arc length, or average distance from the seed.
-
-      * Base value - return the value calculated by the operation.
-      * Gradient - return the log of the gradient of the value calculated by the operation. 
-
-   * Clamping (Gradient only)
-
-      * Clamp exponent values - clamp the log values to be positive. 
-
-Termination - terminate the integration based on the time or distance advected or maximum number of steps. Depending on the operator these options may not all be available. Further they may be either "and" or "or". 
-
-* Limit maximum time elapsed by particles (FTLE) - (Default state off, Default value 10), Finite Time Lyapunov Exponent, this is a measure of relative dispersion based on the advection time.
-* Limit maximum advection distance (FLLE) - (Default state off, Default value 10), Finite Length Lyapunov Exponent, this is a measure of absolute dispersion.
-* Limit maximum size (FSLE) - (Default state off, Default value 10), Finite Size Lyapunov Exponent, this is a measure of relative dispersion based on the size (distance) between neighboring seeds.
-* Maximum number of steps (default 1000) - the maximum number of integration steps that will be allowed regardless or the time or distance. 
+See Tolerance attributes that are common to all PICS operators.
 
 
 Appearance
 ^^^^^^^^^^
 
-Seed Generation:
+The appearance tab specifies how the LCS will be drawn. In addition to the Appearance attributes common to all PICS operators, the LCS operator supports the following attributes.
 
-* Threshold limit - exclude seeds that are not within the threshold
-* Radial limit - exclude seeds that are closer to other seeds than the radial limit.
-* Boundary limit - exclude seeds closer than the specified boundary limit.
-* Maximum number of seeds - the maximum number of seeds generated 
 
-Streamlines and pathlines - see common
+Seed Generation
+"""""""""""""""
+
+Threshold limit
+    Exclude seeds that are not within the threshold
+
+Radial limit
+    Exclude seeds that are closer to other seeds than the radial limit.
+
+Boundary limit
+    Exclude seeds closer than the specified boundary limit.
+
+Maximum number of seeds
+    The maximum number of seeds generated 
+
+
+Streamlines vs Pathlines
+""""""""""""""""""""""""
+
+See Streamlines vs Pathlines attributes that are common to all PICS operators.
+
 
 Advanced
 ^^^^^^^^
 
-See common
+The LCS Operator shares the same Parallel attributes as all the other PICS operators.
 
-Example
-^^^^^^^
+
+Warnings
+""""""""
+
+In addition to the Warnings common to all PICS operators, the LCS Operator supports the following warnings.
+
+Issue warning if the advection limit is not reached
+    If the maximum time or distance is not reached, issue a warning.
+
+Issue warning if the spatial boundary is reached
+    If the integral curve reaches the spatial domain boundary, issue a warning.
 
 
 

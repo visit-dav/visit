@@ -111,7 +111,8 @@ MD3-C1
 
 Termination
 """""""""""
-    The criteria for terminating the integration. See specific operator for details.
+
+The criteria for terminating the integration. See specific operator for details.
 
 
 
