@@ -408,12 +408,21 @@ within a half-day's (4 hours) worth of effort. When there are many such tasks in
 the system to work on, the **Primary** is free to use his/her judgment to decide
 which s/he can most productively address.
 
-Part of the acknowledgment of this new category of work is the new issue tracker
-for tracking it. *New* SRE activity will start with an issue 
-being added in this new issue tracker. However, there are likely a number of
-issues of this same kind already mixed in with our *normal* product development
-issues backlog. These should probably be audited for whether or not they are
-an issue of the *low-hanging fruit* type here and then appropriately re-labeled.
+Part of the acknowledgment of this new category of work is the new
+`issue tracker <https://github.com/visit-dav/live-customer-response/issues>`_
+for tracking it. *New* SRE activity will start with an issue being added there.
+As an SRE incident unfolds it may result in either the same issue being moved to the
+`product development <https://github.com/visit-dav/visit/issues>`_ issue tracker
+and/or new issue(s) being added to the 
+`product development <https://github.com/visit-dav/visit/issues>`_ tracker.
+Any new *product development* issues should be linked back to the original
+SRE issue that spawned them.
+
+Finally, there are likely a number of
+issues of the *low-hanging fruit* kind already mixed in with our
+`product development <https://github.com/visit-dav/visit/issues>`_ issue
+backlog. These should probably be audited for whether or not they are
+an issue of the *low-hanging fruit* type and then appropriately re-labeled.
 
 .. _sre_scheduling:
 
