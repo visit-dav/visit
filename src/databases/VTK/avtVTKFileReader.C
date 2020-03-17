@@ -50,6 +50,10 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+  #define strcasecmp stricmp
+#endif
+
 using std::string;
 using std::vector;
 
