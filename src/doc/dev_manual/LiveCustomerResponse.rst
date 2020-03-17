@@ -138,9 +138,6 @@ links or in *italics* in the paragraphs above) require elaboration. In addition,
 there are also many practical matters which can serve to complicate the basic
 process. These details are addressed in the remaining sections.
 
-.. danger::
-   * Did we introduce all the section headings
-
 .. _sre_roles:
 
 Roles
