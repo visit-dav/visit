@@ -33,6 +33,9 @@
 #   Installed the plugins/platforms and plugins/styles directories in the 
 #   xmledit.app and mcurvit.app directories.
 #
+#   Kathleen Biagas, Wed Jan 22 14:46:17 MST 2020
+#   Add ssl dlls to install for Windows.
+#
 #*****************************************************************************
 
 
@@ -269,5 +272,24 @@ if(NOT VISIT_QT_SKIP_INSTALL)
           # a way to find this via Qt's cmake mechanisms, hence this
           # hard-coded extra step
           THIRD_PARTY_INSTALL_LIBRARY(${VISIT_QT_DIR}/lib/libQt5XcbQpa.so)
+  endif()
+
+  if(WIN32)
+      # Need the ssl dll's too.
+      file(COPY ${VISIT_QT_DIR}/bin/libeay32.dll
+                ${VISIT_QT_DIR}/bin/ssleay32.dll
+           DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty
+           FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                            GROUP_READ GROUP_WRITE
+                            WORLD_READ
+      )
+      install(FILES ${VISIT_QT_DIR}/bin/libeay32.dll
+                    ${VISIT_QT_DIR}/bin/ssleay32.dll
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+              PERMISSIONS OWNER_READ OWNER_WRITE
+                          GROUP_READ GROUP_WRITE
+                          WORLD_READ
+              CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
+      )
   endif()
 endif()

@@ -78,7 +78,18 @@
 #    Added TestDirectDatabaseRoute. I also updated several tests to
 #    use actual data so that they continue to test the old QOT route. 
 #
+#    Kathleen Biagas, Thu Jan 30 13:37:50 MST 2020
+#    Added TestOperatorCreatedVar. (github bugs #2842, #3489).
+#
+#    Alister Maguire, Tue Feb 25 13:46:24 PST 2020
+#    Added tests for handling vectors in the direct database route.
+#
+#    Alister Maguire, Mon Mar  9 15:16:36 PDT 2020
+#    I've removed the use_actual_data flag for Pick queries as this
+#    is now handled internally.
+#
 # ----------------------------------------------------------------------------
+
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
 
 def InitAnnotation():
@@ -769,8 +780,7 @@ def TestDirectDatabaseRoute():
     timer_start = time.time()
 
     PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
-        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride,
-        use_actual_data=0)
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
 
     timer_stop = time.time()
     res = timer_stop - timer_start
@@ -797,8 +807,7 @@ def TestDirectDatabaseRoute():
     stop   = 900
     stride = 10
     PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
-        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride,
-        use_actual_data=0)
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
     stride = 1
     start  = 0
     stop   = 10000
@@ -817,8 +826,7 @@ def TestDirectDatabaseRoute():
     #
     vars=("Primal/node/nodacc_magnitude")
     PickByNode(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
-        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride,
-        use_actual_data=0)
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
     SetActiveWindow(2)
     Test("Direct_Database_Route_03")
     DeleteAllPlots()
@@ -835,8 +843,7 @@ def TestDirectDatabaseRoute():
     element = 489
     vars=("Primal/brick/stress/sz", "Primal/brick/stress/sx")
     PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
-        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride,
-        use_actual_data=0)
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
     SetActiveWindow(2)
     Test("Direct_Database_Route_04")
     DeleteAllPlots()
@@ -846,8 +853,7 @@ def TestDirectDatabaseRoute():
     # Testing the multi curve plot. 
     #
     PickByZone(curve_plot_type=1, vars=vars, do_time=1, domain=domain, element=element,
-        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride,
-        use_actual_data=0)
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
     SetActiveWindow(2)
     Test("Direct_Database_Route_05")
     DeleteAllPlots()
@@ -864,8 +870,7 @@ def TestDirectDatabaseRoute():
     element = 11
     vars = ("default")
     PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
-        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride,
-        use_actual_data=0)
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
     SetActiveWindow(2)
     Test("Direct_Database_Route_06")
     DeleteAllPlots()
@@ -888,7 +893,7 @@ def TestDirectDatabaseRoute():
     pick.doTimeCurve = 1
     pick.timePreserveCoord = 0
     SetPickAttributes(pick)
-    PickByNode(element=327, use_actual_data=0)
+    PickByNode(element=327)
 
     pick.doTimeCurve = 0
     pick.timePreserveCoord = 1
@@ -901,6 +906,72 @@ def TestDirectDatabaseRoute():
     SetActiveWindow(1)
     DeleteAllPlots()
 
+    #
+    # Next, let's test a vector plot. The vectors should be reduced
+    # to their magnitudes.
+    #
+    AddPlot("Vector", "direction")
+    DrawPlots()
+
+    pick = GetPickAttributes()
+    pick.doTimeCurve = 1
+    pick.timePreserveCoord = 0
+    SetPickAttributes(pick)
+    PickByNode(element=10)
+
+    SetActiveWindow(2)
+    InitAnnotation()
+    Test("Direct_Database_Route_08")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
+def TestOperatorCreatedVar():
+    OpenDatabase(silo_data_path("wave.visit"))
+    DefineVectorExpression("normals", "cell_surface_normal(quadmesh)")
+
+    AddPlot("Pseudocolor", "operators/Flux/quadmesh")
+
+    fluxAtts = FluxAttributes()
+    fluxAtts.flowField = "direction"
+    SetOperatorOptions(fluxAtts)
+
+    AddOperator("Slice")
+    sliceAtts = SliceAttributes()
+    sliceAtts.axisType = sliceAtts.Arbitrary
+    sliceAtts.normal = (0, 1, 0)
+    sliceAtts.originType = sliceAtts.Percent
+    sliceAtts.originPercent = 50
+    sliceAtts.project2d = 0
+    SetOperatorOptions(sliceAtts)
+
+    AddOperator("DeferExpression")
+    deferAtts = DeferExpressionAttributes()
+    deferAtts.exprs = ("normals")
+    SetOperatorOptions(deferAtts)
+
+    # we want slice before flux, so demote it
+    DemoteOperator(1)
+
+    DrawPlots()
+
+    qt = GetQueryOverTimeAttributes()
+    qt.timeType = qt.Cycle
+    SetQueryOverTimeAttributes(qt)
+
+    QueryOverTime("Weighted Variable Sum")
+
+    SetActiveWindow(2)
+    InitAnnotation()
+    Test("OperatorCreatedVar_01")
+
+    DeleteAllPlots()
+
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
+    DeleteExpression("normals")
+    CloseDatabase(silo_data_path("wave.visit"))
  
 def TimeQueryMain():
     TestAllTimeQueries()
@@ -916,6 +987,7 @@ def TimeQueryMain():
     TestPickRangeTimeQuery()
     TestReturnValue()
     TestDirectDatabaseRoute()
+    TestOperatorCreatedVar()
 
 # main
 InitAnnotation()

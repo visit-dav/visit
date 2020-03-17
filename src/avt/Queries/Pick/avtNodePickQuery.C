@@ -113,6 +113,9 @@ avtNodePickQuery::~avtNodePickQuery()
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
 //
+//    Alister Maguire, Mon Mar  9 11:01:24 PDT 2020
+//    Set the real element number so the direct database qot has access.
+//
 // ****************************************************************************
 
 void
@@ -256,6 +259,7 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
         pickAtts.SetIncidentElements(pickAtts.GetRealIncidentElements());
     }
 
+    pickAtts.SetRealElementNumber(pickAtts.GetElementNumber());
     pickAtts.SetElementNumber(pickAtts.GetElementNumber() + nodeOrigin);
 
     //

@@ -20,13 +20,8 @@ function bv_visit_depends_on
 
 function bv_visit_info
 {
-    if [[ "$USE_VISIT_FILE" == "yes" ]] ; then
-        export VISIT_MD5_CHECKSUM=""
-        export VISIT_SHA256_CHECKSUM=""
-    else
-        export VISIT_MD5_CHECKSUM="edccd6d6c289356ac1462b1606b10ef9"
-        export VISIT_SHA256_CHECKSUM="40c33f08de7a048fb436b8a72156b9e5303434e8e52d5d8590c7dc3ce8ac607d"
-    fi
+    export VISIT_MD5_CHECKSUM=""
+    export VISIT_SHA256_CHECKSUM=""
 }
 
 function bv_visit_print
@@ -297,7 +292,7 @@ function build_visit
 
     # No real need to do this as it is defined on the cmake line BUT
     # Users may rebuild visit with updated git
-    cp ${START_DIR}/${HOSTCONF} config-site
+    cp ${START_DIR}/${HOSTCONF} ../src/config-site
 
     #
     # Call cmake
@@ -373,12 +368,31 @@ function build_visit
     # Build VisIt
     #
     info "Building VisIt . . . (~50 minutes)"
+    if [[ "${BUILD_SPHINX}" == "yes" ]] ; then
+        $MAKE $MAKE_OPT_FLAGS manuals
+        if [[ $? != 0 ]] ; then
+            warn "Building the VisIt manuals failed.  Continuing"
+        fi
+    fi
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "VisIt build failed.  Giving up"
         return 1
     fi
-    warn "All indications are that VisIt successfully built."
+    warn "All indications are that VisIt was successfully built."
+
+    #
+    # Package VisIt
+    #
+    info "Packaging VisIt ... (~10 minutes)"
+    $MAKE $MAKE_OPT_FLAGS package
+    if [[ $? != 0 ]] ; then
+        warn "VisIt package failed.  Giving up"
+        return 1
+    fi
+    mv visit*.*.tar.gz ../..
+    cp ../src/tools/dev/scripts/visit-install ../..
+    warn "All indications are that VisIt was successfully packaged."
 
     #
     # Install VisIt
@@ -389,7 +403,7 @@ function build_visit
             warn "VisIt installation failed.  Giving up"
             return 1
         fi
-        warn "All indications are that VisIt successfully installed."
+        warn "All indications are that VisIt was successfully installed."
     fi
 
     #
@@ -436,20 +450,14 @@ function bv_visit_build
         #
         # Output the message indicating that we are finished.
         #
-        info "Finished building VisIt."
+        info "Finished creating a VisIt distribution."
         info
-        info "You many now try to run VisIt by cd'ing into the"
-        info "$VISIT_BUILD_DIR/bin directory and invoking \"visit\""
+        info "This created a tar file called visitVERSION.ARCH.tar.gz,"
+        info "where VERSION is the version number, and ARCH is the"
+        info "operating system and architecure."
         info
-        info "To create a binary distribution tarball from this build, cd to"
-        info "${START_DIR}/${VISIT_BUILD_DIR}"
-        info "then enter: \"make package\""
-        info
-        info "This will produce a tarball called visitVERSION.ARCH.tar.gz, where"
-        info "VERSION is the version number, and ARCH is the OS architecure."
-        info
-        info "To install the above tarball in a directory called \"INSTALL_DIR_PATH\""
-        info "enter: tools/dev/scripts/visit-install VERSION ARCH INSTALL_DIR_PATH"
+        info "To install the above tar file in a directory called \"INSTALL_DIR_PATH\""
+        info "enter: ./visit-install VERSION ARCH INSTALL_DIR_PATH"
         info
         info "If you run into problems, contact visit-users@ornl.gov."
     else
@@ -458,5 +466,10 @@ function bv_visit_build
         else
             info "Finished with Errors"
         fi
+    fi
+
+    if [[ $VISIT_BUILD_MODE == "Debug" ]]; then
+        info "Debug build mode was specified. The default build mode for VisIt is Release."
+        info "To build VisIt in Debug mode, pass -DCMAKE_BUILD_TYPE:STRING=Debug to VisIt's cmake configure command."
     fi
 }
