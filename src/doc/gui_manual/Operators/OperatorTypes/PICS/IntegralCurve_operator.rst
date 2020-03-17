@@ -4,7 +4,7 @@ Integral Curve operator
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Source
-""""""
+^^^^^^
 
 Source type
     The user can seed the integral curves using a single point; an arbitrary list of points; samples on a line, plane, circle, sphere, or box; a Named Selection; or Field Data. The following is a list of source types and parameters.
@@ -86,7 +86,7 @@ Field
 
 
 Integration
-"""""""""""
+^^^^^^^^^^^
 
 Specify settings for numerical integrators. In addition to the Integration attributes common to all PICS operators, the Integral Curve operator supports the following attributes.
 
@@ -120,7 +120,7 @@ Termination
 
 
 Appearance
-""""""""""
+^^^^^^^^^^
 
 The appearance tab specifies how the integral curve will be drawn. In addition to the Appearance attributes common to all PICS operators, the Integral Curve operator supports the following attributes.
 
@@ -182,7 +182,7 @@ Streamlines vs Pathlines
 
 
 Advanced
-""""""""
+^^^^^^^^
 
 The Integral Curve Operator shares the same Parallel attributes as all the other PICS operators.
 
