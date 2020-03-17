@@ -25,17 +25,18 @@ or, the underlying computing infrastructure upon which VisIt_ depends such as
 Typically, such inquiries originate from users in the midst of using VisIt_
 and are encountering some kind of difficulty. In highly effective software
 projects, the work involved in handling such inquiries does not end
-with helping this one user's problem and sending them on their way. When one
+with fixing this one user's problem and sending them on their way. When one
 user encounters a problem, there are probably others who have encountered
 the same problem. Furthermore, often the problems users encounter are
 suggestive of minor, easily fixed deficiencies in either the software itself
 or its associated processes and artifacts.
 
-The continuous investment of effort to craft and carry out small corrective
-actions in response to such inquiries is a *best practice*. It is the
+The continuous investment of effort to craft and carry out
+:ref:`small corrective actions <sre_housekeeping>`
+in response to such inquiries is a *best practice*. It represents a
 `fusion <https://medium.com/@aHev/why-ux-researchers-should-learn-sre-practices-a2b213e69a8a>`_
 of aspects of Google's
-`Site Reliability Engineering (SRE) <https://landing.google.com/sre/sre-book/toc/>`_
+`Site Reliability Engineering <https://landing.google.com/sre/sre-book/toc/>`_ (SRE)
 process (sometimes also called
 `Systems Reliability Engineering or Services Reliability Engineering <https://www.cio.com/article/3192531/why-you-need-a-systems-reliability-engineer.html>`_)
 and maybe aspects of either
@@ -92,38 +93,39 @@ The Basic Process
 -----------------
 
 SRE work is allocated and rotated among developers in
-one-week intervals. During a week, one developer's :ref:`role <sre_roles>` is to
+one-week *shifts*. During a shift, one developer's :ref:`role <sre_roles>` is to
 serve as the **Primary** SRE contact and a second developer's
 :ref:`role <sre_roles>` is to serve as a **Backup**. Except for
-:ref:`escalations <sre_escalations>`, all other developers are free of SRE
+:ref:`escalations <sre_escalation>`, all other developers are free of SRE
 responsibilities for that week.
 
-The :ref:`role <sre_role>` of the **Primary** is to :ref:`respond <sre_response_vs_resolution>`
+The :ref:`role <sre_roles>` of the **Primary** is to :ref:`respond <sre_response_vs_resolution>`
 within the response time goal, to each inquiry. Ideally, all SRE
 activity during the week is handled and :ref:`resolved <sre_response_vs_resolution>`
-solely by the **Primary**. However, :ref:`escalations <sre_escalations>`, which we
+solely by the **Primary**. However, :ref:`escalations <sre_escalation>`, which we
 hope are rare, will wind up engaging the **Backup** and may even engage other
-developers. In addition, any :ref:`active issues <sre_active_issues>` that remain
+developers. In addition, any :ref:`active SRE issues <sre_active_issues>` that remain
 unresolved at the end of the week are formally :ref:`handed off <sre_handoffs>` to
 the next **Primary**.
 
-:ref:`Active <sre_active_issues>` SRE issues will be logged and tracked in a separate GitHub,
+:ref:`Active SRE issues <sre_active_issues>` will be logged and tracked in a separate GitHub,
 `issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
 resolution of *serious* incidents, the **Primary** will prepare a brief
 *postmortem* to inform a discussion at the next project meeting of possible changes
-in practices to avoid such major incidents.
+in practices to avoid repeating such major incidents.
 
 .. danger::
    * Lets define serious and postmortem
 
-Because SRE work tends to be interrupt driven, there is always
-the chance that the **Primary** will have no *active* issues. At these *idle* times, the
-**Primary** shall use their time to address general :ref:`housekeeping <sre_housekeeping>`
-or other *low-hanging fruit* type work. In particular, there shall be no expectation
-that a developer serving as **Primary** can get any other work done beyond their
-active or idle SRE obligations. In slow weeks, its conceivable they can. But, there
-can be no implied assumption or expectation that this will be the case.
+Because SRE work tends to be :ref:`interrupt driven <sre_misconceptions>`, there is always
+the chance that the **Primary** will have no :ref:`active <sre_active_issues>` issues.
+At these *idle* times, the **Primary** shall use their time to address general
+:ref:`housekeeping <sre_housekeeping>` or other *low-hanging fruit* type work. In
+particular, there shall be no expectation that a developer serving as **Primary**
+can get any other work done beyond their active or idle SRE obligations. In slow
+weeks, its conceivable they can. But, there can be no implied assumption or
+expectation that this will be the case.
 
 A :ref:`schedule <sre_scheduling>` of the **Primary** and **Backup** assignments going
 out several months is periodically negotiated by the team and posted in the form
@@ -146,41 +148,49 @@ Roles
 
 The **Primary**'s role is to respond, within the response time goal, to each
 inquiry that occurs during that week including those that come in during the
-preceding weekend/holiday. The **Primary**'s goal is to :ref:`resolve <sre_resolve>`
+preceding weekend/holiday. The **Primary**'s goal is to :ref:`resolve <sre_response_vs_resolution>`
 all inquiries by the end of their week.
 
-The **Primary** has the sole responsibility for responding to inquiries and
-deciding next steps. The **Backup** is called into action only by explicit
-request of the **Primary**. The **Primary** may temporarily delegate his/her
-responsibilities to the **Backup** or enlist the **Backup** for help as
-part of an escalation. To the extent possible, temporary delegation from
-**Primary** to **Backup** should be handled formally and by mutual agreement.
-For these reasons, the **Backup** is asked to at least maintain awareness of the
-issues the **Primary** is handling.
+The **Primary** has the sole responsibility for responding to inquiries
+and opening and resolving :ref:`SRE issue tickets <sre_active_issues>`.
+When the **Primary** needs help to
+:ref:`resolve an SRE issue <sre_response_vs_resolution>`, s/he should
+first enlist the **Backup**. This is an :ref:`escalation <sre_escalation>`.
+Nonetheless, the **Backup** (or other developers for that matter) are called
+into action only by explicit request of the **Primary**.
+Note that enlisting additional resources for help is part of
+:ref:`escalation <sre_escalation>` and is not the same as a
+:ref:`handoff <sre_handoffs>`.
+
+If the **Primary**'s schedule changes such that the response time goal may
+not be met, the **Primary** may temporarily *delegate* his/her role and
+responsibilities to the **Backup**. To the extent possible, such temporary
+delegation from **Primary** to **Backup** should be handled formally and by
+mutual agreement. Temporary delegation of the **Primary**'s role is also
+not the same as a :ref:`handoff <sre_handoffs>`.
 
 Ideally, the **Primary** is able to handle all SRE activity
-and no other developers are engaged (However, this situation can change for
-significant :ref:`escalations <sre_escalations>`). Thus, other developers are free to
+and no other developers are engaged. Thus, other developers are free to
 ignore customer inquiries as well as redirect customers who may contact them directly
 via email, phone or walk-in. It is a best practice to handle such redirections
-with a formal, three-way handoff confirming that the customer indeed makes
-contact with the **Primary**.
+with a formal, three-way :ref:`handoff <sre_handoffs>` confirming that the customer
+indeed makes contact with the **Primary**.
 
 .. _sre_active_issues:
 
 Active SRE Issues Repo
 ----------------------
 
-*Active* SRE issues will be logged and tracked in a separate GitHub,
+:ref:`Active SRE issues <sre_active_issues>` will be logged and tracked in a separate GitHub,
 `issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. 
 For each new inquiry, the primary will file an issue ticket and assign themselves.
-When the inquiry is resolved, the associated issue is closed. The primary will
-endeavor to capture all relevant information and communications in this issue.
-The use of GitHub issues for this purpose has a number of advantages over other
-options such as email including better search/browse as well as support for
-attachments. For this reason, a number of steps were taken to integrate the
-``visit-users@elist.ornl.gov`` email list with this issues-only repository.
+When the inquiry is :ref:`resolved <sre_response_vs_resolution>`, the associated
+issue is closed. The primary will endeavor to capture all relevant information and
+communications in this issue. The use of GitHub issues for this purpose has a number
+of advantages over other options such as email including better search/browse as well
+as support for attachments. For this reason, a number of steps were taken to integrate
+the ``visit-users@elist.ornl.gov`` email list with this issues-only repository.
 
 Upon receiving a *new* inquiry on the ``visit-users`` email list, telephone hotline
 call, or walk-in (with the exception of walk-ins involving classified information),
@@ -211,7 +221,7 @@ to later mine to identify process improvements.
 Response Time and Response vs. Resolution
 -----------------------------------------
 The response time goal of four hours was chosen to reflect the worst case
-practicalities of team member's schedules and responsibilities. For example, if
+practicalities of team members' schedules and responsibilities. For example, if
 the **Primary** has meetings just before and just after the lunch hour break,
 there can easily be a four hour period of time where inquiries go unattended.
 Typically, we anticipate response times to be far less than four hours and
@@ -247,7 +257,8 @@ following activities...
   * Developing a reproducer for developers.
 
     * This may include any relevant user data files as well as approval, where
-      appropriate for world read access to such data.
+      appropriate for world read access to such data as part of attaching to
+      a GitHub issue.
 
   * Identifying any *low-hanging fruit* type work that would address, even if
     only in part, the original SRE inquiry and then engaging in the
@@ -292,8 +303,11 @@ a **Primary**'s assignment, it gets handed off to the next week's **Primary**.
 Such handoffs shall be managed formally with a comment (or email) to the
 customer(s) and the next week's **Primary** and **Backup** in the associated
 GitHub issue. The associated issue(s) in the SRE issues
-repository shall be re-assigned by the next week's **Primary** upon beginning
-their shift.
+repository shall be re-assigned by the previous week's **Primary** upon ending
+their shift. However, a preceding week's **Primary** may be near enough
+to :ref:`resolving <sre_response_vs_resolution>` an SRE issue that it makes
+more sense for him/her to carry it completion in the following week. In this
+case, s/he will leave such issues assigned to themselves.
 
 .. _sre_escalation:
 
@@ -314,9 +328,9 @@ file a product development issue as discussed at the end of a preceding section.
 
 If after investigation and diagnosis the work required to resolve an SRE
 incident remains highly uncertain or is not believed to be a
-*low-hanging-fruit* type task, the **Primary** should search the issue system to
-see if this is a known issue and, if so, add additional information to that known
-issue about this new SRE incident (and perhaps remove the
+*low-hanging-fruit* type task, the **Primary** should search the *product
+development* issues to see if this is a known issue and, if so, add additional
+information to that known issue about this new SRE incident (and perhaps remove the
 *reviewed* tag from the issue to cause the issue to be re-reviewed at the next
 VisIt_ project meeting) or submit a *new* issue to the product development issue
 tracker. Such action then *resolves* the original SRE issue.
@@ -349,15 +363,19 @@ requiring classified computing, the **Primary** should
 
 .. _sre_housekeeping:
 
-Housekeeping and Low-hanging Fruit Type Issues
-----------------------------------------------
+SRE vs. Product Development
+---------------------------
 
-Part of the reason for developing this process is the recognition of a
+Part of the reason for formalizing this process is the recognition of a
 different category of work,
-`Site Reliability Engineering (SRE) <https://en.wikipedia.org/wiki/Site_Reliability_Engineering>`_,
-that is nonetheless an essential part of maintaining the overall quality of
+`Site Reliability Engineering <https://en.wikipedia.org/wiki/Site_Reliability_Engineering>`_ (SRE),
+that is an essential part of maintaining the overall quality of
 a software product as well as the productivity of both developers and users
-of the software alike.
+of the software alike. Nonetheless, SRE work is very different from
+conventional *product development* type of work where
+bug fixes, technology refreshes, feature enhancements and major releases are
+prioritized, planned and resources assigned to hit target deliverable
+dates.
 
 Small, easily fixed issues that impact one user's productivity often impact
 others. Likewise for developer productivity issues. Often, these kinds of
@@ -369,13 +387,12 @@ this nature as general *housekeeping* or *low-hanging fruit* type issues.
 
 Apart from acknowledging their existence, a key part of this process is the
 allocation of resources for the sole purpose of supporting SRE activities
-and developing a practice of continuously resolving
-general housekeeping or low-hanging fruit type issues arising from
-SRE inquiries.
+and developing a practice of continuously crafting small corrective actions
+arising from SRE inquiries.
 
 Consequently, another key role of the **Primary** is to use any time not working
-active inquiries to fix *low-hanging fruit* issues; either those the **Primary**
-is currently managing or those from the *backlog*. As a rule of thumb, low-hanging
+active SRE issues to fix other *low-hanging fruit* issues from the
+*product development* backlog. As a rule of thumb, low-hanging
 fruit is considered to be anything that the **Primary** believes is fixable
 within a half-day's (4 hours) worth of effort. When there are many such tasks in
 the system to work on, the **Primary** is free to use his/her judgment to decide
@@ -386,8 +403,7 @@ for tracking it. *New* SRE activity will start with an issue
 being added in this new issue tracker. However, there are likely a number of
 issues of this same kind already mixed in with our *normal* product development
 issues backlog. These should probably be audited for whether or not they are
-an issue of the *general housekeeping* or *low-hanging fruit* type here and
-then appropriately re-labeled.
+an issue of the *low-hanging fruit* type here and then appropriately re-labeled.
 
 .. danger::
    The whole team should engage in a label-palooza to sift through existing
