@@ -93,7 +93,7 @@ MESSAGE(STATUS "Configuring VisIt Binary Tarball Data Targets")
 # Set up archiver executable name (7z, 7za and p7zip are common ones)
 #-----------------------------------------------------------------------------
 IF(NOT VISIT_DATA_ARCHIVER_NAME)
-    list(APPEND VISIT_DATA_ARCHIVER_NAME "7z" "7za" "p7zip")
+    list(APPEND VISIT_DATA_ARCHIVER_NAME "7z" "7za" "7zr" "p7zip")
 ENDIF()
 
 #-----------------------------------------------------------------------------

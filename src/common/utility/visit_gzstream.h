@@ -19,21 +19,8 @@ public:
    /** Simple factory to create ifstream or other streams depending on whether
        named file appears to be a compressed file. */
     visit_ifstream() : strm(0),ifstrm(0) {};
-    visit_ifstream(char const *name, char const *mode = "r") {
-        std::ios_base::openmode m = (std::ios_base::openmode) 0x0;
-        if (strchr(mode,'r')) m |= std::ios_base::in;
-        if (strchr(mode,'b')) m |= std::ios_base::binary;
-        ifstrm = new std::ifstream(name,m);
-        strm = ifstrm;
-    };
-    void open(char const *name, char const *mode = "rb") {
-        if (ifstrm) delete ifstrm;
-        std::ios_base::openmode m = (std::ios_base::openmode) 0x0;
-        if (strchr(mode,'r')) m |= std::ios_base::in;
-        if (strchr(mode,'b')) m |= std::ios_base::binary;
-        ifstrm = new std::ifstream(name,m);
-        strm = ifstrm;
-    };
+    visit_ifstream(char const *name, char const *mode = "r");
+    void open(char const *name, char const *mode = "rb");
     std::istream &operator()(void) const { return *strm; };
     int peek(void)
     {
@@ -66,23 +53,8 @@ public:
        https://refspecs.linuxbase.org/LSB_3.0.0/LSB-PDA/LSB-PDA/zlib-gzopen-1.html.
        Default mode is "zwb6". */
     visit_ofstream() : strm(0) {};
-    visit_ofstream(char const *name, char const *mode = "w") {
-        std::ios_base::openmode m = (std::ios_base::openmode) 0x0;
-        if (strchr(mode,'a')) m |= std::ios_base::app;
-        else if (strchr(mode,'t')) m |= std::ios_base::trunc;
-        if (strchr(mode,'w')) m |= std::ios_base::out;
-        if (strchr(mode,'b')) m |= std::ios_base::binary;
-        strm = new std::ofstream(name,m);
-    };
-    void open(char const *name, char const *mode = "w") {
-        if (strm) delete strm;
-        std::ios_base::openmode m = (std::ios_base::openmode) 0x0;
-        if (strchr(mode,'a')) m |= std::ios_base::app;
-        else if (strchr(mode,'t')) m |= std::ios_base::trunc;
-        if (strchr(mode,'w')) m |= std::ios_base::out;
-        if (strchr(mode,'b')) m |= std::ios_base::binary;
-        strm = new std::ofstream(name,m);
-    };
+    visit_ofstream(char const *name, char const *mode = "w");
+    void open(char const *name, char const *mode = "w");
     std::ostream &operator()(void) const { return *strm; };
    ~visit_ofstream() { delete strm; };
 private:

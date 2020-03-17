@@ -119,6 +119,7 @@ std::vector<std::string>
 CGNSGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
+    defaultPatterns.push_back("*.cgns.*.*");
     defaultPatterns.push_back("*.cgns");
 
     return defaultPatterns;

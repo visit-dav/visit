@@ -432,6 +432,19 @@
 #    Fix sphinx docs build for Windows: sphinx-build executable is in a
 #    different directory, don't build them in-source. Add install command.
 #
+#    Kathleen Biagas, Thu Feb 27 2020
+#    Add a few CMake vars to control optional targets and reduce the number of
+#    build targets when turned off (all on by default):
+#        VISIT_ENABLE_ANNOTATION_TOOLS
+#        VISIT_ENABLE_DATAGEN
+#        VISIT_ENABLE_LIBSIM
+#        VISIT_ENABLE_MANUALS
+#        VISIT_ENABLE_SILO_TOOLS
+#    Rename a few CMake vars for consistency in naming:
+#      VISIT_DATA_MANUAL_EXAMPLES => VISIT_ENABLE_DATA_MANUAL_EXAMPLES
+#      VISIT_BUILD_DIAGNOSTICS    => VISIT_ENABLE_DIAGNOSTICS
+#      VISIT_BUILD_AVTEXAMPLES    => VISIT_ENABLE_EXAMPLES
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -734,7 +747,6 @@ OPTION(VISIT_NOLINK_MPI_WITH_LIBRARIES "Do not link MPI with VisIt's parallel sh
 OPTION(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE "Create a separate executable that forwards VisIt's socket connection between engine and component launcher" ON)
 OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
-OPTION(VISIT_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
 OPTION(VISIT_SPHINX "Enable ability to build sphinx documentation" OFF)
 
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
@@ -759,9 +771,16 @@ ELSE(APPLE OR WIN32)
 ENDIF(APPLE OR WIN32)
 
 OPTION(VISIT_THREAD "Build VisIt with thread support." OFF)
-OPTION(VISIT_BUILD_AVTEXAMPLES  "Enable building of avtexamples" ON)
-OPTION(VISIT_BUILD_DIAGNOSTICS  "Enable building of diagnostices" ON)
 
+# some options that when turned off reduce the build targets
+OPTION(VISIT_ENABLE_ANNOTATION_TOOLS "Enable generation of annotation tools (text2polys, time_annotation)" ON)
+OPTION(VISIT_ENABLE_DATAGEN "Enable generation of sample data files" ON)
+OPTION(VISIT_ENABLE_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
+OPTION(VISIT_ENABLE_DIAGNOSTICS  "Enable building of diagnostices" ON)
+OPTION(VISIT_ENABLE_EXAMPLES  "Enable building of examples" ON)
+OPTION(VISIT_ENABLE_LIBSIM "Enable building of libsim." ON)
+OPTION(VISIT_ENABLE_MANUALS  "Enable building of manuals (requires python3)" ON)
+OPTION(VISIT_ENABLE_SILO_TOOLS "Enable building of silo tools (mrgtree2dot, add_visit_searchpath)" ON)
 OPTION(VISIT_ENABLE_XDB "Enable Intelligent Light XDB database plugin." OFF) # OFF for now
 
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
@@ -2018,7 +2037,9 @@ ADD_SUBDIRECTORY(visit_vtk)
 ADD_SUBDIRECTORY(avt)
 
 IF(NOT VISIT_DBIO_ONLY)
-    ADD_SUBDIRECTORY(sim)
+    if(VISIT_ENABLE_LIBSIM)
+      ADD_SUBDIRECTORY(sim)
+    endif()
     ADD_SUBDIRECTORY(viewer)   # sim depends on viewercore
     ADD_SUBDIRECTORY(engine)   # sim depends on engine
 
@@ -2037,7 +2058,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ADD_SUBDIRECTORY(visitpy)
         ENDIF(NOT VISIT_STATIC)
     ENDIF(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND)
-    # always add java subdir, so code gen targets can be active even 
+    # always add java subdir, so code gen targets can be active even
     # if java is not enabled
     ADD_SUBDIRECTORY(java)
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
@@ -2245,7 +2266,7 @@ ELSE (NOT WIN32)
     ENDIF(VISIT_MAKE_NSIS_INSTALLER)
 ENDIF (NOT WIN32)
 
-if(VISIT_PYTHON3_DIR)
+if(VISIT_PYTHON3_DIR AND VISIT_ENABLE_MANUALS)
   if(WIN32)
     # Need a different path for windows because sphinx-build
     # is in a different location.
@@ -2286,6 +2307,10 @@ SET(FIXUP_OSX TRUE CACHE BOOL "Whether to fix up osx.")
 IF (APPLE AND FIXUP_OSX)
     ADD_SUBDIRECTORY(osxfixup)
 ENDIF ()
+
+if(WIN32 AND VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
+    message("\nCreation of code gen targets has been turned on. If you don't want the xmltools to be run during the buid, build using the ALL_BUILD project.")
+endif()
 
 IF (NOT WIN32)
     MESSAGE(STATUS "\n\nUse recmake_visit.sh or search for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
