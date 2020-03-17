@@ -813,11 +813,11 @@ vector<avtMaterial*>
 avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
                                                   vector<avtMaterial*> mats)
 {
-    // FIX_ME
     bool haveMixedMaterials = false;
     for (size_t i = 0; i < domainNum.size(); i++)
-        if (mats[i]->GetMixlen() != 0)
-            haveMixedMaterials = true;
+        if (mats[i] == NULL)
+            if (mats[i]->GetMixlen() != 0)
+                haveMixedMaterials = true;
 
     int max = UnifyMaximumValue(haveMixedMaterials ? 1 : 0);
     haveMixedMaterials = (max > 0 ? true : false);
@@ -879,6 +879,8 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
     for (size_t i = 0; i < domainNum.size(); ++i)
     {
         avtMaterial *oldMat = mats[i];
+        if (oldMat == NULL)
+            continue;
  
         //
         // Estimate the sizes we will need for the new object.
@@ -1058,6 +1060,9 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
     vector<vtkDataArray *> materialArrays(domainNum.size());
     for (size_t i = 0 ; i < domainNum.size() ; i++)
     {
+        if (mats[i] == NULL)
+            continue;
+ 
         // This should never happen, but it doesn't hurt to check.
         if (mats[i]->GetMixlen() != 0)
         {
@@ -1085,6 +1090,9 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
 
     for (size_t i = 0 ; i < domainNum.size() ; i++)
     {
+        if (mats[i] == NULL)
+            continue;
+ 
         int nMaterials = mats[i]->GetNMaterials();
         int nZones = result[i]->GetNumberOfTuples();
         int *matPtr = (int *)(result[i]->GetVoidPointer(0));

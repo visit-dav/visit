@@ -8009,7 +8009,6 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     //
     if (anymats)
     {
-        // FIX_ME !!!!
         src->DatabaseProgress(localstage++, nlocalstage,
                               "Creating ghost zones for materials");
 
@@ -8054,8 +8053,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
             for (int i = 0 ; i < nummixvars ; i++)
             {
                 vector<avtMixedVariable*> mixvarList;
-                int  numDomains = (int)doms.size();
-                for (int j = 0 ; j < numDomains ; j++)
+                for (int j = 0 ; j < (int)doms.size(); j++)
                 {
                     avtMaterial *mat = matList[j];
                     if (mat != NULL && mat->GetMixlen() > 0)
