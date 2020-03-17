@@ -1103,6 +1103,15 @@ ViewerQueryManager::DatabaseQuery(const MapNode &in_queryParams)
     // ensure we are all on the same page
     queryParams["use_actual_data"] = useActualData;
 
+    //
+    // This isn't a pick through time, so we need to be careful
+    // about using the direct route.
+    //
+    if (useActualData == 1)
+    {
+        timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+    }
+
     if (qName == "SpatialExtents")
     {
         //
@@ -2752,6 +2761,10 @@ ViewerQueryManager::SetDDTPickCallback(void (*cb)(PickAttributes *, void*), void
 //   retrieved pick point. Also, don't update the designator
 //   if we are overriding the pick label.
 //
+//   Alister Maguire, Tue Mar 10 08:49:49 PDT 2020
+//   Make sure to disable the direct database QOT if preserve
+//   coords is requested.
+//
 // ****************************************************************************
 
 void
@@ -2779,6 +2792,15 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
 
     if (pickAtts->GetDoTimeCurve())
     {
+        if (pickAtts->GetTimePreserveCoord())
+        {
+            timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+        }
+        else
+        {
+            timeQueryAtts->SetCanUseDirectDatabaseRoute(true);
+        }
+
         PickThroughTime(ppi, pickAtts->GetTimeCurveType(), dom, el);
         return;
     }
@@ -5128,12 +5150,6 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
         }
     }
 
-    if (qParams.HasNumericEntry("use_actual_data") &&
-        qParams.GetEntry("use_actual_data")->ToInt() == 1)
-    {
-        timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
-    }
-
     //
     //  Grab information from the originating window.
     //
@@ -5437,6 +5453,10 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
 //    Added warning if curvePlotType is 'Multiple y axes' when only using
 //    1 variable, and revert to 'Single y axis' for the Time pick.
 //
+//    Alister Maguire, Mon Mar  9 13:31:50 PDT 2020
+//    Turn off "use actual data" here as it's usually not needed. It will be
+//    checked again downstream in case it actually is needed.
+//
 // ****************************************************************************
 
 void
@@ -5592,6 +5612,13 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
         }
         const MapNode &timeOpts = pickAtts->GetTimeOptions();
         params.Merge(timeOpts);
+
+        //
+        // By default, a pick through time doesn't need actual data.
+        // This will be double-checked later on.
+        //
+        params["use_actual_data"] = 0;
+
         qatts.SetQueryInputParams(params);
         DoTimeQuery(origWin, &qatts);
     }

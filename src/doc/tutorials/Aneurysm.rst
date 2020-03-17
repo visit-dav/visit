@@ -12,9 +12,11 @@ This tutorial provides a short introduction to VisIt's features while exploring 
 Open the dataset
 ----------------
 
-1. Click on the *Open* icon to bring up the File open window.
-2. Navigate your file system to the folder containing "aneurysm.visit".
-3. Highlight the file "aneurysm.visit" and then click *OK*.
+This tutorial uses the `aneurysm <http://www.visitusers.org/index.php?title=Tutorial_Data>`_ dataset.
+1. `Download <http://www.visitusers.org/index.php?title=Tutorial_Data>`_ the aneurysm dataset.
+2. Click on the *Open* icon to bring up the File open window.
+3. Navigate your file system to the folder containing "aneurysm.visit".
+4. Highlight the file "aneurysm.visit" and then click *OK*.
 
 Plotting the mesh topology
 --------------------------

@@ -17,12 +17,14 @@ CGNSPluginInfo.C
 SET(LIBM_SOURCES
 CGNSMDServerPluginInfo.C
 ${COMMON_SOURCES}
+avtCGNSFileReader.C
 avtCGNSFileFormat.C
 )
 
 SET(LIBE_SOURCES
 CGNSEnginePluginInfo.C
 ${COMMON_SOURCES}
+avtCGNSFileReader.C
 avtCGNSFileFormat.C
 )
 
@@ -49,9 +51,6 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VTKh_INCLUDE_DIRS}
-${VTKM_DIR}/include/vtkm-1.2
-${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
 ${VTK_INCLUDE_DIRS}
 )
 

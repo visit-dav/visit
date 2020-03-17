@@ -13,9 +13,11 @@ The potential flow solver is a mini-app developed using the `MFEM <http://www.mf
 Open the dataset
 ----------------
 
-1. Click on the *Open* icon to bring up the File open window.
-2. Navigate your file system to the folder containing "potential_flow_ang_sweep.visit".
-3. Highlight the file "potential_flow_ang_sweep.visit" and then click *OK*.
+This tutorial uses the `potential flow <http://www.visitusers.org/index.php?title=Tutorial_Data>`_ dataset.
+1. `Download <http://www.visitusers.org/index.php?title=Tutorial_Data>`_ the potential flow dataset.
+2. Click on the *Open* icon to bring up the File open window.
+3. Navigate your file system to the folder containing "potential_flow_ang_sweep.visit".
+4. Highlight the file "potential_flow_ang_sweep.visit" and then click *OK*.
 
 Plotting the mesh topology
 --------------------------

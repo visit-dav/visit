@@ -162,6 +162,9 @@ MenuNameToFormat(const char *menu_name)
 // Creation:   Tue Nov 21 14:05:35 PST 2006
 //
 // Modifications:
+//   Kathleen Biagas, Wed Mar 4 2020
+//   Test both forms of path separators, instead of VISIT_SLASH_STRING, as
+//   unix-style may sometimes be used on Windows in this wizard.
 //
 // ****************************************************************************
 
@@ -171,7 +174,10 @@ EnsureDirectoryExists(std::string &name, bool nameIsFile)
     QString dirName;
     if(nameIsFile)
     {
-        std::string::size_type pos = name.rfind(VISIT_SLASH_STRING);
+        std::string::size_type pos = name.rfind("/");
+        if (pos == std::string::npos)
+            pos = name.rfind("\\");
+
         if(pos != std::string::npos)
         {
             dirName = QString(name.substr(0, pos).c_str());

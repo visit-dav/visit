@@ -17,6 +17,7 @@ VisIt_ Developer Manual
     MemoryLeaks
     Docker
     LiveCustomerResponse
+    OpenGL
 
 .. Indices and tables
 .. ==================
