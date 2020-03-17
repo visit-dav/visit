@@ -167,6 +167,66 @@ and **Blue** sliders to change the color. You can also right click on
 a color to select it and open the **Popup color** menu to choose a new
 color.
 
+Numerically Controlled Banded Coloring
+""""""""""""""""""""""""""""""""""""""
+
+Sometimes it is convenient to create numerically controlled *banded*
+coloring of smoothly varying data. A **Discrete** color table does indeed
+wind up *banding* smoothly varying data. However, the band boundaries are
+uniformly spaced in the variable's *range* and this may not always be
+desirable. Sometimes, it is desirable to have finely tuned banding around
+specific portions of the variable's range. This requires the coordination of
+a **Discrete** color table and an appropriately constructed
+:ref:`conditional expression <If_Expression_Function>`.
+
+For example, given the a smoothly varying variable, ``u``, in the range
+``[-1...+1]`` shown in normal (e.g. ``hot``) **Pseudocolor** plot in
+:numref:`Fig. %s <fig-MakingItPretty-smooth-coloring>`.
+
+.. _fig-MakingItPretty-smooth-coloring:
+
+.. figure:: images/MakingItPretty-smooth-coloring.png
+
+   Smoothly colored variable using ``hot`` color table.
+
+
+we would like to produce a 4-color banded plot using the coloring logic in
+the table below...
+
+===============   =====================
+Values in Range   Map to this Hex Color
+===============   =====================
+-inf...-0.95           red
+-0.95...0              green
+0...+0.95              blue
++0.95...+inf           cyan
+===============   =====================
+
+Using a 4-color **Discrete** color table alone, only the plot in
+:numref:`Fig. %s <fig-MakingItPretty-uniform-banded-coloring>` is produced.
+
+.. _fig-MakingItPretty-uniform-banded-coloring:
+
+.. figure:: images/MakingItPretty-uniform-banded-coloring.png
+
+   A 4-color **Discrete** color table coloring alone
+
+This is because the colors in a **Discrete** color table are always uniformly
+spaced over the variable's value range. To produce the desired coloring
+we need to use a :ref:`conditional expression <If_Expression_Function>` that
+maps the input variable into 4 distinct values using the range logic from
+the table. In this case, the correct expression would be
+``if(lt(u,-0.95),0, if(lt(u,0),1, if(lt(u,0.95),2,3)))``. Then, plotting this
+expression using the 4-color **Discrete** color table, the desired coloring is
+produced as shown in 
+
+.. _fig-MakingItPretty-numerically-banded-coloring:
+
+.. figure:: images/MakingItPretty-numerically-banded-coloring.png
+
+   A 4-color **Discrete** color table coloring combined with a
+   conditional expression
+
 Converting color table types
 """"""""""""""""""""""""""""
 
