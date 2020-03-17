@@ -8,4 +8,6 @@
     </Function>
     <Function name="GetAllVarNames" user="true" member="true">
     </Function>
+    <Function name="SortExpressions" user="true" member="true">
+    </Function>
   </Attribute>
