@@ -108,7 +108,7 @@ Integrator
 Step Length
     See Step Length attributes that are common to all PICS operators.
     
-Integrator
+Tolerances
     See Tolerance attributes that are common to all PICS operators.
 
 Termination

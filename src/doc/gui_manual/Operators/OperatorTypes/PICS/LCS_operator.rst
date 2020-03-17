@@ -16,47 +16,69 @@ However, when performing the calculate with Finite Space Lyapunov Exponents (FSL
 For more details see the following paper: `A Comparison of Finite-Time and Finite-Size Lyapunov Exponents by Ronald Peikert, Armin Pobitzer, Filip Sadlo and Benjamin Schindler, <http://www.scivis.ethz.ch/publications/pdf/2014/peikert2014comparison.pdf>`_
 
 Source
-""""""
+^^^^^^
 
-The user can seed the integral curves using the native mesh or define a their own rectilinear grid. Source types: 
-
-* Native Mesh – (default) create seeds at the nodes of the native mesh. 
+Source types
+    The user can seed the integral curves using the native mesh or define their own rectilinear grid.
+   
+* Native Mesh – create seeds at the nodes of the native mesh. 
 * Rectilinear Grid – create seeds at the nodes of a user defined rectilinear grid. 
 
-   * Resolution - Three cartesian values separated with a space defining the number of samples 
-   * Data start extent 
+   * Resolution - Three cartesian values separated with a space defining the number of samples in each dimension.
+   * Data extents: specify the starting and ending extents, using either the native mesh's extents (Full) or user-defined extents (Subset)
 
-      * Full - Use the native mesh's real world data extent for defining the beginning of the grid 
-      * Subset - User defined real world data extents for defining the beginning of the grid 
-
-   * Data end extent 
-
-      * Full - Use the native mesh's real world data extent for defining the beginning of the grid 
-      * Subset - User defined real world data extents for defining the end of the grid 
-
-      
-Auxilary Grid - When calculating the Jacobean for the Cauchy-Green tensor one can use the neighboring points from the native mesh or one can specify an auxiliary grid which allows for the detection of finer features but at a greater computational expense. Using an auxiliary grid is advantageous because it is independent of the native mesh. Which gives more accurate results for higher order elements. Haller et al. found that for analytic flows (double gyre flow, ABC flow), the eigenvalues can be calculated from the native mesh. For simulation flows, using the auxiliary grid for eigenvalue calculations give better results.
+Auxilary Grid
+    When calculating the Jacobian for the Cauchy-Green tensor, one can use the neighboring points from the native mesh or one can specify an auxiliary grid that allows for the detection of finer features but at greater computational expense. Using an auxiliary grid is advantageous because it is independent of the native mesh. It gives more accurate results for higher order elements. Haller et al. found that for analytic flows (double gyre flow, ABC flow), the eigenvalues can be calculated from the native mesh. For simulation flows, using the auxiliary grid for eigenvalue calculations gives better results.
 
 * None - no auxiliary grid
 * 2D - use a 2D auxiliary grid (i.e. X and Y directions). Can be used with 2D or 3D fields.
 * 3D - use a 3D auxiliary grid 
 * Spacing - the differential spacing between the node and auxiliary grid points. 
 
-Field - see common data
-
-
+Field
+    See Field attributes that are common to all PICS operators.
 
 Integration
+^^^^^^^^^^^
+
+Specify settings for numerical integrators. In addition to the Integration attributes common to all PICS operators, the LCS operator supports the following attributes.
+
+Integration Direction
+    Sets the integration direction through time. Options are:
+    
+* Forward - Integrate forward in time.
+* Backward - Integrate backward in time.
+    
+Integrator
+    See Integrator attributes that are common to all PICS operators.
+    
+Step Length
+    See Step Length attributes that are common to all PICS operators.
+    
+Tolerances
+    See Tolerance attributes that are common to all PICS operators.
+   
+Termination
 """""""""""
 
-Integration - See common data
+    LCS termination can be controlled in several different ways. The termination is based on the most conservative criteria, so only one criteria must be met for termination.
 
-Termination:
-
-Operation type - The user can visualization LCS via traditional techniques using FTLE or FSLE or via experimental techniques based on absolute dispersion; FLLE, the integration time, arc length, or average distance from the seed.
+Operation type
+    The user can specify various termination criteria determined by the type of termination operation. Each selection in Operation Type has different attributes and will change the interface.
+    
+    
+    
+    
+    
+    
+Lyapunov Exponent
+    
+    
+    
+    The user can visualization LCS via traditional techniques using FTLE or FSLE or via experimental techniques based on absolute dispersion; FLLE, the integration time, arc length, or average distance from the seed.
 
 * Lyapunov Exponent (default), Eigen Value, Eigen Vector 
-* Tensor - One may select the left or right Cauchy Green:
+* Tensor - One may select the left or right Cauchy Green
 * Clamp exponent values - clamp the log values to be positive. 
 * Eigen Value (Lyapunov Exponent and Eigen Value)
 
@@ -96,7 +118,7 @@ Termination - terminate the integration based on the time or distance advected o
 
 
 Appearance
-""""""""""
+^^^^^^^^^^
 
 Seed Generation:
 
@@ -108,12 +130,12 @@ Seed Generation:
 Streamlines and pathlines - see common
 
 Advanced
-""""""""
+^^^^^^^^
 
 See common
 
 Example
-"""""""
+^^^^^^^
 
 
 
