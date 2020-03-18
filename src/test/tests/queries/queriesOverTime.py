@@ -84,6 +84,10 @@
 #    Alister Maguire, Tue Feb 25 13:46:24 PST 2020
 #    Added tests for handling vectors in the direct database route.
 #
+#    Alister Maguire, Mon Mar  9 15:16:36 PDT 2020
+#    I've removed the use_actual_data flag for Pick queries as this
+#    is now handled internally.
+#
 # ----------------------------------------------------------------------------
 
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
@@ -776,8 +780,7 @@ def TestDirectDatabaseRoute():
     timer_start = time.time()
 
     PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
-        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride,
-        use_actual_data=0)
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
 
     timer_stop = time.time()
     res = timer_stop - timer_start
@@ -804,8 +807,7 @@ def TestDirectDatabaseRoute():
     stop   = 900
     stride = 10
     PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
-        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride,
-        use_actual_data=0)
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
     stride = 1
     start  = 0
     stop   = 10000
@@ -824,8 +826,7 @@ def TestDirectDatabaseRoute():
     #
     vars=("Primal/node/nodacc_magnitude")
     PickByNode(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
-        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride,
-        use_actual_data=0)
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
     SetActiveWindow(2)
     Test("Direct_Database_Route_03")
     DeleteAllPlots()
@@ -842,8 +843,7 @@ def TestDirectDatabaseRoute():
     element = 489
     vars=("Primal/brick/stress/sz", "Primal/brick/stress/sx")
     PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
-        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride,
-        use_actual_data=0)
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
     SetActiveWindow(2)
     Test("Direct_Database_Route_04")
     DeleteAllPlots()
@@ -853,8 +853,7 @@ def TestDirectDatabaseRoute():
     # Testing the multi curve plot. 
     #
     PickByZone(curve_plot_type=1, vars=vars, do_time=1, domain=domain, element=element,
-        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride,
-        use_actual_data=0)
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
     SetActiveWindow(2)
     Test("Direct_Database_Route_05")
     DeleteAllPlots()
@@ -871,8 +870,7 @@ def TestDirectDatabaseRoute():
     element = 11
     vars = ("default")
     PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
-        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride,
-        use_actual_data=0)
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
     SetActiveWindow(2)
     Test("Direct_Database_Route_06")
     DeleteAllPlots()
@@ -895,7 +893,7 @@ def TestDirectDatabaseRoute():
     pick.doTimeCurve = 1
     pick.timePreserveCoord = 0
     SetPickAttributes(pick)
-    PickByNode(element=327, use_actual_data=0)
+    PickByNode(element=327)
 
     pick.doTimeCurve = 0
     pick.timePreserveCoord = 1
@@ -919,7 +917,7 @@ def TestDirectDatabaseRoute():
     pick.doTimeCurve = 1
     pick.timePreserveCoord = 0
     SetPickAttributes(pick)
-    PickByNode(element=10, use_actual_data=0)
+    PickByNode(element=10)
 
     SetActiveWindow(2)
     InitAnnotation()
