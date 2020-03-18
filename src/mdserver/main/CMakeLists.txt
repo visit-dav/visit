@@ -73,7 +73,6 @@ ENDIF (NOT WIN32)
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
-${VTK_INCLUDE_DIRS}
 ${VISIT_SOURCE_DIR}/mdserver/rpc
 ${VISIT_SOURCE_DIR}/mdserver/proxy
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
@@ -105,11 +104,11 @@ TARGET_LINK_LIBRARIES(mdserver
     avtdatabase_ser
     lightweight_visit_vtk
     visit_verdict
-    vtkCommonCore
-    vtkIOCore
-    vtktiff
-    vtkpng
-    vtkjpeg
+    VTK::CommonCore
+    VTK::IOCore
+    VTK::tiff
+    VTK::png
+    VTK::jpeg
     ${ZLIB_LIBRARY}
     ${CMAKE_THREAD_LIBS}
     ${DL_LIB}

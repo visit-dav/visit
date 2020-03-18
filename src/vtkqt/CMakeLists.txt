@@ -27,15 +27,14 @@ include_directories(
     ${VISIT_SOURCE_DIR}/include
     ${VISIT_SOURCE_DIR}/vtkqt
     ${VISIT_SOURCE_DIR}/common/utility
-    ${VTK_INCLUDE_DIRS}
 )
 
 add_library(vtkqt ${VTKQT_SOURCES})
 
 # Specify the libraries to link against on Windows & Mac
 target_link_libraries(vtkqt 
-    vtkCommonCore vtkGUISupportQt vtkGUISupportQtOpenGL vtkIOImage
-    vtkRenderingOpenGL2 vtkRenderingFreeType ${QT_QTCORE_LIBRARY}
+    VTK::CommonCore vtkGUISupportQt vtkGUISupportQtOpenGL VTK::IOImage
+    VTK::RenderingOpenGL2 VTK::RenderingFreeType ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES})
 
 if(HAVE_OSMESA)

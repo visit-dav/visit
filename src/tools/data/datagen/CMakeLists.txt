@@ -285,9 +285,7 @@ ENDFOREACH(BASIC_TARGET ${BASIC_TARGETS_PAR})
 #-----------------------------------------------------------------------------
 FOREACH(VTK_TARGET ${VTK_TARGETS})
     BUILD_DATA_TARGET(${VTK_TARGET}
-        INCLUDE_DIRS ${VTK_INCLUDE_DIRS}
-        LIB_DIRS ${VTK_LIBRARY_DIRS}
-        LIBS vtkIOLegacy)
+        LIBS VTK::IOLegacy)
 ENDFOREACH(VTK_TARGET ${VTK_TARGETS})
 
 #-----------------------------------------------------------------------------

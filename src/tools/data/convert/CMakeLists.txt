@@ -60,7 +60,6 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Colleagues
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories

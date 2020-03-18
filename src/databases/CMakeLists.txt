@@ -457,15 +457,15 @@ unv
 ${XDBPLUGIN}
 )
 
-IF(TARGET vtkIOEnSight)
+IF(TARGET VTK::IOEnSight)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS EnSight)
 ELSE()
     IF(DEFINED VISIT_SELECTED_DATABASE_PLUGINS)
-        VISIT_SELECTED_PLUGIN_ERROR(DATABASE "EnSight" "EnSight plugin requires vtkIOEnSight")
+        VISIT_SELECTED_PLUGIN_ERROR(DATABASE "EnSight" "EnSight plugin requires VTK::IOEnSight")
     ELSE()
-        MESSAGE(STATUS "EnSight plugin requires vtkIOEnSight")
+        MESSAGE(STATUS "EnSight plugin requires VTK::IOEnSight")
     ENDIF()
-ENDIF(TARGET vtkIOEnSight)
+ENDIF()
 
 IF (NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS

@@ -134,15 +134,15 @@ ENDIF(NOT BLUEGENEQ)
 #  ENDIF()
 #ENDIF(VISIT_PYTHON_FILTERS OR VISIT_PYTHON_SCRIPTING)
 
-IF(TARGET vtkGeovisCore)
+IF(TARGET VTK::GeovisCore)
     LIST(APPEND REQUIRED_OPERATOR_PLUGINS CartographicProjection)
 ELSE()
     IF(DEFINED VISIT_SELECTED_OPERATOR_PLUGINS)
         VISIT_SELECTED_PLUGIN_ERROR(OPERATOR
           "CartographicProjection"
-          "library vtkGeovisCore not found")
+          "library VTK::GeovisCore not found")
     ELSE()
-        MESSAGE(STATUS "CartographicProjection requires vtkGeovisCore")
+        MESSAGE(STATUS "CartographicProjection requires VTK::GeovisCore")
     ENDIF()
 ENDIF()
 

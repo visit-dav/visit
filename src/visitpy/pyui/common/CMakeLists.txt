@@ -33,7 +33,6 @@ set(guiwrapper_include_paths
     ${VISIT_SOURCE_DIR}/visit_vtk/full
     ${VISIT_SOURCE_DIR}/avt/Plotter/vtk
     ${VISIT_SOURCE_DIR}/avt/Plotter/
-    ${VTK_INCLUDE_DIRS}
 )
 
 include_directories(${guiwrapper_include_paths})

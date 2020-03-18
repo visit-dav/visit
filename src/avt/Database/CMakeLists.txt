@@ -80,7 +80,6 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
 ${VISIT_SOURCE_DIR}/third_party_builtin/tess2
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories

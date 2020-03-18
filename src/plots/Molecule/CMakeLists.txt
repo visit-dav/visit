@@ -81,7 +81,6 @@ ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
 ${VISIT_INCLUDE_DIR}/avt/Plotter/vtk
 )

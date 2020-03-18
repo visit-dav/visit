@@ -11,7 +11,6 @@
 include_directories(
 ${VISIT_BINARY_DIR}/include
 ${VISIT_SOURCE_DIR}/include
-${VTK_INCLUDE_DIRS}
 )
 
 

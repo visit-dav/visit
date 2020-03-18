@@ -464,7 +464,6 @@ class CMakeGeneratorPlugin : public Plugin
             out << "${QT_QTGUI_INCLUDE_DIR}" << endl;
             out << "${QT_QTWIDGETS_INCLUDE_DIR}" << endl;
         }
-        out << "${VTK_INCLUDE_DIRS}" << endl;
         out << "${PYINCLUDES}" << endl;
         if(extraIncludes.size() > 0)
             out << ToString(extraIncludes, true);
@@ -1094,7 +1093,6 @@ class CMakeGeneratorPlugin : public Plugin
         out << VisItIncludeDir() << "/avt/VisWindow/VisWindow" << endl;
         out << VisItIncludeDir() << "/visit_vtk/full" << endl;
         out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
-        out << "${VTK_INCLUDE_DIRS}" << endl;
         out << ")" << endl;
         out << endl;
 

@@ -43,7 +43,7 @@
 #   I replaced support for vtkm with vtkh.
 #
 #   Kathleen Biagas, Fri Jul 19 12:13:02 PDT 2019
-#   Added vtkCommonMath, vtkCommonTransforms, vtkFiltersGeneral in support
+#   Added VTK::CommonMath, VTK::CommonTransforms, VTK::FiltersGeneral in support
 #   of building plugins vs install on Windows. They are direct depencencies
 #   for this library, and CMake automagically pulls them in when compiling
 #   VisIt even if not listed, but not when building the plugins.
@@ -169,7 +169,6 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/engine/main
 ${VTKh_INCLUDE_DIRS}
 ${VTKm_INCLUDE_DIRS}
-${VTK_INCLUDE_DIRS}
 )
 
 if(VISIT_OSPRAY)
@@ -181,7 +180,7 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtfilters_ser ${AVTFILTERS_SOURCES})
-TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts vtkCommonMath vtkCommonTransforms vtkFiltersGeneral vtkFiltersModeling)
+TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts VTK::CommonMath VTK::CommonTransforms VTK::FiltersGeneral VTK::FiltersModeling)
 IF(VISIT_OSPRAY) 
     TARGET_LINK_LIBRARIES(avtfilters_ser ${OSPRAY_LIBRARIES})
     IF(ICET_FOUND)
@@ -193,7 +192,7 @@ VISIT_INSTALL_TARGETS(avtfilters_ser)
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtfilters_par ${AVTFILTERS_SOURCES})
-    TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts vtkCommonMath vtkCommonTransforms vtkFiltersGeneral vtkFiltersModeling)
+    TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts VTK::CommonMath VTK::CommonTransforms VTK::FiltersGeneral VTK::FiltersModeling)
     IF(VISIT_OSPRAY) 
         TARGET_LINK_LIBRARIES(avtfilters_par ${OSPRAY_LIBRARIES})
         IF(ICET_FOUND)

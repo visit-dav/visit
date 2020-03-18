@@ -35,7 +35,7 @@ MACRO(PATCH_VTK_AND_MPICH_PATHS target libfile)
 IF(APPLE)
     ADD_CUSTOM_TARGET(${target} ALL
         COMMAND ${CMAKE_COMMAND} -E echo "Fixing VTK and MPICH paths in ${libfile}"
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/vxdbfixup.py -from-rpath ${libfile} ${VISIT_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} ${VISIT_MPICH_DIR}/lib
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/vxdbfixup.py -from-rpath ${libfile} ${VISIT_LIBRARY_DIR} ${VISIT_MPICH_DIR}/lib
     )
     ADD_DEPENDENCIES(${target} copy_vxdb_binaries_to_lib)
 ENDIF(APPLE)

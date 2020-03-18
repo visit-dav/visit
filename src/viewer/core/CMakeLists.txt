@@ -113,7 +113,6 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/osmesa
-${VTK_INCLUDE_DIRS}
 )
 
 link_directories(${LIBRARY_OUTPUT_DIRECTORY})

@@ -59,6 +59,9 @@
 #   Kathleen Biagas, Fri Jan  17 2020
 #   Install vtkTestOpenGLVersion.exe on Windows when needed.
 # 
+#   Kathleen Biagas, Wed Mar 18 12:36:15 PDT 2020
+#   Changed module naming from vtkXXX to VTK::XXX per VTK-9 scheme.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -73,30 +76,31 @@ MESSAGE(STATUS "Checking for VTK in ${VTK_DIR}")
 
 # Set up our list of required and optional vtk modules
 SET(REQ_VTK_MODS 
-        vtkCommonCore
-        vtkCommonDataModel
-        vtkFiltersCore
-        vtkFiltersFlowPaths
-        vtkFiltersHybrid
-        vtkFiltersModeling
-        vtkIOLegacy
-        vtkIOPLY
-        vtkIOXML
-        vtkInteractionStyle
-        vtkRenderingAnnotation
-        vtkRenderingOpenGL2
-        vtkRenderingVolumeOpenGL2
-        vtkglew)
+        VTK::CommonCore
+        VTK::CommonDataModel
+        VTK::FiltersCore
+        VTK::FiltersFlowPaths
+        VTK::FiltersHybrid
+        VTK::FiltersModeling
+        VTK::IOLegacy
+        VTK::IOPLY
+        VTK::IOXML
+        VTK::InteractionStyle
+        VTK::RenderingAnnotation
+        VTK::RenderingOpenGL2
+        VTK::glew)
+
+# we used to require this?        VTK::RenderingVolumeOpenGL2
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    LIST(APPEND REQ_VTK_MODS vtkGUISupportQtOpenGL)
+    LIST(APPEND REQ_VTK_MODS VTK::GUISupportQtOpenGL)
 ENDIF()
 
 # Optional
 #SET(OPT_VTK_MODS
-#       vtkGeovisCore # Cartographic Projection
-#       vtkIOEnSight  # EnSight
-#       vtklibxml2    # Xdmf
+#       VTK::GeovisCore # Cartographic Projection
+#       VTK::IOEnSight  # EnSight
+#       VTK::libxml2    # Xdmf
 #   )
 
 # We don't list our required modules in the find_package call because it

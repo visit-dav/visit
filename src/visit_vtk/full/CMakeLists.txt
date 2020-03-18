@@ -28,7 +28,7 @@
 #   vtk rendering libs.  Remove vtk rendering libs from linker.
 #
 #   Kathleen Biagas, Fri Jul 19 12:13:02 PDT 2019
-#   Added vtkCommonExecutionModel, vtkCommonMisc in support of building plugins
+#   Added VTK::CommonExecutionModel, VTK::CommonMisc in support of building plugins
 #   vs install on Windows. They are direct depencencies for this library,
 #   and CMake automagically pulls them in when compiling VisIt, even if not
 #   listed, but not when building the plugins.
@@ -105,7 +105,6 @@ ${VISIT_SOURCE_DIR}/common/Exceptions/Pipeline
 ${VISIT_SOURCE_DIR}/common/misc
 ${VISIT_SOURCE_DIR}/common/utility
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VTK_INCLUDE_DIRS}
 ${BOOST_INCLUDE_DIR}
 ${OPENEXR_INCLUDE_DIR}
 )
@@ -119,7 +118,7 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${OPENEXR_LIBRARY_DIR})
 
 ADD_LIBRARY(visit_vtk ${VISIT_VTK_SOURCES})
 
-TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkCommonExecutionModel vtkCommonMisc vtkFiltersExtraction vtkFiltersFlowPaths vtkFiltersSources vtkImagingHybrid vtkIOImage vtktiff ${OPENEXR_LIB})
+TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk VTK::CommonExecutionModel VTK::CommonMisc VTK::FiltersExtraction VTK::FiltersFlowPaths VTK::FiltersSources VTK::ImagingHybrid VTK::IOImage VTK::tiff ${OPENEXR_LIB})
 
 
 VISIT_INSTALL_TARGETS(visit_vtk)

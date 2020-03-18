@@ -16,7 +16,6 @@
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_SOURCE_DIR}/common/utility
-${VTK_INCLUDE_DIRS}
 )
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
@@ -25,11 +24,11 @@ ADD_EXECUTABLE(text2polys text2polys.C arial_font.C)
 ADD_EXECUTABLE(time_annotation time_annotation.C arial_font.C)
 
 # Specify the libraries to link against
-TARGET_LINK_LIBRARIES(text2polys vtkIOLegacy)
+TARGET_LINK_LIBRARIES(text2polys VTK::IOLegacy)
 
 TARGET_LINK_LIBRARIES(time_annotation
-    vtkRenderingOpenGL2 vtkRenderingFreeType vtkInteractionStyle
-    vtksys vtkIOImage)
+    VTK::RenderingOpenGL2 VTK::RenderingFreeType VTK::InteractionStyle
+    VTK::vtksys VTK::IOImage)
 
 if(HAVE_OSMESA)
     target_link_libraries(time_annotation ${OSMESA_LIBRARIES})

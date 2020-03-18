@@ -26,15 +26,14 @@ visit_transition.C ${COMMON_SOURCES}
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_SOURCE_DIR}/common/utility
-${VTK_INCLUDE_DIRS}
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 )
 
 ADD_EXECUTABLE(visit_composite  ${VISIT_COMPOSITE_SOURCES})
-target_link_libraries(visit_composite vtkIOImage visit_vtk)
+target_link_libraries(visit_composite VTK::IOImage visit_vtk)
 
 ADD_EXECUTABLE(visit_transition ${VISIT_TRANSITION_SOURCES})
-target_link_libraries(visit_transition vtkIOImage visit_vtk)
+target_link_libraries(visit_transition VTK::IOImage visit_vtk)
 
 # Installation targets
 VISIT_INSTALL_TARGETS(visit_composite visit_transition)

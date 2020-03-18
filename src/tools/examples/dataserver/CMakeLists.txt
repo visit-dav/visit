@@ -26,7 +26,6 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${PYTHON_INCLUDE_PATH}
-${VTK_INCLUDE_DIRS}
 )
 
 # If static then we need some static symbol lookup functions
@@ -37,9 +36,9 @@ ENDIF(VISIT_STATIC)
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 SET(VTK_EXTRA_LIBS
-vtktiff
-vtkjpeg
-vtkpng
+VTK::tiff
+VTK::jpeg
+VTK::png
 ${VTK_FREETYPE_LIBRARIES}
 )
 

@@ -344,7 +344,6 @@ ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VISIT_SOURCE_DIR}/vtkm
 ${VISIT_SOURCE_DIR}/third_party_builtin/verdict
-${VTK_INCLUDE_DIRS}
 ${VTKM_INCLUDE_DIR}
 )
 

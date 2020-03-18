@@ -21,7 +21,7 @@
 #   Move avtTimeLoopFilter and avtTimeLoopCollectorFilter to Filters directory.
 #
 #   Cyrus Harrison, on Oct 28 14:39:05 PDT 2013
-#   Link vtkCommonDataModel (it contains the vtkDataSet types)
+#   Link VTK::CommonDataModel (it contains the vtkDataSet types)
 #
 #   Brad Whitlock, Mon Apr  7 15:24:19 PDT 2014
 #   Link to visit_vtk.
@@ -37,7 +37,7 @@
 #   I replaced support for vtkm with vtkh.
 #
 #   Kathleen Biagas, Fri Jul 19 12:13:02 PDT 2019
-#   Added vtkCommonMath, vtkCommonTransforms in support of building plugins
+#   Added VTK::CommonMath, VTK::CommonTransforms in support of building plugins
 #   vs install on Windows. They are direct depencencies for this library,
 #   and CMake automagically pulls them in when compiling VisIt, even if not
 #   listed, but not when building the plugins.
@@ -228,7 +228,6 @@ ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VTKh_INCLUDE_DIRS}
 ${VTKm_INCLUDE_DIRS}
-${VTK_INCLUDE_DIRS}
 ${ZLIB_INCLUDE_DIR}
 )
 
@@ -244,8 +243,8 @@ ENDIF(NOT VISIT_DBIO_ONLY)
 ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
 TARGET_LINK_LIBRARIES(avtpipeline_ser
                       visitcommon ${AVTMATH} avtdbatts
-                      visit_vtk lightweight_visit_vtk vtkCommonCore
-                      vtkCommonDataModel vtkCommonMath vtkCommonTransforms
+                      visit_vtk lightweight_visit_vtk VTK::CommonCore
+                      VTK::CommonDataModel VTK::CommonMath VTK::CommonTransforms
                       vtkFiltersGeometry
                       ${ZLIB_LIBRARY})
 if(VTKH_FOUND)
@@ -260,8 +259,8 @@ IF(VISIT_PARALLEL)
 
     TARGET_LINK_LIBRARIES(avtpipeline_par
                           visitcommon ${AVTMATH} avtdbatts
-                          visit_vtk lightweight_visit_vtk vtkCommonCore
-                          vtkCommonDataModel vtkCommonMath vtkCommonTransforms
+                          visit_vtk lightweight_visit_vtk VTK::CommonCore
+                          VTK::CommonDataModel VTK::CommonMath VTK::CommonTransforms
                           vtkFiltersGeometry
                           ${ZLIB_LIBRARY})
     if(VTKH_FOUND)

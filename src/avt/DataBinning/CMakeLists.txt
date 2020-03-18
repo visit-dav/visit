@@ -40,7 +40,6 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories

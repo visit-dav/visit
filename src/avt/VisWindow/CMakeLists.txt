@@ -137,7 +137,6 @@ ${VISIT_SOURCE_DIR}/avt/Plotter/vtk
 ${VISIT_SOURCE_DIR}/avt/View
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VTK_INCLUDE_DIRS}
 ${OPENGL_INCLUDE_DIR}
 )
 
@@ -146,18 +145,18 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtviswindow_ser ${AVTVISWINDOW_SOURCES})
-TARGET_LINK_LIBRARIES(avtviswindow_ser visitcommon avtview avtmath avtplotter_ser visit_vtk lightweight_visit_vtk vtkFiltersModeling vtkImagingCore vtkInteractionStyle ${OBJC_LIBS})
+TARGET_LINK_LIBRARIES(avtviswindow_ser visitcommon avtview avtmath avtplotter_ser visit_vtk lightweight_visit_vtk VTK::FiltersModeling VTK::ImagingCore VTK::InteractionStyle ${OBJC_LIBS})
 IF(VISIT_OSPRAY)
-    TARGET_LINK_LIBRARIES(avtviswindow_ser vtkRenderingOSPRay)
+    TARGET_LINK_LIBRARIES(avtviswindow_ser VTK::RenderingOSPRay)
 ENDIF(VISIT_OSPRAY)
 VISIT_INSTALL_TARGETS(avtviswindow_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtviswindow_par ${AVTVISWINDOW_SOURCES})
-    TARGET_LINK_LIBRARIES(avtviswindow_par visitcommon avtview avtmath avtplotter_par visit_vtk lightweight_visit_vtk vtkFiltersModeling vtkImagingCore vtkInteractionStyle ${OBJC_LIBS})
+    TARGET_LINK_LIBRARIES(avtviswindow_par visitcommon avtview avtmath avtplotter_par visit_vtk lightweight_visit_vtk VTK::FiltersModeling VTK::ImagingCore VTK::InteractionStyle ${OBJC_LIBS})
     IF(VISIT_OSPRAY)
-        TARGET_LINK_LIBRARIES(avtviswindow_par vtkRenderingOSPRay)
+        TARGET_LINK_LIBRARIES(avtviswindow_par VTK::RenderingOSPRay)
     ENDIF(VISIT_OSPRAY)
     VISIT_INSTALL_TARGETS(avtviswindow_par)
 ENDIF(VISIT_PARALLEL)

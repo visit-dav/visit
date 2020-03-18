@@ -170,7 +170,6 @@ ${VISIT_SOURCE_DIR}/mdserver/rpc
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/vtkqt
 ${VISIT_SOURCE_DIR}/winutil
-${VTK_INCLUDE_DIRS}
 )
 
 if(HAVE_OSMESA OR HAVE_EGL)

@@ -44,7 +44,6 @@ ${VISIT_COMMON_INCLUDES}
 ${VISIT_SOURCE_DIR}/winutil
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories needed to use Qt.

@@ -68,13 +68,12 @@ ${VISIT_SOURCE_DIR}/viewer/main
 ${VISIT_SOURCE_DIR}/viewer/main/ui
 ${VISIT_SOURCE_DIR}/viewer/rpc
 ${VISIT_SOURCE_DIR}/vtkqt
-${VTK_INCLUDE_DIRS}
 )
 
 SET(VTK_EXTRA_LIBS
-vtktiff
-vtkjpeg
-vtkpng
+VTK::tiff
+VTK::jpeg
+VTK::png
 ${VTK_FREETYPE_LIBRARIES}
 )
 

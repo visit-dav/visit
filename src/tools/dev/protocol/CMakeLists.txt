@@ -42,9 +42,9 @@ ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 )
 
 SET(VTK_EXTRA_LIBS
-vtktiff
-vtkjpeg
-vtkpng
+VTK::tiff
+VTK::jpeg
+VTK::png
 ${VTK_FREETYPE_LIBRARIES}
 )
 

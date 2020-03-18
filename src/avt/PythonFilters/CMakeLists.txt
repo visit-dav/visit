@@ -30,7 +30,6 @@ ${VISIT_SOURCE_DIR}/avt/DBAtts/
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData/
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL/
 ${VISIT_SOURCE_DIR}/visitpy/common/
-${VTK_INCLUDE_DIRS}
 ${PYTHON_INCLUDE_PATH}
 )
 
