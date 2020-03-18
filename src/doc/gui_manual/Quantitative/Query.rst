@@ -339,37 +339,39 @@ ZoneCenter
 Point Queries
 """""""""""""
 
-NodePick
-    The NodePick query performs node picking at the specified world coordinate
-    which, if used in 3D, need not be on the surface of a 3D dataset.The plot
-    to be picked must be highlighted in the **Plot list**. Information about
-    the picked node, if there is one, is printed to the **Query results** and
-    the **Pick Window**.
-
 Pick
-    The Pick query performs zone picking at the specified world coordinate 
-    which, if used in 3D, need not be on the surface of a 3D dataset.The plot 
-    to be picked must be highlighted in the **Plot list**. Information about 
-    the picked node, if there is one, is printed to the **Query results** and 
-    the **Pick Window**.
+    In general, the Pick query allows users to query a single zone or node at
+    a user specified location in the dataset. There are several options for
+    determining how this zone or node is chosen:
 
-PickByNode
-    The PickByNode query performs node pick using the highlighted plot in the
-    **Plot list** and specified domain and node values. You can give a global
-    node number if you turn on the **Use Global Node** check box. A pick point
-    is added to the vis window and the query results appear in the
-    **Query results** and the **Pick Window**. Note: this is the query to use
-    if you want to query the database for the value of a variable at a certain
-    node. VisIt can produce a Curve plot of this query with respect to time.
+    1. **Pick using coordinates**
+    2. **Pick using domain and element id**
+    3. **Pick using unique element label**
 
-PickByZone
-    The PickByZone query performs zone pick using the highlighted plot in the
-    Plot list and specified domain and zone values. You can give a global node
-    number if you turn on the **Use Global ** **Zone** check box. A pick point
-    is added to the vis window and the query results appear in the
-    **Query results** and the **Pick Window**. Note: this is the query to use
-    if you want to query the database for the value of a variable at a certain
-    cell. VisIt can produce a Curve plot of this query with respect to time.
+    It's important to make sure that the plot you wish to query is highlighted
+    in the **Plot list**. Information from your picked element, when available,
+    will appear in both the **Pick Window** and the **Query results** window.
+    If querying a 3D dataset, the queried element need not be on the surface
+    of the mesh.
+
+    The Pick query also provides the option to generate a curve with respect
+    to time, allowing the user to set the start time, stop time, and stride.
+    **Note on performance**: when generating a curve over time, users have
+    the option to preserve either the picked *coordinate* or the picked *element*.
+    While each of these choices will produce very different results, it's worth
+    keeping in mind that preserving the picked *element* will be substantially
+    faster than preserving the picked *coordinate* when working with datasets
+    with large numbers of time steps.
+
+TrajectoryByNode and TrajectoryByZone
+    The TrajectoryByNode and TrajectoryByZone queries first perform a Pick
+    using domain and element id on their respective elements, and they then generate
+    a curve **plotting one variable with respect to another**.
+    You'll notice that, next to the **Variables** parameter, there is a text box containing
+    defulat variables **var_for_x** and **var_for_y**. Replace these defaults with your
+    desired variables for the query, and the resulting curve will plot your replacement
+    for **var_for_x** with respect to **var_for_y**.
+
 
 Line Queries
 """"""""""""
