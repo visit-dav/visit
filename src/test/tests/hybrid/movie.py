@@ -24,9 +24,9 @@ import os, string, subprocess, visit_utils, Image
 
 def GenerateMovie(movieArgs):
     if TestEnv.params["parallel"]:
-        args = [TestEnv.params["visit_bin"], "-movie", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + movieArgs
+        args = [TestEnv.params["visit_bin"], "-movie", "-noconfig", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + movieArgs
     else:
-        args = [TestEnv.params["visit_bin"], "-movie"] + movieArgs
+        args = [TestEnv.params["visit_bin"], "-movie", "-noconfig"] + movieArgs
     p = subprocess.check_output(args)
     return p
 
