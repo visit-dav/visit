@@ -3,12 +3,6 @@
 Lagrangian Coherent Structure operator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The PICS allows for the computation of Lagrangian Coherent Structures (LCS) using a variety techniques developed by George Haller and his group at ETH Zürich. Haller proposed that the ridges of Finite Time Lyapunov Exponents (FTLE) are indicators of hyperbolic LCS (repelling and attracting). In two dimensional flows, hyperbolic LCS's turn out to be stationary curves of the averaged material shear while elliptic LCS's are stationary curves of the averaged strain. The LCS operator coupled with the Integral Curve (Hyperbolic LCS) and Limit Cycle (Elliptical LCS) operators provide a mechanism to calculate these structures and have been developed in cooperation between the VisIt PICS team and the Haller Group.
-
-For complete details on computing elliptical LCS (closed orbits) and hyperbolic LCS (stretch and shrink lines) see the following paper: `K. Onu, F. Huhn, & G. Haller, LCS Tool: A Computational platform for Lagrangian coherent structures, J. of Computational Science, 7 (2015) 26-36 <http://georgehaller.com/reprints/lcstool.pdf>`_
-
-INCLUDE IMAGE of elliptical and hyperbolic LCS
-
 The LCS operator utilizes Lyapunov Exponents based on the Cauchy-Green Tensor to highlight LCS's in vector fields. The Cauchy-Green tensor is used as an equivalent definition because it is independent of the mesh discretization. As such, when performing an FTLE calculation, the time can be specified as one would for a traditional FTLE, and the resulting value will be based on the maximal Eigen value.
 
 However, when performing the calculate with Finite Space Lyapunov Exponents (FSLE), instead of assuming a uniform mesh discretization and specifying the dispersion distance, we specify a dispersion factor which in a traditional FTLE is the dispersion distance divided by the initial distance. In the equivalent definition the dispersion distance is the maximal Eigen value. Thus when the maximal Eigen value is greater than the specified dispersion factor, then the exponent is calculated.

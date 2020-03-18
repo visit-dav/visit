@@ -7,6 +7,12 @@ IMAGE HERE
 
 The generation of the curves form the basis of VisIt's Parallel Integral Curve System (PICS), made up of the :ref:`Integral Curve operator`, the :ref:`LCS operator`, the :ref:`Limit Cycle operator`, and the :ref:`Poincare operator`. Much of the underlying infrastructure and interface is the same for each operator. The user selects a series of seed locations where curves are generated, which are then visualized and analyzed.
 
+The PICS allows for the computation of Lagrangian Coherent Structures (LCS) using a variety techniques developed by George Haller and his group at ETH Zürich. Haller proposed that the ridges of Finite Time Lyapunov Exponents (FTLE) are indicators of hyperbolic LCS (repelling and attracting). In two dimensional flows, hyperbolic LCS's turn out to be stationary curves of the averaged material shear while elliptic LCS's are stationary curves of the averaged strain. The LCS operator coupled with the Integral Curve (Hyperbolic LCS) and Limit Cycle (Elliptical LCS) operators provide a mechanism to calculate these structures and have been developed in cooperation between the VisIt PICS team and the Haller Group.
+
+INCLUDE IMAGE of elliptical and hyperbolic LCS
+
+For complete details on computing elliptical LCS (closed orbits) and hyperbolic LCS (stretch and shrink lines) see the following paper: `K. Onu, F. Huhn, & G. Haller, LCS Tool: A Computational platform for Lagrangian coherent structures, J. of Computational Science, 7 (2015) 26-36 <http://georgehaller.com/reprints/lcstool.pdf>`_
+
 .. toctree::
     :maxdepth: 1
 
@@ -18,7 +24,7 @@ The generation of the curves form the basis of VisIt's Parallel Integral Curve S
 Parameters
 ----------
 
-Common to all PICS operators is a four tab GUI: Source, Integration, Appearance, and Advanced (the Poincare operator also has an Analysis tab). These tabs contain many functions that are common across all four operators. The following is a description of those common features.
+Common to all PICS operators is a four tab GUI: Source, Integration, Appearance, and Advanced (the Poincare operator also has an Analysis tab). These tabs contain many functions that are common across all four operators. The following is a description of those common features. Please note: on a mac system, the contents of the Source and Integration tabs are combined into a single Integration tab.
 
 
 Source
