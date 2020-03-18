@@ -368,7 +368,7 @@ TrajectoryByNode and TrajectoryByZone
     using domain and element id on their respective elements, and they then generate
     a curve **plotting one variable with respect to another**.
     You'll notice that, next to the **Variables** parameter, there is a text box containing
-    defulat variables **var_for_x** and **var_for_y**. Replace these defaults with your
+    default variables **var_for_x** and **var_for_y**. Replace these defaults with your
     desired variables for the query, and the resulting curve will plot your replacement
     for **var_for_x** with respect to **var_for_y**.
 
