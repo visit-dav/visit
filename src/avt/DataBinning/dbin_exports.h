@@ -6,10 +6,14 @@
 #define AVTDBIN_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(AVTDBIN_EXPORTS) || defined(avtdbin_ser_EXPORTS) || defined(avtdbin_par_EXPORTS) 
 #define AVTDBIN_API __declspec(dllexport)
 #else
 #define AVTDBIN_API __declspec(dllimport)
+#endif
+#else
+#define AVTDBIN_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

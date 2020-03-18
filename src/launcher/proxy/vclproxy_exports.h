@@ -6,10 +6,14 @@
 #define LAUNCHER_PROXY_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(LAUNCHER_PROXY_EXPORTS) || defined(vclproxy_EXPORTS)
 #define LAUNCHER_PROXY_API __declspec(dllexport)
 #else
 #define LAUNCHER_PROXY_API __declspec(dllimport)
+#endif
+#else
+#define LAUNCHER_PROXY_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

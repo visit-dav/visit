@@ -6,10 +6,14 @@
 #define PLOTTER_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(AVTPLOTTER_EXPORTS) || defined(avtplotter_ser_EXPORTS) || defined(avtplotter_par_EXPORTS)
 #define PLOTTER_API __declspec(dllexport)
 #else
 #define PLOTTER_API __declspec(dllimport)
+#endif
+#else
+#define PLOTTER_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about inheritance by dominance.

@@ -6,10 +6,14 @@
 #define GUI_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(GUI_EXPORTS) || defined(gui_EXPORTS)
 #define GUI_API __declspec(dllexport)
 #else
 #define GUI_API __declspec(dllimport)
+#endif
+#else
+#define GUI_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

@@ -6,10 +6,14 @@
 #define ENGINE_MAIN_EXPORTS_H
 
 #if defined(_WIN32)
-#  if defined(ENGINE_MAIN_EXPORTS) || defined(engine_ser_EXPORTS) || defined(engine_par_EXPORTS)
-#    define ENGINE_MAIN_API __declspec(dllexport)
+#  if !defined(VISIT_STATIC)
+#    if defined(ENGINE_MAIN_EXPORTS) || defined(engine_ser_EXPORTS) || defined(engine_par_EXPORTS)
+#      define ENGINE_MAIN_API __declspec(dllexport)
+#    else
+#      define ENGINE_MAIN_API __declspec(dllimport)
+#    endif
 #  else
-#    define ENGINE_MAIN_API __declspec(dllimport)
+#    define ENGINE_MAIN_API
 #  endif
 #  if defined(_MSC_VER)
 //   Turn off warning about lack of DLL interface

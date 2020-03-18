@@ -6,10 +6,14 @@
 #define NEK5000_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(nek5000_interp_EXPORTS)
 #define NEK5000_API __declspec(dllexport)
 #else
 #define NEK5000_API __declspec(dllimport)
+#endif
+#else
+#define NEK5000_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

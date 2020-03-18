@@ -6,10 +6,14 @@
 #define WINUTIL_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(WINUTIL_EXPORTS) || defined(winutil_EXPORTS)
 #define WINUTIL_API __declspec(dllexport)
 #else
 #define WINUTIL_API __declspec(dllimport)
+#endif
+#else
+#define WINUTIL_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

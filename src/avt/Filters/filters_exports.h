@@ -6,10 +6,14 @@
 #define AVTFILTERS_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(AVTFILTERS_EXPORTS) || defined(avtfilters_ser_EXPORTS) || defined(avtfilters_par_EXPORTS)
 #define AVTFILTERS_API __declspec(dllexport)
 #else
 #define AVTFILTERS_API __declspec(dllimport)
+#endif
+#else
+#define AVTFILTERS_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

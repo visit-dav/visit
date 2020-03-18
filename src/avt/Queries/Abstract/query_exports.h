@@ -6,10 +6,14 @@
 #define QUERY_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(AVTQUERY_EXPORTS) || defined(avtquery_ser_EXPORTS) || defined(avtquery_par_EXPORTS)
 #define QUERY_API __declspec(dllexport)
 #else
 #define QUERY_API __declspec(dllimport)
+#endif
+#else
+#define QUERY_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about inheritance by dominance.

@@ -8,10 +8,14 @@
 #define VXDB_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(VXDB_ser_EXPORTS) || defined(VXDB_par_EXPORTS)
 #define VXDB_API __declspec(dllexport)
 #else
 #define VXDB_API __declspec(dllimport)
+#endif
+#else
+#define VXDB_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

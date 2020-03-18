@@ -6,10 +6,14 @@
 #define GUIWRAPPER_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(GUIWRAPPER_EXPORTS) || defined(guiwrapper_EXPORTS)
 #define GUIWRAPPER_API __declspec(dllexport)
 #else
 #define GUIWRAPPER_API __declspec(dllimport)
+#endif
+#else
+#define GUIWRAPPER_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

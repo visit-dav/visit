@@ -6,10 +6,14 @@
 #define EXPRESSION_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(AVTEXPRESSION_EXPORTS) || defined(avtexpressions_ser_EXPORTS) || defined(avtexpressions_par_EXPORTS)
 #define EXPRESSION_API __declspec(dllexport)
 #else
 #define EXPRESSION_API __declspec(dllimport)
+#endif
+#else
+#define EXPRESSION_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about inheritance by dominance.

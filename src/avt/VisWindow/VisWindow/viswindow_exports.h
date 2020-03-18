@@ -6,12 +6,17 @@
 #define VISWINDOW_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(VISWINDOW_EXPORTS) || defined(avtviswindow_ser_EXPORTS) || defined(avtviswindow_par_EXPORTS)
 #define VISWINDOW_API  __declspec(dllexport)
 #define VISWINDOW_API2 __declspec(dllexport)
 #else
 #define VISWINDOW_API  __declspec(dllimport)
 #define VISWINDOW_API2 __declspec(dllimport)
+#endif
+#else
+#define VISWINDOW_API
+#define VISWINDOW_API2
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

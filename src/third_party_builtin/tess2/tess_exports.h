@@ -3,10 +3,14 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #if defined(_WIN32)
-  #if defined(tess2_EXPORTS)
-    #define TESS2_API __declspec(dllexport)
+  #if !defined(VISIT_STATIC)
+    #if defined(tess2_EXPORTS)
+      #define TESS2_API __declspec(dllexport)
+    #else
+      #define TESS2_API __declspec(dllimport)
+    #endif
   #else
-    #define TESS2_API __declspec(dllimport)
+    #define TESS2_API
   #endif
 #else
   #ifdef __cplusplus

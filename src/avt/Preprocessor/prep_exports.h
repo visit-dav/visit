@@ -6,10 +6,14 @@
 #define PREP_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #ifdef PREP_EXPORTS
 #define PREP_API __declspec(dllexport)
 #else
 #define PREP_API __declspec(dllimport)
+#endif
+#else
+#define PREP_API
 #endif
 #else
 # if __GNUC__ >= 4 && defined(PREP_EXPORTS)

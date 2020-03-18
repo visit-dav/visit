@@ -6,10 +6,14 @@
 #define MIR_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(AVTMIR_EXPORTS) || defined(avtmir_ser_EXPORTS) || defined(avtmir_par_EXPORTS)
 #define MIR_API __declspec(dllexport)
 #else
 #define MIR_API __declspec(dllimport)
+#endif
+#else
+#define MIR_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about possible loss of data

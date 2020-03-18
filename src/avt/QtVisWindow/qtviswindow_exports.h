@@ -6,10 +6,14 @@
 #define QTVISWINDOW_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(AVTQTVISWINDOW_EXPORTS) || defined (avtqtviswindow_EXPORTS)
 #define QTVISWINDOW_API __declspec(dllexport)
 #else
 #define QTVISWINDOW_API __declspec(dllimport)
+#endif
+#else
+#define QTVISWINDOW_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

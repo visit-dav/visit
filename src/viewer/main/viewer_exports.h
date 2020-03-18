@@ -6,10 +6,14 @@
 #define VIEWER_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(VIEWER_EXPORTS) || defined(viewer_EXPORTS)
 #define VIEWER_API __declspec(dllexport)
 #else
 #define VIEWER_API __declspec(dllimport)
+#endif
+#else
+#define VIEWER_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

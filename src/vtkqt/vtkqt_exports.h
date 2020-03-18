@@ -6,10 +6,14 @@
 #define VTKQT_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(VTKQT_EXPORTS) || defined(vtkqt_EXPORTS)
 #define VTKQT_API __declspec(dllexport)
 #else
 #define VTKQT_API __declspec(dllimport)
+#endif
+#else
+#define VTKQT_API
 #endif
 #else
 # if __GNUC__ >= 4 && (defined(VTKQT_EXPORTS) || defined(vtkqt_EXPORTS))

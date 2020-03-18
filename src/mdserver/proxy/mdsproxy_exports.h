@@ -6,10 +6,14 @@
 #define MDSERVER_PROXY_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(MDSPROXY_EXPORTS) || defined(mdserverproxy_EXPORTS)
 #define MDSERVER_PROXY_API __declspec(dllexport)
 #else
 #define MDSERVER_PROXY_API __declspec(dllimport)
+#endif
+#else
+#define MDSERVER_PROXY_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

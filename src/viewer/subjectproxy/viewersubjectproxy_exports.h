@@ -6,10 +6,14 @@
 #define VIEWER_SUBJECT_PROXY_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(VIEWER_SUBJECT_PROXY_EXPORTS)||defined(viewersubjectproxy_EXPORTS)
 #define VIEWER_SUBJECT_PROXY_API __declspec(dllexport)
 #else
 #define VIEWER_SUBJECT_PROXY_API __declspec(dllimport)
+#endif
+#else
+#define VIEWER_SUBJECT_PROXY_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

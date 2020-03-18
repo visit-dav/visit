@@ -6,12 +6,17 @@
 #define MDSERVER_RPC_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(MDSERVER_RPC_EXPORTS) || defined(mdserverrpc_EXPORTS)
 #define MDSERVER_RPC_API  __declspec(dllexport)
 #define MDSERVER_RPC_API2 __declspec(dllexport)
 #else
 #define MDSERVER_RPC_API  __declspec(dllimport)
 #define MDSERVER_RPC_API2 __declspec(dllimport)
+#endif
+#else
+#define MDSERVER_RPC_API
+#define MDSERVER_RPC_API2
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
