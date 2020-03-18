@@ -49,8 +49,9 @@
 
 #include "PMDFile.h"
 
-#include <DebugStream.h>
 #include <stdio.h>
+
+#include <DebugStream.h>
 
 #ifndef TEST
 #include <InvalidVariableException.h>
