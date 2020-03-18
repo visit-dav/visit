@@ -76,15 +76,15 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-    export VTK_FILE=${VTK_FILE:-"VTK-8.1.0.tar.gz"}
-    export VTK_VERSION=${VTK_VERSION:-"8.1.0"}
-    export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"8.1"}
+    export VTK_FILE=${VTK_FILE:-"VTK-9.0.0.rc1.tar.gz"}
+    export VTK_VERSION=${VTK_VERSION:-"9.0.0.rc1"}
+    export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.0"}
     export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
-    export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
-    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-8.1.0"}
+    export VTK_URL=${VTK_URL:-"https://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
+    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-9.0.0.rc1"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
-    export VTK_MD5_CHECKSUM="4fa5eadbc8723ba0b8d203f05376d932"
-    export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
+    export VTK_MD5_CHECKSUM="d41d8cd98f00b204e9800998ecf8427e"
+    #export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
 }
 
 function bv_vtk_print
@@ -144,56 +144,10 @@ function bv_vtk_dry_run
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
-function apply_vtkxopenglrenderwindow_patch
-{
-  # patch vtk's vtkXOpenRenderWindow to fix segv when deleting windows in
-  # offscreen mode.
-
-   patch -p0 << \EOF
-*** Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx.orig 2018-03-30 14:38:07.000000000
---- Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx 2018-03-30 14:38:40.000000000
-***************
-*** 1148,1160 ****
-
-  void vtkXOpenGLRenderWindow::PopContext()
-  {
-    GLXContext current = glXGetCurrentContext();
-    GLXContext target = static_cast<GLXContext>(this->ContextStack.top());
-    this->ContextStack.pop();
-!   if (target != current)
-    {
-      glXMakeCurrent(this->DisplayStack.top(),
-        this->DrawableStack.top(),
-        target);
-    }
-    this->DisplayStack.pop();
---- 1148,1160 ----
-
-  void vtkXOpenGLRenderWindow::PopContext()
-  {
-    GLXContext current = glXGetCurrentContext();
-    GLXContext target = static_cast<GLXContext>(this->ContextStack.top());
-    this->ContextStack.pop();
-!   if (target && target != current)
-    {
-      glXMakeCurrent(this->DisplayStack.top(),
-        this->DrawableStack.top(),
-        target);
-    }
-    this->DisplayStack.pop();
-
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtk patch for vtkXOpenGLRenderWindow failed."
-      return 1
-    fi
-    return 0;
-
-}
 
 function apply_vtkopenglspheremapper_h_patch
 {
+##NEED TO UPDATE THIS
   # patch vtk's vtkOpenGLSphereMapper.h to fix bug evidenced when
   # points are double precision
 
@@ -522,50 +476,6 @@ EOF
     return 0;
 }
 
-function apply_vtkdatawriter_patch
-{
-  # patch vtk's vtkDataWriter to fix bug when writing binary vtkBitArray.
-
-   patch -p0 << \EOF
-*** IO/Legacy/vtkDataWriter.cxx.original 2018-01-19 13:52:19.000000000
---- IO/Legacy/vtkDataWriter.cxx 2018-01-19 13:52:49.000000000
-***************
-*** 1070,1082 ****
-            }
-          }
-        }
-        else
-        {
-          unsigned char *cptr=
-!           static_cast<vtkUnsignedCharArray *>(data)->GetPointer(0);
-          fp->write(reinterpret_cast<char *>(cptr),
-                    (sizeof(unsigned char))*((num-1)/8+1));
-
-        }
-        *fp << "\n";
-      }
---- 1070,1082 ----
-            }
-          }
-        }
-        else
-        {
-          unsigned char *cptr=
-!           static_cast<vtkBitArray *>(data)->GetPointer(0);
-          fp->write(reinterpret_cast<char *>(cptr),
-                    (sizeof(unsigned char))*((num-1)/8+1));
-
-        }
-        *fp << "\n";
-      }
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtk patch for vtkDataWriter failed."
-      return 1
-    fi
-    return 0;
-}
 
 function apply_vtkospray_patches
 {
@@ -967,43 +877,34 @@ EOF
 
 function apply_vtk_patch
 {
-    apply_vtkdatawriter_patch
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
+    # will have to test if these or versions thereof are still required
+    #apply_vtkopenglspheremapper_h_patch
+    #if [[ $? != 0 ]] ; then
+    #    return 1
+    #fi
 
-    apply_vtkopenglspheremapper_h_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    apply_vtkopenglspheremapper_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    apply_vtkxopenglrenderwindow_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    #apply_vtkopenglspheremapper_patch
+    #if [[ $? != 0 ]] ; then
+    #    return 1
+    #fi
 
     # Note: don't guard ospray patches by if ospray is selected 
     # b/c subsequent calls to build_visit won't get a chance to patch
     # given the if test logic used above
-    apply_vtkospraypolydatamappernode_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    #apply_vtkospraypolydatamappernode_patch
+    #if [[ $? != 0 ]] ; then
+    #    return 1
+    #fi
 
-    apply_vtkospray_patches
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    #apply_vtkospray_patches
+    #if [[ $? != 0 ]] ; then
+    #    return 1
+    #fi
 
-    apply_vtkospray_linking_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    #apply_vtkospray_linking_patch
+    #if [[ $? != 0 ]] ; then
+    #    return 1
+    #fi
 
     return 0
 }
@@ -1034,20 +935,20 @@ function build_vtk
     #
     # Apply patches
     #
-    info "Patching VTK . . ."
-    cd $VTK_BUILD_DIR || error "Can't cd to VTK build dir."
-    apply_vtk_patch
-    if [[ $? != 0 ]] ; then
-        if [[ $untarred_vtk == 1 ]] ; then
-            warn "Giving up on VTK build because the patch failed."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
-        fi
-    fi
+    #info "Patching VTK . . ."
+    #cd $VTK_BUILD_DIR || error "Can't cd to VTK build dir."
+    #apply_vtk_patch
+    #if [[ $? != 0 ]] ; then
+    #    if [[ $untarred_vtk == 1 ]] ; then
+    #        warn "Giving up on VTK build because the patch failed."
+    #        return 1
+    #    else
+    #        warn "Patch failed, but continuing.  I believe that this script\n" \
+    #             "tried to apply a patch to an existing directory that had\n" \
+    #             "already been patched ... that is, the patch is\n" \
+    #             "failing harmlessly on a second application."
+    #    fi
+    #fi
 
     # move back up to the start dir
     cd "$START_DIR"
@@ -1117,8 +1018,8 @@ function build_vtk
     fi
     vopts="${vopts} -DVTK_DEBUG_LEAKS:BOOL=${vtk_debug_leaks}"
     vopts="${vopts} -DVTK_LEGACY_REMOVE:BOOL=true"
-    vopts="${vopts} -DBUILD_TESTING:BOOL=false"
-    vopts="${vopts} -DBUILD_DOCUMENTATION:BOOL=false"
+    vopts="${vopts} -DVTK_BUILD_TESTING:BOOL=false"
+    vopts="${vopts} -DVTK_BUILD_DOCUMENTATION:BOOL=false"
     vopts="${vopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
     vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
@@ -1155,40 +1056,39 @@ function build_vtk
     vopts="${vopts} -DVTK_ALL_NEW_OBJECT_FACTORY:BOOL=true"
 
     # Turn off module groups
-    vopts="${vopts} -DVTK_Group_Imaging:BOOL=false"
-    vopts="${vopts} -DVTK_Group_MPI:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Qt:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Rendering:BOOL=false"
-    vopts="${vopts} -DVTK_Group_StandAlone:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Tk:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Views:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Web:BOOL=false"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_Imaging:STRING=DONT_WANT"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_MPI:STRING=DONT_WANT"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_Qt:STRING=DONT_WANT"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_Rendering:STRING=DONT_WANT"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_StandAlone:STRING=DONT_WANT"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_Tk:STRING=DONT_WANT"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_Views:STRING=DONT_WANT"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_Web:STRING=DONT_WANT"
 
     # Turn on individual modules. dependent modules are turned on automatically
-    vopts="${vopts} -DModule_vtkCommonCore:BOOL=true"
-    vopts="${vopts} -DModule_vtkFiltersFlowPaths:BOOL=true"
-    vopts="${vopts} -DModule_vtkFiltersHybrid:BOOL=true"
-    vopts="${vopts} -DModule_vtkFiltersModeling:BOOL=true"
-    vopts="${vopts} -DModule_vtkGeovisCore:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOEnSight:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOGeometry:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOLegacy:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOPLY:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOXML:BOOL=true"
-    vopts="${vopts} -DModule_vtkInteractionStyle:BOOL=true"
-    vopts="${vopts} -DModule_vtkRenderingAnnotation:BOOL=true"
-    vopts="${vopts} -DModule_vtkRenderingFreeType:BOOL=true"
-    vopts="${vopts} -DModule_vtkRenderingOpenGL2:BOOL=true"
-    vopts="${vopts} -DModule_vtklibxml2:BOOL=true"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_CommonCore:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersFlowPaths:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersHybrid:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersModeling:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GeovisCore:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOEnSight:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOGeometry:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOLegacy:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOPLY:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOXML:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_InteractionStyle:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingAnnotation:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingFreeType:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingOpenGL2:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_libxml2:STRING=YES"
 
     # Tell VTK where to locate qmake if we're building graphical support. We
     # do not add graphical support for server-only builds.
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
-                vopts="${vopts} -DModule_vtkGUISupportQtOpenGL:BOOL=true"
+                vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQtOpenGL:BOOL:STRING=YES"
                 vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_BIN_DIR}/qmake"
-                vopts="${vopts} -DVTK_QT_VERSION=5"
                 vopts="${vopts} -DCMAKE_PREFIX_PATH=${QT_INSTALL_DIR}/lib/cmake"
             fi
         fi
@@ -1203,6 +1103,7 @@ function build_vtk
             pylib="${PYTHON_LIBRARY}"
 
             vopts="${vopts} -DVTK_WRAP_PYTHON:BOOL=true"
+            vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=2"
             vopts="${vopts} -DPYTHON_EXECUTABLE:FILEPATH=${py}"
             vopts="${vopts} -DPYTHON_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
             vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
@@ -1231,7 +1132,7 @@ function build_vtk
 
     # Use OSPRay?
     if [[ "$DO_OSPRAY" == "yes" ]] ; then
-        vopts="${vopts} -DModule_vtkRenderingOSPRay:BOOL=ON"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingOSPRay:BOOL=ON"
         vopts="${vopts} -DOSPRAY_INSTALL_DIR=${OSPRAY_INSTALL_DIR}"
         vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}"
     fi
