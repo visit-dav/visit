@@ -51,6 +51,7 @@
 //    Use glyph's output port when creating avtVectorGlyphMapper.
 //
 // ****************************************************************************
+
 avtVectorPlot::avtVectorPlot()
 {
     colorsInitialized = false;
@@ -90,6 +91,7 @@ avtVectorPlot::avtVectorPlot()
 //    Delete resample filter.
 //
 // ****************************************************************************
+
 avtVectorPlot::~avtVectorPlot()
 {
     if (vectorMapper != NULL)
@@ -134,6 +136,7 @@ avtVectorPlot::~avtVectorPlot()
 //  Creation:    March 21, 2001
 //
 // ****************************************************************************
+
 avtPlot *
 avtVectorPlot::Create()
 {
@@ -157,6 +160,7 @@ avtVectorPlot::Create()
 //    Changed to Set... (Get is now done in avtPlot.C)
 //
 // ****************************************************************************
+
 void
 avtVectorPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 {
@@ -183,6 +187,7 @@ avtVectorPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 //  Creation:   March 21, 2000
 //
 // ****************************************************************************
+
 avtMapperBase *
 avtVectorPlot::GetMapper(void)
 {
@@ -225,6 +230,7 @@ avtVectorPlot::GetMapper(void)
 //    (ApplyRenderingTransformation).
 //
 // ****************************************************************************
+
 avtDataObject_p
 avtVectorPlot::ApplyOperators(avtDataObject_p input)
 {
@@ -252,6 +258,7 @@ avtVectorPlot::ApplyOperators(avtDataObject_p input)
 //    "ApplyOperators".  Move those filters here.
 //
 // ****************************************************************************
+
 avtDataObject_p
 avtVectorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
@@ -309,6 +316,7 @@ avtVectorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Added call to SetLimitsMode. 
 //
 // ****************************************************************************
+
 void
 avtVectorPlot::CustomizeBehavior(void)
 {
@@ -348,6 +356,7 @@ avtVectorPlot::CustomizeBehavior(void)
 //    I added call to ComputeMagVarName and SetMapperColors.
 //
 // ****************************************************************************
+
 void
 avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 {
@@ -444,6 +453,7 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Consider InvertColorTable flag when setting updateColors.
 //
 // ****************************************************************************
+
 void
 avtVectorPlot::SetAtts(const AttributeGroup *a)
 {
@@ -574,6 +584,7 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
 //    Retrieve invertColorTable flag and send to avtLUT.
 //
 // ****************************************************************************
+
 bool
 avtVectorPlot::SetColorTable(const char *ctName)
 {
@@ -621,6 +632,7 @@ avtVectorPlot::SetColorTable(const char *ctName)
 //    Remove call to SetColorTable, as it is unnecessary here.
 //
 // ****************************************************************************
+
 void
 avtVectorPlot::SetLegend(bool legendOn)
 {
@@ -651,6 +663,7 @@ avtVectorPlot::SetLegend(bool legendOn)
 //    Account for user-set min and max or limitsMode.
 //
 // ****************************************************************************
+
 void
 avtVectorPlot::SetLegendRanges()
 {
@@ -688,6 +701,7 @@ avtVectorPlot::SetLegendRanges()
 //    Release data for resample filter.
 //
 // ****************************************************************************
+
 void
 avtVectorPlot::ReleaseData(void)
 {
@@ -718,6 +732,7 @@ avtVectorPlot::ReleaseData(void)
 //  Creation:   August 9, 2004 
 //
 // ****************************************************************************
+
 void
 avtVectorPlot::ComputeMagVarName(const std::string &vn)
 {
@@ -734,6 +749,7 @@ avtVectorPlot::ComputeMagVarName(const std::string &vn)
 //  Creation:   August 12, 2004 
 //
 // ****************************************************************************
+
 void
 avtVectorPlot::SetMapperColors()
 {
@@ -763,6 +779,7 @@ avtVectorPlot::SetMapperColors()
 //  Modifications:
 //
 // ****************************************************************************
+
 void
 avtVectorPlot::SetLimitsMode(int limitsMode)
 {
@@ -837,6 +854,7 @@ avtVectorPlot::SetLimitsMode(int limitsMode)
 //  Creation:   February 29, 2012
 //
 // ****************************************************************************
+
 const MapNode &
 avtVectorPlot::GetExtraInfoForPick()
 {

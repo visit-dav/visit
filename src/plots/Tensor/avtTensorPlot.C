@@ -34,6 +34,7 @@
 //    pipeline connectivity with vtk-6.
 //
 // ****************************************************************************
+
 avtTensorPlot::avtTensorPlot()
 {
     colorsInitialized = false;
@@ -72,6 +73,7 @@ avtTensorPlot::avtTensorPlot()
 //  Creation:   Tue Sep 23 20:57:03 PST 2003
 //
 // ****************************************************************************
+
 avtTensorPlot::~avtTensorPlot()
 {
     if (tensorMapper != NULL)
@@ -111,6 +113,7 @@ avtTensorPlot::~avtTensorPlot()
 //  Creation:   Tue Sep 23 20:57:03 PST 2003
 //
 // ****************************************************************************
+
 avtPlot *
 avtTensorPlot::Create()
 {
@@ -134,6 +137,7 @@ avtTensorPlot::Create()
 //    Changed to Set... (Get is now done in avtPlot.C)
 //
 // ****************************************************************************
+
 void
 avtTensorPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 {
@@ -152,6 +156,7 @@ avtTensorPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 //  Creation:   Tue Sep 23 20:57:03 PST 2003
 //
 // ****************************************************************************
+
 avtMapperBase *
 avtTensorPlot::GetMapper(void)
 {
@@ -180,6 +185,7 @@ avtTensorPlot::GetMapper(void)
 //    transformation.  Move them to the ApplyRenderingTransformation method.
 //
 // ****************************************************************************
+
 avtDataObject_p
 avtTensorPlot::ApplyOperators(avtDataObject_p input)
 {
@@ -207,6 +213,7 @@ avtTensorPlot::ApplyOperators(avtDataObject_p input)
 //    Put them here.
 //
 // ****************************************************************************
+
 avtDataObject_p
 avtTensorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
@@ -247,6 +254,7 @@ avtTensorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //  Creation:   Tue Sep 23 20:57:03 PST 2003
 //
 // ****************************************************************************
+
 void
 avtTensorPlot::CustomizeBehavior(void)
 {
@@ -273,6 +281,7 @@ avtTensorPlot::CustomizeBehavior(void)
 //    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003
 //    Set antialiased render order.
 // ****************************************************************************
+
 void
 avtTensorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 {
@@ -307,6 +316,7 @@ avtTensorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Consider invertColorTable flag when setting updateColors.
 //
 // ****************************************************************************
+
 void
 avtTensorPlot::SetAtts(const AttributeGroup *a)
 {
@@ -393,6 +403,7 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
 //    Retrieve invertColorTable flag and pass to avtLUT.
 //
 // ****************************************************************************
+
 bool
 avtTensorPlot::SetColorTable(const char *ctName)
 {
@@ -436,6 +447,7 @@ avtTensorPlot::SetColorTable(const char *ctName)
 //  Creation:   September 23, 2003
 //
 // ****************************************************************************
+
 void
 avtTensorPlot::SetLegend(bool legendOn)
 {
@@ -462,6 +474,7 @@ avtTensorPlot::SetLegend(bool legendOn)
 //  Date:       September 23, 2003
 //
 // ****************************************************************************
+
 void
 avtTensorPlot::SetLegendRanges()
 {
@@ -494,6 +507,7 @@ avtTensorPlot::SetLegendRanges()
 //  Creation:   September 12, 2002
 //
 // ****************************************************************************
+
 void
 avtTensorPlot::ReleaseData(void)
 {
@@ -523,6 +537,7 @@ avtTensorPlot::ReleaseData(void)
 //  Creation:   August 12, 2004 
 //
 // ****************************************************************************
+
 void
 avtTensorPlot::SetMapperColors()
 {
@@ -552,6 +567,7 @@ avtTensorPlot::SetMapperColors()
 //  Modifications:
 //
 // ****************************************************************************
+
 void
 avtTensorPlot::SetLimitsMode(int limitsMode)
 {
@@ -626,6 +642,7 @@ avtTensorPlot::SetLimitsMode(int limitsMode)
 //  Creation:   February 29, 2012
 //
 // ****************************************************************************
+
 const MapNode &
 avtTensorPlot::GetExtraInfoForPick()
 {
