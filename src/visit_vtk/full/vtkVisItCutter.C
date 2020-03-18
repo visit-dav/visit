@@ -18,6 +18,7 @@
 #include "vtkVisItCutter.h"
 
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkContourValues.h>
 #include <vtkDataSet.h>
@@ -410,8 +411,6 @@ vtkVisItCutter::DataSetCutter()
 void
 vtkVisItCutter::UnstructuredGridCutter()
 {
-  vtkIdType cellId, i;
-  int iter;
   vtkDataArray *cellScalars;
   vtkCellArray *newVerts, *newLines, *newPolys;
   vtkPoints *newPoints;
@@ -419,14 +418,11 @@ vtkVisItCutter::UnstructuredGridCutter()
   double value, s;
   vtkIdType estimatedSize, numCells=input->GetNumberOfCells();
   vtkIdType numPts=input->GetNumberOfPoints();
-  vtkIdType cellArrayIt = 0;
-  int numCellPts;
   vtkPointData *inPD, *outPD;
   vtkCellData *inCD=input->GetCellData(), *outCD=output->GetCellData();
   vtkCellData *vert_outCD = vtkCellData::New();
   vtkCellData *line_outCD = vtkCellData::New();
   vtkCellData *poly_outCD = vtkCellData::New();
-  vtkIdList *cellIds;
   int numContours = this->ContourValues->GetNumberOfContours();
   int abortExecute = 0;
 
@@ -480,7 +476,7 @@ vtkVisItCutter::UnstructuredGridCutter()
 
   // Loop over all points evaluating scalar function at each point
   //
-  for ( i=0; i < numPts; i++ )
+  for ( vtkIdType i=0; i < numPts; i++ )
     {
     s = this->CutFunction->FunctionValue(input->GetPoint(i));
     cutScalars->SetComponent(i,0,s);
@@ -493,24 +489,26 @@ vtkVisItCutter::UnstructuredGridCutter()
   int cut=0;
 
   vtkUnstructuredGrid *grid = vtkUnstructuredGrid::SafeDownCast(input);
-  vtkIdType *cellArrayPtr = grid->GetCells()->GetPointer();
+  auto cellIter = vtk::TakeSmartPointer(grid->GetCells()->NewIterator());
   double *scalarArrayPtr = cutScalars->GetPointer(0);
   double tempScalar;
   cellScalars = cutScalars->NewInstance();
   cellScalars->SetNumberOfComponents(cutScalars->GetNumberOfComponents());
   cellScalars->Allocate(VTK_CELL_SIZE*cutScalars->GetNumberOfComponents());
- 
+
+  vtkIdType numCellPts;
+  const vtkIdType *ptIds;
   if ( this->SortBy == VTK_SORT_BY_CELL )
     {
     // Loop over all contour values.  Then for each contour value, 
     // loop over all cells.
     //
-    for (iter=0; iter < numContours && !abortExecute; iter++)
+    for (int iter=0; iter < numContours && !abortExecute; iter++)
       {
       // Loop over all cells; get scalar values for all cell points
       // and process each cell.
       //
-      for (cellId=0; cellId < numCells && !abortExecute; cellId++)
+      for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal() && !abortExecute; cellIter->GoToNextCell())
         {
         if ( !(++cut % progressInterval) )
           {
@@ -518,19 +516,15 @@ vtkVisItCutter::UnstructuredGridCutter()
           this->UpdateProgress ((double)cut/numCuts);
           abortExecute = this->GetAbortExecute();
           }
+        cellIter->GetCurrentCell(numCellPts, ptIds);
 
-        numCellPts = cellArrayPtr[cellArrayIt];
-        cellArrayIt++;
-        
         //find min and max values in scalar data
-        range[0] = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-        range[1] = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-        cellArrayIt++;
-        
-        for (i = 1; i < numCellPts; i++)
+        range[0] = scalarArrayPtr[ptIds[0]];
+        range[1] = scalarArrayPtr[ptIds[0]];
+
+        for (vtkIdType i = 1; i < numCellPts; i++)
           {
-          tempScalar = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-          cellArrayIt++;
+          tempScalar = scalarArrayPtr[ptIds[i]];
           if (tempScalar <= range[0])
             {
             range[0] = tempScalar;
@@ -550,11 +544,12 @@ vtkVisItCutter::UnstructuredGridCutter()
 
         if (needCell) 
           {
+          vtkIdType cellId = cellIter->GetCurrentCellId();
           vtkCell *cell = input->GetCell(cellId);
-          cellIds = cell->GetPointIds();
+          vtkIdList *cellIds = cell->GetPointIds();
           cutScalars->GetTuples(cellIds,cellScalars);
           // Loop over all contour values.
-          for (iter=0; iter < numContours && !abortExecute; iter++)
+          for (int iter2=0; iter2 < numContours && !abortExecute; iter2++)
             {
             if ( !(++cut % progressInterval) )
               {
@@ -562,7 +557,7 @@ vtkVisItCutter::UnstructuredGridCutter()
               this->UpdateProgress ((double)cut/numCuts);
               abortExecute = this->GetAbortExecute();
               }
-            value = this->ContourValues->GetValue(iter);
+            value = this->ContourValues->GetValue(iter2);
             CellContour(cell, value, cellScalars, this->Locator, newVerts, 
                     newLines, newPolys, inPD, outPD, inCD, cellId, 
                     vert_outCD, line_outCD, poly_outCD);
@@ -578,20 +573,17 @@ vtkVisItCutter::UnstructuredGridCutter()
     // Loop over all cells; get scalar values for all cell points
     // and process each cell.
     //
-    for (cellId=0; cellId < numCells && !abortExecute; cellId++)
+    for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal() && !abortExecute; cellIter->GoToNextCell())
       {
-      numCellPts = cellArrayPtr[cellArrayIt];
-      cellArrayIt++;
-          
+      cellIter->GetCurrentCell(numCellPts, ptIds);
+
       //find min and max values in scalar data
-      range[0] = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-      range[1] = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-      cellArrayIt++;
-          
-      for (i = 1; i < numCellPts; i++)
+      range[0] = scalarArrayPtr[ptIds[0]];
+      range[1] = scalarArrayPtr[ptIds[0]];
+
+      for (vtkIdType i = 1; i < numCellPts; i++)
         {
-        tempScalar = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-        cellArrayIt++;
+        tempScalar = scalarArrayPtr[ptIds[i]];
         if (tempScalar <= range[0])
           {
           range[0] = tempScalar;
@@ -615,11 +607,12 @@ vtkVisItCutter::UnstructuredGridCutter()
           
       if (needCell) 
         {
+        vtkIdType cellId = cellIter->GetCurrentCellId();
         vtkCell *cell = input->GetCell(cellId);
-        cellIds = cell->GetPointIds();
+        vtkIdList *cellIds = cell->GetPointIds();
         cutScalars->GetTuples(cellIds,cellScalars);
         // Loop over all contour values.
-        for (iter=0; iter < numContours && !abortExecute; iter++)
+        for (int iter=0; iter < numContours && !abortExecute; iter++)
           {
           if ( !(++cut % progressInterval) )
             {
@@ -656,7 +649,7 @@ vtkVisItCutter::UnstructuredGridCutter()
   if (newVerts->GetNumberOfCells())
     {
     output->SetVerts(newVerts);
-    for (i = 0; i < newVerts->GetNumberOfCells(); i++, newCellId++)
+    for (vtkIdType i = 0; i < newVerts->GetNumberOfCells(); i++, newCellId++)
         outCD->CopyData(vert_outCD, i, newCellId);
     }
   newVerts->Delete();
@@ -665,7 +658,7 @@ vtkVisItCutter::UnstructuredGridCutter()
   if (newLines->GetNumberOfCells())
     {
     output->SetLines(newLines);
-    for (i = 0; i < newLines->GetNumberOfCells(); i++, newCellId++)
+    for (vtkIdType i = 0; i < newLines->GetNumberOfCells(); i++, newCellId++)
         outCD->CopyData(line_outCD, i, newCellId);
     }
   newLines->Delete();
@@ -674,7 +667,7 @@ vtkVisItCutter::UnstructuredGridCutter()
   if (newPolys->GetNumberOfCells())
     {
     output->SetPolys(newPolys);
-    for (i = 0; i < newPolys->GetNumberOfCells(); i++, newCellId++)
+    for (vtkIdType i = 0; i < newPolys->GetNumberOfCells(); i++, newCellId++)
         outCD->CopyData(poly_outCD, i, newCellId);
     }
   newPolys->Delete();

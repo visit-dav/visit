@@ -25,7 +25,7 @@ vtkSkewLookupTable::vtkSkewLookupTable(int sze, int ext):
 
 // Given a scalar value v, return an rgba color value from lookup table.
 // val is first skewed accoring to the skewFactor
-unsigned char *vtkSkewLookupTable::MapValue(double val)
+const unsigned char *vtkSkewLookupTable::MapValue(double val)
 {
   float temp = vtkSkewValue((float)val, (float)this->TableRange[0], (float)this->TableRange[1],
                             this->SkewFactor);
@@ -46,7 +46,7 @@ static void vtkSkewLookupTableMapData(vtkSkewLookupTable *self,
                                   int length, int inIncr, int outFormat)
 {
   int i = length;
-  unsigned char *cptr;
+  const unsigned char *cptr;
   float alpha;
 
   if ( (alpha = self->GetAlpha()) >= 1.0) // no blending reuqired

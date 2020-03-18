@@ -5,6 +5,7 @@
 #include "vtkConnectedTubeFilter.h"
 
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkCleanPolyData.h>
 #include <vtkFloatArray.h>
@@ -178,27 +179,29 @@ vtkConnectedTubeFilter::PointSequenceList::Build(vtkPoints *points,
     connectivity[1] = new vtkIdType[len];
     cellindex       = new vtkIdType[len];
 
-    vtkIdType *cells = lines->GetPointer();
 
     // Initalize all points to be disconnected from each other
-    int i;
-    for (i=0; i<len; i++)
+    for (int i=0; i<len; i++)
     {
         numneighbors[i] = 0;
     }
 
     int numCells = lines->GetNumberOfCells();
-    for (i=0; i<numCells; i++)
+    auto iter = vtk::TakeSmartPointer(lines->NewIterator());
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
     {
+        vtkIdType cellSize;
+        const vtkIdType *currCell = nullptr;
+        iter->GetCurrentCell(cellSize, currCell);
         // We assume all cells are two-point lines (i.e. not polylines)
-        if (cells[i*3] != 2)
+        if (cellSize != 2)
         {
             return false;
         }
 
         // Get the begin and end index for this segment
-        vtkIdType a = cells[i*3 + 1];
-        vtkIdType b = cells[i*3 + 2];
+        const vtkIdType a = currCell[0];
+        const vtkIdType b = currCell[1];
 
         // If we have two neighbors already, this is a T intersection
         if (numneighbors[a] >= 2 || numneighbors[b] >= 2)
@@ -211,8 +214,8 @@ vtkConnectedTubeFilter::PointSequenceList::Build(vtkPoints *points,
         connectivity[numneighbors[b]][b] = a;
         numneighbors[a]++;
         numneighbors[b]++;
-        cellindex[a] = i;
-        cellindex[b] = i;
+        cellindex[a] = iter->GetCurrentCellId();
+        cellindex[b] = iter->GetCurrentCellId();
     }
     return true;
 }
@@ -403,14 +406,12 @@ bool vtkConnectedTubeFilter::BuildConnectivityArrays(vtkPolyData *input)
 {
     vtkPoints    *inPts   = NULL;
     vtkCellArray *inLines = NULL;
-    int numPts;
-    int numCells;
     vtkDebugMacro(<<"Building tube connectivity arrays");
 
-    if (!(inPts=input->GetPoints())               || 
-        (numPts = inPts->GetNumberOfPoints()) < 1 ||
-        !(inLines = input->GetLines())            ||
-        (numCells = inLines->GetNumberOfCells()) < 1)
+    if (!(inPts=input->GetPoints())       ||
+        (inPts->GetNumberOfPoints() < 1)  ||
+        !(inLines = input->GetLines())    ||
+        (inLines->GetNumberOfCells() < 1))
     {
         vtkDebugMacro(<< ": No input data!\n");
         return false;

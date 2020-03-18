@@ -6,7 +6,6 @@
 #define VTKQT_RENDER_WINDOW_H
 #include <vtkqt_exports.h>
 #include <QMainWindow>
-// Veneer over QVTKWidget2 to make it look like VisIt's vtkQtRenderWindow.
 
 class vtkRenderWindow;
 class vtkRenderWindowInteractor;

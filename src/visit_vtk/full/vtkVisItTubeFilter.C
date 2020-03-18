@@ -104,9 +104,10 @@ int vtkVisItTubeFilter::RequestData(
     vtkIdType i;
     double range[2], maxSpeed=0;
     vtkCellArray *newStrips;
-    vtkIdType npts=0, *pts=NULL;
+    vtkIdType npts=0;
+    const vtkIdType *pts=nullptr;
     vtkIdType offset=0;
-    vtkFloatArray *newTCoords=NULL;
+    vtkFloatArray *newTCoords=nullptr;
     int abort=0;
     vtkIdType inCellId;
     double oldRadius=1.0;
@@ -314,7 +315,7 @@ int vtkVisItTubeFilter::RequestData(
 //   Fix dead code that read past the end of an array.
 //
 int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
-                                       vtkIdType npts, vtkIdType *pts,
+                                       vtkIdType npts, const vtkIdType *pts,
                                        vtkPoints *inPts, vtkPoints *newPts, 
                                        vtkPointData *pd, vtkPointData *outPD,
                                        vtkFloatArray *newNormals,
@@ -552,7 +553,7 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
 }
 
 void vtkVisItTubeFilter::GenerateStrips(vtkIdType offset, vtkIdType npts, 
-                                        vtkIdType* vtkNotUsed(pts), 
+                                        const vtkIdType* vtkNotUsed(pts), 
                                         vtkIdType inCellId,
                                         vtkCellData *cd, vtkCellData *outCD,
                                         vtkCellArray *newStrips)
@@ -660,7 +661,7 @@ void vtkVisItTubeFilter::GenerateStrips(vtkIdType offset, vtkIdType npts,
 //   should ignore them.
 //
 void vtkVisItTubeFilter::GenerateTextureCoords(vtkIdType offset,
-                                               vtkIdType npts, vtkIdType *pts, 
+                                               vtkIdType npts, const vtkIdType *pts, 
                                                vtkPoints *inPts, 
                                                vtkDataArray *inScalars_,
                                                bool cellScalars,

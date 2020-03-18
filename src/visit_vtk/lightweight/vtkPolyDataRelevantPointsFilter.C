@@ -5,6 +5,7 @@
 #include "vtkPolyDataRelevantPointsFilter.h"
 
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
@@ -95,9 +96,9 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
   // First set up some of the constructs that will be used to create a mapping
   // between the old point indices and the new point indices.
   //
-  int numNewPts = 0;
-  int *oldToNew = new int[numPts];
-  int *newToOld = new int[numPts];
+  vtkIdType numNewPts = 0;
+  vtkIdType *oldToNew = new vtkIdType[numPts];
+  vtkIdType *newToOld = new vtkIdType[numPts];
   for (vtkIdType i = 0; i < numPts; i++)
     {
     oldToNew[i] = -1;
@@ -115,18 +116,18 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
   //
   for (int i = 0 ; i < 4 ; i++)
     {
-    vtkIdType ncells = arrays[i]->GetNumberOfCells();
-    vtkIdType *ptr = arrays[i]->GetPointer();
-    for (vtkIdType j = 0 ; j < ncells ; j++)
+    auto iter = vtk::TakeSmartPointer(arrays[i]->NewIterator());
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
       {
-      int npts = *ptr++;
-      for (int k = 0 ; k < npts ; k++)
+      vtkIdType npts=0;
+      const vtkIdType *ptr=nullptr;
+      iter->GetCurrentCell(npts, ptr);
+      for (vtkIdType k = 0 ; k < npts ; k++)
         {
-        int oldPt = *ptr++;
-        if (oldToNew[oldPt] == -1)
+        if (oldToNew[ptr[k]] == -1)
           {
-          newToOld[numNewPts] = oldPt;
-          oldToNew[oldPt] = numNewPts;
+          newToOld[numNewPts] = ptr[k];
+          oldToNew[ptr[k]] = numNewPts;
           numNewPts++;
           }
         }
@@ -203,7 +204,7 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
   //
   int nIdStoreSize = 1024;
   vtkIdType *pts = new vtkIdType[nIdStoreSize];
-  vtkIdType *oldPts = NULL;
+  const vtkIdType *oldPts = nullptr;
   vtkIdType nids = 0;
   input->BuildCells();
   for (vtkIdType i = 0; i < numCells; i++) 

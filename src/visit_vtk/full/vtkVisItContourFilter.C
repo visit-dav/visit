@@ -414,7 +414,7 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
         vtkIdType  cellId = (CellList != NULL ? CellList[i] : i);
         int        cellType = ug->GetCellType(cellId);
         vtkIdType  npts;
-        vtkIdType *pts;
+        const vtkIdType *pts;
         ug->GetCellPoints(cellId, npts, pts);
         const int *triangulation_table = NULL;
         const int *vertices_from_edges = NULL;
@@ -491,7 +491,8 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
 
             if(cellType == VTK_POLYHEDRON)
             {
-                vtkIdType nFaces, *facePtIds;
+                vtkIdType nFaces;
+                const vtkIdType *facePtIds;
                 ug->GetFaceStream(cellId, nFaces, facePtIds);
                 stuff_I_cant_contour->InsertNextCell(cellType, npts, pts, 
                      nFaces, facePtIds);

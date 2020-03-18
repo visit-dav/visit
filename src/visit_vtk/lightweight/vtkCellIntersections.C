@@ -623,15 +623,14 @@ vtkCellIntersections::TetraIntersectWithLine(vtkTetra *cell, double p1[3],
 {
   int i, intersection = 0;
   double tTemp, xTemp[3];
-  int faceNum, *faceIds;
 
   double pt0[3], pt1[3], pt2[3];
   t = VTK_DOUBLE_MAX;
 
-  for (faceNum = 0; faceNum < 4; faceNum++)
+  for (vtkIdType faceNum = 0; faceNum < 4; faceNum++)
     {
     tTemp = VTK_DOUBLE_MAX;
-    faceIds = cell->GetFaceArray(faceNum);
+    const vtkIdType *faceIds = cell->GetFaceArray(faceNum);
     cell->Points->GetPoint(faceIds[0], pt0);
     cell->Points->GetPoint(faceIds[1], pt1);
     cell->Points->GetPoint(faceIds[2], pt2);
@@ -691,15 +690,15 @@ int
 vtkCellIntersections::HexIntersectWithLine(vtkHexahedron *cell, double p1[3], 
     double p2[3], double& t, double x[3])
 {
-  int  i, intersection = 0, faceNum, *faceIds;
+  int  i, intersection = 0;
   double tTemp, xTemp[3];
   double pt0[3], pt1[3], pt2[3], pt3[3];
   t = VTK_DOUBLE_MAX;
 
-  for (faceNum = 0; faceNum < 6; faceNum++)
+  for (vtkIdType faceNum = 0; faceNum < 6; faceNum++)
     {
     tTemp = VTK_DOUBLE_MAX;
-    faceIds = cell->GetFaceArray(faceNum);
+    const vtkIdType *faceIds = cell->GetFaceArray(faceNum);
     cell->Points->GetPoint(faceIds[0], pt0);
     cell->Points->GetPoint(faceIds[1], pt1);
     cell->Points->GetPoint(faceIds[2], pt2);
@@ -729,18 +728,18 @@ vtkCellIntersections::QuadraticHexahedronIntersectWithLine(
                              vtkQuadraticHexahedron *cell, double p1[3], 
                              double p2[3], double& t, double x[3])
 {
-  int  i, intersection = 0, faceNum;
+  int  i, intersection = 0;
   double tTemp, xTemp[3];
   double pt0[3], pt1[3], pt2[3], pt3[3];
   t = VTK_DOUBLE_MAX;
 
-  int allFaces[6][4] = { { 0, 1, 5, 4 }, { 1, 2, 6, 5 },
-                    { 4, 5, 6, 7 }, { 3, 0, 4, 7 },
-                    { 0, 1, 2, 3 }, { 2, 3, 7, 6 } };
-  for (faceNum = 0; faceNum < 6; faceNum++)
+  vtkIdType allFaces[6][4] = { { 0, 1, 5, 4 }, { 1, 2, 6, 5 },
+                               { 4, 5, 6, 7 }, { 3, 0, 4, 7 },
+                               { 0, 1, 2, 3 }, { 2, 3, 7, 6 } };
+  for (vtkIdType faceNum = 0; faceNum < 6; faceNum++)
     {
     tTemp = VTK_DOUBLE_MAX;
-    int *faceIds = allFaces[faceNum];
+    vtkIdType *faceIds = allFaces[faceNum];
     cell->Points->GetPoint(faceIds[0], pt0);
     cell->Points->GetPoint(faceIds[1], pt1);
     cell->Points->GetPoint(faceIds[2], pt2);
@@ -772,15 +771,14 @@ vtkCellIntersections::WedgeIntersectWithLine(vtkWedge *cell, double p1[3],
   int i, intersection = 0;
   double tTemp, xTemp[3];
   double pt0[3], pt1[3], pt2[3], pt3[3];
-  int faceNum, *faceIds;
 
   t = VTK_DOUBLE_MAX;
 
   // faces 0 & 1 are triangle-faces, intersect them first
-  for (faceNum = 0; faceNum < 2; faceNum++)
+  for (vtkIdType faceNum = 0; faceNum < 2; faceNum++)
     {
     tTemp = VTK_DOUBLE_MAX;
-    faceIds = cell->GetFaceArray(faceNum);
+    const vtkIdType *faceIds = cell->GetFaceArray(faceNum);
     cell->Points->GetPoint(faceIds[0], pt0);
     cell->Points->GetPoint(faceIds[1], pt1);
     cell->Points->GetPoint(faceIds[2], pt2);
@@ -802,10 +800,10 @@ vtkCellIntersections::WedgeIntersectWithLine(vtkWedge *cell, double p1[3],
     }
 
   // faces 2 -4 are quads, now intersect them
-  for (faceNum = 2; faceNum < 5; faceNum++)
+  for (vtkIdType faceNum = 2; faceNum < 5; faceNum++)
     {
     tTemp = VTK_DOUBLE_MAX;
-    faceIds = cell->GetFaceArray(faceNum);
+    const vtkIdType *faceIds = cell->GetFaceArray(faceNum);
     cell->Points->GetPoint(faceIds[0], pt0);
     cell->Points->GetPoint(faceIds[1], pt1);
     cell->Points->GetPoint(faceIds[2], pt2);
@@ -835,18 +833,16 @@ vtkCellIntersections::PyramidIntersectWithLine(vtkPyramid *cell, double p1[3],
     double p2[3], double& t, double x[3])
 {
   int i, intersection = 0;
-  int faceNum;
-  int *faceIds;
   double xTemp[3], tTemp;
   double pt0[3], pt1[3], pt2[3], pt3[3];
 
   t = VTK_DOUBLE_MAX;
 
   // faces 1-4 are triangles, intersect them first.
-  for (faceNum = 1; faceNum < 5; faceNum++)
+  for (vtkIdType faceNum = 1; faceNum < 5; faceNum++)
     {
     tTemp = VTK_DOUBLE_MAX;
-    faceIds = cell->GetFaceArray(faceNum);
+    const vtkIdType *faceIds = cell->GetFaceArray(faceNum);
     cell->Points->GetPoint(faceIds[0], pt0);
     cell->Points->GetPoint(faceIds[1], pt1);
     cell->Points->GetPoint(faceIds[2], pt2);
@@ -867,7 +863,7 @@ vtkCellIntersections::PyramidIntersectWithLine(vtkPyramid *cell, double p1[3],
       }
     }
   // now intersect quad face 
-  faceIds = cell->GetFaceArray(0);
+  const vtkIdType *faceIds = cell->GetFaceArray(0);
   cell->Points->GetPoint(faceIds[0], pt0);
   cell->Points->GetPoint(faceIds[1], pt1);
   cell->Points->GetPoint(faceIds[2], pt2);

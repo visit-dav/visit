@@ -66,7 +66,7 @@ private:
 
   void ConsolidateFacesWithoutGhostZones(vtkRectilinearGrid *, vtkPolyData *);
   vtkPolyData *ConsolidateFacesWithGhostZones(vtkPolyData *, vtkIdTypeArray *,
-                       std::vector<int>&, std::vector<int>&,std::vector<int>&);
+               vtkIdTypeArray *, std::vector<int>&, std::vector<int>&,std::vector<int>&);
 
   static const vtkIdType quads2[1][4];
   static const vtkIdType quads3[6][4];

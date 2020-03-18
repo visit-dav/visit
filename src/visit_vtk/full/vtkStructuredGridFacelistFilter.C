@@ -6,6 +6,7 @@
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
@@ -145,9 +146,12 @@ vtkStructuredGridFacelistFilter::RequestData(
   outCellData->CopyAllocate(inCellData);
 
   vtkCellArray *polys = vtkCellArray::New();
-  vtkIdTypeArray *list = vtkIdTypeArray::New();
-  list->SetNumberOfValues(numOutCells*(4+1));
-  vtkIdType *nl = list->GetPointer(0);
+  vtkIdTypeArray *offsets = vtkIdTypeArray::New();
+  vtkIdTypeArray *connectivity = vtkIdTypeArray::New();
+  offsets->SetNumberOfValues(numOutCells+1);
+  connectivity->SetNumberOfValues(numOutCells*4);
+  vtkIdType *ol = offsets->GetPointer(0);
+  vtkIdType *cl = connectivity->GetPointer(0);
   
   //
   // Left face
@@ -157,11 +161,11 @@ vtkStructuredGridFacelistFilter::RequestData(
   {
     for (j = 0 ; j < nZ-1 ; j++)
     {
-      *nl++ = 4;
-      *nl++ = PointIndex(0, i, j, nX, nY, nZ);
-      *nl++ = PointIndex(0, i, j+1, nX, nY, nZ);
-      *nl++ = PointIndex(0, i+1, j+1, nX, nY, nZ);
-      *nl++ = PointIndex(0, i+1, j, nX, nY, nZ);
+      *ol++ = 4;
+      *cl++ = PointIndex(0, i, j, nX, nY, nZ);
+      *cl++ = PointIndex(0, i, j+1, nX, nY, nZ);
+      *cl++ = PointIndex(0, i+1, j+1, nX, nY, nZ);
+      *cl++ = PointIndex(0, i+1, j, nX, nY, nZ);
       int cId = CellIndex(0, i, j, nX, nY, nZ);
       outCellData->CopyData(inCellData, cId, cellId);
       cellId++;
@@ -177,11 +181,11 @@ vtkStructuredGridFacelistFilter::RequestData(
     {
       for (j = 0 ; j < nZ-1 ; j++)
       {
-        *nl++ = 4;
-        *nl++ = PointIndex(nX-1, i, j, nX, nY, nZ);
-        *nl++ = PointIndex(nX-1, i+1, j, nX, nY, nZ);
-        *nl++ = PointIndex(nX-1, i+1, j+1, nX, nY, nZ);
-        *nl++ = PointIndex(nX-1, i, j+1, nX, nY, nZ);
+        *ol++ = 4;
+        *cl++ = PointIndex(nX-1, i, j, nX, nY, nZ);
+        *cl++ = PointIndex(nX-1, i+1, j, nX, nY, nZ);
+        *cl++ = PointIndex(nX-1, i+1, j+1, nX, nY, nZ);
+        *cl++ = PointIndex(nX-1, i, j+1, nX, nY, nZ);
         int cId = CellIndex(nX-2, i, j, nX, nY, nZ);
         outCellData->CopyData(inCellData, cId, cellId);
         cellId++;
@@ -196,11 +200,11 @@ vtkStructuredGridFacelistFilter::RequestData(
   {
     for (j = 0 ; j < nZ-1 ; j++)
     {
-      *nl++ = 4;
-      *nl++ = PointIndex(i, 0, j, nX, nY, nZ);
-      *nl++ = PointIndex(i+1, 0, j, nX, nY, nZ);
-      *nl++ = PointIndex(i+1, 0, j+1, nX, nY, nZ);
-      *nl++ = PointIndex(i, 0, j+1, nX, nY, nZ);
+      *ol++ = 4;
+      *cl++ = PointIndex(i, 0, j, nX, nY, nZ);
+      *cl++ = PointIndex(i+1, 0, j, nX, nY, nZ);
+      *cl++ = PointIndex(i+1, 0, j+1, nX, nY, nZ);
+      *cl++ = PointIndex(i, 0, j+1, nX, nY, nZ);
       int cId = CellIndex(i, 0, j, nX, nY, nZ);
       outCellData->CopyData(inCellData, cId, cellId);
       cellId++;
@@ -216,11 +220,11 @@ vtkStructuredGridFacelistFilter::RequestData(
     {
       for (j = 0 ; j < nZ-1 ; j++)
       {
-        *nl++ = 4;
-        *nl++ = PointIndex(i, nY-1, j, nX, nY, nZ);
-        *nl++ = PointIndex(i, nY-1, j+1, nX, nY, nZ);
-        *nl++ = PointIndex(i+1, nY-1, j+1, nX, nY, nZ);
-        *nl++ = PointIndex(i+1, nY-1, j, nX, nY, nZ);
+        *ol++ = 4;
+        *cl++ = PointIndex(i, nY-1, j, nX, nY, nZ);
+        *cl++ = PointIndex(i, nY-1, j+1, nX, nY, nZ);
+        *cl++ = PointIndex(i+1, nY-1, j+1, nX, nY, nZ);
+        *cl++ = PointIndex(i+1, nY-1, j, nX, nY, nZ);
         int cId = CellIndex(i, nY-2, j, nX, nY, nZ);
         outCellData->CopyData(inCellData, cId, cellId);
         cellId++;
@@ -235,11 +239,11 @@ vtkStructuredGridFacelistFilter::RequestData(
   {
     for (j = 0 ; j < nY-1 ; j++)
     {
-      *nl++ = 4;
-      *nl++ = PointIndex(i, j, 0, nX, nY, nZ);
-      *nl++ = PointIndex(i, j+1, 0, nX, nY, nZ);
-      *nl++ = PointIndex(i+1, j+1, 0, nX, nY, nZ);
-      *nl++ = PointIndex(i+1, j, 0, nX, nY, nZ);
+      *ol++ = 4;
+      *cl++ = PointIndex(i, j, 0, nX, nY, nZ);
+      *cl++ = PointIndex(i, j+1, 0, nX, nY, nZ);
+      *cl++ = PointIndex(i+1, j+1, 0, nX, nY, nZ);
+      *cl++ = PointIndex(i+1, j, 0, nX, nY, nZ);
       int cId = CellIndex(i, j, 0, nX, nY, nZ);
       outCellData->CopyData(inCellData, cId, cellId);
       cellId++;
@@ -255,20 +259,24 @@ vtkStructuredGridFacelistFilter::RequestData(
     {
       for (j = 0 ; j < nY-1 ; j++)
       {
-        *nl++ = 4;
-        *nl++ = PointIndex(i, j, nZ-1, nX, nY, nZ);
-        *nl++ = PointIndex(i+1, j, nZ-1, nX, nY, nZ);
-        *nl++ = PointIndex(i+1, j+1, nZ-1, nX, nY, nZ);
-        *nl++ = PointIndex(i, j+1, nZ-1, nX, nY, nZ);
+        *ol++ = 4;
+        *cl++ = PointIndex(i, j, nZ-1, nX, nY, nZ);
+        *cl++ = PointIndex(i+1, j, nZ-1, nX, nY, nZ);
+        *cl++ = PointIndex(i+1, j+1, nZ-1, nX, nY, nZ);
+        *cl++ = PointIndex(i, j+1, nZ-1, nX, nY, nZ);
         int cId = CellIndex(i, j, nZ-2, nX, nY, nZ);
         outCellData->CopyData(inCellData, cId, cellId);
         cellId++;
       }
     }
   }
-  
-  polys->SetCells(numOutCells, list);
-  list->Delete();
+ 
+  // last entry of offsets array should be the length of the connectivity array.
+  *ol++ = numOutCells*4;
+
+  polys->SetData(offsets, connectivity);
+  offsets->Delete();
+  connectivity->Delete();
 
   outCellData->Squeeze();
   output->SetPolys(polys);

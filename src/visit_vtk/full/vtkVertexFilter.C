@@ -156,7 +156,7 @@ vtkVertexFilter::RequestData(
       if (ugrid != NULL && ugrid->GetCellType(i) == VTK_CONVEX_POINT_SET)
       {
           vtkIdType npts;
-          vtkIdType *pts;
+          const vtkIdType *pts;
           ugrid->GetCellPoints(i, npts, pts);
           point[0] = 0.;
           point[1] = 0.;

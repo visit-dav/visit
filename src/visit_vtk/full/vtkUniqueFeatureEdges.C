@@ -5,6 +5,7 @@
 #include "vtkUniqueFeatureEdges.h"
 
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkEdgeTable.h>
@@ -97,13 +98,14 @@ int vtkUniqueFeatureEdges::RequestData(
   vtkCellArray *newLines;
   vtkPolyData *Mesh;
   int i;
-  vtkIdType j, numNei, cellId;
+  vtkIdType j, numNei;
   vtkIdType numBEdges, numNonManifoldEdges, numFedges, numManifoldEdges;
   double n[3], x1[3], x2[3];
   double cosAngle = 0;
   vtkIdType lineIds[2];
-  vtkIdType npts, *pts;
-  vtkCellArray *inPolys, *inStrips, *newPolys;
+  vtkIdType npts;
+  const vtkIdType *pts;
+  vtkCellArray *inPolys, *newPolys;
   vtkDataArray *polyNormals = NULL;
   vtkIdType numPts, numCells, numPolys, numStrips, nei;
   vtkIdList *neighbors;
@@ -166,9 +168,10 @@ int vtkUniqueFeatureEdges::RequestData(
       {
       newPolys->Allocate(newPolys->EstimateSize(numStrips,5));
       }
-    inStrips = input->GetStrips();
-    for ( inStrips->InitTraversal(); inStrips->GetNextCell(npts,pts); )
+    auto inStrips = vtk::TakeSmartPointer(input->GetStrips()->NewIterator());
+    for (inStrips->GoToFirstCell(); !inStrips->IsDoneWithTraversal(); inStrips->GoToNextCell())
       {
+      inStrips->GetCurrentCell(npts,pts);
       vtkTriangleStrip::DecomposeStrip(npts, pts, newPolys);
       }
     Mesh->SetPolys(newPolys);
@@ -211,11 +214,12 @@ int vtkUniqueFeatureEdges::RequestData(
     polyNormals->SetNumberOfComponents(3);
     polyNormals->Allocate(newPolys->GetNumberOfCells());
 
-    for (cellId=0, newPolys->InitTraversal(); newPolys->GetNextCell(npts,pts);
-    cellId++)
+    auto npIter = vtk::TakeSmartPointer(newPolys->NewIterator());
+    for (npIter->GoToFirstCell(); !npIter->IsDoneWithTraversal(); npIter->GoToNextCell())
       {
+      npIter->GetCurrentCell(npts,pts);
       vtkPolygon::ComputeNormal(inPts,npts,pts,n);
-      polyNormals->InsertTuple(cellId,n);
+      polyNormals->InsertTuple(npIter->GetCurrentCellId(),n);
       }
 
     cosAngle = cos( vtkMath::RadiansFromDegrees( this->FeatureAngle ) );
@@ -228,9 +232,11 @@ int vtkUniqueFeatureEdges::RequestData(
   vtkIdType progressInterval=numCells/20+1;
 
   numBEdges = numNonManifoldEdges = numFedges = numManifoldEdges = 0;
-  for (cellId=0, newPolys->InitTraversal();
-       newPolys->GetNextCell(npts,pts) && !abort; cellId++)
+  auto npIter = vtk::TakeSmartPointer(newPolys->NewIterator());
+  for (npIter->GoToFirstCell(); !npIter->IsDoneWithTraversal() && !abort; npIter->GoToNextCell())
     {
+    npIter->GetCurrentCell(npts,pts);
+    vtkIdType cellId = npIter->GetCurrentCellId();
     if ( ! (cellId % progressInterval) ) //manage progress / early abort
       {
       this->UpdateProgress ((double)cellId / numCells);

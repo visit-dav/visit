@@ -18,6 +18,7 @@
 #include <vtkVisItFeatureEdges.h>
 
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
@@ -102,8 +103,8 @@ int vtkVisItFeatureEdges::RequestData(
   double cosAngle = 0;
   vtkIdType lineIds[2];
   vtkIdType npts = 0;
-  vtkIdType *pts = 0;
-  vtkCellArray *inPolys, *inStrips, *newPolys;
+  const vtkIdType *pts = 0;
+  vtkCellArray *inPolys, *newPolys;
   vtkFloatArray *polyNormals = NULL;
   vtkIdType numPts, numCells, numPolys, numStrips, nei;
   vtkIdList *neighbors;
@@ -163,9 +164,10 @@ int vtkVisItFeatureEdges::RequestData(
       {
       newPolys->Allocate(newPolys->EstimateSize(numStrips,5));
       }
-    inStrips = input->GetStrips();
-    for ( inStrips->InitTraversal(); inStrips->GetNextCell(npts,pts); )
+    auto inStrips = vtk::TakeSmartPointer(input->GetStrips()->NewIterator());
+    for ( inStrips->GoToFirstCell(); !inStrips->IsDoneWithTraversal(); inStrips->GoToNextCell())
       {
+      inStrips->GetCurrentCell(npts,pts);
       vtkTriangleStrip::DecomposeStrip(npts, pts, newPolys);
       }
     Mesh->SetPolys(newPolys);

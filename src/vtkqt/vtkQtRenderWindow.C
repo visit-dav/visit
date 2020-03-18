@@ -2,11 +2,11 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#include "vtkOpenGL.h"
+#include <vtkOpenGL.h>
 
 #include <vtkQtRenderWindow.h>
 
-#include "QVTKOpenGLWidget.h"
+#include <QVTKOpenGLWidget.h>
 
 #include <vtkGenericOpenGLRenderWindow.h>
 #include <QVTKInteractor.h>
@@ -92,16 +92,16 @@ public:
         // the channel seems to be benign. In addition, the 2D view
         // bounds and picking are off.
         gl = new QVTKOpenGLWidget(w);
-        if (!gl->GetRenderWindow())
+        if (!gl->renderWindow())
         {
             vtkGenericOpenGLRenderWindow *renWin = vtkGenericOpenGLRenderWindow::New();
-            gl->SetRenderWindow(renWin);
+            gl->setRenderWindow(renWin);
             renWin->Delete();
         }
-        gl->GetRenderWindow()->AlphaBitPlanesOn();
-        gl->GetRenderWindow()->SetStereoRender( stereo );
-        gl->GetRenderWindow()->AlphaBitPlanesOn();
-        gl->GetRenderWindow()->SetStereoRender( stereo );
+        gl->renderWindow()->AlphaBitPlanesOn();
+        gl->renderWindow()->SetStereoRender( stereo );
+        gl->renderWindow()->AlphaBitPlanesOn();
+        gl->renderWindow()->SetStereoRender( stereo );
     }
 
     virtual ~vtkQtRenderWindowPrivate()
@@ -178,7 +178,7 @@ vtkQtRenderWindow::Delete()
 vtkRenderWindow *
 vtkQtRenderWindow::GetRenderWindow()
 {
-    return d->gl->GetRenderWindow();
+    return d->gl->renderWindow();
 }
 
     // Description:
@@ -186,7 +186,7 @@ vtkQtRenderWindow::GetRenderWindow()
 vtkRenderWindowInteractor * 
 vtkQtRenderWindow::GetInteractor()
 {
-    return d->gl->GetInteractor();
+    return d->gl->interactor();
 }
 
 QWidget *

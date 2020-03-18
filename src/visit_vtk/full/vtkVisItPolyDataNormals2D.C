@@ -5,6 +5,7 @@
 #include "vtkVisItPolyDataNormals2D.h"
 
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
@@ -164,25 +165,21 @@ vtkVisItPolyDataNormals2D::ExecutePoint(
     output->Allocate(inCL->GetNumberOfConnectivityEntries());
     outCD->CopyAllocate(inCD, nTotalCells);
 
-    vtkIdType *connPtrL = inCL->GetPointer();
-    for (i = 0 ; i < nLines ; i++)
+    auto connPtrL = vtk::TakeSmartPointer(inCL->NewIterator());
+    for (connPtrL->GoToFirstCell(); !connPtrL->IsDoneWithTraversal(); connPtrL->GoToNextCell())
     {
         outCD->CopyData(inCD, nVerts+i, nVerts+i);
-        int nVerts = *connPtrL++;
-        if (nVerts == 2)
-        {
-            output->InsertNextCell(VTK_LINE, 2,
-                                   connPtrL);
-        }
-        else
-        {
-            output->InsertNextCell(VTK_POLY_LINE, nVerts,
-                                   connPtrL);
-        }
+        vtkIdType nPtIds;
+        const vtkIdType *ptIds;
+        connPtrL->GetCurrentCell(nPtIds, ptIds);
+        int type = VTK_LINE;
+        if (nPtIds != 2)
+            type = VTK_POLY_LINE;
+        output->InsertNextCell(type, nPtIds, ptIds);
 
         double pt0[3], pt1[3];
-        inPts->GetPoint(connPtrL[0], pt0);
-        inPts->GetPoint(connPtrL[1], pt1);
+        inPts->GetPoint(ptIds[0], pt0);
+        inPts->GetPoint(ptIds[1], pt1);
         double dx = pt1[0] - pt0[0];
         double dy = pt1[1] - pt0[1];
         // this gets normalized later
@@ -191,16 +188,13 @@ vtkVisItPolyDataNormals2D::ExecutePoint(
         normal[1] = -dx;
         normal[2] = 0;
 
-        for (int j = 0 ; j < nVerts ; j++)
+        for (int j = 0 ; j < nPtIds ; j++)
         {
-            int p = connPtrL[j];
+            int p = ptIds[j];
             dnormals[p*3+0] += normal[0];
             dnormals[p*3+1] += normal[1];
             dnormals[p*3+2] += normal[2];
         }
-
-        // Increment our connectivity pointer
-        connPtrL += nVerts;
     }
 
     // Renormalize the normals; they've only been accumulated so far,
@@ -266,8 +260,6 @@ vtkVisItPolyDataNormals2D::ExecutePoint(
 void
 vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
 {
-    int  i;
-
     // Get all the input and output objects we'll need to reference
     output->ShallowCopy(input);
 
@@ -286,7 +278,7 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     // The verts come before the polys.  So add normals for them.
     int numPrimitivesWithoutNormals = 0;
     numPrimitivesWithoutNormals += input->GetVerts()->GetNumberOfCells();
-    for (i = 0 ; i < numPrimitivesWithoutNormals ; i++)
+    for (int i = 0 ; i < numPrimitivesWithoutNormals ; i++)
     {
         newNormalPtr[0] = 0.;
         newNormalPtr[1] = 0.;
@@ -295,12 +287,12 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     }
 
     vtkCellArray *inCL  = input->GetLines();
-    vtkIdType *connPtrL = inCL->GetPointer();
-    int nLines = inCL->GetNumberOfCells();
-    for (i = 0 ; i < nLines ; i++)
+    auto  connPtrL = vtk::TakeSmartPointer(inCL->NewIterator());
+    for (connPtrL->GoToFirstCell(); !connPtrL->IsDoneWithTraversal(); connPtrL->GoToNextCell())
     {
-        int nVerts = *connPtrL++;
-        vtkIdType *cell = connPtrL;
+        vtkIdType nVerts;
+        const vtkIdType *cell;
+        connPtrL->GetCurrentCell(nVerts, cell);
 
         double v0[3], v1[3];
         double normal[3] = {0, 0, 1};
@@ -322,17 +314,12 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
         newNormalPtr[1] = (float)(normal[1]);
         newNormalPtr[2] = (float)(normal[2]);
         newNormalPtr += 3;
-
-        //
-        // Step through connectivity
-        //
-        connPtrL += nVerts;
     }
         
     // The triangle strips come after the polys.  So add normals for them.
     numPrimitivesWithoutNormals = 0;
     numPrimitivesWithoutNormals += input->GetPolys()->GetNumberOfCells();
-    for (i = 0 ; i < numPrimitivesWithoutNormals ; i++)
+    for (int i = 0 ; i < numPrimitivesWithoutNormals ; i++)
     {
         newNormalPtr[0] = 0.f;
         newNormalPtr[1] = 0.f;
@@ -343,7 +330,7 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     // The triangle strips come after the polys.  So add normals for them.
     numPrimitivesWithoutNormals = 0;
     numPrimitivesWithoutNormals += input->GetStrips()->GetNumberOfCells();
-    for (i = 0 ; i < numPrimitivesWithoutNormals ; i++)
+    for (int i = 0 ; i < numPrimitivesWithoutNormals ; i++)
     {
         newNormalPtr[0] = 0.f;
         newNormalPtr[1] = 0.f;

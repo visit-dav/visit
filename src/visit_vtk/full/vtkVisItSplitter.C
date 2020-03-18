@@ -413,7 +413,7 @@ public:
         nCellPts = (dims[2] <= 1) ? 4 : 8;
     }
 
-    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
+    inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
     {
         const int X_val[8] = { 0, 1, 1, 0, 0, 1, 1, 0 };
         const int Y_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
@@ -518,9 +518,9 @@ public:
         return pd->GetCellType(cellId);
     }
 
-    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
+    inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
     {
-        vtkIdType *cellPts = NULL;
+        const vtkIdType *cellPts = NULL;
         pd->GetCellPoints(cellId, nCellPts, cellPts);
         return cellPts;
     }
@@ -542,9 +542,9 @@ public:
         return ug->GetCellType(cellId);
     }
 
-    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
+    inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
     {
-        vtkIdType *cellPts = NULL;
+        const vtkIdType *cellPts = NULL;
         ug->GetCellPoints(cellId, nCellPts, cellPts);
         return cellPts;
     }
@@ -569,7 +569,7 @@ public:
         return cellPoints.GetCellType(cellId);
     }
 
-    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
+    inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
     {
         return cellPoints.GetCellPoints(cellId, nCellPts);
     }
@@ -622,7 +622,7 @@ public:
         return cellPoints.GetCellType(cellId);
     }
 
-    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
+    inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
     {
         return cellPoints.GetCellPoints(cellId, nCellPoints);
     }
@@ -706,7 +706,7 @@ vtkVisItSplitter_Algorithm(Bridge bridge, ScalarAccess scalar,
         vtkIdType cellId = (state.CellList != NULL ? state.CellList[i] : i);
         int cellType = bridge.GetCellType(cellId);
         vtkIdType nCellPts = 0;
-        vtkIdType *cellPts = bridge.GetCellPoints(cellId, nCellPts);
+        const vtkIdType *cellPts = bridge.GetCellPoints(cellId, nCellPts);
 
         // If it's something we can't clip, skip this output
         switch (cellType)

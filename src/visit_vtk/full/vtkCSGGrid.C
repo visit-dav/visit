@@ -34,7 +34,9 @@
 #include <vtkSphere.h>
 #include <vtkThreshold.h>
 #include <vtkTransform.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
+
 #include <vtkVisItClipper.h>
 #include <vtkVisItSplitter.h>
 

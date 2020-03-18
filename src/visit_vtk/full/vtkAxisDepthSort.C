@@ -152,7 +152,7 @@ vtkAxisDepthSort::RequestData(
     vtkPointData *outPD      = NULL;
     vtkCellData  *outCD      = NULL;
     vtkIdType     npts       = 0;
-    vtkIdType    *cellPts    = 0;
+    const vtkIdType    *cellPts    = nullptr;
     input->BuildCells();
  
     //

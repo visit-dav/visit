@@ -569,7 +569,7 @@ vtkSlicer::UnstructuredGridExecute(void)
         vtkIdType  cellId = (CellList != NULL ? CellList[i] : i);
         int        cellType = ug->GetCellType(cellId);
         vtkIdType  npts;
-        vtkIdType *pts;
+        const vtkIdType *pts;
         ug->GetCellPoints(cellId, npts, pts);
         const int *triangulation_table = NULL;
         const int *vertices_from_edges = NULL;
@@ -682,7 +682,8 @@ vtkSlicer::UnstructuredGridExecute(void)
 
             if(cellType == VTK_POLYHEDRON)
             {
-                vtkIdType nFaces, *facePtIds;
+                vtkIdType nFaces;
+                const vtkIdType *facePtIds;
                 ug->GetFaceStream(cellId, nFaces, facePtIds);
                 stuff_I_cant_slice->InsertNextCell(cellType, npts, pts, 
                     nFaces, facePtIds);

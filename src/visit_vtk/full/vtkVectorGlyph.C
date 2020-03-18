@@ -251,18 +251,19 @@ vtkVectorGlyph::RequestData(
         xform->SetInputConnection(sphere->GetOutputPort());
         xform->Update();
         vtkPolyData *spoly = (vtkPolyData *)xform->GetOutput();
-        int np = spoly->GetPoints()->GetNumberOfPoints();
+        vtkIdType np = spoly->GetPoints()->GetNumberOfPoints();
         pts->SetNumberOfPoints(np);
         
         //set points.
-        for (int i = 0; i < np; i++)
+        for (vtkIdType i = 0; i < np; i++)
             pts->SetPoint(i, spoly->GetPoints()->GetPoint(i));
         
         //set polys.
         np = spoly->GetPolys()->GetNumberOfCells();
-        for (int i = 0; i < np; i++)
+        for (vtkIdType i = 0; i < np; i++)
         {
-            vtkIdType n, *p;
+            vtkIdType n;
+            const vtkIdType *p;
             spoly->GetPolys()->GetNextCell(n, p);
             polys->InsertNextCell(n, p);
         }

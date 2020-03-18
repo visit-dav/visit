@@ -271,7 +271,7 @@ vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
           continue;
 
       vtkIdType npts;
-      vtkIdType *pts;
+      const vtkIdType *pts;
       inGrid->GetCellPoints(i, npts, pts);
       *ct++ = inGrid->GetCellType(i);
       *cl++ = currentIndex;
@@ -396,7 +396,7 @@ vtkDataSetRemoveGhostCells::PolyDataExecute()
   outGrid->Allocate(nCells);
   inGrid->BuildCells();
   vtkIdType npts;
-  vtkIdType *pts;
+  const vtkIdType *pts;
   int cell = 0;
   for (int i = 0 ; i < nCells ; i++)
     {
