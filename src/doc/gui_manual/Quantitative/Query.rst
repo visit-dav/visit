@@ -366,7 +366,7 @@ Pick
 TrajectoryByNode and TrajectoryByZone
     The TrajectoryByNode and TrajectoryByZone queries first perform a Pick
     using domain and element id on their respective elements, and they then generate
-    a curve **plotting one variable with respect to another**.
+    a curve *plotting one variable with respect to another*.
     You'll notice that, next to the **Variables** parameter, there is a text box containing
     default variables **var_for_x** and **var_for_y**. Replace these defaults with your
     desired variables for the query, and the resulting curve will plot your replacement
