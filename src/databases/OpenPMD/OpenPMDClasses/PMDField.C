@@ -49,6 +49,8 @@
 
 #include "PMDField.h"
 
+#include <DebugStream.h>
+
 // ***************************************************************************
 // Method: PMDField::PMDField
 //
@@ -265,8 +267,8 @@ void PMDField::SetGridDimensions(hid_t datasetId)
     }
     else
     {
-        cerr << "Error in PMDField::SetGridDimensions, ndims = " << ndims
-             << endl;
+        debug5 << "Error in PMDField::SetGridDimensions, ndims = " << ndims
+               << endl;
     }
 
 }
@@ -540,8 +542,8 @@ PMDField::SetGeometry(char * name,
         }
         else
         {
-            cerr << " Error in PMDField::SetGeometry:" << endl;
-            cerr << " tmpchar is not a valid geometry" << endl;
+            debug5 << " Error in PMDField::SetGeometry:" << endl;
+            debug5 << " tmpchar is not a valid geometry" << endl;
         }
 
         delete[] buffer;
@@ -940,8 +942,8 @@ PMDField::SetGeometryParameters(char * name,
       }
       else
       {
-        cerr << " Error in PMDField::SetGeometryParamters" << endl;
-        cerr << " Sign of imag is not recongnized" << endl;
+        debug5 << " Error in PMDField::SetGeometryParamters" << endl;
+        debug5 << " Sign of imag is not recongnized" << endl;
         return -1;
       }
 
@@ -949,8 +951,8 @@ PMDField::SetGeometryParameters(char * name,
   }
   else
   {
-      cerr << " Error in PMDField::SetGeometryParamters" << endl;
-      cerr << " Attribute is not a string" << endl;
+      debug5 << " Error in PMDField::SetGeometryParamters" << endl;
+      debug5 << " Attribute is not a string" << endl;
       return -1;
   }
   return 0;
@@ -1139,10 +1141,10 @@ PMDField::GetBlockProperties(int blockDim,
     }
     else
     {
-        cerr << " This dimension, "
-             << this->ndims
-             << ", can not be read in parallel"
-             << endl;
+        debug5 << " This dimension, "
+               << this->ndims
+               << ", can not be read in parallel"
+               << endl;
         return -1;
     }
 
@@ -1187,7 +1189,7 @@ PMDField::ComputeArrayThetaMode(void * dataSetArray,
     // Offset for index computation
     offset0 = this->nbNodes[2]*this->nbNodes[1];
 
-    cerr << this->dataSize << endl;
+    debug5 << this->dataSize << endl;
 
     // Create a pointer depending of the data size
     // Simple precision
@@ -1310,10 +1312,10 @@ PMDField::ComputeArrayThetaMode(void * dataSetArray,
     }
     else
     {
-        cerr << " Error in PMDField::ComputeArrayThetaMode" << endl;
-        cerr << " DataSize is not recognized: "
-             << this->dataSize
-             << endl;
+        debug5 << " Error in PMDField::ComputeArrayThetaMode" << endl;
+        debug5 << " DataSize is not recognized: "
+               << this->dataSize
+               << endl;
     }
     return 0;
 }
