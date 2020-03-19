@@ -6,7 +6,7 @@
 #define MATH_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(VISIT_BUILD_SHARED_LIBS)
+#if !defined(VISIT_STATIC)
 #if defined(AVTMATH_EXPORTS) || defined(avtmath_EXPORTS)
 #define MATH_API __declspec(dllexport)
 #else

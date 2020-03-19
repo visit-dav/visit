@@ -6,7 +6,7 @@
 #define IVP_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(VISIT_BUILD_SHARED_LIBS)
+#if !defined(VISIT_STATIC)
 #if defined(AVTIVP_EXPORTS) || defined(avtivp_ser_EXPORTS) || defined(avtivp_par_EXPORTS)
 #define IVP_API __declspec(dllexport)
 #else

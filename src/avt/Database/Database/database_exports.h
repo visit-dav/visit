@@ -6,7 +6,7 @@
 #define DATABASE_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(VISIT_BUILD_SHARED_LIBS)
+#if !defined(VISIT_STATIC)
 #if defined(AVTDATABASE_EXPORTS) || defined(avtdatabase_ser_EXPORTS) || defined(avtdatabase_par_EXPORTS)
 #define DATABASE_API __declspec(dllexport)
 #else

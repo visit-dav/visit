@@ -7,7 +7,7 @@
 
 #if defined(_WIN32)
 # define DESCRIPTOR unsigned int
-#if defined(VISIT_BUILD_SHARED_LIBS)
+#if !defined(VISIT_STATIC)
 # if defined(COMM_EXPORTS) || defined(visitcommon_EXPORTS)
 #   define COMM_API  __declspec(dllexport)
 #   define COMM_API2 __declspec(dllexport)

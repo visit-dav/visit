@@ -6,7 +6,7 @@
 #define Operator_PLUGIN_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(VISIT_BUILD_SHARED_LIBS)
+#if !defined(VISIT_STATIC)
 # define OP_EXPORT __declspec(dllexport)
 #else
 #define OP_EXPORT

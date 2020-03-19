@@ -6,7 +6,7 @@
 #define PARSER_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(VISIT_BUILD_SHARED_LIBS)
+#if !defined(VISIT_STATIC)
 # if defined(PARSER_EXPORTS) || defined(visitcommon_EXPORTS)
 #   define PARSER_API  __declspec(dllexport)
 #   define PARSER_API2 __declspec(dllexport)

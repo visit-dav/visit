@@ -6,7 +6,7 @@
 #define EXPR_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(VISIT_BUILD_SHARED_LIBS)
+#if !defined(VISIT_STATIC)
 # if defined(EXPR_EXPORTS) || defined(visitcommon_EXPORTS)
 #   define EXPR_API  __declspec(dllexport)
 #   define EXPR_API2 __declspec(dllexport)
