@@ -139,6 +139,9 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //    and in fact removes them from the output, don't process the input if
 //    they are present.
 //
+//    Alister Maguire, Wed Mar 18 15:16:33 PDT 2020
+//    Updated vtkVisItPolyDataNormals filter to handle triangle strips.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -169,10 +172,6 @@ avtVertexNormalsFilter::ExecuteData(avtDataRepresentation *in_dr)
     if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
     {
         vtkPolyData *pd = (vtkPolyData *)in_ds;
-        // The polydata normals filter doesn't handle triangle strips, in fact
-        // it removes them, so don't process a dataset that contains them.
-        if (pd->GetNumberOfStrips() > 0)
-            return in_dr;
 
         bool pointNormals = true;
         if (atts.ValidActiveVariable())
