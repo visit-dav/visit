@@ -807,6 +807,10 @@ avtUnstructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 //  Programmer:  Hank Childs
 //  Creation:    March 9, 2007
 //
+//  Modifications:
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
+//
 // ****************************************************************************
 
 vector<avtMaterial*>
@@ -847,11 +851,14 @@ avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
 //  Creation:    February 13, 2007
 //
 //  Modifications:
-//
 //    Mark C. Miller, Mon Feb  9 17:11:23 PST 2015
 //    Adjust memcpy calls to copy minimum size of old/new buffers. I used
 //    MIN instead of always using old sizes because I was not absolutely sure
 //    whether the new sizes could indeed be smaller.
+//
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
+//
 // ****************************************************************************
 
 #ifndef MIN
@@ -1047,6 +1054,9 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
 //    Hank Childs, Tue Feb 13 16:42:36 PST 2007
 //    Renamed method to ExchangeCleanMaterials.  This method is now only called
 //    if we know that the materials are clean.
+//
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
 //
 // ****************************************************************************
 
