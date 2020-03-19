@@ -181,8 +181,11 @@ Definition:
 void
 WellBoreViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    WellBoreViewerEnginePluginInfo::clientAtts  = new WellBoreAttributes;
-    WellBoreViewerEnginePluginInfo::defaultAtts = new WellBoreAttributes;
+    if (WellBoreViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        WellBoreViewerEnginePluginInfo::clientAtts  = new WellBoreAttributes;
+        WellBoreViewerEnginePluginInfo::defaultAtts = new WellBoreAttributes;
+    }
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);
@@ -259,6 +262,7 @@ WellBoreViewerEnginePluginInfo::InitializeDefaultPalette(
     }
 }
 
+Target: xml2atts
 Function: ProcessOldVersions
 Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 Definition:

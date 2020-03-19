@@ -16,14 +16,17 @@
 #    use 'repr(db)' when writing script file to preserve '\' escapes.
 #    Replace forward-slash with back-slash in pattern.
 #
+#    Kathleen Biagas, Tue Jun 11 11:44:14 PDT 2019
+#    Pass '-noconfig' to generated command line in GenerateCinema.
+#
 # ----------------------------------------------------------------------------
 import os, string, subprocess
 
 def GenerateCinema(cinemaArgs):
     if TestEnv.params["parallel"]:
-        args = [TestEnv.params["visit_bin"], "-cinema", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + cinemaArgs
+        args = [TestEnv.params["visit_bin"], "-noconfig", "-cinema", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + cinemaArgs
     else:
-        args = [TestEnv.params["visit_bin"], "-cinema"] + cinemaArgs
+        args = [TestEnv.params["visit_bin"], "-noconfig", "-cinema"] + cinemaArgs
     p = subprocess.check_output(args)
     return p
 
@@ -182,7 +185,7 @@ def test1(db):
 def MakeShortWave():
     db = abs_path("short_wave.visit")
     f = open(db, "wt")
-    for i in xrange(0, 700, 100):
+    for i in range(0, 700, 100):
         f.write(silo_data_path("wave%04d.silo" % i) + "\n")
     f.close()
     return os.path.abspath(db)

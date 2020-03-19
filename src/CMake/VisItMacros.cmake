@@ -1,43 +1,11 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
-#*****************************************************************************
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
+#****************************************************************************
 #  A place to store macros used by plugins, so that PluginVsInstall.cmake.in
 #  will not have to rewrite them.  Should reduce maintenance headache for
-#  that file.  This file should only include those that 
+#  that file.  This file should only include those that
 #  PluginVsInstall.cmake.in also uses without modification.
 #
 #*****************************************************************************
@@ -83,7 +51,7 @@ IF (WIN32)
 ENDIF (WIN32)
 
 FUNCTION(ADD_TARGET_INCLUDE target)
-      set_property(TARGET ${target} 
+      set_property(TARGET ${target}
                    APPEND
                    PROPERTY INCLUDE_DIRECTORIES ${ARGN})
 ENDFUNCTION(ADD_TARGET_INCLUDE)
@@ -136,9 +104,9 @@ FUNCTION(ADD_PARALLEL_LIBRARY target)
     ENDIF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
 ENDFUNCTION(ADD_PARALLEL_LIBRARY)
 
-MACRO(VISIT_PLUGIN_TARGET_RTOD type) 
+MACRO(VISIT_PLUGIN_TARGET_RTOD type)
     IF(WIN32)
-        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES 
+        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY_RELEASE
                 "${VISIT_PLUGIN_DIR}/${type}"
             RUNTIME_OUTPUT_DIRECTORY_DEBUG
@@ -150,5 +118,142 @@ MACRO(VISIT_PLUGIN_TARGET_RTOD type)
         )
     ENDIF(WIN32)
 ENDMACRO(VISIT_PLUGIN_TARGET_RTOD)
+
+
+
+##############################################################################
+# Function that creates a generic XML tool Code Gen Target
+# (helper for functions below, don't call directly )
+##############################################################################
+FUNCTION(ADD_XML_TOOLS_GEN_TARGET gen_name
+                                  src_dir
+                                  dest_dir
+                                  tool_name
+                                  gen_type)
+    ####
+    # only create code gen targets if:
+    #  we aren't on windows
+    #  our cmake for gen targets option is on
+    ####
+    if(VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
+        set(gen_target_name "gen_${gen_type}_${gen_name}")
+
+        MESSAGE(STATUS "Adding ${tool_name} generation target: ${gen_target_name}")
+
+        if(WIN32)
+            # need to test this in the future
+            set(xml_gen_tool visit_exe -${tool_name})
+        else()
+            set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/${tool_name})
+        endif()
+
+        # construct path to source file, we need to run
+        # in the dir where we want the code to gen
+        set(xml_input ${src_dir}/${gen_name}.xml)
+
+        if(NOT IS_ABSOLUTE ${xml_input})
+            set(xml_input "${CMAKE_CURRENT_SOURCE_DIR}/${xml_input}")
+        endif()
+
+        add_custom_target(${gen_target_name}
+            COMMAND ${xml_gen_tool} -clobber ${xml_input}
+            DEPENDS  ${xml_file} ${tool_name}
+            WORKING_DIRECTORY ${dest_dir}
+            COMMENT "Running ${tool_name} on ${gen_name}" VERBATIM)
+
+        if(WIN32)
+            set_target_properties(${gen_target_name} PROPERTIES
+                FOLDER "generators/${gen_type}")
+            add_dependencies(${gen_target_name} visit_exe)
+        endif()
+
+        # connect this target to roll up target for all python gen
+        set(top_level_target "gen_${gen_type}_all")
+        if(NOT TARGET ${top_level_target})
+            add_custom_target(${top_level_target})
+            if(WIN32)
+                set_target_properties(${top_level_target} PROPERTIES
+                    FOLDER "generators/all")
+            endif()
+        endif()
+
+        add_dependencies(${top_level_target} ${gen_target_name})
+    endif()
+ENDFUNCTION(ADD_XML_TOOLS_GEN_TARGET)
+
+#############################################################################
+# Function that creates XML tools C++ Code Gen Target
+##############################################################################
+FUNCTION(ADD_CPP_GEN_TARGET gen_name
+                            src_dir
+                            dest_dir)
+
+    ADD_XML_TOOLS_GEN_TARGET(${gen_name}
+                             ${src_dir}
+                             ${dest_dir}
+                             "xml2atts"
+                             "cpp")
+
+ENDFUNCTION(ADD_CPP_GEN_TARGET)
+
+##############################################################################
+# Function that creates XML tools Python Code Gen Target
+##############################################################################
+FUNCTION(ADD_PYTHON_GEN_TARGET gen_name
+                               src_dir
+                               dest_dir)
+
+   ADD_XML_TOOLS_GEN_TARGET(${gen_name}
+                            ${src_dir}
+                            ${dest_dir}
+                            "xml2python"
+                            "python")
+
+ENDFUNCTION(ADD_PYTHON_GEN_TARGET)
+
+##############################################################################
+# Function that creates XML tools Java Code Gen Target
+##############################################################################
+FUNCTION(ADD_JAVA_GEN_TARGET gen_name
+                             src_dir
+                             dest_dir)
+
+     ADD_XML_TOOLS_GEN_TARGET(${gen_name}
+                              ${src_dir}
+                              ${dest_dir}
+                              "xml2java"
+                              "java")
+
+ENDFUNCTION(ADD_JAVA_GEN_TARGET)
+
+##############################################################################
+# Function that creates XML tools Info Code Gen Target
+##############################################################################
+FUNCTION(ADD_INFO_GEN_TARGET gen_name
+                             src_dir
+                             dest_dir)
+
+    ADD_XML_TOOLS_GEN_TARGET(${gen_name}
+                             ${src_dir}
+                             ${dest_dir}
+                             "xml2info"
+                             "info")
+
+ENDFUNCTION(ADD_INFO_GEN_TARGET)
+
+##############################################################################
+# Function that creates XML tools Info Code Gen Target
+##############################################################################
+FUNCTION(ADD_CMAKE_GEN_TARGET gen_name
+                              src_dir
+                              dest_dir)
+
+    ADD_XML_TOOLS_GEN_TARGET(${gen_name}
+                             ${src_dir}
+                             ${dest_dir}
+                             "xml2cmake"
+                             "cmake")
+
+ENDFUNCTION(ADD_CMAKE_GEN_TARGET)
 
 

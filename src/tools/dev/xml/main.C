@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
 //  Modifications:
@@ -61,8 +27,8 @@ void ProcessFile(QString file);
 
 // ***************************************************************************
 //  Function: Die
-//  Purpose: 
-//   When a fatal error occurs we need to flush cErr & cOut manually before 
+//  Purpose:
+//   When a fatal error occurs we need to flush cErr & cOut manually before
 //   calling exit().
 //
 // ***************************************************************************
@@ -90,9 +56,9 @@ PrintUsage(const char *prog)
     cErr << "    options:" << Endl;
     cErr << "        -clobber       overwrite old files if possible" << Endl;
     cErr << "        -noprint       no debug output" << Endl;
-    cErr << "        -public        (xml2cmake only) install publicly" 
+    cErr << "        -public        (xml2cmake only) install publicly"
          << Endl;
-    cErr << "        -private       (xml2cmake only) install privately" 
+    cErr << "        -private       (xml2cmake only) install privately"
          << Endl;
     cErr << "        -outputtoinputdir  store results in same location as "
          << ".xml file" << Endl;
@@ -161,6 +127,10 @@ public:
 //    Delete the QFile if we never call open on it; trying to use it anyway
 //    will cause a segfault.
 //
+//    Kathleen Biagas, Thu Dec 26 08:38:29 MST 2019
+//    Don't use QIODevice::Text on Windows, to prevent windows-style line
+//    endings, we want unix-style line endings.
+//
 // ****************************************************************************
 
 QFile *
@@ -175,12 +145,20 @@ Open(const QString &name_withoutpath)
     bool alreadyexists = false;
     QFile *file = new QFile(name);
     if (clobber)
+#ifdef WIN32
+        file->open(QIODevice::WriteOnly);
+#else
         file->open(QIODevice::WriteOnly | QIODevice::Text);
+#endif
     else
     {
         if (!file->exists())
         {
+#ifdef WIN32
+            file->open(QIODevice::WriteOnly);
+#else
             file->open(QIODevice::WriteOnly | QIODevice::Text);
+#endif
         }
         else
         {
@@ -207,15 +185,15 @@ Open(const QString &name_withoutpath)
 }
 
 // ****************************************************************************
-//  Function:  FileContentsChecksum 
+//  Function:  FileContentsChecksum
 //
 //  Purpose:   Return a checksum of a file's contents given its pathname
 //
 //  Arguments:
 //    name           the pathname
 //
-//  Programmer:  Mark C. Miller 
-//  Creation:    April 9, 2008 
+//  Programmer:  Mark C. Miller
+//  Creation:    April 9, 2008
 //
 //  Modifications:
 //    Brad Whitlock, Thu May  8 13:40:53 PDT 2008
@@ -260,8 +238,8 @@ FileContentsChecksum(const QString &name, unsigned int *sum)
 //    file           the header file stream to close
 //    pre_name_withoutpath the (pre) of the file without pathname
 //
-//  Programmer:  Mark C. Miller 
-//  Creation:    April 9, 2008 
+//  Programmer:  Mark C. Miller
+//  Creation:    April 9, 2008
 //
 //  Modifications:
 //    Brad Whitlock, Thu May  8 13:48:35 PDT 2008
@@ -331,7 +309,7 @@ CloseHeader(QTextStream &file, const QString &pre_name_withoutpath)
 //    Added Common plugin info.
 //
 //    Jeremy Meredith, Wed Feb  6 16:53:39 PST 2002
-//    Added code so it will not clobber existing files unless the 
+//    Added code so it will not clobber existing files unless the
 //    "-clobber" flag is given, and so it will not print if
 //    the "-noprint" option is given.
 //
@@ -412,6 +390,9 @@ CloseHeader(QTextStream &file, const QString &pre_name_withoutpath)
 //    I added -dv so we can have it behave differently when installed vs
 //    not installed.
 //
+//    Kathleen Biagas, Tue Feb 25 2020
+//    Skip -forceversion and it's version number when searching for files.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -489,13 +470,18 @@ int main(int argc, char *argv[])
     std::back_insert_iterator<std::vector<std::string> > fi(files);
     for (int f = 1 ; f < argc ; f++)
     {
-        if(QFile(argv[f]).exists())
+        if (strcmp(argv[f], "-forceversion") == 0)
+        {
+            // skip the version number
+            ++f;
+        }
+        else if(QFile(argv[f]).exists())
         {
             *fi = std::string(argv[f]);
         }
         else if(argv[f][0] != '-') // don't warn for arguments.
         {
-            cErr << "File '" << argv[1] << "' doesn't exist!\n";
+            cErr << "File '" << argv[f] << "' doesn't exist!\n";
         }
     }
 
@@ -511,18 +497,18 @@ int main(int argc, char *argv[])
 
 // ****************************************************************************
 //
-//    Kathleen Bonnell, Thu Jul  5 17:58:22 PDT 2007 
+//    Kathleen Bonnell, Thu Jul  5 17:58:22 PDT 2007
 //    For GeneratePython, if plugin, call plugin->WriteHeader instead of
 //    attribute->WriteHeader.  There is a flag that needs to be turned off
 //    for plugins.  The plugin->WriteHeader will turn off the flag then call
 //    the WriteHeader for the atts.
-//    
+//
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Made it re-write header file only when header file has changed
 //
 //    Kathleen Bonnell, Thu Apr 17 09:55:07 PDT 2008
 //    Added code to retrieve the full path for this executable when
-//    generating project files on windows. 
+//    generating project files on windows.
 //
 //    Brad Whitlock, Thu May  8 11:53:18 PDT 2008
 //    Qt 4. Use QTextStream.
@@ -562,7 +548,7 @@ ProcessFile(QString file)
         QXmlInputSource   source(&xmlFile);
         QXmlSimpleReader  reader;
         ErrorHandler      errorhandler;
-        
+
         reader.setFeature(
            "http://qt-project.org/xml/features/report-whitespace-only-CharData",
            false);

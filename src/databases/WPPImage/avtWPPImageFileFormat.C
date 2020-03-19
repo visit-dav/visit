@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtWPPImageFileFormat.C                           //
@@ -61,7 +27,6 @@
 #include <DebugStream.h>
 
 #include <fcntl.h>
-#include <snprintf.h>
 
 using namespace std;
 #ifdef WIN32
@@ -167,7 +132,7 @@ avtWPPImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         debug5 << "no of pts = " << m_ni[b] << " " << m_nj[b] << " " 
                << m_nk[b] << endl;
         char buf[50];
-        SNPRINTF(buf,50,"h=%f",m_gridsize[b]);
+        snprintf(buf,50,"h=%f",m_gridsize[b]);
         string bname= buf;
         mmd->blockNames[b] = bname;
     }
@@ -282,14 +247,14 @@ avtWPPImageFileFormat::GetVar(int domain, const char *varname)
     char errmsg[500];
     if( fd == -1 )
     {
-        SNPRINTF(errmsg,500,"Error opening file %s",m_filename.c_str());
+        snprintf(errmsg,500,"Error opening file %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     off_t nr = LSEEK(fd,m_offset[domain],SEEK_CUR);
     if( nr != m_offset[domain] )
     {
         CLOSE(fd);
-        SNPRINTF(errmsg,500,"Error accessing array in %s",m_filename.c_str());
+        snprintf(errmsg,500,"Error accessing array in %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     size_t npts = ((size_t) m_ni[domain])*m_nj[domain]*m_nk[domain];
@@ -307,7 +272,7 @@ avtWPPImageFileFormat::GetVar(int domain, const char *varname)
         if( (size_t)nr != sizeof(float)*npts )
         {
             CLOSE(fd);
-            SNPRINTF(errmsg,500,"Error reading array in %s", 
+            snprintf(errmsg,500,"Error reading array in %s", 
                      m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
@@ -325,7 +290,7 @@ avtWPPImageFileFormat::GetVar(int domain, const char *varname)
         if( (size_t)nr != sizeof(double)*npts )
         {
             CLOSE(fd); 
-            SNPRINTF(errmsg,500,"Error reading array in %s", 
+            snprintf(errmsg,500,"Error reading array in %s", 
                      m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
@@ -393,7 +358,7 @@ void avtWPPImageFileFormat::Initialize()
           m_mode == "velmag" || m_mode == "qs" || m_mode == "qp" || 
           m_mode == "hvel" ) ) 
     {
-        SNPRINTF(errmsg,500,"Error: Unknown volimage mode %s" , 
+        snprintf(errmsg,500,"Error: Unknown volimage mode %s" , 
                  m_mode.c_str() );
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
@@ -403,7 +368,7 @@ void avtWPPImageFileFormat::Initialize()
     if (find3D != string::npos && find3D == k-2)
     {
         // We have a '3D.mode' type file -- this is for volimage
-        SNPRINTF(errmsg,500,"Error: WPPImage reader does not read 3D volimage"
+        snprintf(errmsg,500,"Error: WPPImage reader does not read 3D volimage"
                 " files -- use the volimage reader instead. mode -- %s", m_mode.c_str());
         debug1 << errmsg << endl; 
         EXCEPTION1( InvalidDBTypeException, errmsg );
@@ -416,7 +381,7 @@ void avtWPPImageFileFormat::Initialize()
     int fd = OPEN( m_filename.c_str(), O_RDONLY|O_BINARY );
     if( fd == -1 )
     {
-        SNPRINTF(errmsg,500,"Error in WPPImage opening file %s",
+        snprintf(errmsg,500,"Error in WPPImage opening file %s",
                  m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
@@ -425,14 +390,14 @@ void avtWPPImageFileFormat::Initialize()
     if( nr != sizeof(int) )
     {
         CLOSE(fd); // closing the solution file
-        SNPRINTF(errmsg,500,"Error reading precision in %s",
+        snprintf(errmsg,500,"Error reading precision in %s",
                  m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     if( (m_prec != 4) && (m_prec != 8 ) )
     {
         CLOSE(fd); // closing the solution file
-        SNPRINTF(errmsg,500,"Error, precision is %i, should be 4 or 8\n",
+        snprintf(errmsg,500,"Error, precision is %i, should be 4 or 8\n",
                  m_prec);
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
@@ -440,7 +405,7 @@ void avtWPPImageFileFormat::Initialize()
     if( nr != sizeof(int) )
     {
         CLOSE(fd); // closing the solution file
-        SNPRINTF(errmsg,500,"Error reading nblocks in %s",m_filename.c_str());
+        snprintf(errmsg,500,"Error reading nblocks in %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     debug5 << "prec = " << m_prec << " " << " nblocks = " << m_nblocks << endl;
@@ -481,7 +446,7 @@ void avtWPPImageFileFormat::Initialize()
         if( nr != sizeof(double) )
         {
             CLOSE(fd); // closing the solution file
-            SNPRINTF(errmsg,500,"Error reading gridsizes in %s",
+            snprintf(errmsg,500,"Error reading gridsizes in %s",
                      m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
@@ -489,7 +454,7 @@ void avtWPPImageFileFormat::Initialize()
         if( nr != sizeof(int)*4 )
         {
             CLOSE(fd); // closing the solution file
-            SNPRINTF(errmsg,500,"Error reading dimensions in %s",
+            snprintf(errmsg,500,"Error reading dimensions in %s",
                      m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }

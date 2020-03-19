@@ -3,6 +3,8 @@ PROJECT(CosmosPP_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(CosmosPP)
+
 SET(COMMON_SOURCES
 CosmosPPPluginInfo.C
 CosmosPPCommonPluginInfo.C

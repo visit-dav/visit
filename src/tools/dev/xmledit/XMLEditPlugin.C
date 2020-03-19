@@ -1,40 +1,7 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 #include "XMLEditStd.h"
 #include "XMLEditPlugin.h"
 
@@ -95,8 +62,11 @@
 //    Add support for expression-creating-operators.
 //
 //    Hank Childs, Mon Jan 31 15:57:50 PST 2011
-//    Grey out the labels for operator creating expressions when we have 
+//    Grey out the labels for operator creating expressions when we have
 //    non-operators.
+//
+//    Kathleen Biagas, Thu Jan  2 10:05:15 MST 2020
+//    Added hasLicense.
 //
 // ****************************************************************************
 
@@ -113,7 +83,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     pluginButton->setChecked(true);
     attpluginGroup->addButton(pluginButton,0);
     attpluginGroup->addButton(attButton,1);
-    
+
     topLayout->addWidget(pluginButton, row, 0);
     topLayout->addWidget(attButton,    row, 1);
     row++;
@@ -128,7 +98,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     ++row;
     QVBoxLayout *innerPluginLayout = new QVBoxLayout(pluginGroup);
     innerPluginLayout->setMargin(10);
-   
+
     QGridLayout *pluginLayout = new QGridLayout;
     pluginLayout->setSpacing(5);
 
@@ -166,7 +136,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     pluginLayout->addWidget(iconFile, pRow,1, 1,5);
     pRow++;
     innerPluginLayout->addLayout(pluginLayout);
-    
+
     //
     // Plot plugin attributes
     //
@@ -346,13 +316,16 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     dbPluginLayout->addWidget(hasOptions, dbRow,0, 1,2);
     dbRow++;
 
+    hasLicense = new QCheckBox(tr("File format provides license."), dbPluginGroup);
+    hasLicense->setChecked(false);
+    dbPluginLayout->addWidget(hasLicense, dbRow,0, 1,2);
+    dbRow++;
+
     innerdbPluginLayout->addLayout(dbPluginLayout);
-    
+
     topLayout->setRowStretch(row, 100);
     row++;
 
-    
-    
     xmldoc = NULL;
 
     connect(attpluginGroup, SIGNAL(buttonClicked(int)),
@@ -449,6 +422,8 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
             this, SLOT(hasWriterChanged(bool)));
     connect(hasOptions, SIGNAL(toggled(bool)),
             this, SLOT(hasOptionsChanged(bool)));
+    connect(hasLicense, SIGNAL(toggled(bool)),
+            this, SLOT(hasLicenseChanged(bool)));
     connect(enabledByDefault, SIGNAL(toggled(bool)),
             this, SLOT(enabledByDefaultChanged(bool)));
 }
@@ -493,6 +468,9 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
 //
 //    Hank Childs, Thu Dec 30 15:07:03 PST 2010
 //    Add support for expression creating operators.
+//
+//    Kathleen Biagas, Thu Jan  2 10:05:15 MST 2020
+//    Added hasLicense.
 //
 // ****************************************************************************
 
@@ -642,6 +620,7 @@ XMLEditPlugin::UpdateWindowContents()
             hasIcon->setChecked(false);
             hasWriter->setChecked(xmldoc->plugin->haswriter);
             hasOptions->setChecked(xmldoc->plugin->hasoptions);
+            hasLicense->setChecked(xmldoc->plugin->haslicense);
             filePatternsStrict->setChecked(xmldoc->plugin->filePatternsStrict);
             opensWholeDirectory->setChecked(xmldoc->plugin->opensWholeDirectory);
 
@@ -664,6 +643,7 @@ XMLEditPlugin::UpdateWindowContents()
             hasIcon->setChecked(false);
             hasWriter->setChecked(false);
             hasOptions->setChecked(false);
+            hasLicense->setChecked(false);
             enabledByDefault->setChecked(true);
             pluginType->setCurrentIndex(0);
         }
@@ -689,6 +669,7 @@ XMLEditPlugin::UpdateWindowContents()
         iconFile->setText("");
         hasWriter->setChecked(false);
         hasOptions->setChecked(false);
+        hasLicense->setChecked(false);
         pluginType->setCurrentIndex(0);
         dbType->setCurrentIndex(0);
         filePatterns->setText("");
@@ -745,6 +726,9 @@ XMLEditPlugin::UpdateWindowContents()
 //
 //    Hank Childs, Mon Jan 31 16:02:59 PST 2011
 //    Grey out operator heading if we are doing plot or DB.
+//
+//    Kathleen Biagas, Thu Jan  2 10:05:15 MST 2020
+//    Added hasLicense.
 //
 // ****************************************************************************
 
@@ -807,6 +791,7 @@ XMLEditPlugin::UpdateWindowSensitivity()
     hasIcon->setEnabled(op || plot);
     hasWriter->setEnabled(db);
     hasOptions->setEnabled(db);
+    hasLicense->setEnabled(db);
     enabledByDefault->setEnabled(plugin);
     bool val = (op || plot) && (xmldoc->plugin->iconFile.length() > 0);
     iconFile->setEnabled(val);
@@ -849,8 +834,11 @@ XMLEditPlugin::UpdateWindowSensitivity()
 //    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
 //
 //    Kevin Bensema, Wed Jul 17 17:30 PDT 2013
-//    Added createExpressions to the list of widgets affected by 
+//    Added createExpressions to the list of widgets affected by
 //    BlockAllSignals
+//
+//    Kathleen Biagas, Thu Jan  2 10:05:15 MST 2020
+//    Added hasLicense.
 //
 // ****************************************************************************
 
@@ -880,6 +868,7 @@ XMLEditPlugin::BlockAllSignals(bool block)
     iconFile->blockSignals(block);
     hasWriter->blockSignals(block);
     hasOptions->blockSignals(block);
+    hasLicense->blockSignals(block);
     enabledByDefault->blockSignals(block);
     createExpressions->blockSignals(block);
 }
@@ -909,6 +898,9 @@ XMLEditPlugin::BlockAllSignals(bool block)
 //    Hank Childs, Tue May 24 10:19:40 PDT 2005
 //    Added another argument to plugin constructor.
 //
+//    Kathleen Biagas, Thu Jan  2 10:05:15 MST 2020
+//    Added another argument to the plugin constructor, for hasLicense.
+//
 // ****************************************************************************
 void
 XMLEditPlugin::attpluginGroupChanged(int id)
@@ -919,7 +911,7 @@ XMLEditPlugin::attpluginGroupChanged(int id)
         if (!xmldoc->plugin)
         {
             xmldoc->plugin = new Plugin("","","","","","","",false,false,false,
-                                        false);
+                                        false,false);
             xmldoc->plugin->atts = xmldoc->attribute;
         }
     }
@@ -1004,7 +996,7 @@ XMLEditPlugin::iconFileTextChanged(const QString &text)
 // Creation:   Thu Mar 13 11:35:51 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1029,7 +1021,7 @@ XMLEditPlugin::hasIconChanged(bool val)
 // Creation:   September 23, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1050,7 +1042,7 @@ XMLEditPlugin::hasWriterChanged(bool val)
 // Creation:   December 28, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1069,7 +1061,7 @@ XMLEditPlugin::filePatternsStrictChanged(bool val)
 // Creation:   December 28, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1088,7 +1080,7 @@ XMLEditPlugin::opensWholeDirectoryChanged(bool val)
 // Creation:   May 24, 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1103,13 +1095,34 @@ XMLEditPlugin::hasOptionsChanged(bool val)
 }
 
 // ****************************************************************************
+// Method: XMLEditPlugin::hasLicenseChanged
+//
+// Programmer: Kathleen Biagas
+// Creation:   January 2, 2020
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+XMLEditPlugin::hasLicenseChanged(bool val)
+{
+    if (xmldoc->docType != "Plugin")
+        return;
+
+    xmldoc->plugin->haslicense = val;
+
+    UpdateWindowSensitivity();
+}
+
+// ****************************************************************************
 // Method: XMLEditPlugin::enabledByDefaultChanged
 //
 // Programmer: Jeremy Meredith
 // Creation:   November  5, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1129,7 +1142,7 @@ XMLEditPlugin::enabledByDefaultChanged(bool val)
 // Creation:   December 30, 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

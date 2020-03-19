@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ***************************************************************************
 //                              avtSAMRAIFileFormat.C                         
@@ -93,8 +59,6 @@
 #include <UnexpectedValueException.h>
 #include <Utility.h>
 #include <DataNode.h>
-
-#include <snprintf.h>
 
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
 // in this file uses version 1.6 of the HDF5 API. This is harmless for
@@ -533,7 +497,7 @@ avtSAMRAIFileFormat::CloseFile(int f)
         {
             char msg[512];
             static bool haveIssuedWarning = false;
-            SNPRINTF(msg, sizeof(msg), "Error closing HDF5 SAMRAI file \"%s\". "
+            snprintf(msg, sizeof(msg), "Error closing HDF5 SAMRAI file \"%s\". "
                 "The file may have been left open holding HDF5 resources. "
                 "This may indicate a problem with the SAMRAI plugin or some other HDF5 based "
                 "plugin that has attempted to open this file. Please contact VisIt developers "
@@ -1403,7 +1367,7 @@ avtSAMRAIFileFormat::ReadSparseMaterialData(int patch, const int *matnos,
     avtMaterial *mat = 0;
 
     char domName[256];
-    SNPRINTF(domName, sizeof(domName), "patch_%d", patch);
+    snprintf(domName, sizeof(domName), "patch_%d", patch);
 
     // compute logical size in each dimension of this patch
     int dim = num_dim_problem < 3 ? num_dim_problem: 3;
@@ -1731,7 +1695,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
        // Construct the object we came here for
        //
        char domName[256];
-       SNPRINTF(domName, sizeof(domName),"%d", patch);
+       snprintf(domName, sizeof(domName),"%d", patch);
        mat = new avtMaterial(num_mats, matnos, matnames, dim, dims, 0,
                              vfracs, domName);
 
@@ -2705,7 +2669,7 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             char msg[512];
             static bool haveIssuedWarning = false;
-            SNPRINTF(msg, sizeof(msg), "Ordinarily, VisIt displays a wireframe, subset "
+            snprintf(msg, sizeof(msg), "Ordinarily, VisIt displays a wireframe, subset "
                 "plot of 'levels' automatically upon opening a SAMRAI file. However, such "
                 "a plot is not applicable in the case that there is only one patch. So, "
                 "the normal subset plot is not being displayed.");

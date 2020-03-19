@@ -79,8 +79,9 @@ function bv_tbb_host_profile
         #   TBB related projects. I want to keep it set here since I am afraid of breaking other packages
         #   other than ospray
         if [[ "$USE_SYSTEM_TBB" == "no" ]]; then
-            echo "VISIT_OPTION_DEFAULT(TBB_ROOT \${VISITHOME}/tbb/$TBB_VERSION/\${VISITARCH})" >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_TBB_DIR \${VISITHOME}/tbb/$TBB_VERSION/\${VISITARCH})" >> $HOSTCONF
+            echo "SETUP_APP_VERSION(TBB ${TBB_VERSION})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(TBB_ROOT \${VISITHOME}/tbb/\${TBB_VERSION}/\${VISITARCH})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_TBB_DIR \${VISITHOME}/tbb/\${TBB_VERSION}/\${VISITARCH})" >> $HOSTCONF
         else
             echo "VISIT_OPTION_DEFAULT(TBB_ROOT ${TBB_INSTALL_DIR})" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_TBB_DIR ${TBB_INSTALL_DIR})" >> $HOSTCONF
@@ -91,7 +92,7 @@ function bv_tbb_host_profile
 function bv_tbb_print_usage
 {
     #tbb does not have an option, it is only dependent on tbb.
-    printf "%-15s %s [%s]\n" "--tbb" "Build TBB" "$DO_TBB"
+    printf "%-20s %s [%s]\n" "--tbb" "Build TBB" "$DO_TBB"
 }
 
 function bv_tbb_ensure

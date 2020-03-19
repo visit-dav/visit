@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PoincareAttributes.h>
 #include <DataNode.h>
@@ -85,8 +51,8 @@ PoincareAttributes::SourceType_FromString(const std::string &s, PoincareAttribut
 //
 
 static const char *FieldType_strings[] = {
-"Default", "FlashField", "M3DC12DField", 
-"M3DC13DField", "Nek5000Field", "NektarPPField", 
+"Default", "FlashField", "M3DC12DField",
+"M3DC13DField", "Nek5000Field", "NektarPPField",
 "NIMRODField"};
 
 std::string
@@ -124,7 +90,7 @@ PoincareAttributes::FieldType_FromString(const std::string &s, PoincareAttribute
 //
 
 static const char *IntegrationType_strings[] = {
-"Euler", "Leapfrog", "DormandPrince", 
+"Euler", "Leapfrog", "DormandPrince",
 "AdamsBashforth", "RK4", "M3DC12DIntegrator"
 };
 
@@ -237,7 +203,7 @@ PoincareAttributes::CoordinateSystem_FromString(const std::string &s, PoincareAt
 //
 
 static const char *OverlapType_strings[] = {
-"Raw", "Remove", "Merge", 
+"Raw", "Remove", "Merge",
 "Smooth"};
 
 std::string
@@ -498,10 +464,10 @@ PoincareAttributes::Opacity_FromString(const std::string &s, PoincareAttributes:
 //
 
 static const char *DataValue_strings[] = {
-"Solid", "SafetyFactorQ", "SafetyFactorP", 
-"SafetyFactorQ_NotP", "SafetyFactorP_NotQ", "ToroidalWindings", 
-"PoloidalWindingsQ", "PoloidalWindingsP", "FieldlineOrder", 
-"PointOrder", "PlaneOrder", "WindingGroupOrder", 
+"Solid", "SafetyFactorQ", "SafetyFactorP",
+"SafetyFactorQ_NotP", "SafetyFactorP_NotQ", "ToroidalWindings",
+"PoloidalWindingsQ", "PoloidalWindingsP", "FieldlineOrder",
+"PointOrder", "PlaneOrder", "WindingGroupOrder",
 "WindingPointOrder", "WindingPointOrderModulo"};
 
 std::string
@@ -539,7 +505,7 @@ PoincareAttributes::DataValue_FromString(const std::string &s, PoincareAttribute
 //
 
 static const char *ParallelizationAlgorithmType_strings[] = {
-"LoadOnDemand", "ParallelStaticDomains", "MasterSlave", 
+"LoadOnDemand", "ParallelStaticDomains", "MasterSlave",
 "VisItSelects"};
 
 std::string
@@ -614,8 +580,8 @@ PoincareAttributes::PathlinesCMFE_FromString(const std::string &s, PoincareAttri
 //
 
 static const char *PointType_strings[] = {
-"Box", "Axis", "Icosahedron", 
-"Octahedron", "Tetrahedron", "SphereGeometry", 
+"Box", "Axis", "Icosahedron",
+"Octahedron", "Tetrahedron", "SphereGeometry",
 "Point", "Sphere"};
 
 std::string
@@ -651,7 +617,7 @@ PoincareAttributes::PointType_FromString(const std::string &s, PoincareAttribute
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
 //
-// Purpose: 
+// Purpose:
 //   Init utility for the PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -660,7 +626,7 @@ PoincareAttributes::PointType_FromString(const std::string &s, PoincareAttribute
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void PoincareAttributes::Init()
@@ -763,7 +729,7 @@ void PoincareAttributes::Init()
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
 //
-// Purpose: 
+// Purpose:
 //   Copy utility for the PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -772,7 +738,7 @@ void PoincareAttributes::Init()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void PoincareAttributes::Copy(const PoincareAttributes &obj)
@@ -878,7 +844,7 @@ const AttributeGroup::private_tmfs_t PoincareAttributes::TmfsStruct = {POINCAREA
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
 //
-// Purpose: 
+// Purpose:
 //   Default constructor for the PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -887,10 +853,10 @@ const AttributeGroup::private_tmfs_t PoincareAttributes::TmfsStruct = {POINCAREA
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-PoincareAttributes::PoincareAttributes() : 
+PoincareAttributes::PoincareAttributes() :
     AttributeSubject(PoincareAttributes::TypeMapFormatString),
     singleColor(0, 0, 0), colorTableName("Default")
 {
@@ -900,7 +866,7 @@ PoincareAttributes::PoincareAttributes() :
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the derived classes of PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -909,10 +875,10 @@ PoincareAttributes::PoincareAttributes() :
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-PoincareAttributes::PoincareAttributes(private_tmfs_t tmfs) : 
+PoincareAttributes::PoincareAttributes(private_tmfs_t tmfs) :
     AttributeSubject(tmfs.tmfs),
     singleColor(0, 0, 0), colorTableName("Default")
 {
@@ -922,7 +888,7 @@ PoincareAttributes::PoincareAttributes(private_tmfs_t tmfs) :
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
 //
-// Purpose: 
+// Purpose:
 //   Copy constructor for the PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -931,10 +897,10 @@ PoincareAttributes::PoincareAttributes(private_tmfs_t tmfs) :
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) : 
+PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) :
     AttributeSubject(PoincareAttributes::TypeMapFormatString)
 {
     PoincareAttributes::Copy(obj);
@@ -943,7 +909,7 @@ PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) :
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
 //
-// Purpose: 
+// Purpose:
 //   Copy constructor for derived classes of the PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -952,10 +918,10 @@ PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) :
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj, private_tmfs_t tmfs) : 
+PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj, private_tmfs_t tmfs) :
     AttributeSubject(tmfs.tmfs)
 {
     PoincareAttributes::Copy(obj);
@@ -964,7 +930,7 @@ PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj, private_tm
 // ****************************************************************************
 // Method: PoincareAttributes::~PoincareAttributes
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -973,7 +939,7 @@ PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj, private_tm
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 PoincareAttributes::~PoincareAttributes()
@@ -982,9 +948,9 @@ PoincareAttributes::~PoincareAttributes()
 }
 
 // ****************************************************************************
-// Method: PoincareAttributes::operator = 
+// Method: PoincareAttributes::operator =
 //
-// Purpose: 
+// Purpose:
 //   Assignment operator for the PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -993,10 +959,10 @@ PoincareAttributes::~PoincareAttributes()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-PoincareAttributes& 
+PoincareAttributes&
 PoincareAttributes::operator = (const PoincareAttributes &obj)
 {
     if (this == &obj) return *this;
@@ -1007,9 +973,9 @@ PoincareAttributes::operator = (const PoincareAttributes &obj)
 }
 
 // ****************************************************************************
-// Method: PoincareAttributes::operator == 
+// Method: PoincareAttributes::operator ==
 //
-// Purpose: 
+// Purpose:
 //   Comparison operator == for the PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1018,7 +984,7 @@ PoincareAttributes::operator = (const PoincareAttributes &obj)
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1125,9 +1091,9 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
 }
 
 // ****************************************************************************
-// Method: PoincareAttributes::operator != 
+// Method: PoincareAttributes::operator !=
 //
-// Purpose: 
+// Purpose:
 //   Comparison operator != for the PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1136,7 +1102,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1148,7 +1114,7 @@ PoincareAttributes::operator != (const PoincareAttributes &obj) const
 // ****************************************************************************
 // Method: PoincareAttributes::TypeName
 //
-// Purpose: 
+// Purpose:
 //   Type name method for the PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1157,7 +1123,7 @@ PoincareAttributes::operator != (const PoincareAttributes &obj) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const std::string
@@ -1169,7 +1135,7 @@ PoincareAttributes::TypeName() const
 // ****************************************************************************
 // Method: PoincareAttributes::CopyAttributes
 //
-// Purpose: 
+// Purpose:
 //   CopyAttributes method for the PoincareAttributes class.
 //
 // Programmer: Dave Pugmire
@@ -1210,7 +1176,7 @@ PoincareAttributes::CopyAttributes(const AttributeGroup *atts)
 // ****************************************************************************
 // Method: PoincareAttributes::CreateCompatible
 //
-// Purpose: 
+// Purpose:
 //   Creates a new state object of the desired type.
 //
 // Programmer: Dave Pugmire
@@ -1248,7 +1214,7 @@ PoincareAttributes::CreateCompatible(const std::string &tname) const
 // ****************************************************************************
 // Method: PoincareAttributes::NewInstance
 //
-// Purpose: 
+// Purpose:
 //   NewInstance method for the PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1257,7 +1223,7 @@ PoincareAttributes::CreateCompatible(const std::string &tname) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AttributeSubject *
@@ -1275,7 +1241,7 @@ PoincareAttributes::NewInstance(bool copy) const
 // ****************************************************************************
 // Method: PoincareAttributes::SelectAll
 //
-// Purpose: 
+// Purpose:
 //   Selects all attributes.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1284,7 +1250,7 @@ PoincareAttributes::NewInstance(bool copy) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1376,7 +1342,7 @@ PoincareAttributes::SelectAll()
 // ****************************************************************************
 // Method: PoincareAttributes::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   This method creates a DataNode representation of the object so it can be saved to a config file.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1385,7 +1351,7 @@ PoincareAttributes::SelectAll()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1876,7 +1842,7 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
 // ****************************************************************************
 // Method: PoincareAttributes::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   This method sets attributes in this object from values in a DataNode representation of the object.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1885,7 +1851,7 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3389,7 +3355,7 @@ PoincareAttributes::SelectOLineAxisFileName()
 // ****************************************************************************
 // Method: PoincareAttributes::GetFieldName
 //
-// Purpose: 
+// Purpose:
 //   This method returns the name of a field given its index.
 //
 // Note:       Autogenerated by xml2atts.
@@ -3398,7 +3364,7 @@ PoincareAttributes::SelectOLineAxisFileName()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 std::string
@@ -3490,7 +3456,7 @@ PoincareAttributes::GetFieldName(int index) const
 // ****************************************************************************
 // Method: PoincareAttributes::GetFieldType
 //
-// Purpose: 
+// Purpose:
 //   This method returns the type of a field given its index.
 //
 // Note:       Autogenerated by xml2atts.
@@ -3499,7 +3465,7 @@ PoincareAttributes::GetFieldName(int index) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AttributeGroup::FieldType
@@ -3591,7 +3557,7 @@ PoincareAttributes::GetFieldType(int index) const
 // ****************************************************************************
 // Method: PoincareAttributes::GetFieldTypeName
 //
-// Purpose: 
+// Purpose:
 //   This method returns the name of a field type given its index.
 //
 // Note:       Autogenerated by xml2atts.
@@ -3600,7 +3566,7 @@ PoincareAttributes::GetFieldType(int index) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 std::string
@@ -3692,7 +3658,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
 // ****************************************************************************
 // Method: PoincareAttributes::FieldsEqual
 //
-// Purpose: 
+// Purpose:
 //   This method compares two fields and return true if they are equal.
 //
 // Note:       Autogenerated by xml2atts.
@@ -3701,7 +3667,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -4129,7 +4095,7 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // ****************************************************************************
 // Method: PoincareAttributes::ChangesRequireRecalculation
 //
-// Purpose: 
+// Purpose:
 //   Determine if attribute changes require recalculation.
 //
 // Programmer: Dave Pugmire
@@ -4142,9 +4108,9 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 bool
 PoincareAttributes::ChangesRequireRecalculation(const PoincareAttributes &obj) const
 {
-    std::cerr << IntegralCurveAttsRequireRecalculation(obj) << "  " 
+    std::cerr << IntegralCurveAttsRequireRecalculation(obj) << "  "
               << PoincareAttsRequireRecalculation(obj) << std::endl;
-              
+
     return IntegralCurveAttsRequireRecalculation(obj) ||
            PoincareAttsRequireRecalculation(obj);
 }
@@ -4152,7 +4118,7 @@ PoincareAttributes::ChangesRequireRecalculation(const PoincareAttributes &obj) c
 // ****************************************************************************
 // Method: PoincareAttributes::IntegralCurveAttsRequireRecalculation
 //
-// Purpose: 
+// Purpose:
 //   Determine if integral curve attribute changes require recalculation.
 //
 // Programmer: Dave Pugmire
@@ -4220,7 +4186,7 @@ PoincareAttributes::IntegralCurveAttsRequireRecalculation(const PoincareAttribut
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttsRequireRecalculation
 //
-// Purpose: 
+// Purpose:
 //   Determine if poincare attribute changes require recalculation.
 //
 // Programmer: Dave Pugmire
@@ -4234,7 +4200,7 @@ bool
 PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &obj) const
 {
     return coordinateSystem != obj.coordinateSystem ||
- 
+
            analysis != obj.analysis ||
 
            maximumToroidalWinding != obj.maximumToroidalWinding ||
@@ -4259,7 +4225,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            show1DPlots != obj.show1DPlots ||
            showChaotic != obj.showChaotic ||
            verboseFlag != obj.verboseFlag ||
- 
+
            dataValue != obj.dataValue ||
 
            meshType != obj.meshType ||

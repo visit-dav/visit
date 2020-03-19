@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #ifndef CODEFILE_H
 #define CODEFILE_H
@@ -168,68 +134,68 @@ class CodeFile
     }
 
     bool HasCode(const QString &name) const
-    { 
-        return HasItem(code, name); 
+    {
+        return HasItem(code, name);
     }
-    bool GetCode(const QString &name, QStringList &targets, QStringList &first, 
+    bool GetCode(const QString &name, QStringList &targets, QStringList &first,
                  QStringList &second) const
     {
         return GetItem(code, name, targets, first, second);
     }
-    void GetAllCodes(QStringList &targets, QStringList &names, QStringList &first, 
+    void GetAllCodes(QStringList &targets, QStringList &names, QStringList &first,
                  QStringList &second) const
     {
         GetAllItems(code, targets, names, first, second);
     }
 
     bool HasFunction(const QString &name) const
-    { 
-        return HasItem(func, name); 
+    {
+        return HasItem(func, name);
     }
-    bool GetFunction(const QString &name, QStringList &targets, QStringList &first, 
+    bool GetFunction(const QString &name, QStringList &targets, QStringList &first,
                  QStringList &second) const
     {
         return GetItem(func, name, targets, first, second);
     }
-    void GetAllFunctions(QStringList &targets, QStringList &names, QStringList &first, 
+    void GetAllFunctions(QStringList &targets, QStringList &names, QStringList &first,
                  QStringList &second) const
     {
         GetAllItems(func, targets, names, first, second);
     }
 
     bool HasVariable(const QString &name) const
-    { 
-        return HasItem(var, name); 
+    {
+        return HasItem(var, name);
     }
-    bool GetVariable(const QString &name, QStringList &targets, QStringList &first, 
+    bool GetVariable(const QString &name, QStringList &targets, QStringList &first,
                  QStringList &second) const
     {
         return GetItem(var, name, targets, first, second);
     }
-    void GetAllVariables(QStringList &targets, QStringList &names, QStringList &first, 
+    void GetAllVariables(QStringList &targets, QStringList &names, QStringList &first,
                  QStringList &second) const
     {
         GetAllItems(var, targets, names, first, second);
     }
 
     bool HasConstant(const QString &name) const
-    { 
-        return HasItem(constant, name); 
+    {
+        return HasItem(constant, name);
     }
-    bool GetConstant(const QString &name, QStringList &language, QStringList &first, 
+    bool GetConstant(const QString &name, QStringList &language, QStringList &first,
                      QStringList &second) const
     {
         return GetItem(constant, name, language, first, second);
     }
-    void GetAllConstants(QStringList &targets, QStringList &names, QStringList &first, 
+    void GetAllConstants(QStringList &targets, QStringList &names, QStringList &first,
                  QStringList &second) const
     {
         GetAllItems(constant, targets, names, first, second);
     }
 
     bool HasInit(const QString &name) const
-    { 
-        return HasItem(init, name); 
+    {
+        return HasItem(init, name);
     }
     bool GetInit(const QString &name, QStringList &targets, QStringList &def) const
     {
@@ -249,7 +215,7 @@ class CodeFile
         {
             if(it->first == key)
             {
-                QStringPairVector sec = it->second;  
+                QStringPairVector sec = it->second;
                 for (size_t i = 0; i < sec.size(); ++i)
                 {
                     cond += sec[i].first;
@@ -453,7 +419,7 @@ private:
                         PVMit it;
                         std::pair<QString, QString> p(name, value);
                         for(it = condition.begin(); it != condition.end(); ++it)
-                        { 
+                        {
                             if (thisKey == it->first)
                                 break;
                         }
@@ -512,8 +478,8 @@ private:
         return false;
     }
 
-    bool GetItem(const QStringPairMap &m, const QString &name, 
-                 QStringList &targets, QStringList &first, 
+    bool GetItem(const QStringPairMap &m, const QString &name,
+                 QStringList &targets, QStringList &first,
                  QStringList &second) const
     {
         bool retval = false;
@@ -535,14 +501,14 @@ private:
     void GetAllItems(const QStringPairMap &m,
                      QStringList &targets,
                      QStringList &names,
-                     QStringList &first, 
+                     QStringList &first,
                      QStringList &second) const
     {
         for(QStringPairMap::const_iterator it = m.begin(); it != m.end(); ++it)
         {
             QString target, key;
             SplitKey(it->first, target, key);
-            
+
             targets += target;
             names += key;
             first += it->second.first;
@@ -559,7 +525,7 @@ private:
         {
             QString target, key;
             SplitKey(it->first, target, key);
-            
+
             targets += target;
             names += key;
             defs += it->second;
@@ -578,7 +544,7 @@ private:
         return false;
     }
 
-    bool GetItem(const QStringQStringMap &m, const QString &name, 
+    bool GetItem(const QStringQStringMap &m, const QString &name,
                  QStringList &targets, QStringList &first) const
     {
         bool retval = false;

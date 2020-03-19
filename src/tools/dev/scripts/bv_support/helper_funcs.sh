@@ -454,9 +454,16 @@ function verify_checksum_by_lookup
 #   I made it use the anonymous svn site as the fallback download site        #
 #   instead of llnl's web site.                                               #
 #                                                                             #
-#   Eric Brugger, Fri Feb  1 14:56:58 PST 2019
-#   I modified it to work post git transition.
-#
+#   Eric Brugger, Fri Feb  1 14:56:58 PST 2019                                #
+#   I modified it to work post git transition.                                #
+#                                                                             #
+#   Alister Maguire, Thu Jan  2 11:45:44 MST 2020                             #
+#   Added download attempt for links that exclude the file name.              #
+#                                                                             #
+#   Eric Brugger, Wed Jan 29 09:52:20 PST 2020                                #
+#   I modified the routine to download the visit tar file and third party     #
+#   libraries from github.                                                    #
+#                                                                             #
 # *************************************************************************** #
 
 function download_file
@@ -469,7 +476,7 @@ function download_file
     shift
 
     # If the visit source code is requested, handle that now.
-    site="${nerscroot}/${VISIT_VERSION}"
+    site="${visitroot}v${VISIT_VERSION}"
     if [[ "$dfile" == "$VISIT_FILE" ]] ; then
         try_download_file $site/$dfile $dfile
         if [[ $? == 0 ]] ; then
@@ -479,8 +486,13 @@ function download_file
 
     # It must be a third party library, handle that now.
     #
-    # First try NERSC.
-    site="${nerscroot}/${VISIT_VERSION}/third_party"
+    # First try GitHub. We only update the third party libraries when
+    # doing a major release, so the patch is always 0. The fancy
+    # parsing below grabs the major and minor version numbers.
+    IFS="." read -r -a vers <<< "$VISIT_VERSION"
+    major=${vers[0]}
+    minor=${vers[1]}
+    site="${thirdpartyroot}v${major}.${minor}.0"
     try_download_file $site/$dfile $dfile
     if [[ $? == 0 ]] ; then
         return 0
@@ -500,6 +512,12 @@ function download_file
                 try_download_file $site/$dfile $dfile
                 if [[ $? == 0 ]] ; then
                     return 0
+                else
+                    # Some download links exclude the file name.
+                    try_download_file_from_shortened_url $site $dfile
+                    if [[ $? == 0 ]] ; then
+                        return 0
+                    fi
                 fi
             fi
         done
@@ -856,24 +874,28 @@ function check_files
 
 
 # *************************************************************************** #
-#                          extract_parallel_ldflags                           #
+#                          process_parallel_ldflags                           #
 # --------------------------------------------------------------------------- #
-# VisIt's cmake config wants lib names stripped of "-l"                       #
-# If PAR_LIBS is used to pass parallel LDFLAGS we need to separate the libs   #
-# from the linker flags and strip the "-l" prefixes.                          #
-# This function accomplishes this and creates two new  variables:             #
-#   PAR_LINKER_FLAGS & PAR_LIBRARY_NAMES                                      #
+# This routine processes the PAR_LIBS variable into three other variables.    #
+#   PAR_LINKER_FLAGS :        Any linker flags that aren't libraries (don't   #
+#                             start with "-l".                                #
+#   PAR_LIBRARY_NAMES:        The library names with the "-l" stripped out.   #
+#   PAR_LIBRARY_LINKER_FLAGS: The library names with the "-l".                #
 # *************************************************************************** #
 function process_parallel_ldflags
 {
     export PAR_LINKER_FLAGS=""
     export PAR_LIBRARY_NAMES=""
+    export PAR_LIBRARY_LINKER_FLAGS=""
 
     for arg in $1; do
         pos=`echo "$arg" | awk '{ printf "%d", index($1,"-l"); }'`
         if [[ "$pos" != "0" ]] ; then
-            # we have a lib, remove the "-l" prefix & add it to the running
-            # list
+            # We have a library.
+            # Add it to the running list of library names with the "-l".
+            export PAR_LIBRARY_LINKER_FLAGS="$PAR_LIBRARY_LINKER_FLAGS$arg "
+            # Remove the "-l" prefix & add it to the running list of library
+            # names without the "-l".
             LIB_NAME=${arg#-l}
             export PAR_LIBRARY_NAMES="$PAR_LIBRARY_NAMES$LIB_NAME "
         else
@@ -897,9 +919,13 @@ function check_parallel
         parallel="yes"
     fi
 
-    # if we are using PAR_LIBS, call helper to split this into:
-    # PAR_LIBRARY_NAMES & PAR_LINKER_FLAGS
+    # If we are using PAR_LIBS, call helper to split this into:
+    # PAR_LINKER_FLAGS, PAR_LIBRARY_NAMES & PAR_LIBRARY_LINKER_FLAGS
     process_parallel_ldflags "$PAR_LIBS"
+
+    # If we are using PAR_INCLUDE, store the directory name without the
+    # "-I"
+    export PAR_INCLUDE_PATH=`echo "$PAR_INCLUDE" | sed "s/-I//"`
 
     #
     # Parallelization
@@ -938,9 +964,11 @@ function check_parallel
             export VISIT_MPI_COMPILER_CXX="$MPICH_COMPILER_CXX"
             export PAR_COMPILER="$MPICH_COMPILER"
             export PAR_COMPILER_CXX="$MPICH_COMPILER_CXX"
+            export PAR_INCLUDE="-I${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/include"
             info  "Configuring parallel with mpich build: "
-            info  "  PAR_COMPILER: $MPICH_COMPILER "
-            info  "  PAR_COMPILER_CXX: $MPICH_COMPILER_CXX"
+            info  "  PAR_COMPILER: $PAR_COMPILER"
+            info  "  PAR_COMPILER_CXX: $PAR_COMPILER_CXX"
+            info  "  PAR_INCLUDE: $PAR_INCLUDE"
             return 0
         fi
 
@@ -1440,7 +1468,6 @@ function usage
     printf "%-20s %s [%s]\n" "--cxxflags" "Explicitly set CXXFLAGS" "$CXXFLAGS"
     printf "%-20s %s [%s]\n" "--cc"  "Explicitly set C_COMPILER" "$C_COMPILER"
     printf "%-20s %s [%s]\n" "--cxx" "Explicitly set CXX_COMPILER" "$CXX_COMPILER"
-    printf "%-20s %s [%s]\n" "--debug" "Add '-g' to C[XX]FLAGS" "no"
     printf "%s <%s>  %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
     printf "%-20s %s [%s]\n" "--fortran" "Enable compilation of Fortran sources" "no"
     printf "%-20s %s\n"      "--fc" "Explicitly set FC_COMPILER"

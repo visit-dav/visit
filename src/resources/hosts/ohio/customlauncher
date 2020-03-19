@@ -24,8 +24,8 @@ class JobSubmitter_qsub_OSC(JobSubmitter_qsub):
         if self.launcher.osc_host == "OWENS":
             return ["/opt/torque/bin/qsub"]
         else:
-            print "Cannot resolve OSC host, trying default 'qsub'"
-            print "Contact oschelp@osc.edu for help"
+            print("Cannot resolve OSC host, trying default 'qsub'")
+            print("Contact oschelp@osc.edu for help")
             return ["qsub"]
 
     def PPNArgument(self):
@@ -42,7 +42,7 @@ class OSCLauncher(MainLauncher):
 
     def Customize(self):
         msg = """ Ohio Supercomputer Center - Custom Launch File \n"""
-        print msg
+        print(msg)
 
         sys.path.insert(0, "/usr/local/lmod/lmod/init/")
         import os

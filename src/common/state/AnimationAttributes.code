@@ -4,13 +4,13 @@ Definition:
 // ****************************************************************************
 // Method: AnimationAttributes::ProcessOldVersions
 //
-// Purpose: 
+// Purpose:
 //   This method creates modifies a DataNode representation of the object
 //   so it conforms to the newest representation of the object, which can
 //   can be read back in.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   January 12, 2005 
+// Programmer: Kathleen Bonnell
+// Creation:   January 12, 2005
 //
 // Modifications:
 //

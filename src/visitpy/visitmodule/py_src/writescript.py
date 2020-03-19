@@ -1,39 +1,7 @@
-###############################################################################
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
 ###############################################################################
 # file: writescript.py
 # Purpose: This function can interrogate the current state of VisIt to write out
@@ -90,7 +58,7 @@ Example:
             write_state_object_atts(f, atts, name)
             return 1
         wroteline = 0
-        for i in xrange(len(lines)):
+        for i in range(len(lines)):
             line = lines[i]
             if line == '' or line[0] == '#':
                 continue
@@ -143,7 +111,7 @@ Example:
     def write_sil(f):
         silr = visit.SILRestriction()
         nsets = [0,0]
-        for setid in xrange(silr.NumSets()):
+        for setid in range(silr.NumSets()):
             if silr.UsesData(setid):
                 nsets[1] += 1
             else:
@@ -156,7 +124,7 @@ Example:
             # More sets were on so we'll turn them all on and then turn off sets
             # that were off.
             sets = []
-            for setid in xrange(silr.NumSets()):
+            for setid in range(silr.NumSets()):
                 if not silr.UsesData(setid) and len(silr.MapsOut(setid)) == 0:
                     sets.append(setid)
 
@@ -171,7 +139,7 @@ Example:
                 if 0: #For now. silr.SetIndex() is buggy. #if len(sets) < 100:
                     line = 'offSets = ('
                     linelen = len(line)
-                    for i in xrange(len(sets)):
+                    for i in range(len(sets)):
                         s = '"%s", ' % silr.SetName(sets[i])
                         line = line + s
                         linelen = linelen + len(s)
@@ -181,7 +149,7 @@ Example:
                     line = line + ')\n'
                     f.write('%s' % line)
                     f.write('offSets = (')
-                    for i in xrange(len(sets)):
+                    for i in range(len(sets)):
                         f.write('"%s", ' % silr.SetName(sets[i]))
                     f.write(')\n')
                     f.write('for silSet in offSets:\n')
@@ -189,7 +157,7 @@ Example:
                 else:
                     line = 'offSets = ('
                     linelen = len(line)
-                    for i in xrange(len(sets)):
+                    for i in range(len(sets)):
                         s = '%d, ' % sets[i]
                         line = line + s
                         linelen = linelen + len(s)
@@ -205,7 +173,7 @@ Example:
             # More sets were off so we'll turn them all off and then turn on sets
             # that were on.
             sets = []
-            for setid in xrange(silr.NumSets()):
+            for setid in range(silr.NumSets()):
                 if silr.UsesData(setid) and len(silr.MapsOut(setid)) == 0:
                     sets.append(setid)
 
@@ -220,7 +188,7 @@ Example:
                 if 0: #For now. silr.SetIndex() is buggy. #if len(sets) < 100:
                     line = 'onSets = ('
                     linelen = len(line)
-                    for i in xrange(len(sets)):
+                    for i in range(len(sets)):
                         s = '"%s", ' % silr.SetName(sets[i])
                         line = line + s
                         linelen = linelen + len(s)
@@ -234,7 +202,7 @@ Example:
                 else:
                     line = 'onSets = ('
                     linelen = len(line)
-                    for i in xrange(len(sets)):
+                    for i in range(len(sets)):
                         s = '%d, ' % sets[i]
                         line = line + s
                         linelen = linelen + len(s)

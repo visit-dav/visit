@@ -4,7 +4,7 @@ visitpng = "visit210.png"
 try:
     visitpng = sys.argv[1]
 except:
-    print "Usage: python make_visit_icon.py filename"
+    print("Usage: python make_visit_icon.py filename")
     sys.exit(0)
 
 resolutions = (
@@ -22,11 +22,11 @@ resolutions = (
 try:
     os.mkdir("VisItIcon.iconset")
 except:
-    print "VisItIcon.iconset already exists."
+    print("VisItIcon.iconset already exists.")
 
 for res in resolutions:
     cmd = "convert -resize %s\\! %s VisItIcon.iconset/%s.png" % (res[1], visitpng, res[0])
-    print cmd
+    print(cmd)
     os.system(cmd)
 
 cmd = "iconutil -c icns VisItIcon.iconset VisItIcon.icns"

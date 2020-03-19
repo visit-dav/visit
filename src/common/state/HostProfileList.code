@@ -4,14 +4,14 @@ Definition:
 // ****************************************************************************
 //  Method: HostProfileList::GetActiveLaunchProfileForHost
 //
-//  Purpose: 
+//  Purpose:
 //    Returns the active launch profile for the machine with a host name
 //    pattern matching the specified host name.
 //
 //  Arguments:
 //    hostName    the host name to match with the profile hostname patterns
-//   
-//  Returns:    
+//
+//  Returns:
 //    A pointer to the host profile, or NULL.
 //
 //  Programmer: Jeremy Meredith
@@ -22,7 +22,7 @@ Definition:
 // ****************************************************************************
 LaunchProfile *
 HostProfileList::GetActiveLaunchProfileForHost(const std::string &hostName) const
-{   
+{
     MachineProfile *machine = GetMachineProfileForHost(hostName);
     return machine ? machine->GetActiveLaunchProfile() : NULL;
 }
@@ -33,14 +33,14 @@ Definition:
 // ****************************************************************************
 //  Method: HostProfileList::GetMachineProfileForHost
 //
-//  Purpose: 
+//  Purpose:
 //    Gets the machine profile with a host name pattern
 //    matching the specified host name.
 //
 //  Arguments:
 //    hostName    the host name to match with the profile hostname patterns
-//   
-//  Returns:    
+//
+//  Returns:
 //    A pointer to the machine profile, or NULL.
 //
 //  Programmer: Jeremy Meredith

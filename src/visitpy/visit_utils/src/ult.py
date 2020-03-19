@@ -1,39 +1,7 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#*****************************************************************************
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
 """
 file: ult.py
 author: Cyrus Harrison (cyrush@llnl.gov)
@@ -98,7 +66,7 @@ try:
 except:
     pass
 
-from common import VisItException, require_visit
+from .common import VisItException, require_visit
 
 @require_visit
 def plot(dbfile=None):
@@ -109,7 +77,7 @@ def plot(dbfile=None):
         dbfile = wi.activeSource
     md = visit.GetMetaData(dbfile)
     ncrvs = md.GetNumCurves()
-    cnames = [md.GetCurves(i).name for i in xrange(ncrvs)]
+    cnames = [md.GetCurves(i).name for i in range(ncrvs)]
     cnames.sort()
     for cname in cnames:
         visit.AddPlot("Curve",cname)
@@ -192,10 +160,10 @@ class Curve(object):
                 lshape = len(samples.shape)
                 if  lshape == 1:
                     r = samples.shape
-                    samples = [ Sample(i,samples[i]) for i in xrange(r)]
+                    samples = [ Sample(i,samples[i]) for i in range(r)]
                 elif lshape  == 2:
                     r,c = samples.shape
-                    samples = [ Sample(samples[i,0],samples[i,1]) for i in xrange(r)]
+                    samples = [ Sample(samples[i,0],samples[i,1]) for i in range(r)]
                 else:
                     # error
                     msg = "Cannot convert ndarry w/ shape %s to Curve " % str(lshape)
@@ -297,7 +265,7 @@ class Curve(object):
         Enables nice python syntatic sugar for slicing & accessing samples.
         """
         if isinstance(idx,slice):
-            return [ self[i] for i in xrange(*idx.indices(len(self)))]
+            return [ self[i] for i in range(*idx.indices(len(self)))]
         if not isinstance(idx,int):
             raise TypeError
         if idx < 0 or idx >= len(self):
@@ -334,7 +302,7 @@ class Curve(object):
         Saves a curve (or curves) to an ultra file.
         """
         if echo:
-            print "[Creating: %s ]" % fname
+            print("[Creating: %s ]" % fname)
         ocmd = "w"
         if append:
             ocmd += "a"
@@ -345,7 +313,7 @@ class Curve(object):
                 cls.__save_curve(f,c,"curve_%d" % cid)
                 cid +=1
         elif isinstance(data,dict):
-            for k, c in data.items():
+            for k, c in list(data.items()):
                 cls.__save_curve(f,c,k)
         else:
             cls.__save_curve(f,data)
@@ -362,7 +330,7 @@ class Curve(object):
             cname = "curve"
         fobj.write("# %s\n"  % cname)
         if isinstance(data,Curve):
-            for v in data.values():
+            for v in list(data.values()):
                 fobj.write("%s %s\n" % (str(v[0]),str(v[1])))
         elif using_numpy and isinstance(data,npy.ndarray):
             for i in range(data.shape[0]):
@@ -381,7 +349,7 @@ class Curve(object):
         lines = [l.strip() for l in f.readlines() if l.strip() != ""]
         nlines = len(lines)
         f.close()
-        for i in xrange(nlines):
+        for i in range(nlines):
             l = lines[i]
             if l[0] == "#" and (i == nlines-1 or lines[i+1][0] != "#"):
                 if curr is not None:
@@ -418,14 +386,14 @@ class Merger(object):
         # the first end point.
         pts = {}
         for c in curves:
-            if not c.first() in pts.keys():
+            if not c.first() in list(pts.keys()):
                 pts[c.first()] =  [0,c]
-            if not c.last() in pts.keys():
+            if not c.last() in list(pts.keys()):
                 pts[c.last()] =  [0,c]
             pts[c.first()][0] +=1
             pts[c.last()][0]  +=1
         curr = None
-        for k,v in pts.items():
+        for k,v in list(pts.items()):
             if v[0] == 1 and v[1].first() == k:
                 curr = v[1]
                 break

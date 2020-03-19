@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtS3DFileFormat.C                           //
@@ -63,7 +29,6 @@
 
 #include <DebugStream.h>
 
-#include <snprintf.h>
 #define S3D_PLUGIN_VERSION 1.1
 
 using     std::string;
@@ -124,7 +89,7 @@ parse_dirname(char *wholePath)
 //   this method uses snprintf to create the string, but then removes the 
 //   leading 0 in the exponent part if on a windows system.  When we start 
 //   using MSVC8, can switch to _set_output_format(_TWO_DIGIT_EXPONENT)
-//   before the call to SNPRINTF instead of using find / replace.
+//   before the call to snprintf instead of using find / replace.
 //
 //  Creation:  June 5, 2007
 //  Programmer:  Kathleen Bonnell
@@ -135,7 +100,7 @@ string
 CreateStringFromDouble(double ts)
 {
     char temp[256];
-    SNPRINTF(temp,256,"%1.3E",ts);
+    snprintf(temp,256,"%1.3E",ts);
     string tempStr(temp);
 #ifdef WIN32
     size_t off = tempStr.find("E+0");
@@ -227,7 +192,7 @@ avtS3DFileFormat::OpenLogFile(void)
     int len = strlen(copy);
     char *logFilename = new char[len+32];
     copy[len-4] = '\0';
-    SNPRINTF(logFilename, len+32, "%s.savefile.log", copy);
+    snprintf(logFilename, len+32, "%s.savefile.log", copy);
 
     debug4 << "avtS3DFileFormat::OpenLogFile: logFilename " << logFilename << endl;
     ifstream timefile(logFilename);
@@ -343,7 +308,7 @@ avtS3DFileFormat::FreeUpResources(void)
 //  Modifications:
 //    Kathleen Bonnell, Tue Jun  5 13:53:29 PDT 2007
 //    To get around WIN32 issues, call parse_dirname instead of dirname, and
-//    CreateStringFromDouble instead of SNPRINTF.  
+//    CreateStringFromDouble instead of snprintf.  
 //
 // ****************************************************************************
 
@@ -382,7 +347,7 @@ avtS3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     string timestepDir = CreateStringFromDouble(fileTimes[timeState]);
 
     char path[256];
-    SNPRINTF(path,256,"%s%s%s%sfield.00000",dir.c_str(),VISIT_SLASH_STRING, timestepDir.c_str(), VISIT_SLASH_STRING);
+    snprintf(path,256,"%s%s%s%sfield.00000",dir.c_str(),VISIT_SLASH_STRING, timestepDir.c_str(), VISIT_SLASH_STRING);
 
     NcError err(NcError::verbose_nonfatal);
  
@@ -529,7 +494,7 @@ avtS3DFileFormat::CalculateSubpiece(int domain)
 //  Modifications:
 //    Kathleen Bonnell, Tue Jun  5 13:53:29 PDT 2007
 //    To get around WIN32 issues, call parse_dirname instead of dirname, and
-//    CreateStringFromDouble instead of SNPRINTF.  
+//    CreateStringFromDouble instead of snprintf.  
 //
 // ****************************************************************************
 
@@ -702,7 +667,7 @@ avtS3DFileFormat::GetMesh(int timeState, int domain, const char *meshname)
 //  Modifications:
 //    Kathleen Bonnell, Tue Jun  5 13:53:29 PDT 2007
 //    To get around WIN32 issues, call parse_dirname instead of dirname, and
-//    CreateStringFromDouble instead of SNPRINTF.  
+//    CreateStringFromDouble instead of snprintf.  
 //
 //    Kathleen Bonnell, Wed Jul 2 14:44:11 PDT 2008
 //    Removed unreferenced variables.
@@ -726,7 +691,7 @@ avtS3DFileFormat::GetVar(int timeState, int domain, const char *varname)
 
     // Open up the NetCDF file.
     char path[256];
-    SNPRINTF(path,256,"%s%s%s%sfield.%05d",dir.c_str(),VISIT_SLASH_STRING, timestepDir.c_str(), VISIT_SLASH_STRING, domain);
+    snprintf(path,256,"%s%s%s%sfield.%05d",dir.c_str(),VISIT_SLASH_STRING, timestepDir.c_str(), VISIT_SLASH_STRING, domain);
     debug5 << "avtS3DFileFormat::GetVar: Full path to data file is " << path << endl;
 
     NcFile nf(path);

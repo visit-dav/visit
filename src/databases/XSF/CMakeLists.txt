@@ -3,6 +3,8 @@ PROJECT(XSF_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(XSF)
+
 SET(COMMON_SOURCES
 XSFPluginInfo.C
 XSFCommonPluginInfo.C

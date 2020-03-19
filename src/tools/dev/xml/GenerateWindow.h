@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #ifndef GENERATE_WINDOW_H
 #define GENERATE_WINDOW_H
@@ -101,7 +67,7 @@
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
-//    Kathleen Bonnell, Thu Nov 11 16:56:21 PST 2004 
+//    Kathleen Bonnell, Thu Nov 11 16:56:21 PST 2004
 //    Added support for ucharVector.
 //
 //    Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
@@ -329,7 +295,7 @@ class WindowGeneratorIntArray : public virtual IntArray , public virtual WindowG
         writeSourceCreateLabel(c);
         c << "    "<<name<<" = new QLineEdit(central);" << endl;
         c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
-          << "            this, SLOT("<<name<<"ProcessText()));" << endl;        
+          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
         c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
     }
     virtual bool            providesSourceGetCurrent() const { return true; }
@@ -383,7 +349,7 @@ class WindowGeneratorIntVector : public virtual IntVector , public virtual Windo
         writeSourceCreateLabel(c);
         c << "    "<<name<<" = new QLineEdit(central);" << endl;
         c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
-          << "            this, SLOT("<<name<<"ProcessText()));" << endl;        
+          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
         c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
     }
     virtual bool            providesSourceGetCurrent() const { return true; }
@@ -416,7 +382,7 @@ class WindowGeneratorIntVector : public virtual IntVector , public virtual Windo
 };
 
 
-// 
+//
 // ----------------------------------- Bool -----------------------------------
 //
 class WindowGeneratorBool : public virtual Bool , public virtual WindowGeneratorField
@@ -1390,7 +1356,7 @@ class WindowGeneratorScaleMode : public virtual ScaleMode , public virtual Windo
 //    Brad Whitlock, Wed Dec 8 16:12:01 PST 2004
 //    Added support for variable names.
 //
-//    Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007 
+//    Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007
 //    Added scalemode.
 //
 // ----------------------------------------------------------------------------
@@ -1466,7 +1432,7 @@ class WindowGeneratorAttribute : public GeneratorBase
   public:
     WindowGeneratorAttribute(const QString &n, const QString &p, const QString &f,
                              const QString &e, const QString &ei, const QString &bc)
-        : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME, bc), fields(), 
+        : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME, bc), fields(),
           windowname(), plugintype()
     {
         plugintype = "";
@@ -1555,7 +1521,7 @@ class WindowGeneratorAttribute : public GeneratorBase
         }
         h << "class QvisVariableButton;" << endl;
         h << endl;
-        
+
         WriteClassComment(h, windowname, QString("Defines ") + windowname + QString(" class."));
 
         if(plugintype == "operator")
@@ -1926,7 +1892,7 @@ class WindowGeneratorAttribute : public GeneratorBase
             c << endl;
         }
 
-        // Create a set of the fields that enable other fields so we can 
+        // Create a set of the fields that enable other fields so we can
         // influence how the source callback methods get "SetUpdate(false)".
         std::set<Field*> enablers;
         for (i=0; i<fields.size(); i++)
@@ -1958,6 +1924,9 @@ class WindowGeneratorAttribute : public GeneratorBase
 //   Brad Whitlock, Wed Mar 5 12:00:40 PDT 2008
 //   Made it use a base class.
 //
+//   Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
+//   Added hl arg, for haslicense.
+//
 // ----------------------------------------------------------------------------
 
 class WindowGeneratorPlugin : public PluginBase
@@ -1968,8 +1937,8 @@ class WindowGeneratorPlugin : public PluginBase
   public:
     WindowGeneratorPlugin(const QString &n,const QString &l,const QString &t,
           const QString &vt,const QString &dt,const QString &v,const QString &ifile,
-          bool hw,bool ho,bool onlyengine,bool noengine)
-        : PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine), atts(NULL), windowname()
+          bool hw,bool ho,bool hl,bool onlyengine,bool noengine)
+        : PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,hl,onlyengine,noengine), atts(NULL), windowname()
     {
         if (type == "plot")
             windowname = QString("Qvis")+name+QString("PlotWindow");

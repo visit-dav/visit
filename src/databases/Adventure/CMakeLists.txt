@@ -3,6 +3,8 @@ PROJECT(Adventure_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(Adventure)
+
 SET(COMMON_SOURCES
 AdventurePluginInfo.C
 AdventureCommonPluginInfo.C

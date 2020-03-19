@@ -3,6 +3,8 @@ PROJECT(ProteinDataBank_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(ProteinDataBank)
+
 SET(COMMON_SOURCES
 ProteinDataBankPluginInfo.C
 ProteinDataBankCommonPluginInfo.C

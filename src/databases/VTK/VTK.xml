@@ -33,8 +33,14 @@
       VTMParser.C
     </Files>
     <LIBS>
+      vtkFiltersGeneral
       vtkIOXML
+      vtkIOXMLParser
     </LIBS>
-    <Attribute name="" purpose="" persistent="true">
+    <Attribute name="" purpose="" persistent="true" codefile="VTK.code">
+      <Function name="VTKCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+      <Function name="VTKCommonPluginInfo::GetDatabaseType" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

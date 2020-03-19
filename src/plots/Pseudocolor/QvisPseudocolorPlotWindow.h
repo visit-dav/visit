@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #ifndef QVIS_PSEUDOCOLOR_WINDOW_H
 #define QVIS_PSEUDOCOLOR_WINDOW_H
@@ -65,7 +31,7 @@ class PseudocolorAttributes;
 //   This class is a postable window that watches pseudocolot plot
 //   attributes and always represents their current state.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jul 28 17:16:38 PST 2000
@@ -81,7 +47,7 @@ class PseudocolorAttributes;
 //   Brad Whitlock, Sat Jun 16 15:17:12 PST 2001
 //   I added a color table button.
 //
-//   Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001 
+//   Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001
 //   I added a limits combo box.
 //
 //   Brad Whitlock, Fri Feb 15 10:27:55 PDT 2002
@@ -93,9 +59,9 @@ class PseudocolorAttributes;
 //   Jeremy Meredith, Fri Dec 20 11:36:03 PST 2002
 //   Added scaling of point variables by a scalar field.
 //
-//   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004 
+//   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
 //   Replace individual point-size related widgets and associated slots
-//   with QvisPointControl 
+//   with QvisPointControl
 //
 //   Brad Whitlock, Wed Jul 20 14:23:58 PST 2005
 //   Added a new slot to handle a new signal from QvisPointControl.
@@ -123,6 +89,11 @@ class PseudocolorAttributes;
 //
 //   Kathleen Biagas, Wed Dec 26 13:08:45 PST 2018
 //   Add belowMinColor, aboveMaxColor, belowMinToggle, aboveMaxToggle.
+//
+//   Kathleen Biagas, Tue Aug 27 09:15:38 PDT 2019
+//   Added lineSettings and endPointSettings methods which allow changing the
+//   visibility and/or enabled state of certain controls based on the rendering
+//   type(s) in effect.
 //
 // ****************************************************************************
 
@@ -196,7 +167,7 @@ private slots:
 
     void tailStyleChanged(int newStyle);
     void headStyleChanged(int newStyle);
-  
+
     void endPointRadiusProcessText();
     void endPointRadiusSizeTypeChanged(int v);
     void endPointRatioProcessText();
@@ -302,5 +273,8 @@ private:
 
     QCheckBox             *legendToggle;
     QCheckBox             *lightingToggle;
+
+    void lineSettings(void);
+    void endPointSettings(void);
 };
 #endif

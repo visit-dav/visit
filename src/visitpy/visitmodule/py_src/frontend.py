@@ -1,39 +1,7 @@
-###############################################################################
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
 ###############################################################################
 # file: frontend.py
 # Purpose: Front for the visit module.
@@ -87,13 +55,13 @@ def LaunchWithProxy(vdir=None,proxy=None):
 
 def LaunchPySide(vdir=None,args=None):
     VisItModuleState.add_argument("-pyuiembedded")
-    import pyside_support
+    from . import pyside_support
     ret = pyside_support.LaunchPyViewer(args)
     return VisItModuleState.launch(vdir,ret.GetViewerProxyPtr())
 
 def LaunchPyQt(vdir=None,args=None):
     VisItModuleState.add_argument("-pyuiembedded")
-    import pyqt_support
+    from . import pyqt_support
     ret = pyqt_support.LaunchPyViewer(args)
     return VisItModuleState.launch(vdir,ret.GetViewerProxyPtr())
 
@@ -120,7 +88,7 @@ class VisItModuleState(object):
             env  = cls.__read_visit_env(vcmd)
             mod  = cls.__visit_module_path(env["LIBPATH"])
             #print "Using visitmodule: %s" % mod
-            for k in env.keys():
+            for k in list(env.keys()):
                 if k != "LIBPATH" and k != "VISITARCHHOME":
                     os.environ[k] = env[k]
             mod = cls.__load_visitmodule(mod)
@@ -144,8 +112,8 @@ class VisItModuleState(object):
             # 'visit' module, there seems to be a 'visit' entry in
             # __main__. 
             main_mod = __import__("__main__")
-            if "SetDebugLevel" in main_mod.__dict__.keys():
-                for k,v in mod.__dict__.items():
+            if "SetDebugLevel" in list(main_mod.__dict__.keys()):
+                for k,v in list(mod.__dict__.items()):
                     # avoid hidden module vars
                     if not k.startswith("__"):
                         main_mod.__dict__[k] = v
@@ -153,8 +121,8 @@ class VisItModuleState(object):
                 # which helps it get command recording right.
                 mod.LocalNameSpace()
             launched = True
-        except Exception, e:
-            print "ERROR: %s" % e
+        except Exception as e:
+            print("ERROR: %s" % e)
         return launched
     @classmethod
     def __load_visitmodule(cls,mod_file):
@@ -266,7 +234,7 @@ class VisItModuleState(object):
                "VISITPLUGINDIR":"",
                "VISITARCHHOME":""}
         for l in pout:
-            for k in res.keys():
+            for k in list(res.keys()):
                 if l.startswith(k + "="):
                     r = l[len(k)+1:]
                     r = r.strip(":")

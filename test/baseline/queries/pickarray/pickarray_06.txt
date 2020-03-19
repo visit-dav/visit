@@ -14,7 +14,7 @@ u:  <nodal>
     (806) = -4.65847
     (805) = -2.44911
 
-arr3:  <zonal> = (-0.921542,0,0) mag = 0.921542
+arr3:  <zonal> = (-0.921542, 0, 0)
 
 
 Pick could not retrieve the requested information, possibly due to a bad expression in its variables list. Please check the requested variables list and try again.

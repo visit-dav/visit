@@ -20,7 +20,7 @@ def main():
             break
 
     if makemovie == "":
-        print "The makemoviemain script could not locate the makemovie script!"
+        print("The makemoviemain script could not locate the makemovie script!")
         sys.exit(-1)
     else:
         # Source the makemovie.py script, which contains all of the 

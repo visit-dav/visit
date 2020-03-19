@@ -1,39 +1,8 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
+#****************************************************************************
 # Modifications:
 #   Kathleen Bonnell, Thu Dec  3 10:55:03 PST 2009
 #   Wrap CMAKE_X_LIBS so that it won't parse on windows. Change ${MESA_FOUND}
@@ -121,25 +90,51 @@ if (VISIT_OSMESA_DIR)
 
     set(OSMESA_INCLUDE_DIR ${VISIT_OSMESA_DIR}/include CACHE PATH "OSMesa include path")
 
-    find_library(GLAPI_LIBRARY glapi
-                 PATH ${VISIT_OSMESA_DIR}/lib
+    find_library(GLAPI_LIBRARY glapi PATH ${VISIT_OSMESA_DIR}/lib
                  NO_DEFAULT_PATH)
+    if (GLAPI_LIBRARY)
+        get_filename_component(GLAPI_LIB ${GLAPI_LIBRARY} NAME)
+        execute_process(COMMAND objdump -p ${GLAPI_LIBRARY}
+                        COMMAND grep SONAME
+                        RESULT_VARIABLE GLAPI_SONAME_RESULT
+                        OUTPUT_VARIABLE GLAPI_SONAME
+                        ERROR_VARIABLE  GLAPI_SONAME_ERROR)
 
-    get_filename_component(GLAPI_LIB ${GLAPI_LIBRARY} NAME)
+        if(GLAPI_SONAME)
+            string(REPLACE "SONAME" "" GLAPI_SONAME ${GLAPI_SONAME})
+            string(STRIP ${GLAPI_SONAME} GLAPI_SONAME)
+            set(GLAPI_LIBRARY ${VISIT_OSMESA_DIR}/lib/${GLAPI_SONAME})
+        endif()
 
-    # find the SOName
-    execute_process(COMMAND objdump -p ${GLAPI_LIBRARY}
-                    COMMAND grep SONAME
-                    RESULT_VARIABLE GLAPI_SONAME_RESULT
-                    OUTPUT_VARIABLE GLAPI_SONAME
-                    ERROR_VARIABLE  GLAPI_SONAME_ERROR)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                                ${GLAPI_LIBRARY}
+                                ${VISIT_BINARY_DIR}/lib/osmesa/)
 
-    if(GLAPI_SONAME)
-        string(REPLACE "SONAME" "" GLAPI_SONAME ${GLAPI_SONAME})
-        string(STRIP ${GLAPI_SONAME} GLAPI_SONAME)
-        set(GLAPI_LIBRARY ${VISIT_OSMESA_DIR}/lib/${GLAPI_SONAME})
+        list(APPEND OSMESA_LIBRARIES ${GLAPI_LIBRARY})
     endif()
-    list(APPEND OSMESA_LIBRARIES ${GLAPI_LIBRARY})
+
+    find_library(GLU_LIBRARY GLU PATH ${VISIT_OSMESA_DIR}/lib
+                 NO_DEFAULT_PATH)
+    if (GLU_LIBRARY)
+        get_filename_component(GLU_LIB ${GLU_LIBRARY} NAME)
+        execute_process(COMMAND objdump -p ${GLU_LIBRARY}
+                        COMMAND grep SONAME
+                        RESULT_VARIABLE GLU_SONAME_RESULT
+                        OUTPUT_VARIABLE GLU_SONAME
+                        ERROR_VARIABLE  GLU_SONAME_ERROR)
+
+        if(GLU_SONAME)
+            string(REPLACE "SONAME" "" GLU_SONAME ${GLU_SONAME})
+            string(STRIP ${GLU_SONAME} GLU_SONAME)
+            set(GLU_LIBRARY ${VISIT_OSMESA_DIR}/lib/${GLU_SONAME})
+        endif()
+
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                                ${GLU_LIBRARY}
+                                ${VISIT_BINARY_DIR}/lib/osmesa/)
+
+        list(APPEND OSMESA_LIBRARIES ${GLU_LIBRARY})
+    endif()
 
     # Check for OSMesa size limit --- IS THIS STILL NECESSARY?
     set(MY_LIBS ${OSMESA_LIBRARIES})

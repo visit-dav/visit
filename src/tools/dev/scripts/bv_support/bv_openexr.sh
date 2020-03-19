@@ -64,7 +64,7 @@ function bv_openexr_host_profile
 function bv_openexr_print_usage
 {
     #openexr does not have an option, it is only dependent on openexr.
-    printf "%-15s %s [%s]\n" "--openexr" "Build OpenEXR" "$DO_OPENEXR"
+    printf "%-20s %s [%s]\n" "--openexr" "Build OpenEXR" "$DO_OPENEXR"
 }
 
 function bv_openexr_ensure

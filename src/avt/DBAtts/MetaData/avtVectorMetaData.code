@@ -28,7 +28,7 @@ Definition:
 //
 // ****************************************************************************
 
-avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn, 
+avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
                                      avtCentering c, int vd)
     : avtVarMetaData(avtVectorMetaData::TmfsStruct, n, mn, c)
 {
@@ -94,8 +94,8 @@ Definition:
 //    Hank Childs, Tue May  1 12:53:10 PDT 2001
 //    Check for NULL extents.
 //
-//    Kathleen Bonnell, Thu Mar 11 10:59:14 PST 2004 
-//    DataExtents now only has 2 components. 
+//    Kathleen Bonnell, Thu Mar 11 10:59:14 PST 2004
+//    DataExtents now only has 2 components.
 //
 // ****************************************************************************
 

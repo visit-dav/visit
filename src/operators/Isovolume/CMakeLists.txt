@@ -3,6 +3,8 @@ PROJECT(Isovolume_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Isovolume)
+
 SET(COMMON_SOURCES
 IsovolumePluginInfo.C
 IsovolumeCommonPluginInfo.C
@@ -110,6 +112,10 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SIsovolumeOperator ${LIBS_SOURCES})
+        IF(WIN32)
+            # This prevents python from #defining snprintf as _snprintf
+            SET_TARGET_PROPERTIES(SIsovolumeOperator PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
+        ENDIF()
         TARGET_LINK_LIBRARIES(SIsovolumeOperator visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SIsovolumeOperator)
     ENDIF(VISIT_PYTHON_SCRIPTING)

@@ -3,6 +3,8 @@ PROJECT(H5Nimrod_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(H5Nimrod)
+
 SET(COMMON_SOURCES
 H5NimrodPluginInfo.C
 H5NimrodCommonPluginInfo.C

@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                             avtSliceFilter.C                              //
@@ -78,8 +44,6 @@
 #include <BadVectorException.h>
 #include <DebugStream.h>
 #include <TimingsManager.h>
-
-#include <snprintf.h>
 
 #include <string>
 #include <vector>
@@ -2197,7 +2161,7 @@ avtSliceFilter::UpdateDataObjectInfo(void)
                 un[2] = up[2] / up_mag;
             }
             char ylabel[2048];
-            SNPRINTF(ylabel, 2048, "(%.2f,%.2f,%.2f)-Axis", un[0],un[1],un[2]);
+            snprintf(ylabel, 2048, "(%.2f,%.2f,%.2f)-Axis", un[0],un[1],un[2]);
             outAtts.SetYLabel(ylabel);
 
             double cross[3] = {0., 0., 0.};
@@ -2213,7 +2177,7 @@ avtSliceFilter::UpdateDataObjectInfo(void)
                 cross[2] /= cross_mag;
             }
             char xlabel[2048];
-            SNPRINTF(xlabel, 2048, "(%.2f,%.2f,%.2f)-Axis", cross[0], cross[1], 
+            snprintf(xlabel, 2048, "(%.2f,%.2f,%.2f)-Axis", cross[0], cross[1], 
                                                             cross[2]);
             outAtts.SetXLabel(xlabel);
         }
@@ -2223,30 +2187,30 @@ avtSliceFilter::UpdateDataObjectInfo(void)
     char tmpstr[200];
     double ox = 0., oy = 0., oz = 0.;
     GetOrigin(ox, oy, oz);
-    SNPRINTF(tmpstr, 200, ", origin=%lg,%lg,%lg", ox, oy, oz);
+    snprintf(tmpstr, 200, ", origin=%lg,%lg,%lg", ox, oy, oz);
     std::string originStr(tmpstr);
     if(atts.GetAxisType() == SliceAttributes::XAxis)
     {
         if(atts.GetOriginType() == SliceAttributes::Point)
         {
-            SNPRINTF(tmpstr, 200, "X=%lg", atts.GetOriginPoint()[0]);
+            snprintf(tmpstr, 200, "X=%lg", atts.GetOriginPoint()[0]);
         }
         else if(atts.GetOriginType() == SliceAttributes::Intercept)
         {
-            SNPRINTF(tmpstr, 200, "X=%lg", atts.GetOriginIntercept());
+            snprintf(tmpstr, 200, "X=%lg", atts.GetOriginIntercept());
         }
         else if(atts.GetOriginType() == SliceAttributes::Percent)
         {
-            SNPRINTF(tmpstr, 200, "X percent=%lg", atts.GetOriginPercent());
+            snprintf(tmpstr, 200, "X percent=%lg", atts.GetOriginPercent());
         }
         else if(atts.GetOriginType() == SliceAttributes::Zone)
         {
-            SNPRINTF(tmpstr, 200, "X domain=%d, zone=%d",
+            snprintf(tmpstr, 200, "X domain=%d, zone=%d",
                      atts.GetOriginZoneDomain(), atts.GetOriginZone());
         }
         else if(atts.GetOriginType() == SliceAttributes::Node)
         {
-            SNPRINTF(tmpstr, 200, "X domain=%d, node=%d",
+            snprintf(tmpstr, 200, "X domain=%d, node=%d",
                      atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
         }
         outAtts.AddFilterMetaData("Slice", std::string(tmpstr) + originStr);
@@ -2255,24 +2219,24 @@ avtSliceFilter::UpdateDataObjectInfo(void)
     {
         if(atts.GetOriginType() == SliceAttributes::Point)
         {
-            SNPRINTF(tmpstr, 200, "Y=%lg", atts.GetOriginPoint()[1]);
+            snprintf(tmpstr, 200, "Y=%lg", atts.GetOriginPoint()[1]);
         }
         else if(atts.GetOriginType() == SliceAttributes::Intercept)
         {
-            SNPRINTF(tmpstr, 200, "Y=%lg", atts.GetOriginIntercept());
+            snprintf(tmpstr, 200, "Y=%lg", atts.GetOriginIntercept());
         }
         else if(atts.GetOriginType() == SliceAttributes::Percent)
         {
-            SNPRINTF(tmpstr, 200, "Y percent=%lg", atts.GetOriginPercent());
+            snprintf(tmpstr, 200, "Y percent=%lg", atts.GetOriginPercent());
         }
         else if(atts.GetOriginType() == SliceAttributes::Zone)
         {
-            SNPRINTF(tmpstr, 200, "Y domain=%d, zone=%d",
+            snprintf(tmpstr, 200, "Y domain=%d, zone=%d",
                      atts.GetOriginZoneDomain(), atts.GetOriginZone());
         }
         else if(atts.GetOriginType() == SliceAttributes::Node)
         {
-            SNPRINTF(tmpstr, 200, "Y domain=%d, node=%d",
+            snprintf(tmpstr, 200, "Y domain=%d, node=%d",
                      atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
         }
         outAtts.AddFilterMetaData("Slice", std::string(tmpstr) + originStr);
@@ -2281,24 +2245,24 @@ avtSliceFilter::UpdateDataObjectInfo(void)
     {
         if(atts.GetOriginType() == SliceAttributes::Point)
         {
-            SNPRINTF(tmpstr, 200, "Z=%lg", atts.GetOriginPoint()[2]);
+            snprintf(tmpstr, 200, "Z=%lg", atts.GetOriginPoint()[2]);
         }
         else if(atts.GetOriginType() == SliceAttributes::Intercept)
         {
-            SNPRINTF(tmpstr, 200, "Z=%lg", atts.GetOriginIntercept());
+            snprintf(tmpstr, 200, "Z=%lg", atts.GetOriginIntercept());
         }
         else if(atts.GetOriginType() == SliceAttributes::Percent)
         {
-            SNPRINTF(tmpstr, 200, "Z percent=%lg", atts.GetOriginPercent());
+            snprintf(tmpstr, 200, "Z percent=%lg", atts.GetOriginPercent());
         }
         else if(atts.GetOriginType() == SliceAttributes::Zone)
         {
-            SNPRINTF(tmpstr, 200, "Z domain=%d, zone=%d",
+            snprintf(tmpstr, 200, "Z domain=%d, zone=%d",
                      atts.GetOriginZoneDomain(), atts.GetOriginZone());
         }
         else if(atts.GetOriginType() == SliceAttributes::Node)
         {
-            SNPRINTF(tmpstr, 200, "Z domain=%d, node=%d",
+            snprintf(tmpstr, 200, "Z domain=%d, node=%d",
                      atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
         }
         outAtts.AddFilterMetaData("Slice", std::string(tmpstr) + originStr);
@@ -2307,32 +2271,32 @@ avtSliceFilter::UpdateDataObjectInfo(void)
     {
         if(atts.GetOriginType() == SliceAttributes::Point)
         {
-            SNPRINTF(tmpstr, 200, "origin=%lg,%lg,%lg",
+            snprintf(tmpstr, 200, "origin=%lg,%lg,%lg",
                      atts.GetOriginPoint()[0], atts.GetOriginPoint()[1], atts.GetOriginPoint()[2]);
         }
         else if(atts.GetOriginType() == SliceAttributes::Intercept)
         {
-            SNPRINTF(tmpstr, 200, "intercept=%lg", atts.GetOriginIntercept());
+            snprintf(tmpstr, 200, "intercept=%lg", atts.GetOriginIntercept());
         }
         else if(atts.GetOriginType() == SliceAttributes::Percent)
         {
-            SNPRINTF(tmpstr, 200, "percent=%lg", atts.GetOriginPercent());
+            snprintf(tmpstr, 200, "percent=%lg", atts.GetOriginPercent());
         }
         else if(atts.GetOriginType() == SliceAttributes::Zone)
         {
-            SNPRINTF(tmpstr, 200, "domain=%d, zone=%d",
+            snprintf(tmpstr, 200, "domain=%d, zone=%d",
                      atts.GetOriginZoneDomain(), atts.GetOriginZone());
         }
         else if(atts.GetOriginType() == SliceAttributes::Node)
         {
-            SNPRINTF(tmpstr, 200, "domain=%d, node=%d",
+            snprintf(tmpstr, 200, "domain=%d, node=%d",
                      atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
         }
 
         std::string s(tmpstr);
         if(atts.GetOriginType() != SliceAttributes::Point)
             s = s + originStr;
-        SNPRINTF(tmpstr, 200, ", normal=%lg,%lg,%lg",
+        snprintf(tmpstr, 200, ", normal=%lg,%lg,%lg",
                      atts.GetNormal()[0], atts.GetNormal()[1], atts.GetNormal()[2]);
         outAtts.AddFilterMetaData("Slice", s + std::string(tmpstr));
     }

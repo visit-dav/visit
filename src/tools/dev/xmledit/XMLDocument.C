@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include "XMLEditStd.h"
 #include "XMLDocument.h"
@@ -143,6 +109,9 @@ class ErrorHandler : public QXmlErrorHandler
 //    Kathleen Biagas, Wed Nov 30 18:59:22 PST 2016
 //    Changed location for report whitespace feature, fixes problems with QT5.
 //
+//    Kathleen Biagas, Thu Jan  2 09:26:23 PST 2020
+//    Added new argument to plugin constructor, for hasLicense.
+//
 // ****************************************************************************
 
 void
@@ -158,7 +127,7 @@ XMLDocument::open(const QString &file)
     if (!test)
     {
         docType = "Plugin";
-        plugin = new Plugin("","","","","","", "", false, false, false, false);
+        plugin = new Plugin("","","","","","", "", false, false, false, false, false);
         attribute = new Attribute("","",QString(),"","","");
         plugin->atts = attribute;
         return;
@@ -175,7 +144,7 @@ XMLDocument::open(const QString &file)
         QXmlInputSource   source(&xmlFile);
         QXmlSimpleReader  reader;
         ErrorHandler      errorhandler;
-        
+
         reader.setFeature("http://qt-project.org/xml/features/report-whitespace-only-CharData", false);
         reader.setContentHandler(&parser);
         reader.setErrorHandler(&errorhandler);
@@ -290,7 +259,7 @@ XMLDocument::save(const QString &file)
             if (attribute->fields[i]->enabler &&
                 attribute->fields[i]->enableval.empty())
             {
-                
+
                 QMessageBox::warning(0,"Error",
                     QString("The enabler for field %1 must have at least one value.").arg(attribute->fields[i]->name));
                 return;
@@ -326,7 +295,7 @@ XMLDocument::save(const QString &file)
         }
     }
 
-    
+
     QFile outfile(file);
 
     if (!outfile.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -334,7 +303,7 @@ XMLDocument::save(const QString &file)
         QMessageBox::warning(0,"Error","Could not open xml file for saving!");
         return;
     }
-    
+
     QTextStream out(&outfile);
 
     out << "<?xml version=\"1.0\"?>\n";

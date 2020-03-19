@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include "QvisLimitCycleWindow.h"
 
@@ -67,14 +33,14 @@ TurnOff(QWidget *w0, QWidget *w1=NULL);
 // ****************************************************************************
 // Method: QvisLimitCycleWindow::QvisLimitCycleWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
 // Modifications:
-//   
+//
 //   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
 //   Add named selections as a seed source.
 //
@@ -95,14 +61,14 @@ QvisLimitCycleWindow::QvisLimitCycleWindow(const int type,
 // ****************************************************************************
 // Method: QvisLimitCycleWindow::~QvisLimitCycleWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisLimitCycleWindow::~QvisLimitCycleWindow()
@@ -113,141 +79,47 @@ QvisLimitCycleWindow::~QvisLimitCycleWindow()
 // ****************************************************************************
 // Method: QvisLimitCycleWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 14:19:00 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Wed Dec 22 13:05:04 PST 2004
-//   I added support for coloring by vorticity.
-//
-//   Hank Childs, Sat Mar  3 09:11:44 PST 2007
-//   Added useWholeBox.
-//
-//   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
-//   Add integral curve direction option.
-//
-//   Brad Whitlock, Wed Apr 23 11:46:59 PDT 2008
-//   Added tr()'s
-//
-//   Dave Pugmire, Mon Aug 4 2:49:38 EDT 2008
-//   Added termination, algorithm and integration options.
-//
-//   Brad Whitlock, Wed Aug  6 10:20:49 PDT 2008
-//   Qt 4.
-//
-//   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
-//   Add accurate distance calculate option.
-//
-//   Dave Pugmire, Wed Aug 13 12:56:11 EST 2008
-//   Changed label text for integral curve algorithms.
-//
-//   Dave Pugmire, Tue Aug 19 17:18:03 EST 2008
-//   Removed the accurate distance calculation option.
-//
-//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
-//   Add new coloring methods, length, time and ID.
-//
-//   Sean Ahern, Wed Sep  3 16:19:27 EDT 2008
-//   Tweaked the layout to make it a bit more consistent.
-//
-//   Dave Pugmire, Tue Oct 7 08:17:22 EDT 2008
-//   Changed 'Termination Criteria' to 'Termination Criterion'
-//
-//   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
-//
-//   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
-//   Added number of steps as a termination criterion.
-//
-//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//   Add pathline GUI.
-//    
-//   Hank Childs, Sat May  2 22:14:38 PDT 2009
-//   Add support for point lists.
-//
-//   Dave Pugmire, Wed Jun 10 16:26:25 EDT 2009
-//   Add color by variable.
-//
-//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
-//   Add custom renderer and lots of appearance options to the integral curves plots.
-//
-//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
-//   Change layout of window for 2.0 interface changes.
-//
-//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
-//   New seed sources.
-//
-//   Dave Pugmire, Mon Jul 12 15:34:29 EDT 2010
-//   Rename Exterior to Boundary.
-//
-//   Hank Childs, Wed Sep 29 20:22:36 PDT 2010
-//   Add label and check box for whether we should restrict the maximum
-//   time step length.
-//
-//   Hank Childs, Fri Oct  1 21:13:56 PDT 2010
-//   Add size type for absTol.
-//
-//   Hank Childs, Oct  8 23:30:27 PDT 2010
-//   Set up controls for multiple termination criteria.
-//
-//   Dave Pugmire, Tue Oct 19 13:52:00 EDT 2010
-//   Add a delete all points button for the point list seed option.
-// 
-//   Hank Childs, Fri Oct 22 09:22:18 PDT 2010
-//   Rename Adams-Bashforth's "Maximum step length" to "Step length" since
-//   it always takes the same size step.
-//
-//   Hank Childs, Sat Oct 30 11:25:04 PDT 2010
-//   Initialize sample density.  Otherwise, atts set from the CLI gets overset,
-//   because we set the density based on the value of the text field, and we
-//   get a signal that causes us to use the default value before we ever set
-//   the field with the correct value.
-// 
-//   Hank Childs, Sun Dec  5 09:52:44 PST 2010
-//   Add support for disabling warnings for stiffness and critical points.
-//   Also add description of tolerances.
-//
-//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
-//   Add named selections as a seed source.
 //
 // ****************************************************************************
 
 void
 QvisLimitCycleWindow::CreateWindowContents()
 {
-    QTabWidget *propertyTabs = new QTabWidget(central);
+    QTabWidget *propertyTabs = new QTabWidget();
     topLayout->addWidget(propertyTabs);
 
     // ----------------------------------------------------------------------
     // Integration tab
     // ----------------------------------------------------------------------
-    QWidget *integrationTab = new QWidget(central);
+    QWidget *integrationTab = new QWidget();
     propertyTabs->addTab(integrationTab, tr("Integration"));
     CreateIntegrationTab(integrationTab);
 
     // ----------------------------------------------------------------------
     // Appearance tab
     // ----------------------------------------------------------------------
-    QWidget *appearanceTab = new QWidget(central);
+    QWidget *appearanceTab = new QWidget();
     propertyTabs->addTab(appearanceTab, tr("Appearance"));
     CreateAppearanceTab(appearanceTab);
 
     // ----------------------------------------------------------------------
     // Advanced tab
     // ----------------------------------------------------------------------
-    QWidget *advancedTab = new QWidget(central);
+    QWidget *advancedTab = new QWidget();
     propertyTabs->addTab(advancedTab, tr("Advanced"));
     CreateAdvancedTab(advancedTab);
 }
 
 // ****************************************************************************
-// Method: QvisLimitCycleWindow::CreateAppearanceTab
+// Method: QvisLimitCycleWindow::CreateSourceTab
 //
-// Purpose: 
-//   Populates the appearance tab.
+// Purpose:
+//   Populates the source tab.
 //
 // Programmer: Dave Pugmire
 // Creation:   Tue Dec 29 14:37:53 EST 2009
@@ -279,14 +151,14 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sourceLayout->addWidget(new QLabel(tr("Source type"), sourceGroup), 0, 0);
     sourceType = new QComboBox(sourceGroup);
     sourceType->addItem(tr("Line"));
-//    sourceType->addItem(tr("Plane"));
+    // sourceType->addItem(tr("Plane"));
     connect(sourceType, SIGNAL(activated(int)),
             this, SLOT(sourceTypeChanged(int)));
     sourceLayout->addWidget(sourceType, 0, 1, 1, 2);
 
     // Create the source geometry subgroup
     QGroupBox *geometryGroup = new QGroupBox(sourceGroup);
-    sourceLayout->addWidget(geometryGroup, 1, 0, 4, 3);
+    sourceLayout->addWidget(geometryGroup, 1, 0, 1, 6);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
     geometryLayout->setMargin(5);
@@ -303,14 +175,14 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     lineStartLabel->setBuddy(lineStart);
     geometryLayout->addWidget(lineStartLabel, gRow, 0);
     geometryLayout->addWidget(lineStart, gRow, 1);
-    ++gRow;
+
     lineEnd = new QLineEdit(sourceGroup);
     connect(lineEnd, SIGNAL(returnPressed()),
             this, SLOT(lineEndProcessText()));
     lineEndLabel = new QLabel(tr("End"), sourceGroup);
     lineEndLabel->setBuddy(lineEnd);
-    geometryLayout->addWidget(lineEndLabel, gRow, 0);
-    geometryLayout->addWidget(lineEnd, gRow, 1);
+    geometryLayout->addWidget(lineEndLabel, gRow, 2);
+    geometryLayout->addWidget(lineEnd, gRow, 3);
     ++gRow;
 
 
@@ -322,24 +194,22 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     planeOriginLabel->setBuddy(planeOrigin);
     geometryLayout->addWidget(planeOriginLabel,gRow,0);
     geometryLayout->addWidget(planeOrigin, gRow,1);
-    ++gRow;
 
     planeNormal = new QLineEdit(sourceGroup);
     connect(planeNormal, SIGNAL(returnPressed()),
             this, SLOT(planeNormalProcessText()));
     planeNormalLabel = new QLabel(tr("Normal"), sourceGroup);
     planeNormalLabel->setBuddy(planeNormal);
-    geometryLayout->addWidget(planeNormalLabel,gRow,0);
-    geometryLayout->addWidget(planeNormal, gRow,1);
-    ++gRow;
+    geometryLayout->addWidget(planeNormalLabel,gRow,2);
+    geometryLayout->addWidget(planeNormal, gRow,3);
 
     planeUpAxis = new QLineEdit(sourceGroup);
     connect(planeUpAxis, SIGNAL(returnPressed()),
             this, SLOT(planeUpAxisProcessText()));
     planeUpAxisLabel = new QLabel(tr("Up axis"), sourceGroup);
     planeUpAxisLabel->setBuddy(planeUpAxis);
-    geometryLayout->addWidget(planeUpAxisLabel,gRow,0);
-    geometryLayout->addWidget(planeUpAxis, gRow,1);
+    geometryLayout->addWidget(planeUpAxisLabel,gRow,4);
+    geometryLayout->addWidget(planeUpAxis, gRow,5);
     ++gRow;
 
 
@@ -352,7 +222,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->setSpacing(10);
     samplingLayout->setRowStretch(5,10);
     gRow++;
-    
+
     int sRow = 0;
     samplingTypeLabel = new QLabel(tr("Sampling type:"), samplingGroup);
     samplingLayout->addWidget(samplingTypeLabel, sRow, 0);
@@ -377,9 +247,9 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->addWidget(fillButtons[0], sRow, 4);
     samplingLayout->addWidget(fillButtons[1], sRow, 5);
     connect(fillButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(fillChanged(int)));
-    
+
     sRow++;
-    
+
     numberOfRandomSamplesLabel = new QLabel(tr("Number of random samples"), samplingGroup);
     samplingLayout->addWidget(numberOfRandomSamplesLabel, sRow, 0, 1, 2);
     numberOfRandomSamples = new QSpinBox(samplingGroup);
@@ -455,7 +325,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);
-    
+
 
     // Create the field constant text field.
     fieldConstantLabel = new QLabel(tr("Constant"), fieldGroup);
@@ -479,7 +349,6 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
     // connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
     // fieldLayout->addWidget(forceNodal, 2, 0);
-
 
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);
@@ -516,7 +385,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     connect(integrationType, SIGNAL(activated(int)),
             this, SLOT(integrationTypeChanged(int)));
     integrationLayout->addWidget(integrationType, 1,1);
-    
+
     // Create the step length text field.
     maxStepLengthLabel = new QLabel(tr("Step length"), integrationGroup);
     maxStepLength = new QLineEdit(integrationGroup);
@@ -529,7 +398,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     limitMaxTimeStep = new QCheckBox(tr("Limit maximum time step"), integrationGroup);
     connect(limitMaxTimeStep, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeStepChanged(bool)));
     integrationLayout->addWidget(limitMaxTimeStep, 3, 0);
-    
+
     maxTimeStep = new QLineEdit(integrationGroup);
     connect(maxTimeStep, SIGNAL(returnPressed()),
             this, SLOT(maxTimeStepProcessText()));
@@ -597,7 +466,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
 // ****************************************************************************
 // Method: QvisLimitCycleWindow::CreateAppearanceTab
 //
-// Purpose: 
+// Purpose:
 //   Populates the appearance tab.
 //
 // Programmer: Dave Pugmire
@@ -619,7 +488,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
 //
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
-// 
+//
 //   Dave Pugmire, Mon Feb 21 08:17:42 EST 2011
 //   Add color by correlation distance.
 //
@@ -794,7 +663,7 @@ QvisLimitCycleWindow::CreateAppearanceTab(QWidget *pageAppearance)
 // ****************************************************************************
 // Method: QvisLimitCycleWindow::CreateAdvancedTab
 //
-// Purpose: 
+// Purpose:
 //   Populates the advanced tab.
 //
 // Programmer: Dave Pugmire
@@ -807,7 +676,7 @@ QvisLimitCycleWindow::CreateAppearanceTab(QWidget *pageAppearance)
 //
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
-// 
+//
 //   Hank Childs, Sun Dec  5 05:31:57 PST 2010
 //   Add additional warning controls.
 //
@@ -839,13 +708,13 @@ QvisLimitCycleWindow::CreateAdvancedTab(QWidget *pageAdvanced)
             this, SLOT(parallelAlgorithmChanged(int)));
     algoGLayout->addWidget( parallelAlgoLabel, 1,0);
     algoGLayout->addWidget( parallelAlgo, 1,1);
-    
+
     maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
     maxSLCount = new QSpinBox(algoGrp);
     maxSLCount->setKeyboardTracking(false);
     maxSLCount->setMinimum(1);
     maxSLCount->setMaximum(100000);
-    connect(maxSLCount, SIGNAL(valueChanged(int)), 
+    connect(maxSLCount, SIGNAL(valueChanged(int)),
             this, SLOT(maxSLCountChanged(int)));
     algoGLayout->addWidget( maxSLCountLabel, 2,0);
     algoGLayout->addWidget( maxSLCount,2,1);
@@ -892,7 +761,7 @@ QvisLimitCycleWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(issueWarningForStepsize, 1, 0);
     QLabel *stepsizeLabel = new QLabel(tr("Issue warning when a step size underflow is detected."), warningsGrp);
     warningsGLayout->addWidget(stepsizeLabel, 1, 1, 1, 2);
-    
+
     issueWarningForStiffness = new QCheckBox(central);
     connect(issueWarningForStiffness, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForStiffnessChanged(bool)));
@@ -903,7 +772,7 @@ QvisLimitCycleWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(stiffnessDescLabel1, 3, 1, 1, 2);
     QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
     warningsGLayout->addWidget(stiffnessDescLabel2, 4, 1, 1, 2);
-    
+
     issueWarningForCriticalPoints = new QCheckBox(central);
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
@@ -925,7 +794,7 @@ QvisLimitCycleWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 // ****************************************************************************
 // Method: QvisLimitCycleWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: Brad Whitlock
@@ -974,7 +843,7 @@ QvisLimitCycleWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 //
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
-// 
+//
 //   Hank Childs, Sun Dec  5 09:52:44 PST 2010
 //   Add support for disabling warnings for stiffness and critical points.
 //
@@ -1002,7 +871,7 @@ QvisLimitCycleWindow::UpdateWindow(bool doAll)
         if( info )
           info->Detach(this);
       }
-      
+
       // Attach to the selected plot types
       for(int i = 0; i < GetViewerState()->GetPlotList()->GetNumPlots(); ++i)
       {
@@ -1130,7 +999,7 @@ QvisLimitCycleWindow::UpdateWindow(bool doAll)
             dataVariable->setText(atts->GetDataVariable().c_str());
             dataVariable->blockSignals(false);
           break;
-          
+
         case LimitCycleAttributes::ID_dataValue:
             dataValueComboBox->blockSignals(true);
             dataValueComboBox->setCurrentIndex(int(atts->GetDataValue()));
@@ -1218,7 +1087,7 @@ QvisLimitCycleWindow::UpdateWindow(bool doAll)
               integrationType->setCurrentIndex(LimitCycleAttributes::AdamsBashforth);
               UpdateIntegrationAttributes();
             }
-            else if (atts->GetIntegrationType() == LimitCycleAttributes::M3DC12DIntegrator) 
+            else if (atts->GetIntegrationType() == LimitCycleAttributes::M3DC12DIntegrator)
             {
               atts->SetIntegrationType(LimitCycleAttributes::DormandPrince);
               integrationType->setCurrentIndex(LimitCycleAttributes::DormandPrince);
@@ -1324,7 +1193,7 @@ QvisLimitCycleWindow::UpdateWindow(bool doAll)
               randomSeed->setValue(atts->GetRandomSeed());
               randomSeed->blockSignals(false);
               break;
-              
+
             case LimitCycleAttributes::ID_numberOfRandomSamples:
               numberOfRandomSamples->blockSignals(true);
               numberOfRandomSamples->setValue(atts->GetNumberOfRandomSamples());
@@ -1370,7 +1239,7 @@ QvisLimitCycleWindow::UpdateWindow(bool doAll)
             correlationDistanceAngTolEdit->setText(DoubleToQString(atts->GetCorrelationDistanceAngTol()));
             correlationDistanceAngTolEdit->blockSignals(false);
             break;
-            
+
           case LimitCycleAttributes::ID_correlationDistanceMinDistAbsolute:
             if (atts->GetCorrelationDistanceMinDistType() == LimitCycleAttributes::Absolute)
             {
@@ -1387,7 +1256,7 @@ QvisLimitCycleWindow::UpdateWindow(bool doAll)
                 correlationDistanceMinDistEdit->blockSignals(false);
             }
             break;
-            
+
           case LimitCycleAttributes::ID_correlationDistanceMinDistType:
             correlationDistanceMinDistType->blockSignals(true);
             correlationDistanceMinDistType->setCurrentIndex((int) atts->GetCorrelationDistanceMinDistType());
@@ -1436,14 +1305,14 @@ QvisLimitCycleWindow::TurnOffSourceAttributes()
 // ****************************************************************************
 // Method: QvisLimitCycleWindow::UpdateSourceAttributes
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets for the various stream source types.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 17:22:05 PST 2002
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Sat Mar  3 09:11:44 PST 2007
 //   Hide/show useWholeBox.  Also enable/disable pointDensity if source type
 //   is point.
@@ -1465,7 +1334,7 @@ QvisLimitCycleWindow::UpdateSourceAttributes()
     TurnOffSourceAttributes();
 
     bool showSampling = false, enableFill = false;
-    
+
     if (atts->GetSourceType() == LimitCycleAttributes::SpecifiedLine)
     {
         TurnOn(lineStart, lineStartLabel);
@@ -1535,7 +1404,7 @@ QvisLimitCycleWindow::UpdateSourceAttributes()
 // ****************************************************************************
 // Method: QvisLimitCycleWindow::UpdateFieldAttributes
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets for the various field types.
 //
 // Programmer: Dave Pugmire
@@ -1550,7 +1419,7 @@ QvisLimitCycleWindow::UpdateFieldAttributes()
     {
     case LimitCycleAttributes::M3DC12DField:
       if( atts->GetIntegrationType() ==
-          LimitCycleAttributes::M3DC12DIntegrator ) 
+          LimitCycleAttributes::M3DC12DIntegrator )
         TurnOn(fieldConstant, fieldConstantLabel);
       else
         TurnOff(fieldConstant, fieldConstantLabel);
@@ -1577,7 +1446,7 @@ QvisLimitCycleWindow::UpdateFieldAttributes()
 // ****************************************************************************
 // Method: QvisLimitCycleWindow::UpdateIntegrationAttributes
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets for the various integration types.
 //
 // Programmer: Dave Pugmire
@@ -1644,7 +1513,7 @@ QvisLimitCycleWindow::UpdateIntegrationAttributes()
 // ****************************************************************************
 // Method: QvisLimitCycleWindow::UpdateAlgorithmAttributes
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets for the various integration types.
 //
 // Programmer: Dave Pugmire
@@ -1667,7 +1536,7 @@ QvisLimitCycleWindow::UpdateAlgorithmAttributes()
                              LimitCycleAttributes::ParallelStaticDomains);
     bool useMasterSlave = (atts->GetParallelizationAlgorithmType() ==
                            LimitCycleAttributes::MasterSlave);
-    
+
     //Turn off everything.
     maxDomainCacheLabel->hide();
     maxDomainCache->hide();
@@ -1700,7 +1569,7 @@ QvisLimitCycleWindow::UpdateAlgorithmAttributes()
 // ****************************************************************************
 // Method: QvisLimitCycleWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: Brad Whitlock
@@ -1738,7 +1607,7 @@ QvisLimitCycleWindow::UpdateAlgorithmAttributes()
 //
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
-// 
+//
 //   Hank Childs, Sun Dec  5 09:52:44 PST 2010
 //   Add support for disabling warnings for stiffness and critical points.
 //
@@ -2092,7 +1961,7 @@ QvisLimitCycleWindow::GetCurrentValues(int which_widget)
         if (sampleDensity[1]->value() != atts->GetSampleDensity1())
             atts->SetSampleDensity1(sampleDensity[1]->value());
     }
-    
+
     // criticalPointThreshold
     if(which_widget == LimitCycleAttributes::ID_criticalPointThreshold || doAll)
     {
@@ -2195,7 +2064,7 @@ QvisLimitCycleWindow::directionTypeChanged(int val)
         atts->SetIntegrationDirection(LimitCycleAttributes::IntegrationDirection(val));
         Apply();
     }
-}   
+}
 
 void
 QvisLimitCycleWindow::fieldTypeChanged(int val)
@@ -2205,7 +2074,7 @@ QvisLimitCycleWindow::fieldTypeChanged(int val)
         atts->SetFieldType(LimitCycleAttributes::FieldType(val));
         Apply();
     }
-}   
+}
 
 void
 QvisLimitCycleWindow::fieldConstantProccessText()
@@ -2222,7 +2091,7 @@ QvisLimitCycleWindow::integrationTypeChanged(int val)
         atts->SetIntegrationType(LimitCycleAttributes::IntegrationType(val));
         Apply();
     }
-}   
+}
 
 void
 QvisLimitCycleWindow::parallelAlgorithmChanged(int val)
@@ -2232,7 +2101,7 @@ QvisLimitCycleWindow::parallelAlgorithmChanged(int val)
         atts->SetParallelizationAlgorithmType(LimitCycleAttributes::ParallelizationAlgorithmType(val));
         Apply();
     }
-}   
+}
 
 void
 QvisLimitCycleWindow::maxStepLengthProcessText()

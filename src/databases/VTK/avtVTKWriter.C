@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                               avtVTKWriter.C                              //
@@ -51,12 +17,15 @@
 #include <vtkStringArray.h>
 #include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
+#include <vtkStringArray.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLRectilinearGridWriter.h>
 #include <vtkXMLStructuredGridWriter.h>
 #include <vtkXMLUnstructuredGridWriter.h>
 
 #include <DebugStream.h>
+#include <Expression.h>
+#include <ExpressionList.h>
 #include <avtDatabaseMetaData.h>
 #include <avtParallelContext.h>
 #include <FileFunctions.h>
@@ -188,6 +157,8 @@ avtVTKWriter::OpenFile(const string &stemname, int nb)
 //    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
 //    Retrieve meshName.
 //
+//    Mark C. Miller, Mon Mar  9 19:51:45 PDT 2020
+//    Capture a copy of exprList.
 // ****************************************************************************
 
 void
@@ -199,6 +170,7 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
     meshName = GetMeshName(md);
     time     = GetTime();
     cycle    = GetCycle();
+    exprList = md->GetExprList();
 }
 
 
@@ -237,6 +209,9 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 //    Mark C. Miller, Tue Apr  9 18:45:38 PDT 2019
 //    Add tetrahedralize option (works in 2D and 3D).
+//
+//    Mark C. Miller, Mon Mar  9 19:50:57 PDT 2020
+//    Add output of expressions
 // ****************************************************************************
 
 void
@@ -274,6 +249,40 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
         mn->SetNumberOfValues(1);
         mn->SetValue(0, time);
         mn->SetName("TIME");
+        ds->GetFieldData()->AddArray(mn);
+        mn->Delete();
+    }
+
+    // Write any non-operator, non-auto expressions
+    if (exprList.GetNumExpressions())
+    {
+        vtkStringArray *mn = vtkStringArray::New();
+        mn->SetNumberOfValues(exprList.GetNumExpressions());
+        int used = 0;
+        for (int i = 0; i < exprList.GetNumExpressions(); i++)
+        {
+            Expression const expr = exprList.GetExpressions(i);
+
+            if (expr.GetFromOperator()) continue;
+            if (expr.GetAutoExpression()) continue;
+
+            string vtypestr = "unknown";
+            switch (expr.GetType())
+            {
+                case Expression::CurveMeshVar:  vtypestr = "curve";    break;
+                case Expression::ScalarMeshVar: vtypestr = "scalar";   break;
+                case Expression::VectorMeshVar: vtypestr = "vector";   break;
+                case Expression::TensorMeshVar: vtypestr = "tensor";   break;
+                case Expression::ArrayMeshVar:  vtypestr = "array";    break;
+                case Expression::Material:      vtypestr = "material"; break;
+                case Expression::Species:       vtypestr = "species";  break;
+                default: break;
+            }
+
+            mn->SetValue(used++, expr.GetName() + ";" + vtypestr + ";" + expr.GetDefinition());
+        }
+        mn->SetNumberOfValues(used);
+        mn->SetName("VisItExpressions");
         ds->GetFieldData()->AddArray(mn);
         mn->Delete();
     }
@@ -468,9 +477,9 @@ avtVTKWriter::WriteRootFile()
         if(doXML)
         {
             if(writeContext.GroupSize() > 1)
-                SNPRINTF(filename, 1024, "%s.%d.vtm", stem.c_str(), writeContext.GroupRank());
+                snprintf(filename, 1024, "%s.%d.vtm", stem.c_str(), writeContext.GroupRank());
             else
-                SNPRINTF(filename, 1024, "%s.vtm", stem.c_str());
+                snprintf(filename, 1024, "%s.vtm", stem.c_str());
             ofstream ofile(filename);
             ofile << "<?xml version=\"1.0\"?>" << endl;
             ofile << "<VTKFile type=\"vtkMultiBlockDataSet\" version=\"1.0\">" << endl;

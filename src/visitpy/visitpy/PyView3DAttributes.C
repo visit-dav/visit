@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyView3DAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyView3DAttributes
@@ -77,148 +42,148 @@ PyView3DAttributes_ToString(const View3DAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const double *viewNormal = atts->GetViewNormal();
-        SNPRINTF(tmpStr, 1000, "%sviewNormal = (", prefix);
+        snprintf(tmpStr, 1000, "%sviewNormal = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", viewNormal[i]);
+            snprintf(tmpStr, 1000, "%g", viewNormal[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *focus = atts->GetFocus();
-        SNPRINTF(tmpStr, 1000, "%sfocus = (", prefix);
+        snprintf(tmpStr, 1000, "%sfocus = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", focus[i]);
+            snprintf(tmpStr, 1000, "%g", focus[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *viewUp = atts->GetViewUp();
-        SNPRINTF(tmpStr, 1000, "%sviewUp = (", prefix);
+        snprintf(tmpStr, 1000, "%sviewUp = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", viewUp[i]);
+            snprintf(tmpStr, 1000, "%g", viewUp[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sviewAngle = %g\n", prefix, atts->GetViewAngle());
+    snprintf(tmpStr, 1000, "%sviewAngle = %g\n", prefix, atts->GetViewAngle());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sparallelScale = %g\n", prefix, atts->GetParallelScale());
+    snprintf(tmpStr, 1000, "%sparallelScale = %g\n", prefix, atts->GetParallelScale());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snearPlane = %g\n", prefix, atts->GetNearPlane());
+    snprintf(tmpStr, 1000, "%snearPlane = %g\n", prefix, atts->GetNearPlane());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfarPlane = %g\n", prefix, atts->GetFarPlane());
+    snprintf(tmpStr, 1000, "%sfarPlane = %g\n", prefix, atts->GetFarPlane());
     str += tmpStr;
     {   const double *imagePan = atts->GetImagePan();
-        SNPRINTF(tmpStr, 1000, "%simagePan = (", prefix);
+        snprintf(tmpStr, 1000, "%simagePan = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 2; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", imagePan[i]);
+            snprintf(tmpStr, 1000, "%g", imagePan[i]);
             str += tmpStr;
             if(i < 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%simageZoom = %g\n", prefix, atts->GetImageZoom());
+    snprintf(tmpStr, 1000, "%simageZoom = %g\n", prefix, atts->GetImageZoom());
     str += tmpStr;
     if(atts->GetPerspective())
-        SNPRINTF(tmpStr, 1000, "%sperspective = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sperspective = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sperspective = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sperspective = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%seyeAngle = %g\n", prefix, atts->GetEyeAngle());
+    snprintf(tmpStr, 1000, "%seyeAngle = %g\n", prefix, atts->GetEyeAngle());
     str += tmpStr;
     if(atts->GetCenterOfRotationSet())
-        SNPRINTF(tmpStr, 1000, "%scenterOfRotationSet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scenterOfRotationSet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scenterOfRotationSet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scenterOfRotationSet = 0\n", prefix);
     str += tmpStr;
     {   const double *centerOfRotation = atts->GetCenterOfRotation();
-        SNPRINTF(tmpStr, 1000, "%scenterOfRotation = (", prefix);
+        snprintf(tmpStr, 1000, "%scenterOfRotation = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", centerOfRotation[i]);
+            snprintf(tmpStr, 1000, "%g", centerOfRotation[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetAxis3DScaleFlag())
-        SNPRINTF(tmpStr, 1000, "%saxis3DScaleFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%saxis3DScaleFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%saxis3DScaleFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%saxis3DScaleFlag = 0\n", prefix);
     str += tmpStr;
     {   const double *axis3DScales = atts->GetAxis3DScales();
-        SNPRINTF(tmpStr, 1000, "%saxis3DScales = (", prefix);
+        snprintf(tmpStr, 1000, "%saxis3DScales = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", axis3DScales[i]);
+            snprintf(tmpStr, 1000, "%g", axis3DScales[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *shear = atts->GetShear();
-        SNPRINTF(tmpStr, 1000, "%sshear = (", prefix);
+        snprintf(tmpStr, 1000, "%sshear = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", shear[i]);
+            snprintf(tmpStr, 1000, "%g", shear[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetWindowValid())
-        SNPRINTF(tmpStr, 1000, "%swindowValid = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%swindowValid = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%swindowValid = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%swindowValid = 0\n", prefix);
     str += tmpStr;
     return str;
 }
@@ -863,6 +828,9 @@ View3DAttributes_GetWindowValid(PyObject *self, PyObject *args)
 // Programmer: Mark C. Miller
 // Created:    May 15, 2008
 //
+//    Mark C. Miller, Tue Nov 26 10:26:26 PST 2019
+//    Deal with possible out of range axis argument. Instead of erroring,
+//    we do this by reversing interpretation of args if so.
 // ****************************************************************************
 
 /*static*/ PyObject *
@@ -878,11 +846,152 @@ View3DAttributes_RotateAxis(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "id", &ival, &dval))
         return NULL;
 
+    // Out of range ival could indicate user reversed axis and angle
+    if (ival < 0 || ival > 2)
+    {
+        if (dval == 0 || dval == 1 || dval == 2)
+        {
+            int tmp = (int) dval;
+            dval = ival;
+            ival = tmp;
+        }
+        else
+        {
+            PyErr_SetString(PyExc_IndexError, "Axis arg (the first) must be 0,1 or 2 for X,Y or Z");
+            return NULL;
+        }
+    }
+
     // Call the C++ method to change the view.
     obj->data->RotateAxis(ival, dval);
 
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+static PyObject *
+View3DAttributes_Add(PyObject *v, PyObject *w)
+{
+    bool arg1isObject = PyView3DAttributes_Check(v);
+    bool arg2isObject = PyView3DAttributes_Check(w);
+    if(!arg1isObject || !arg2isObject)
+    {
+        cerr << "View3DAttributes_add: One or more arguments are not View3DAttributes!" << endl;
+        return NULL;
+    }
+
+    PyObject *retval = NewView3DAttributes(0);
+    View3DAttributes *c = PyView3DAttributes_FromPyObject(retval);
+    View3DAttributes *a = ((View3DAttributesObject *)v)->data;
+    View3DAttributes *b = ((View3DAttributesObject *)w)->data;
+
+    c->GetViewNormal()[0] = a->GetViewNormal()[0] + b->GetViewNormal()[0];
+    c->GetViewNormal()[1] = a->GetViewNormal()[1] + b->GetViewNormal()[1];
+    c->GetViewNormal()[2] = a->GetViewNormal()[2] + b->GetViewNormal()[2];
+
+    c->GetFocus()[0] = a->GetFocus()[0] + b->GetFocus()[0];
+    c->GetFocus()[1] = a->GetFocus()[1] + b->GetFocus()[1];
+    c->GetFocus()[2] = a->GetFocus()[2] + b->GetFocus()[2];
+
+    c->GetViewUp()[0] = a->GetViewUp()[0] + b->GetViewUp()[0];
+    c->GetViewUp()[1] = a->GetViewUp()[1] + b->GetViewUp()[1];
+    c->GetViewUp()[2] = a->GetViewUp()[2] + b->GetViewUp()[2];
+
+    c->SetViewAngle(a->GetViewAngle() + b->GetViewAngle());
+    c->SetParallelScale(a->GetParallelScale() + b->GetParallelScale());
+    c->SetNearPlane(a->GetNearPlane() + b->GetNearPlane());
+    c->SetFarPlane(a->GetFarPlane() + b->GetFarPlane());
+    c->SetPerspective(a->GetPerspective() + b->GetPerspective());
+
+    c->GetImagePan()[0] = a->GetImagePan()[0] + b->GetImagePan()[0];
+    c->GetImagePan()[1] = a->GetImagePan()[1] + b->GetImagePan()[1];
+    c->SetImageZoom(a->GetImageZoom() + b->GetImageZoom());
+
+    c->SetEyeAngle(a->GetEyeAngle() + b->GetEyeAngle());
+
+    c->SetCenterOfRotationSet(a->GetCenterOfRotationSet() +
+                              b->GetCenterOfRotationSet());
+    c->GetCenterOfRotation()[0] = a->GetCenterOfRotation()[0] +
+                                  b->GetCenterOfRotation()[0];
+    c->GetCenterOfRotation()[1] = a->GetCenterOfRotation()[1] +
+                                  b->GetCenterOfRotation()[1];
+    c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] +
+                                  b->GetCenterOfRotation()[2];
+    return retval;
+}
+
+static PyObject *
+View3DAttributes_Mul(PyObject *v, PyObject *w)
+{
+    PyObject *retval = NewView3DAttributes(0);
+    View3DAttributes *c = PyView3DAttributes_FromPyObject(retval);
+
+    View3DAttributes *a;
+    double val = 1.;
+    bool arg1isObject = PyView3DAttributes_Check(v);
+    bool arg2isObject = PyView3DAttributes_Check(w);
+
+    if(arg1isObject && arg2isObject)
+    {
+        return NULL;
+    }
+    else
+    {
+        PyObject *num;
+
+        if(arg1isObject)
+        {
+            a = ((View3DAttributesObject *)v)->data;
+            num = w;
+        }
+        else
+        {
+            a = ((View3DAttributesObject *)w)->data;
+            num = v;
+        }
+
+        if(PyFloat_Check(num))
+            val = PyFloat_AS_DOUBLE(num);
+        else if(PyInt_Check(num))
+            val = double(PyInt_AS_LONG(num));
+        else if(PyLong_Check(num))
+            val = PyLong_AsDouble(num);
+        else
+        {
+            cerr << "MUL: Expected numeric argument is not a number!" << endl;
+        }
+
+        c->GetViewNormal()[0] = a->GetViewNormal()[0] * val;
+        c->GetViewNormal()[1] = a->GetViewNormal()[1] * val;
+        c->GetViewNormal()[2] = a->GetViewNormal()[2] * val;
+
+        c->GetFocus()[0] = a->GetFocus()[0] * val;
+        c->GetFocus()[1] = a->GetFocus()[1] * val;
+        c->GetFocus()[2] = a->GetFocus()[2] * val;
+
+        c->GetViewUp()[0] = a->GetViewUp()[0] * val;
+        c->GetViewUp()[1] = a->GetViewUp()[1] * val;
+        c->GetViewUp()[2] = a->GetViewUp()[2] * val;
+
+        c->SetViewAngle(a->GetViewAngle() * val);
+        c->SetParallelScale(a->GetParallelScale() * val);
+        c->SetNearPlane(a->GetNearPlane() * val);
+        c->SetFarPlane(a->GetFarPlane() * val);
+        c->SetPerspective(a->GetPerspective() * val);
+
+        c->GetImagePan()[0] = a->GetImagePan()[0] * val;
+        c->GetImagePan()[1] = a->GetImagePan()[1] * val;
+        c->SetImageZoom(a->GetImageZoom() * val);
+
+        c->SetEyeAngle(a->GetEyeAngle() * val);
+
+        c->SetCenterOfRotationSet(a->GetCenterOfRotationSet() * val);
+        c->GetCenterOfRotation()[0] = a->GetCenterOfRotation()[0] * val;
+        c->GetCenterOfRotation()[1] = a->GetCenterOfRotation()[1] * val;
+        c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] * val;
+    }
+
+    return retval;
 }
 
 
@@ -923,6 +1032,8 @@ PyMethodDef PyView3DAttributes_methods[VIEW3DATTRIBUTES_NMETH] = {
     {"SetWindowValid", View3DAttributes_SetWindowValid, METH_VARARGS},
     {"GetWindowValid", View3DAttributes_GetWindowValid, METH_VARARGS},
     {"RotateAxis", View3DAttributes_RotateAxis, METH_VARARGS},
+    {"Add", View3DAttributes_Add, METH_VARARGS},
+    {"Mul", View3DAttributes_Mul, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1058,138 +1169,13 @@ View3DAttributes_str(PyObject *v)
     return PyString_FromString(PyView3DAttributes_ToString(obj->data,"").c_str());
 }
 
-static PyObject *
-View3DAttributes_add(PyObject *v, PyObject *w)
-{
-    bool arg1isObject = PyView3DAttributes_Check(v);
-    bool arg2isObject = PyView3DAttributes_Check(w);
-    if(!arg1isObject || !arg2isObject)
-    {
-        cerr << "View3DAttributes_add: One or more arguments are not View3DAttributes!" << endl;
-        return NULL;
-    }
-
-    PyObject *retval = NewView3DAttributes(0);
-    View3DAttributes *c = PyView3DAttributes_FromPyObject(retval);
-    View3DAttributes *a = ((View3DAttributesObject *)v)->data;
-    View3DAttributes *b = ((View3DAttributesObject *)w)->data;
-
-    c->GetViewNormal()[0] = a->GetViewNormal()[0] + b->GetViewNormal()[0];
-    c->GetViewNormal()[1] = a->GetViewNormal()[1] + b->GetViewNormal()[1];
-    c->GetViewNormal()[2] = a->GetViewNormal()[2] + b->GetViewNormal()[2];
-
-    c->GetFocus()[0] = a->GetFocus()[0] + b->GetFocus()[0];
-    c->GetFocus()[1] = a->GetFocus()[1] + b->GetFocus()[1];
-    c->GetFocus()[2] = a->GetFocus()[2] + b->GetFocus()[2];
-
-    c->GetViewUp()[0] = a->GetViewUp()[0] + b->GetViewUp()[0];
-    c->GetViewUp()[1] = a->GetViewUp()[1] + b->GetViewUp()[1];
-    c->GetViewUp()[2] = a->GetViewUp()[2] + b->GetViewUp()[2];
-
-    c->SetViewAngle(a->GetViewAngle() + b->GetViewAngle());
-    c->SetParallelScale(a->GetParallelScale() + b->GetParallelScale());
-    c->SetNearPlane(a->GetNearPlane() + b->GetNearPlane());
-    c->SetFarPlane(a->GetFarPlane() + b->GetFarPlane());
-    c->SetPerspective(a->GetPerspective() + b->GetPerspective());
-
-    c->GetImagePan()[0] = a->GetImagePan()[0] + b->GetImagePan()[0];
-    c->GetImagePan()[1] = a->GetImagePan()[1] + b->GetImagePan()[1];
-    c->SetImageZoom(a->GetImageZoom() + b->GetImageZoom());
-
-    c->SetEyeAngle(a->GetEyeAngle() + b->GetEyeAngle());
-
-    c->SetCenterOfRotationSet(a->GetCenterOfRotationSet() +
-                              b->GetCenterOfRotationSet());
-    c->GetCenterOfRotation()[0] = a->GetCenterOfRotation()[0] +
-                                  b->GetCenterOfRotation()[0];
-    c->GetCenterOfRotation()[1] = a->GetCenterOfRotation()[1] +
-                                  b->GetCenterOfRotation()[1];
-    c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] +
-                                  b->GetCenterOfRotation()[2];
-    return retval;
-}
-
-static PyObject *
-View3DAttributes_mul(PyObject *v, PyObject *w)
-{
-    PyObject *retval = NewView3DAttributes(0);
-    View3DAttributes *c = PyView3DAttributes_FromPyObject(retval);
-
-    View3DAttributes *a;
-    double val = 1.;
-    bool arg1isObject = PyView3DAttributes_Check(v);
-    bool arg2isObject = PyView3DAttributes_Check(w);
-
-    if(arg1isObject && arg2isObject)
-    {
-        return NULL;
-    }
-    else
-    {
-        PyObject *num;
-
-        if(arg1isObject)
-        {
-            a = ((View3DAttributesObject *)v)->data;
-            num = w;
-        }
-        else
-        {
-            a = ((View3DAttributesObject *)w)->data;
-            num = v;
-        }
-
-        if(PyFloat_Check(num))
-            val = PyFloat_AS_DOUBLE(num);
-        else if(PyInt_Check(num))
-            val = double(PyInt_AS_LONG(num));
-        else if(PyLong_Check(num))
-            val = PyLong_AsDouble(num);
-        else
-        {
-            cerr << "MUL: Expected numeric argument is not a number!" << endl;
-        }
-
-        c->GetViewNormal()[0] = a->GetViewNormal()[0] * val;
-        c->GetViewNormal()[1] = a->GetViewNormal()[1] * val;
-        c->GetViewNormal()[2] = a->GetViewNormal()[2] * val;
-
-        c->GetFocus()[0] = a->GetFocus()[0] * val;
-        c->GetFocus()[1] = a->GetFocus()[1] * val;
-        c->GetFocus()[2] = a->GetFocus()[2] * val;
-
-        c->GetViewUp()[0] = a->GetViewUp()[0] * val;
-        c->GetViewUp()[1] = a->GetViewUp()[1] * val;
-        c->GetViewUp()[2] = a->GetViewUp()[2] * val;
-
-        c->SetViewAngle(a->GetViewAngle() * val);
-        c->SetParallelScale(a->GetParallelScale() * val);
-        c->SetNearPlane(a->GetNearPlane() * val);
-        c->SetFarPlane(a->GetFarPlane() * val);
-        c->SetPerspective(a->GetPerspective() * val);
-
-        c->GetImagePan()[0] = a->GetImagePan()[0] * val;
-        c->GetImagePan()[1] = a->GetImagePan()[1] * val;
-        c->SetImageZoom(a->GetImageZoom() * val);
-
-        c->SetEyeAngle(a->GetEyeAngle() * val);
-
-        c->SetCenterOfRotationSet(a->GetCenterOfRotationSet() * val);
-        c->GetCenterOfRotation()[0] = a->GetCenterOfRotation()[0] * val;
-        c->GetCenterOfRotation()[1] = a->GetCenterOfRotation()[1] * val;
-        c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] * val;
-    }
-
-    return retval;
-}
-
 //
 // The type description structure
 //
 static PyNumberMethods View3DAttributes_as_number = {
-    (binaryfunc)View3DAttributes_add, /*nb_add*/
+    (binaryfunc)View3DAttributes_Add, /*nb_add*/
     (binaryfunc)0, /*nb_subtract*/
-    (binaryfunc)View3DAttributes_mul, /*nb_multiply*/
+    (binaryfunc)View3DAttributes_Mul, /*nb_multiply*/
     (binaryfunc)0, /*nb_divide*/
     (binaryfunc)0,    /*nb_remainder*/
     (binaryfunc)0,    /*nb_divmod*/

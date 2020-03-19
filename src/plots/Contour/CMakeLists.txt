@@ -3,6 +3,8 @@ PROJECT(Contour_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Contour)
+
 SET(COMMON_SOURCES
 ContourPluginInfo.C
 ContourCommonPluginInfo.C
@@ -100,6 +102,10 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SContourPlot ${LIBS_SOURCES})
+        IF(WIN32)
+            # This prevents python from #defining snprintf as _snprintf
+            SET_TARGET_PROPERTIES(SContourPlot PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
+        ENDIF()
         TARGET_LINK_LIBRARIES(SContourPlot visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SContourPlot)
     ENDIF(VISIT_PYTHON_SCRIPTING)

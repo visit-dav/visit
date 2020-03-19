@@ -1,49 +1,13 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ExplodeViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ExplodePluginInfo.h>
 #include <ExplodeAttributes.h>
-
-#include <avtPlotMetaData.h>
 
 //
 // Storage for static data elements.
@@ -64,8 +28,11 @@ ExplodeAttributes *ExplodeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ExplodeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ExplodeViewerEnginePluginInfo::clientAtts  = new ExplodeAttributes;
-    ExplodeViewerEnginePluginInfo::defaultAtts = new ExplodeAttributes;
+    if (ExplodeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ExplodeViewerEnginePluginInfo::clientAtts  = new ExplodeAttributes;
+        ExplodeViewerEnginePluginInfo::defaultAtts = new ExplodeAttributes;
+    }
 }
 
 // ****************************************************************************
@@ -165,12 +132,13 @@ ExplodeViewerEnginePluginInfo::GetClientAtts(AttributeSubject *atts)
 //  Modifications:
 //
 //      Alister Maguire, Wed Nov  8 10:12:34 PST 2017
-//      Added retrieval of boundary names. 
+//      Added retrieval of boundary names.
 //
 //      Alister Maguire, Wed Jan 17 15:28:46 PST 2018
-//      Moved most of the method to PrivateSetOperatorAtts(). 
+//      Moved most of the method to PrivateSetOperatorAtts().
 //
 // ****************************************************************************
+#include <avtPlotMetaData.h>
 
 void
 ExplodeViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
@@ -199,12 +167,12 @@ ExplodeViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
 //
 //  Modifications:
 //      Alister Maguire, Wed Jan 17 15:28:46 PST 2018
-//      Added a call to PrivateSetOperatorAtts(). 
+//      Added a call to PrivateSetOperatorAtts().
 //
 // ****************************************************************************
 
 void
-ExplodeViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *atts, 
+ExplodeViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *atts,
     const avtPlotMetaData &plot)
 {
     cerr << "UPDATING OPERATOR ATTS" << endl;
@@ -232,13 +200,12 @@ ExplodeViewerEnginePluginInfo::GetMenuName() const
     return "Explode";
 }
 
-
 // ****************************************************************************
 //  Method: ExplodeViewerEnginePluginInfo::PrivateSetOperatorAtts
 //
 //  Purpose:
 //      Retrieve the boundary (material) names and set them within the i
-//      operator attributes. 
+//      operator attributes.
 //
 //  Programmer: Alister Maguire
 //  Creation:   Wed Jan 17 15:28:46 PST 2018
@@ -246,7 +213,7 @@ ExplodeViewerEnginePluginInfo::GetMenuName() const
 //  Modifications:
 //
 //      Alister Maguire, Tue Sep 18 14:57:03 PDT 2018
-//      Added the ability to handle multiple types of subsets. 
+//      Added the ability to handle multiple types of subsets.
 //
 // ****************************************************************************
 
@@ -256,7 +223,7 @@ ExplodeViewerEnginePluginInfo::GetMenuName() const
 #include <InvalidVariableException.h>
 
 void
-ExplodeViewerEnginePluginInfo::PrivateSetOperatorAtts(AttributeSubject *atts, 
+ExplodeViewerEnginePluginInfo::PrivateSetOperatorAtts(AttributeSubject *atts,
     const avtPlotMetaData &plot)
 {
     ExplodeAttributes *explodeAtts = (ExplodeAttributes *)atts;
@@ -276,21 +243,21 @@ ExplodeViewerEnginePluginInfo::PrivateSetOperatorAtts(AttributeSubject *atts,
     stringVector::const_iterator pos;
     char temp[512];
 
-    // 
-    // Create subset names, based on Subset Type 
-    // 
+    //
+    // Create subset names, based on Subset Type
+    //
     avtSubsetType subT = md->DetermineSubsetType(varName);
     switch (subT)
     {
-        case AVT_DOMAIN_SUBSET : 
+        case AVT_DOMAIN_SUBSET :
         {
-            debug5 << "Exploding a domain mesh subset." << endl; 
+            debug5 << "Exploding a domain mesh subset." << endl;
             explodeAtts->SetSubsetType(ExplodeAttributes::Domain);
             defaultAtts->SetSubsetType(ExplodeAttributes::Domain);
             if (mesh->blockNames.empty())
             {
                 for (int i = 0; i < mesh->numBlocks; i++)
-                { 
+                {
                     sprintf(temp, "%d", i+mesh->blockOrigin);
                     subsetNames.push_back(temp);
                 }
@@ -308,10 +275,10 @@ ExplodeViewerEnginePluginInfo::PrivateSetOperatorAtts(AttributeSubject *atts,
 
         case AVT_GROUP_SUBSET :
         {
-            debug5 << "Exploding a group mesh subset." << endl; 
+            debug5 << "Exploding a group mesh subset." << endl;
             explodeAtts->SetSubsetType(ExplodeAttributes::Group);
             defaultAtts->SetSubsetType(ExplodeAttributes::Group);
-            
+
             std::set<int>    groupSet;
             std::vector<int> gIDS;
 
@@ -355,7 +322,7 @@ ExplodeViewerEnginePluginInfo::PrivateSetOperatorAtts(AttributeSubject *atts,
 
         case AVT_ENUMSCALAR_SUBSET :
         {
-            debug5 << "Exploding an enumerated scalar subset." << endl; 
+            debug5 << "Exploding an enumerated scalar subset." << endl;
             explodeAtts->SetSubsetType(ExplodeAttributes::EnumScalar);
             defaultAtts->SetSubsetType(ExplodeAttributes::EnumScalar);
             const avtScalarMetaData *smd = md->GetScalar(varName);
@@ -370,7 +337,7 @@ ExplodeViewerEnginePluginInfo::PrivateSetOperatorAtts(AttributeSubject *atts,
         }
         break;
 
-        case AVT_MATERIAL_SUBSET: 
+        case AVT_MATERIAL_SUBSET:
         // Fall through to default
 
         default:
@@ -378,8 +345,8 @@ ExplodeViewerEnginePluginInfo::PrivateSetOperatorAtts(AttributeSubject *atts,
             //
             // By default, we explode materials.
             //
-            debug5 << "Exploding a materials." << endl; 
-            int numMaterials = md->GetNumMaterials();  
+            debug5 << "Exploding a materials." << endl;
+            int numMaterials = md->GetNumMaterials();
             explodeAtts->SetSubsetType(ExplodeAttributes::Material);
             defaultAtts->SetSubsetType(ExplodeAttributes::Material);
 
@@ -393,7 +360,7 @@ ExplodeViewerEnginePluginInfo::PrivateSetOperatorAtts(AttributeSubject *atts,
                     {
                         if ( !(*pos).empty() )
                         {
-                            subsetNames.push_back(*pos); 
+                            subsetNames.push_back(*pos);
                         }
                     }
                 }
@@ -406,3 +373,4 @@ ExplodeViewerEnginePluginInfo::PrivateSetOperatorAtts(AttributeSubject *atts,
     explodeAtts->SetBoundaryNames(subsetNames);
     defaultAtts->SetBoundaryNames(subsetNames);
 }
+

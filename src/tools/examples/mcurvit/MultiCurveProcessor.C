@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <MultiCurveProcessor.h>
 
@@ -298,6 +264,10 @@ MultiCurveProcessor::CreatePlot(const string &varName)
 // Creation:   Tue Feb  3 12:43:04 PST 2009
 //
 // Modifications:
+//   Eric Brugger, Fri Jan 17 11:21:19 PST 2020
+//   Changed the positions passed for the title annotations since the
+//   definition of Position2 changed from the text width to the text height
+//   with version 3.0.
 //
 // ****************************************************************************
 
@@ -311,9 +281,9 @@ MultiCurveProcessor::FinishPlot()
         text.push_back("Multi Curve Plot");
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(0).SetText(text);
         double position[2];
-        position[0] = 0.3; position[1] = 0.92;
+        position[0] = 0.34; position[1] = 0.955;
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(0).SetPosition(position);
-        position[0] = 0.4;  // The text width
+        position[0] = 0.025;  // The text height
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(0).SetPosition2(position);
         ColorAttribute red;
         red.SetRgba(255, 0, 0, 255);
@@ -322,9 +292,9 @@ MultiCurveProcessor::FinishPlot()
 
         // Set the second title.
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(1).SetText(text);
-        position[0] = 0.3; position[1] = 0.02;
+        position[0] = 0.34; position[1] = 0.02;
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(1).SetPosition(position);
-        position[0] = 0.4;  // The text width
+        position[0] = 0.025;  // The text height
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(1).SetPosition2(position);
         red.SetRgba(0, 255, 0, 255);
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(1).SetTextColor(red);

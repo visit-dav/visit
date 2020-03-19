@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <Python.h>
 #include <stdio.h>
@@ -44,7 +10,6 @@
 #else
 #include <process.h> // for _getpid
 #endif
-#include <snprintf.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -1539,9 +1504,9 @@ visit_SetDebugLevel(PyObject *self, PyObject *args)
         viewerArguments.push_back("-debug");
         char tmp[10];
         if (moduleBufferDebug)
-            SNPRINTF(tmp, 10, "%db", moduleDebugLevel);
+            snprintf(tmp, 10, "%db", moduleDebugLevel);
         else
-            SNPRINTF(tmp, 10, "%d", moduleDebugLevel);
+            snprintf(tmp, 10, "%d", moduleDebugLevel);
         //GetViewerProxy()->AddArgument(tmp);
         viewerArguments.push_back(tmp);
     }
@@ -3304,19 +3269,19 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
                 // make sure expr is not from db, or an auto expression
                 if(expr.GetAutoExpression())
                 {
-                    SNPRINTF(buff,512,
+                    snprintf(buff,512,
                              "Cannot delete auto generated expression \"%s\".",
                              exprName);
                 }
                 else if(expr.GetFromDB())
                 {
-                    SNPRINTF(buff,512,
+                    snprintf(buff,512,
                              "Cannot delete database expression \"%s\".",
                              exprName);
                 }
                 else if(expr.GetFromOperator())
                 {
-                    SNPRINTF(buff,512,
+                    snprintf(buff,512,
                              "Cannot delete operator expression \"%s\".",
                              exprName);
                 }
@@ -3339,7 +3304,7 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
     MUTEX_UNLOCK();
     
     if(!found)
-        SNPRINTF(buff,512,"Cannot delete unknown expression \"%s\".",exprName);
+        snprintf(buff,512,"Cannot delete unknown expression \"%s\".",exprName);
          
     if(!success)
     {
@@ -7706,7 +7671,7 @@ visit_ListPlots(PyObject *self, PyObject *args)
              size_t  strLen = 0;
 
              size_t j;
-             SNPRINTF(tmpStr, sizeof(tmpStr),
+             snprintf(tmpStr, sizeof(tmpStr),
                  "Plot[%d]|id=%d;type=\"%s\";database=\"%s\";var=%s;active=%d;"
                  "hidden=%d;framerange=(%d, %d);keyframes={", i,
                     plot.GetId(),
@@ -7723,13 +7688,13 @@ visit_ListPlots(PyObject *self, PyObject *args)
              const std::vector<int> &keyframes = plot.GetKeyframes();
              for(j = 0; j < keyframes.size(); ++j)
              {
-                 SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "%d", keyframes[j]);
+                 snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, "%d", keyframes[j]);
                  strLen = strlen(tmpStr);
                  if(j < keyframes.size() - 1)
-                     SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
+                     snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
                  strLen = strlen(tmpStr);
              }
-             SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "};database keyframes={");
+             snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, "};database keyframes={");
              strLen = strlen(tmpStr);
 
              // Print out the database keyframes.
@@ -7737,27 +7702,27 @@ visit_ListPlots(PyObject *self, PyObject *args)
                  plot.GetDatabaseKeyframes();
              for(j = 0; j < databaseKeyframes.size(); ++j)
              {
-                 SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "%d", databaseKeyframes[j]);
+                 snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, "%d", databaseKeyframes[j]);
                  strLen = strlen(tmpStr);
                  if(j < databaseKeyframes.size() - 1)
-                     SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
+                     snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
                  strLen = strlen(tmpStr);
              }
-             SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "};operators={");
+             snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, "};operators={");
              strLen = strlen(tmpStr);
 
              // Print out the plot operators.
              for(j = 0; j < (size_t)plot.GetNumOperators(); ++j)
              {
                  int op = plot.GetOperator(j);
-                 SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "\"%s\"",
+                 snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, "\"%s\"",
                      GetViewerProxy()->GetOperatorPluginManager()->GetEnabledID(op).c_str());
                  strLen = strlen(tmpStr);
                  if(j < (size_t)plot.GetNumOperators() - 1)
-                     SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
+                     snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
                  strLen = strlen(tmpStr);
              }
-             SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen,
+             snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen,
                  "};activeOperator=%d", plot.GetActiveOperator());
              strLen = strlen(tmpStr);
 
@@ -11070,11 +11035,11 @@ visit_Source(PyObject *self, PyObject *args)
         //
         // Add a ".py" extension and try to open the file.
         //
-        SNPRINTF(buf, 1024, "%s.py", fileName);
+        snprintf(buf, 1024, "%s.py", fileName);
         fp = fopen(buf, "rb");
         if(fp == NULL)
         {
-            SNPRINTF(buf, 1024, "Could not find file %s for sourcing.", fileName);
+            snprintf(buf, 1024, "Could not find file %s for sourcing.", fileName);
             VisItErrorFunc(buf);
             return NULL;
         }
@@ -11083,7 +11048,7 @@ visit_Source(PyObject *self, PyObject *args)
     //
     // Turn logging off.
     //
-    SNPRINTF(buf, 1024, "Source(\"%s\")\n", fileName);
+    snprintf(buf, 1024, "Source(\"%s\")\n", fileName);
     LogFile_Write(buf);
     LogFile_IncreaseLevel();
 
@@ -15078,7 +15043,7 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
     else
     {
         char message[400];
-        SNPRINTF(message, 400, "%s is not a recognized annotation type.",
+        snprintf(message, 400, "%s is not a recognized annotation type.",
            annotType);
         VisItErrorFunc(message);
         return NULL;
@@ -15131,7 +15096,7 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
     else if(errorFlag > 0)
     {
         char message[400];
-        SNPRINTF(message, 400, "VisIt could not create an annotation object "
+        snprintf(message, 400, "VisIt could not create an annotation object "
             "of type: %s.", annotType);
         VisItErrorFunc(message);
         return NULL;
@@ -15232,7 +15197,7 @@ visit_GetAnnotationObject(PyObject *self, PyObject *args)
         else
         {
             char msg[400];
-            SNPRINTF(msg, 400, "An unrecognized object name \"%s\" was requested.", annotName);
+            snprintf(msg, 400, "An unrecognized object name \"%s\" was requested.", annotName);
             VisItErrorFunc(msg);
         }
     }
@@ -16898,7 +16863,7 @@ visit_exec_client_method(void *data)
                     {
                         int len = code[i].size() + 6 + 1;
                         buf = new char[len];
-                        SNPRINTF(buf, len, "visit.%s", code[i].c_str());
+                        snprintf(buf, len, "visit.%s", code[i].c_str());
                     }
                 }
                 if(buf == NULL)
@@ -17599,10 +17564,10 @@ AddDefaultMethods()
     AddMethod("Close",  visit_Close, visit_Close_doc);
     AddMethod("Launch", visit_Launch, visit_Launch_doc);
     AddMethod("LaunchNowin", visit_LaunchNowin, visit_Launch_doc);
-    AddMethod("LocalNameSpace", visit_LocalNameSpace,visit_LocalNamespace_doc);
-    AddMethod("GetDebugLevel", visit_GetDebugLevel, visit_DebugLevel_doc);
+    AddMethod("LocalNameSpace", visit_LocalNameSpace,visit_LocalNameSpace_doc);
+    AddMethod("GetDebugLevel", visit_GetDebugLevel, visit_GetDebugLevel_doc);
     AddMethod("GetLastError", visit_GetLastError, visit_GetLastError_doc);
-    AddMethod("SetDebugLevel", visit_SetDebugLevel, visit_DebugLevel_doc);
+    AddMethod("SetDebugLevel", visit_SetDebugLevel, visit_SetDebugLevel_doc);
     AddMethod("Version", visit_Version, visit_Version_doc);
     AddMethod("LongFileName", visit_LongFileName, visit_LongFileName_doc);
     AddMethod("InitializeViewerProxy", visit_InitializeViewerProxy, NULL);
@@ -17630,7 +17595,7 @@ AddProxyMethods()
                                                   visit_CheckForNewStates_doc);
     AddMethod("ChooseCenterOfRotation",  visit_ChooseCenterOfRotation,
                                              visit_ChooseCenterOfRotation_doc);
-    AddMethod("ClearAllWindows", visit_ClearAllWindows, visit_Clear_doc);
+    AddMethod("ClearAllWindows", visit_ClearAllWindows, visit_ClearAllWindows_doc);
     AddMethod("ClearCache", visit_ClearCache, visit_ClearCache_doc);
     AddMethod("ClearCacheForAllEngines", visit_ClearCacheForAllEngines,
                                                          visit_ClearCache_doc);
@@ -17642,7 +17607,7 @@ AddProxyMethods()
                                                 visit_ClearReferenceLines_doc);
     AddMethod("ClearViewKeyframes", visit_ClearViewKeyframes,
                                                  visit_ClearViewKeyframes_doc);
-    AddMethod("ClearWindow", visit_ClearWindow, visit_Clear_doc);
+    AddMethod("ClearWindow", visit_ClearWindow, visit_ClearWindow_doc);
     AddMethod("ClientMethod", visit_ClientMethod);
     AddMethod("CloneWindow",  visit_CloneWindow, visit_CloneWindow_doc);
     AddMethod("CloseComputeEngine", visit_CloseComputeEngine,
@@ -17653,11 +17618,11 @@ AddProxyMethods()
     AddMethod("ConstructDDFAttributes", visit_ConstructDataBinningAttributes, visit_ConstructDataBinning_doc);
 
     AddMethod("CopyAnnotationsToWindow", visit_CopyAnnotationsToWindow,
-                                                               visit_Copy_doc);
+                                                               visit_CopyAnnotationsToWindow_doc);
     AddMethod("CopyLightingToWindow", visit_CopyLightingToWindow,
-                                                               visit_Copy_doc);
-    AddMethod("CopyPlotsToWindow", visit_CopyPlotsToWindow, visit_Copy_doc);
-    AddMethod("CopyViewToWindow", visit_CopyViewToWindow, visit_Copy_doc);
+                                                               visit_CopyLightingToWindow_doc);
+    AddMethod("CopyPlotsToWindow", visit_CopyPlotsToWindow, visit_CopyPlotsToWindow_doc);
+    AddMethod("CopyViewToWindow", visit_CopyViewToWindow, visit_CopyViewToWindow_doc);
     AddMethod("CreateAnnotationObject", visit_CreateAnnotationObject,
                                              visit_CreateAnnotationObject_doc);
     AddMethod("CreateDatabaseCorrelation", visit_CreateDatabaseCorrelation,
@@ -17667,21 +17632,21 @@ AddProxyMethods()
     AddMethod("DatabasePlugins", visit_DatabasePlugins,
                                                visit_DatabasePlugins_doc);
     AddMethod("DefineArrayExpression", visit_DefineArrayExpression,
-                                               visit_DefineExpression_doc);
+                                               visit_DefineArrayExpression_doc);
     AddMethod("DefineCurveExpression", visit_DefineCurveExpression,
-                                               visit_DefineExpression_doc);
+                                               visit_DefineCurveExpression_doc);
     AddMethod("DefineMeshExpression", visit_DefineMeshExpression,
-                                               visit_DefineExpression_doc);
+                                               visit_DefineMeshExpression_doc);
     AddMethod("DefineMaterialExpression", visit_DefineMaterialExpression,
-                                           visit_DefineExpression_doc);
+                                           visit_DefineMaterialExpression_doc);
     AddMethod("DefineScalarExpression", visit_DefineScalarExpression,
-                                             visit_DefineExpression_doc);
+                                             visit_DefineScalarExpression_doc);
     AddMethod("DefineSpeciesExpression", visit_DefineSpeciesExpression,
-                                            visit_DefineExpression_doc);
+                                            visit_DefineSpeciesExpression_doc);
     AddMethod("DefineTensorExpression", visit_DefineTensorExpression,
-                                             visit_DefineExpression_doc);
+                                             visit_DefineTensorExpression_doc);
     AddMethod("DefineVectorExpression", visit_DefineVectorExpression,
-                                             visit_DefineExpression_doc);
+                                             visit_DefineVectorExpression_doc);
     AddMethod("DeleteDatabaseCorrelation", visit_DeleteDatabaseCorrelation,
                                           visit_DeleteDatabaseCorrelation_doc);
     AddMethod("DeleteExpression", visit_DeleteExpression,
@@ -17689,8 +17654,8 @@ AddProxyMethods()
     AddMethod("DeIconifyAllWindows", visit_DeIconifyAllWindows,
                                                 visit_DeIconifyAllWindows_doc);
     AddMethod("DeleteActivePlots", visit_DeleteActivePlots,
-                                                        visit_DeletePlots_doc);
-    AddMethod("DeleteAllPlots", visit_DeleteAllPlots,visit_DeletePlots_doc);
+                                                        visit_DeleteActivePlots_doc);
+    AddMethod("DeleteAllPlots", visit_DeleteAllPlots,visit_DeleteAllPlots_doc);
     AddMethod("DeleteNamedSelection", visit_DeleteNamedSelection,
                                            visit_DeleteNamedSelection_doc);
     AddMethod("DeletePlotDatabaseKeyframe", visit_DeletePlotDatabaseKeyframe,
@@ -17715,15 +17680,15 @@ AddProxyMethods()
                                                 visit_GetAnnotationObjectNames_doc);
 
     AddMethod("GetLocalHostName", visit_GetLocalHostName,
-                                                       visit_GetLocalName_doc);
+                                                       visit_GetLocalHostName_doc);
     AddMethod("GetLocalUserName", visit_GetLocalUserName,
-                                                       visit_GetLocalName_doc);
+                                                       visit_GetLocalUserName_doc);
     AddMethod("GetSaveWindowAttributes", visit_GetSaveWindowAttributes,
                                             visit_GetSaveWindowAttributes_doc);
-    AddMethod("GetViewAxisArray", visit_GetViewAxisArray, visit_GetView_doc);
-    AddMethod("GetViewCurve", visit_GetViewCurve, visit_GetView_doc);
-    AddMethod("GetView2D", visit_GetView2D, visit_GetView_doc);
-    AddMethod("GetView3D", visit_GetView3D, visit_GetView_doc);
+    AddMethod("GetViewAxisArray", visit_GetViewAxisArray, visit_GetViewAxisArray_doc);
+    AddMethod("GetViewCurve", visit_GetViewCurve, visit_GetViewCurve_doc);
+    AddMethod("GetView2D", visit_GetView2D, visit_GetView2D_doc);
+    AddMethod("GetView3D", visit_GetView3D, visit_GetView3D_doc);
     AddMethod("GetAnnotationAttributes", visit_GetAnnotationAttributes,
                                             visit_GetAnnotationAttributes_doc);
     AddMethod("GetDatabaseCorrelation", visit_GetDatabaseCorrelation, NULL);
@@ -17757,13 +17722,13 @@ AddProxyMethods()
                                              visit_GetPipelineCachingMode_doc);
     AddMethod("GetProcessAttributes", visit_GetProcessAttributes, NULL);
     AddMethod("GetQueryOutputString", visit_GetQueryOutputString,
-                                                     visit_GetQueryOutput_doc);
+                                                     visit_GetQueryOutputString_doc);
     AddMethod("GetQueryOutputValue", visit_GetQueryOutputValue,
-                                                     visit_GetQueryOutput_doc);
+                                                     visit_GetQueryOutputValue_doc);
     AddMethod("GetQueryOutputXML", visit_GetQueryOutputXML,
-                                                     visit_GetQueryOutput_doc);
+                                                     visit_GetQueryOutputXML_doc);
     AddMethod("GetQueryOutputObject", visit_GetQueryOutputObject,
-                                                     visit_GetQueryOutput_doc);
+                                                     visit_GetQueryOutputObject_doc);
     AddMethod("GetQueryParameters", visit_GetQueryParameters, visit_GetQueryParameters_doc);
     AddMethod("GetPlotInformation", visit_GetPlotInformation,
                                                      visit_GetPlotInformation_doc);
@@ -17846,7 +17811,7 @@ AddProxyMethods()
     AddMethod("RemoveLastOperator", visit_RemoveLastOperator,
                                                      visit_RemoveOperator_doc);
     AddMethod("RemoveOperator", visit_RemoveOperator,visit_RemoveOperator_doc);
-    AddMethod("ReenamePickLabel", visit_RenamePickLabel, visit_RenamePickLabel_doc);
+    AddMethod("RenamePickLabel", visit_RenamePickLabel, visit_RenamePickLabel_doc);
     AddMethod("ReOpenDatabase", visit_ReOpenDatabase,visit_ReOpenDatabase_doc);
     AddMethod("ReplaceDatabase", visit_ReplaceDatabase,
                                                     visit_ReplaceDatabase_doc);
@@ -17966,10 +17931,10 @@ AddProxyMethods()
                                          visit_SetTryHarderCyclesTimes_doc);
     AddMethod("SetViewExtentsType", visit_SetViewExtentsType,
                                                  visit_SetViewExtentsType_doc);
-    AddMethod("SetViewAxisArray", visit_SetViewAxisArray, visit_SetView_doc);
-    AddMethod("SetViewCurve", visit_SetViewCurve, visit_SetView_doc);
-    AddMethod("SetView2D", visit_SetView2D, visit_SetView_doc);
-    AddMethod("SetView3D", visit_SetView3D, visit_SetView_doc);
+    AddMethod("SetViewAxisArray", visit_SetViewAxisArray, visit_SetViewAxisArray_doc);
+    AddMethod("SetViewCurve", visit_SetViewCurve, visit_SetViewCurve_doc);
+    AddMethod("SetView2D", visit_SetView2D, visit_SetView2D_doc);
+    AddMethod("SetView3D", visit_SetView3D, visit_SetView3D_doc);
     AddMethod("SetViewKeyframe", visit_SetViewKeyframe,
                                                     visit_SetViewKeyframe_doc);
           
@@ -17979,8 +17944,8 @@ AddProxyMethods()
     AddMethod("SetWindowMode", visit_SetWindowMode, visit_SetWindowMode_doc);
     AddMethod("ShowAllWindows", visit_ShowAllWindows,visit_ShowAllWindows_doc);
     AddMethod("ShowToolbars", visit_ShowToolbars, visit_ShowToolbars_doc);
-    AddMethod("SuppressQueryOutputOn", visit_SuppressQueryOutputOn, visit_SuppressQueryOutput_doc);
-    AddMethod("SuppressQueryOutputOff", visit_SuppressQueryOutputOff, visit_SuppressQueryOutput_doc);
+    AddMethod("SuppressQueryOutputOn", visit_SuppressQueryOutputOn, visit_SuppressQueryOutputOn_doc);
+    AddMethod("SuppressQueryOutputOff", visit_SuppressQueryOutputOff, visit_SuppressQueryOutputOff_doc);
     AddMethod("SetQueryOutputToObject", visit_SetQueryOutputToObject, visit_SetQueryOutputToObject_doc);
     AddMethod("SetQueryOutputToValue", visit_SetQueryOutputToValue, visit_SetQueryOutputToValue_doc);
     AddMethod("SetQueryOutputToString", visit_SetQueryOutputToString, visit_SetQueryOutputToString_doc);
@@ -17990,22 +17955,22 @@ AddProxyMethods()
     AddMethod("TimeSliderNextState", visit_TimeSliderNextState,
                                                 visit_TimeSliderNextState_doc);
     AddMethod("TimeSliderPreviousState", visit_TimeSliderPreviousState,
-                                                visit_TimeSliderPrevState_doc);
+                                                visit_TimeSliderPreviousState_doc);
     AddMethod("TimeSliderSetState", visit_SetTimeSliderState,
                                                  visit_SetTimeSliderState_doc);
     AddMethod("ToggleBoundingBoxMode", visit_ToggleBoundingBoxMode,
-                                                         visit_ToggleMode_doc);
+                                                         visit_ToggleBoundingBoxMode_doc);
     AddMethod("ToggleCameraViewMode", visit_ToggleCameraViewMode,
-                                                         visit_ToggleMode_doc);
+                                                         visit_ToggleCameraViewMode_doc);
     AddMethod("ToggleFullFrameMode", visit_ToggleFullFrameMode,
-                                                         visit_ToggleMode_doc);
-    AddMethod("ToggleLockTime", visit_ToggleLockTime, visit_ToggleMode_doc);
-    AddMethod("ToggleLockTools", visit_ToggleLockTools, visit_ToggleMode_doc);
+                                                         visit_ToggleFullFrameMode_doc);
+    AddMethod("ToggleLockTime", visit_ToggleLockTime, visit_ToggleLockTime_doc);
+    AddMethod("ToggleLockTools", visit_ToggleLockTools, visit_ToggleLockTools_doc);
     AddMethod("ToggleLockViewMode", visit_ToggleLockViewMode,
-                                                         visit_ToggleMode_doc);
+                                                         visit_ToggleLockViewMode_doc);
     AddMethod("ToggleMaintainViewMode", visit_ToggleMaintainViewMode,
-                                                         visit_ToggleMode_doc);
-    AddMethod("ToggleSpinMode", visit_ToggleSpinMode, visit_ToggleMode_doc);
+                                                         visit_ToggleMaintainViewMode_doc);
+    AddMethod("ToggleSpinMode", visit_ToggleSpinMode, visit_ToggleSpinMode_doc);
     AddMethod("UndoView",  visit_UndoView, visit_UndoView_doc);
     AddMethod("UpdateNamedSelection", visit_UpdateNamedSelection, visit_UpdateNamedSelection_doc);
 
@@ -18029,8 +17994,8 @@ AddProxyMethods()
     AddMethod("GetOperatorOptions", visit_GetOperatorOptions, visit_GetOperatorOptions_doc);
     AddMethod("GetPlotOptions", visit_GetPlotOptions, visit_GetPlotOptions_doc);
     AddMethod("GetTimeSliders", visit_GetTimeSliders,visit_GetTimeSliders_doc);
-    AddMethod("ListDomains", visit_ListDomains, visit_List_doc);
-    AddMethod("ListMaterials", visit_ListMaterials, visit_List_doc);
+    AddMethod("ListDomains", visit_ListDomains, visit_ListDomains_doc);
+    AddMethod("ListMaterials", visit_ListMaterials, visit_ListMaterials_doc);
     AddMethod("NumOperatorPlugins", visit_NumOperatorPlugins,
                                                  visit_NumOperatorPlugins_doc);
     AddMethod("NumPlotPlugins", visit_NumPlotPlugins,
@@ -18041,10 +18006,10 @@ AddProxyMethods()
     AddMethod("Queries",  visit_Queries, visit_Queries_doc);
     AddMethod("SetDatabaseCorrelationOptions", visit_SetDatabaseCorrelationOptions,
                                       visit_SetDatabaseCorrelationOptions_doc);
-    AddMethod("TurnDomainsOff", visit_TurnDomainsOff, visit_Turn_doc);
-    AddMethod("TurnDomainsOn", visit_TurnDomainsOn, visit_Turn_doc);
-    AddMethod("TurnMaterialsOff", visit_TurnMaterialsOff, visit_Turn_doc);
-    AddMethod("TurnMaterialsOn", visit_TurnMaterialsOn, visit_Turn_doc);
+    AddMethod("TurnDomainsOff", visit_TurnDomainsOff, visit_TurnDomainsOff_doc);
+    AddMethod("TurnDomainsOn", visit_TurnDomainsOn, visit_TurnDomainsOn_doc);
+    AddMethod("TurnMaterialsOff", visit_TurnMaterialsOff, visit_TurnMaterialsOff_doc);
+    AddMethod("TurnMaterialsOn", visit_TurnMaterialsOn, visit_TurnMaterialsOn_doc);
     AddMethod("QueriesOverTime",  visit_QueriesOverTime,
                                                     visit_QueriesOverTime_doc);
     AddMethod("SetColorTexturingEnabled", visit_SetColorTexturingEnabled, 
@@ -18065,8 +18030,8 @@ AddProxyMethods()
     AddMethod("GetCallbackArgumentCount", visit_GetCallbackArgumentCount, 
               visit_GetCallbackArgumentCount_doc);
 
-    AddMethod("LoadAttribute", visit_LoadAttribute, visit_LoadSaveAttribute_doc);
-    AddMethod("SaveAttribute", visit_SaveAttribute, visit_LoadSaveAttribute_doc);
+    AddMethod("LoadAttribute", visit_LoadAttribute, visit_LoadAttribute_doc);
+    AddMethod("SaveAttribute", visit_SaveAttribute, visit_SaveAttribute_doc);
 
     //
     // Lighting
@@ -18084,13 +18049,13 @@ AddProxyMethods()
     AddMethod("NumColorTableNames", visit_NumColorTables,
                                                  visit_NumColorTableNames_doc);
     AddMethod("SetActiveContinuousColorTable", visit_SetActiveContinuousColorTable,
-                                                visit_SetActiveColorTable_doc);
+                                                visit_SetActiveContinuousColorTable_doc);
     AddMethod("SetActiveDiscreteColorTable", visit_SetActiveDiscreteColorTable,
-                                                visit_SetActiveColorTable_doc);
+                                                visit_SetActiveDiscreteColorTable_doc);
     AddMethod("GetActiveContinuousColorTable", visit_GetActiveContinuousColorTable,
-                                                visit_GetActiveColorTable_doc);
+                                                visit_GetActiveContinuousColorTable_doc);
     AddMethod("GetActiveDiscreteColorTable", visit_GetActiveDiscreteColorTable,
-                                                visit_GetActiveColorTable_doc);
+                                                visit_GetActiveDiscreteColorTable_doc);
     AddMethod("GetNumPlots", visit_GetNumPlots, visit_GetNumPlots_doc);
     AddMethod("Argv", visit_Argv, NULL);
     AddMethod("UpdateMouseActions", visit_UpdateMouseActions, NULL);
@@ -18808,9 +18773,9 @@ InitializeViewerProxy(ViewerProxy* proxy)
         GetViewerProxy()->AddArgument("-debug");
         char tmp[10];
         if (moduleBufferDebug)
-            SNPRINTF(tmp, 10, "%db", moduleDebugLevel);
+            snprintf(tmp, 10, "%db", moduleDebugLevel);
         else
-            SNPRINTF(tmp, 10, "%d", moduleDebugLevel);
+            snprintf(tmp, 10, "%d", moduleDebugLevel);
         GetViewerProxy()->AddArgument(tmp);
     }
 

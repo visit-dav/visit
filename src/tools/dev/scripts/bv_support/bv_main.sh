@@ -1181,11 +1181,9 @@ function run_build_visit()
             --create-rpm) CREATE_RPM="yes";;
             --log-file) next_arg="log-file";;
             --database-plugins) next_arg="database-plugins";;
-            --debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"; CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g"; VISIT_BUILD_MODE="Debug";;
             --bv-debug) set -vx;;
             --download-only) DOWNLOAD_ONLY="yes";;
             --engine-only) DO_ENGINE_ONLY="yes";;
-            --flags-debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"; CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g"; VISIT_BUILD_MODE="Debug";;
             --gdal) DO_GDAL="yes";;
             --fc) next_arg="fc";;
             --fortran) DO_FORTRAN="yes";;
@@ -1268,14 +1266,23 @@ function run_build_visit()
     fi
 
     #
-    # If we doing a trunk build then make sure we are using GIT
+    # If we doing a trunk or RC build then make sure we are using GIT
     #
-    if [[ "$TRUNK_BUILD" == "yes" ]]; then
+    if [[ "$TRUNK_BUILD" == "yes" || "$RC_BUILD" == "yes" ]]; then
         if [[ "$DO_GIT" == "no" ]]; then
             DO_GIT="yes"
             DO_GIT_ANON="yes"
             export GIT_ROOT_PATH=$GIT_ANON_ROOT_PATH
         fi
+    fi
+
+    #
+    # Add -g if we are doing a debug build
+    #
+    info "[build_visit build mode ] $VISIT_BUILD_MODE"
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        C_OPT_FLAGS="${C_OPT_FLAGS} -g"
+        CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g"
     fi
 
     check_minimum_compiler_version
@@ -1375,7 +1382,7 @@ function run_build_visit()
                           "Bailing out."
                 fi
             else
-                info "The third party library location does not exist. Create it?"
+                info "The third party library location does not exist. Create it? [yes/no]"
                 read RESPONSE
                 if [[ "$RESPONSE" != "yes" ]] ; then
                     error "The third party library location does not exist." \

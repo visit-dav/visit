@@ -1,40 +1,7 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 #include "XMLEditCodeGeneratorWindow.h"
 #include <QDir>
 #include <QFontMetrics>
@@ -47,14 +14,14 @@
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:21:46 PST 2008
@@ -65,7 +32,7 @@
 //
 // ****************************************************************************
 
-XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow(QWidget *parent) 
+XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow(QWidget *parent)
 : QMainWindow(parent), xmlFile()
 {
     toolIndex = 0;
@@ -75,7 +42,7 @@ XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow(QWidget *parent)
 
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
-    
+
     QVBoxLayout *topLayout = new QVBoxLayout(central);
     topLayout->setSpacing(10);
     topLayout->setMargin(10);
@@ -92,21 +59,21 @@ XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow(QWidget *parent)
     QPushButton *dismiss = new QPushButton(tr("Dismiss"), central);
     buttonLayout->addWidget(dismiss);
     topLayout->addLayout(buttonLayout);
-    
+
     connect(dismiss, SIGNAL(clicked()), this, SLOT(hide()));
 }
 
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::~XMLEditCodeGeneratorWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:21:56 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 XMLEditCodeGeneratorWindow::~XMLEditCodeGeneratorWindow()
@@ -117,26 +84,26 @@ XMLEditCodeGeneratorWindow::~XMLEditCodeGeneratorWindow()
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::GenerateCode
 //
-// Purpose: 
+// Purpose:
 //   Invokes the xml tools on the specified file.
 //
 // Arguments:
 //   xml   : The XML file.
 //   tools : An array of bools indicating which tools to run.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:22:09 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
-XMLEditCodeGeneratorWindow::GenerateCode(const QString &xml, 
+XMLEditCodeGeneratorWindow::GenerateCode(const QString &xml,
     const bool *tools)
 {
     xmlFile = xml;
@@ -171,7 +138,7 @@ PathToVisIt()
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::generateOne
 //
-// Purpose: 
+// Purpose:
 //   Invokes 1 tool and sets it up so the next one will be called when this
 //   tool is done.
 //
@@ -197,10 +164,10 @@ XMLEditCodeGeneratorWindow::generateOne()
         // Create a new process.
         currentProcess = new QProcess(this);
         QString xmlTool(PathToVisIt() + xmlTools[toolIndex]);
-        
+
         QStringList arguments;
         arguments << "-clobber";
-        
+
         arguments << xmlFile;
 
         // Set the process's working directory.
@@ -215,9 +182,9 @@ XMLEditCodeGeneratorWindow::generateOne()
             currentProcess->setWorkingDirectory(dirName);
         }
 
-        connect(currentProcess, SIGNAL(readyReadStandardOutput()), 
+        connect(currentProcess, SIGNAL(readyReadStandardOutput()),
                 this, SLOT(readProcessStdout()));
-        connect(currentProcess, SIGNAL(readyReadStandardError()), 
+        connect(currentProcess, SIGNAL(readyReadStandardError()),
                 this, SLOT(readProcessStderr()));
         if(toolIndex < ID_XML2AVT)
         {
@@ -246,7 +213,7 @@ XMLEditCodeGeneratorWindow::generateOne()
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::readProcessStdout
 //
-// Purpose: 
+// Purpose:
 //   Reads stdout from the process.
 //
 // Programmer: Brad Whitlock
@@ -271,7 +238,7 @@ XMLEditCodeGeneratorWindow::readProcessStdout()
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::readProcessStderr
 //
-// Purpose: 
+// Purpose:
 //   Reads stderr from the process.
 //
 // Programmer: Brad Whitlock
@@ -296,7 +263,7 @@ XMLEditCodeGeneratorWindow::readProcessStderr()
 // ****************************************************************************
 // Method: XMLEditCodeGeneratorWindow::cleanupProcess
 //
-// Purpose: 
+// Purpose:
 //   Cleans up the process.
 //
 // Programmer: Brad Whitlock

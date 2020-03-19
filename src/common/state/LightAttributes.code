@@ -1,7 +1,7 @@
 Function: operator =
 Declaration: LightAttributes &operator=(const LightAttributes &obj);
 Definition:
-LightAttributes& 
+LightAttributes&
 LightAttributes::operator = (const LightAttributes &obj)
 {
     if (this == &obj) return *this;

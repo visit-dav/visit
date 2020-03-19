@@ -3,6 +3,8 @@ PROJECT(CaleHDF5_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(CaleHDF5)
+
 SET(COMMON_SOURCES
 CaleHDF5PluginInfo.C
 CaleHDF5CommonPluginInfo.C

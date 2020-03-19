@@ -3,6 +3,8 @@ PROJECT(IndexSelect_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(IndexSelect)
+
 SET(COMMON_SOURCES
 IndexSelectPluginInfo.C
 IndexSelectCommonPluginInfo.C
@@ -110,6 +112,10 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SIndexSelectOperator ${LIBS_SOURCES})
+        IF(WIN32)
+            # This prevents python from #defining snprintf as _snprintf
+            SET_TARGET_PROPERTIES(SIndexSelectOperator PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
+        ENDIF()
         TARGET_LINK_LIBRARIES(SIndexSelectOperator visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SIndexSelectOperator)
     ENDIF(VISIT_PYTHON_SCRIPTING)

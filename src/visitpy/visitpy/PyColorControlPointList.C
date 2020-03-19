@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyColorControlPointList.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyColorControlPoint.h>
 
 // ****************************************************************************
@@ -83,7 +48,7 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
         for(AttributeGroupVector::const_iterator pos = atts->GetControlPoints().begin(); pos != atts->GetControlPoints().end(); ++pos, ++index)
         {
             const ColorControlPoint *current = (const ColorControlPoint *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetControlPoints(%d).", index);
+            snprintf(tmpStr, 1000, "GetControlPoints(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyColorControlPoint_ToString(current, objPrefix.c_str());
         }
@@ -94,15 +59,15 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
     switch (atts->GetSmoothing())
     {
       case ColorControlPointList::None:
-          SNPRINTF(tmpStr, 1000, "%ssmoothing = %sNone  # %s\n", prefix, prefix, smoothing_names);
+          snprintf(tmpStr, 1000, "%ssmoothing = %sNone  # %s\n", prefix, prefix, smoothing_names);
           str += tmpStr;
           break;
       case ColorControlPointList::Linear:
-          SNPRINTF(tmpStr, 1000, "%ssmoothing = %sLinear  # %s\n", prefix, prefix, smoothing_names);
+          snprintf(tmpStr, 1000, "%ssmoothing = %sLinear  # %s\n", prefix, prefix, smoothing_names);
           str += tmpStr;
           break;
       case ColorControlPointList::CubicSpline:
-          SNPRINTF(tmpStr, 1000, "%ssmoothing = %sCubicSpline  # %s\n", prefix, prefix, smoothing_names);
+          snprintf(tmpStr, 1000, "%ssmoothing = %sCubicSpline  # %s\n", prefix, prefix, smoothing_names);
           str += tmpStr;
           break;
       default:
@@ -110,16 +75,16 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
     }
 
     if(atts->GetEqualSpacingFlag())
-        SNPRINTF(tmpStr, 1000, "%sequalSpacingFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sequalSpacingFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sequalSpacingFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sequalSpacingFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetDiscreteFlag())
-        SNPRINTF(tmpStr, 1000, "%sdiscreteFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdiscreteFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdiscreteFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdiscreteFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
+    snprintf(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
     str += tmpStr;
     return str;
 }
@@ -144,9 +109,9 @@ ColorControlPointList_GetControlPoints(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetControlPoints().size() == 0)
-            SNPRINTF(msg, 400, "In ColorControlPointList::GetControlPoints : The index %d is invalid because controlPoints is empty.", index);
+            snprintf(msg, 400, "In ColorControlPointList::GetControlPoints : The index %d is invalid because controlPoints is empty.", index);
         else
-            SNPRINTF(msg, 400, "In ColorControlPointList::GetControlPoints : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetControlPoints().size());
+            snprintf(msg, 400, "In ColorControlPointList::GetControlPoints : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetControlPoints().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -180,7 +145,7 @@ ColorControlPointList_AddControlPoints(PyObject *self, PyObject *args)
     if(!PyColorControlPoint_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The ColorControlPointList::AddControlPoints method only accepts ColorControlPoint objects.");
+        snprintf(msg, 400, "The ColorControlPointList::AddControlPoints method only accepts ColorControlPoint objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -228,7 +193,7 @@ ColorControlPointList_RemoveControlPoints(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumControlPoints())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In ColorControlPointList::RemoveControlPoints : Index %d is out of range", index);
+        snprintf(msg, 400, "In ColorControlPointList::RemoveControlPoints : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }

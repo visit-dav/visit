@@ -37,7 +37,7 @@ the RestoreSession function.
     # Import a session file from the current working directory. 
     RestoreSesssion("my_visualization.session", 0) 
     # Now that VisIt has restored the session, animate through time.
-    for states in range(TimeSliderGetNStates()): 
+    for state in range(TimeSliderGetNStates()): 
       SetTimeSliderState(state) 
       SaveWindow() 
 

@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyText2DObject.h>
 #include <ObserverToCallback.h>
@@ -646,7 +612,6 @@ Text2DObject_print(PyObject *v, FILE *fp, int flags)
     return 0;
 }
 
-#include <snprintf.h>
 static PyObject *
 PyText2DObject_StringRepresentation(const AnnotationObject *atts)
 {
@@ -654,56 +619,56 @@ PyText2DObject_StringRepresentation(const AnnotationObject *atts)
     char tmpStr[1000]; 
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "visible = 1\n");
+        snprintf(tmpStr, 1000, "visible = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "visible = 0\n");
+        snprintf(tmpStr, 1000, "visible = 0\n");
     str += tmpStr;
     if(atts->GetActive())
-        SNPRINTF(tmpStr, 1000, "active = 1\n");
+        snprintf(tmpStr, 1000, "active = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "active = 0\n");
+        snprintf(tmpStr, 1000, "active = 0\n");
 /*CUSTOM*/
     {   const double *position = atts->GetPosition();
-        SNPRINTF(tmpStr, 1000, "position = (%g, %g)\n", position[0], position[1]);
+        snprintf(tmpStr, 1000, "position = (%g, %g)\n", position[0], position[1]);
     }
     str += tmpStr;
     const double *position2 = atts->GetPosition2();
-    SNPRINTF(tmpStr, 1000, "height = %g\n", position2[0]);
+    snprintf(tmpStr, 1000, "height = %g\n", position2[0]);
     str += tmpStr;
     const unsigned char *textColor = atts->GetTextColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "textColor = (%d, %d, %d, %d)\n", int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
+    snprintf(tmpStr, 1000, "textColor = (%d, %d, %d, %d)\n", int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
     str += tmpStr;
     if(atts->GetUseForegroundForTextColor())
-        SNPRINTF(tmpStr, 1000, "useForegroundForTextColor = 1\n");
+        snprintf(tmpStr, 1000, "useForegroundForTextColor = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "useForegroundForTextColor = 0\n");
+        snprintf(tmpStr, 1000, "useForegroundForTextColor = 0\n");
     str += tmpStr;
     const stringVector &s = atts->GetText();
-    SNPRINTF(tmpStr, 1000, "text = \"%s\"\n", s.size() > 0 ? s[0].c_str() : "");
+    snprintf(tmpStr, 1000, "text = \"%s\"\n", s.size() > 0 ? s[0].c_str() : "");
     str += tmpStr;
     const char *fontFamily_names = "Arial, Courier, Times";
     if(atts->GetFontFamily() == AnnotationObject::Arial)
-        SNPRINTF(tmpStr, 1000, "fontFamily = Arial  # %s\n", fontFamily_names);
+        snprintf(tmpStr, 1000, "fontFamily = Arial  # %s\n", fontFamily_names);
     else if(atts->GetFontFamily() == AnnotationObject::Courier)
-        SNPRINTF(tmpStr, 1000, "fontFamily = Courier  # %s\n", fontFamily_names);
+        snprintf(tmpStr, 1000, "fontFamily = Courier  # %s\n", fontFamily_names);
     else
-        SNPRINTF(tmpStr, 1000, "fontFamily = Times  # %s\n", fontFamily_names);
+        snprintf(tmpStr, 1000, "fontFamily = Times  # %s\n", fontFamily_names);
     str += tmpStr;
 
     if(atts->GetFontBold())
-        SNPRINTF(tmpStr, 1000, "fontBold = 1\n");
+        snprintf(tmpStr, 1000, "fontBold = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "fontBold = 0\n");
+        snprintf(tmpStr, 1000, "fontBold = 0\n");
     str += tmpStr;
     if(atts->GetFontItalic())
-        SNPRINTF(tmpStr, 1000, "fontItalic = 1\n");
+        snprintf(tmpStr, 1000, "fontItalic = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "fontItalic = 0\n");
+        snprintf(tmpStr, 1000, "fontItalic = 0\n");
     str += tmpStr;
     if(atts->GetFontShadow())
-        SNPRINTF(tmpStr, 1000, "fontShadow = 1\n");
+        snprintf(tmpStr, 1000, "fontShadow = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "fontShadow = 0\n");
+        snprintf(tmpStr, 1000, "fontShadow = 0\n");
     str += tmpStr;
     return PyString_FromString(str.c_str());
 }

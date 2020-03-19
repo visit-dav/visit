@@ -140,7 +140,7 @@ class WaveMovieGenerator(moviegenerator.MovieGenerator):
     # t value.
     #
     def SetupVisualization(self, dbName, t, index, times):
-        print "Opening %s" % dbName
+        print("Opening %s" % dbName)
 
         # Add a mesh plot.
         AddPlot("Mesh", "quadmesh")

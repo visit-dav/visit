@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtGTCFileFormat.C                           //
@@ -42,6 +8,7 @@
 
 #include <avtMTSDFileFormatInterface.h>
 #include <avtGTCFileFormat.h>
+#include <ADIOS2HelperFuncs.h>
 
 #include <string>
 #include <map>
@@ -62,21 +29,50 @@ using namespace std;
 bool
 avtGTCFileFormat::Identify(const char *fname)
 {
+    bool retval = false;
+    string engineName = ADIOS2Helper_GetEngineName(fname);
+    string fileName   = ADIOS2Helper_GetFileName(fname);
+    bool stagingMode  = ADIOS2Helper_IsStagingEngine(engineName);
+
     adios2::ADIOS adios;
     adios2::IO io(adios.DeclareIO("ReadBP"));
-    adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
+    io.SetEngine(engineName);
+    adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
+    adios2::StepStatus status =
+        reader.BeginStep(adios2::StepMode::Read, -1.0f);
+    if (status == adios2::StepStatus::OK)
+    {
+        //std::cout<<" Identifier for GTC received streaming step = "<<reader.CurrentStep()<<endl;
+        std::map<std::string, adios2::Params> variables, attributes;
+        variables = io.AvailableVariables();
+        attributes = io.AvailableAttributes();
 
-    std::map<std::string, adios2::Params> variables, attributes;
-    variables = io.AvailableVariables();
-    attributes = io.AvailableAttributes();
+        int vfind = 0;
+        vector<string> reqVars = {"coordinates", "potential",
+                                  "igrid", "index-shift"};
+        for (auto vi = variables.begin(); vi != variables.end(); vi++)
+            if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
+                vfind++;
 
+        retval = (vfind == reqVars.size());
+        reader.EndStep();
+    }
+    reader.Close();
+    return retval;
+}
+
+bool avtGTCFileFormat::IdentifyADIOS2(
+                    std::map<std::string, adios2::Params> &variables,
+                    std::map<std::string, adios2::Params> &attributes)
+{
     int vfind = 0;
-    vector<string> reqVars = {"coordinates", "potential", "igrid", "index-shift"};
+    vector<string> reqVars = {"coordinates", "potential",
+                              "igrid", "index-shift"};
     for (auto vi = variables.begin(); vi != variables.end(); vi++)
         if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
             vfind++;
 
-    return vfind==reqVars.size();
+    return (vfind == reqVars.size());
 }
 
 avtFileFormatInterface *
@@ -91,6 +87,36 @@ avtGTCFileFormat::CreateInterface(const char *const *list,
         ffl[i] =  new avtMTSDFileFormat*[nBlock];
         for (int j = 0; j < nBlock; j++)
             ffl[i][j] =  new avtGTCFileFormat(list[i*nBlock +j]);
+    }
+    return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
+}
+
+avtFileFormatInterface *
+avtGTCFileFormat::CreateInterfaceADIOS2(
+        const char *const *list,
+        int nList,
+        int nBlock,
+        std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader,
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes
+        )
+{
+    int nTimestepGroups = nList / nBlock;
+    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+    for (int i = 0; i < nTimestepGroups; i++)
+    {
+        ffl[i] =  new avtMTSDFileFormat*[nBlock];
+        for (int j = 0; j < nBlock; j++)
+            if (!i && !j)
+            {
+                ffl[i][j] =  new avtGTCFileFormat(adios, reader, io, variables, attributes, list[i*nBlock +j]);
+            }
+            else
+            {
+                ffl[i][j] =  new avtGTCFileFormat(list[i*nBlock +j]);
+            }
     }
     return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
 }
@@ -133,6 +159,28 @@ avtGTCFileFormat::avtGTCFileFormat(const char *filename)
     */
 }
 
+
+avtGTCFileFormat::avtGTCFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader,
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes,
+        const char *filename)
+    : adios(adios),
+      reader(reader),
+      io(io),
+      numTimeSteps(1),
+      avtMTSDFileFormat(&filename, 1),
+      variables(variables),
+      attributes(attributes),
+      grid(NULL),
+      cylGrid(NULL),
+      ptGrid(NULL)
+{
+    //Determine how many steps we have.
+    if (variables.find("potential") != variables.end())
+        numTimeSteps = std::stoi(variables["potential"]["AvailableStepsCount"]);
+}
 
 // ****************************************************************************
 //  Method: avtGTCFileFormat destructor
@@ -273,7 +321,7 @@ avtGTCFileFormat::GetPtMesh(int timestate, const char *meshname)
     //dims: nPlanes, 3, nPts
     auto cDims = cVar.Shape();
 
-    cout<<"DIMS: "<<cDims<<endl;
+    //cout<<"DIMS: "<<cDims<<endl;
     vector<float> xbuff, ybuff, zbuff;
 
     cVar.SetSelection(adios2::Box<adios2::Dims>({0,0,0}, {cDims[0], 1, cDims[2]}));
@@ -330,12 +378,12 @@ void create_potential_mesh_vertex_list( //float **data_in,
 {
     float *data_in[3] = {X_in, Y_in, Z_in};
 
-    vector<int> nPoloidalNodes[nPoloidalPlanes];   // Number of nodes in each poloidal contour
-    vector<int> poloidalIndex[nPoloidalPlanes];    // Starting node index of each poloidal contour
+    vector <vector<int> > nPoloidalNodes(nPoloidalPlanes);   // Number of nodes in each poloidal contour
+    vector <vector<int> > poloidalIndex(nPoloidalPlanes);    // Starting node index of each poloidal contour
 
-    vector<int> vertices[nPoloidalPlanes]; // Plane vertex connections
+    vector <vector<int> > vertices(nPoloidalPlanes); // Plane vertex connections
 
-    vector< vector< int > > degeneracies[nPoloidalPlanes]; // degenerate indices
+    vector <vector< vector< int > > > degeneracies(nPoloidalPlanes); // degenerate indices
 
     // Index of the closest node on the neighboring contour.
     int **neighborIndex = new int*[nPoloidalPlanes];
@@ -677,7 +725,6 @@ void create_potential_mesh_vertex_list( //float **data_in,
         }
         numElemPlane.push_back(numElements);
       }
-      cout<<"MEOW: "<<numElemPlane<<endl;
     }
 
     // Multiple slices so create connections for prisms.
@@ -1168,7 +1215,7 @@ avtGTCFileFormat::CreateMesh(bool xyzMesh)
         float dPhi = (2.0*M_PI)/(numPlanes-1);
         for (int i = 0; i < numPlanes-1; i++)
         {
-            cout<<"PHI= "<<phi*(180.0/M_PI)<<endl;
+            //cout<<"PHI= "<<phi*(180.0/M_PI)<<endl;
             for (int j = 0; j < ptsPerPlane; j++)
             {
                 int idx = i*ptsPerPlane+j;

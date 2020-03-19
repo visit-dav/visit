@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                               visit-hdf5.h                                //
@@ -72,7 +38,7 @@ static void VisIt_IssueH5Warning(int phase)
     if (phase == 0 && !haveIssuedOpenWarning)
     {
 #ifndef NDEBUG
-        SNPRINTF(msg, sizeof(msg), "Detected attempt to open an HDF5 file without H5F_CLOSE_SEMI.\n"
+        snprintf(msg, sizeof(msg), "Detected attempt to open an HDF5 file without H5F_CLOSE_SEMI.\n"
             "Please contact VisIt developers to have this issue fixed.");
         haveIssuedOpenWarning = true;
         if (!avtCallback::IssueWarning(msg))
@@ -81,7 +47,7 @@ static void VisIt_IssueH5Warning(int phase)
     }
     else if (phase == 1 && !haveIssuedCloseWarning)
     {
-        SNPRINTF(msg, sizeof(msg), "An attempt to close an HDF5 file failed, incidating a bug in the plugin.\n"
+        snprintf(msg, sizeof(msg), "An attempt to close an HDF5 file failed, incidating a bug in the plugin.\n"
             "Please contact VisIt developers to have this issue fixed.");
         haveIssuedCloseWarning = true;
         if (!avtCallback::IssueWarning(msg))
@@ -144,7 +110,7 @@ static herr_t VisIt_H5Fclose(hid_t fid)
         char msg[4096];
         char msg2[8192];
         hid_t *ooids = (hid_t *) malloc(noo * sizeof(hid_t));
-        SNPRINTF(msg, sizeof(msg), "Internal plugin error: %d objects left open in file: ", noo);
+        snprintf(msg, sizeof(msg), "Internal plugin error: %d objects left open in file: ", noo);
 #if HDF5_VERSION_GE(1,6,5)
         H5Fget_obj_ids(fid, obj_flags, noo, ooids);
 #else
@@ -155,14 +121,14 @@ static herr_t VisIt_H5Fclose(hid_t fid)
         {
             char name[256], tmp[256];
             H5Iget_name(ooids[i], name, sizeof(name));
-            SNPRINTF(tmp, sizeof(tmp), "\n    \"%.230s\" (id=%d)", name, (int) ooids[i]);
+            snprintf(tmp, sizeof(tmp), "\n    \"%.230s\" (id=%d)", name, (int) ooids[i]);
             if ((strlen(msg) + strlen(tmp) + 1) >= sizeof(msg))
                 break;
             strcat(msg, tmp);
             n += strlen(tmp);
         }
         free(ooids);
-        SNPRINTF(msg2, sizeof(msg2), "The HDF5 library indicates the plugin has left the following "
+        snprintf(msg2, sizeof(msg2), "The HDF5 library indicates the plugin has left the following "
             "objects in the file open...%s", msg);
         if (!avtCallback::IssueWarning(msg2))
            cerr << msg2 << endl;

@@ -40,9 +40,6 @@ Postfix:
         return PyInt_FromLong(0L);
     }
 
-
-
-
 Code: PyPseudocolorAttributes_setattr
 Prefix:
 Postfix:
@@ -107,6 +104,12 @@ Definition:
 //   I modified the plot to support independently setting the point style
 //   for the two end points of lines.
 //
+//   Alister Maguire, Tue Jul 16 11:00:45 PDT 2019
+//   I added a check to see if transparency is allowed.
+//
+//   Kathleen Biagas, Tue Nov  5 08:23:09 PST 2019
+//   Added check for certain pointType changes.
+//
 // ****************************************************************************
 bool
 PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &obj) const
@@ -162,6 +165,21 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             endPointResolution       != obj.endPointResolution ||
                             0 );
 
+    //
+    // If we've switched to an opacity mode that contains transparency, we
+    // need to re-compute the face and ghost removal.
+    //
+    OpacityType newOpacType = obj.GetOpacityType();
+    bool alteringOpacChange = ((newOpacType != FullyOpaque &&
+                                OpacityType(opacityType) == FullyOpaque) ||
+                               (newOpacType == FullyOpaque &&
+                                OpacityType(opacityType) != FullyOpaque));
+
+    // Certain point type changes require a recalculation.
+    bool currentPointTypeIsPoint =     pointType == Point;
+    bool newPointTypeIsPoint     = obj.pointType == Point;
+
+    bool changingPointType =  pointType != obj.pointType && currentPointTypeIsPoint != newPointTypeIsPoint;
 
     return (centering != obj.centering ||
             needSecondaryVar ||
@@ -172,6 +190,8 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
             renderPoints != obj.renderPoints ||
             wireframeColor != obj.wireframeColor ||
             pointColor != obj.pointColor ||
+            alteringOpacChange ||
+            changingPointType ||
             0);
 
 }

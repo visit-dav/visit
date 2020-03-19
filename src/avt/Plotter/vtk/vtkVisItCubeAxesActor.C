@@ -24,7 +24,6 @@ All rights reserved.
 #include <vtkCollection.h>
 #include <DebugStream.h>
 #include <float.h>
-#include <snprintf.h>
 
 #include <vector>
 using std::vector;
@@ -161,11 +160,11 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   this->scalingChanged = false;
 
   this->XLabelFormat = new char[8]; 
-  SNPRINTF(this->XLabelFormat, 8, "%s","%-#6.3g");
+  snprintf(this->XLabelFormat, 8, "%s","%-#6.3g");
   this->YLabelFormat = new char[8]; 
-  SNPRINTF(this->YLabelFormat,8, "%s","%-#6.3g");
+  snprintf(this->YLabelFormat,8, "%s","%-#6.3g");
   this->ZLabelFormat = new char[8]; 
-  SNPRINTF(this->ZLabelFormat,8, "%s","%-#6.3g");
+  snprintf(this->ZLabelFormat,8, "%s","%-#6.3g");
   this->Inertia = 1;
   this->RenderCount = 0;
 
@@ -194,13 +193,13 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   this->DrawZGridlines = false;
 
   this->XTitle = new char[7];
-  SNPRINTF(this->XTitle,7, "%s","X-Axis");
+  snprintf(this->XTitle,7, "%s","X-Axis");
   this->XUnits = NULL;
   this->YTitle = new char[7];
-  SNPRINTF(this->YTitle,7, "%s","Y-Axis");
+  snprintf(this->YTitle,7, "%s","Y-Axis");
   this->YUnits = NULL;
   this->ZTitle = new char[7];
-  SNPRINTF(this->ZTitle,7, "%s","Z-Axis");
+  snprintf(this->ZTitle,7, "%s","Z-Axis");
   this->ZUnits = NULL;
 
   this->ActualXLabel = 0;
@@ -925,9 +924,9 @@ vtkVisItCubeAxesActor::ComputeLabelExponent(const double bnds[6])
       this->mustAdjustXValue = true;
 
       if (XUnits == NULL || XUnits[0] == '\0')
-        SNPRINTF(xTitle,64, "%s (x10^%d)", this->XTitle, xPow);
+        snprintf(xTitle,64, "%s (x10^%d)", this->XTitle, xPow);
       else
-        SNPRINTF(xTitle,64, "%s (x10^%d %s)", this->XTitle, xPow, XUnits);
+        snprintf(xTitle,64, "%s (x10^%d %s)", this->XTitle, xPow, XUnits);
       }
     else 
       { 
@@ -943,9 +942,9 @@ vtkVisItCubeAxesActor::ComputeLabelExponent(const double bnds[6])
       this->mustAdjustXValue = false;
 
       if (XUnits == NULL || XUnits[0] == '\0')
-        SNPRINTF(xTitle,64, "%s", this->XTitle);
+        snprintf(xTitle,64, "%s", this->XTitle);
       else
-        SNPRINTF(xTitle,64, "%s (%s)", this->XTitle, XUnits);
+        snprintf(xTitle,64, "%s (%s)", this->XTitle, XUnits);
       }
 
 
@@ -963,9 +962,9 @@ vtkVisItCubeAxesActor::ComputeLabelExponent(const double bnds[6])
         }
       this->mustAdjustYValue = true;
       if (YUnits == NULL || YUnits[0] == '\0')
-        SNPRINTF(yTitle,64, "%s (x10^%d)", this->YTitle, yPow);
+        snprintf(yTitle,64, "%s (x10^%d)", this->YTitle, yPow);
       else
-        SNPRINTF(yTitle,64, "%s (x10^%d %s)", this->YTitle, yPow, YUnits);
+        snprintf(yTitle,64, "%s (x10^%d %s)", this->YTitle, yPow, YUnits);
       }
     else 
       { 
@@ -980,9 +979,9 @@ vtkVisItCubeAxesActor::ComputeLabelExponent(const double bnds[6])
         }
       this->mustAdjustYValue = false;
       if (YUnits == NULL || YUnits[0] == '\0')
-        SNPRINTF(yTitle,64, "%s", this->YTitle);
+        snprintf(yTitle,64, "%s", this->YTitle);
       else
-        SNPRINTF(yTitle,64, "%s (%s)", this->YTitle, YUnits);
+        snprintf(yTitle,64, "%s (%s)", this->YTitle, YUnits);
       }
 
 
@@ -1000,9 +999,9 @@ vtkVisItCubeAxesActor::ComputeLabelExponent(const double bnds[6])
       this->mustAdjustZValue = true;
 
       if (ZUnits == NULL || ZUnits[0] == '\0')
-        SNPRINTF(zTitle,64, "%s (x10^%d)", this->ZTitle, zPow);
+        snprintf(zTitle,64, "%s (x10^%d)", this->ZTitle, zPow);
       else
-        SNPRINTF(zTitle,64, "%s (x10^%d %s)", this->ZTitle, zPow, ZUnits);
+        snprintf(zTitle,64, "%s (x10^%d %s)", this->ZTitle, zPow, ZUnits);
       }
     else 
       { 
@@ -1018,9 +1017,9 @@ vtkVisItCubeAxesActor::ComputeLabelExponent(const double bnds[6])
       this->mustAdjustZValue = false;
 
       if (ZUnits == NULL || ZUnits[0] == '\0')
-        SNPRINTF(zTitle,64, "%s", this->ZTitle);
+        snprintf(zTitle,64, "%s", this->ZTitle);
       else
-        SNPRINTF(zTitle,64, "%s (%s)", this->ZTitle, ZUnits);
+        snprintf(zTitle,64, "%s (%s)", this->ZTitle, ZUnits);
       }
   
     this->lastXPow = xPow;
@@ -1097,7 +1096,7 @@ vtkVisItCubeAxesActor::ComputeLabelFormat(const double bnds[6])
     if (xAxisDigits != this->lastXAxisDigits)
     {
         char  format[16];
-        SNPRINTF(format,16, "%%.%df", xAxisDigits);
+        snprintf(format,16, "%%.%df", xAxisDigits);
         this->SetXLabelFormat(format);
         this->lastXAxisDigits = xAxisDigits;
     }
@@ -1106,7 +1105,7 @@ vtkVisItCubeAxesActor::ComputeLabelFormat(const double bnds[6])
     if (yAxisDigits != this->lastYAxisDigits)
     {
         char  format[16];
-        SNPRINTF(format,16, "%%.%df", yAxisDigits);
+        snprintf(format,16, "%%.%df", yAxisDigits);
         this->SetYLabelFormat(format);
         this->lastYAxisDigits = yAxisDigits;
     }
@@ -1115,7 +1114,7 @@ vtkVisItCubeAxesActor::ComputeLabelFormat(const double bnds[6])
     if (zAxisDigits != this->lastZAxisDigits)
     {
         char  format[16];
-        SNPRINTF(format,16, "%%.%df", zAxisDigits);
+        snprintf(format,16, "%%.%df", zAxisDigits);
         this->SetZLabelFormat(format);
         this->lastZAxisDigits = zAxisDigits;
     }
@@ -2164,11 +2163,11 @@ vtkVisItCubeAxesActor::BuildLabels(vtkVisItAxisActor *axes[4])
       }
     if (mustAdjustValue) 
       {
-      SNPRINTF(label,64, format, val*scaleFactor);
+      snprintf(label,64, format, val*scaleFactor);
       }
     else
       {
-      SNPRINTF(label,64, format, val);
+      snprintf(label,64, format, val);
       }
     if (fabs(val) < 0.01)
       {
@@ -2177,17 +2176,17 @@ vtkVisItCubeAxesActor::BuildLabels(vtkVisItAxisActor *axes[4])
       // The maximum number of digits that we allow past the decimal is 5.
       // 
       if (strcmp(label, "-0") == 0) 
-        SNPRINTF(label, 64, "0");
+        snprintf(label, 64, "0");
       else if (strcmp(label, "-0.0") == 0) 
-        SNPRINTF(label, 64, "0.0");
+        snprintf(label, 64, "0.0");
       else if (strcmp(label, "-0.00") == 0) 
-        SNPRINTF(label, 64, "0.00");
+        snprintf(label, 64, "0.00");
       else if (strcmp(label, "-0.000") == 0) 
-        SNPRINTF(label, 64, "0.000");
+        snprintf(label, 64, "0.000");
       else if (strcmp(label, "-0.0000") == 0)
-        SNPRINTF(label, 64, "0.0000");
+        snprintf(label, 64, "0.0000");
       else if (strcmp(label, "-0.00000") == 0)
-        SNPRINTF(label, 64, "0.00000");
+        snprintf(label, 64, "0.00000");
       }
     labels.push_back(label);
     val += deltaVal;

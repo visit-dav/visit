@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <avtHohlraumFluxQuery.h>
 
@@ -50,7 +16,6 @@
 #include <vectortypes.h>
 
 #include <visitstream.h>
-#include <snprintf.h>
 
 #include <string>
 #include <vector>
@@ -352,7 +317,7 @@ avtHohlraumFluxQuery::SetDivideEmisByAbsorb(bool flag)
 //    will be used later to compute temperature from flux.
 //
 //    Cyrus Harrison, Tue Sep 18 16:17:57 PDT 2007
-//    Changed sprintf to SNPRINTF
+//    Changed sprintf to snprintf
 //
 //    Hank Childs, Fri May  2 09:02:39 PDT 2008
 //    Add a warning for no intersections.
@@ -407,12 +372,12 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
         char msg[256];
         if (output->GetPointData()->GetArray(absVarName.c_str()) != NULL)
         {
-            SNPRINTF(msg,256, "Failure: variable %s is node-centered, "
+            snprintf(msg,256, "Failure: variable %s is node-centered, "
                               "but it must be zone-centered for this query.", 
                               absVarName.c_str());
         }
         else
-            SNPRINTF(msg,256, "Variable %s not found.", absVarName.c_str());
+            snprintf(msg,256, "Variable %s not found.", absVarName.c_str());
         EXCEPTION1(VisItException, msg);
     }
     if (emissivityBins == NULL)
@@ -420,12 +385,12 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
         char msg[256];
         if (output->GetPointData()->GetArray(emisVarName.c_str()) != NULL)
         {
-            SNPRINTF(msg,256, "Failure: variable %s is node-centered, "
+            snprintf(msg,256, "Failure: variable %s is node-centered, "
                               "but it must be zone-centered for this query.", 
                               emisVarName.c_str());
         }
         else
-            SNPRINTF(msg,256, "Variable %s not found.", emisVarName.c_str());
+            snprintf(msg,256, "Variable %s not found.", emisVarName.c_str());
         EXCEPTION1(VisItException, msg);
     }
     if ( emissivityBins->GetNumberOfComponents() != 
@@ -757,7 +722,7 @@ avtHohlraumFluxQuery::PostExecute(void)
     if (PAR_Rank() == 0)
     {
         int times = 0;
-        SNPRINTF(name,256, "hf%d.ult", times++);
+        snprintf(name,256, "hf%d.ult", times++);
 
         for (times = 0 ; times < 10000 ; times++)
         {
@@ -787,7 +752,7 @@ avtHohlraumFluxQuery::PostExecute(void)
             else
             {
                 ifile.close();
-                SNPRINTF(name,256, "hf%d.ult", times);
+                snprintf(name,256, "hf%d.ult", times);
             }
         }
     }
@@ -799,11 +764,11 @@ avtHohlraumFluxQuery::PostExecute(void)
     char buf[512];
     MapNode result_node;
         
-    SNPRINTF(buf,512,"The hohlraum flux query over %d energy groups "
+    snprintf(buf,512,"The hohlraum flux query over %d energy groups "
                  "was written to %s.\n", numBins, name);
     msg += buf;
     format = "Sum is " + floatFormat + ".\n";
-    SNPRINTF(buf,512,format.c_str(), resultSum);
+    snprintf(buf,512,format.c_str(), resultSum);
     msg+=buf;
 
     result_node["Sum"] = resultSum;
@@ -811,7 +776,7 @@ avtHohlraumFluxQuery::PostExecute(void)
     if (binWidths.size() != 0)
     {
         format = "Temperature is " + floatFormat + ".\n";
-        SNPRINTF(buf,512,format.c_str(),temperature);
+        snprintf(buf,512,format.c_str(),temperature);
         msg+=buf;
 
         result_node["Temperature"] = temperature;
@@ -824,7 +789,7 @@ avtHohlraumFluxQuery::PostExecute(void)
     for (ii = 0 ; ii < numBins ; ii++)
     {
         format = " " + floatFormat;
-        SNPRINTF(buf,512, format.c_str(), result[ii]);
+        snprintf(buf,512, format.c_str(), result[ii]);
         msg+=buf;
 
         if (ii < numBins-1)

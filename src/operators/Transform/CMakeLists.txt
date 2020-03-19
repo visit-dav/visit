@@ -3,6 +3,8 @@ PROJECT(Transform_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Transform)
+
 SET(COMMON_SOURCES
 TransformPluginInfo.C
 TransformCommonPluginInfo.C
@@ -110,6 +112,10 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(STransformOperator ${LIBS_SOURCES})
+        IF(WIN32)
+            # This prevents python from #defining snprintf as _snprintf
+            SET_TARGET_PROPERTIES(STransformOperator PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
+        ENDIF()
         TARGET_LINK_LIBRARIES(STransformOperator visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} STransformOperator)
     ENDIF(VISIT_PYTHON_SCRIPTING)

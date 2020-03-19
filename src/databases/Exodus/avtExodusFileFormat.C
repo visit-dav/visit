@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                           avtExodusFileFormat.C                           //
@@ -111,7 +77,7 @@ static map<string, int> messageCounts;
     if (ERR != NC_NOERR)                                                                        \
     {                                                                                           \
         char msg[1024];                                                                         \
-        SNPRINTF(msg, sizeof(msg), "Encountered netCDF error (%d, \"%s\") after call to \"%s\"" \
+        snprintf(msg, sizeof(msg), "Encountered netCDF error (%d, \"%s\") after call to \"%s\"" \
             " at line %d in file \"%s\"\n", ERR, nc_strerror(ERR), #FN, THELINE, THEFILE);      \
         if (messageCounts.find(msg) == messageCounts.end())                                     \
             messageCounts[msg] = 1;                                                             \
@@ -277,7 +243,7 @@ static void fill_tmp_suffixes(int n, ...)
         {                                                              \
             char sepStr[2] = {sepChar, '\0'};                          \
             char ex_var_name[256];                                     \
-            SNPRINTF(ex_var_name, sizeof(ex_var_name),                 \
+            snprintf(ex_var_name, sizeof(ex_var_name),                 \
                 "%s%s%s", prefix.c_str(), &sepStr[0], tmp_suffixes[q]);\
             if (strcasecmp(ex_var_name, list[i+q]))                    \
                 things_match = false;                                  \
@@ -463,12 +429,12 @@ static int AreSuccessiveStringsRelatedComponentNames(avtDatabaseMetaData *md,
         CASE((2, "0", "1"));
         CASE((2, "r", "z")); // Still cartesian in RZ plane
         CASE((2, "z", "r")); // Still cartesian in RZ plane
-        SNPRINTF(defn, sizeof(defn), "{%s, %s}", list2[0], list2[1]);
+        snprintf(defn, sizeof(defn), "{%s, %s}", list2[0], list2[1]);
     END_CASES(defn, VectorMeshVar);
     BEGIN_CASES; // 2D polar vectors
         CASE((2, "r", "t"));
         CASE((2, "r", "theta"));
-        SNPRINTF(defn, sizeof(defn), "{%s*cos(%s), %s*sin(%s)}",
+        snprintf(defn, sizeof(defn), "{%s*cos(%s), %s*sin(%s)}",
             list2[0], list2[1], list2[0], list2[1]);
     END_CASES(defn, VectorMeshVar);
     BEGIN_CASES; // 3D cartesian vectors
@@ -477,18 +443,18 @@ static int AreSuccessiveStringsRelatedComponentNames(avtDatabaseMetaData *md,
         CASE((3, "u", "v", "w"));
         CASE((3, "1", "2", "3"));
         CASE((3, "0", "1", "2"));
-        SNPRINTF(defn, sizeof(defn), "{%s, %s, %s}", list2[0], list2[1], list2[2]);
+        snprintf(defn, sizeof(defn), "{%s, %s, %s}", list2[0], list2[1], list2[2]);
     END_CASES(defn, VectorMeshVar);
     BEGIN_CASES; // 3D cylindrical vectors
         CASE((3, "r", "t", "z"));
         CASE((3, "r", "theta", "z"));
-        SNPRINTF(defn, sizeof(defn), "{%s*cos(%s), %s*sin(%s), %s}",
+        snprintf(defn, sizeof(defn), "{%s*cos(%s), %s*sin(%s), %s}",
             list2[0], list2[1], list2[0], list2[1], list2[2]);
     END_CASES(defn, VectorMeshVar);
     BEGIN_CASES; // 3D spherical vectors
         CASE((3, "r", "t", "p"));
         CASE((3, "r", "theta", "phi"));
-        SNPRINTF(defn, sizeof(defn), "{%s*cos(%s)*sin(%s), %s*sin(%s)*sin(%s), %s*cos(%s)}",
+        snprintf(defn, sizeof(defn), "{%s*cos(%s)*sin(%s), %s*sin(%s)*sin(%s), %s*cos(%s)}",
             list2[0], list2[1], list2[2],
             list2[0], list2[1], list2[2],
             list2[0], list2[2]);
@@ -499,7 +465,7 @@ static int AreSuccessiveStringsRelatedComponentNames(avtDatabaseMetaData *md,
         CASE((3, "uu", "vv", "uv"));
         CASE((3, "11", "22", "12"));
         CASE((3, "00", "11", "01"));
-        SNPRINTF(defn, sizeof(defn), "{{%s, %s}, {%s, %s}}",
+        snprintf(defn, sizeof(defn), "{{%s, %s}, {%s, %s}}",
             list2[0], list2[2], list2[2], list2[1]);
     END_CASES(defn, TensorMeshVar);
     BEGIN_CASES; // 2D, cartesian symmetric tensors (upper triangular row-by-row)
@@ -508,7 +474,7 @@ static int AreSuccessiveStringsRelatedComponentNames(avtDatabaseMetaData *md,
         CASE((3, "uu", "uv", "vu"));
         CASE((3, "11", "12", "21"));
         CASE((3, "00", "01", "10"));
-        SNPRINTF(defn, sizeof(defn), "{{%s, %s}, {%s, %s}}",
+        snprintf(defn, sizeof(defn), "{{%s, %s}, {%s, %s}}",
             list2[0], list2[1], list2[1], list2[2]);
     END_CASES(defn, TensorMeshVar);
     BEGIN_CASES; // 2D, cartesian full tensors
@@ -517,7 +483,7 @@ static int AreSuccessiveStringsRelatedComponentNames(avtDatabaseMetaData *md,
         CASE((4, "uu", "uv", "vu", "vv"));
         CASE((4, "11", "12", "21", "22"));
         CASE((4, "00", "01", "10", "11"));
-        SNPRINTF(defn, sizeof(defn), "{{%s, %s}, {%s, %s}}",
+        snprintf(defn, sizeof(defn), "{{%s, %s}, {%s, %s}}",
             list2[0], list2[1], list2[2], list2[3]);
     END_CASES(defn, TensorMeshVar);
     BEGIN_CASES; // 3D, cartesian symmetric tensors (Voigt notation order) 
@@ -526,7 +492,7 @@ static int AreSuccessiveStringsRelatedComponentNames(avtDatabaseMetaData *md,
         CASE((6, "uu", "vv", "ww", "vw", "uw", "uv"));
         CASE((6, "11", "22", "33", "23", "13", "12"));
         CASE((6, "00", "11", "22", "12", "02", "01"));
-        SNPRINTF(defn, sizeof(defn), "{{%s, %s, %s}, {%s, %s, %s}, {%s, %s, %s}}",
+        snprintf(defn, sizeof(defn), "{{%s, %s, %s}, {%s, %s, %s}, {%s, %s, %s}}",
             list2[0], list2[5], list2[4],
             list2[5], list2[1], list2[3],
             list2[4], list2[3], list2[2]);
@@ -537,7 +503,7 @@ static int AreSuccessiveStringsRelatedComponentNames(avtDatabaseMetaData *md,
         CASE((6, "uu", "uv", "uw", "vv", "vw", "ww"));
         CASE((6, "11", "12", "13", "22", "23", "33"));
         CASE((6, "00", "01", "02", "11", "12", "22"));
-        SNPRINTF(defn, sizeof(defn), "{{%s, %s, %s}, {%s, %s, %s}, {%s, %s, %s}}",
+        snprintf(defn, sizeof(defn), "{{%s, %s, %s}, {%s, %s, %s}, {%s, %s, %s}}",
             list2[0], list2[1], list2[2],
             list2[1], list2[3], list2[4],
             list2[2], list2[4], list2[5]);
@@ -548,14 +514,14 @@ static int AreSuccessiveStringsRelatedComponentNames(avtDatabaseMetaData *md,
         CASE((9, "uu", "uv", "uw", "vu", "vv", "vw", "wu", "wv", "ww"));
         CASE((9, "11", "12", "13", "21", "22", "23", "31", "32", "33"));
         CASE((9, "00", "01", "02", "10", "11", "12", "20", "21", "22"));
-        SNPRINTF(defn, sizeof(defn), "{{%s, %s, %s}, {%s, %s, %s}, {%s, %s, %s}}",
+        snprintf(defn, sizeof(defn), "{{%s, %s, %s}, {%s, %s, %s}, {%s, %s, %s}}",
             list2[0], list2[1], list2[2],
             list2[3], list2[4], list2[5],
             list2[6], list2[7], list2[8]);
     END_CASES(defn, TensorMeshVar);
     BEGIN_CASES; // 2D symmetric cartesian tensor with out of plane z-component
         CASE((4, "xx", "xy", "yy", "zz"));
-        SNPRINTF(defn, sizeof(defn), "{{%s, %s, 0}, {%s, %s, 0}, {0, 0, %s}}",
+        snprintf(defn, sizeof(defn), "{{%s, %s, 0}, {%s, %s, 0}, {0, 0, %s}}",
             list2[0], list2[1], list2[1], list2[2], list2[3]);
     END_CASES(defn, TensorMeshVar);
 
@@ -770,7 +736,7 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, avtVarTyp
         if (ndims > 3)
         {
             char msg[256];
-            SNPRINTF(msg, sizeof(msg), "%s has %d>3 dimensions", visit_varname, ndims);
+            snprintf(msg, sizeof(msg), "%s has %d>3 dimensions", visit_varname, ndims);
             EXCEPTION1(InvalidVariableException, msg);
         }
 
@@ -847,7 +813,7 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, avtVarTyp
         size_t starts[3], counts[3], dlen;
 
         // First, we'll attempt to find the second form of storage 
-        SNPRINTF(ex_var_name, sizeof(ex_var_name), "vals_nod_var%d", exvaridx+1);
+        snprintf(ex_var_name, sizeof(ex_var_name), "vals_nod_var%d", exvaridx+1);
         ncerr = nc_inq_varid(exncfid, ex_var_name, &varid);
         if (ncerr == NC_NOERR && !isCoord)
         {
@@ -862,7 +828,7 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, avtVarTyp
             buf = (void*) malloc(num_comps * num_nodes * SizeOfNCType(type));
             for (i = 0; i < num_comps; i++)
             {
-                SNPRINTF(ex_var_name, sizeof(ex_var_name), "vals_nod_var%d", exvaridx+1+i);
+                snprintf(ex_var_name, sizeof(ex_var_name), "vals_nod_var%d", exvaridx+1+i);
                 nc_inq_varid(exncfid, ex_var_name, &varid);
                 char *p = (char *) buf + i * num_nodes * SizeOfNCType(type);
                 ncerr = nc_get_vara(exncfid, varid, starts, counts, p);
@@ -936,12 +902,12 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, avtVarTyp
                 int elem_varid;
                 char elem_varname[NC_MAX_NAME+1];
 //warning THIS LOGIC DOESNT WORK FOR ZONAL VARS WITH MULTIPLE COMPONENTS
-                SNPRINTF(elem_varname, sizeof(elem_varname), "vals_elem_var%deb%d", exvaridx+1, i+1);
+                snprintf(elem_varname, sizeof(elem_varname), "vals_elem_var%deb%d", exvaridx+1, i+1);
                 ncerr = nc_inq_varid(exncfid, elem_varname, &elem_varid);
                 if (ncerr != NC_NOERR) // handle no-var on this eb case
                 {
                     char num_el_in_blk_dimname[NC_MAX_NAME+1];
-                    SNPRINTF(num_el_in_blk_dimname, sizeof(num_el_in_blk_dimname), "num_el_in_blk%d", i+1);
+                    snprintf(num_el_in_blk_dimname, sizeof(num_el_in_blk_dimname), "num_el_in_blk%d", i+1);
                     int num_el_in_blk_dimId;
                     ncerr = nc_inq_dimid(exncfid, num_el_in_blk_dimname, &num_el_in_blk_dimId);
                     if (ncerr == NC_NOERR) // handle no eb on this proc case.
@@ -1265,11 +1231,11 @@ GetExodusSetsVar(int exncfid, int ts, char const *var, int numNodes, int numElem
 
         char tmp[32], tmp1[32];
         if (stype == "node")
-            SNPRINTF(tmp, sizeof(tmp), "node_ns%d", i+1);
+            snprintf(tmp, sizeof(tmp), "node_ns%d", i+1);
         else
         {
-            SNPRINTF(tmp,  sizeof(tmp), "elem_ss%d", i+1);
-            SNPRINTF(tmp1, sizeof(tmp1), "side_ss%d", i+1);
+            snprintf(tmp,  sizeof(tmp), "elem_ss%d", i+1);
+            snprintf(tmp1, sizeof(tmp1), "side_ss%d", i+1);
         }
  
         int setlist_varid, sidelist_varid;
@@ -2154,7 +2120,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     {
         int connect_varid;
         char connect_varname[NC_MAX_NAME+1];
-        SNPRINTF(connect_varname, sizeof(connect_varname), "connect%d", (int)i+1);
+        snprintf(connect_varname, sizeof(connect_varname), "connect%d", (int)i+1);
         VisItNCErr = nc_inq_varid(ncExIIId, connect_varname, &connect_varid);
         if (VisItNCErr == NC_ENOTVAR) continue;
         CheckNCError(nc_inq_varid);
@@ -2222,9 +2188,9 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     {
         char name[256];
         if (blockName[0] == "")
-            SNPRINTF(name, sizeof(name), "%d", blockId[i]);
+            snprintf(name, sizeof(name), "%d", blockId[i]);
         else
-            SNPRINTF(name, sizeof(name), "%s_%d", blockName[i].c_str(), blockId[i]);
+            snprintf(name, sizeof(name), "%s_%d", blockName[i].c_str(), blockId[i]);
         ebsmd->AddEnumNameValue(name, i+1);
     }
     md->Add(ebsmd);
@@ -2280,7 +2246,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             for (int m = 0; m < matCount; m++)
             {
                 char tmpstr[8];
-                SNPRINTF(tmpstr, sizeof(tmpstr), "%d", m);
+                snprintf(tmpstr, sizeof(tmpstr), "%d", m);
                 matnames.push_back(tmpstr);
             }
             avtMaterialMetaData *mmd = new avtMaterialMetaData("Materials", "Mesh", matCount, matnames);
@@ -2397,7 +2363,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         for (size_t i = 0; i < nsids.size(); i++)
         {
             char tmp[32];
-            SNPRINTF(tmp, sizeof(tmp), "%d", nsids[i]);
+            snprintf(tmp, sizeof(tmp), "%d", nsids[i]);
             smd->AddEnumNameValue(tmp, i);
         }
         smd->SetEnumerationType(avtScalarMetaData::ByBitMask);
@@ -2420,7 +2386,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         for (size_t i = 0; i < ssids.size(); i++)
         {
             char tmp[32];
-            SNPRINTF(tmp, sizeof(tmp), "%d", ssids[i]);
+            snprintf(tmp, sizeof(tmp), "%d", ssids[i]);
             smd->AddEnumNameValue(tmp, i);
         }
         smd->SetEnumerationType(avtScalarMetaData::ByBitMask);
@@ -2570,7 +2536,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
     {
         int connect_varid;
         char connect_varname[NC_MAX_NAME+1];
-        SNPRINTF(connect_varname, sizeof(connect_varname), "connect%d", i+1);
+        snprintf(connect_varname, sizeof(connect_varname), "connect%d", i+1);
         VisItNCErr = nc_inq_varid(ncExIIId, connect_varname, &connect_varid);
 
         bool arb3D = false;
@@ -2580,30 +2546,30 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
 
             int nodelist_varid;
             char nodelist_varname[NC_MAX_NAME+1];
-            SNPRINTF(nodelist_varname, sizeof(nodelist_varname), "fbconn%d", i+1);
+            snprintf(nodelist_varname, sizeof(nodelist_varname), "fbconn%d", i+1);
             VisItNCErr = nc_inq_varid(ncExIIId, nodelist_varname, &nodelist_varid);
             if (VisItNCErr != NC_NOERR) continue;
 
             char nodecnts_varname[NC_MAX_NAME+1];
             int nodecnts_varid;
-            SNPRINTF(nodecnts_varname, sizeof(nodecnts_varname), "fbepecnt%d", i+1);
+            snprintf(nodecnts_varname, sizeof(nodecnts_varname), "fbepecnt%d", i+1);
             VisItNCErr = nc_inq_varid(ncExIIId, nodecnts_varname, &nodecnts_varid);
             if (VisItNCErr != NC_NOERR) continue;
 
             char facelist_varname[NC_MAX_NAME+1];
             int facelist_varid;
-            SNPRINTF(facelist_varname, sizeof(facelist_varname), "facconn%d", i+1);
+            snprintf(facelist_varname, sizeof(facelist_varname), "facconn%d", i+1);
             VisItNCErr = nc_inq_varid(ncExIIId, facelist_varname, &facelist_varid);
             if (VisItNCErr != NC_NOERR) continue;
 
             char facecnts_varname[NC_MAX_NAME+1];
             int facecnts_varid;
-            SNPRINTF(facecnts_varname, sizeof(facecnts_varname), "ebepecnt%d", i+1);
+            snprintf(facecnts_varname, sizeof(facecnts_varname), "ebepecnt%d", i+1);
             VisItNCErr = nc_inq_varid(ncExIIId, facecnts_varname, &facecnts_varid);
             if (VisItNCErr != NC_NOERR) continue;
 
             char num_el_in_blk_dimname[NC_MAX_NAME+1];
-            SNPRINTF(num_el_in_blk_dimname, sizeof(num_el_in_blk_dimname), "num_el_in_blk%d", i+1);
+            snprintf(num_el_in_blk_dimname, sizeof(num_el_in_blk_dimname), "num_el_in_blk%d", i+1);
             int num_el_in_blk_dimId;
             VisItNCErr = nc_inq_dimid(ncExIIId, num_el_in_blk_dimname, &num_el_in_blk_dimId);
             CheckNCError(nc_inq_dimid);
@@ -2613,7 +2579,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
             int num_elems_in_blk = (int) num_el_in_blk_len;
 
             char num_fa_in_blk_dimname[NC_MAX_NAME+1];
-            SNPRINTF(num_fa_in_blk_dimname, sizeof(num_fa_in_blk_dimname), "num_fa_in_blk%d", i+1);
+            snprintf(num_fa_in_blk_dimname, sizeof(num_fa_in_blk_dimname), "num_fa_in_blk%d", i+1);
             int num_fa_in_blk_dimId;
             VisItNCErr = nc_inq_dimid(ncExIIId, num_fa_in_blk_dimname, &num_fa_in_blk_dimId);
             CheckNCError(nc_inq_dimid);
@@ -2629,7 +2595,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
             if (VisItNCErr != NC_NOERR)
             {
                 char msg[256];
-                SNPRINTF(msg, sizeof(msg), "Unable to read ebepecnt%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
+                snprintf(msg, sizeof(msg), "Unable to read ebepecnt%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
                 delete [] facecnts_buf;
                 EXCEPTION1(InvalidFilesException, msg);
             }
@@ -2644,7 +2610,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
             if (VisItNCErr != NC_NOERR)
             {
                 char msg[256];
-                SNPRINTF(msg, sizeof(msg), "Unable to read faconn%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
+                snprintf(msg, sizeof(msg), "Unable to read faconn%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
                 delete [] facecnts_buf;
                 delete [] facelist_buf;
                 EXCEPTION1(InvalidFilesException, msg);
@@ -2657,7 +2623,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
             if (VisItNCErr != NC_NOERR)
             {
                 char msg[256];
-                SNPRINTF(msg, sizeof(msg), "Unable to read fbepecnt%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
+                snprintf(msg, sizeof(msg), "Unable to read fbepecnt%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
                 delete [] facecnts_buf;
                 delete [] facelist_buf;
                 delete [] nodecnts_buf;
@@ -2677,7 +2643,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
             if (VisItNCErr != NC_NOERR)
             {
                 char msg[256];
-                SNPRINTF(msg, sizeof(msg), "Unable to read fbconn%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
+                snprintf(msg, sizeof(msg), "Unable to read fbconn%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
                 delete [] facecnts_buf;
                 delete [] facelist_buf;
                 delete [] nodecnts_buf;
@@ -2734,7 +2700,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
             strcpy(connect_elem_type_attval, "unknown");
 
         char num_el_in_blk_dimname[NC_MAX_NAME+1];
-        SNPRINTF(num_el_in_blk_dimname, sizeof(num_el_in_blk_dimname), "num_el_in_blk%d", i+1);
+        snprintf(num_el_in_blk_dimname, sizeof(num_el_in_blk_dimname), "num_el_in_blk%d", i+1);
         int num_el_in_blk_dimId;
         VisItNCErr = nc_inq_dimid(ncExIIId, num_el_in_blk_dimname, &num_el_in_blk_dimId);
         CheckNCError(nc_inq_dimid);
@@ -2744,7 +2710,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         int num_elems_in_blk = (int) num_el_in_blk_len;
 
         char num_nod_per_dimname[NC_MAX_NAME+1];
-        SNPRINTF(num_nod_per_dimname, sizeof(num_nod_per_dimname), "num_nod_per_el%d", i+1);
+        snprintf(num_nod_per_dimname, sizeof(num_nod_per_dimname), "num_nod_per_el%d", i+1);
         int num_nod_per_dimId;
         VisItNCErr = nc_inq_dimid(ncExIIId, num_nod_per_dimname, &num_nod_per_dimId);
         CheckNCError(nc_inq_dimid);
@@ -2764,12 +2730,12 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         {
             int ebepecnt_varid;
             char ebepecnt_varname[NC_MAX_NAME+1];
-            SNPRINTF(ebepecnt_varname, sizeof(ebepecnt_varname), "ebepecnt%d", i+1);
+            snprintf(ebepecnt_varname, sizeof(ebepecnt_varname), "ebepecnt%d", i+1);
             VisItNCErr = nc_inq_varid(ncExIIId, ebepecnt_varname, &ebepecnt_varid);
             if (VisItNCErr != NC_NOERR)
             {
                 char msg[256];
-                SNPRINTF(msg, sizeof(msg), "Unable to get var id for ebepecnt%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
+                snprintf(msg, sizeof(msg), "Unable to get var id for ebepecnt%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
                 EXCEPTION1(InvalidFilesException, msg);
             }
 
@@ -2779,7 +2745,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
             if (VisItNCErr != NC_NOERR)
             {
                 char msg[256];
-                SNPRINTF(msg, sizeof(msg), "Unable to read ebepecnt%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
+                snprintf(msg, sizeof(msg), "Unable to read ebepecnt%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
                 EXCEPTION1(InvalidFilesException, msg);
             }
 
@@ -2801,7 +2767,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
                 if (VisItNCErr != NC_NOERR)
                 {
                     char msg[256];
-                    SNPRINTF(msg, sizeof(msg), "Unable to read connect%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
+                    snprintf(msg, sizeof(msg), "Unable to read connect%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
                     EXCEPTION1(InvalidFilesException, msg);
                 }
                 int *p = conn_buf;
@@ -2825,7 +2791,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
                 if (VisItNCErr != NC_NOERR)
                 {
                     char msg[256];
-                    SNPRINTF(msg, sizeof(msg), "Unable to read connect%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
+                    snprintf(msg, sizeof(msg), "Unable to read connect%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
                     EXCEPTION1(InvalidFilesException, msg);
                 }
                 long long *p = conn_buf;
@@ -3076,7 +3042,7 @@ avtExodusFileFormat::GetVar(int ts, const char *var)
             if ((int) mixvals.size() != mat->GetMixlen())
             {
                 char errmsg[256];
-                SNPRINTF(errmsg, sizeof(errmsg), "Mixed variable size, %d, doesn't agree with material "
+                snprintf(errmsg, sizeof(errmsg), "Mixed variable size, %d, doesn't agree with material "
                     "mixlen, %d, for variable \"%s\"", (int) mixvals.size(), mat->GetMixlen(), var);
                 avtCallback::IssueWarning(errmsg);
                 goto skipMatSpecific;
@@ -3186,6 +3152,10 @@ ConvertGlobalElementIdsToInt(vtkDataArray *da)
 static vtkDataArray *
 EnsureGlobalElementIdsAreInt(vtkDataArray *da)
 {
+#if VISIT_VERSION_GE(3,3,0)
+#error EITHER FIX GLOBAL ELEMENT ID BASED GHOST-ZONE COMM OR UPDATE THIS VERSION TRIGGER
+#endif
+
     if (!da) return 0;
 
     if (da->IsA("vtkIntArray")) return da;
@@ -3254,7 +3224,7 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
                 if (!volFracVarArray) 
                 {
                     char errmsg[256];
-                    SNPRINTF(errmsg, sizeof(errmsg), "Unable to get material volume "
+                    snprintf(errmsg, sizeof(errmsg), "Unable to get material volume "
                         "fraction array \"%s\"", vfns.GetName(m));
                     EXCEPTION1(InvalidVariableException, errmsg);
                 }
@@ -3263,7 +3233,7 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
                 else if (nzones != volFracVarArray->GetNumberOfTuples())
                 {
                     char errmsg[256];
-                    SNPRINTF(errmsg, sizeof(errmsg), "Material volume fraction array \"%s\" "
+                    snprintf(errmsg, sizeof(errmsg), "Material volume fraction array \"%s\" "
                         "not the same size (%d) as previously read arrays (%d)",
                         vfns.GetName(m),(int)volFracVarArray->GetNumberOfTuples(),nzones);
                     EXCEPTION1(InvalidVariableException, errmsg);
@@ -3287,7 +3257,7 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         ENDTRY
 
         char thisDomain[16];
-        SNPRINTF(thisDomain, sizeof(thisDomain), "File%d", myDomain);
+        snprintf(thisDomain, sizeof(thisDomain), "File%d", myDomain);
         int *matids = new int[matCount];
         char **matnames = new char*[matCount];
         const int matnamelen = 16;
@@ -3295,7 +3265,7 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         {
             matids[m] = m;
             matnames[m] = new char[matnamelen];
-            SNPRINTF(matnames[m],matnamelen,"%d",m);
+            snprintf(matnames[m],matnamelen,"%d",m);
         }
 
         avtMaterial *mat = new avtMaterial(matCount, matids, matnames,

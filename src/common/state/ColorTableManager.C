@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <ColorTableManager.h>
 #include <DataNode.h>
@@ -47,7 +13,7 @@
 // ****************************************************************************
 // Method: ColorTableManager::ColorTableManager
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the ColorTableManager class.
 //
 // Programmer: Brad Whitlock
@@ -68,14 +34,14 @@ ColorTableManager::ColorTableManager() : ccpl()
 // ****************************************************************************
 // Method: ColorTableManager::~ColorTableManager
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the ColorTableManager class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 3 18:23:39 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ColorTableManager::~ColorTableManager()
@@ -85,7 +51,7 @@ ColorTableManager::~ColorTableManager()
 // ****************************************************************************
 // Method: ColorTableManager::Export
 //
-// Purpose: 
+// Purpose:
 //   Exports a color table to the named file.
 //
 // Arguments:
@@ -114,7 +80,7 @@ ColorTableManager::Export(const std::string &ctName,
     ccpl = ccpl_;
 
     //
-    // Make sure that if the color table already contains the colortable 
+    // Make sure that if the color table already contains the colortable
     // directory that we don't decorate the name.
     //
     std::string ctDir(GetUserVisItDirectory());
@@ -140,7 +106,7 @@ ColorTableManager::Export(const std::string &ctName,
 // ****************************************************************************
 // Method: ColorTableManager::ImportColorTables
 //
-// Purpose: 
+// Purpose:
 //   Imports VisIt's external color tables.
 //
 // Programmer: Brad Whitlock
@@ -177,7 +143,7 @@ ColorTableManager::ImportColorTables(ColorTableAttributes *cta)
 // ****************************************************************************
 // Method: ColorTableManager::WriteConfigFile
 //
-// Purpose: 
+// Purpose:
 //   Writes a the color table to a file.
 //
 // Arguments:
@@ -215,8 +181,8 @@ ColorTableManager::WriteConfigFile(std::ostream& out)
     // if necessary.
     if (ctNode->GetNode("ColorControlPointList")->GetNode("category"))
     {
-        // if the category is Standard 
-        std::string category = 
+        // if the category is Standard
+        std::string category =
             ctNode->GetNode("ColorControlPointList")->GetNode("category")->AsString();
         if (category == std::string("Standard"))
         {
@@ -256,7 +222,7 @@ ColorTableManager::WriteConfigFile(const char *filename)
 // ****************************************************************************
 // Method: ColorTableManager::ReadConfigFile
 //
-// Purpose: 
+// Purpose:
 //   Reads a color table from a file.
 //
 // Arguments:
@@ -266,7 +232,7 @@ ColorTableManager::WriteConfigFile(const char *filename)
 // Creation:   Thu Jul 3 18:27:57 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 DataNode *
 ColorTableManager::ReadConfigFile(std::istream& in)
@@ -303,18 +269,18 @@ ColorTableManager::ReadConfigFile(const char *filename)
 // ****************************************************************************
 // Method: ColorTableManager::ImportHelper
 //
-// Purpose: 
+// Purpose:
 //   Static callback function for ReadAndProcessDirectory.
 //
 // Arguments:
 //   data       : Callback data.
 //   ctFileName : The name of the color table file to open.
-//   
+//
 // Programmer: Brad Whitlock
 // Creation:   Mon Jul 7 15:42:51 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -328,7 +294,7 @@ ColorTableManager::ImportHelper(void *data, const std::string &ctFileName,
 // ****************************************************************************
 // Method: ColorTableManager::ImportColorTable
 //
-// Purpose: 
+// Purpose:
 //   Tries to import the named file as a color table.
 //
 // Arguments:
@@ -372,8 +338,8 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
                 ctName = ctFileName;
             else
                 ctName = ctFileName.substr(pos + 1, ctFileName.size() - pos - 1 - 3);
-            
-            // Look for the ColorTable node.           
+
+            // Look for the ColorTable node.
             DataNode *node2 = node->SearchForNode("ColorTable");
             if(node2 == 0)
                 return;
@@ -385,10 +351,10 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
             {
                 if (importingPersonal)
                     ccpl2.SetCategoryName("UserDefined");
-                else 
+                else
                     ccpl2.SetCategoryName("Standard");
             }
-            
+
             // Check for errors that would break code down the line
             int ii;
             bool broken = false;
@@ -417,7 +383,7 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
             else
             {
                 ctAtts->AddColorTable(ctName, ccpl2);
-            
+
                 debug4 << "Imported color table " << ctFileName.c_str()
                        << " as " << ctName.c_str() << endl;
             }

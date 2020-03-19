@@ -1,45 +1,32 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <CGNSPluginInfo.h>
+
+#include <climits>
+
 #include <avtCGNSFileFormat.h>
 #include <avtMTMDFileFormatInterface.h>
+#include <avtMTSDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
+#include <DebugStream.h>
+
+// ****************************************************************************
+//  Method: CGNSCommonPluginInfo constructor
+//
+//  Programmer: Eric Brugger
+//  Creation:   Fri Feb 28 13:40:33 PST 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+CGNSCommonPluginInfo::CGNSCommonPluginInfo() : CommonDatabasePluginInfo(), CGNSGeneralPluginInfo()
+{
+    // Assume MD by default.
+    dbType = DB_TYPE_MTMD;
+}
 
 // ****************************************************************************
 //  Method:  CGNSCommonPluginInfo::GetDatabaseType
@@ -54,7 +41,7 @@
 DatabaseType
 CGNSCommonPluginInfo::GetDatabaseType()
 {
-    return DB_TYPE_MTMD;
+    return dbType;
 }
 
 // ****************************************************************************
@@ -78,14 +65,107 @@ avtDatabase *
 CGNSCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
+    avtDatabase *db = NULL;
+
+    //
+    // If the number of blocks is 1, see if the names follow the
+    // conventions for a multi-file multi-block file.
+    //
+    if (nBlock == 1)
+    {
+        bool multiblockFile = true;
+        int  globalNBlocks = -1;
+        for (int f = 0 ; multiblockFile && f < nList; f++)
+        {
+            //
+            // Eliminate the path information to get just the filename.
+            //
+            const char *file = strrchr(list[f], VISIT_SLASH_CHAR);
+            if (file == NULL) file = list[f];
+
+            //
+            // Determine if the filename matches "basename.cgns.nblocks.iblock"
+            // where basename is an any string, cgns is the string "cgns",
+            // nblocks is the number of blocks, and iblock is the block
+            // index. Furthermore, nblocks must evenly divide the number of
+            // files in the list and iblock must be monotonically increasing
+            // with no gaps in the numbering.
+            //
+            const char *str = strstr(file, "cgns");
+            if (str == NULL)
+            {
+                multiblockFile = false;
+                break;
+            }
+            if (str[4] != '.')
+            {
+                multiblockFile = false;
+                break;
+            }
+            char *str2;
+            long int nBlocks = strtol(&str[5], &str2, 10);
+            if (nBlocks == 0 || nBlocks == LONG_MAX ||
+                nBlocks == LONG_MIN || nBlocks < 0 ||
+                nBlocks > nList ||
+                nList % nBlocks != 0 || str2[0] != '.')
+            {
+                multiblockFile = false;
+                break;
+            }
+            if (f == 0) globalNBlocks = nBlocks;
+            if (nBlocks != globalNBlocks)
+            {
+                multiblockFile = false;
+                break;
+            }
+            char *str3;
+            long int iBlock = strtol(&str2[1], &str3, 10);
+            if (iBlock == LONG_MAX || iBlock == LONG_MIN ||
+                iBlock < 0 || iBlock >= nBlocks ||
+                iBlock != f % nBlocks || str3[0] != '\0')
+            {
+                multiblockFile = false;
+                break;
+            }
+        }
+        if (multiblockFile)
+            nBlock = globalNBlocks;
+    }
+
     // ignore any nBlocks past 1
     int nTimestepGroups = nList / nBlock;
-    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
-    for (int i = 0 ; i < nTimestepGroups ; i++)
+    if (nBlock > 1)
     {
-        ffl[i] = new avtCGNSFileFormat(list[i*nBlock]);
+        dbType = DB_TYPE_MTSD;
+
+        avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+        for (int i = 0 ; i < nTimestepGroups ; i++)
+        {
+            ffl[i] = new avtMTSDFileFormat*[nBlock];
+            for (int j = 0 ; j < nBlock ; j++)
+            {
+                 ffl[i][j] = new avtCGNS_MTSDFileFormat(list[i*nBlock+j]);
+            }
+        }
+        avtMTSDFileFormatInterface *inter =
+            new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
+        db = new avtGenericDatabase(inter);
+        debug5 << "CGNSCommonPluginInfo::SetupDatabase MTSD" << endl;
     }
-    avtMTMDFileFormatInterface *inter 
-           = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
-    return new avtGenericDatabase(inter);
+    else
+    {
+        dbType = DB_TYPE_MTMD;
+
+        avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
+        for (int i = 0 ; i < nTimestepGroups ; i++)
+        {
+            ffl[i] = new avtCGNS_MTMDFileFormat(list[i]);
+        }
+        avtMTMDFileFormatInterface *inter =
+            new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
+        db = new avtGenericDatabase(inter);
+        debug5 << "CGNSCommonPluginInfo::SetupDatabase MTMD" << endl;
+    }
+
+    return db;
 }

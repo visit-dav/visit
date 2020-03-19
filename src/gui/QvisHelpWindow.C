@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <stdlib.h>
 #include <visit-config.h>
@@ -99,6 +65,9 @@
 //   Brad Whitlock, Fri Oct 12 16:43:20 PDT 2012
 //   I moved help under resources.
 //
+//   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
+//   Added manualPath for accessing the sphinx manual.
+//
 // ****************************************************************************
 
 QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
@@ -106,6 +75,10 @@ QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
 {
     // Set the help path from an environment variable.
     helpPath = QString(GetVisItResourcesDirectory(VISIT_RESOURCES_HELP).c_str());
+
+    // Create a path to locate the manual from the helpPath. 
+    manualPath = QString("manual") + QString(VISIT_SLASH_STRING) + 
+        QString("index.html");
 
     firstShow = true;
     activeTab = 0;
@@ -393,6 +366,9 @@ QvisHelpWindow::ReleaseNotesFile() const
 //   Kathleen Bonnell, Sat Aug 28 13:17:45 MST 2010 
 //   Added ultrawrapper document.
 //
+//   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
+//   Replaced manual pages with our new sphinx manuals.
+//
 // ****************************************************************************
 
 void
@@ -443,52 +419,11 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
     ultraPage->setData(0, Qt::UserRole, QVariant("ultrawrapper.html"));
     ultraPage->setIcon(0, helpIcon);
 
-    // Read the XML file and create the DOM tree. Then use the tree to
-    // build the User manual content.
-    bool noHelp = false;
-    QFile helpIndexFile(fileName);
-    if(helpIndexFile.open(QIODevice::ReadOnly))
-    {
-        QDomDocument domTree;
-        if(domTree.setContent(&helpIndexFile))
-        {
-            // Create a root node for the User's manual.
-            QTreeWidgetItem *UMrootItem = new QTreeWidgetItem(helpContents);
-            UMrootItem->setIcon(0, openBookIcon);
-            UMrootItem->setText(0, tr("VisIt User's Manual"));
-            UMrootItem->setData(0, Qt::UserRole, QVariant("list0000.html"));
-
-            // Create the tree view out of the DOM
-            QDomElement root = domTree.documentElement();
-            QDomNode node = root.firstChild();
-            while(!node.isNull())
-            {
-                if(node.isElement() && node.nodeName() == "body")
-                {
-                    QDomElement body = node.toElement();
-                    BuildContents(UMrootItem, body);
-                    break;
-                }
-                node = node.nextSibling();
-            }
-
-            // Make the root node open by default.
-            helpContents->expandItem(UMrootItem);
-        }
-        else
-            noHelp = true;
-        helpIndexFile.close();
-    }
-    else
-        noHelp = true;
-
-    if(noHelp)
-    {
-        Message(tr("VisIt cannot read the help index file! "
-                "No online help will be available."));
-        debug1 << "VisIt cannot read the help index file! "
-                  "No online help will be available.\n";
-    }
+    QTreeWidgetItem *manual = new QTreeWidgetItem(
+        helpContents, 0);
+    manual->setText(0, tr("VisIt Manuals"));
+    manual->setData(0, Qt::UserRole, QVariant(manualPath));
+    manual->setIcon(0, helpIcon);
 
     helpContents->blockSignals(false);
 
@@ -579,6 +514,9 @@ QvisHelpWindow::BuildContents(QTreeWidgetItem *parentItem,
 //   Brad Whitlock, Thu Jun 19 16:45:54 PDT 2008
 //   Qt 4.
 //
+//   Alister Maguire, Wed Nov  6 08:11:16 PST 2019
+//   Added the new sphinx manual path.
+//
 // ****************************************************************************
 
 void
@@ -592,6 +530,7 @@ QvisHelpWindow::BuildIndex()
     AddToIndex(tr("Ultra wrapper"), "ultrawrapper.html");
     AddToIndex(tr("VisIt"), "home.html");
     AddToIndex(tr("Release notes"), ReleaseNotesFile());
+    AddToIndex(tr("VisIt Manuals"), manualPath);
 
     // Populate the index list box.
     helpIndex->blockSignals(true);

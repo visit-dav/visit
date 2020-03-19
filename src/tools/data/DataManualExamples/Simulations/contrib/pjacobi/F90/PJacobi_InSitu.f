@@ -1,40 +1,6 @@
-c---------------------------------------------------------------------------
-c Note the command callback making a call to simulate_one_timestep()
-c---------------------------------------------------------------------------
-c visitgetmetadata    
-c---------------------------------------------------------------------------
-      integer function visitgetmetadata()
-      use jacobi_module
-      implicit none
-      include "visitfortransimV2interface.inc"
-c     Local variables
-      integer md, mmd, vmd, cmd, err
-
-      simtime = iter*0.1
-c      print *, 'id ', par_rank, ' m =', m, ' mp=', mp
-      if(visitmdsimalloc(md).eq.VISIT_OKAY) then
-          err = visitmdsimsetcycletime(md, iter, simtime)
-
-      if( visRunFlag ) then
-              err = visitmdsimsetmode(md, VISIT_SIMMODE_RUNNING)
-          else
-              err = visitmdsimsetmode(md, VISIT_SIMMODE_STOPPED)
-          endif
-
-c     Add a 2D rect mesh
-          if(visitmdmeshalloc(mmd).eq.VISIT_OKAY) then
-              err = visitmdmeshsetname(mmd, "mesh", 4)
-              err = visitmdmeshsetmeshtype(mmd, 
-     .            VISIT_MESHTYPE_RECTILINEAR)
-              err = visitmdmeshsettopologicaldim(mmd, 2)
-              err = visitmdmeshsetspatialdim(mmd, 2)
-              err = visitmdmeshsetnumdomains(mmd, par_size)
-              err = visitmdmeshsetdomaintitle(mmd, "Domains", 7)
-              err = visitmdmeshsetdomainpiecename(mmd, "domain", 6)
-              err = visitmdmeshsetxunits(mmd, "m", 1)
-              err = visitmdmeshsetyunits(mmd, "m", 1)
-              err = visitmdmeshsetxlabel(mmd, "Width", 5)
-              err = visitmdmeshsetylabel(mmd, "Height", 6)
+c Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+c Project developers.  See the top-level LICENSE file for dates and other
+c details.  No copyright assignment is required to contribute to VisIt.
               err = visitmdsimaddmesh(md, mmd)
           endif
 

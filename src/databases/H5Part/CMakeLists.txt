@@ -3,6 +3,8 @@ PROJECT(H5Part_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(H5Part)
+
 SET(COMMON_SOURCES
 H5PartPluginInfo.C
 H5PartCommonPluginInfo.C

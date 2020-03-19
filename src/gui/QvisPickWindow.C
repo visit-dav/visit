@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <stdio.h> // for sscanf
 #include <string>
@@ -145,7 +111,7 @@ void PickRecord::reset() {
 // ****************************************************************************
 // Method: QvisPickWindow::QvisPickWindow
 //
-// Purpose: 
+// Purpose:
 //   Cconstructor for the QvisPickWindow class.
 //
 // Arguments:
@@ -155,13 +121,13 @@ void PickRecord::reset() {
 //   notepad   : The notepad widget to which the window posts.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   December 3, 2001 
+// Creation:   December 3, 2001
 //
 // Modifications:
 //   Brad Whitlock, Thu Nov 7 16:08:55 PST 2002
 //   I made the window resize better by passing false for the stretch flag.
 //
-//   Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
+//   Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
 //   Made the window only have the Apply button (not reset or make default).
 //
 //   Brad Whitlock, Wed Aug 27 08:36:19 PDT 2003
@@ -170,18 +136,18 @@ void PickRecord::reset() {
 //   Brad Whitlock, Tue Sep 9 09:30:01 PDT 2003
 //   I made nextPage and lastLetter be members.
 //
-//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
 //   Added savePicks flag.
 //
-//   Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
-//   Made the window have all buttons.  
+//   Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003
+//   Made the window have all buttons.
 //
 //   Ellen Tarwater, Fri May 18, 2007
 //   Added save Count for 'Save Pick as...' functionality.
 //
-//   Katheen Bonnell, Thu Nov 29 15:35:15 PST 2007 
+//   Katheen Bonnell, Thu Nov 29 15:35:15 PST 2007
 //   Added defaultAutoShow, defaultSavePicks, defaultNumTabs so that their
-//   counterparts can be 'reset' correclty from user-saved values when needed. 
+//   counterparts can be 'reset' correclty from user-saved values when needed.
 //
 //   Brad Whitlock, Wed Apr  9 11:30:06 PDT 2008
 //   QString for caption, shortName.
@@ -194,9 +160,9 @@ void PickRecord::reset() {
 //
 // ****************************************************************************
 
-QvisPickWindow::QvisPickWindow(PickAttributes *subj, const QString &caption, 
+QvisPickWindow::QvisPickWindow(PickAttributes *subj, const QString &caption,
                            const QString &shortName, QvisNotepadArea *notepad) :
-    QvisPostableWindowObserver(subj, caption, shortName, notepad, 
+    QvisPostableWindowObserver(subj, caption, shortName, notepad,
                            QvisPostableWindowObserver::AllExtraButtons, false),
     lastLetter(" ")
 {
@@ -214,7 +180,7 @@ QvisPickWindow::QvisPickWindow(PickAttributes *subj, const QString &caption,
 // ****************************************************************************
 // Method: QvisPickWindow::~QvisPickWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the QvisPickWindow class.
 //
 // Programmer: Kathleen Bonnell
@@ -236,11 +202,11 @@ QvisPickWindow::~QvisPickWindow()
 // ****************************************************************************
 // Method: QvisPickWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   This method creates the widgets for the Pick operator window.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   December 3, 2001 
+// Creation:   December 3, 2001
 //
 // Modifications:
 //   Brad Whitlock, Fri Feb 15 17:17:40 PST 2002
@@ -248,47 +214,47 @@ QvisPickWindow::~QvisPickWindow()
 //   get around a weird memory problem where I could not seem to free those
 //   arrays.
 //
-//   Kathleen Bonnell, Thu Jun 27 14:37:29 PDT 2002 
-//   Set column mode to 1. 
+//   Kathleen Bonnell, Thu Jun 27 14:37:29 PDT 2002
+//   Set column mode to 1.
 //
 //   Brad Whitlock, Thu Nov 7 17:34:24 PST 2002
 //   Added a stretch factor and a minimum height to the tab widget.
 //
-//   Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002   
-//   Added useNodeCoords checkbox. 
+//   Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002
+//   Added useNodeCoords checkbox.
 //
 //   Brad Whitlock, Wed Aug 27 08:38:55 PDT 2003
 //   I added a checkbox to set autoShow mode.
 //
-//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
 //   Added  savePicks checkbox.
 //
-//   Kathleen Bonnell, Tue Nov 18 14:03:22 PST 2003 
+//   Kathleen Bonnell, Tue Nov 18 14:03:22 PST 2003
 //   Added  logicalZone checkbox.
 //
-//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003
 //   Reorganized, added more buttons for user control of what type of
-//   output pick returns. 
+//   output pick returns.
 //
-//   Kathleen Bonnell, Thu Apr  1 18:42:52 PST 2004 
-//   Added TimeCurve checkbox. 
+//   Kathleen Bonnell, Thu Apr  1 18:42:52 PST 2004
+//   Added TimeCurve checkbox.
 //
-//   Kathleen Bonnell, Wed Jun  9 09:41:15 PDT 2004 
-//   Added conciseOutput, showMeshName and showTimestep checkboxes. 
+//   Kathleen Bonnell, Wed Jun  9 09:41:15 PDT 2004
+//   Added conciseOutput, showMeshName and showTimestep checkboxes.
 //
 //   Brad Whitlock, Fri Dec 10 09:50:04 PDT 2004
 //   Changed a label into a variable button so it is easier to add
 //   variables to the pick variables.
 //
-//   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004 
-//   Added 'displayGlobalIds' checkbox. 
+//   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004
+//   Added 'displayGlobalIds' checkbox.
 //
-//   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004 
-//   Added 'displayPickLetter' checkbox. 
+//   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004
+//   Added 'displayPickLetter' checkbox.
 //
-//   Kathleen Bonnell, Mon Oct 31 10:39:28 PST 2005 
+//   Kathleen Bonnell, Mon Oct 31 10:39:28 PST 2005
 //   Hide all tabs whose index > MIN_PICK_TABS.
-//   Added 'userMaxPickTabs' spinbox. 
+//   Added 'userMaxPickTabs' spinbox.
 //
 //   Ellen Tarwater, Fri May 18, 2007
 //   Added "Save picks as" button
@@ -299,10 +265,10 @@ QvisPickWindow::~QvisPickWindow()
 //   Cyrus Harrison, Mon Sep 17 15:18:50 PDT 2007
 //   Added floatFormat
 //
-//   Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
-//   Added preserveCoord combo box. 
+//   Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007
+//   Added preserveCoord combo box.
 //
-//   Kathleen Bonnell, Thu Nov 29 15:32:32 PST 2007 
+//   Kathleen Bonnell, Thu Nov 29 15:32:32 PST 2007
 //   Added clearPicks push button.
 //
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
@@ -331,20 +297,27 @@ QvisPickWindow::~QvisPickWindow()
 //   Added button for resetting pick letter.
 //
 //   Alister Maguire, Wed Sep 27 10:11:04 PDT 2017
-//   Added a button for changing the pick highlights color. 
+//   Added a button for changing the pick highlights color.
+//
+//   Kathleen Biagas, Fri Nov  8 08:47:59 PST 2019
+//   Moved pick results and some settings to the right side of the window.
 //
 // ****************************************************************************
 
 void
 QvisPickWindow::CreateWindowContents()
 {
+    QHBoxLayout *sideBySideLayout = new QHBoxLayout();
+    topLayout->addLayout(sideBySideLayout);
+
+    QVBoxLayout *rightLayout = new QVBoxLayout();
     resultsTabWidget = new QTabWidget(central);
     resultsTabWidget->setMinimumHeight(200);
-    topLayout->addWidget(resultsTabWidget, 10);
+    rightLayout->addWidget(resultsTabWidget, 10);
 
     for (int i = 0; i < MAX_PICK_TABS; i++)
     {
-        pages[i] = new QWidget(central);
+        pages[i] = new QWidget();
         QVBoxLayout *vLayout = new QVBoxLayout(pages[i]);
         vLayout->setMargin(10);
         vLayout->setSpacing(5);
@@ -357,23 +330,23 @@ QvisPickWindow::CreateWindowContents()
         if (i < MIN_PICK_TABS)
         {
             pages[i]->show();
-            resultsTabWidget->addTab(pages[i]," "); 
+            resultsTabWidget->addTab(pages[i]," ");
         }
     }
-    
-    QGridLayout *gLayout = new QGridLayout(0);
-    topLayout->addLayout(gLayout);
 
-    userMaxPickTabs = new QSpinBox(central);
+    QGridLayout *gLayout = new QGridLayout(0);
+    rightLayout->addLayout(gLayout);
+
+    userMaxPickTabs = new QSpinBox();
     userMaxPickTabs->setMinimum(MIN_PICK_TABS);
     userMaxPickTabs->setMaximum(MAX_PICK_TABS);
     userMaxPickTabs->setButtonSymbols(QAbstractSpinBox::PlusMinus);
     gLayout->addWidget(userMaxPickTabs, 0, 1);
-    QLabel *userMaxPickTabsLabel = new QLabel(tr("Max tabs"), central);
+    QLabel *userMaxPickTabsLabel = new QLabel(tr("Max tabs"));
     userMaxPickTabsLabel->setBuddy(userMaxPickTabs);
     gLayout->addWidget(userMaxPickTabsLabel, 0,0);
 
-    QPushButton *savePicksButton = new QPushButton(tr("Save picks as") + QString("..."), central);
+    QPushButton *savePicksButton = new QPushButton(tr("Save picks as") + QString("..."));
     connect(savePicksButton, SIGNAL(clicked()),
             this, SLOT(savePickText()));
     gLayout->addWidget(savePicksButton, 0, 2, 1, 2);
@@ -385,62 +358,60 @@ QvisPickWindow::CreateWindowContents()
             this, SLOT(addPickVariable(const QString &)));
     gLayout->addWidget(varsButton, 1, 0);
 
-    varsLineEdit = new QLineEdit(central);
-    varsLineEdit->setText("default"); 
+    varsLineEdit = new QLineEdit();
+    varsLineEdit->setText("default");
     connect(varsLineEdit, SIGNAL(returnPressed()),
             this, SLOT(variableProcessText()));
     gLayout->addWidget(varsLineEdit, 1, 1, 1, 3);
 
-    
-    QLabel *floatFormatLabel = new QLabel(tr("Float format"),central);
+    QLabel *floatFormatLabel = new QLabel(tr("Float format"));
     gLayout->addWidget(floatFormatLabel, 2, 0);
-    
-    floatFormatLineEdit= new QLineEdit(central);
-    floatFormatLineEdit->setText("%g"); 
+
+    floatFormatLineEdit= new QLineEdit();
+    floatFormatLineEdit->setText("%g");
     gLayout->addWidget(floatFormatLineEdit, 2, 1, 1, 3);
     connect(floatFormatLineEdit, SIGNAL(returnPressed()),
             this, SLOT(floatFormatProcessText()));
 
-    autoShowCheckBox = new QCheckBox(tr("Automatically show window"), central);
+    autoShowCheckBox = new QCheckBox(tr("Automatically show window"));
     connect(autoShowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoShowToggled(bool)));
     gLayout->addWidget(autoShowCheckBox, 3, 0, 1, 4);
 
 #ifdef HAVE_DDT
     QPushButton *focusPickInDDTButton =
-        new QPushButton(tr("Add Pick to DDT"), central);
+        new QPushButton(tr("Add Pick to DDT"));
     connect(focusPickInDDTButton, SIGNAL(clicked()),
             this,SLOT(focusPickInDDTClicked()));
     gLayout->addWidget(focusPickInDDTButton,3,2,1,2);
 #endif
 
-    savePicksCheckBox = new QCheckBox(tr("Don't clear this window"), central);
+    savePicksCheckBox = new QCheckBox(tr("Don't clear this window"));
     connect(savePicksCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(savePicksToggled(bool)));
     gLayout->addWidget(savePicksCheckBox, 4, 0, 1, 2);
 
-    QPushButton *clearPicksButton = new QPushButton(tr("Clear picks"), central);
+    QPushButton *clearPicksButton = new QPushButton(tr("Clear picks"));
     connect(clearPicksButton, SIGNAL(clicked()),
             this, SLOT(clearPicks()));
     gLayout->addWidget(clearPicksButton, 4, 2, 1, 2);
 
-    QPushButton *resetLetterButton = new QPushButton(tr("Reset pick letter"), 
-                                                    central);
+    QPushButton *resetLetterButton = new QPushButton(tr("Reset pick letter"));
     connect(resetLetterButton, SIGNAL(clicked()),
             this, SLOT(resetPickLetter()));
     gLayout->addWidget(resetLetterButton, 5, 2, 1, 2);
 
-    setHighlightColorButton = new QPushButton(tr("Set highlight color"), 
-                                             central);
+    setHighlightColorButton = new QPushButton(tr("Set highlight color"));
     connect(setHighlightColorButton, SIGNAL(clicked()),
             this, SLOT(setHighlightColor()));
     gLayout->addWidget(setHighlightColorButton, 5, 0, 1, 2);
     setHighlightColorButton->setEnabled(false);
-  
-    optionsTabWidget = new QTabWidget(central);
+    QVBoxLayout *leftLayout = new QVBoxLayout();
+
+    optionsTabWidget = new QTabWidget();
     connect(optionsTabWidget, SIGNAL(currentChanged(int)),
             this, SLOT(optionsTabSelected(int)));
-    topLayout->addWidget(optionsTabWidget, 10);
+    leftLayout->addWidget(optionsTabWidget, 10);
 
     CreateDisplayOptionsTab();
     CreateTimeOptionsTab();
@@ -450,16 +421,18 @@ QvisPickWindow::CreateWindowContents()
     optionsTabWidget->blockSignals(true);
     optionsTabWidget->setCurrentIndex(activeOptionsTab);
     optionsTabWidget->blockSignals(false);
+    sideBySideLayout->addLayout(leftLayout);
+    sideBySideLayout->addLayout(rightLayout);
 }
 
 
 // ****************************************************************************
 // Method: QvisAnnotationWindow::CreateDisplayOptionsTab
 //
-// Purpose: 
+// Purpose:
 //   Creates the Display options tab.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 23, 2011
 //
 // Modifications:
@@ -467,7 +440,7 @@ QvisPickWindow::CreateWindowContents()
 //   Removed 'Options' from tab title so more tabs can be visible.
 //
 //   Alister Maguire, Wed Aug  8 15:33:21 PDT 2018
-//   Added option to update the swivel focus. 
+//   Added option to update the swivel focus.
 //
 // ****************************************************************************
 
@@ -484,7 +457,7 @@ QvisPickWindow::CreateDisplayOptionsTab()
             this, SLOT(conciseOutputToggled(bool)));
     dLayout->addWidget(conciseOutputCheckBox, 0, 0);
 
-    swivelFocusToPick = new QCheckBox(tr("Swivel focus"), 
+    swivelFocusToPick = new QCheckBox(tr("Swivel focus"),
                                       pageDisplay);
     connect(swivelFocusToPick, SIGNAL(toggled(bool)),
             this, SLOT(swivelFocusToPickToggled(bool)));
@@ -510,13 +483,13 @@ QvisPickWindow::CreateDisplayOptionsTab()
             this, SLOT(displayGlobalIdsToggled(bool)));
     dLayout->addWidget(displayGlobalIds, 2, 2, 1, 2);
 
-    displayPickLetter = new QCheckBox(tr("Reference pick letter"), 
+    displayPickLetter = new QCheckBox(tr("Reference pick letter"),
                                       pageDisplay);
     connect(displayPickLetter, SIGNAL(toggled(bool)),
             this, SLOT(displayPickLetterToggled(bool)));
     dLayout->addWidget(displayPickLetter, 4, 0, 1, 4);
 
-    displayPickHighlight = new QCheckBox(tr("Pick highlights"), 
+    displayPickHighlight = new QCheckBox(tr("Pick highlights"),
                                       pageDisplay);
     connect(displayPickHighlight, SIGNAL(toggled(bool)),
             this, SLOT(displayPickHighlightToggled(bool)));
@@ -573,15 +546,19 @@ QvisPickWindow::CreateDisplayOptionsTab()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::CreateTimeOptionsTab
 //
-// Purpose: 
+// Purpose:
 //   Creates the Time options tab.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 23, 2011
 //
 // Modifications:
 //   Kathleen Biagas, Wed Jan 25 16:01:18 MST 2012
 //   Removed 'Options' from tab title so more tabs can be visible.
+//
+//   Alister Maguire, Wed Oct 16 08:41:57 MST 2019
+//   Added extra argumentto QvisTimeQueryOptionsWidget creation that
+//   disables creation of the data origin buttons.
 //
 // ****************************************************************************
 
@@ -593,7 +570,8 @@ QvisPickWindow::CreateTimeOptionsTab()
 
     QVBoxLayout *tLayout = new QVBoxLayout(pageTime);
 
-    timeOpts = new QvisTimeQueryOptionsWidget(tr("Do time curve with next pick"), pageTime);
+    timeOpts = new QvisTimeQueryOptionsWidget(
+        tr("Do time curve with next pick"), pageTime);
     connect(timeOpts, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
     tLayout->addWidget(timeOpts);
@@ -623,10 +601,10 @@ QvisPickWindow::CreateTimeOptionsTab()
 // ****************************************************************************
 // Method: QvisAnnotationWindow::CreateSpreadsheetOptionsTab
 //
-// Purpose: 
+// Purpose:
 //   Creates the Spreadsheet options tab.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 23, 2011
 //
 // Modifications:
@@ -660,14 +638,14 @@ QvisPickWindow::CreateSpreadsheetOptionsTab()
 // ****************************************************************************
 // Method: QvisPickWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the window needs to be updated.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 26, 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -683,7 +661,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisPickWindow::UpdateAll
 //
-// Purpose: 
+// Purpose:
 //   This method updates the window's widgets to reflect changes made
 //   in the PickAttributes object that the window watches.
 //
@@ -693,42 +671,42 @@ QvisPickWindow::UpdateWindow(bool doAll)
 //           states.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   December 3, 2001 
+// Creation:   December 3, 2001
 //
 // Modifications:
-//   Kathleen Bonnell, Tue Mar 26 15:23:11 PST 2002  
+//   Kathleen Bonnell, Tue Mar 26 15:23:11 PST 2002
 //   Updated x for IsSelected(x) to match new ordering due to clearWindow flag.
 //
-//   Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002   
+//   Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
 //   Updated x for IsSelected(x) to match new ordering due to cellPoint
-//   internal member. 
+//   internal member.
 //
-//   Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002   
-//   Update new pickAtts member useNodeCoords, logicalCoords. 
+//   Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002
+//   Update new pickAtts member useNodeCoords, logicalCoords.
 //
 //   Brad Whitlock, Wed Aug 27 08:37:57 PDT 2003
 //   Made the window show itself if autoShow mode is on.
 //
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
-//   Don't clear the window if savePicks is checked. 
+//   Don't clear the window if savePicks is checked.
 //
-//   Kathleen Bonnell, Tue Nov 18 14:03:22 PST 2003 
-//   Update logicalZone. 
+//   Kathleen Bonnell, Tue Nov 18 14:03:22 PST 2003
+//   Update logicalZone.
 //
-//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
-//   More options, reordered old options. 
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003
+//   More options, reordered old options.
 //
-//   Kathleen Bonnell, Thu Apr  1 18:42:52 PST 2004 
-//   Added TimeCurve checkbox. 
+//   Kathleen Bonnell, Thu Apr  1 18:42:52 PST 2004
+//   Added TimeCurve checkbox.
 //
-//   Kathleen Bonnell, Wed Jun  9 09:41:15 PDT 2004 
-//   Added conciseOutput, showMeshName and showTimestep checkboxes. 
+//   Kathleen Bonnell, Wed Jun  9 09:41:15 PDT 2004
+//   Added conciseOutput, showMeshName and showTimestep checkboxes.
 //
-//   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004 
-//   Added 'displayGlobalIds'. 
+//   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004
+//   Added 'displayGlobalIds'.
 //
-//   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004 
-//   Added 'displayPickLetter'. 
+//   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004
+//   Added 'displayPickLetter'.
 //
 //   Hank Childs, Thu Aug 30 14:16:57 PDT 2007
 //   Added CreateSpreadsheet.
@@ -736,8 +714,8 @@ QvisPickWindow::UpdateWindow(bool doAll)
 //   Cyrus Harrison,  Mon Sep 17 15:15:47 PDT 2007
 //   Added floatFormat
 //
-//   Kathleen Bonnell, Fri Nov  9 14:00:27 PST 2007 
-//   Added timePreserveCoord and fixed some select numbers to match atts. 
+//   Kathleen Bonnell, Fri Nov  9 14:00:27 PST 2007
+//   Added timePreserveCoord and fixed some select numbers to match atts.
 //
 //   Brad Whitlock, Mon Dec 17 09:33:48 PST 2007
 //   Made it use ids.
@@ -753,7 +731,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
 //
 //   Alister Maguire, Thu Sep 28 15:06:20 PDT 2017
 //   If 'show pick highlights' is enabled, show the color
-//   setting button. Otherwise, hide it.  
+//   setting button. Otherwise, hide it.
 //
 // ****************************************************************************
 
@@ -782,7 +760,7 @@ QvisPickWindow::UpdateAll(bool doAll)
     if (pickAtts->IsSelected(PickAttributes::ID_pickLetter) ||
         pickAtts->IsSelected(PickAttributes::ID_clearWindow) || doAll)
     {
-        bool clearWindow = (savePicks ? false : 
+        bool clearWindow = (savePicks ? false :
                             pickAtts->GetClearWindow());
         // If autoShow mode is on, make sure that the window is showing.
         if(!doAll && autoShow && !isPosted &&
@@ -794,7 +772,7 @@ QvisPickWindow::UpdateAll(bool doAll)
         UpdatePage();
     }
 
-    //  If variables changes, 
+    //  If variables changes,
     //
     if (pickAtts->IsSelected(PickAttributes::ID_variables) || doAll)
     {
@@ -805,7 +783,7 @@ QvisPickWindow::UpdateAll(bool doAll)
            allVars2 += userVars[i];
            allVars2 += " ";
         }
-        varsLineEdit->setText(allVars2.c_str()); 
+        varsLineEdit->setText(allVars2.c_str());
     }
 
     // displayIncidentElements
@@ -814,7 +792,7 @@ QvisPickWindow::UpdateAll(bool doAll)
         displayIncEls->blockSignals(true);
         displayIncEls->setChecked(pickAtts->GetShowIncidentElements());
         displayIncEls->blockSignals(false);
- 
+
    }
     // showNodeId
     if (pickAtts->IsSelected(PickAttributes::ID_showNodeId) || doAll)
@@ -943,7 +921,7 @@ QvisPickWindow::UpdateAll(bool doAll)
         spreadsheetCheckBox->setChecked(pickAtts->GetCreateSpreadsheet());
         spreadsheetCheckBox->blockSignals(false);
     }
-    
+
     // floatFormat
     if (pickAtts->IsSelected(PickAttributes::ID_floatFormat) || doAll)
     {
@@ -972,16 +950,16 @@ QvisPickWindow::UpdateAll(bool doAll)
 // ****************************************************************************
 // Method: QvisPickWindow::UpdateTimeQueryOptions
 //
-// Purpose: 
+// Purpose:
 //   Sets the enabled state for the time options widget.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 26, 2011
 //
 // Modifications:
 //    Kathleen Biagas, Wed Jan 25 15:51:52 MST 2012
 //    Set enabled state of redoPickButton.
-//   
+//
 //    Kathleen Biagas, Wed Apr 11 19:16:26 PDT 2012
 //    Call UpdateState on timeOpts instead of setEnabled.
 //
@@ -1000,52 +978,52 @@ QvisPickWindow::UpdateTimeOptions()
 // ****************************************************************************
 // Method: QvisPickWindow::UpdatePage
 //
-// Purpose: 
+// Purpose:
 //   This method updates the nextPage on the tab widget to reflect changes made
 //   in the PickAttributes object that the window watches.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   December 3, 2001 
+// Creation:   December 3, 2001
 //
 // Modifications:
 //   Brad Whitlock, Fri Feb 15 17:26:05 PST 2002
 //   Changed the code so it uses more references instead of copies.
 //
-//   Kathleen Bonnell, Tue Mar 26 15:23:11 PST 2002   
+//   Kathleen Bonnell, Tue Mar 26 15:23:11 PST 2002
 //   Added call to ClearPages if flag is set.
 //
-//   Kathleen Bonnell, Thu Jun 27 14:37:29 PDT 2002 
-//   Changed the way that vars are inserted in the page. Set column mode to 1. 
+//   Kathleen Bonnell, Thu Jun 27 14:37:29 PDT 2002
+//   Changed the way that vars are inserted in the page. Set column mode to 1.
 //
-//   Kathleen Bonnell, Tue Jul 30 10:18:05 PDT 2002 
+//   Kathleen Bonnell, Tue Jul 30 10:18:05 PDT 2002
 //   Don't display domain number for single-domain problems, or z-coord for
-//   2d. 
+//   2d.
 //
-//   Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002  
+//   Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002
 //   Count number of items added, and use it for setRowMode. Added nodeCoords.
-//   
-//   Kathleen Bonnell, Thu Apr 17 15:34:45 PDT 2003  
-//   Use pickAtts.CellPoint (intead of pickAtts.PickPoint) for pick 
-//   intersection point.  Specify when the intersection point is in 
-//   transformed space. 
-//   
-//   Kathleen Bonnell, Wed Jun 25 13:45:04 PDT 2003 
+//
+//   Kathleen Bonnell, Thu Apr 17 15:34:45 PDT 2003
+//   Use pickAtts.CellPoint (intead of pickAtts.PickPoint) for pick
+//   intersection point.  Specify when the intersection point is in
+//   transformed space.
+//
+//   Kathleen Bonnell, Wed Jun 25 13:45:04 PDT 2003
 //   Reflect new naming convention in PickAttributes. Rework to support
 //   nodePick.
 //
 //   Brad Whitlock, Tue Sep 9 09:07:17 PDT 2003
 //   I made the infoLists be QTextEdits instead of QListWidgetes.
 //
-//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
-//   Don't clear window if savePicks is checked. 
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
+//   Don't clear window if savePicks is checked.
 //   Removed code that printed all the pickAtts info separately.  Code was here
-//   because "\n" did not play well with QListWidget.  Any time PickAttributes 
-//   changed, this code had to be updated as well.  Now simply use 
+//   because "\n" did not play well with QListWidget.  Any time PickAttributes
+//   changed, this code had to be updated as well.  Now simply use
 //   pickAtts->CreateOutputString.
-//   
-//   Kathleen Bonnell, Mon Oct 31 10:44:07 PST 2005 
-//   Use value in userMaxPickTabs for setting nextPage instead of 
-//   MAX_PICK_TABS. 
+//
+//   Kathleen Bonnell, Mon Oct 31 10:44:07 PST 2005
+//   Use value in userMaxPickTabs for setting nextPage instead of
+//   MAX_PICK_TABS.
 //
 //   Jonathan Byrd Mon Feb 4, 2013
 //   Record data concerning the latest pick in the pickRecord array
@@ -1070,7 +1048,7 @@ QvisPickWindow::UpdatePage()
     }
     else if (lastLetter != pickLetter && pickAtts->GetFulfilled())
     {
-        QString temp; 
+        QString temp;
         std::string displayString;
 
         // Change the tab heading.
@@ -1106,7 +1084,7 @@ QvisPickWindow::UpdatePage()
             {
                 if (info.GetVariableType() == "scalar" && values.size()==1)
                 {
-                    SNPRINTF(buff, 256, info.GetFloatFormat().c_str(), values[0]);
+                    snprintf(buff, 256, info.GetFloatFormat().c_str(), values[0]);
                 }
             }
         }
@@ -1122,7 +1100,7 @@ QvisPickWindow::UpdatePage()
 // ****************************************************************************
 // Method: QvisPickWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values for one or all of the lineEdit widgets.
 //
 // Arguments:
@@ -1133,14 +1111,14 @@ QvisPickWindow::UpdatePage()
 // Creation:   Mon Sep 25 15:11:42 PST 2000
 //
 // Modifications:
-//   Kathleen Bonnell, Tue Mar 26 14:03:24 PST 2002 
+//   Kathleen Bonnell, Tue Mar 26 14:03:24 PST 2002
 //   Improved parsing of the varsLineEdit text.
 //
-//   Kathleen Bonnell, Mon Oct 31 10:44:07 PST 2005 
+//   Kathleen Bonnell, Mon Oct 31 10:44:07 PST 2005
 //   Added call to ResizeTabs.
 //
 //   Cyrus Harrison, Thu Sep 13 12:21:05 PDT 2007
-//   Added logic for floaing point format string 
+//   Added logic for floaing point format string
 //
 //   Cyrus Harrison, Wed Sep 26 09:50:46 PDT 2007
 //   Added validation of the floating point format string.
@@ -1179,14 +1157,14 @@ QvisPickWindow::GetCurrentValues(int which_widget)
         stringVector userVars;
         temp = varsLineEdit->displayText().simplified();
         QStringList lst(temp.split(" "));
- 
+
         QStringList::Iterator it;
- 
+
         for (it = lst.begin(); it != lst.end(); ++it)
         {
             userVars.push_back((*it).toStdString());
         }
- 
+
         pickAtts->SetVariables(userVars);
     }
     if (which_widget == PickAttributes::ID_floatFormat || doAll)
@@ -1212,7 +1190,7 @@ QvisPickWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisPickWindow::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   This method saves the window's information to a DataNode tree.
 //
 // Arguments:
@@ -1224,8 +1202,8 @@ QvisPickWindow::GetCurrentValues(int which_widget)
 // Modifications:
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
 //   Added a node for savePicks.
-//   
-//   Kathleen Bonnell, Mon Oct 31 10:47:53 PST 2005 
+//
+//   Kathleen Bonnell, Mon Oct 31 10:47:53 PST 2005
 //   Added a node for userMaxTabs.
 //
 //   Brad Whitlock, Fri Jun  6 14:56:43 PDT 2008
@@ -1259,7 +1237,7 @@ QvisPickWindow::CreateNode(DataNode *parentNode)
 // ****************************************************************************
 // Method: QvisPickWindow::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   Reads window attributes from the DataNode representation of the config
 //   file.
 //
@@ -1272,13 +1250,13 @@ QvisPickWindow::CreateNode(DataNode *parentNode)
 // Modifications:
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
 //   Added a node for savePicks.
-//   
-//   Kathleen Bonnell, Mon Oct 31 10:47:53 PST 2005 
+//
+//   Kathleen Bonnell, Mon Oct 31 10:47:53 PST 2005
 //   Added a node for userMaxTabs.
-//   
-//   Katheen Bonnell, Thu Nov 29 15:35:15 PST 2007 
+//
+//   Katheen Bonnell, Thu Nov 29 15:35:15 PST 2007
 //   Added defaultAutoShow, defaultSavePicks, defaultNumTabs so that their
-//   counterparts can be 'reset' correclty from user-saved values when needed. 
+//   counterparts can be 'reset' correclty from user-saved values when needed.
 //
 //   Brad Whitlock, Fri Jun  6 14:56:56 PDT 2008
 //   Qt 4.
@@ -1315,7 +1293,7 @@ QvisPickWindow::SetFromNode(DataNode *parentNode, const int *borders)
     {
         activeOptionsTab = node->AsInt();
         if (activeOptionsTab < 0 || activeOptionsTab > 2)
-            activeOptionsTab = 0;    
+            activeOptionsTab = 0;
         // Show the appropriate page based on the activeOptionsTab setting.
         optionsTabWidget->blockSignals(true);
         optionsTabWidget->setCurrentIndex(activeOptionsTab);
@@ -1326,7 +1304,7 @@ QvisPickWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // ****************************************************************************
 // Method: QvisPickWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   This method applies the pick attributes and optionally tells
 //   the viewer to apply them.
 //
@@ -1339,10 +1317,10 @@ QvisPickWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // Creation:   Mon Sep 25 15:22:16 PST 2000
 //
 // Modifications:
-//   Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003 
+//   Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003
 //   Added call to viewer->SetPickAttributes.
 //
-//   Kathleen Bonnell, Tue Dec 28 16:17:23 PST 2004 
+//   Kathleen Bonnell, Tue Dec 28 16:17:23 PST 2004
 //   Set pickAtts fulfilled flag to  false so that obervers won't think
 //   that a pick has been performed and the results should be displayed.
 //
@@ -1374,11 +1352,11 @@ QvisPickWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisPickWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function to apply the pick attributes.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   December 3, 2001 
+// Creation:   December 3, 2001
 //
 // ****************************************************************************
 
@@ -1391,9 +1369,9 @@ QvisPickWindow::apply()
 // ****************************************************************************
 // Method: QvisPickWindow::variableProcessText
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function that propagates changes of the variable list to the
-//   pick attributes. 
+//   pick attributes.
 //
 // Programmer: Kathleen Bonnell
 // Creation:   ?
@@ -1410,8 +1388,8 @@ QvisPickWindow::variableProcessText()
 // ****************************************************************************
 // Method: QvisPickWindow::floatFormatProcessText
 //
-// Purpose: 
-//   Qt slot function that propagates changes of the floating point format 
+// Purpose:
+//   Qt slot function that propagates changes of the floating point format
 //   string to the pick attributes.
 //
 // Programmer: Cyrus Harrison
@@ -1429,12 +1407,12 @@ QvisPickWindow::floatFormatProcessText()
 // ****************************************************************************
 // Method: QvisPickWindow::ClearPages
 //
-// Purpose: 
-//   This method clears all the pages on the tab widget to reflect a 
+// Purpose:
+//   This method clears all the pages on the tab widget to reflect a
 //   clean-slate
 //
 // Programmer: Kathleen Bonnell
-// Creation:   March 25, 2002 
+// Creation:   March 25, 2002
 //
 // Modifications:
 //   Brad Whitlock, Fri Jun  6 14:48:04 PDT 2008
@@ -1458,7 +1436,7 @@ QvisPickWindow::ClearPages()
 // ****************************************************************************
 // Method: QvisPickWindow::autoShowToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the internal autoShow flag when the
 //   autoShow checkbox is toggled.
 //
@@ -1469,7 +1447,7 @@ QvisPickWindow::ClearPages()
 // Creation:   Wed Aug 27 08:46:20 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1482,18 +1460,18 @@ QvisPickWindow::autoShowToggled(bool val)
 // ****************************************************************************
 // Method: QvisPickWindow::savePicksToggled
 //
-// Purpose: 
-//   This is a Qt slot function that sets the internal savePicks flag when 
+// Purpose:
+//   This is a Qt slot function that sets the internal savePicks flag when
 //   the savePicks checkbox is toggled.
 //
 // Arguments:
 //   val : The new savePicks value.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   September 9, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   September 9, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1506,12 +1484,12 @@ QvisPickWindow::savePicksToggled(bool val)
 // ****************************************************************************
 // Method: QvisPickWindow::makeDefault
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function to make the current pick attributes
 //   the defaults.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   December 3, 2001 
+// Creation:   December 3, 2001
 //
 // ****************************************************************************
 
@@ -1528,15 +1506,15 @@ QvisPickWindow::makeDefault()
 // ****************************************************************************
 // Method: QvisPickWindow::reset
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function to reset the PickAttributes to the
 //   last applied values.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   December 3, 2001 
+// Creation:   December 3, 2001
 //
 // Modifications:
-//   Katheen Bonnell, Thu Nov 29 15:35:15 PST 2007 
+//   Katheen Bonnell, Thu Nov 29 15:35:15 PST 2007
 //   Allow 'autoShow', 'savePicks' and 'maxTabs' to be reset.
 //
 // ****************************************************************************
@@ -1544,22 +1522,22 @@ QvisPickWindow::makeDefault()
 void
 QvisPickWindow::reset()
 {
-    // Set the autoShow back to default 
+    // Set the autoShow back to default
     autoShow = defaultAutoShow;
     autoShowCheckBox->blockSignals(true);
     autoShowCheckBox->setChecked(autoShow);
     autoShowCheckBox->blockSignals(false);
 
-    // Set the max tabs back to default 
+    // Set the max tabs back to default
     userMaxPickTabs->setValue(defaultNumTabs);
     ResizeTabs();
 
-    // Set the "don't clear window" back to default 
+    // Set the "don't clear window" back to default
     savePicks = defaultSavePicks;
     savePicksCheckBox->blockSignals(true);
     savePicksCheckBox->setChecked(savePicks);
     savePicksCheckBox->blockSignals(false);
-    
+
 
     // Tell the viewer to reset the pick attributes to the last
     // applied values.
@@ -1573,16 +1551,16 @@ QvisPickWindow::reset()
 //
 // Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not the indicdent elements should be displayed. 
+//   or not the indicdent elements should be displayed.
 //
 // Arguments:
 //   val : The state of the toggle button.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 9, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   December 9, 2003
 //
 // ****************************************************************************
- 
+
 void
 QvisPickWindow::displayIncElsToggled(bool val)
 {
@@ -1596,16 +1574,16 @@ QvisPickWindow::displayIncElsToggled(bool val)
 //
 // Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not the node id should be displayed. 
+//   or not the node id should be displayed.
 //
 // Arguments:
 //   val : The state of the toggle button.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 9, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   December 9, 2003
 //
 // ****************************************************************************
- 
+
 void
 QvisPickWindow::nodeIdToggled(bool val)
 {
@@ -1618,16 +1596,16 @@ QvisPickWindow::nodeIdToggled(bool val)
 //
 // Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not the nodes' domain logical coordinates should be displayed. 
+//   or not the nodes' domain logical coordinates should be displayed.
 //
 // Arguments:
 //   val : The state of the toggle button.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 9, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   December 9, 2003
 //
 // ****************************************************************************
- 
+
 void
 QvisPickWindow::nodeDomLogToggled(bool val)
 {
@@ -1640,16 +1618,16 @@ QvisPickWindow::nodeDomLogToggled(bool val)
 //
 // Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not the nodes' block logical coordinates should be displayed. 
+//   or not the nodes' block logical coordinates should be displayed.
 //
 // Arguments:
 //   val : The state of the toggle button.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 9, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   December 9, 2003
 //
 // ****************************************************************************
- 
+
 void
 QvisPickWindow::nodeBlockLogToggled(bool val)
 {
@@ -1662,16 +1640,16 @@ QvisPickWindow::nodeBlockLogToggled(bool val)
 //
 // Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not the nodes' physical coordinates should be displayed. 
+//   or not the nodes' physical coordinates should be displayed.
 //
 // Arguments:
 //   val : The state of the toggle button.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 9, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   December 9, 2003
 //
 // ****************************************************************************
- 
+
 void
 QvisPickWindow::nodePhysicalToggled(bool val)
 {
@@ -1684,16 +1662,16 @@ QvisPickWindow::nodePhysicalToggled(bool val)
 //
 // Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not the zones' id should be displayed. 
+//   or not the zones' id should be displayed.
 //
 // Arguments:
 //   val : The state of the toggle button.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 9, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   December 9, 2003
 //
 // ****************************************************************************
- 
+
 void
 QvisPickWindow::zoneIdToggled(bool val)
 {
@@ -1706,16 +1684,16 @@ QvisPickWindow::zoneIdToggled(bool val)
 //
 // Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not the zone's domain logical coordinates should be displayed. 
+//   or not the zone's domain logical coordinates should be displayed.
 //
 // Arguments:
 //   val : The state of the toggle button.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 9, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   December 9, 2003
 //
 // ****************************************************************************
- 
+
 void
 QvisPickWindow::zoneDomLogToggled(bool val)
 {
@@ -1728,16 +1706,16 @@ QvisPickWindow::zoneDomLogToggled(bool val)
 //
 // Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not the zones' block logical coordinates should be displayed. 
+//   or not the zones' block logical coordinates should be displayed.
 //
 // Arguments:
 //   val : The state of the toggle button.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 9, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   December 9, 2003
 //
 // ****************************************************************************
- 
+
 void
 QvisPickWindow::zoneBlockLogToggled(bool val)
 {
@@ -1748,15 +1726,15 @@ QvisPickWindow::zoneBlockLogToggled(bool val)
 // ****************************************************************************
 // Method: QvisPickWindow::timeCurveToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
 //   or not the next pick should create a time curve.
 //
 // Arguments:
 //   val : The new timeCurve value.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   April 1, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   April 1, 2004
 //
 // Modifications:
 //   Kathleen Biagas, Fri Jan 13 14:40:28 PST 2012
@@ -1778,7 +1756,7 @@ QvisPickWindow::timeCurveToggled(bool val)
 // ****************************************************************************
 // Method: QvisPickWindow::spreadsheetToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
 //   or not the next pick should create a spreadsheet.
 //
@@ -1792,7 +1770,7 @@ QvisPickWindow::timeCurveToggled(bool val)
 //   Kathleen Biagas, Fri Jan 13 14:40:28 PST 2012
 //   Make do time-curve with next pick and create spreadsheet with next pick
 //   mutually exclusive.
-//   
+//
 // ****************************************************************************
 
 void
@@ -1808,18 +1786,18 @@ QvisPickWindow::spreadsheetToggled(bool val)
 // ****************************************************************************
 // Method: QvisPickWindow::conciseOutputToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
 //   or not the pick output should be printed in concise format.
 //
 // Arguments:
 //   val : The new conciseOutput value.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 9, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   June 9, 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1832,18 +1810,18 @@ QvisPickWindow::conciseOutputToggled(bool val)
 // ****************************************************************************
 // Method: QvisPickWindow::showMeshNameToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not the pick output should display the mesh name. 
+//   or not the pick output should display the mesh name.
 //
 // Arguments:
 //   val : The new showMeshName value.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 9, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   June 9, 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1856,18 +1834,18 @@ QvisPickWindow::showMeshNameToggled(bool val)
 // ****************************************************************************
 // Method: QvisPickWindow::showTimestepToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not the pick output should display the timestep. 
+//   or not the pick output should display the timestep.
 //
 // Arguments:
 //   val : The new showTimestep value.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 9, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   June 9, 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1882,7 +1860,7 @@ QvisPickWindow::showTimestepToggled(bool val)
 //
 // Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not the camera focus should swivel to the pick point. 
+//   or not the camera focus should swivel to the pick point.
 //
 // Arguments:
 //   val : The state of the toggle button.
@@ -1891,10 +1869,10 @@ QvisPickWindow::showTimestepToggled(bool val)
 // Creation:   Wed Aug  8 15:33:21 PDT 2018
 //
 // ****************************************************************************
- 
+
 void
 QvisPickWindow::swivelFocusToPickToggled(bool val)
-{   
+{
     pickAtts->SetSwivelFocusToPick(val);
     Apply();
 }
@@ -1902,7 +1880,7 @@ QvisPickWindow::swivelFocusToPickToggled(bool val)
 // ****************************************************************************
 // Method: QvisPickWindow::addPickVariable
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user selects a new
 //   pick variable.
 //
@@ -1913,7 +1891,7 @@ QvisPickWindow::swivelFocusToPickToggled(bool val)
 // Creation:   Fri Dec 10 09:57:14 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1935,16 +1913,16 @@ QvisPickWindow::addPickVariable(const QString &var)
 //
 // Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not globalIds should be displayed. 
+//   or not globalIds should be displayed.
 //
 // Arguments:
 //   val : The state of the toggle button.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 15, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   December 15, 2004
 //
 // ****************************************************************************
- 
+
 void
 QvisPickWindow::displayGlobalIdsToggled(bool val)
 {
@@ -1957,16 +1935,16 @@ QvisPickWindow::displayGlobalIdsToggled(bool val)
 //
 // Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not the pick letter should be displayed. 
+//   or not the pick letter should be displayed.
 //
 // Arguments:
 //   val : The state of the toggle button.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 15, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   December 15, 2004
 //
 // ****************************************************************************
- 
+
 void
 QvisPickWindow::displayPickLetterToggled(bool val)
 {
@@ -1979,19 +1957,19 @@ QvisPickWindow::displayPickLetterToggled(bool val)
 //
 // Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not the pick highlight should be displayed. 
+//   or not the pick highlight should be displayed.
 //
 // Arguments:
 //   val : The state of the toggle button.
 //
-// Programmer: Matt Larsen 
-// Creation:   Jul 18, 2016 
+// Programmer: Matt Larsen
+// Creation:   Jul 18, 2016
 //
 // ****************************************************************************
- 
+
 void
 QvisPickWindow::displayPickHighlightToggled(bool val)
-{   
+{
     pickAtts->SetShowPickHighlight(val);
     Apply();
 }
@@ -2000,18 +1978,18 @@ QvisPickWindow::displayPickHighlightToggled(bool val)
 // ****************************************************************************
 // Method: QvisPickWindow::preserveCoordActivated
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
-//   or not a time-curve pick should preserved the picked coordinates. 
+//   or not a time-curve pick should preserved the picked coordinates.
 //
 // Arguments:
 //   val : The new timePreserveCoord value.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   November 9, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   November 9, 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2024,7 +2002,7 @@ QvisPickWindow::preserveCoordActivated(int val)
 // ****************************************************************************
 // Method: QvisPickWindow::timeCurveTypeActivated
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the value indicating whether
 //   a time-curve pick will generate a curve with single-y axis (Curve plot)
 //   or multiple y axes (MultiCurve plot).
@@ -2032,11 +2010,11 @@ QvisPickWindow::preserveCoordActivated(int val)
 // Arguments:
 //   val : The new timeCurveType value.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   March 3, 2011 
+// Programmer: Kathleen Bonnell
+// Creation:   March 3, 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2052,10 +2030,10 @@ QvisPickWindow::timeCurveTypeActivated(int val)
 //
 // Purpose:
 //   Resizes the number of tab the resultsTabWidget hold based on the
-//   current value in userMaxPickTabs. 
+//   current value in userMaxPickTabs.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   October 31, 2005 
+// Programmer: Kathleen Bonnell
+// Creation:   October 31, 2005
 //
 // Modifications:
 //   Brad Whitlock, Fri Jun  6 14:50:19 PDT 2008
@@ -2088,16 +2066,16 @@ QvisPickWindow::ResizeTabs()
         if (nextPage >= newMax)
             nextPage = 0;
     }
-    else // newMax > currentMax 
+    else // newMax > currentMax
     {
         // Increase the number of pages that resultsTabWidget holds
         for (i = currentMax; i < newMax; i++)
         {
             pages[i]->show();
-            resultsTabWidget->addTab(pages[i]," "); 
+            resultsTabWidget->addTab(pages[i]," ");
         }
         if (resultsTabWidget->tabText(nextPage) != " ")
-            nextPage = currentMax; 
+            nextPage = currentMax;
     }
 }
 
@@ -2105,8 +2083,8 @@ QvisPickWindow::ResizeTabs()
 // ****************************************************************************
 // Method: QvisPickWindow::savePickText
 //
-// Purpose: 
-//   This is a Qt slot function that saves the pick text in a user 
+// Purpose:
+//   This is a Qt slot function that saves the pick text in a user
 //   selected file.
 //
 // Programmer: Ellen Tarwater
@@ -2120,8 +2098,8 @@ QvisPickWindow::ResizeTabs()
 //   Qt 4.
 //
 //   Kathleen Bonnell, Fri May 13 13:28:45 PDT 2011
-//   On Windows, explicitly test writeability of the 'cwd' before passing it 
-//   to getSaveFileName (eg don't present user with a place to save a file if 
+//   On Windows, explicitly test writeability of the 'cwd' before passing it
+//   to getSaveFileName (eg don't present user with a place to save a file if
 //   they cannot save there!)
 //
 //   Kathleen Biagas, Wed Oct 29 11:59:46 PDT 2014
@@ -2138,7 +2116,7 @@ QvisPickWindow::savePickText()
     QString defaultFile;
     defaultFile.sprintf("visit%04d", saveCount);
     defaultFile += saveExtension;
-    
+
     QString useDir;
     useDir = QDir::current().path();
 
@@ -2176,7 +2154,7 @@ QvisPickWindow::savePickText()
                     stream << resultsTabWidget->tabText(i).simplified()
                            << "\n" << txt << "\n";
             }
-   
+
             file.close();
         }
         else
@@ -2189,14 +2167,14 @@ QvisPickWindow::savePickText()
 // ****************************************************************************
 // Method: QvisPickWindow::clearPicks
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that clears the picks from the active window.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   November 29, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   November 29, 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2232,7 +2210,7 @@ QvisPickWindow::resetPickLetter()
 // Purpose:
 //    This is a Qt slot function that opens up a color picker
 //    and allows the user to change the color of the pick
-//    highlights. 
+//    highlights.
 //
 // Programmer: Alister Maguire
 // Creation: Sep 27, 2017
@@ -2240,17 +2218,17 @@ QvisPickWindow::resetPickLetter()
 // Modifications:
 //
 //    Alister Maguire, Thu Apr 26 10:59:22 PDT 2018
-//    Removed conversion to float. Range is now 0 - 255 int. 
+//    Removed conversion to float. Range is now 0 - 255 int.
 //
 //    Alister Maguire, Mon Aug 20 09:51:26 PDT 2018
-//    Show the currently selected color in the color picker. 
+//    Show the currently selected color in the color picker.
 //
 // ****************************************************************************
 
 void
 QvisPickWindow::setHighlightColor()
 {
-    int  *cRGB = pickAtts->GetPickHighlightColor(); 
+    int  *cRGB = pickAtts->GetPickHighlightColor();
     QColor cColor(cRGB[0], cRGB[1], cRGB[2]);
 
     QColor nColor = QColorDialog::getColor(cColor, this);
@@ -2266,7 +2244,7 @@ QvisPickWindow::setHighlightColor()
 // ****************************************************************************
 // Method: QvisPickWindow::redoPickClicked()
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that repeats the last pick.
 //
 // Programmer: Gunther H. Weber
@@ -2278,7 +2256,7 @@ QvisPickWindow::setHighlightColor()
 //
 // ****************************************************************************
 
-void 
+void
 QvisPickWindow::redoPickClicked()
 {
     // Save old state
@@ -2286,7 +2264,7 @@ QvisPickWindow::redoPickClicked()
     displayPickLetterSave = pickAtts->GetShowPickLetter();
     reusePickLetterSave = pickAtts->GetReusePickLetter();
 
-    // Do not display a new pick letter, do not advance pick letter, 
+    // Do not display a new pick letter, do not advance pick letter,
     // do not create a spreadsheet
     pickAtts->SetShowPickLetter(!pickAtts->GetDoTimeCurve());
     pickAtts->SetReusePickLetter(true);
@@ -2306,7 +2284,7 @@ QvisPickWindow::redoPickClicked()
 // ****************************************************************************
 // Method: QvisPickWindow::redoPickWithSpreadsheetClicked()
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that repeats the last pick to bring up a
 //   spreadsheet.
 //
@@ -2314,10 +2292,10 @@ QvisPickWindow::redoPickClicked()
 // Creation:   Fri Aug 15 10:52:49 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-void 
+void
 QvisPickWindow::redoPickWithSpreadsheetClicked()
 {
     // Save old state
@@ -2341,8 +2319,8 @@ QvisPickWindow::redoPickWithSpreadsheetClicked()
 // ****************************************************************************
 // Method: QvisPickWindow::redoPick()
 //
-// Purpose: 
-//   This is a Qt slot function that is called by the GUI after the 
+// Purpose:
+//   This is a Qt slot function that is called by the GUI after the
 //   PickAttributes change initiated by a redoPickClicked() or
 //   redoPickWithSpreadsheetClicked() method changed.
 //
@@ -2414,16 +2392,16 @@ QvisPickWindow::redoPick()
 // ****************************************************************************
 // Method: QvisPickWindow::restorePickAttributesAfterRepick()
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called by the GUI to restore the
 //   PickAttributes to their original values after a repeated pick operation
-//   is completed. 
+//   is completed.
 //
 // Programmer: Gunther H. Weber
 // Creation:   Fri Aug 15 10:52:49 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2440,13 +2418,13 @@ QvisPickWindow::restorePickAttributesAfterRepick()
 // ****************************************************************************
 // Method: QvisPickWindow::optionsTabSelected
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when options tabs are changed.
 //
 // Arguments:
 //   index : The new active tab.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 26, 2011
 //
 // Modifications:
@@ -2470,13 +2448,13 @@ QvisPickWindow::optionsTabSelected(int index)
 // ****************************************************************************
 // Method: QvisPickWindow::ConnectPlotList
 //
-// Purpose: 
+// Purpose:
 //   This method connects this window to the plotList.
 //
 // Arguments:
-//   pl        The plot list whichis being connected. 
+//   pl        The plot list whichis being connected.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 26, 2011
 //
 // Modifications:
@@ -2503,7 +2481,7 @@ QvisPickWindow::ConnectPlotList(PlotList *pl)
 // Arguments:
 //   TheRemovedSubject : A pointer to the subject being removed.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 26, 2011
 //
 // Modifications:

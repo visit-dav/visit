@@ -231,8 +231,11 @@ Definition:
 void
 MultiCurveViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MultiCurveViewerEnginePluginInfo::clientAtts  = new MultiCurveAttributes;
-    MultiCurveViewerEnginePluginInfo::defaultAtts = new MultiCurveAttributes;
+    if (MultiCurveViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        MultiCurveViewerEnginePluginInfo::clientAtts  = new MultiCurveAttributes;
+        MultiCurveViewerEnginePluginInfo::defaultAtts = new MultiCurveAttributes;
+    }
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);
@@ -313,7 +316,7 @@ MultiCurveViewerEnginePluginInfo::InitializeDefaultPalette(
     multiCurve->EnlargeMultiColor(16);
 }
 
-arget: xml2python
+Target: xml2python
 Code: PyMultiCurveAttributes_getattr
 Prefix:
 Postfix:

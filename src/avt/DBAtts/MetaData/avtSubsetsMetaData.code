@@ -69,17 +69,17 @@ avtSubsetsMetaData::Print(ostream &out, int indent) const
         {
             if (catCount > 51)
             {
-                Indent(out, indent+1); 
+                Indent(out, indent+1);
                 out << "." << endl;
             }
             if (catCount > 52)
             {
-                Indent(out, indent+1); 
+                Indent(out, indent+1);
                 out << "." << endl;
             }
             if (catCount > 53)
             {
-                Indent(out, indent+1); 
+                Indent(out, indent+1);
                 out << "." << endl;
             }
             for (int i = catCount-50; i < catCount; i++)
@@ -90,7 +90,7 @@ avtSubsetsMetaData::Print(ostream &out, int indent) const
                     out << " and color \"" << colorScheme[i] << "\"";
                 out << endl;
             }
-        } 
+        }
     }
 #endif
 
@@ -129,17 +129,17 @@ avtSubsetsMetaData::Print(ostream &out, int indent) const
         {
             if (graphEdges.size() > 102)
             {
-               Indent(out, indent+1); 
+               Indent(out, indent+1);
                out << "." << endl;
             }
             if (graphEdges.size() > 104)
             {
-               Indent(out, indent+1); 
+               Indent(out, indent+1);
                out << "." << endl;
             }
             if (graphEdges.size() > 106)
             {
-               Indent(out, indent+1); 
+               Indent(out, indent+1);
                out << "." << endl;
             }
             for (size_t i = graphEdges.size() - 100; i < graphEdges.size(); i += 2)

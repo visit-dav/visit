@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                           avtPseudocolorFilter.C                          //
@@ -52,11 +18,15 @@
 //
 //  Modifications:
 //
+//    Alister Maguire, Tue Jul 16 14:12:20 PDT 2019
+//    Added instantiation of mustRemoveFacesBeforeGhosts.
+//
 // ****************************************************************************
 
 avtPseudocolorFilter::avtPseudocolorFilter()
 {
     keepNodeZone = false;
+    mustRemoveFacesBeforeGhosts = false;
 }
 
 
@@ -80,14 +50,43 @@ avtPseudocolorFilter::~avtPseudocolorFilter()
 //
 //  Purpose:    Sets the PseudcolorAttributes needed for this filter.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   November 10, 2040 
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 10, 2004
+//
+//  Modifications:
+//
+//    Alister Maguire, Tue Jul 16 14:12:20 PDT 2019
+//    Check if we've entered or exited an opacity mode that allows
+//    for transparency. If so, we need to update the ghost/face removal
+//    flag.
 //
 // ****************************************************************************
 
 void
 avtPseudocolorFilter::SetPlotAtts(const PseudocolorAttributes *atts)
 {
+    PseudocolorAttributes::OpacityType newOpacType = atts->GetOpacityType();
+    PseudocolorAttributes::OpacityType oldOpacType = plotAtts.GetOpacityType();
+
+    if (newOpacType != PseudocolorAttributes::FullyOpaque &&
+        oldOpacType == PseudocolorAttributes::FullyOpaque)
+    {
+        //
+        // The user has turned on transparency. We must remove faces
+        // before ghosts to avoid rendering processor boundaries.
+        //
+        mustRemoveFacesBeforeGhosts = true;
+    }
+    else if (newOpacType == PseudocolorAttributes::FullyOpaque &&
+             oldOpacType != PseudocolorAttributes::FullyOpaque)
+    {
+        //
+        // Transparency is now off, so we can go back to the normal
+        // ghost/face removal process.
+        //
+        mustRemoveFacesBeforeGhosts = false;
+    }
+
     plotAtts = *atts;
 }
 
@@ -96,7 +95,7 @@ avtPseudocolorFilter::SetPlotAtts(const PseudocolorAttributes *atts)
 //  Method: avtPseudocolorFilter::ExecuteData
 //
 //  Purpose:
-//      Returns input. 
+//      Returns input.
 //
 //  Arguments:
 //      inDR      The input data representation.
@@ -125,13 +124,18 @@ avtPseudocolorFilter::ExecuteData(avtDataRepresentation *inDR)
 //  Purpose:  Sets flags in the pipeline.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   October 29, 2004 
+//  Creation:   October 29, 2004
 //
 //  Modifications:
 //    Kathleen Biagas, Fri Nov  2 10:23:11 PDT 2012
 //    Ensure primaryVariable is still the active var, use of expression for
 //    pointVar may have changed the active var.
-//  
+//
+//    Alister Maguire, Tue Jul 16 14:12:20 PDT 2019
+//    Added a call to SetRemoveFacesBeforeGhosts. When the user allows
+//    or disallows transparency, we need to toggle this flag so that
+//    processor boundaries are not rendered.
+//
 // ****************************************************************************
 
 void
@@ -147,23 +151,25 @@ avtPseudocolorFilter::UpdateDataObjectInfo(void)
     if( topoDim == 0 )
     {
       outAtts.SetKeepNodeZoneArrays(keepNodeZone);
-      
+
       if (!primaryVar.empty() && outAtts.ValidActiveVariable())
       {
         if (outAtts.GetVariableName() != primaryVar)
             outAtts.SetActiveVariable(primaryVar.c_str());
       }
     }
+
+    outAtts.SetForceRemoveFacesBeforeGhosts(mustRemoveFacesBeforeGhosts);
 }
 
 
 // ****************************************************************************
 //  Method: avtPseudocolorFilter::ModifyContract
 //
-//  Purpose:  Turns on Node/Zone numbers when appropriate. 
-// 
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 29, 2004 
+//  Purpose:  Turns on Node/Zone numbers when appropriate.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 29, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Jun 10 13:37:09 PDT 2005
@@ -179,6 +185,10 @@ avtPseudocolorFilter::UpdateDataObjectInfo(void)
 //    Eric Brugger, Wed Oct 26 09:23:35 PDT 2016
 //    I modified the plot to support independently setting the point style
 //    for the two end points of lines.
+//
+//    Kathleen Biagas, Wed Nov  6 15:19:01 PST 2019
+//    Cannot use topological dimension test for point/line settings.
+//    Dataset may be of mixed topology.
 //
 // ****************************************************************************
 
@@ -215,8 +225,7 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
     }
 
     // Point scaling by a secondary variable
-    if( (topoDim == 0 || (topoDim > 0 && plotAtts.GetRenderPoints())) &&
-        plotAtts.GetPointType() != Point &&
+    if( plotAtts.GetPointType() != Point &&
         plotAtts.GetPointType() != Sphere &&
         plotAtts.GetPointSizeVarEnabled() &&
         pointVar != "default" &&
@@ -229,9 +238,8 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
     }
 
     // Tube/Ribbon scaling by a secondary variable
-    if( (topoDim == 1 || (topoDim > 1 && plotAtts.GetRenderWireframe())) &&
-        (plotAtts.GetLineType() == PseudocolorAttributes::Tube || 
-         plotAtts.GetLineType() == PseudocolorAttributes::Ribbon) && 
+    if( (plotAtts.GetLineType() == PseudocolorAttributes::Tube ||
+         plotAtts.GetLineType() == PseudocolorAttributes::Ribbon) &&
         plotAtts.GetTubeRadiusVarEnabled() &&
         tubeRadiusVar != "default" &&
         tubeRadiusVar != "\0" &&
@@ -247,9 +255,8 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
     }
 
     // End Point scaling by a secondary variable
-    if( (topoDim == 1 || (topoDim > 1 && plotAtts.GetRenderWireframe())) &&
-        (plotAtts.GetTailStyle() != PseudocolorAttributes::None ||
-         plotAtts.GetHeadStyle() != PseudocolorAttributes::None) && 
+    if( (plotAtts.GetTailStyle() != PseudocolorAttributes::None ||
+         plotAtts.GetHeadStyle() != PseudocolorAttributes::None) &&
         plotAtts.GetEndPointRadiusVarEnabled() &&
         endPointRadiusVar != "default" &&
         endPointRadiusVar != "\0" &&
@@ -277,7 +284,7 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
           contract->GetDataRequest()->MayRequireNodes())
       {
         keepNodeZone = true;
-        
+
         if (data.ValidActiveVariable())
           {
             if (data.GetCentering() == AVT_NODECENT)
@@ -289,7 +296,7 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
                 rv->GetDataRequest()->TurnZoneNumbersOn();
             }
         }
-        else 
+        else
         {
             // canot determine variable centering, so turn on both
             // node numbers and zone numbers.

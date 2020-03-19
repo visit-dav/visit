@@ -3,6 +3,8 @@ PROJECT(MM5_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(MM5)
+
 SET(COMMON_SOURCES
 MM5PluginInfo.C
 MM5CommonPluginInfo.C

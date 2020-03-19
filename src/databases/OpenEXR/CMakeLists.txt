@@ -3,6 +3,8 @@ PROJECT(OpenEXR_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(OpenEXR)
+
 SET(COMMON_SOURCES
 OpenEXRPluginInfo.C
 OpenEXRCommonPluginInfo.C

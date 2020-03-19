@@ -15,11 +15,7 @@ function bv_mfem_disable
 
 function bv_mfem_depends_on
 {
-    local depends_on=""
-
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        depends_on="$depends_on zlib"
-    fi
+    local depends_on="zlib"
 
     if [[ "$DO_CONDUIT" == "yes" ]] ; then
         depends_on="$depends_on conduit"
@@ -30,12 +26,12 @@ function bv_mfem_depends_on
 
 function bv_mfem_info
 {
-    export MFEM_VERSION=${MFEM_VERSION:-"3.4"}
+    export MFEM_VERSION=${MFEM_VERSION:-"4.0"}
     export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
     export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
-    export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-3-4"}
-    export MFEM_MD5_CHECKSUM="59aff55ba3d7d7816cb3efbf84af7724"
-    export MFEM_SHA256_CHECKSUM="4e73e4fe0482636de3c5dc983cd395839a83cb16f6f509bd88b053e8b3858e05"
+    export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-0"}
+    export MFEM_MD5_CHECKSUM="acbc9ca4398f3cc19762abdc47654607"
+    export MFEM_SHA256_CHECKSUM="df5bdac798ea84a263979f6fbf79de9013e1c55562f95f98644c3edcacfbc727"
 }
 
 function bv_mfem_print
@@ -61,16 +57,7 @@ function bv_mfem_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR \${VISITHOME}/mfem/$MFEM_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
 
-        ZLIB_LIBDEP=""
-        if [[ "$DO_ZLIB" == "yes" ]] ; then
-            ZLIB_LIBDEP="\${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH}/lib z"
-        else
-            ZLIB_LIBDEP="/usr/lib z"
-            #moving global patch to have limited effect
-            if [[ -d /usr/lib/x86_64-linux-gnu ]]; then
-                ZLIB_LIBDEP="/usr/lib/x86_64-linux-gnu z"
-            fi
-        fi
+        ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
 
         CONDUIT_LIBDEP=""
         if [[ "$DO_CONDUIT" == "yes" ]] ; then
@@ -123,9 +110,7 @@ function build_mfem
 
     cd $MFEM_BUILD_DIR || error "Can't cd to mfem build dir."
 
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        ZLIBARG=-L${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib
-    fi
+    ZLIBARG=-L${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib
 
     MFEM_USE_CONDUIT=NO
 
@@ -140,6 +125,9 @@ function build_mfem
         fi
     fi
 
+    # Version 4.0 now requires c++11
+    CXXFLAGS="-std=c++11 ${CXXFLAGS}"
+
     #
     # Call configure
     #
@@ -153,7 +141,6 @@ function build_mfem
     #
     # Build mfem
     #
-
     info "Building mfem . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then

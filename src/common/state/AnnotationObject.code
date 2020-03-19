@@ -204,7 +204,7 @@ AnnotationObject::ProcessOldLegend(DataNode *searchNode, const char *configVersi
             n += 384;
             node->SetInt(n);
         }
-    
+
         // new numTics attribute, default setting is 5
     }
 
@@ -216,9 +216,9 @@ AnnotationObject::ProcessOldLegend(DataNode *searchNode, const char *configVersi
         options["numTicks"] = node->AsInt();
         searchNode->RemoveNode("intAttribute2");
     }
-    else // pre 2.0.0 
+    else // pre 2.0.0
     {
-        options["numTicks"] = 5; // default 
+        options["numTicks"] = 5; // default
     }
 
     node = searchNode->GetNode("intAttribute3");

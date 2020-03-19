@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include "XMLEdit.h"
 
@@ -97,13 +63,13 @@ XMLEdit::XMLEdit(const QString &file, QWidget *p)
 
     makefiletab = new XMLEditMakefile(this);
     tabs->addTab(makefiletab, tr("CMake"));
-   
+
     attributetab = new XMLEditAttribute(this);
     tabs->addTab(attributetab, tr("Attribute"));
-   
+
     enumstab = new XMLEditEnums(this);
     tabs->addTab(enumstab, tr("Enums"));
-    
+
     fieldstab = new XMLEditFields(this);
     tabs->addTab(fieldstab, tr("Fields"));
 
@@ -112,19 +78,19 @@ XMLEdit::XMLEdit(const QString &file, QWidget *p)
 
     constantstab = new XMLEditConstants(this);
     tabs->addTab(constantstab, tr("Constants"));
-   
+
     includestab = new XMLEditIncludes(this);
     tabs->addTab(includestab, tr("Includes"));
-    
+
     codetab = new XMLEditCode(this);
     tabs->addTab(codetab, tr("Code"));
-    
+
     connect(tabs, SIGNAL(currentChanged(int)),
             this, SLOT(updateTab(int)));
-            
+
     setCentralWidget(tabs);
     codeGenerationWindow = 0;
-    
+
     OpenFile(file);
 }
 
@@ -195,7 +161,7 @@ XMLEdit::saveAs()
 //  Method:  XMLEdit::save
 //
 //  Purpose:
-//    Menu callback: Save the file with its existing name, or prompt if 
+//    Menu callback: Save the file with its existing name, or prompt if
 //    it was still unnamed.
 //
 //  Programmer:  Jeremy Meredith
@@ -248,7 +214,7 @@ XMLEdit::OpenFile(const QString &file)
     constantstab->SetDocument(xmldoc);
     includestab->SetDocument(xmldoc);
     codetab->SetDocument(xmldoc);
-     
+
     plugintab->UpdateWindowContents();
     makefiletab->UpdateWindowContents();
     attributetab->UpdateWindowContents();
@@ -258,7 +224,7 @@ XMLEdit::OpenFile(const QString &file)
     constantstab->UpdateWindowContents();
     includestab->UpdateWindowContents();
     codetab->UpdateWindowContents();
-    
+
     setWindowTitle(tr("XMLEdit: %1").arg(file));
 }
 
@@ -332,8 +298,8 @@ XMLEdit::updateTab(int tab)
 // ****************************************************************************
 // Method: XMLEdit::generateCode
 //
-// Purpose: 
-//   Invokes the code generation window to call various XML tools on the 
+// Purpose:
+//   Invokes the code generation window to call various XML tools on the
 //   XML file that we saved.
 //
 // Programmer: Brad Whitlock

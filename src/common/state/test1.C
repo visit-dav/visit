@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <string>
 #include <AttributeSubject.h>
@@ -61,13 +27,13 @@ bool Run_Test5(bool verbose, int *subtest, int *nsubtests);
 // Purpose:
 //   Runs the test functions.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 8 16:31:14 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 int
@@ -105,7 +71,7 @@ main(int argc, char *argv[])
 /// Test 1 - simple types
 ///
 /// Notes:
-///    This test is designed to make sure that simple types can be 
+///    This test is designed to make sure that simple types can be
 ///    communicated properly.
 ///
 ///////////////////////////////////////////////////////////////////////////
@@ -124,7 +90,7 @@ public:\
 // Creation:   Wed Aug 9 14:15:55 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class Test1 : public AttributeSubject
@@ -202,7 +168,7 @@ public:
 // Creation:   Wed Aug 9 14:16:18 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class Test1Observer : public Observer
@@ -267,7 +233,7 @@ public:
 // Purpose:
 //   Tests to make sure that simple types can be communicated.
 //
-// Notes:      
+// Notes:
 //   This is done by setting values of the attributes in the
 //   AttributeGroup, writing to a BufferConnection and then trying
 //   to reconstruct the attributes in a different AttributeGroup.
@@ -276,7 +242,7 @@ public:
 // Creation:   Wed Aug 9 10:17:13 PDT 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 bool
@@ -374,7 +340,7 @@ public:\
 // Creation:   Wed Aug 9 14:17:03 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class Test2 : public AttributeSubject
@@ -433,7 +399,7 @@ public:
 
     void Reset()
     {
-        Init();   
+        Init();
         UnSelectAll();
     }
 
@@ -461,7 +427,7 @@ public:
 // Creation:   Wed Aug 9 14:18:24 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 template <class T>
 void
@@ -489,7 +455,7 @@ PrintArray(T *array, int len)
 // Creation:   Wed Aug 9 14:18:59 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class Test2Observer : public Observer
@@ -546,7 +512,7 @@ public:
 //   Tests to make sure that static sized lists of simple types can
 //   be communicated.
 //
-// Notes:      
+// Notes:
 //   This is done by setting values of the attributes in the
 //   AttributeGroup, writing to a BufferConnection and then trying
 //   to reconstruct the attributes in a different AttributeGroup.
@@ -555,7 +521,7 @@ public:
 // Creation:   Wed Aug 9 10:17:13 PDT 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 bool
@@ -656,7 +622,7 @@ public:\
 // Creation:   Wed Aug 9 14:19:36 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 template<class T>
@@ -683,7 +649,7 @@ CompareVector(const std::vector<T> &v1, const std::vector<T> &v2)
 // Creation:   Wed Aug 9 14:20:30 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class Test3 : public AttributeSubject
@@ -748,7 +714,7 @@ public:
 // Creation:   Wed Aug 9 14:26:04 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 template <class T>
@@ -776,7 +742,7 @@ PrintVector(const std::vector<T> &array)
 // Creation:   Wed Aug 9 14:26:40 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class Test3Observer : public Observer
@@ -832,7 +798,7 @@ public:
 // Purpose:
 //   Tests to make sure that vectors of simple types can be communicated.
 //
-// Notes:      
+// Notes:
 //   This is done by setting values of the attributes in the
 //   AttributeGroup, writing to a BufferConnection and then trying
 //   to reconstruct the attributes in a different AttributeGroup.
@@ -841,7 +807,7 @@ public:
 // Creation:   Wed Aug 9 10:17:13 PDT 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 bool
@@ -959,7 +925,7 @@ public:\
 // Creation:   Wed Aug 9 14:27:22 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class Test4Inner : public AttributeSubject
@@ -1021,7 +987,7 @@ public:
 // Creation:   Wed Aug 9 14:28:07 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class Test4 : public AttributeSubject
@@ -1082,7 +1048,7 @@ public:
 // Creation:   Wed Aug 9 14:28:40 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class Test4Observer : public Observer
@@ -1141,7 +1107,7 @@ public:
 // Purpose:
 //   Tests to make sure that nested types can be communicated.
 //
-// Notes:      
+// Notes:
 //   This is done by setting values of the attributes in the
 //   AttributeGroup, writing to a BufferConnection and then trying
 //   to reconstruct the attributes in a different AttributeGroup.
@@ -1150,7 +1116,7 @@ public:
 // Creation:   Wed Aug 9 10:17:13 PDT 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 bool
@@ -1284,7 +1250,7 @@ public:\
 // Creation:   Wed Aug 9 14:29:16 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class Test5Data : public AttributeSubject
@@ -1351,7 +1317,7 @@ public:
 // Creation:   Wed Aug 9 14:29:52 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 bool
@@ -1380,13 +1346,13 @@ CompareAttributeGroupVectors(const AttributeGroupVector &ag1,
 // Purpose:
 //   This class holds an AttributeGroupsVector of Test5Data objects.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Aug 9 14:30:42 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class Test5 : public AttributeSubject
@@ -1400,7 +1366,7 @@ public:
     {
         Select(1, (void *)&f_attr);
 
-        // Create a new Test5Data based on the one we passed in and 
+        // Create a new Test5Data based on the one we passed in and
         // then add it to the AttributeGroupVector
         Test5Data *n_data = new Test5Data(data);
         f_attr.push_back(n_data);
@@ -1410,7 +1376,7 @@ public:
     // a Test5Data object. This is required for an AttributeGroup
     // that contains an AttributeGroupVector. It is called to
     // make new elements when an AttributeGroupVector attribute
-    // must grow. The int parameter is the attrId of the 
+    // must grow. The int parameter is the attrId of the
     // AttributeGroupVector that is growing. Objects that are returned
     // should match the data type being stored in the AttributeGroupVector.
     //
@@ -1505,7 +1471,7 @@ operator << (ostream &os, const AttributeGroupVector &av)
 // Creation:   Wed Aug 9 14:35:20 PST 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 class Test5Observer : public Observer
@@ -1553,7 +1519,7 @@ public:
 //   Tests to make sure that a vector of AttributeGroups can be
 //   communicated.
 //
-// Notes:      
+// Notes:
 //   This is done by setting values of the attributes in the
 //   AttributeGroup, writing to a BufferConnection and then trying
 //   to reconstruct the attributes in a different AttributeGroup.
@@ -1562,7 +1528,7 @@ public:
 // Creation:   Wed Aug 9 10:17:13 PDT 2000
 //
 // Modifications:
-//   
+//
 // *******************************************************************
 
 bool

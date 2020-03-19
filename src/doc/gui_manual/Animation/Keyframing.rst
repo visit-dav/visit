@@ -15,6 +15,11 @@ animation progresses, you can make a slice plane move, you can make the view
 slowly change, etc. Keyframe animations allow for quite complex animation
 behavior.
 
+There is a
+`video tutorial <https://www.youtube.com/embed/tLm_3Vl9rLg?vq=720hd>`_
+that demonstrates the process of creating a
+keyframing animation and saving it as a movie.
+
 Keyframing Window
 ~~~~~~~~~~~~~~~~~
 

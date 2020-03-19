@@ -18,7 +18,7 @@ Definition:
 //   Jeremy Meredith, Thu Jan 12 13:28:49 EST 2012
 //   Some files, like curves, don't have expressions.  Don't assume
 //   we have any meshes in our file.
-//   
+//
 // ****************************************************************************
 #include <string.h>
 

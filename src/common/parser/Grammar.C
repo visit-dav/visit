@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include "Grammar.h"
 #include "Colors.h"
@@ -474,43 +440,9 @@ Grammar::Configure()
 void
 Grammar::WriteStateInitialization(const string &name, ostream &o)
 {
-    o << "/*****************************************************************************" << endl;
-    o << "*" << endl;
-    o << "* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC" << endl;
-    o << "* Produced at the Lawrence Livermore National Laboratory" << endl;
-    o << "* LLNL-CODE-442911" << endl;
-    o << "* All rights reserved." << endl;
-    o << "*" << endl;
-    o << "* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The" << endl;
-    o << "* full copyright notice is contained in the file COPYRIGHT located at the root" << endl;
-    o << "* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html." << endl;
-    o << "*" << endl;
-    o << "* Redistribution  and  use  in  source  and  binary  forms,  with  or  without" << endl;
-    o << "* modification, are permitted provided that the following conditions are met:" << endl;
-    o << "*" << endl;
-    o << "*  - Redistributions of  source code must  retain the above  copyright notice," << endl;
-    o << "*    this list of conditions and the disclaimer below." << endl;
-    o << "*  - Redistributions in binary form must reproduce the above copyright notice," << endl;
-    o << "*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the" << endl;
-    o << "*    documentation and/or other materials provided with the distribution." << endl;
-    o << "*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may" << endl;
-    o << "*    be used to endorse or promote products derived from this software without" << endl;
-    o << "*    specific prior written permission." << endl;
-    o << "*" << endl;
-    o << "* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS \"AS IS\"" << endl;
-    o << "* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE" << endl;
-    o << "* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE" << endl;
-    o << "* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY," << endl;
-    o << "* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY" << endl;
-    o << "* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL" << endl;
-    o << "* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR" << endl;
-    o << "* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER" << endl;
-    o << "* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT" << endl;
-    o << "* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY" << endl;
-    o << "* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH" << endl;
-    o << "* DAMAGE." << endl;
-    o << "*" << endl;
-    o << "*****************************************************************************/" << endl;
+    o << "// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt" << endl;
+    o << "// Project developers.  See the top-level LICENSE file for dates and other" << endl;
+    o << "// details.  No copyright assignment is required to contribute to VisIt." << endl;
     o << "" << endl;
 
     o << "//" << endl;

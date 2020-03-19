@@ -3,6 +3,8 @@ PROJECT(FT2_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(FT2)
+
 SET(COMMON_SOURCES
 FT2PluginInfo.C
 FT2CommonPluginInfo.C

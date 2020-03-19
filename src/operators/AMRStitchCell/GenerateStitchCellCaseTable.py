@@ -21,6 +21,11 @@
 #\/
 # z
 
+import sys
+
+if (sys.version_info > (3, 0)):
+    from functools import reduce
+
 rotXVtxPermutation = [ 4, 5, 1, 0, 7, 6, 2, 3 ]
 rotYVtxPermutation = [ 1, 5, 6, 2, 0, 4, 7, 3 ]
 rotZVtxPermutation = [ 3, 0, 1, 2, 7, 4, 5, 6 ]
@@ -112,8 +117,8 @@ while len(allCases) > 0:
     derivedCases = [ chainPermutations(perm, currCase) for perm in allVtxPermutations ]
     allCases = [ elem for elem in allCases if elem not in derivedCases ]
 
-print "***Base cases (%d):" % len(baseCases)
-print [ x for x in enumerate(baseCases) ]
+print("***Base cases (%d):" % len(baseCases))
+print([ x for x in enumerate(baseCases) ])
 
 def subCasesInXPossible(l):
    return (not l[0] or not l[3] or not l[4] or not l[7]) and l[0] == l[1] and l[3] == l[2] and l[4] == l[5] and l[7] == l[6]
@@ -144,20 +149,20 @@ def numSubCases(l):
    else:
        return 2 ** (boolToInt(subCasesInXPossible(l)) +  boolToInt(subCasesInYPossible(l)) + boolToInt(subCasesInZPossible(l)))
  
-print "***Number of subcases:"
+print("***Number of subcases:")
 numSubCasesForBaseCase = [numSubCases(case) for case in baseCases]
-print numSubCasesForBaseCase
+print(numSubCasesForBaseCase)
 
 allCases = [configForCase(i) for i in range(0, 256)]
 
 baseCaseForCase = [ x[0] for x in [ [baseCase[0] for baseCase in enumerate(baseCases) if (ac in [ chainPermutations(perm, baseCase[1]) for perm in allVtxPermutations ] ) ] for ac in allCases]]
 
-print "***Base case for case:"
-print baseCaseForCase 
+print("***Base case for case:")
+print(baseCaseForCase) 
 
-print "***Permutation of base case for case:"
+print("***Permutation of base case for case:")
 permForCase = [perm[0] for perm in  [[permutation[0] for permutation in enumerate(allVtxPermutations) if allCases[i] == chainPermutations(permutation[1], baseCases[baseCaseForCase[i]])] for i in range(0,256)]]
-print permForCase
+print(permForCase)
 
 baseCaseTesselations = [
     [ ], # Case 0 
@@ -214,7 +219,7 @@ def configForFaceCase(caseNo):
 
 for i in range(0, len(baseCaseTesselations)):
     if len(baseCaseTesselations[i]) != numSubCasesForBaseCase[i]:
-        print "Error: Number of tessleations does not match number of subcases for case %d" % i
+        print("Error: Number of tessleations does not match number of subcases for case %d" % i)
 
 faceBaseCaseAndShiftForCase = [ [ (x[1], x[2]) for x in  [ (derivedFaceCase(baseCase[1], shift), baseCase[0], shift)
 for baseCase in enumerate(faceBaseCases) for shift in range(0,4) ] if x[0] == configForFaceCase(faceCase) ][0] for faceCase in range(0,16)]
@@ -243,23 +248,23 @@ def checkTess(caseConfig, caseTess):
     l =sum([ [ normalizedFace([ cell[vtx] for vtx in face]) for face in facesForTessElementLen[len(cell)] ] for cell in caseTess ],[]) + [ normalizedFace(x[::-1]) for x in outerFaces(caseConfig) ]
     l1 = [ x for x in l if l.count(x) != 1 or  l.count(normalizedFace(x[::-1])) != 1 ]
     if len(l1) != 0:
-        print "Incorrect tesselation!"
-        print "Case configuration: ", caseConfig
-        print "Case tesselation: ", caseTess
-        print "Outer faces: ", [normalizedFace(x) for x in outerFaces(caseConfig)]
-        print "Tesselation boundary faces: ", sum([ [ normalizedFace([ cell[vtx] for vtx in face]) for face in facesForTessElementLen[len(cell)] ] for cell in caseTess ],[])
-        print "Leftover faces: ", l1
-        print "*********************"
+        print("Incorrect tesselation!")
+        print("Case configuration: ", caseConfig)
+        print("Case tesselation: ", caseTess)
+        print("Outer faces: ", [normalizedFace(x) for x in outerFaces(caseConfig)])
+        print("Tesselation boundary faces: ", sum([ [ normalizedFace([ cell[vtx] for vtx in face]) for face in facesForTessElementLen[len(cell)] ] for cell in caseTess ],[]))
+        print("Leftover faces: ", l1)
+        print("*********************")
 
 for i in range(1, len(baseCases)):
-   print "Checking base case tesselation %d" % i
+   print("Checking base case tesselation %d" % i)
    checkTess(baseCases[i], baseCaseTesselations[i][0])
 
 
 tesselations = [ [ applyPermutation(allInverseVtxPermutations[permForCase[caseNo]], baseCaseTesselations[baseCaseForCase[caseNo]][subCaseNo]) for subCaseNo in range(0, numSubCases(configForCase(caseNo))) ] for caseNo in range(0, 256) ] 
 #tesselations = [ [ [ baseCaseForCase[caseNo], subCaseNo ] for subCaseNo in range(0, numSubCases(configForCase(caseNo))) ] for caseNo in range(0, 256) ] 
 
-print configForCase(246)," ", baseCaseForCase[246], " ", permForCase[246], " ", allVtxPermutations[permForCase[246]], " ", allInverseVtxPermutations[permForCase[246]], " ", baseCaseTesselations[16], " ", tesselations[246]
+print(configForCase(246)," ", baseCaseForCase[246], " ", permForCase[246], " ", allVtxPermutations[permForCase[246]], " ", allInverseVtxPermutations[permForCase[246]], " ", baseCaseTesselations[16], " ", tesselations[246])
 def subCaseNumberAfterPermutation(caseNo, subCaseNo):
     l= fillRightToLen(numberToReverseBinaryList(subCaseNo), 3, 0)
     axisPerm = allAxisPermutations[permForCase[caseNo]]
@@ -278,7 +283,7 @@ tesselationCasesWithFourSubcases = [ x[0] for x in enumerate(baseCaseForCase) if
 for caseNo in tesselationCasesWithFourSubcases:
     newOrder = [ subCaseNumberAfterPermutation(caseNo, x) for x in range(0,4) ]
     tesselations[caseNo] = [ tesselations[caseNo][newOrder[i]] for i in range(0,4) ]
-    print "Case no.", caseNo, " config. ", configForCase(caseNo), " tesselations ", tesselations[caseNo]
+    print("Case no.", caseNo, " config. ", configForCase(caseNo), " tesselations ", tesselations[caseNo])
 
 tesselationList = []
 tesselationStart = []
@@ -290,9 +295,9 @@ for caseNo in range(0,256):
        tesselationList = tesselationList + delistify(tesselations[caseNo][subCaseNo]) + [ -1 ]
    tesselationStart[-1] = fillRightToLen(tesselationStart[-1], 4, -1)
 
-print "Checking tesselations for derived cases." 
+print("Checking tesselations for derived cases.") 
 for i in range(1, 256):
-    print "Checking tesselation for case %d derived from base case %d" % (i, baseCaseForCase[i])
+    print("Checking tesselation for case %d derived from base case %d" % (i, baseCaseForCase[i]))
     checkTess(configForCase(i), tesselations[i][0])
 
 implFile = open("AMRStitchCellTesselations3D.C", "w");

@@ -5,18 +5,18 @@ Definition:
 //  Method:  Line::SetPoint1
 //
 //  Purpose:
-//    A method to set the xyz values of point1. 
+//    A method to set the xyz values of point1.
 //
 //  Arguments:
 //    x,y,z   the coordinate
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    February 28, 2003 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    February 28, 2003
 //
 // ****************************************************************************
 
 void
-Line::SetPoint1(double x, double y, double z) 
+Line::SetPoint1(double x, double y, double z)
 {
     point1[0] = x;
     point1[1] = y;
@@ -31,18 +31,18 @@ Definition:
 //  Method:  Line::SetPoint2
 //
 //  Purpose:
-//    A method to set the xyz values of point2. 
+//    A method to set the xyz values of point2.
 //
 //  Arguments:
 //    x,y,z   the coordinate
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    February 28, 2003 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    February 28, 2003
 //
 // ****************************************************************************
 
 void
-Line::SetPoint2(double x, double y, double z) 
+Line::SetPoint2(double x, double y, double z)
 {
     point2[0] = x;
     point2[1] = y;

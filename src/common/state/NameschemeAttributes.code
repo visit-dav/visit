@@ -155,7 +155,7 @@ const char *NameschemeAttributes::GetName(int n) const
     // ensure 'n' is in correct range for it.
     if ((size_t)n < allExplicitNames.size())
         return allExplicitNames[n].c_str();
-        
+
     // Next, see if we have an explicit names map for this object.
     if (explicitIds.size())
     {
@@ -172,7 +172,7 @@ const char *NameschemeAttributes::GetName(int n) const
     static char tmpname[128];
     if (namescheme == "")
     {
-        SNPRINTF(tmpname, sizeof(tmpname), "unknown_name_%d", n);
+        snprintf(tmpname, sizeof(tmpname), "unknown_name_%d", n);
         return tmpname;
     }
 
@@ -189,7 +189,7 @@ const char *NameschemeAttributes::GetName(int n) const
         // it for this object. Create it now.
 
         // We could make this switch larger to accomodate a larger number
-        // of external array references. But, for now, we're setting a 
+        // of external array references. But, for now, we're setting a
         // limit at 4. If we want to increase it, we need to make sure the
         // cooresponding Namescheme class can support it.
         switch(externalArrayNames.size())
@@ -212,7 +212,7 @@ const char *NameschemeAttributes::GetName(int n) const
     if (retval && retval[0] != '\0') return retval;
 
     // Ok, we can't compute a name. Make one up.
-    SNPRINTF(tmpname, sizeof(tmpname), "unknown_name_%d", n);
+    snprintf(tmpname, sizeof(tmpname), "unknown_name_%d", n);
     return tmpname;
 }
 

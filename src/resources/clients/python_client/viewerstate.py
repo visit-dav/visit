@@ -5,7 +5,7 @@ global_viewerstate = None
 class Struct(object):
 
   def __init__(self):
-    for k, v in self.__data__.iteritems():
+    for k, v in self.__data__.items():
       if isinstance(v, dict):
         #setattr(self, str(k), Struct(str(k),v))
         #self.__dict__[str(k)] = Struct(str(k),v)
@@ -16,30 +16,49 @@ class Struct(object):
 
   def __repr__(self):
     return '{%s}' % str(', '.join('%s : %s' % (k, repr(v)) for
-      (k, v) in self.__dict__.iteritems()))
+      (k, v) in self.__dict__.items()))
 
   def __str__(self):
     return '%s' % str('\n'.join('%s = %s' % (k, repr(v)) for
-      (k, v) in self.__dict__.iteritems()))
+      (k, v) in self.__dict__.items()))
 
   def __setattr__(self,name,value):
-    if name in self.__dict__: 
-        if type(value) == type(self.__dict__[name]):
-            self.__dict__[name] = value
-        elif isinstance(value,(bool,int,long,float)) \
-             and isinstance(self.__dict__[name],(bool,int,long,float)):
-             if isinstance(self.__dict__[name],bool) : 
-                self.__dict__[name] = bool(value)
-             elif isinstance(self.__dict__[name],int) : 
-                self.__dict__[name] = int(value)
-             elif isinstance(self.__dict__[name],long) : 
-                self.__dict__[name] = long(value)
-             elif isinstance(self.__dict__[name],float) : 
-                self.__dict__[name] = float(value)
-             #if isinstance(self.__dict__[name],complex) : 
-             #   self.__dict__[name] = complex(value)
-        else:
-            raise ValueError("Types mismatch {0} and {1}".format(type(value),type(self.__dict__[name])))
+    if name in self.__dict__:
+        # python 3 path
+        if (sys.version_info > (3, 0)):
+            if type(value) == type(self.__dict__[name]):
+                self.__dict__[name] = value
+            elif isinstance(value,(bool,int,float)) \
+                 and isinstance(self.__dict__[name],(bool,int,float)):
+                 if isinstance(self.__dict__[name],bool) : 
+                    self.__dict__[name] = bool(value)
+                 elif isinstance(self.__dict__[name],int) : 
+                    self.__dict__[name] = int(value)
+                 elif isinstance(self.__dict__[name],int) : 
+                    self.__dict__[name] = int(value)
+                 elif isinstance(self.__dict__[name],float) : 
+                    self.__dict__[name] = float(value)
+                 #if isinstance(self.__dict__[name],complex) : 
+                 #   self.__dict__[name] = complex(value)
+            else:
+                raise ValueError("Types mismatch {0} and {1}".format(type(value),type(self.__dict__[name])))
+        else: # python 2 path (includes long)
+            if type(value) == type(self.__dict__[name]):
+                self.__dict__[name] = value
+            elif isinstance(value,(bool,int,long,float)) \
+                 and isinstance(self.__dict__[name],(bool,int,long,float)):
+                 if isinstance(self.__dict__[name],bool) : 
+                    self.__dict__[name] = bool(value)
+                 elif isinstance(self.__dict__[name],int) : 
+                    self.__dict__[name] = int(value)
+                 elif isinstance(self.__dict__[name],long) : 
+                    self.__dict__[name] = int(value)
+                 elif isinstance(self.__dict__[name],float) : 
+                    self.__dict__[name] = float(value)
+                 #if isinstance(self.__dict__[name],complex) : 
+                 #   self.__dict__[name] = complex(value)
+            else:
+                raise ValueError("Types mismatch {0} and {1}".format(type(value),type(self.__dict__[name])))
     else:
         raise RuntimeError("Unable to set unknown attribute: '{0}'".format(name))
 
@@ -63,7 +82,7 @@ class AttributeSubject:
 
     def dict2obj(self,typename,dictionary):
         obj = type(str(typename),(object,),dictionary)
-        for k, v in dictionary.iteritems():
+        for k, v in dictionary.items():
             if isinstance(v, dict):
                 setattr(obj,str(k), self.dict2obj(k,v))
             else:
@@ -84,14 +103,14 @@ class AttributeSubject:
             else:
                 self.data.update(updateState)
         except:
-            print self.typename, "failed to parse", updateState["contents"]
+            print(self.typename, "failed to parse", updateState["contents"])
 
         # tell all listeners of update
         try:
             for i in range(len(self.listeners)):
                 self.listeners[i](self)
         except:
-            print "updating listeners failed"
+            print("updating listeners failed")
 
     def sync(self):
         if self.obj is None:
@@ -128,17 +147,17 @@ class ViewerState:
     def notify(self,index,tag=""):
 
         if self.conn is None: 
-            print "No connection to send results"
+            print("No connection to send results")
             return
 
         if index < len(self.states):
             if tag != "" and tag != self.states[index].typename:
-                print "tags do not match", tag, " vs ", self.states[index].typename
+                print("tags do not match", tag, " vs ", self.states[index].typename)
                 return
             res = json.dumps(self.states[index].data)
             self.conn.send(res)
         else:
-            print "non-existent index: ", index, " tag = ", tag
+            print("non-existent index: ", index, " tag = ", tag)
 
     def update(self,inputState):
 

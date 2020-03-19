@@ -5,7 +5,7 @@ void
 PlotInfoAttributes::PrintSelf(ostream &os)
 {
     os << "Data:\n" ;
-    os << data.ToXML(); 
+    os << data.ToXML();
 }
 
 

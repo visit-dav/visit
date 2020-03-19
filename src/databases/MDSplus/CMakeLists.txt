@@ -3,6 +3,8 @@ PROJECT(MDSplus_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(MDSplus)
+
 SET(COMMON_SOURCES
 MDSplusPluginInfo.C
 MDSplusCommonPluginInfo.C

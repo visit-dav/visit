@@ -1,40 +1,6 @@
-// ***************************************************************************
-//
-// Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-// Produced at the Lawrence Livermore National Laboratory
-// LLNL-CODE-442911
-// All rights reserved.
-//
-// This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-// full copyright notice is contained in the file COPYRIGHT located at the root
-// of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-//
-// Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-// modification, are permitted provided that the following conditions are met:
-//
-//  - Redistributions of  source code must  retain the above  copyright notice,
-//    this list of conditions and the disclaimer below.
-//  - Redistributions in binary form must reproduce the above copyright notice,
-//    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-//    documentation and/or other materials provided with the distribution.
-//  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-//    be used to endorse or promote products derived from this software without
-//    specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-// ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-// LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-// DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-// CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-// LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-// OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ***************************************************************************
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 package llnl.visit;
 
@@ -52,7 +18,7 @@ import java.util.Vector;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class AnnotationObjectList extends AttributeSubject
@@ -235,13 +201,13 @@ public class AnnotationObjectList extends AttributeSubject
      * @param timeDisplay 0=All frames, 1=Frames for plot, 2=States for plot
      * @param visible Whether the annotation is visible.
      * @param rounded Whether the ends of the progress bar are rounded
-     * @param shaded Whether the progress bar is shaded 
+     * @param shaded Whether the progress bar is shaded
      */
-    public void SetTimeSliderOptions(String annotName, 
+    public void SetTimeSliderOptions(String annotName,
         double x, double y, double width, double height,
-        String label, String timeFormat, 
-        ColorAttribute startColor, ColorAttribute endColor, 
-        ColorAttribute textColor, boolean useForegroundColor, 
+        String label, String timeFormat,
+        ColorAttribute startColor, ColorAttribute endColor,
+        ColorAttribute textColor, boolean useForegroundColor,
         int timeDisplay,
         boolean visible, boolean rounded, boolean shaded)
     {
@@ -280,10 +246,10 @@ public class AnnotationObjectList extends AttributeSubject
      * @param shadow Whether the font has a shadow.
      * @param visible Whether the annotation is visible.
      */
-    public void SetText2DOptions(String annotName, 
+    public void SetText2DOptions(String annotName,
         double x, double y, double height,
-        String text, 
-        ColorAttribute textColor, boolean useForegroundColor, 
+        String text,
+        ColorAttribute textColor, boolean useForegroundColor,
         int fontFamily, boolean bold, boolean italic, boolean shadow,
         boolean visible)
     {
@@ -324,13 +290,13 @@ public class AnnotationObjectList extends AttributeSubject
      * @param useForegroundColor True to use the foreground color as the text color
      * @param visible Whether the annotation is visible.
      */
-    public void SetText3DOptions(String annotName, 
+    public void SetText3DOptions(String annotName,
         double x, double y, double z,
         String text,
         boolean heightMode, double fixedHeight, int relativeHeight,
         boolean facesCamera,
         double rotX, double rotY, double rotZ,
-        ColorAttribute textColor, boolean useForegroundColor, 
+        ColorAttribute textColor, boolean useForegroundColor,
         boolean visible)
     {
         AnnotationObject annot = GetAnnotation(annotName);
@@ -368,11 +334,11 @@ public class AnnotationObjectList extends AttributeSubject
      * @param useForegroundColor True to use the foreground color as the text color
      * @param visible Whether the annotation is visible.
      */
-    public void SetLine2DOptions(String annotName, 
+    public void SetLine2DOptions(String annotName,
         double x0, double y0, double x1, double y1,
         int lineWidth,
         int startArrow, int endArrow,
-        ColorAttribute color, boolean useForegroundColor, 
+        ColorAttribute color, boolean useForegroundColor,
         boolean visible)
     {
         AnnotationObject annot = GetAnnotation(annotName);
@@ -398,7 +364,7 @@ public class AnnotationObjectList extends AttributeSubject
      * @param x0 X location of the start point
      * @param y0 Y location of the start point
      * @param z0 Z location of the start point
-     * @param x1 X location of the end point 
+     * @param x1 X location of the end point
      * @param y1 Y location of the end point
      * @param z1 Z location of the end point
      * @param lineWidth Width of the line.
@@ -417,12 +383,12 @@ public class AnnotationObjectList extends AttributeSubject
      * @param useForegroundColor True to use the foreground color as the text color
      * @param visible Whether the annotation is visible.
      */
-    public void SetLine3DOptions(String annotName, 
+    public void SetLine3DOptions(String annotName,
         double x0, double y0, double z0, double x1, double y1, double z1,
         int lineWidth, int lineType, int tubeQuality, double tubeRadius,
         boolean arrow1, int arrow1Resolution, double arrow1Radius, double arrow1Height,
         boolean arrow2, int arrow2Resolution, double arrow2Radius, double arrow2Height,
-        ColorAttribute color, boolean useForegroundColor, 
+        ColorAttribute color, boolean useForegroundColor,
         boolean visible)
     {
         AnnotationObject annot = GetAnnotation(annotName);
@@ -465,11 +431,11 @@ public class AnnotationObjectList extends AttributeSubject
      * @param opacity Overal opacity of the image.
      * @param visible Whether the annotation is visible.
      */
-    public void SetImageOptions(String annotName, 
+    public void SetImageOptions(String annotName,
         String filename,
         double x, double y,
         double xScale, double yScale, boolean scalesLinked,
-        ColorAttribute transColor, boolean removeTransColor, 
+        ColorAttribute transColor, boolean removeTransColor,
         double opacity,
         boolean visible)
     {
@@ -482,8 +448,8 @@ public class AnnotationObjectList extends AttributeSubject
             annot.SetPosition(x, y, 0.);
             annot.SetPosition2(xScale * 100., yScale * 100., 0.);
             ColorAttribute c = new ColorAttribute(
-                transColor.Red(), 
-                transColor.Green(), 
+                transColor.Red(),
+                transColor.Green(),
                 transColor.Blue(),
                 (int)(opacity * 255.));
             annot.SetColor1(c);
@@ -509,10 +475,10 @@ public class AnnotationObjectList extends AttributeSubject
         int shifted = (1 << bit);
         int mask = ~shifted;
         int data = annot.GetIntAttribute1();
-        annot.SetIntAttribute1((data & mask) | (val ? shifted : 0)); 
+        annot.SetIntAttribute1((data & mask) | (val ? shifted : 0));
     }
 
-    public void SetLegendOptions(String annotName, 
+    public void SetLegendOptions(String annotName,
          boolean managePosition,
          double  x, double y,
          double  scaleX,
@@ -528,9 +494,9 @@ public class AnnotationObjectList extends AttributeSubject
          boolean minMaxInclusive,
          boolean drawValues,
          double fontHeight,
-         ColorAttribute textColor, boolean useForegroundColor, 
+         ColorAttribute textColor, boolean useForegroundColor,
          int fontFamily, boolean bold, boolean italic, boolean shadow,
-         boolean visible)      
+         boolean visible)
     {
         AnnotationObject annot = GetAnnotation(annotName);
         if(annot != null)

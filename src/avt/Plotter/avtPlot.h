@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                                   avtPlot.h                               //
@@ -109,8 +75,8 @@ class     MapNode;
 //    Brad Whitlock, Thu Jun 14 16:42:27 PST 2001
 //    Added the SetColorTable method that gets overridden in certain subclasses.
 //
-//    Kathleen Bonnell, Wed Jun 20 13:35:27 PDT 2001 
-//    Added avtGhostZoneFilter. 
+//    Kathleen Bonnell, Wed Jun 20 13:35:27 PDT 2001
+//    Added avtGhostZoneFilter.
 //
 //    Kathleen Bonnell, Fri Jul 20 07:26:55 PDT 2001
 //    Added ghostZoneAndFacelistFilter, removed facelistFilter, ghostZoneFilter.
@@ -122,15 +88,15 @@ class     MapNode;
 //    Removed the SIL restriction argument from NeedsRecalculation.  Added
 //    the method GetCurrentSILRestriction.
 //
-//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 200 
-//    Added method CompactTree, and filter avtCompactTreeFilter. 
-//    
-//    Kathleen Bonnell, Wed Sep 26 15:36:14 PDT 2001 
-//    Added virtual methods SetBackgroundColor, SetForegroundColor. 
-//    
-//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001 
+//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 200
+//    Added method CompactTree, and filter avtCompactTreeFilter.
+//
+//    Kathleen Bonnell, Wed Sep 26 15:36:14 PDT 2001
+//    Added virtual methods SetBackgroundColor, SetForegroundColor.
+//
+//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001
 //    Added method SetCurrentExtents, member currentExtentFilter.
-//    
+//
 //    Jeremy Meredith, Thu Nov  8 11:07:22 PST 2001
 //    Added Equivalent and ReleaseData.
 //    Added WindowAttributes to the engine's Execute method.
@@ -144,18 +110,18 @@ class     MapNode;
 //    Hank Childs, Mon Dec 31 11:36:28 PST 2001
 //    Added vertex normals.
 //
-//    Kathleen Bonnell, Fri Jul 12 18:42:11 PDT 2002 
-//    Added hook to retrieve a plot's decorations mapper. 
+//    Kathleen Bonnell, Fri Jul 12 18:42:11 PDT 2002
+//    Added hook to retrieve a plot's decorations mapper.
 //
-//    Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002  
+//    Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002
 //    Added intermediateDataObject, which is a copy of the data in the pipeline
 //    before "ReduceGeometry" occurs.   Used by Queries.
 //
-//    Kathleen Bonnell, Tue Oct 22 08:41:29 PDT 2002  
-//    Added method ApplyRenderingTransformation, in order to split 
+//    Kathleen Bonnell, Tue Oct 22 08:41:29 PDT 2002
+//    Added method ApplyRenderingTransformation, in order to split
 //    ApplyOperators into two methods.  If a plot should be query-able, the
-//    output from ApplyOperators will yield a queryable object. 
-//    
+//    output from ApplyOperators will yield a queryable object.
+//
 //    Jeremy Meredith, Tue Dec 10 09:05:11 PST 2002
 //    Added virtual GetSmoothingLevel function.
 //
@@ -165,15 +131,15 @@ class     MapNode;
 //    actually implement the Execute methods. The public methods are unchanged
 //    externally but have become wrappers that call the protected equivalents.
 //
-//    Kathleen Bonnell, Tue Mar 25 11:18:43 PST 2003 
-//    Renamed GetTransformedPoints to RequiresReExecuteForQuery. 
+//    Kathleen Bonnell, Tue Mar 25 11:18:43 PST 2003
+//    Renamed GetTransformedPoints to RequiresReExecuteForQuery.
 //
 //    Jeremy Meredith, Wed Aug 13 16:33:21 PDT 2003
 //    Made the vertex normals filter be a pointer to the subclass so I could
 //    access methods not in avtDatasetToDatasetFilter.
 //
 //    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003
-//    Added SetOpaqueMeshIsAppropriate. 
+//    Added SetOpaqueMeshIsAppropriate.
 //
 //    Eric Brugger, Fri Mar 19 15:46:52 PST 2004
 //    Added Set/GetDataExtents.
@@ -181,8 +147,8 @@ class     MapNode;
 //    Mark C. Miller, Wed Mar 24 19:23:21 PST 2004
 //    Added AttributesDependOnDatabaseMetaData
 //
-//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
-//    Added bool args to RequiresReExecuteForQuery. 
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004
+//    Added bool args to RequiresReExecuteForQuery.
 //
 //    Brad Whitlock, Tue Jul 20 16:10:25 PST 2004
 //    Added variable units.
@@ -194,15 +160,15 @@ class     MapNode;
 //    Made GetCellCountMultiplierForSRThreshold non-virtual
 //    Added SetCellCountMultiplierForSRThreshold
 //
-//    Kathleen Bonnell, Tue Aug 24 16:12:03 PDT 2004 
-//    Added avtMeshType arg to SetOpaqueMeshIsAppropriate. 
+//    Kathleen Bonnell, Tue Aug 24 16:12:03 PDT 2004
+//    Added avtMeshType arg to SetOpaqueMeshIsAppropriate.
 //
-//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004 
+//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004
 //    Added meshType as a member of this class, removed MeshType arg from
-//    SetOpaqueMeshIsAppropriate. 
+//    SetOpaqueMeshIsAppropriate.
 //
-//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004 
-//    Removed meshType, added topologicalDim and SpatialDim. 
+//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004
+//    Removed meshType, added topologicalDim and SpatialDim.
 //
 //    Hank Childs, Wed Nov 24 16:39:52 PST 2004
 //    Added virtual functions PlotIsImageBased and ImageExecute.
@@ -218,8 +184,8 @@ class     MapNode;
 //    Kathleen Bonnell Tue Jun 20 16:02:38 PDT 2006
 //    Added GetPlotInfoAtts.
 //
-//    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007 
-//    To facilitate log-views, added avtMeshLogFilter, SetScaleMode, 
+//    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007
+//    To facilitate log-views, added avtMeshLogFilter, SetScaleMode,
 //    xScaleMode, yScaleMode, havePerformedLogX, havePerformedLogY.
 //
 //    Kathleen Bonnell,  Tue Apr  3 16:06:54 PDT 2007
@@ -229,11 +195,11 @@ class     MapNode;
 //    Gunther H. Weber, Thu Apr 12 10:48:17 PDT 2007
 //    Added GetFilterForTopOfPipeline()
 //
-//    Kathleen Bonnell,  Wed May  9 16:58:50 PDT 2007 
+//    Kathleen Bonnell,  Wed May  9 16:58:50 PDT 2007
 //    Added WindowMode arg to SetScaleMode. Added virtual method
 //    CanDo2DViewScaling.
 //
-//    Kathleen Bonnell, Tue Sep 25 07:57:01 PDT 2007 
+//    Kathleen Bonnell, Tue Sep 25 07:57:01 PDT 2007
 //    Removed unused method GetScaleMode, added separate scale modes for 2D
 //    and curve.  Added ScaleModeRequiresUpdate.
 //
@@ -251,7 +217,7 @@ class     MapNode;
 //    I renamed a method that returns the plot info atts.
 //
 //    Kathleen Bonnell, Mon Mar  2 16:29:09 PST 2009
-//    Removed CanDoCurveViewScaling, CanDo2DViewScaling (moved into 
+//    Removed CanDoCurveViewScaling, CanDo2DViewScaling (moved into
 //    ViewerPlotPluginInfo)
 //
 //    Hank Childs, Mon Apr  6 14:05:10 PDT 2009
@@ -279,11 +245,17 @@ class     MapNode;
 //    Kathleen Biagas, Thu Apr 13 10:42:01 PDT 2017
 //    Make GetMapper return an avtMapperBase.
 //
+//    Kathleen Biagas, Thu Oct 31 12:23:09 PDT 2019
+//    Added PlotHasBeenGlyphed, default return false so derived types don't
+//    have to define.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
 {
   public:
+    static int                 instanceCount;
+
                                avtPlot();
     virtual                   ~avtPlot();
 
@@ -295,16 +267,16 @@ class PLOTTER_API avtPlot
     avtActor_p                 Execute(avtDataObjectReader_p);
     avtActor_p                 Execute(avtDataObjectReader_p, avtDataObject_p dob);
 
-    virtual bool               PlotIsImageBased(void) { return false; };
+    virtual bool               PlotIsImageBased(void) { return false; }
     virtual int                GetNumberOfStagesForImageBasedPlot(
                                        const WindowAttributes &) const
-                                       { return 0; };
+                                       { return 0; }
     virtual avtImage_p         ImageExecute(avtImage_p img,
-                                            const WindowAttributes &) 
-                                    { return img; };
+                                            const WindowAttributes &)
+                                    { return img; }
 
     virtual bool               Equivalent(const AttributeGroup *)
-                                            { return false; };
+                                            { return false; }
     virtual void               ReleaseData(void);
 
     virtual void               SetAtts(const AttributeGroup*) = 0;
@@ -321,7 +293,7 @@ class PLOTTER_API avtPlot
     bool                       NeedsRecalculation(void);
 
     virtual bool               AttributesDependOnDatabaseMetaData(void)
-                                   { return false; };
+                                   { return false; }
 
     virtual bool               SetColorTable(const char *ctName);
     void                       SetCurrentSILRestriction(avtSILRestriction_p);
@@ -330,36 +302,40 @@ class PLOTTER_API avtPlot
     virtual bool               SetBackgroundColor(const double *);
     virtual bool               SetForegroundColor(const double *);
 
-    void                       SetIndex(int ind) { index = ind; };
+    void                       SetIndex(int ind) { index = ind; }
 
-    bool                       RequiresReExecuteForQuery(const bool, const bool); 
-    avtDataObject_p            GetIntermediateDataObject(void) 
-                                  { return intermediateDataObject; };
+    bool                       RequiresReExecuteForQuery(const bool, const bool);
+    avtDataObject_p            GetIntermediateDataObject(void)
+                                  { return intermediateDataObject; }
     virtual avtMapperBase     *GetMapper(void) = 0;
-    virtual bool               CanCacheWriterExternally(void) { return true; } 
-    virtual bool               ManagesOwnTransparency(void) { return false; };
-    virtual const AttributeSubject 
+    virtual bool               CanCacheWriterExternally(void) { return true; }
+    virtual bool               ManagesOwnTransparency(void) { return false; }
+    virtual const AttributeSubject
                               *SetOpaqueMeshIsAppropriate(bool)
-                                   { return NULL; };
+                                   { return NULL; }
     float                      GetCellCountMultiplierForSRThreshold() const;
-    const PlotInfoAttributes  &GetPlotInformation() const; 
+    const PlotInfoAttributes  &GetPlotInformation() const;
 
     bool                       SetScaleMode(ScaleMode, ScaleMode, WINDOW_MODE);
     bool                       ScaleModeRequiresUpdate(WINDOW_MODE, ScaleMode,
                                                        ScaleMode rs);
-    virtual bool               NeedZBufferToCompositeEvenIn2D(void) 
-                                                          { return false; };
-    virtual void               RegisterNamedSelection(const std::string &) {;};
+    virtual bool               NeedZBufferToCompositeEvenIn2D(void)
+                                                          { return false; }
+    virtual void               RegisterNamedSelection(const std::string &) {;}
 
     virtual avtFilter         *GetFilterForTopOfPipeline() { return 0; }
 
     virtual bool               CompatibleWithCumulativeQuery() const { return true; }
-  
+
     virtual const MapNode&     GetExtraInfoForPick(void);
     virtual avtContract_p      ModifyContract(avtContract_p c0) { return EnhanceSpecification(c0); }
+
+    virtual bool               PlotHasBeenGlyphed() { return false; }
+
   protected:
     bool                       needsRecalculation;
     int                        index;
+    int                        instanceIndex;
     int                        spatialDim;
     int                        topologicalDim;
     avtActor_p                 actor;
@@ -384,7 +360,7 @@ class PLOTTER_API avtPlot
     virtual avtLegend_p        GetLegend(void) = 0;
 
     virtual int                GetSmoothingLevel() { return 0; }
-    virtual bool               UtilizeRenderingFilters(void) { return true; };
+    virtual bool               UtilizeRenderingFilters(void) { return true; }
 
     virtual int                TargetTopologicalDimension(void) = 0;
 
@@ -399,7 +375,7 @@ class PLOTTER_API avtPlot
 
     virtual avtContract_p
                                EnhanceSpecification(avtContract_p);
-    virtual avtDecorationsMapper         
+    virtual avtDecorationsMapper
                                *GetDecorationsMapper(void);
 
     virtual void               SetCellCountMultiplierForSRThreshold(
@@ -422,35 +398,35 @@ typedef ref_ptr<avtPlot> avtPlot_p;
 class PLOTTER_API avtImageDataPlot : public avtPlot
 {
   public:
-    virtual int          TargetTopologicalDimension(void) { return -1; };
+    virtual int          TargetTopologicalDimension(void) { return -1; }
 };
 
 
 class PLOTTER_API avtPointDataPlot : public avtPlot
 {
   public:
-    virtual int          TargetTopologicalDimension(void) { return 0; };
+    virtual int          TargetTopologicalDimension(void) { return 0; }
 };
 
 
 class PLOTTER_API avtLineDataPlot : public avtPlot
 {
   public:
-    virtual int          TargetTopologicalDimension(void) { return 1; };
+    virtual int          TargetTopologicalDimension(void) { return 1; }
 };
 
 
 class PLOTTER_API avtSurfaceDataPlot : public avtPlot
 {
   public:
-    virtual int          TargetTopologicalDimension(void) { return 2; };
+    virtual int          TargetTopologicalDimension(void) { return 2; }
 };
 
 
 class PLOTTER_API avtVolumeDataPlot : public avtPlot
 {
   public:
-    virtual int          TargetTopologicalDimension(void) { return 3; };
+    virtual int          TargetTopologicalDimension(void) { return 3; }
 };
 
 

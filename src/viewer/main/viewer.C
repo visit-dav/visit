@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                                 viewer.C                                  //
@@ -152,6 +118,15 @@ Viewer_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QS
 //    files. The GUI has the sole responsiblity for removing the crash
 //    session files on exit.
 //
+//    Kevin Griffin, Wed Oct 23 14:28:32 PDT 2019
+//    The GUIenabled flag was removed from the QApplication constructor which
+//    was used to trigger 'nowin' mode that allowed the VisIt CLI to run
+//    without a window system. To get the same effect, instantiating a plain
+//    QCoreApplication is done when nowin mode is set.
+//
+//    Eric Brugger, Wed Nov 27 14:35:58 PST 2019
+//    Added delete of argv2 and mainApp to clean up memory before exiting.
+//
 // ****************************************************************************
 
 int
@@ -198,7 +173,7 @@ ViewerMain(int argc, char *argv[])
 // Instead of being exclusionary, should the check insted be
 // #if defined(Q_OS_LINUX) ??
 #if !defined(_WIN32) && !defined(Q_OS_MAC)
-        if (viewer.GetNowinMode())
+        if(viewer.GetNowinMode())
         {
             // really only need this if X11 not running, but how to test?
             add_platform_arg = true;
@@ -220,7 +195,7 @@ ViewerMain(int argc, char *argv[])
         argv2[real_argc+1] = (char*)viewer.State()->GetAppearanceAttributes()->GetFontName().c_str();
         argv2[real_argc+2] = (char*)"-name";
         argv2[real_argc+3] = (char*)"visit-viewer";
-        if (add_platform_arg)
+        if(add_platform_arg)
         {
             argv2[real_argc+4] = (char*)"-platform";
             argv2[real_argc+5] = (char*)"minimal";
@@ -237,7 +212,15 @@ ViewerMain(int argc, char *argv[])
         surfaceFormat.setAlphaBufferSize(0);
         QSurfaceFormat::setDefaultFormat(surfaceFormat);
 
-        QApplication *mainApp = new QApplication(argc2, argv2, !viewer.GetNowinMode());
+        QCoreApplication *mainApp = NULL;
+        if(viewer.GetNowinMode())
+        {
+            mainApp = new QCoreApplication(argc2, argv2);
+        }
+        else
+        {
+            mainApp = new QApplication(argc2, argv2);
+        }
 
         //
         // Now that we've created the QApplication, let's call the viewer's
@@ -277,6 +260,10 @@ ViewerMain(int argc, char *argv[])
             }
             ENDTRY
         }
+#ifdef DEBUG_MEMORY_LEAKS
+        delete mainApp;
+        delete [] argv2;
+#endif
     }
     CATCH2(VisItException, e)
     {

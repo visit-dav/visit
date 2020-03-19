@@ -87,7 +87,7 @@ FileOpenOptions::MergeNewFromPluginInfo(const DBPluginInfoAttributes *dbinfo)
                     // If we get here, it means the option is defined
                     // in the config file but is NOT defined by the plugin.
                     // and probably never has been defined by the plugin at
-                    // any time in the past. 
+                    // any time in the past.
                     //
                     debug1 << "Got unknown option \"" << optname
                            << "\" from config file for plugin \"" << id

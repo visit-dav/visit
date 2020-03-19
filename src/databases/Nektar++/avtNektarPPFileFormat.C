@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtNektarPPFileFormat.C                        //
@@ -273,6 +239,16 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
     EXCEPTION1( FileDoesNotExistException, m_meshFile.c_str() );
   }
 
+  char *argv[2];
+  argv[0] = new char[1];
+  argv[1] = new char[m_meshFile.size()+1];
+  strcpy(argv[1], m_meshFile.c_str());
+
+  m_vSession = LibUtilities::SessionReader::CreateInstance(2, argv);
+
+  delete argv[0];
+  delete argv[1];
+
   // Get the Nektar++ field file for the time slice and the variables.
   if( m_fieldFile.size() )
   {
@@ -484,7 +460,8 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
     //----------------------------------------------
     // Read in mesh from input file
     SpatialDomains::MeshGraphSharedPtr graphShPt =
-      SpatialDomains::MeshGraph::Read(m_meshFile);
+      // SpatialDomains::MeshGraph::Read(m_meshFile);
+      SpatialDomains::MeshGraph::Read(m_vSession);
     //----------------------------------------------
 
     m_nElements = graphShPt->GetExpansions().size();
@@ -521,7 +498,7 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
       nElements = 0;
 
       SpatialDomains::ExpansionMap emap = graphShPt->GetExpansions();
-      SpatialDomains::ExpansionMapIter it;
+      std::map<int,SpatialDomains::ExpansionShPtr>::iterator it;
     
       for (it = emap.begin(); it != emap.end(); ++it)
       {
@@ -571,7 +548,7 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
     if( topological_dimension == 2 )
       extents[4] = extents[5] = 0;
 
-    const SpatialDomains::PointGeomMap& ptIds = graphShPt->GetVertSet();
+    const SpatialDomains::PointGeomMap& ptIds = graphShPt->GetAllPointGeoms();
     SpatialDomains::PointGeomMap::const_iterator ptIdsIt;
 
     for (ptIdsIt = ptIds.begin(); ptIdsIt != ptIds.end(); ++ptIdsIt)
@@ -712,7 +689,8 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
     //----------------------------------------------
     // Read in the vertrices from input mesh file
     SpatialDomains::MeshGraphSharedPtr graphShPt =
-      SpatialDomains::MeshGraph::Read(m_meshFile);
+      // SpatialDomains::MeshGraph::Read(m_meshFile);
+      SpatialDomains::MeshGraph::Read(m_vSession);
 
     int nVerts = graphShPt->GetNvertices();
 
@@ -725,7 +703,7 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
     vtkPts->SetDataTypeToDouble();
     vtkPts->SetNumberOfPoints( nVerts );
 
-    const SpatialDomains::PointGeomMap& ptIds = graphShPt->GetVertSet();
+    const SpatialDomains::PointGeomMap& ptIds = graphShPt->GetAllPointGeoms();
     SpatialDomains::PointGeomMap::const_iterator ptIdsIt;
     int vtkId = 0;
 
@@ -765,8 +743,9 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
       // Add in all of the triangle elements
       vtkTriangle *tri = vtkTriangle::New();
       SpatialDomains::TriGeomMap triGeomMap = graphShPt->GetAllTriGeoms();
-      SpatialDomains::TriGeomMapIter triGeomMapIter = triGeomMap.begin();
-        
+      std::map<int,SpatialDomains::TriGeomSharedPtr>::iterator
+         triGeomMapIter = triGeomMap.begin();
+
       while( triGeomMapIter != triGeomMap.end() )
       {       
         SpatialDomains::TriGeomSharedPtr triGeom = triGeomMapIter->second;
@@ -793,8 +772,9 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
       // Add in all of the quad elements
       vtkQuad *quad = vtkQuad::New();
       SpatialDomains::QuadGeomMap quadGeomMap = graphShPt->GetAllQuadGeoms();
-      SpatialDomains::QuadGeomMapIter quadGeomMapIter = quadGeomMap.begin();
-        
+      std::map<int,SpatialDomains::QuadGeomSharedPtr>::iterator
+        quadGeomMapIter = quadGeomMap.begin();
+
       while( quadGeomMapIter != quadGeomMap.end() )
       {       
         SpatialDomains::QuadGeomSharedPtr quadGeom = quadGeomMapIter->second;
@@ -825,8 +805,9 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
       // Add in all of the tet elements
       vtkTetra *tet = vtkTetra::New();
       SpatialDomains::TetGeomMap tetGeomMap = graphShPt->GetAllTetGeoms();
-      SpatialDomains::TetGeomMapIter tetGeomMapIter = tetGeomMap.begin();
-        
+      std::map<int,SpatialDomains::TetGeomSharedPtr>::iterator
+         tetGeomMapIter = tetGeomMap.begin();
+
       while( tetGeomMapIter != tetGeomMap.end() )
       {       
         SpatialDomains::TetGeomSharedPtr tetGeom = tetGeomMapIter->second;
@@ -853,7 +834,8 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
       // Add in all of the hex elements
       vtkHexahedron *hex = vtkHexahedron::New();
       SpatialDomains::HexGeomMap hexGeomMap = graphShPt->GetAllHexGeoms();
-      SpatialDomains::HexGeomMapIter hexGeomMapIter = hexGeomMap.begin();
+      std::map<int,SpatialDomains::HexGeomSharedPtr>::iterator
+	hexGeomMapIter = hexGeomMap.begin();
 
       while( hexGeomMapIter != hexGeomMap.end() )
       {       
@@ -881,8 +863,9 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
       // Add in all of the prism elements
       vtkWedge *wedge = vtkWedge::New();
       SpatialDomains::PrismGeomMap prismGeomMap = graphShPt->GetAllPrismGeoms();
-      SpatialDomains::PrismGeomMapIter prismGeomMapIter = prismGeomMap.begin();
-        
+      std::map<int,SpatialDomains::PrismGeomSharedPtr>::iterator
+        prismGeomMapIter = prismGeomMap.begin();
+
       while( prismGeomMapIter != prismGeomMap.end() )
       {       
         SpatialDomains::PrismGeomSharedPtr prismGeom = prismGeomMapIter->second;
@@ -915,8 +898,9 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
       // Add in all of the pyramid elements
       vtkPyramid *pyramid = vtkPyramid::New();
       SpatialDomains::PyrGeomMap pyramidGeomMap = graphShPt->GetAllPyrGeoms();
-      SpatialDomains::PyrGeomMapIter pyramidGeomMapIter = pyramidGeomMap.begin();
-      
+      std::map<int,SpatialDomains::PyrGeomSharedPtr>::iterator
+	pyramidGeomMapIter = pyramidGeomMap.begin();
+
       while( pyramidGeomMapIter != pyramidGeomMap.end() )
       {       
         SpatialDomains::PyrGeomSharedPtr pyramidGeom = pyramidGeomMapIter->second;
@@ -1048,7 +1032,8 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
     //----------------------------------------------
     // Read in mesh from input file
     SpatialDomains::MeshGraphSharedPtr graphShPt =
-      SpatialDomains::MeshGraph::Read(m_meshFile);
+      // SpatialDomains::MeshGraph::Read(m_meshFile);
+      SpatialDomains::MeshGraph::Read(m_vSession);
 
     // For each vertex evluate the velocity at that location using the
     // previously stored Nektar++ fields.
@@ -1078,8 +1063,9 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
     {
       // Add in all of the triangle elements
       SpatialDomains::TriGeomMap triGeomMap = graphShPt->GetAllTriGeoms();
-      SpatialDomains::TriGeomMapIter triGeomMapIter = triGeomMap.begin();
-        
+      std::map<int,SpatialDomains::TriGeomSharedPtr>::iterator
+	  triGeomMapIter = triGeomMap.begin();
+
       while( triGeomMapIter != triGeomMap.end() )
       {       
         int nt_el = triGeomMapIter->first;
@@ -1102,7 +1088,8 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
       
       // Add in all of the quad elements
       SpatialDomains::QuadGeomMap quadGeomMap = graphShPt->GetAllQuadGeoms();
-      SpatialDomains::QuadGeomMapIter quadGeomMapIter = quadGeomMap.begin();
+      std::map<int,SpatialDomains::QuadGeomSharedPtr>::iterator
+	quadGeomMapIter = quadGeomMap.begin();
         
       while( quadGeomMapIter != quadGeomMap.end() )
       {       
@@ -1130,7 +1117,8 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
     {
       // Add in all of the tet elements
       SpatialDomains::TetGeomMap tetGeomMap = graphShPt->GetAllTetGeoms();
-      SpatialDomains::TetGeomMapIter tetGeomMapIter = tetGeomMap.begin();
+      std::map<int,SpatialDomains::TetGeomSharedPtr>::iterator
+	tetGeomMapIter = tetGeomMap.begin();
         
       while( tetGeomMapIter != tetGeomMap.end() )
       {       
@@ -1154,8 +1142,9 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
         
       // Add in all of the pyramid elements
       SpatialDomains::PyrGeomMap pyramidGeomMap = graphShPt->GetAllPyrGeoms();
-      SpatialDomains::PyrGeomMapIter pyramidGeomMapIter = pyramidGeomMap.begin();
-      
+      std::map<int,SpatialDomains::PyrGeomSharedPtr>::iterator
+	pyramidGeomMapIter = pyramidGeomMap.begin();
+
       while( pyramidGeomMapIter != pyramidGeomMap.end() )
       {       
         int nt_el = pyramidGeomMapIter->first;
@@ -1178,8 +1167,9 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
         
       // Add in all of the prism elements
       SpatialDomains::PrismGeomMap prismGeomMap = graphShPt->GetAllPrismGeoms();
-      SpatialDomains::PrismGeomMapIter prismGeomMapIter = prismGeomMap.begin();
-        
+      std::map<int,SpatialDomains::PrismGeomSharedPtr>::iterator
+        prismGeomMapIter = prismGeomMap.begin();
+
       while( prismGeomMapIter != prismGeomMap.end() )
       {       
         int nt_el = prismGeomMapIter->first;
@@ -1202,7 +1192,8 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
         
       // Add in all of the hex elements
       SpatialDomains::HexGeomMap hexGeomMap = graphShPt->GetAllHexGeoms();
-      SpatialDomains::HexGeomMapIter hexGeomMapIter = hexGeomMap.begin();
+      std::map<int,SpatialDomains::HexGeomSharedPtr>::iterator
+	hexGeomMapIter = hexGeomMap.begin();
 
       while( hexGeomMapIter != hexGeomMap.end() )
       {       
@@ -1563,7 +1554,7 @@ std::string avtNektarPPFileFormat::GetNektarFileAsXMLString( std::string var )
   else // mesh file only, no field data
   {
     SpatialDomains::ExpansionMap emap = graphShPt->GetExpansions();
-    SpatialDomains::ExpansionMapIter it;
+    std::map<int,SpatialDomains::ExpansionShPtr>::iterator it;
 
     for (it = emap.begin(); it != emap.end(); ++it)
     {

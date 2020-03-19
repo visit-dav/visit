@@ -1,40 +1,7 @@
 #!/bin/env python
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#*****************************************************************************
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
 """
 file: visit_test_reports.py
 description: Beta Test Report Generation.
@@ -257,7 +224,7 @@ class TestScriptResult(object):
     @classmethod
     def from_dict(cls,vals):
         v = dict(vals)
-        if v.has_key("details"):
+        if "details" in v:
             del v["details"]
         return TestScriptResult(**v)
     def error(self):
@@ -279,7 +246,7 @@ class TestScriptResult(object):
                   124:"database plugin requirement not met",
                    -1:"failed"}
         rcode = self.return_code
-        if not rcode in codes.keys():
+        if not rcode in list(codes.keys()):
             rcode = -1
         return codes[rcode]
     def message(self):
@@ -297,7 +264,7 @@ class TestScriptResult(object):
                   124:"! Database plugin requirement not met",
                    -1:"! ERROR: Missing Exit() when running test file:"}
         rcode =self.return_code
-        if not rcode in codes.keys():
+        if not rcode in list(codes.keys()):
             rcode = -1
         return codes[rcode] + " %s/%s" % (self.category,self.file)
 
@@ -310,7 +277,7 @@ class TestScriptResult(object):
 class TestCaseResult:
     @classmethod
     def from_dict(cls,vals):
-        if vals.has_key("diff_pixels"):
+        if "diff_pixels" in vals:
             return TestCaseImageResult.from_dict(vals)
         else:
             return TestCaseTextResult.from_dict(vals)
@@ -438,7 +405,7 @@ class JSONIndex(object):
     def load_cases(cls,fname,res):
         index_base     = os.path.split(os.path.abspath(fname))[0]
         for script_res in res["results"]:
-            if not "details" in script_res.keys():
+            if not "details" in list(script_res.keys()):
                 tsr = TestScriptResult(**script_res)
                 cases_results =  pjoin(index_base,
                                         "json","%s_%s.json" % (tsr.category,tsr.base))
@@ -455,7 +422,7 @@ def text_summary(json_res,errors_only=False):
         if not errors_only or tscript_res.error():
             rtxt += "[%s/%s]\n" %( tscript_res.category, tscript_res.base)
             rtxt += " %s\n" % tscript_res.message()
-            if "sections" in r["details"].keys():
+            if "sections" in list(r["details"].keys()):
                 for sect in r["details"]["sections"]:
                     if not errors_only and sect['name'] != "<default>":
                         rtxt += "[[%s]]\n" % sect['name']
@@ -503,16 +470,16 @@ def main():
     Main entry point for commandline text + email summary from json results.
     """
     if len(sys.argv) < 3:
-        print "usage:"
-        print " Text Report:  visit_test_reports.py [results.json] --text  <errors_only=False>"
-        print " Email Report: visit_test_reports.py [results.json] --email [user1@email.com;user2@email.com;...] [smtp server] <errors_only=False>"
+        print("usage:")
+        print(" Text Report:  visit_test_reports.py [results.json] --text  <errors_only=False>")
+        print(" Email Report: visit_test_reports.py [results.json] --email [user1@email.com;user2@email.com;...] [smtp server] <errors_only=False>")
         sys.exit(-1)
     errors_only = False
     res = JSONIndex.load_results(sys.argv[1],True)
     if sys.argv[2] == "--text":
         if len(sys.argv)  == 4:
             errors_only = bool(sys.argv[3])
-        print text_summary(res,errors_only)
+        print(text_summary(res,errors_only))
     else:
         recp_list = sys.argv[3]
         if recp_list.count(";"):

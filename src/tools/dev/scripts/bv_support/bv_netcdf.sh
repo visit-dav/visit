@@ -27,15 +27,12 @@ function bv_netcdf_depends_on
     if [[ "$USE_SYSTEM_NETCDF" == "yes" ]]; then
         echo ""
     else
-        local depends_on=""
+        local depends_on="zlib"
         if [[ "$DO_HDF5" == "yes" ]] ; then
             depends_on="hdf5"        
             if [[ "$DO_SZIP" == "yes" ]] ; then
                 depends_on="${depends_on} szip"        
             fi
-        fi
-        if [[ "$DO_ZLIB" == "yes" ]] ; then
-            depends_on="zlib"        
         fi
         echo ${depends_on}
     fi
@@ -118,7 +115,7 @@ function bv_netcdf_dry_run
     fi
 }
 
-function apply_netcdf_411_OSX10_13_patch
+function apply_netcdf_411_macOS_patch
 {
     patch -p0 << \EOF
 diff -c netcdf-4.1.1/ncgen3/orig/genlib.h netcdf-4.1.1/ncgen3/genlib.h 
@@ -291,9 +288,10 @@ function apply_netcdf_patch
                 apply_netcdf_411_darwin_patch
             fi
             
-            if [[ `sw_vers -productVersion` == 10.13.[0-9]* ]] ; then
-                info "Applying OS X 10.13 patch . . ."
-                apply_netcdf_411_OSX10_13_patch
+            if [[ `sw_vers -productVersion` == 10.13.[0-9]* ||
+                  `sw_vers -productVersion` == 10.14.[0-9]* ]] ; then
+                info "Applying macOS patch . . ."
+                apply_netcdf_411_macOS_patch
             fi
         fi
     fi
@@ -370,10 +368,7 @@ function build_netcdf
             H5ARGS="$H5ARGS --with-szlib=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         fi
     fi
-    ZLIBARGS=""
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        ZLIBARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
-    fi
+    ZLIBARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
 
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \

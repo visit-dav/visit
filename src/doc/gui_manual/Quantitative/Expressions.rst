@@ -303,8 +303,14 @@ Product Operator (``*``) : ``exprL * exprR``
 .. _Division_Expression_Operator:
 
 Division Operator (``/``) : ``exprL / exprR``
-    Creates a new expression which is quotient after dividing the ``exprL``
+    Creates a new expression which is the quotient after dividing the ``exprL``
     expression by the ``exprR`` expression.
+
+Division Operator : ``divide(val_numerator, val_denominator, [div_by_zero_value, tolerance])``
+    Creates a new expression which is the quotient after dividing the
+    ``val_numerator`` expression by the ``val_denominator`` expression. The
+    ``div_by_zero_value`` is used wherever the ``val_denominator`` is within
+    ``tolerance`` of zero.
 
 .. _Exponent_Expression_Operator:
 
@@ -365,17 +371,17 @@ Base 10 Logarithm Function (``log10()``) : ``log10(expr0)``
     Creates a new expression which is everywhere the base 10 logarithm of its
     argument.
 
-.. _Pairwise_Max_Expression_Function:
+.. _Max_Expression_Function:
 
-Pairwise Max Function (``max()``) : ``max(expr0,exrp1)``
-    Creates a new expression which is everywhere the pairwise maximum of its
-    two arguments.
+Max Function (``max()``) : ``max(expr0, exrp1 [, ...])``
+    Creates a new expression which is everywhere the maximum among all input
+    variables.
 
-.. _Pairwise_Min_Expression_Function:
+.. _Min_Expression_Function:
 
-Pairwise Min Function (``min()``) : ``min(expr0,exrp1)``
-    Creates a new expression which is everywhere the pairwise minimum of its
-    two arguments.
+Min Function (``min()``) : ``min(expr0, exrp1 [, ...])``
+    Creates a new expression which is everywhere the minimum among all input
+    variables.
 
 .. _Modulo_Expression_Function:
 
@@ -751,17 +757,48 @@ Tensor Expressions
 .. _Contraction_Expression_Function:
 
 Contraction Function: ``contraction()`` : ``contraction(expr0)``
-    No description available.
+    Creates a *scalar* expression which is everywhere the *contraction* of
+    ``expr0`` which must be a *tensor* valued expression. The contraction is
+    the sum of pairwise dot-products of each of the column vectors of the
+    tensor with itself as shown in the code snip-it below.
+
+.. container:: collapsible
+
+    .. container:: header
+
+        **Show/Hide Code for** ``contraction()``
+
+    .. literalinclude:: ../../../../src/avt/Expressions/General/avtTensorContractionExpression.C
+        :language: C++
+        :start-after: For a rank 2 tensor, the contraction collapses to a scalar.
+        :end-before: out->SetTuple(i, &ctract);
 
 .. _Determinant_Expression_Function:
 
 Determinant Function: ``determinant()`` : ``determinant(expr0)``
-    No description available.
+    Creates a *scalar* expression which is everywhere the
+    `determinant <https://en.wikipedia.org/wiki/Determinant>`_ of
+    ``expr0`` which must be *tensor* valued.
 
 .. _Effective_Tensor_Expression_Function:
 
 Effective Tensor Function: ``effective_tensor()`` : ``effective_tensor(expr0)``
-    No description available.
+    Creates a *scalar* expression which is everywhere the square root of three
+    times the *second principal invariant of the stress deviator tenosr*,
+    :math:`\sqrt{3*J_2}`, where :math:`J_2` is the *second principal invariant
+    of the stress deviator tensor*. This is also known as the *von Mises stress*
+    or the *Huber-Mises stress* or the *Mises effective stress*.
+
+.. container:: collapsible
+
+    .. container:: header
+
+        **Show/Hide Code for** ``effective_tensor()``
+
+    .. literalinclude:: ../../../../src/avt/Expressions/Derivations/avtEffectiveTensorExpression.C
+        :language: C++
+        :start-after: vals = in->GetTuple9(i);
+        :end-before: out->SetTuple1(i, out2);
 
 .. _Eigenvalue_Expression_Function:
 
@@ -772,7 +809,8 @@ Eigenvalue Function: ``eigenvalue()`` : ``eigenvalue(expr0)``
     as a vector valued expression where each eigenvalue is a component of
     the vector. Use the vector component operator,
     :ref:`[] <Vector_Component_Expression_Operator>`, to access individual
-    eigenvalues.
+    eigenvalues. If a non-symmetric tensor is supplied, results are
+    indeterminate.
 
 .. _Eigenvector_Expression_Function:
 
@@ -801,38 +839,112 @@ Inverse Function: ``inverse()`` : ``inverse(expr0)``
 .. _Principal_Deviatoric_Tensor_Expression_Function:
 
 Principal Deviatoric Tensor Function: ``principal_deviatoric_tensor()`` : ``principal_deviatoric_tensor(expr0)``
-    Creates a new vector expression which is everywhere the 
-    principal deviatoric stress components of the input argument, which must
-    be a tensor.
+    Deviatoric stress is the stress tensor which results after subtracting the
+    `hydrostatic stress tensor <http://www.continuummechanics.org/hydrodeviatoricstress.html>`_.
+    Hydrostatic stress is a *scalar* quantity also often referred to as
+    *average pressure* or just *pressure*. However, it is often characterized in
+    *tensor* form by multiplying it through a 3x3 identity matrix.
+
+    The ``principal_deviatoric_tensor()`` expression function creates a new
+    *vector* expression which is everywhere the principal components of the
+    deviatoric stress tensor computed from the *symmetric* tensor argument
+    ``expr0``. In other words, the *eigenvalues* of the deviatoric
+    stress tensor.
+
+    Potentially, it would be more appropriate to create a new *tensor* field
+    here with all zeros for off-diagonal elements and the eigenvalues on the
+    main diagonal.
+
+    This expression can also be computed by using a combination of the ``trace()``
+    and ``principal_tensor()`` expression functions. The ``trace()`` (divided by
+    3) would be used to subtract out hydrostatic stress and the result could be
+    used in the ``principal_tensor()`` expression to arrive at the same result.
+
+.. container:: collapsible 
+
+    .. container:: header
+
+        **Show/Hide Code for** ``principal_deviatoric_tensor()``
+
+    .. literalinclude:: ../../../../src/avt/Expressions/Derivations/avtPrincipalDeviatoricTensorExpression.C
+        :language: C++
+        :start-after: vals = in->GetTuple9(i);
+        :end-before: out->SetTuple(i, out3);
 
 .. _Principal_Tensor_Expression_Function:
 
 Principal Tensor Function: ``principal_tensor()`` : ``principal_tensor(expr0)``
-    Creates a new vector expression which is everywhere the 
-    principal stress components of the input argument, which must
-    be a tensor.
+    Creates a new *vector* expression which is everywhere the 
+    principal stress components of the input argument, which must a *symmetric*
+    tensor. The principal stress components are the
+    `eigenvalues of the stress tensor. <https://uclageo.com/CEE220/Section2.3.php>`_
+    So, the vector expression computed here is the same as 
+    :ref:`eigenvalue() <Eigenvalue_Expression_Function>`.
+
+    Potentially, it would be more appropriate to create a new *tensor* field
+    here with all zeros for off-diagonal elements and the eigenvalues on the
+    main diagonal.
 
 .. _Transpose_Expression_Function:
 
 Transpose Function: ``transpose()`` : ``transpose(expr0)``
     Creates a new tensor expression which is everywhere the transpose of
-    its input argument which must also be a tensor.
+    its input argument which must also be a tensor. The first row vector
+    in the input becomes the first column vector in the output, etc.
 
 .. _Tensor_Maximum_Shear_Expression_Function:
 
 Tensor Maximum Shear Function: ``tensor_maximum_shear()`` : ``tensor_maximum_shear(expr0)``
-    No description available.
+    Creates a new *Scalar* expression which is everywhere the *maximum
+    shear stress* as defined in *J.C. Ugural and S.K. Fenster "Advanced Strength
+    and Applied Elasticity", Prentice Hall 4th Edition, page 81.* the specific
+    mathematical operations of which are shown in the code snip-it below.
+
+.. container:: collapsible
+
+    .. container:: header
+
+        **Show/Hide Code for** ``tensor_maximum_shear()``
+
+    .. image:: images/tensor_max_shear_eqns.png
+
+    .. literalinclude:: ../../../../src/avt/Expressions/Derivations/avtTensorMaximumShearExpression.C 
+        :language: C++
+        :start-after: 9 components of stress tensor
+        :end-before: out->SetTuple1(i, (princ0 - princ2) * 0.5);
 
 .. _Trace_Expression_Function:
 
 Trace Function: ``trace()`` : ``trace(expr0)``
-    No description available.
+    Creates a new scalar expression which is everywhere the
+    `trace <https://en.wikipedia.org/wiki/Trace_(linear_algebra)>`_
+    of ``expr0`` which must be a 3x3 tensor. The trace is the sum of the
+    diagonal elements.
 
 .. _Viscous_Stress_Expression_Function:
 
 Viscous Stress Function: ``viscous_stress()`` : ``viscous_stress(expr0)``
-    No description available.
+    Creates a new tensor expression which is everywhere the
+    `viscous stress <https://en.wikipedia.org/wiki/Viscous_stress_tensor>`_.
+    The key difference between *viscous* stress and *elastic* stress (which
+    is the kind of stress many of the other functions here deal with) is
+    that *viscous* stress is related to the *rate of change* of deformation
+    whereas *elastic* stress is related to the *amount* of deformation.
+    These two are related in the same way velocity and distance are related.
 
+    The argument here, ``expr0`` is a *vector* valued velocity. In addition,
+    the current implementation of this function works only for 2D, structured
+    gridded meshes.
+
+.. container:: collapsible
+
+    .. container:: header
+
+        **Show/Hide Code for** ``viscous_stress()``
+
+    .. literalinclude:: ../../../../src/avt/Expressions/General/avtViscousStressExpression.C
+        :language: C++
+        :start-after: calculate the gradient
 
 Array Expressions
 """""""""""""""""
@@ -1386,13 +1498,18 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    the other database is encoded with a special syntax prepending the
    ``Donor Variable`` argument.
 
-   The ``Donor Variable`` argument is a string argument consisting
-   of the donor variable's name and up to three pre-pending sub-strings which
-   may be optionally needed to specify...
+.. _Pos_Cmfe_Donor_Variable_Synax:
 
-       #. ...the *Database* in which the donor variable resides,
-       #. ...the *State Id* from which to take the donor variable,
-       #. ...the *Modality* by which states are identified in the *State Id*
+   The ``Donor Variable`` argument is a string argument of the form::
+
+    <PATH-TO-DATABASE-FROM-CWD[SSS]MM:VARNAME>
+
+   consisting of the donor variable's name and up to three pre-pending
+   sub-strings which may be optionally needed to specify...
+
+       #. ...the *Database* (``PATH-TO-DATABASE-FROM-CWD``) in which the donor variable resides,
+       #. ...the *State Id* (``[SSS]``) from which to take the donor variable,
+       #. ...the *Modality* (``MM``) by which states are identified in the *State Id*
           sub-string.
 
    Depending on circumstances, specifying the ``Donor-Variable`` argument to
@@ -1426,10 +1543,14 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    *delta*) to the current state. For example, the substring ``[200]c`` means to
    treat the ``200`` as a *cycle* number in the donor database whereas the
    the substring ``[-10]id`` means to treat the ``-10`` as an (``i``) index
-   (``d``) delta. Note that in cases where the donor database does not have
-   an exact match for the specified cycle or time, VisIt_ will chose the state
-   with the cycle or time which is closest in absolute distance. For the *index*
-   modality, if there is no exact match for the specified index, an error
+   (``d``) delta. So, ``[200]c`` would map the *donor* at cycle 200
+   to the *current* cycle of the *target* and ``[-10]id`` would map the
+   *donor* at the current *index minus 10* to the *current* index of the *target*.
+   In particular, the string ``[0]id`` is needed to create a CMFE that keeps
+   *donor* and *target* in lock step. Note that in cases where the donor database
+   does not have an exact match for the specified cycle or time, VisIt_ will chose
+   the state with the cycle or time which is closest in absolute distance. For the
+   *index* modality, if there is no exact match for the specified index, an error
    results. See cases D-I in the examples below.
 
    Note that the *relative* form of specifying the *State Id* is needed even
@@ -1769,13 +1890,21 @@ isnan Function: ``isnan()`` : ``isnan(expr0)``
 
 .. _Q_Criterion_Expression_Function:
 
-q criterion Function: ``q_criterion()`` : ``q_criterion(expr0)``
-    No description available.
+q criterion Function: ``q_criterion()`` : ``q_criterion(<gradient(velocity[0])>, <gradient(velocity[1])>, <gradient(velocity[2])>)``
+    Generates the Q-criterion value developed by Hunt et. al.. It is based on the
+    observation that, in regions where the Q-criterion is greater than zero, rotation
+    exceeds strain and, in conjunction with a pressure min, indicates the presence of
+    a vortex. The three arguments to the function are gradient vectors of the x-, y-,
+    and z-velocity. The gradient function (see :ref:`gradient() <Gradient_Expression_Function>`) can be used to create the gradient vectors.
 
 .. _Lambda2_Expression_Function:
 
-lambda2 Function: ``lambda2()`` : ``lambda2(expr0)``
-    No description available.
+lambda2 Function: ``lambda2()`` : ``lambda2(<gradient(velocity[0])>, <gradient(velocity[1])>, <gradient(velocity[2])>)``
+    Generates the Lambda-2 criterion. It is based on the observation that, in
+    regions where Lambda-2 is less than zero, rotation exceeds strain and, in
+    conjunction with a pressure min, indicates the presence of a vortex. The three
+    arguments to the function are gradient vectors of the x-, y-, and z-velocity.
+    The gradient function (see :ref:`gradient() <Gradient_Expression_Function>`) can be used to create the gradient vectors.
 
 .. _Mean_Curvature_Expression_Function:
 

@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                             avtDataAttributes.C                           //
@@ -59,7 +25,6 @@
 #include <InvalidMergeException.h>
 
 #include <cstring>
-#include <snprintf.h>
 #include <float.h>
 
 using     std::string;
@@ -187,6 +152,9 @@ using     std::sort;
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
 //
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added instantiation of forceRemoveFacesBeforeGhosts.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes() : plotInfoAtts()
@@ -272,6 +240,7 @@ avtDataAttributes::avtDataAttributes() : plotInfoAtts()
     multiresCellSize = DBL_MAX;
 
     constructMultipleCurves = false;
+    forceRemoveFacesBeforeGhosts = false;
 }
 
 
@@ -1067,6 +1036,9 @@ avtDataAttributes::Print(ostream &out)
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
 //
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added forceRemoveFacesBeforeGhosts.
+//
 // ****************************************************************************
 
 void
@@ -1176,6 +1148,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     *(multiresExtents) = *(di.multiresExtents);
     multiresCellSize = di.multiresCellSize;
     constructMultipleCurves = di.constructMultipleCurves;
+    forceRemoveFacesBeforeGhosts = di.forceRemoveFacesBeforeGhosts;
 }
 
 
@@ -1324,6 +1297,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    Cyrus Harrison,Thu Feb  9 10:26:48 PST 2012
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
+//
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added forceRemoveFacesBeforeGhosts.
 //
 // ****************************************************************************
 
@@ -1593,6 +1569,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     multiresExtents->Merge(*(da.multiresExtents));
     plotInfoAtts.Merge(da.plotInfoAtts);
     constructMultipleCurves &= da.constructMultipleCurves;
+    forceRemoveFacesBeforeGhosts &= da.forceRemoveFacesBeforeGhosts;
 
     // there's no good answer for unitCellVectors or rectilinearGridTransform
 }
@@ -2860,6 +2837,9 @@ avtDataAttributes::SetDynamicDomainDecomposition(bool ddd)
 //    Add GetMultiresExtents and GetMultiresCellSize to support adding
 //    a multi resolution display capability for AMR data.
 //
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added forceRemoveFacesBeforeGhosts.
+//
 // ****************************************************************************
 
 void
@@ -2869,7 +2849,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     size_t   i, j;
 
     int varSize = 7;
-    int numVals = 35 + static_cast<int>(varSize*variables.size());
+    int numVals = 36 + static_cast<int>(varSize*variables.size());
     int *vals = new int[numVals];
     i = 0;
     vals[i++] = topologicalDimension;
@@ -2905,6 +2885,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[i++] = (nodesAreCritical ? 1 : 0);
     vals[i++] = (rectilinearGridHasTransform ? 1 : 0);
     vals[i++] = (constructMultipleCurves ? 1 : 0);
+    vals[i++] = (forceRemoveFacesBeforeGhosts ? 1 : 0);
     vals[i++] = activeVariable;
     vals[i++] = static_cast<int>(variables.size());
     int basei = i;
@@ -3174,6 +3155,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Add GetMultiresExtents and GetMultiresCellSize to support adding
 //    a multi resolution display capability for AMR data.
 //
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added forceRemoveFacesBeforeGhosts.
+//
 // ****************************************************************************
 
 int
@@ -3315,6 +3299,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     constructMultipleCurves = (tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    forceRemoveFacesBeforeGhosts = (tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
@@ -5164,7 +5152,7 @@ static void ExtentsToString(avtExtents *exts, char *str, int maxlen)
         char tmp[1000];
         for (int i=0; i<dim; i++)
         {
-            SNPRINTF(tmp, 1000, "%e -> %e", e[i*2+0], e[i*2+1]);
+            snprintf(tmp, 1000, "%e -> %e", e[i*2+0], e[i*2+1]);
             if (strlen(tmp)+strlen(str)+6 > (size_t)maxlen)
             {
                 strcat(str, "...");
@@ -5189,13 +5177,13 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     webpage->AddSubheading("Basic data attributes");
     webpage->StartTable();
     webpage->AddTableHeader2("Field", "Value");
-    SNPRINTF(str, 4096, "%d", spatialDimension);
+    snprintf(str, 4096, "%d", spatialDimension);
     webpage->AddTableEntry2("Spatial Dimension", str);
-    SNPRINTF(str, 4096, "%d", topologicalDimension);
+    snprintf(str, 4096, "%d", topologicalDimension);
     webpage->AddTableEntry2("Topological Dimension", str);
-    SNPRINTF(str, 4096, "%d", cellOrigin);
+    snprintf(str, 4096, "%d", cellOrigin);
     webpage->AddTableEntry2("Cell Origin", str);
-    SNPRINTF(str, 4096, "%d", nodeOrigin);
+    snprintf(str, 4096, "%d", nodeOrigin);
     webpage->AddTableEntry2("Node Origin", str);
     switch (containsGhostZones)
     {
@@ -5238,9 +5226,9 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
                             YesOrNo(containsGlobalZoneIds));
     webpage->AddTableEntry2("Contains global node ids?", 
                             YesOrNo(containsGlobalNodeIds));
-    SNPRINTF(str, 4096, "%d", blockOrigin);
+    snprintf(str, 4096, "%d", blockOrigin);
     webpage->AddTableEntry2("Block Origin", str);
-    SNPRINTF(str, 4096, "%d", groupOrigin);
+    snprintf(str, 4096, "%d", groupOrigin);
     webpage->AddTableEntry2("Group Origin", str);
     webpage->AddTableEntry2("Contains original cells?", 
                             YesOrNo(containsOriginalCells));
@@ -5256,11 +5244,11 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
                             YesOrNo(origElementsRequiredForPick));
     webpage->AddTableEntry2("Is the file format reader doing domain decomposition?",
                             YesOrNo(dynamicDomainDecomposition));
-    SNPRINTF(str, 4096, "%ld", levelsOfDetail);
+    snprintf(str, 4096, "%ld", levelsOfDetail);
     webpage->AddTableEntry2("Levels of detail", str);
     ExtentsToString(multiresExtents, str, 4096);
     webpage->AddTableEntry2("Multires extents", str);
-    SNPRINTF(str, 4096, "%g", multiresCellSize);
+    snprintf(str, 4096, "%g", multiresCellSize);
     webpage->AddTableEntry2("Multires cell size", str);
     switch (meshCoordType)
     {
@@ -5329,21 +5317,21 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("Database name", fullDBName.c_str());
     webpage->AddTableEntry2("File name", filename.c_str());
     webpage->AddTableEntry2("Mesh name", meshname.c_str());
-    SNPRINTF(str, 4096, "%d", numStates);
+    snprintf(str, 4096, "%d", numStates);
     webpage->AddTableEntry2("Number of time slices?", str);
     webpage->AddTableEntry2("Data is replicated on all processors?",
                             YesOrNo(dataIsReplicatedOnAllProcessors));
     if (timeIsAccurate)
-        SNPRINTF(str, 4096, "%f", dtime);
+        snprintf(str, 4096, "%f", dtime);
     else
-        SNPRINTF(str, 4096, "%f (guess)", dtime);
+        snprintf(str, 4096, "%f (guess)", dtime);
     webpage->AddTableEntry2("Time", str);
     if (cycleIsAccurate)
-        SNPRINTF(str, 4096, "%d", cycle);
+        snprintf(str, 4096, "%d", cycle);
     else
-        SNPRINTF(str, 4096, "%d (guess)", cycle);
+        snprintf(str, 4096, "%d (guess)", cycle);
     webpage->AddTableEntry2("Cycle", str);
-    SNPRINTF(str, 4096, "%d", timeIndex);
+    snprintf(str, 4096, "%d", timeIndex);
     webpage->AddTableEntry2("Time index", str);
     webpage->EndTable();
 
@@ -5376,7 +5364,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
             webpage->AddTableEntry3(NULL, "Type", 
                                    avtVarTypeToString(variables[i]->vartype).c_str());
             webpage->AddTableEntry3(NULL, "Units", variables[i]->varunits.c_str());
-            SNPRINTF(str, 4096, "%d", variables[i]->dimension);
+            snprintf(str, 4096, "%d", variables[i]->dimension);
             webpage->AddTableEntry3(NULL, "Dimension", str);
             switch (variables[i]->centering)
             {
@@ -5393,7 +5381,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
             webpage->AddTableEntry3(NULL, "Centering", str);
             webpage->AddTableEntry3(NULL, "Treat variable as ASCII characters?",
                                     YesOrNo(variables[i]->treatAsASCII));
-            SNPRINTF(str, 4096, "%d", variables[i]->useForAxis);
+            snprintf(str, 4096, "%d", variables[i]->useForAxis);
             webpage->AddTableEntry3(NULL, "Use for axis", str);
             ExtentsToString(variables[i]->originalData, str, 4096);
             webpage->AddTableEntry3(NULL, "Original data extents", str);
@@ -5411,7 +5399,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
             {
                 for (size_t j = 0 ; j < variables[i]->subnames.size() ; j++)
                 {
-                    SNPRINTF(str, 4096, "Variable subname[%ld]", j);
+                    snprintf(str, 4096, "Variable subname[%ld]", j);
                     webpage->AddTableEntry3(NULL, str,
                                             variables[i]->subnames[j].c_str());
                 }

@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyViewerRPC.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyViewerRPC
@@ -131,983 +96,983 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
     switch (atts->GetRPCType())
     {
       case ViewerRPC::CloseRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sCloseRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sCloseRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DetachRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDetachRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDetachRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::AddWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sAddWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sAddWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DeleteWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDeleteWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDeleteWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetWindowLayoutRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetWindowLayoutRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetWindowLayoutRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetActiveWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetActiveWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetActiveWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ClearWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sClearWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sClearWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ClearAllWindowsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sClearAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sClearAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::OpenDatabaseRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sOpenDatabaseRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sOpenDatabaseRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::CloseDatabaseRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sCloseDatabaseRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sCloseDatabaseRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ActivateDatabaseRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sActivateDatabaseRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sActivateDatabaseRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::CheckForNewStatesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sCheckForNewStatesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sCheckForNewStatesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::CreateDatabaseCorrelationRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sCreateDatabaseCorrelationRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sCreateDatabaseCorrelationRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::AlterDatabaseCorrelationRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sAlterDatabaseCorrelationRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sAlterDatabaseCorrelationRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DeleteDatabaseCorrelationRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDeleteDatabaseCorrelationRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDeleteDatabaseCorrelationRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ReOpenDatabaseRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sReOpenDatabaseRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sReOpenDatabaseRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ReplaceDatabaseRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sReplaceDatabaseRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sReplaceDatabaseRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::OverlayDatabaseRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sOverlayDatabaseRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sOverlayDatabaseRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::OpenComputeEngineRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sOpenComputeEngineRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sOpenComputeEngineRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::CloseComputeEngineRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sCloseComputeEngineRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sCloseComputeEngineRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::AnimationSetNFramesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sAnimationSetNFramesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sAnimationSetNFramesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::AnimationPlayRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sAnimationPlayRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sAnimationPlayRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::AnimationReversePlayRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sAnimationReversePlayRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sAnimationReversePlayRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::AnimationStopRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sAnimationStopRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sAnimationStopRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::TimeSliderNextStateRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sTimeSliderNextStateRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sTimeSliderNextStateRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::TimeSliderPreviousStateRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sTimeSliderPreviousStateRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sTimeSliderPreviousStateRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetTimeSliderStateRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetTimeSliderStateRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetTimeSliderStateRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetActiveTimeSliderRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetActiveTimeSliderRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetActiveTimeSliderRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::AddPlotRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sAddPlotRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sAddPlotRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::AddEmbeddedPlotRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sAddEmbeddedPlotRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sAddEmbeddedPlotRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetPlotFrameRangeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetPlotFrameRangeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetPlotFrameRangeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DeletePlotKeyframeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDeletePlotKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDeletePlotKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::MovePlotKeyframeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sMovePlotKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sMovePlotKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DeleteActivePlotsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDeleteActivePlotsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDeleteActivePlotsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::HideActivePlotsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sHideActivePlotsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sHideActivePlotsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DrawPlotsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDrawPlotsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDrawPlotsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DisableRedrawRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDisableRedrawRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDisableRedrawRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::RedrawRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sRedrawRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sRedrawRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetActivePlotsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetActivePlotsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetActivePlotsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ChangeActivePlotsVarRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sChangeActivePlotsVarRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sChangeActivePlotsVarRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::AddOperatorRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sAddOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sAddOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::AddInitializedOperatorRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sAddInitializedOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sAddInitializedOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::PromoteOperatorRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sPromoteOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sPromoteOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DemoteOperatorRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDemoteOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDemoteOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::RemoveOperatorRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sRemoveOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sRemoveOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::RemoveLastOperatorRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sRemoveLastOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sRemoveLastOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::RemoveAllOperatorsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sRemoveAllOperatorsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sRemoveAllOperatorsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SaveWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSaveWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSaveWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetDefaultPlotOptionsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetDefaultPlotOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetDefaultPlotOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetPlotOptionsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetPlotOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetPlotOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetDefaultOperatorOptionsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetDefaultOperatorOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetDefaultOperatorOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetOperatorOptionsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetOperatorOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetOperatorOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::WriteConfigFileRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sWriteConfigFileRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sWriteConfigFileRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ConnectToMetaDataServerRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sConnectToMetaDataServerRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sConnectToMetaDataServerRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::IconifyAllWindowsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sIconifyAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sIconifyAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DeIconifyAllWindowsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDeIconifyAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDeIconifyAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ShowAllWindowsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sShowAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sShowAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::HideAllWindowsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sHideAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sHideAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::UpdateColorTableRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sUpdateColorTableRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sUpdateColorTableRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetAnnotationAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetAnnotationAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetAnnotationAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetDefaultAnnotationAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetDefaultAnnotationAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetDefaultAnnotationAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResetAnnotationAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResetAnnotationAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResetAnnotationAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetKeyframeAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetKeyframeAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetKeyframeAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetPlotSILRestrictionRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetPlotSILRestrictionRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetPlotSILRestrictionRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetViewAxisArrayRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetViewAxisArrayRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetViewAxisArrayRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetViewCurveRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetViewCurveRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetViewCurveRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetView2DRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetView2DRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetView2DRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetView3DRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetView3DRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetView3DRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResetPlotOptionsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResetPlotOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResetPlotOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResetOperatorOptionsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResetOperatorOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResetOperatorOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetAppearanceRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetAppearanceRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetAppearanceRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ProcessExpressionsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sProcessExpressionsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sProcessExpressionsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetLightListRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetLightListRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetLightListRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetDefaultLightListRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetDefaultLightListRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetDefaultLightListRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResetLightListRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResetLightListRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResetLightListRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetAnimationAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetAnimationAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetAnimationAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetWindowAreaRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetWindowAreaRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetWindowAreaRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::PrintWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sPrintWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sPrintWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResetViewRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResetViewRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResetViewRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::RecenterViewRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sRecenterViewRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sRecenterViewRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ToggleAllowPopupRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sToggleAllowPopupRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sToggleAllowPopupRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ToggleMaintainViewModeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sToggleMaintainViewModeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sToggleMaintainViewModeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ToggleBoundingBoxModeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sToggleBoundingBoxModeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sToggleBoundingBoxModeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ToggleCameraViewModeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sToggleCameraViewModeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sToggleCameraViewModeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::TogglePerspectiveViewRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sTogglePerspectiveViewRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sTogglePerspectiveViewRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ToggleSpinModeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sToggleSpinModeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sToggleSpinModeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ToggleLockTimeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sToggleLockTimeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sToggleLockTimeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ToggleLockToolsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sToggleLockToolsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sToggleLockToolsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ToggleLockViewModeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sToggleLockViewModeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sToggleLockViewModeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ToggleFullFrameRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sToggleFullFrameRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sToggleFullFrameRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::UndoViewRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sUndoViewRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sUndoViewRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::RedoViewRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sRedoViewRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sRedoViewRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::InvertBackgroundRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sInvertBackgroundRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sInvertBackgroundRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ClearPickPointsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sClearPickPointsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sClearPickPointsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetWindowModeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetWindowModeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetWindowModeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::EnableToolRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sEnableToolRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sEnableToolRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetToolUpdateModeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetToolUpdateModeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetToolUpdateModeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::CopyViewToWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sCopyViewToWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sCopyViewToWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::CopyLightingToWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sCopyLightingToWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sCopyLightingToWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::CopyAnnotationsToWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sCopyAnnotationsToWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sCopyAnnotationsToWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::CopyPlotsToWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sCopyPlotsToWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sCopyPlotsToWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ClearCacheRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sClearCacheRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sClearCacheRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ClearCacheForAllEnginesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sClearCacheForAllEnginesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sClearCacheForAllEnginesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetViewExtentsTypeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetViewExtentsTypeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetViewExtentsTypeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ClearRefLinesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sClearRefLinesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sClearRefLinesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetRenderingAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetRenderingAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetRenderingAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::QueryRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sQueryRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sQueryRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::CloneWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sCloneWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sCloneWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetMaterialAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetMaterialAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetMaterialAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetDefaultMaterialAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetDefaultMaterialAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetDefaultMaterialAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResetMaterialAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResetMaterialAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResetMaterialAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetPlotDatabaseStateRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetPlotDatabaseStateRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetPlotDatabaseStateRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DeletePlotDatabaseKeyframeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDeletePlotDatabaseKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDeletePlotDatabaseKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::MovePlotDatabaseKeyframeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sMovePlotDatabaseKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sMovePlotDatabaseKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ClearViewKeyframesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sClearViewKeyframesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sClearViewKeyframesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DeleteViewKeyframeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDeleteViewKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDeleteViewKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::MoveViewKeyframeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sMoveViewKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sMoveViewKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetViewKeyframeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetViewKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetViewKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::OpenMDServerRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sOpenMDServerRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sOpenMDServerRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::EnableToolbarRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sEnableToolbarRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sEnableToolbarRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::HideToolbarsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sHideToolbarsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sHideToolbarsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::HideToolbarsForAllWindowsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sHideToolbarsForAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sHideToolbarsForAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ShowToolbarsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sShowToolbarsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sShowToolbarsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ShowToolbarsForAllWindowsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sShowToolbarsForAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sShowToolbarsForAllWindowsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetToolbarIconSizeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetToolbarIconSizeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetToolbarIconSizeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SaveViewRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSaveViewRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSaveViewRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetGlobalLineoutAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetGlobalLineoutAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetGlobalLineoutAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetPickAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetPickAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetPickAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ExportColorTableRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sExportColorTableRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sExportColorTableRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ExportEntireStateRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sExportEntireStateRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sExportEntireStateRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ImportEntireStateRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sImportEntireStateRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sImportEntireStateRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ImportEntireStateWithDifferentSourcesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sImportEntireStateWithDifferentSourcesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sImportEntireStateWithDifferentSourcesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResetPickAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResetPickAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResetPickAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::AddAnnotationObjectRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sAddAnnotationObjectRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sAddAnnotationObjectRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::HideActiveAnnotationObjectsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sHideActiveAnnotationObjectsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sHideActiveAnnotationObjectsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DeleteActiveAnnotationObjectsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDeleteActiveAnnotationObjectsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDeleteActiveAnnotationObjectsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::RaiseActiveAnnotationObjectsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sRaiseActiveAnnotationObjectsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sRaiseActiveAnnotationObjectsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::LowerActiveAnnotationObjectsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sLowerActiveAnnotationObjectsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sLowerActiveAnnotationObjectsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetAnnotationObjectOptionsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetAnnotationObjectOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetAnnotationObjectOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetDefaultAnnotationObjectListRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetDefaultAnnotationObjectListRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetDefaultAnnotationObjectListRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResetAnnotationObjectListRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResetAnnotationObjectListRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResetAnnotationObjectListRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResetPickLetterRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResetPickLetterRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResetPickLetterRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetDefaultPickAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetDefaultPickAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetDefaultPickAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ChooseCenterOfRotationRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sChooseCenterOfRotationRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sChooseCenterOfRotationRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetCenterOfRotationRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetCenterOfRotationRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetCenterOfRotationRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetQueryOverTimeAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetQueryOverTimeAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetQueryOverTimeAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetDefaultQueryOverTimeAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetDefaultQueryOverTimeAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetDefaultQueryOverTimeAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResetQueryOverTimeAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResetQueryOverTimeAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResetQueryOverTimeAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResetLineoutColorRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResetLineoutColorRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResetLineoutColorRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetInteractorAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetInteractorAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetInteractorAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetDefaultInteractorAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetDefaultInteractorAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetDefaultInteractorAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResetInteractorAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResetInteractorAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResetInteractorAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::GetProcInfoRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sGetProcInfoRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sGetProcInfoRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SendSimulationCommandRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSendSimulationCommandRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSendSimulationCommandRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::UpdateDBPluginInfoRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sUpdateDBPluginInfoRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sUpdateDBPluginInfoRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ExportDBRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sExportDBRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sExportDBRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetTryHarderCyclesTimesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetTryHarderCyclesTimesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetTryHarderCyclesTimesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::OpenClientRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sOpenClientRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sOpenClientRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::OpenGUIClientRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sOpenGUIClientRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sOpenGUIClientRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::OpenCLIClientRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sOpenCLIClientRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sOpenCLIClientRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SuppressQueryOutputRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSuppressQueryOutputRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSuppressQueryOutputRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetQueryFloatFormatRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetQueryFloatFormatRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetQueryFloatFormatRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetMeshManagementAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetMeshManagementAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetMeshManagementAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetDefaultMeshManagementAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetDefaultMeshManagementAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetDefaultMeshManagementAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResetMeshManagementAttributesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResetMeshManagementAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResetMeshManagementAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ResizeWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sResizeWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sResizeWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::MoveWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sMoveWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sMoveWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::MoveAndResizeWindowRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sMoveAndResizeWindowRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sMoveAndResizeWindowRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetStateLoggingRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetStateLoggingRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetStateLoggingRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ConstructDataBinningRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sConstructDataBinningRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sConstructDataBinningRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::RequestMetaDataRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sRequestMetaDataRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sRequestMetaDataRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetTreatAllDBsAsTimeVaryingRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetTreatAllDBsAsTimeVaryingRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetTreatAllDBsAsTimeVaryingRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetCreateMeshQualityExpressionsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetCreateMeshQualityExpressionsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetCreateMeshQualityExpressionsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetCreateTimeDerivativeExpressionsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetCreateTimeDerivativeExpressionsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetCreateTimeDerivativeExpressionsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetCreateVectorMagnitudeExpressionsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetCreateVectorMagnitudeExpressionsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetCreateVectorMagnitudeExpressionsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetPrecisionTypeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetPrecisionTypeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetPrecisionTypeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetBackendTypeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetBackendTypeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetBackendTypeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::CopyActivePlotsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sCopyActivePlotsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sCopyActivePlotsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetPlotFollowsTimeRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetPlotFollowsTimeRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetPlotFollowsTimeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::TurnOffAllLocksRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sTurnOffAllLocksRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sTurnOffAllLocksRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetDefaultFileOpenOptionsRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetDefaultFileOpenOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetDefaultFileOpenOptionsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetSuppressMessagesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetSuppressMessagesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetSuppressMessagesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ApplyNamedSelectionRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sApplyNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sApplyNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::CreateNamedSelectionRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sCreateNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sCreateNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DeleteNamedSelectionRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDeleteNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDeleteNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::LoadNamedSelectionRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sLoadNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sLoadNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SaveNamedSelectionRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSaveNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSaveNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetNamedSelectionAutoApplyRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetNamedSelectionAutoApplyRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetNamedSelectionAutoApplyRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::UpdateNamedSelectionRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sUpdateNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sUpdateNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::InitializeNamedSelectionVariablesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sInitializeNamedSelectionVariablesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sInitializeNamedSelectionVariablesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::MenuQuitRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sMenuQuitRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sMenuQuitRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetPlotDescriptionRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetPlotDescriptionRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetPlotDescriptionRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::MovePlotOrderTowardFirstRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sMovePlotOrderTowardFirstRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sMovePlotOrderTowardFirstRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::MovePlotOrderTowardLastRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sMovePlotOrderTowardLastRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sMovePlotOrderTowardLastRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetPlotOrderToFirstRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetPlotOrderToFirstRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetPlotOrderToFirstRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetPlotOrderToLastRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetPlotOrderToLastRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetPlotOrderToLastRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::RenamePickLabelRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sRenamePickLabelRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sRenamePickLabelRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::GetQueryParametersRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sGetQueryParametersRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sGetQueryParametersRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DDTConnectRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDDTConnectRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDDTConnectRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::DDTFocusRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDDTFocusRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sDDTFocusRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ReleaseToDDTRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sReleaseToDDTRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sReleaseToDDTRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::PlotDDTVispointVariablesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sPlotDDTVispointVariablesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sPlotDDTVispointVariablesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ExportRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sExportRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sExportRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ExportHostProfileRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sExportHostProfileRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sExportHostProfileRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::ReadHostProfilesFromDirectoryRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sReadHostProfilesFromDirectoryRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sReadHostProfilesFromDirectoryRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::SetRemoveDuplicateNodesRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetRemoveDuplicateNodesRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sSetRemoveDuplicateNodesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::MaxRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sMaxRPC  # %s\n", prefix, prefix, RPCType_names);
+          snprintf(tmpStr, 1000, "%sRPCType = %sMaxRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%swindowLayout = %d\n", prefix, atts->GetWindowLayout());
+    snprintf(tmpStr, 1000, "%swindowLayout = %d\n", prefix, atts->GetWindowLayout());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
+    snprintf(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swindowMode = %d\n", prefix, atts->GetWindowMode());
+    snprintf(tmpStr, 1000, "%swindowMode = %d\n", prefix, atts->GetWindowMode());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swindowArea = \"%s\"\n", prefix, atts->GetWindowArea().c_str());
+    snprintf(tmpStr, 1000, "%swindowArea = \"%s\"\n", prefix, atts->GetWindowArea().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdatabase = \"%s\"\n", prefix, atts->GetDatabase().c_str());
+    snprintf(tmpStr, 1000, "%sdatabase = \"%s\"\n", prefix, atts->GetDatabase().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sprogramHost = \"%s\"\n", prefix, atts->GetProgramHost().c_str());
+    snprintf(tmpStr, 1000, "%sprogramHost = \"%s\"\n", prefix, atts->GetProgramHost().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sprogramSim = \"%s\"\n", prefix, atts->GetProgramSim().c_str());
+    snprintf(tmpStr, 1000, "%sprogramSim = \"%s\"\n", prefix, atts->GetProgramSim().c_str());
     str += tmpStr;
     {   const stringVector &programOptions = atts->GetProgramOptions();
-        SNPRINTF(tmpStr, 1000, "%sprogramOptions = (", prefix);
+        snprintf(tmpStr, 1000, "%sprogramOptions = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < programOptions.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", programOptions[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", programOptions[i].c_str());
             str += tmpStr;
             if(i < programOptions.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%snFrames = %d\n", prefix, atts->GetNFrames());
+    snprintf(tmpStr, 1000, "%snFrames = %d\n", prefix, atts->GetNFrames());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstateNumber = %d\n", prefix, atts->GetStateNumber());
+    snprintf(tmpStr, 1000, "%sstateNumber = %d\n", prefix, atts->GetStateNumber());
     str += tmpStr;
     {   const int *frameRange = atts->GetFrameRange();
-        SNPRINTF(tmpStr, 1000, "%sframeRange = (", prefix);
+        snprintf(tmpStr, 1000, "%sframeRange = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 2; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", frameRange[i]);
+            snprintf(tmpStr, 1000, "%d", frameRange[i]);
             str += tmpStr;
             if(i < 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sframe = %d\n", prefix, atts->GetFrame());
+    snprintf(tmpStr, 1000, "%sframe = %d\n", prefix, atts->GetFrame());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%splotType = %d\n", prefix, atts->GetPlotType());
+    snprintf(tmpStr, 1000, "%splotType = %d\n", prefix, atts->GetPlotType());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soperatorType = %d\n", prefix, atts->GetOperatorType());
+    snprintf(tmpStr, 1000, "%soperatorType = %d\n", prefix, atts->GetOperatorType());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
+    snprintf(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
     str += tmpStr;
     {   const intVector &activePlotIds = atts->GetActivePlotIds();
-        SNPRINTF(tmpStr, 1000, "%sactivePlotIds = (", prefix);
+        snprintf(tmpStr, 1000, "%sactivePlotIds = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < activePlotIds.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", activePlotIds[i]);
+            snprintf(tmpStr, 1000, "%d", activePlotIds[i]);
             str += tmpStr;
             if(i < activePlotIds.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &activeOperatorIds = atts->GetActiveOperatorIds();
-        SNPRINTF(tmpStr, 1000, "%sactiveOperatorIds = (", prefix);
+        snprintf(tmpStr, 1000, "%sactiveOperatorIds = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < activeOperatorIds.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", activeOperatorIds[i]);
+            snprintf(tmpStr, 1000, "%d", activeOperatorIds[i]);
             str += tmpStr;
             if(i < activeOperatorIds.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &expandedPlotIds = atts->GetExpandedPlotIds();
-        SNPRINTF(tmpStr, 1000, "%sexpandedPlotIds = (", prefix);
+        snprintf(tmpStr, 1000, "%sexpandedPlotIds = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < expandedPlotIds.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", expandedPlotIds[i]);
+            snprintf(tmpStr, 1000, "%d", expandedPlotIds[i]);
             str += tmpStr;
             if(i < expandedPlotIds.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
+    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%squeryName = \"%s\"\n", prefix, atts->GetQueryName().c_str());
+    snprintf(tmpStr, 1000, "%squeryName = \"%s\"\n", prefix, atts->GetQueryName().c_str());
     str += tmpStr;
     {   const double *queryPoint1 = atts->GetQueryPoint1();
-        SNPRINTF(tmpStr, 1000, "%squeryPoint1 = (", prefix);
+        snprintf(tmpStr, 1000, "%squeryPoint1 = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", queryPoint1[i]);
+            snprintf(tmpStr, 1000, "%g", queryPoint1[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%stoolId = %d\n", prefix, atts->GetToolId());
+    snprintf(tmpStr, 1000, "%stoolId = %d\n", prefix, atts->GetToolId());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sembeddedPlotId = %d\n", prefix, atts->GetEmbeddedPlotId());
+    snprintf(tmpStr, 1000, "%sembeddedPlotId = %d\n", prefix, atts->GetEmbeddedPlotId());
     str += tmpStr;
     if(atts->GetBoolFlag())
-        SNPRINTF(tmpStr, 1000, "%sboolFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sboolFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sboolFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sboolFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sintArg1 = %d\n", prefix, atts->GetIntArg1());
+    snprintf(tmpStr, 1000, "%sintArg1 = %d\n", prefix, atts->GetIntArg1());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sintArg2 = %d\n", prefix, atts->GetIntArg2());
+    snprintf(tmpStr, 1000, "%sintArg2 = %d\n", prefix, atts->GetIntArg2());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sintArg3 = %d\n", prefix, atts->GetIntArg3());
+    snprintf(tmpStr, 1000, "%sintArg3 = %d\n", prefix, atts->GetIntArg3());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstringArg1 = \"%s\"\n", prefix, atts->GetStringArg1().c_str());
+    snprintf(tmpStr, 1000, "%sstringArg1 = \"%s\"\n", prefix, atts->GetStringArg1().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstringArg2 = \"%s\"\n", prefix, atts->GetStringArg2().c_str());
+    snprintf(tmpStr, 1000, "%sstringArg2 = \"%s\"\n", prefix, atts->GetStringArg2().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stoolUpdateMode = %d\n", prefix, atts->GetToolUpdateMode());
+    snprintf(tmpStr, 1000, "%stoolUpdateMode = %d\n", prefix, atts->GetToolUpdateMode());
     str += tmpStr;
     //queryParams
     return str;

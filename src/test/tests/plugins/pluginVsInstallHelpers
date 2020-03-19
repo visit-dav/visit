@@ -1,39 +1,6 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#*****************************************************************************
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
 
 """
 file: pluginVsInstallHelpers
@@ -124,6 +91,10 @@ def createPackage():
 #
 #   Helper which installs the package in the build dir.
 #
+#   Modifications:
+#     Eric Brugger, Thu Oct  3 10:16:05 PDT 2019
+#     Remove logic to rename hardware path on toss3 systems.
+#
 # -----------------------------------------------------------------------------
 def installPackage():
     fname = abs_path(TestEnv.params["run_dir"], "installPackage_results.txt")
@@ -145,26 +116,6 @@ def installPackage():
         f.write("calling install cmd\n")
         subprocess.check_call([installCmd, "-c", "llnl_open", version, "linux-x86_64", installDir ], stdout=f,stderr=f)
         f.write("calling install cmd ... done\n")
-        # now we have to move the install to linux-x86_64-toss3 if running on a toss3,
-        # or VisIt won't launch
-        #  This is the list from llnl's custom launcher
-        if "borax"    in socket.gethostname() or \
-           "catalyst" in socket.gethostname() or \
-           "jade"     in socket.gethostname() or \
-           "max"      in socket.gethostname() or \
-           "mica"     in socket.gethostname() or \
-           "pascal"   in socket.gethostname() or \
-           "quartz"   in socket.gethostname() or \
-           "rzgenie"  in socket.gethostname() or \
-           "rzhasgpu" in socket.gethostname() or \
-           "rztopaz"  in socket.gethostname() or \
-           "rztrona"  in socket.gethostname() or \
-           "surface"  in socket.gethostname() or \
-           "syrah"    in socket.gethostname() or \
-           "agate"    in socket.gethostname() :
-            print "installPackage, renaming to toss3"
-            os.chdir(abs_path(installDir, version))
-            os.rename("linux-x86_64", "linux-x86_64-toss3")
         status = 1
     except subprocess.CalledProcessError as err:
         status = 0
@@ -262,20 +213,34 @@ def build(plugin, pluginResults):
 # -----------------------------------------------------------------------------
 #   Method: buildPlugin
 #
+#   Arguments:
+#     pluginType     Type of plugin: (databases, plots, operators)
+#     pluginList     A list of plugins of the given type to be built. 
+#
 #   Programmer: Kathleen Biagas
 #   Date:       Thu Nov 8, 2018
 #
-#   Helper which runs copies to the rund dir and builds each plugin of the
-#   given type 
+#   Helper which copies to the run dir and builds each plugin of the
+#   given type.
+#
+#   Modifications:
+#     Kathleen Biagas, Tue Nov 26 08:54:33 PST 2019
+#     Changed the skipList argument to a pluginList argument providing the
+#     list of plugins to build instead of to skip.
 #
 # -----------------------------------------------------------------------------
-def buildPlugin(pluginType, skiplist):
+def buildPlugin(pluginType, pluginList):
     print "buildPlugin: ", pluginType
     plugindir = abs_path(TestEnv.params["run_dir"], pluginType)
 
     if os.path.exists(plugindir):
         shutil.rmtree(plugindir)
-    subprocess.call(["cp", "-R", visit_src_path(pluginType), plugindir])
+
+    os.mkdir(plugindir)
+
+    for plugin in pluginList:
+        subprocess.call(["cp", "-R", visit_src_path(pluginType,plugin), plugindir])
+
     os.chdir(plugindir)
     plugins = glob.glob("*")
     try:
@@ -289,9 +254,6 @@ def buildPlugin(pluginType, skiplist):
     for pl in plugins:
         if os.path.isdir(pl):
             pluginResults[pl] = {}
-            if pl in skiplist:
-               pluginResults[pl] = "skipped"
-               continue
             os.chdir(pl)
             status = regencmake(pl, pluginResults)
             if status == 0: 
@@ -307,13 +269,23 @@ def buildPlugin(pluginType, skiplist):
 # -----------------------------------------------------------------------------
 #   Method: do_plugin_type
 #
+#   Arguments:
+#     pluginType  The type of plugin to build: (databases, plots, operators)
+#     pluginList  A list of plugins of the given type to build.
+#
 #   Programmer: Kathleen Biagas
 #   Date:       Thu Nov 8, 2018
 #
 #   Main helper which calls the rest for the given plugin type.
 #
+#   Modifications:
+#     Kathleen Biagas, Tue Nov 26 08:54:33 PST 2019
+#     Changed the skipList argument to a pluginList argument providing the
+#     list of plugins to build instead of to skip.
+#
 # -----------------------------------------------------------------------------
-def do_plugin_type(pluginType, skiplist):
+
+def do_plugin_type(pluginType, pluginList):
     # createPackage and installPackage cause the test to overrun the limit
     # so, instead of creating (which has been added to the build),
     # just check that the install exists
@@ -336,7 +308,7 @@ def do_plugin_type(pluginType, skiplist):
         Exit(-1)
 
     results = {}
-    results = buildPlugin(pluginType, skiplist)
+    results = buildPlugin(pluginType, pluginList)
 
     pp = pprint.PrettyPrinter(indent=4)
     txt = pp.pformat(results)

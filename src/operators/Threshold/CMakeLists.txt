@@ -3,6 +3,8 @@ PROJECT(Threshold_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Threshold)
+
 SET(COMMON_SOURCES
 ThresholdPluginInfo.C
 ThresholdCommonPluginInfo.C
@@ -110,6 +112,10 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SThresholdOperator ${LIBS_SOURCES})
+        IF(WIN32)
+            # This prevents python from #defining snprintf as _snprintf
+            SET_TARGET_PROPERTIES(SThresholdOperator PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
+        ENDIF()
         TARGET_LINK_LIBRARIES(SThresholdOperator visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SThresholdOperator)
     ENDIF(VISIT_PYTHON_SCRIPTING)

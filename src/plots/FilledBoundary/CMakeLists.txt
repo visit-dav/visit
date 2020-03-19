@@ -3,6 +3,8 @@ PROJECT(FilledBoundary_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(FilledBoundary)
+
 SET(COMMON_SOURCES
 FilledBoundaryPluginInfo.C
 FilledBoundaryCommonPluginInfo.C
@@ -102,6 +104,10 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SFilledBoundaryPlot ${LIBS_SOURCES})
+        IF(WIN32)
+            # This prevents python from #defining snprintf as _snprintf
+            SET_TARGET_PROPERTIES(SFilledBoundaryPlot PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
+        ENDIF()
         TARGET_LINK_LIBRARIES(SFilledBoundaryPlot visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SFilledBoundaryPlot)
     ENDIF(VISIT_PYTHON_SCRIPTING)

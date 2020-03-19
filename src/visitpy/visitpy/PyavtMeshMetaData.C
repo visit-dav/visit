@@ -1,50 +1,12 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyavtMeshMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
-#include <avtTypes.h>
 #include <avtTypes.h>
 #include <PyNameschemeAttributes.h>
-#include <avtTypes.h>
-#include <avtTypes.h>
 
 // ****************************************************************************
 // Module: PyavtMeshMetaData
@@ -81,179 +43,179 @@ PyavtMeshMetaData_ToString(const avtMeshMetaData *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->name.c_str());
+    snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->name.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soriginalName = \"%s\"\n", prefix, atts->originalName.c_str());
+    snprintf(tmpStr, 1000, "%soriginalName = \"%s\"\n", prefix, atts->originalName.c_str());
     str += tmpStr;
     if(atts->validVariable)
-        SNPRINTF(tmpStr, 1000, "%svalidVariable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svalidVariable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svalidVariable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svalidVariable = 0\n", prefix);
     str += tmpStr;
     const char *meshType_names = "AVT_RECTILINEAR_MESH, AVT_CURVILINEAR_MESH, AVT_UNSTRUCTURED_MESH, AVT_POINT_MESH, AVT_SURFACE_MESH, AVT_CSG_MESH, AVT_AMR_MESH, AVT_UNKNOWN_MESH";
     if(atts->meshType == AVT_RECTILINEAR_MESH)
     {
-        SNPRINTF(tmpStr, 1000, "%smeshType = %sAVT_RECTILINEAR_MESH  # %s\n", prefix, prefix, meshType_names);
+        snprintf(tmpStr, 1000, "%smeshType = %sAVT_RECTILINEAR_MESH  # %s\n", prefix, prefix, meshType_names);
         str += tmpStr;
     }
     else if(atts->meshType == AVT_CURVILINEAR_MESH)
     {
-        SNPRINTF(tmpStr, 1000, "%smeshType = %sAVT_CURVILINEAR_MESH  # %s\n", prefix, prefix, meshType_names);
+        snprintf(tmpStr, 1000, "%smeshType = %sAVT_CURVILINEAR_MESH  # %s\n", prefix, prefix, meshType_names);
         str += tmpStr;
     }
     else if(atts->meshType == AVT_UNSTRUCTURED_MESH)
     {
-        SNPRINTF(tmpStr, 1000, "%smeshType = %sAVT_UNSTRUCTURED_MESH  # %s\n", prefix, prefix, meshType_names);
+        snprintf(tmpStr, 1000, "%smeshType = %sAVT_UNSTRUCTURED_MESH  # %s\n", prefix, prefix, meshType_names);
         str += tmpStr;
     }
     else if(atts->meshType == AVT_POINT_MESH)
     {
-        SNPRINTF(tmpStr, 1000, "%smeshType = %sAVT_POINT_MESH  # %s\n", prefix, prefix, meshType_names);
+        snprintf(tmpStr, 1000, "%smeshType = %sAVT_POINT_MESH  # %s\n", prefix, prefix, meshType_names);
         str += tmpStr;
     }
     else if(atts->meshType == AVT_SURFACE_MESH)
     {
-        SNPRINTF(tmpStr, 1000, "%smeshType = %sAVT_SURFACE_MESH  # %s\n", prefix, prefix, meshType_names);
+        snprintf(tmpStr, 1000, "%smeshType = %sAVT_SURFACE_MESH  # %s\n", prefix, prefix, meshType_names);
         str += tmpStr;
     }
     else if(atts->meshType == AVT_CSG_MESH)
     {
-        SNPRINTF(tmpStr, 1000, "%smeshType = %sAVT_CSG_MESH  # %s\n", prefix, prefix, meshType_names);
+        snprintf(tmpStr, 1000, "%smeshType = %sAVT_CSG_MESH  # %s\n", prefix, prefix, meshType_names);
         str += tmpStr;
     }
     else if(atts->meshType == AVT_AMR_MESH)
     {
-        SNPRINTF(tmpStr, 1000, "%smeshType = %sAVT_AMR_MESH  # %s\n", prefix, prefix, meshType_names);
+        snprintf(tmpStr, 1000, "%smeshType = %sAVT_AMR_MESH  # %s\n", prefix, prefix, meshType_names);
         str += tmpStr;
     }
     else
     {
-        SNPRINTF(tmpStr, 1000, "%smeshType = %sAVT_UNKNOWN_MESH  # %s\n", prefix, prefix, meshType_names);
+        snprintf(tmpStr, 1000, "%smeshType = %sAVT_UNKNOWN_MESH  # %s\n", prefix, prefix, meshType_names);
         str += tmpStr;
     }
 
     const char *meshCoordType_names = "AVT_XY, AVT_RZ, AVT_ZR";
     if(atts->meshCoordType == AVT_XY)
     {
-        SNPRINTF(tmpStr, 1000, "%smeshCoordType = %sAVT_XY  # %s\n", prefix, prefix, meshCoordType_names);
+        snprintf(tmpStr, 1000, "%smeshCoordType = %sAVT_XY  # %s\n", prefix, prefix, meshCoordType_names);
         str += tmpStr;
     }
     else if(atts->meshCoordType == AVT_RZ)
     {
-        SNPRINTF(tmpStr, 1000, "%smeshCoordType = %sAVT_RZ  # %s\n", prefix, prefix, meshCoordType_names);
+        snprintf(tmpStr, 1000, "%smeshCoordType = %sAVT_RZ  # %s\n", prefix, prefix, meshCoordType_names);
         str += tmpStr;
     }
     else
     {
-        SNPRINTF(tmpStr, 1000, "%smeshCoordType = %sAVT_ZR  # %s\n", prefix, prefix, meshCoordType_names);
+        snprintf(tmpStr, 1000, "%smeshCoordType = %sAVT_ZR  # %s\n", prefix, prefix, meshCoordType_names);
         str += tmpStr;
     }
 
-    SNPRINTF(tmpStr, 1000, "%scellOrigin = %d\n", prefix, atts->cellOrigin);
+    snprintf(tmpStr, 1000, "%scellOrigin = %d\n", prefix, atts->cellOrigin);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sspatialDimension = %d\n", prefix, atts->spatialDimension);
+    snprintf(tmpStr, 1000, "%sspatialDimension = %d\n", prefix, atts->spatialDimension);
     str += tmpStr;
     if(atts->hasLogicalBounds)
-        SNPRINTF(tmpStr, 1000, "%shasLogicalBounds = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shasLogicalBounds = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shasLogicalBounds = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shasLogicalBounds = 0\n", prefix);
     str += tmpStr;
     {   const int *logicalBounds = atts->logicalBounds;
-        SNPRINTF(tmpStr, 1000, "%slogicalBounds = (", prefix);
+        snprintf(tmpStr, 1000, "%slogicalBounds = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", logicalBounds[i]);
+            snprintf(tmpStr, 1000, "%d", logicalBounds[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->hasNumberCells)
-        SNPRINTF(tmpStr, 1000, "%shasNumberCells = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shasNumberCells = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shasNumberCells = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shasNumberCells = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumberCells = %d\n", prefix, atts->numberCells);
+    snprintf(tmpStr, 1000, "%snumberCells = %d\n", prefix, atts->numberCells);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stopologicalDimension = %d\n", prefix, atts->topologicalDimension);
+    snprintf(tmpStr, 1000, "%stopologicalDimension = %d\n", prefix, atts->topologicalDimension);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxUnits = \"%s\"\n", prefix, atts->xUnits.c_str());
+    snprintf(tmpStr, 1000, "%sxUnits = \"%s\"\n", prefix, atts->xUnits.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syUnits = \"%s\"\n", prefix, atts->yUnits.c_str());
+    snprintf(tmpStr, 1000, "%syUnits = \"%s\"\n", prefix, atts->yUnits.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szUnits = \"%s\"\n", prefix, atts->zUnits.c_str());
+    snprintf(tmpStr, 1000, "%szUnits = \"%s\"\n", prefix, atts->zUnits.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxLabel = \"%s\"\n", prefix, atts->xLabel.c_str());
+    snprintf(tmpStr, 1000, "%sxLabel = \"%s\"\n", prefix, atts->xLabel.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syLabel = \"%s\"\n", prefix, atts->yLabel.c_str());
+    snprintf(tmpStr, 1000, "%syLabel = \"%s\"\n", prefix, atts->yLabel.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szLabel = \"%s\"\n", prefix, atts->zLabel.c_str());
+    snprintf(tmpStr, 1000, "%szLabel = \"%s\"\n", prefix, atts->zLabel.c_str());
     str += tmpStr;
     if(atts->hasSpatialExtents)
-        SNPRINTF(tmpStr, 1000, "%shasSpatialExtents = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shasSpatialExtents = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shasSpatialExtents = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shasSpatialExtents = 0\n", prefix);
     str += tmpStr;
     {   const double *minSpatialExtents = atts->minSpatialExtents;
-        SNPRINTF(tmpStr, 1000, "%sminSpatialExtents = (", prefix);
+        snprintf(tmpStr, 1000, "%sminSpatialExtents = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", minSpatialExtents[i]);
+            snprintf(tmpStr, 1000, "%g", minSpatialExtents[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *maxSpatialExtents = atts->maxSpatialExtents;
-        SNPRINTF(tmpStr, 1000, "%smaxSpatialExtents = (", prefix);
+        snprintf(tmpStr, 1000, "%smaxSpatialExtents = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", maxSpatialExtents[i]);
+            snprintf(tmpStr, 1000, "%g", maxSpatialExtents[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%snumBlocks = %d\n", prefix, atts->numBlocks);
+    snprintf(tmpStr, 1000, "%snumBlocks = %d\n", prefix, atts->numBlocks);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sblockOrigin = %d\n", prefix, atts->blockOrigin);
+    snprintf(tmpStr, 1000, "%sblockOrigin = %d\n", prefix, atts->blockOrigin);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sblockPieceName = \"%s\"\n", prefix, atts->blockPieceName.c_str());
+    snprintf(tmpStr, 1000, "%sblockPieceName = \"%s\"\n", prefix, atts->blockPieceName.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sblockTitle = \"%s\"\n", prefix, atts->blockTitle.c_str());
+    snprintf(tmpStr, 1000, "%sblockTitle = \"%s\"\n", prefix, atts->blockTitle.c_str());
     str += tmpStr;
     {   const stringVector &blockNames = atts->blockNames;
-        SNPRINTF(tmpStr, 1000, "%sblockNames = (", prefix);
+        snprintf(tmpStr, 1000, "%sblockNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < blockNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", blockNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", blockNames[i].c_str());
             str += tmpStr;
             if(i < blockNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     { // new scope
@@ -261,224 +223,224 @@ PyavtMeshMetaData_ToString(const avtMeshMetaData *atts, const char *prefix)
         objPrefix += "blockNameScheme.";
         str += PyNameschemeAttributes_ToString(&atts->blockNameScheme, objPrefix.c_str());
     }
-    SNPRINTF(tmpStr, 1000, "%snumGroups = %d\n", prefix, atts->numGroups);
+    snprintf(tmpStr, 1000, "%snumGroups = %d\n", prefix, atts->numGroups);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sgroupOrigin = %d\n", prefix, atts->groupOrigin);
+    snprintf(tmpStr, 1000, "%sgroupOrigin = %d\n", prefix, atts->groupOrigin);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sgroupPieceName = \"%s\"\n", prefix, atts->groupPieceName.c_str());
+    snprintf(tmpStr, 1000, "%sgroupPieceName = \"%s\"\n", prefix, atts->groupPieceName.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sgroupTitle = \"%s\"\n", prefix, atts->groupTitle.c_str());
+    snprintf(tmpStr, 1000, "%sgroupTitle = \"%s\"\n", prefix, atts->groupTitle.c_str());
     str += tmpStr;
     {   const stringVector &groupNames = atts->groupNames;
-        SNPRINTF(tmpStr, 1000, "%sgroupNames = (", prefix);
+        snprintf(tmpStr, 1000, "%sgroupNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < groupNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", groupNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", groupNames[i].c_str());
             str += tmpStr;
             if(i < groupNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &groupIds = atts->groupIds;
-        SNPRINTF(tmpStr, 1000, "%sgroupIds = (", prefix);
+        snprintf(tmpStr, 1000, "%sgroupIds = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < groupIds.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", groupIds[i]);
+            snprintf(tmpStr, 1000, "%d", groupIds[i]);
             str += tmpStr;
             if(i < groupIds.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &groupIdsBasedOnRange = atts->groupIdsBasedOnRange;
-        SNPRINTF(tmpStr, 1000, "%sgroupIdsBasedOnRange = (", prefix);
+        snprintf(tmpStr, 1000, "%sgroupIdsBasedOnRange = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < groupIdsBasedOnRange.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", groupIdsBasedOnRange[i]);
+            snprintf(tmpStr, 1000, "%d", groupIdsBasedOnRange[i]);
             str += tmpStr;
             if(i < groupIdsBasedOnRange.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->disjointElements)
-        SNPRINTF(tmpStr, 1000, "%sdisjointElements = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdisjointElements = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdisjointElements = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdisjointElements = 0\n", prefix);
     str += tmpStr;
     const char *containsGhostZones_names = "AVT_NO_GHOSTS, AVT_HAS_GHOSTS, AVT_CREATED_GHOSTS, AVT_MAYBE_GHOSTS";
     if(atts->containsGhostZones == AVT_NO_GHOSTS)
     {
-        SNPRINTF(tmpStr, 1000, "%scontainsGhostZones = %sAVT_NO_GHOSTS  # %s\n", prefix, prefix, containsGhostZones_names);
+        snprintf(tmpStr, 1000, "%scontainsGhostZones = %sAVT_NO_GHOSTS  # %s\n", prefix, prefix, containsGhostZones_names);
         str += tmpStr;
     }
     else if(atts->containsGhostZones == AVT_HAS_GHOSTS)
     {
-        SNPRINTF(tmpStr, 1000, "%scontainsGhostZones = %sAVT_HAS_GHOSTS  # %s\n", prefix, prefix, containsGhostZones_names);
+        snprintf(tmpStr, 1000, "%scontainsGhostZones = %sAVT_HAS_GHOSTS  # %s\n", prefix, prefix, containsGhostZones_names);
         str += tmpStr;
     }
     else if(atts->containsGhostZones == AVT_CREATED_GHOSTS)
     {
-        SNPRINTF(tmpStr, 1000, "%scontainsGhostZones = %sAVT_CREATED_GHOSTS  # %s\n", prefix, prefix, containsGhostZones_names);
+        snprintf(tmpStr, 1000, "%scontainsGhostZones = %sAVT_CREATED_GHOSTS  # %s\n", prefix, prefix, containsGhostZones_names);
         str += tmpStr;
     }
     else
     {
-        SNPRINTF(tmpStr, 1000, "%scontainsGhostZones = %sAVT_MAYBE_GHOSTS  # %s\n", prefix, prefix, containsGhostZones_names);
+        snprintf(tmpStr, 1000, "%scontainsGhostZones = %sAVT_MAYBE_GHOSTS  # %s\n", prefix, prefix, containsGhostZones_names);
         str += tmpStr;
     }
 
     if(atts->containsOriginalCells)
-        SNPRINTF(tmpStr, 1000, "%scontainsOriginalCells = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scontainsOriginalCells = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scontainsOriginalCells = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scontainsOriginalCells = 0\n", prefix);
     str += tmpStr;
     if(atts->containsOriginalNodes)
-        SNPRINTF(tmpStr, 1000, "%scontainsOriginalNodes = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scontainsOriginalNodes = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scontainsOriginalNodes = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scontainsOriginalNodes = 0\n", prefix);
     str += tmpStr;
     if(atts->containsGlobalNodeIds)
-        SNPRINTF(tmpStr, 1000, "%scontainsGlobalNodeIds = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scontainsGlobalNodeIds = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scontainsGlobalNodeIds = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scontainsGlobalNodeIds = 0\n", prefix);
     str += tmpStr;
     if(atts->containsGlobalZoneIds)
-        SNPRINTF(tmpStr, 1000, "%scontainsGlobalZoneIds = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scontainsGlobalZoneIds = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scontainsGlobalZoneIds = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scontainsGlobalZoneIds = 0\n", prefix);
     str += tmpStr;
     const char *loadBalanceScheme_names = "LOAD_BALANCE_UNKNOWN, LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER, LOAD_BALANCE_STRIDE_ACROSS_BLOCKS, LOAD_BALANCE_RANDOM_ASSIGNMENT, LOAD_BALANCE_DBPLUGIN_DYNAMIC, LOAD_BALANCE_RESTRICTED, LOAD_BALANCE_ABSOLUTE";
     if(atts->loadBalanceScheme == LOAD_BALANCE_UNKNOWN)
     {
-        SNPRINTF(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_UNKNOWN  # %s\n", prefix, prefix, loadBalanceScheme_names);
+        snprintf(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_UNKNOWN  # %s\n", prefix, prefix, loadBalanceScheme_names);
         str += tmpStr;
     }
     else if(atts->loadBalanceScheme == LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER)
     {
-        SNPRINTF(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER  # %s\n", prefix, prefix, loadBalanceScheme_names);
+        snprintf(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER  # %s\n", prefix, prefix, loadBalanceScheme_names);
         str += tmpStr;
     }
     else if(atts->loadBalanceScheme == LOAD_BALANCE_STRIDE_ACROSS_BLOCKS)
     {
-        SNPRINTF(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_STRIDE_ACROSS_BLOCKS  # %s\n", prefix, prefix, loadBalanceScheme_names);
+        snprintf(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_STRIDE_ACROSS_BLOCKS  # %s\n", prefix, prefix, loadBalanceScheme_names);
         str += tmpStr;
     }
     else if(atts->loadBalanceScheme == LOAD_BALANCE_RANDOM_ASSIGNMENT)
     {
-        SNPRINTF(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_RANDOM_ASSIGNMENT  # %s\n", prefix, prefix, loadBalanceScheme_names);
+        snprintf(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_RANDOM_ASSIGNMENT  # %s\n", prefix, prefix, loadBalanceScheme_names);
         str += tmpStr;
     }
     else if(atts->loadBalanceScheme == LOAD_BALANCE_DBPLUGIN_DYNAMIC)
     {
-        SNPRINTF(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_DBPLUGIN_DYNAMIC  # %s\n", prefix, prefix, loadBalanceScheme_names);
+        snprintf(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_DBPLUGIN_DYNAMIC  # %s\n", prefix, prefix, loadBalanceScheme_names);
         str += tmpStr;
     }
     else if(atts->loadBalanceScheme == LOAD_BALANCE_RESTRICTED)
     {
-        SNPRINTF(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_RESTRICTED  # %s\n", prefix, prefix, loadBalanceScheme_names);
+        snprintf(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_RESTRICTED  # %s\n", prefix, prefix, loadBalanceScheme_names);
         str += tmpStr;
     }
     else
     {
-        SNPRINTF(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_ABSOLUTE  # %s\n", prefix, prefix, loadBalanceScheme_names);
+        snprintf(tmpStr, 1000, "%sloadBalanceScheme = %sLOAD_BALANCE_ABSOLUTE  # %s\n", prefix, prefix, loadBalanceScheme_names);
         str += tmpStr;
     }
 
     if(atts->nodesAreCritical)
-        SNPRINTF(tmpStr, 1000, "%snodesAreCritical = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%snodesAreCritical = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%snodesAreCritical = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%snodesAreCritical = 0\n", prefix);
     str += tmpStr;
     {   const float *unitCellVectors = atts->unitCellVectors;
-        SNPRINTF(tmpStr, 1000, "%sunitCellVectors = (", prefix);
+        snprintf(tmpStr, 1000, "%sunitCellVectors = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 9; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", unitCellVectors[i]);
+            snprintf(tmpStr, 1000, "%g", unitCellVectors[i]);
             str += tmpStr;
             if(i < 8)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const float *unitCellOrigin = atts->unitCellOrigin;
-        SNPRINTF(tmpStr, 1000, "%sunitCellOrigin = (", prefix);
+        snprintf(tmpStr, 1000, "%sunitCellOrigin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", unitCellOrigin[i]);
+            snprintf(tmpStr, 1000, "%g", unitCellOrigin[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->rectilinearGridHasTransform)
-        SNPRINTF(tmpStr, 1000, "%srectilinearGridHasTransform = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%srectilinearGridHasTransform = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%srectilinearGridHasTransform = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%srectilinearGridHasTransform = 0\n", prefix);
     str += tmpStr;
     {   const double *rectilinearGridTransform = atts->rectilinearGridTransform;
-        SNPRINTF(tmpStr, 1000, "%srectilinearGridTransform = (", prefix);
+        snprintf(tmpStr, 1000, "%srectilinearGridTransform = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 16; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", rectilinearGridTransform[i]);
+            snprintf(tmpStr, 1000, "%g", rectilinearGridTransform[i]);
             str += tmpStr;
             if(i < 15)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%snodeOrigin = %d\n", prefix, atts->nodeOrigin);
+    snprintf(tmpStr, 1000, "%snodeOrigin = %d\n", prefix, atts->nodeOrigin);
     str += tmpStr;
     if(atts->containsExteriorBoundaryGhosts)
-        SNPRINTF(tmpStr, 1000, "%scontainsExteriorBoundaryGhosts = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scontainsExteriorBoundaryGhosts = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scontainsExteriorBoundaryGhosts = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scontainsExteriorBoundaryGhosts = 0\n", prefix);
     str += tmpStr;
     if(atts->hideFromGUI)
-        SNPRINTF(tmpStr, 1000, "%shideFromGUI = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shideFromGUI = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shideFromGUI = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shideFromGUI = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sLODs = %d\n", prefix, atts->LODs);
+    snprintf(tmpStr, 1000, "%sLODs = %d\n", prefix, atts->LODs);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spresentGhostZoneTypes = %d\n", prefix, atts->presentGhostZoneTypes);
+    snprintf(tmpStr, 1000, "%spresentGhostZoneTypes = %d\n", prefix, atts->presentGhostZoneTypes);
     str += tmpStr;
     if(atts->zonesWereSplit)
-        SNPRINTF(tmpStr, 1000, "%szonesWereSplit = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%szonesWereSplit = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%szonesWereSplit = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%szonesWereSplit = 0\n", prefix);
     str += tmpStr;
     return str;
 }

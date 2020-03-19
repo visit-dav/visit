@@ -3,10 +3,12 @@
         <!-- required libraries -->
         <required>
             <lib name="cmake"/> <!-- cmake is here -->
+            <lib name="openssl"/>
             <lib name="python"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt"/>
             <lib name="qwt"/>
+            <lib name="zlib"/>
         </required>
 
         <!-- optional libraries -->
@@ -16,7 +18,6 @@
             <lib name="advio"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
-            <lib name="ccmio"/>
             <lib name="cfitsio"/>
             <lib name="cgns"/>
             <lib name="conduit"/>
@@ -41,13 +42,12 @@
             <lib name="nektarpp"/>
             <lib name="netcdf"/>
             <lib name="openexr"/>
-            <lib name="openssl"/>
             <lib name="osmesa"/>
             <lib name="ospray"/>
             <lib name="p7zip"/>
             <lib name="pidx"/>
-            <lib name="pyside"/>
             <lib name="silo"/>
+            <lib name="stripack"/>
             <lib name="szip"/>
             <lib name="tbb"/>
             <lib name="tcmalloc"/>
@@ -55,24 +55,25 @@
             <lib name="vtkm"/>
             <lib name="vtkh"/>
             <lib name="xdmf"/>
-            <lib name="zlib"/>
         </optional>
 
         <!-- thirdparty flag -->
         <group name="required" comment="All required libraries" enabled="yes">
             <lib name="cmake"/> <!-- cmake is here -->
+            <lib name="openssl"/>
             <lib name="python"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt"/>
             <lib name="qwt"/>
+            <lib name="zlib"/>
         </group>
 
         <group name="optional" comment="All optional libraries" enabled="no">
             <lib name="adios"/>
+            <lib name="adios2"/>
             <lib name="advio"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
-            <lib name="ccmio"/>
             <lib name="cfitsio"/>
             <lib name="cgns"/>
             <lib name="conduit"/>
@@ -91,7 +92,6 @@
             <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="openexr"/>
-            <lib name="openssl"/>
             <lib name="ospray"/>
             <lib name="p7zip"/>
             <lib name="pidx"/>
@@ -101,16 +101,16 @@
             <lib name="vtkm"/>
             <lib name="vtkh"/>
             <lib name="xdmf"/>
-            <lib name="zlib"/>
         </group>
 
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
             <lib name="no-cmake"/>
+            <lib name="no-openssl"/>
             <lib name="no-python"/>
-            <lib name="no-pyside"/>
             <lib name="no-qt" />
             <lib name="no-qwt" />
             <lib name="no-vtk"/>
+            <lib name="no-zlib"/>
         </group>
 
         <!-- all io libraries -->
@@ -120,7 +120,6 @@
 <!--        <lib name="advio"/>    Removed by Allen Sanderson-->
             <lib name="boost"/> <!-- required by nektarpp -->
             <lib name="boxlib"/>
-            <lib name="ccmio"/>
             <lib name="cfitsio"/>
             <lib name="conduit"/>
             <lib name="mfem"/>
@@ -139,7 +138,7 @@
             <lib name="szip"/>
             <lib name="uintah"/>
             <lib name="xdmf"/>
-            <lib name="zlib"/> <!-- required by nektarpp -->
+            <lib name="zlib"/>
         </group>
 
         <!-- dbio-only-->
@@ -149,7 +148,6 @@
             <lib name="advio"/>
             <lib name="boost"/> <!-- required by nektarpp -->
             <lib name="boxlib"/>
-            <lib name="ccmio"/>
             <lib name="cfitsio"/>
             <lib name="conduit"/>
             <lib name="mfem"/>
@@ -167,7 +165,7 @@
             <lib name="szip"/>
             <lib name="uintah"/>
             <lib name="xdmf"/>
-            <lib name="zlib"/> <!-- required by nektarpp -->
+            <lib name="zlib"/>
             <lib name="no-qt"/>
             <lib name="no-qwt"/>
             <lib name="no-python"/>
@@ -207,6 +205,7 @@
             <lib name="vtk"/>
             <lib name="qt"/>
             <lib name="qwt"/>
+            <lib name="zlib"/>
         </required>
 
         <!-- optional libraries -->
@@ -235,6 +234,7 @@
             <lib name="vtk"/>
             <lib name="qt"/>
             <lib name="qwt"/>
+            <lib name="zlib"/>
         </group>
 
         <group name="optional" comment="All optional libraries" enabled="no">
@@ -257,6 +257,7 @@
             <lib name="no-qt" />
             <lib name="no-qwt" />
             <lib name="no-vtk"/>
+            <lib name="no-zlib"/>
         </group>
 
         <!-- nodbio flag -->
@@ -264,6 +265,7 @@
             <lib name="hdf5"/>
             <lib name="netcdf"/>
             <lib name="szip"/>
+            <lib name="zlib"/>
             <lib name="uintah"/>
             <lib name="no-python"/>
             <lib name="no-qt"/>
@@ -275,6 +277,7 @@
             <lib name="hdf5"/>
             <lib name="netcdf"/>
             <lib name="szip"/>
+            <lib name="zlib"/>
             <lib name="uintah"/>
         </group>
         <!-- #all the optional non io libraries -->

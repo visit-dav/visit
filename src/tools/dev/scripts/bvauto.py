@@ -31,7 +31,7 @@ def sexe(cmd):
     """
     Runs a shell command.
     """
-    print "[exe: %s]" % cmd
+    print("[exe: %s]" % cmd)
     os.system(cmd)
     
 def parse_args():
@@ -41,20 +41,20 @@ def parse_args():
     res = {}
     nargs = len(sys.argv)
     if nargs < 2:
-        print "usage:"
-        print " Test build_visit on current machine:"
-        print "  bvauto.py [bvauto.input]"
-        print " Test build_visit on current machine and post results"
-        print "  bvauto.py [bvauto.input] <--post> [result root] [result group]"
-        print "  example: bvauto.py bvauto.input --post cyrush@davinci.nersc.gov:/path/to/results/ visitdev"
-        print " Reindex Result Root (local machine only):"
-        print "  bvauto.py <--reindex> [result root] [result group]"
-        print "  example: bvauto.py --reindex /path/to/results/ visitdev"
+        print("usage:")
+        print(" Test build_visit on current machine:")
+        print("  bvauto.py [bvauto.input]")
+        print(" Test build_visit on current machine and post results")
+        print("  bvauto.py [bvauto.input] <--post> [result root] [result group]")
+        print("  example: bvauto.py bvauto.input --post cyrush@davinci.nersc.gov:/path/to/results/ visitdev")
+        print(" Reindex Result Root (local machine only):")
+        print("  bvauto.py <--reindex> [result root] [result group]")
+        print("  example: bvauto.py --reindex /path/to/results/ visitdev")
         sys.exit(-1)
     if sys.argv[1] == "--reindex":
         if nargs <4:
-            print "usage:"    
-            print "  bvauto.py <--reindex> [result root] [result group]"
+            print("usage:")    
+            print("  bvauto.py <--reindex> [result root] [result group]")
             sys.exit(-1)
         res["op"] = "reindex"
         res["result_root"] = os.path.abspath(sys.argv[2])
@@ -67,14 +67,14 @@ def parse_args():
         res["cleanup"] = False
         if nargs > 2:
             if sys.argv[2] != "--post" or nargs < 5:
-                print "usage:"
-                print "  bvauto.py [bvauto.input] <--post> [result root] [result group]"
+                print("usage:")
+                print("  bvauto.py [bvauto.input] <--post> [result root] [result group]")
                 sys.exit(-1)
             res["post"] = True
             res["cleanup"] = True
             res["result_root"] = sys.argv[3]
             res["result_group"] = sys.argv[4]
-    if "result_root" in res.keys():
+    if "result_root" in list(res.keys()):
         if res["result_root"][-1]== "/":
             res["result_root"]=res["result_root"][:-1]
     return res
@@ -90,7 +90,7 @@ def get_svn_root():
     """
     Constructs a svn root for the VisIt repo using env var SVN_NERSC_NAME.
     """
-    if not "SVN_NERSC_NAME" in os.environ.keys():
+    if not "SVN_NERSC_NAME" in list(os.environ.keys()):
         sys.stderr.write("<Error: Could not obtain nersc svn user name from environment.")
         sys.stderr.write("Make sure SVN_NERSC_NAME is set!>\n")
         sys.exit(-1)
@@ -127,8 +127,8 @@ def analyze_result(rfile):
     try:
         import xml.etree.ElementTree as etree
     except:
-        print "<Error: Could not load  xml.etree.ElementTree module. ",
-        print "bvauto.py requires Python Version >= 2.5>"
+        print("<Error: Could not load  xml.etree.ElementTree module. ", end=' ')
+        print("bvauto.py requires Python Version >= 2.5>")
         sys.exit(-1)
     et = etree.parse(rfile)
     et = et.getroot()
@@ -152,7 +152,7 @@ def reindex_results(result_root,result_group):
     Rebuilds the index.html file at a given result_root and sets 
     group read permisions.
     """
-    print "[bvauto: reindex %s %s]" % (result_root,result_group)
+    print("[bvauto: reindex %s %s]" % (result_root,result_group))
     rdirs = glob.glob("%s/bv.auto.*/*.xml" % result_root)
     rdirs.sort()
     rdirs.reverse()
@@ -203,12 +203,12 @@ def run_tests(input_file,mode):
     Rebuilds the index.html file at a given result_root and sets 
     group read permisions.
     """
-    print "[bvauto: test %s %s]" % (input_file,mode)
+    print("[bvauto: test %s %s]" % (input_file,mode))
     svn_root = get_svn_root()
     run_dir = create_run_dir(mode)
     libcmds = parse_tests(input_file)
-    print "[Svn Root:    %s]" % svn_root
-    print "[Run Dir:     %s]" % run_dir
+    print("[Svn Root:    %s]" % svn_root)
+    print("[Run Dir:     %s]" % run_dir)
     result_file="%s.xml" % run_dir
     cwd = os.getcwd()
     os.chdir(run_dir);
@@ -232,14 +232,14 @@ def post(pattern,result_dir,result_group):
     Handles posting to local file system (via cp) or remote system (via ssh/scp).
     """
     if result_dir.find("@") > 0 and result_dir.find(":") > 0:
-        print "[Posting to remote path]"
+        print("[Posting to remote path]")
         remote_host, remote_path = result_dir.split(":")
         sexe("ssh %s mkdir %s" % (remote_host,remote_path))
         sexe("scp %s %s" % (pattern,result_dir))
         sexe("ssh %s chgrp -R %s %s" % (remote_host,result_group,remote_path))
         sexe("ssh %s chmod -R g+rx %s" % (remote_host,remote_path))
     else:
-        print "[Posting to local path]"
+        print("[Posting to local path]")
         # copy results to public dir (xml,xsl,css,bv_log_*txt)
         if not os.path.exists(result_dir):
             sexe("mkdir %s/" % result_dir)
@@ -284,7 +284,7 @@ def main():
         if args["cleanup"]:
             cleanup_run_dir(run_dir)
     else:
-        print args
+        print(args)
 
 if __name__ == "__main__":
     main()

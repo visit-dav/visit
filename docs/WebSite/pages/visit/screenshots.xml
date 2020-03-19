@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt Screen Shots]]></title>
+  <IM>LLNL-WEB-XXXXXX</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[March 19, 2013]]></lastchanged>
+  <lastchanged><![CDATA[September 9, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -119,7 +120,7 @@
 	</div>		
 	<div class="span3">
 		<div class="well muted">
-			<p>The <strong>subset plot</strong> is used to display different parts of an assembly. Portions of the assembly can be selectively turned on and off. The first image shows an entire crash impact dummy, while the second image shows only the hips and upper body.</p>	
+			<p>The <strong>molecule plot</strong> is used to display molecules as spheres and cylinders. The image on the left is a crotamine molecule with the atoms shown as spheres sized by the covalent radius, colored by the element type, and the bonds not shown. The image on the right has the atoms shown a constant size, colored by the element type, and the bonds shown as cylinders, colored by the adjacent element type.</p>	
 		</div> 
 	</div>
 </div>	

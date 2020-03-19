@@ -22,7 +22,7 @@ Definition:
 //
 // ****************************************************************************
 
-avtSymmetricTensorMetaData::avtSymmetricTensorMetaData(std::string n, std::string mn, 
+avtSymmetricTensorMetaData::avtSymmetricTensorMetaData(std::string n, std::string mn,
                                      avtCentering c, int vd)
     : avtVarMetaData(avtSymmetricTensorMetaData::TmfsStruct, n, mn, c)
 {

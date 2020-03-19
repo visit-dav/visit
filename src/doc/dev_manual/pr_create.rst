@@ -12,6 +12,14 @@ tailor the review effort and balance the load among developers. We hope these po
 will help ensure PR reviews are completed in a timely manner. The benefits of reviews
 outweigh the added time.
 
+Forking the repo
+----------------
+
+Developers who do not have write access to the primary VisIt_ repo may make
+contributions by forking the repo and submitting pull requests. GitHub provides
+excellent informational articles about `forking a repo <https://help.github.com/en/articles/fork-a-repo>`_ and
+`creating pull requests from a fork <https://help.github.com/en/articles/creating-a-pull-request-from-a-fork>`_.
+
 Working with the Template
 -------------------------
 

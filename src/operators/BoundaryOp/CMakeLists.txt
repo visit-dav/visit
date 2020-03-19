@@ -3,6 +3,8 @@ PROJECT(BoundaryOp_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(BoundaryOp)
+
 SET(COMMON_SOURCES
 BoundaryOpPluginInfo.C
 BoundaryOpCommonPluginInfo.C
@@ -110,6 +112,10 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SBoundaryOpOperator ${LIBS_SOURCES})
+        IF(WIN32)
+            # This prevents python from #defining snprintf as _snprintf
+            SET_TARGET_PROPERTIES(SBoundaryOpOperator PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
+        ENDIF()
         TARGET_LINK_LIBRARIES(SBoundaryOpOperator visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SBoundaryOpOperator)
     ENDIF(VISIT_PYTHON_SCRIPTING)
