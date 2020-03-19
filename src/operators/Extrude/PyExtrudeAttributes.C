@@ -62,8 +62,85 @@ PyExtrudeAttributes_ToString(const ExtrudeAttributes *atts, const char *prefix)
     else
         snprintf(tmpStr, 1000, "%sbyVariable = 0\n", prefix);
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
-    str += tmpStr;
+    {   const stringVector &scalarVariableNames = atts->GetScalarVariableNames();
+        snprintf(tmpStr, 1000, "%sscalarVariableNames = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < scalarVariableNames.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "\"%s\"", scalarVariableNames[i].c_str());
+            str += tmpStr;
+            if(i < scalarVariableNames.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const stringVector &visualVariableNames = atts->GetVisualVariableNames();
+        snprintf(tmpStr, 1000, "%svisualVariableNames = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < visualVariableNames.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "\"%s\"", visualVariableNames[i].c_str());
+            str += tmpStr;
+            if(i < visualVariableNames.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const doubleVector &extentMinima = atts->GetExtentMinima();
+        snprintf(tmpStr, 1000, "%sextentMinima = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < extentMinima.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%g", extentMinima[i]);
+            str += tmpStr;
+            if(i < extentMinima.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const doubleVector &extentMaxima = atts->GetExtentMaxima();
+        snprintf(tmpStr, 1000, "%sextentMaxima = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < extentMaxima.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%g", extentMaxima[i]);
+            str += tmpStr;
+            if(i < extentMaxima.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    const char *variableDisplay_names = "Index, Value";
+    switch (atts->GetVariableDisplay())
+    {
+      case ExtrudeAttributes::Index:
+          snprintf(tmpStr, 1000, "%svariableDisplay = %sIndex  # %s\n", prefix, prefix, variableDisplay_names);
+          str += tmpStr;
+          break;
+      case ExtrudeAttributes::Value:
+          snprintf(tmpStr, 1000, "%svariableDisplay = %sValue  # %s\n", prefix, prefix, variableDisplay_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     snprintf(tmpStr, 1000, "%slength = %g\n", prefix, atts->GetLength());
     str += tmpStr;
     snprintf(tmpStr, 1000, "%ssteps = %d\n", prefix, atts->GetSteps());
@@ -164,26 +241,259 @@ ExtrudeAttributes_GetByVariable(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ExtrudeAttributes_SetVariable(PyObject *self, PyObject *args)
+ExtrudeAttributes_SetScalarVariableNames(PyObject *self, PyObject *args)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
+    stringVector  &vec = obj->data->GetScalarVariableNames();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
         return NULL;
 
-    // Set the variable in the object.
-    obj->data->SetVariable(std::string(str));
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyString_Check(item))
+                vec[i] = std::string(PyString_AS_STRING(item));
+            else
+                vec[i] = std::string("");
+        }
+    }
+    else if(PyString_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = std::string(PyString_AS_STRING(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the scalarVariableNames in the object as modified.
+    obj->data->SelectScalarVariableNames();
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ExtrudeAttributes_GetVariable(PyObject *self, PyObject *args)
+ExtrudeAttributes_GetScalarVariableNames(PyObject *self, PyObject *args)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetVariable().c_str());
+    // Allocate a tuple the with enough entries to hold the scalarVariableNames.
+    const stringVector &scalarVariableNames = obj->data->GetScalarVariableNames();
+    PyObject *retval = PyTuple_New(scalarVariableNames.size());
+    for(size_t i = 0; i < scalarVariableNames.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(scalarVariableNames[i].c_str()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtrudeAttributes_SetVisualVariableNames(PyObject *self, PyObject *args)
+{
+    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+
+    stringVector  &vec = obj->data->GetVisualVariableNames();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyString_Check(item))
+                vec[i] = std::string(PyString_AS_STRING(item));
+            else
+                vec[i] = std::string("");
+        }
+    }
+    else if(PyString_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = std::string(PyString_AS_STRING(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the visualVariableNames in the object as modified.
+    obj->data->SelectVisualVariableNames();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtrudeAttributes_GetVisualVariableNames(PyObject *self, PyObject *args)
+{
+    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the visualVariableNames.
+    const stringVector &visualVariableNames = obj->data->GetVisualVariableNames();
+    PyObject *retval = PyTuple_New(visualVariableNames.size());
+    for(size_t i = 0; i < visualVariableNames.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(visualVariableNames[i].c_str()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtrudeAttributes_SetExtentMinima(PyObject *self, PyObject *args)
+{
+    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+
+    doubleVector  &vec = obj->data->GetExtentMinima();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = PyFloat_AS_DOUBLE(item);
+            else if(PyInt_Check(item))
+                vec[i] = double(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = PyLong_AsDouble(item);
+            else
+                vec[i] = 0.;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyFloat_AS_DOUBLE(tuple);
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = double(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyLong_AsDouble(tuple);
+    }
+    else
+        return NULL;
+
+    // Mark the extentMinima in the object as modified.
+    obj->data->SelectExtentMinima();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtrudeAttributes_GetExtentMinima(PyObject *self, PyObject *args)
+{
+    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the extentMinima.
+    const doubleVector &extentMinima = obj->data->GetExtentMinima();
+    PyObject *retval = PyTuple_New(extentMinima.size());
+    for(size_t i = 0; i < extentMinima.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(extentMinima[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtrudeAttributes_SetExtentMaxima(PyObject *self, PyObject *args)
+{
+    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+
+    doubleVector  &vec = obj->data->GetExtentMaxima();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = PyFloat_AS_DOUBLE(item);
+            else if(PyInt_Check(item))
+                vec[i] = double(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = PyLong_AsDouble(item);
+            else
+                vec[i] = 0.;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyFloat_AS_DOUBLE(tuple);
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = double(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyLong_AsDouble(tuple);
+    }
+    else
+        return NULL;
+
+    // Mark the extentMaxima in the object as modified.
+    obj->data->SelectExtentMaxima();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtrudeAttributes_GetExtentMaxima(PyObject *self, PyObject *args)
+{
+    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the extentMaxima.
+    const doubleVector &extentMaxima = obj->data->GetExtentMaxima();
+    PyObject *retval = PyTuple_New(extentMaxima.size());
+    for(size_t i = 0; i < extentMaxima.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(extentMaxima[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtrudeAttributes_SetVariableDisplay(PyObject *self, PyObject *args)
+{
+    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the variableDisplay in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetVariableDisplay(ExtrudeAttributes::VariableDisplayType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid variableDisplay value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Index, Value.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtrudeAttributes_GetVariableDisplay(PyObject *self, PyObject *args)
+{
+    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetVariableDisplay()));
     return retval;
 }
 
@@ -267,8 +577,16 @@ PyMethodDef PyExtrudeAttributes_methods[EXTRUDEATTRIBUTES_NMETH] = {
     {"GetAxis", ExtrudeAttributes_GetAxis, METH_VARARGS},
     {"SetByVariable", ExtrudeAttributes_SetByVariable, METH_VARARGS},
     {"GetByVariable", ExtrudeAttributes_GetByVariable, METH_VARARGS},
-    {"SetVariable", ExtrudeAttributes_SetVariable, METH_VARARGS},
-    {"GetVariable", ExtrudeAttributes_GetVariable, METH_VARARGS},
+    {"SetScalarVariableNames", ExtrudeAttributes_SetScalarVariableNames, METH_VARARGS},
+    {"GetScalarVariableNames", ExtrudeAttributes_GetScalarVariableNames, METH_VARARGS},
+    {"SetVisualVariableNames", ExtrudeAttributes_SetVisualVariableNames, METH_VARARGS},
+    {"GetVisualVariableNames", ExtrudeAttributes_GetVisualVariableNames, METH_VARARGS},
+    {"SetExtentMinima", ExtrudeAttributes_SetExtentMinima, METH_VARARGS},
+    {"GetExtentMinima", ExtrudeAttributes_GetExtentMinima, METH_VARARGS},
+    {"SetExtentMaxima", ExtrudeAttributes_SetExtentMaxima, METH_VARARGS},
+    {"GetExtentMaxima", ExtrudeAttributes_GetExtentMaxima, METH_VARARGS},
+    {"SetVariableDisplay", ExtrudeAttributes_SetVariableDisplay, METH_VARARGS},
+    {"GetVariableDisplay", ExtrudeAttributes_GetVariableDisplay, METH_VARARGS},
     {"SetLength", ExtrudeAttributes_SetLength, METH_VARARGS},
     {"GetLength", ExtrudeAttributes_GetLength, METH_VARARGS},
     {"SetSteps", ExtrudeAttributes_SetSteps, METH_VARARGS},
@@ -307,8 +625,21 @@ PyExtrudeAttributes_getattr(PyObject *self, char *name)
         return ExtrudeAttributes_GetAxis(self, NULL);
     if(strcmp(name, "byVariable") == 0)
         return ExtrudeAttributes_GetByVariable(self, NULL);
-    if(strcmp(name, "variable") == 0)
-        return ExtrudeAttributes_GetVariable(self, NULL);
+    if(strcmp(name, "scalarVariableNames") == 0)
+        return ExtrudeAttributes_GetScalarVariableNames(self, NULL);
+    if(strcmp(name, "visualVariableNames") == 0)
+        return ExtrudeAttributes_GetVisualVariableNames(self, NULL);
+    if(strcmp(name, "extentMinima") == 0)
+        return ExtrudeAttributes_GetExtentMinima(self, NULL);
+    if(strcmp(name, "extentMaxima") == 0)
+        return ExtrudeAttributes_GetExtentMaxima(self, NULL);
+    if(strcmp(name, "variableDisplay") == 0)
+        return ExtrudeAttributes_GetVariableDisplay(self, NULL);
+    if(strcmp(name, "Index") == 0)
+        return PyInt_FromLong(long(ExtrudeAttributes::Index));
+    if(strcmp(name, "Value") == 0)
+        return PyInt_FromLong(long(ExtrudeAttributes::Value));
+
     if(strcmp(name, "length") == 0)
         return ExtrudeAttributes_GetLength(self, NULL);
     if(strcmp(name, "steps") == 0)
@@ -333,8 +664,16 @@ PyExtrudeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ExtrudeAttributes_SetAxis(self, tuple);
     else if(strcmp(name, "byVariable") == 0)
         obj = ExtrudeAttributes_SetByVariable(self, tuple);
-    else if(strcmp(name, "variable") == 0)
-        obj = ExtrudeAttributes_SetVariable(self, tuple);
+    else if(strcmp(name, "scalarVariableNames") == 0)
+        obj = ExtrudeAttributes_SetScalarVariableNames(self, tuple);
+    else if(strcmp(name, "visualVariableNames") == 0)
+        obj = ExtrudeAttributes_SetVisualVariableNames(self, tuple);
+    else if(strcmp(name, "extentMinima") == 0)
+        obj = ExtrudeAttributes_SetExtentMinima(self, tuple);
+    else if(strcmp(name, "extentMaxima") == 0)
+        obj = ExtrudeAttributes_SetExtentMaxima(self, tuple);
+    else if(strcmp(name, "variableDisplay") == 0)
+        obj = ExtrudeAttributes_SetVariableDisplay(self, tuple);
     else if(strcmp(name, "length") == 0)
         obj = ExtrudeAttributes_SetLength(self, tuple);
     else if(strcmp(name, "steps") == 0)

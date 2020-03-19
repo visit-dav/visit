@@ -1,0 +1,331 @@
+Function: InsertVariable
+Declaration: void InsertVariable(const std::string &variableName_);
+Definition:
+// ****************************************************************************
+// Method: ParallelCoordinatesAttributes::InsertVariable
+//
+// Purpose: Inserts an variable (assuming at the end)
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// Note: Taken largely from Mark Blair's Parallel Variable plot.
+//
+// Modifications:
+//    Jeremy Meredith, Fri Feb  1 17:55:14 EST 2008
+//    Made it use float min/max for non-limiting extents values.
+//   
+//    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
+//    Remove the variable extents; they were unusued.
+//
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedVariableNames to scalarVariableNames to distinguish these
+//    as names of actual scalars instead of just display names.  Added
+//    visualVariableNames.
+//
+// ****************************************************************************
+
+void
+ExtrudeAttributes::InsertVariable(const std::string &variableName_)
+{
+    std::string newVariableName = variableName_;
+
+    size_t curVariableCount = scalarVariableNames.size();
+    size_t variableOrdinal;
+    double saveExtentMin, saveExtentMax;
+
+    stringVector::iterator svariableNamesIt;
+    stringVector::iterator vvariableNamesIt;
+    doubleVector::iterator extentMinIt;
+    doubleVector::iterator extentMaxIt;
+    
+    for (variableOrdinal = 0; variableOrdinal < curVariableCount; variableOrdinal++)
+    {
+        if (scalarVariableNames[variableOrdinal] == newVariableName) break;
+    }
+
+    if (variableOrdinal < curVariableCount)
+    {
+        saveExtentMin  = extentMinima[variableOrdinal];
+        saveExtentMax  = extentMaxima[variableOrdinal];
+
+        svariableNamesIt = scalarVariableNames.begin()  + variableOrdinal;
+        vvariableNamesIt = visualVariableNames.begin()  + variableOrdinal;
+        extentMinIt  = extentMinima.begin()     + variableOrdinal;
+        extentMaxIt  = extentMaxima.begin()     + variableOrdinal;
+
+        scalarVariableNames.erase(svariableNamesIt);
+        visualVariableNames.erase(vvariableNamesIt);
+        extentMinima.erase(extentMinIt);
+        extentMaxima.erase(extentMaxIt);
+    }
+    else
+    {
+        saveExtentMin  = -1e+37;
+        saveExtentMax  = +1e+37;
+    }
+
+    size_t insertOrdinal = scalarVariableNames.size();
+
+    svariableNamesIt = scalarVariableNames.begin()  + insertOrdinal;
+    vvariableNamesIt = visualVariableNames.begin()  + insertOrdinal;
+    extentMinIt  = extentMinima.begin()     + insertOrdinal;
+    extentMaxIt  = extentMaxima.begin()     + insertOrdinal;
+
+    scalarVariableNames.insert(svariableNamesIt, newVariableName);
+    visualVariableNames.insert(vvariableNamesIt, newVariableName);
+    extentMinima.insert(extentMinIt, saveExtentMin);
+    extentMaxima.insert(extentMaxIt, saveExtentMax);
+    
+    SelectAll();
+}
+
+Function: DeleteVariable
+Declaration: void DeleteVariable(const std::string &variableName_, int minVariableCount);
+Definition:
+// ****************************************************************************
+// Method: ExtrudeAttributes::DeleteVariable
+//
+// Purpose: Deletes an variable (as long as there are enough remaining)
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// Note: Taken largely from Mark Blair's Parallel Variable plot.
+//
+// Modifications:
+//    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
+//    Remove the variable extents; they were unusued.
+//   
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedVariableNames to scalarVariableNames to distinguish these
+//    as names of actual scalars instead of just display names.  Added
+//    visualVariableNames.
+//
+//    Kathleen Bonnell, Wed Jun 4 07:54:16 PDT 2008 
+//    Removed unused variables leftSelectedVariableID, rightSelectedVariableID.
+//
+// ****************************************************************************
+
+void
+ExtrudeAttributes::DeleteVariable(const std::string &variableName_,
+                                          int minVariableCount)
+{
+    if ((int)scalarVariableNames.size() <= minVariableCount) return;
+
+    std::string newVariableName = variableName_;
+
+    size_t curVariableCount = scalarVariableNames.size();
+    size_t variableOrdinal;
+
+    for (variableOrdinal = 0; variableOrdinal < curVariableCount; variableOrdinal++)
+    {
+        if (scalarVariableNames[variableOrdinal] == newVariableName) break;
+    }
+
+    if (variableOrdinal < curVariableCount)
+    {
+        visualVariableNames.erase(visualVariableNames.begin() + variableOrdinal);
+        scalarVariableNames.erase(scalarVariableNames.begin() + variableOrdinal);
+        extentMinima.erase(extentMinima.begin() + variableOrdinal);
+        extentMaxima.erase(extentMaxima.begin() + variableOrdinal);
+        
+        SelectAll();
+    }
+}
+
+Function: AttributesAreConsistent
+Declaration: bool AttributesAreConsistent() const;
+Definition:
+// ****************************************************************************
+// Method: ExtrudeAttributes::AttributesAreConsistent
+//
+// Purpose: Returns true only if (1) all vector attributes are the same length,
+//          (2) all variable names are unique, and (3) the index of the currently
+//          displayable variable information in the GUI is in range.
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// ****************************************************************************
+
+bool
+ExtrudeAttributes::AttributesAreConsistent() const
+{
+    size_t variableNamesSize = scalarVariableNames.size();
+    size_t variableNum, variable2Num;
+    std::string variableName;
+    
+    if (variableNamesSize == 0)
+    {
+        if (extentMinima.size() != extentMaxima.size())
+            return false;
+
+        return true;
+    }
+    
+    if ((extentMinima.size() != variableNamesSize) ||
+        (extentMaxima.size() != variableNamesSize))
+    {
+        return false;
+    }
+    
+    for (variableNum = 0; variableNum < variableNamesSize - 1; variableNum++)
+    {
+        variableName = scalarVariableNames[variableNum];
+
+        for (variable2Num = variableNum + 1; variable2Num < variableNamesSize; variable2Num++ )
+        {
+            if (scalarVariableNames[variable2Num] == variableName)
+                return false;
+        }
+    }
+    
+    return true;
+}
+
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+// ****************************************************************************
+// Method: ExtrudeAttributes::CopyAttributes
+//
+// Purpose: Sets the attributes from another attribute group
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// ****************************************************************************
+bool
+ExtrudeAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const ExtrudeAttributes *tmp =
+            (const ExtrudeAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if (atts->TypeName() == "VariableRestrictionAttributes")
+    {
+        const VariableRestrictionAttributes *ar =
+            (const VariableRestrictionAttributes *)atts;
+
+        if (scalarVariableNames.size() == 0)
+        {
+            visualVariableNames = ar->GetNames();
+            extentMinima = ar->GetMinima();
+            extentMaxima = ar->GetMaxima();
+        }
+        else
+        {
+            for (size_t i=0; i<extentMinima.size(); i++)
+            {
+                extentMinima[i] = ar->GetMinima()[i];
+                extentMaxima[i] = ar->GetMaxima()[i];
+            }
+        }
+        SelectVisualVariableNames();
+        SelectExtentMinima();
+        SelectExtentMaxima();
+
+        retval = true;
+    }
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+// ****************************************************************************
+//  Method:  ExtrudeAttributes::CreateCompatible
+//
+//  Purpose:
+//    Creates an object of the specified type initialized with the
+//    attributes from this object.
+//
+//  Arguments:
+//    tname : The typename of the object that we want to create.
+//
+//  Returns:    A new object of the type specified by tname or 0.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  8, 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 15 13:13:56 EST 2008
+//    Added better support for variable names.
+//
+// ****************************************************************************
+AttributeSubject *
+ExtrudeAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new ExtrudeAttributes(*this);
+    }
+    else if (tname == "VariableRestrictionAttributes" ||
+             tname == "ThresholdAttributes")
+    {
+        // Note: my hope was that we could update the plot attributes
+        // and have it connect with a threshold tool in another window.
+        // Unfortunately, CreateCompatible("ThresholdAttributes") isn't
+        // called, so there's a missing path issue.  We could probably
+        // get rid of the support for Threshold here.
+        VariableRestrictionAttributes *ar = new VariableRestrictionAttributes;
+
+        ar->SetNames(visualVariableNames);
+        ar->SetMinima(extentMinima);
+        ar->SetMaxima(extentMaxima);
+
+        if (tname == "VariableRestrictionAttributes")
+        {
+            retval = ar;
+        }
+        else
+        {
+            retval = ar->CreateCompatible(tname);
+            delete ar;
+        }
+    }
+
+    return retval;
+}
+
+Function: ResetAxes
+Declaration: void ResetAxes();
+Definition:
+// ****************************************************************************
+//  Method:  ExtrudeAttributes::ResetAxes
+//
+//  Purpose:
+//    Clear out all the variable axes.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  7, 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedVariableNames to scalarVariableNames to distinguish these
+//    as names of actual scalars instead of just display names.  Added
+//    visualVariableNames.
+//
+// ****************************************************************************
+void
+ExtrudeAttributes::ResetAxes()
+{
+    scalarVariableNames.clear();
+    visualVariableNames.clear();
+    extentMinima.clear();
+    extentMaxima.clear();
+    
+    SelectAll();
+}

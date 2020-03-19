@@ -7,6 +7,8 @@ package llnl.visit.operators;
 import llnl.visit.AttributeSubject;
 import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
+import java.util.Vector;
+import java.lang.Double;
 
 // ****************************************************************************
 // Class: ExtrudeAttributes
@@ -25,7 +27,12 @@ import llnl.visit.Plugin;
 
 public class ExtrudeAttributes extends AttributeSubject implements Plugin
 {
-    private static int ExtrudeAttributes_numAdditionalAtts = 6;
+    private static int ExtrudeAttributes_numAdditionalAtts = 10;
+
+    // Enum values
+    public final static int VARIABLEDISPLAYTYPE_INDEX = 0;
+    public final static int VARIABLEDISPLAYTYPE_VALUE = 1;
+
 
     public ExtrudeAttributes()
     {
@@ -36,7 +43,11 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         axis[1] = 0;
         axis[2] = 1;
         byVariable = false;
-        variable = new String("default");
+        scalarVariableNames = new Vector();
+        visualVariableNames = new Vector();
+        extentMinima = new Vector();
+        extentMaxima = new Vector();
+        variableDisplay = VARIABLEDISPLAYTYPE_INDEX;
         length = 1;
         steps = 1;
         preserveOriginalCellNumbers = true;
@@ -51,7 +62,11 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         axis[1] = 0;
         axis[2] = 1;
         byVariable = false;
-        variable = new String("default");
+        scalarVariableNames = new Vector();
+        visualVariableNames = new Vector();
+        extentMinima = new Vector();
+        extentMaxima = new Vector();
+        variableDisplay = VARIABLEDISPLAYTYPE_INDEX;
         length = 1;
         steps = 1;
         preserveOriginalCellNumbers = true;
@@ -69,7 +84,29 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         axis[2] = obj.axis[2];
 
         byVariable = obj.byVariable;
-        variable = new String(obj.variable);
+        scalarVariableNames = new Vector(obj.scalarVariableNames.size());
+        for(i = 0; i < obj.scalarVariableNames.size(); ++i)
+            scalarVariableNames.addElement(new String((String)obj.scalarVariableNames.elementAt(i)));
+
+        visualVariableNames = new Vector(obj.visualVariableNames.size());
+        for(i = 0; i < obj.visualVariableNames.size(); ++i)
+            visualVariableNames.addElement(new String((String)obj.visualVariableNames.elementAt(i)));
+
+        extentMinima = new Vector(obj.extentMinima.size());
+        for(i = 0; i < obj.extentMinima.size(); ++i)
+        {
+            Double dv = (Double)obj.extentMinima.elementAt(i);
+            extentMinima.addElement(new Double(dv.doubleValue()));
+        }
+
+        extentMaxima = new Vector(obj.extentMaxima.size());
+        for(i = 0; i < obj.extentMaxima.size(); ++i)
+        {
+            Double dv = (Double)obj.extentMaxima.elementAt(i);
+            extentMaxima.addElement(new Double(dv.doubleValue()));
+        }
+
+        variableDisplay = obj.variableDisplay;
         length = obj.length;
         steps = obj.steps;
         preserveOriginalCellNumbers = obj.preserveOriginalCellNumbers;
@@ -96,10 +133,50 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < 3 && axis_equal; ++i)
             axis_equal = (axis[i] == obj.axis[i]);
 
+        // Compare the elements in the scalarVariableNames vector.
+        boolean scalarVariableNames_equal = (obj.scalarVariableNames.size() == scalarVariableNames.size());
+        for(i = 0; (i < scalarVariableNames.size()) && scalarVariableNames_equal; ++i)
+        {
+            // Make references to String from Object.
+            String scalarVariableNames1 = (String)scalarVariableNames.elementAt(i);
+            String scalarVariableNames2 = (String)obj.scalarVariableNames.elementAt(i);
+            scalarVariableNames_equal = scalarVariableNames1.equals(scalarVariableNames2);
+        }
+        // Compare the elements in the visualVariableNames vector.
+        boolean visualVariableNames_equal = (obj.visualVariableNames.size() == visualVariableNames.size());
+        for(i = 0; (i < visualVariableNames.size()) && visualVariableNames_equal; ++i)
+        {
+            // Make references to String from Object.
+            String visualVariableNames1 = (String)visualVariableNames.elementAt(i);
+            String visualVariableNames2 = (String)obj.visualVariableNames.elementAt(i);
+            visualVariableNames_equal = visualVariableNames1.equals(visualVariableNames2);
+        }
+        // Compare the elements in the extentMinima vector.
+        boolean extentMinima_equal = (obj.extentMinima.size() == extentMinima.size());
+        for(i = 0; (i < extentMinima.size()) && extentMinima_equal; ++i)
+        {
+            // Make references to Double from Object.
+            Double extentMinima1 = (Double)extentMinima.elementAt(i);
+            Double extentMinima2 = (Double)obj.extentMinima.elementAt(i);
+            extentMinima_equal = extentMinima1.equals(extentMinima2);
+        }
+        // Compare the elements in the extentMaxima vector.
+        boolean extentMaxima_equal = (obj.extentMaxima.size() == extentMaxima.size());
+        for(i = 0; (i < extentMaxima.size()) && extentMaxima_equal; ++i)
+        {
+            // Make references to Double from Object.
+            Double extentMaxima1 = (Double)extentMaxima.elementAt(i);
+            Double extentMaxima2 = (Double)obj.extentMaxima.elementAt(i);
+            extentMaxima_equal = extentMaxima1.equals(extentMaxima2);
+        }
         // Create the return value
         return (axis_equal &&
                 (byVariable == obj.byVariable) &&
-                (variable.equals(obj.variable)) &&
+                scalarVariableNames_equal &&
+                visualVariableNames_equal &&
+                extentMinima_equal &&
+                extentMaxima_equal &&
+                (variableDisplay == obj.variableDisplay) &&
                 (length == obj.length) &&
                 (steps == obj.steps) &&
                 (preserveOriginalCellNumbers == obj.preserveOriginalCellNumbers));
@@ -131,34 +208,62 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         Select(1);
     }
 
-    public void SetVariable(String variable_)
+    public void SetScalarVariableNames(Vector scalarVariableNames_)
     {
-        variable = variable_;
+        scalarVariableNames = scalarVariableNames_;
         Select(2);
+    }
+
+    public void SetVisualVariableNames(Vector visualVariableNames_)
+    {
+        visualVariableNames = visualVariableNames_;
+        Select(3);
+    }
+
+    public void SetExtentMinima(Vector extentMinima_)
+    {
+        extentMinima = extentMinima_;
+        Select(4);
+    }
+
+    public void SetExtentMaxima(Vector extentMaxima_)
+    {
+        extentMaxima = extentMaxima_;
+        Select(5);
+    }
+
+    public void SetVariableDisplay(int variableDisplay_)
+    {
+        variableDisplay = variableDisplay_;
+        Select(6);
     }
 
     public void SetLength(double length_)
     {
         length = length_;
-        Select(3);
+        Select(7);
     }
 
     public void SetSteps(int steps_)
     {
         steps = steps_;
-        Select(4);
+        Select(8);
     }
 
     public void SetPreserveOriginalCellNumbers(boolean preserveOriginalCellNumbers_)
     {
         preserveOriginalCellNumbers = preserveOriginalCellNumbers_;
-        Select(5);
+        Select(9);
     }
 
     // Property getting methods
     public double[] GetAxis() { return axis; }
     public boolean  GetByVariable() { return byVariable; }
-    public String   GetVariable() { return variable; }
+    public Vector   GetScalarVariableNames() { return scalarVariableNames; }
+    public Vector   GetVisualVariableNames() { return visualVariableNames; }
+    public Vector   GetExtentMinima() { return extentMinima; }
+    public Vector   GetExtentMaxima() { return extentMaxima; }
+    public int      GetVariableDisplay() { return variableDisplay; }
     public double   GetLength() { return length; }
     public int      GetSteps() { return steps; }
     public boolean  GetPreserveOriginalCellNumbers() { return preserveOriginalCellNumbers; }
@@ -171,12 +276,20 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(1, buf))
             buf.WriteBool(byVariable);
         if(WriteSelect(2, buf))
-            buf.WriteString(variable);
+            buf.WriteStringVector(scalarVariableNames);
         if(WriteSelect(3, buf))
-            buf.WriteDouble(length);
+            buf.WriteStringVector(visualVariableNames);
         if(WriteSelect(4, buf))
-            buf.WriteInt(steps);
+            buf.WriteDoubleVector(extentMinima);
         if(WriteSelect(5, buf))
+            buf.WriteDoubleVector(extentMaxima);
+        if(WriteSelect(6, buf))
+            buf.WriteInt(variableDisplay);
+        if(WriteSelect(7, buf))
+            buf.WriteDouble(length);
+        if(WriteSelect(8, buf))
+            buf.WriteInt(steps);
+        if(WriteSelect(9, buf))
             buf.WriteBool(preserveOriginalCellNumbers);
     }
 
@@ -191,15 +304,27 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
             SetByVariable(buf.ReadBool());
             break;
         case 2:
-            SetVariable(buf.ReadString());
+            SetScalarVariableNames(buf.ReadStringVector());
             break;
         case 3:
-            SetLength(buf.ReadDouble());
+            SetVisualVariableNames(buf.ReadStringVector());
             break;
         case 4:
-            SetSteps(buf.ReadInt());
+            SetExtentMinima(buf.ReadDoubleVector());
             break;
         case 5:
+            SetExtentMaxima(buf.ReadDoubleVector());
+            break;
+        case 6:
+            SetVariableDisplay(buf.ReadInt());
+            break;
+        case 7:
+            SetLength(buf.ReadDouble());
+            break;
+        case 8:
+            SetSteps(buf.ReadInt());
+            break;
+        case 9:
             SetPreserveOriginalCellNumbers(buf.ReadBool());
             break;
         }
@@ -210,7 +335,16 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         String str = new String();
         str = str + doubleArrayToString("axis", axis, indent) + "\n";
         str = str + boolToString("byVariable", byVariable, indent) + "\n";
-        str = str + stringToString("variable", variable, indent) + "\n";
+        str = str + stringVectorToString("scalarVariableNames", scalarVariableNames, indent) + "\n";
+        str = str + stringVectorToString("visualVariableNames", visualVariableNames, indent) + "\n";
+        str = str + doubleVectorToString("extentMinima", extentMinima, indent) + "\n";
+        str = str + doubleVectorToString("extentMaxima", extentMaxima, indent) + "\n";
+        str = str + indent + "variableDisplay = ";
+        if(variableDisplay == VARIABLEDISPLAYTYPE_INDEX)
+            str = str + "VARIABLEDISPLAYTYPE_INDEX";
+        if(variableDisplay == VARIABLEDISPLAYTYPE_VALUE)
+            str = str + "VARIABLEDISPLAYTYPE_VALUE";
+        str = str + "\n";
         str = str + doubleToString("length", length, indent) + "\n";
         str = str + intToString("steps", steps, indent) + "\n";
         str = str + boolToString("preserveOriginalCellNumbers", preserveOriginalCellNumbers, indent) + "\n";
@@ -221,7 +355,11 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
     // Attributes
     private double[] axis;
     private boolean  byVariable;
-    private String   variable;
+    private Vector   scalarVariableNames; // vector of String objects
+    private Vector   visualVariableNames; // vector of String objects
+    private Vector   extentMinima; // vector of Double objects
+    private Vector   extentMaxima; // vector of Double objects
+    private int      variableDisplay;
     private double   length;
     private int      steps;
     private boolean  preserveOriginalCellNumbers;

@@ -18,6 +18,7 @@ class vtkDataSet;
 class vtkPoints;
 class vtkPointSet;
 class vtkRectilinearGrid;
+class vtkUnstructuredGrid;
 
 // ****************************************************************************
 //  Class: avtExtrudeFilter
@@ -55,28 +56,40 @@ class avtExtrudeFilter : public avtPluginDataTreeIterator
     std::string mainVariable;  
 
     virtual avtContract_p ModifyContract(avtContract_p in_contract);
-
+  
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
 
+    virtual void         PostExecute(void);
     virtual void         UpdateDataObjectInfo(void);
 
     void                 CopyVariables(vtkDataSet *in_ds, vtkDataSet *out_ds, 
-                                       int nLevels, const int *cellReplication = NULL) const;
+                                       const int *cellReplication = NULL) const;
     vtkPoints           *CreateExtrudedPoints(vtkPoints *inPoints, int nLevels);
     void                 ExtrudeExtents(double *dbounds) const;
     vtkDataSet          *ExtrudeToRectilinearGrid(vtkDataSet *in_ds) const;
     vtkDataSet          *ExtrudeToStructuredGrid(vtkDataSet *in_ds);
     vtkDataSet          *ExtrudeToUnstructuredGrid(vtkPointSet *in_ds);
 
-    vtkDataSet  *ExtrudeCellVariableToUnstructuredGrid(vtkRectilinearGrid *in_ds);
-    vtkDataSet  *ExtrudeCellVariableToUnstructuredGrid(vtkPointSet *in_ds);
+    vtkDataSet  *ExtrudeCellVariableToUnstructuredGrid(vtkRectilinearGrid *in_ds,
+                                                       vtkUnstructuredGrid *out_ds = nullptr);
+    vtkDataSet  *ExtrudeCellVariableToUnstructuredGrid(vtkPointSet *in_ds,
+                                                       vtkUnstructuredGrid *out_ds = nullptr);
 
+   // Flags to indicte if the varArray is node or cell based
     bool cellData{false};
     bool nodeData{false};
     vtkDataArray *varArray{nullptr};
 
     double minScalar{0};
     double maxScalar{0};
+
+    // Number of stacked extrusions only set if there are two or
+    // variables.
+    unsigned int num_stacked_extrusions{0};
+    unsigned int stacked_index{0};
+
+    // Names for the variables created for stacked extrusions
+    std::string stackedVarNames[2]{"StackedIndex", "StackedValue"};
 };
 
 #endif

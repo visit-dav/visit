@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="Extrude" type="operator" label="Extrude" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Extrude.xpm" category="Geometry">
-    <Attribute name="ExtrudeAttributes" purpose="This class contains attributes for the extrude operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="ExtrudeAttributes" purpose="This class contains attributes for the extrude operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Extrude.code">
       <Field name="axis" label="Extrusion axis" type="doubleArray" length="3">
         0.000000
         0.000000
@@ -9,8 +9,20 @@
       <Field name="byVariable" label="By variable" type="bool">
         false
       </Field>
-      <Field name="variable" label="Variable" type="variablename" enabler="byVariable:true" vartypes="01000000000">
-        default
+      <Field name="scalarVariableNames" label="scalarVariableNames" type="stringVector">
+      </Field>
+      <Field name="visualVariableNames" label="visualVariableNames" type="stringVector">
+      </Field>
+      <Field name="extentMinima" label="extentMinima" type="doubleVector">
+      </Field>
+      <Field name="extentMaxima" label="extentMaxima" type="doubleVector">
+      </Field>
+      <Enum name="VariableDisplayType">
+        Index
+        Value
+      </Enum>
+      <Field name="variableDisplay" label="Variable Display" type="enum" subtype="VariableDisplayType">
+        Index
       </Field>
       <Field name="length" label="Length" type="double">
         1.
@@ -21,5 +33,11 @@
       <Field name="preserveOriginalCellNumbers" label="Preserve original cell numbers" type="bool">
         true
       </Field>
+      <Function name="InsertVariable" user="true" member="true">
+      </Function>
+      <Function name="DeleteVariable" user="true" member="true">
+      </Function>
+      <Function name="AttributesAreConsistent" user="true" member="true">
+      </Function>
     </Attribute>
   </Plugin>

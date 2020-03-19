@@ -9,9 +9,14 @@
 #include <AttributeSubject.h>
 
 class ExtrudeAttributes;
-class QLabel;
+class QButtonGroup;
 class QCheckBox;
+class QGroupBox;
+class QLabel;
 class QLineEdit;
+class QPushButton;
+class QTreeWidget;
+class QTreeWidgetItem;
 class QvisVariableButton;
 
 // ****************************************************************************
@@ -40,21 +45,51 @@ class QvisExtrudeWindow : public QvisOperatorWindow
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisExtrudeWindow();
     virtual void CreateWindowContents();
+
   protected:
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
+
   private slots:
     void axisProcessText();
-    void byVariableChanged(bool val);
-    void variableChanged(const QString &varName);
     void lengthProcessText();
     void stepsProcessText();
     void preserveOriginalCellNumbersChanged(bool val);
+
+    void variableGroupChanged(bool val);
+    void addVariable(const QString &variableToAdd);
+    void deleteVariable();
+    void moveVariableUp();
+    void moveVariableDown();
+    void variableSelected(QTreeWidgetItem*);
+    void resetVariableExtents();
+    void variableMinValueChanged(const QString &val);
+    void variableMaxValueChanged(const QString &val);
+    void variableMinOrMaxValProcessText();
+    void variableDisplayChanged(int val);
+
   private:
+    int GetSelectedVariableIndex();
+
     QLineEdit *axis;
     QLineEdit *length;
-    QCheckBox *byVariable;
-    QvisVariableButton *variable;
+
+    QGroupBox          *variableGroup;
+    QTreeWidget        *variableTree;
+    QvisVariableButton *variableNewButton;
+    QPushButton        *variableDeleteButton;
+    QPushButton        *variableUpButton;
+    QPushButton        *variableDownButton;
+    QPushButton        *variableResetExtentsButton;
+    QLabel             **variableDisplayLabel;
+    QWidget            *variableDisplay;
+    QButtonGroup       *variableDisplayButtonGroup;
+
+    QLabel             *variableMinValLabel;
+    QLineEdit          *variableMinVal;
+    QLabel             *variableMaxValLabel;
+    QLineEdit          *variableMaxVal;
+  
     QLineEdit *steps;
     QCheckBox *preserveOriginalCellNumbers;
     QLabel *axisLabel;
