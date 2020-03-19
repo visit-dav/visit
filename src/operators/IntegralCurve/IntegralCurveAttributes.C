@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <IntegralCurveAttributes.h>
 #include <DataNode.h>
@@ -51,8 +17,8 @@
 //
 
 static const char *SourceType_strings[] = {
-"SpecifiedPoint", "PointList", "SpecifiedLine", 
-"Circle", "SpecifiedPlane", "SpecifiedSphere", 
+"SpecifiedPoint", "PointList", "SpecifiedLine",
+"Circle", "SpecifiedPlane", "SpecifiedSphere",
 "SpecifiedBox", "Selection", "FieldData"
 };
 
@@ -91,23 +57,24 @@ IntegralCurveAttributes::SourceType_FromString(const std::string &s, IntegralCur
 //
 
 static const char *DataValue_strings[] = {
-"Solid", "SeedPointID", "Speed", 
-"Vorticity", "ArcLength", "TimeAbsolute", 
-"TimeRelative", "AverageDistanceFromSeed", "CorrelationDistance", 
-"Difference", "Variable"};
+"Solid", "SeedPointID", "Speed",
+"Vorticity", "ArcLength", "TimeAbsolute",
+"TimeRelative", "AverageDistanceFromSeed", "CorrelationDistance",
+"ClosedCurve", "Difference", "Variable"
+};
 
 std::string
 IntegralCurveAttributes::DataValue_ToString(IntegralCurveAttributes::DataValue t)
 {
     int index = int(t);
-    if(index < 0 || index >= 11) index = 0;
+    if(index < 0 || index >= 12) index = 0;
     return DataValue_strings[index];
 }
 
 std::string
 IntegralCurveAttributes::DataValue_ToString(int t)
 {
-    int index = (t < 0 || t >= 11) ? 0 : t;
+    int index = (t < 0 || t >= 12) ? 0 : t;
     return DataValue_strings[index];
 }
 
@@ -115,7 +82,7 @@ bool
 IntegralCurveAttributes::DataValue_FromString(const std::string &s, IntegralCurveAttributes::DataValue &val)
 {
     val = IntegralCurveAttributes::Solid;
-    for(int i = 0; i < 11; ++i)
+    for(int i = 0; i < 12; ++i)
     {
         if(s == DataValue_strings[i])
         {
@@ -131,7 +98,7 @@ IntegralCurveAttributes::DataValue_FromString(const std::string &s, IntegralCurv
 //
 
 static const char *CleanupMethod_strings[] = {
-"NoCleanup", "Merge", "Before", 
+"NoCleanup", "Merge", "Before",
 "After"};
 
 std::string
@@ -245,7 +212,7 @@ IntegralCurveAttributes::DisplayGeometry_FromString(const std::string &s, Integr
 //
 
 static const char *IntegrationDirection_strings[] = {
-"Forward", "Backward", "Both", 
+"Forward", "Backward", "Both",
 "ForwardDirectionless", "BackwardDirectionless", "BothDirectionless"
 };
 
@@ -284,7 +251,7 @@ IntegralCurveAttributes::IntegrationDirection_FromString(const std::string &s, I
 //
 
 static const char *ParallelizationAlgorithmType_strings[] = {
-"LoadOnDemand", "ParallelStaticDomains", "MasterSlave", 
+"LoadOnDemand", "ParallelStaticDomains", "MasterSlave",
 "VisItSelects"};
 
 std::string
@@ -322,8 +289,8 @@ IntegralCurveAttributes::ParallelizationAlgorithmType_FromString(const std::stri
 //
 
 static const char *FieldType_strings[] = {
-"Default", "FlashField", "M3DC12DField", 
-"M3DC13DField", "Nek5000Field", "NektarPPField", 
+"Default", "FlashField", "M3DC12DField",
+"M3DC13DField", "Nek5000Field", "NektarPPField",
 "NIMRODField"};
 
 std::string
@@ -361,7 +328,7 @@ IntegralCurveAttributes::FieldType_FromString(const std::string &s, IntegralCurv
 //
 
 static const char *IntegrationType_strings[] = {
-"Euler", "Leapfrog", "DormandPrince", 
+"Euler", "Leapfrog", "DormandPrince",
 "AdamsBashforth", "RK4", "M3DC12DIntegrator"
 };
 
@@ -472,7 +439,7 @@ IntegralCurveAttributes::SizeType_FromString(const std::string &s, IntegralCurve
 // ****************************************************************************
 // Method: IntegralCurveAttributes::IntegralCurveAttributes
 //
-// Purpose: 
+// Purpose:
 //   Init utility for the IntegralCurveAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -481,7 +448,7 @@ IntegralCurveAttributes::SizeType_FromString(const std::string &s, IntegralCurve
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void IntegralCurveAttributes::Init()
@@ -590,7 +557,7 @@ void IntegralCurveAttributes::Init()
 // ****************************************************************************
 // Method: IntegralCurveAttributes::IntegralCurveAttributes
 //
-// Purpose: 
+// Purpose:
 //   Copy utility for the IntegralCurveAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -599,7 +566,7 @@ void IntegralCurveAttributes::Init()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void IntegralCurveAttributes::Copy(const IntegralCurveAttributes &obj)
@@ -714,7 +681,7 @@ const AttributeGroup::private_tmfs_t IntegralCurveAttributes::TmfsStruct = {INTE
 // ****************************************************************************
 // Method: IntegralCurveAttributes::IntegralCurveAttributes
 //
-// Purpose: 
+// Purpose:
 //   Default constructor for the IntegralCurveAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -723,10 +690,10 @@ const AttributeGroup::private_tmfs_t IntegralCurveAttributes::TmfsStruct = {INTE
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-IntegralCurveAttributes::IntegralCurveAttributes() : 
+IntegralCurveAttributes::IntegralCurveAttributes() :
     AttributeSubject(IntegralCurveAttributes::TypeMapFormatString)
 {
     IntegralCurveAttributes::Init();
@@ -735,7 +702,7 @@ IntegralCurveAttributes::IntegralCurveAttributes() :
 // ****************************************************************************
 // Method: IntegralCurveAttributes::IntegralCurveAttributes
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the derived classes of IntegralCurveAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -744,10 +711,10 @@ IntegralCurveAttributes::IntegralCurveAttributes() :
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-IntegralCurveAttributes::IntegralCurveAttributes(private_tmfs_t tmfs) : 
+IntegralCurveAttributes::IntegralCurveAttributes(private_tmfs_t tmfs) :
     AttributeSubject(tmfs.tmfs)
 {
     IntegralCurveAttributes::Init();
@@ -756,7 +723,7 @@ IntegralCurveAttributes::IntegralCurveAttributes(private_tmfs_t tmfs) :
 // ****************************************************************************
 // Method: IntegralCurveAttributes::IntegralCurveAttributes
 //
-// Purpose: 
+// Purpose:
 //   Copy constructor for the IntegralCurveAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -765,10 +732,10 @@ IntegralCurveAttributes::IntegralCurveAttributes(private_tmfs_t tmfs) :
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-IntegralCurveAttributes::IntegralCurveAttributes(const IntegralCurveAttributes &obj) : 
+IntegralCurveAttributes::IntegralCurveAttributes(const IntegralCurveAttributes &obj) :
     AttributeSubject(IntegralCurveAttributes::TypeMapFormatString)
 {
     IntegralCurveAttributes::Copy(obj);
@@ -777,7 +744,7 @@ IntegralCurveAttributes::IntegralCurveAttributes(const IntegralCurveAttributes &
 // ****************************************************************************
 // Method: IntegralCurveAttributes::IntegralCurveAttributes
 //
-// Purpose: 
+// Purpose:
 //   Copy constructor for derived classes of the IntegralCurveAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -786,10 +753,10 @@ IntegralCurveAttributes::IntegralCurveAttributes(const IntegralCurveAttributes &
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-IntegralCurveAttributes::IntegralCurveAttributes(const IntegralCurveAttributes &obj, private_tmfs_t tmfs) : 
+IntegralCurveAttributes::IntegralCurveAttributes(const IntegralCurveAttributes &obj, private_tmfs_t tmfs) :
     AttributeSubject(tmfs.tmfs)
 {
     IntegralCurveAttributes::Copy(obj);
@@ -798,7 +765,7 @@ IntegralCurveAttributes::IntegralCurveAttributes(const IntegralCurveAttributes &
 // ****************************************************************************
 // Method: IntegralCurveAttributes::~IntegralCurveAttributes
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the IntegralCurveAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -807,7 +774,7 @@ IntegralCurveAttributes::IntegralCurveAttributes(const IntegralCurveAttributes &
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 IntegralCurveAttributes::~IntegralCurveAttributes()
@@ -816,9 +783,9 @@ IntegralCurveAttributes::~IntegralCurveAttributes()
 }
 
 // ****************************************************************************
-// Method: IntegralCurveAttributes::operator = 
+// Method: IntegralCurveAttributes::operator =
 //
-// Purpose: 
+// Purpose:
 //   Assignment operator for the IntegralCurveAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -827,10 +794,10 @@ IntegralCurveAttributes::~IntegralCurveAttributes()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-IntegralCurveAttributes& 
+IntegralCurveAttributes&
 IntegralCurveAttributes::operator = (const IntegralCurveAttributes &obj)
 {
     if (this == &obj) return *this;
@@ -841,9 +808,9 @@ IntegralCurveAttributes::operator = (const IntegralCurveAttributes &obj)
 }
 
 // ****************************************************************************
-// Method: IntegralCurveAttributes::operator == 
+// Method: IntegralCurveAttributes::operator ==
 //
-// Purpose: 
+// Purpose:
 //   Comparison operator == for the IntegralCurveAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -852,7 +819,7 @@ IntegralCurveAttributes::operator = (const IntegralCurveAttributes &obj)
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -978,9 +945,9 @@ IntegralCurveAttributes::operator == (const IntegralCurveAttributes &obj) const
 }
 
 // ****************************************************************************
-// Method: IntegralCurveAttributes::operator != 
+// Method: IntegralCurveAttributes::operator !=
 //
-// Purpose: 
+// Purpose:
 //   Comparison operator != for the IntegralCurveAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -989,7 +956,7 @@ IntegralCurveAttributes::operator == (const IntegralCurveAttributes &obj) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1001,7 +968,7 @@ IntegralCurveAttributes::operator != (const IntegralCurveAttributes &obj) const
 // ****************************************************************************
 // Method: IntegralCurveAttributes::TypeName
 //
-// Purpose: 
+// Purpose:
 //   Type name method for the IntegralCurveAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1010,7 +977,7 @@ IntegralCurveAttributes::operator != (const IntegralCurveAttributes &obj) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const std::string
@@ -1022,7 +989,7 @@ IntegralCurveAttributes::TypeName() const
 // ****************************************************************************
 // Method: IntegralCurveAttributes::CopyAttributes
 //
-// Purpose: 
+// Purpose:
 //   CopyAttributes method for the IntegralCurveAttributes class.
 //
 // Programmer: Brad Whitlock
@@ -1060,7 +1027,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
             SetPointSource(p->GetPoint());
             retval = true;
         }
-    } 
+    }
     else if(atts->TypeName() == "Line")
     {
         if(sourceType == SpecifiedLine)
@@ -1093,7 +1060,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
             SetRadius(sphere->GetRadius());
             retval = true;
         }
-    }   
+    }
     else if(atts->TypeName() == "BoxExtents")
     {
         if(sourceType == SpecifiedBox)
@@ -1189,7 +1156,7 @@ IntegralCurveAttributes::CreateCompatible(const std::string &tname) const
 // ****************************************************************************
 // Method: IntegralCurveAttributes::NewInstance
 //
-// Purpose: 
+// Purpose:
 //   NewInstance method for the IntegralCurveAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1198,7 +1165,7 @@ IntegralCurveAttributes::CreateCompatible(const std::string &tname) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AttributeSubject *
@@ -1216,7 +1183,7 @@ IntegralCurveAttributes::NewInstance(bool copy) const
 // ****************************************************************************
 // Method: IntegralCurveAttributes::SelectAll
 //
-// Purpose: 
+// Purpose:
 //   Selects all attributes.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1225,7 +1192,7 @@ IntegralCurveAttributes::NewInstance(bool copy) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1311,7 +1278,7 @@ IntegralCurveAttributes::SelectAll()
 // ****************************************************************************
 // Method: IntegralCurveAttributes::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   This method creates a DataNode representation of the object so it can be saved to a config file.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1320,7 +1287,7 @@ IntegralCurveAttributes::SelectAll()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1773,7 +1740,7 @@ IntegralCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
 // ****************************************************************************
 // Method: IntegralCurveAttributes::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   This method sets attributes in this object from values in a DataNode representation of the object.
 //
 // Note:       Autogenerated by xml2atts.
@@ -1782,7 +1749,7 @@ IntegralCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1848,7 +1815,7 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 11)
+            if(ival >= 0 && ival < 12)
                 SetDataValue(DataValue(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -3223,7 +3190,7 @@ IntegralCurveAttributes::SelectSelection()
 // ****************************************************************************
 // Method: IntegralCurveAttributes::GetFieldName
 //
-// Purpose: 
+// Purpose:
 //   This method returns the name of a field given its index.
 //
 // Note:       Autogenerated by xml2atts.
@@ -3232,7 +3199,7 @@ IntegralCurveAttributes::SelectSelection()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 std::string
@@ -3318,7 +3285,7 @@ IntegralCurveAttributes::GetFieldName(int index) const
 // ****************************************************************************
 // Method: IntegralCurveAttributes::GetFieldType
 //
-// Purpose: 
+// Purpose:
 //   This method returns the type of a field given its index.
 //
 // Note:       Autogenerated by xml2atts.
@@ -3327,7 +3294,7 @@ IntegralCurveAttributes::GetFieldName(int index) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AttributeGroup::FieldType
@@ -3413,7 +3380,7 @@ IntegralCurveAttributes::GetFieldType(int index) const
 // ****************************************************************************
 // Method: IntegralCurveAttributes::GetFieldTypeName
 //
-// Purpose: 
+// Purpose:
 //   This method returns the name of a field type given its index.
 //
 // Note:       Autogenerated by xml2atts.
@@ -3422,7 +3389,7 @@ IntegralCurveAttributes::GetFieldType(int index) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 std::string
@@ -3508,7 +3475,7 @@ IntegralCurveAttributes::GetFieldTypeName(int index) const
 // ****************************************************************************
 // Method: IntegralCurveAttributes::FieldsEqual
 //
-// Purpose: 
+// Purpose:
 //   This method compares two fields and return true if they are equal.
 //
 // Note:       Autogenerated by xml2atts.
@@ -3517,7 +3484,7 @@ IntegralCurveAttributes::GetFieldTypeName(int index) const
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -3963,7 +3930,7 @@ IntegralCurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) cons
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options.
 //
-//   Christoph Garth, Wed Jan 13 17:14:21 PST 2010 
+//   Christoph Garth, Wed Jan 13 17:14:21 PST 2010
 //   Add support for circle source.
 //
 //   Hank Childs, Fri Oct  1 20:43:34 PDT 2010
@@ -4025,7 +3992,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
 
         return true;
     }
-         
+
     // If they say they don't want warnings, then don't re-execute.  If they say they do,
     // then we better re-execute so we can give them that warning.
     if (issueTerminationWarnings != obj.issueTerminationWarnings &&
@@ -4126,7 +4093,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
             return true;
         }
     }
-    
+
     if (sourceType == PointList || sourceType == FieldData)
     {
         if (pointList.size() != obj.pointList.size())
@@ -4188,7 +4155,7 @@ IntegralCurveAttributes::ProcessOldVersions(DataNode *parentNode,
             return;
 
         std::string mode = sourceNode->AsString();
-        
+
         if (mode == "Point")
         {
           searchNode->RemoveNode(sourceNode, true);

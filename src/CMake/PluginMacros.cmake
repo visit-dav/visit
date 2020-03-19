@@ -1,39 +1,8 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
+#****************************************************************************
 # Modifications:
 #   Kathleen Biagas, Fri Nov 18 12:00:18 MST 2011
 #   Added plugin name to VISIT_PLUGIN_TARGET_FOLDER args, so that plugins
@@ -52,6 +21,9 @@
 #   Move VISIT_PLUGIN_TARGET_RTOD to VisItMacros.cmake, so it can be used
 #   by PluginVsInstall.cmake (since it needs no re-write).
 #
+#   Kathleen Biagas, Wed Mar 4 2020
+#   Enable code-gen targets on Windows, and use FOLDER property.
+#
 #****************************************************************************/
 
 
@@ -64,8 +36,8 @@ MACRO(VISIT_INSTALL_PLUGINS type)
             INSTALL(TARGETS ${ARGN}
                 LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
                 RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                            GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
                             WORLD_READ             WORLD_EXECUTE
                 CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
             )
@@ -80,8 +52,8 @@ MACRO(VISIT_INSTALL_PLUGINS type)
                   INSTALL(FILES ${filename}
                     DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
                     COMPONENT RUNTIME
-                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                                GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                 WORLD_READ             WORLD_EXECUTE
                     CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                   )
@@ -90,8 +62,8 @@ MACRO(VISIT_INSTALL_PLUGINS type)
                   INSTALL(FILES ${filename}
                     DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
                     COMPONENT RUNTIME
-                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                                GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                 WORLD_READ             WORLD_EXECUTE
                   )
                 ENDIF()
@@ -112,7 +84,129 @@ MACRO(VISIT_INSTALL_PLOT_PLUGINS)
     VISIT_INSTALL_PLUGINS(plots ${ARGN})
 ENDMACRO(VISIT_INSTALL_PLOT_PLUGINS)
 
-MACRO(VISIT_PLUGIN_TARGET_FOLDER type pname) 
+MACRO(VISIT_PLUGIN_TARGET_FOLDER type pname)
     SET_TARGET_PROPERTIES(${ARGN} PROPERTIES FOLDER "plugins/${type}/${pname}")
 ENDMACRO(VISIT_PLUGIN_TARGET_FOLDER)
+
+
+##############################################################################
+# Function that adds all Code Gen Targets for a plugin
+##############################################################################
+FUNCTION(ADD_PLUGIN_CODE_GEN_TARGETS gen_name)
+    ####
+    # only create code gen targets if our cmake for gen targets option is on
+    ####
+    if(VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
+        set(gen_target_name "gen_plugin_${gen_name}")
+
+        MESSAGE(STATUS "Adding xml tools plugin generation target: ${gen_target_name}")
+
+        ADD_CPP_GEN_TARGET(${gen_name}
+                           ${CMAKE_CURRENT_SOURCE_DIR}
+                           ${CMAKE_CURRENT_SOURCE_DIR})
+
+        ADD_PYTHON_GEN_TARGET(${gen_name}
+                              ${CMAKE_CURRENT_SOURCE_DIR}
+                              ${CMAKE_CURRENT_SOURCE_DIR})
+
+
+        ADD_JAVA_GEN_TARGET(${gen_name}
+                            ${CMAKE_CURRENT_SOURCE_DIR}
+                            ${CMAKE_CURRENT_SOURCE_DIR})
+
+        ADD_INFO_GEN_TARGET(${gen_name}
+                            ${CMAKE_CURRENT_SOURCE_DIR}
+                            ${CMAKE_CURRENT_SOURCE_DIR})
+
+        ADD_CMAKE_GEN_TARGET(${gen_name}
+                             ${CMAKE_CURRENT_SOURCE_DIR}
+                             ${CMAKE_CURRENT_SOURCE_DIR})
+
+        add_custom_target(${gen_target_name})
+        if(WIN32)
+            set_target_properties(${gen_target_name} PROPERTIES
+                FOLDER "generators/plugin")
+        endif()
+
+        set(gen_plugin_deps "")
+        list(APPEND gen_plugin_deps "gen_cpp_${gen_name}")
+        list(APPEND gen_plugin_deps "gen_python_${gen_name}")
+        list(APPEND gen_plugin_deps "gen_java_${gen_name}")
+        list(APPEND gen_plugin_deps "gen_info_${gen_name}")
+        # we don't wan't to directly wire up xml2cmake
+
+        add_dependencies(${gen_target_name} ${gen_plugin_deps})
+
+        # connect this target to roll up target for plugin gen
+        if(NOT TARGET gen_plugin_all)
+            add_custom_target("gen_plugin_all")
+            if(WIN32)
+                set_target_properties(gen_plugin_all PROPERTIES
+                    FOLDER "generators/all")
+            endif()
+        endif()
+
+        add_dependencies(gen_plugin_all ${gen_target_name})
+    endif()
+ENDFUNCTION(ADD_PLUGIN_CODE_GEN_TARGETS)
+
+##############################################################################
+# Function that adds all Code Gen Targets for a plot plugin
+##############################################################################
+FUNCTION(ADD_PLOT_CODE_GEN_TARGETS gen_name)
+    ADD_PLUGIN_CODE_GEN_TARGETS(${gen_name})
+ENDFUNCTION(ADD_PLOT_CODE_GEN_TARGETS)
+
+##############################################################################
+# Function that adds all Code Gen Targets for an operator plugin
+##############################################################################
+FUNCTION(ADD_OPERATOR_CODE_GEN_TARGETS gen_name)
+    ADD_PLUGIN_CODE_GEN_TARGETS(${gen_name})
+ENDFUNCTION(ADD_OPERATOR_CODE_GEN_TARGETS)
+
+##############################################################################
+# Function that adds all Code Gen Targets for a database plugin
+##############################################################################
+FUNCTION(ADD_DATABASE_CODE_GEN_TARGETS gen_name)
+    ####
+    # only create code gen targets if our cmake for gen targets option is on
+    ####
+    if(VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
+        set(gen_target_name "gen_plugin_${gen_name}")
+
+        MESSAGE(STATUS "Adding xml tools plugin generation target: ${gen_target_name}")
+
+        add_custom_target(${gen_target_name})
+        if(WIN32)
+            set_target_properties(${gen_target_name} PROPERTIES
+                FOLDER "generators/plugin")
+        endif()
+
+        # only xml2info and xml2cmake for db plugins
+        ADD_INFO_GEN_TARGET(${gen_name}
+                            ${CMAKE_CURRENT_SOURCE_DIR}
+                            ${CMAKE_CURRENT_SOURCE_DIR})
+
+        ADD_CMAKE_GEN_TARGET(${gen_name}
+                             ${CMAKE_CURRENT_SOURCE_DIR}
+                             ${CMAKE_CURRENT_SOURCE_DIR})
+
+        set(gen_plugin_deps "")
+        list(APPEND gen_plugin_deps "gen_info_${gen_name}")
+        # we don't wan't to directly wire up xml2cmake
+
+        add_dependencies(${gen_target_name} ${gen_plugin_deps})
+
+        # connect this target to roll up target for plugin gen
+        if(NOT TARGET gen_plugin_all)
+            add_custom_target("gen_plugin_all")
+            if(WIN32)
+                set_target_properties(gen_plugin_all PROPERTIES
+                    FOLDER "generators/all")
+            endif()
+        endif()
+
+        add_dependencies(gen_plugin_all ${gen_target_name})
+    endif()
+ENDFUNCTION(ADD_DATABASE_CODE_GEN_TARGETS)
 

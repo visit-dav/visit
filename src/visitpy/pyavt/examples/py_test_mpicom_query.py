@@ -63,7 +63,7 @@ class MPIComTest(SimplePythonQuery):
         self.test_scatter()
         #self.test_alltoall()
     def test_reduce(self):
-        print self.rank,":test_reduce"
+        print(self.rank,":test_reduce")
         # test min reduce
         self.test("min",mpicom.min(self.rank),0)
         # test max reduce
@@ -74,7 +74,7 @@ class MPIComTest(SimplePythonQuery):
         self.test("mult",mpicom.mult(self.rank),0)
         # test broadcast of integer
     def test_broadcast(self):
-        print self.rank,":test_broadcast"
+        print(self.rank,":test_broadcast")
         if self.rank == 0:
             self.test("broadcast",mpicom.broadcast(1),None)
         else:
@@ -97,7 +97,7 @@ class MPIComTest(SimplePythonQuery):
         else:
             self.test("broadcast",mpicom.broadcast(),fluffy)
     def test_p2p(self):
-        print self.rank,":test_p2p"
+        print(self.rank,":test_p2p")
         # test send/recv with python object
         fluffy = Dog("fluffy",3)
         if self.size > 1:
@@ -111,18 +111,18 @@ class MPIComTest(SimplePythonQuery):
             elif self.rank == 1:
                 self.test("sendrecv",mpicom.sendrecv(self.rank,0,0),0)
     def test_gather(self):
-        print self.rank,":test_gather"
+        print(self.rank,":test_gather")
         res = [ i for i in range(self.size)]
         self.test("gather",mpicom.gather(self.rank),res)
     def test_scatter(self):
-        print self.rank,":test_scatter"
+        print(self.rank,":test_scatter")
         if self.rank == 0:
             msg = [ i for i in range(self.size)]
             self.test("scatter",mpicom.scatter(msg),self.rank)
         else:
             self.test("scatter",mpicom.scatter(),self.rank)
     def test_alltoall(self):
-        print self.rank,"alltoall"
+        print(self.rank,"alltoall")
         msg = [ self.rank] * self.size
         res = [ i for i in range(self.size)]
         self.test("alltoall",mpicom.alltoall(msg),res)

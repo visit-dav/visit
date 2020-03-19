@@ -1,39 +1,8 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
+#****************************************************************************
 # Modifications:
 #   Kathleen Biagas, Thu Mar 24 16:18:19 PDT 2016
 #   Added install for qt libraries, and necessary plugins (eg platform
@@ -60,6 +29,13 @@
 #   Kathleen Biagas, Thu Sep 27 11:33:43 PDT 2018
 #   Add UiTools to qt_libs_install.
 #
+#   Kevin Griffin, Mon Aug 26 12:15:21 PDT 2019
+#   Installed the plugins/platforms and plugins/styles directories in the 
+#   xmledit.app and mcurvit.app directories.
+#
+#   Kathleen Biagas, Wed Jan 22 14:46:17 MST 2020
+#   Add ssl dlls to install for Windows.
+#
 #*****************************************************************************
 
 
@@ -68,7 +44,12 @@ IF(NOT DEFINED VISIT_QT_DIR)
     MESSAGE(FATAL_ERROR "Qt5 installation directory not specified")
 ENDIF()
 
-set(QT_MOC_EXECUTABLE ${VISIT_QT_DIR}/bin/moc)
+if(WIN32)
+    set(QT_MOC_EXECUTABLE ${VISIT_QT_DIR}/bin/moc.exe)
+else()
+    set(QT_MOC_EXECUTABLE ${VISIT_QT_DIR}/bin/moc)
+endif()
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(QT5_INCLUDE_DIRS "")
 set(QT5_LIBRARIES "")
@@ -258,12 +239,24 @@ if(NOT VISIT_QT_SKIP_INSTALL)
 
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/viewer.app/Contents/MacOS)
+      
+      install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/xmledit.app/Contents/MacOS)
+
+      install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/mcurvit.app/Contents/MacOS)
 
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/gui.app/Contents/MacOS)
 
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/viewer.app/Contents/MacOS)
+
+      install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/xmledit.app/Contents/MacOS)
+
+      install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/mcurvit.app/Contents/MacOS)
   else()
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
               DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/qtplugins)
@@ -279,5 +272,24 @@ if(NOT VISIT_QT_SKIP_INSTALL)
           # a way to find this via Qt's cmake mechanisms, hence this
           # hard-coded extra step
           THIRD_PARTY_INSTALL_LIBRARY(${VISIT_QT_DIR}/lib/libQt5XcbQpa.so)
+  endif()
+
+  if(WIN32)
+      # Need the ssl dll's too.
+      file(COPY ${VISIT_QT_DIR}/bin/libeay32.dll
+                ${VISIT_QT_DIR}/bin/ssleay32.dll
+           DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty
+           FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                            GROUP_READ GROUP_WRITE
+                            WORLD_READ
+      )
+      install(FILES ${VISIT_QT_DIR}/bin/libeay32.dll
+                    ${VISIT_QT_DIR}/bin/ssleay32.dll
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+              PERMISSIONS OWNER_READ OWNER_WRITE
+                          GROUP_READ GROUP_WRITE
+                          WORLD_READ
+              CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
+      )
   endif()
 endif()

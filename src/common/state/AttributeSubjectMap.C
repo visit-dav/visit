@@ -1,44 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                           AttributeSubjectMap.C                           //
-// ************************************************************************* //
+// **************************************************************************
+//  AttributeSubjectMap.C
+// **************************************************************************
 
 #include <AttributeSubject.h>
 #include <AttributeSubjectMap.h>
@@ -72,7 +38,7 @@ AttributeSubjectMap::AttributeSubjectMap()
 // ****************************************************************************
 // Method: AttributeSubjectMap::AttributeSubjectMap
 //
-// Purpose: 
+// Purpose:
 //   Copy constructor.
 //
 // Arguments:
@@ -82,7 +48,7 @@ AttributeSubjectMap::AttributeSubjectMap()
 // Creation:   Tue Dec 30 17:05:04 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AttributeSubjectMap::AttributeSubjectMap(const AttributeSubjectMap &obj)
@@ -133,7 +99,7 @@ AttributeSubjectMap::~AttributeSubjectMap()
 // ****************************************************************************
 // Method: AttributeSubjectMap::operator =
 //
-// Purpose: 
+// Purpose:
 //   Assignment operator.
 //
 // Arguments:
@@ -143,7 +109,7 @@ AttributeSubjectMap::~AttributeSubjectMap()
 // Creation:   Tue Dec 30 17:05:42 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -248,8 +214,8 @@ AttributeSubjectMap::SetAtts(const int index, const AttributeSubject *attr)
 //    index     The given index
 //    attr      The attribute subject to store.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   March 25, 2004 
+//  Programmer: Mark C. Miller
+//  Creation:   March 25, 2004
 //
 // ****************************************************************************
 
@@ -295,9 +261,9 @@ AttributeSubjectMap::SetAtts(const int index, const AttributeSubject *attr,
                              int &i0, int &i1)
 {
     int i;
- 
+
     for (i = 0; i < nIndices && indices[i] < index; ++i) ;
- 
+
     //
     // If the index matches an existing index exactly then replace
     // the attributes for it, otherwise insert it in the list.
@@ -452,10 +418,10 @@ AttributeSubjectMap::DeleteAtts(const int index, int &i0, int &i1)
     //
     int i;
     for (i = 0; i < nIndices && indices[i] < index; ++i) ;
- 
+
     //
     // If we found a match, then delete the attribute subject at
-    // the index and compress the list. 
+    // the index and compress the list.
     //
     if (i < nIndices && indices[i] == index)
     {
@@ -529,7 +495,7 @@ AttributeSubjectMap::MoveAtts(int oldIndex, int newIndex, int &i0, int &i1)
     //
     int i;
     for (i = 0; i < nIndices && indices[i] < oldIndex; ++i) ;
- 
+
     //
     // If we found a match, then delete the attribute subject at
     // the index, compress the list, and set the attributes at
@@ -564,7 +530,7 @@ AttributeSubjectMap::MoveAtts(int oldIndex, int newIndex, int &i0, int &i1)
         //
         int i2, i3;
         SetAtts(newIndex, attr, i2, i3);
-        
+
         //
         // Update the range of attributes invalidated.
         //
@@ -768,7 +734,7 @@ AttributeSubjectMap::ResizeMap(const int newSize)
 // ****************************************************************************
 // Method: AttributeSubjectMap::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   Saves the AttributeSubjectMap to a DataNode.
 //
 // Arguments:
@@ -818,7 +784,7 @@ AttributeSubjectMap::CreateNode(DataNode *parentNode)
 // ****************************************************************************
 // Method: AttributeSubjectMap::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   Initializes the map using the data in the config file.
 //
 // Arguments:
@@ -829,7 +795,7 @@ AttributeSubjectMap::CreateNode(DataNode *parentNode)
 // Creation:   Tue Jul 22 11:33:21 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -889,7 +855,7 @@ AttributeSubjectMap::SetFromNode(DataNode *parentNode,
 // ****************************************************************************
 // Method: AttributeSubjectMap::ProcessOldVersions
 //
-// Purpose: 
+// Purpose:
 //   Initializes the map using the data in the config file.
 //
 // Arguments:
@@ -901,7 +867,7 @@ AttributeSubjectMap::SetFromNode(DataNode *parentNode,
 // Creation:   Wed Feb 13 14:43:42 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

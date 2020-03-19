@@ -1,40 +1,6 @@
-// ***************************************************************************
-//
-// Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-// Produced at the Lawrence Livermore National Laboratory
-// LLNL-CODE-442911
-// All rights reserved.
-//
-// This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-// full copyright notice is contained in the file COPYRIGHT located at the root
-// of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-//
-// Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-// modification, are permitted provided that the following conditions are met:
-//
-//  - Redistributions of  source code must  retain the above  copyright notice,
-//    this list of conditions and the disclaimer below.
-//  - Redistributions in binary form must reproduce the above copyright notice,
-//    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-//    documentation and/or other materials provided with the distribution.
-//  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-//    be used to endorse or promote products derived from this software without
-//    specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-// ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-// LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-// DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-// CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-// LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-// OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ***************************************************************************
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 package llnl.visit;
 
@@ -51,7 +17,7 @@ package llnl.visit;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class SurfaceFilterAttributes extends AttributeSubject
@@ -65,6 +31,10 @@ public class SurfaceFilterAttributes extends AttributeSubject
 
     public final static int LIMITSMODE_ORIGINALDATA = 0;
     public final static int LIMITSMODE_CURRENTPLOT = 1;
+
+    public final static int SCALINGMODE_NEVER = 0;
+    public final static int SCALINGMODE_AUTO = 1;
+    public final static int SCALINGMODE_ALWAYS = 2;
 
 
     public SurfaceFilterAttributes()
@@ -80,7 +50,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
         max = 1;
         zeroFlag = false;
         variable = new String("default");
-        useXYLimits = true;
+        useXYLimits = SCALINGMODE_AUTO;
         generateNodalOutput = true;
     }
 
@@ -97,7 +67,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
         max = 1;
         zeroFlag = false;
         variable = new String("default");
-        useXYLimits = true;
+        useXYLimits = SCALINGMODE_AUTO;
         generateNodalOutput = true;
     }
 
@@ -201,7 +171,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
         Select(8);
     }
 
-    public void SetUseXYLimits(boolean useXYLimits_)
+    public void SetUseXYLimits(int useXYLimits_)
     {
         useXYLimits = useXYLimits_;
         Select(9);
@@ -223,7 +193,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
     public double  GetMax() { return max; }
     public boolean GetZeroFlag() { return zeroFlag; }
     public String  GetVariable() { return variable; }
-    public boolean GetUseXYLimits() { return useXYLimits; }
+    public int     GetUseXYLimits() { return useXYLimits; }
     public boolean GetGenerateNodalOutput() { return generateNodalOutput; }
 
     // Write and read methods.
@@ -248,7 +218,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
         if(WriteSelect(8, buf))
             buf.WriteString(variable);
         if(WriteSelect(9, buf))
-            buf.WriteBool(useXYLimits);
+            buf.WriteInt(useXYLimits);
         if(WriteSelect(10, buf))
             buf.WriteBool(generateNodalOutput);
     }
@@ -285,7 +255,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
             SetVariable(buf.ReadString());
             break;
         case 9:
-            SetUseXYLimits(buf.ReadBool());
+            SetUseXYLimits(buf.ReadInt());
             break;
         case 10:
             SetGenerateNodalOutput(buf.ReadBool());
@@ -317,7 +287,14 @@ public class SurfaceFilterAttributes extends AttributeSubject
         str = str + doubleToString("max", max, indent) + "\n";
         str = str + boolToString("zeroFlag", zeroFlag, indent) + "\n";
         str = str + stringToString("variable", variable, indent) + "\n";
-        str = str + boolToString("useXYLimits", useXYLimits, indent) + "\n";
+        str = str + indent + "useXYLimits = ";
+        if(useXYLimits == SCALINGMODE_NEVER)
+            str = str + "SCALINGMODE_NEVER";
+        if(useXYLimits == SCALINGMODE_AUTO)
+            str = str + "SCALINGMODE_AUTO";
+        if(useXYLimits == SCALINGMODE_ALWAYS)
+            str = str + "SCALINGMODE_ALWAYS";
+        str = str + "\n";
         str = str + boolToString("generateNodalOutput", generateNodalOutput, indent) + "\n";
         return str;
     }
@@ -333,7 +310,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
     private double  max;
     private boolean zeroFlag;
     private String  variable;
-    private boolean useXYLimits;
+    private int     useXYLimits;
     private boolean generateNodalOutput;
 }
 

@@ -40,7 +40,7 @@ function bv_vtk_alt_vtk_dir
 
 function bv_vtk_depends_on
 {
-    depends_on="cmake"
+    depends_on="cmake zlib"
 
     if [[ "$DO_PYTHON" == "yes" ]]; then
         depends_on="${depends_on} python"
@@ -113,6 +113,9 @@ function bv_vtk_host_profile
         echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR $SYSTEM_VTK_DIR)" >> $HOSTCONF
     else
         echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/\${VTK_VERSION}/\${VISITARCH})" >> $HOSTCONF
+        # vtk's target system should take care of this, so does VisIt need to know?
+        echo "VISIT_OPTION_DEFAULT(VISIT_VTK_INCDEP ZLIB_INCLUDE_DIR)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_VTK_LIBDEP ZLIB_LIBRARY)" >> $HOSTCONF
     fi
 }
 
@@ -189,19 +192,222 @@ EOF
 
 }
 
+function apply_vtkopenglspheremapper_h_patch
+{
+  # patch vtk's vtkOpenGLSphereMapper.h to fix bug evidenced when
+  # points are double precision
+
+   patch -p0 << \EOF
+*** Rendering/OpenGL2/vtkOpenGLSphereMapper.h.orig  2019-06-05 11:49:48.675659000 -0700
+--- Rendering/OpenGL2/vtkOpenGLSphereMapper.h  2019-06-05 10:25:08.000000000 -0700
+***************
+*** 94,105 ****
+  
+    void RenderPieceDraw(vtkRenderer *ren, vtkActor *act) override;
+  
+-   virtual void CreateVBO(
+-     float * points, vtkIdType numPts,
+-     unsigned char *colors, int colorComponents,
+-     vtkIdType nc,
+-     float *sizes, vtkIdType ns, vtkRenderer *ren);
+- 
+    // used for transparency
+    bool Invert;
+    float Radius;
+--- 94,99 ----
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkOpenGLSphereMapper.h failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_vtkopenglspheremapper_patch
 {
   # patch vtk's vtkOpenGLSphereMapper to fix bug that ignores opacity when
-  # specifying single color for the sphere imposters
+  # specifying single color for the sphere imposters, and another bug
+  # evidenced when points are double precision
 
    patch -p0 << \EOF
-*** Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx.original 2018-01-19 14:03:28.000000000
---- Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx 2018-01-19 14:04:15.000000000
+*** Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx.orig 2017-12-22 08:33:25.000000000 -0800
+--- Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx 2019-06-06 12:21:13.735291000 -0700
 ***************
-*** 330,347 ****
-      nc = numPts;
-      cc = this->Colors->GetNumberOfComponents();
+*** 15,20 ****
+--- 15,21 ----
+  
+  #include "vtkOpenGLHelper.h"
+  
++ #include "vtkDataArrayAccessor.h"
+  #include "vtkFloatArray.h"
+  #include "vtkMath.h"
+  #include "vtkMatrix4x4.h"
+***************
+*** 211,253 ****
+    os << indent << "Radius: " << this->Radius << "\n";
+  }
+  
+! // internal function called by CreateVBO
+! void vtkOpenGLSphereMapper::CreateVBO(
+!   float * points, vtkIdType numPts,
+!   unsigned char *colors, int colorComponents,
+!   vtkIdType nc,
+!   float *sizes, vtkIdType ns, vtkRenderer *ren)
+  {
+!   vtkFloatArray *verts = vtkFloatArray::New();
+!   verts->SetNumberOfComponents(3);
+!   verts->SetNumberOfTuples(numPts*3);
+!   float *vPtr = static_cast<float *>(verts->GetVoidPointer(0));
+  
+!   vtkFloatArray *offsets = vtkFloatArray::New();
+!   offsets->SetNumberOfComponents(2);
+!   offsets->SetNumberOfTuples(numPts*3);
+    float *oPtr = static_cast<float *>(offsets->GetVoidPointer(0));
+- 
+-   vtkUnsignedCharArray *ucolors = vtkUnsignedCharArray::New();
+-   ucolors->SetNumberOfComponents(4);
+-   ucolors->SetNumberOfTuples(numPts*3);
+    unsigned char *cPtr = static_cast<unsigned char *>(ucolors->GetVoidPointer(0));
+  
+!   float *pointPtr;
+!   unsigned char *colorPtr;
+  
+    float cos30 = cos(vtkMath::RadiansFromDegrees(30.0));
+  
+    for (vtkIdType i = 0; i < numPts; ++i)
+    {
+!     pointPtr = points + i*3;
+!     colorPtr = (nc == numPts ? colors + i*colorComponents : colors);
+!     float radius = (ns == numPts ? sizes[i] : sizes[0]);
+  
+      // Vertices
+!     *(vPtr++) = pointPtr[0];
+!     *(vPtr++) = pointPtr[1];
+!     *(vPtr++) = pointPtr[2];
+      *(cPtr++) = colorPtr[0];
+      *(cPtr++) = colorPtr[1];
+      *(cPtr++) = colorPtr[2];
+--- 212,250 ----
+    os << indent << "Radius: " << this->Radius << "\n";
+  }
+  
+! // internal function called by BuildBufferObjects
+! template <typename PtsArray, typename SizesArray>
+! void vtkOpenGLSphereMapper_PrepareVBO(
+!   PtsArray *points, unsigned char *colors, int colorComponents,
+!   vtkIdType nc, SizesArray *sizesA, vtkIdType ns,
+!   vtkFloatArray *verts, vtkFloatArray *offsets, vtkUnsignedCharArray *ucolors)
+  {
+!   vtkIdType numPts = points->GetNumberOfTuples();
+  
+!   float *vPtr = static_cast<float *>(verts->GetVoidPointer(0));
+    float *oPtr = static_cast<float *>(offsets->GetVoidPointer(0));
+    unsigned char *cPtr = static_cast<unsigned char *>(ucolors->GetVoidPointer(0));
+  
+!   vtkDataArrayAccessor<PtsArray> pointPtr(points);
+!   vtkDataArrayAccessor<SizesArray> sizes(sizesA);
+! 
+!   float radius = sizes.Get(0, 0);
+!   
+!   unsigned char *colorPtr = colors;
+  
+    float cos30 = cos(vtkMath::RadiansFromDegrees(30.0));
+  
+    for (vtkIdType i = 0; i < numPts; ++i)
+    {
+!     if (nc == numPts)
+!         colorPtr = colors + i*colorComponents;
+!     if (ns == numPts)
+!         radius = sizes.Get(i, 0);
+  
+      // Vertices
+!     *(vPtr++) = pointPtr.Get(i, 0);
+!     *(vPtr++) = pointPtr.Get(i, 1);
+!     *(vPtr++) = pointPtr.Get(i, 2);
+      *(cPtr++) = colorPtr[0];
+      *(cPtr++) = colorPtr[1];
+      *(cPtr++) = colorPtr[2];
+***************
+*** 255,263 ****
+      *(oPtr++) = -2.0f*radius*cos30;
+      *(oPtr++) = -radius;
+  
+!     *(vPtr++) = pointPtr[0];
+!     *(vPtr++) = pointPtr[1];
+!     *(vPtr++) = pointPtr[2];
+      *(cPtr++) = colorPtr[0];
+      *(cPtr++) = colorPtr[1];
+      *(cPtr++) = colorPtr[2];
+--- 252,260 ----
+      *(oPtr++) = -2.0f*radius*cos30;
+      *(oPtr++) = -radius;
+  
+!     *(vPtr++) = pointPtr.Get(i, 0);
+!     *(vPtr++) = pointPtr.Get(i, 1);
+!     *(vPtr++) = pointPtr.Get(i, 2);
+      *(cPtr++) = colorPtr[0];
+      *(cPtr++) = colorPtr[1];
+      *(cPtr++) = colorPtr[2];
+***************
+*** 265,273 ****
+      *(oPtr++) = 2.0f*radius*cos30;
+      *(oPtr++) = -radius;
+  
+!     *(vPtr++) = pointPtr[0];
+!     *(vPtr++) = pointPtr[1];
+!     *(vPtr++) = pointPtr[2];
+      *(cPtr++) = colorPtr[0];
+      *(cPtr++) = colorPtr[1];
+      *(cPtr++) = colorPtr[2];
+--- 262,270 ----
+      *(oPtr++) = 2.0f*radius*cos30;
+      *(oPtr++) = -radius;
+  
+!     *(vPtr++) = pointPtr.Get(i, 0);
+!     *(vPtr++) = pointPtr.Get(i, 1);
+!     *(vPtr++) = pointPtr.Get(i, 2);
+      *(cPtr++) = colorPtr[0];
+      *(cPtr++) = colorPtr[1];
+      *(cPtr++) = colorPtr[2];
+***************
+*** 275,288 ****
+      *(oPtr++) = 0.0f;
+      *(oPtr++) = 2.0f*radius;
     }
+- 
+-   this->VBOs->CacheDataArray("vertexMC", verts, ren, VTK_FLOAT);
+-   verts->Delete();
+-   this->VBOs->CacheDataArray("offsetMC", offsets, ren, VTK_FLOAT);
+-   offsets->Delete();
+-   this->VBOs->CacheDataArray("scalarColor", ucolors, ren, VTK_UNSIGNED_CHAR);
+-   ucolors->Delete();
+-   VBOs->BuildAllVBOs(ren);
+  }
+  
+  //-------------------------------------------------------------------------
+--- 272,277 ----
+***************
+*** 320,326 ****
+    // then the scalars do not have to be regenerted.
+    this->MapScalars(1.0);
+  
+!   vtkIdType numPts = poly->GetPoints()->GetNumberOfPoints();
+    unsigned char *c;
+    int cc;
+    vtkIdType nc;
+--- 309,317 ----
+    // then the scalars do not have to be regenerted.
+    this->MapScalars(1.0);
+  
+!   vtkPoints *pts = poly->GetPoints();
+! 
+!   vtkIdType numPts = pts->GetNumberOfPoints();
+    unsigned char *c;
+    int cc;
+    vtkIdType nc;
+***************
+*** 333,373 ****
     else
     {
       double *ac = act->GetProperty()->GetColor();
@@ -212,15 +418,38 @@ function apply_vtkopenglspheremapper_patch
       nc = 1;
 !     cc = 3;
     }
-
-    float *scales;
+  
+!   float *scales;
     vtkIdType ns = poly->GetPoints()->GetNumberOfPoints();
-    if (this->ScaleArray != NULL &&
+    if (this->ScaleArray != nullptr &&
         poly->GetPointData()->HasArray(this->ScaleArray))
---- 330,349 ----
-      nc = numPts;
-      cc = this->Colors->GetNumberOfComponents();
+    {
+!     scales = static_cast<float*>(poly->GetPointData()->GetArray(this->ScaleArray)->GetVoidPointer(0));
+      ns = numPts;
     }
+    else
+    {
+!     scales = &this->Radius;
+      ns = 1;
+    }
+  
+!   // Iterate through all of the different types in the polydata, building OpenGLs
+!   // and IBOs as appropriate for each type.
+!   this->CreateVBO(
+!     static_cast<float *>(poly->GetPoints()->GetVoidPointer(0)),
+!     numPts,
+!     c, cc, nc,
+!     scales, ns,
+!     ren);
+  
+    if (!this->Colors)
+    {
+      delete [] c;
+    }
+  
+    // create the IBO
+    this->Primitives[PrimitivePoints].IBO->IndexCount = 0;
+--- 324,386 ----
     else
     {
       double *ac = act->GetProperty()->GetColor();
@@ -233,16 +462,61 @@ function apply_vtkopenglspheremapper_patch
       nc = 1;
 !     cc = 4;
     }
-
-    float *scales;
+  
+!   vtkDataArray *scales = NULL;
     vtkIdType ns = poly->GetPoints()->GetNumberOfPoints();
-    if (this->ScaleArray != NULL &&
+    if (this->ScaleArray != nullptr &&
         poly->GetPointData()->HasArray(this->ScaleArray))
-
+    {
+!     scales = poly->GetPointData()->GetArray(this->ScaleArray);
+      ns = numPts;
+    }
+    else
+    {
+!     scales = vtkFloatArray::New();
+!     scales->SetNumberOfTuples(1);
+!     scales->SetTuple1(0, this->Radius);
+      ns = 1;
+    }
+  
+!   vtkFloatArray *verts = vtkFloatArray::New();
+!   verts->SetNumberOfComponents(3);
+!   verts->SetNumberOfTuples(numPts*3);
+! 
+!   vtkFloatArray *offsets = vtkFloatArray::New();
+!   offsets->SetNumberOfComponents(2);
+!   offsets->SetNumberOfTuples(numPts*3);
+! 
+!   vtkUnsignedCharArray *ucolors = vtkUnsignedCharArray::New();
+!   ucolors->SetNumberOfComponents(4);
+!   ucolors->SetNumberOfTuples(numPts*3);
+! 
+!   vtkOpenGLSphereMapper_PrepareVBO(pts->GetData(), c, cc, nc, scales, ns,
+!                                    verts, offsets, ucolors);
+! 
+!   this->VBOs->CacheDataArray("vertexMC", verts, ren, VTK_FLOAT);
+!   verts->Delete();
+!   this->VBOs->CacheDataArray("offsetMC", offsets, ren, VTK_FLOAT);
+!   offsets->Delete();
+!   this->VBOs->CacheDataArray("scalarColor", ucolors, ren, VTK_UNSIGNED_CHAR);
+!   ucolors->Delete();
+!   this->VBOs->BuildAllVBOs(ren);
+  
+    if (!this->Colors)
+    {
+      delete [] c;
+    }
++   if (ns != numPts)
++   {
++     scales->Delete();
++   }
+  
+    // create the IBO
+    this->Primitives[PrimitivePoints].IBO->IndexCount = 0;
 EOF
 
     if [[ $? != 0 ]] ; then
-      warn "vtk patch for vtkOpenGLSphereMapper failed."
+      warn "vtk patch for vtkOpenGLSphereMapper.cxx failed."
       return 1
     fi
     return 0;
@@ -658,11 +932,49 @@ EOF
     return 0;
 }
 
+
+function apply_vtkospray_linking_patch
+{
+    # fix from kevin griffin
+    # patch to vtk linking issue noticed on macOS
+    patch -p0 << \EOF
+    diff -c Rendering/OSPRay/CMakeLists.txt.orig  Rendering/OSPRay/CMakeLists.txt
+    *** Rendering/OSPRay/CMakeLists.txt.orig	2019-05-21 15:15:50.000000000 -0700
+    --- Rendering/OSPRay/CMakeLists.txt	2019-05-21 15:16:07.000000000 -0700
+    ***************
+    *** 37,42 ****
+    --- 37,45 ----
+      vtk_module_library(vtkRenderingOSPRay ${Module_SRCS})
+  
+      target_link_libraries(${vtk-module} LINK_PUBLIC ${OSPRAY_LIBRARIES})
+    + # patch to solve linking issue noticed on macOS
+    + target_link_libraries(${vtk-module} LINK_PUBLIC vtkFiltersGeometry)
+    + 
+  
+      # OSPRay_Core uses MMTime which is in it's own special library.
+      if(WIN32)
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for ospray linking failed."
+      return 1
+    fi
+
+    return 0;
+}
+
+
+
 function apply_vtk_patch
 {
     apply_vtkdatawriter_patch
     if [[ $? != 0 ]] ; then
        return 1
+    fi
+
+    apply_vtkopenglspheremapper_h_patch
+    if [[ $? != 0 ]] ; then
+        return 1
     fi
 
     apply_vtkopenglspheremapper_patch
@@ -675,16 +987,22 @@ function apply_vtk_patch
         return 1
     fi
 
+    # Note: don't guard ospray patches by if ospray is selected 
+    # b/c subsequent calls to build_visit won't get a chance to patch
+    # given the if test logic used above
     apply_vtkospraypolydatamappernode_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
 
-    if [[ "$DO_OSPRAY" == "yes" ]] ; then
-        apply_vtkospray_patches
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
+    apply_vtkospray_patches
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtkospray_linking_patch
+    if [[ $? != 0 ]] ; then
+        return 1
     fi
 
     return 0
@@ -836,10 +1154,6 @@ function build_vtk
     # allow VisIt to override any of vtk's classes
     vopts="${vopts} -DVTK_ALL_NEW_OBJECT_FACTORY:BOOL=true"
 
-    # OpenGL2 backend VTK-8.1, OpenGL2 is the default.
-    #vopts="${vopts} -DVTK_RENDERING_BACKEND:STRING=OpenGL2"
-
-
     # Turn off module groups
     vopts="${vopts} -DVTK_Group_Imaging:BOOL=false"
     vopts="${vopts} -DVTK_Group_MPI:BOOL=false"
@@ -920,6 +1234,15 @@ function build_vtk
         vopts="${vopts} -DModule_vtkRenderingOSPRay:BOOL=ON"
         vopts="${vopts} -DOSPRAY_INSTALL_DIR=${OSPRAY_INSTALL_DIR}"
         vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}"
+    fi
+
+    # zlib support, use the one we build
+    vopts="${vopts} -DVTK_USE_SYSTEM_ZLIB:BOOL=ON"
+    vopts="${vopts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
+    if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
+        vopts="${vopts} -DZLIB_LIBRARY_RELEASE:FILEPATH=${ZLIB_LIBRARY}"
+    else
+        vopts="${vopts} -DZLIB_LIBRARY_DEBUG:FILEPATH=${ZLIB_LIBRARY}"
     fi
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"

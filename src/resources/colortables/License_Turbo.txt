@@ -1,0 +1,4 @@
+# Copyright 2019 Google LLC.
+# SPDX-License-Identifier: Apache-2.0
+# Author: Anton Mikhailov
+https://gist.github.com/mikhailov-work/ee72ba4191942acecc03fe6da94fc73f

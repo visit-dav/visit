@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyView2DAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyView2DAttributes
@@ -77,68 +42,68 @@ PyView2DAttributes_ToString(const View2DAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const double *windowCoords = atts->GetWindowCoords();
-        SNPRINTF(tmpStr, 1000, "%swindowCoords = (", prefix);
+        snprintf(tmpStr, 1000, "%swindowCoords = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 4; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", windowCoords[i]);
+            snprintf(tmpStr, 1000, "%g", windowCoords[i]);
             str += tmpStr;
             if(i < 3)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *viewportCoords = atts->GetViewportCoords();
-        SNPRINTF(tmpStr, 1000, "%sviewportCoords = (", prefix);
+        snprintf(tmpStr, 1000, "%sviewportCoords = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 4; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", viewportCoords[i]);
+            snprintf(tmpStr, 1000, "%g", viewportCoords[i]);
             str += tmpStr;
             if(i < 3)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *fullFrameActivationMode_names = "On, Off, Auto";
     switch (atts->GetFullFrameActivationMode())
     {
       case View2DAttributes::On:
-          SNPRINTF(tmpStr, 1000, "%sfullFrameActivationMode = %sOn  # %s\n", prefix, prefix, fullFrameActivationMode_names);
+          snprintf(tmpStr, 1000, "%sfullFrameActivationMode = %sOn  # %s\n", prefix, prefix, fullFrameActivationMode_names);
           str += tmpStr;
           break;
       case View2DAttributes::Off:
-          SNPRINTF(tmpStr, 1000, "%sfullFrameActivationMode = %sOff  # %s\n", prefix, prefix, fullFrameActivationMode_names);
+          snprintf(tmpStr, 1000, "%sfullFrameActivationMode = %sOff  # %s\n", prefix, prefix, fullFrameActivationMode_names);
           str += tmpStr;
           break;
       case View2DAttributes::Auto:
-          SNPRINTF(tmpStr, 1000, "%sfullFrameActivationMode = %sAuto  # %s\n", prefix, prefix, fullFrameActivationMode_names);
+          snprintf(tmpStr, 1000, "%sfullFrameActivationMode = %sAuto  # %s\n", prefix, prefix, fullFrameActivationMode_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sfullFrameAutoThreshold = %g\n", prefix, atts->GetFullFrameAutoThreshold());
+    snprintf(tmpStr, 1000, "%sfullFrameAutoThreshold = %g\n", prefix, atts->GetFullFrameAutoThreshold());
     str += tmpStr;
     const char *xScale_values[] = {"LINEAR", "LOG"};
-    SNPRINTF(tmpStr, 1000, "%sxScale = %s%s  # LINEAR, LOG\n", prefix, prefix, xScale_values[atts->GetXScale()]);
+    snprintf(tmpStr, 1000, "%sxScale = %s%s  # LINEAR, LOG\n", prefix, prefix, xScale_values[atts->GetXScale()]);
     str += tmpStr;
     const char *yScale_values[] = {"LINEAR", "LOG"};
-    SNPRINTF(tmpStr, 1000, "%syScale = %s%s  # LINEAR, LOG\n", prefix, prefix, yScale_values[atts->GetYScale()]);
+    snprintf(tmpStr, 1000, "%syScale = %s%s  # LINEAR, LOG\n", prefix, prefix, yScale_values[atts->GetYScale()]);
     str += tmpStr;
     if(atts->GetWindowValid())
-        SNPRINTF(tmpStr, 1000, "%swindowValid = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%swindowValid = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%swindowValid = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%swindowValid = 0\n", prefix);
     str += tmpStr;
     return str;
 }
@@ -408,6 +373,123 @@ View2DAttributes_GetWindowValid(PyObject *self, PyObject *args)
 }
 
 
+static PyObject *
+View2DAttributes_Add(PyObject *v, PyObject *w)
+{
+    bool arg1isObject = PyView2DAttributes_Check(v);
+    bool arg2isObject = PyView2DAttributes_Check(w);
+    if(!arg1isObject || !arg2isObject)
+    {
+        cerr << "View2DAttributes_Add: One or more arguments are not View2DAttributes!" << endl;
+        return NULL;
+    }
+
+
+    PyObject *retval = NewView2DAttributes(0);
+    View2DAttributes *c = PyView2DAttributes_FromPyObject(retval);
+    View2DAttributes *a = ((View2DAttributesObject *)v)->data;
+    View2DAttributes *b = ((View2DAttributesObject *)w)->data;
+
+
+    c->GetWindowCoords()[0] = a->GetWindowCoords()[0] + b->GetWindowCoords()[0];
+    c->GetWindowCoords()[1] = a->GetWindowCoords()[1] + b->GetWindowCoords()[1];
+    c->GetWindowCoords()[2] = a->GetWindowCoords()[2] + b->GetWindowCoords()[2];
+    c->GetWindowCoords()[3] = a->GetWindowCoords()[3] + b->GetWindowCoords()[3];
+
+
+    c->GetViewportCoords()[0] = a->GetViewportCoords()[0] + b->GetViewportCoords()[0];
+    c->GetViewportCoords()[1] = a->GetViewportCoords()[1] + b->GetViewportCoords()[1];
+    c->GetViewportCoords()[2] = a->GetViewportCoords()[2] + b->GetViewportCoords()[2];
+    c->GetViewportCoords()[3] = a->GetViewportCoords()[3] + b->GetViewportCoords()[3];
+
+
+    if(a->GetFullFrameAutoThreshold() < b->GetFullFrameAutoThreshold())
+        c->SetFullFrameAutoThreshold(a->GetFullFrameAutoThreshold());
+    else
+        c->SetFullFrameAutoThreshold(b->GetFullFrameAutoThreshold());
+
+
+    if(a->GetFullFrameActivationMode() == View2DAttributes::On &&
+       b->GetFullFrameActivationMode() == View2DAttributes::On)
+    {
+        c->SetFullFrameActivationMode(View2DAttributes::On);
+    }
+    else if(a->GetFullFrameActivationMode() == View2DAttributes::Off &&
+       b->GetFullFrameActivationMode() == View2DAttributes::Off)
+    {
+        c->SetFullFrameActivationMode(View2DAttributes::Off);
+    }
+    else
+        c->SetFullFrameActivationMode(View2DAttributes::Auto); 
+
+    return retval;
+}
+
+static PyObject *
+View2DAttributes_Mul(PyObject *v, PyObject *w)
+{
+    PyObject *retval = NewView2DAttributes(0);
+    View2DAttributes *c = PyView2DAttributes_FromPyObject(retval);
+
+
+    View2DAttributes *a;
+    double val = 1.;
+    bool arg1isObject = PyView2DAttributes_Check(v);
+    bool arg2isObject = PyView2DAttributes_Check(w);
+
+
+    if(arg1isObject && arg2isObject)
+    {
+        return NULL;
+    }
+    else
+    {
+        PyObject *num;
+
+
+        if(arg1isObject)
+        {
+            a = ((View2DAttributesObject *)v)->data;
+            num = w;
+        }
+        else
+        {
+            a = ((View2DAttributesObject *)w)->data;
+            num = v;
+        }
+
+
+        if(PyFloat_Check(num))
+            val = PyFloat_AS_DOUBLE(num);
+        else if(PyInt_Check(num))
+            val = double(PyInt_AS_LONG(num));
+        else if(PyLong_Check(num))
+            val = PyLong_AsDouble(num);
+        else
+        {
+            cerr << "MUL: Expected numeric argument is not a number!" << endl;
+        }
+
+
+        c->GetWindowCoords()[0] = a->GetWindowCoords()[0] * val;
+        c->GetWindowCoords()[1] = a->GetWindowCoords()[1] * val; 
+        c->GetWindowCoords()[2] = a->GetWindowCoords()[2] * val;
+        c->GetWindowCoords()[3] = a->GetWindowCoords()[3] * val;
+
+
+        c->GetViewportCoords()[0] = a->GetViewportCoords()[0] * val;
+        c->GetViewportCoords()[1] = a->GetViewportCoords()[1] * val;
+        c->GetViewportCoords()[2] = a->GetViewportCoords()[2] * val;
+        c->GetViewportCoords()[3] = a->GetViewportCoords()[3] * val;
+
+
+        c->SetFullFrameAutoThreshold(a->GetFullFrameAutoThreshold() * val);
+        c->SetFullFrameActivationMode(a->GetFullFrameActivationMode());
+    }
+
+    return retval;
+}
+
 
 PyMethodDef PyView2DAttributes_methods[VIEW2DATTRIBUTES_NMETH] = {
     {"Notify", View2DAttributes_Notify, METH_VARARGS},
@@ -425,6 +507,8 @@ PyMethodDef PyView2DAttributes_methods[VIEW2DATTRIBUTES_NMETH] = {
     {"GetYScale", View2DAttributes_GetYScale, METH_VARARGS},
     {"SetWindowValid", View2DAttributes_SetWindowValid, METH_VARARGS},
     {"GetWindowValid", View2DAttributes_GetWindowValid, METH_VARARGS},
+    {"Add", View2DAttributes_Add, METH_VARARGS},
+    {"Mul", View2DAttributes_Mul, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -537,119 +621,13 @@ View2DAttributes_str(PyObject *v)
     return PyString_FromString(PyView2DAttributes_ToString(obj->data,"").c_str());
 }
 
-
-static PyObject *
-View2DAttributes_add(PyObject *v, PyObject *w)
-{
-    bool arg1isObject = PyView2DAttributes_Check(v);
-    bool arg2isObject = PyView2DAttributes_Check(w);
-    if(!arg1isObject || !arg2isObject)
-    {
-        cerr << "View2DAttributes_add: One or more arguments are not View2DAttributes!" << endl;
-        return NULL;
-    }
-
-    PyObject *retval = NewView2DAttributes(0);
-    View2DAttributes *c = PyView2DAttributes_FromPyObject(retval);
-    View2DAttributes *a = ((View2DAttributesObject *)v)->data;
-    View2DAttributes *b = ((View2DAttributesObject *)w)->data;
-
-    c->GetWindowCoords()[0] = a->GetWindowCoords()[0] + b->GetWindowCoords()[0];
-    c->GetWindowCoords()[1] = a->GetWindowCoords()[1] + b->GetWindowCoords()[1];
-    c->GetWindowCoords()[2] = a->GetWindowCoords()[2] + b->GetWindowCoords()[2];
-    c->GetWindowCoords()[3] = a->GetWindowCoords()[3] + b->GetWindowCoords()[3];
-
-    c->GetViewportCoords()[0] = a->GetViewportCoords()[0] + b->GetViewportCoords()[0];
-    c->GetViewportCoords()[1] = a->GetViewportCoords()[1] + b->GetViewportCoords()[1];
-    c->GetViewportCoords()[2] = a->GetViewportCoords()[2] + b->GetViewportCoords()[2];
-    c->GetViewportCoords()[3] = a->GetViewportCoords()[3] + b->GetViewportCoords()[3];
-
-    if(a->GetFullFrameAutoThreshold() < b->GetFullFrameAutoThreshold())
-        c->SetFullFrameAutoThreshold(a->GetFullFrameAutoThreshold());
-    else
-        c->SetFullFrameAutoThreshold(b->GetFullFrameAutoThreshold());
-
-    if(a->GetFullFrameActivationMode() == View2DAttributes::On &&
-       b->GetFullFrameActivationMode() == View2DAttributes::On)
-    {
-        c->SetFullFrameActivationMode(View2DAttributes::On);
-    }
-    else if(a->GetFullFrameActivationMode() == View2DAttributes::Off &&
-       b->GetFullFrameActivationMode() == View2DAttributes::Off)
-    {
-        c->SetFullFrameActivationMode(View2DAttributes::Off);
-    }
-    else
-        c->SetFullFrameActivationMode(View2DAttributes::Auto);
-
-    return retval;
-}
-
-static PyObject *
-View2DAttributes_mul(PyObject *v, PyObject *w)
-{
-    PyObject *retval = NewView2DAttributes(0);
-    View2DAttributes *c = PyView2DAttributes_FromPyObject(retval);
-
-    View2DAttributes *a;
-    double val = 1.;
-    bool arg1isObject = PyView2DAttributes_Check(v);
-    bool arg2isObject = PyView2DAttributes_Check(w);
-
-    if(arg1isObject && arg2isObject)
-    {
-        return NULL;
-    }
-    else
-    {
-        PyObject *num;
-
-        if(arg1isObject)
-        {
-            a = ((View2DAttributesObject *)v)->data;
-            num = w;
-        }
-        else
-        {
-            a = ((View2DAttributesObject *)w)->data;
-            num = v;
-        }
-
-        if(PyFloat_Check(num))
-            val = PyFloat_AS_DOUBLE(num);
-        else if(PyInt_Check(num))
-            val = double(PyInt_AS_LONG(num));
-        else if(PyLong_Check(num))
-            val = PyLong_AsDouble(num);
-        else
-        {
-            cerr << "MUL: Expected numeric argument is not a number!" << endl;
-        }
-
-        c->GetWindowCoords()[0] = a->GetWindowCoords()[0] * val;
-        c->GetWindowCoords()[1] = a->GetWindowCoords()[1] * val;
-        c->GetWindowCoords()[2] = a->GetWindowCoords()[2] * val;
-        c->GetWindowCoords()[3] = a->GetWindowCoords()[3] * val;
-
-        c->GetViewportCoords()[0] = a->GetViewportCoords()[0] * val;
-        c->GetViewportCoords()[1] = a->GetViewportCoords()[1] * val;
-        c->GetViewportCoords()[2] = a->GetViewportCoords()[2] * val;
-        c->GetViewportCoords()[3] = a->GetViewportCoords()[3] * val;
-
-        c->SetFullFrameAutoThreshold(a->GetFullFrameAutoThreshold() * val);
-        c->SetFullFrameActivationMode(a->GetFullFrameActivationMode());
-    }
-
-    return retval;
-}
-
 //
 // The type description structure
 //
 static PyNumberMethods View2DAttributes_as_number = {
-    (binaryfunc)View2DAttributes_add, /*nb_add*/
+    (binaryfunc)View2DAttributes_Add, /*nb_add*/
     (binaryfunc)0, /*nb_subtract*/
-    (binaryfunc)View2DAttributes_mul, /*nb_multiply*/
+    (binaryfunc)View2DAttributes_Mul, /*nb_multiply*/
     (binaryfunc)0, /*nb_divide*/
     (binaryfunc)0,    /*nb_remainder*/
     (binaryfunc)0,    /*nb_divmod*/
@@ -682,7 +660,6 @@ static PyNumberMethods View2DAttributes_as_number = {
     0,            /*nb_inplace_xor*/
     0,            /*nb_inplace_or*/
 };
-
 
 //
 // The doc string for the class.

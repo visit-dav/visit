@@ -44,16 +44,22 @@ function bv_ispc_info
     if [[ "$OPSYS" == "Darwin" ]] ; then
         export ISPC_FILE=${ISPC_FILE:-"ispc-v${ISPC_VERSION}-osx.tar.gz"}
         export ISPC_URL=${ISPC_URL:-"http://sdvis.org/ospray/download/dependencies/osx/"}
+        # these are binary builds, not source tarballs so the mdf5s and shas differ 
+        # between platforms 
+        export ISPC_MD5_CHECKSUM="387cce62a6c63def5e6eb1c0a468a3db"
+        export ISPC_SHA256_CHECKSUM="aa307b97bea67d71aff046e3f69c0412cc950eda668a225e6b909dba752ef281"
         export ISPC_INSTALL_DIR_NAME=ispc-v$ISPC_VERSION-osx
     else
         export ISPC_FILE=${ISPC_FILE:-"ispc-v${ISPC_VERSION}-linux.tar.gz"}
         export ISPC_URL=${ISPC_URL:-"http://sdvis.org/ospray/download/dependencies/linux/"}
+        # these are binary builds, not source tarballs so the mdf5s and shas differ 
+        # between platforms 
+        export ISPC_MD5_CHECKSUM="0178a33a065ae65d0be00be23871cf9f"
+        export ISPC_SHA256_CHECKSUM="5513fbf8a2f6e889232ec1e7aa42f6f0b47954dcb9797e1e3d5e8d6f59301e40"
         export ISPC_INSTALL_DIR_NAME=ispc-v$ISPC_VERSION-linux
     fi
     export ISPC_COMPATIBILITY_VERSION=${ISPC_COMPATIBILITY_VERSION:-"${ISPC_VERSION}"}
     export ISPC_BUILD_DIR=${ISPC_BUILD_DIR:-"${ISPC_VERSION}"}
-    export ISPC_MD5_CHECKSUM="0178a33a065ae65d0be00be23871cf9f"
-    export ISPC_SHA256_CHECKSUM="5513fbf8a2f6e889232ec1e7aa42f6f0b47954dcb9797e1e3d5e8d6f59301e40"
 }
 
 function bv_ispc_print
@@ -72,7 +78,8 @@ function bv_ispc_host_profile
         echo "## ISPC" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         if [[ "$USE_SYSTEM_ISPC" == "no" ]]; then
-            echo "VISIT_OPTION_DEFAULT(VISIT_ISPC_DIR \${VISITHOME}/ispc/$ISPC_VERSION/\${VISITARCH})" >> $HOSTCONF
+            echo "SETUP_APP_VERSION(ISPC ${ISPC_VERSION})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_ISPC_DIR \${VISITHOME}/ispc/\${ISPC_VERSION}/\${VISITARCH})" >> $HOSTCONF
         else
             echo "VISIT_OPTION_DEFAULT(VISIT_ISPC_DIR ${ISPC_INSTALL_DIR})" >> $HOSTCONF
         fi
@@ -82,7 +89,7 @@ function bv_ispc_host_profile
 function bv_ispc_print_usage
 {
     #ispc does not have an option, it is only dependent on ispc.
-    printf "%-15s %s [%s]\n" "--ispc" "Build ISPC" "$DO_ISPC"
+    printf "%-20s %s [%s]\n" "--ispc" "Build ISPC" "$DO_ISPC"
 }
 
 function bv_ispc_ensure

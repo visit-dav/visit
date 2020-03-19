@@ -16,7 +16,7 @@ Definition:
 //  Modifications:
 //
 //    Hank Childs, Fri May 18 16:01:06 PDT 2007
-//    Forced to hand-edit return of avtDisplacePluginFilter ... not 
+//    Forced to hand-edit return of avtDisplacePluginFilter ... not
 //    avtDisplaceFilter.
 //
 // ****************************************************************************

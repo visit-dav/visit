@@ -1,3 +1,7 @@
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 #include <EngineMethods.h>
 
 #include <EngineState.h>
@@ -17,7 +21,6 @@
 #include <SocketConnection.h>
 #include <StatusAttributes.h>
 #include <TimingsManager.h>
-#include <snprintf.h>
 
 
 // ****************************************************************************
@@ -485,7 +488,7 @@ EngineMethods::Execute(bool respondWithNull, void (*waitCB)(void *), void *cbDat
     }
 
     char msg[128];
-    SNPRINTF(msg, 128, "Reading %ld bytes from socket", size);
+    snprintf(msg, 128, "Reading %ld bytes from socket", size);
     visitTimer->StopTimer(readData, msg);
     visitTimer->DumpTimings();
 

@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include "QvisLCSWindow.h"
 
@@ -62,14 +28,14 @@ TurnOff(QWidget *w0, QWidget *w1=NULL);
 // ****************************************************************************
 // Method: QvisLCSWindow::QvisLCSWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
 // Modifications:
-//   
+//
 //   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
 //   Add named selections as a seed source.
 //
@@ -90,14 +56,14 @@ QvisLCSWindow::QvisLCSWindow(const int type,
 // ****************************************************************************
 // Method: QvisLCSWindow::~QvisLCSWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisLCSWindow::~QvisLCSWindow()
@@ -108,14 +74,12 @@ QvisLCSWindow::~QvisLCSWindow()
 // ****************************************************************************
 // Method: QvisLCSWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 void
@@ -127,36 +91,41 @@ QvisLCSWindow::CreateWindowContents()
     // ----------------------------------------------------------------------
     // Integration tab
     // ----------------------------------------------------------------------
-    QWidget *integrationTab = new QWidget(central);
+    QWidget *integrationTab = new QWidget();
     propertyTabs->addTab(integrationTab, tr("Integration"));
     CreateIntegrationTab(integrationTab);
 
     // ----------------------------------------------------------------------
+    // LCS tab
+    // ----------------------------------------------------------------------
+    QWidget *LCSTab = new QWidget();
+    propertyTabs->addTab(LCSTab, tr("LCS"));
+    CreateLCSTab(LCSTab);
+
+    // ----------------------------------------------------------------------
     // Appearance tab
     // ----------------------------------------------------------------------
-    QWidget *appearanceTab = new QWidget(central);
+    QWidget *appearanceTab = new QWidget();
     propertyTabs->addTab(appearanceTab, tr("Appearance"));
     CreateAppearanceTab(appearanceTab);
 
     // ----------------------------------------------------------------------
     // Advanced tab
     // ----------------------------------------------------------------------
-    QWidget *advancedTab = new QWidget(central);
+    QWidget *advancedTab = new QWidget();
     propertyTabs->addTab(advancedTab, tr("Advanced"));
     CreateAdvancedTab(advancedTab);
 }
 
 
 // ****************************************************************************
-// Method: QvisLCSWindow::IntegrationTab
+// Method: QvisLCSWindow::CreateIntegrationTab
 //
-// Purpose: 
+// Purpose:
 //   Populates the integration tab.
 //
 // Programmer: Dave Pugmire
 // Creation:   Tue Dec 29 14:37:53 EST 2009
-//
-// Modifications:
 //
 // ****************************************************************************
 
@@ -186,7 +155,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sourceLayout->addWidget(sourceType, 0, 1, 1, 2);
 
     // Create the source geometry subgroup
-    QGroupBox *geometryGroup = new QGroupBox(sourceGroup);
+    QGroupBox *geometryGroup = new QGroupBox();
     sourceLayout->addWidget(geometryGroup, 1, 0, 4, 3);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
@@ -195,62 +164,62 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     geometryLayout->setRowStretch(5,10);
 
     // Regular grid
-    QGroupBox *regularGridBox = new QGroupBox(central);
+    QGroupBox *regularGridBox = new QGroupBox();
     regularGridBox->setTitle(tr("Regular Grid"));
     geometryLayout->addWidget(regularGridBox);
 
     // Resolution
     QGridLayout *rgridLayout = new QGridLayout(regularGridBox);
-    ResolutionLabel = new QLabel(tr("Resolution"), central);
+    ResolutionLabel = new QLabel(tr("Resolution"));
     rgridLayout->addWidget(ResolutionLabel,0,0);
 
-    Resolution = new QLineEdit(central);
+    Resolution = new QLineEdit();
     connect(Resolution, SIGNAL(returnPressed()),
             this, SLOT(ResolutionProcessText()));
     rgridLayout->addWidget(Resolution, 0, 1, 1, 2);
 
     // Start extents
-    rgridLayout->addWidget(new QLabel(tr("Data start extent"), central), 1, 0);
+    rgridLayout->addWidget(new QLabel(tr("Data start extent")), 1, 0);
 
-    UseDataSetStart = new QButtonGroup(central);
-    QRadioButton* rb = new QRadioButton(tr("Full"), central);
+    UseDataSetStart = new QButtonGroup();
+    QRadioButton* rb = new QRadioButton(tr("Full"));
     UseDataSetStart->addButton(rb, 0);
     rgridLayout->addWidget(rb, 1,1);
 
-    rb = new QRadioButton(tr("Subset"), central);
+    rb = new QRadioButton(tr("Subset"));
     UseDataSetStart->addButton(rb, 1);
     rgridLayout->addWidget(rb, 1,2);
     connect(UseDataSetStart, SIGNAL(buttonClicked(int)), this,
             SLOT(UseDataSetStartChanged(int)));
 
-    StartPosition = new QLineEdit(central);
+    StartPosition = new QLineEdit();
     connect(StartPosition, SIGNAL(returnPressed()),
             this, SLOT(StartPositionProcessText()));
     rgridLayout->addWidget(StartPosition, 1,3);
 
 
     // End extents
-    rgridLayout->addWidget(new QLabel(tr("Data end extent"), central), 2, 0);
+    rgridLayout->addWidget(new QLabel(tr("Data end extent")), 2, 0);
 
-    UseDataSetEnd = new QButtonGroup(central);
-    rb = new QRadioButton(tr("Full"), central);
+    UseDataSetEnd = new QButtonGroup();
+    rb = new QRadioButton(tr("Full"));
     UseDataSetEnd->addButton(rb, 0);
     rgridLayout->addWidget(rb, 2,1);
 
-    rb = new QRadioButton(tr("Subset"), central);
+    rb = new QRadioButton(tr("Subset"));
     UseDataSetEnd->addButton(rb, 1);
     rgridLayout->addWidget(rb, 2,2);
     connect(UseDataSetEnd, SIGNAL(buttonClicked(int)), this,
             SLOT(UseDataSetEndChanged(int)));
 
-    EndPosition = new QLineEdit(central);
+    EndPosition = new QLineEdit();
     connect(EndPosition, SIGNAL(returnPressed()),
             this, SLOT(EndPositionProcessText()));
     rgridLayout->addWidget(EndPosition, 2,3);
 
 
     // Create the auxiliary grid group box.
-    QGroupBox *auxiliaryGridGroup = new QGroupBox(central);
+    QGroupBox *auxiliaryGridGroup = new QGroupBox();
     auxiliaryGridGroup->setTitle(tr("Auxiliary Grid"));
     sourceLayout->addWidget(auxiliaryGridGroup, 5, 0, 1, 4);
 
@@ -259,19 +228,19 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     auxiliaryGridLayout->setSpacing(10);
 
     // Auxiliary grid label and combo box
-    auxiliaryGridLayout->addWidget( new QLabel(tr("Auxiliary Grid"), auxiliaryGridGroup), 0,0);
+    auxiliaryGridLayout->addWidget( new QLabel(tr("Auxiliary Grid")), 0,0);
 
-    auxiliaryGrid = new QComboBox(auxiliaryGridGroup);
+    auxiliaryGrid = new QComboBox();
     auxiliaryGrid->addItem(tr("None"));
     auxiliaryGrid->addItem(tr("2D"));
     auxiliaryGrid->addItem(tr("3D"));
     connect(auxiliaryGrid, SIGNAL(activated(int)),
             this, SLOT(auxiliaryGridChanged(int)));
     auxiliaryGridLayout->addWidget(auxiliaryGrid, 0,1);
-    
+
     // Create the auxiliary grid spacing
-    auxiliaryGridSpacingLabel = new QLabel(tr("Spacing"), auxiliaryGridGroup);
-    auxiliaryGridSpacing = new QLineEdit(auxiliaryGridGroup);
+    auxiliaryGridSpacingLabel = new QLabel(tr("Spacing"));
+    auxiliaryGridSpacing = new QLineEdit();
     connect(auxiliaryGridSpacing, SIGNAL(returnPressed()), this,
             SLOT(auxiliaryGridSpacingProcessText()));
     auxiliaryGridLayout->addWidget(auxiliaryGridSpacingLabel, 0,2);
@@ -279,7 +248,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
 
 
     // Create the field group box.
-    QGroupBox *fieldGroup = new QGroupBox(central);
+    QGroupBox *fieldGroup = new QGroupBox();
     fieldGroup->setTitle(tr("Field"));
     mainLayout->addWidget(fieldGroup, 6, 0, 1, 1);
 //    mainLayout->setStretchFactor(fieldGroup, 100);
@@ -288,8 +257,8 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     fieldLayout->setSpacing(10);
 
 
-    fieldLayout->addWidget( new QLabel(tr("Field"), fieldGroup), 0,0);
-    fieldType = new QComboBox(fieldGroup);
+    fieldLayout->addWidget( new QLabel(tr("Field")), 0,0);
+    fieldType = new QComboBox();
     fieldType->addItem(tr("Default"));
     fieldType->addItem(tr("Flash"));
     fieldType->addItem(tr("M3D-C1 2D"));
@@ -300,27 +269,27 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);
-    
+
 
     // Create the field constant text field.
-    fieldConstantLabel = new QLabel(tr("Constant"), fieldGroup);
-    fieldConstant = new QLineEdit(fieldGroup);
+    fieldConstantLabel = new QLabel(tr("Constant"));
+    fieldConstant = new QLineEdit();
     connect(fieldConstant, SIGNAL(returnPressed()), this,
             SLOT(fieldConstantProcessText()));
     fieldLayout->addWidget(fieldConstantLabel, 0,2);
     fieldLayout->addWidget(fieldConstant, 0,3);
 
     // Create the widgets that specify a velocity source.
-    velocitySource = new QLineEdit(fieldGroup);
+    velocitySource = new QLineEdit();
     connect(velocitySource, SIGNAL(returnPressed()),
             this, SLOT(velocitySourceProcessText()));
-    velocitySourceLabel = new QLabel(tr("Velocity"), fieldGroup);
+    velocitySourceLabel = new QLabel(tr("Velocity"));
     velocitySourceLabel->setBuddy(velocitySource);
     fieldLayout->addWidget(velocitySourceLabel, 1, 2);
     fieldLayout->addWidget(velocitySource, 1, 3);
 
     // Create the node centering
-    // forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
+    // forceNodal = new QCheckBox(tr("Force node centering"));
     // connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
     // fieldLayout->addWidget(forceNodal, 2, 0);
 
@@ -356,7 +325,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     connect(integrationType, SIGNAL(activated(int)),
             this, SLOT(integrationTypeChanged(int)));
     integrationLayout->addWidget(integrationType, 1,1);
-    
+
     // Create the step length text field.
     maxStepLengthLabel = new QLabel(tr("Step length"), integrationGroup);
     maxStepLength = new QLineEdit(integrationGroup);
@@ -368,7 +337,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     limitMaxTimeStep = new QCheckBox(tr("Limit maximum time step"), integrationGroup);
     connect(limitMaxTimeStep, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeStepChanged(bool)));
     integrationLayout->addWidget(limitMaxTimeStep, 3, 0);
-    
+
     // Create the step length text field.
     maxTimeStep = new QLineEdit(integrationGroup);
     connect(maxTimeStep, SIGNAL(returnPressed()),
@@ -402,11 +371,31 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     absTolSizeType->addItem(tr("Fraction of Bounding Box"), 1);
     connect(absTolSizeType, SIGNAL(activated(int)), this, SLOT(absTolSizeTypeChanged(int)));
     toleranceLayout->addWidget(absTolSizeType, 1, 2);
+}
+
+
+// ****************************************************************************
+// Method: QvisLCSWindow::LCSTab
+//
+// Purpose:
+//   Populates the lcs tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// ****************************************************************************
+
+void
+QvisLCSWindow::CreateLCSTab(QWidget *pageLCS)
+{
+    QGridLayout *mainLayout = new QGridLayout(pageLCS);
+    mainLayout->setMargin(5);
+    mainLayout->setSpacing(10);
 
     // Create the termination group box.
     QGroupBox *terminationGroup = new QGroupBox(central);
     terminationGroup->setTitle(tr("Termination"));
-    mainLayout->addWidget(terminationGroup, 12, 0, 2, 2);
+    mainLayout->addWidget(terminationGroup, 0, 0, 2, 2);
 //    mainLayout->setStretchFactor(terminationGroup, 100);
     QGridLayout *terminationLayout = new QGridLayout(terminationGroup);
     terminationLayout->setMargin(5);
@@ -418,7 +407,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // termination.
     terminationTypeButtonGroup = new QButtonGroup(terminationGroup);
 
-    // Create the operation of integration.
+    // Create the operation of lcs.
     terminationLayout->addWidget(new QLabel(tr("Operation type"),
                                             central), 0, 0);
 
@@ -498,7 +487,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
 
 
     // Radio button termination type
-    rb = new QRadioButton(tr("Limit maximum advection time i.e. FTLE"), terminationGroup);
+    QRadioButton *rb = new QRadioButton(tr("Limit maximum advection time i.e. FTLE"), terminationGroup);
     terminationTypeButtonGroup->addButton(rb, 0);
     terminationLayout->addWidget(rb, 2, 0, 1, 2);
 
@@ -545,36 +534,12 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     connect(maxSteps, SIGNAL(returnPressed()),
             this, SLOT(maxStepsProcessText()));
     terminationLayout->addWidget(maxSteps, 5, 2);
-}
 
-
-// ****************************************************************************
-// Method: QvisLCSWindow::CreateAppearanceTab
-//
-// Purpose: 
-//   Populates the appearance tab.
-//
-// Programmer: Dave Pugmire
-// Creation:   Tue Dec 29 14:37:53 EST 2009
-//
-// Modifications:
-//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
-//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
-//   signal will only emit when 'enter' is pressed or spinbox loses focus.
-//
-// ****************************************************************************
-
-void
-QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
-{
-    QGridLayout *mainLayout = new QGridLayout(pageAppearance);
-    mainLayout->setMargin(5);
-    mainLayout->setSpacing(10);
 
     // Seed generation group.
-    QGroupBox *seedGroup = new QGroupBox(pageAppearance);
+    QGroupBox *seedGroup = new QGroupBox(pageLCS);
     seedGroup->setTitle(tr("Seed generation"));
-    mainLayout->addWidget(seedGroup, 0, 0);
+    mainLayout->addWidget(seedGroup, 6, 0, 4, 2);
 
     QGridLayout *seedGroupLayout = new QGridLayout(seedGroup);
     seedGroupLayout->setSpacing(10);
@@ -616,6 +581,31 @@ QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
     connect(seedLimit, SIGNAL(valueChanged(int)),
             this, SLOT(seedLimitChanged(int)));
     seedGroupLayout->addWidget( seedLimit, 3, 1);
+}
+
+
+// ****************************************************************************
+// Method: QvisLCSWindow::CreateAppearanceTab
+//
+// Purpose:
+//   Populates the appearance tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
+// ****************************************************************************
+
+void
+QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
+{
+    QGridLayout *mainLayout = new QGridLayout(pageAppearance);
+    mainLayout->setMargin(5);
+    mainLayout->setSpacing(10);
 
     // Streamlines/Pathline Group.
     QGroupBox *icGrp = new QGroupBox(pageAppearance);
@@ -689,7 +679,7 @@ QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
 // ****************************************************************************
 // Method: QvisLCSWindow::CreateAdvancedTab
 //
-// Purpose: 
+// Purpose:
 //   Populates the advanced tab.
 //
 // Programmer: Dave Pugmire
@@ -702,7 +692,7 @@ QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
 //
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
-// 
+//
 //   Hank Childs, Sun Dec  5 05:31:57 PST 2010
 //   Add additional warning controls.
 //
@@ -738,13 +728,13 @@ QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
             this, SLOT(parallelAlgorithmChanged(int)));
     algoGLayout->addWidget( parallelAlgoLabel, 1,0);
     algoGLayout->addWidget( parallelAlgo, 1,1);
-    
+
     maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
     maxSLCount = new QSpinBox(algoGrp);
     maxSLCount->setKeyboardTracking(false);
     maxSLCount->setMinimum(1);
     maxSLCount->setMaximum(100000);
-    connect(maxSLCount, SIGNAL(valueChanged(int)), 
+    connect(maxSLCount, SIGNAL(valueChanged(int)),
             this, SLOT(maxSLCountChanged(int)));
     algoGLayout->addWidget( maxSLCountLabel, 2,0);
     algoGLayout->addWidget( maxSLCount,2,1);
@@ -805,7 +795,7 @@ QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(issueWarningForStepsize, 3, 0);
     QLabel *stepsizeLabel = new QLabel(tr("Issue warning when a step size underflow is detected."), warningsGrp);
     warningsGLayout->addWidget(stepsizeLabel, 3, 1, 1, 2);
- 
+
     issueWarningForStiffness = new QCheckBox(central);
     connect(issueWarningForStiffness, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForStiffnessChanged(bool)));
@@ -816,7 +806,7 @@ QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(stiffnessDescLabel1, 5, 1, 1, 2);
     QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
     warningsGLayout->addWidget(stiffnessDescLabel2, 6, 1, 1, 2);
-    
+
     issueWarningForCriticalPoints = new QCheckBox(central);
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
@@ -839,7 +829,7 @@ QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 // ****************************************************************************
 // Method: QvisLCSWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: Brad Whitlock
@@ -1020,12 +1010,12 @@ QvisLCSWindow::UpdateWindow(bool doAll)
                   eigenComponent->addItem(tr("Lambda Shear Pos."));
                   eigenComponent->addItem(tr("Lambda Shear Neg."));
                 }
-                
+
                 bval = (atts->GetEigenComponent() ==
                         LCSAttributes::PosLambdaShearVector ||
                         atts->GetEigenComponent() ==
                         LCSAttributes::NegLambdaShearVector);
-            
+
                 if( bval )
                 {
 //                  eigenWeightLabel->show();
@@ -1039,7 +1029,7 @@ QvisLCSWindow::UpdateWindow(bool doAll)
                     eigenWeightSlider->hide();
                 }
 
-//              eigenWeightLabel->setEnabled( bval );   
+//              eigenWeightLabel->setEnabled( bval );
                 eigenWeightEdit->setEnabled( bval );
                 eigenWeightSlider->setEnabled( bval );
               }
@@ -1101,7 +1091,7 @@ QvisLCSWindow::UpdateWindow(bool doAll)
                     LCSAttributes::PosLambdaShearVector ||
                     atts->GetEigenComponent() ==
                     LCSAttributes::NegLambdaShearVector);
-            
+
             if( bval )
             {
 //            eigenWeightLabel->show();
@@ -1115,7 +1105,7 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               eigenWeightSlider->hide();
             }
 
-//          eigenWeightLabel->setEnabled( bval );   
+//          eigenWeightLabel->setEnabled( bval );
             eigenWeightEdit->setEnabled( bval );
             eigenWeightSlider->setEnabled( bval );
             break;
@@ -1240,7 +1230,7 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               integrationType->setCurrentIndex(LCSAttributes::AdamsBashforth);
               UpdateIntegrationAttributes();
             }
-            else if (atts->GetIntegrationType() == LCSAttributes::M3DC12DIntegrator) 
+            else if (atts->GetIntegrationType() == LCSAttributes::M3DC12DIntegrator)
             {
               atts->SetIntegrationType(LCSAttributes::DormandPrince);
               integrationType->setCurrentIndex(LCSAttributes::DormandPrince);
@@ -1368,7 +1358,7 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             issueWarningForMaxSteps->setChecked(atts->GetIssueTerminationWarnings());
             issueWarningForMaxSteps->blockSignals(false);
             break;
-            
+
         case LCSAttributes::ID_issueCriticalPointsWarnings:
             issueWarningForCriticalPoints->blockSignals(true);
             issueWarningForCriticalPoints->setChecked(atts->GetIssueCriticalPointsWarnings());
@@ -1400,7 +1390,7 @@ QvisLCSWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisLCSWindow::UpdateFieldAttributes
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets for the various field types.
 //
 // Programmer: Dave Pugmire
@@ -1415,7 +1405,7 @@ QvisLCSWindow::UpdateFieldAttributes()
     {
     case LCSAttributes::M3DC12DField:
       if( atts->GetIntegrationType() ==
-          LCSAttributes::M3DC12DIntegrator ) 
+          LCSAttributes::M3DC12DIntegrator )
         TurnOn(fieldConstant, fieldConstantLabel);
       else
         TurnOff(fieldConstant, fieldConstantLabel);
@@ -1442,7 +1432,7 @@ QvisLCSWindow::UpdateFieldAttributes()
 // ****************************************************************************
 // Method: QvisLCSWindow::UpdateIntegrationAttributes
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets for the various integration types.
 //
 // Programmer: Dave Pugmire
@@ -1503,7 +1493,7 @@ QvisLCSWindow::UpdateIntegrationAttributes()
 // ****************************************************************************
 // Method: QvisLCSWindow::UpdateAlgorithmAttributes
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets for the various integration types.
 //
 // Programmer: Dave Pugmire
@@ -1523,7 +1513,7 @@ QvisLCSWindow::UpdateAlgorithmAttributes()
                              LCSAttributes::ParallelStaticDomains);
     bool useMasterSlave = (atts->GetParallelizationAlgorithmType() ==
                            LCSAttributes::MasterSlave);
-    
+
     //Turn off everything.
     maxDomainCacheLabel->hide();
     maxDomainCache->hide();
@@ -1556,7 +1546,7 @@ QvisLCSWindow::UpdateAlgorithmAttributes()
 // ****************************************************************************
 // Method: QvisLCSWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: Brad Whitlock
@@ -1865,7 +1855,7 @@ QvisLCSWindow::GetCurrentValues(int which_widget)
         if (val >= 0)
             atts->SetSeedLimit(val);
     }
-    
+
 
     // maxProcessCount
     if (which_widget == LCSAttributes::ID_maxProcessCount || doAll)
@@ -1884,7 +1874,7 @@ QvisLCSWindow::GetCurrentValues(int which_widget)
         if (val >= 2)
             atts->SetWorkGroupSize(val);
     }
-    
+
     // criticalPointThreshold
     if(which_widget == LCSAttributes::ID_criticalPointThreshold || doAll)
     {
@@ -1966,7 +1956,7 @@ QvisLCSWindow::directionTypeChanged(int val)
         atts->SetIntegrationDirection(LCSAttributes::IntegrationDirection(val));
         Apply();
     }
-}   
+}
 
 void
 QvisLCSWindow::fieldTypeChanged(int val)
@@ -1976,7 +1966,7 @@ QvisLCSWindow::fieldTypeChanged(int val)
         atts->SetFieldType(LCSAttributes::FieldType(val));
         Apply();
     }
-}   
+}
 
 void
 QvisLCSWindow::fieldConstantProcessText()
@@ -1993,7 +1983,7 @@ QvisLCSWindow::auxiliaryGridChanged(int val)
         atts->SetAuxiliaryGrid(LCSAttributes::AuxiliaryGrid(val));
         Apply();
     }
-}   
+}
 
 void
 QvisLCSWindow::auxiliaryGridSpacingProcessText()
@@ -2010,7 +2000,7 @@ QvisLCSWindow::integrationTypeChanged(int val)
         atts->SetIntegrationType(LCSAttributes::IntegrationType(val));
         Apply();
     }
-}   
+}
 
 void
 QvisLCSWindow::parallelAlgorithmChanged(int val)
@@ -2020,7 +2010,7 @@ QvisLCSWindow::parallelAlgorithmChanged(int val)
         atts->SetParallelizationAlgorithmType(LCSAttributes::ParallelizationAlgorithmType(val));
         Apply();
     }
-}   
+}
 
 void
 QvisLCSWindow::maxStepLengthProcessText()
@@ -2071,7 +2061,7 @@ QvisLCSWindow::operationTypeChanged(int val)
         atts->SetOperationType(LCSAttributes::OperationType(val));
         Apply();
     }
-}   
+}
 
 void
 QvisLCSWindow::cauchyGreenTensorChanged(int val)
@@ -2081,7 +2071,7 @@ QvisLCSWindow::cauchyGreenTensorChanged(int val)
         atts->SetCauchyGreenTensor(LCSAttributes::CauchyGreenTensor(val));
         Apply();
     }
-}   
+}
 
 void
 QvisLCSWindow::eigenComponentChanged(int val)
@@ -2091,7 +2081,7 @@ QvisLCSWindow::eigenComponentChanged(int val)
         atts->SetEigenComponent(LCSAttributes::EigenComponent(val));
         Apply();
     }
-}   
+}
 
 void
 QvisLCSWindow::operatorTypeChanged(int val)
@@ -2101,7 +2091,7 @@ QvisLCSWindow::operatorTypeChanged(int val)
         atts->SetOperatorType(LCSAttributes::OperatorType(val));
         Apply();
     }
-}   
+}
 
 void
 QvisLCSWindow::eigenWeightEditProcessText()

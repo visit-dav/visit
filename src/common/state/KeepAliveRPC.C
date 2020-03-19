@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <KeepAliveRPC.h>
 #include <DebugStream.h>
@@ -42,14 +8,14 @@
 // ****************************************************************************
 // Method: KeepAliveRPC::KeepAliveRPC
 //
-// Purpose: 
+// Purpose:
 //   Constructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 12 10:05:46 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 KeepAliveRPC::KeepAliveRPC() : BlockingRPC("i", NULL)
@@ -60,14 +26,14 @@ KeepAliveRPC::KeepAliveRPC() : BlockingRPC("i", NULL)
 // ****************************************************************************
 // Method: KeepAliveRPC::~KeepAliveRPC
 //
-// Purpose: 
+// Purpose:
 //   Destructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 12 10:05:57 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 KeepAliveRPC::~KeepAliveRPC()
@@ -77,7 +43,7 @@ KeepAliveRPC::~KeepAliveRPC()
 // ****************************************************************************
 // Method: KeepAliveRPC::operator()
 //
-// Purpose: 
+// Purpose:
 //   Invocation method for the RPC.
 //
 // Arguments:
@@ -87,7 +53,7 @@ KeepAliveRPC::~KeepAliveRPC()
 // Creation:   Fri Mar 12 10:06:15 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -103,20 +69,20 @@ KeepAliveRPC::operator()()
 // ****************************************************************************
 // Method: KeepAliveRPC::SelectAll
 //
-// Purpose: 
+// Purpose:
 //   Selects the value that we received.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 12 10:07:30 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -128,7 +94,7 @@ KeepAliveRPC::SelectAll()
 // ****************************************************************************
 // Method: KeepAliveRPC::SetValue
 //
-// Purpose: 
+// Purpose:
 //   Sets the RPC's value.
 //
 // Arguments:
@@ -138,7 +104,7 @@ KeepAliveRPC::SelectAll()
 // Creation:   Fri Mar 12 10:08:19 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -151,7 +117,7 @@ KeepAliveRPC::SetValue(int v)
 // ****************************************************************************
 // Method: KeepAliveRPC::GetValue
 //
-// Purpose: 
+// Purpose:
 //   Returns the value for the RPC's value field.
 //
 // Returns:    The RPC's value field.
@@ -160,7 +126,7 @@ KeepAliveRPC::SetValue(int v)
 // Creation:   Fri Mar 12 10:09:02 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -172,14 +138,14 @@ KeepAliveRPC::GetValue() const
 // ****************************************************************************
 // Method: KeepAliveRPC::TypeName
 //
-// Purpose: 
+// Purpose:
 //   Returns the RPC name.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Dec  7 11:09:23 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const std::string

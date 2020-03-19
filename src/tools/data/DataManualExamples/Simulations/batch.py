@@ -1,40 +1,7 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
-#*****************************************************************************
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
 import math, os, string, sys
 sys.path.append("../../../lib")                # for _simV2.so
 sys.path.append("../../../sim/V2/swig/python") # for simV2.py
@@ -302,7 +269,7 @@ class Batch(object):
 
         if self.domains[0]*self.domains[1]*self.domains[2] != self.par_size:
             if self.par_rank == 0:
-                print "The number of domains must match the number of ranks.\n"
+                print("The number of domains must match the number of ranks.\n")
             self.Finalize()
             return -1
 
@@ -369,13 +336,13 @@ class Batch(object):
             offset[2] = (self.extents[5] - self.extents[4]) * kdom;
 
             index = 0
-            for k in xrange(self.dims[2]):
+            for k in range(self.dims[2]):
                 tz = float(k) / float(self.dims[2] - 1)
                 z = (1.-tz)*self.extents[4] + tz*self.extents[5]
-                for j in xrange(self.dims[1]):
+                for j in range(self.dims[1]):
                     ty = float(j) / float(self.dims[1] - 1)
                     y = (1.-ty)*self.extents[2] + ty*self.extents[3]
-                    for i in xrange(self.dims[0]):
+                    for i in range(self.dims[0]):
                         tx = float(i) / float(self.dims[0] - 1)
                         x = (1.-tx)*self.extents[0] + tx*self.extents[1]
                         self.x[index] = x + offset[0]
@@ -384,9 +351,9 @@ class Batch(object):
                         index = index + 1
 
         # Update q
-        for k in xrange(self.dims[2]-1):
-            for j in xrange(self.dims[1]-1):
-                for i in xrange(self.dims[0]-1):
+        for k in range(self.dims[2]-1):
+            for j in range(self.dims[1]-1):
+                for i in range(self.dims[0]-1):
                     srcIndex = k*self.dims[0]*self.dims[1] +\
                                j*self.dims[0] +\
                                i
@@ -422,32 +389,32 @@ class Batch(object):
                 filebase = "slice3v_%04d" % self.cycle
                 err = extract_slice_3v(filebase, v0, v1, v2, extractvars)
                 if self.par_rank == 0:
-                    print "slice3v export returned %s" % extract_err(err)
+                    print("slice3v export returned %s" % extract_err(err))
     
                 filebase = "sliceON_%04d" % self.cycle
                 err = extract_slice_origin_normal(filebase, origin, normal, extractvars)
                 if self.par_rank == 0:
-                    print "sliceON export returned %s" % extract_err(err)
+                    print("sliceON export returned %s" % extract_err(err))
 
                 filebase = "sliceX_%04d" % self.cycle
                 err = extract_slice(filebase, 0, 0.5, extractvars)
                 if self.par_rank == 0:
-                    print "sliceX export returned %s" % extract_err(err)
+                    print("sliceX export returned %s" % extract_err(err))
 
                 filebase = "sliceY_%04d" % self.cycle
                 err = extract_slice(filebase, 1, 2.5, extractvars)
                 if self.par_rank == 0:
-                    print "slice export returned %s" % extract_err(err)
+                    print("slice export returned %s" % extract_err(err))
 
                 filebase = "sliceZ_%04d" % self.cycle
                 err = extract_slice(filebase, 2, 5., extractvars)
                 if self.par_rank == 0:
-                    print "sliceZ export returned %s" % extract_err(err)
+                    print("sliceZ export returned %s" % extract_err(err))
 
                 filebase = "iso_%04d" % self.cycle
                 err = extract_iso(filebase, "radius", isos, extractvars)
                 if self.par_rank == 0:
-                    print "iso export returned %s" % extract_err(err)
+                    print("iso export returned %s" % extract_err(err))
 
             if self.render:
                 filename = "batch%04d.png" % self.cycle
@@ -457,9 +424,9 @@ class Batch(object):
                 VisItDrawPlots()
                 if VisItSaveWindow(filename, self.image_width, self.image_height, VISIT_IMAGEFORMAT_PNG) == VISIT_OKAY:
                     if self.par_rank == 0:
-                        print "Saved", filename
+                        print("Saved", filename)
                 elif self.par_rank == 0:
-                    print "The image could not be saved to ", filename
+                    print("The image could not be saved to ", filename)
                 VisItDeleteActivePlots()
 
             self.cycle = self.cycle + 1
@@ -541,7 +508,7 @@ class Batch(object):
         elif name == "radius":
             h = VisIt_VariableData_alloc()
             rad = [0.] * npts
-            for index in xrange(npts):
+            for index in range(npts):
                 rad[index] = math.sqrt(self.x[index]*self.x[index] + 
                                        self.y[index]*self.y[index] + 
                                        self.z[index]*self.z[index])
@@ -550,7 +517,7 @@ class Batch(object):
         elif name == "d":
             h = VisIt_VariableData_alloc()
             rad = [0.] * npts
-            for index in xrange(npts):
+            for index in range(npts):
                 rad[index] = math.sin(self.time + 
                                       0.25 * math.sqrt(self.x[index]*self.x[index] + 
                                        self.y[index]*self.y[index] + 
@@ -560,7 +527,7 @@ class Batch(object):
         elif name == "dom":
             h = VisIt_VariableData_alloc()
             dom = [0.] * npts
-            for index in xrange(npts):
+            for index in range(npts):
                 dom[index] = domain
             # Use copy since dom will go out of scope
             VisIt_VariableData_setDataD(h, VISIT_OWNER_COPY, 1, npts, dom)

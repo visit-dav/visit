@@ -1,39 +1,8 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
+#****************************************************************************
 # Modifications:
 #   Hank Childs, Thu Jul 22 09:55:03 PDT 2010
 #   Add attributes for multi-window saves.
@@ -71,7 +40,133 @@
 #   Kathleen Biagas, Tue Dec 20 15:43:20 PST 2016
 #   Added GlyphTypes.
 #
-#****************************************************************************/
+#    Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
+#    Add xml tools code gen targets
+#****************************************************************************
+
+
+# Add XML Code Gen Targets
+
+# Note: These names are in alphabetical order
+
+set(COMMON_STATE_GEN_OBJECTS 
+    AnimationAttributes
+    AnnotationAttributes
+    AnnotationObject
+    AnnotationObjectList
+    AppearanceAttributes
+    Axes2D
+    Axes3D
+    AxesArray
+    AxisAttributes
+    AxisLabels
+    AxisRestrictionAttributes
+    AxisTickMarks
+    AxisTitles
+    BoxExtents
+    CinemaAttributes
+    ClientInformation
+    ClientInformationList
+    ClientMethod
+    ColorAttribute
+    ColorAttributeList
+    ColorControlPoint
+    ColorControlPointList
+    ColorTableAttributes
+    CompactSILRestrictionAttributes
+    ConstructDataBinningAttributes
+    ContourOpAttributes
+    DBOptionsAttributes
+    DBPluginInfoAttributes
+    DatabaseAttributes
+    DatabaseCorrelation
+    DatabaseCorrelationList
+    EngineList
+    EngineProperties
+    ExportDBAttributes
+    Expression
+    ExpressionList
+    FileOpenOptions
+    FontAttributes
+    GaussianControlPoint
+    GaussianControlPointList
+    GlobalAttributes
+    GlobalLineoutAttributes
+    HostProfileList
+    InteractorAttributes
+    InternalResampleAttributes
+    KeyframeAttributes
+    LaunchProfile
+    LightAttributes
+    LightList
+    Line
+    LinearTransformAttributes
+    MachineProfile
+    MaterialAttributes
+    MeshManagementAttributes
+    MessageAttributes
+    MovieAttributes
+    NameschemeAttributes
+    NamespaceAttributes
+    PickAttributes
+    PickVarInfo
+    PlaneAttributes
+    Plot
+    PlotInfoAttributes
+    PlotList
+    PlotQueryInfo
+    PluginManagerAttributes
+    PointAttributes
+    PrinterAttributes
+    ProcessAttributes
+    QueryAttributes
+    QueryList
+    QueryOverTimeAttributes
+    RenderingAttributes
+    SILArrayAttributes
+    SILAttributes
+    SILMatrixAttributes
+    SILRestrictionAttributes
+    SaveSubWindowAttributes
+    SaveSubWindowsAttributes
+    SaveWindowAttributes
+    SeedMeAttributes
+    SelectionList
+    SelectionProperties
+    SelectionSummary
+    SelectionVariableSummary
+    SimilarityTransformAttributes
+    SimulationCommand
+    SimulationUIValues
+    SphereAttributes
+    StatusAttributes
+    SurfaceFilterAttributes
+    SyncAttributes
+    ThresholdOpAttributes
+    TimeFormat
+    View2DAttributes
+    View3DAttributes
+    ViewAttributes
+    ViewAxisArrayAttributes
+    ViewCurveAttributes
+    ViewerClientAttributes
+    ViewerClientInformation
+    ViewerClientInformationElement
+    VisualCueInfo
+    VisualCueList
+    WindowAttributes
+    WindowInformation)
+
+
+# Common State Objects
+foreach(obj_name ${COMMON_STATE_GEN_OBJECTS})
+    ADD_CPP_GEN_TARGET(${obj_name}
+                       ${CMAKE_CURRENT_SOURCE_DIR}/state/
+                       ${CMAKE_CURRENT_SOURCE_DIR}/state/)
+endforeach()
+
+
+
 
 SET(COMM_SOURCES
 comm/BadHostException.C
@@ -358,20 +453,20 @@ ADD_LIBRARY(visitcommon
 
 # Specify the libraries to link against on Windows
 IF(WIN32)
-    TARGET_LINK_LIBRARIES(visitcommon ws2_32 shlwapi userenv ${ZLIB_LIB})
+    TARGET_LINK_LIBRARIES(visitcommon ws2_32 shlwapi userenv ${ZLIB_LIBRARY})
 ELSE(WIN32)
-    TARGET_LINK_LIBRARIES(visitcommon ${ZLIB_LIB} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    TARGET_LINK_LIBRARIES(visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
     ADD_EXECUTABLE(StringHelpers_test utility/StringHelpers_test.C)
-    TARGET_LINK_LIBRARIES(StringHelpers_test ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIB} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    TARGET_LINK_LIBRARIES(StringHelpers_test ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
     ADD_EXECUTABLE(Utility_test utility/Utility_test.C)
-    TARGET_LINK_LIBRARIES(Utility_test ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIB} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    TARGET_LINK_LIBRARIES(Utility_test ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
     ADD_EXECUTABLE(Namescheme_test utility/Namescheme_test.C)
-    TARGET_LINK_LIBRARIES(Namescheme_test ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIB} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    TARGET_LINK_LIBRARIES(Namescheme_test ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
     ADD_EXECUTABLE(MRUCache_test utility/MRUCache_test.C)
     ADD_EXECUTABLE(exprconfig expr/ExprConfig.C)
-    TARGET_LINK_LIBRARIES(exprconfig ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIB} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    TARGET_LINK_LIBRARIES(exprconfig ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
     ADD_EXECUTABLE(exprtest expr/test.C)
-    TARGET_LINK_LIBRARIES(exprtest ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIB} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    TARGET_LINK_LIBRARIES(exprtest ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
     ADD_CUSTOM_TARGET(init)
     ADD_DEPENDENCIES(init exprconfig)
     ADD_CUSTOM_COMMAND(TARGET init POST_BUILD COMMAND exprconfig ExprInit.C

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt FAQs]]></title>
+  <IM>LLNL-WEB-786678</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[March 20, 2013]]></lastchanged>
+  <lastchanged><![CDATA[August 14, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -21,11 +22,12 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>6. Why won't VisIt run on my Linux system?</h2>
-<p> Some Linux systems, when they are not connected to a network, do not know how to resolve localhost. This causes problems because VisIt is network-aware and must know the host on which to launch its various components. You should check your /etc/hosts file and make sure that there are entries for localhost. If there are no lines that contain localhost, adding the following line to the /etc/hosts file might allow VisIt to run:</p>
-<ul>
-  <li class="nobullet"> 127.0.0.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; localhost </li>
-</ul>
+<h2>6. Which license does VisIt use?</h2>
+<p>VisIt is released under the BSD license, which you can view on <a href="simulation/computer-codes/visit/license" title="VisIt's BSD license" target="_blank">VisIt's license</a> page. </p>
+<H2>
+  <CENTER>
+  </CENTER>
+</H2>
 
 </div>
 </div>	

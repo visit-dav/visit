@@ -1,3 +1,7 @@
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 #ifndef VTK_COMPONENT_DATA_ARRAY_H
 #define VTK_COMPONENT_DATA_ARRAY_H
 #include <vtkTypedDataArray.h>

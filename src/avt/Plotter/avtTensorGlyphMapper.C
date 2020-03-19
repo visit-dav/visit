@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                             avtTensorGlyphMapper.C                        //
@@ -96,6 +62,8 @@ avtTensorGlyphMapper::avtTensorGlyphMapper(vtkAlgorithmOutput *g)
     tensorFilter      = NULL;
     nTensorFilters    = 0;
     lut = NULL;
+    setMin = setMax = false;
+    limitsMode = 0;  // use original data extents
 }
 
 
@@ -551,6 +519,307 @@ avtTensorGlyphMapper::SetLookupTable(vtkLookupTable *LUT)
             mappers[i]->SetLookupTable(lut);
         }
     } 
+}
+
+// ****************************************************************************
+//  Method: avtTensorGlyphMapper::SetMin
+//
+//  Purpose:
+//      Sets the plotter's scalar min.
+//
+//  Arguments:
+//      minArg      The new minimum.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004 
+//
+// ****************************************************************************
+
+void
+avtTensorGlyphMapper::SetMin(double minArg)
+{
+    if (setMin == true && min == minArg)
+    {
+        return;
+    }
+
+    min    = minArg;
+    setMin = true;
+
+    SetMappersMinMax();
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorGlyphMapper::SetMinOff
+//
+//  Purpose:
+//      Sets the bounds for the scalar's min to be off.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004 
+//
+// ****************************************************************************
+
+void
+avtTensorGlyphMapper::SetMinOff(void)
+{
+    if (setMin == false)
+    {
+        return;
+    }
+    setMin = false;
+
+    SetMappersMinMax();
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorGlyphMapper::SetMax
+//
+//  Purpose:
+//      Sets the plotter's scalar max.
+//
+//  Arguments:
+//      maxArg      The new maximum.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004 
+//
+// ****************************************************************************
+
+void
+avtTensorGlyphMapper::SetMax(double maxArg)
+{
+    if (setMax == true && max == maxArg)
+    {
+        return;
+    }
+
+    max    = maxArg;
+    setMax = true;
+
+    SetMappersMinMax();
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorGlyphMapper::SetMaxOff
+//
+//  Purpose:
+//      Sets the bounds for the scalar's max to be off.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004 
+//
+// ****************************************************************************
+
+void
+avtTensorGlyphMapper::SetMaxOff(void)
+{
+    if (setMax == false)
+    {
+        return;
+    }
+    setMax = false;
+
+    SetMappersMinMax();
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorGlyphMapper::SetMappersMinMax
+//
+//  Purpose:
+//      Sets the mappers min/max.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtTensorGlyphMapper::SetMappersMinMax(void)
+{
+    if (mappers == NULL)
+    {
+        //
+        // This happens when SetMin is called before the mappers are
+        // initialized.
+        //
+        return;
+    }
+
+    double mmin = 0.;
+    double mmax = 0.;
+
+    if (limitsMode == 1 ) // use current plot extents
+    {
+        GetCurrentRange(mmin, mmax);
+    }
+    else  // use either original data extents or user-specified limits
+    {
+        GetRange(mmin, mmax);
+    }
+
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL)
+        {
+            mappers[i]->SetScalarRange(mmin, mmax);
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorGlyphMapper::GetRange
+//
+//  Purpose:
+//      Gets the range of the variable, taking into account artificial limits.
+//
+//  Arguments:
+//      rmin    The minimum in the range.
+//      rmax    The maximum in the range.
+//
+//  Returns:    True if the extents were found, false otherwise.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtTensorGlyphMapper::GetRange(double &rmin, double &rmax)
+{
+    if (mappers == NULL)
+    {
+        //
+        // We have been asked for the range before the input has been set.
+        //
+        rmin = 0.;
+        rmax = 1.;
+        return false;
+    }
+
+    double de[2];
+    bool gotExtents = avtMapper::GetRange(de[0], de[1]);
+
+    rmin = (setMin ? min : de[0]);
+    rmax = (setMax ? max : de[1]);
+
+    return gotExtents;
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorGlyphMapper::GetCurrentRange
+//
+//  Purpose:
+//      Gets the current range of the variable. 
+//
+//  Arguments:
+//      rmin          The minimum in the range.
+//      rmax          The maximum in the range.
+//
+//  Returns:    True if the extents were found, false otherwise.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004 
+//
+// ****************************************************************************
+
+bool
+avtTensorGlyphMapper::GetCurrentRange(double &rmin, double &rmax)
+{
+    if (mappers == NULL)
+    {
+        //
+        // We have been asked for the range before the input has been set.
+        //
+        rmin = 0.;
+        rmax = 1.;
+        return false;
+    }
+
+    double de[2];
+    bool rv = avtMapper::GetCurrentRange(de[0], de[1]);
+
+    rmin = (setMin ? min : de[0]);
+    rmax = (setMax ? max : de[1]);
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorGlyphMapper::SetLimitsMode
+//
+//  Purpose:
+//    Sets the limits mode, which specifies which type of limits to use.
+//
+//  Arguments:
+//    lm        The new limits mode.
+//                0: Use Original Data limits
+//                1: Use Current Plot limits
+//                2: Use user-specified limits. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 22, 2004
+//
+// ****************************************************************************
+
+void
+avtTensorGlyphMapper::SetLimitsMode(const int lm)
+{
+    if (lm == limitsMode)
+    {
+        return;
+    }
+
+    limitsMode = lm;
+
+    SetMappersMinMax();
+}
+
+// ****************************************************************************
+//  Method: avtTensorGlyphMapper::GetVarRange
+//
+//  Purpose:
+//      Gets the range of the variable. (Artificial limits ignored).
+//
+//  Arguments:
+//      rmin          The minimum in the range.
+//      rmax          The maximum in the range.
+//
+//  Returns:    True if the extents were found, false otherwise.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtTensorGlyphMapper::GetVarRange(double &rmin, double &rmax)
+{
+    if (mappers == NULL)
+    {
+        //
+        // We have been asked for the range before the input has been set.
+        //
+        rmin = 0.;
+        rmax = 1.;
+        return false;
+    }
+
+    bool rv = avtMapper::GetRange(rmin, rmax);
+    return rv;
 }
 
 

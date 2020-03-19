@@ -38,5 +38,13 @@ IF (CMAKE_CL_64)
 ENDIF ()
 
 # To find the resources
-GET_FILENAME_COMPONENT(VISIT_WINDOWS_DIR ${VISIT_SOURCE_DIR}/../visitwindows REALPATH)
+if (EXISTS ${VISIT_SOURCE_DIR}/../visitwindows)
+  set(VISIT_WINDOWS_DIR ${VISIT_SOURCE_DIR}/../visitwindows)
+elseif (EXISTS ${VISIT_SOURCE_DIR}/../../visitwindows)
+  set(VISIT_WINDOWS_DIR ${VISIT_SOURCE_DIR}/../../visitwindows)
+else ()
+  message(FATAL_ERROR "visitwindows not found.")
+endif ()
+GET_FILENAME_COMPONENT(VISIT_WINDOWS_DIR ${VISIT_WINDOWS_DIR} REALPATH)
+message(STATUS "VISIT_WINDOWS_DIR = ${VISIT_WINDOWS_DIR}.")
 

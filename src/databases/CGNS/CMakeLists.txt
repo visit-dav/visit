@@ -3,6 +3,8 @@ PROJECT(CGNS_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(CGNS)
+
 SET(COMMON_SOURCES
 CGNSPluginInfo.C
 CGNSCommonPluginInfo.C
@@ -15,12 +17,14 @@ CGNSPluginInfo.C
 SET(LIBM_SOURCES
 CGNSMDServerPluginInfo.C
 ${COMMON_SOURCES}
+avtCGNSFileReader.C
 avtCGNSFileFormat.C
 )
 
 SET(LIBE_SOURCES
 CGNSEnginePluginInfo.C
 ${COMMON_SOURCES}
+avtCGNSFileReader.C
 avtCGNSFileFormat.C
 )
 

@@ -3,6 +3,8 @@ PROJECT(AMR_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(AMR)
+
 SET(COMMON_SOURCES
 AMRPluginInfo.C
 AMRCommonPluginInfo.C

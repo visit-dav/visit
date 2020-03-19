@@ -3,6 +3,8 @@ PROJECT(Claw_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(Claw)
+
 SET(COMMON_SOURCES
 ClawPluginInfo.C
 ClawCommonPluginInfo.C

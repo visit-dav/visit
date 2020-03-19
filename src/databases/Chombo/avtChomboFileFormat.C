@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                           avtChomboFileFormat.C                           //
@@ -42,7 +8,6 @@
 
 #include <avtChomboFileFormat.h>
 
-#include <snprintf.h>
 #include <string>
 #include <vector>
 #include <cstring>
@@ -758,7 +723,7 @@ avtChomboFileFormat::InitializeReader(void)
     for (int i = 0 ; i < num_vars ; i++)
     {
         char name[1024];
-        SNPRINTF(name, 1024, "component_%d", i);
+        snprintf(name, 1024, "component_%d", i);
         hid_t vname = H5Aopen_name(slash, name);
         if (vname < 0)
         {
@@ -860,7 +825,7 @@ avtChomboFileFormat::InitializeReader(void)
     for (int i = 0 ; i < num_levels ; i++)
     {
         char name[1024];
-        SNPRINTF(name, 1024, "level_%d", i);
+        snprintf(name, 1024, "level_%d", i);
         hid_t level = H5Gopen(file_handle, name);
         if (level < 0)
         {
@@ -1058,7 +1023,7 @@ avtChomboFileFormat::InitializeReader(void)
     for (int i = 0 ; i < num_levels ; i++)
     {
         char name[1024];
-        SNPRINTF(name, 1024, "level_%d", i);
+        snprintf(name, 1024, "level_%d", i);
 
         hid_t level = H5Gopen(file_handle, name);
         hid_t boxes = H5Dopen(level, "boxes");
@@ -1902,10 +1867,10 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             char sum_expr_buffer[4096];
 
             Expression sum_expr;
-            SNPRINTF(sum_expr_buffer, buff_size, "%s_sum", varnames[i].c_str());
+            snprintf(sum_expr_buffer, buff_size, "%s_sum", varnames[i].c_str());
             sum_expr.SetName(sum_expr_buffer);
             addedExpressionNames.push_back(sum_expr_buffer);
-            SNPRINTF(sum_expr_buffer, buff_size, "array_sum(%s)", varnames[i].c_str());
+            snprintf(sum_expr_buffer, buff_size, "array_sum(%s)", varnames[i].c_str());
             sum_expr.SetDefinition(sum_expr_buffer);
             sum_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&sum_expr);
@@ -1957,7 +1922,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
 
             char yName[1024];
-            SNPRINTF(yName, 1024, "%c%s", yChar, varnames[i].c_str()+1);
+            snprintf(yName, 1024, "%c%s", yChar, varnames[i].c_str()+1);
             int matchY = -1;
             for (int j = 0 ; j < nVars ; j++)
             {
@@ -1977,7 +1942,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     str++;
                 vec.SetName(str);
                 char defn[1024];
-                SNPRINTF(defn, 1024, "{<%s>, <%s>}", varnames[i].c_str(), yName);
+                snprintf(defn, 1024, "{<%s>, <%s>}", varnames[i].c_str(), yName);
                 vec.SetDefinition(defn);
                 vec.SetType(Expression::VectorMeshVar);
                 md->AddExpression(&vec);
@@ -1986,7 +1951,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             else
             {
                 char zName[1024];
-                SNPRINTF(zName, 1024, "%c%s", zChar, varnames[i].c_str()+1);
+                snprintf(zName, 1024, "%c%s", zChar, varnames[i].c_str()+1);
                 int matchZ = -1;
                 for (int j = 0 ; j < nVars ; j++)
                 {
@@ -2004,7 +1969,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     str++;
                 vec.SetName(str);
                 char defn[1024];
-                SNPRINTF(defn, 1024, "{<%s>, <%s>, <%s>}", varnames[i].c_str(),
+                snprintf(defn, 1024, "{<%s>, <%s>, <%s>}", varnames[i].c_str(),
                                                      yName,zName);
                 vec.SetDefinition(defn);
                 vec.SetType(Expression::VectorMeshVar);
@@ -2082,7 +2047,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                         expressionName.insert(0, std::string("particle_"));
                     vec.SetName(expressionName);
                     char defn[1024];
-                    SNPRINTF(defn, 1024, "{<%s>, <%s>}", particleVarnames[i].c_str(), yName.c_str());
+                    snprintf(defn, 1024, "{<%s>, <%s>}", particleVarnames[i].c_str(), yName.c_str());
                     vec.SetDefinition(defn);
                     vec.SetType(Expression::VectorMeshVar);
                     md->AddExpression(&vec);
@@ -2109,7 +2074,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                         expressionName.insert(0, std::string("particle_"));
                     vec.SetName(expressionName);
                     char defn[1024];
-                    SNPRINTF(defn, 1024, "{<%s>, <%s>, <%s>}", particleVarnames[i].c_str(),
+                    snprintf(defn, 1024, "{<%s>, <%s>, <%s>}", particleVarnames[i].c_str(),
                             yName.c_str(), zName.c_str());
                     vec.SetDefinition(defn);
                     vec.SetType(Expression::VectorMeshVar);
@@ -2228,12 +2193,12 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         Expression *dv_parExpression = new Expression;
         dv_parExpression->SetName("_dv_par");
         char buffer[256];
-        SNPRINTF(buffer, 256, "cell_constant(Mesh, %lf)", dx[0][2]);
+        snprintf(buffer, 256, "cell_constant(Mesh, %lf)", dx[0][2]);
         dv_parExpression->SetDefinition(buffer);
         md->AddExpression(dv_parExpression);
         Expression *dmuExpression = new Expression;
         dmuExpression->SetName("_dmu");
-        SNPRINTF(buffer, 256, "cell_constant(Mesh, %lf)", dx[0][3]);
+        snprintf(buffer, 256, "cell_constant(Mesh, %lf)", dx[0][3]);
         dmuExpression->SetDefinition(buffer);
         md->AddExpression(dmuExpression);
     }
@@ -3093,7 +3058,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         // are probably right...
         //
         char name[1024];
-        SNPRINTF(name, 1024, "level_%d", level);
+        snprintf(name, 1024, "level_%d", level);
         if (file_handle < 0)
         {
             file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, vtkFileCloseSemiProperty ());
@@ -3442,7 +3407,7 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
             // are probably right...
             //
             char name[1024];
-            SNPRINTF(name, 1024, "level_%d", level);
+            snprintf(name, 1024, "level_%d", level);
             if (file_handle < 0)
             {
                 file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, vtkFileCloseSemiProperty ());

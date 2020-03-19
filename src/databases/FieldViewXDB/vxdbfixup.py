@@ -69,22 +69,22 @@ def change_lib(libname, visitpath, vtkpath, mpipath, order):
     lib = os.path.split(libname)[-1]
     a,b = order(joinlib("@rpath/lib", lib), joinlib(visitpath, lib))
     cmd = "install_name_tool -id %s %s" % (b, libname)
-    print cmd
+    print(cmd)
     a = os.system(cmd)
     for lib in VisItLibs:
         a,b = order(joinlib("@rpath/lib", lib), joinlib(visitpath, lib))
         cmd = "install_name_tool -change %s %s %s" % (a, b, libname)
-        print cmd
+        print(cmd)
         a = os.system(cmd)
     for lib in VTKLibs:
         a,b = order(joinlib("@rpath/lib", lib), joinlib(vtkpath, lib))
         cmd = "install_name_tool -change %s %s %s" % (a, b, libname)
-        print cmd
+        print(cmd)
         a = os.system(cmd)
     for lib in MPILibs:
         a,b = order(joinlib("@rpath/lib", lib), joinlib(mpipath, lib))
         cmd = "install_name_tool -change %s %s %s" % (a, b, libname)
-        print cmd
+        print(cmd)
         a = os.system(cmd)
         # Hack for now.
         #cmd = string.replace(cmd, "2.8.0", "2.7.0")
@@ -97,7 +97,7 @@ def change_lib(libname, visitpath, vtkpath, mpipath, order):
 def rpath_to_vtk_mpich(libname, visitpath, vtkpath, mpipath):
     def order(a,b):
         return (a,b)
-    print "Turning rpath in %s to proper VTK and MPICH paths." % libname
+    print("Turning rpath in %s to proper VTK and MPICH paths." % libname)
     change_lib(libname, visitpath, vtkpath, mpipath, order)
 
 #
@@ -106,7 +106,7 @@ def rpath_to_vtk_mpich(libname, visitpath, vtkpath, mpipath):
 def vtk_mpich_to_rpath(libname, visitpath, vtkpath, mpipath):
     def order(a,b):
         return (b,a)
-    print "Turning proper paths to VTK and MPICH in %s to rpath." % libname
+    print("Turning proper paths to VTK and MPICH in %s to rpath." % libname)
     change_lib(libname, visitpath, vtkpath, mpipath, order)
 
 if sys.argv[1] == "-to-rpath":

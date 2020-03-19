@@ -3,6 +3,8 @@ PROJECT(ToroidalPoloidalProjection_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(ToroidalPoloidalProjection)
+
 SET(COMMON_SOURCES
 ToroidalPoloidalProjectionPluginInfo.C
 ToroidalPoloidalProjectionCommonPluginInfo.C
@@ -110,6 +112,10 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SToroidalPoloidalProjectionOperator ${LIBS_SOURCES})
+        IF(WIN32)
+            # This prevents python from #defining snprintf as _snprintf
+            SET_TARGET_PROPERTIES(SToroidalPoloidalProjectionOperator PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
+        ENDIF()
         TARGET_LINK_LIBRARIES(SToroidalPoloidalProjectionOperator visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SToroidalPoloidalProjectionOperator)
     ENDIF(VISIT_PYTHON_SCRIPTING)

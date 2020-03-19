@@ -166,9 +166,9 @@ except OSError:
 if mode == PRINT_ADDRESS:
     #print "readlines!"
     if(len(lines) > 0):
-        print lines[-1]
+        print(lines[-1])
     else:
-        print "0x00000000"
+        print("0x00000000")
 
     # Rename the address file to a backup so if the build fails then
     # we can restore it for next time.
@@ -179,9 +179,9 @@ if mode == PRINT_ADDRESS:
 else:
     if FileExists(libFile):
         if not LibraryIsPreBound(libFile):
-	    print "***"
-   	    print "*** %s is not prebound!" % libFile
-	    print "***"
+	    print("***")
+   	    print("*** %s is not prebound!" % libFile)
+	    print("***")
 	    AppendLog(logFile, "*** %s is not prebound!" % libFile)
 	    # Since the library was not prebound, try and restore the 
 	    # address file so we can use the same offset for the next
@@ -222,11 +222,11 @@ else:
         if(libFile != ""):
             AppendLog(logFile, "%s   0x%08x" % (libFile, addr))
     else:
-        print "***"
-	print "*** Not updating the prebinding segment offset because "
-	print "*** %s " % libFile
-	print "*** does not exist! It must not have built."
-	print "***"
+        print("***")
+	print("*** Not updating the prebinding segment offset because ")
+	print("*** %s " % libFile)
+	print("*** does not exist! It must not have built.")
+	print("***")
 	RestoreBackup(backup, addressFile)
 	    
 sys.exit(0)

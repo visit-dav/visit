@@ -97,6 +97,12 @@ if test "$lastpass" != "0" ; then
 fi
 
 #
+# Convert any known email addresses with noreply in them.
+#
+sed -i "s/mclarsen@users.noreply.github.com/larsen30@llnl.gov/" modifiers
+sed -i "s/jameskress@users.noreply.github.com/kressjm@ornl.gov/" modifiers
+
+#
 # Build the email list of modifiers.
 #
 modifiersEmails=

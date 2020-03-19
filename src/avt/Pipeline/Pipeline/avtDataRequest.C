@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                             avtDataRequest.C                              //
@@ -54,8 +20,9 @@
 #include <vector>
 #include <map>
 
-#include <snprintf.h>
 #include <visit-config.h>
+
+#include <QueryOverTimeAttributes.h>
 
 using     std::vector;
 using     std::map;
@@ -195,6 +162,9 @@ using     std::map;
 //    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
 //    Added forceConstructMaterialLabels. 
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added initialization of retrieveQOTDataset and QOTAtts.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts,
@@ -240,6 +210,8 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     passNativeCSG = false;
     transformVectorsDuringProject = true;
     needPostGhostMaterialInfo = false;
+    retrieveQOTDataset = false;
+    QOTAtts = NULL;
 
     InitAdmissibleDataTypes();
 
@@ -690,6 +662,9 @@ avtDataRequest::avtDataRequest(avtDataRequest_p spec)
 //    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
 //    added forceConstructMaterialLabels.
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added retrieveQOTDataset and QOTAtts.
+//
 // ****************************************************************************
 
 avtDataRequest &
@@ -759,6 +734,8 @@ avtDataRequest::operator=(const avtDataRequest &spec)
     passNativeCSG                   = spec.passNativeCSG;
     transformVectorsDuringProject   = spec.transformVectorsDuringProject;
     needPostGhostMaterialInfo       = spec.needPostGhostMaterialInfo;
+    retrieveQOTDataset              = spec.retrieveQOTDataset;
+    QOTAtts                         = spec.QOTAtts;
     secondaryVariables              = spec.secondaryVariables;
     selectionName                   = spec.selectionName;
     missingDataBehavior             = spec.missingDataBehavior;
@@ -886,6 +863,9 @@ avtDataRequest::operator=(const avtDataRequest &spec)
 //
 //    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
 //    Added forceConstructMaterialLabels.
+//
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added retrieveQOTDataset and QOTAtts.
 //
 // ****************************************************************************
 
@@ -1107,6 +1087,27 @@ avtDataRequest::operator==(const avtDataRequest &ds)
 
     if (needPostGhostMaterialInfo != ds.needPostGhostMaterialInfo)
         return false;
+
+    if (retrieveQOTDataset != ds.retrieveQOTDataset)
+        return false;
+
+    if (QOTAtts != NULL && ds.QOTAtts != NULL)
+    {
+        if ((*QOTAtts) == (*ds.QOTAtts))
+        {
+            return true;
+        }
+
+        return false;
+    }
+    else if (QOTAtts == NULL && ds.QOTAtts == NULL)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
  
     //if (selectionName != ds.selectionName)
     //    return false;
@@ -1233,6 +1234,45 @@ avtDataRequest::GetRestriction(void)
     }
 
     return sil.silr;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::SetQOTAtts
+//
+//  Purpose:
+//      Set the query over time attribitues. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//
+// ****************************************************************************
+
+void
+avtDataRequest::SetQOTAtts(QueryOverTimeAttributes *qA)
+{
+    QOTAtts = qA;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::GetQOTAtts
+//
+//  Purpose:
+//      Get the query over time attributes. 
+//
+//  Returns: 
+//      The query over time attributes. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Tue Sep 24 11:15:10 MST 2019 
+//
+// ****************************************************************************
+
+const QueryOverTimeAttributes *
+avtDataRequest::GetQOTAtts(void) const
+{
+    return QOTAtts;
 }
 
 
@@ -1992,6 +2032,9 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
 //    Added forceConstructMaterialLabels.
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added retrieveQOTDataset.
+//
 // ****************************************************************************
 
 static const char *
@@ -2070,7 +2113,7 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
         const char *type = vtkImageScalarTypeNameMacro(it->first);
         bool val = it->second;
         char entry[1024];
-        SNPRINTF(entry, 1024, "%s = %s", type, (val ? "true" : "false"));
+        snprintf(entry, 1024, "%s = %s", type, (val ? "true" : "false"));
         webpage->AddTableEntry2("", entry);
     }
 
@@ -2096,6 +2139,7 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("usesAllDomains", YesOrNo(usesAllDomains));
     webpage->AddTableEntry2("transformVectorsDuringProject", YesOrNo(transformVectorsDuringProject));
     webpage->AddTableEntry2("needPostGhostMaterialInfo", YesOrNo(needPostGhostMaterialInfo));
+    webpage->AddTableEntry2("retrieveQOTDataset", YesOrNo(retrieveQOTDataset));
     webpage->AddTableEntry2("selectionName", selectionName.c_str());
     if(missingDataBehavior == MISSING_DATA_IGNORE)
         webpage->AddTableEntry2("missingDataBehavior", "MISSING_DATA_IGNORE");

@@ -19,7 +19,7 @@ import os
 # Check the version.
 ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
-    print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
+    print("This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version()))
 
 # Define a function to print out the categories and the sets in them.
 def specselect():
@@ -39,12 +39,12 @@ def specselect():
         else:
             silr.TurnOffSet(s_index)
     SetPlotSILRestriction(silr)
-    print silr
+    print(silr)
     
     # Draw the species selected plot.
     DrawPlots()
 
 if(not os.path.isfile("../../data/specmix_quad.silo")):
-    print "This script requires the file specmix_quad.silo to be built in the data directory"
+    print("This script requires the file specmix_quad.silo to be built in the data directory")
 else:
     specselect()

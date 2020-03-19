@@ -4,7 +4,7 @@ Definition:
 // ****************************************************************************
 // Method: AnnotationObjectList::ProcessOldVersions
 //
-// Purpose: 
+// Purpose:
 //   This method maps old AnnotationAttributes fields to the 1.9.0 version of
 //   the data node tree for AnnotationAttributes.
 //
@@ -88,7 +88,7 @@ AnnotationObjectList::GetNewObjectName() const
     char tmp[200];
     do
     {
-        SNPRINTF(tmp, 200, "NewObject%d", index++);
+        snprintf(tmp, 200, "NewObject%d", index++);
         name = tmp;
         found = IndexForName(name) != -1;
     } while(found);
@@ -164,13 +164,13 @@ Definition:
      * @param timeDisplay 0=All frames, 1=Frames for plot, 2=States for plot
      * @param visible Whether the annotation is visible.
      * @param rounded Whether the ends of the progress bar are rounded
-     * @param shaded Whether the progress bar is shaded 
+     * @param shaded Whether the progress bar is shaded
      */
-    public void SetTimeSliderOptions(String annotName, 
+    public void SetTimeSliderOptions(String annotName,
         double x, double y, double width, double height,
-        String label, String timeFormat, 
-        ColorAttribute startColor, ColorAttribute endColor, 
-        ColorAttribute textColor, boolean useForegroundColor, 
+        String label, String timeFormat,
+        ColorAttribute startColor, ColorAttribute endColor,
+        ColorAttribute textColor, boolean useForegroundColor,
         int timeDisplay,
         boolean visible, boolean rounded, boolean shaded)
     {
@@ -212,10 +212,10 @@ Definition:
      * @param shadow Whether the font has a shadow.
      * @param visible Whether the annotation is visible.
      */
-    public void SetText2DOptions(String annotName, 
+    public void SetText2DOptions(String annotName,
         double x, double y, double height,
-        String text, 
-        ColorAttribute textColor, boolean useForegroundColor, 
+        String text,
+        ColorAttribute textColor, boolean useForegroundColor,
         int fontFamily, boolean bold, boolean italic, boolean shadow,
         boolean visible)
     {
@@ -259,13 +259,13 @@ Definition:
      * @param useForegroundColor True to use the foreground color as the text color
      * @param visible Whether the annotation is visible.
      */
-    public void SetText3DOptions(String annotName, 
+    public void SetText3DOptions(String annotName,
         double x, double y, double z,
         String text,
         boolean heightMode, double fixedHeight, int relativeHeight,
         boolean facesCamera,
         double rotX, double rotY, double rotZ,
-        ColorAttribute textColor, boolean useForegroundColor, 
+        ColorAttribute textColor, boolean useForegroundColor,
         boolean visible)
     {
         AnnotationObject annot = GetAnnotation(annotName);
@@ -306,11 +306,11 @@ Definition:
      * @param useForegroundColor True to use the foreground color as the text color
      * @param visible Whether the annotation is visible.
      */
-    public void SetLine2DOptions(String annotName, 
+    public void SetLine2DOptions(String annotName,
         double x0, double y0, double x1, double y1,
         int lineWidth,
         int startArrow, int endArrow,
-        ColorAttribute color, boolean useForegroundColor, 
+        ColorAttribute color, boolean useForegroundColor,
         boolean visible)
     {
         AnnotationObject annot = GetAnnotation(annotName);
@@ -339,7 +339,7 @@ Definition:
      * @param x0 X location of the start point
      * @param y0 Y location of the start point
      * @param z0 Z location of the start point
-     * @param x1 X location of the end point 
+     * @param x1 X location of the end point
      * @param y1 Y location of the end point
      * @param z1 Z location of the end point
      * @param lineWidth Width of the line.
@@ -358,12 +358,12 @@ Definition:
      * @param useForegroundColor True to use the foreground color as the text color
      * @param visible Whether the annotation is visible.
      */
-    public void SetLine3DOptions(String annotName, 
+    public void SetLine3DOptions(String annotName,
         double x0, double y0, double z0, double x1, double y1, double z1,
         int lineWidth, int lineType, int tubeQuality, double tubeRadius,
         boolean arrow1, int arrow1Resolution, double arrow1Radius, double arrow1Height,
         boolean arrow2, int arrow2Resolution, double arrow2Radius, double arrow2Height,
-        ColorAttribute color, boolean useForegroundColor, 
+        ColorAttribute color, boolean useForegroundColor,
         boolean visible)
     {
         AnnotationObject annot = GetAnnotation(annotName);
@@ -409,11 +409,11 @@ Definition:
      * @param opacity Overal opacity of the image.
      * @param visible Whether the annotation is visible.
      */
-    public void SetImageOptions(String annotName, 
+    public void SetImageOptions(String annotName,
         String filename,
         double x, double y,
         double xScale, double yScale, boolean scalesLinked,
-        ColorAttribute transColor, boolean removeTransColor, 
+        ColorAttribute transColor, boolean removeTransColor,
         double opacity,
         boolean visible)
     {
@@ -426,8 +426,8 @@ Definition:
             annot.SetPosition(x, y, 0.);
             annot.SetPosition2(xScale * 100., yScale * 100., 0.);
             ColorAttribute c = new ColorAttribute(
-                transColor.Red(), 
-                transColor.Green(), 
+                transColor.Red(),
+                transColor.Green(),
                 transColor.Blue(),
                 (int)(opacity * 255.));
             annot.SetColor1(c);
@@ -456,10 +456,10 @@ Definition:
         int shifted = (1 << bit);
         int mask = ~shifted;
         int data = annot.GetIntAttribute1();
-        annot.SetIntAttribute1((data & mask) | (val ? shifted : 0)); 
+        annot.SetIntAttribute1((data & mask) | (val ? shifted : 0));
     }
 
-    public void SetLegendOptions(String annotName, 
+    public void SetLegendOptions(String annotName,
          boolean managePosition,
          double  x, double y,
          double  scaleX,
@@ -475,9 +475,9 @@ Definition:
          boolean minMaxInclusive,
          boolean drawValues,
          double fontHeight,
-         ColorAttribute textColor, boolean useForegroundColor, 
+         ColorAttribute textColor, boolean useForegroundColor,
          int fontFamily, boolean bold, boolean italic, boolean shadow,
-         boolean visible)      
+         boolean visible)
     {
         AnnotationObject annot = GetAnnotation(annotName);
         if(annot != null)

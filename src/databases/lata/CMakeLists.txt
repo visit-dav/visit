@@ -3,6 +3,8 @@ PROJECT(lata_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(lata)
+
 SET(COMMON_SOURCES
 lataPluginInfo.C
 lataCommonPluginInfo.C

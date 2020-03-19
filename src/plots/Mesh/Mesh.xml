@@ -17,10 +17,12 @@
       <Enum name="MeshColor">
         Foreground
         MeshCustom
+        MeshRandom
       </Enum>
       <Enum name="OpaqueColor">
         Background
         OpaqueCustom
+        OpaqueRandom
       </Enum>
       <Enum name="OpaqueMode">
         Auto

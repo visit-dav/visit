@@ -94,14 +94,18 @@ function build_p7zip
         warn "Unable to prepare P7ZIP build directory. Giving Up!"
         return 1
     fi
-    
+
     cd $P7ZIP_BUILD_DIR || error "Can't cd to P7ZIP build dir."
     if [[ "$OPSYS" == "Darwin" ]] ; then
-        DTDIGITS=$(echo ${MACOSX_DEPLOYMENT_TARGET} | tr -d'.')
-        if [[ $DTDIGITS -le 109 ]]; then #
-            cp makefile.macosx_gcc_32bits makefile.machine
-        else
+        if [[ -z "${MACOSX_DEPLOYMENT_TARGET}" ]]; then
             cp makefile.macosx_llvm_64bits makefile.machine
+        else
+            DTDIGITS=$(echo ${MACOSX_DEPLOYMENT_TARGET} | tr -d '.')
+            if [[ $DTDIGITS -le 109 ]]; then #
+                cp makefile.macosx_gcc_32bits makefile.machine
+            else
+                cp makefile.macosx_llvm_64bits makefile.machine
+            fi
         fi
     fi
 
@@ -138,7 +142,7 @@ function build_p7zip
 function bv_p7zip_is_enabled
 {
     if [[ $DO_P7ZIP == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }

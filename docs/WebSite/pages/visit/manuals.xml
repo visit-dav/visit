@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt Manuals]]></title>
-  <IM>LLNL-WEB-677918</IM>
+  <IM>LLNL-WEB-786678</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[November 9, 2015]]></lastchanged>
+  <lastchanged><![CDATA[August 14, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,39 +22,21 @@
   <li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>VisIt Getting Started Manual (<a href="content/assets/docs/simulation/computer-codes/visit/GettingStarted.pdf">267 K pdf</a>)</h2>
-
-<p>This <a href="content/assets/docs/simulation/computer-codes/visit/GettingStarted.pdf">document</a> introduces you to the VisIt graphical user interface (GUI). It provides a brief overview on how VisIt works and directions on how to start VisIt and use the various controls in the Visit main and popup windows.</p>
+<h2>Manuals</h2>
 
 <ul>
-	<li><b>VisIt User's Manual</b> (<a href="content/assets/docs/simulation/computer-codes/visit/VisItUsersManual1.5.pdf">15.8 MB pdf</a>)&#8212;This <a href="content/assets/docs/simulation/computer-codes/visit/VisItUsersManual1.5.pdf">document</a> describes how to use the VisIt Graphical User Interface (GUI). It covers in detail all the controls available from the VisIt GUI, including such topics as working with files, plots, operators, saving and printing, visualization windows, quantitative analysis, making it pretty, animation and keyframing, interactive tools, multiple databases and windows, and remote visualization.</li><br />
+	<li><b>VisIt User Manual</b> &#8212;This <a href="https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/gui_manual/index.html">document</a> describes how to use the VisIt Graphical User Interface (GUI). It covers in detail all the controls available from the VisIt GUI, including such topics as working with files, plots, operators, saving and printing, visualization windows, quantitative analysis, making it pretty, animation and keyframing, interactive tools, multiple databases and windows, and remote visualization.</li><br />
 
-	<li><b>VisIt Python Interface Manual</b> (<a href="http://visit.ilight.com/svn/visit/trunk/releases/2.10.0/VisItPythonManual.pdf">3.67 MB pdf</a>)&#8212;This <a href="http://visit.ilight.com/svn/visit/trunk/releases/2.10.0/VisItPythonManual.pdf">document</a> describes how to use the VisIt Python Interface. It covers in detail all of the functions and objects provide by the VisIt Python Interface and also gives some background on scripting with Python and common patterns that can be used when creating scripts for VisIt.</li><br />
+	<li><b>VisIt Python Interface Manual</b> &#8212;This <a href="https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/cli_manual/index.html">document</a> describes how to use the VisIt Python Interface. It covers in detail all of the functions and objects provide by the VisIt Python Interface and also gives some background on scripting with Python and common patterns that can be used when creating scripts for VisIt.</li><br />
+
+        <li><b>VisIt Tutorials</b> &#8212;This <a href="https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/tutorials/index.html">document</a> contains a series of hands on tutorials that expose the user to the features in VisIt. The first three tutorials form a good basis for using VisIt, including the basics of using the GUI, performing data analysis and using the VisIt Python Interface to script and automate tasks. After that are a series of tutorials that cover advanced topics in detail.</li><br />
 
 	<li><b>Getting Data Into VisIt</b>  (<a href="content/assets/docs/simulation/computer-codes/visit/GettingDataIntoVisIt2.0.0.pdf">3.61 MB pdf</a>) Example source code (<a href="content/assets/docs/simulation/computer-codes/visit/GettingDataIntoVisItExamples2.0.0.tar.gz">50 KB tar.gz</a>)&#8212;This <a href="content/assets/docs/simulation/computer-codes/visit/GettingDataIntoVisIt2.0.0.pdf">document</a> describes how to get data into VisIt using three different approaches: (1) writing data files that VisIt can read, (2) creating a database reader plug-in, and (3) instrumenting a simulation code to talk directly to VisIt so no files need to be written. This manual covers in detail most aspects of the three approaches to getting data into VisIt and also provides complete working <a href="content/assets/docs/simulation/computer-codes/visit/GettingDataIntoVisItExamples2.0.0.tar.gz">source code examples</a>. </li>
-</ul>	
-
-<h2>Class and Tutorial Materials </h2>
-
-<ul>
-	<li><b>Visualization with VisIt Class Data</b> (<a href="content/assets/docs/simulation/computer-codes/visit/VisItClassData.zip">181 MB zip</a>)&#8212;This <a href="content/assets/docs/simulation/computer-codes/visit/VisItClassData.zip">zip file</a> contains the data files used in the Visualization with VisIt class. These data files are used extensively in the class so you should download this data file if you plan to work through exercises.</li><br />
-
-	<li><b>Visualization with VisIt Class Slides</b> (<a href="content/assets/docs/simulation/computer-codes/visit/VisualizationWithVisIt.pdf">78 MB pdf</a>)&#8212;This <a href="content/assets/docs/simulation/computer-codes/visit/VisualizationWithVisIt.pdf">document</a> contains the slides which make up the bulk of the LLNL class Visualization with VisIt.</li><br />
-
-	<li><b>Visualization with VisIt Class Exercises</b> (<a href="content/assets/docs/simulation/computer-codes/visit/VisItClassExercises.pdf">17.3 Mb pdf</a>)&#8212;This <a href="content/assets/docs/simulation/computer-codes/visit/VisItClassExercises.pdf">document</a> contains most of the exercises used in the LLNL class Visualization with VisIt.</li><br />
-
-	<li><b>Visualization with VisIt Class Slides II</b> (<a href="content/assets/docs/simulation/computer-codes/visit/VisualizationWithVisItII.pdf">6.6 MB pdf</a>)&#8212;This <a href="content/assets/docs/simulation/computer-codes/visit/VisualizationWithVisItII.pdf">document</a> contains the slides for 4 additional sections of the Visualization with VisIt, covering advanced topics such as Python scripting and data analysis.</li><br />
-
-	<li><b>Visualization with VisIt Class Exercises II</b> (<a href="content/assets/docs/simulation/computer-codes/visit/VisItClassExercisesII.pdf">2.8 Mb pdf</a>)&#8212;This <a href="content/assets/docs/simulation/computer-codes/visit/VisItClassExercisesII.pdf">document</a> contains advanced exercises used in the LLNL class Visualization with VisIt.</li><br />
-
-	<li><b>VisIt Tutorial</b>&#8212;<a href="http://www.visitusers.org/index.php?title=Short_Tutorial" target="_blank">This tutorial</a> has been given at the SciDAC 2008 Conference in Seattle, WA and also at the CScADS Workshop in Snowbird, Utah. The idea is to provide a quick introduction to many features in VisIt.</li>
 </ul>	
 
 <h2>Other Resources</h2>
 <ul>
 	<li><b>visitusers.org</b>&#8212;The community of VisIt users has created a wiki at <a href="http://www.visitusers.org" target="_blank">visitusers.org</a>. The wiki contains up to date information about VisIt not found at any other source, including valuable <a href="http://www.visitusers.org/index.php?title=Developer_Documentation" target="_blank">developer documentation</a> and <a href="http://www.visitusers.org/index.php?title=User_Documentation" target="_blank">user documentation</a> contributed by VisIt users just like you.</li><br />
-
-	<li><b>VisIt podcast</b>&#8212;Check out the <a href="http://www.rce-cast.com/index.php/Podcast/rce06-visit.html" target="_blank">RCE VisIt podcast</a>.</li>
 </ul>	
 
 

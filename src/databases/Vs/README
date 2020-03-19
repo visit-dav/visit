@@ -5,7 +5,7 @@ to describe the data contained within.  Properly marked-up
 files can be opened using this database reader, and thus
 displayed in VisIt.  VizSchema also allows users to specify
 run information and other miscellaneous data in a standardized
-manner.  VizSchema is designed to be versatile and can be 
+manner.  VizSchema is designed to be versatile and can be
 added to data files after the fact.
 
 VizSchema requires VisIt to be compiled with support for HDF5

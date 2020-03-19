@@ -83,7 +83,15 @@
 #   Eric Brugger, Fri Jan  4 09:34:59 PST 2019
 #   I modified the script to work with the GitHub repository.
 #
-
+#   Eric Brugger, Fri Oct  4 09:12:49 PDT 2019
+#   I modified the installation of visit to no longer add toss3 to the
+#   installation path.
+#
+#   Cyrus Harrison, Tue Nov 26 16:50:14 PST 2019
+#   Directly call visit_test_suite.py instead of old runtest wrapper
+#
+#   Kathleen Biagas, Mon Feb 24 2020
+#   VISIT_BUILD_AVTEXAMPLES renamed to VISIT_ENABLE_AVTEXAMPLES
 
 #
 # Determine the users name and e-mail address.
@@ -196,7 +204,7 @@ done
 
 if test "$branch" = "trunk" ; then
     workingDir="test_trunk"
-    cmakeCmd="/usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0b/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake"
+    cmakeCmd="/usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake"
 else
     workingDir="test_branch"
     cmakeCmd="/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake"
@@ -225,7 +233,7 @@ fi
 
 cd $testDir/$workingDir
 
-rm -f buildlog
+rm -f buildlog installlog
 
 # Clone the repository if necessary.
 if test ! -e $testDir/$workingDir/visit; then
@@ -236,6 +244,7 @@ fi
 cd visit
 rm -f .git/index.lock >> ../buildlog 2>&1
 git pull >> ../buildlog 2>&1
+git lfs pull >> ../buildlog 2>&1
 
 if test "$branch" = "trunk" ; then
     if test "$revision" = "latest" ; then
@@ -299,7 +308,7 @@ if test "$branch" = "trunk" ; then
         -DVISIT_CONFIG_SITE=config-site/pascal83.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
-        -DVISIT_DATA_MANUAL_EXAMPLES:BOOL=ON \
+        -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
         -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON \
         -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
         -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
@@ -310,7 +319,7 @@ else
         -DVISIT_CONFIG_SITE=config-site/pascal83.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
-        -DVISIT_DATA_MANUAL_EXAMPLES:BOOL=ON \
+        -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
         -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
         -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
         -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
@@ -331,9 +340,16 @@ cat ../make.err >> ../../buildlog
 
 echo "Source build completed at: \`date\`"
 
+# Copy stripack lib for ffp plugin tests
+cp /usr/workspace/visit/miller86/stripack/libstripack.so ./lib/.
+
+# Update the test baselines
+cd ../test
+git lfs pull >> ../../../buildlog 2>&1
+
 # Build the test data
 cd ../data
-git lfs pull
+git lfs pull >> ../../../buildlog 2>&1
 cd ../build
 cd testdata
 make -j 8 data >> ../../../buildlog 2>&1
@@ -351,27 +367,9 @@ echo "Starting install:\`date\`"
 
 # Install the package
 cd ../
-version=`cat $testDir/$workingDir/visit/src/VERSION`
+version=\`cat $testDir/$workingDir/visit/src/VERSION\`
 
 ../src/tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ../../installlog 2>&1
-
-if test "$testHost" = "pascal"     || \
-   test "$testHost" = "borax"      || \
-   test "$testHost" = "catalyst"   || \
-   test "$testHost" = "jade"       || \
-   test "$testHost" = "max"        || \
-   test "$testHost" = "mica"       || \
-   test "$testHost" = "quarts"     || \
-   test "$testHost" = "rzgenie"    || \
-   test "$testHost" = "rzhasgpu"   || \
-   test "$testHost" = "rztopaz"    || \
-   test "$testHost" = "rztrona"    || \
-   test "$testHost" = "rzsurface"  || \
-   test "$testHost" = "syrah"      || \
-   test "$testHost" = "agate"  ; then
-    mv ./_install/\$version/linux-x86_64 ./_install/\$version/linux-x86_64-toss3
-fi
-
 
 if test "$debug" = "true" ; then
     echo "Install completed at: \`date\`" | mail -s "Install completed" $userEmail
@@ -401,7 +399,7 @@ for m in \$modes; do
 
 
     # Run the test
-    ../../src/test/runtest --parallel-launch "srun" -b ../../test/baseline -d ../../build/testdata -e ../../build/bin/visit -o \$resDir -m "\$m" -n 1 --cmake $cmakeCmd >> ../../../buildlog 2>&1
+    python ../../src/test/visit_test_suite.py --parallel-launch "srun" -b ../../test/baseline -d ../../build/testdata -e ../../build/bin/visit -o \$resDir -m "\$m" -n 1 --cmake $cmakeCmd >> ../../../buildlog 2>&1
     mv \$resDir/html \$dateTag/\$theMode
 
     # Move the results to the consolidation directory

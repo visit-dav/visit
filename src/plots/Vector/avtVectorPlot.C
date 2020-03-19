@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtVectorPlot.C                                //
@@ -89,13 +55,14 @@
 avtVectorPlot::avtVectorPlot()
 {
     colorsInitialized = false;
-    glyph        = vtkVectorGlyph::New();
     vectorFilter = new avtVectorFilter(true, 10);
     resampleFilter = NULL;
     ghostFilter  = new avtGhostZoneFilter();
     ghostFilter->GhostDataMustBeRemoved();
-    glyphMapper  = new avtVectorGlyphMapper(glyph->GetOutputPort());
     avtLUT       = new avtLookupTable();
+
+    vectorGlyph  = vtkVectorGlyph::New();
+    vectorMapper = new avtVectorGlyphMapper(vectorGlyph->GetOutputPort());
 
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Vector");
@@ -108,7 +75,6 @@ avtVectorPlot::avtVectorPlot()
     //
     varLegendRefPtr = varLegend;
 }
-
 
 // ****************************************************************************
 //  Method: avtVectorPlot destructor
@@ -128,10 +94,10 @@ avtVectorPlot::avtVectorPlot()
 
 avtVectorPlot::~avtVectorPlot()
 {
-    if (glyphMapper != NULL)
+    if (vectorMapper != NULL)
     {
-        delete glyphMapper;
-        glyphMapper = NULL;
+        delete vectorMapper;
+        vectorMapper = NULL;
     }
     if (vectorFilter != NULL)
     {
@@ -148,18 +114,17 @@ avtVectorPlot::~avtVectorPlot()
         delete ghostFilter;
         ghostFilter = NULL;
     }
-    if (glyph != NULL)
-    {
-        glyph->Delete();
-        glyph = NULL;
-    }
     if (avtLUT != NULL)
     {
         delete avtLUT;
         avtLUT = NULL;
     }
+    if (vectorGlyph != NULL)
+    {
+        vectorGlyph->Delete();
+        vectorGlyph = NULL;
+    }
 }
-
 
 // ****************************************************************************
 //  Method:  avtVectorPlot::Create
@@ -172,12 +137,11 @@ avtVectorPlot::~avtVectorPlot()
 //
 // ****************************************************************************
 
-avtPlot*
+avtPlot *
 avtVectorPlot::Create()
 {
     return new avtVectorPlot;
 }
-
 
 // ****************************************************************************
 //  Method:  avtVectorPlot::SetCellCountMultiplierForSRThreshold
@@ -227,7 +191,7 @@ avtVectorPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 avtMapperBase *
 avtVectorPlot::GetMapper(void)
 {
-    return glyphMapper;
+    return vectorMapper;
 }
 
 
@@ -299,8 +263,9 @@ avtDataObject_p
 avtVectorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     ghostFilter->SetInput(input);
-    ComputeMagVarName(varname);
+
     avtDataObject_p dob = ghostFilter->GetOutput();
+
     if (atts.GetGlyphLocation() == VectorAttributes::UniformInSpace)
     {
         avtDataAttributes &atts = dob->GetInfo().GetAttributes();
@@ -317,8 +282,12 @@ avtVectorPlot::ApplyRenderingTransformation(avtDataObject_p input)
             dob = resampleFilter->GetOutput();
         }
     }
+
     vectorFilter->SetInput(dob);
+
+    ComputeMagVarName(varname);
     vectorFilter->SetMagVarName(magVarName); 
+
     return vectorFilter->GetOutput();
 }
 
@@ -357,7 +326,6 @@ avtVectorPlot::CustomizeBehavior(void)
     behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
 }
 
-
 // ****************************************************************************
 //  Method: avtVectorPlot::CustomizeMapper
 //
@@ -394,18 +362,19 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 {
     ComputeMagVarName(varname);
     SetMapperColors();
+    
     int dim = doi.GetAttributes().GetSpatialDimension();
     if (dim == 2)
     {
         //
         // We will get a flat head if the "cone head" feature is off.
         //
-        glyph->SetConeHead(0);
+        vectorGlyph->SetConeHead(0);
         behavior->SetRenderOrder(MUST_GO_LAST);
     }
     else
     {
-        glyph->SetConeHead(1);
+        vectorGlyph->SetConeHead(1);
         behavior->SetRenderOrder(DOES_NOT_MATTER);
     }
 
@@ -414,7 +383,6 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
     //
     SetLegendRanges();
 }
-
 
 // ****************************************************************************
 //  Method: avtVectorPlot::SetAtts
@@ -495,7 +463,7 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
     bool updateColors = (!colorsInitialized) ||
        (atts.GetColorTableName() != newAtts->GetColorTableName()) ||
        (atts.GetInvertColorTable() != newAtts->GetInvertColorTable()) ||
-       (atts.GetColorByMag() != newAtts->GetColorByMag());
+       (atts.GetColorByMagnitude() != newAtts->GetColorByMagnitude());
 
     // See if any attributes that require the plot to be regenerated were
     // changed and copy the state object.
@@ -530,22 +498,22 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
         resampleFilter = new avtResampleFilter(&resatts);
     }
 
-    glyph->SetArrow(atts.GetGlyphType() == VectorAttributes::Arrow);
+    vectorGlyph->SetArrow(atts.GetGlyphType() == VectorAttributes::Arrow);
     
-    glyph->SetMakeHead(atts.GetHeadOn());
-    glyph->SetHeadSize(atts.GetHeadSize());
-    glyph->SetLineStem(atts.GetLineStem());
-    glyph->SetStemWidth(atts.GetStemWidth());
+    vectorGlyph->SetMakeHead(atts.GetHeadOn());
+    vectorGlyph->SetHeadSize(atts.GetHeadSize());
+    vectorGlyph->SetLineStem(atts.GetLineStem());
+    vectorGlyph->SetStemWidth(atts.GetStemWidth());
 
     if (atts.GetGeometryQuality() == VectorAttributes::High)
     {
-        glyph->HighQualityOn();
-        glyph->CapEndsOn();
+        vectorGlyph->HighQualityOn();
+        vectorGlyph->CapEndsOn();
     }
     else //if (atts.GetGeometryQuality() == VectorAttributes::Fast)
     {
-        glyph->HighQualityOff();
-        glyph->CapEndsOff();
+        vectorGlyph->HighQualityOff();
+        vectorGlyph->CapEndsOff();
     }
 
     float offset = 0;
@@ -555,18 +523,18 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
       case VectorAttributes::Middle:  offset =   0;  break;
       case VectorAttributes::Tail:    offset = +.5;  break;
     }
-    glyph->SetOriginOffset(offset);
+    vectorGlyph->SetOriginOffset(offset);
 
-    glyphMapper->SetScaleByMagnitude(atts.GetScaleByMagnitude());
-    glyphMapper->SetAutoScale(atts.GetAutoScale());
-    glyphMapper->SetScale(atts.GetScale() * atts.GetAnimationScale());
+    vectorMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
+
+    vectorMapper->SetScaleByMagnitude(atts.GetScaleByMagnitude());
+    vectorMapper->SetAutoScale(atts.GetAutoScale());
+    vectorMapper->SetScale(atts.GetScale() * atts.GetAnimationScale());
 
     SetMapperColors();
 
-    glyphMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
-
     // Update the plot's colors if needed.
-    if (atts.GetColorByMag() &&
+    if (atts.GetColorByMagnitude() &&
        (updateColors || atts.GetColorTableName() == "Default"))
     {
         colorsInitialized = true;
@@ -621,7 +589,7 @@ bool
 avtVectorPlot::SetColorTable(const char *ctName)
 {
     bool retval = false;
-    if (atts.GetColorByMag())
+    if (atts.GetColorByMagnitude())
     {
         bool namesMatch = (atts.GetColorTableName() == std::string(ctName));
         bool invert = atts.GetInvertColorTable();
@@ -636,7 +604,7 @@ avtVectorPlot::SetColorTable(const char *ctName)
 
         if (retval)
         {
-            glyphMapper->SetLookupTable(avtLUT->GetLookupTable());
+            vectorMapper->SetLookupTable(avtLUT->GetLookupTable());
         }
     }
     else
@@ -703,18 +671,18 @@ avtVectorPlot::SetLegendRanges()
 
     if (atts.GetLimitsMode() == VectorAttributes::OriginalData)
     {
-        glyphMapper->GetRange(min, max);
+        vectorMapper->GetRange(min, max);
     }
     else
     {
-        glyphMapper->GetCurrentRange(min, max);
+        vectorMapper->GetCurrentRange(min, max);
     }
     varLegend->SetRange(min, max);
 
     //
     // Set the range for the legend's text and colors.
     //
-    glyphMapper->GetVarRange(min, max);
+    vectorMapper->GetVarRange(min, max);
     varLegend->SetVarRange(min, max);
 }
 
@@ -733,7 +701,7 @@ avtVectorPlot::SetLegendRanges()
 //    Release data for resample filter.
 //
 // ****************************************************************************
- 
+
 void
 avtVectorPlot::ReleaseData(void)
 {
@@ -752,7 +720,6 @@ avtVectorPlot::ReleaseData(void)
         ghostFilter->ReleaseData();
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtVectorPlot::ComputeMagVarName
@@ -776,7 +743,7 @@ avtVectorPlot::ComputeMagVarName(const std::string &vn)
 //  Method: avtVectorPlot::SetMapperColors
 //
 //  Purpose:
-//    Tells the glyphMapper how to color the data. 
+//    Tells the vectorMapper how to color the data. 
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   August 12, 2004 
@@ -786,18 +753,17 @@ avtVectorPlot::ComputeMagVarName(const std::string &vn)
 void
 avtVectorPlot::SetMapperColors()
 {
-    if (atts.GetColorByMag())
+    if (atts.GetColorByMagnitude())
     {
-        glyphMapper->ColorByScalarOn(magVarName);
+        vectorMapper->ColorByScalarOn(magVarName);
     }
     else
     {
         const unsigned char *col = atts.GetVectorColor().GetColor();
         avtLUT->SetLUTColors(col, 1);
-        glyphMapper->ColorByMagOff(col);
+        vectorMapper->ColorByMagOff(col);
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtVectorPlot::SetLimitsMode
@@ -821,15 +787,15 @@ avtVectorPlot::SetLimitsMode(int limitsMode)
     //
     //  Retrieve the actual range of the data
     //
-    glyphMapper->GetVarRange(min, max);
+    vectorMapper->GetVarRange(min, max);
 
     float userMin = atts.GetMinFlag() ? atts.GetMin() : min;
     float userMax = atts.GetMaxFlag() ? atts.GetMax() : max;
       
     if (dataExtents.size() == 2)
     {
-        glyphMapper->SetMin(dataExtents[0]);
-        glyphMapper->SetMax(dataExtents[1]);
+        vectorMapper->SetMin(dataExtents[0]);
+        vectorMapper->SetMax(dataExtents[1]);
     }
     else if (atts.GetMinFlag() && atts.GetMaxFlag())
     {
@@ -839,44 +805,44 @@ avtVectorPlot::SetLimitsMode(int limitsMode)
         }
         else
         {
-            glyphMapper->SetMin(userMin);
-            glyphMapper->SetMax(userMax);
+            vectorMapper->SetMin(userMin);
+            vectorMapper->SetMax(userMax);
         }
     } 
     else if (atts.GetMinFlag())
     {
-        glyphMapper->SetMin(userMin);
+        vectorMapper->SetMin(userMin);
         if (userMin > userMax)
         {
-            glyphMapper->SetMax(userMin);
+            vectorMapper->SetMax(userMin);
         }
         else
         {
-            glyphMapper->SetMaxOff();
+            vectorMapper->SetMaxOff();
         }
     }
     else if (atts.GetMaxFlag())
     {
-        glyphMapper->SetMax(userMax);
+        vectorMapper->SetMax(userMax);
         if (userMin > userMax)
         {
-            glyphMapper->SetMin(userMax);
+            vectorMapper->SetMin(userMax);
         }
         else
         {
-            glyphMapper->SetMinOff();
+            vectorMapper->SetMinOff();
         }
     }
     else
     {
-        glyphMapper->SetMinOff();
-        glyphMapper->SetMaxOff();
+        vectorMapper->SetMinOff();
+        vectorMapper->SetMaxOff();
     }
-    glyphMapper->SetLimitsMode(limitsMode);
+
+    vectorMapper->SetLimitsMode(limitsMode);
 
     SetLegendRanges();
 }
-
 
 // ****************************************************************************
 //  Method: avtVectorPlot::GetExtraInfoForPick
@@ -897,4 +863,3 @@ avtVectorPlot::GetExtraInfoForPick()
 
     return extraPickInfo;
 }
-

@@ -30,6 +30,10 @@
 #    Added TestScale, which demonstrates the need to scale curves with values
 #    greater than 1e37 or less than 1e-37.
 #
+#    Kathleen Biagas, Wed Aug 28 09:04:00 MST 2019
+#    Turn off cycling of colors for all tests.  Set the colors individually
+#    to match current baseline results.
+#
 # ----------------------------------------------------------------------------
 
 def Test1():
@@ -38,29 +42,29 @@ def Test1():
     DefineCurveExpression("logED", "log10(<Exponential Distribution>)")
     DefineCurveExpression("logLap", "log10(<Laplace Distribution>)")
     AddPlot("Curve", "Exponential Distribution")
+    c = CurveAttributes()
+    c.curveColorSource = c.Custom
+    c.curveColor = (255, 0, 0, 255)
+    SetPlotOptions(c)
     DrawPlots()
     Test("curve_1_01")
 
     ChangeActivePlotsVar("logED")
-    c = CurveAttributes()
-    c.cycleColors = 0
+    c.curveColor = (0, 0, 0, 255)
     SetPlotOptions(c)
     ResetView()
     Test("curve_1_02")
 
     ChangeActivePlotsVar("Laplace Distribution")
-    c = CurveAttributes()
-    c.cycleColors = 0
-    c.color = (0, 255, 0, 255)
+    c.curveColor = (0, 255, 0, 255)
     c.lineWidth = 2
     SetPlotOptions(c)
     ResetView()
     Test("curve_1_03")
 
     ChangeActivePlotsVar("logLap")
-    c = CurveAttributes()
-    c.cycleColors = 0
-    c.color = (0, 255, 255, 255)
+    c.lineWidth = 0
+    c.curveColor = (0, 255, 255, 255)
     SetPlotOptions(c)
     ResetView()
     Test("curve_1_04")
@@ -75,7 +79,7 @@ def Test1():
     ResetView()
     Test("curve_1_06")
 
-    c.color = (120, 10, 150, 255)
+    c.curveColor = (120, 10, 150, 255)
     SetPlotOptions(c)
 
     v.domainCoords = (1.13181, 1.14079)
@@ -106,18 +110,26 @@ def TestOverlayCurves():
     OpenDatabase(data_path("curve_test_data/ol_curveA.curve"))
 
     AddPlot("Curve","ol_curveA")  # id=2
+    c = CurveAttributes()
+    c.curveColorSource = c.Custom
+    c.curveColor = (0, 255, 0, 0)
+    SetPlotOptions(c)
     DrawPlots()
     Test("curve_2_01")
 
     OpenDatabase(data_path("curve_test_data/ol_curveB.curve"))
 
     AddPlot("Curve","ol_curveB")  # id=3
+    c.curveColor = (0, 0, 255, 0)
+    SetPlotOptions(c)
     DrawPlots()
     Test("curve_2_02")
 
     OpenDatabase(data_path("curve_test_data/ol_curveC.curve"))
 
     AddPlot("Curve","ol_curveC")  # id=4
+    c.curveColor = (0, 255, 255, 0)
+    SetPlotOptions(c)
     DrawPlots()
     Test("curve_2_03")
 
@@ -170,6 +182,8 @@ def TestPointsAndSymbols():
     curve = CurveAttributes()
     curve.showLabels = 0
     curve.showPoints = 1
+    curve.curveColorSource = curve.Custom 
+    curve.curveColor = (0, 0, 0, 255)
     SetPlotOptions(curve)
     DrawPlots()
     ResetView()
@@ -296,6 +310,8 @@ def TestTimeCue():
     c = CurveAttributes()
     c.showLabels = 0
     c.showPoints = 1
+    c.curveColorSource = c.Custom
+    c.curveColor = (0, 0, 0, 255)
     c.doBallTimeCue = 1
     c.timeCueBallSize = 1
     c.ballTimeCueColor = (0, 255, 0, 255)
@@ -414,8 +430,13 @@ def TestPolar():
     CloseDatabase(data_path("curve_test_data/circle.ultra"))
 
 def TestScale():
+    TestSection("Scale")
     OpenDatabase(data_path("curve_test_data/need_scale.ultra"))
     AddPlot("Curve", "toobig")
+    c = CurveAttributes()
+    c.curveColorSource = c.Custom
+    c.curveColor = (40, 165, 165, 255)
+    SetPlotOptions(c)
     DrawPlots()
     Test("curve_scale_00")
 

@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                             avtPoint3DFileFormat.C                        //
@@ -60,11 +26,16 @@
 
 #include "visit_gzstream.h"
 
+#include <cstdlib>
+#include <cstring>
+
 const char      *avtPoint3DFileFormat::MESHNAME = "points";
 
 #define COORDINATE_ORDER_DEFAULT 0
 #define COORDINATE_ORDER_XYZV    0
 #define COORDINATE_ORDER_XYVZ    1
+#define COORDINATE_ORDER_XYV     2
+#define COORDINATE_ORDER_XV      3
 
 using std::string;
 using std::vector;
@@ -80,12 +51,15 @@ using std::vector;
 //    Hank Childs, Mon Apr  7 18:21:32 PDT 2003
 //    Do not open files in the constructor.
 //
+//    Mark C. Miller, Thu Jul 25 21:12:42 PDT 2019
+//    Added spatialDim
 // ****************************************************************************
 
 avtPoint3DFileFormat::avtPoint3DFileFormat(const char *fname)
     : avtSTSDFileFormat(fname)
 {
     haveReadData = false;
+    spatialDim = 3;
     column1 = NULL;
     column2 = NULL;
     column3 = NULL;
@@ -243,6 +217,8 @@ avtPoint3DFileFormat::GetVar(const char *var)
 //    Hank Childs, Mon Apr  7 18:21:32 PDT 2003
 //    Read in the variable names before populating the meta-data.
 //
+//    Mark C. Miller, Thu Jul 25 21:12:53 PDT 2019
+//    Added spatialDim
 // ****************************************************************************
 
 void
@@ -257,12 +233,12 @@ avtPoint3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->name = MESHNAME;
     mesh->meshType = AVT_POINT_MESH;
     mesh->blockOrigin = 0;
-    mesh->spatialDimension = 3;
+    mesh->spatialDimension = spatialDim;
     mesh->topologicalDimension = 0;
     mesh->hasSpatialExtents = false;
     md->Add(mesh);
 
-    for (int i = 0 ; i < 4 ; i++)
+    for (int i = 0 ; i < spatialDim+1 ; i++)
     {
         AddScalarVarToMetaData(md, varnames[i], MESHNAME, AVT_NODECENT, NULL);
     }
@@ -316,6 +292,10 @@ avtPoint3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    there was code to decrement the number of points read by one, but this
 //    was no longer necessary because of Jeremy's change on Jan 20, 2010.
 //
+//    Mark C. Miller, Thu Jul 25 21:13:09 PDT 2019
+//    Added logic to support different coordflag settings for 2D and 1D
+//    inputs. This meant delaying early return for mdserver sufficiently
+//    to have read the coordflag line.
 // ****************************************************************************
 
 void
@@ -342,12 +322,8 @@ avtPoint3DFileFormat::ReadData(void)
         if (GetStrictMode() && !StringHelpers::IsPureASCII(buf, 1024))
             EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
         varnames.push_back(buf);
+        if (ifile.peek() == '\n') break;
     }
-
-    // If we're in the mdserver and not in strict mode, we can
-    // assume the file's valid.  Otherwise, read a little more.
-    if (avtDatabase::OnlyServeUpMetaData() && !GetStrictMode())
-        return;
 
     char     line[1024];
 
@@ -370,38 +346,54 @@ avtPoint3DFileFormat::ReadData(void)
         EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
     while (!ifile().eof())
     {
-        // Allow the user to specify "coordflag" in the file.
+        // Allow user to specify "coordflag" in the file.
         if(line[0] == '#')
         {
             if(strncmp(line+1, "coordflag", 9) == 0)
             {
-                debug4 << mName << "Reading coordflag value from file: ";
-                if(strncmp(line+9+2, "xyzv", 4) == 0)
+                debug1 << mName << "Reading coordflag value from file: ";
+                if (strncmp(line+9+2, "xyzv", 4) == 0)
                 {
                     coordFlag = COORDINATE_ORDER_XYZV;
-                    debug4 << "xyzv";
+                    spatialDim = 3;
+                    debug1 << "xyzv";
                 }
-                else if(strncmp(line+9+2, "xyvz", 4) == 0)
+                else if (strncmp(line+9+2, "xyvz", 4) == 0)
                 {
                     coordFlag = COORDINATE_ORDER_XYVZ;
-                    debug4 << "xyvz";
+                    spatialDim = 3;
+                    debug1 << "xyvz";
                 }
-                debug4 << endl;
+                else if (strncmp(line+9+2, "xyv", 3) == 0)
+                {
+                    coordFlag = COORDINATE_ORDER_XYV;
+                    spatialDim = 2;
+                    debug1 << "xyv";
+                }
+                else if (strncmp(line+9+2, "xv", 2) == 0)
+                {
+                    coordFlag = COORDINATE_ORDER_XV;
+                    spatialDim = 1;
+                    debug1 << "xv";
+                }
+                debug1 << endl;
             }
         }
         else
         {
             float a=0, b=0, c=0, d=0;
             int n = sscanf(line, "%f %f %f %f", &a, &b, &c, &d);
-            if (GetStrictMode() && n != 4)
+            if (GetStrictMode() && n != spatialDim+1)
             {
                 EXCEPTION2(InvalidFilesException, filename,
-                           "Bad line in file; less than four values");
+                           "Bad line in file; less than 4 values");
             }
             var1.push_back(a);
             var2.push_back(b);
-            var3.push_back(c);
-            var4.push_back(d);
+            if (spatialDim > 1)
+                var3.push_back(c);
+            if (spatialDim > 2)
+                var4.push_back(d);
         }
 
         line[0] = '\0';
@@ -439,14 +431,14 @@ avtPoint3DFileFormat::ReadData(void)
 
     column3 = vtkFloatArray::New();
     column3->SetNumberOfTuples(npts);
-    for (i = 0 ; i < npts ; i++)
+    for (i = 0 ; i < npts && spatialDim > 1; i++)
     {
         column3->SetTuple1(i, var3[i]);
     }
 
     column4 = vtkFloatArray::New();
     column4->SetNumberOfTuples(npts);
-    for (i = 0 ; i < npts ; i++)
+    for (i = 0 ; i < npts && spatialDim > 2; i++)
     {
         column4->SetTuple1(i, var4[i]);
     }
@@ -458,10 +450,20 @@ avtPoint3DFileFormat::ReadData(void)
         for (i = 0 ; i < npts ; i++)
              p->SetPoint(i, var1[i], var2[i], var3[i]);
     }
-    else // COORDINATE_ORDER_XYVZ
+    else if(coordFlag == COORDINATE_ORDER_XYVZ)
     {
         for (i = 0 ; i < npts ; i++)
              p->SetPoint(i, var1[i], var2[i], var4[i]);
+    }
+    else if(spatialDim == 2)
+    {
+        for (i = 0 ; i < npts ; i++)
+             p->SetPoint(i, var1[i], var2[i], 0);
+    }
+    else if(spatialDim == 1)
+    {
+        for (i = 0 ; i < npts ; i++)
+             p->SetPoint(i, var1[i], 0, 0);
     }
 
     points = vtkUnstructuredGrid::New();

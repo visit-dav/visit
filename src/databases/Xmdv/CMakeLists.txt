@@ -3,6 +3,8 @@ PROJECT(Xmdv_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(Xmdv)
+
 SET(COMMON_SOURCES
 XmdvPluginInfo.C
 XmdvCommonPluginInfo.C

@@ -1,39 +1,8 @@
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
 #*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
 # Modifications:
 #   David M. Camp, Th Jan 14 11:50:00 PST 2010
 #   Added new function ADD_TARGET_DEFINITIONS to add defines to targets.
@@ -106,6 +75,15 @@
 #   Kathleen Biagas, Wed Apr 17 12:54:40 PDT 2019
 #   MFEM has an include dependency on conduit, move it below conduit in the
 #   list and add conduit include to it's include.
+#
+#   Eric Brugger, Wed Jun 26 10:01:32 PDT 2019
+#   Removed the CCM reader.
+#
+#   Kathleen Biagas, Fri Jul 19 12:11:05 PDT 2019
+#   Added ZLIB. Removed SLIVR. Added zlib to MFEM include.
+#
+#   Kevin Griffin, Thu Aug 8 18:30:27 PDT 2019
+#   Added the correct paths for the QT_QT*_INCLUDE_DIR variables for OSX.
 #
 #****************************************************************************/
 
@@ -183,6 +161,12 @@ set(VISIT_COMMON_INCLUDES
     ${VISIT_INCLUDE_DIR}/visit/common/utility
 )
 
+set(HAVE_LIBZ @HAVE_LIBZ@)
+if(HAVE_LIBZ)
+    set(ZLIB_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/zlib/include)
+    list(APPEND VISIT_COMMON_INCLUDES ${ZLIB_INCLUDE_DIR})
+endif()
+
 # VisIt options
 set(VISIT_PYTHON_SCRIPTING       @VISIT_PYTHON_SCRIPTING@)
 set(VISIT_SERVER_COMPONENTS_ONLY @VISIT_SERVER_COMPONENTS_ONLY@)
@@ -210,12 +194,21 @@ set(TESSELLATION_LIBRARY @TESSELLATION_LIBRARY@)
 set(BOOST_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/boost/include/boost)
 
 # Set up Qt
-set(QT_INCLUDE_DIR           ${VISIT_INCLUDE_DIR}/qt/include)
-set(QT_QTCORE_INCLUDE_DIR    ${VISIT_INCLUDE_DIR}/qt/include/QtCore)
-set(QT_QTGUI_INCLUDE_DIR     ${VISIT_INCLUDE_DIR}/qt/include/QtGui)
-set(QT_QTOPENGL_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/qt/include/QtOpenGL)
-set(QT_QTWIDGETS_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/qt/include/QtWidgets)
-set(QT_QTXML_INCLUDE_DIR     ${VISIT_INCLUDE_DIR}/qt/include/QtXml)
+if(APPLE)
+    set(QT_INCLUDE_DIR           ${VISIT_INCLUDE_DIR}/qt/include)
+    set(QT_QTCORE_INCLUDE_DIR    ${VISIT_LIBRARY_DIR}/QtCore.framework/Versions/Current/Headers)
+    set(QT_QTGUI_INCLUDE_DIR     ${VISIT_LIBRARY_DIR}/QtGui.framework/Versions/Current/Headers)
+    set(QT_QTOPENGL_INCLUDE_DIR  ${VISIT_LIBRARY_DIR}/QtOpenGL.framework/Versions/Current/Headers)
+    set(QT_QTWIDGETS_INCLUDE_DIR ${VISIT_LIBRARY_DIR}/QtWidgets.framework/Versions/Current/Headers)
+    set(QT_QTXML_INCLUDE_DIR     ${VISIT_LIBRARY_DIR}/QtXml.framework/Versions/Current/Headers)
+else()
+    set(QT_INCLUDE_DIR           ${VISIT_INCLUDE_DIR}/qt/include)
+    set(QT_QTCORE_INCLUDE_DIR    ${VISIT_INCLUDE_DIR}/qt/include/QtCore)
+    set(QT_QTGUI_INCLUDE_DIR     ${VISIT_INCLUDE_DIR}/qt/include/QtGui)
+    set(QT_QTOPENGL_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/qt/include/QtOpenGL)
+    set(QT_QTWIDGETS_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/qt/include/QtWidgets)
+    set(QT_QTXML_INCLUDE_DIR     ${VISIT_INCLUDE_DIR}/qt/include/QtXml)
+endif()
 
 set(QT_LIBRARY_DIR           ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(QT_BIN                   ${VISIT_BINARY_DIR})
@@ -224,20 +217,6 @@ set(QT_MOC_EXECUTABLE        ${VISIT_BINARY_DIR}/moc)
 # Set up Python
 set(PYTHON_INCLUDE_PATH    ${VISIT_INCLUDE_DIR}@python_include_relative_path@)
 set(PYTHON_LIBRARY         ${VISIT_LIBRARY_DIR}/@PYLIB@)
-
-# Set up SLIVR
-if(VISIT_SLIVR)
-    set(SLIVR_INCLUDE_DIR
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr/slivr
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr/teem-1.9.0-src/src
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr/teem-1.9.0-src/src/teem
-    )
-    set(SLIVR_GUI_IMPL    QvisCMap2Display.C QvisCMap2Widget.C)
-    set(SLIVR_GUI_HDR     QvisCMap2Display.h QvisCMap2Widget.h)
-    set(SLIVR_LIB         slivrG slivrV)
-    add_definitions(-DHAVE_LIBSLIVR)
-endif()
 
 if(VISIT_OSPRAY)
     set(OSPRAY_INCLUDE_DIR    ${VISIT_INCLUDE_DIR})
@@ -257,10 +236,6 @@ set(BOXLIB_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/boxlib/include)
 set(BOXLIB_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(BOXLIB_2D_LIB @BOXLIB_2D_LIB@)
 set(BOXLIB_3D_LIB @BOXLIB_3D_LIB@)
-
-set(CCMIO_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/ccmio/include)
-set(CCMIO_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
-set(CCMIO_LIB @CCMIO_LIB@)
 
 set(CFITSIO_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/cfitsio/include)
 set(CFITSIO_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
@@ -339,7 +314,8 @@ if(VISIT_PARALLEL)
     set(CONDUIT_MPI_LIB @CONDUIT_MPI_LIB@)
 endif()
 
-set(MFEM_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/mfem/include;${CONDUIT_INCLUDE_DIR})
+# mfem include, fudge because we know that the includes should be
+set(MFEM_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/mfem/include;${CONDUIT_INCLUDE_DIR};${ZLIB_INCLUDE_DIR})
 set(MFEM_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(MFEM_LIB @MFEM_LIB@)
 
@@ -348,7 +324,8 @@ set(OPENEXR_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(OPENEXR_LIB @OPENEXR_LIB@)
 
 set(VTKh_INCLUDE_DIRS  ${VISIT_INCLUDE_DIR}/vtkh/include)
-set(VTKM_DIR           ${VISIT_INCLUDE_DIR}/vtkm)
+set(VTKm_INCLUDE_DIRS  ${VISIT_INCLUDE_DIR}/vtkm/include/vtkm-@VTKm_VERSION_MAJOR@.@VTKm_VERSION_MINOR@
+                       ${VISIT_INCLUDE_DIR}/vtkm/include/vtkm-@VTKm_VERSION_MAJOR@.@VTKm_VERSION_MINOR@/vtkm/thirdparty/taotuple)
 
 include(${VISIT_INCLUDE_DIR}/VisItMacros.cmake)
 
@@ -387,7 +364,7 @@ endmacro()
 # Parallel settings
 set(VISIT_PARALLEL_CXXFLAGS     @filtered_VISIT_PARALLEL_CXXFLAGS@)
 set(VISIT_PARALLEL_LINKER_FLAGS @filtered_VISIT_PARALLEL_LINKER_FLAGS@)
-set(VISIT_PARALLEL_LIBS         @filtered_VISIT_PARALLEL_LIBS@)
+set(VISIT_PARALLEL_LIBS         "@filtered_VISIT_PARALLEL_LIBS@")
 set(VISIT_PARALLEL_INCLUDE      "@filtered_VISIT_PARALLEL_INCLUDE@")
 set(VISIT_PARALLEL_DEFS         @filtered_VISIT_PARALLEL_DEFS@)
 set(VISIT_NOLINK_MPI_WITH_LIBRARIES @VISIT_NOLINK_MPI_WITH_LIBRARIES@)

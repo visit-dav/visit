@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtMassVoxelExtractor.C                        //
@@ -69,6 +35,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <cmath>
 
 #define INLINE   inline
 #ifdef _MSC_VER
@@ -599,7 +566,7 @@ sv_ComputeNodeBlendForSpan(
 //   data     : The data for the point variable.
 //   N        : The number of samples to process.
 //   transferFn1D : The opacity map we'll use to map scalar to opacity.
-//   oneSamplesContribution : How much a sample counts for when integrating.
+//   sampleDist : The distance between each sample on a ray. 
 //   tmpSampleList : The samples to store (output)
 //   ii_           : The sample index (from 0) where we terminated.
 //   opacity       : The accumulated opacity.
@@ -614,6 +581,10 @@ sv_ComputeNodeBlendForSpan(
 //
 // Modifications:
 //
+//     Alister Maguire, Mon Jun  3 15:22:32 PDT 2019
+//     Changed oneSamplesContribution to sampleDist and updated the opacity
+//     to use a standard opacity correction
+//
 // ****************************************************************************
 
 template <typename T>
@@ -625,7 +596,7 @@ sv_SamplePointOpacityVariable_ERT(
     const T *data,
     int N,
     const avtOpacityMap *transferFn1D,
-    float oneSamplesContribution,
+    float sampleDist,
     double (*tmpSampleList)[AVT_VARIABLE_LIMIT],
     int &ii_,
     float &opacity)
@@ -659,9 +630,12 @@ sv_SamplePointOpacityVariable_ERT(
 
         if (alpha > 0)
         {
-            float samplesOpacity = alpha * oneSamplesContribution;
-            samplesOpacity = (samplesOpacity > 1. ? 1. : samplesOpacity);
-            float ff = (1-opacity)*samplesOpacity;
+            float samplesOpacity = 1.0;
+            if (alpha < 1.0)
+            { 
+                samplesOpacity = (1.0 - std::pow((1.0 - alpha), sampleDist));
+            }
+            float ff = (1.f-opacity)*samplesOpacity;
             opacity = opacity + ff;
         }
         bool early_term = (opacity > threshold);
@@ -693,7 +667,7 @@ sv_SamplePointOpacityVariable_ERT(
 //   data     : The data for the point variable.
 //   N        : The number of samples to process.
 //   transferFn1D : The opacity map we'll use to map scalar to opacity.
-//   oneSamplesContribution : How much a sample counts for when integrating.
+//   sampleDist : The distance between each sample on a ray. 
 //   tmpSampleList : The samples to store (output)
 //   ii_           : The sample index (from 0) where we terminated.
 //   opacity       : The accumulated opacity.
@@ -708,6 +682,10 @@ sv_SamplePointOpacityVariable_ERT(
 //
 // Modifications:
 //
+//     Alister Maguire, Mon Jun  3 15:22:32 PDT 2019
+//     Changed oneSamplesContribution to sampleDist and updated the opacity
+//     to use a standard opacity correction
+//
 // ****************************************************************************
 
 template <typename T>
@@ -718,7 +696,7 @@ sv_SampleCellOpacityVariable_ERT(
     const T *data,
     int N,
     const avtOpacityMap *transferFn1D,
-    float oneSamplesContribution,
+    float sampleDist,
     double (*tmpSampleList)[AVT_VARIABLE_LIMIT],
     int &ii_,
     float &opacity)
@@ -739,8 +717,12 @@ sv_SampleCellOpacityVariable_ERT(
 
         if (alpha > 0)
         {
-            float samplesOpacity = alpha * oneSamplesContribution;
-            samplesOpacity = (samplesOpacity > 1. ? 1. : samplesOpacity);
+            float samplesOpacity = 1.f;
+            if (alpha < 1.0)
+            { 
+                samplesOpacity = (1.0 - std::pow((1.0 - alpha), sampleDist));
+            }
+
             float ff = (1-opacity)*samplesOpacity;
             opacity = opacity + ff;
         }
@@ -776,6 +758,9 @@ sv_SampleCellOpacityVariable_ERT(
 // Creation:   Fri Feb 17 14:56:38 PST 2017
 //
 // Modifications:
+//
+//     Alister Maguire, Mon Jun  3 15:40:31 PDT 2019
+//     Replaced oneSamplesContribution with a standard opacity correction. 
 //
 // ****************************************************************************
 
@@ -850,10 +835,13 @@ avtMassVoxelExtractor::SampleVariable_Common(int first, int last, int w, int h)
     }
 
 #ifdef EARLY_RAY_TERMINATION
-    const float distanceToReachFullOpacity = 1.f/250.f;
-    int maxSample = depth-1;
-    float distanceCoveredPerSample = 1.f/maxSample;
-    float oneSamplesContribution = distanceCoveredPerSample/distanceToReachFullOpacity;
+    //
+    // We need to calculate the sample distance so that we can apply
+    // opacity correction: 
+    // 1 - ((1 - alpha(x))**sampleDist)
+    //
+    float viewDist = float((view.farPlane - view.nearPlane));
+    float sampleDist = viewDist / float(ray->GetNumberOfSamples());
     float opacity = 0.f;
 #endif
 
@@ -931,7 +919,7 @@ avtMassVoxelExtractor::SampleVariable_Common(int first, int last, int w, int h)
                 {
                 vtkTemplateMacro(
                     if(sv_SamplePointOpacityVariable_ERT(index, coeff, pt_index[pt_var_handled],
-                       (const VTK_TT *)pt_array, N, transferFn1D, oneSamplesContribution,
+                       (const VTK_TT *)pt_array, N, transferFn1D, sampleDist,
                        tmpSampleList, ii, opacity))
                     {
                         // We terminated early so trim the span.
@@ -954,7 +942,7 @@ avtMassVoxelExtractor::SampleVariable_Common(int first, int last, int w, int h)
                 {
                 vtkTemplateMacro(
                     if(sv_SampleCellOpacityVariable_ERT(index, cell_index[cell_var_handled],
-                       (const VTK_TT *)c_array, N, transferFn1D, oneSamplesContribution,
+                       (const VTK_TT *)c_array, N, transferFn1D, sampleDist,
                        tmpSampleList, ii, opacity))
                     {
                         // We terminated early so trim the span.

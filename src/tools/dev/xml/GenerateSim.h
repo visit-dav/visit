@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #ifndef GENERATE_SIM_H
 #define GENERATE_SIM_H
@@ -51,7 +17,7 @@
 #define GENERATOR_NAME "xml2sim"
 
 QString
-pad(const QString &s, int len) 
+pad(const QString &s, int len)
 {
     QString p(s);
     while(p.length() < len)
@@ -158,11 +124,11 @@ class AttsGeneratorField : public virtual Field
     virtual void WriteVisItFortranMacro(QTextStream &h, const QString &classname)
     {
         QString mName(FortranName(classname, "SET"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = QString(FortranName(classname, "GET"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
     }
 
@@ -198,7 +164,7 @@ class AttsGeneratorField : public virtual Field
     {
         h << "    " << pad(GetCPPName(), maxLen) << " " << name << ";" << endl;
     }
-  
+
     virtual void WriteSimV2Ctor(QTextStream &h)
     {
     }
@@ -376,15 +342,15 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
     virtual void WriteVisItFortranMacro(QTextStream &h, const QString &classname)
     {
         QString mName(FortranName(classname, "ADD"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = FortranName(classname, "GETNUM");
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = FortranName(classname, "GET");
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
     }
 
@@ -493,7 +459,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
 };
 
 
-// 
+//
 // ----------------------------------- Bool -----------------------------------
 //
 class AttsGeneratorBool : public virtual Bool , public virtual AttsGeneratorField
@@ -898,15 +864,15 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual A
     virtual void WriteVisItFortranMacro(QTextStream &h, const QString &classname)
     {
         QString mName(FortranName(classname, "ADD"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = QString(FortranName(classname, "GETNUM"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = QString(FortranName(classname, "GET"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
     }
 
@@ -1170,15 +1136,15 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     virtual void WriteVisItFortranMacro(QTextStream &h, const QString &classname)
     {
         QString mName(FortranName(classname, "ADD"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = QString(FortranName(classname, "GETNUM"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
 
         mName = QString(FortranName(classname, "GET"));
-        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
           << mName.toLower() << ", " << mName << ")" << endl;
     }
 
@@ -1757,7 +1723,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         // Write user-defined methods
         for (size_t i=0; i<functions.size(); i++)
         {
-            if (functions[i]->user && 
+            if (functions[i]->user &&
                 functions[i]->target == generatorName)
             {
                 h << functions[i]->decl << endl;
@@ -1774,7 +1740,6 @@ class AttsGeneratorAttribute : public GeneratorBase
         h << copyright_str << endl;
 
         h << "#include <cstring>" << endl;
-        h << "#include <snprintf.h>" << endl;
         h << "#include <vectortypes.h>" << endl;
         h << "#include \"VisItDataInterfaceRuntime.h\"" << endl;
         h << "#include \"VisItDataInterfaceRuntimeP.h\"" << endl;
@@ -1822,7 +1787,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         h << "    {" << endl;
         h << "        if(obj->objectType() != VISIT_"<<name.toUpper()<<")" << endl;
         h << "        {" << endl;
-        h << "            SNPRINTF(tmp, 150, \"%s: The provided handle does not point to \"" << endl;
+        h << "            snprintf(tmp, 150, \"%s: The provided handle does not point to \"" << endl;
         h << "                \"a "<<name<<" object. (type=%d)\", fname, obj->objectType());" << endl;
         h << "            VisItError(tmp);" << endl;
         h << "            obj = NULL;" << endl;
@@ -1830,7 +1795,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         h << "    }" << endl;
         h << "    else" << endl;
         h << "    {" << endl;
-        h << "        SNPRINTF(tmp, 150, \"%s: An invalid handle was provided.\", fname);" << endl;
+        h << "        snprintf(tmp, 150, \"%s: An invalid handle was provided.\", fname);" << endl;
         h << "        VisItError(tmp);" << endl;
         h << "    }" << endl;
         h << endl;
@@ -1870,7 +1835,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         // Write user-defined methods
         for (size_t i=0; i<functions.size(); i++)
         {
-            if (functions[i]->user && 
+            if (functions[i]->user &&
                 functions[i]->target == generatorName)
             {
                 h << functions[i]->def << endl;
@@ -1890,6 +1855,8 @@ private:
 
 // ----------------------------------------------------------------------------
 // Modifications:
+//   Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
+//   Added hl arg, for haslicense.
 //
 // ----------------------------------------------------------------------------
 #include <PluginBase.h>
@@ -1901,8 +1868,8 @@ class AttsGeneratorPlugin : public PluginBase
   public:
     AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,
         const QString &vt,const QString &dt, const QString &v, const QString &ifile,
-        bool hw, bool ho, bool onlyengine, bool noengine) : 
-        PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine), atts(NULL)
+        bool hw, bool ho, bool hl, bool onlyengine, bool noengine) :
+        PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,hl,onlyengine,noengine), atts(NULL)
     {
     }
 

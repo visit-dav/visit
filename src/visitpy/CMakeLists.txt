@@ -1,39 +1,8 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
+#****************************************************************************
 # Modifications:
 #  Hank Childs, Thu Jul 22 09:55:03 PDT 2010
 #  Add attributes for multi-window saves.
@@ -72,7 +41,158 @@
 #  Kathleen Biagas, Thu Sep 27 11:35:34 PDT 2018
 #  Change PYTHON_LIBRARIES to PYTHON_LIBRARY for consistency throughout visit.
 #
-#****************************************************************************/
+#  Cyrus Harrison, Fri Dec  6 14:51:33 PST 2019
+#  Add python code gen cmake targets for those objects that can be code-gend
+#
+#****************************************************************************
+
+#########################################################
+# BEGIN Logic for XML Code Gen Targets
+#########################################################
+
+#####################
+# Metadata Objects
+#####################
+
+
+#####################
+# Metadata Objects that we can't Code-Gen, or have customizations:
+#####################
+# avtMeshMetaData
+# avtSimulationInformation
+# avtSpeciesMetaData
+
+SET(PY_GEN_METADATA_OBJECTS
+    avtArrayMetaData
+    avtBaseVarMetaData
+    avtCurveMetaData
+    avtDatabaseMetaData
+    avtDefaultPlotMetaData
+    avtLabelMetaData
+    avtMatSpeciesMetaData
+    avtMaterialMetaData
+    # avtMeshMetaData (see above note)
+    avtScalarMetaData
+    avtSimulationCommandSpecification
+    # avtSimulationInformation # (see above note)
+    # avtSpeciesMetaData # (see above note)
+    avtSubsetsMetaData
+    avtSymmetricTensorMetaData
+    avtTensorMetaData
+    avtVarMetaData
+    avtVectorMetaData
+    )
+
+#####################
+# State Objects
+#####################
+
+#####################
+# State Objects that we can't Code-Gen, or have customizations:
+#####################
+# ColorControlPointList
+# DatabaseCorrelation
+# SaveSubWindowAttributes
+# View2DAttributes
+# View2DAttributes
+
+SET(PY_GEN_STATE_OBJECTS
+    AnimationAttributes
+    AnnotationAttributes
+    Axes2D
+    Axes3D
+    AxesArray
+    AxisAttributes
+    AxisLabels
+    AxisTickMarks
+    AxisTitle
+    ColorAttribute
+    ColorAttributeList
+    ColorControlPoint
+    # ColorControlPointList  # (see above note)
+    ColorTableAttributes 
+    ConstructDataBinningAttributes
+    # DatabaseCorrelation # (see above note)
+    DBOptionsAttributes
+    EngineProperties
+    ExportDBAttributes
+    Expression
+    ExpressionList
+    FontAttributes
+    FileOpenOptions
+    GaussianControlPoint
+    GaussianControlPointList
+    GlobalAttributes
+    GlobalLineoutAttributes
+    InteractorAttributes
+    KeyframeAttributes
+    LaunchProfile
+    LightAttributes
+    MachineProfile
+    MaterialAttributes
+    MeshManagementAttributes
+    NameschemeAttributes
+    PickAttributes
+    PickVarInfo
+    Plot
+    PlotList
+    PrinterAttributes
+    ProcessAttributes
+    QueryAttributes
+    QueryOverTimeAttributes
+    RenderingAttributes
+    SaveWindowAttributes
+    SaveSubWindowAttributes 
+    # SaveSubWindowsAttributes # (see above note)
+    SelectionProperties
+    SelectionSummary
+    SelectionVariableSummary
+    SelectionList
+    ThresholdOpAttributes
+    # View2DAttributes # (see above note)
+    # View3DAttributes # (see above note)
+    ViewAttributes
+    ViewAxisArrayAttributes
+    ViewerClientAttributes
+    ViewerClientInformation
+    ViewerClientInformationElement
+    ViewCurveAttributes
+    WindowInformation)
+
+#######
+# RPC Objects
+#######
+
+SET(PY_GEN_RPC_OBJECTS ViewerRPC)
+
+
+#########################################################
+# Add our code gen targets
+#########################################################
+# Metadata Objects
+foreach(obj_name ${PY_GEN_METADATA_OBJECTS})
+    ADD_PYTHON_GEN_TARGET(${obj_name}
+                          ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
+                          ${CMAKE_CURRENT_SOURCE_DIR}/visitpy)
+endforeach()
+
+# State Objects
+foreach(obj_name ${PY_GEN_STATE_OBJECTS})
+    ADD_PYTHON_GEN_TARGET(${obj_name}
+                          ${VISIT_SOURCE_DIR}/common/state/
+                          ${CMAKE_CURRENT_SOURCE_DIR}/visitpy)
+endforeach()
+
+# RPC Objects
+foreach(obj_name ${PY_GEN_RPC_OBJECTS})
+    ADD_PYTHON_GEN_TARGET(${obj_name}
+                          ${VISIT_SOURCE_DIR}/viewer/rpcstate/
+                          ${CMAKE_CURRENT_SOURCE_DIR}/visitpy)
+endforeach()
+#########################################################
+# END Logic for XML Code Gen Targets
+#########################################################
+
 
 SET(COMMON_SOURCES
 common/CallbackHandlers.C
@@ -118,6 +238,7 @@ visitpy/PyavtTensorMetaData.C
 visitpy/PyavtVarMetaData.C 
 visitpy/PyavtVectorMetaData.C
 )
+
 
 SET(GENERATED_PY_SOURCES
 visitpy/PyAnimationAttributes.C 
@@ -219,6 +340,9 @@ ${PY_SOURCES}
 ${METADATA_SOURCES}
 ${GENERATED_PY_SOURCES}
 )
+if(WIN32)
+    set_target_properties(visitpy PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
+endif()
 TARGET_LINK_LIBRARIES(visitpy
 avtdbatts
 viewerrpc

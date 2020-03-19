@@ -279,24 +279,19 @@ function build_cgns
             LIBEXT="so"
         fi
     fi
+
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        cf_build_type="$cf_build_type --enable-debug"
+    fi
+
     # optionally add HDF5 and szip to the configure.
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
         H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
-            if [[ "$OPSYS" == "Darwin" ]] ; then
-                H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.$LIBEXT"
-            else
-                H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.$LIBEXT"
-            fi
+            H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.$LIBEXT"
         fi
-        if [[ "$DO_ZLIB" == "yes" ]] ; then
-            if [[ "$OPSYS" == "Darwin" ]] ; then
-                H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.$LIBEXT"
-            else
-                H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.$LIBEXT"
-            fi
-        fi
+        H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.$LIBEXT"
     fi
     if [[ "$OPSYS" == "Darwin" ]] ; then
         info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \

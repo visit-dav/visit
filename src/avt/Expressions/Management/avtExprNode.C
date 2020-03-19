@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                                avtExprNode.C                              //
@@ -45,7 +11,6 @@
 #include <ExprPipelineState.h>
 #include <avtExprNode.h>
 #include <DebugStream.h>
-#include <snprintf.h>
 
 #include <avtApplyDataBinningExpression.h>
 #include <avtApplyEnumerationExpression.h>
@@ -136,7 +101,7 @@ avtIntegerConstExpr::CreateFilters(ExprPipelineState *state)
     avtConstantCreatorExpression *f = new avtConstantCreatorExpression();
     f->SetValue(value);
     char strrep[30];
-    SNPRINTF(strrep, 30, "'%d'", value);
+    snprintf(strrep, 30, "'%d'", value);
     state->PushName(string(strrep));
     f->SetOutputVariableName(strrep);
 
@@ -167,7 +132,7 @@ avtFloatConstExpr::CreateFilters(ExprPipelineState *state)
     avtConstantCreatorExpression *f = new avtConstantCreatorExpression();
     f->SetValue(value);
     char strrep[30];
-    SNPRINTF(strrep, 30, "'%e'", value);
+    snprintf(strrep, 30, "'%e'", value);
     state->PushName(string(strrep));
     f->SetOutputVariableName(strrep);
 
@@ -306,7 +271,7 @@ avtIndexExpr::CreateFilters(ExprPipelineState *state)
 
     // Set the variable the function should output.
     char value_name[200];
-    SNPRINTF(value_name, 200, "%d", ind);
+    snprintf(value_name, 200, "%d", ind);
     string outputName = inputName + "[" + value_name + "]";
     state->PushName(outputName);
     f->SetOutputVariableName(outputName.c_str());
@@ -511,6 +476,10 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Timo Bremer, Fri Oct 28 09:09:27 PDT 2016
 //    Added merge_tree, split_tree and local_threshold.
 //
+//    Eddie Rusu, Mon Sep 30 14:49:38 PDT 2019
+//    Changed MinMax expression creation so that they construct with doMin
+//    as a construction parameter.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -631,17 +600,9 @@ avtFunctionExpr::CreateFilters(string functionName)
     if (functionName == "distance_to_best_fit_line2")
         return new avtDistanceToBestFitLineExpression(false);
     if (functionName == "min" || functionName == "minimum")
-    {
-        avtMinMaxExpression *mm = new avtMinMaxExpression;
-        mm->SetDoMinimum(true);
-        return mm;
-    }
+        return new avtMinMaxExpression(true);
     if (functionName == "max" || functionName == "maximum")
-    {
-        avtMinMaxExpression *mm = new avtMinMaxExpression;
-        mm->SetDoMinimum(false);
-        return mm;
-    }
+        return new avtMinMaxExpression(false);
     if (functionName == "geodesic_vector_quantize")
         return new avtGeodesicVectorQuantizeExpression();
     if (functionName == "color")

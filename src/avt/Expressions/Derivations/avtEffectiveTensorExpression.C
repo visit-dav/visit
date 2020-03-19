@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                       avtEffectiveTensorExpression.C                      //
@@ -99,6 +65,8 @@ avtEffectiveTensorExpression::~avtEffectiveTensorExpression()
 //    Hank Childs, Fri Jan 30 11:38:50 PST 2004
 //    Fix mistake in calculating ('4085).
 //
+//    Mark C. Miller, Mon Nov 11 14:21:38 PST 2019
+//    Added comments to try to document what this function is computing.
 // ****************************************************************************
 
 void
@@ -110,16 +78,28 @@ avtEffectiveTensorExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
         for (int i = 0 ; i < ntuples ; i++)
         {
             double *vals = in->GetTuple9(i);   
+            double s11 = vals[0], s12 = vals[1], s13 = vals[2];
+            double s21 = vals[3], s22 = vals[4], s23 = vals[5];
+            double s31 = vals[6], s32 = vals[7], s33 = vals[8];
 
-            double trace = -(vals[0] + vals[4] + vals[8]) / 3.;
-            double dev0 = vals[0] + trace;
-            double dev1 = vals[4] + trace;
-            double dev2 = vals[8] + trace;
+            // First invariant of the stress tensor
+            // aka "pressure" of incompressible fluid in motion
+            // aka "mean effective stress"
+            double trace = (s11 + s22 + s33) / 3.;
 
+            // components of the deviatoric stress
+            double dev0 = s11 - trace;
+            double dev1 = s22 - trace;
+            double dev2 = s33 - trace;
+
+            // The second invariant of the stress deviator
+            // aka "J2"
             double out2 = 0.5*(dev0*dev0 + dev1*dev1 + dev2*dev2) +
-                         vals[1]*vals[1] + vals[2]*vals[2] +
-                         vals[5]*vals[5];
+                         s12*s12 + s13*s13 + s23*s23;
+
+            // stress deviator
             out2 = sqrt(3.*out2);
+
             out->SetTuple1(i, out2);
         }
     }

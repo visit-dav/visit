@@ -19,7 +19,7 @@ def step(sim):
     keepGoing = True
     while keepGoing:
         buf = sim.p.stderr.readline()
-        print buf
+        print(buf)
         if "Command 'step'" in buf:
             keepGoing = False
 
@@ -85,7 +85,7 @@ def meshtest(sim, mesh):
     DeleteAllPlots()
     AddPlot("Pseudocolor", mesh + "/temperature")
     DrawPlots()
-    for i in xrange(20):
+    for i in range(20):
         step(sim)
         m = m + [MemorySample(sim, "Pseudocolor plot temperature iteration %d" % i)]
     DeleteAllPlots()
@@ -117,9 +117,9 @@ def PlotMemoryCurve(filename, testname):
 def TestMemoryUsage(memory, testname):
     def AllMethodsUseLessMemoryThanCopying(memory):
         numSamples = len(memory["aos_c"])
-        for i in xrange(numSamples):
+        for i in range(numSamples):
             copyMem = memory["aos_c"][i][0]
-            for k in memory.keys():
+            for k in list(memory.keys()):
                 if k != "aos_c":
                     if memory[k][i][0] > copyMem:
                         return False
@@ -130,12 +130,12 @@ def TestMemoryUsage(memory, testname):
         TestText(testname, "ERROR: Some methods used more memory than copying.")
 
 def WriteData(filename, memory):
-    print memory
+    print(memory)
     numSamples = len(memory["aos_c"])
     f = open(filename, "wt")
     M = MeshNames()
     f.write("event," + string.replace(str(M), "'", "")[1:-1] + "\n")
-    for row in xrange(numSamples):
+    for row in range(numSamples):
         s = memory["aos_c"][row][1] 
         for m in M:
             s = s + ", " + str(memory[m][row][0])
@@ -160,7 +160,7 @@ if connected:
     for mesh in M:
         m = meshtest(sim, mesh)
         f.write("# " + mesh + "\n")
-        for i in xrange(len(m)):
+        for i in range(len(m)):
             f.write("%g %g\n" % (i,m[i][0]))
         memorySamples[mesh] = m
     f.close()

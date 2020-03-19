@@ -1,40 +1,7 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 // Uncomment this line to make this plugin load array variables as
 // avtArrayMetaData objects and expressions for each of the components
 // Otherwise, this plugin will load components of the arrays as
@@ -71,7 +38,6 @@
 #include <DebugStream.h>
 #include <Expression.h>
 #include <StringHelpers.h>
-#include <snprintf.h>
 
 // This header file is last because it includes "scstd.h" (indirectly
 // through "pdb.h"), which defines min and max, which conflict with
@@ -633,7 +599,7 @@ PP_ZFileReader::ReadMaterialNamesHelper(PDBFileObject *p, const char *namregVar,
                     if(s > sptr)
                     {
                         char tmp[100]; 
-                        SNPRINTF(tmp, 100, "%d %s", nmatNames+1, sptr);
+                        snprintf(tmp, 100, "%d %s", nmatNames+1, sptr);
                         matNames.push_back(tmp);
                         ++nmatNames;
                     }
@@ -750,7 +716,7 @@ PP_ZFileReader::PopulateMaterialNames()
         for(int i = materialNames.size(); i < nMaterials; ++i)
         {
             char tmp[20];
-            SNPRINTF(tmp, 20, "%d", i + 1);
+            snprintf(tmp, 20, "%d", i + 1);
             materialNames.push_back(tmp);
         }
     }
@@ -779,7 +745,7 @@ PP_ZFileReader::PopulateMaterialNames()
         for(int j = materialNames.size(); j < nMaterials; ++j)
         {
             char tmp[20];
-            SNPRINTF(tmp, 20, "%d", j + 1);
+            snprintf(tmp, 20, "%d", j + 1);
             materialNames.push_back(tmp);
         }
 
@@ -1257,7 +1223,7 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
                         for (fd = 0; fd < numFreeDims; fd++)
                         {
                             char thisComp[10];
-                            SNPRINTF(thisComp, sizeof(thisComp), "_%03d", dimIdx[fd]);
+                            snprintf(thisComp, sizeof(thisComp), "_%03d", dimIdx[fd]);
                             compVarName += thisComp;
                         }
                         compNames.push_back(compVarName);
@@ -1270,7 +1236,7 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
                         //
 #ifdef USE_DECOMPOSE
                         char def[200];
-                        SNPRINTF(def, sizeof(def), "array_decomose(<%s>,%d)",
+                        snprintf(def, sizeof(def), "array_decomose(<%s>,%d)",
                             theVarName.c_str(), c);
                         Expression e;
                         e.SetName(compVarName);
@@ -1613,7 +1579,7 @@ PP_ZFileReader::AddRayMetaData(avtDatabaseMetaData *md)
             for (int lsr = 0; lsr < nLasers; ++lsr)
             {
                 char lasername[32];
-                SNPRINTF(lasername, 32, "laser%03d", lsr+1);
+                snprintf(lasername, 32, "laser%03d", lsr+1);
                 laserid->AddEnumNameValue(lasername, lsr+1);
             }
             md->Add(laserid);
@@ -1650,7 +1616,7 @@ PP_ZFileReader::AddRayMetaData(avtDatabaseMetaData *md)
             for (int lsr = 0; lsr < nLasers; ++lsr)
             {
                 char lasername[32];
-                SNPRINTF(lasername, 32, "laser%03d", lsr+1);
+                snprintf(lasername, 32, "laser%03d", lsr+1);
                 laserid->AddEnumNameValue(lasername, lsr+1);
             }
             md->Add(laserid);

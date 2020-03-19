@@ -1,40 +1,7 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 #include <XMLEditCodeSelectionDialog.h>
 
 #include <QCheckBox>
@@ -46,14 +13,14 @@
 // ****************************************************************************
 // Method: XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:24:29 PST 2008
@@ -68,7 +35,7 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent) :
     QDialog(parent)
 {
     QVBoxLayout *topLayout = new QVBoxLayout(this);
-    
+
     QHBoxLayout *hLayout = new QHBoxLayout();
     hLayout->setSpacing(10);
 
@@ -107,7 +74,7 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent) :
     hLayout->addWidget(pluginGroup);
 
     topLayout->addLayout(hLayout);
-    
+
     // Add some buttons
     QHBoxLayout *bLayout = new QHBoxLayout();
     bLayout->setSpacing(5);
@@ -116,9 +83,9 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent) :
     QPushButton *cancel = new QPushButton(tr("Cancel"), this);
     bLayout->addWidget(cancel);
     bLayout->addWidget(okay);
-// 
+//
     topLayout->addLayout(bLayout);
-    
+
     connect(okay, SIGNAL(clicked()), this, SLOT(accept()));
     connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
 }
@@ -126,20 +93,20 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent) :
 // ****************************************************************************
 // Method: XMLEditCodeSelectionDialog::~XMLEditCodeSelectionDialog
 //
-// Purpose: 
+// Purpose:
 //   Destructor.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:24:40 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 XMLEditCodeSelectionDialog::~XMLEditCodeSelectionDialog()
@@ -149,7 +116,7 @@ XMLEditCodeSelectionDialog::~XMLEditCodeSelectionDialog()
 // ****************************************************************************
 // Method: XMLEditCodeSelectionDialog::selectTools
 //
-// Purpose: 
+// Purpose:
 //   Static function that lets the user select the tools to invoke.
 //
 // Arguments:
@@ -157,19 +124,19 @@ XMLEditCodeSelectionDialog::~XMLEditCodeSelectionDialog()
 //   useTools    : The tools that will be used. Input/Output arg.
 //   toolEnabled : Which tools will be enabled.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 16:24:48 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
-XMLEditCodeSelectionDialog::selectTools(const QString &caption, 
+XMLEditCodeSelectionDialog::selectTools(const QString &caption,
     bool *_useTools, const bool *_toolEnabled)
 {
     XMLEditCodeSelectionDialog *inst = new XMLEditCodeSelectionDialog(0);

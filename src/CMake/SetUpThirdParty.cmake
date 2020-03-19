@@ -1,39 +1,8 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
+#****************************************************************************
 # Modifications:
 #   Eric Brugger, Tue Mar 16 12:42:01 PDT 2010
 #   I modified the script to not install libraries located in /usr/lib.
@@ -55,9 +24,9 @@
 #   didn't specify a library like TCMALLOC that we have an error situation
 #   when it does not exist.
 #
-#   Allen Sanderson, Kathleen Biagas, Thu Jan 22 08:55:21 MST 2015 
+#   Allen Sanderson, Kathleen Biagas, Thu Jan 22 08:55:21 MST 2015
 #   Added logic for headers-only installs (like boost).  Pass 'NO_LIBS'
-#   for 'libs' argument to specify a headers-only build. 
+#   for 'libs' argument to specify a headers-only build.
 #
 #   Kathleen Biagas, Fri Mar 17 09:15:37 PDT 2017
 #   Set HAVE_LIBXXX when LIBXXX_FOUND.
@@ -77,11 +46,11 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 #  assumes libs are in ${x_DIR}/${libextensiondir}
 #
 #
-#  pkg is the name used to specify the x_DIR (generally upper case name 
+#  pkg is the name used to specify the x_DIR (generally upper case name
 #  of pkg)
 #  libdirextensions are the paths beyond x_DIR where the libs may be found.
 #  incdirextension is the path beyond x_DIR where the includes may be found.
-#  libs is the list of library names for this package 
+#  libs is the list of library names for this package
 #
 #  uses path specified by pkg_DIR as base path for the files
 #
@@ -116,13 +85,12 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
     SET(lib_skip_install "VISIT_${pkg}_SKIP_INSTALL")
 
     #
-    # Zero out lib names b/c they may be hanging around from a previous 
+    # Zero out lib names b/c they may be hanging around from a previous
     # configure.
     #
     UNSET("${tp_found}")
     UNSET("${have_tp}")
     SET("${lib_var}" "")
-
     SET("${inc_dir_var}" "${base_dir_val}/${incdirextension}")
 
     IF(NOT EXISTS ${${inc_dir_var}})
@@ -223,7 +191,7 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
         IF(NOT "${${lib_dep}}" STREQUAL "")
             MESSAGE(STATUS "  Looking for dependent libraries for ${pkg}")
         ENDIF(NOT "${${lib_dep}}" STREQUAL "")
-  
+
         #
         # This alternates between a reading path & a lib from ${pkg}_LIBDEP
         #
@@ -250,7 +218,7 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
                              NO_CMAKE_SYSTEM_PATH)
                 IF(full_lib_path)
                     IF(${${lib_skip_install}})
-                        MESSAGE(STATUS "Skipping installation of ${full_lib_path}") 
+                        MESSAGE(STATUS "Skipping installation of ${full_lib_path}")
                     ELSE(${${lib_skip_install}})
                         IF(NOT "${current_lib_dir}" STREQUAL "/usr/lib")
                             THIRD_PARTY_INSTALL_LIBRARY(${full_lib_path})
@@ -278,9 +246,9 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
         IF(NOT "${${inc_dep}}" STREQUAL "")
             MESSAGE(STATUS "  Looking for dependent includes for ${pkg}")
         ENDIF()
-  
+
         FOREACH(X ${${inc_dep}})
-            MESSAGE("looking for include dependency: ${X}")
+            MESSAGE(STATUS "looking for include dependency: ${X}")
             if(EXISTS ${${X}})
                 list(APPEND ${inc_dir_var} "${${X}}")
             endif()
@@ -311,4 +279,3 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
     ENDIF()
 
 ENDFUNCTION(SET_UP_THIRD_PARTY)
-

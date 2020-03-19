@@ -24,7 +24,7 @@
 import os
 import sys
 if(not os.path.isfile("/usr/gapps/visit/data/wave.visit")):
-    print "This script requires the file wave.visit to be built in the data directory"
+    print("This script requires the file wave.visit to be built in the data directory")
     sys.exit()
 
 #

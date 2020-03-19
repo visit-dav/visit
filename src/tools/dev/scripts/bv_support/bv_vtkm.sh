@@ -242,7 +242,7 @@ function build_vtkm
     vopts="${vopts} -DVTKm_ENABLE_RENDERING:BOOL=ON"
     vopts="${vopts} -DVTKm_USE_64BIT_IDS:BOOL=OFF"
     vopts="${vopts} -DVTKm_USE_DOUBLE_PRECISION:BOOL=ON"
-    vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=Release"
+    vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
     if [[ -d $CUDA_HOME ]]; then
         echo "Building with CUDA support."
         vopts="${vopts} -DVTKm_ENABLE_CUDA:BOOL=ON"

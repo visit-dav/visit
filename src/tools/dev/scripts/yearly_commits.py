@@ -23,26 +23,26 @@ def increment_for_version(ver):
 def main(startver, endver):
     hits_per_month = {}
     count = 0
-    for v in xrange(startver, endver):
+    for v in range(startver, endver):
         k,incr = increment_for_version(v)
         if incr > 0:
-            if k in hits_per_month.keys():
+            if k in list(hits_per_month.keys()):
                 hits_per_month[k] = hits_per_month[k] + incr
             else:
                 hits_per_month[k] = incr
         count = count + 1
         if count == 10:
-            print v - startver + 1, "/", endver - startver
+            print(v - startver + 1, "/", endver - startver)
             count = 0
 
-    print "\n\nMonth  ", "Number of commits"
-    keys = hits_per_month.keys()
+    print("\n\nMonth  ", "Number of commits")
+    keys = list(hits_per_month.keys())
     keys.sort()
     for k in keys:
-        print k, hits_per_month[k]
+        print(k, hits_per_month[k])
 
 if len(sys.argv) < 3:
-    print sys.stderr << "Usage: python yearly_commits.py startver endver\n"
+    print(sys.stderr << "Usage: python yearly_commits.py startver endver\n")
     sys.exit(-1)
 
 startver = int(sys.argv[1])

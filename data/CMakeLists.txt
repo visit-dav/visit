@@ -1,39 +1,8 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
+#****************************************************************************
 # Modifications:
 #   Eric Brugger, Fri Jan 22 16:51:39 PST 2010
 #   I added the data generator unic, which generates UNIC test data.
@@ -107,10 +76,12 @@
 #
 #   Mark C. Miller, Tue Apr 16 13:11:15 PDT 2019
 #   Reduced min cmake vesion required to 3.7
-#****************************************************************************/
+#
+#   Mark C. Miller, Tue Dec 10 09:24:24 PST 2019
+#   Remove custom help target.
+#****************************************************************************
+
 CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
-CMAKE_POLICY(PUSH)
-CMAKE_POLICY(SET CMP0037 OLD) # allow defining help target
 
 IF(WIN32)
     PROJECT(VISIT_DATA)
@@ -122,7 +93,7 @@ MESSAGE(STATUS "Configuring VisIt Binary Tarball Data Targets")
 # Set up archiver executable name (7z, 7za and p7zip are common ones)
 #-----------------------------------------------------------------------------
 IF(NOT VISIT_DATA_ARCHIVER_NAME)
-    list(APPEND VISIT_DATA_ARCHIVER_NAME "7z" "7za" "p7zip")
+    list(APPEND VISIT_DATA_ARCHIVER_NAME "7z" "7za" "7zr" "p7zip")
 ENDIF()
 
 #-----------------------------------------------------------------------------
@@ -234,25 +205,13 @@ ADD_CUSTOM_COMMAND(
 ADD_CUSTOM_TARGET(list DEPENDS _archive_list)
 
 #-----------------------------------------------------------------------------
-# Define help bootstrap and associate with all (default) target so would-be
-# users are likely to stumble into it.
-#-----------------------------------------------------------------------------
-ADD_CUSTOM_TARGET(
-    _help_hint ALL VERBATIM
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "Run 'make help' for useful make targets and meanings"
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "")
-
-#-----------------------------------------------------------------------------
 # Define target for help on 7z
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_TARGET(
-    7zhelp VERBATIM
+    7z-more-help VERBATIM
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "              Help using 7z archiver/compresser"
+    COMMAND ${CMAKE_COMMAND} -E echo "             More help using 7z archiver/compresser"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "7z (or 7-Zip) is an archiving and compression tool that replaces"  
     COMMAND ${CMAKE_COMMAND} -E echo "the combination of tools like tar and gzip (.tar.gz or .tgz) and"
@@ -285,7 +244,7 @@ ADD_CUSTOM_TARGET(
 # set to old.
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_TARGET(
-    help VERBATIM
+    7z-help VERBATIM
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "               Conveninent make targets:"
@@ -309,8 +268,6 @@ ADD_CUSTOM_TARGET(
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=foodir_archive AFILES=foodir archive"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "To get more help on using the 7z archiver"
-    COMMAND ${CMAKE_COMMAND} -E echo "  make 7zhelp"
+    COMMAND ${CMAKE_COMMAND} -E echo "  make 7z-more-help"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "")
-
-CMAKE_POLICY(POP)

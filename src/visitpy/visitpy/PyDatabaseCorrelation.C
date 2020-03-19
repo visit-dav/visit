@@ -1,44 +1,9 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyDatabaseCorrelation.h>
 #include <ObserverToCallback.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyDatabaseCorrelation
@@ -78,34 +43,34 @@ PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *pref
     // Make a reference.
     const DatabaseCorrelation &correlation = *atts;
 
-    SNPRINTF(tmpStr, 1000, "name = \"%s\"\n", atts->GetName().c_str());
+    snprintf(tmpStr, 1000, "name = \"%s\"\n", atts->GetName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "numStates = %d\n", atts->GetNumStates());
+    snprintf(tmpStr, 1000, "numStates = %d\n", atts->GetNumStates());
     str += tmpStr;
     const char *method_names = "IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation";
     if(atts->GetMethod() == DatabaseCorrelation::IndexForIndexCorrelation)
         {
-             SNPRINTF(tmpStr, 1000, "method = IndexForIndexCorrelation  # %s\n", method_names);
+             snprintf(tmpStr, 1000, "method = IndexForIndexCorrelation  # %s\n", method_names);
              str += tmpStr;
         }
     else if(atts->GetMethod() == DatabaseCorrelation::StretchedIndexCorrelation)
         {
-             SNPRINTF(tmpStr, 1000, "method = StretchedIndexCorrelation  # %s\n", method_names);
+             snprintf(tmpStr, 1000, "method = StretchedIndexCorrelation  # %s\n", method_names);
              str += tmpStr;
         }
     else if(atts->GetMethod() == DatabaseCorrelation::TimeCorrelation)
         {
-             SNPRINTF(tmpStr, 1000, "method = TimeCorrelation  # %s\n", method_names);
+             snprintf(tmpStr, 1000, "method = TimeCorrelation  # %s\n", method_names);
              str += tmpStr;
         }
     else if(atts->GetMethod() == DatabaseCorrelation::CycleCorrelation)
         {
-             SNPRINTF(tmpStr, 1000, "method = CycleCorrelation  # %s\n", method_names);
+             snprintf(tmpStr, 1000, "method = CycleCorrelation  # %s\n", method_names);
              str += tmpStr;
         }
     else
         {
-             SNPRINTF(tmpStr, 1000, "method = UserDefinedCorrelation  # %s\n", method_names);
+             snprintf(tmpStr, 1000, "method = UserDefinedCorrelation  # %s\n", method_names);
              str += tmpStr;
         }
 
@@ -113,21 +78,21 @@ PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *pref
     const stringVector &databaseNames = correlation.GetDatabaseNames();
     for(i = 0; i < databaseNames.size(); ++i)
     {
-        SNPRINTF(tmpStr, 1000, "database[%ld]=%s\n", i, databaseNames[i].c_str());
+        snprintf(tmpStr, 1000, "database[%ld]=%s\n", i, databaseNames[i].c_str());
         str += tmpStr;
-        SNPRINTF(tmpStr, 1000, "    numStates=%d\n", correlation.GetDatabaseNStates()[i]);
+        snprintf(tmpStr, 1000, "    numStates=%d\n", correlation.GetDatabaseNStates()[i]);
         str += tmpStr;
         str += "    times={";
         for(j = 0; j < (size_t)correlation.GetDatabaseNStates()[i]; ++j)
         {
-            SNPRINTF(tmpStr, 1000, "%g, ", correlation.GetDatabaseTimes()[index+j]);
+            snprintf(tmpStr, 1000, "%g, ", correlation.GetDatabaseTimes()[index+j]);
             str += tmpStr;
         }
         str += "}\n";
         str += "    cycles={";
         for(j = 0; j < (size_t)correlation.GetDatabaseNStates()[i]; ++j)
         {
-            SNPRINTF(tmpStr, 1000, "%d, ", correlation.GetDatabaseCycles()[index+j]);
+            snprintf(tmpStr, 1000, "%d, ", correlation.GetDatabaseCycles()[index+j]);
             str += tmpStr;
         }
         str += "}\n";
@@ -137,42 +102,42 @@ PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *pref
         str += "    indices={";
         for(j = 0; j < (size_t)correlation.GetNumStates(); ++j)
         {
-            SNPRINTF(tmpStr, 1000, "%d, ", correlation.GetIndices()[i*correlation.GetNumStates() + j]);
+            snprintf(tmpStr, 1000, "%d, ", correlation.GetIndices()[i*correlation.GetNumStates() + j]);
             str += tmpStr;
         }
         str += "}\n";
     }
 
     {   const doubleVector &condensedTimes = atts->GetCondensedTimes();
-        SNPRINTF(tmpStr, 1000, "condensedTimes = (");
+        snprintf(tmpStr, 1000, "condensedTimes = (");
         str += tmpStr;
         for(i = 0; i < condensedTimes.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", condensedTimes[i]);
+            snprintf(tmpStr, 1000, "%g", condensedTimes[i]);
             str += tmpStr;
             if(i < condensedTimes.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &condensedCycles = atts->GetCondensedCycles();
-        SNPRINTF(tmpStr, 1000, "condensedCycles = (");
+        snprintf(tmpStr, 1000, "condensedCycles = (");
         str += tmpStr;
         for(i = 0; i < condensedCycles.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", condensedCycles[i]);
+            snprintf(tmpStr, 1000, "%d", condensedCycles[i]);
             str += tmpStr;
             if(i < condensedCycles.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

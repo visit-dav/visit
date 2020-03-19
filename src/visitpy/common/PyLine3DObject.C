@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyLine3DObject.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 #include <MapNode.h>
 
@@ -915,7 +880,6 @@ Line3DObject_print(PyObject *v, FILE *fp, int flags)
     return 0;
 }
 
-#include <snprintf.h>
 PyObject *
 PyLine3DObject_StringRepresentation(const AnnotationObject *atts)
 {
@@ -924,61 +888,61 @@ PyLine3DObject_StringRepresentation(const AnnotationObject *atts)
     const MapNode &opts = atts->GetOptions();
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "visible = 1\n");
+        snprintf(tmpStr, 1000, "visible = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "visible = 0\n");
+        snprintf(tmpStr, 1000, "visible = 0\n");
     str += tmpStr;
     if(atts->GetActive())
-        SNPRINTF(tmpStr, 1000, "active = 1\n");
+        snprintf(tmpStr, 1000, "active = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "active = 0\n");
+        snprintf(tmpStr, 1000, "active = 0\n");
     str += tmpStr;
     const double *pos= atts->GetPosition();
-    SNPRINTF(tmpStr, 1000, "point1 = (%g, %g, %g)\n", pos[0], pos[1], pos[2]);
+    snprintf(tmpStr, 1000, "point1 = (%g, %g, %g)\n", pos[0], pos[1], pos[2]);
     str += tmpStr;
     const double *pos2 = atts->GetPosition2();
-    SNPRINTF(tmpStr, 1000, "point2 = (%g, %g, %g)\n", pos2[0], pos2[1], pos2[2]);
+    snprintf(tmpStr, 1000, "point2 = (%g, %g, %g)\n", pos2[0], pos2[1], pos2[2]);
     str += tmpStr;
 
     const char *type_values[] = {"LINE", "TUBE"};
-    SNPRINTF(tmpStr, 1000, "lineType = %s  # LINE, TUBE\n", type_values[opts.GetEntry("lineType")->AsInt()]);
+    snprintf(tmpStr, 1000, "lineType = %s  # LINE, TUBE\n", type_values[opts.GetEntry("lineType")->AsInt()]);
     str += tmpStr;
 
-    SNPRINTF(tmpStr, 1000, "width = %d\n", opts.GetEntry("width")->AsInt());
+    snprintf(tmpStr, 1000, "width = %d\n", opts.GetEntry("width")->AsInt());
     str += tmpStr;
 
     const char *qual_values[] = {"LOW", "MEDIUM", "HIGH"};
-    SNPRINTF(tmpStr, 1000, "tubeQuality = %s  # LOW, MEDIUM, HIGH\n", qual_values[opts.GetEntry("tubeQuality")->AsInt()]);
+    snprintf(tmpStr, 1000, "tubeQuality = %s  # LOW, MEDIUM, HIGH\n", qual_values[opts.GetEntry("tubeQuality")->AsInt()]);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "tubeRadius = %lg\n", opts.GetEntry("tubeRadius")->AsDouble());
+    snprintf(tmpStr, 1000, "tubeRadius = %lg\n", opts.GetEntry("tubeRadius")->AsDouble());
     str += tmpStr;
 
     if(atts->GetUseForegroundForTextColor())
-        SNPRINTF(tmpStr, 1000, "useForegroundForLineColor = 1\n");
+        snprintf(tmpStr, 1000, "useForegroundForLineColor = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "useForegroundForLineColor = 0\n");
+        snprintf(tmpStr, 1000, "useForegroundForLineColor = 0\n");
     str += tmpStr;
  
     const unsigned char *color = atts->GetColor1().GetColor();
-    SNPRINTF(tmpStr, 1000, "color = (%d, %d, %d, %d)\n", int(color[0]), int(color[1]), int(color[2]), int(color[3]));
+    snprintf(tmpStr, 1000, "color = (%d, %d, %d, %d)\n", int(color[0]), int(color[1]), int(color[2]), int(color[3]));
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "opacity = %d\n", atts->GetColor1().Alpha());
+    snprintf(tmpStr, 1000, "opacity = %d\n", atts->GetColor1().Alpha());
     str += tmpStr;
 
     
-    SNPRINTF(tmpStr, 1000, "arrow1 = %d\n", opts.GetEntry("arrow1")->AsInt());
+    snprintf(tmpStr, 1000, "arrow1 = %d\n", opts.GetEntry("arrow1")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow1Resolution = %d\n", opts.GetEntry("arrow1Resolution")->AsInt());
+    snprintf(tmpStr, 1000, "arrow1Resolution = %d\n", opts.GetEntry("arrow1Resolution")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow1Radius = %lg\n", opts.GetEntry("arrow1Radius")->AsDouble());
-    SNPRINTF(tmpStr, 1000, "arrow1Height = %lg\n", opts.GetEntry("arrow1Height")->AsDouble());
+    snprintf(tmpStr, 1000, "arrow1Radius = %lg\n", opts.GetEntry("arrow1Radius")->AsDouble());
+    snprintf(tmpStr, 1000, "arrow1Height = %lg\n", opts.GetEntry("arrow1Height")->AsDouble());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow2 = %d\n", opts.GetEntry("arrow1")->AsInt());
+    snprintf(tmpStr, 1000, "arrow2 = %d\n", opts.GetEntry("arrow1")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow2Resolution = %d\n", opts.GetEntry("arrow2Resolution")->AsInt());
+    snprintf(tmpStr, 1000, "arrow2Resolution = %d\n", opts.GetEntry("arrow2Resolution")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow2Radius = %lg\n", opts.GetEntry("arrow2Radius")->AsDouble());
-    SNPRINTF(tmpStr, 1000, "arrow2Height = %lg\n", opts.GetEntry("arrow2Height")->AsDouble());
+    snprintf(tmpStr, 1000, "arrow2Radius = %lg\n", opts.GetEntry("arrow2Radius")->AsDouble());
+    snprintf(tmpStr, 1000, "arrow2Height = %lg\n", opts.GetEntry("arrow2Height")->AsDouble());
     str += tmpStr;
  
     return PyString_FromString(str.c_str());

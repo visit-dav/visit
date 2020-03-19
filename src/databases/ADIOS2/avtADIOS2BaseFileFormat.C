@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtADIOS2BaseFileFormat.C                           //
@@ -42,6 +8,7 @@
 
 #include <avtMTSDFileFormatInterface.h>
 #include <avtADIOS2BaseFileFormat.h>
+#include <ADIOS2HelperFuncs.h>
 
 #include <string>
 #include <map>
@@ -114,6 +81,44 @@ avtADIOS2BaseFileFormat::CreateInterface(const char *const *list,
     return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
 }
 
+avtFileFormatInterface *
+avtADIOS2BaseFileFormat::CreateInterfaceADIOS2(
+        const char *const *list,
+        int nList,
+        int nBlock,
+        std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader, 
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes
+        )
+{
+    int nTimestepGroups = nList / nBlock;
+    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+    for (int i = 0; i < nTimestepGroups; i++)
+    {
+        ffl[i] =  new avtMTSDFileFormat*[nBlock];
+        for (int j = 0; j < nBlock; j++)
+        {
+        cout << "----------- ADIOS Base create interface for  " 
+             << list[i*nBlock +j] 
+             << " -----------------" << endl;
+
+            if (!i && !j) 
+            {
+                ffl[i][j] =  new avtADIOS2BaseFileFormat(adios, reader, io, variables, attributes, list[i*nBlock +j]);
+            }
+            else
+            {
+                ffl[i][j] =  new avtADIOS2BaseFileFormat(list[i*nBlock +j]);
+            }
+        }
+    }
+    cout << "----------- ADIOS Base return MTSD interface " << endl;
+    return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
+}
+
+
 // ****************************************************************************
 //  Method: avtADIOS2BaseFileFormat constructor
 //
@@ -122,24 +127,6 @@ avtADIOS2BaseFileFormat::CreateInterface(const char *const *list,
 //
 // ****************************************************************************
 
-const char * sstFileName = "stream_T1.bp.sst";
-const char * sstFileName2 = "stream_T1.bp";
-
-static const string getEngineType(const string &fname)
-{
-    if (fname.find(".bp.sst") != string::npos)
-        return "SST";
-    else
-        return "BP";
-}
-
-static const string getFile(const string &fname)
-{
-    if (fname.find(".bp.sst") != string::npos)
-        return fname.substr(0, fname.size()-4);
-
-    return fname;
-}
 
 avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
     : adios(std::make_shared<adios2::ADIOS>(adios2::DebugON)),
@@ -147,18 +134,18 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
       isClosed(false),
       avtMTSDFileFormat(&filename, 1)
 {
-    engineType = getEngineType(filename);
-    io = adios2::IO(adios->DeclareIO(engineType));
-    io.SetEngine(engineType);
-    reader = io.Open(getFile(filename), adios2::Mode::Read);
+    engineName = ADIOS2Helper_GetEngineName(filename);
+    stagingMode = ADIOS2Helper_IsStagingEngine(engineName);
+    string adiosFileName = ADIOS2Helper_GetFileName(filename);
+    io = adios2::IO(adios->DeclareIO(engineName));
+    io.SetEngine(engineName);
+    reader = io.Open(adiosFileName, adios2::Mode::Read);
 
-    if (engineType == "SST")
+    if (stagingMode)
     {
         numTimeSteps = 100000;
-//        reader.BeginStep(adios2::StepMode::NextAvailable, 0.0f);
-//        reader.EndStep();
     }
-    else if (engineType == "BP")
+    else 
     {
         map<string, adios2::Params> vars = io.AvailableVariables();
         for (auto &v : vars)
@@ -171,34 +158,60 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
             }
         }
     }
-
-#if 0
-    cout<<__FILE__<<" "<<__LINE__<<" "<<filename<<" "<<getFile(filename)<<endl;
-    cout<<"engineType= "<<engineType<<endl;
-    //reader = io.Open(filename, adios2::Mode::Read);
-
-    cout<<"io.Open("<<filename<<")"<<endl;
-
-    reader.BeginStep(adios2::StepMode::NextAvailable, 0.0f);
-    variables = io.AvailableVariables();
-
-    if (variables.size() > 0)
-    {
-        auto var0 = variables.begin()->second;
-        string nsteps = var0["AvailableStepsCount"];
-        numTimeSteps = std::stoi(nsteps);
-    }
-    numTimeSteps = 1000;
-
-    cout<<"variables: "<<variables<<endl;
-    cout<<"Num Timesteps= "<<numTimeSteps<<endl;
-
-    for (auto &v : variables)
-        cout<<"Var: "<<v.first<<" :: "<<v.second<<endl;
-    reader.EndStep();
-#endif
 }
 
+avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader,
+        adios2::IO &io, 
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes, 
+        const char *filename)
+    : adios(adios),
+      numTimeSteps(1),
+      isClosed(false),
+      reader(reader),
+      io(io),
+      variables(variables),
+      avtMTSDFileFormat(&filename, 1)
+{
+    engineName = ADIOS2Helper_GetEngineName(filename);
+    stagingMode = ADIOS2Helper_IsStagingEngine(engineName);
+
+    if (stagingMode)
+    {
+        numTimeSteps = 100000;
+    }
+    else 
+    {
+        for (auto &v : variables)
+        {
+            string nsteps = v.second["AvailableStepsCount"];
+            if (!nsteps.empty())
+            {
+                numTimeSteps = std::stoi(nsteps);
+                break;
+            }
+        }
+    }
+    cout << "----------- ADIOS Base reader for " 
+         << filename << " with " << numTimeSteps 
+         << "steps -----------------" << endl;
+}
+
+avtADIOS2BaseFileFormat::~avtADIOS2BaseFileFormat()
+{
+#if MDSERVER
+    cout << "-----------\nADIOS destructor called in MDSERVER \n-----------------\n" << endl;
+#else
+    cout << "-----------\nADIOS destructor called in ENGINE \n-----------------\n" << endl;
+#endif
+    if (!isClosed)
+    {
+        cout << "-----------\nADIOS reader closes down stream \n-----------------\n" << endl;
+        reader.Close();
+    }
+    isClosed = true;
+}
 
 // ****************************************************************************
 //  Method: avtADIOS2BaseFileFormat::GetNTimesteps
@@ -254,14 +267,31 @@ avtADIOS2BaseFileFormat::FreeUpResources(void)
 void
 avtADIOS2BaseFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
-    if (engineType == "SST")
+    if (stagingMode)
     {
-        reader.BeginStep(adios2::StepMode::NextAvailable, 0.0f);
-        reader.EndStep();
+        /*
+        adios2::StepStatus status = reader.BeginStep(adios2::StepMode::Read, -1.0f);
+        if (status != adios2::StepStatus::OK)
+            return;
+#if MDSERVER
+        cout<<" MDSERVER received streaming step = "<<reader.CurrentStep()<<endl;
+#else
+        cout<<" Server populates metadata from streaming step = "<<reader.CurrentStep()<<endl;
+#endif
+        */
     }
 
     meshInfo.clear();
     variables = io.AvailableVariables();
+
+    cout<<" Server populates metadata with "<<variables.size() <<" variables."<<endl;
+
+#if MDSERVER
+    if (stagingMode)
+    {
+        reader.EndStep();
+    }
+#endif
 
     vector<pair<string,string>> vars;
 
@@ -301,8 +331,11 @@ avtADIOS2BaseFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
         AddScalarVarToMetaData(md, v.first, v.second, AVT_NODECENT);
 
 #if MDSERVER
-//    if (!isClosed)
-//        reader.Close();
+    if (!isClosed)
+    {
+        cout << "-----------\nADIOS reader closes down stream in MDSERVER \n-----------------\n" << endl;
+        reader.Close();
+    }
     isClosed = true;
 #endif
 }
@@ -395,6 +428,7 @@ avtADIOS2BaseFileFormat::GetMesh(int timestate, const char *meshname)
 vtkDataArray *
 avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
 {
+    static int prev_timestate = 0;
     cout<<"GetVar: "<<varname<<" ts= "<<timestate<<endl;
 
     if (variables.find(varname) == variables.end())
@@ -403,19 +437,38 @@ avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
     auto var = variables[varname];
     string varType = var["Type"];
 
-    if (engineType == "BP")
+    if (stagingMode)
     {
+        if (timestate != prev_timestate)
+        {
+            cout<<" release step = "<<reader.CurrentStep()<<endl;
+            reader.EndStep(); // release previous step
+            prev_timestate = timestate;
+            adios2::StepStatus status = adios2::StepStatus::NotReady;
+            while (status == adios2::StepStatus::NotReady) 
+            {
+                status = reader.BeginStep(adios2::StepMode::Read, 10.0f);
+                if (status == adios2::StepStatus::EndOfStream || 
+                    status == adios2::StepStatus::OtherError)
+                {
+                    reader.Close();
+                    //variables.clear();
+                    return NULL;
+                }
+                else if (status == adios2::StepStatus::NotReady)
+                {
+                    cout<<" still waiting for next step = "
+                        <<reader.CurrentStep()<<endl;
+                }
+            }
+            cout<<" received streaming step = "<<reader.CurrentStep()<<endl;
+        }
     }
-    else if (engineType == "SST")
-    {
-        adios2::StepStatus status = reader.BeginStep(adios2::StepMode::NextAvailable, 0.0f);
-        if (status != adios2::StepStatus::OK)
-            return NULL;
-    }
+
 
     adios2::Variable<double> v = io.InquireVariable<double>(varname);
     //cout<<"DIMS= "<<v.Shape()<<endl;
-    if (engineType == "BP")
+    if (!stagingMode)
         v.SetStepSelection({timestate, 1});
 
     size_t numVals = 1;
@@ -425,14 +478,12 @@ avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
     vector<double> buff(numVals);
     reader.Get(v, buff.data(), adios2::Mode::Sync);
 
+
     vtkDoubleArray *arr = vtkDoubleArray::New();
     arr->SetNumberOfComponents(1);
     arr->SetNumberOfTuples(numVals);
     for (int i = 0; i < numVals; i++)
         arr->SetTuple1(i, buff[i]);
-
-    if (engineType == "SST")
-        reader.EndStep();
 
     return arr;
 }

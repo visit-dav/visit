@@ -184,7 +184,7 @@ def faceNodes(faceKey):
 
 if __name__ == "__main__":
   if len(sys.argv) != 5:
-    print >> sys.stderr, "Usage: WireFrame <dbfile> <time-spec> <mesh> <keyBase>"
+    print("Usage: WireFrame <dbfile> <time-spec> <mesh> <keyBase>", file=sys.stderr)
     exit(-1)
 
   sc = SparkContext()
@@ -245,7 +245,7 @@ if __name__ == "__main__":
   # We really should 'insert' this data into the HDFS database but
   # for now, we'll just write external files from the master to cwd
   #
-  print "RuledFrame yielded %d faces and %d nodes"%(len(collectedFaces),len(collectedCoords))
+  print("RuledFrame yielded %d faces and %d nodes"%(len(collectedFaces),len(collectedCoords)))
   f = os.popen("bzip2 > RuledFrame_%s_%s_coords.txt.bz2"%(sys.argv[1],sys.argv[3]),"w")
   for c in collectedCoords:
       f.write("%s,0,%g,%g,%g\n"%(c[0],c[1][0],c[1][1],c[1][2]))

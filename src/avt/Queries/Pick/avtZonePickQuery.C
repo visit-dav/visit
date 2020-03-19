@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                              avtZonePickQuery.C                           //
@@ -98,14 +64,38 @@ avtZonePickQuery::~avtZonePickQuery()
 //  Programmer: Kathleen Bonnell
 //  Creation:   May 20, 2004 
 //
+//  Modifications:
+//      Alister Maguire, Tue Oct 22 14:01:43 MST 2019
+//      Was setting transform to m instead of invTransform. Updated
+//      to set the invTransform.
+//
 // ****************************************************************************
 
 void
 avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 {
-    transform =  m;
+    invTransform = m;
 }
 
+
+// ****************************************************************************
+//  Method: avtZonePickQuery::SetTransform
+//
+//  Purpose:
+//      Sets the transform.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Oct 22 14:01:43 MST 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtZonePickQuery::SetTransform(const avtMatrix *m)
+{
+    transform = m;
+}
 
 
 // ****************************************************************************
@@ -149,6 +139,13 @@ avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 //
 //    Matt Larsen, Mon Sep 11 10:15:00 PDT 2016
 //    Fixed issue with the wrong cell being highlighted with Mili
+//
+//    Alister Maguire, Wed Dec  4 11:26:19 MST 2019
+//    Changed the transform to invTransform (transform previously was
+//    set to be the inverse).
+//
+//    Alister Maguire, Mon Mar  9 11:01:24 PDT 2020
+//    Set the real element number so the direct database qot has access.
 //
 // ****************************************************************************
 
@@ -301,16 +298,17 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
         pickAtts.SetIncidentElements(pickAtts.GetRealIncidentElements());
     }
 
+    pickAtts.SetRealElementNumber(pickAtts.GetElementNumber());
     pickAtts.SetElementNumber(pickAtts.GetElementNumber() + cellOrigin);
     //
     // If the points of this dataset have been transformed, and we know 
     // the inverse transform matrix, transform the pick point that will 
     // be displayed in the pick info window.
     //
-    if (transform != NULL)
+    if (invTransform != NULL)
     {
         avtVector v1(pickAtts.GetPickPoint());
-        v1 = (*transform) * v1;
+        v1 = (*invTransform) * v1;
         // 
         // PickPoint is used for placing the pick letter, so set
         // this tranformed point in CellPoint instead.
@@ -347,6 +345,10 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Added avtDatAttributes arg.
 //
+//    Alister Maguire, Wed Dec  4 11:26:19 MST 2019
+//    Changed the transform to invTransform (transform previously was
+//    set to be the inverse).
+//
 // ****************************************************************************
 
 void
@@ -356,13 +358,13 @@ avtZonePickQuery::Preparation(const avtDataAttributes &)
     // Transform the point that will be used in locating the cell. 
     //
     double *cellPoint  = pickAtts.GetCellPoint();
-    if (transform != NULL)
+    if (invTransform != NULL)
     {
         //
         // Transform the intersection point back to original space.
         //
         avtVector v1(cellPoint);
-        v1 = (*transform) * v1;
+        v1 = (*invTransform) * v1;
         cellPoint[0] = v1.x;
         cellPoint[1] = v1.y;
         cellPoint[2] = v1.z;

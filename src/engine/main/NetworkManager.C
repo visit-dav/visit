@@ -1,46 +1,11 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                              NetworkManager.C                             //
 // ************************************************************************* //
 
-#include <snprintf.h>
 #include <AttributeSubject.h>
 #include <NetworkManager.h>
 #include <DataNetwork.h>
@@ -111,6 +76,8 @@
 #include <avtWholeImageCompositerNoZ.h>
 #include <avtPlot.h>
 #include <avtQueryOverTimeFilter.h>
+#include <avtTimeLoopQOTFilter.h>
+#include <avtDirectDatabaseQOTFilter.h>
 #include <avtQueryFactory.h>
 #include <avtMultiresFilter.h>
 #include <avtValueImageCompositer.h>
@@ -4861,7 +4828,7 @@ NetworkManager::ExportDatabases(const intVector &ids, const ExportDBAttributes &
             // Rig up a temporary ExportDBAttributes where we change the filename a little.
             ExportDBAttributes eAtts(atts);
             char plotid[4];
-            SNPRINTF(plotid, 4, "_%02d", int(i));
+            snprintf(plotid, 4, "_%02d", int(i));
 
             if(atts.GetAllTimes())
                 eAtts.SetFilename(filename + plotid + std::string("_") + timeSuffix + ext);
@@ -4983,7 +4950,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
     if (!GetDatabasePluginManager()->PluginAvailable(db_type))
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "Unable to load plugin \"%s\" for exporting.",
+        snprintf(msg, 1024, "Unable to load plugin \"%s\" for exporting.",
                  db_type.c_str());
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -4992,7 +4959,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
     if (info == NULL)
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "Unable to get plugin info for \"%s\".",
+        snprintf(msg, 1024, "Unable to get plugin info for \"%s\".",
                  db_type.c_str());
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -5003,7 +4970,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
     if (wrtr == NULL)
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "Unable to locate writer for \"%s\".",
+        snprintf(msg, 1024, "Unable to locate writer for \"%s\".",
                  db_type.c_str());
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -5228,57 +5195,150 @@ NetworkManager::CloneNetwork(const int id)
 //    if available.  Use it as a value to help determine where input is
 //    gathered from.
 //
+//    Alister Maguire, Mon Sep 23 12:35:44 MST 2019
+//    Refactored to handle two QOT types: DirectDatabaset and TimeLoop. 
+//
+//    Alister Maguire, Tue Oct 29 14:46:38 MST 2019
+//    Updated to perform the network cloning within this method. If we're
+//    using the TimeLoop route, use a true clone. If we're using the
+//    DirectDatabase route, create a psuedo clone by starting an entirely
+//    new network based off of the cloning target.
+//
+//    Alister Maguire, Mon Mar  9 13:31:50 PDT 2020
+//    Assume we can use the direct route if query atts say yes and there are
+//    no expressions. Also, we can use this route for screen picks.
+//
 // ****************************************************************************
 
 void
 NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
                                        const int clonedFromId)
 {
-    if (workingNet == NULL)
+    if (networkCache[clonedFromId] == NULL)
     {
         std::string error =  "Adding a filter to a non-existent network." ;
         EXCEPTION1(ImproperUseException, error);
     }
 
-    bool useActualData = true;
-    if (qA->GetQueryAtts().GetQueryInputParams().HasNumericEntry("use_actual_data"))
+    //
+    // We need to determine if we can use the direct database QOT 
+    // filter. 
+    //
+    bool useDirectDatabaseQOT = false;
+
+    if (qA->GetCanUseDirectDatabaseRoute())
     {
-        useActualData = qA->GetQueryAtts().GetQueryInputParams().GetEntry("use_actual_data")->ToBool();
+        //
+        // The query atts think that we can use this route, but we
+        // we need to make sure that the current expressions are
+        // compatible.
+        //
+        avtExpressionEvaluatorFilter *eef = 
+            dynamic_cast<avtExpressionEvaluatorFilter *> 
+            (networkCache[clonedFromId]->GetExpressionNode()->GetFilter());
+
+        if (eef != NULL)
+        {
+            useDirectDatabaseQOT = eef->CanApplyToDirectDatabaseQOT(); 
+        }
+        else
+        {
+            //
+            // Assume we're safe.
+            //
+            useDirectDatabaseQOT = true;
+        }
     }
 
-    //
-    // Determine which input the filter should use.
-    //
-    avtDataObject_p input;
-    if (useActualData ||
-        qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
-        qA->GetQueryAtts().GetName() == "Locate and Pick Node")
+    bool useActualData = false;
+    if (qA->GetQueryAtts().GetQueryInputParams().
+        HasNumericEntry("use_actual_data"))
     {
-        input = networkCache[clonedFromId]->GetPlot()->
-                GetIntermediateDataObject();
+        useActualData = qA->GetQueryAtts().GetQueryInputParams().
+            GetEntry("use_actual_data")->ToBool();
+
+        if (useActualData && useDirectDatabaseQOT)
+        {
+            useDirectDatabaseQOT = false;
+        }
     }
-    else
-    {
-        input = workingNet->GetExpressionNode()->GetOutput();
-    }
+
+    qA->SetCanUseDirectDatabaseRoute(useDirectDatabaseQOT);
 
     qA->GetQueryAtts().SetPipeIndex(networkCache[clonedFromId]->
         GetContract()->GetPipelineIndex());
 
-    if (strcmp(workingNet->GetDataSpec()->GetVariable(),
-               qA->GetQueryAtts().GetVariables()[0].c_str()) != 0)
+    avtDataObject_p input = NULL;
+
+    if (useDirectDatabaseQOT)
     {
+        //
+        // We're using the direct route. Let's start an entirely new
+        // network based off of the cloning target.
+        //
+        NetnodeDB *nndb = networkCache[clonedFromId]->GetNetDB();
+        StartNetwork(nndb->GetDB()->GetFileFormat(), 
+                     nndb->GetFilename(), 
+                     nndb->GetVarName(), 
+                     nndb->GetTime());
+
+        input = workingNet->GetExpressionNode()->GetOutput();
+
+        //
+        // We need to let the database readers know that we're asking for
+        // a specialized QOT dataset.  
+        //
         avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
             qA->GetQueryAtts().GetVariables()[0].c_str());
+        dr->SetRetrieveQOTDataset(true);
+        dr->SetQOTAtts(qA);
+
+        //
+        // Add the remaining variables as secondaries. 
+        //
+        stringVector vars = qA->GetQueryAtts().GetVariables();
+        for (int i = 1; i < vars.size(); ++i)
+        {
+            dr->AddSecondaryVariable(vars[i].c_str());
+        }
 
         workingNet->SetDataSpec(dr);
     }
+    else
+    {
+        //
+        // A screen pick requires that we use actual data.
+        //
+        if (qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
+            qA->GetQueryAtts().GetName() == "Locate and Pick Node")
+        {
+            useActualData = true;
+        }
 
-    //
-    // Pass down the current SILRestriction (via UseSet) in case the query
-    // needs to make use of this information.
-    //
-    avtSILRestriction_p silr = workingNet->GetDataSpec()->GetRestriction();
+        //
+        // We're using the TimeLoop route. This means we need a true clone.
+        //
+        CloneNetwork(clonedFromId);
+
+        if (useActualData)
+        {
+            input = networkCache[clonedFromId]->GetPlot()->
+                    GetIntermediateDataObject();
+        }
+        else
+        {
+            input = workingNet->GetExpressionNode()->GetOutput();
+        }
+
+        if (strcmp(workingNet->GetDataSpec()->GetVariable(),
+                        qA->GetQueryAtts().GetVariables()[0].c_str()) != 0)
+        {
+            avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
+                qA->GetQueryAtts().GetVariables()[0].c_str());
+
+            workingNet->SetDataSpec(dr);
+        }
+    }
 
     //
     //  Create a transition node so that the new filter will receive
@@ -5291,23 +5351,40 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 
     workingNet->AddNode(trans);
 
+    avtQueryOverTimeFilter *qotFilter = NULL;
+
+    if (useDirectDatabaseQOT)
+    {
+        qotFilter = new avtDirectDatabaseQOTFilter(qA);
+    }
+    else
+    {
+        qotFilter = new avtTimeLoopQOTFilter(qA);
+
+        //
+        // Pass down the current SILRestriction (via UseSet) in case the query
+        // needs to make use of this information.
+        //
+        avtSILRestriction_p silr = workingNet->GetDataSpec()->GetRestriction();
+        if (*silr != NULL)
+        {
+            const SILRestrictionAttributes *silAtts = silr->MakeAttributes();
+            qotFilter->SetSILAtts(silAtts);
+            delete silAtts;
+        }
+    }
+
     //
     // Put a QueryOverTimeFilter right after the transition to handle
     // the query.
     //
-    avtQueryOverTimeFilter *qf = new avtQueryOverTimeFilter(qA);
-    if (*silr != NULL)
-    {
-        const SILRestrictionAttributes *silAtts = silr->MakeAttributes();
-        qf->SetSILAtts(silAtts);
-        delete silAtts;
-    }
-    NetnodeFilter *qfilt = new NetnodeFilter(qf, "QueryOverTime");
-    qfilt->GetInputNodes().push_back(trans);
+    NetnodeFilter *nodeFilter = new NetnodeFilter(qotFilter, "QueryOverTime");
+    nodeFilter->GetInputNodes().push_back(trans);
 
-    workingNetnodeList.push_back(qfilt);
-    workingNet->AddNode(qfilt);
+    workingNetnodeList.push_back(nodeFilter);
+    workingNet->AddNode(nodeFilter);
 }
+
 
 // ****************************************************************************
 //  Method:  NetworkManager::NewVisWindow
@@ -5581,7 +5658,7 @@ NetworkManager::FormatDebugImage(char *out, size_t outlen, const char *prefix)
 const
 {
   static int numDumps = 0;
-  SNPRINTF(out, outlen, "%s_%03d_%03d", prefix, PAR_Rank(), numDumps);
+  snprintf(out, outlen, "%s_%03d_%03d", prefix, PAR_Rank(), numDumps);
   numDumps++;
 }
 
@@ -6649,7 +6726,7 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
     if(!viswinMap.count(windowID))
     {
         char invalid[256];
-        SNPRINTF(invalid, sizeof(invalid),
+        snprintf(invalid, sizeof(invalid),
                  "Attempt to render on invalid window id=%d", windowID);
         EXCEPTION1(ImproperUseException, invalid);
     }
@@ -7508,7 +7585,7 @@ NetworkManager::StopTimer()
     int rows,cols;
     viswin->GetSize(rows, cols);
 
-    SNPRINTF(msg, 1023, "NM::Render %lld cells %d pixels",
+    snprintf(msg, 1023, "NM::Render %lld cells %d pixels",
              renderState.cellCountTotal, rows*cols);
     visitTimer->StopTimer(renderState.timer, msg);
     renderState.timer = -1;

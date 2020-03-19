@@ -1,56 +1,42 @@
-# Module automatically read in from construct_build_visit
-# Insert header and comments
-
-
-#initialize all the variables
 function bv_visit_initialize
 {
     export DO_VISIT="yes"
 }
 
-#enable the module for install
 function bv_visit_enable
 { 
     DO_VISIT="yes"
 }
 
-#disable the module for install
 function bv_visit_disable
 {
     DO_VISIT="no"
 }
 
-#add any dependency with comma separation
 function bv_visit_depends_on
 {
     echo ""
 }
 
-#add information about how to get library..
 function bv_visit_info
 {
-    echo "Setting VisIt info..."
+    export VISIT_MD5_CHECKSUM=""
+    export VISIT_SHA256_CHECKSUM=""
 }
 
-#print variables used by this module
 function bv_visit_print
 {
     printf "%s%s\n" "VISIT_FILE=" "${VISIT_FILE}"
     printf "%s%s\n" "VISIT_VERSION=" "${VISIT_VERSION}"
-    #printf "%s%s\n" "VISIT_COMPATIBILITY_VERSION=" "${VISIT_COMPATIBILITY_VERSION}"
-    #printf "%s%s\n" "VISIT_BUILD_DIR=" "${VISIT_BUILD_DIR}"
 }
 
-#print how to install and uninstall module..
 function bv_visit_print_usage
 {
     printf "%-20s %s [%s]\n" "--visit"   "Build VisIt" "$DO_VISIT"
 }
 
-#values to add to host profile, write to $HOSTCONF
 function bv_visit_host_profile
 {
-    #Add code to write values to variable $HOSTCONF
     if [[ "$DO_VISIT" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -58,7 +44,6 @@ function bv_visit_host_profile
     fi
 }
 
-#prepare the module and check whether it is built or is ready to be built.
 function bv_visit_ensure_built_or_ready
 {
     # Check-out the latest git sources, before building VisIt
@@ -69,10 +54,26 @@ function bv_visit_ensure_built_or_ready
             # Print a dialog screen
             info "GIT clone of visit ($GIT_ROOT_PATH) . . ."
             if [[ "$DO_REVISION" == "yes" && "$GITREVISION" != "" ]] ; then
-                # FIXME: Actually get the specified revision.
+                # Get the specified revision.
                 git clone $GIT_ROOT_PATH
-            else
+                cd visit
+                git checkout $GITREVISION
+                cd ..
+            elif [[ "$TRUNK_BUILD" == "yes" ]] ; then
+                # Get the trunk version
                 git clone $GIT_ROOT_PATH
+            elif [[ "$RC_BUILD" == "yes" ]] ; then
+                # Get the RC version
+                git clone $GIT_ROOT_PATH
+                cd visit
+                git checkout ${VISIT_VERSION:0:3}RC
+                cd ..
+            elif [[ "$TAGGED_BUILD" == "yes" ]] ; then
+                # Get the tagged version
+                git clone $GIT_ROOT_PATH
+                cd visit
+                git checkout v${VISIT_VERSION}
+                cd ..
             fi
             if [[ $? != 0 ]] ; then
                 warn "Unable to build VisIt. GIT clone failed."
@@ -112,14 +113,11 @@ function bv_visit_dry_run
 }
 
 
-#print what the module will do for building
 function bv_visit_print_build_command
 {
-    #print the build command..
     echo "visit has no build commands set"
 }
 
-# Modify the makefiles that cmake generated.
 function bv_visit_modify_makefiles
 {
     # NOTE: We are inside the VisIt src directory when this function is called.
@@ -132,12 +130,6 @@ function bv_visit_modify_makefiles
                 sed '/LDFLAGS/s/$/ -Wl,-dylib_file,\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib:\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib/' > Make.tmp
             mv -f databases/Shapefile/Makefile databases/Shapefile/Makefile.orig
             mv -f Make.tmp databases/Shapefile/Makefile
-            if [[ "$DO_CCMIO" == "yes" ]] ; then
-                cat databases/CCM/Makefile | \
-                    sed '/LDFLAGS/s/$/ -Wl,-dylib_file,\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib:\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib/' > Make.tmp
-                mv -f databases/CCM/Makefile databases/CCM/Makefile.orig
-                mv -f Make.tmp databases/CCM/Makefile
-            fi
         fi 
         if (( ${VER%%.*} < 8 )) ; then
             info "Patching VisIt . . ."
@@ -176,13 +168,6 @@ function bv_visit_modify_makefiles
                avt/Expressions/Makefile.orig
             mv -f Make.tmp avt/Expressions/Makefile
         fi
-    elif [[ "$OPSYS" == "SunOS" ]]; then
-        # Some Solaris systems hang when compiling Fluent when optimizations
-        # are on.  Turn optimizations off.
-        info "Patching VisIt . . ."
-        cat databases/Fluent/Makefile | sed '/CXXFLAGS/s/$/ -O0/g' > Make.tmp
-        mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
-        mv -f Make.tmp databases/Fluent/Makefile
     fi
 
     if [[ "$BUILD_VISIT_BGQ" == "yes" ]] ; then
@@ -307,7 +292,7 @@ function build_visit
 
     # No real need to do this as it is defined on the cmake line BUT
     # Users may rebuild visit with updated git
-    cp ${START_DIR}/${HOSTCONF} config-site
+    cp ${START_DIR}/${HOSTCONF} ../src/config-site
 
     #
     # Call cmake
@@ -383,12 +368,31 @@ function build_visit
     # Build VisIt
     #
     info "Building VisIt . . . (~50 minutes)"
+    if [[ "${BUILD_SPHINX}" == "yes" ]] ; then
+        $MAKE $MAKE_OPT_FLAGS manuals
+        if [[ $? != 0 ]] ; then
+            warn "Building the VisIt manuals failed.  Continuing"
+        fi
+    fi
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "VisIt build failed.  Giving up"
         return 1
     fi
-    warn "All indications are that VisIt successfully built."
+    warn "All indications are that VisIt was successfully built."
+
+    #
+    # Package VisIt
+    #
+    info "Packaging VisIt ... (~10 minutes)"
+    $MAKE $MAKE_OPT_FLAGS package
+    if [[ $? != 0 ]] ; then
+        warn "VisIt package failed.  Giving up"
+        return 1
+    fi
+    mv visit*.*.tar.gz ../..
+    cp ../src/tools/dev/scripts/visit-install ../..
+    warn "All indications are that VisIt was successfully packaged."
 
     #
     # Install VisIt
@@ -399,7 +403,7 @@ function build_visit
             warn "VisIt installation failed.  Giving up"
             return 1
         fi
-        warn "All indications are that VisIt successfully installed."
+        warn "All indications are that VisIt was successfully installed."
     fi
 
     #
@@ -429,22 +433,6 @@ function bv_visit_is_installed
     return 0
 }
 
-function bv_patch_2_5_0
-{
-
-    if [[ -e visit2.5.0 ]]; then
-        info "apply patch to ModelFit operator"
-        patch -f -p0 visit2.5.0/src/operators/ModelFit/CMakeLists.txt <<\EOF
-24d23
-< QT_WRAP_CPP(GModelFitOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
-94a94
->     QT_WRAP_CPP(GModelFitOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
-EOF
-    fi
-
-}
-
-#the build command..
 function bv_visit_build
 {
     #
@@ -462,20 +450,14 @@ function bv_visit_build
         #
         # Output the message indicating that we are finished.
         #
-        info "Finished building VisIt."
+        info "Finished creating a VisIt distribution."
         info
-        info "You many now try to run VisIt by cd'ing into the"
-        info "$VISIT_BUILD_DIR/bin directory and invoking \"visit\""
+        info "This created a tar file called visitVERSION.ARCH.tar.gz,"
+        info "where VERSION is the version number, and ARCH is the"
+        info "operating system and architecure."
         info
-        info "To create a binary distribution tarball from this build, cd to"
-        info "${START_DIR}/${VISIT_BUILD_DIR}"
-        info "then enter: \"make package\""
-        info
-        info "This will produce a tarball called visitVERSION.ARCH.tar.gz, where"
-        info "VERSION is the version number, and ARCH is the OS architecure."
-        info
-        info "To install the above tarball in a directory called \"INSTALL_DIR_PATH\""
-        info "enter: tools/dev/scripts/visit-install VERSION ARCH INSTALL_DIR_PATH"
+        info "To install the above tar file in a directory called \"INSTALL_DIR_PATH\""
+        info "enter: ./visit-install VERSION ARCH INSTALL_DIR_PATH"
         info
         info "If you run into problems, contact visit-users@ornl.gov."
     else
@@ -484,5 +466,10 @@ function bv_visit_build
         else
             info "Finished with Errors"
         fi
+    fi
+
+    if [[ $VISIT_BUILD_MODE == "Debug" ]]; then
+        info "Debug build mode was specified. The default build mode for VisIt is Release."
+        info "To build VisIt in Debug mode, pass -DCMAKE_BUILD_TYPE:STRING=Debug to VisIt's cmake configure command."
     fi
 }

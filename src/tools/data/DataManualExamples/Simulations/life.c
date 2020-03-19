@@ -1,3 +1,7 @@
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 /******************************************************************************
  * Game of Life demo example for in-situ
  * Written by Jean M Favre, Swiss National Supercomputer Center

@@ -1,44 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                              avtScatterPlot.C                             //
-// ************************************************************************* // 
+// ************************************************************************* //
 
 #include <avtScatterPlot.h>
 
@@ -70,7 +36,7 @@
 
 avtScatterPlot::avtScatterPlot() : avtPlot(), atts()
 {
-    filter = NULL; 
+    filter = NULL;
     colorsInitialized = false;
     fgColor[0] = fgColor[1] = fgColor[2] = 0.;
 
@@ -84,7 +50,7 @@ avtScatterPlot::avtScatterPlot() : avtPlot(), atts()
     //
     // This is to allow the legend to be reference counted so the behavior can
     // still access it after the plot is deleted.  The legend cannot be
-    // reference counted all of the time since we need to know that it is a 
+    // reference counted all of the time since we need to know that it is a
     // VariableLegend.
     //
     varLegendRefPtr = varLegend;
@@ -131,7 +97,7 @@ avtScatterPlot::~avtScatterPlot()
 //  Purpose:
 //    Call the constructor.
 //
-//  Programmer:  Brad Whitlock 
+//  Programmer:  Brad Whitlock
 //  Creation:    Tue Nov 2 22:10:12 PST 2004
 //
 // ****************************************************************************
@@ -173,7 +139,7 @@ avtScatterPlot::SetScaling(int mode, double skew)
        avtLUT->SetSkewFactor(skew);
        glyphMapper->SetLUT(avtLUT->GetSkewLookupTable());
     }
-    else 
+    else
     {
        glyphMapper->SetLUT(avtLUT->GetLookupTable());
     }
@@ -182,14 +148,14 @@ avtScatterPlot::SetScaling(int mode, double skew)
 // ****************************************************************************
 // Method: avtScatterPlot::SetLimitsMode
 //
-// Purpose: 
+// Purpose:
 //   Sets whether min/max limits are on.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 14 14:03:12 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -230,14 +196,14 @@ avtScatterPlot::SetLimitsMode()
         limitsMode = LM_USER_LIMITS;
         if (userMin >= userMax)
         {
-            EXCEPTION1(InvalidLimitsException, false); 
+            EXCEPTION1(InvalidLimitsException, false);
         }
         else
         {
             glyphMapper->SetMin(userMin);
             glyphMapper->SetMax(userMax);
         }
-    } 
+    }
     else if (minFlag)
     {
         limitsMode = LM_USER_LIMITS;
@@ -275,13 +241,13 @@ avtScatterPlot::SetLimitsMode()
     // Set the range in the legend.
     varLegend->SetRange(userMin, userMax);
 
-    // 
+    //
     // Perform error checking if log scaling is to be used.
-    // 
+    //
     if (mode == 1 && ((minFlag && min <= 0) || (maxFlag && max <= 0.)))
     {
-        EXCEPTION1(InvalidLimitsException, true); 
-    } 
+        EXCEPTION1(InvalidLimitsException, true);
+    }
     varLegend->SetScaling(mode, skew);
 
     //
@@ -293,7 +259,7 @@ avtScatterPlot::SetLimitsMode()
 // ****************************************************************************
 // Method: avtScatterPlot::GetColorInformation
 //
-// Purpose: 
+// Purpose:
 //   Since the roles of each variable in this plot can be varied, this
 //   routine figures out which variable is playing the color role and
 //   returns information about it.
@@ -379,7 +345,7 @@ avtScatterPlot::GetColorInformation(std::string &colorString,
 // ****************************************************************************
 // Method: avtScatterPlot::SetAtts
 //
-// Purpose: 
+// Purpose:
 //   This method is called when we set the plot's attributes.
 //
 // Arguments:
@@ -392,7 +358,7 @@ avtScatterPlot::GetColorInformation(std::string &colorString,
 //    Brad Whitlock, Wed Jul 20 13:26:13 PST 2005
 //    I made the pointSize in the atts be used for to set the point size for
 //    points, which is not the same as what's used for Box, Axis, Icosahedra.
-//   
+//
 //    Kathleen Bonnell, Mon Jan 17 18:13:11 MST 2011
 //    Consider InvertColorTable flag when setting updateColors.
 //
@@ -408,8 +374,8 @@ avtScatterPlot::SetAtts(const AttributeGroup *a)
 
     // See if the colors will need to be updated.
     bool updateColors = (!colorsInitialized) ||
-         (atts.GetColorTableName() != newAtts->GetColorTableName()) || 
-         (atts.GetInvertColorTable() != newAtts->GetInvertColorTable()); 
+         (atts.GetColorTableName() != newAtts->GetColorTableName()) ||
+         (atts.GetInvertColorTable() != newAtts->GetInvertColorTable());
 
     needsRecalculation =
         atts.ChangesRequireRecalculation(*(const ScatterAttributes*)a);
@@ -548,8 +514,8 @@ avtScatterPlot::SetVarName(const char *name)
 //  Arguments:
 //      legendOn     true if the legend should be turned on, false otherwise.
 //
-//  Programmer: Brad Whitlock 
-//  Creation:   Tue Nov 2 22:10:12 PST 2004 
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Nov 2 22:10:12 PST 2004
 //
 // ****************************************************************************
 
@@ -569,7 +535,7 @@ avtScatterPlot::SetLegend(bool legendOn)
 // ****************************************************************************
 // Method: avtScatterPlot::SetColorTable
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the color table is changed.
 //
 // Arguments:
@@ -595,7 +561,7 @@ avtScatterPlot::SetColorTable(const char *ctName)
     bool invert = atts.GetInvertColorTable();
 
     if (atts.GetColorTableName() == "Default")
-        return avtLUT->SetColorTable(NULL, namesMatch, false, invert); 
+        return avtLUT->SetColorTable(NULL, namesMatch, false, invert);
     else
         return avtLUT->SetColorTable(ctName, namesMatch, false, invert);
 }
@@ -610,7 +576,7 @@ avtScatterPlot::SetColorTable(const char *ctName)
 //  Returns:    The mapper for this plot.
 //
 //  Programmer: Brad Whitlock
-//  Creation:   Tue Nov 2 22:10:12 PST 2004 
+//  Creation:   Tue Nov 2 22:10:12 PST 2004
 //
 // ****************************************************************************
 
@@ -659,7 +625,7 @@ avtScatterPlot::ApplyOperators(avtDataObject_p input)
     filter->SetInput(dob);
     dob = filter->GetOutput();
 
-    return dob; 
+    return dob;
 }
 
 
@@ -693,7 +659,7 @@ avtScatterPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //  Method: avtScatterPlot::CustomizeBehavior
 //
 //  Purpose:
-//      Customizes the behavior of the output.  
+//      Customizes the behavior of the output.
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Nov 2 22:10:12 PST 2004
@@ -746,8 +712,8 @@ avtScatterPlot::TargetTopologicalDimension(void)
 //
 //  Returns:    True if using this color will require the plot to be redrawn.
 //
-//  Programmer: Brad Whitlock 
-//  Creation:   September 26, 2001 
+//  Programmer: Brad Whitlock
+//  Creation:   September 26, 2001
 //
 //  Modifications:
 //
@@ -762,7 +728,7 @@ avtScatterPlot::SetForegroundColor(const double *fg)
     {
        if (fgColor[0] != fg[0] || fgColor[1] != fg[1] || fgColor[2] != fg[2])
        {
-           retval = true; 
+           retval = true;
        }
     }
     fgColor[0] = fg[0];
@@ -778,7 +744,7 @@ avtScatterPlot::SetForegroundColor(const double *fg)
 // ****************************************************************************
 // Method: avtScatterPlot::SetPointGlyphSize
 //
-// Purpose: 
+// Purpose:
 //   Sets the point glyph size into the mapper.
 //
 // Programmer: Brad Whitlock
@@ -831,12 +797,12 @@ avtScatterPlot::Equivalent(const AttributeGroup *a)
 //  Creation:   Tue Nov 2 22:10:12 PST 2004
 //
 // ****************************************************************************
- 
+
 void
 avtScatterPlot::ReleaseData(void)
 {
     avtPlot::ReleaseData();
- 
+
     if (filter != NULL)
         filter->ReleaseData();
 }
@@ -844,7 +810,7 @@ avtScatterPlot::ReleaseData(void)
 // ****************************************************************************
 // Method: avtScatterPlot::EnhanceSpecification
 //
-// Purpose: 
+// Purpose:
 //   Enhance the data specification so all of the required variables are
 //   read from the database.
 //
@@ -996,7 +962,7 @@ avtScatterPlot::GetExtraInfoForPick()
             var2Name = var1Name;
         else
             addVars.push_back(var2Name);
-          
+
         if (varRole == ScatterAttributes::Coordinate0)
             xvar = var2Name;
         else if (varRole == ScatterAttributes::Coordinate1)
@@ -1056,3 +1022,22 @@ avtScatterPlot::GetExtraInfoForPick()
 
     return extraPickInfo;
 }
+
+
+// ****************************************************************************
+//  Method: avtScatterPlot::PlotHasBeenGlyphed
+//
+//  Purpose:
+//    Returns whether or not this plot has had point glyphs applied.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   October 31, 2019 
+//
+// ****************************************************************************
+
+bool
+avtScatterPlot::PlotHasBeenGlyphed()
+{
+    return (atts.GetPointType() != Point && atts.GetPointType() != Sphere);
+}
+

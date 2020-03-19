@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                          avtFileFormatInterface.C                         //
@@ -44,6 +10,14 @@
 
 #include <avtFileFormat.h>
 #include <DebugStream.h>
+#include <ImproperUseException.h>
+
+#include <vtkFloatArray.h>
+#include <vtkPolyData.h>
+#include <vtkPoints.h>
+#include <vtkDataArray.h>
+
+#include <QueryOverTimeAttributes.h>
 
 
 using     std::vector;
@@ -447,4 +421,412 @@ avtFileFormatInterface::SetStrictMode(bool strictMode)
         avtFileFormat *ff = GetFormat(i);
         ff->SetStrictMode(strictMode);
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtFileFormatInterface::GetCycles
+//
+//  Purpose:
+//      Retrieve all available cycles (to be implemented by children).
+//
+//  Arguments:
+//      unnamed int      Domain. 
+//      unnamed vector   Vector to store cycles. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:46:43 MST 2019 
+//
+// ****************************************************************************
+
+void
+avtFileFormatInterface::GetCycles(int, intVector &)
+{
+    debug2 << "Trying to retrieve cycles, but it's not implemented..." << endl;
+}
+
+
+// ****************************************************************************
+//  Method: avtFileFormatInterface::GetTimes
+//
+//  Purpose:
+//      Retrieve all available times (to be implemented by children).
+//
+//  Arguments:
+//      unnamed int      Domain. 
+//      unnamed vector   Vector to store times. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:46:43 MST 2019 
+//
+// ****************************************************************************
+
+void
+avtFileFormatInterface::GetTimes(int, doubleVector &)
+{
+    debug2 << "Trying to retrieve times, but it's not implemented..." << endl;
+}
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::GetQOTMesh
+//
+//  Purpose:
+//      Retrieve a query over time mesh. Currently, this is a reduced 
+//      point mesh such that each point is located at position (x, 0, 0),
+//      where x is the timestep, simulation time, or cycle (whichever was
+//      requested).
+//
+//      All of the mesh's future arrays should be the same size (number of
+//      requested timesteps), and each will be a variable/element pair
+//      through time. The value located at position 'i' of every array
+//      should correspond to the value of the array's variable/element 
+//      pair associated with the timestep/time/cycle from the x value
+//      of the 'ith' point. 
+//
+//  Arguments:
+//      QOTAtts    The query over time attributes. 
+//      domain     The domain to query. 
+//      tsRange    The timestep range. 
+//      tsStride   The timestep stride. 
+//
+//  Returns:
+//      A query over time mesh. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Tue Sep 24 11:15:10 MST 2019 
+//
+//  Modifications
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
+                                   int domain,
+                                   int *tsRange,
+                                   int tsStride)
+{
+    QueryOverTimeAttributes::TimeType tType = QOTAtts->GetTimeType();
+
+    int startT = tsRange[0];
+    int stopT  = tsRange[1];
+
+    //
+    // We want to always include the last time step. In cases where this
+    // doesn't occur naturally, we need to manually add it. 
+    //
+    bool addLastStep = ((stopT - startT) % tsStride == 0.0) ? false : true;
+
+    //
+    // First, let's make sure this timestep range is valid. 
+    //
+    intVector cycles;
+    GetCycles(domain, cycles);
+    int numTS = cycles.size();
+
+    if (startT < 0 || startT >= numTS ||
+        stopT < 0 || stopT >= numTS ||
+        startT > stopT)
+    {
+        char msg[256]; 
+        snprintf(msg, 256, "Invalid timestep range requested.");
+        EXCEPTION1(ImproperUseException, msg);
+    }
+
+    int numPoints = (int) ceil((float)(stopT - startT) / 
+        (float) tsStride) + 1;
+
+    doubleVector xCoords;
+    xCoords.reserve(numPoints);
+
+    switch (tType)
+    {
+        case QueryOverTimeAttributes::Cycle:
+        {
+            for (int i = startT; i <= stopT; i += tsStride)
+            {
+                xCoords.push_back((double) cycles[i]);
+            }
+
+            if (addLastStep)
+            {
+                xCoords.push_back((double) cycles[stopT]);
+            }
+
+            break;
+        }
+        case QueryOverTimeAttributes::DTime:
+        {
+            doubleVector times;
+            GetTimes(domain, times);
+
+            for (int i = startT; i <= stopT; i += tsStride)
+            {
+                xCoords.push_back((double) times[i]);
+            }
+
+            if (addLastStep)
+            {
+                xCoords.push_back((double) times[stopT]);
+            }
+
+            break;
+        }
+        case QueryOverTimeAttributes::Timestep:
+        {
+            for (int i = startT; i <= stopT; i += tsStride)
+            {
+                xCoords.push_back((double) i);
+            }
+
+            if (addLastStep)
+            {
+                xCoords.push_back((double) stopT);
+            }
+
+            break;
+        }
+        default:
+        {
+            char msg[256]; 
+            snprintf(msg, 256, "Unknown time type requested.");
+            EXCEPTION1(ImproperUseException, msg);
+        }
+    }
+
+    vtkPolyData *polyData = vtkPolyData::New();
+    vtkPoints *points     = vtkPoints::New();
+    points->Allocate(numPoints);
+
+    for (int i = 0; i < numPoints; ++i)
+    {
+        points->InsertNextPoint(xCoords[i], 0.0, 0.0);
+    }
+
+    polyData->SetPoints(points);
+    points->Delete();
+
+    return (vtkDataSet *) polyData;
+}
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::GetQOTVar
+//
+//  Purpose:
+//      Retrieve a query over time variable. 
+//      This will produce an array that contains the values of a single 
+//      element/variable pair through time. Each index 'i' of the array will
+//      correspond with the 'ith' timestep. 
+//
+//  Arguments:
+//      domain       The domain to read the variable from. 
+//      varPath      The variable path to retrieve. 
+//      element      The element to retrieve. 
+//      tsRange      The timestep range. 
+//      tsStride     The timestep stride. 
+//
+//  Returns:
+//      A query over time variable. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Tue Sep 24 11:15:10 MST 2019
+//
+//  Modifications
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtFileFormatInterface::GetQOTVar(int domain,
+                                  const char *varPath,
+                                  int element,
+                                  int *tsRange,
+                                  int tsStride)
+{
+    int startT = tsRange[0];
+    int stopT  = tsRange[1];
+
+    //
+    // We want to always include the last time step. In cases where this
+    // doesn't occur naturally, we need to manually add it. 
+    //
+    bool addLastStep = ((stopT - startT) % tsStride == 0.0) ? false : true;
+    int numTuples    = (int) ceil((float)(stopT - startT) / 
+        (float) tsStride) + 1;
+
+    vtkFloatArray *spanArray = vtkFloatArray::New();
+    spanArray->SetNumberOfTuples(numTuples);
+    spanArray->SetNumberOfComponents(1);
+
+    //
+    // Iterate over the requested time states and retrieve the requested
+    // var/element pair. 
+    //
+    int tupIdx = 0;
+    for (int ts = startT; ts <= stopT; ts += tsStride, ++tupIdx)
+    {
+        //
+        // Activate the current timestep and retrieve our variable. 
+        //
+        TRY
+        {
+            ActivateTimestep(ts);
+            vtkFloatArray *allValues = (vtkFloatArray *) 
+                GetVar(ts, domain, varPath);
+
+            float targetVal = allValues->GetTuple1(element);
+            spanArray->SetTuple1(tupIdx, targetVal);
+
+            allValues->Delete();
+        }
+        CATCH2(VisItException, e)
+        {
+            spanArray->SetTuple1(tupIdx, 
+                std::numeric_limits<float>::quiet_NaN());
+        }
+        ENDTRY
+    }
+
+    if (addLastStep)
+    {
+        TRY
+        {
+            ActivateTimestep(stopT);
+            vtkFloatArray *allValues = (vtkFloatArray *) 
+                GetVar(stopT, domain, varPath);
+
+            float targetVal = allValues->GetTuple1(element);
+            spanArray->SetTuple1(tupIdx, targetVal);
+
+            allValues->Delete();
+        }
+        CATCH2(VisItException, e)
+        {
+            spanArray->SetTuple1(tupIdx, 
+                std::numeric_limits<float>::quiet_NaN());
+        }
+        ENDTRY
+    }
+
+    return (vtkDataArray *) spanArray;
+}
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::GetQOTVectorVar
+//
+//  Purpose:
+//      Retrieve a query over time vector variable. 
+//      This will produce an array that contains the values of a single 
+//      element/variable pair through time. Each index 'i' of the array will
+//      correspond with the 'ith' timestep. 
+//
+//  Arguments:
+//      domain       The domain to read the variable from. 
+//      varPath      The variable path to retrieve. 
+//      vDim         The dimension of the vector. 
+//      element      The element to retrieve. 
+//      tsRange      The timestep range. 
+//      tsStride     The timestep stride. 
+//
+//  Returns:
+//      A query over time vector variable. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    
+//
+//  Modifications
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtFileFormatInterface::GetQOTVectorVar(int domain,
+                                        const char *varPath,
+                                        int vDim,
+                                        int element,
+                                        int *tsRange,
+                                        int tsStride)
+{
+    int startT = tsRange[0];
+    int stopT  = tsRange[1];
+
+    //
+    // We want to always include the last time step. In cases where this
+    // doesn't occur naturally, we need to manually add it. 
+    //
+    bool addLastStep = ((stopT - startT) % tsStride == 0.0) ? false : true;
+    int numTuples    = (int) ceil((float)(stopT - startT) / 
+        (float) tsStride) + 1;
+
+    //
+    // VisIt ids begin at 0, but the interface ids start at 1. 
+    // Account for this before retrieving. 
+    //
+    long int vecPos  = element * vDim;
+
+    vtkFloatArray *spanArray = vtkFloatArray::New();
+    spanArray->SetNumberOfComponents(vDim);
+    spanArray->SetNumberOfTuples(numTuples);
+
+    double *targetVec = new double[vDim];
+    double *NaNVec    = new double[vDim];
+
+    for (int i = 0; i < vDim; ++i)
+    {
+        targetVec[i] = 0.0;
+        NaNVec[i]    = std::numeric_limits<float>::quiet_NaN();
+    }
+
+    //
+    // Iterate over the requested time states and retrieve the requested vars
+    // and elements. 
+    //
+    int tupIdx = 0;
+    for (int ts = startT; ts <= stopT; ts += tsStride, ++tupIdx)
+    {
+        //
+        // Activate the current timestep and retrieve our variable. 
+        //
+        TRY
+        {
+            ActivateTimestep(ts);
+            vtkFloatArray *allValues = (vtkFloatArray *) 
+                GetVectorVar(ts, domain, varPath);
+
+            allValues->GetTuple(element, targetVec);
+            spanArray->SetTuple(tupIdx, targetVec);
+
+            allValues->Delete();
+        }
+        CATCH2(VisItException, e)
+        {
+            spanArray->SetTuple(tupIdx, NaNVec);
+        }
+        ENDTRY
+    }
+
+    if (addLastStep) 
+    {
+        TRY
+        {
+            ActivateTimestep(stopT);
+            vtkFloatArray *allValues = (vtkFloatArray *) 
+                GetVectorVar(stopT, domain, varPath);
+
+            allValues->GetTuple(element, targetVec);
+            spanArray->SetTuple(tupIdx, targetVec);
+
+            allValues->Delete();
+        }
+        CATCH2(VisItException, e)
+        {
+            spanArray->SetTuple(tupIdx, NaNVec);
+        }
+        ENDTRY
+    }
+
+    delete [] targetVec;
+    delete [] NaNVec;
+
+    return (vtkDataArray *) spanArray;
 }

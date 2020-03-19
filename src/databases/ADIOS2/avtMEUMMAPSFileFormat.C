@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtMEUMMAPSFileFormat.C                           //
@@ -42,6 +8,7 @@
 
 #include <avtMTMDFileFormatInterface.h>
 #include <avtMEUMMAPSFileFormat.h>
+#include <ADIOS2HelperFuncs.h>
 
 #include <string>
 #include <map>
@@ -63,14 +30,49 @@ using namespace std;
 bool
 avtMEUMMAPSFileFormat::Identify(const char *fname)
 {
+    bool retval = false;
+    string engineName = ADIOS2Helper_GetEngineName(fname);
+    string fileName   = ADIOS2Helper_GetFileName(fname);
+    bool stagingMode  = ADIOS2Helper_IsStagingEngine(engineName);
+
     adios2::ADIOS adios;
     adios2::IO io(adios.DeclareIO("ReadBP"));
-    adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
+    io.SetEngine(engineName);
+    adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
+    adios2::StepStatus status =
+        reader.BeginStep(adios2::StepMode::Read, -1.0f);
+    if (status == adios2::StepStatus::OK)
+    {
+        //std::cout<<" Identifier for MEUMAPPS received streaming step = "<<reader.CurrentStep()<<endl;
 
-    std::map<std::string, adios2::Params> variables, attributes;
-    variables = io.AvailableVariables();
-    attributes = io.AvailableAttributes();
+        std::map<std::string, adios2::Params> variables, attributes;
+        variables = io.AvailableVariables();
+        attributes = io.AvailableAttributes();
 
+        int afind = 0;
+        for (auto it = attributes.begin(); it != attributes.end(); it++)
+        {
+            if (it->first == "app" && it->second["Value"] == "\"meumapps\"")
+                afind++;
+        }
+
+        int vfind = 0;
+        vector<string> reqVars = {"Nx", "Ny", "dx", "dy", "dz"};
+        for (auto vi = variables.begin(); vi != variables.end(); vi++)
+            if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
+                vfind++;
+
+        retval = (afind == 1 && vfind==reqVars.size());
+        reader.EndStep();
+    }
+    reader.Close();
+    return retval;
+}
+
+bool avtMEUMMAPSFileFormat::IdentifyADIOS2(
+                    std::map<std::string, adios2::Params> &variables,
+                    std::map<std::string, adios2::Params> &attributes)
+{
     int afind = 0;
     for (auto it = attributes.begin(); it != attributes.end(); it++)
     {
@@ -84,7 +86,7 @@ avtMEUMMAPSFileFormat::Identify(const char *fname)
         if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
             vfind++;
 
-    return afind == 1 && vfind==reqVars.size();
+    return (afind == 1 && vfind==reqVars.size());
 }
 
 avtFileFormatInterface *
@@ -97,6 +99,34 @@ avtMEUMMAPSFileFormat::CreateInterface(const char *const *list,
     for (int i = 0 ; i < nTimestepGroups ; i++)
         ffl[i] = new avtMEUMMAPSFileFormat(list[i*nBlock]);
 
+    return new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
+}
+
+avtFileFormatInterface *
+avtMEUMMAPSFileFormat::CreateInterfaceADIOS2(
+        const char *const *list,
+        int nList,
+        int nBlock,
+        std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader,
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes
+        )
+{
+    int nTimestepGroups = nList / nBlock;
+    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
+    for (int i = 0; i < nTimestepGroups; i++)
+    {
+        if (!i)
+        {
+            ffl[i] =  new avtMEUMMAPSFileFormat(adios, reader, io, variables, attributes, list[i*nBlock]);
+        }
+        else
+        {
+            ffl[i] =  new avtMEUMMAPSFileFormat(list[i*nBlock]);
+        }
+    }
     return new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
 }
 
@@ -118,8 +148,8 @@ avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(const char *filename)
     reader = io.Open(filename, adios2::Mode::Read);
     variables = io.AvailableVariables();
     auto attributes = io.AvailableAttributes();
-    for (auto &a : attributes)
-        cout<<"Attr: "<<a.first<<" "<<a.second<<endl;
+//    for (auto &a : attributes)
+//        cout<<"Attr: "<<a.first<<" "<<a.second<<endl;
 
     if (variables.size() > 0)
     {
@@ -128,8 +158,8 @@ avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(const char *filename)
         numTimeSteps = std::stoi(nsteps);
     }
 
-    for (auto &v : variables)
-        cout<<"Var: "<<v.first<<endl;
+//    for (auto &v : variables)
+//        cout<<"Var: "<<v.first<<endl;
 
     origin = {0,0,0};
     spacing.push_back(std::stof(variables["dx"]["Value"]));
@@ -140,9 +170,43 @@ avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(const char *filename)
     meshSz.push_back(std::stoi(variables["Nz"]["Value"]) + 1);
 
     dT = std::stof(variables["dt"]["Value"]);
-    cout<<"NT= "<<numTimeSteps<<endl;
+//    cout<<"NT= "<<numTimeSteps<<endl;
 }
 
+avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader,
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes,
+        const char *filename)
+    : adios(adios),
+      reader(reader),
+      io(io),
+      numTimeSteps(1),
+      avtMTMDFileFormat(filename),
+      variables(variables)
+{
+    if (variables.size() > 0)
+    {
+        auto var0 = variables.begin()->second;
+        string nsteps = var0["AvailableStepsCount"];
+        numTimeSteps = std::stoi(nsteps);
+    }
+
+//    for (auto &v : variables)
+//        cout<<"Var: "<<v.first<<endl;
+
+    origin = {0,0,0};
+    spacing.push_back(std::stof(variables["dx"]["Value"]));
+    spacing.push_back(std::stof(variables["dy"]["Value"]));
+    spacing.push_back(std::stof(variables["dz"]["Value"]));
+    meshSz.push_back(std::stoi(variables["Nx"]["Value"]) + 1);
+    meshSz.push_back(std::stoi(variables["Ny"]["Value"]) + 1);
+    meshSz.push_back(std::stoi(variables["Nz"]["Value"]) + 1);
+
+    dT = std::stof(variables["dt"]["Value"]);
+//    cout<<"NT= "<<numTimeSteps<<endl;
+}
 
 // ****************************************************************************
 //  Method: avtMEUMMAPSFileFormat::FreeUpResources
@@ -198,7 +262,7 @@ avtMEUMMAPSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
     }
 
     AddMeshToMetaData(md, "mesh", AVT_RECTILINEAR_MESH, NULL, numBlocks, 0, 3, 3);
-    cout<<"numblocks= "<<numBlocks<<endl;
+//    cout<<"numblocks= "<<numBlocks<<endl;
 }
 
 
@@ -240,7 +304,7 @@ avtMEUMMAPSFileFormat::GetMesh(int ts, int domain, const char *meshname)
     int iy1 = (i1/nz) % ny;
     int iz1 = i1/(ny*nz);
 
-    cout<<"GetMesh: "<<domain<<" "<<info.Start<<" "<<info.Count<<" ("<<ix0<<" "<<iy0<<" "<<iz0<<") ("<<ix1<<" "<<iy1<<" "<<iz1<<")"<<endl;
+//    cout<<"GetMesh: "<<domain<<" "<<info.Start<<" "<<info.Count<<" ("<<ix0<<" "<<iy0<<" "<<iz0<<") ("<<ix1<<" "<<iy1<<" "<<iz1<<")"<<endl;
 
     int dims[3] = {ix1-ix0, iy1-iy0, iz1-iz0};
 
@@ -317,7 +381,7 @@ avtMEUMMAPSFileFormat::GetMesh(int ts, int domain, const char *meshname)
 vtkDataArray *
 avtMEUMMAPSFileFormat::GetVar(int ts, int domain, const char *varname)
 {
-    cout<<"GetVar: "<<varname<<endl;
+//    cout<<"GetVar: "<<varname<<endl;
 
     if (variables.find(varname) == variables.end())
         return NULL;
@@ -330,8 +394,8 @@ avtMEUMMAPSFileFormat::GetVar(int ts, int domain, const char *varname)
     if (varType == "double")
     {
         adios2::Variable<double> v = io.InquireVariable<double>(varname);
-        cout<<"DIMS= "<<v.Shape()<<endl;
-        cout<<variables[varname]<<endl;
+//        cout<<"DIMS= "<<v.Shape()<<endl;
+//        cout<<variables[varname]<<endl;
 
         v.SetSelection(adios2::Box<adios2::Dims>({0}, v.Shape()));
 

@@ -3,6 +3,8 @@ PROJECT(PlainText_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(PlainText)
+
 SET(COMMON_SOURCES
 PlainTextPluginInfo.C
 PlainTextCommonPluginInfo.C

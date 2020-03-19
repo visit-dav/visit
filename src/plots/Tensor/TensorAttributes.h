@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #ifndef TENSORATTRIBUTES_H
 #define TENSORATTRIBUTES_H
@@ -55,12 +21,23 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class TensorAttributes : public AttributeSubject
 {
 public:
+    enum LimitsMode
+    {
+        OriginalData,
+        CurrentPlot
+    };
+    enum GlyphLocation
+    {
+        AdaptsToMeshResolution,
+        UniformInSpace
+    };
+
     // These constructors are for objects of this class
     TensorAttributes();
     TensorAttributes(const TensorAttributes &obj);
@@ -86,41 +63,68 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectTensorColor();
     void SelectColorTableName();
+    void SelectTensorColor();
 
     // Property setting methods
+    void SetGlyphLocation(GlyphLocation glyphLocation_);
     void SetUseStride(bool useStride_);
-    void SetStride(int stride_);
     void SetNTensors(int nTensors_);
+    void SetStride(int stride_);
+    void SetOrigOnly(bool origOnly_);
+    void SetLimitsMode(LimitsMode limitsMode_);
+    void SetMinFlag(bool minFlag_);
+    void SetMin(double min_);
+    void SetMaxFlag(bool maxFlag_);
+    void SetMax(double max_);
+    void SetColorByEigenValues(bool colorByEigenValues_);
+    void SetColorTableName(const std::string &colorTableName_);
+    void SetInvertColorTable(bool invertColorTable_);
+    void SetTensorColor(const ColorAttribute &tensorColor_);
+    void SetUseLegend(bool useLegend_);
     void SetScale(double scale_);
     void SetScaleByMagnitude(bool scaleByMagnitude_);
     void SetAutoScale(bool autoScale_);
-    void SetColorByEigenvalues(bool colorByEigenvalues_);
-    void SetUseLegend(bool useLegend_);
-    void SetTensorColor(const ColorAttribute &tensorColor_);
-    void SetColorTableName(const std::string &colorTableName_);
-    void SetInvertColorTable(bool invertColorTable_);
+    void SetAnimationStep(int animationStep_);
 
     // Property getting methods
+    GlyphLocation        GetGlyphLocation() const;
     bool                 GetUseStride() const;
-    int                  GetStride() const;
     int                  GetNTensors() const;
-    double               GetScale() const;
-    bool                 GetScaleByMagnitude() const;
-    bool                 GetAutoScale() const;
-    bool                 GetColorByEigenvalues() const;
-    bool                 GetUseLegend() const;
-    const ColorAttribute &GetTensorColor() const;
-          ColorAttribute &GetTensorColor();
+    int                  GetStride() const;
+    bool                 GetOrigOnly() const;
+    LimitsMode           GetLimitsMode() const;
+    bool                 GetMinFlag() const;
+    double               GetMin() const;
+    bool                 GetMaxFlag() const;
+    double               GetMax() const;
+    bool                 GetColorByEigenValues() const;
     const std::string    &GetColorTableName() const;
           std::string    &GetColorTableName();
     bool                 GetInvertColorTable() const;
+    const ColorAttribute &GetTensorColor() const;
+          ColorAttribute &GetTensorColor();
+    bool                 GetUseLegend() const;
+    double               GetScale() const;
+    bool                 GetScaleByMagnitude() const;
+    bool                 GetAutoScale() const;
+    int                  GetAnimationStep() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
+    // Enum conversion functions
+    static std::string LimitsMode_ToString(LimitsMode);
+    static bool LimitsMode_FromString(const std::string &, LimitsMode &);
+protected:
+    static std::string LimitsMode_ToString(int);
+public:
+    static std::string GlyphLocation_ToString(GlyphLocation);
+    static bool GlyphLocation_FromString(const std::string &, GlyphLocation &);
+protected:
+    static std::string GlyphLocation_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -130,40 +134,57 @@ public:
 
     // User-defined methods
     bool ChangesRequireRecalculation(const TensorAttributes &obj);
+    double GetAnimationScale() const;
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_useStride = 0,
-        ID_stride,
+        ID_glyphLocation = 0,
+        ID_useStride,
         ID_nTensors,
+        ID_stride,
+        ID_origOnly,
+        ID_limitsMode,
+        ID_minFlag,
+        ID_min,
+        ID_maxFlag,
+        ID_max,
+        ID_colorByEigenValues,
+        ID_colorTableName,
+        ID_invertColorTable,
+        ID_tensorColor,
+        ID_useLegend,
         ID_scale,
         ID_scaleByMagnitude,
         ID_autoScale,
-        ID_colorByEigenvalues,
-        ID_useLegend,
-        ID_tensorColor,
-        ID_colorTableName,
-        ID_invertColorTable,
+        ID_animationStep,
         ID__LAST
     };
 
 private:
+    int            glyphLocation;
     bool           useStride;
-    int            stride;
     int            nTensors;
+    int            stride;
+    bool           origOnly;
+    int            limitsMode;
+    bool           minFlag;
+    double         min;
+    bool           maxFlag;
+    double         max;
+    bool           colorByEigenValues;
+    std::string    colorTableName;
+    bool           invertColorTable;
+    ColorAttribute tensorColor;
+    bool           useLegend;
     double         scale;
     bool           scaleByMagnitude;
     bool           autoScale;
-    bool           colorByEigenvalues;
-    bool           useLegend;
-    ColorAttribute tensorColor;
-    std::string    colorTableName;
-    bool           invertColorTable;
+    int            animationStep;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define TENSORATTRIBUTES_TMFS "biidbbbbasb"
+#define TENSORATTRIBUTES_TMFS "ibiibibdbdbsbabdbbi"
 
 #endif

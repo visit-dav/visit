@@ -1,6 +1,6 @@
 function bv_zlib_initialize
 {
-    export DO_ZLIB="no"
+    export DO_ZLIB="yes"
 }
 
 function bv_zlib_enable
@@ -22,13 +22,13 @@ function bv_zlib_depends_on
 
 function bv_zlib_info
 {
-    export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.8"}
-    export ZLIB_FILE=${ZLIB_FILE:-"zlib-${ZLIB_VERSION}.tar.gz"}
+    export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.11"}
+    export ZLIB_FILE=${ZLIB_FILE:-"zlib-${ZLIB_VERSION}.tar.xz"}
     export ZLIB_COMPATIBILITY_VERSION=${ZLIB_COMPATIBILITY_VERSION:-"1.2"}
-    export ZLIB_URL=${ZLIB_URL:-https://wci.llnl.gov/codes/zlib/zlib-${ZLIB_VERSION}}
+    export ZLIB_URL=${ZLIB_URL:-https://www.zlib.net}
     export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-${ZLIB_VERSION}"}
-    export ZLIB_MD5_CHECKSUM="44d667c142d7cda120332623eab69f40"
-    export ZLIB_SHA256_CHECKSUM="36658cb768a54c1d4dec43c3116c27ed893e88b02ecfcb44f2166f9c0b7f2a0d"
+    export ZLIB_MD5_CHECKSUM="85adef240c5f370b308da8c938951a68"
+    export ZLIB_SHA256_CHECKSUM="4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066"
 }
 
 function bv_zlib_print
@@ -46,34 +46,36 @@ function bv_zlib_print_usage
 
 function bv_zlib_host_profile
 {
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## ZLIB" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo \
-            "VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR \${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH})" \
-            >> $HOSTCONF
-    fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## ZLIB" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "SETUP_APP_VERSION(ZLIB $ZLIB_VERSION)" >> $HOSTCONF
+    echo \
+        "VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR \${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH})" \
+        >> $HOSTCONF
+}
+
+function bv_zlib_initialize_vars
+{
+    export VISIT_ZLIB_DIR=${VISIT_ZLIB_DIR:-"$VISITDIR/zlib/${ZLIB_VERSION}/${VISITARCH}"}
+    export ZLIB_LIBRARY_DIR="${VISIT_ZLIB_DIR}/lib"
+    export ZLIB_INCLUDE_DIR="${VISIT_ZLIB_DIR}/include"
+    export ZLIB_LIBRARY="${ZLIB_LIBRARY_DIR}/libz.${SO_EXT}"
 }
 
 function bv_zlib_ensure
 {
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        ensure_built_or_ready "zlib" $ZLIB_VERSION $ZLIB_BUILD_DIR $ZLIB_FILE $ZLIB_URL
-        if [[ $? != 0 ]] ; then
-            ANY_ERRORS="yes"
-            DO_ZLIB="no"
-            error "Unable to build ZLIB.  ${ZLIB_FILE} not found."
-        fi
+    ensure_built_or_ready "zlib" $ZLIB_VERSION $ZLIB_BUILD_DIR $ZLIB_FILE $ZLIB_URL
+    if [[ $? != 0 ]] ; then
+        ANY_ERRORS="yes"
+        error "Unable to build ZLIB.  ${ZLIB_FILE} not found."
     fi
 }
 
 function bv_zlib_dry_run
 {
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        echo "Dry run option not set for zlib."
-    fi
+    echo "Dry run option not set for zlib."
 }
 
 # *************************************************************************** #
@@ -107,12 +109,18 @@ function build_zlib
         STATICARGS=""
     fi
 
-    info "env CXX=$CXX_COMPILER CC=$C_COMPILER ./configure \
-        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATICARGS"
+    info "env CXX=$CXX_COMPILER CC=$C_COMPILER \
+         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
+         CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+         ./configure \
+        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATIC_ARGS"
 
     # Call configure
-    env CXX=$CXX_COMPILER CC=$C_COMPILER ./configure \
-        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATICARGS
+    env CXX=$CXX_COMPILER CC=$C_COMPILER \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" \
+        CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+        ./configure \
+        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATIC_ARGS
 
     if [[ $? != 0 ]] ; then
         warn "ZLIB configure failed.  Giving up"
@@ -167,17 +175,15 @@ function bv_zlib_is_installed
 function bv_zlib_build
 {
     cd "$START_DIR"
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        check_if_installed "zlib" $ZLIB_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping ZLIB build.  ZLIB is already installed."
-        else
-            info "Building ZLIB (~1 minute)"
-            build_zlib
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install ZLIB.  Bailing out."
-            fi
-            info "Done building ZLIB"
+    check_if_installed "zlib" $ZLIB_VERSION
+    if [[ $? == 0 ]] ; then
+        info "Skipping ZLIB build.  ZLIB is already installed."
+    else
+        info "Building ZLIB (~1 minute)"
+        build_zlib
+        if [[ $? != 0 ]] ; then
+            error "Unable to build or install ZLIB.  Bailing out."
         fi
+        info "Done building ZLIB"
     fi
 }

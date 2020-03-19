@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtLAMMPSFileFormat.C                           //
@@ -66,7 +32,7 @@ bool
 avtLAMMPSFileFormat::Identify(const char *fname)
 {
     shared_ptr<adios2::ADIOS> adios = std::make_shared<adios2::ADIOS>(adios2::DebugON);
-    adios2::IO io = adios2::IO(adios->DeclareIO("ReadBP"));
+    adios2::IO io = adios2::IO(adios->DeclareIO("ReadBPLAMMPS"));
     io.SetEngine("BP");
     adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
     auto attributes = io.AvailableAttributes();
@@ -82,7 +48,29 @@ avtLAMMPSFileFormat::Identify(const char *fname)
     {
         isLAMMPS = false;
     }
+    reader.Close();
     return isLAMMPS;
+}
+
+bool avtLAMMPSFileFormat::IdentifyADIOS2(
+                    std::map<std::string, adios2::Params> &variables,
+                    std::map<std::string, adios2::Params> &attributes)
+{
+    int vfind = 0;
+    vector<string> reqVars = {"atoms", "natoms", "ntimestep"};
+
+    for (auto vi = variables.begin(); vi != variables.end(); vi++)
+        if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
+            vfind++;
+
+    int afind = 0;
+    vector<string> reqAttrs = {"LAMMPS/dump_style", "LAMMPS/num_ver", "LAMMPS/version"};
+
+    for (auto ai = attributes.begin(); ai != attributes.end(); ai++)
+        if (std::find(reqAttrs.begin(), reqAttrs.end(), ai->first) != reqAttrs.end())
+            afind++;
+
+    return (vfind == reqVars.size() && afind == reqAttrs.size());
 }
 
 avtFileFormatInterface *
@@ -97,6 +85,36 @@ avtLAMMPSFileFormat::CreateInterface(const char *const *list,
         ffl[i] =  new avtMTSDFileFormat*[nBlock];
         for (int j = 0; j < nBlock; j++)
             ffl[i][j] =  new avtLAMMPSFileFormat(list[i*nBlock +j]);
+    }
+    return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
+}
+
+avtFileFormatInterface *
+avtLAMMPSFileFormat::CreateInterfaceADIOS2(
+        const char *const *list,
+        int nList,
+        int nBlock,
+        std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader,
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes
+        )
+{
+    int nTimestepGroups = nList / nBlock;
+    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+    for (int i = 0; i < nTimestepGroups; i++)
+    {
+        ffl[i] =  new avtMTSDFileFormat*[nBlock];
+        for (int j = 0; j < nBlock; j++)
+            if (!i && !j)
+            {
+                ffl[i][j] =  new avtLAMMPSFileFormat(adios, reader, io, variables, attributes, list[i*nBlock +j]);
+            }
+            else
+            {
+                ffl[i][j] =  new avtLAMMPSFileFormat(list[i*nBlock +j]);
+            }
     }
     return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
 }
@@ -146,6 +164,39 @@ avtLAMMPSFileFormat::avtLAMMPSFileFormat(const char *filename)
         times[i] = (double)tbuff[i];
 }
 
+
+
+avtLAMMPSFileFormat::avtLAMMPSFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader,
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes,
+        const char *filename)
+    : adios(adios),
+      reader(reader),
+      io(io),
+      numTimeSteps(1),
+      currentTimestep(-1),
+      numAtoms(-1),
+      numColumns(-1),
+      avtMTSDFileFormat(&filename, 1),
+      variables(variables),
+      attributes(attributes)
+{
+    string columnsStr = attributes["columns"]["Value"];
+    numColumns = std::stoi(attributes["columns"]["Elements"]);
+    GenerateTableOffsets(columnsStr);
+
+    numTimeSteps = std::stoi(variables["atoms"]["AvailableStepsCount"]);
+
+    times.resize(numTimeSteps);
+    vector<uint64_t> tbuff(numTimeSteps);
+    adios2::Variable<uint64_t> t = io.InquireVariable<uint64_t>("ntimestep");
+    t.SetStepSelection({0, numTimeSteps});
+    reader.Get(t, tbuff.data(), adios2::Mode::Sync);
+    for (int i = 0; i < numTimeSteps; i++)
+        times[i] = (double)tbuff[i];
+}
 // ****************************************************************************
 //  Method: avtADIOS2FileFormat::FreeUpResources
 //

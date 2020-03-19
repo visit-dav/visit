@@ -3,6 +3,8 @@ PROJECT(Blueprint_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(Blueprint)
+
 SET(COMMON_SOURCES
 BlueprintPluginInfo.C
 BlueprintCommonPluginInfo.C

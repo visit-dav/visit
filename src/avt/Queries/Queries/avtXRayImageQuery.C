@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <avtXRayImageQuery.h>
 
@@ -56,7 +22,6 @@
 #include <vectortypes.h>
 
 #include <visitstream.h>
-#include <snprintf.h>
 
 #include <DebugStream.h>
 #include <TimingsManager.h>
@@ -977,7 +942,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 //
                 // Create the file base name and increment the family number.
                 //
-                SNPRINTF(baseName, 512, "output%04d.", iFileFamily);
+                snprintf(baseName, 512, "output%04d.", iFileFamily);
                 if (iFileFamily < 9999) iFileFamily++;
 
                 //
@@ -986,7 +951,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 // the next file base name in the sequence.
                 //
                 char fileName[512];
-                SNPRINTF(fileName, 512, "%s00.%s", baseName, exts[outputType]);
+                snprintf(fileName, 512, "%s00.%s", baseName, exts[outputType]);
 
                 ifstream ifile(fileName);
                 if (!ifile.fail() && iFileFamily < 9999)
@@ -996,7 +961,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
             else
             {
-                SNPRINTF(baseName, 512, "output");
+                snprintf(baseName, 512, "output");
             }
         }
 
@@ -1102,21 +1067,21 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     
             if (numBins == 1 && outputType < 4)
             {
-                SNPRINTF(buf, 512, "The x ray image query results were "
+                snprintf(buf, 512, "The x ray image query results were "
                          "written to the file %s00.%s\n", baseName,
                          exts[outputType]);
             }
             else
                 if (outputType < 4)
                 {
-                    SNPRINTF(buf, 512, "The x ray image query results were "
+                    snprintf(buf, 512, "The x ray image query results were "
                         "written to the files %s00.%s - %s%02d.%s\n",
                         baseName, exts[outputType], baseName, numBins - 1,
                         exts[outputType]);
                 }
                 else
                 {
-                    SNPRINTF(buf, 512, "The x ray image query results were "
+                    snprintf(buf, 512, "The x ray image query results were "
                         "written to the files %s00.%s - %s%02d.%s\n",
                         baseName, exts[outputType], baseName, 2*numBins - 1,
                         exts[outputType]);
@@ -1175,7 +1140,7 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
         {
             if (dataSets[i]->GetPointData()->GetArray(absVarName.c_str()) != NULL)
             {
-                SNPRINTF(msg,256, "Variable %s is node-centered, but "
+                snprintf(msg,256, "Variable %s is node-centered, but "
                          "it must be zone-centered for this query.",
                          absVarName.c_str());
                 
@@ -1196,7 +1161,7 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
             if (dataSets[i]->GetPointData()->GetArray(emisVarName.c_str())
                 != NULL)
             {
-                SNPRINTF(msg,256, "Variable %s is node-centered, but "
+                snprintf(msg,256, "Variable %s is node-centered, but "
                          "it must be zone-centered for this query.",
                          emisVarName.c_str());
                 
@@ -1238,7 +1203,7 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
     int maxNsets = UnifyMaximumValue(nsets);
     if(maxNsets <= 0)
     {
-        SNPRINTF(msg, 256, "Variables %s and %s resulted in no data being selected.", absVarName.c_str(), emisVarName.c_str());
+        snprintf(msg, 256, "Variables %s and %s resulted in no data being selected.", absVarName.c_str(), emisVarName.c_str());
         EXCEPTION1(VisItException, msg);
     }
 }

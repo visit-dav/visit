@@ -57,7 +57,7 @@ SiloCommonPluginInfo::SetReadOptions(DBOptionsAttributes *opts)
                 else
                 {
                     debug1 << "\" to Never" << endl;
-                    opts->SetEnum(SILO_RDOPT_IGNORE_SEXTS, 2); // Never 
+                    opts->SetEnum(SILO_RDOPT_IGNORE_SEXTS, 2); // Never
                 }
                 opts->SetEnumStrings(SILO_RDOPT_IGNORE_SEXTS, defaultReadOptions->GetEnumStrings(SILO_RDOPT_IGNORE_SEXTS));
             }
@@ -85,7 +85,7 @@ SiloCommonPluginInfo::SetReadOptions(DBOptionsAttributes *opts)
                 else
                 {
                     debug1 << "\" to Never" << endl;
-                    opts->SetEnum(SILO_RDOPT_IGNORE_DEXTS, 2); // Never 
+                    opts->SetEnum(SILO_RDOPT_IGNORE_DEXTS, 2); // Never
                 }
                 opts->SetEnumStrings(SILO_RDOPT_IGNORE_DEXTS, defaultReadOptions->GetEnumStrings(SILO_RDOPT_IGNORE_DEXTS));
             }

@@ -44,7 +44,7 @@ def TestLength(testname):
 
 def ComputeStates(nStates, stateIncrement):
     lastState = nStates - 1
-    states = range(0, nStates, stateIncrement)
+    states = list(range(0, nStates, stateIncrement))
     if(states[-1] != lastState):
         states = states  + [lastState]
     return states

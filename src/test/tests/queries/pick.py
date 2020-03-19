@@ -222,8 +222,21 @@
 #    Alister Maguire, Mon Aug 20 12:45:25 PDT 2018
 #    Added a test for node highlight. 
 #
+#    Alister Maguire, Tue May 21 13:10:05 PDT 2019
+#    Updated tests that use mili to adhere to the plugin changes. 
+#
+#    Alister Maguire, Thu Sep 12 15:54:36 PDT 2019
+#    Add test for highlighting a zone picked by global id. 
+#
+#    Alister Maguire, Thu Jan  2 15:16:53 PST 2020
+#    Added test for translated zone highlights.
+#
 # ----------------------------------------------------------------------------
+from __future__ import print_function
+
+
 RequiredDatabasePlugin(("Boxlib2D","SAMRAI","Mili"))
+defaultAtts = GetPickAttributes()
 
 def Pick3DTo2D():
     # Testing pick on 3d plots projected to 2d via Slice and Cone operators
@@ -1138,7 +1151,7 @@ def PickBigSilMat():
 def PickOnionPeel2():
     #From defect VisIt00003981, onionpeel and window ACTUAL_EXTENTS 
     #pick not working
-    print tests_path("queries","pickonionpeel.session"), 0,silo_data_path("curv3d.silo")
+    print(tests_path("queries","pickonionpeel.session"), 0,silo_data_path("curv3d.silo"))
     RestoreSessionWithDifferentSources(tests_path("queries","pickonionpeel.session"), 0,
                                        silo_data_path("curv3d.silo"))
     vars = "default"
@@ -1492,13 +1505,13 @@ def PickAfterEngineCrashed():
 
             # Kill all of the engines in the pid list.
             if len(pids) < 1:
-                print >>sys.stderr, "Killing all engines because we could not get a list of pids"
+                print("Killing all engines because we could not get a list of pids", file=sys.stderr)
                 # TODO_WINDOWS THIS WONT WORK ON WINDOWS
                 os.system("killall engine_ser")
                 os.system("killall engine_par")
             else:
                 for pid in pids:
-                    print >>sys.stderr, "Killing engine %s" % pid
+                    print("Killing engine %s" % pid, file=sys.stderr)
                     # TODO_WINDOWS THIS WONT WORK ON WINDOWS
                     os.system("kill -9 %s" % pid)
         except:
@@ -2557,14 +2570,14 @@ def PickTensors():
 
 def PickMili():
     #'7144
-    OpenDatabase(data_path("mili_test_data/m_plot.mili"))
+    OpenDatabase(data_path("mili_test_data/single_proc/m_plot.mili"))
 
-    AddPlot("Pseudocolor", "derived/nodpos/x")
+    AddPlot("Pseudocolor", "Primal/brick/stress/sx")
     AddOperator("Threshold")
     thresh = ThresholdAttributes()
     thresh.lowerBounds = (1.0)
     thresh.upperBounds = (1.0)
-    thresh.listedVarNames = ("sand")
+    thresh.listedVarNames = ("Primal/Shared/sand")
     SetOperatorOptions(thresh)
     SetTimeSliderState(77)
     DrawPlots()
@@ -2579,9 +2592,9 @@ def PickMili():
     SetView3D(v)
 
     vars = "default"
-    Pick(130, 200, vars)
+    Pick(100, 150, vars)
     s = GetPickOutput()
-    NodePick(130, 200, vars)
+    NodePick(100, 150, vars)
     s = s + GetPickOutput()
 
     RemoveLastOperator()
@@ -2804,6 +2817,25 @@ def PickHighlight():
     Test("PickHighlight_01")
     DeleteAllPlots()
     ResetPickLetter()
+
+    OpenDatabase(silo_data_path("global_node.silo"))
+    AddPlot("Pseudocolor", "p")
+    DrawPlots()
+
+    # bug '3880 -- global id highlights incorrect cell. 
+    origAtts = GetPickAttributes()
+    pickAtts = origAtts
+    pickAtts.showPickHighlight = 1
+    pickAtts.showPickLetter = 1
+    SetPickAttributes(pickAtts)
+
+    PickByGlobalZone(236919)
+    Test("GlobalHighlight_00")
+
+    SetPickAttributes(origAtts)
+    DeleteAllPlots()
+    ResetPickLetter()
+
     #restore the attributes
     annotAtts  = GetAnnotationAttributes() 
     annotAtts.userInfoFlag = 1
@@ -2899,12 +2931,12 @@ def PickLines3D():
     ResetPickLetter()
 
 def PickZoneLabel():
-    OpenDatabase(data_path("mili_test_data2/sslide14ball_l.plt.mili"))
+    OpenDatabase(data_path("mili_test_data/single_proc/sslide14ball_l.plt.mili"))
     TurnOffAllAnnotations()
-    AddPlot("Pseudocolor", "bend_magnitude")
+    AddPlot("Pseudocolor", "Primal/shell/bend_magnitude")
     DrawPlots()
     options = {}
-    options["element_label"] = "brick 19"
+    options["element_label"] = "shell 9"
     options["vars"] = "OriginalZoneLabels"
     PickByZoneLabel(options)
     s = GetPickOutput()
@@ -2914,9 +2946,9 @@ def PickZoneLabel():
     ResetPickLetter()
 
 def PickNodeLabel():
-    OpenDatabase(data_path("mili_test_data2/sslide14ball_l.plt.mili"))
+    OpenDatabase(data_path("mili_test_data/single_proc/sslide14ball_l.plt.mili"))
     TurnOffAllAnnotations()
-    AddPlot("Pseudocolor", "bend_magnitude")
+    AddPlot("Pseudocolor", "Primal/shell/bend_magnitude")
     DrawPlots()
     options = {}
     options["element_label"] = "node 93"
@@ -2929,14 +2961,21 @@ def PickNodeLabel():
     ResetPickLetter()
 
 def PickRangeLabel():
-    OpenDatabase(data_path("mili_test_data2/sslide14ball_l.plt.mili"))
+    OpenDatabase(data_path("mili_test_data/single_proc/d3samp6.plt.mili"))
     TurnOffAllAnnotations()
-    AddPlot("Pseudocolor", "bend_magnitude")
+    AddPlot("Pseudocolor", "Primal/shell/bend_magnitude")
     DrawPlots()
+
+    SetPickAttributes(defaultAtts)
+
     options = {}
-    options["element_label"] = "brick"
-    options["pick_range"] = "22-24,18"
+    options["element_label"] = "shell"
+    options["return_curves"] = 1
+    options["start_time"] = 0
+    options["end_time"] = 2
+    options["pick_range"] = "4-5,9"
     options["vars"] = "OriginalZoneLabels"
+
     output_dict = PickByZoneLabel(options)
     s = str(output_dict)
     TestText("PickRangeByZoneLabel",s)
@@ -2983,29 +3022,29 @@ def TestRemovePicks():
     ResetPickLetter()
 
 def TestRemoveLabeledPicks():
-    OpenDatabase(data_path("mili_test_data2/sslide14ball_l.plt.mili"))
+    OpenDatabase(data_path("mili_test_data/single_proc/sslide14ball_l.plt.mili"))
     TurnOffAllAnnotations()
-    AddPlot("Pseudocolor", "bend_magnitude")
+    AddPlot("Pseudocolor", "Primal/shell/bend_magnitude")
     pickAtts = GetPickAttributes()
     pickAtts.showPickHighlight = 1
     SetPickAttributes(pickAtts) 
     DrawPlots()
 
     options = {}
-    options["element_label"] = "brick 1"
+    options["element_label"] = "shell 1"
     PickByZoneLabel(options)
-    options["element_label"] = "brick 2"
+    options["element_label"] = "shell 2"
     PickByZoneLabel(options)
-    options["element_label"] = "brick 5"
+    options["element_label"] = "shell 5"
     PickByZoneLabel(options)
 
     Test("RemoveLabeledPicks_00")
-    to_remove = "brick 1, brick 2, brick 19"
+    to_remove = "shell 1, shell 2, shell 19"
     removed   = RemovePicks(to_remove)
     Test("RemoveLabeledPicks_01")
 
-    expected = "brick 1, brick 2"
-    AssertEqual("Removed expected bricks", expected, removed)
+    expected = "shell 1, shell 2"
+    AssertEqual("Removed expected shell", expected, removed)
 
     ClearPickPoints() 
     DeleteAllPlots()
@@ -3070,6 +3109,41 @@ def TestNodeHighlight():
     ResetPickLetter()
 
 
+def TestTranslatedHighlight():
+    ResetPickAttributes()
+    ClearPickPoints() 
+    DeleteAllPlots()
+    ResetPickLetter()
+    ResetView()
+
+    OpenDatabase(silo_data_path("globe.silo"))
+    TurnOffAllAnnotations()
+    AddPlot("Pseudocolor", "v")
+    AddOperator("Transform")
+
+    TransformAtts = TransformAttributes()
+    TransformAtts.doScale = 1
+    TransformAtts.scaleOrigin = (0, 0, 0)
+    TransformAtts.scaleX = 1
+    TransformAtts.scaleY = 2
+    TransformAtts.scaleZ = 1
+    TransformAtts.doTranslate = 1
+    TransformAtts.translateX = 100
+    SetOperatorOptions(TransformAtts)
+    
+    DrawPlots()
+
+    pAtts = GetPickAttributes()
+    pAtts.showPickHighlight = 1
+    SetPickAttributes(pAtts)
+
+    PickByZone(element=580)     
+    Test("TranslatedHighlight_00")
+    
+    ClearPickPoints() 
+    DeleteAllPlots()
+    ResetPickLetter()
+
 
 def PickMain():
     Pick3DTo2D()
@@ -3112,6 +3186,7 @@ def PickMain():
     PickRangeLabel()
     TestSwivelHighlight()
     TestNodeHighlight()
+    TestTranslatedHighlight()
 
 # Call the main function
 TurnOnAllAnnotations()

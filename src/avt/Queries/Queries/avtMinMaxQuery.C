@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                              avtMinMaxQuery.C                             //
@@ -43,7 +9,6 @@
 #include <avtMinMaxQuery.h>
 
 #include <iomanip>
-#include <snprintf.h>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -275,6 +240,9 @@ avtMinMaxQuery::PreExecute()
 //    Cyrus Harrison, Wed Jan 30 14:07:03 PST 2008
 //    Added variable name to GetMixedVar call.
 //
+//    Kathleen Biagas, Fri Jan  3 12:00:06 MST 2020
+//    MinMaxInfo.value is now MinMaxInfo.mvalue
+//
 // ****************************************************************************
 
 void
@@ -405,40 +373,40 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 
             if (doMin && !ghost)
             {
-                if (val < minInfo1.GetValue())
+                if (val < minInfo1.GetMvalue())
                 {
                     haveMin1 = true;
                     minInfo1.SetElementNum(elNum);
-                    minInfo1.SetValue(val);
+                    minInfo1.SetMvalue(val);
                     minInfo1.SetDomain(domain);
                 }
                 ds->GetPointCells(elNum, cellIds);
                 if (cellIds->GetNumberOfIds() > 0  &&
-                    val < minInfo2.GetValue())
+                    val < minInfo2.GetMvalue())
                 {
                     haveMin2 = true;
                     minInfo2.SetElementNum(elNum);
-                    minInfo2.SetValue(val);
+                    minInfo2.SetMvalue(val);
                     minInfo2.SetDomain(domain);
                 }
                 cellIds->Reset();
             }
             if (doMax && !ghost)
             {
-                if (val > maxInfo1.GetValue())
+                if (val > maxInfo1.GetMvalue())
                 {
                     haveMax1 = true;
                     maxInfo1.SetElementNum(elNum);
-                    maxInfo1.SetValue(val);
+                    maxInfo1.SetMvalue(val);
                     maxInfo1.SetDomain(domain);
                 }
                 ds->GetPointCells(elNum, cellIds);
                 if (cellIds->GetNumberOfIds() > 0  &&
-                    val > maxInfo2.GetValue())
+                    val > maxInfo2.GetMvalue())
                 {
                     haveMax2 = true;
                     maxInfo2.SetElementNum(elNum);
-                    maxInfo2.SetValue(val);
+                    maxInfo2.SetMvalue(val);
                     maxInfo2.SetDomain(domain);
                 }
                 cellIds->Reset();
@@ -483,20 +451,20 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 
             if (doMin && !ghost)
             {
-                if (val < minInfo1.GetValue())
+                if (val < minInfo1.GetMvalue())
                 {
                     haveMin1 = true;
                     minInfo1.SetElementNum(elNum);
-                    minInfo1.SetValue(val);
+                    minInfo1.SetMvalue(val);
                     minInfo1.SetDomain(domain);
                 }
                 for (size_t i = 0; i < matValues.size(); i++)
                 {
-                    if (matValues[i] < minInfo2.GetValue())
+                    if (matValues[i] < minInfo2.GetMvalue())
                     {
                         haveMin2 = true;
                         minInfo2.SetElementNum(elNum);
-                        minInfo2.SetValue(matValues[i]);
+                        minInfo2.SetMvalue(matValues[i]);
                         minInfo2.SetDomain(domain);
                         minInfo2.SetMatName(matNames[i]);
                     }
@@ -504,20 +472,20 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
             }
             if (doMax && !ghost)
             {
-                if (val > maxInfo1.GetValue())
+                if (val > maxInfo1.GetMvalue())
                 {
                     haveMax1 = true;
                     maxInfo1.SetElementNum(elNum);
-                    maxInfo1.SetValue(val);
+                    maxInfo1.SetMvalue(val);
                     maxInfo1.SetDomain(domain);
                 }
                 for (size_t i = 0; i < matValues.size(); i++)
                 {
-                    if (matValues[i] > maxInfo2.GetValue())
+                    if (matValues[i] > maxInfo2.GetMvalue())
                     {
                         haveMax2 = true;
                         maxInfo2.SetElementNum(elNum);
-                        maxInfo2.SetValue(matValues[i]);
+                        maxInfo2.SetMvalue(matValues[i]);
                         maxInfo2.SetDomain(domain);
                         maxInfo2.SetMatName(matNames[i]);
                     }
@@ -605,6 +573,9 @@ avtMinMaxQuery::PostExecute(void)
 //    Brad Whitlock, Thu Mar 24 11:01:59 PDT 2011
 //    I changed the logic so resVals will use values that have been set.
 //
+//    Kathleen Biagas, Fri Jan  3 12:00:06 MST 2020
+//    MinMaxInfo.value is now MinMaxInfo.mvalue
+//
 // ****************************************************************************
 
 void
@@ -615,17 +586,17 @@ avtMinMaxQuery::TimeVaryingPostExecute(void)
     if(doMax)
     {
         if (!nodeCentered)
-            resVals.push_back(maxInfo1.GetValue());
+            resVals.push_back(maxInfo1.GetMvalue());
         else
-            resVals.push_back(maxInfo2.GetValue());
+            resVals.push_back(maxInfo2.GetMvalue());
     }
 
     if(doMin)
     {
         if (!nodeCentered)
-            resVals.push_back(minInfo1.GetValue());
+            resVals.push_back(minInfo1.GetMvalue());
         else
-            resVals.push_back(minInfo2.GetValue());
+            resVals.push_back(minInfo2.GetMvalue());
     }
 
     SetResultValues(resVals);
@@ -676,37 +647,40 @@ avtMinMaxQuery::TimeVaryingPostExecute(void)
 //    computed correctly. test min/max values rather zone/node id when creating
 //    the query output allows min/max to be reported.
 //
+//    Kathleen Biagas, Fri Jan  3 12:00:06 MST 2020
+//    MinMaxInfo.value is now MinMaxInfo.mvalue
+//
 // ****************************************************************************
 
 void
 avtMinMaxQuery::StandardPostExecute()
 {
-    bool hasMin1 = (ThisProcessorHasMinimumValue(minInfo1.GetValue()) &&
-               minInfo1.GetValue() != DBL_MAX);
+    bool hasMin1 = (ThisProcessorHasMinimumValue(minInfo1.GetMvalue()) &&
+               minInfo1.GetMvalue() != DBL_MAX);
     if (hasMin1)
     {
         minInfo1.TransformCoord(invTransform);
         FindElement(minInfo1);
     }
 
-    bool hasMax1 = (ThisProcessorHasMaximumValue(maxInfo1.GetValue()) &&
-               maxInfo1.GetValue() != -DBL_MAX);
+    bool hasMax1 = (ThisProcessorHasMaximumValue(maxInfo1.GetMvalue()) &&
+               maxInfo1.GetMvalue() != -DBL_MAX);
     if (hasMax1)
     {
         maxInfo1.TransformCoord(invTransform);
         FindElement(maxInfo1);
     }
 
-    bool hasMin2 = (ThisProcessorHasMinimumValue(minInfo2.GetValue()) &&
-               minInfo2.GetValue() != DBL_MAX);
+    bool hasMin2 = (ThisProcessorHasMinimumValue(minInfo2.GetMvalue()) &&
+               minInfo2.GetMvalue() != DBL_MAX);
     if (hasMin2)
     {
         minInfo2.TransformCoord(invTransform);
         FindElement(minInfo2);
     }
 
-    bool hasMax2 = (ThisProcessorHasMaximumValue(maxInfo2.GetValue()) &&
-               maxInfo2.GetValue() != -DBL_MAX);
+    bool hasMax2 = (ThisProcessorHasMaximumValue(maxInfo2.GetMvalue()) &&
+               maxInfo2.GetMvalue() != -DBL_MAX);
     if (hasMax2)
     {
         maxInfo2.TransformCoord(invTransform);
@@ -720,11 +694,11 @@ avtMinMaxQuery::StandardPostExecute()
 
     if (PAR_Rank() == 0)
     {
-        int nMin = (minInfo1.GetValue() != DBL_MAX ? 1 : 0)
-                + (((minInfo2.GetValue() != DBL_MAX) && (!minInfo1.EquivalentForOutput(minInfo2))) ? 1 : 0);
+        int nMin = (minInfo1.GetMvalue() != DBL_MAX ? 1 : 0)
+                + (((minInfo2.GetMvalue() != DBL_MAX) && (!minInfo1.EquivalentForOutput(minInfo2))) ? 1 : 0);
 
-        int nMax = (maxInfo1.GetValue() != -DBL_MAX ? 1 : 0)
-                + (((maxInfo2.GetValue() != -DBL_MAX) && (!maxInfo1.EquivalentForOutput(maxInfo2))) ? 1 : 0);
+        int nMax = (maxInfo1.GetMvalue() != -DBL_MAX ? 1 : 0)
+                + (((maxInfo2.GetMvalue() != -DBL_MAX) && (!maxInfo1.EquivalentForOutput(maxInfo2))) ? 1 : 0);
 
         nMin = (nMin == 0 ? nMin : (nMax > nMin ? nMax : nMin));
         nMax = (nMax == 0 ? nMax : (nMin > nMax ? nMin : nMax));
@@ -738,7 +712,7 @@ avtMinMaxQuery::StandardPostExecute()
 
         if(doMax)
         {
-            result_node["max"] = maxInfo1.GetValue();
+            result_node["max"] = maxInfo1.GetMvalue();
             result_node["max_domain"] = maxInfo1.GetDomain();
             result_node["max_element_num"] = maxInfo1.GetElementNum();
             doubleVector maxCoord(maxInfo1.GetCoord(), maxInfo1.GetCoord() + dimension);
@@ -747,7 +721,7 @@ avtMinMaxQuery::StandardPostExecute()
         }
         if(doMin)
         {
-            result_node["min"] = minInfo1.GetValue();
+            result_node["min"] = minInfo1.GetMvalue();
             result_node["min_domain"] = minInfo1.GetDomain();
             result_node["min_element_num"] = minInfo1.GetElementNum();
             doubleVector minCoord(minInfo1.GetCoord(), minInfo1.GetCoord() + dimension);
@@ -921,6 +895,9 @@ avtMinMaxQuery::CreateResultMessage(const int n)
 //    Cyrus Harrison, Tue Sep 18 15:26:32 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Kathleen Biagas, Fri Jan  3 12:00:06 MST 2020
+//    MinMaxInfo.value is now MinMaxInfo.mvalue
+//
 // ****************************************************************************
 
 string
@@ -937,11 +914,11 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
     char buf[256];
     string floatFormat = queryAtts.GetFloatFormat();
 
-    SNPRINTF(buf,256,floatFormat.c_str(),info.GetValue());
+    snprintf(buf,256,floatFormat.c_str(),info.GetMvalue());
 
     res += buf;
     res += " (" + elementName;
-    SNPRINTF(buf,256," %d ",elNum);
+    snprintf(buf,256," %d ",elNum);
     res +=buf;
 
     if (info.GetMatName() != "NO_MAT")
@@ -959,7 +936,7 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
         }
         else
         {
-            SNPRINTF(buf,256,"in domain %d ",info.GetDomain()+blockOrigin);
+            snprintf(buf,256,"in domain %d ",info.GetDomain()+blockOrigin);
             res += buf;
         }
     }
@@ -969,19 +946,19 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
     const double *c = info.GetCoord();
     if (queryAtts.GetVarTypes()[0] == QueryAttributes::Curve || scalarCurve)
     {
-        SNPRINTF(buf,256,floatFormat.c_str(),c[0]);
+        snprintf(buf,256,floatFormat.c_str(),c[0]);
         res += buf;
     }
     else if (dimension == 2 && !invTransform)
     {
         format = floatFormat + ", " + floatFormat;
-        SNPRINTF(buf,256,format.c_str(),c[0],c[1]);
+        snprintf(buf,256,format.c_str(),c[0],c[1]);
         res += buf;
     }
     else
     {
         format = floatFormat + ", " + floatFormat + ", " + floatFormat;
-        SNPRINTF(buf,256,format.c_str(),c[0],c[1],c[2]);
+        snprintf(buf,256,format.c_str(),c[0],c[1],c[2]);
         res += buf;
     }
     res +=  ">)";
@@ -1007,6 +984,8 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
 //  Creation:   July 1, 2004
 //
 //  Modifications:
+//    Kathleen Biagas, Fri Jan  3 12:00:06 MST 2020
+//    MinMaxInfo.value is now MinMaxInfo.mvalue
 //
 // ****************************************************************************
 
@@ -1024,7 +1003,7 @@ avtMinMaxQuery::CreateMessage(const int nMsg, const MinMaxInfo &info1,
     {
         msg =  var + " -- " + info1.GetType() + " = ";
         msg += InfoToString(info1);
-        vals.push_back(info1.GetValue());
+        vals.push_back(info1.GetMvalue());
     }
     else
     {
@@ -1036,7 +1015,7 @@ avtMinMaxQuery::CreateMessage(const int nMsg, const MinMaxInfo &info1,
             msg =  msg + "\n" + var + " -- " + info2.GetType() + " " + nodeMsg2;
             msg +=  "\n           = ";
             msg += InfoToString(info2);
-            vals.push_back(info1.GetValue());
+            vals.push_back(info1.GetMvalue());
         }
         else
         {
@@ -1046,7 +1025,7 @@ avtMinMaxQuery::CreateMessage(const int nMsg, const MinMaxInfo &info1,
             msg =  msg + "\n" + var + " -- " + info2.GetType() + " " + zoneMsg2;
             msg +=  "\n           = ";
             msg += InfoToString(info2);
-            vals.push_back(info2.GetValue());
+            vals.push_back(info2.GetMvalue());
         }
     }
 }

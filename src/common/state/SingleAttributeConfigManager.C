@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <SingleAttributeConfigManager.h>
 #include <DataNode.h>
@@ -45,7 +11,7 @@
 // ****************************************************************************
 // Method: SingleAttributeConfigManager::SingleAttributeConfigManager
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the SingleAttributeConfigManager class.
 //
 // Programmer: Jeremy Meredith
@@ -54,7 +20,7 @@
 // Modifications:
 //   Jeremy Meredith, Thu Apr 29 12:14:13 EDT 2010
 //   Added ability to do a selective save.
-//   
+//
 // ****************************************************************************
 
 SingleAttributeConfigManager::SingleAttributeConfigManager(AttributeGroup *att)
@@ -66,14 +32,14 @@ SingleAttributeConfigManager::SingleAttributeConfigManager(AttributeGroup *att)
 // ****************************************************************************
 // Method: SingleAttributeConfigManager::~SingleAttributeConfigManager
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the SingleAttributeConfigManager class.
 //
 // Programmer: Jeremy Meredith
 // Creation:   January  2, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 SingleAttributeConfigManager::~SingleAttributeConfigManager()
@@ -83,7 +49,7 @@ SingleAttributeConfigManager::~SingleAttributeConfigManager()
 // ****************************************************************************
 // Method: SingleAttributeConfigManager::Export
 //
-// Purpose: 
+// Purpose:
 //   Exports the attribute to the named file.
 //
 // Returns:    true on success; false otherwise
@@ -115,7 +81,7 @@ SingleAttributeConfigManager::Export(const std::string &filename,
 // ****************************************************************************
 // Method: SingleAttributeConfigManager::Import
 //
-// Purpose: 
+// Purpose:
 //   Imports the atribute from the named file.
 //
 // Returns:    true on success; false otherwise
@@ -127,7 +93,10 @@ SingleAttributeConfigManager::Export(const std::string &filename,
 //
 //   Tom Fogal, Fri Mar  6 10:26:12 MST 2009
 //   Fix: function wasn't returning anything in the `success' case.
-//   
+//
+//   Eric Brugger, Tue Nov 26 14:16:07 PST 2019
+//   Added code to delete node to eliminate a memory leak.
+//
 // ****************************************************************************
 bool
 SingleAttributeConfigManager::Import(std::istream& in)
@@ -138,6 +107,9 @@ SingleAttributeConfigManager::Import(std::istream& in)
         return false;
 
     attribute->SetFromNode(node);
+
+    delete node;
+
     return true;
 }
 
@@ -150,13 +122,16 @@ SingleAttributeConfigManager::Import(const std::string &filename)
         return false;
 
     attribute->SetFromNode(node);
+
+    delete node;
+
     return true;
 }
 
 // ****************************************************************************
 // Method: SingleAttributeConfigManager::WriteConfigFile
 //
-// Purpose: 
+// Purpose:
 //   Writes the attribute to a file.
 //
 // Arguments:
@@ -210,7 +185,7 @@ SingleAttributeConfigManager::WriteConfigFile(const char *filename)
 // ****************************************************************************
 // Method: SingleAttributeConfigManager::ReadConfigFile
 //
-// Purpose: 
+// Purpose:
 //   Reads the attribute from a file.
 //
 // Arguments:
@@ -220,7 +195,7 @@ SingleAttributeConfigManager::WriteConfigFile(const char *filename)
 // Creation:   January  2, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 

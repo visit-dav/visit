@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <stdio.h>
 #include <algorithm>
@@ -56,6 +22,7 @@
 #include <QStatusBar>
 #include <QStyle>
 #include <QStyleFactory>
+#include <QTemporaryFile>
 #include <QTranslator>
 #include <QList>
 
@@ -185,8 +152,6 @@
 #include <unistd.h>
 #endif
 
-#include <snprintf.h>
-
 // Some defines
 #define VISIT_GUI_CONFIG_FILE "guiconfig"
 #define VIEWER_READY_TAG          100
@@ -254,17 +219,17 @@ static bool restoringSession = false;
 // ****************************************************************************
 // Function: StripSurroundingQuotes
 //
-// Purpose: 
+// Purpose:
 //   Removes quotes ' or " from beginning and end of string.
 //
 // Arguments:
 //   s1 : The string
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   January 9, 2008 
+// Programmer: Kathleen Bonnell
+// Creation:   January 9, 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 StripSurroundingQuotes(std::string & s1)
@@ -284,9 +249,9 @@ StripSurroundingQuotes(std::string & s1)
 // ****************************************************************************
 // Function: GetNextArg
 //
-// Purpose: 
+// Purpose:
 //   Retrieves the next arg from the arg list, catentating successive
-//   args if necessary. 
+//   args if necessary.
 //
 // Arguments:
 //   argc      Number of args
@@ -296,11 +261,11 @@ StripSurroundingQuotes(std::string & s1)
 //
 // Returns:    The next arg from the list.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   January 9, 2008 
+// Programmer: Kathleen Bonnell
+// Creation:   January 9, 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 std::string
 GetNextArg(int argc, char **argv, int start, int &nargs)
@@ -327,7 +292,7 @@ GetNextArg(int argc, char **argv, int start, int &nargs)
 // ****************************************************************************
 // Function: LongFileName
 //
-// Purpose: 
+// Purpose:
 //   Converts a Windows short filename into a long filename.
 //
 // Arguments:
@@ -335,7 +300,7 @@ GetNextArg(int argc, char **argv, int start, int &nargs)
 //
 // Returns:    The long windows name of the file.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 11 18:39:36 PST 2003
@@ -344,7 +309,7 @@ GetNextArg(int argc, char **argv, int start, int &nargs)
 //   Kathleen Bonnell, Wed Jan  9 11:17:40 PST 2008
 //   Changed arg type from const char * to const std::string.
 //
-//   Kathleen Bonnell, Fri Apr 11 08:28:53 PDT 2008 
+//   Kathleen Bonnell, Fri Apr 11 08:28:53 PDT 2008
 //   Added WINAPI to def of pathFuncType.
 //
 // ****************************************************************************
@@ -385,7 +350,7 @@ LongFileName(const std::string &shortName)
 // ****************************************************************************
 // Method: GUI_LogQtMessages
 //
-// Purpose: 
+// Purpose:
 //   Message handler that routes Qt messages to the debug logs.
 //
 // Arguments:
@@ -396,19 +361,24 @@ LongFileName(const std::string &shortName)
 // Creation:   Thu Mar 15 18:17:47 PST 2007
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Fri Dec 14 11:09:45 PST 2007
-//   Issue an error message to the console if we cannot connect to the 
+//   Issue an error message to the console if we cannot connect to the
 //   X server.
+//
+//   Kevin Griffin, Wed Nov  6 13:43:17 PST 2019
+//   Added the "Empty filename passed to function" warning to the suppress list.
+//   Added the additional context information if available. By default, the
+//   context information is only recorded in debug builds.
 //
 // ****************************************************************************
 
 static void
 GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    const int n_strs_to_suppress = 1;
+    const int n_strs_to_suppress = 2;
     const char *strs_to_suppress[] =
-       { "Invalid XLFD" };
+    { "Invalid XLFD", "Empty filename passed to function" };
     bool shouldPrint = true;
     for (int i = 0 ; i < n_strs_to_suppress ; i++)
     {
@@ -419,42 +389,64 @@ GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QStri
         }
     }
 
-    if (shouldPrint)
-        cerr << msg.toStdString() << endl;
-
+    std::string qtMsgStr;
+    bool isFatal = false;
     switch(type)
     {
-    case QtInfoMsg:
-        debug1 << "Qt: Info: " << msg.toStdString() << endl;
-        break;
-    case QtDebugMsg:
-        debug1 << "Qt: Debug: " << msg.toStdString() << endl;
-        break;
-    case QtWarningMsg:
-        debug1 << "Qt: Warning: " << msg.toStdString() << endl;
-        break;
-    case QtCriticalMsg:
-        debug1 << "Qt: Critical: " << msg.toStdString() << endl;
-        break;
-    case QtFatalMsg:
-        debug1 << "Qt: Fatal: " << msg.toStdString() << endl;
-        abort(); // HOOKS_IGNORE
-        break;
+        case QtInfoMsg:
+            qtMsgStr.append("Qt: Info: ");
+            break;
+        case QtDebugMsg:
+            qtMsgStr.append("Qt: Debug: ");
+            break;
+        case QtWarningMsg:
+            qtMsgStr.append("Qt: Warning: ");
+            break;
+        case QtCriticalMsg:
+            qtMsgStr.append("Qt: Critical: ");
+            break;
+        case QtFatalMsg:
+            qtMsgStr.append("Qt: Fatal: ");
+            isFatal = true;
+            break;
     }
+
+    // Build QT message
+    qtMsgStr.append(msg.toStdString());
+
+    // Print additional information if provided
+    if(context.file != NULL)
+    {
+        qtMsgStr.append(" [");
+        qtMsgStr.append(context.file);
+        qtMsgStr.append(":");
+        qtMsgStr.append(std::to_string(context.line));
+        qtMsgStr.append(":");
+        qtMsgStr.append(context.function);
+        qtMsgStr.append("]");
+    }
+
+    if(shouldPrint)
+        cerr << qtMsgStr << endl;
+
+    debug1 << qtMsgStr << endl;
+
+    if(isFatal)
+        abort(); // HOOKS_IGNORE
 }
 
 
 // ****************************************************************************
 // Method: QvisGUIApplication::QvisGUIApplication
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisGUIApplication class.
 //
 // Arguments:
 //   argc : The number of command line arguments.
 //   argv : The command line arguments.
 //
-// Note:       
+// Note:
 //   This method creates the FileServer, the Viewer, and all of the
 //   windows for the GUI. Both the FileServer and the Viewer launch
 //   remote processes so they could take a little while.
@@ -471,7 +463,7 @@ GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QStri
 //   Changed how the MDServer gets launched.
 //
 //   Brad Whitlock, Mon Nov 27 16:00:44 PST 2000
-//   Changed the code so command line arguments not consumed by the GUI are 
+//   Changed the code so command line arguments not consumed by the GUI are
 //   passed on to the viewer.
 //
 //   Brad Whitlock, Thu Mar 29 14:44:34 PST 2001
@@ -554,7 +546,7 @@ GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QStri
 //   not contain a path.
 //
 //   Jeremy Meredith, Fri Jul  5 18:08:25 PDT 2002
-//   I made it look for a "guiconfig" file in the ".visit" directory 
+//   I made it look for a "guiconfig" file in the ".visit" directory
 //   instead of a ".visitguiconfig" file.
 //
 //   Brad Whitlock, Wed Sep 25 14:52:56 PST 2002
@@ -644,15 +636,15 @@ GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QStri
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *proxy) :
     ConfigManager(), GUIBase(), windowNames(), message(), plotWindows(),
     operatorWindows(), otherWindows(), foregroundColor(), backgroundColor(),
-    applicationStyle(), applicationLocale("default"), loadFile(), sessionFile(), 
+    applicationStyle(), applicationLocale("default"), loadFile(), sessionFile(),
     sessionDir(), movieArguments(), recoveryFiles()
 {
     completeInit = visitTimer->StartTimer();
     int total = visitTimer->StartTimer();
 
 #if 0
-    // NOTE: On Ubuntu 9.10/64bit calling setColorSpec with a compositing 
-    // window manager causes Qt windows to be semi-transparent and they are 
+    // NOTE: On Ubuntu 9.10/64bit calling setColorSpec with a compositing
+    // window manager causes Qt windows to be semi-transparent and they are
     // not drawn correctly unless shown over a black background. I'm for either
     // getting rid of this code (since most displays are better than 256 colors
     // now) or coming up with clever conditions for conditional compilation.
@@ -711,7 +703,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     keepAliveTimer = 0;
     allowFileSelectionChange = true;
     visitUpdate = 0;
-    saveMovieWizard = 0;    
+    saveMovieWizard = 0;
     setupCMFEWizard = 0;
     interpreter = 0;
     movieProgress = 0;
@@ -731,7 +723,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     fileServer = new FileServerList;
     fileServer->SetProfiles(GetViewerState()->GetHostProfileList());
     embeddedGUI = false;
-    
+
     visitPIDStr = GetVisItPIDString();
 
     // Process any GUI arguments that should not be passed on to other programs.
@@ -861,7 +853,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     windowNames += tr("Setup Host Profiles and Configuration");
     windowNames += tr("SeedMe");
 
-    // If the geometry was not passed on the command line then the 
+    // If the geometry was not passed on the command line then the
     // savedGUIGeometry flag will still be set to false. If we
     // can, read the GUI geometry from the config file so we can
     // create a viewer area relative to it.
@@ -890,7 +882,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
 
         bool xy_set = false, wh_set = false;
         int x, y, w, h;
-        ReadSavedMainWindowGeometry(localSettings, wh_set, w, h, 
+        ReadSavedMainWindowGeometry(localSettings, wh_set, w, h,
             xy_set, x, y);
         if(wh_set)
         {
@@ -899,7 +891,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
             savedGUISize[1] = h;
             savedGUILocation[0] = xy_set ? x : 0;
             savedGUILocation[1] = xy_set ? y : 0;
-            debug1 << "Saved GUI geometry: w=" << w << " h=" << h 
+            debug1 << "Saved GUI geometry: w=" << w << " h=" << h
                    << " x=" << x << " y=" << y << endl;
         }
     }
@@ -964,7 +956,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
 // ****************************************************************************
 // Method: QvisGUIApplication::~QvisGUIApplication
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisGUIApplication class.
 //
 // Programmer: Brad Whitlock
@@ -1082,7 +1074,7 @@ QvisGUIApplication::~QvisGUIApplication()
 // Purpose:
 //   This slot calls HeavyInit or FinalInit.
 //   It is a replacement/work around for using QTimer::singleShot to provide
-//   interactive startup. On X11 with Qt 4.5 & Qt 4.6 the QTimer::singleShot 
+//   interactive startup. On X11 with Qt 4.5 & Qt 4.6 the QTimer::singleShot
 //   approach hangs in the GLib event loop waiting for mouse events.
 //
 // Programmer: Cyrus Harrison
@@ -1146,7 +1138,7 @@ QvisGUIApplication::HeavyInitialization()
     WindowMetrics *wm = 0;
 
     // Create some timers.
-    if(heavyInitStage == 0) 
+    if(heavyInitStage == 0)
         stagedInit = visitTimer->StartTimer();
     timeid = visitTimer->StartTimer();
 
@@ -1264,7 +1256,7 @@ QvisGUIApplication::HeavyInitialization()
         break;
     case 15:
         // Tell the mdserver to load its plugins. It can't load plugins before
-        // we process the config settings though because that sets up the 
+        // we process the config settings though because that sets up the
         // file server, which sets and reads files for the active directory.
         // Loading plugins before that stalls the gui if the mdserver is
         // slow about loading plugins.
@@ -1299,7 +1291,7 @@ QvisGUIApplication::HeavyInitialization()
 // ****************************************************************************
 // Method: QvisGUIApplication::LaunchViewer
 //
-// Purpose: 
+// Purpose:
 //   This method launches the viewer.
 //
 // Programmer: Brad Whitlock
@@ -1352,8 +1344,8 @@ QvisGUIApplication::LaunchViewer()
 // ****************************************************************************
 // Method: QvisGUIApplication::Synchronize
 //
-// Purpose: 
-//   Sends a synchronization tag to the viewer. When the viewer returns the 
+// Purpose:
+//   Sends a synchronization tag to the viewer. When the viewer returns the
 //   tag, it means that it's ready for more input and we can use that to
 //   do things in the GUI.
 //
@@ -1361,7 +1353,7 @@ QvisGUIApplication::LaunchViewer()
 // Creation:   Wed Jun 18 15:53:25 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1376,7 +1368,7 @@ QvisGUIApplication::Synchronize(int tag)
 // ****************************************************************************
 // Method: QvisGUIApplication::HandleSynchronize
 //
-// Purpose: 
+// Purpose:
 //   Handles a trigger that was echoed back from the viewer.
 //
 // Arguments:
@@ -1410,10 +1402,10 @@ QvisGUIApplication::Synchronize(int tag)
 //   sync REDO_PICK_TAG, pick, sync RESTORE_PICK_ATTS_TAG, change attributes
 //   back.
 //
-//   Kathleen Bonnell, Fri Nov 7 10:10:14 PST 2008 
+//   Kathleen Bonnell, Fri Nov 7 10:10:14 PST 2008
 //   On Windows, if 'user directory' is not being used for session file, use
 //   current path from fileServer instead of '.', as '.' evaluates to the
-//   install dir on Windows, and users may not have write access. 
+//   install dir on Windows, and users may not have write access.
 //
 //   Cyrus Harrison, Fri Mar  5 10:28:42 PST 2010
 //   Emit FireInit signal instead of using QTimer::singleShot to
@@ -1497,7 +1489,7 @@ QvisGUIApplication::HandleSynchronize(int val)
 // ****************************************************************************
 // Method: QvisGUIApplication::SyncCallback
 //
-// Purpose: 
+// Purpose:
 //   This method handles a syncattributes object an converts it into a trigger.
 //
 // Arguments:
@@ -1508,7 +1500,7 @@ QvisGUIApplication::HandleSynchronize(int val)
 // Creation:   Wed Jun 18 16:12:59 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1522,7 +1514,7 @@ QvisGUIApplication::SyncCallback(Subject *s, void *data)
 // ****************************************************************************
 // Method: QvisGUIApplication::ClientMethodCallback
 //
-// Purpose: 
+// Purpose:
 //   This method handles a clientmethod object.
 //
 // Arguments:
@@ -1533,7 +1525,7 @@ QvisGUIApplication::SyncCallback(Subject *s, void *data)
 // Creation:   Wed May 4 18:03:04 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1546,7 +1538,7 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 // ****************************************************************************
 // Method: QvisGUIApplication::FinalInitialization
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that contains initialization code for the GUI
 //   that is executed once the GUI is in its event loop and waiting to hear
 //   that the viewer is ready.
@@ -1564,8 +1556,8 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //   Brad Whitlock, Mon Nov 10 14:56:51 PST 2003
 //   I added a stage to load a session file.
 //
-//   Kathleen Bonnell, Mon Dec  1 08:40:21 PST 2003 
-//   Ensure that qprinter is initialized with the viewer's PrinterAttributes. 
+//   Kathleen Bonnell, Mon Dec  1 08:40:21 PST 2003
+//   Ensure that qprinter is initialized with the viewer's PrinterAttributes.
 //
 //   Brad Whitlock, Fri Mar 12 14:15:35 PST 2004
 //   Added code to create a timer that is used to send keep alive signals
@@ -1582,7 +1574,7 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //
 //   Brad Whitlock, Fri Jan 7 16:34:32 PST 2005
 //   Changed the code so dismissing the splashscreen is the last thing done
-//   on MacOS X so we are more likely to get the GUI's menu and not the 
+//   on MacOS X so we are more likely to get the GUI's menu and not the
 //   viewer's menu.
 //
 //   Brad Whitlock, Wed Feb 16 11:03:57 PDT 2005
@@ -1631,13 +1623,16 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //   CLI is started on-demand when needed by the user
 //   (i.e. user selects Macro... menuitem) - see Bug #2264
 //
+//   Cyrus Harrison, Tue Aug 13 15:46:52 PDT 2019
+//   Removed update VisIt related logic.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::FinalInitialization()
 {
     bool moreInit = true;
-    
+
     // Create time timers.
     if(initStage == 0)
         stagedInit = visitTimer->StartTimer();
@@ -1777,12 +1772,7 @@ QvisGUIApplication::FinalInitialization()
     case 11:
         // Show the release notes if this is the first time that the
         // user has run this version of VisIt.
-        if(GetIsDevelopmentVersion())
-        {
-            // Make sure that we don't allow updates in development versions.
-            mainWin->updateNotAllowed();
-        }
-        else
+        if(!GetIsDevelopmentVersion())
         {
             ConfigStateEnum code;
             ConfigStateIncrementRunCount(code);
@@ -1860,14 +1850,14 @@ QvisGUIApplication::FinalInitialization()
 // ****************************************************************************
 // Method: QvisGUIApplication::IsFullyInitialized
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the gui has been fully initialized.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct  6 12:09:27 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1879,13 +1869,13 @@ QvisGUIApplication::IsFullyInitialized() const
 // ****************************************************************************
 // Method: QvisGUIApplication::SetWindowArea
 //
-// Purpose: 
+// Purpose:
 //   Set the window area for the viewer.
 //
 // Arguments:
 //   x,y,w,h : The window area for the viewer.
 //
-// Returns:    
+// Returns:
 //
 // Note:       We let the routine tell the viewer the window area if the gui
 //             is fully initialized or if there is no viewer geometry. This
@@ -1899,7 +1889,7 @@ QvisGUIApplication::IsFullyInitialized() const
 // Creation:   Wed Oct  6 12:02:51 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1914,7 +1904,7 @@ QvisGUIApplication::SetWindowArea(int x, int y, int w, int h)
 // ****************************************************************************
 // Method: QvisGUIApplication::ShowAllWindows
 //
-// Purpose: 
+// Purpose:
 //   Show all windows for the first time, making sure to tell the viewer where
 //   it can show its windows. The main window must have been mapped so it has
 //   a valid width value.
@@ -1925,7 +1915,7 @@ QvisGUIApplication::SetWindowArea(int x, int y, int w, int h)
 // Modifications:
 //   Brad Whitlock, Wed Oct  6 12:14:21 PDT 2010
 //   I made it call SetWindowArea for this class.
-//   
+//
 // ****************************************************************************
 
 void
@@ -1949,7 +1939,7 @@ QvisGUIApplication::ShowAllWindows()
 // ****************************************************************************
 // Method: QvisGUIApplication::Exec
 //
-// Purpose: 
+// Purpose:
 //   The application's main event loop
 //
 // Programmer: Brad Whitlock
@@ -1989,7 +1979,7 @@ QvisGUIApplication::Exec()
 // ****************************************************************************
 // Method: QvisGUIApplication::Quit
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user wants to
 //   quit VisIt.
 //
@@ -2000,7 +1990,7 @@ QvisGUIApplication::Exec()
 // Creation:   Fri May 6 12:18:37 PDT 2005
 //
 // Modifications:
-//   
+//
 //    Cyrus Harrison, Tue Jan 15 11:14:45 PST 2008
 //    Exclude close warning for cli launched b/c of visitrc file.
 //
@@ -2018,7 +2008,7 @@ QvisGUIApplication::Exec()
 //    the CLI ourselves.
 //
 //    David Camp, Thu Aug  8 08:50:06 PDT 2013
-//    Added the restore from last session feature. 
+//    Added the restore from last session feature.
 //
 // ****************************************************************************
 
@@ -2033,7 +2023,7 @@ QvisGUIApplication::Quit()
                             QFile(GetUserVisItRCFile().c_str()).exists();
 
         closeAllClients = true;
-        
+
         if(num_clients > 1)
         {
             // disconnect some slots so we don't keep getting the dialog.
@@ -2045,7 +2035,7 @@ QvisGUIApplication::Quit()
                            this, SLOT(Quit()));
             }
 
-            // if the user does not have a visitrc file, or if we have 3 
+            // if the user does not have a visitrc file, or if we have 3
             // or more clients ask user if they want to close all clients.
 
             bool shouldPrompt = (num_clients >= 2 ? true : false);
@@ -2088,7 +2078,7 @@ QvisGUIApplication::Quit()
 // ****************************************************************************
 // Method: QvisGUIApplication::ProcessArguments
 //
-// Purpose: 
+// Purpose:
 //   Sets internal flags from values stored in the command line arguments and
 //   removes the argument from the list.
 //
@@ -2171,15 +2161,15 @@ QvisGUIApplication::Quit()
 //    Brad Whitlock, Thu Mar 15 17:32:57 PST 2007
 //    Changed how -font is handled.
 //
-//    Kathleen Bonnell, Tue Jan  8 18:04:05 PST 2008 
+//    Kathleen Bonnell, Tue Jan  8 18:04:05 PST 2008
 //    Catenate multiple args into single path for -o option on Windows when
 //    encountering an arg that begins with a quote (fixes problem with
 //    using path-with-spaces and the -o arg on the command-line).
 //
-//    Kathleen Bonnell, Wed Jan  9 11:17:40 PST 2008 
+//    Kathleen Bonnell, Wed Jan  9 11:17:40 PST 2008
 //    Moved catenation of arg into its own function, GetNextArg.  Moved code
-//    that removes surrounding quotes to its own function. Use GetNextArg and 
-//    StripSurroundingQuotes for sessionfile option.  
+//    that removes surrounding quotes to its own function. Use GetNextArg and
+//    StripSurroundingQuotes for sessionfile option.
 //
 //    Brad Whitlock, Wed Apr  9 14:09:21 PDT 2008
 //    Added -locale argument.
@@ -2240,7 +2230,7 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
         }
 
         // Remove any arguments that could be dangerous to the viewer.
-        if(stripHostAndPort || 
+        if(stripHostAndPort ||
            current == std::string("-borders") ||
            current == std::string("-o") ||
            current == std::string("-sessionfile"))
@@ -2252,7 +2242,7 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                 if(i + 1 < argc)
                 {
 #if defined(_WIN32)
-                    std::string tmpFileName = 
+                    std::string tmpFileName =
                         LongFileName(GetNextArg(argc, argv, i+1, nArgsSkip));
 #else
                     std::string tmpFileName(argv[i+1]);
@@ -2307,7 +2297,7 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                     // Set the name of the session file that we're going to
                     // load once the GUI's done initializing.
 #if defined(_WIN32)
-                    std::string tmpSession = 
+                    std::string tmpSession =
                         LongFileName(GetNextArg(argc, argv, i+1, nArgsSkip));
                     StripSurroundingQuotes(tmpSession);
                     sessionFile = QString(tmpSession.c_str());
@@ -2319,7 +2309,7 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                 {
                     cerr << "The -sessionfile option must be followed by a "
                             "session filename." << endl;
-                }                
+                }
             }
 
             for(int j = i; j + nArgsSkip < argc; ++j)
@@ -2355,7 +2345,7 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                      << endl;
                 continue;
             }
-            
+
             // Parse the geometry string.
             int w,h,x,y;
             if(sscanf(argv[i+1], "%dx%d+%d+%d", &w, &h, &x, &y) == 4)
@@ -2529,12 +2519,12 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
 // ****************************************************************************
 // Method: QvisGUIApplication::ExtractSystemDefaultAppearance
 //
-// Purpose: 
-//   Gets Qt's default appearance settings and puts the values into the default 
+// Purpose:
+//   Gets Qt's default appearance settings and puts the values into the default
 //   section of the appearance attributes.
 //
 // Programmer: Cyrus Harrison
-// Creation:   
+// Creation:
 //
 // Modifications:
 //   Brad Whitlock, Wed Nov 26 11:16:47 PDT 2008
@@ -2551,7 +2541,7 @@ QvisGUIApplication::ExtractSystemDefaultAppearance()
 // ****************************************************************************
 // Method: QvisGUIApplication::CustomizeAppearance
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the application appearance settings
 //   based on the values in the appearance attributes.
 //
@@ -2627,7 +2617,7 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
 // ****************************************************************************
 // Method: QvisGUIApplication::SetOrientation
 //
-// Purpose: 
+// Purpose:
 //   Set the main window's orientation.
 //
 // Arguments:
@@ -2672,7 +2662,7 @@ QvisGUIApplication::SetOrientation(int _orientation)
 // ****************************************************************************
 // Method: QvisGUIApplication::MoveAndResizeMainWindow
 //
-// Purpose: 
+// Purpose:
 //   Move and resize the main window.
 //
 // Arguments:
@@ -2690,7 +2680,7 @@ QvisGUIApplication::SetOrientation(int _orientation)
 // Modifications:
 //   Sean Ahern, Tue Apr 16 11:49:23 PDT 2002
 //   Renamed to better fit its purpose.
-// 
+//
 //   Brad Whitlock, Thu Apr 18 13:10:20 PST 2002
 //   Don't subtract the preshift on MS Windows.
 //
@@ -2700,7 +2690,7 @@ QvisGUIApplication::SetOrientation(int _orientation)
 //   Kathleen Bonnell, Tue Oct 28 08:18:06 PDT 2008
 //   Added logic specific to restoring session, to prevent window from
 //   being drawn partly offscreen when running VisIt remotely.
-// 
+//
 //   Kathleen Biagas, Fri Apr 12 15:05:18 PDT 2019
 //   Remove orientation from args, it is now an ivar.
 //
@@ -2780,7 +2770,7 @@ QvisGUIApplication::MoveAndResizeMainWindow()
 // ****************************************************************************
 // Method: QvisGUIApplication::AddViewerArguments
 //
-// Purpose: 
+// Purpose:
 //   Adds any arguments in the list to the arguments passed to the viewer.
 //
 // Arguments:
@@ -2845,7 +2835,7 @@ QvisGUIApplication::AddViewerArguments(int argc, char **argv)
 // ****************************************************************************
 // Method: QvisGUIApplication::AddMovieArguments
 //
-// Purpose: 
+// Purpose:
 //   Adds certain arguments to the list of arguments that will be passed along
 //   to the movie-maker.
 //
@@ -2857,7 +2847,7 @@ QvisGUIApplication::AddViewerArguments(int argc, char **argv)
 // Creation:   Fri Oct 28 12:21:19 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2891,7 +2881,7 @@ QvisGUIApplication::AddMovieArguments(int argc, char **argv)
 // ****************************************************************************
 // Method: QvisGUIApplication::CalculateViewerArea
 //
-// Purpose: 
+// Purpose:
 //   Figures out where the viewer's windows should go.
 //
 // Arguments:
@@ -2915,7 +2905,7 @@ QvisGUIApplication::AddMovieArguments(int argc, char **argv)
 //   screen area would be passed to the viewer.
 //
 //   Brad Whitlock, Tue Jul 25 12:09:55 PDT 2006
-//   I added support for choosing the viewer window area around saved 
+//   I added support for choosing the viewer window area around saved
 //   main window geometries.
 //
 // ****************************************************************************
@@ -2992,7 +2982,7 @@ QvisGUIApplication::CalculateViewerArea(int orientation, int &x, int &y,
 // ****************************************************************************
 // Method: QvisGUIApplication::AddViewerSpaceArguments
 //
-// Purpose: 
+// Purpose:
 //   This method adds command line arguments to the viewer before
 //   the viewer is launched.
 //
@@ -3002,7 +2992,7 @@ QvisGUIApplication::CalculateViewerArea(int orientation, int &x, int &y,
 // Modifications:
 //    Jeremy Meredith, Fri Jul 20 11:16:46 PDT 2001
 //    Moved CalculateBorders out of here.  Added "shift" arguments as well.
-//   
+//
 //    Jeremy Meredith, Fri Jul 20 13:58:07 PDT 2001
 //    Changed the geometry flags to use the calculated screen size.
 //
@@ -3049,7 +3039,7 @@ QvisGUIApplication::AddViewerSpaceArguments()
 // ****************************************************************************
 // Method: QvisGUIApplication::CreateMainWindow
 //
-// Purpose: 
+// Purpose:
 //   Creates the main window.
 //
 // Arguments:
@@ -3087,7 +3077,7 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Added save movie.
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
-//   Moved WindowInformation ahead of plot list in list of observers 
+//   Moved WindowInformation ahead of plot list in list of observers
 //
 //   Brad Whitlock, Tue Nov 14 15:37:51 PST 2006
 //   Connected new restoreSessionWithSources signal from Main window.
@@ -3107,6 +3097,9 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //
 //   Kathleen Biagas, Fri Apr 12 15:06:48 PDT 2019
 //   Removed orientation from MoveAndResizeMainWindow args.
+//
+//   Cyrus Harrison, Tue Aug 13 15:46:52 PDT 2019
+//   Removed updateVisIt related logic.
 //
 // ****************************************************************************
 
@@ -3142,7 +3135,7 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(saveMovie()), this, SLOT(SaveMovie()));
     connect(mainWin, SIGNAL(setupCMFE()), this, SLOT(SetupCMFE()));
     connect(mainWin, SIGNAL(printWindow()), this, SLOT(PrintWindow()));
-    
+
     connect(mainWin->GetPlotManager(), SIGNAL(activatePlotWindow(int)),
             this, SLOT(ActivatePlotWindow(int)));
     connect(mainWin->GetPlotManager(), SIGNAL(addPlot(int, const QString &)),
@@ -3160,7 +3153,6 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(saveSession()), this, SLOT(SaveSession()));
     connect(mainWin, SIGNAL(saveSessionAs()), this, SLOT(SaveSessionAs()));
     connect(mainWin, SIGNAL(saveCrashRecoveryFile()), this, SLOT(SaveCrashRecoveryFile()));
-    connect(mainWin, SIGNAL(updateVisIt()), this, SLOT(updateVisIt()));
 
     mainWin->ConnectMessageAttr(&message);
     mainWin->ConnectGUIMessageAttributes();
@@ -3178,7 +3170,7 @@ QvisGUIApplication::CreateMainWindow()
 // ****************************************************************************
 // Method: QvisGUIApplication::SetupWindows
 //
-// Purpose: 
+// Purpose:
 //   Create the crucial windows and set up slot functions to be called when
 //   we want to look at the other windows.
 //
@@ -3189,15 +3181,15 @@ QvisGUIApplication::CreateMainWindow()
 //   Brad Whitlock, Wed Aug 4 16:13:42 PST 2004
 //   Forced the file selection window to be created.
 //
-//   Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
-//   Added InteractorWindow. 
+//   Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004
+//   Added InteractorWindow.
 //
-//   Kathleen Bonnell, Fri Aug 20 15:51:50 PDT 2004 
+//   Kathleen Bonnell, Fri Aug 20 15:51:50 PDT 2004
 //   Forced creation of ColorTableWindow, so that colortable names will be
 //   available to other windows as needed.
 //
 //   Brad Whitlock, Thu Dec 9 09:50:33 PDT 2004
-//   Added code to connect the application's method to show the expression 
+//   Added code to connect the application's method to show the expression
 //   window to the variable button so all variable buttons can open the
 //   expression window.
 //
@@ -3223,7 +3215,7 @@ QvisGUIApplication::CreateMainWindow()
 //   Added Macro window.
 //
 //   Gunther H. Weber, Fri Aug 15 10:46:55 PDT 2008
-//   Connect signals necessary for redoing a pick. 
+//   Connect signals necessary for redoing a pick.
 //
 //   Brad Whitlock, Fri Aug  6 17:00:02 PDT 2010
 //   Add Selections window.
@@ -3377,7 +3369,7 @@ QvisGUIApplication::SetupWindows()
 // ****************************************************************************
 // Method: QvisGUIApplication::WindowFactory
 //
-// Purpose: 
+// Purpose:
 //   Creates a window and returns a pointer to it.
 //
 // Arguments:
@@ -3385,15 +3377,15 @@ QvisGUIApplication::SetupWindows()
 //
 // Returns:    A pointer to a window.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu May 6 14:54:09 PST 2004
 //
 // Modifications:
-//   Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
-//   Added InteractorWindow. 
-//   
+//   Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004
+//   Added InteractorWindow.
+//
 //   Jeremy Meredith, Mon Apr  4 16:07:10 PDT 2005
 //   Added the Simulations window.
 //
@@ -3531,7 +3523,7 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_SUBSET:
         // Create the subset window.
-        { QvisSubsetWindow *sWin = new QvisSubsetWindow(windowNames[i], 
+        { QvisSubsetWindow *sWin = new QvisSubsetWindow(windowNames[i],
             tr("Subset"), mainWin->GetNotepad());
           sWin->ConnectSILRestrictionAttributes(GetViewerState()->GetSILRestrictionAttributes());
           sWin->ConnectSelectionList(GetViewerState()->GetSelectionList());
@@ -3569,7 +3561,7 @@ QvisGUIApplication::WindowFactory(int i)
     case WINDOW_KEYFRAME:
         // Create the keyframe window.
         { QvisKeyframeWindow *kfWin = new QvisKeyframeWindow(
-            GetViewerState()->GetKeyframeAttributes(), windowNames[i], 
+            GetViewerState()->GetKeyframeAttributes(), windowNames[i],
             tr("Keyframer"), mainWin->GetNotepad());
           kfWin->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
           kfWin->ConnectPlotList(GetViewerState()->GetPlotList());
@@ -3704,7 +3696,7 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_SELECTIONS:
         // Create the Selections window.
-        { QvisSelectionsWindow *sWin = new QvisSelectionsWindow(windowNames[i], 
+        { QvisSelectionsWindow *sWin = new QvisSelectionsWindow(windowNames[i],
               tr("Selections"), mainWin->GetNotepad());
           sWin->ConnectSelectionList(GetViewerState()->GetSelectionList());
           sWin->ConnectPlotList(GetViewerState()->GetPlotList());
@@ -3721,7 +3713,7 @@ QvisGUIApplication::WindowFactory(int i)
     case WINDOW_SEEDME:
         {
             win = new QvisSeedMeWindow(GetViewerState()->GetSeedMeAttributes(),
-                                       windowNames[i], windowNames[i], 
+                                       windowNames[i], windowNames[i],
                                        mainWin->GetNotepad());
             connect(win, SIGNAL(runCommand(const QString &)),
                     this, SLOT(Interpret(const QString &)));
@@ -3735,7 +3727,7 @@ QvisGUIApplication::WindowFactory(int i)
 // ****************************************************************************
 // Method: QvisGUIApplication::CreateInitiallyVisibleWindows
 //
-// Purpose: 
+// Purpose:
 //   Creates the windows that are initially visible based on the settings
 //   in the config file.
 //
@@ -3824,14 +3816,14 @@ QvisGUIApplication::CreateInitiallyVisibleWindows(DataNode *node)
                 }
                 else
                 {
-                    // Ask for the initialized window so it will be created 
+                    // Ask for the initialized window so it will be created
                     // and get initialized with the local and system settings.
                     GetInitializedWindowPointer(i);
                     //inherited interface don't need to show up, especially if
                     //it is embedded in another interface..
                     if(embeddedGUI) GetInitializedWindowPointer(i)->hide();
                 }
-                
+
                 // If the macro window is visible or posted start the CLI if not already running
                 if(WINDOW_MACRO == i)
                 {
@@ -3845,7 +3837,7 @@ QvisGUIApplication::CreateInitiallyVisibleWindows(DataNode *node)
 // ****************************************************************************
 // Method: QvisGUIApplication::ReadWindowSettings
 //
-// Purpose: 
+// Purpose:
 //   Makes a window read its config settings.
 //
 // Arguments:
@@ -3856,7 +3848,7 @@ QvisGUIApplication::CreateInitiallyVisibleWindows(DataNode *node)
 // Creation:   Thu May 6 14:55:36 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3887,7 +3879,7 @@ QvisGUIApplication::ReadWindowSettings(QvisWindowBase *win, DataNode *node)
 // ****************************************************************************
 // Method: QvisGUIApplication::GetWindowPointer
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the i'th window, even if it needs to be created
 //   first.
 //
@@ -3896,7 +3888,7 @@ QvisGUIApplication::ReadWindowSettings(QvisWindowBase *win, DataNode *node)
 //
 // Returns:    A pointer to the i'th window.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu May 6 14:56:29 PST 2004
@@ -3930,7 +3922,7 @@ QvisGUIApplication::GetWindowPointer(int i)
 // ****************************************************************************
 // Method: QvisGUIApplication::GetInitializedWindowPointer
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the i'th window after it has been initialized using
 //   the system and local settings.
 //
@@ -3939,13 +3931,13 @@ QvisGUIApplication::GetWindowPointer(int i)
 //
 // Returns:    A pointer to the window that we want.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu May 6 15:19:21 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisWindowBase *
@@ -4013,7 +4005,7 @@ QvisGUIApplication::LoadPlugins()
         visitTimer->StopTimer(timeid, "Loading plugins");
         // There was an error loading plugins so quit
         cerr << "VisIt experienced a fatal error loading plugins. The cause "
-             << "of the failure was: " << obj.GetExceptionType() << ": " 
+             << "of the failure was: " << obj.GetExceptionType() << ": "
              << obj.Message() << endl;
         // Close the viewer
         GetViewerProxy()->Close();
@@ -4037,7 +4029,7 @@ QvisGUIApplication::LoadPlugins()
 // ****************************************************************************
 // Method: QvisGUIApplication::CreatePluginWindows
 //
-// Purpose: 
+// Purpose:
 //   Loops over the plugin list and creates the plugin windows.
 //
 // Programmer: Brad Whitlock
@@ -4046,7 +4038,7 @@ QvisGUIApplication::LoadPlugins()
 // Modifications:
 //   Kathleen Bonnell, Mon May  7 15:58:13 PDT 2001
 //   Added Erase operator.
-//   
+//
 //   Hank Childs, Fri Jul 20 09:19:07 PDT 2001
 //   Removed material select operator.
 //
@@ -4102,7 +4094,7 @@ QvisGUIApplication::CreatePluginWindows()
         // Get a pointer to the GUI portion of the plot plugin information.
         std::string id(plotPluginManager->GetEnabledID(i));
         GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(id);
-   
+
         // Add a NULL window to the list of plot windows. We'll create the
         // plugin window later when we need it.
         plotWindows.push_back(0);
@@ -4114,7 +4106,7 @@ QvisGUIApplication::CreatePluginWindows()
         */
 
         // Add an option to the main window's plot manager widget's plot list.
-        QString *menuName = GUIInfo->GetMenuName();       
+        QString *menuName = GUIInfo->GetMenuName();
         mainWin->GetPlotManager()->AddPlotType(QString(id.c_str()), *menuName,
                                                GUIInfo->GetVariableTypes(),
                                                GUIInfo->XPMIconData());
@@ -4151,7 +4143,7 @@ QvisGUIApplication::CreatePluginWindows()
 // ****************************************************************************
 // Method: QvisGUIApplication::EnableOperatorMenuGrouping
 //
-// Purpose: 
+// Purpose:
 //   This method must be called from the main event loop and not from an
 //   update of the plugin manager attributes.
 //
@@ -4159,7 +4151,7 @@ QvisGUIApplication::CreatePluginWindows()
 // Creation:   Mon Feb  8 14:38:02 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4175,7 +4167,7 @@ QvisGUIApplication::EnableOperatorMenuGrouping()
 // ****************************************************************************
 // Method: QvisGUIApplication::EnsurePlotWindowIsCreated
 //
-// Purpose: 
+// Purpose:
 //   This method creates the i'th plot plugin window if it has not been
 //   created yet.
 //
@@ -4211,7 +4203,7 @@ QvisGUIApplication::EnsurePlotWindowIsCreated(int i)
 
         // Create the plot plugin window.
         plotWindows[i] = GUIInfo->CreatePluginWindow(i,
-            GetViewerState()->GetPlotAttributes(i), 
+            GetViewerState()->GetPlotAttributes(i),
             caption, shortName, mainWin->GetNotepad());
 
         delete menuName;
@@ -4221,7 +4213,7 @@ QvisGUIApplication::EnsurePlotWindowIsCreated(int i)
 // ****************************************************************************
 // Method: QvisGUIApplication::EnsureOperatorWindowIsCreated
 //
-// Purpose: 
+// Purpose:
 //   This method creates the i'th operator plugin window if it has not been
 //   created yet.
 //
@@ -4257,7 +4249,7 @@ QvisGUIApplication::EnsureOperatorWindowIsCreated(int i)
 
         // Create the operator plugin window.
         operatorWindows[i] = GUIInfo->CreatePluginWindow(i,
-            GetViewerState()->GetOperatorAttributes(i), 
+            GetViewerState()->GetOperatorAttributes(i),
             caption, shortName, mainWin->GetNotepad());
     }
 }
@@ -4265,7 +4257,7 @@ QvisGUIApplication::EnsureOperatorWindowIsCreated(int i)
 // ****************************************************************************
 // Method: QvisGUIApplication::WriteConfigFile
 //
-// Purpose: 
+// Purpose:
 //   Writes the GUI's part of the config file.
 //
 // Arguments:
@@ -4320,7 +4312,7 @@ QvisGUIApplication::EnsureOperatorWindowIsCreated(int i)
 //
 //    Jeremy Meredith, Tue Mar 30 12:26:59 PST 2004
 //    Added code to make sure we're not saving a simulation as a valid
-//    database name.  The actual plots won't get saved anyway, due to 
+//    database name.  The actual plots won't get saved anyway, due to
 //    ViewerPlotList::CreateNode.
 //
 //    Brad Whitlock, Fri Apr 9 14:00:49 PST 2004
@@ -4443,7 +4435,7 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
 // ****************************************************************************
 // Method: QvisGUIApplication::WritePluginWindowConfigs
 //
-// Purpose: 
+// Purpose:
 //   Loops through the lists of plugin windows and makes each of them add their
 //   window information to the config file info.
 //
@@ -4485,7 +4477,7 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 // ****************************************************************************
 // Method: QvisGUIApplication::SetSessionNameInWindowTitle
 //
-// Purpose: 
+// Purpose:
 //   Set the name of the session file into the window title.
 //
 // Arguments:
@@ -4495,7 +4487,7 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 // Creation:   Fri Mar  2 15:38:05 PST 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4512,7 +4504,7 @@ QvisGUIApplication::SetSessionNameInWindowTitle(const QString &filename)
 // ****************************************************************************
 // Method: QvisGUIApplication::SaveSession
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the viewer to save out all of its
 //   state to an XML file.
 //
@@ -4547,7 +4539,7 @@ QvisGUIApplication::SaveSession()
 // ****************************************************************************
 // Method: QvisGUIApplication::SaveSessionAs
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the viewer to save out all of its
 //   state to an XML file.
 //
@@ -4570,8 +4562,8 @@ QvisGUIApplication::SaveSession()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
-//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
-//   Use '.session' on windows, too. Send sessionDir to getSaveFileName 
+//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010
+//   Use '.session' on windows, too. Send sessionDir to getSaveFileName
 //   instead of '.'
 //
 //   Brad Whitlock, Fri Mar  2 15:35:51 PST 2012
@@ -4630,7 +4622,7 @@ QvisGUIApplication::SaveSessionAs()
 // ****************************************************************************
 // Method: QvisGUIApplication::SaveSessionFile
 //
-// Purpose: 
+// Purpose:
 //   Saves a session with the specified file name.
 //
 // Arguments:
@@ -4640,9 +4632,9 @@ QvisGUIApplication::SaveSessionAs()
 // Creation:   Mon May 9 14:57:08 PST 2005
 //
 // Modifications:
-//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
-//   Use '.session' on windows, too. 
-//   
+//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010
+//   Use '.session' on windows, too.
+//
 //   David Camp, Tue Aug  4 11:04:14 PDT 2015
 //   Added new dialog to be able to save session files on remote host.
 //
@@ -4683,14 +4675,14 @@ QvisGUIApplication::SaveSessionFile(const QString &fileName, const std::string &
 // ****************************************************************************
 // Method: QvisGUIApplication::UpdateSavedConfigFile
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that we use to read in the current settings
 //   and save out an updated "recent path list" to the settings. This should
 //   help users find navigate their directories easier without having to save
 //   settings.
 //
 // Note:       This is currently only called when the Selected Files window
-//             is dismissed with a click but we could change it so that the 
+//             is dismissed with a click but we could change it so that the
 //             settings are instead saved every N minutes if we ever stick
 //             any other automatically saved settings into this file.
 //
@@ -4700,7 +4692,7 @@ QvisGUIApplication::SaveSessionFile(const QString &fileName, const std::string &
 // Creation:   Tue Mar 7 10:08:19 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4738,7 +4730,7 @@ QvisGUIApplication::UpdateSavedConfigFile()
                 // Save the config file into a new file temporarily.
                 int len = strlen(configFile) + 4 + 1;
                 char *tmpname = new char[len];
-                SNPRINTF(tmpname, len, "%s.bak", configFile);
+                snprintf(tmpname, len, "%s.bak", configFile);
 
                 std::ofstream outf;
                 outf.open(tmpname, ios::out | ios::trunc);
@@ -4777,7 +4769,7 @@ QvisGUIApplication::UpdateSavedConfigFile()
 // ****************************************************************************
 // Method: QvisGUIApplication::ReadConfigFile
 //
-// Purpose: 
+// Purpose:
 //   Reads the config file and uses the GUI's portion to set window
 //   information.
 //
@@ -4867,7 +4859,7 @@ QvisGUIApplication::ReadConfigFile(const char *filename)
 // ****************************************************************************
 // Method: QvisGUIApplication::RestoreSession
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that allows the user to choose the name of
 //   a VisIt session to restore and then tells the viewer to restore the
 //   session using the file.
@@ -4895,9 +4887,9 @@ QvisGUIApplication::ReadConfigFile(const char *filename)
 //   Cyrus Harrison, Mon Feb  4 09:45:22 PST 2008
 //   Resolved AIX linking error w/ auto std::string to QString conversion.
 //
-//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
+//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010
 //   Search for '.session' on windows. Keep .vses for loading older sessions.
-//   
+//
 //   David Camp, Tue Aug  4 11:04:14 PDT 2015
 //   Added new ablitiy to load session files from a remote host.
 //
@@ -4927,8 +4919,8 @@ QvisGUIApplication::RestoreSession()
 // ****************************************************************************
 // Method: QvisGUIApplication::RestoreSessionWithDifferentSources
 //
-// Purpose: 
-//   This is a Qt slot function that lets the user choose to restore the 
+// Purpose:
+//   This is a Qt slot function that lets the user choose to restore the
 //   session with different sources.
 //
 // Programmer: Brad Whitlock
@@ -4938,7 +4930,7 @@ QvisGUIApplication::RestoreSession()
 //
 //   Dave Pugmire, Thu Jan 31 10:47:06 EST 2008
 //   Use sessionDir for the default directory.
-//   
+//
 //   Cyrus Harrison, Mon Feb  4 09:45:22 PST 2008
 //   Resolved AIX linking error w/ auto std::string to QString conversion.
 //
@@ -4951,9 +4943,9 @@ QvisGUIApplication::RestoreSession()
 //   Jeremy Meredith, Thu Aug  7 15:39:55 EDT 2008
 //   Removed unused var.
 //
-//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
+//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010
 //   Search for '.session' on windows. Keep .vses for loading older sessions.
-//   
+//
 //   Kathleen Bonnell, Fri May 13 14:05:11 PDT 2011
 //   Set fallbackPath of srcChanger to sessionDir.
 //
@@ -4988,12 +4980,12 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
             std::map<std::string, stringVector> uses;
             if(sessionAccess.GetSourceMap(keys, values, uses))
             {
-                QvisSessionSourceChangerDialog *srcChanger = new 
+                QvisSessionSourceChangerDialog *srcChanger = new
                     QvisSessionSourceChangerDialog(0);
                 srcChanger->setSources(keys, values, uses);
                 srcChanger->setFallbackPath(sessionDir.c_str());
 
-                // Let the user change the sources that are used to 
+                // Let the user change the sources that are used to
                 // restore the session.
                 if(srcChanger->exec() == QDialog::Accepted)
                 {
@@ -5031,7 +5023,7 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
 // ****************************************************************************
 // Method: QvisGUIApplication::RestoreSessionFile
 //
-// Purpose: 
+// Purpose:
 //   Restores the specified session.
 //
 // Arguments:
@@ -5049,7 +5041,7 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
 //
 //   Brad Whitlock, Thu May 6 15:17:34 PST 2004
 //   I added a call to the new CreateInitiallyVisibleWindows method, which
-//   creates the windows for which we have information stored in the 
+//   creates the windows for which we have information stored in the
 //   session file.
 //
 //   Brad Whitlock, Mon Aug 2 13:30:50 PST 2004
@@ -5099,7 +5091,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
 
         restoringSession = true;
         std::string filename(s.toStdString());
-          
+
         // Make the gui read in its part of the config.
         std::string guifilename(filename);
         guifilename += ".gui";
@@ -5148,7 +5140,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
 // ****************************************************************************
 // Method: QvisGUIApplication::ProcessSessionNode
 //
-// Purpose: 
+// Purpose:
 //   Process the Session xml node.
 //
 // Arguments:
@@ -5177,7 +5169,7 @@ QvisGUIApplication::ProcessSessionNode(DataNode *node,
     {
         ProcessConfigSettings(node, false);
         CreateInitiallyVisibleWindows(node);
-        ProcessWindowConfigSettings(node); 
+        ProcessWindowConfigSettings(node);
 
         // Look for the VisIt tree.
         DataNode *visitRoot = node->GetNode("VisIt");
@@ -5225,7 +5217,7 @@ QvisGUIApplication::ProcessSessionNode(DataNode *node,
                     // viewer to restore with different sources.
                     connect(sessionFileHelper,
                         SIGNAL(complete(const QString &, const stringVector &)),
-                        this, 
+                        this,
                         SLOT(sessionFileHelper_LoadSessionWithDifferentSources(
                             const QString &, const stringVector &)));
 
@@ -5294,7 +5286,7 @@ QvisGUIApplication::ProcessSessionNode(DataNode *node,
 // ****************************************************************************
 // Method: QvisGUIApplication::sessionFileHelper_LoadFile
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function used with sessionFileHelper to load a particular
 //   database.
 //
@@ -5305,7 +5297,7 @@ QvisGUIApplication::ProcessSessionNode(DataNode *node,
 // Creation:   Thu Oct 27 16:28:45 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5319,7 +5311,7 @@ QvisGUIApplication::sessionFileHelper_LoadFile(const QString &db)
 // ****************************************************************************
 // Method: QvisGUIApplication::sessionFileHelper_LoadSession
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function that tells the viewer to load the session file.
 //
 // Arguments:
@@ -5332,7 +5324,7 @@ QvisGUIApplication::sessionFileHelper_LoadFile(const QString &db)
 // Creation:   Thu Oct 27 16:29:28 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5348,7 +5340,7 @@ QvisGUIApplication::sessionFileHelper_LoadSession(const QString &filename)
 // ****************************************************************************
 // Method: QvisGUIApplication::sessionFileHelper_LoadSessionWithDifferentSources
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function that tells the viewer to load the session file.
 //
 // Arguments:
@@ -5362,7 +5354,7 @@ QvisGUIApplication::sessionFileHelper_LoadSession(const QString &filename)
 // Creation:   Thu Oct 27 16:29:28 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5380,7 +5372,7 @@ QvisGUIApplication::sessionFileHelper_LoadSessionWithDifferentSources(
 // ****************************************************************************
 // Method: QvisGUIApplication::ProcessConfigSettings
 //
-// Purpose: 
+// Purpose:
 //   This method processes the configuration settings that were read by the
 //   ReadConfigFile method.
 //
@@ -5426,7 +5418,7 @@ QvisGUIApplication::ProcessConfigSettings(DataNode *node, bool systemConfig)
 // ****************************************************************************
 // Method: QvisGUIApplication::ProcessWindowConfigSettings
 //
-// Purpose: 
+// Purpose:
 //   This method processes the configuration settings that were read by the
 //   ReadConfigFile method.
 //
@@ -5461,7 +5453,7 @@ QvisGUIApplication::ProcessConfigSettings(DataNode *node, bool systemConfig)
 //   I added code to make the main window process its settings.
 //
 //   Kathleen Bonnell, Tue Oct 28 08:18:06 PDT 2008
-//   For call to SetFromNode, if a session is being restored, instead of 
+//   For call to SetFromNode, if a session is being restored, instead of
 //   passing the value from savedGUIGeometry, pass false so values stored in
 //   session file aren't overwritten.
 //
@@ -5517,7 +5509,7 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
     }
 
     // Get whether to enable warning popups.
-    DataNode *swpNode = 0; 
+    DataNode *swpNode = 0;
     if((swpNode = guiNode->GetNode("enableWarningMessagePopups")) != 0)
     {
         messageWin->SetEnableWarningPopups(swpNode->AsBool());
@@ -5528,14 +5520,14 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
     ReadPluginWindowConfigs(guiNode, configVersion);
 
     // Read the main window's config settings now.
-    mainWin->SetFromNode(guiNode, restoringSession ? false : savedGUIGeometry, 
+    mainWin->SetFromNode(guiNode, restoringSession ? false : savedGUIGeometry,
         savedGUISize, savedGUILocation, borders);
 }
 
 // ****************************************************************************
 // Method: QvisGUIApplication::ReadPluginWindowConfigs
 //
-// Purpose: 
+// Purpose:
 //   Loops through all of the plugin windows and makes them read their window
 //   position, size information.
 //
@@ -5651,24 +5643,24 @@ QvisGUIApplication::ReadPluginWindowConfigs(DataNode *parentNode,
 // ****************************************************************************
 // Method: QvisGUIApplication::ReadSavedMainWindowGeometry
 //
-// Purpose: 
+// Purpose:
 //   Reads the main window's geometry from the config file.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 25 12:32:28 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
-QvisGUIApplication::ReadSavedMainWindowGeometry(DataNode *parentNode, 
+QvisGUIApplication::ReadSavedMainWindowGeometry(DataNode *parentNode,
     bool &wh_set, int &w, int &h, bool &xy_set, int &x, int &y)
 {
     wh_set = false;
@@ -5730,7 +5722,7 @@ QvisGUIApplication::ReadSavedMainWindowGeometry(DataNode *parentNode,
 // ****************************************************************************
 // Method: QvisGUIApplication::StartMDServer
 //
-// Purpose: 
+// Purpose:
 //   Starts an mdserver through the viewer.
 //
 // Arguments:
@@ -5738,7 +5730,7 @@ QvisGUIApplication::ReadSavedMainWindowGeometry(DataNode *parentNode,
 //   args      : A vector containing the program arguments.
 //   data      : A pointer that can be cast to "this".
 //
-// Returns:    
+// Returns:
 //
 // Note:       This is a callback function that the fileServer object
 //             uses to launch mdservers.
@@ -5770,7 +5762,7 @@ QvisGUIApplication::StartSharedServer(const std::string &hostName,
 }
 
 void
-QvisGUIApplication::StartMDServer(const std::string &hostName, 
+QvisGUIApplication::StartMDServer(const std::string &hostName,
     const stringVector &args, void *data)
 {
     ViewerProxy *theViewer = (ViewerProxy *)data;
@@ -5795,13 +5787,13 @@ QvisGUIApplication::StartMDServer(const std::string &hostName,
 // ****************************************************************************
 // Method: QvisGUIApplication::InitializeFileServer
 //
-// Purpose: 
+// Purpose:
 //   Initializes the file server from entries in the config file.
 //
 // Arguments:
 //   guiNode : A pointer to the GUI's data node.
 //
-// Note:       
+// Note:
 //   This was broken out of the ReadConfigFile method due to the
 //   complexity of things that can happen.
 //
@@ -5985,7 +5977,7 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
 // ****************************************************************************
 // Method: QvisGUIApplication::GetVirtualDatabaseDefinitions
 //
-// Purpose: 
+// Purpose:
 //   Gets all of the virtual file definitions for files in the applied
 //   file list.
 //
@@ -5996,7 +5988,7 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
 // Creation:   Tue Jul 27 11:59:42 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6011,7 +6003,7 @@ QvisGUIApplication::GetVirtualDatabaseDefinitions(
     {
         if(files[i].IsVirtual())
         {
-            defs[files[i].FullName()] = 
+            defs[files[i].FullName()] =
                 fileServer->GetVirtualFileDefinition(files[i].FullName());
         }
     }
@@ -6020,12 +6012,12 @@ QvisGUIApplication::GetVirtualDatabaseDefinitions(
 // ****************************************************************************
 // Method: QvisGUIApplication::RefreshFileList
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that rereads the files in the current directory
 //   and adds them to the new list of applied files, which are the files that
 //   appear in the selected files list in the file panel.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jun 23 10:43:58 PDT 2003
@@ -6138,7 +6130,7 @@ QvisGUIApplication::RefreshFileList()
         if(refreshedFiles[i].IsVirtual())
         {
             std::string fileName(refreshedFiles[i].FullName());
-            StringStringVectorMap::const_iterator oldDef = 
+            StringStringVectorMap::const_iterator oldDef =
                 oldVirtualDefinitions.find(fileName);
             StringStringVectorMap::const_iterator newDef =
                 newVirtualDefinitions.find(fileName);
@@ -6158,13 +6150,13 @@ QvisGUIApplication::RefreshFileList()
 // ****************************************************************************
 // Method: QvisGUIApplication::RefreshFileListAndNextFrame
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that rereads the files in the current directory
 //   and adds them to the new list of applied files, which are the files that
 //   appear in the selected files list in the file panel. After doing all that,
 //   it tells the viewer to do a nextframe.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 30 16:57:16 PST 2003
@@ -6185,7 +6177,7 @@ QvisGUIApplication::RefreshFileListAndNextFrame()
 // ****************************************************************************
 // Method: QvisGUIApplication::LoadFile
 //
-// Purpose: 
+// Purpose:
 //   Loads the initial data file if there is one.
 //
 // Programmer: Brad Whitlock
@@ -6282,7 +6274,7 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
             if(f.host != oldHost)
             {
                 fileServer->SetHost(f.host);
-                fileServer->Notify();                
+                fileServer->Notify();
             }
 
             // In case the path was relative, expand the path to a full path.
@@ -6315,7 +6307,7 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
                             stringVector def(fileServer->GetVirtualFileDefinition(*pos));
 
                             // See if the file that we want to open is in the virtual
-                            // file definition.                       
+                            // file definition.
                             for(size_t state = 0; state < def.size(); ++state)
                             {
                                 if(f.filename == def[state])
@@ -6339,7 +6331,7 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
 
                 //
                 // Combine the files with the applied files so we can call this
-                // method repeatedly and have all of the files that we've opened 
+                // method repeatedly and have all of the files that we've opened
                 // this way be in the applied file list.
                 //
                 fileServer->SetAppliedFileList(
@@ -6450,7 +6442,7 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
 // ****************************************************************************
 // Method: QvisGUIApplication::ReadFromViewer
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the viewer that it has
 //   input that it can process.
 //
@@ -6514,7 +6506,7 @@ QvisGUIApplication::ReadFromViewer(int)
 // ****************************************************************************
 // Method: QvisGUIApplication::DelayedReadFromViewer
 //
-// Purpose: 
+// Purpose:
 //   Tries to read from the viewer.
 //
 // Note:       This method is called from the event loop in response to having
@@ -6524,7 +6516,7 @@ QvisGUIApplication::ReadFromViewer(int)
 // Creation:   Thu Jul 31 15:16:30 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6536,7 +6528,7 @@ QvisGUIApplication::DelayedReadFromViewer()
 // ****************************************************************************
 // Method: QvisGUIApplication::SendKeepAlives
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the file server to send keep alive
 //   signals to the mdservers.
 //
@@ -6544,7 +6536,7 @@ QvisGUIApplication::DelayedReadFromViewer()
 // Creation:   Fri Mar 12 14:12:30 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6556,7 +6548,7 @@ QvisGUIApplication::SendKeepAlives()
 // ****************************************************************************
 // Method: QvisGUIApplication::SaveSettings
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that writes the VisIt config file.
 //
 // Programmer: Brad Whitlock
@@ -6595,7 +6587,7 @@ QvisGUIApplication::SaveSettings()
 // ****************************************************************************
 // Method: QvisGUIApplication::ActivatePlotWindow
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a plot window must be
 //   activated.
 //
@@ -6606,7 +6598,7 @@ QvisGUIApplication::SaveSettings()
 // Creation:   Fri Mar 23 16:49:25 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6622,7 +6614,7 @@ QvisGUIApplication::ActivatePlotWindow(int index)
 // ****************************************************************************
 // Method: QvisGUIApplication::ActivateOperatorWindow
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when an operator window must be
 //   activated.
 //
@@ -6633,7 +6625,7 @@ QvisGUIApplication::ActivatePlotWindow(int index)
 // Creation:   Fri Mar 23 16:49:25 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6649,8 +6641,8 @@ QvisGUIApplication::ActivateOperatorWindow(int index)
 // ****************************************************************************
 // Method: QvisGUIApplication::NonSpontaneousIconifyWindows
 //
-// Purpose: 
-//   This is a Qt slot function that iconifies all of the GUI windows.  It 
+// Purpose:
+//   This is a Qt slot function that iconifies all of the GUI windows.  It
 //   should only be called when the iconify request is not spontaneous.
 //
 // Programmer: Hank Childs
@@ -6668,7 +6660,7 @@ QvisGUIApplication::NonSpontaneousIconifyWindows(void)
 // ****************************************************************************
 // Method: QvisGUIApplication::IconifyWindows
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that iconifies all of the GUI windows.
 //
 // Programmer: Brad Whitlock
@@ -6730,7 +6722,7 @@ QvisGUIApplication::IconifyWindows(bool isSpontaneous)
 // ****************************************************************************
 // Method: QvisGUIApplication::DeIconifyWindows
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that de-iconifies all of the windows.
 //
 // Programmer: Brad Whitlock
@@ -6788,7 +6780,7 @@ QvisGUIApplication::DeIconifyWindows()
 // ****************************************************************************
 // Method: QvisGUIApplication::AboutVisIt
 //
-// Purpose: 
+// Purpose:
 //   This a Qt slot function that tells the splash screen to show itself.
 //
 // Programmer: Brad Whitlock
@@ -6829,7 +6821,7 @@ QvisGUIApplication::AboutVisIt()
 // ****************************************************************************
 // Method: QvisGUIApplication::SplashScreenProgress
 //
-// Purpose: 
+// Purpose:
 //   This method sends progress messages to the splash screen.
 //
 // Arguments:
@@ -6873,18 +6865,18 @@ QvisGUIApplication::SplashScreenProgress(const QString &msg, int prog)
 // ****************************************************************************
 // Method: QvisGUIApplication::SaveWindow
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot that tells the viewer to print the active window.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Feb 20 12:40:11 PDT 2002
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Wed Oct 15 08:50:14 PDT 2003
 //   Turn off TIFFs where the VTK library doesn't work.
 //
-//   Kathleen Bonnell, Fri Oct 24 16:34:35 PDT 2003 
+//   Kathleen Bonnell, Fri Oct 24 16:34:35 PDT 2003
 //   Remove TIFF fix, VTK now uses TIFF library.
 //
 // ****************************************************************************
@@ -6898,7 +6890,7 @@ QvisGUIApplication::SaveWindow()
 // ****************************************************************************
 // Method: QvisGUIApplication::PrintWindow
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that lets the user set print options and then
 //   it tells the viewer to print.
 //
@@ -6918,8 +6910,8 @@ QvisGUIApplication::SaveWindow()
 //   I added MacOS X specific coding that lets us handle the setting up of
 //   the printer options so we can actually print.
 //
-//   Kathleen Bonnell, Wed Aug 22 17:37:06 PDT 2007 
-//   If on WIN32 and user has set print options, tell viewer to PrintWindow. 
+//   Kathleen Bonnell, Wed Aug 22 17:37:06 PDT 2007
+//   If on WIN32 and user has set print options, tell viewer to PrintWindow.
 //
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
@@ -6939,12 +6931,12 @@ QvisGUIApplication::SaveWindow()
 //   the print dialog is accepted.
 //
 //   Kevin Griffin, Tue Sep 19 16:48:21 PDT 2017
-//   Removed the OS X specific coding since the PMSessionPrintDialog method 
+//   Removed the OS X specific coding since the PMSessionPrintDialog method
 //   has been deprecated and removed and the QPrinter object is now adequate
 //   for printing on OS X.
 //
 // ****************************************************************************
-    
+
 void
 QvisGUIApplication::PrintWindow()
 {
@@ -6953,7 +6945,7 @@ QvisGUIApplication::PrintWindow()
     bool setupPrinter = true;
     p->SetOutputToFile(false);
     p->SetOutputToFileName("");
-    
+
     //
     // If we've never set up the printer options, set them up now using
     // Qt's printer object and printer dialog.
@@ -6962,7 +6954,7 @@ QvisGUIApplication::PrintWindow()
     {
         // Create a new printer object.
         printer = new QPrinter;
-        
+
         // If the printer attributes have no printer name then set the
         // printer object's name into the printer attributes.
         p->SetCreator("VisIt");
@@ -6971,24 +6963,75 @@ QvisGUIApplication::PrintWindow()
             p->SetPrinterName(printer->printerName().toStdString());
             p->Notify();
         }
-        
+
         // Create an observer for the printer attributes that will copy
         // their values into the printer object when there are changes.
         printerObserver = new ObserverToCallback(p,
                                                  UpdatePrinterAttributes, (void *)printer);
-        
+
         // Indicate that we need to set up the printer.
         setupPrinter = true;
     }
-    
+
     // Store the printer attributes into the printer object.
     if(setupPrinter)
         PrinterAttributesToQPrinter(p, printer);
-    
+
     // Execute the printer dialog
     QPrintDialog printDialog(printer, mainWin);
     if(printDialog.exec() == QDialog::Accepted)
     {
+#ifdef WIN32
+        // If printer->outputFileName is NOT NULL, then 'Print to file' was
+        // chosen and the outputFileName set to 'FILE:'.  Not a very helpful
+        // name, and default location will be '%HOMEDRIVE%', eg "C:\"
+        //
+        // In the case that outputFileName IS NULL, but the chosen printer is
+        // 'Microsoft Print to PDF', then there is a different problem:
+        // vtkImageWriter will create a file named 'untitled.pdf' in CWD.
+        // Later, during the QPaint::begin event called from
+        // vtkQtImagePrinter::WriteFile, a QFileDialog will be opened allowing
+        // user to choose file name and location, leaving the empty
+        // 'untitled.pdf' in the file system.
+        //
+        // Resolution of these issues: use QFileDialog here to get filename
+        // and location from user and set QPrinter's outputFileName. This
+        // will force 'Print to file' path.
+
+        bool useFileDialog = false;
+        if(!printer->outputFileName().isNull())
+        {
+            useFileDialog = true;
+        }
+        else if(!printer->printerName().isNull() &&
+               printer->printerName() == QString("Microsoft Print to PDF"))
+        {
+                useFileDialog = true;
+        }
+        if(useFileDialog)
+        {
+            // Use cwd as intial dir if it's writeable
+            QString useDir = QDir::current().path();
+            { // new scope
+                // force a temporary file creation in cwd
+                QTemporaryFile tf("mytemp");
+                if (!tf.open())
+                {
+                    // not writeable, use VisIt's user directory instead.
+                    useDir = GetUserVisItDirectory().c_str();
+                }
+            }
+            QString defaultFile = useDir + "\\" + QString("untitled.pdf");
+
+            // Get the name of the file that the user chose.
+            QString filter(tr("PDF file") +  QString("  (*.pdf)"));
+            QString fileName = QFileDialog::getSaveFileName(0,
+                                   tr("Choose pdf file name"),
+                                   defaultFile,
+                                   filter);
+            printer->setOutputFileName(fileName);
+        }
+#endif
         //
         // Send all of the Qt printer options to the viewer
         //
@@ -6996,7 +7039,7 @@ QvisGUIApplication::PrintWindow()
         p->SetCreator("VisIt");
         printerObserver->SetUpdate(false);
         p->Notify();
-        
+
         //
         // Tell the viewer to print the image. All print dialogs I've seen
         // for Qt 4 have "Print" as the button that accepts the Print dialog.
@@ -7013,7 +7056,7 @@ QvisGUIApplication::PrintWindow()
 // Purpose:
 //   Copies the contents of a QPrinter object into a PrinterAttributes object.
 //
-// Arguments:      
+// Arguments:
 //   printer : The source QPrinter object.
 //   p       : The destination PrinterAttributes object.
 //
@@ -7068,7 +7111,7 @@ QPrinterToPrinterAttributes(QPrinter *printer, PrinterAttributes *p)
 // Purpose:
 //   Copies the contents of a PrinterAttributes object into a QPrinter object.
 //
-// Arguments:      
+// Arguments:
 //   p       : The source PrinterAttributes object.
 //   printer : The destination QPrinter object.
 //
@@ -7082,7 +7125,7 @@ QPrinterToPrinterAttributes(QPrinter *printer, PrinterAttributes *p)
 //   Brad Whitlock, Mon May 24 13:42:17 PDT 2010
 //   Only allow valid printer names.
 //
-//   Kathleen Biagas, Tues Sep 12 10:27:13 MST 2017 
+//   Kathleen Biagas, Tues Sep 12 10:27:13 MST 2017
 //   Add less expensive call to availablePrinterNames for Qt version >= 5.3.
 //
 // ****************************************************************************
@@ -7126,7 +7169,7 @@ PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
 //   attributes change. This function copies the viewer's print attributes
 //   into the application's QPrinter object.
 //
-// Arguments:      
+// Arguments:
 //   subj : A pointer to the PrinterAttributes object that caused the call.
 //   data : A pointer to the QPrinter that we're gonna update.
 //
@@ -7134,7 +7177,7 @@ PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
 // Creation:   Wed Feb 20 13:51:06 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -7222,7 +7265,7 @@ QvisGUIApplication::HandleMetaDataUpdate()
     if( GetViewerState()->GetDatabaseMetaData()->GetIsSimulation() )
     {
         const std::string mdf =
-          GetViewerState()->GetDatabaseMetaData()->GetDatabaseName();   
+          GetViewerState()->GetDatabaseMetaData()->GetDatabaseName();
 
         const QualifiedFilenameVector &qfv = fileServer->GetAppliedFileList();
 
@@ -7280,7 +7323,7 @@ QvisGUIApplication::HandleMetaDataUpdate()
 // ****************************************************************************
 // Method: QvisGUIApplication::AddPlot
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user tries to add a
 //   new plot.
 //
@@ -7297,10 +7340,10 @@ QvisGUIApplication::HandleMetaDataUpdate()
 // Modifications:
 //   Mark Blair, Mon Aug 21 18:29:00 PDT 2006
 //   Pass additional information to plot wizard being created.
-//   
+//
 //   Mark Blair, Tue Aug 22 16:12:00 PDT 2006
 //   Changed interface to GetMetaData.
-//   
+//
 //   Brad Whitlock, Tue Jun 24 11:53:56 PDT 2008
 //   Get the plugin manager from the viewer proxy.
 //
@@ -7374,7 +7417,7 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
 // ****************************************************************************
 // Method: QvisGUIApplication::AddOperator
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user tries to add
 //   an operator.
 //
@@ -7390,7 +7433,7 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
 // Modifications:
 //   Brad Whitlock, Tue Jun 24 11:53:56 PDT 2008
 //   Get the plugin manager from the viewer proxy.
-//   
+//
 //   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
 //   Initial Qt4 Port.
 //
@@ -7445,7 +7488,7 @@ QvisGUIApplication::AddOperator(int operatorType)
 // ****************************************************************************
 // Method: QvisGUIApplication::newExpression
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called from variable buttons to
 //   create a new expression.
 //
@@ -7473,171 +7516,9 @@ QvisGUIApplication::newExpression()
 }
 
 // ****************************************************************************
-// Method: QvisGUIApplication::updateVisIt
-//
-// Purpose: 
-//   This method creates a QvisVisItUpdate object and tells it to look for a
-//   new version of VisIt to install.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Feb 9 17:56:51 PST 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisGUIApplication::updateVisIt()
-{
-    if(visitUpdate == 0)
-    {
-        
-        visitUpdate = new QvisVisItUpdate(mainWin);
-        connect(visitUpdate, SIGNAL(updateNotAllowed()),
-                mainWin, SLOT(updateNotAllowed()));
-        connect(visitUpdate, SIGNAL(installationComplete(const QString &)),
-                this, SLOT(updateVisItCompleted(const QString &)));
-                
-    }
-
-    visitUpdate->startUpdate();
-}
-
-// ****************************************************************************
-// Method: QvisGUIApplication::updateVisItCompleted
-//
-// Purpose: 
-//   This method restarts the current VisIt session in a new version of the
-//   VisIt executable. It's called when a new version of VisIt has been
-//   successfully installed.
-//
-// Arguments:
-//   program : The full name of the new VisIt executable.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Feb 15 11:43:06 PDT 2005
-//
-// Modifications:
-//   Brad Whitlock, Wed Mar 2 11:49:41 PDT 2005
-//   Fixed the code so it compiles on Windows.
-//
-//   Brad Whitlock, Fri May 6 12:14:14 PDT 2005
-//   I made it use the Quit method.
-//
-//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
-//   Support for internationalization.
-//
-//   Brad Whitlock, Thu Oct  2 14:41:25 PDT 2008
-//   Qt 4.
-//
-//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
-//   Windows sessions now use '.session' extension.
-//   
-// ****************************************************************************
-
-void
-QvisGUIApplication::updateVisItCompleted(const QString &program)
-{
-    QString msg(tr("VisIt has been updated. Would you like VisIt to save \n"
-                "its session, quit, and restart the session using the new \n"
-                "version of VisIt?"));
-    if(QMessageBox::information(mainWin, tr("VisIt"), msg,
-       QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
-    {
-        debug1 << "User chose save session and start up again in the new VisIt."
-               << endl; 
-
-        QString visitDir(GetUserVisItDirectory().c_str());
-        QString fileName(visitDir + "update_version");
-        fileName += ".session";
-
-        // Tell the viewer to save a session file.
-        std::string hostname;
-        GetViewerMethods()->ExportEntireState(fileName.toStdString(), hostname);
-
-        // Write the gui part of the session with a ".gui" extension.
-        QString gfileName(fileName + ".gui");
-        WriteConfigFile(gfileName.toStdString().c_str());
-
-#if defined(_WIN32)
-        // Start the new version of VisIt.
-        QProcess *newVisIt = new QProcess(this);
-
-        QStringList args;
-        args.append("-sessionfile");
-        args.append(fileName);
-        if(localOnly)
-            args.append("-localonly");
-        if(!showSplash)
-            args.append("-nosplash");
-        if(!readConfig)
-            args.append("-noconfig");
-        newVisIt->start(program, args);
-
-        // quit this version.
-        Quit();
-#else
-        // Write a script to launch the new version of VisIt       
-        FILE *f = fopen("exec_new_visit", "w");
-        if(f == 0)
-        {
-            Error(tr("VisIt could not automatically relaunch itself. "
-                     "Please exit and restart VisIt."));
-        }
-        else
-        {
-            //
-            // Write a C-shell script to launch the new version of VisIt.
-            // We use a script because it affords us the opportunity to
-            // remove some environment variables that mess up the launch
-            // of the new version.
-            //
-            fprintf(f, "unsetenv VISITDIR\n");
-            fprintf(f, "unsetenv VISITPROGRAM\n");
-            fprintf(f, "unsetenv VISITVERSION\n");
-            fprintf(f, "unsetenv VISITPLUGINDIR\n");
-            fprintf(f, "unsetenv VISITPLUGININSTPUB\n");
-            fprintf(f, "unsetenv VISITPLUGININSTPRI\n");
-            fprintf(f, "unsetenv VISITPLUGININST\n");
-            fprintf(f, "unsetenv VISITHOME\n");
-            fprintf(f, "unsetenv VISITARCHHOME\n");
-            fprintf(f, "unsetenv LD_LIBRARY32_PATH\n");
-            fprintf(f, "unsetenv LD_LIBRARYN32_PATH\n");
-            fprintf(f, "unsetenv LD_LIBRARY64_PATH\n");
-            fprintf(f, "unsetenv PYTHONHOME\n");
-            QString commandLine(program);
-            commandLine += " -sessionfile ";
-            commandLine += fileName;
-            if(localOnly)
-                commandLine += " -localonly";
-            if(!showSplash)
-                commandLine += " -nosplash";
-            if(!readConfig)
-                commandLine += " -noconfig";
-            fprintf(f, "%s\n", commandLine.toStdString().c_str());
-            fprintf(f, "sleep 2\n");
-            fprintf(f, "rm -f exec_new_visit\n");
-            fprintf(f, "exit 0\n");
-            fclose(f);
-
-            // Start the script to launch the new version of VisIt.
-            QProcess *newVisIt = new QProcess(this);
-            QStringList args;
-            args.append("-f");
-            args.append("exec_new_visit");
-            newVisIt->start("csh",args);
-
-            // quit this version.
-            Quit();
-        }
-#endif
-    }
-}
-
-// ****************************************************************************
 // Method: QvisGUIApplication::SendInterface
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sends the GUI's client interface to
 //   the viewer.
 //
@@ -7698,7 +7579,7 @@ QvisGUIApplication::SendInterface()
 // ****************************************************************************
 // Method: QvisGUIApplication::HandleClientMethod
 //
-// Purpose: 
+// Purpose:
 //   Handles GUI client methods, which are commands that can be called by
 //   other VisIt clients.
 //
@@ -7744,7 +7625,7 @@ QvisGUIApplication::HandleClientMethod()
     else
     {
         int okay = GetViewerProxy()->MethodRequestHasRequiredInformation();
-     
+
         if(okay == 0)
         {
             debug5 << "Client method " << method->GetMethodName().c_str()
@@ -7958,7 +7839,7 @@ QvisGUIApplication::HandleClientMethod()
 // ****************************************************************************
 // Method: QvisGUIApplication::SendMessageBoxResult
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called to send messagebox results
 //   as a client method.
 //
@@ -7966,7 +7847,7 @@ QvisGUIApplication::HandleClientMethod()
 // Creation:   Mon May 9 14:20:56 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -7994,7 +7875,7 @@ QvisGUIApplication::SendMessageBoxResult1()
 // ****************************************************************************
 // Function: QuoteSpaces
 //
-// Purpose: 
+// Purpose:
 //   Adds quotes around a string that contains spaces.
 //
 // Arguments:
@@ -8007,7 +7888,7 @@ QvisGUIApplication::SendMessageBoxResult1()
 // Creation:   Tue Jul 12 13:34:39 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 std::string
@@ -8027,8 +7908,8 @@ QuoteSpaces(const std::string &s)
 // ****************************************************************************
 // Function: GetMovieCommandLine
 //
-// Purpose: 
-//   This function creates a command line for "visit -movie" based on the 
+// Purpose:
+//   This function creates a command line for "visit -movie" based on the
 //   information stored in the movieAtts.
 //
 // Arguments:
@@ -8043,7 +7924,7 @@ QuoteSpaces(const std::string &s)
 //   I made it use GetVisItLauncher.
 //
 //   Brad Whitlock, Fri Oct 28 13:52:31 PST 2005
-//   I moved the code to add the visit command to the caller. I also added 
+//   I moved the code to add the visit command to the caller. I also added
 //   code to add the version number if we're not running a development version.
 //
 //   Brad Whitlock, Fri Oct 20 12:14:38 PDT 2006
@@ -8084,7 +7965,7 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     char tmp[100];
     for(size_t i = 0; i < w.size(); ++i)
     {
-        SNPRINTF(tmp, 100, "%dx%d", w[i], h[i]);
+        snprintf(tmp, 100, "%dx%d", w[i], h[i]);
         G += tmp;
         if(i < (w.size() - 1))
             G += ",";
@@ -8127,16 +8008,16 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     args.push_back(QuoteSpaces(dirFile));
 
     args.push_back("-fps");
-    SNPRINTF(tmp, 100, "%d", movieAtts->GetFps());
+    snprintf(tmp, 100, "%d", movieAtts->GetFps());
     args.push_back(tmp);
 
     args.push_back("-start");
-    SNPRINTF(tmp, 100, "%d", movieAtts->GetStartIndex());
+    snprintf(tmp, 100, "%d", movieAtts->GetStartIndex());
     args.push_back(tmp);
 
     if(movieAtts->GetStride() > 1)
     {
-        SNPRINTF(tmp, 100, "%d", movieAtts->GetStride());
+        snprintf(tmp, 100, "%d", movieAtts->GetStride());
         args.push_back("-framestep");
         args.push_back(tmp);
     }
@@ -8144,19 +8025,19 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     if (movieAtts->GetEndIndex() != 1000000000)
     {
         args.push_back("-end");
-        SNPRINTF(tmp, 100, "%d", movieAtts->GetEndIndex());
+        snprintf(tmp, 100, "%d", movieAtts->GetEndIndex());
         args.push_back(tmp);
     }
 
     args.push_back("-frame");
-    SNPRINTF(tmp, 100, "%d", movieAtts->GetInitialFrameValue());
+    snprintf(tmp, 100, "%d", movieAtts->GetInitialFrameValue());
     args.push_back(tmp);
 }
 
 // ****************************************************************************
 // Function: UpdateCurrentWindowSizes
 //
-// Purpose: 
+// Purpose:
 //   This function updates the movieAtts with the correct window width and
 //   height.
 //
@@ -8171,7 +8052,7 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
 // Modifications:
 //    Jeremy Meredith, Tue Jun 24 12:27:54 EDT 2008
 //    Use the actual OSMesa size limit for the window limit.
-//   
+//
 // ****************************************************************************
 
 void
@@ -8205,15 +8086,15 @@ UpdateCurrentWindowSizes(MovieAttributes *movieAtts, int currentWidth,
 // ****************************************************************************
 // Function: GetNumMovieFrames
 //
-// Purpose: 
-//   This function returns the number of frames that could be generated 
+// Purpose:
+//   This function returns the number of frames that could be generated
 //   by a movie.  It is taken from QvisFilePanel::UpdateAnimationControls().
 //
 // Programmer: Dave Bremer
 // Creation:   Fri Oct  5 15:22:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -8254,7 +8135,7 @@ QvisGUIApplication::GetNumMovieFrames()
 // ****************************************************************************
 // Function: QvisGUIApplication::UpdateSessionDir
 //
-// Purpose: 
+// Purpose:
 //   Update the current sessionDir based on the user's file selection.
 //
 // Programmer: Dave Pugmire
@@ -8264,7 +8145,7 @@ QvisGUIApplication::GetNumMovieFrames()
 //   Brad Whitlock, Thu Jan 31 10:07:59 PST 2008
 //   Windows portability.
 //
-//   Kathleen Bonnell, Fri Jun 18 12:10:15 MST 2010 
+//   Kathleen Bonnell, Fri Jun 18 12:10:15 MST 2010
 //   Cannot assume path separators are stored according to platform specifics.
 //   Check unix style first.  Also don't substitute if idx < 0.
 //
@@ -8284,7 +8165,7 @@ QvisGUIApplication::UpdateSessionDir( const std::string &sessionFileName )
 // ****************************************************************************
 // Function: MakeCodeSlashes
 //
-// Purpose: 
+// Purpose:
 //   Turns '\' characters into "\\" in the output string.
 //
 // Arguments:
@@ -8294,7 +8175,7 @@ QvisGUIApplication::UpdateSessionDir( const std::string &sessionFileName )
 // Creation:   Mon Jul 11 10:13:48 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QString
@@ -8338,7 +8219,7 @@ void
 QvisGUIApplication::SetupCMFE()
 {
     if (setupCMFEWizard == NULL)
-        setupCMFEWizard = new QvisCMFEWizard(GetViewerState()->GetExpressionList(), 
+        setupCMFEWizard = new QvisCMFEWizard(GetViewerState()->GetExpressionList(),
                                              mainWin);
     setupCMFEWizard->SetGlobalAttributes(GetViewerState()->GetGlobalAttributes());
     setupCMFEWizard->SetWindowInformation(GetViewerState()->GetWindowInformation());
@@ -8351,16 +8232,16 @@ QvisGUIApplication::SetupCMFE()
 // ****************************************************************************
 // Method: QvisGUIApplication::QueryWindowSize
 //
-// Purpose: 
+// Purpose:
 //   Query the viewer for the window size and activate a synchronize.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 2 18:58:55 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -8381,7 +8262,7 @@ QvisGUIApplication::QueryWindowSize(int tag)
             break;
         }
     }
-    
+
     // Activate the Save movie wizard when the sync is complete.
     Synchronize(tag);
 }
@@ -8389,9 +8270,9 @@ QvisGUIApplication::QueryWindowSize(int tag)
 // ****************************************************************************
 // Method: QvisGUIApplication::SaveMovie
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that gets the current vis window size and
-//   initiates a set of events that eventually calls the SendMovieMain 
+//   initiates a set of events that eventually calls the SendMovieMain
 //   slot, which opens the Save movie wizard.
 //
 // Notes:      The code to stimulate the viewer to send its window size should
@@ -8401,7 +8282,7 @@ QvisGUIApplication::QueryWindowSize(int tag)
 // Creation:   Thu Feb 2 18:58:55 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -8413,8 +8294,8 @@ QvisGUIApplication::SaveMovie()
 // ****************************************************************************
 // Method: QvisGUIApplication::SaveMovieMain
 //
-// Purpose: 
-//   This is Qt slot function that opens the "Save movie" wizard and leads 
+// Purpose:
+//   This is Qt slot function that opens the "Save movie" wizard and leads
 //   the user through setting various movie options.
 //
 // Programmer: Brad Whitlock
@@ -8435,7 +8316,7 @@ QvisGUIApplication::SaveMovie()
 //   Added support for movie templates and changed how stereo works.
 //
 //   Brad Whitlock, Fri Jan 18 14:14:38 PST 2008
-//   Changed the code so it uses our Message dialog so users can paste the 
+//   Changed the code so it uses our Message dialog so users can paste the
 //   command into another window.
 //
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
@@ -8465,7 +8346,7 @@ QvisGUIApplication::SaveMovieMain()
     // The idea here is that I want set the start/end indices on the first
     // call, and if the default number of frames changes.  But I want those
     // parameters to stay the same otherwise, like when there are multiple
-    // executions of the save movie wizard on the same data.  movieAtts 
+    // executions of the save movie wizard on the same data.  movieAtts
     // holds the user-requested data, and I store the default (max) run length
     // in the wizard class.
     int nMovieFrames = GetNumMovieFrames();
@@ -8523,7 +8404,7 @@ QvisGUIApplication::SaveMovieMain()
             const intVector &stereos = movieAtts->GetStereoFlags();
             for(size_t i = 0; i < formats.size(); ++i)
             {
-                const char *stereoNames[] = {"off", "leftright", 
+                const char *stereoNames[] = {"off", "leftright",
                     "redblue", "redgreen"};
                 int si = (stereos[i] < 0 || stereos[i] > 3) ? 0 : stereos[i];
                 QString order;
@@ -8659,9 +8540,9 @@ QvisGUIApplication::SaveMovieMain()
                 QStringList sargs;
                 for(size_t i = 1; i < args.size(); ++i)
                     sargs.append(args[i].c_str());
-                
+
                 movieMaker->start(program,sargs);
-                
+
                 if(movieMaker->state() == QProcess::NotRunning)
                 {
                     errFlag = true;
@@ -8687,7 +8568,7 @@ QvisGUIApplication::SaveMovieMain()
                     msg += " ";
                 }
 
-                // Open a dialog that lists the "visit -movie" command that 
+                // Open a dialog that lists the "visit -movie" command that
                 // you have to run to make the movie.
                 Information(msg);
             }
@@ -8698,7 +8579,7 @@ QvisGUIApplication::SaveMovieMain()
 // ****************************************************************************
 // Method: QvisGUIApplication::CancelMovie
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called by the Movie Progress Dialog
 //   when we click its Cancel button.
 //
@@ -8706,7 +8587,7 @@ QvisGUIApplication::SaveMovieMain()
 // Creation:   Tue Jun 21 11:12:27 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -8721,9 +8602,9 @@ QvisGUIApplication::CancelMovie()
 // ****************************************************************************
 // Method: QvisGUIApplication::SaveCinema
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that gets the current vis window size and
-//   initiates a set of events that eventually calls the SendCinemaMain 
+//   initiates a set of events that eventually calls the SendCinemaMain
 //   slot, which opens the Save Cinema wizard.
 //
 // Notes:      The code to stimulate the viewer to send its window size should
@@ -8733,7 +8614,7 @@ QvisGUIApplication::CancelMovie()
 // Creation:   Thu Sep 14 12:08:08 PDT 2017
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -8748,8 +8629,8 @@ QvisGUIApplication::SaveCinema()
 // ****************************************************************************
 // Method: QvisGUIApplication::SaveCinemaMain
 //
-// Purpose: 
-//   This is Qt slot function that opens the "Save Cinema" wizard and leads 
+// Purpose:
+//   This is Qt slot function that opens the "Save Cinema" wizard and leads
 //   the user through setting Cinema options.
 //
 // Programmer: Brad Whitlock
@@ -8779,7 +8660,7 @@ QvisGUIApplication::SaveCinemaMain()
     // The idea here is that I want set the start/end indices on the first
     // call, and if the default number of frames changes.  But I want those
     // parameters to stay the same otherwise, like when there are multiple
-    // executions of the save cinema wizard on the same data.  cinemaAtts 
+    // executions of the save cinema wizard on the same data.  cinemaAtts
     // holds the user-requested data, and I store the default (max) run length
     // in the wizard class.
     int nCinemaFrames = GetNumMovieFrames();
@@ -8876,7 +8757,7 @@ QvisGUIApplication::SaveCinemaMain()
 // ****************************************************************************
 // Method: QvisGUIApplication::Interpret
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the interpreter to execute a string
 //   containing code of some type.
 //
@@ -8911,7 +8792,7 @@ QvisGUIApplication::Interpret(const QString &s)
 // ****************************************************************************
 // Method: QvisGUIApplication::InterpreterSync
 //
-// Purpose: 
+// Purpose:
 //   Starts a GUI synchronization that will cause the interpreter to execute
 //   code when the synchronization returns.
 //
@@ -8919,7 +8800,7 @@ QvisGUIApplication::Interpret(const QString &s)
 // Creation:   Fri May 6 11:17:31 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisGUIApplication::InterpreterSync()
@@ -8930,7 +8811,7 @@ QvisGUIApplication::InterpreterSync()
 // ****************************************************************************
 // Method: QvisGUIApplication::CrashRecoveryFile
 //
-// Purpose: 
+// Purpose:
 //   Returns the name of the crash recovery file.
 //
 // Returns:    The name of the crash recovery file.
@@ -8939,12 +8820,12 @@ QvisGUIApplication::InterpreterSync()
 // Creation:   Thu Jan 31 11:05:37 PST 2008
 //
 // Modifications:
-//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
+//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010
 //   Windows sessions now use '.session' extinsion.
 //
 //   Kevin Griffin, Mon Mar 12 14:18:57 PDT 2018
 //   Added VisIt PID to the crash recovery file name.
-//   
+//
 // ****************************************************************************
 
 QString
@@ -8981,11 +8862,11 @@ QvisGUIApplication::GetCrashFilePIDs(const QFileInfoList &fileList, intVector &o
     {
         QString fn = fileList.at(i).fileName();
         QStringList tokens = fn.split(".", QString::SkipEmptyParts);
-        
+
         if(tokens.size() > 2) {
             bool ok;
             int pid = tokens[1].toInt(&ok, 10);
-            
+
             if(ok)
             {
                 outPIDs.push_back(pid);
@@ -9016,22 +8897,22 @@ QvisGUIApplication::GetSystemPIDs(std::vector<int> &outPIDs)
 #if !defined(Q_OS_WIN)
     bool ok;
     char buf[2048];
-    
+
     FILE *f = popen("ps -A", "r");
-    
+
     while(fgets(buf, 2048, f) != NULL)
     {
         QString pidStr(buf);
         QStringList tokens = pidStr.split(QRegExp("\\s+"), QString::SkipEmptyParts); // whitespace character
-        
+
         int pid = tokens[0].toInt(&ok, 10);
-        
+
         if(ok)
         {
             outPIDs.push_back(pid);
         }
     }
-    
+
     pclose(f);
 #else
     HANDLE hProcessSnap;
@@ -9058,7 +8939,7 @@ QvisGUIApplication::GetSystemPIDs(std::vector<int> &outPIDs)
 // ****************************************************************************
 // Method: QvisGUIApplication::RestoreCrashRecoveryFile
 //
-// Purpose: 
+// Purpose:
 //   Asks the user whether the crash recovery file should be restored.
 //
 // Programmer: Brad Whitlock
@@ -9071,7 +8952,7 @@ QvisGUIApplication::GetSystemPIDs(std::vector<int> &outPIDs)
 //   Kevin Griffin, Mon Mar 12 14:18:57 PDT 2018
 //   Move the dialog prompt to a new method and now supporting multiple
 //   crash recovery files.
-//   
+//
 // ****************************************************************************
 
 void
@@ -9080,13 +8961,13 @@ QvisGUIApplication::RestoreCrashRecoveryFile()
     // Get list of crash recovery files
     QDir dir(GetUserVisItDirectory().c_str());
     dir.setFilter(QDir::Files);
-    
+
     QStringList nameFilters;
     nameFilters << "crash_recovery.*.session";
     dir.setNameFilters(nameFilters);
-    
+
     QFileInfoList crashFiles = dir.entryInfoList();
-    
+
     if(crashFiles.size() > 0)
     {
         // Crash file PIDs
@@ -9096,13 +8977,13 @@ QvisGUIApplication::RestoreCrashRecoveryFile()
         // System PIDs
         intVector systemPIDs;
         GetSystemPIDs(systemPIDs);
-        
+
         // Exclude crash files of any currently running VisIt processes
         for(int i=0; i<crashFilePIDs.size(); i++)
         {
             int crashFilePID = crashFilePIDs[i];
             bool addFile = true;
-            
+
             for(int j=0; j<systemPIDs.size(); j++)
             {
                 if(crashFilePID == systemPIDs[j])
@@ -9111,13 +8992,13 @@ QvisGUIApplication::RestoreCrashRecoveryFile()
                     break;
                 }
             }
-            
+
             if(addFile)
             {
                 recoveryFiles.append(crashFiles[i]);
             }
         }
-        
+
         if(recoveryFiles.size() > 0)
         {
             ShowCrashRecoveryDialog(recoveryFiles);
@@ -9177,7 +9058,7 @@ QvisGUIApplication::ShowCrashRecoveryDialog(const QFileInfoList &fileInfoList)
             }
         }
     }
-    
+
     Synchronize(REMOVE_CRASH_RECOVERY_TAG);
 }
 
@@ -9204,7 +9085,7 @@ QvisGUIApplication::PerformRestoreSessionFile(const QString &filename)
     std::string host;
     debug1 << "Restoring a crash recovery file: " << filename.toStdString() << endl;
     RestoreSessionFile(filename, files, host);
-    
+
     sessionFile = QString(""); // Make sure the session file name is
     // null as it was used for the recovery which forces a
     // Save Session As to occur if the user does a Save Session
@@ -9213,11 +9094,11 @@ QvisGUIApplication::PerformRestoreSessionFile(const QString &filename)
 // ****************************************************************************
 // Method: QvisGUIApplication::RemoveCrashRecoveryFile
 //
-// Purpose: 
+// Purpose:
 //   Removes the crash recovery file.
 //
 // Notes:
-//    
+//
 // Programmer: Brad Whitlock
 // Creation:   Thu Jan 31 11:06:26 PST 2008
 //
@@ -9231,21 +9112,21 @@ void
 QvisGUIApplication::RemoveCrashRecoveryFile(bool removeOldRecoveryFiles) const
 {
     QFile cr(CrashRecoveryFile());
-    
+
     if(cr.exists())
     {
         debug1 << "Removing crash recovery file: " << cr.fileName().toStdString() << endl;
         cr.remove();
     }
-    
+
     QFile gcr(CrashRecoveryFile() + ".gui");
-    
+
     if(gcr.exists())
     {
         debug1 << "Removing crash recovery gui file: " << gcr.fileName().toStdString() << endl;
         gcr.remove();
     }
-    
+
     // Remove any old recovery files
     if(removeOldRecoveryFiles)
     {
@@ -9276,15 +9157,15 @@ QvisGUIApplication::RemoveCrashRecoveryFileList() const
     {
         QString absFilePath = recoveryFiles[i].absoluteFilePath();
         QFile cr(absFilePath);
-        
+
         if(cr.exists())
         {
             debug1 << "Removing crash recovery file: " << cr.fileName().toStdString() << endl;
             cr.remove();
         }
-        
+
         QFile gcr(absFilePath + ".gui");
-        
+
         if(gcr.exists())
         {
             debug1 << "Removing crash recovery gui file: " << gcr.fileName().toStdString() << endl;
@@ -9296,7 +9177,7 @@ QvisGUIApplication::RemoveCrashRecoveryFileList() const
 // ****************************************************************************
 // Method: QvisGUIApplication::SaveCrashRecoveryFile
 //
-// Purpose: 
+// Purpose:
 //   Saves the crash recovery file.
 //
 // Programmer: Brad Whitlock
@@ -9325,7 +9206,7 @@ QvisGUIApplication::SaveCrashRecoveryFile()
 // ****************************************************************************
 // Method: QvisGUIApplication::redoPick
 //
-// Purpose: 
+// Purpose:
 //   Trigger repeating the current pick.
 //
 // Programmer: Gunther H. Weber
@@ -9343,7 +9224,7 @@ QvisGUIApplication::redoPick()
 // ****************************************************************************
 // Method: QvisGUIApplication::restorePickAttributesAfterRepick
 //
-// Purpose: 
+// Purpose:
 //   Trigger restoring the pick attributes after a repick.
 //
 // Programmer: Gunther H. Weber

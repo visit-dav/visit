@@ -1,46 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyavtSimulationInformation.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
-#include <PyavtSimulationCommandSpecification.h>
 #include <PyavtSimulationCommandSpecification.h>
 
 // ****************************************************************************
@@ -78,42 +42,42 @@ PyavtSimulationInformation_ToString(const avtSimulationInformation *atts, const 
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%shost = \"%s\"\n", prefix, atts->GetHost().c_str());
+    snprintf(tmpStr, 1000, "%shost = \"%s\"\n", prefix, atts->GetHost().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sport = %d\n", prefix, atts->GetPort());
+    snprintf(tmpStr, 1000, "%sport = %d\n", prefix, atts->GetPort());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssecurityKey = \"%s\"\n", prefix, atts->GetSecurityKey().c_str());
+    snprintf(tmpStr, 1000, "%ssecurityKey = \"%s\"\n", prefix, atts->GetSecurityKey().c_str());
     str += tmpStr;
     {   const stringVector &otherNames = atts->GetOtherNames();
-        SNPRINTF(tmpStr, 1000, "%sotherNames = (", prefix);
+        snprintf(tmpStr, 1000, "%sotherNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < otherNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", otherNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", otherNames[i].c_str());
             str += tmpStr;
             if(i < otherNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &otherValues = atts->GetOtherValues();
-        SNPRINTF(tmpStr, 1000, "%sotherValues = (", prefix);
+        snprintf(tmpStr, 1000, "%sotherValues = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < otherValues.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", otherValues[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", otherValues[i].c_str());
             str += tmpStr;
             if(i < otherValues.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     { // new scope
@@ -122,7 +86,7 @@ PyavtSimulationInformation_ToString(const avtSimulationInformation *atts, const 
         for(AttributeGroupVector::const_iterator pos = atts->GetGenericCommands().begin(); pos != atts->GetGenericCommands().end(); ++pos, ++index)
         {
             const avtSimulationCommandSpecification *current = (const avtSimulationCommandSpecification *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetGenericCommands(%d).", index);
+            snprintf(tmpStr, 1000, "GetGenericCommands(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtSimulationCommandSpecification_ToString(current, objPrefix.c_str());
         }
@@ -133,15 +97,15 @@ PyavtSimulationInformation_ToString(const avtSimulationInformation *atts, const 
     switch (atts->GetMode())
     {
       case avtSimulationInformation::Unknown:
-          SNPRINTF(tmpStr, 1000, "%smode = %sUnknown  # %s\n", prefix, prefix, mode_names);
+          snprintf(tmpStr, 1000, "%smode = %sUnknown  # %s\n", prefix, prefix, mode_names);
           str += tmpStr;
           break;
       case avtSimulationInformation::Running:
-          SNPRINTF(tmpStr, 1000, "%smode = %sRunning  # %s\n", prefix, prefix, mode_names);
+          snprintf(tmpStr, 1000, "%smode = %sRunning  # %s\n", prefix, prefix, mode_names);
           str += tmpStr;
           break;
       case avtSimulationInformation::Stopped:
-          SNPRINTF(tmpStr, 1000, "%smode = %sStopped  # %s\n", prefix, prefix, mode_names);
+          snprintf(tmpStr, 1000, "%smode = %sStopped  # %s\n", prefix, prefix, mode_names);
           str += tmpStr;
           break;
       default:
@@ -154,14 +118,14 @@ PyavtSimulationInformation_ToString(const avtSimulationInformation *atts, const 
         for(AttributeGroupVector::const_iterator pos = atts->GetCustomCommands().begin(); pos != atts->GetCustomCommands().end(); ++pos, ++index)
         {
             const avtSimulationCommandSpecification *current = (const avtSimulationCommandSpecification *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetCustomCommands(%d).", index);
+            snprintf(tmpStr, 1000, "GetCustomCommands(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtSimulationCommandSpecification_ToString(current, objPrefix.c_str());
         }
         if(index == 0)
             str += "#customCommands does not contain any avtSimulationCommandSpecification objects.\n";
     }
-    SNPRINTF(tmpStr, 1000, "%smessage = \"%s\"\n", prefix, atts->GetMessage().c_str());
+    snprintf(tmpStr, 1000, "%smessage = \"%s\"\n", prefix, atts->GetMessage().c_str());
     str += tmpStr;
     return str;
 }
@@ -356,9 +320,9 @@ avtSimulationInformation_GetGenericCommands(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetGenericCommands().size() == 0)
-            SNPRINTF(msg, 400, "In avtSimulationInformation::GetGenericCommands : The index %d is invalid because genericCommands is empty.", index);
+            snprintf(msg, 400, "In avtSimulationInformation::GetGenericCommands : The index %d is invalid because genericCommands is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtSimulationInformation::GetGenericCommands : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetGenericCommands().size());
+            snprintf(msg, 400, "In avtSimulationInformation::GetGenericCommands : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetGenericCommands().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -392,7 +356,7 @@ avtSimulationInformation_AddGenericCommands(PyObject *self, PyObject *args)
     if(!PyavtSimulationCommandSpecification_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtSimulationInformation::AddGenericCommands method only accepts avtSimulationCommandSpecification objects.");
+        snprintf(msg, 400, "The avtSimulationInformation::AddGenericCommands method only accepts avtSimulationCommandSpecification objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -440,7 +404,7 @@ avtSimulationInformation_RemoveGenericCommands(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumGenericCommands())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtSimulationInformation::RemoveGenericCommands : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtSimulationInformation::RemoveGenericCommands : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -506,9 +470,9 @@ avtSimulationInformation_GetCustomCommands(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetCustomCommands().size() == 0)
-            SNPRINTF(msg, 400, "In avtSimulationInformation::GetCustomCommands : The index %d is invalid because customCommands is empty.", index);
+            snprintf(msg, 400, "In avtSimulationInformation::GetCustomCommands : The index %d is invalid because customCommands is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtSimulationInformation::GetCustomCommands : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetCustomCommands().size());
+            snprintf(msg, 400, "In avtSimulationInformation::GetCustomCommands : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetCustomCommands().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -542,7 +506,7 @@ avtSimulationInformation_AddCustomCommands(PyObject *self, PyObject *args)
     if(!PyavtSimulationCommandSpecification_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtSimulationInformation::AddCustomCommands method only accepts avtSimulationCommandSpecification objects.");
+        snprintf(msg, 400, "The avtSimulationInformation::AddCustomCommands method only accepts avtSimulationCommandSpecification objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -590,7 +554,7 @@ avtSimulationInformation_RemoveCustomCommands(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumCustomCommands())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtSimulationInformation::RemoveCustomCommands : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtSimulationInformation::RemoveCustomCommands : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }

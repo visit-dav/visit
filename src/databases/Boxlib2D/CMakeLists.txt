@@ -3,6 +3,8 @@ PROJECT(Boxlib2D_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(Boxlib2D)
+
 SET(COMMON_SOURCES
 Boxlib2DPluginInfo.C
 Boxlib2DCommonPluginInfo.C

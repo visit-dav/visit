@@ -3,6 +3,8 @@ PROJECT(Nek5000_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(Nek5000)
+
 SET(COMMON_SOURCES
 Nek5000PluginInfo.C
 Nek5000CommonPluginInfo.C

@@ -1,40 +1,7 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 #include "XMLEditStd.h"
 #include "XMLEditMakefile.h"
 
@@ -86,7 +53,7 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     : QFrame(p)
 {
     QGridLayout *topLayout = new QGridLayout(this);
-    
+
     int row = 0;
 
     topLayout->addWidget(new QLabel(tr("CXXFLAGS"), this), row, 0);
@@ -120,7 +87,7 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     topLayout->addWidget(customGLibs, row, 0);
     topLayout->addWidget(GLibs, row, 1);
     row++;
-    
+
     customWFiles = new QCheckBox(tr("GUI Widget Files"), this);
     WFiles = new QLineEdit(this);
     topLayout->addWidget(customWFiles, row, 0);
@@ -138,7 +105,7 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     topLayout->addWidget(customVFiles, row, 0);
     topLayout->addWidget(VFiles, row,1);
     row++;
-    
+
     customVLibs = new QCheckBox(tr("Viewer Libs"), this);
     VLibs = new QLineEdit(this);
     topLayout->addWidget(customVLibs, row, 0);
@@ -162,13 +129,13 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     topLayout->addWidget(customMLibs, row, 0);
     topLayout->addWidget(MLibs, row, 1);
     row++;
-    
+
     customEFiles = new QCheckBox(tr("Engine Files"), this);
     EFiles = new QLineEdit(this);
     topLayout->addWidget(customEFiles, row, 0);
     topLayout->addWidget(EFiles, row,1);
     row++;
-    
+
     customELibsSer = new QCheckBox(tr("Engine Libs (ser)"), this);
     ELibsSer = new QLineEdit(this);
     topLayout->addWidget(customELibsSer, row, 0);
@@ -243,9 +210,9 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     connect(customEFiles, SIGNAL(clicked()),
             this, SLOT(customefilesChanged()));
     connect(customELibsSer, SIGNAL(clicked()),
-            this, SLOT(customelibsSerChanged()));                            
+            this, SLOT(customelibsSerChanged()));
     connect(customELibsPar, SIGNAL(clicked()),
-            this, SLOT(customelibsParChanged()));                            
+            this, SLOT(customelibsParChanged()));
     connect(customWFiles, SIGNAL(clicked()),
             this, SLOT(customwfilesChanged()));
     connect(customVWFiles, SIGNAL(clicked()),
@@ -254,7 +221,7 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
             this, SLOT(mdSpecificCodeChanged()));
     connect(engSpecificCode, SIGNAL(clicked()),
             this, SLOT(engSpecificCodeChanged()));
-    
+
 }
 
 // ****************************************************************************
@@ -556,7 +523,7 @@ XMLEditMakefile::libsTextChanged(const QString &text)
 // ****************************************************************************
 //  Method:  XMLEditMakefile::defsTextChanged
 //
-//  Programmer:  Kathleen Biagas 
+//  Programmer:  Kathleen Biagas
 //  Creation:    November 6, 2014
 //
 // ****************************************************************************

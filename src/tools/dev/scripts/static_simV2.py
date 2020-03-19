@@ -76,7 +76,7 @@ ddtsim = (
 )
 
 def get_plugin_file_list(filename):
-    print filename
+    print(filename)
     f = open(filename, "rt")
     lines = f.readlines()
     plugins = []
@@ -122,7 +122,7 @@ def includepath():
     return toplevel() + "/include"
 
 def os_system(cmd):
-    print cmd
+    print(cmd)
     os.system(cmd)
 
 def build_archive(archive, tmpdir, path, archlist):
@@ -135,7 +135,7 @@ def build_archive(archive, tmpdir, path, archlist):
     libname = "%s/%s" % (path, archive)
     os_system("ar cr %s *.o" % libname)
     os_system("ranlib %s" % libname)
-    print "Combined archive created at: ", libname
+    print("Combined archive created at: ", libname)
 
     os.chdir(oldDir)
     os_system("rm -rf %s" % tmpdir)
@@ -173,9 +173,9 @@ if sys.platform == "darwin":
     frameworks = "-framework OpenGL -framework AGL -framework SystemConfiguration -framework IOKit -framework Cocoa "
 
 ser_link_line = get_linkline(ser_libs) + "-lz " + vtk_libs + frameworks
-print "Serial link line if you link each library: "
-print ser_link_line
+print("Serial link line if you link each library: ")
+print(ser_link_line)
 
 par_link_line = get_linkline(par_libs) + "-lz " + vtk_libs + frameworks
-print "Parallel link line if you link each library: "
-print par_link_line
+print("Parallel link line if you link each library: ")
+print(par_link_line)

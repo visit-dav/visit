@@ -1,39 +1,7 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#*****************************************************************************
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
 """
  file: filter_graph.py
  author: Cyrus Harrison <cyrush@llnl.gov>
@@ -43,9 +11,9 @@
 
 """
 
-from Queue import Queue
-from property_tree import PropertyTree
-from errors import *
+from queue import Queue
+from .property_tree import PropertyTree
+from .errors import *
 
 class Filter(object):
     """
@@ -210,12 +178,12 @@ class FilterGraph(object):
         """
         Checks if a node with the given name exists in the filter graph.
         """
-        return node_name in self.nodes.keys()
+        return node_name in list(self.nodes.keys())
     def add_node(self,filter_type,node_name=None,node_params=None,node_context=None):
         """
         Adds a new filter nodeinstance of the given type to the filter graph.
         """
-        if not filter_type in self.filters.keys():
+        if not filter_type in list(self.filters.keys()):
             raise UnregisteredFilterError(filter_type)
         if node_name is None or self.has_node(node_name):
             node_name = self.__next_node_name(filter_type)
@@ -255,24 +223,24 @@ class FilterGraph(object):
         res = {"filter_types":{},
                "nodes":{},
                "connections":[]}
-        for k,v in self.filters.items():
+        for k,v in list(self.filters.items()):
             res["filter_types"][k] = {"input_ports":    v.input_ports,
                                       "default_params": v.default_params,
                                       "output_port":    v.output_port}
-        for nname, node in self.nodes.items():
+        for nname, node in list(self.nodes.items()):
             nres = {"type":    node.filter_type,
                     "params":  node.params.properties(),
                     "context": node.context.name}
             res["nodes"][nname] = nres
-        for des_name, ein_map in self.edges_in.items():
-            for port_name, src_name in ein_map.items():
+        for des_name, ein_map in list(self.edges_in.items()):
+            for port_name, src_name in list(ein_map.items()):
                 if not src_name is None:
                     conn = {"from":src_name,"to":des_name,"port":port_name}
                     res["connections"].append(conn)
         return res
     def save_dot(self,fname):
         r   = "digraph G {\n"
-        for nname, node in self.nodes.items():
+        for nname, node in list(self.nodes.items()):
             for e in self.edges_out[nname]:
                 if nname[0] == ":" :
                     nname = "VAR_FETCH_"  + nname[1:]
@@ -284,7 +252,7 @@ class FilterGraph(object):
         """
         Returns the node with the given name, if it exists in the filter graph.
         """
-        if inst_name in self.nodes.keys():
+        if inst_name in list(self.nodes.keys()):
             return self.nodes[inst_name]
         return None
     def __str__(self):
@@ -292,10 +260,10 @@ class FilterGraph(object):
         String pretty print.
         """
         res = "Registered Filter Types:\n"
-        for f in self.filters.values():
+        for f in list(self.filters.values()):
             res += f.info()  + "\n"
         res += "Active Filter Nodes:\n"
-        for n in self.nodes.values():
+        for n in list(self.nodes.values()):
             res += str(n) + "\n"
         return res
     def __next_node_name(self,filter_type=""):

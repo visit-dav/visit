@@ -1,1 +1,0 @@
-glory120.cmake

@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #ifndef QVIS_PREFERENCES_WINDOW_H
 #define QVIS_PREFERENCES_WINDOW_H
@@ -50,7 +16,7 @@ class QSpinBox;
 // ****************************************************************************
 // Class: QvisPreferencesWindow
 //
-// Purpose: 
+// Purpose:
 //   Defines QvisPreferencesWindow class.
 //
 // Programmer: Eric Brugger
@@ -78,7 +44,7 @@ class QSpinBox;
 //
 //   Mark C. Miller, Mon Jun 11 17:45:24 PDT 2007
 //   Added treatAllDBsAsTimeVarying check box
-// 
+//
 //   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
 //   Added 'Update' method, as this class now observes GlobalAttributes.
 //   Added createMeshQuality, createTimeDerivative buttons.
@@ -114,13 +80,16 @@ class QSpinBox;
 //   Added a preference for floating point precision.
 //
 //   David Camp, Thu Aug  8 08:50:06 PDT 2013
-//   Added the restore from last session feature. 
+//   Added the restore from last session feature.
 //
 //   Cameron Christensen, Tuesday, June 10, 2014
 //   Added a preference for setting the backend type.
 //
 //   Kathleen Biagas, Mon Dec 22 10:45:42 PST 2014
 //   Added preference for automatically removing duplicate nodes.
+//
+//   Kathleen Biagas, Fri Nov  8 07:40:44 PST 2019
+//   Added methods for creating tab content.
 //
 // ****************************************************************************
 
@@ -205,6 +174,11 @@ private:
     bool              showSelFiles;
     bool              allowFileSelChange;
     bool              enableWarnPopups;
+
+    void              CreateGeneralTab(QWidget *gtab);
+    void              CreateDatabasesTab(QWidget *gtab);
+    void              CreateSessionFilesTab(QWidget *gtab);
+    void              CreateFilePanelTab(QWidget *gtab);
 };
 
 #endif

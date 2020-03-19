@@ -176,6 +176,23 @@
 #   Eric Brugger, Tue Mar  5 11:19:39 PST 2019
 #   I added rzansel. I removed carver and glory.
 #
+#   Eric Brugger, Wed May  1 09:36:56 PDT 2019
+#   I updated the 3.0.0b cmake paths to 3.0.0.
+#
+#   Eric Brugger, Thu Sep 26 17:35:20 PDT 2019
+#   I removed ifyou and ubuntu1404_64.
+#
+#   Eric Brugger, Fri Dec 13 14:04:47 PST 2019
+#   I updated the 3.0.0 cmake paths to 3.1.0 and added a "make manuals"
+#   step to build the sphinx manuals.
+#
+#   Eric Brugger, Mon Jan 13 15:28:16 PST 2020
+#   I removed rzuseq, vulcan.
+#
+#   Eric Brugger, Tue Feb 11 08:23:59 PST 2020
+#   I modified the kickit builds to do one build against the system
+#   OpenGL and the second against MesaGL.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -217,14 +234,10 @@ esac
 # Parse the execute line, providing default values for error checking.
 #
 kickit=true
-ubuntu1404_64=false
-ifyou=false
 quartz=true
 lassen=true
 rztrona=true
 rzansel=true
-rzuseq=false
-vulcan=true
 cooley=true
 
 dist=undefined
@@ -239,14 +252,10 @@ do
    case $1 in
       -none)
          kickit=false
-         ubuntu1404_64=false
-         ifyou=false
          quartz=false
          lassen=false
          rztrona=false
          rzansel=false
-         rzuseq=false
-         vulcan=false
          cooley=false
          shift
          ;;
@@ -256,22 +265,6 @@ do
          ;;
       +kickit)
          kickit=true
-         shift
-         ;;
-      -ubuntu1404_64)
-         ubuntu1404_64=false
-         shift
-         ;;
-      +ubuntu1404_64)
-         ubuntu1404_64=true
-         shift
-         ;;
-      -ifyou)
-         ifyou=false
-         shift
-         ;;
-      +ifyou)
-         ifyou=true
          shift
          ;;
       -quartz)
@@ -306,22 +299,6 @@ do
          rzansel=true
          shift
          ;;
-      -rzuseq)
-         rzuseq=false
-         shift
-         ;;
-      +rzuseq)
-         rzuseq=true
-         shift
-         ;;
-      -vulcan)
-         vulcan=false
-         shift
-         ;;
-      +vulcan)
-         vulcan=true
-         shift
-         ;;
       -cooley)
          cooley=false
          shift
@@ -345,8 +322,6 @@ then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
    echo "    kickit (B-Div, Linux, x86_64),"
-   echo "    ubuntu1404_64(B-Div, Linux, x86_64),"
-   echo "    ifyou (LC, Linux, x86_64),"
    echo "    quartz (LC, Linux, x86_64),"
    echo "    lassen (LC, Linux, power9),"
    echo "    rztrona (LC, Linux, x86_64),"
@@ -382,7 +357,8 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/thirdparty_shared/3.0.0b/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/3.1.1/opengl/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -401,7 +377,8 @@ ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/li
 rm -rf $dist
 gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
 cd $dist/src
-/usr/gapps/visit/thirdparty_shared/3.0.0b/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_OSMESA_DIR="/usr/gapps/visit/thirdparty_shared/3.0.0b/osmesa/17.2.8/linux-x86_64_gcc-4.8" >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/3.1.1/mesagl/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_CONFIG_SITE="config-site/kickit.mesagl.cmake" >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../../visit\$ver2.linux-x86_64-wmesa.tar.gz
 cd ../..
@@ -431,136 +408,6 @@ then
 fi
 
 #
-# Build on ubuntu1404_64.
-#
-rm -f ubuntu1404_64
-cat <<EOF > ubuntu1404_64
-#!/bin/sh
-if test ! -e /home/brugger1/ubuntu1404_64; then
-   mkdir /home/brugger1/ubuntu1404_64
-fi
-rm -rf /home/brugger1/ubuntu1404_64/visitbuild
-mkdir /home/brugger1/ubuntu1404_64/visitbuild
-mv ubuntu1404_64_$dist.tar.gz /home/brugger1/ubuntu1404_64/visitbuild/$dist.tar.gz
-cd /home/brugger1/ubuntu1404_64/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-/home/brugger1/visit/thirdparty_shared/2.13.0/cmake/3.8.1/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 3 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "     build of visit on ubuntu1404_64"    > resultlog 2>&1
-echo "    ---------------------------------"  >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -rf $dist
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-/home/brugger1/visit/thirdparty_shared/2.13.0/cmake/3.8.1/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_MESA_DIR="/home/brugger1/visit/thirdparty_shared/2.13.0/mesa/7.10.2/linux-x86_64_gcc-4.8" >> ../../buildlog 2>&1
-make -j 3 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../../visit\$ver2.linux-x86_64-wmesa.tar.gz
-cd ../..
-echo ""                                       >> resultlog 2>&1
-echo "     build of visit on ubuntu1404_64"   >> resultlog 2>&1
-echo "    ---------------------------------"  >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $ubuntu1404_64 = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on ubuntu1404_64"
-      cp ubuntu1404_64 ubuntu1404_64_buildit
-      cp $dist.tar.gz ubuntu1404_64_$dist.tar.gz
-      chmod 750 ubuntu1404_64_buildit;./ubuntu1404_64_buildit &
-   fi
-fi
-
-#
-# Build on ifyou.
-#
-rm -f ifyou
-cat <<EOF > ifyou
-#!/bin/sh
-if test ! -e /net/wci-cl1.llnl.gov/vol/home/brugger1/ifyou; then
-   mkdir /net/wci-cl1.llnl.gov/vol/home/brugger1/ifyou
-fi
-rm -rf /net/wci-cl1.llnl.gov/vol/home/brugger1/ifyou/visitbuild
-mkdir /net/wci-cl1.llnl.gov/vol/home/brugger1/ifyou/visitbuild
-mv ifyou_$dist.tar.gz /net/wci-cl1.llnl.gov/vol/home/brugger1/ifyou/visitbuild/$dist.tar.gz
-cd /net/wci-cl1.llnl.gov/vol/home/brugger1/ifyou/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-/net/wci-cl1.llnl.gov/vol/home/brugger1/buildvisit/thirdparty_shared/2.13.1/cmake/3.8.1/linux-x86_64_gcc-7.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 3 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "     build of visit on ifyou"           > resultlog 2>&1
-echo "    -------------------------"          >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-rm -rf $dist
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-/net/wci-cl1.llnl.gov/vol/home/brugger1/buildvisit/thirdparty_shared/2.13.1/cmake/3.8.1/linux-x86_64_gcc-7.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_MESA_DIR="/net/wci-cl1.llnl.gov/vol/home/brugger1/buildvisit/thirdparty_shared/2.13.1/mesa/7.10.2/linux-x86_64_gcc-7.3" >> ../../buildlog 2>&1
-make -j 3 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../../visit\$ver2.linux-x86_64-wmesa.tar.gz
-cd ../..
-echo ""                                       >> resultlog 2>&1
-echo "     build of visit on ifyou"           >> resultlog 2>&1
-echo "    -------------------------"          >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $ifyou = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on ifyou"
-      cp ifyou ifyou_buildit
-      cp $dist.tar.gz ifyou_$dist.tar.gz
-      chmod 750 ifyou_buildit;./ifyou_buildit &
-   fi
-fi
-
-#
 # Build on quartz.
 #
 rm -f quartz
@@ -582,7 +429,8 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0b/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/workspace/wsa/visit/visit/thirdparty_shared/3.1.0/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 12 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -631,8 +479,8 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0b/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 6 >> ../../buildlog 2>&1
+/usr/workspace/wsa/visit/visit/thirdparty_shared/3.1.0/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-intel.tar.gz ../..
 cd ../..
@@ -682,7 +530,8 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/workspace/visit/visit/thirdparty_shared/3.0.0b/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/workspace/visit/visit/thirdparty_shared/3.1.0/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 12 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -733,7 +582,8 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/workspace/visit/visit/thirdparty_shared/3.0.0b/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/workspace/visit/visit/thirdparty_shared/3.1.0/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 12 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-intel.tar.gz ../..
 cd ../..
@@ -764,146 +614,6 @@ then
 fi
 
 #
-# Build on rzuseq.
-#
-rm -f rzuseq
-cat <<EOF > rzuseq
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/rzuseq ; then
-   mkdir /usr/tmp/$user/rzuseq
-fi
-rm -rf /usr/tmp/$user/rzuseq/visitbuild
-mkdir /usr/tmp/$user/rzuseq/visitbuild
-mv rzuseq_$dist.tar.gz /usr/tmp/$user/rzuseq/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/rzuseq/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-cd ..
-# **NOTE** We do 2 in-source builds because of a weird problem with cmake
-# Make a copy of src called login_build
-cp -R src login_build
-# Rename src to compute_build
-mv src compute_build
-# Rename the data directory since the data programs won't run.
-mv data .data
-# install dir
-mkdir visit\${ver2}.linux-ppc64
-bgqinstdir=\`pwd\`/visit\${ver2}.linux-ppc64
-# Build for compute node, engine-only version
-cd compute_build
-/usr/gapps/visit/thirdparty_static/2.12.0/cmake/3.0.2/linux-ppc64_gcc-4.4_BGQ/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/rzuseqlac2-compute.cmake -DVISIT_ENGINE_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
-sh svn_bin/filter_link_commands_BGQ.sh >> ../../buildlog 2>&1
-make install >> ../../buildlog 2>&1
-cd ..
-# Restore data directory
-mv .data data
-# Build for login node, server-components-only version
-cd login_build
-/usr/gapps/visit/thirdparty_static/2.12.0/cmake/3.0.2/linux-ppc64_gcc-4.4/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/rzuseqlac2-login.cmake -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
-make install >> ../../buildlog 2>&1
-cd ..
-# Now, tar up the common install directory.
-tar zcf ../visit\$ver2.linux-ppc64-BGQ.tar.gz visit\${ver2}.linux-ppc64
-cd ..
-rm -f resultlog
-echo "        build of visit on rzuseq"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = (statically linked)" >> resultlog 2>&1
-echo "number of operator plugins = (statically linked)" >> resultlog 2>&1
-echo "number of plot plugins = (statically linked)" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): rzuseq" $emailName < resultlog
-EOF
-
-if [ $rzuseq = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on rzuseq"
-      scp rzuseq rzuseqlac2:rzuseq_buildit
-      scp $dist.tar.gz rzuseqlac2:rzuseq_$dist.tar.gz
-      ssh rzuseqlac2 "chmod 750 rzuseq_buildit;./rzuseq_buildit" &
-   fi
-fi
-
-#
-# Build on vulcan.
-#
-rm -f vulcan
-cat <<EOF > vulcan
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/vulcan ; then
-   mkdir /usr/tmp/$user/vulcan
-fi
-rm -rf /usr/tmp/$user/vulcan/visitbuild
-mkdir /usr/tmp/$user/vulcan/visitbuild
-mv vulcan_$dist.tar.gz /usr/tmp/$user/vulcan/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/vulcan/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-cd ..
-# **NOTE** We do 2 in-source builds because of a weird problem with cmake
-# Make a copy of src called login_build
-cp -R src login_build
-# Rename src to compute_build
-mv src compute_build
-# Rename the data directory since the data programs won't run.
-mv data .data
-# install dir
-mkdir visit\${ver2}.linux-ppc64
-bgqinstdir=\`pwd\`/visit\${ver2}.linux-ppc64
-# Build for compute node, engine-only version
-cd compute_build
-/usr/workspace/wsa/visit/visit/thirdparty_static/2.12.0/cmake/3.0.2/linux-ppc64_gcc-4.4_BGQ/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/vulcanlac4-compute.cmake -DVISIT_ENGINE_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
-sh svn_bin/filter_link_commands_BGQ.sh >> ../../buildlog 2>&1
-make install >> ../../buildlog 2>&1
-cd ..
-# Restore data directory
-mv .data data
-# Build for login node, server-components-only version
-cd login_build
-/usr/workspace/wsa/visit/visit/thirdparty_static/2.12.0/cmake/3.0.2/linux-ppc64_gcc-4.4/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/vulcanlac4-login.cmake -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
-make install >> ../../buildlog 2>&1
-cd ..
-# Now, tar up the common install directory.
-tar zcf ../visit\$ver2.linux-ppc64-BGQ.tar.gz visit\${ver2}.linux-ppc64
-cd ..
-rm -f resultlog
-echo "        build of visit on vulcan"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = (statically linked)" >> resultlog 2>&1
-echo "number of operator plugins = (statically linked)" >> resultlog 2>&1
-echo "number of plot plugins = (statically linked)" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): vulcan" $emailName < resultlog
-EOF
-
-if [ $vulcan = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on vulcan"
-      scp vulcan vulcanlac4:vulcan_buildit
-      scp $dist.tar.gz vulcanlac4:vulcan_$dist.tar.gz
-      ssh vulcanlac4 "chmod 750 vulcan_buildit;./vulcan_buildit" &
-   fi
-fi
-
-#
 # Build on cooley
 #
 rm -f cooley
@@ -921,6 +631,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 /home/ebrugger/buildvisit/third_party/cmake/3.9.3/linux-rhel_7-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -956,5 +667,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzansel rzuseq carver glory vulcan cooley
+   rm -f kickit quartz lassen rztrona rzansel cooley
 fi

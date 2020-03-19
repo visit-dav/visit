@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #ifndef GENERATE_AVT_H
 #define GENERATE_AVT_H
@@ -70,8 +36,8 @@
 //    Jeremy Meredith, Thu Oct 17 15:58:29 PDT 2002
 //    Added some enhancements for the XML editor.
 //
-//    Kathleen Bonnell, Wed Oct 23 18:10:26 PDT 2002  
-//    Added new plot method ApplyRenderingTransformation. 
+//    Kathleen Bonnell, Wed Oct 23 18:10:26 PDT 2002
+//    Added new plot method ApplyRenderingTransformation.
 //
 //    Jeremy Meredith, Mon Sep 22 14:58:36 PDT 2003
 //    Changed an instance where ApplyRenderingTransformation was called
@@ -81,7 +47,7 @@
 //    Added sample avt files for database plugins.  Sample code by Hank Childs.
 //
 //    Jeremy Meredith, Fri Mar 19 13:43:20 PST 2004
-//    Changed MTSD format constructors to pass the correct version of 
+//    Changed MTSD format constructors to pass the correct version of
 //    filename (file list) to the base MTSD constructor.
 //
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
@@ -147,6 +113,9 @@
 //    signature that uses avtDataRepresentation instead of vtkDataSet, domain
 //    and label.
 //
+//    Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
+//    Added hl arg, for haslicense.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -159,8 +128,8 @@ class AVTGeneratorPlugin : public PluginBase
   public:
     AVTGeneratorPlugin(const QString &n,const QString &l,const QString &t,
           const QString &vt,const QString &dt,const QString &v,const QString &ifile,
-          bool hw,bool ho,bool onlyengine,bool noengine)
-        : PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine), atts(NULL), Endl("\n")
+          bool hw,bool ho,bool hl,bool onlyengine,bool noengine)
+        : PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,hl,onlyengine,noengine), atts(NULL), Endl("\n")
     {
     }
     void Print(QTextStream &out)
@@ -178,9 +147,9 @@ class AVTGeneratorPlugin : public PluginBase
         }
 
         h << copyright_str << Endl;
-        h << "// ************************************************************************* //" << Endl;
-        h << "//                                 avt"<<name<<"Plot.h                             //" << Endl;
-        h << "// ************************************************************************* //" << Endl;
+        h << "// ****************************************************************************" << Endl;
+        h << "//  avt"<<name<<"Plot.h" << Endl;
+        h << "// ****************************************************************************" << Endl;
         h << Endl;
         h << "#ifndef AVT_"<<name<<"_PLOT_H" << Endl;
         h << "#define AVT_"<<name<<"_PLOT_H" << Endl;
@@ -251,9 +220,9 @@ class AVTGeneratorPlugin : public PluginBase
             return;
         }
         c << copyright_str << Endl;
-        c << "// ************************************************************************* //" << Endl;
-        c << "//                             avt"<<name<<"Plot.C                                 //" << Endl;
-        c << "// ************************************************************************* //" << Endl;
+        c << "// ****************************************************************************" << Endl;
+        c << "//  avt"<<name<<"Plot.C" << Endl;
+        c << "// ****************************************************************************" << Endl;
         c << Endl;
         c << "#include <avt"<<name<<"Plot.h>" << Endl;
         c << Endl;
@@ -461,9 +430,9 @@ class AVTGeneratorPlugin : public PluginBase
         if (type=="operator")
         {
             h << copyright_str << Endl;
-            h << "// ************************************************************************* //" << Endl;
+            h << "// ****************************************************************************" << Endl;
             h << "//  File: avt"<<name<<"Filter.h" << Endl;
-            h << "// ************************************************************************* //" << Endl;
+            h << "// ****************************************************************************" << Endl;
             h << Endl;
             h << "#ifndef AVT_"<<name<<"_FILTER_H" << Endl;
             h << "#define AVT_"<<name<<"_FILTER_H" << Endl;
@@ -518,9 +487,9 @@ class AVTGeneratorPlugin : public PluginBase
         else if (type=="plot")
         {
             h << copyright_str << Endl;
-            h << "// ************************************************************************* //" << Endl;
-            h << "//                              avt"<<name<<"Filter.h                              //" << Endl;
-            h << "// ************************************************************************* //" << Endl;
+            h << "// ****************************************************************************" << Endl;
+            h << "//  avt"<<name<<"Filter.h" << Endl;
+            h << "// ****************************************************************************" << Endl;
             h << Endl;
             h << "#ifndef AVT_"<<name<<"_FILTER_H" << Endl;
             h << "#define AVT_"<<name<<"_FILTER_H" << Endl;
@@ -568,9 +537,9 @@ class AVTGeneratorPlugin : public PluginBase
         if (type=="operator")
         {
             c << copyright_str << Endl;
-            c << "// ************************************************************************* //" << Endl;
+            c << "// ****************************************************************************" << Endl;
             c << "//  File: avt"<<name<<"Filter.C" << Endl;
-            c << "// ************************************************************************* //" << Endl;
+            c << "// ****************************************************************************" << Endl;
             c << Endl;
             c << "#include <avt"<<name<<"Filter.h>" << Endl;
             c << Endl;
@@ -755,9 +724,9 @@ class AVTGeneratorPlugin : public PluginBase
         else if (type=="plot")
         {
             c << copyright_str << Endl;
-            c << "// ************************************************************************* //" << Endl;
-            c << "//                              avt"<<name<<"Filter.C                              //" << Endl;
-            c << "// ************************************************************************* //" << Endl;
+            c << "// ****************************************************************************" << Endl;
+            c << "//  avt"<<name<<"Filter.C" << Endl;
+            c << "// ****************************************************************************" << Endl;
             c << Endl;
             c << "#include <avt"<<name<<"Filter.h>" << Endl;
             c << Endl;
@@ -848,9 +817,9 @@ class AVTGeneratorPlugin : public PluginBase
         {
             h << copyright_str << Endl;
             h << "" << Endl;
-            h << "// ************************************************************************* //" << Endl;
-            h << "//                            avt"<<name<<"FileFormat.h                           //" << Endl;
-            h << "// ************************************************************************* //" << Endl;
+            h << "// ****************************************************************************" << Endl;
+            h << "//  avt"<<name<<"FileFormat.h" << Endl;
+            h << "// ****************************************************************************" << Endl;
             h << "" << Endl;
             h << "#ifndef AVT_"<<name<<"_FILE_FORMAT_H" << Endl;
             h << "#define AVT_"<<name<<"_FILE_FORMAT_H" << Endl;
@@ -916,9 +885,9 @@ class AVTGeneratorPlugin : public PluginBase
         else if (dbtype == "MTSD")
         {
             h << copyright_str << Endl;
-            h << "// ************************************************************************* //" << Endl;
-            h << "//                            avt"<<name<<"FileFormat.h                           //" << Endl;
-            h << "// ************************************************************************* //" << Endl;
+            h << "// ****************************************************************************" << Endl;
+            h << "//  avt"<<name<<"FileFormat.h" << Endl;
+            h << "// ****************************************************************************" << Endl;
             h << "" << Endl;
             h << "#ifndef AVT_"<<name<<"_FILE_FORMAT_H" << Endl;
             h << "#define AVT_"<<name<<"_FILE_FORMAT_H" << Endl;
@@ -991,9 +960,9 @@ class AVTGeneratorPlugin : public PluginBase
         else if (dbtype == "STMD")
         {
             h << copyright_str << Endl;
-            h << "// ************************************************************************* //" << Endl;
-            h << "//                            avt"<<name<<"FileFormat.h                           //" << Endl;
-            h << "// ************************************************************************* //" << Endl;
+            h << "// ****************************************************************************" << Endl;
+            h << "//  avt"<<name<<"FileFormat.h" << Endl;
+            h << "// ****************************************************************************" << Endl;
             h << "" << Endl;
             h << "#ifndef AVT_"<<name<<"_FILE_FORMAT_H" << Endl;
             h << "#define AVT_"<<name<<"_FILE_FORMAT_H" << Endl;
@@ -1060,9 +1029,9 @@ class AVTGeneratorPlugin : public PluginBase
         else if (dbtype == "MTMD")
         {
             h << copyright_str << Endl;
-            h << "// ************************************************************************* //" << Endl;
-            h << "//                            avt"<<name<<"FileFormat.h                           //" << Endl;
-            h << "// ************************************************************************* //" << Endl;
+            h << "// ****************************************************************************" << Endl;
+            h << "//  avt"<<name<<"FileFormat.h" << Endl;
+            h << "// ****************************************************************************" << Endl;
             h << "" << Endl;
             h << "#ifndef AVT_"<<name<<"_FILE_FORMAT_H" << Endl;
             h << "#define AVT_"<<name<<"_FILE_FORMAT_H" << Endl;
@@ -1135,9 +1104,9 @@ class AVTGeneratorPlugin : public PluginBase
         if (dbtype == "STSD")
         {
             c << copyright_str << Endl;
-            c << "// ************************************************************************* //" << Endl;
-            c << "//                            avt"<<name<<"FileFormat.C                           //" << Endl;
-            c << "// ************************************************************************* //" << Endl;
+            c << "// ****************************************************************************" << Endl;
+            c << "//  avt"<<name<<"FileFormat.C" << Endl;
+            c << "// ****************************************************************************" << Endl;
             c << "" << Endl;
             c << "#include <avt"<<name<<"FileFormat.h>" << Endl;
             c << "" << Endl;
@@ -1442,9 +1411,9 @@ class AVTGeneratorPlugin : public PluginBase
         else if (dbtype == "MTSD")
         {
             c << copyright_str << Endl;
-            c << "// ************************************************************************* //" << Endl;
-            c << "//                            avt"<<name<<"FileFormat.C                           //" << Endl;
-            c << "// ************************************************************************* //" << Endl;
+            c << "// ****************************************************************************" << Endl;
+            c << "//  avt"<<name<<"FileFormat.C" << Endl;
+            c << "// ****************************************************************************" << Endl;
             c << "" << Endl;
             c << "#include <avt"<<name<<"FileFormat.h>" << Endl;
             c << "" << Endl;
@@ -1773,9 +1742,9 @@ class AVTGeneratorPlugin : public PluginBase
         else if (dbtype == "STMD")
         {
             c << copyright_str << Endl;
-            c << "// ************************************************************************* //" << Endl;
-            c << "//                            avt"<<name<<"FileFormat.C                           //" << Endl;
-            c << "// ************************************************************************* //" << Endl;
+            c << "// ****************************************************************************" << Endl;
+            c << "//  avt"<<name<<"FileFormat.C" << Endl;
+            c << "// ****************************************************************************" << Endl;
             c << "" << Endl;
             c << "#include <avt"<<name<<"FileFormat.h>" << Endl;
             c << "" << Endl;
@@ -2089,9 +2058,9 @@ class AVTGeneratorPlugin : public PluginBase
         else if (dbtype == "MTMD")
         {
             c << copyright_str << Endl;
-            c << "// ************************************************************************* //" << Endl;
-            c << "//                            avt"<<name<<"FileFormat.C                           //" << Endl;
-            c << "// ************************************************************************* //" << Endl;
+            c << "// ****************************************************************************" << Endl;
+            c << "//  avt"<<name<<"FileFormat.C" << Endl;
+            c << "// ****************************************************************************" << Endl;
             c << "" << Endl;
             c << "#include <avt"<<name<<"FileFormat.h>" << Endl;
             c << "" << Endl;
@@ -2430,9 +2399,9 @@ class AVTGeneratorPlugin : public PluginBase
     void WriteFileFormatOptionsHeader(QTextStream &h)
     {
         h << copyright_str << Endl;
-        h << "// ************************************************************************* //" << Endl;
-        h << "//                             avt"<<name<<"Options.h                              //" << Endl;
-        h << "// ************************************************************************* //" << Endl;
+        h << "// ****************************************************************************" << Endl;
+        h << "//  avt"<<name<<"Options.h" << Endl;
+        h << "// ****************************************************************************" << Endl;
         h << "" << Endl;
         h << "#ifndef AVT_"<<name<<"_OPTIONS_H" << Endl;
         h << "#define AVT_"<<name<<"_OPTIONS_H" << Endl;
@@ -2462,9 +2431,9 @@ class AVTGeneratorPlugin : public PluginBase
     void WriteFileFormatOptionsSource(QTextStream &h)
     {
         h << copyright_str << Endl;
-        h << "// ************************************************************************* //" << Endl;
-        h << "//                             avt"<<name<<"Options.C                              //" << Endl;
-        h << "// ************************************************************************* //" << Endl;
+        h << "// ****************************************************************************" << Endl;
+        h << "//  avt"<<name<<"Options.C" << Endl;
+        h << "// ****************************************************************************" << Endl;
         h << "" << Endl;
         h << "#include <avt"<<name<<"Options.h>" << Endl;
         h << "" << Endl;
@@ -2480,11 +2449,8 @@ class AVTGeneratorPlugin : public PluginBase
         h << "//      Creates the options for "<<name<<" readers." << Endl;
         h << "//" << Endl;
         h << "//  Important Note:" << Endl;
-        h << "//      The code below sets up empty options.  If your format "
-          << Endl;
-        h << "//      does not require read options, no modifications are "
-          << Endl;
-        h << "//      necessary." << Endl;
+        h << "//      The code below sets up empty options.  If your format does not require" << Endl;
+        h << "//      read options, no modifications are necessary." << Endl;
         h << "//" << Endl;
         h << "//  Programmer: "<<UserName()<<"generated by xml2avt" << Endl;
         h << "//  Creation:   "<<CurrentTime()<< Endl;
@@ -2523,11 +2489,8 @@ class AVTGeneratorPlugin : public PluginBase
         h << "//      Creates the options for "<<name<<" writers." << Endl;
         h << "//" << Endl;
         h << "//  Important Note:" << Endl;
-        h << "//      The code below sets up empty options.  If your format "
-          << Endl;
-        h << "//      does not require write options, no modifications are "
-          << Endl;
-        h << "//      necessary." << Endl;
+        h << "//      The code below sets up empty options.  If your format does not require" << Endl;
+        h << "//      write options, no modifications are necessary." << Endl;
         h << "//" << Endl;
         h << "//  Programmer: "<<UserName()<<"generated by xml2avt" << Endl;
         h << "//  Creation:   "<<CurrentTime()<< Endl;
@@ -2544,9 +2507,9 @@ class AVTGeneratorPlugin : public PluginBase
     void WriteFileFormatWriterHeader(QTextStream &h)
     {
         h << copyright_str << Endl;
-        h << "// ************************************************************************* //" << Endl;
-        h << "//                             avt"<<name<<"Writer.h                              //" << Endl;
-        h << "// ************************************************************************* //" << Endl;
+        h << "// ****************************************************************************" << Endl;
+        h << "//  avt"<<name<<"Writer.h" << Endl;
+        h << "// ****************************************************************************" << Endl;
         h << "" << Endl;
         h << "#ifndef AVT_"<<name<<"_WRITER_H" << Endl;
         h << "#define AVT_"<<name<<"_WRITER_H" << Endl;
@@ -2597,9 +2560,9 @@ class AVTGeneratorPlugin : public PluginBase
     void WriteFileFormatWriterSource(QTextStream &c)
     {
         c << copyright_str << Endl;
-        c << "// ************************************************************************* //" << Endl;
-        c << "//                              avt"<<name<<"Writer.C                             //" << Endl;
-        c << "// ************************************************************************* //" << Endl;
+        c << "// ****************************************************************************" << Endl;
+        c << "//  avt"<<name<<"Writer.C" << Endl;
+        c << "// ****************************************************************************" << Endl;
         c << "" << Endl;
         c << "#include <avt"<<name<<"Writer.h>" << Endl;
         c << "" << Endl;
@@ -2704,7 +2667,7 @@ class AVTGeneratorPlugin : public PluginBase
         c << "    // CLOSE FILES" << Endl;
         c << "}" << Endl;
     }
-    
+
 };
 
 

@@ -1,40 +1,8 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
+#include <cmath> // for sqrt used in color distance method
 
 #include <avtColorTables.h>
 #include <ColorTableAttributes.h>
@@ -53,12 +21,20 @@
 static const char *predef_ct_names[]  = { "bluehot", "caleblack", "calewhite",
     "contoured", "difference", "gray", "hot", "hot_and_cold", 
     "hot_desaturated", "levels", "orangehot", "rainbow", "xray",
-    "cpk_jmol", "cpk_rasmol", "amino_rasmol", "amino_shapely"
+    "cpk_jmol", "cpk_rasmol", "amino_rasmol", "amino_shapely",
+    "distinct"
 };
-static const int predef_ct_ncolors[]  = {4, 7, 7, 4, 3, 2, 5, 5, 8, 30, 4, 6, 2, 110, 110, 23, 23};
-static const int predef_ct_smooth[]   = {1, 1, 1, 0, 1, 1, 1, 1, 1,  0, 1, 1, 1,   0,   0,  0,  0};
-static const int predef_ct_equal[]    = {0, 0, 0, 1, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1};
-static const int predef_ct_discrete[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1};
+static const int predef_ct_ncolors[]  = {4, 7, 7, 4, 3, 2, 5, 5, 8, 30, 4, 6, 2, 110, 110, 23, 23, 22};
+static const int predef_ct_smooth[]   = {1, 1, 1, 0, 1, 1, 1, 1, 1,  0, 1, 1, 1,   0,   0,  0,  0,  0};
+static const int predef_ct_equal[]    = {0, 0, 0, 1, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1,  1};
+static const int predef_ct_discrete[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1,  1};
+
+//
+// The 4-tuples in the tables below are defining
+//     position, r, g, b
+// where position is a value in [0,1] and should be monotone
+// increasing from first color @ 0 to last color @ 1.
+//
 
 /* Hot */
 static const float ct_hot[] = {
@@ -472,6 +448,33 @@ static const float ct_shapely_colors[] = {
  0.204f, 1.000f, 0.000f, 1.000f,
 };
 
+/* 22 maximally perceptually distinct colors */
+// Grabbed 29May19 from https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
+static const float ct_distinct[] = {
+0.000f, 0.902f, 0.098f, 0.294f,
+0.048f, 0.235f, 0.706f, 0.294f,
+0.095f, 1.000f, 0.882f, 0.098f,
+0.143f, 0.000f, 0.510f, 1.000f, // modified B->70% to 100%
+0.190f, 0.961f, 0.510f, 0.188f,
+0.238f, 0.569f, 0.118f, 0.706f,
+0.286f, 0.275f, 0.941f, 0.941f,
+0.333f, 0.941f, 0.196f, 0.902f,
+0.381f, 0.824f, 0.961f, 0.235f,
+0.429f, 0.980f, 0.745f, 0.745f,
+0.476f, 0.000f, 0.502f, 0.502f,
+0.524f, 0.902f, 0.745f, 1.000f,
+0.571f, 0.667f, 0.431f, 0.157f,
+0.619f, 1.000f, 0.980f, 0.784f,
+0.667f, 0.502f, 0.000f, 0.000f,
+0.714f, 0.667f, 1.000f, 0.765f,
+0.762f, 0.502f, 0.502f, 0.000f,
+0.810f, 1.000f, 0.843f, 0.706f,
+0.857f, 0.000f, 0.000f, 0.502f,
+0.905f, 0.502f, 0.502f, 0.502f,
+0.952f, 1.000f, 1.000f, 1.000f,
+1.000f, 0.000f, 0.000f, 0.000f,
+};
+
 // Static pointer to single instance.
 avtColorTables *avtColorTables::instance = NULL;
 
@@ -535,34 +538,39 @@ reverse_alphas(unsigned char *a, int na)
 //   Kathleen Biagas, Fri Aug 8 08:27:44 PDT 2014
 //   Add CategoryName.
 //
+//   Mark C. Miller, Mon Jun 10 17:37:19 PDT 2019
+//   Make the code a little more automated as color tables are added.
 // ****************************************************************************
 
 avtColorTables::avtColorTables()
 {
     ctAtts = new ColorTableAttributes();
 
-    // Set up some pointers.
-    const float *predef_ct_colors[17];
-    predef_ct_colors[0]  = ct_bluehot;
-    predef_ct_colors[1]  = ct_caleblack;
-    predef_ct_colors[2]  = ct_calewhite;
-    predef_ct_colors[3]  = ct_contoured;
-    predef_ct_colors[4]  = ct_difference;
-    predef_ct_colors[5]  = ct_gray;
-    predef_ct_colors[6]  = ct_hot;
-    predef_ct_colors[7]  = ct_hot_and_cold;
-    predef_ct_colors[8]  = ct_hot_desaturated;
-    predef_ct_colors[9]  = ct_levels;
-    predef_ct_colors[10] = ct_orangehot;
-    predef_ct_colors[11] = ct_rainbow;
-    predef_ct_colors[12] = ct_xray;
-    predef_ct_colors[13] = ct_jmol_colors;
-    predef_ct_colors[14] = ct_rasmol_colors;
-    predef_ct_colors[15] = ct_amino_colors;
-    predef_ct_colors[16] = ct_shapely_colors;
+    // Just add new, pre-defined color tables to this list
+    float const *predef_ct_colors[] = {
+        ct_bluehot,
+        ct_caleblack,
+        ct_calewhite,
+        ct_contoured,
+        ct_difference,
+        ct_gray,
+        ct_hot,
+        ct_hot_and_cold,
+        ct_hot_desaturated,
+        ct_levels,
+        ct_orangehot,
+        ct_rainbow,
+        ct_xray,
+        ct_jmol_colors,
+        ct_rasmol_colors,
+        ct_amino_colors,
+        ct_shapely_colors,
+        ct_distinct
+    };
+    int const ntables = sizeof(predef_ct_colors)/sizeof(predef_ct_colors[0]);
 
     // Add each colortable.
-    for(int i = 0; i < 17; ++i)
+    for(int i = 0; i < ntables; ++i)
     {
         ColorControlPointList ccpl;
 
@@ -999,6 +1007,49 @@ avtColorTables::GetControlPointColor(const std::string &ctName, int i,
 }
 
 // ****************************************************************************
+// Method: avtColorTables::GetJNDControlPointColor
+//
+// Purpose: Finds a color, starting from the i'th color control point for the
+// specified, that is above the just-noticeably-different (JND) color distance
+// from a given (avoidrgb) color
+//
+// Arguments:
+//   ctName   : The name of the discrete color table.
+//   i        : The index at which to start the search. The value is mod'ed so
+//              that it always falls within the number of control points for
+//              the specified color table.
+//   avoidrgb : The color we wish to avoid matching too closely.
+//
+// Returns:    A boolean value indicating whether or not a color was returned.
+//
+// Mark C. Miller, Wed Jun 19 17:56:46 PDT 2019
+// ****************************************************************************
+
+bool
+avtColorTables::GetJNDControlPointColor(const std::string &ctName, int i,
+    unsigned char const *avoidrgb, unsigned char *jndrgb, bool invert) const
+{
+    int index = ctAtts->GetColorTableIndex(ctName);
+    if (index < 0) return false;
+    const ColorControlPointList &ct = ctAtts->operator[](index);
+
+    for (int n = 0; n < ct.GetNumControlPoints(); n++)
+    {
+        unsigned char rgb[3];
+        int j = (i+n) % ct.GetNumControlPoints();
+        if (invert) j = ct.GetNumControlPoints()-1-j;
+        std::copy(ct[j].GetColors(),ct[j].GetColors()+3,rgb);
+        if (PerceptualColorDistance(rgb, avoidrgb) > JNDColorDistance)
+        {
+            std::copy(rgb,rgb+3,jndrgb);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// ****************************************************************************
 // Method: avtColorTables::SetColorTables
 //
 // Purpose: 
@@ -1099,3 +1150,24 @@ avtColorTables::ImportColorTables()
 #endif
 }
 
+
+// ****************************************************************************
+// Method: avtColorTables::PerceptualColorDistance
+//
+// Purpose: Compute perceptual distance between two rgb colors using
+// https://www.compuphase.com/cmetric.htm by Thiadmer Riemersma under
+// Creative Commons License
+//
+// Mark C. Miller, Tue Jun 18 13:48:25 PDT 2019
+//
+// ****************************************************************************
+
+double
+avtColorTables::PerceptualColorDistance(unsigned char const *rgbA, unsigned char const *rgbB)
+{
+    long rmean = ((long)rgbA[0] + (long)rgbB[0]) / 2;
+    long r = (long)rgbA[0] - (long)rgbB[0];
+    long g = (long)rgbA[1] - (long)rgbB[1];
+    long b = (long)rgbA[2] - (long)rgbB[2];
+    return sqrt((((512+rmean)*r*r)>>8) + 4*g*g + (((767-rmean)*b*b)>>8));
+}

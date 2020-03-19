@@ -14,6 +14,10 @@
 #    Kathleen Biagas, Tue Jul 22 11:51:27 MST 2014
 #    Added Pick_ByGlobalId.
 #
+#    Kathleen Biagas, Wed Aug 28 09:04:00 MST 2019
+#    Turn off cycling of colors for all Curve plot tests.  Set the colors
+#    individually to match current baseline results.
+#
 # ---------------------------------------------------------------------------- 
 
 def TimePick():
@@ -38,11 +42,19 @@ def TimePick():
     # Which is used for subsequent timesteps, the coordinate or the element?
     #     preserve_coord:  0 (use the element)  or 1 (use the coordinate)
 
+    c = CurveAttributes()
+    c.curveColorSource = c.Custom
+    c.curveColor = (255, 0, 0, 255)
+    SetDefaultPlotOptions(c)
+
     vars =("pressure", "v", "direction_magnitude")
     PickByNode(element=8837, vars=vars, do_time=1, preserve_coord=0,curve_plot_type=0)
     SetActiveWindow(2);
     Test("TimePick_NamedArgs_00")
     DeleteAllPlots()
+
+    c.curveColor = (0, 255, 0, 255)
+    SetDefaultPlotOptions(c)
 
     SetActiveWindow(1)
     PickByNode(element=8837, vars=vars, do_time=1, preserve_coord=0,curve_plot_type=0,start_time=15, end_time=50, stride=7)
@@ -50,7 +62,10 @@ def TimePick():
     Test("TimePick_NamedArgs_01")
     DeleteAllPlots()
 
+    c.curveColor = (0, 0, 255, 255)
+    SetDefaultPlotOptions(c)
     SetActiveWindow(1)
+
     # different way for specifying time options, result should be same as previopus:
     time_opt = {'stride':7, 'start_time': 15, 'end_time':50}
     PickByNode(element=8837, vars=vars, do_time=1, preserve_coord=0, time_options=time_opt)

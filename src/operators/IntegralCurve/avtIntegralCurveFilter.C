@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                        avtIntegralCurveFilter.C                           //
@@ -775,6 +741,8 @@ avtIntegralCurveFilter::PostExecute(void)
         dataValue == IntegralCurveAttributes::TimeAbsolute ||
         dataValue == IntegralCurveAttributes::TimeRelative ||
         dataValue == IntegralCurveAttributes::AverageDistanceFromSeed ||
+        dataValue == IntegralCurveAttributes::CorrelationDistance ||
+        dataValue == IntegralCurveAttributes::ClosedCurve ||
         dataValue == IntegralCurveAttributes::Difference ||
         dataValue == IntegralCurveAttributes::Variable)
     {
@@ -2514,7 +2482,7 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 
         if (numAdvection)
         {
-          SNPRINTF(str, 4096,
+          snprintf(str, 4096,
                    "%s\n%d of your integral curves terminated before they reached "
                    "the maximum advection criteria.  This may be indicative of your "
                    "time or distance criteria being too large or the curve leaving the domain."
@@ -2529,7 +2497,7 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numBoundary);
         if (numBoundary > 0)
         {
-            SNPRINTF(str, 4096, 
+            snprintf(str, 4096, 
                      "%s\n%d of your integral curves exited the spatial domain.\n", str, numBoundary);
         }
     }
@@ -2539,7 +2507,7 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numEarlyTerminators);
         if (numEarlyTerminators > 0)
         {
-          SNPRINTF(str, 4096,
+          snprintf(str, 4096,
                    "%s\n%d of your integral curves terminated because they "
                    "reached the maximum number of steps.  This may be indicative of your "
                    "time or distance criteria being too large or of other attributes being "
@@ -2558,7 +2526,7 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numCritPts);
         if (numCritPts > 0)
         {
-            SNPRINTF(str, 4096, 
+            snprintf(str, 4096, 
                      "%s\n%d of your integral curves circled round and round a critical point (a zero"
                      " velocity location).  Normally, VisIt is able to advect the particle "
                      "to the critical point location and terminate.  However, VisIt was not able "
@@ -2573,7 +2541,7 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numStepSize);
         if (numStepSize > 0)
         {
-            SNPRINTF(str, 4096, 
+            snprintf(str, 4096, 
                      "%s\n%d of your integral curves were unable to advect because of the \"stepsize\".  "
                      "Often the step size becomes too small when appraoching a spatial "
                      "or temporal boundary. This especially happens when the step size matches "
@@ -2587,7 +2555,7 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numStiff);
         if (numStiff > 0)
         {
-            SNPRINTF(str, 4096, 
+            snprintf(str, 4096, 
                      "%s\n%d of your integral curves were unable to advect because of \"stiffness\".  "
                      "When one component of a velocity field varies quickly and another stays "
                      "relatively constant, then it is not possible to choose step sizes that "
@@ -2598,7 +2566,7 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 
     if( strlen( str ) )
     {
-        SNPRINTF(str, 4096, 
+        snprintf(str, 4096, 
                  "\n%s\nIf you want to disable any of these messages, "
                  "you can do so under the Advanced tab.\n", str);
 
@@ -2635,8 +2603,8 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     }
 
     //Make a polydata.
-    vtkPoints     *points   = vtkPoints::New();
-    vtkCellArray  *lines    = vtkCellArray::New();
+    vtkPoints      *points   = vtkPoints::New();
+    vtkCellArray   *lines    = vtkCellArray::New();
     vtkDoubleArray *scalars  = vtkDoubleArray::New();
     vtkDoubleArray *tangents = vtkDoubleArray::New();
     vtkDoubleArray *thetas   = NULL;
@@ -2690,21 +2658,24 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         tubeVariableIndex >= 0)
       ProcessVaryTubeRadiusByScalar(ics);
 
-    double correlationDistMinDistToUse = correlationDistanceMinDist;
+    double correlationDistMinDistToUse = 0.0;
     double correlationDistAngTolToUse = 0.0;
 
     if (dataValue == IntegralCurveAttributes::CorrelationDistance)
     {
+        correlationDistMinDistToUse = correlationDistanceMinDist;
+        
         if (correlationDistanceDoBBox)
             correlationDistMinDistToUse *= GetLengthScale();
+
         correlationDistAngTolToUse = cos(correlationDistanceAngTol *M_PI/180.0);
     }
-
+    
     vtkIdType pIdx = 0;
 
-    double cropBeginFlag  = atts.GetCropBeginFlag();
+    bool   cropBeginFlag  = atts.GetCropBeginFlag();
     double cropBeginValue = atts.GetCropBegin();
-    double cropEndFlag    = atts.GetCropEndFlag();
+    bool   cropEndFlag    = atts.GetCropEndFlag();
     double cropEndValue   = atts.GetCropEnd();
 
     for (int i = 0; i < numICs; i++)
@@ -2715,6 +2686,22 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         size_t nSamples = (ic ? ic->GetNumberOfSamples() : 0);
         if (nSamples <= 1)
             continue;
+
+        unsigned int closedCurve;
+        
+        if (dataValue == IntegralCurveAttributes::ClosedCurve)
+        {
+            cropEndFlag = atts.GetCropEndFlag();
+            
+            closedCurve = CheckForClosedCurve( ic );
+
+            if( closedCurve && cropBeginFlag == false && cropEndFlag == false )
+            {
+              cropValue = IntegralCurveAttributes::StepNumber;
+              cropEndFlag = true;
+              cropEndValue = closedCurve;
+            }
+        }
 
         // When cropping save off whether one needs to interpolate and
         // the parameter values at the end points. The beginning and
@@ -2756,16 +2743,22 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                     break; 
                 }
 
-                // Beginning or end point matches the crop value so
+                // Beginning point matches the crop value so
                 // take those indexes.  In these cases no
                 // interpolation will be needed.
-                if( cropBeginValue == crop_value )
+                if( beginIndex < 0 && cropBeginValue == crop_value )
                 {
-                  if( cropBeginFlag && beginIndex < 0 )
                     beginIndex = (int)j;
+                    cropBeginInterpolate = false;
+                }
 
-                  if( cropEndFlag )
+                // End point matches the crop value so
+                // take those indexes.  In these cases no
+                // interpolation will be needed.
+                else if( cropEndFlag && cropEndValue == crop_value )
+                {
                     endIndex = (int)j;
+                    cropEndInterpolate = false;
                 }
 
                 // Within range so take those indexes - this is an
@@ -2774,7 +2767,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                 else if( cropBeginValue < crop_value &&
                          crop_value < cropEndValue )
                 {
-                  if( cropBeginFlag && beginIndex < 0 )
+                  if( beginIndex < 0 )
                   {
                     // If not the first point interpolation will be needed.
                     if( 0 < j )
@@ -2962,6 +2955,9 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                   ComputeCorrelationDistance(j, ic,
                                              correlationDistAngTolToUse,
                                              correlationDistMinDistToUse);
+                break;
+              case IntegralCurveAttributes::ClosedCurve:
+                data_value = closedCurve;
                 break;
               case IntegralCurveAttributes::Difference:
                 data_value = distance;
@@ -3236,6 +3232,90 @@ avtIntegralCurveFilter::ComputeCorrelationDistance(int idx,
     return val;
 }
 
+// ****************************************************************************
+// Method:  avtIntegralCurveFilter::CheckForClosedCurve
+//
+// Purpose: Loop through the integral curve checking to see if it is
+// closed which is defined as when a subsequent point is within a user
+// defined tolerance of the initial seed point.
+//
+// Arguments: da curve
+//   
+//
+// Programmer:  Allen Sasnderson
+// Creation:    February 17, 2020
+//
+// ****************************************************************************
+
+#define SIGN(x) ((x) < 0.0 ? (int) -1 : (int) 1)
+
+unsigned int
+avtIntegralCurveFilter::CheckForClosedCurve(avtStateRecorderIntegralCurve *ic)
+{
+    // Get the tolerance value set by the user. It may absolute or
+    // from the boxing box.
+    bool doBBox = (atts.GetCorrelationDistanceMinDistType() ==
+                   IntegralCurveAttributes::FractionOfBBox);
+    
+    double tolerance = (doBBox ?
+                        atts.GetCorrelationDistanceMinDistBBox() * GetLengthScale():
+                        atts.GetCorrelationDistanceMinDistAbsolute());
+
+    // Set up the plane equation.
+    avtVector planeN = (ic->GetSample(1).position -
+                        ic->GetSample(0).position).normalized();    
+    avtVector planePt(0,0,0);
+    double plane[4];
+            
+    plane[0] = planeN.x;
+    plane[1] = planeN.y;
+    plane[2] = planeN.z;
+    plane[3] = planePt.dot(planeN);
+    
+    // Start with the first point being the current point so to not
+    // get an intersection immediately.
+    avtVector basePt = ic->GetSample(0).position;   
+    avtVector lastPt, currPt = ic->GetSample(1).position;
+    double lastDist, currDist = planeN.dot( currPt ) - plane[3];
+
+    unsigned int nSamples = ic->GetNumberOfSamples();
+
+    for (unsigned int i=2; i<nSamples; ++i)
+    {
+        lastPt = currPt;
+        currPt = avtVector(ic->GetSample(i).position);
+                
+        lastDist = currDist;
+        currDist = Dot( planeN, currPt ) - plane[3];
+    
+        // First look at only points that intersect the plane.
+        if( SIGN(lastDist) != SIGN(currDist) ) 
+        {
+            avtVector dir(currPt-lastPt);
+                    
+            double dot = Dot(planeN, dir);
+            
+            // If the segment is in the same direction as the plane then
+            // find where it intersects the plane.
+            if( dot > 0.0 )
+            {
+                avtVector w = lastPt - planePt;
+        
+                double t = -Dot(planeN, w ) / dot;
+        
+                avtVector point = avtVector(lastPt + dir * t);
+
+		// Now see if the intersected points is within the tolerance.
+                if( (point - basePt).length() < tolerance)
+                {
+                    return i;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
 
 // ****************************************************************************
 // Method:  avtIntegralCurveFilter::ProcessVaryTubeRadiusByScalar

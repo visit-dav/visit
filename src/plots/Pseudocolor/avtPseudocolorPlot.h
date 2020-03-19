@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                             avtPseudocolorPlot.h                          //
@@ -50,14 +16,11 @@
 
 class     avtLookupTable;
 class     avtPseudocolorFilter;
+class     avtPseudocolorGeometryFilter;
 class     avtShiftCenteringFilter;
 class     avtPseudocolorMapper;
-class     avtVariablePointGlyphMapper;
 class     avtVariableLegend;
 class     avtPolylineCleanupFilter;
-class     avtPolylineAddEndPointsFilter;
-class     avtPolylineToRibbonFilter;
-class     avtPolylineToTubeFilter;
 class     avtStaggeringFilter;
 
 // ****************************************************************************
@@ -80,37 +43,37 @@ class     avtStaggeringFilter;
 //    Hank Childs, Tue Mar 27 14:47:03 PST 2001
 //    Inherited from avtSurfaceDataPlot instead of avtPlot and added GetName.
 //
-//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001 
+//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001
 //    Made PseudocolorAttributes a data member so other methods can have access
-//    to the atts.  Added SetScaling, DefineLogLUT, and DefineSkewLUT methods. 
+//    to the atts.  Added SetScaling, DefineLogLUT, and DefineSkewLUT methods.
 //
 //    Kathleen Bonnell, Tue Apr 24 12:22:01 PDT 2001
-//    Added avtShiftCenterFilter. 
-//    
+//    Added avtShiftCenterFilter.
+//
 //    Jeremy Meredith, Tue Jun  5 20:45:02 PDT 2001
 //    Allow storage of attributes as a class member.
 //
 //    Brad Whitlock, Thu Jun 14 16:49:22 PST 2001
 //    Added SetColorTable method.
 //
-//    Kathleen Bonnell, Wed Aug 29 16:44:31 PDT 2001 
-//    Added avtLookupTable and previousMode. 
+//    Kathleen Bonnell, Wed Aug 29 16:44:31 PDT 2001
+//    Added avtLookupTable and previousMode.
 //
-//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001 
+//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001
 //    Added SetLimitsMode.  Removed SetMin, SetMax, SetMinOff, SetMaxOff.
 //
-//    Kathleen Bonnell, Wed Mar 13 12:04:53 PST 2002 
-//    Added private method SetLegendRanges.  
+//    Kathleen Bonnell, Wed Mar 13 12:04:53 PST 2002
+//    Added private method SetLegendRanges.
 //
-//    Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002 
-//    Removed previousMode, no longer needed. 
+//    Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002
+//    Removed previousMode, no longer needed.
 //
 //    Hank Childs, Sun Jun 23 12:19:23 PDT 2002
 //    Add support for point meshes.
 //
 //    Kathleen Bonnell, Tue Oct 22 08:33:26 PDT 2002
-//    Added ApplyRenderingTransformation. 
-//    
+//    Added ApplyRenderingTransformation.
+//
 //    Jeremy Meredith, Tue Dec 10 09:06:18 PST 2002
 //    Added GetSmoothingLevel to allow smoothing inside avtPlot.
 //
@@ -121,14 +84,14 @@ class     avtStaggeringFilter;
 //    Added EnhanceSpecification, and topoDim ivar.  Replaced glyphPoints
 //    and varMapper with glyphMapper.
 //
-//    Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
+//    Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004
 //    Added SetCellCountMultiplierForSRThreshold.
 //
-//    Kathleen Bonnell, Tue Nov  2 11:01:28 PST 2004 
+//    Kathleen Bonnell, Tue Nov  2 11:01:28 PST 2004
 //    Added avtPseudocolorFilter.
 //
 //    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
-//    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper. 
+//    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper.
 //
 //    Brad Whitlock, Thu Jul 21 15:25:44 PST 2005
 //    Added SetPointGlyphSize.
@@ -149,6 +112,17 @@ class     avtStaggeringFilter;
 //    Change use of avtVariableMapper to avtPseudcolorMapper, a specialization
 //    of avtVariableMapper that utilizes a special vtk mapper.
 //
+//    Kathleen Biagas, Thu Oct 31 12:31:03 MST 2019
+//    Added PlotHasBeenGlyphed.
+//
+//    Kathleen Biagas, Tue Nov  5 11:29:55 PST 2019
+//    Replace avtPolylineAddEndPointsFilter, avtPolylineToRibbonFilter,
+//    avtPolylineToTubeFilter with single avtPseudcolorGeometryFilter.
+//    Remove avtVariablePointGlyphMapper, GetBBoxSize.
+//
+//    Kathleen Biagas, Mon Nov 11 17:36:15 PST 2019
+//    Added ManagesOwnTransparency, so SR mode with transparency will work.
+//
 // ****************************************************************************
 
 class avtPseudocolorPlot : public avtSurfaceDataPlot
@@ -159,7 +133,7 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
 
     static avtPlot             *Create();
 
-    virtual const char         *GetName(void) { return "PseudocolorPlot"; };
+    virtual const char         *GetName(void) { return "PseudocolorPlot"; }
 
     virtual void                SetAtts(const AttributeGroup*);
     virtual void                GetDataExtents(std::vector<double> &);
@@ -175,20 +149,21 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     bool                        SetOpacityFromAtts();
     void                        SetScaling(int, double);
 
+    virtual bool                PlotHasBeenGlyphed();
+    virtual bool                ManagesOwnTransparency()
+                                    { return PlotHasBeenGlyphed(); }
+
   protected:
-    avtVariablePointGlyphMapper   *glyphMapper;
     avtPseudocolorMapper          *mapper;
     avtVariableLegend             *varLegend;
     avtLegend_p                    varLegendRefPtr;
     PseudocolorAttributes          atts;
-    avtPseudocolorFilter          *pcfilter;
+    avtPseudocolorFilter          *pcFilter;
+    avtPseudocolorGeometryFilter  *geoFilter;
 
     avtPolylineCleanupFilter      *polylineCleanupFilter;
-    avtPolylineAddEndPointsFilter *polylineAddEndPointsFilter;
-    avtPolylineToRibbonFilter     *polylineToRibbonFilter;
-    avtPolylineToTubeFilter       *polylineToTubeFilter;
     avtStaggeringFilter           *staggeringFilter;
-    avtShiftCenteringFilter       *filter;
+    avtShiftCenteringFilter       *shiftFilter;
     bool                           colorsInitialized;
     int                            topoDim;
     avtLookupTable                *avtLUT;
@@ -197,42 +172,16 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
-    // virtual avtContract_p       EnhanceSpecification(avtContract_p);
     virtual void                CustomizeBehavior(void);
     virtual int                 GetSmoothingLevel();
 
-    virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; };
+    virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; }
 
     virtual void                SetCellCountMultiplierForSRThreshold(
                                    const avtDataObject_p dob);
 private:
     void                        SetLegendRanges(void);
     void                        SetPointGlyphSize();
-
-    double GetBBoxSize( double *bbox )
-    {
-        double vol = 1;
-        int    numDims = 0;
-        if (bbox[1] > bbox[0])
-        {
-            vol *= (bbox[1]-bbox[0]);
-            numDims++;
-        }
-        if (bbox[3] > bbox[2])
-        {
-            vol *= (bbox[3]-bbox[2]);
-            numDims++;
-        }
-        if (bbox[5] > bbox[4])
-        {
-            vol *= (bbox[5]-bbox[4]);
-            numDims++;
-        }
-
-        double length = pow(vol, 1.0/numDims);
-        return length;
-    }
-
 };
 
 #endif

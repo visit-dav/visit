@@ -1,7 +1,10 @@
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 #ifndef FIXED_LENGTH_BIT_FIELD_H
 #define FIXED_LENGTH_BIT_FIELD_H
 
-//#include <iostream>
 
 // ****************************************************************************
 // Class:    FixedLengthBitField

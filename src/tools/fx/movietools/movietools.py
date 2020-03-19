@@ -1,4 +1,5 @@
 import Image, os, arial
+import sys
 
 ###############################################################################
 # Function: getTypeFromExtension
@@ -89,7 +90,10 @@ def applyFunctionToNFrames(func, filesPerThread, nframes, conversionargs):
         func(0, 0, nframes, conversionargs)
     else:
         try:
-            import thread
+            if (sys.version_info > (3, 0)):
+                import _thread
+            else:
+                import thread as _thread
             keepSpawning = 1
             start = filesPerThread
             end = filesPerThread
@@ -104,7 +108,7 @@ def applyFunctionToNFrames(func, filesPerThread, nframes, conversionargs):
                 if(end >= nframes):
                     end = nframes
                     keepSpawning = 0
-                thread.start_new(applyFunctionToNFramesWMutex, (threadID, exitmutex, func, start, end, conversionargs))
+                _thread.start_new(applyFunctionToNFramesWMutex, (threadID, exitmutex, func, start, end, conversionargs))
                 start = start + filesPerThread
                 threadID = threadID + 1
             # Do the first part of the work on the main thread.
@@ -113,7 +117,7 @@ def applyFunctionToNFrames(func, filesPerThread, nframes, conversionargs):
             # Wait for all of the threads to complete
             while 0 in exitmutex: pass
         except ImportError:
-            print "Could not import threads module."
+            print("Could not import threads module.")
             func(0, 0, nframes, conversionargs)
 
 ###############################################################################
@@ -173,9 +177,9 @@ def resizeImage(im, outputname, xres, yres):
             py = (yres - minsize) / 2
             newImage.paste(pasteImage, (px, py, px+pasteImage.size[0], py+pasteImage.size[1]))
             newImage.save(outputname, saveFormat)
-        print "Saved", outputname
+        print("Saved", outputname)
     except IOError:
-        print "Could not process frame %s. We could not write the new file." % outputname
+        print("Could not process frame %s. We could not write the new file." % outputname)
 
 ###############################################################################
 # Function: resizeFramesHelper
@@ -189,7 +193,7 @@ def resizeImage(im, outputname, xres, yres):
 ###############################################################################
 
 def resizeFramesHelper(threadID, start, end, conversionargs):
-    print "resizeFramesHelper(%d, %d" % (start, end), conversionargs,")"
+    print("resizeFramesHelper(%d, %d" % (start, end), conversionargs,")")
 
     baseFormat = conversionargs[0]
     for i in range(start, end):
@@ -204,7 +208,7 @@ def resizeFramesHelper(threadID, start, end, conversionargs):
                 # Resize the image
                 resizeImage(originalImage, outputname, xres, yres)
         except IOError:
-            print "Could not process frame %d because of the input file." % i
+            print("Could not process frame %d because of the input file." % i)
 
 ###############################################################################
 # Function: convertFramesHelper
@@ -218,7 +222,7 @@ def resizeFramesHelper(threadID, start, end, conversionargs):
 
 def convertFramesHelper(threadID, start, end, conversionargs):
     # Get the arguments out of the tuple.
-    print "convertFramesHelper(%d, %d," % (start, end), conversionargs,")"
+    print("convertFramesHelper(%d, %d," % (start, end), conversionargs,")")
     fromNameFormat = conversionargs[0]
     toNameFormat = conversionargs[1]
     toType = getTypeFromExtension(toNameFormat)
@@ -231,7 +235,7 @@ def convertFramesHelper(threadID, start, end, conversionargs):
             im1 = Image.open(im1name)
             im1.save(im2name, toType)
         except IOError:
-            print "Could not open the source image %s" % im1name
+            print("Could not open the source image %s" % im1name)
 
 ###############################################################################
 # Function: removeFilesHelper
@@ -245,7 +249,7 @@ def convertFramesHelper(threadID, start, end, conversionargs):
 
 def removeFilesHelper(threadID, start, end, conversionargs):
     # Get the arguments out of the tuple.
-    print "removeFilesHelper(%d, %d," % (start, end), conversionargs,")"
+    print("removeFilesHelper(%d, %d," % (start, end), conversionargs,")")
 
     # Create the list of files to remove.
     format = conversionargs
@@ -254,7 +258,7 @@ def removeFilesHelper(threadID, start, end, conversionargs):
         fileName = format % i
         command = command + " " + fileName
     # Remove the files.
-    print command
+    print(command)
     os.system(command)
 
 def resizeMultipleFrames(baseFormat, nframes, conversionargs):
@@ -288,12 +292,12 @@ def removeFiles(format, nframes):
 
 def createStreamingMovie(moviename, baseFormat, nframes):
     if(not commandInPath("img2sm")):
-        print """
+        print("""
 ***
 *** The createStreamingMovie command cannot create a movie because
 *** the \"img2sm\" command cannot be found in your path.
 ***
-"""
+""")
         return
 
     format = baseFormat[-3:]
@@ -335,12 +339,12 @@ def createQuickTimeMovieHelper(threadID, start, end, conversionargs):
 
 def createQuickTimeMovie(moviename, baseFormat, nframes, xres, yres):
     if(not commandInPath("makemovie")):
-        print """
+        print("""
 ***
 *** The createQuickTimeMovie function cannot create a movie because
 *** because the \"makemovie\" command cannot be found in your path.
 ***
-"""
+""")
         return
 
     baseType = getTypeFromExtension(baseFormat)
@@ -378,12 +382,12 @@ def createQuickTimeMovie(moviename, baseFormat, nframes, xres, yres):
 
 def createMPEG(moviename, baseFormat, nframes, xres, yres):
     if(not commandInPath("mpeg_encode")):
-        print """
+        print("""
 ***
 *** The createMPEG function cannot create a movie because
 *** the \"mpeg_encode\" command cannot be found in your path.
 ***
-"""
+""")
         return
 
     baseType = getTypeFromExtension(baseFormat)
@@ -428,7 +432,7 @@ def createMPEG(moviename, baseFormat, nframes, xres, yres):
             command = "mpeg_encode %s" % paramFile
             os.system(command)
         except IOError:
-            print "Could not create param file!"
+            print("Could not create param file!")
 
 ###############################################################################
 # Function: createTarFile
@@ -472,11 +476,11 @@ def interpolateFrames(file1, file2, baseFormat, nframes, startindex):
                 im3.save(outname, saveType)
                 index = index + 1
             except IOError:
-                print "Can't save", outname
+                print("Can't save", outname)
 
         retval = 1
     except IOError:
-        print "Can't open one of the input files."
+        print("Can't open one of the input files.")
     return retval
 
 ###############################################################################
@@ -519,7 +523,7 @@ def ReadDataFile(filename):
                 if(aline[0] != '#'):
                     data = data + [aline[:-1]]
     except IOError:
-        print "Could not read from", filename
+        print("Could not read from", filename)
     return data
 
 def testShrink():

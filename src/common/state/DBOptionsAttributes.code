@@ -383,7 +383,7 @@ Definition:
 // ****************************************************************************
 
 void
-DBOptionsAttributes::SetEnumStrings(const std::string &name, 
+DBOptionsAttributes::SetEnumStrings(const std::string &name,
                                     const std::vector<std::string> &values)
 {
     int eIndex = FindIndex(name);

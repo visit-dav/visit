@@ -151,7 +151,7 @@ moves = {4 : (0.02, 0.5), 8 : (0.2, 0.9)}
 for i in range(nsteps):
     t = float(i) / float(nsteps - 1)
     slider.percentComplete = t * 100.
-    if i in moves.keys():
+    if i in list(moves.keys()):
         slider.position = moves[i]
     v = v0 * (1. - t) + v1 * t
     SetView3D(v)

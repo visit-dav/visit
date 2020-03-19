@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtVisItXdmfFileFormat.C                       //
@@ -200,6 +166,11 @@ avtVisItXdmfFileFormat::OpenFile(int f)
 //  Programmer: Eric Brugger
 //  Creation:   Wed Mar 19 12:38:46 PDT 2008
 //
+//  Modifications:
+//    Eric Brugger, Fri Jun 14 10:12:17 PDT 2019
+//    I increased the maximum number of characters allowed in file and
+//    dataset names from 1023 to 2047.
+//
 // ****************************************************************************
 
 hid_t
@@ -209,7 +180,7 @@ avtVisItXdmfFileFormat::OpenFile(const char *n)
     // The directory of this file is all relative to the directory of
     // the xmf file.  Reflect that here.
     //
-    char name[1024];
+    char name[2048];
     if (n[0] == '/')
     {
         strcpy(name, n);
@@ -293,7 +264,7 @@ avtVisItXdmfFileFormat::CloseFile(int f)
 //
 //  Purpose:
 //      Split a filename:dataset location into the file name and dataset name.
-//      The filename and datasetname buffers must be 1024 characters long
+//      The filename and datasetname buffers must be 2048 characters long
 //      including the terminating NULL.
 //
 //  Programmer: Eric Brugger
@@ -302,6 +273,10 @@ avtVisItXdmfFileFormat::CloseFile(int f)
 //  Modifications:
 //    Kathleen Bonnell, Tue Jan  8 17:51:30 PST 2008
 //    Use 'const' with return of ststr to suppress error on Windows with MSVC8.
+//
+//    Eric Brugger, Fri Jun 14 10:12:17 PDT 2019
+//    I increased the maximum number of characters allowed in file and
+//    dataset names from 1023 to 2047.
 //
 // ****************************************************************************
 
@@ -341,9 +316,9 @@ avtVisItXdmfFileFormat::DetermineFileAndDataset(const char *input,
         avtCallback::IssueWarning("Dataset specifier missing a filename.");
         return 2;
     }
-    if (ptr2 - ptr > 1023)
+    if (ptr2 - ptr > 2047)
     {
-        avtCallback::IssueWarning("Dataset specifier filename over 1023 characters.");
+        avtCallback::IssueWarning("Dataset specifier filename over 2047 characters.");
         return 3;
     }
     char *ptr4 = filename;
@@ -357,9 +332,9 @@ avtVisItXdmfFileFormat::DetermineFileAndDataset(const char *input,
         avtCallback::IssueWarning("Dataset specifier missing a dataset name.");
         return 4;
     }
-    if (ptr3 - ptr2 > 1023)
+    if (ptr3 - ptr2 > 2047)
     {
-        avtCallback::IssueWarning("Dataset specifier dataset name over 1023 characters.");
+        avtCallback::IssueWarning("Dataset specifier dataset name over 2047 characters.");
         return 5;
     }
     ptr4 = datasetname;
@@ -963,6 +938,10 @@ avtVisItXdmfFileFormat::AddVarInfo(bool topGrid, int iBlock, VarInfo *varInfo)
 //    I enhanced the routine to be insensitive to the case for element names,
 //    attribute names, and attribute values that were not names.
 //
+//    Eric Brugger, Fri Jun 14 10:12:17 PDT 2019
+//    I increased the maximum number of characters allowed in file and
+//    dataset names from 1023 to 2047.
+//
 // ****************************************************************************
 
 DataItem *
@@ -1014,7 +993,7 @@ avtVisItXdmfFileFormat::ParseDataItem()
         {
             cdataOffset = xdmfParser.GetCDataOffset();
             cdataLength = xdmfParser.GetCDataLength();
-            if (cdataLength <= 1023)
+            if (cdataLength <= 2047)
             {
                 cdata = new char[cdataLength+1];
                 memcpy(cdata, xdmfParser.GetCDataValue(), cdataLength+1);

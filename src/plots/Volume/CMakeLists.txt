@@ -3,6 +3,8 @@ PROJECT(Volume_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Volume)
+
 SET(COMMON_SOURCES
 VolumePluginInfo.C
 VolumeCommonPluginInfo.C
@@ -85,9 +87,6 @@ ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VTKh_INCLUDE_DIRS}
-${VTKM_DIR}/include/vtkm-1.2
-${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
 ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
@@ -114,7 +113,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GVolumePlot visitcommon gui )
 
     ADD_LIBRARY(VVolumePlot ${LIBV_SOURCES})
-    TARGET_LINK_LIBRARIES(VVolumePlot visitcommon viewer vtkRenderingVolumeOpenGL2 )
+    TARGET_LINK_LIBRARIES(VVolumePlot visitcommon viewer vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
     if(VISIT_OSPRAY)
         target_link_libraries(VVolumePlot ${OSPRAY_LIBRARIES})
     endif()
@@ -129,6 +128,10 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SVolumePlot ${LIBS_SOURCES})
+        IF(WIN32)
+            # This prevents python from #defining snprintf as _snprintf
+            SET_TARGET_PROPERTIES(SVolumePlot PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
+        ENDIF()
         TARGET_LINK_LIBRARIES(SVolumePlot visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SVolumePlot)
     ENDIF(VISIT_PYTHON_SCRIPTING)
@@ -142,7 +145,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EVolumePlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EVolumePlot_ser visitcommon avtplotter_ser avtpipeline_ser avtexpressions_ser vtkRenderingVolumeOpenGL2 )
+TARGET_LINK_LIBRARIES(EVolumePlot_ser visitcommon avtplotter_ser avtpipeline_ser avtexpressions_ser vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
 if(VISIT_OSPRAY)
     target_link_libraries(EVolumePlot_ser ${OSPRAY_LIBRARIES})
 endif()
@@ -152,7 +155,7 @@ ADD_TARGET_DEFINITIONS(EVolumePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVolumePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtplotter_par avtpipeline_par avtexpressions_par vtkRenderingVolumeOpenGL2 )
+    TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtplotter_par avtpipeline_par avtexpressions_par vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
     if(VISIT_OSPRAY)
         target_link_libraries(EVolumePlot_par ${OSPRAY_LIBRARIES})
     endif()

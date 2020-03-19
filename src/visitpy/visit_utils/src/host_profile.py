@@ -1,39 +1,7 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#*****************************************************************************
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
 """
  file: host_profile.py
  author: Cyrus Harrison (cyrush@llnl.gov)
@@ -53,7 +21,7 @@ import xml.etree.ElementTree as et
 from os.path import join as pjoin
 
 
-from common import VisItException, hostname, require_visit
+from .common import VisItException, hostname, require_visit
 
 
 try:
@@ -72,7 +40,7 @@ class HostProfile(object):
         self.partitions = partitions
         self.defaults = defaults
     def launch_method(self,part):
-        if not self.partitions.has_key(part):
+        if part not in self.partitions:
             raise VisItException("Unsupported partition '%s' on host %s" % (part,self.name))
         return self.partitions[part]
     @classmethod
@@ -98,7 +66,7 @@ class HostProfile(object):
                     if nnset:
                         nn  = cls.__fetch_xml_field(lp,"numNodes")
                         ppn = nprocs / nn
-                if par and len(defs.keys()) == 0:
+                if par and len(list(defs.keys())) == 0:
                     nnset =  cls.__fetch_xml_field(lp,"numNodesSet")
                     nn    = cls.__fetch_xml_field(lp,"numNodes")
                     defs["nprocs"] = nprocs
@@ -135,7 +103,7 @@ class HostProfile(object):
 
 def hosts(vdir=None,legacy=False,reload=False):
     global __hosts
-    if len(__hosts.keys()) == 0 or reload:
+    if len(list(__hosts.keys())) == 0 or reload:
         __hosts.clear()
         if legacy:
             llnl_open, llnl_closed = legacy_vutils_engine_profiles()
@@ -143,7 +111,7 @@ def hosts(vdir=None,legacy=False,reload=False):
             __hosts.update(llnl_closed)
         else:
             if vdir is None:
-                if not os.environ.has_key("VISITHOME"):
+                if "VISITHOME" not in os.environ:
                     raise VisItException("hosts() requires VISITHOME env var or explicit vdir argument")
                 vdir = os.environ["VISITHOME"]
             hpf_files = glob.glob(pjoin(vdir,".visit","hosts","*.xml"))
@@ -152,5 +120,5 @@ def hosts(vdir=None,legacy=False,reload=False):
                     hpf = HostProfile.load(hpf_file)
                     __hosts[hpf.name] = hpf
                 except:
-                    print "[warning: Could not load host profile: '%s']" % hpf_file
+                    print("[warning: Could not load host profile: '%s']" % hpf_file)
     return __hosts

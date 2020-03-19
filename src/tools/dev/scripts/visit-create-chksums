@@ -109,18 +109,22 @@ do
    echo ""                                                >  $output
    echo "The VisIt executable $property"                  >> $output
    echo ""                                                >> $output
-   $cmd INSTALL_NOTES                                     >> $output
-   $cmd VisIt-$version.dmg                                >> $output
-   $cmd VisIt-$version-10.13.dmg                          >> $output
+   $cmd INSTALL_NOTES.txt                                 >> $output
    $cmd jvisit$version.tar.gz                             >> $output
-   $cmd visit-install$version2                            >> $output
-   $cmd visit${version}_x64.exe                           >> $output
-   $cmd visit$version2.darwin-x86_64.tar.gz               >> $output
-   $cmd visit${version2}-10.13.darwin-x86_64.tar.gz       >> $output
-   $cmd visit$version2.linux-x86_64-ubuntu18.tar.gz       >> $output
-   $cmd visit$version2.linux-x86_64-ubuntu18-wmesa.tar.gz >> $output
+   $cmd visit$version.darwin-x86_64-10_14.dmg             >> $output
+   $cmd visit$version.darwin-x86_64-10_14.tar.gz          >> $output
+   $cmd visit$version.darwin-x86_64-10.13.dmg             >> $output
+   $cmd visit$version.darwin-x86_64-10.13.tar.gz          >> $output
+   $cmd visit$version2.linux-x86_64-centos8.tar.gz        >> $output
+   $cmd visit$version2.linux-x86_64-debian9.tar.gz        >> $output
+   $cmd visit$version2.linux-x86_64-fedora27.tar.gz       >> $output
    $cmd visit$version2.linux-x86_64-rhel7.tar.gz          >> $output
    $cmd visit$version2.linux-x86_64-rhel7-wmesa.tar.gz    >> $output
+   $cmd visit$version2.linux-x86_64-ubuntu16.tar.gz       >> $output
+   $cmd visit$version2.linux-x86_64-ubuntu18.tar.gz       >> $output
+   $cmd visit$version2.linux-x86_64-ubuntu19.tar.gz       >> $output
+   $cmd visit${version}_x64.exe                           >> $output
+   $cmd visit-install$version2                            >> $output
 
    echo ""                                                >> $output
    echo "The VisIt source code $property"                 >> $output
@@ -128,14 +132,12 @@ do
    $cmd build_visit$version2                              >> $output
    $cmd $dist.tar.gz                                      >> $output
    $cmd visitdev$version.exe                              >> $output
-   cd third_party
-   files=`ls`
+   files=`ls third_party`
    for file in $files
    do
-      $cmd $file >> ../$output
+      $cmd third_party/$file | sed "s/third_party\///" >> $output
       shift
    done
-   cd ..
 
    shift
 done
@@ -147,6 +149,14 @@ chmod 664 visit_md5_checksums visit_sha1_checksums
 chmod 664 visit_sha256_checksums visit_filesizes
 chgrp visit visit_md5_checksums visit_sha1_checksums
 chgrp visit visit_sha256_checksums visit_filesizes
+
+#
+# Rename the output files to add ".txt"
+#
+mv visit_md5_checksums visit_md5_checksums.txt
+mv visit_sha1_checksums visit_sha1_checksums.txt
+mv visit_sha256_checksums visit_sha256_checksums.txt
+mv visit_filesizes visit_filesizes.txt
 
 #
 # Clean up temporary files.

@@ -4,7 +4,7 @@ Definition:
 // ****************************************************************************
 // Method: SimilarityTransformAttributes::CopyAttributes
 //
-// Purpose: 
+// Purpose:
 //   CopyAttributes method for the SimilarityTransformAttributes class.
 //
 // Programmer: Brad Whitlock
@@ -48,7 +48,7 @@ Definition:
 // ****************************************************************************
 // Method: SimilarityTransformAttributes::CreateCompatible
 //
-// Purpose: 
+// Purpose:
 //   Creates an object of the specified type initialized with the attributes
 //   from this object.
 //
@@ -57,13 +57,13 @@ Definition:
 //
 // Returns:    A new object of the type specified by tname or 0.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Oct 29 08:57:46 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AttributeSubject *
@@ -99,15 +99,15 @@ Definition:
 // ****************************************************************************
 // Method: SimilarityTransformAttributes::SetFromNode
 //
-// Purpose: 
-//   This method sets attributes in this object from values in a DataNode 
+// Purpose:
+//   This method sets attributes in this object from values in a DataNode
 //    representation of the object.
 //
 // Programmer:  Kathleen Biagas
-// Creation:    August 28, 2012 
+// Creation:    August 28, 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

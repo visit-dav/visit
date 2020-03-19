@@ -1,39 +1,7 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#*****************************************************************************
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
 """
  file: windows.py
  author: Cyrus Harrison <cyrush@llnl.gov>
@@ -47,8 +15,8 @@
 import os
 import shutil
 
-from common import VisItException, require_visit, sexe
-from property_tree import PropertyTree
+from .common import VisItException, require_visit, sexe
+from .property_tree import PropertyTree
 
 try:
     import visit
@@ -75,7 +43,7 @@ class WindowManager(object):
     def remove_window(cls,win):
         win.clear_plots()
         # make sure we don't delete the last window
-        if len(cls.__windows.keys()) > 1:
+        if len(list(cls.__windows.keys())) > 1:
             prev_lvl = visit.SuppressMessages(2)
             visit.DeleteWindow()
             visit.SuppressMessages(prev_lvl)
@@ -83,7 +51,7 @@ class WindowManager(object):
         del cls.__windows[win.window_id]
     @classmethod
     def registered_windows(cls):
-        return cls.__windows.values()
+        return list(cls.__windows.values())
     @classmethod
     def cleanup_windows(cls):
         for win in cls.registered_windows():
@@ -129,7 +97,7 @@ class Window(object):
         if not ts is None:
             ofile = "%s%04d" %(ofile,ts)
         stargs = (format,str(vnames),odir,ofile)
-        print "[exporting format: %s vars: %s path: %s/%s ]" % stargs
+        print("[exporting format: %s vars: %s path: %s/%s ]" % stargs)
         eatts = visit.ExportDBAttributes()
         eatts.db_type = format
         eatts.filename = ofile
@@ -152,10 +120,10 @@ class Window(object):
         obase = os.path.abspath(obase)
         odir, ofile = os.path.split(obase)
         if ts is None:
-            print "[rendering %s/%s.png]" % (odir,ofile)
+            print("[rendering %s/%s.png]" % (odir,ofile))
             tmp_ofile = "%s___.tmp" % ofile
         else:
-            print "[rendering %s/%s%04d.png]" % (odir,ofile,ts)
+            print("[rendering %s/%s%04d.png]" % (odir,ofile,ts))
             tmp_ofile = "%s.%04d___.tmp" % (ofile,ts)
         sa = visit.SaveWindowAttributes()
         sa.outputToCurrentDirectory = 0
@@ -178,7 +146,7 @@ class Window(object):
         shutil.move(fname,des)
         if ores[0] != res[0] or ores[1] != res[1]:
             stargs = (res[0],res[1],ores[0],ores[1])
-            print "[resizing output (from %dx%d to %dx%d)]" % stargs
+            print("[resizing output (from %dx%d to %dx%d)]" % stargs)
             sexe("convert -resize %dx%d %s %s" % (ores[0],ores[1],des,des))
         visit.SuppressMessages(prev_lvl)
         return des
