@@ -195,7 +195,7 @@ void PMDFile::ScanFileAttributes()
 
             this->version = buffer;
 
-            delete buffer;
+            delete [] buffer;
         }
         else if (strcmp(attrName,"meshesPath")==0)
         {
@@ -206,7 +206,7 @@ void PMDFile::ScanFileAttributes()
             buffer[size] = '\0';
 
             strncpy(this->meshesPath,buffer,sizeof(buffer));
-            delete buffer;
+            delete [] buffer;
 
         }
         else if (strcmp(attrName,"particlesPath")==0)
@@ -219,7 +219,7 @@ void PMDFile::ScanFileAttributes()
 
             strncpy(this->particlesPath,buffer,sizeof(buffer));
 
-            delete buffer;
+            delete [] buffer;
         }
     }
 
