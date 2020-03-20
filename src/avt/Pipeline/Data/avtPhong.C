@@ -300,9 +300,18 @@ void avtPhong::AddLightingHeadlight(int index, const avtRay *ray, unsigned char 
         if (nl < 0.0)
             nl = -nl;
 
+        //
+        // Lighting power is too harsh if we just multiply it in. Incorporating it
+        // into diffuse gives a much more palatable result.
+        //
+        double lp = 1.0 / lightingPower;
         for (int i=0; i<3; i++) 
-              col[i] = ( ((matProperties[0] + (matProperties[1] * nl)) * col[i])   + ((matProperties[2] * pow(nl,matProperties[3])) * alpha) ) * lightingPower;
-            //                amb              +          diff                   +                    spec
+        {
+            // amb + diff + spec
+            col[i] = (((matProperties[0] +
+                       (pow(matProperties[1], lp) * nl)) * col[i]) +
+                      ((matProperties[2] * pow(nl,matProperties[3])) * alpha) );
+        }
 
        // convert to unsignedChar
         if ((col[0] * 255) > 255.0)
