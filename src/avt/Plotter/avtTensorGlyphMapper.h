@@ -67,7 +67,17 @@ class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
     void                       SetAutoScale(bool);
     void                       SetLookupTable(vtkLookupTable *lut);
 
-  protected:
+    // methods for setting limits for coloring
+    void                       SetLimitsMode(const int);
+    void                       SetMin(double);
+    void                       SetMinOff(void);
+    void                       SetMax(double);
+    void                       SetMaxOff(void);
+    virtual bool               GetRange(double &, double &);
+    virtual bool               GetCurrentRange(double &, double &);
+    bool                       GetVarRange(double &, double &);
+
+ protected:
     vtkAlgorithmOutput        *glyph;
     vtkLookupTable            *lut;
     bool                       colorByMag;
@@ -76,10 +86,15 @@ class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
     bool                       scaleByMagnitude;
     bool                       autoScale;
 
+    double                     min, max;
+    bool                       setMin, setMax;
+    int                        limitsMode;
+
     vtkVisItTensorGlyph      **tensorFilter;
     int                        nTensorFilters;
 
     virtual void               CustomizeMappers(void);
+    void                       SetMappersMinMax(void);
 
     virtual vtkAlgorithmOutput *InsertFilters(vtkDataSet *, int);
     virtual void               SetUpFilters(int);
