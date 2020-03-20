@@ -36,6 +36,7 @@ avtPhong::avtPhong(double gmax, double lpow)
     : gradMax(gmax), lightingPower(lpow)
 {
     inv_gradMax = 1. / gmax;
+    inv_lightingPower = 1. / lightingPower;
 }
 
 
@@ -304,13 +305,13 @@ void avtPhong::AddLightingHeadlight(int index, const avtRay *ray, unsigned char 
         // Lighting power is too harsh if we just multiply it in. Incorporating it
         // into diffuse gives a much more palatable result.
         //
-        double lp = 1.0 / lightingPower;
         for (int i=0; i<3; i++) 
         {
             // amb + diff + spec
-            col[i] = (((matProperties[0] +
-                       (pow(matProperties[1], lp) * nl)) * col[i]) +
-                      ((matProperties[2] * pow(nl,matProperties[3])) * alpha) );
+            double amb  = matProperties[0];
+            double diff = pow(matProperties[1], inv_lightingPower) * nl;
+            double spec = matProperties[2] * pow(nl,matProperties[3]) * alpha;
+            col[i] = ((amb + diff) * col[i]) + spec;
         }
 
        // convert to unsignedChar
