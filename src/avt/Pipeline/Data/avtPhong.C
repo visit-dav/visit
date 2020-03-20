@@ -247,7 +247,8 @@ double dot(double v1[3], double v2[3]){
 }
 
 
-void avtPhong::AddLightingHeadlight(int index, const avtRay *ray, unsigned char *rgb, double alpha, double matProperties[4]) const
+void avtPhong::AddLightingHeadlight(int index, const avtRay *ray,
+    unsigned char *rgb, double alpha, double matProperties[4]) const
 {
     const LightAttributes &l = lights.GetLight(0);
     if (l.GetEnabledFlag()){
