@@ -819,8 +819,7 @@ avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
 {
     bool haveMixedMaterials = false;
     for (size_t i = 0; i < domainNum.size(); i++)
-        if (mats[i] == NULL)
-            if (mats[i]->GetMixlen() != 0)
+        if (mats[i] != NULL && mats[i]->GetMixlen() != 0)
                 haveMixedMaterials = true;
 
     int max = UnifyMaximumValue(haveMixedMaterials ? 1 : 0);
