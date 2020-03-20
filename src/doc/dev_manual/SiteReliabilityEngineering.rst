@@ -32,7 +32,7 @@ suggestive of minor, easily fixed deficiencies in either the software itself
 or its associated processes and artifacts.
 
 The continuous investment of effort to craft and carry out
-:ref:`small corrective actions <sre_housekeeping>`
+:ref:`small corrective actions <sre_sre_vs_product_development>`
 in response to such inquiries is a *best practice*. It represents a
 `fusion <https://medium.com/@aHev/why-ux-researchers-should-learn-sre-practices-a2b213e69a8a>`_
 of aspects of Google's
@@ -48,9 +48,9 @@ For mature DOE software projects with wide reach and many users, SRE activity
 represents a brand of effort wholly different from conventional software product
 development, planning and execution. Like most DOE software projects, VisIt_ has
 no dedicated SRE resources. Instead, developers themselves must also support SRE
-work. Nonetheless, managing SRE work effectively and efficiently is an essential
-part of maintaining the overall quality of the software as well as the
-productivity of both developers and users of the software alike.
+work. Nonetheless,
+`managing SRE work effectively and efficiently is an essential part of maintaining the overall productivity and sustainability of the software <https://beyondphilosophy.com/15-statistics-that-should-change-the-business-world-but-havent>`_
+as well as the productivity of both users and developers of the software alike.
 
 Goals
 -----
@@ -118,7 +118,7 @@ in practices to avoid repeating such major incidents.
 Because SRE work tends to be :ref:`interrupt driven <sre_misconceptions>`, there is always
 the chance that the **Primary** will have no :ref:`active <sre_active_issues>` issues.
 At these *idle* times, the **Primary** shall use their time to address general
-:ref:`housekeeping <sre_housekeeping>` or other *low-hanging fruit* type work. In
+:ref:`housekeeping <sre_sre_vs_product_development>` or other *low-hanging fruit* type work. In
 particular, there shall be no expectation that a developer serving as **Primary**
 can get any other work done beyond their active or idle SRE obligations. In slow
 weeks, its conceivable they can. But, there can be no implied assumption or
@@ -169,6 +169,74 @@ ignore customer inquiries as well as redirect customers who may contact them dir
 via email, phone or walk-in. It is a best practice to handle such redirections
 with a formal, three-way :ref:`handoff <sre_handoffs>` confirming that the customer
 indeed makes contact with the **Primary**.
+
+.. _sre_sre_vs_product_development:
+
+SRE vs. Product Development
+---------------------------
+
+Part of the reason for formalizing this process is the recognition of a
+different category of work,
+`Site Reliability Engineering <https://en.wikipedia.org/wiki/Site_Reliability_Engineering>`_ (SRE),
+that is
+`essential part of maintaining the overall quality <https://beyondphilosophy.com/15-statistics-that-should-change-the-business-world-but-havent>`_
+of a software product as well as the productivity of both developers and users
+of the software alike. Nonetheless, SRE work is very different from
+conventional *product development* type work where bug fixes, technology
+refreshes and feature enhancements are estimated and prioritized,
+methodically planned and resources are assigned to hit target release dates.
+
+Issues that impact one user's productivity often impact others. Likewise for
+developers. When such issues come to our attention, whenever possible it
+is often helpful to identify *two* kinds of actions; a short-term
+*constructive* correction and a longer-term *comprehensive* solution.
+
+=======================  ======================
+Constructive Correction  Comprehensive Solution
+=======================  ======================
+Short term               Longer term
+Faster response          Slower response
+Low cost                 Higher cost
+Low risk                 Higher risk
+Unplanned                Planned
+Mitigation               Resolution
+=======================  ======================
+
+A constructive correction has value only when it represents a step towards the
+comprehensive solution, can sufficiently reduce the impact of the issue and can
+be rolled out to users significantly sooner than the comprehensive solution.
+Ordinarily, the constructive work is something the **Primary** handles as
+part of their SRE responsibilities. The comprehensive work is handled as part of
+normal product development.
+
+Constructive corrections can wind up falling through the cracks of traditional
+software project management and planning processes. However, such work also often
+represents low cost high benefit improvements in quality of either the software
+itself or the development or deployment processes supporting it. We refer to issues
+of this nature as general *low-hanging fruit* type issues.
+
+Apart from acknowledging their existence, a key part of this process is the
+allocation of resources for the sole purpose of supporting SRE activities
+and developing a practice of continuously crafting constructive corrective
+actions arising from SRE inquiries.
+
+Consequently, another key role of the **Primary** is to use any time not working
+active SRE issues to fix other *low-hanging fruit* issues from the
+*product development* backlog. As a rule of thumb, low-hanging
+fruit is considered to be anything that the **Primary** believes is fixable
+within a half-day's (4 hours) worth of effort. When there are many such tasks in
+the system to work on, the **Primary** is free to use his/her judgment to decide
+which s/he can most productively address.
+
+Part of the acknowledgment of this new category of work is the new
+`issue tracker <https://github.com/visit-dav/live-customer-response/issues>`_
+for tracking it. *New* SRE activity will start with an issue being added there.
+As an SRE incident unfolds it may result in either the same issue being moved to the
+`product development <https://github.com/visit-dav/visit/issues>`_ issue tracker
+and/or new issue(s) being added to the 
+`product development <https://github.com/visit-dav/visit/issues>`_ tracker.
+Any new *product development* issues should be linked back to the original
+SRE issue that spawned them.
 
 .. _sre_active_issues:
 
@@ -282,9 +350,9 @@ When such incidents occur, it is a best practice to spend some time considering
 adjustments in processes that can help to avoid repeating similar issues in
 the future.
 
-When such incidents are resolved, the **Primary** will prepare a brief *postmortem*
-(often just a set of bullet points) explaining what happend and why, estimating the
-amount of resources that were needed to resolve the incident, describing key
+When such incidents reach SRE resolution, the **Primary** will prepare a
+brief *postmortem* (often just a set of bullet points) explaining what happened and why,
+estimating the amount of resources that were needed to resolve the incident, describing key
 milestones in the work to resolve the incident and suggesting recommendations for
 changes in processes to prevent such incidents from being repeated. This *postmortem*
 will be used to guide team discussion during a subsequent weekly project meeting.
@@ -370,59 +438,6 @@ requiring classified computing, the **Primary** should
   * If customer indicates immediate response is required, the **Primary**
     should query the whole team to arrange another developer who can
     handle it.
-
-.. _sre_housekeeping:
-
-SRE vs. Product Development
----------------------------
-
-Part of the reason for formalizing this process is the recognition of a
-different category of work,
-`Site Reliability Engineering <https://en.wikipedia.org/wiki/Site_Reliability_Engineering>`_ (SRE),
-that is an essential part of maintaining the overall quality of
-a software product as well as the productivity of both developers and users
-of the software alike. Nonetheless, SRE work is very different from
-conventional *product development* type of work where
-bug fixes, technology refreshes, feature enhancements and major releases are
-prioritized, planned and resources assigned to hit target deliverable
-dates.
-
-Small, easily fixed issues that impact one user's productivity often impact
-others. Likewise for developer productivity issues. Often, these kinds of
-issues can wind up falling through the cracks of traditional software project
-management and planning processes. However, such issues also often represent
-low cost high benefit improvements in quality of either the software itself or
-the development or deployment processes supporting it. We refer to issues of
-this nature as general *housekeeping* or *low-hanging fruit* type issues.
-
-Apart from acknowledging their existence, a key part of this process is the
-allocation of resources for the sole purpose of supporting SRE activities
-and developing a practice of continuously crafting small corrective actions
-arising from SRE inquiries.
-
-Consequently, another key role of the **Primary** is to use any time not working
-active SRE issues to fix other *low-hanging fruit* issues from the
-*product development* backlog. As a rule of thumb, low-hanging
-fruit is considered to be anything that the **Primary** believes is fixable
-within a half-day's (4 hours) worth of effort. When there are many such tasks in
-the system to work on, the **Primary** is free to use his/her judgment to decide
-which s/he can most productively address.
-
-Part of the acknowledgment of this new category of work is the new
-`issue tracker <https://github.com/visit-dav/live-customer-response/issues>`_
-for tracking it. *New* SRE activity will start with an issue being added there.
-As an SRE incident unfolds it may result in either the same issue being moved to the
-`product development <https://github.com/visit-dav/visit/issues>`_ issue tracker
-and/or new issue(s) being added to the 
-`product development <https://github.com/visit-dav/visit/issues>`_ tracker.
-Any new *product development* issues should be linked back to the original
-SRE issue that spawned them.
-
-Finally, there are likely a number of
-issues of the *low-hanging fruit* kind already mixed in with our
-`product development <https://github.com/visit-dav/visit/issues>`_ issue
-backlog. These should probably be audited for whether or not they are
-an issue of the *low-hanging fruit* type and then appropriately re-labeled.
 
 .. _sre_scheduling:
 

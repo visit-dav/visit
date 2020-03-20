@@ -16,7 +16,7 @@ VisIt_ Developer Manual
     CreateRelease
     MemoryLeaks
     Docker
-    LiveCustomerResponse
+    SiteReliabilityEngineering
     OpenGL
 
 .. Indices and tables
