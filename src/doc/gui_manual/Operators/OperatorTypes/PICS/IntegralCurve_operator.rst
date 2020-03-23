@@ -61,6 +61,7 @@ Plane
       serves as the "X" axis embedded in the plane.)
     * Sampling - Specify the type of sampling, the region from which to sample
       (interior or boundary) and the number of samples.
+      
        * The sampling "Distance in X" and "Distance in Y" define the dimensions
          of the rectangle in the plane. 
    
