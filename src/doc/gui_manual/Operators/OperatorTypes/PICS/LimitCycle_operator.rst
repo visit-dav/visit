@@ -116,7 +116,7 @@ Maximum number of steps
 Appearance
 ^^^^^^^^^^
 
-The appearance tab specifies how the integral curve will be drawn. In addition
+The appearance tab specifies how the integral curve will be rendered. In addition
 to the Appearance attributes common to all PICS operators, the Integral Curve
 operator supports the following attributes.
 

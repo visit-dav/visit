@@ -118,7 +118,7 @@ See Tolerance attributes that are common to all PICS operators.
 Appearance
 ^^^^^^^^^^
 
-The appearance tab specifies how the LCS will be drawn. In addition to the
+The appearance tab specifies how the LCS will be rendered. In addition to the
 Appearance attributes common to all PICS operators, the LCS operator supports
 the following attributes.
 

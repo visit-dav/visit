@@ -209,7 +209,7 @@ Verbose
 Appearance
 ^^^^^^^^^^
 
-The appearance tab specifies how the integral curve will be drawn. In addition
+The appearance tab specifies how the integral curve will be rendered. In addition
 to the Appearance attributes common to all PICS operators, the Poincare
 operator supports the following attributes.
 
@@ -231,10 +231,10 @@ Safety Factor P
     the magnetic axis 
 
 Safety Factor Q == P
-    Draw the surfaces on if the safety factor Q is equal to the safety factor P 
+    Render the surfaces on if the safety factor Q is equal to the safety factor P 
 
 Safety Factor Q != P
-    Draw the surfaces on if the safety factor Q is not equal to the safety
+    Render the surfaces on if the safety factor Q is not equal to the safety
     factor P 
 
 Toroidal Windings Q

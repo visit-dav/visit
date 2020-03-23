@@ -201,7 +201,7 @@ Maximum number of steps
 Appearance
 ^^^^^^^^^^
 
-The appearance tab specifies how the integral curve will be drawn. In addition
+The appearance tab specifies how the integral curve will be rendered. In addition
 to the Appearance attributes common to all PICS operators, the Integral Curve
 operator supports the following attributes.
 
@@ -302,17 +302,17 @@ initial curve has been defined via the integral curve operator. ::
    database = "localhost:/Projects/Data/myDatabase.vtk database"
    md = GetMetaData( database )
    # Assume the other attributes of the Integral Curve operator have been set
-   # for drawing a path line from time zero to the end time.
+   # for rendering a path line from time zero to the end time.
    atts = IntegralCurveAttributes()
    atts.cropValue = atts.Time
    atts.cropEndFlag = 1
-   # Draw ten steps for each interval
+   # Render ten steps for each interval
    nsteps = 10
    # loop through each time interval
    for i in range(TimeSliderGetNStates()-1) :
      time = md.times[i]
      nextTime = md.times[i+1]
-     # Draw ten steps for each interval
+     # Render ten steps for each interval
      for j in range(nsteps) :
        atts.cropEnd = time + (nextTime-time) * (j+1) / nsteps
        SetOperatorOptions(atts)
