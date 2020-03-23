@@ -179,7 +179,7 @@ The user may select the integral curve to be based on an instantaneous or
 time-varying vector field producing streamlines or pathlines, respectively. A
 streamline is path rendered by an integrator that uses the same vector field for
 the entire integration. A pathline uses the vector field that is in-step with
-the integrator, so as the integrator steps through time, it renders from the
+the integrator, so as the integrator steps through time, it uses the
 vector field at that new time step.
     
 Pathline Options:
