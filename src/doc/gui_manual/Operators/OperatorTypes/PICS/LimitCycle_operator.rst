@@ -189,8 +189,3 @@ Advanced
 ^^^^^^^^
 
 See Advanced tab attributes that are common to all PICS operators.
-
-
-
-
-

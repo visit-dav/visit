@@ -340,24 +340,3 @@ Issue warning if the advection limit is not reached
 
 Issue warning if the spatial boundary is reached
     If the integral curve reaches the spatial domain boundary, issue a warning.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
