@@ -102,13 +102,11 @@ NIMROD
     element and 1D toroidal finite Fourier series element (future
     implementation).
 
-
 Integration
 ^^^^^^^^^^^
 
 Specify settings for the numerical integrator. See each operator for varied
 settings.
-
 
 Integrator
 """"""""""
@@ -134,15 +132,13 @@ Runge-Kutta
     
 M3D-C1 2D Integrator (M3D-C1 2D fields only)
     Uses Newton's method under the hood.
-    
-         
+       
 Step Length
 """""""""""
 
 The length of the integration step. Most integrators use a fixed step length.
 Runge-Kutta-Dormand-Prince uses adaptive step size, which can be clipped by
 this value.
-
 
 Tolerances
 """"""""""
@@ -164,14 +160,11 @@ MD3-C1
     NOT REALLY CLEAR WHAT THIS IS BECAUSE AB USES A FIXED-STEP SIZE. MAYBE THIS
     IS A CLIP?
 
-
 Termination
 """""""""""
 
 The criteria for terminating the integration. See specific operator for
 details.
-
-
 
 Appearance
 ^^^^^^^^^^
@@ -234,7 +227,6 @@ Parallelize over curves and domains
    
 Have VisIt select the best algorithm
     VisIt automagically selects the best parallelization algorithm.
-
 
 Warnings
 """"""""

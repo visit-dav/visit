@@ -100,7 +100,6 @@ Field Data
     * Copy to point list - Copy the points to the point list source
       (see above). This allows the points to be edited. 
 
-
 Sampling type
 """""""""""""
 
@@ -134,7 +133,6 @@ Field
 """""
 
 See Field attributes that are common to all PICS operators.
-
 
 Integration
 ^^^^^^^^^^^
@@ -197,7 +195,6 @@ must be met for termination. The options are:
 
 Maximum number of steps
     The maximum number of integration steps that will be allowed. 
-
 
 Appearance
 ^^^^^^^^^^
@@ -322,7 +319,6 @@ Streamlines vs Pathlines
 """"""""""""""""""""""""
 
 See Streamlines vs Pathlines attributes that are common to all PICS operators.
-
 
 Advanced
 ^^^^^^^^

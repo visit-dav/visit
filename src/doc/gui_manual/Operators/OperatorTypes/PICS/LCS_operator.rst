@@ -23,8 +23,6 @@ Finite-Size Lyapunov Exponents by Ronald Peikert, Armin Pobitzer, Filip Sadlo
 and Benjamin Schindler,
 <http://www.scivis.ethz.ch/publications/pdf/2014/peikert2014comparison.pdf>`_
 
-
-
 Source
 ^^^^^^
 
@@ -45,7 +43,6 @@ Regular Grid
       number of samples in each dimension.
     * Data extents - Specify the starting and ending extents, using either the
       native mesh's extents (Full) or user-defined extents (Subset).
-
 
 Auxilary Grid
 """""""""""""
@@ -72,13 +69,10 @@ None
 Spacing
     The differential spacing between the node and auxiliary grid points. 
 
-
 Field
 """""
 
 See Field attributes that are common to all PICS operators.
-
-
 
 Integration
 ^^^^^^^^^^^
@@ -86,7 +80,6 @@ Integration
 Specify settings for numerical integrators. In addition to the Integration
 attributes common to all PICS operators, the LCS operator supports the
 following attributes.
-
 
 Integration Direction
 """""""""""""""""""""
@@ -114,14 +107,12 @@ Tolerances
 
 See Tolerance attributes that are common to all PICS operators.
 
-
 Appearance
 ^^^^^^^^^^
 
 The appearance tab specifies how the LCS will be rendered. In addition to the
 Appearance attributes common to all PICS operators, the LCS operator supports
 the following attributes.
-
 
 Seed Generation
 """""""""""""""
@@ -138,19 +129,16 @@ Boundary limit
 Maximum number of seeds
     The maximum number of seeds generated 
 
-
 Streamlines vs Pathlines
 """"""""""""""""""""""""
 
 See Streamlines vs Pathlines attributes that are common to all PICS operators.
-
 
 Advanced
 ^^^^^^^^
 
 The LCS Operator shares the same Parallel attributes as all the other PICS
 operators.
-
 
 Warnings
 """"""""

@@ -18,7 +18,6 @@ then its return distance is compared to its neighboring integral curves. If a
 zero crossing is found, then a binary search is conducted. The binary search is
 also limited by a maximum number of iterations.
 
-
 Source
 ^^^^^^
 
@@ -43,12 +42,10 @@ The Limit Cycle operator only supports uniform samples from the line.
 Samples along line
     Number of uniform samples to take along the line defined above.
 
-
 Field
 """""
 
 See Field attributes that are common to all PICS operators.
-
 
 Integration
 ^^^^^^^^^^^
@@ -112,7 +109,6 @@ must be met for termination. The options are:
 Maximum number of steps
     The maximum number of integration steps that will be allowed.  
 
-
 Appearance
 ^^^^^^^^^^
 
@@ -142,7 +138,6 @@ Show the signed return distances for the first iteration
 
 Instead of plotting the limit cycles, plot the return distances along the
 Poincaré section.
-
 
 Data Value
 """"""""""
@@ -178,12 +173,10 @@ Average Distance from seed
 Variable
     Each point along a streamline is colored by the value of a scalar variable. 
 
-
 Streamlines vs Pathlines
 """"""""""""""""""""""""
 
 See Streamlines vs Pathlines attributes that are common to all PICS operators.
-
 
 Advanced
 ^^^^^^^^

@@ -23,7 +23,6 @@ A.R. Sanderson, G. Chen, X. Tricoche, D. Pugmire, S. Kruger, J. Breslau.
 Visualization / Information Visualization 2010, IEEE Transactions on
 Visualization and Computer Graphics, Vol. 16, No. 4, pp. 1431-1440. 2010.
 
-
 Source
 ^^^^^^
 
@@ -65,7 +64,6 @@ Field
 """""
 
 See Field attributes that are common to all PICS operators.
-
 
 Integration
 ^^^^^^^^^^^
@@ -114,7 +112,6 @@ Puncture Plane
 
 Note: when selecting “Toroidal” the “Analysis” must also be set to “Punctures
 only” as there is currently no analysis in the toroidal plane. See below.
-
 
 Analysis
 ^^^^^^^^
@@ -168,7 +165,6 @@ Detect O Points
 Note: The critical point detection is experimental code and does not always
 work!!!! 
 
-
 Perform O-Line Analysis
     Calculate the poloidal winding relative the O-Line (central axis) which
     provides a more accurate winding value.
@@ -205,14 +201,12 @@ Verbose
    number of nodes in each winding group: with 4 nodes 
    analysis state: complete. 
 
-
 Appearance
 ^^^^^^^^^^
 
 The appearance tab specifies how the integral curve will be rendered. In addition
 to the Appearance attributes common to all PICS operators, the Poincare
 operator supports the following attributes.
-
 
 Data Value
 """"""""""
@@ -265,7 +259,6 @@ Winding Point Order Modulo Order
     Use the order of the punctures within each winding group modulo the
     toroidal windings (useful for islands in islands) 
 
-
 Display
 """""""
 
@@ -297,12 +290,10 @@ Smooth
     Display all of the punctures points in a connected fashion removing the
     overlapping sections while smoothing between points. Experimental. 
 
-
 Streamlines vs Pathlines
 """"""""""""""""""""""""
 
 See Streamlines vs Pathlines attributes that are common to all PICS operators.
-
 
 Advanced
 ^^^^^^^^
