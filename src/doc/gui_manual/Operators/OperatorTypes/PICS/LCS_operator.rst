@@ -10,7 +10,7 @@ such, when performing an FTLE calculation, the time can be specified as one
 would for a traditional FTLE, and the resulting value will be based on the
 maximal Eigen value.
 
-However, when performing the calculate with Finite Space Lyapunov Exponents
+However, when performing the calculation with Finite Space Lyapunov Exponents
 (FSLE), instead of assuming a uniform mesh discretization and specifying the
 dispersion distance, we specify a dispersion factor which in a traditional FTLE
 is the dispersion distance divided by the initial distance. In the equivalent

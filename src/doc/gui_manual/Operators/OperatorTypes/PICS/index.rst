@@ -198,7 +198,7 @@ Pathline Options:
       
     * Interpolation over time - indicated whether the mesh changes over time. 
    
-       * Mesh is static over time - typically the case but can not be assumed.
+       * Mesh is static over time - typically the case, but cannot be assumed.
          Confirm this before selecting.
        * Mesh varies over time (Default).
 

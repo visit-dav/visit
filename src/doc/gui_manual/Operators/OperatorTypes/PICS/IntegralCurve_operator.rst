@@ -39,7 +39,7 @@ Line
     * Sampling - Specify the type of sampling and the number of samples.
    
 Circle
-    Seed from a cicle defined by a plane and a radius.
+    Seed from a circle defined by a plane and a radius.
 
     * Origin - X Y Z location of the origin.
     * Normal - X Y Z vector. The "normal" of the plane.
@@ -61,7 +61,7 @@ Plane
       serves as the "X" axis embedded in the plane.)
     * Sampling - Specify the type of sampling, the region from which to sample
       (interior or boundary) and the number of samples.
-      
+
        * The sampling "Distance in X" and "Distance in Y" define the dimensions
          of the rectangle in the plane. 
    
@@ -98,7 +98,7 @@ Field Data
     with "Seed Points".
 
     * Copy to point list - Copy the points to the point list source
-      (see above). This allows points to be edited. 
+      (see above). This allows the points to be edited. 
 
 
 Sampling type
