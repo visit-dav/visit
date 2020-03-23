@@ -156,6 +156,9 @@ avtUnstructuredPointBoundaries::CheckGenerated(int d1, int d2)
 //    Brad Whitlock, Thu Jun 26 14:21:20 PDT 2014
 //    Permit ghosting for 2D cells so wireframe material plots work properly.
 //
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
+//
 // ****************************************************************************
 
 void
@@ -167,6 +170,8 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
     vtkIdList *pl = vtkIdList::New();
     for (size_t i = 0; i < domainNum.size(); ++i)
     {
+        if (meshes[i] == NULL)
+            continue;
         int sendDom = domainNum[i];
         for (int recvDom = 0; recvDom < nTotalDomains; ++recvDom)
         {
