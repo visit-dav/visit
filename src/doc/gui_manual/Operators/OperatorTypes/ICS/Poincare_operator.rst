@@ -63,13 +63,13 @@ will be set to 0.
 Field
 """""
 
-See Field attributes that are common to all PICS operators.
+See Field attributes that are common to all ICS operators.
 
 Integration
 ^^^^^^^^^^^
 
 Specify settings for numerical integrators. In addition to the Integration
-attributes common to all PICS operators, the Poincare operator supports the
+attributes common to all ICS operators, the Poincare operator supports the
 following attributes.
 
 Punctures
@@ -205,7 +205,7 @@ Appearance
 ^^^^^^^^^^
 
 The appearance tab specifies how the integral curve will be rendered. In addition
-to the Appearance attributes common to all PICS operators, the Poincare
+to the Appearance attributes common to all ICS operators, the Poincare
 operator supports the following attributes.
 
 Data Value
@@ -293,9 +293,9 @@ Smooth
 Streamlines vs Pathlines
 """"""""""""""""""""""""
 
-See Streamlines vs Pathlines attributes that are common to all PICS operators.
+See Streamlines vs Pathlines attributes that are common to all ICS operators.
 
 Advanced
 ^^^^^^^^
 
-See Advanced tab attributes that are common to all PICS operators.
+See Advanced tab attributes that are common to all ICS operators.

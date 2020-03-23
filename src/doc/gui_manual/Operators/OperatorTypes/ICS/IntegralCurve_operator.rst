@@ -132,13 +132,13 @@ bounded rectangle, as shown below.
 Field
 """""
 
-See Field attributes that are common to all PICS operators.
+See Field attributes that are common to all ICS operators.
 
 Integration
 ^^^^^^^^^^^
 
 Specify settings for numerical integrators. In addition to the Integration
-attributes common to all PICS operators, the Integral Curve operator supports
+attributes common to all ICS operators, the Integral Curve operator supports
 the following attributes.
 
 Integration Direction
@@ -168,23 +168,23 @@ Both Directionless
 Eigen vectors are an example of a directionless vector field. To integrate
 using a directionless field requires that any orientation discontinuity be
 corrected prior to linear interpolation. That is, all vectors must be rotated
-to match the orientation of the trajectory. The PICS code will do this
+to match the orientation of the trajectory. The ICS code will do this
 processing for standard fields (e.g non-higher order elements).
     
 Integrator
 """"""""""
 
-See Integrator attributes that are common to all PICS operators.
+See Integrator attributes that are common to all ICS operators.
     
 Step Length
 """""""""""
 
-See Step Length attributes that are common to all PICS operators.
+See Step Length attributes that are common to all ICS operators.
     
 Tolerances
 """"""""""
 
-See Tolerance attributes that are common to all PICS operators.
+See Tolerance attributes that are common to all ICS operators.
 
 Termination
 """""""""""
@@ -200,7 +200,7 @@ Appearance
 ^^^^^^^^^^
 
 The appearance tab specifies how the integral curve will be rendered. In addition
-to the Appearance attributes common to all PICS operators, the Integral Curve
+to the Appearance attributes common to all ICS operators, the Integral Curve
 operator supports the following attributes.
 
 Data
@@ -318,18 +318,18 @@ initial curve has been defined via the integral curve operator. ::
 Streamlines vs Pathlines
 """"""""""""""""""""""""
 
-See Streamlines vs Pathlines attributes that are common to all PICS operators.
+See Streamlines vs Pathlines attributes that are common to all ICS operators.
 
 Advanced
 ^^^^^^^^
 
 The Integral Curve Operator shares the same Parallel attributes as all the
-other PICS operators.
+other ICS operators.
 
 Warnings
 """"""""
 
-In addition to the Warnings common to all PICS operators, the Integral Curve
+In addition to the Warnings common to all ICS operators, the Integral Curve
 operator supports the following warnings.
 
 Issue warning if the advection limit is not reached

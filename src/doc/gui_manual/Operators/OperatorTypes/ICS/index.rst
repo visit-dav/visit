@@ -1,23 +1,23 @@
-Parallel Integral Curve System
-==============================
+Integral Curve System
+=====================
 
 Within the VisIt infrastructure is the ability to generate integral curves:
 streamlines and pathlines. An integral curve is a curve that begins at a seed
-location X, and is tangent at every point in a vector field. An integral curve
+location and is tangent at every point in a vector field. An integral curve
 is computed by numerical integration of the seed location through the vector
 field. The image below shows fieldlines through the magnetic field of a
 core-collapse supernova simulation from the GenASiS code.
 
 IMAGE HERE
 
-The generation of the curves form the basis of VisIt's Parallel Integral Curve
-System (PICS), made up of the :ref:`Integral Curve operator`, the :ref:`LCS
+The generation of the curves form the basis of VisIt's Integral Curve
+System (ICS), made up of the :ref:`Integral Curve operator`, the :ref:`LCS
 operator`, the :ref:`Limit Cycle operator`, and the :ref:`Poincare operator`.
 Much of the underlying infrastructure and interface is the same for each
 operator. The user selects a series of seed locations where curves are
 generated, which are then visualized and analyzed.
 
-The PICS allows for the computation of Lagrangian Coherent Structures (LCS)
+The ICS allows for the computation of Lagrangian Coherent Structures (LCS)
 using a variety techniques developed by George Haller and his group at ETH
 Zürich. Haller proposed that the ridges of Finite Time Lyapunov Exponents
 (FTLE) are indicators of hyperbolic LCS (repelling and attracting). In two
@@ -26,7 +26,7 @@ averaged material shear while elliptic LCS's are stationary curves of the
 averaged strain. The LCS operator coupled with the Integral Curve (Hyperbolic
 LCS) and Limit Cycle (Elliptical LCS) operators provide a mechanism to
 calculate these structures and have been developed in cooperation between the
-VisIt PICS team and the Haller Group.
+VisIt ICS team and the Haller Group.
 
 INCLUDE IMAGE of elliptical and hyperbolic LCS
 
@@ -47,7 +47,7 @@ J. of Computational Science, 7 (2015) 26-36
 Parameters
 ----------
 
-Common to all PICS operators is a four tab GUI: Source, Integration,
+Common to all ICS operators is a four tab GUI: Source, Integration,
 Appearance, and Advanced (the Poincare operator also has an Analysis tab).
 These tabs contain many functions that are common across all four operators.
 The following is a description of those common features. Please note: on a mac
