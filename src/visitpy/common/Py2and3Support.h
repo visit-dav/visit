@@ -5,7 +5,7 @@
 #ifndef PY_2_AND_3_SUPPORT
 #define PY_2_AND_3_SUPPORT
 #include <Python.h>
-#include <visitpy_exports.h>
+#include <vector>
 
 #if PY_MAJOR_VERSION >= 3
 #define IS_PY3K
@@ -29,47 +29,169 @@
 //#############################################################################
 
 //-----------------------------------------------------------------------------
-int VISITPY_API PyString_Check(PyObject *o);
+static int
+PyString_Check(PyObject *o)
+{
+    return PyUnicode_Check(o);
+}
 
 //-----------------------------------------------------------------------------
-char * VISITPY_API PyString_AsString(PyObject *py_obj);
+static char *
+PyString_AsString(PyObject *py_obj)
+{
+    char *res = NULL;
+    if(PyUnicode_Check(py_obj))
+    {
+        PyObject * temp_bytes = PyUnicode_AsEncodedString(py_obj,
+                                                          "ASCII",
+                                                          "strict"); // Owned reference
+        if(temp_bytes != NULL)
+        {
+            res = strdup(PyBytes_AS_STRING(temp_bytes));
+            Py_DECREF(temp_bytes);
+        }
+        else
+        {
+            // TODO: Error
+        }
+    }
+    else if(PyBytes_Check(py_obj))
+    {
+        res = strdup(PyBytes_AS_STRING(py_obj));
+    }
+    else
+    {
+        // TODO: ERROR or auto convert?
+    }
+    
+    return res;
+}
 
 //-----------------------------------------------------------------------------
-void VISITPY_API PyString_AsString_Cleanup(char *bytes);
+static PyObject *
+PyString_FromString(const char *s)
+{
+    return PyUnicode_FromString(s);
+}
 
 //-----------------------------------------------------------------------------
-PyObject * VISITPY_API PyString_FromString(const char *s);
+static void
+PyString_AsString_Cleanup(char *bytes)
+{
+    free(bytes);
+}
 
 //-----------------------------------------------------------------------------
-PyObject * VISITPY_API PyString_FromStringAndSize(const char *v, Py_ssize_t len);
+static PyObject*
+PyString_FromStringAndSize(const char *v, Py_ssize_t len)
+{
+    return PyUnicode_FromStringAndSize(v,len);
+}
 
 //-----------------------------------------------------------------------------
-PyObject * VISITPY_API PyUnicode_From_UTF32_Unicode_Buffer(const char *unicode_buffer,
-                                               int string_len);
+static PyObject *
+PyUnicode_From_UTF32_Unicode_Buffer(const char *unicode_buffer,
+                                    int string_len)
+{
+    return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND,
+                                     unicode_buffer,
+                                     string_len);
+}
 
 //-----------------------------------------------------------------------------
-int VISITPY_API PyInt_Check(PyObject *o);
+static int
+PyInt_Check(PyObject *o)
+{
+    return PyLong_Check(o);
+}
 
 //-----------------------------------------------------------------------------
-int VISITPY_API PyInt_CheckExact(PyObject *o);
+static int
+PyInt_CheckExact(PyObject *o)
+{
+    return PyLong_CheckExact(o);
+}
 
 //-----------------------------------------------------------------------------
-PyObject * VISITPY_API PyInt_FromLong(long value);
+static PyObject *PyInt_FromLong(long value)
+{
+    return PyLong_FromLong(value);
+}
 
 //-----------------------------------------------------------------------------
-long VISITPY_API PyInt_AsLong(PyObject *o);
+static long
+PyInt_AsLong(PyObject *o)
+{
+    return PyLong_AsLong(o);
+}
+
 
 //-----------------------------------------------------------------------------
-long VISITPY_API PyInt_AS_LONG(PyObject *o);
+static long
+PyInt_AS_LONG(PyObject *o)
+{
+    return PyLong_AS_LONG(o);
+}
 
 //-----------------------------------------------------------------------------
-long VISITPY_API PyInt_AS_LONG(PyObject *o);
+// Note: Make sure to use PyMethodDef *, to match PyMethodDef table[]
+static PyObject *
+Py_FindMethod(PyMethodDef * /*table*/, PyObject *ob, char *name)
+{
+    PyObject *py_name_str = PyString_FromString(name);
+    PyObject *res = PyObject_GenericGetAttr(ob, py_name_str);
+    Py_DECREF(py_name_str);
+    return res;
+}
+
 
 //-----------------------------------------------------------------------------
-PyObject *Py_FindMethod(PyMethodDef table[], PyObject *ob, char *name);
+// ref: https://stackoverflow.com/questions/15962847/what-happened-to-py-flushline-in-python-3-3
+static int
+Py_FlushLine(void)
+{
+       PyObject *f = PySys_GetObject("stdout");
+       if (f == NULL)
+               return 0;
+       return PyFile_WriteString("\n", f);
+}
+
+
+        #ifdef IS_PY3K
+   
+        #else
+            Py_SetProgramName(argv[0]);
+        #endif
+            
+//-----------------------------------------------------------------------------
+static void
+Py_SetProgramName(char *name)
+{
+    wchar_t *w_prog_name = Py_DecodeLocale(name, NULL);
+    Py_SetProgramName(w_prog_name);
+    PyMem_RawFree(w_prog_name);
+}
 
 //-----------------------------------------------------------------------------
-int Py_FlushLine(void);
+static void
+PySys_SetArgv(int argc, char **argv)
+{
+    // alloc ptrs for encoded ver
+    std::vector<wchar_t*> wargv(argc);
+    
+    for(int i = 0; i < argc; i++)
+    {
+        wargv[i] = Py_DecodeLocale(argv[i], NULL);
+    }
+    
+    PySys_SetArgv(argc,&wargv[0]);
+    
+    for(int i = 0; i < argc; i++)
+    {
+        PyMem_RawFree(wargv[i]);
+    }
+}
+
 
 //#############################################################################
 //#############################################################################
@@ -87,8 +209,15 @@ int Py_FlushLine(void);
 
 
 //-----------------------------------------------------------------------------
-PyObject * VISITPY_API PyUnicode_From_UTF32_Unicode_Buffer(const char *unicode_buffer,
-                                                           int string_len);
+static PyObject * 
+PyUnicode_From_UTF32_Unicode_Buffer(const char *unicode_buffer,
+                                    int string_len)
+{
+    return PyUnicode_Decode(unicode_buffer,
+                             string_len,
+                             "utf-32",
+                             "strict");
+}
 #endif
 
 //-----------------------------------------------------------------------------
