@@ -206,36 +206,41 @@ operator supports the following attributes.
 Data
 """"
 
-Allows the user to set the data value associated with each data point on the
-integral curve. You can set the data value to one of:
+Allows the user to set the coloring associated with each data point on the
+integral curve. You can set the coloring setting to one of:
 
 Solid
-    Each integral curve is given a single color.
+    Every curve is given the same color.
 
 Seed ID
-    Each integral curve is given a different color.
+    Each curve is given a different color.
 
 Speed
-    The magnitude of the vector field at each point.
+    Each curve's color varies by the magnitude of the vector field at each
+    point along the curve.
 
 Vorticity Magnitude
-    The vorticity magnitude at each point.
+    Each curve's color varies by the magnitude of the vorticity at each point
+    along the curve.
 
 Arc Length
-    the overall path length of the integral curve.
+    Each curve is colored according to its path length.
 
 Absolute time
-    The absolute time associated with each integration step.
+    Each curve's color varies by the absolute time associated with each
+    integration step at each point along the curve.
 
 Relative time
-    The relative time associated with each integration step assuming the seed
-    point is at time equals zero (t = 0).
+    Each curve's color varies by the relative time associated with each
+    integration step at each point along the curve assuming the seed point is
+    at time zero (t = 0).
 
 Average Distance from seed
-    A single value based on the average distance from seed.
+    Each curve is colored according to the average distance of all the points
+    in the curve from the seed.
 
 Variable
-    Each point along a streamline is colored by the value of a scalar variable. 
+    Each curve's color varies by the value of a scalar variable.
 
 Cleanup
 """""""
