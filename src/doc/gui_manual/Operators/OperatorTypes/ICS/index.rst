@@ -61,6 +61,8 @@ Source
 The set of points to seed the integral curves in the operator. See specific
 operator for details.
 
+.. _common ICS field:
+
 Field
 """""
 
@@ -102,11 +104,16 @@ NIMROD
     element and 1D toroidal finite Fourier series element (future
     implementation).
 
+.. _common ICS integration:
+
 Integration
 ^^^^^^^^^^^
 
 Specify settings for the numerical integrator. See each operator for varied
 settings.
+
+
+.. _common ICS integrator:
 
 Integrator
 """"""""""
@@ -133,12 +140,16 @@ Runge-Kutta
 M3D-C1 2D Integrator (M3D-C1 2D fields only)
     Uses Newton's method under the hood.
        
+.. _common ICS step length:
+
 Step Length
 """""""""""
 
 The length of the integration step. Most integrators use a fixed step length.
 Runge-Kutta-Dormand-Prince uses adaptive step size, which can be clipped by
 this value.
+
+.. _common ICS tolerances:
 
 Tolerances
 """"""""""
@@ -166,11 +177,15 @@ Termination
 The criteria for terminating the integration. See specific operator for
 details.
 
+.. _common ICS appearance:
+
 Appearance
 ^^^^^^^^^^
 
 Specify appearance settings for the curves. See specific operator for details
 on most settings.
+
+.. _common ICS streamlines:
 
 Streamlines vs Pathlines
 """"""""""""""""""""""""
@@ -195,8 +210,12 @@ Pathline Options:
          Confirm this before selecting.
        * Mesh varies over time (Default).
 
+.. _common ICS advanced:
+
 Advanced
 ^^^^^^^^
+
+.. _common ICS parallel:
 
 Parallel integration
 """"""""""""""""""""
@@ -228,8 +247,11 @@ Parallelize over curves and domains
 Have VisIt select the best algorithm
     VisIt automagically selects the best parallelization algorithm.
 
+.. _common ICS warnings:
+
 Warnings
 """"""""
+
 Alert for various conditions that may occur during the integration.
 
 Issue warning when the maximum number of steps is reached

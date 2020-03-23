@@ -132,14 +132,14 @@ bounded rectangle, as shown below.
 Field
 """""
 
-See Field attributes that are common to all ICS operators.
+See :ref:`common ICS field` attributes that are common to all ICS operators.
 
 Integration
 ^^^^^^^^^^^
 
-Specify settings for numerical integrators. In addition to the Integration
-attributes common to all ICS operators, the Integral Curve operator supports
-the following attributes.
+Specify settings for numerical integrators. In addition to the
+:ref:`common ICS integration` attributes common to all ICS operators, the
+Integral Curve operator supports the following attributes.
 
 Integration Direction
 """""""""""""""""""""
@@ -174,17 +174,20 @@ processing for standard fields (e.g non-higher order elements).
 Integrator
 """"""""""
 
-See Integrator attributes that are common to all ICS operators.
+See :ref:`common ICS integrator` attributes that are common to all ICS
+operators.
     
 Step Length
 """""""""""
 
-See Step Length attributes that are common to all ICS operators.
+See :ref:`common ICS step length` attributes that are common to all ICS
+operators.
     
 Tolerances
 """"""""""
 
-See Tolerance attributes that are common to all ICS operators.
+See :ref:`common ICS tolerances` attributes that are common to all ICS 
+operators.
 
 Termination
 """""""""""
@@ -200,7 +203,7 @@ Appearance
 ^^^^^^^^^^
 
 The appearance tab specifies how the integral curve will be rendered. In addition
-to the Appearance attributes common to all ICS operators, the Integral Curve
+to the :ref:`common ICS appearance` attributes common to all ICS operators, the Integral Curve
 operator supports the following attributes.
 
 Data
@@ -322,19 +325,20 @@ initial curve has been defined via the integral curve operator. ::
 Streamlines vs Pathlines
 """"""""""""""""""""""""
 
-See Streamlines vs Pathlines attributes that are common to all ICS operators.
+See :ref:`common ICS streamlines` attributes that are common to all ICS
+operators.
 
 Advanced
 ^^^^^^^^
 
-The Integral Curve Operator shares the same Parallel attributes as all the
-other ICS operators.
+The Integral Curve Operator shares the same :ref:`common ICS parallel`
+attributes as all the other ICS operators.
 
 Warnings
 """"""""
 
-In addition to the Warnings common to all ICS operators, the Integral Curve
-operator supports the following warnings.
+In addition to the :ref:`common ICS warnings` common to all ICS operators, the
+Integral Curve operator supports the following warnings.
 
 Issue warning if the advection limit is not reached
     If the maximum time or distance is not reached, issue a warning.

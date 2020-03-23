@@ -45,14 +45,14 @@ Samples along line
 Field
 """""
 
-See Field attributes that are common to all ICS operators.
+See :ref:`common ICS field` attributes that are common to all ICS operators.
 
 Integration
 ^^^^^^^^^^^
 
-Specify settings for numerical integrators. In addition to the Integration
-attributes common to all ICS operators, the Limit Cycle operator supports the
-following attributes.
+Specify settings for numerical integrators. In addition to the
+:ref:`common ICS integration` attributes common to all ICS operators, the Limit
+Cycle operator supports the following attributes.
 
 Integration Direction
 """""""""""""""""""""
@@ -87,17 +87,20 @@ processing for standard fields (e.g non-higher order elements).
 Integrator
 """"""""""
 
-See Integrator attributes that are common to all ICS operators.
+See :ref:`common ICS integrator` attributes that are common to all ICS
+operators.
     
 Step Length
 """""""""""
 
-See Step Length attributes that are common to all ICS operators.
+See :ref:`common ICS step length` attributes that are common to all ICS
+operators.
     
 Tolerances
 """"""""""
 
-See Tolerance attributes that are common to all ICS operators.
+See :ref:`common ICS tolerance` attributes that are common to all ICS
+operators.
 
 Termination
 """""""""""
@@ -112,9 +115,9 @@ Maximum number of steps
 Appearance
 ^^^^^^^^^^
 
-The appearance tab specifies how the integral curve will be rendered. In addition
-to the Appearance attributes common to all ICS operators, the Integral Curve
-operator supports the following attributes.
+The appearance tab specifies how the integral curve will be rendered. In
+addition to the :ref:`common ICS appearance` attributes common to all ICS
+operators, the Integral Curve operator supports the following attributes.
 
 Cycle tolerance
 """""""""""""""
@@ -181,9 +184,11 @@ Variable
 Streamlines vs Pathlines
 """"""""""""""""""""""""
 
-See Streamlines vs Pathlines attributes that are common to all ICS operators.
+See :ref:`common ICS streamlines` attributes that are common to all ICS
+operators.
 
 Advanced
 ^^^^^^^^
 
-See Advanced tab attributes that are common to all ICS operators.
+See :ref:`common ICS advanced` tab attributes that are common to all ICS
+operators.

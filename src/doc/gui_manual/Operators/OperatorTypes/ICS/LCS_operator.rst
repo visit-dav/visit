@@ -72,14 +72,14 @@ Spacing
 Field
 """""
 
-See Field attributes that are common to all ICS operators.
+See :ref:`common ICS field` attributes that are common to all ICS operators.
 
 Integration
 ^^^^^^^^^^^
 
-Specify settings for numerical integrators. In addition to the Integration
-attributes common to all ICS operators, the LCS operator supports the
-following attributes.
+Specify settings for numerical integrators. In addition to the
+:ref:`common ICS integration` attributes common to all ICS operators, the LCS
+operator supports the following attributes.
 
 Integration Direction
 """""""""""""""""""""
@@ -95,24 +95,27 @@ Backward
 Integrator
 """"""""""
 
-See Integrator attributes that are common to all ICS operators.
+See :ref:`common ICS integrator` attributes that are common to all ICS
+operators.
     
 Step Length
 """""""""""
 
-See Step Length attributes that are common to all ICS operators.
+See :ref:`common ICS step length` attributes that are common to all ICS
+operators.
     
 Tolerances
 """"""""""
 
-See Tolerance attributes that are common to all ICS operators.
+See :ref:`common ICS tolerances` attributes that are common to all ICS
+operators.
 
 Appearance
 ^^^^^^^^^^
 
 The appearance tab specifies how the LCS will be rendered. In addition to the
-Appearance attributes common to all ICS operators, the LCS operator supports
-the following attributes.
+:ref:`common_ICS_appearance` attributes common to all ICS operators, the LCS
+operator supports the following attributes.
 
 Seed Generation
 """""""""""""""
@@ -132,19 +135,20 @@ Maximum number of seeds
 Streamlines vs Pathlines
 """"""""""""""""""""""""
 
-See Streamlines vs Pathlines attributes that are common to all ICS operators.
+See :ref:`common ICS streamlines` attributes that are common to all ICS
+operators.
 
 Advanced
 ^^^^^^^^
 
-The LCS Operator shares the same Parallel attributes as all the other ICS
-operators.
+The LCS Operator shares the same :ref:`common ICS parallel` attributes as all
+the other ICS operators.
 
 Warnings
 """"""""
 
-In addition to the Warnings common to all ICS operators, the LCS Operator
-supports the following warnings.
+In addition to the :ref:`common ICS warnings` common to all ICS operators, the
+LCS Operator supports the following warnings.
 
 Issue warning if the advection limit is not reached
     If the maximum time or distance is not reached, issue a warning.
