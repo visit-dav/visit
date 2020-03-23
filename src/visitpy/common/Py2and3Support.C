@@ -86,6 +86,13 @@ PyInt_Check(PyObject *o)
 }
 
 //-----------------------------------------------------------------------------
+int
+PyInt_CheckExact(PyObject *o)
+{
+    return PyLong_CheckExact(o);
+}
+
+//-----------------------------------------------------------------------------
 PyObject *PyInt_FromLong(long value)
 {
     return PyLong_FromLong(value);
@@ -107,13 +114,26 @@ PyInt_AS_LONG(PyObject *o)
 }
 
 //-----------------------------------------------------------------------------
+// Note: Make sure to use PyMethodDef *, to match PyMethodDef table[]
 PyObject *
-Py_FindMethod(PyMethodDef /*table[] */, PyObject *ob, char *name)
+Py_FindMethod(PyMethodDef * /*table*/, PyObject *ob, char *name)
 {
     PyObject *py_name_str = PyString_FromString(name);
     PyObject *res = PyObject_GenericGetAttr(ob, py_name_str);
     Py_DECREF(py_name_str);
     return res;
+}
+
+
+//-----------------------------------------------------------------------------
+// ref: https://stackoverflow.com/questions/15962847/what-happened-to-py-flushline-in-python-3-3
+int
+Py_FlushLine(void)
+{
+       PyObject *f = PySys_GetObject("stdout");
+       if (f == NULL)
+               return 0;
+       return PyFile_WriteString("\n", f);
 }
 
 //-----------------------------------------------------------------------------
