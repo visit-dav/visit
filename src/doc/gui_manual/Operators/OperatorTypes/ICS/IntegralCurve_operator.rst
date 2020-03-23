@@ -252,10 +252,9 @@ Keep all points
     Keep all points generated.
 
 Merge points
-    Use the vtkCleanPolyData algorithm to merge duplicate points using a
-    spatial threshold. If the threshold is zero the tolerance will be based on
-    a fraction of the bounding box. Otherwise the tolerance will be based on an
-    absolute tolerance.
+    Merge duplicate points using a spatial threshold. If the threshold is zero,
+    then the tolerance will be based on a fraction of the bounding box.
+    Otherwise the tolerance will be based on an absolute tolerance.
 
 Delete points before
     Delete all points that come before a "critical" point defined by a velocity
