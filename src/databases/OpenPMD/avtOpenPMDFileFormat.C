@@ -127,6 +127,8 @@ avtOpenPMDFileFormat::Initialize()
     debug5 << "avtOpenPMDFileFormat::Initialize" << endl;
     if(!this->initialized)
     {
+        H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+
         // Open the OpenPMD file
         openPMDFile.OpenFile(filename);
 
@@ -148,7 +150,7 @@ avtOpenPMDFileFormat::Initialize()
         if (this->numTasks > 1)
         {
             this->parallel = true;
-            cerr << " Parallel with " << this->numTasks << " tasks"<< endl;
+            debug5 << " Parallel with " << this->numTasks << " tasks"<< endl;
         }
 
         // Initialization has been done
@@ -565,9 +567,9 @@ avtOpenPMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             // Invalid momentum dimension
             else
             {
-                cerr << " The gamma expression can not be created for "
+                debug5 << " The gamma expression can not be created for "
                         "such a momentum dimension: "
-                     << particle->numDimsMomenta << endl;
+                       << particle->numDimsMomenta << endl;
             }
 
             e1->SetDefinition(definition);
@@ -917,15 +919,15 @@ avtOpenPMDFileFormat::GetMesh(int timestate, int domain, const char *meshname)
                                                         domain,
                                                         &fieldBlock);
 
-                        cerr    << "fieldBlock.minNode[0]: "
-                                << fieldBlock.minNode[0]
-                                << " " << fieldBlock.nbNodes[0]
-                                << " " << fieldBlock.maxNode[0] << endl;
+                        debug5    << "fieldBlock.minNode[0]: "
+                                  << fieldBlock.minNode[0]
+                                  << " " << fieldBlock.nbNodes[0]
+                                  << " " << fieldBlock.maxNode[0] << endl;
 
-                        cerr    << "fieldBlock.minNode[1]: "
-                                << fieldBlock.minNode[1]
-                                << " " << fieldBlock.nbNodes[1]
-                                << " " << fieldBlock.maxNode[1] << endl;
+                        debug5    << "fieldBlock.minNode[1]: "
+                                  << fieldBlock.minNode[1]
+                                  << " " << fieldBlock.nbNodes[1]
+                                  << " " << fieldBlock.maxNode[1] << endl;
 
                         dims[0] = fieldBlock.nbNodes[0];
                         dims[1] = fieldBlock.nbNodes[1];
@@ -1000,7 +1002,7 @@ avtOpenPMDFileFormat::GetMesh(int timestate, int domain, const char *meshname)
                 // No recognized dimension
                 else
                 {
-                    cerr << " Dimension of this field "
+                    debug5 << " Dimension of this field "
                     "dataset is not recognized: " << ndims << endl;
                 }
 
@@ -1140,8 +1142,8 @@ avtOpenPMDFileFormat::GetMesh(int timestate, int domain, const char *meshname)
             // Sanity check
             if ((ndims <= 1)||(ndims > 3))
             {
-                cerr << "The number of position datasets is invalid: "
-                     << ndims << endl;
+                debug5 << "The number of position datasets is invalid: "
+                       << ndims << endl;
             }
 
             /* ____ Treatment of the file in parallel _____________________ */
@@ -1800,8 +1802,8 @@ avtOpenPMDFileFormat::GetVar(int timestate, int domain, const char *varname)
                     }
                     else
                     {
-                        cerr << " Error in avtOpenPMDFileFormat::GetVar" << endl;
-                        cerr << " The data size is not recognized." << endl;
+                        debug5 << " Error in avtOpenPMDFileFormat::GetVar" << endl;
+                        debug5 << " The data size is not recognized." << endl;
                     }
 
                 }
@@ -1852,8 +1854,8 @@ avtOpenPMDFileFormat::GetVar(int timestate, int domain, const char *varname)
                     }
                     else
                     {
-                        cerr << " Error in avtOpenPMDFileFormat::GetVar" << endl;
-                        cerr << " The data size is not recognized." << endl;
+                        debug5 << " Error in avtOpenPMDFileFormat::GetVar" << endl;
+                        debug5 << " The data size is not recognized." << endl;
                     }
                 }
 
