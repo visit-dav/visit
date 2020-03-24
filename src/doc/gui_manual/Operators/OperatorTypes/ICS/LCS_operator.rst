@@ -12,11 +12,11 @@ maximal Eigen value.
 
 However, when performing the calculation with Finite Space Lyapunov Exponents
 (FSLE), instead of assuming a uniform mesh discretization and specifying the
-dispersion distance, we specify a dispersion factor which in a traditional FTLE
-is the dispersion distance divided by the initial distance. In the equivalent
-definition the dispersion distance is the maximal Eigen value. Thus when the
-maximal Eigen value is greater than the specified dispersion factor, then the
-exponent is calculated.
+dispersion distance, we specify a dispersion factor. In a traditional FTLE,
+this is the dispersion distance divided by the initial distance. In the
+equivalent definition the dispersion distance is the maximal Eigen value. Thus
+when the maximal Eigen value is greater than the specified dispersion factor,
+then the exponent is calculated.
 
 For more details see the following paper: `A Comparison of Finite-Time and
 Finite-Size Lyapunov Exponents by Ronald Peikert, Armin Pobitzer, Filip Sadlo
@@ -39,8 +39,8 @@ Regular Grid
     Create seeds at the nodes of a user-defined rectilinear grid. Parameters
     are:
 
-    * Resolution - Three cartesian values separated with a space defining the
-      number of samples in each dimension.
+    * Resolution - Three space-separated values defining the number of samples
+      in each dimension.
     * Data extents - Specify the starting and ending extents, using either the
       native mesh's extents (Full) or user-defined extents (Subset).
 
