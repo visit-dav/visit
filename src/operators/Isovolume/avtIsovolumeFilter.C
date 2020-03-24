@@ -614,64 +614,6 @@ avtIsovolumeFilter::ExecuteData_VTKM(avtDataRepresentation *in_dr, std::vector<d
     std::string isoVar(activeVariable != NULL ? activeVariable
                                               : pipelineVariable);
 
-    //VTKm version.
-#if 0
-    vtkm::cont::DataSet result;
-    vtkm::cont::DataSet ds = in_ds->GetDomain(0);
-
-    if (clips[0] && clips[1])
-    {
-        std::cout<<"Clip both: "<<bounds[0]<<" "<<bounds[1]<<" "<<isoVar<<std::endl;
-        vtkm::filter::ClipWithField clip1, clip2;
-        clip1.SetClipValue(4); //bounds[1]);
-        clip1.SetInvertClip(true);
-        clip1.SetActiveField(isoVar);
-        clip1.SetFieldsToPass(isoVar, vtkm::cont::Field::Association::POINTS);
-        auto tmp = clip1.Execute(ds);
-
-        clip2.SetClipValue(3); //bounds[0]);
-        clip2.SetActiveField(isoVar);
-        clip2.SetFieldsToPass(isoVar, vtkm::cont::Field::Association::POINTS);
-
-        result = clip2.Execute(tmp);
-    }
-    else if (clips[0])
-    {
-        std::cout<<"Clip 0: "<<bounds[0]<<" "<<bounds[1]<<std::endl;
-        vtkm::filter::ClipWithField clip;
-        clip.SetInvertClip(false);
-        clip.SetClipValue(bounds[0]);
-        clip.SetActiveField(isoVar);
-        clip.SetFieldsToPass(isoVar, vtkm::cont::Field::Association::POINTS);
-        result = clip.Execute(ds);
-    }
-    else if (clips[1])
-    {
-        std::cout<<"Clip 1: "<<bounds[0]<<" "<<bounds[1]<<std::endl;
-        vtkm::filter::ClipWithField clip;
-        clip.SetClipValue(bounds[1]);
-        clip.SetActiveField(isoVar);
-        clip.SetFieldsToPass(isoVar, vtkm::cont::Field::Association::POINTS);
-        result = clip.Execute(ds);
-    }
-
-    vtkm::filter::CleanGrid cleaner;
-    cleaner.SetFieldsToPass(isoVar);
-    result = cleaner.Execute(result);
-
-    /*
-    vtkm::io::writer::VTKDataSetWriter writer("out.vtk");
-    writer.WriteDataSet(result);
-    std::cout<<"VTKm result: "<<std::endl;
-    result.PrintSummary(std::cout);
-    */
-
-    vtkh::DataSet *out_ds = new vtkh::DataSet();
-    out_ds->AddDomain(result, in_dr->GetDomain());
-
-#else
-
-    //VTKh version
     vtkh::IsoVolume iso;
 
     iso.SetRange(vtkm::Range(bounds[0], bounds[1]));
@@ -679,8 +621,6 @@ avtIsovolumeFilter::ExecuteData_VTKM(avtDataRepresentation *in_dr, std::vector<d
     iso.SetInput(in_ds);
     iso.Update();
     vtkh::DataSet *out_ds = iso.GetOutput();
-
-#endif
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds, in_dr->GetDomain(), in_dr->GetLabel());
     visitTimer->StopTimer(timerHandle, "avtIsovolumeFilter::ExecuteDataTree_VTKM");
