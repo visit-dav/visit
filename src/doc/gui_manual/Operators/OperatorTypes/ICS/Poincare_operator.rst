@@ -1,9 +1,9 @@
 .. _Poincare operator:
 
-Poincare operator
+Poincaré operator
 ~~~~~~~~~~~~~~~~~
 
-The Poincare operator constructs a Poincaré section for toroidal geometry, i.e.
+The Poincaré operator constructs a Poincaré section for toroidal geometry, i.e.
 for integral curves that lie on toroidal geometry (cylindrical
 coordinates). The basis of constructing a connected plot is to accurately
 determine the number of toroidal and poloidal windings (i.e. the winding pair).
@@ -70,7 +70,7 @@ Integration
 
 Specify settings for numerical integrators. In addition to the
 :ref:`common ICS integration` attributes common to all ICS operators, the
-Poincare operator supports the following attributes.
+Poincaré operator supports the following attributes.
 
 Punctures
 """""""""
@@ -206,7 +206,7 @@ Appearance
 
 The appearance tab specifies how the integral curve will be rendered. In addition
 to the :ref:`common ICS appearance` attributes common to all ICS operators, the
-Poincare operator supports the following attributes.
+Poincaré operator supports the following attributes.
 
 Data Value
 """"""""""

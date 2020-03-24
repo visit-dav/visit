@@ -48,7 +48,7 @@ Parameters
 ----------
 
 Common to all ICS operators is a four tab GUI: Source, Integration,
-Appearance, and Advanced (the Poincare operator also has an Analysis tab).
+Appearance, and Advanced (the Poincaré operator also has an Analysis tab).
 These tabs contain many functions that are common across all four operators.
 The following is a description of those common features. Please note: on a mac
 system, the contents of the Source and Integration tabs are combined into a
