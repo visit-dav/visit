@@ -49,25 +49,16 @@
 #   Change target location on Windows, to be relative to in the exe dir,
 #   will aid running sim examples via test suite.
 #
+#   Kathleen Biagas, Thu Feb 27 2020
+#   Remove all_simulations target, as this folder is not added to the build
+#   unless VISIT_ENABLE_DATA_MANUAL_EXAMPLES is true.
+#   Remove 'if(VISIT_PARALLEL AND VISIT_FORTRAN)', 'if(VISIT_FORTRAN)', and
+#   'if(VISIT_PARALLEL)' from functions so if-tests are performed only once.
+#
 #****************************************************************************
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-# This target depends on all the simulations so we make this target if we want
-# to build any of the simulations.
-IF(NOT VISIT_DATA_MANUAL_EXAMPLES)
-    IF (WIN32)
-        PROJECT(VISIT_SIMULATION_EXAMPLES)
-    ELSE()
-        ADD_CUSTOM_TARGET(all_simulations)
-    ENDIF()
-ENDIF(NOT VISIT_DATA_MANUAL_EXAMPLES)
-
-# The simulation will be built here but not added to the "all" target. This means
-# it won't be built unless we explicitly build it or make the "all_simulations"
-# target.
 FUNCTION(SET_SIMULATION_PROPERTIES target)
     IF(NOT WIN32)
         SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
@@ -75,12 +66,6 @@ FUNCTION(SET_SIMULATION_PROPERTIES target)
             RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/Simulations
             FOLDER tools/data/DataManualExamples/Simulations
         )
-        IF(NOT VISIT_DATA_MANUAL_EXAMPLES)
-            SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
-                EXCLUDE_FROM_ALL TRUE
-            )
-            ADD_DEPENDENCIES(all_simulations sim_${target})
-        ENDIF()
     ELSE()
         SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
             OUTPUT_NAME ${target}
@@ -132,67 +117,61 @@ FUNCTION(ADD_SIMV2_SIMULATION target)
 ENDFUNCTION(ADD_SIMV2_SIMULATION)
 
 FUNCTION(ADD_FORTRAN_SIMV2_SIMULATION target)
-    IF(VISIT_FORTRAN)
-        ADD_EXECUTABLE(sim_${target} ${ARGN} simulationexamplev2.f)
-        SET_SIMULATION_PROPERTIES(${target})
-        IF(NOT VISIT_STATIC)
-            TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2 ${EXTRA_SIM_LIBS})
-        ELSE()
-            TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2_static_ser 
-                ${VTK_LIBS} ${ZLIB_LIB} ${EXTRA_SIM_LIBS})
-        ENDIF()
-        ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
-    ENDIF(VISIT_FORTRAN)
+    ADD_EXECUTABLE(sim_${target} ${ARGN} simulationexamplev2.f)
+    SET_SIMULATION_PROPERTIES(${target})
+    IF(NOT VISIT_STATIC)
+        TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2 ${EXTRA_SIM_LIBS})
+    ELSE()
+        TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2_static_ser 
+            ${VTK_LIBS} ${ZLIB_LIB} ${EXTRA_SIM_LIBS})
+    ENDIF()
+    ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
 ENDFUNCTION(ADD_FORTRAN_SIMV2_SIMULATION)
 
 FUNCTION(ADD_PARALLEL_SIMV2_SIMULATION target)
-    IF(VISIT_PARALLEL)
-        IF(BLUEGENEQ)
-            SET(TMP_NOLINK ${VISIT_NOLINK_MPI_WITH_LIBRARIES})
-            # Do this to try and control the order of MPI libraries on the command line
-            SET(VISIT_NOLINK_MPI_WITH_LIBRARIES ON)
-            SET(EXTRA_SIM_LIBS ${EXTRA_SIM_LIBS} ${ICET_LIB} ${VISIT_PARALLEL_LIBS})
-        ELSE(BLUEGENEQ)
-           IF(ICET_FOUND)
-               SET(EXTRA_SIM_LIBS ${EXTRA_SIM_LIBS} ${ICET_LIB})
-           ENDIF(ICET_FOUND)
-        ENDIF(BLUEGENEQ)
-        ADD_PARALLEL_EXECUTABLE(sim_${target} ${ARGN})
-        SET_SIMULATION_PROPERTIES(${target})
-        SET_TARGET_PROPERTIES(sim_${target} PROPERTIES HAS_CXX ON)
-        IF(NOT VISIT_STATIC)
-            TARGET_LINK_LIBRARIES(sim_${target} simV2 ${EXTRA_SIM_LIBS})
-        ELSE()
-            TARGET_LINK_LIBRARIES(sim_${target} simV2_static_par ${VTK_LIBS} ${ZLIB_LIB}
-                                                                 ${EXTRA_SIM_LIBS})
-        ENDIF()
-        ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
-        IF(BLUEGENEQ)
-            SET(VISIT_NOLINK_MPI_WITH_LIBRARIES ${TMP_NOLINK})
-        ENDIF(BLUEGENEQ)
-    ENDIF(VISIT_PARALLEL)
+    IF(BLUEGENEQ)
+        SET(TMP_NOLINK ${VISIT_NOLINK_MPI_WITH_LIBRARIES})
+        # Do this to try and control the order of MPI libraries on the command line
+        SET(VISIT_NOLINK_MPI_WITH_LIBRARIES ON)
+        SET(EXTRA_SIM_LIBS ${EXTRA_SIM_LIBS} ${ICET_LIB} ${VISIT_PARALLEL_LIBS})
+    ELSE(BLUEGENEQ)
+       IF(ICET_FOUND)
+           SET(EXTRA_SIM_LIBS ${EXTRA_SIM_LIBS} ${ICET_LIB})
+       ENDIF(ICET_FOUND)
+    ENDIF(BLUEGENEQ)
+    ADD_PARALLEL_EXECUTABLE(sim_${target} ${ARGN})
+    SET_SIMULATION_PROPERTIES(${target})
+    SET_TARGET_PROPERTIES(sim_${target} PROPERTIES HAS_CXX ON)
+    IF(NOT VISIT_STATIC)
+        TARGET_LINK_LIBRARIES(sim_${target} simV2 ${EXTRA_SIM_LIBS})
+    ELSE()
+        TARGET_LINK_LIBRARIES(sim_${target} simV2_static_par ${VTK_LIBS} ${ZLIB_LIB}
+                                                             ${EXTRA_SIM_LIBS})
+    ENDIF()
+    ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
+    IF(BLUEGENEQ)
+        SET(VISIT_NOLINK_MPI_WITH_LIBRARIES ${TMP_NOLINK})
+    ENDIF(BLUEGENEQ)
 ENDFUNCTION(ADD_PARALLEL_SIMV2_SIMULATION)
 
 FUNCTION(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION target)
-    IF(VISIT_PARALLEL AND VISIT_FORTRAN)
-        ADD_PARALLEL_FORTRAN_EXECUTABLE(sim_${target} ${ARGN} simulationexamplev2.f)
-        SET_SIMULATION_PROPERTIES(${target})
-        SET(FLIBS ${EXTRA_SIM_LIBS})
-        IF(ICET_FOUND)
-            SET(FLIBS ${FLIBS} ${ICET_LIB})
-        ENDIF(ICET_FOUND)
-        # HACK: Force the Fortran MPI libraries.
-        SET(FLIBS ${FLIBS} ${MPI_Fortran_LIBRARIES})
-        IF(NOT VISIT_STATIC)
-            TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2 ${FLIBS})
-        ELSE()
-            TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2_static_ser 
-                ${VTK_LIBS} ${ZLIB_LIB} ${FLIBS})
-        ENDIF()
-        ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
-        # HACK:Force the Fortran include path. Why was it not already set?
-        ADD_TARGET_INCLUDE(sim_${target} ${MPI_Fortran_INCLUDE_PATH})
-    ENDIF(VISIT_PARALLEL AND VISIT_FORTRAN)
+    ADD_PARALLEL_FORTRAN_EXECUTABLE(sim_${target} ${ARGN} simulationexamplev2.f)
+    SET_SIMULATION_PROPERTIES(${target})
+    SET(FLIBS ${EXTRA_SIM_LIBS})
+    IF(ICET_FOUND)
+        SET(FLIBS ${FLIBS} ${ICET_LIB})
+    ENDIF(ICET_FOUND)
+    # HACK: Force the Fortran MPI libraries.
+    SET(FLIBS ${FLIBS} ${MPI_Fortran_LIBRARIES})
+    IF(NOT VISIT_STATIC)
+        TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2 ${FLIBS})
+    ELSE()
+        TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2_static_ser 
+            ${VTK_LIBS} ${ZLIB_LIB} ${FLIBS})
+    ENDIF()
+    ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
+    # HACK:Force the Fortran include path. Why was it not already set?
+    ADD_TARGET_INCLUDE(sim_${target} ${MPI_Fortran_INCLUDE_PATH})
 ENDFUNCTION(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION)
 
 FUNCTION(ADD_PYTHON_SIMV2_SIMULATION target)
@@ -205,119 +184,88 @@ ENDFUNCTION(ADD_PYTHON_SIMV2_SIMULATION)
 ## Simulation targets
 ##
 ADD_SIMV2_SIMULATION(aresamr aresamr.c)
-
 ADD_SIMV2_SIMULATION(amr amr.c)
-ADD_FORTRAN_SIMV2_SIMULATION(famr famr.f)
-
 ADD_SIMV2_SIMULATION(batch batch.c extract.c)
-ADD_PARALLEL_SIMV2_SIMULATION(batch_par batch.c extract.c)
-
 ADD_SIMV2_SIMULATION(csg csg.c)
-
 ADD_SIMV2_SIMULATION(curve curve.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fcurve fcurve.f)
-
 ADD_SIMV2_SIMULATION(domainbounds domainbounds.c)
-ADD_PARALLEL_SIMV2_SIMULATION(domainbounds_par domainbounds.c)
-
 ADD_SIMV2_SIMULATION(ghostcells ghostcells.c)
-ADD_PARALLEL_SIMV2_SIMULATION(ghostcells_par ghostcells.c)
-
 ADD_SIMV2_SIMULATION(globalids globalids.c)
-ADD_PARALLEL_SIMV2_SIMULATION(globalids_par globalids.c)
-
 ADD_SIMV2_SIMULATION(higherorder higherorder.c)
-
 ADD_SIMV2_SIMULATION(interleave interleave.c)
-
 ADD_SIMV2_SIMULATION(life life.c)
-ADD_PARALLEL_SIMV2_SIMULATION(life_par life.c)
-
 ADD_SIMV2_SIMULATION(mandelbrot mandelbrot.C patch.C)
-ADD_PARALLEL_SIMV2_SIMULATION(mandelbrot_par mandelbrot.C patch.C)
-
 ADD_SIMV2_SIMULATION(mandelbulbsim mandelbulbsim.C extract.c)
-ADD_PARALLEL_SIMV2_SIMULATION(mandelbulbsim_par mandelbulbsim.C extract.c)
-
 ADD_SIMV2_SIMULATION(material material.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fmaterial fmaterial.f)
-
 ADD_SIMV2_SIMULATION(materialvar materialvar.c)
-
 ADD_SIMV2_SIMULATION(mesh mesh.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fmesh fmesh.f)
-
 ADD_SIMV2_SIMULATION(multiblock multiblock.c)
-ADD_PARALLEL_SIMV2_SIMULATION(multiblock_par multiblock.c)
-
 ADD_SIMV2_SIMULATION(point point.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fpoint fpoint.f)
-
 ADD_SIMV2_SIMULATION(polyhedral polyhedral.c)
-
 ADD_SIMV2_SIMULATION(scalar scalar.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fscalar fscalar.f)
-ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION(fscalarp fscalarp.f)
-
 ADD_SIMV2_SIMULATION(surface surface.c)
-
 ADD_SIMV2_SIMULATION(sim1 sim1.c)
-
 ADD_SIMV2_SIMULATION(sim2 sim2.c)
-ADD_PARALLEL_SIMV2_SIMULATION(sim2p sim2p.c)
-
 ADD_SIMV2_SIMULATION(sim3 sim3.c)
-ADD_PARALLEL_SIMV2_SIMULATION(sim3p sim3p.c)
-
 ADD_SIMV2_SIMULATION(sim4 sim4.c)
-ADD_PARALLEL_SIMV2_SIMULATION(sim4p sim4p.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fsim4 fsim4.f)
-
 ADD_SIMV2_SIMULATION(sim5 sim5.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fsim5 fsim5.f)
-
 ADD_SIMV2_SIMULATION(sim6 sim6.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fsim6 fsim6.f)
-
 ADD_SIMV2_SIMULATION(sim7 sim7.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fsim7 fsim7.f)
-
 ADD_SIMV2_SIMULATION(sim8 sim8.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fsim8 fsim8.f)
-
 ADD_SIMV2_SIMULATION(sim9 sim9.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fsim9 fsim9.f)
-
 ADD_SIMV2_SIMULATION(sim10 sim10.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fsim10 fsim10.f)
-
 ADD_SIMV2_SIMULATION(sim11 sim11.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fsim11 fsim11.f)
-
 ADD_SIMV2_SIMULATION(sim12 sim12.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fsim12 fsim12.f)
-
 ADD_SIMV2_SIMULATION(species species.c)
-
 ADD_SIMV2_SIMULATION(ucdcurve ucdcurve.c)
-ADD_PARALLEL_SIMV2_SIMULATION(ucdcurve_par ucdcurve.c)
-
 ADD_SIMV2_SIMULATION(unstructured unstructured.c)
-ADD_FORTRAN_SIMV2_SIMULATION(funstructured funstructured.f)
-
 ADD_SIMV2_SIMULATION(updateplots updateplots.c)
-ADD_PARALLEL_SIMV2_SIMULATION(updateplots_par updateplots.c)
-ADD_FORTRAN_SIMV2_SIMULATION(fupdateplots fupdateplots.f)
-
 #usequeries.c
-
 ADD_SIMV2_SIMULATION(var var.c)
-
 ADD_SIMV2_SIMULATION(writeback writeback.c)
-ADD_PARALLEL_SIMV2_SIMULATION(writeback_par writeback.c)
-
 ADD_SIMV2_SIMULATION(zerocopy zerocopy.c extract.c)
-ADD_PARALLEL_SIMV2_SIMULATION(zerocopy_par zerocopy.c extract.c)
+
+IF(VISIT_FORTRAN)
+    ADD_FORTRAN_SIMV2_SIMULATION(famr famr.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fcurve fcurve.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fmaterial fmaterial.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fmesh fmesh.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fpoint fpoint.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fscalar fscalar.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fsim4 fsim4.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fsim5 fsim5.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fsim6 fsim6.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fsim7 fsim7.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fsim8 fsim8.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fsim9 fsim9.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fsim10 fsim10.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fsim11 fsim11.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fsim12 fsim12.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(funstructured funstructured.f)
+    ADD_FORTRAN_SIMV2_SIMULATION(fupdateplots fupdateplots.f)
+ENDIF(VISIT_FORTRAN)
+
+IF(VISIT_PARALLEL)
+    ADD_PARALLEL_SIMV2_SIMULATION(batch_par batch.c extract.c)
+    ADD_PARALLEL_SIMV2_SIMULATION(domainbounds_par domainbounds.c)
+    ADD_PARALLEL_SIMV2_SIMULATION(ghostcells_par ghostcells.c)
+    ADD_PARALLEL_SIMV2_SIMULATION(globalids_par globalids.c)
+    ADD_PARALLEL_SIMV2_SIMULATION(life_par life.c)
+    ADD_PARALLEL_SIMV2_SIMULATION(mandelbrot_par mandelbrot.C patch.C)
+    ADD_PARALLEL_SIMV2_SIMULATION(mandelbulbsim_par mandelbulbsim.C extract.c)
+    ADD_PARALLEL_SIMV2_SIMULATION(multiblock_par multiblock.c)
+    ADD_PARALLEL_SIMV2_SIMULATION(sim2p sim2p.c)
+    ADD_PARALLEL_SIMV2_SIMULATION(sim3p sim3p.c)
+    ADD_PARALLEL_SIMV2_SIMULATION(sim4p sim4p.c)
+    ADD_PARALLEL_SIMV2_SIMULATION(ucdcurve_par ucdcurve.c)
+    ADD_PARALLEL_SIMV2_SIMULATION(updateplots_par updateplots.c)
+    ADD_PARALLEL_SIMV2_SIMULATION(writeback_par writeback.c)
+    ADD_PARALLEL_SIMV2_SIMULATION(zerocopy_par zerocopy.c extract.c)
+    if(VISIT_FORTRAN)
+        ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION(fscalarp fscalarp.f)
+    endif() 
+ENDIF(VISIT_PARALLEL)
+
 
 # copy python examples to simulation examples build dir
 IF(VISIT_OUT_OF_SOURCE_BUILD)

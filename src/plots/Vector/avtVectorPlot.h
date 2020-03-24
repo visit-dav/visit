@@ -18,11 +18,11 @@
 
 class     vtkVectorGlyph;
 
+class     avtVectorFilter;
+class     avtVectorGlyphMapper;
 class     avtGhostZoneFilter;
 class     avtResampleFilter;
-class     avtVectorGlyphMapper;
 class     avtVariableLegend;
-class     avtVectorFilter;
 class     avtLookupTable;
 
 // ****************************************************************************
@@ -87,27 +87,24 @@ class avtVectorPlot : public avtPointDataPlot
     static avtPlot             *Create();
 
     virtual void                SetAtts(const AttributeGroup*);
-    virtual bool                SetColorTable(const char *ctName);
-
-    void                        SetLimitsMode(int);
     virtual bool                NeedZBufferToCompositeEvenIn2D(void)
                                                           { return true; };
 
-    virtual const MapNode     &GetExtraInfoForPick(void);
+    virtual const MapNode      &GetExtraInfoForPick(void);
 
   protected:
     VectorAttributes            atts;
     bool                        colorsInitialized;
 
-    avtVectorGlyphMapper       *glyphMapper;
+    avtVectorGlyphMapper       *vectorMapper;
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
     avtVectorFilter            *vectorFilter;
-    avtResampleFilter          *resampleFilter;
     avtGhostZoneFilter         *ghostFilter;
+    avtResampleFilter          *resampleFilter;
     avtLookupTable             *avtLUT;
 
-    vtkVectorGlyph             *glyph;
+    vtkVectorGlyph             *vectorGlyph;
 
     virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
@@ -115,17 +112,19 @@ class avtVectorPlot : public avtPointDataPlot
     virtual void                CustomizeBehavior(void);
     virtual void                CustomizeMapper(avtDataObjectInformation &);
 
+    bool                        SetColorTable(const char *);
+    void                        SetLimitsMode(int);
+    void                        SetMapperColors(void);
+
     virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; };
     void                        SetLegend(bool);
     void                        SetLegendRanges();
-    void                        ComputeMagVarName(const std::string &);
-    void                        SetMapperColors(void);
-    std::string                 magVarName;
 
-    virtual void                SetCellCountMultiplierForSRThreshold(const avtDataObject_p);
+    virtual void                SetCellCountMultiplierForSRThreshold(const avtDataObject_p); 
+
+    void                        ComputeMagVarName(const std::string &);
+    std::string                 magVarName;
 };
 
 
 #endif
-
-

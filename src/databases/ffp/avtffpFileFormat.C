@@ -14,7 +14,12 @@
 
 #include <avtffpFileFormat.h>
 
+#ifdef WIN32
+#include <windows.h>
+#else
 #include <dlfcn.h>
+#endif
+
 #include <math.h>
 #include <string>
 
@@ -64,9 +69,36 @@ static trlistp_t _trlistp = 0;
 static int InitLibStripack()
 {
     static char const * const envar = "VISIT_FFP_STRIPACK_PATH";
+#ifdef WIN32
+    HINSTANCE libh = NULL;
+    if (Environment::exists(envar))
+        libh = LoadLibrary(Environment::get(envar).c_str());
+    if (!libh)
+        libh = LoadLibrary("libstripack.dll");
+    if (!libh)
+        return 1;
+
+    _trmeshp = (trmeshp_t) GetProcAddress(libh, "trmesh");
+   if (!_trmeshp)
+        _trmeshp = (trmeshp_t) GetProcAddress(libh, "trmesh_");
+   if (!_trmeshp)
+        _trmeshp = (trmeshp_t) GetProcAddress(libh, "TRMESH");
+   if (!_trmeshp)
+        _trmeshp = (trmeshp_t) GetProcAddress(libh, "TRMESH_");
+
+    _trlistp = (trlistp_t) GetProcAddress(libh, "trlist");
+   if (!_trlistp)
+        _trlistp = (trlistp_t) GetProcAddress(libh, "trlist_");
+   if (!_trlistp)
+        _trlistp = (trlistp_t) GetProcAddress(libh, "TRLIST");
+   if (!_trlistp)
+        _trlistp = (trlistp_t) GetProcAddress(libh, "TRLIST_");
+
+    // We can't ever close it or we loose access to the functions
+    //FreeLibrary(libh);
+#else
     int const dlmode = RTLD_LAZY|RTLD_LOCAL;
     void *libh = 0;
-
     if (Environment::exists(envar))
         libh = dlopen(Environment::get(envar).c_str(), dlmode);
     if (!libh)
@@ -75,6 +107,7 @@ static int InitLibStripack()
         libh = dlopen("libstripack.dylib", dlmode);
     if (!libh)
         return 1;
+
 
    // Account for various fortran name mangling schemes
    // https://en.wikipedia.org/wiki/Name_mangling#Fortran
@@ -96,6 +129,7 @@ static int InitLibStripack()
 
     // We can't ever close it or we loose access to the functions
     //dlclose(libh);
+#endif
 
     return 0;
 }
@@ -104,12 +138,12 @@ static int InitLibStripack()
 static const int dummy = InitLibStripack();
 
 static void mytrmesh(int *np, double *xp, double *yp, double *zp,
-    int *list, int *lptr, int *lend, int *lnew, int *near, int *next,
+    int *list, int *lptr, int *lend, int *lnew, int *lnear, int *next,
     double *dist, int *ier)
 {
     if (_trmeshp)
     {
-        (*_trmeshp)(np, xp, yp, zp, list, lptr, lend, lnew, near, next, dist, ier);
+        (*_trmeshp)(np, xp, yp, zp, list, lptr, lend, lnew, lnear, next, dist, ier);
         return;
     }
 
@@ -1760,7 +1794,7 @@ avtffpFileFormat::ReadFile(void)
                     gzFile unvgandle ;
                     unvhandle = fopen(unvfile.c_str(), "r");
                     bool flipflop = false ;
-                    int len = 2048; // Longest line length
+                    const int len = 2048; // Longest line length
                     char buf[len]; // A line length
                     int label ; 
                     if (unvhandle == NULL)
@@ -1960,7 +1994,7 @@ avtffpFileFormat::ReadFile(void)
                         int * lptr = (int *)calloc((size_t ) (6*(np-2)),sizeof(int)) ;
                         //int * near = (int *)malloc(np*sizeof(int)) ;
                         //int * next = (int *)malloc(np*sizeof(int)) ;
-                        int * near = (int *)calloc((size_t ) (np),sizeof(int)) ;
+                        int * lnear = (int *)calloc((size_t ) (np),sizeof(int)) ;
                         int * next = (int *)calloc((size_t ) (np),sizeof(int)) ;
                         //  Compute the Delaunay triangulation.
                         fprintf(stdout,"Building the Delaunay mesh\n");
@@ -1972,7 +2006,7 @@ avtffpFileFormat::ReadFile(void)
                             }
                         }
 #endif 
-                        mytrmesh( &np, xp, yp, zp, list, lptr, lend, &lnew, near, next, dist, &ier ) ;
+                        mytrmesh( &np, xp, yp, zp, list, lptr, lend, &lnew, lnear, next, dist, &ier ) ;
 #if INTERACTIVEREAD
                         if (debuglevel >= 0)
                             fprintf(stdout,"Error code=%d, lnew=%d\n",ier,lnew);
@@ -1992,7 +2026,7 @@ avtffpFileFormat::ReadFile(void)
                         mytrlist( &np, list, lptr, lend, &nrow, &nt, ltri, &ier ) ;
                         fprintf(stdout,"Built #triangles=%d\n",nt);
                         // Release intermediate memory between trmesh and trlist
-                        free(dist); free(lend); free(list); free(lptr); free(near); free(next) ;
+                        free(dist); free(lend); free(list); free(lptr); free(lnear); free(next) ;
                         // Build the Ideas mesh
 #endif
                         // Release memory build for stripack

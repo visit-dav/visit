@@ -157,6 +157,10 @@ avtZoneTypeRankExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsI
 //  Programmer:   Mark C. Miller 
 //  Creation:     April 2, 2008 
 //
+//  Modifications
+//
+//  Mark C. Miller, Wed Mar  4 18:31:50 PST 2020
+//  Remove call to SetTreatAsASCII.
 // ****************************************************************************
 
 void
@@ -165,5 +169,4 @@ avtZoneTypeRankExpression::UpdateDataObjectInfo(void)
     avtSingleInputExpressionFilter::UpdateDataObjectInfo();
 
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.SetTreatAsASCII(true);
 }
