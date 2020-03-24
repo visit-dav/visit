@@ -3,91 +3,39 @@
 Integral Curve operator
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+The Integral Curve Operator allows the user to compute an integral curve from a
+seed point through a vector field without any asusmption on its structure.
+
 Source
 ^^^^^^
 
 Source type
 """""""""""
 
-The user can seed the integral curves using a single point; an arbitrary list
-of points; samples on a line, plane, circle, sphere, or box; a Named Selection;
-or Field Data. The following is a list of source types and their respective
-parameters.
-
-Point
-    Seed from a point. The point location can be set interactively using the
-    interactive point tool.
-
-    * Location - X Y Z location of the seed point. 
+The source type controls how the seeds for curves are created. There are
+various options, the names of which are self-descriptive such as creating them
+along a *line* or around a *sphere*. Only those options that require further
+clarification are described further here. 
    
 Point List
-    Seed from a list of points.
-
-    * Add Point - add a point which can then be edited by the user. Double
-      clicking on the entry enters the editing mode.
-    * Delete Point - delete the currently selected entry.
-    * Delete All Points - delete all the points in the list.
-    * Read Text File - read in a list of points from a text file. The format
-      must have one point per line as either "X Y Z" or "X, Y, Z"
-   
-Line
-    Seed from a line defined by its end points. The line location can be set
-    interactively using the interactive line tool.
- 
-    * Start - X Y Z location of the line starting point.
-    * End - X Y Z location of the line ending point.
-    * Sampling - Specify the type of sampling and the number of samples.
+    Seed from a list of points. In addition to *Add Point*, *Delete Point*, and
+    *Delete All Points*, the user can *Read Text File* that is formatted with
+    one point per each line either as "X Y Z" or "X, Y, Z".
    
 Circle
     Seed from a circle defined by a plane and a radius.
 
-    * Origin - X Y Z location of the origin.
-    * Normal - X Y Z vector. The "normal" of the plane.
     * Up Axis - X Y Z vector. The "up axis" serves as the "Y" axis embedded in
       the plane. (The vector orthogonal to both the "up axis" and the "normal"
       serves as the "X" axis embedded in the plane.)
-    * Radius - radius of the circle.
-    * Sampling - Specify the type of sampling, the region from which to sample
-      (interior or boundary) and the number of samples.
    
 Plane
     Seed from a plane. The plane location can be set interactively using the
     interactive plane tool.
 
-    * Origin - X Y Z location of the origin.
-    * Normal - X Y Z vector. The "normal" of the plane.
     * Up Axis - X Y Z vector. The "up axis" serves as the "Y" axis embedded in
       the plane. (The vector orthogonal to both the "up axis" and the "normal"
       serves as the "X" axis embedded in the plane.)
-    * Sampling - Specify the type of sampling, the region from which to sample
-      (interior or boundary) and the number of samples.
-
-       * The sampling "Distance in X" and "Distance in Y" define the dimensions
-         of the rectangle in the plane. 
-   
-Sphere
-    Seed from a sphere defined by a point and a radius. The sphere location and
-    size can be set interactively using the interactive sphere tool.
-
-    * Origin - X Y Z location of the origin.
-    * Radius - radius of the sphere.
-    * Sampling - Specify the type of sampling, the region from which to sample
-      (interior or boundary) and the number of samples.
-   
-       * "Samples in Latitude", "Samples in Longitude", and "Samples in R"
-         specifies how many samples to take along each direction.
-   
-Box
-    Seed from a box defined by bounds along the X, Y, and Z axes. The box
-    location and size can be set interactively using the interactive box tool.
-
-    * The "Whole data set" check box indicates that the seeding box should be
-      the same as the bounding box of the entire dataset.
-    * X Extents - extents along the X axis.
-    * Y Extents - extents along the Y axis.
-    * Z Extents - extents along the Z axis. 
-    * Sampling - Specify the type of sampling, the region from which to sample
-      (interior or boundary) and the number of samples.
    
 Selection
     Seed with a named selection.
@@ -97,37 +45,22 @@ Field Data
     Curve operator. The array containing the seed point(s) must begin its name
     with "Seed Points".
 
-    * Copy to point list - Copy the points to the point list source
-      (see above). This allows the points to be edited. 
-
 Sampling type
 """""""""""""
 
-For samples taken from a line, circle, plane, sphere or box, there is an option
-to generate uniform or random samples from the specified region. In more
-detail:
-
-Uniform
-    Sample uniformly along the boundary or the interior. 
-
-    * Samples in X - (Default 1) Create N samples along the X axis.
-    * Samples in Y - (Default 1) Create N samples along the Y axis.
-    * Samples in Z - (Default 1) Create N samples along the Z axis. 
-   
-Random
-    Sample randomly along the boundary or the interior. 
-
-    * Random number of samples (Default 1).
-    * Random number Seed - (Default 0) ensures that the same set of random
-      samples is taken each time the plot is regenerated. 
+For samples taken from a geometric object, there is an option to generate
+uniform or random samples from the specified region. Random samples can be
+reproduced by supplying a random number seed.
 
 Boundary vs Interior Samples
 """"""""""""""""""""""""""""
 
-Samples from a circle, plane, sphere, or box can be either taken from the
-boundary, or the interior. For example, in the case of a plane sampling source,
-the samples can either lie along the edges of the planar region, or within the
-bounded rectangle, as shown below.
+Samples from a geometric object can be either taken from the boundary, or the
+interior. For example, in the case of a plane sampling source, the samples can
+either lie along the edges of the planar region, or within the bounded
+rectangle, as shown below.
+
+IMAGE HERE
     
 Field
 """""
@@ -144,32 +77,13 @@ Integral Curve operator supports the following attributes.
 Integration Direction
 """""""""""""""""""""
 
-Sets the integration direction through time. Options are:
-    
-Forward
-    Integrate forward in time.
-
-Backward
-    Integrate backward in time.
-
-Both
-    Integrate both forward and backward in time, producing two integral curves.
-
-Forward Directionless
-    Integrate forward in time assuming a directionless vector field.
-
-Backward Directionless
-    Integrate backward in time assuming a directionless vector field.
-
-Both Directionless
-    Integrate both forward and backward in time assuming a directionless vector
-    field, producing two integral curves.
-
-Eigen vectors are an example of a directionless vector field. To integrate
-using a directionless field requires that any orientation discontinuity be
-corrected prior to linear interpolation. That is, all vectors must be rotated
-to match the orientation of the trajectory. The ICS code will do this
-processing for standard fields (e.g non-higher order elements).
+Sets the integration direction through time. The user can choose from a
+combination of forward, backward, and directionless. Eigen vectors are an
+example of a directionless vector field. To integrate using a directionless
+field requires that any orientation discontinuity be corrected prior to linear
+interpolation. That is, all vectors must be rotated to match the orientation of
+the trajectory. The ICS code will do this processing for standard fields
+(e.g non-higher order elements).
     
 Integrator
 """"""""""
@@ -202,41 +116,17 @@ Maximum number of steps
 Appearance
 ^^^^^^^^^^
 
-The appearance tab specifies how the integral curve will be rendered. In addition
-to the :ref:`common ICS appearance` attributes common to all ICS operators, the Integral Curve
-operator supports the following attributes.
+The appearance tab specifies how the integral curve will be rendered. In
+addition to the :ref:`common ICS appearance` attributes common to all ICS
+operators, the Integral Curve operator supports the following attributes.
 
 Data
 """"
 
-Allows the user to set the coloring associated with each data point on the
-integral curve. You can set the coloring setting to one of:
-
-Solid
-    Every curve is given the same color.
-
-Seed ID
-    Each curve is given a different color.
-
-Speed
-    Each curve's color varies by the magnitude of the vector field at each
-    point along the curve.
-
-Vorticity Magnitude
-    Each curve's color varies by the magnitude of the vorticity at each point
-    along the curve.
-
-Arc Length
-    Each curve is colored according to its path length.
-
-Absolute time
-    Each curve's color varies by the absolute time associated with each
-    integration step at each point along the curve.
-
-Relative time
-    Each curve's color varies by the relative time associated with each
-    integration step at each point along the curve assuming the seed point is
-    at time zero (t = 0).
+The data type controls how the integral curves are colored. There are various
+options, the names of which are self-descriptive such as coloring the curves
+a *solid* color or according to a *seed*. Only those options that require
+further clarification are described further here.
 
 Average Distance from seed
     Each curve is colored according to the average distance of all the points
@@ -249,15 +139,8 @@ Cleanup
 """""""
 
 Allows the user to remove points along the integral curve according to
-difference schemes.
-
-Keep all points
-    Keep all points generated.
-
-Merge points
-    Merge duplicate points using a spatial threshold. If the threshold is zero,
-    then the tolerance will be based on a fraction of the bounding box.
-    Otherwise the tolerance will be based on an absolute tolerance.
+difference schemes. Options are self-descriptive, with additional information
+provided here as needed.
 
 Delete points before
     Delete all points that come before a "critical" point defined by a velocity
@@ -276,30 +159,17 @@ Delete points after
     so this cleaning will remove all duplicate points leaving the first
     temporal value. 
 
-Note: if displaying integral curves using tubes or ribbon regardless of the
-cleanup setting vtkCleanPolyData will be called. Tubes and ribbons cannot
-contain duplicate points. 
+.. warning:
+    Cleanup will always be called if the user displays integral curves using
+    tubes or ribbon regardless of the settings here because they cannot contain
+    duplicate points.
 
 Crop the integral Curve (for animations)
 """"""""""""""""""""""""""""""""""""""""
 
 Integral curves can be cropped so that they appear to grow over time. This
-option is useful for creating animation via a python script.
-    
-Distance
-    Crop based on the arc length of the integral curve.
-
-Time
-    Crop based on the integration time of the integral curve.
-
-Step number
-    Crop based on the step number of the integral curve. 
-
-From
-    If selected the cropping will start at the value selected.
-
-To
-    If selected the cropping will end at the value selected.
+option is useful for creating animations. Users can crop the curves based on
+several criteria and within a desired time range.
 
 Streamlines vs Pathlines
 """"""""""""""""""""""""

@@ -104,36 +104,17 @@ settings.
 Integrator
 """"""""""
 
-Sets the integration scheme. Options are:
-
-Forward Euler
-    The basic Euler integration with a fixed step length. This integrator is
-    not recommended.
-
-Leap Frog
-    Simple method for numerical integration where both the position and
-    velocity are updated using a fixed step length.
-
-Runge-Kutta-Dormand-Prince (RKDP)
-    A Runge-Kutta based scheme with adaptive step size control.
-    
-Adams-Bashforth (Multi-step)
-    A linear multistep integration using a fixed step length.
-    
-Runge-Kutta
-    Traditional 4th order Runge-Kutta with a fixed step length.
-    
-M3D-C1 2D Integrator (M3D-C1 2D fields only)
-    Uses Newton's method under the hood.
+Sets the integration scheme. There are various options common among numerical
+integration packages, such as *Leap Frog* and *Runge-Kutta*. More details on
+the different schemes can be found through a simple online search.
        
 .. _common ICS step length:
 
 Step Length
 """""""""""
 
-The length of the integration step. Most integrators use a fixed step length.
-Runge-Kutta-Dormand-Prince uses adaptive step size, which can be clipped by
-the step length.
+Most integrators use a fixed step length. Runge-Kutta-Dormand-Prince (RKDP)
+uses adaptive step size, which can be clipped by the step length.
 
 .. _common ICS tolerances:
 
@@ -143,11 +124,10 @@ Tolerances
 RKDP, Adams-Bashforth, and MD3-C1 make use of the tolerance options.
     
 RKDP
-    Two tolerances are available - The adaptive step is set such that the
-    maximum error at each step is less than the maximum between the absolute
-    tolerance and the relative tolerance times the value of the vector field at
-    the current point. The absolute tolerance can be truly absolute or relative
-    to the bounding box.
+    The step size adapts to ensure that the maximum error at each step is less
+    than the maximum between the absolute tolerance and the relative tolerance
+    times the value of the vector field at the current point.The absolute
+    tolerance can be truly absolute or relative to the bounding box.
 
 Termination
 """""""""""
