@@ -5,7 +5,7 @@ Within the VisIt infrastructure is the ability to generate integral curves:
 streamlines and pathlines. An integral curve is a curve that begins at a seed
 location and is tangent at every point in a vector field. An integral curve
 is computed by numerical integration of the seed location through the vector
-field. The image below shows fieldlines through the magnetic field of a
+field. The image below shows integral curves through the magnetic field of a
 core-collapse supernova simulation from the GenASiS code.
 
 IMAGE HERE

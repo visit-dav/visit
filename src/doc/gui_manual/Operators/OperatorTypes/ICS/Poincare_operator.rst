@@ -4,7 +4,7 @@ Poincare operator
 ~~~~~~~~~~~~~~~~~
 
 The Poincare operator constructs a Poincaré section for toroidal geometry, i.e.
-for streamlines/fieldlines that lie on toroidal geometry (cylindrical
+for integral curves that lie on toroidal geometry (cylindrical
 coordinates). The basis of constructing a connected plot is to accurately
 determine the number of toroidal and poloidal windings (i.e. the winding pair).
 This process is iterative, starting with a minimum number of puncture points
@@ -29,7 +29,7 @@ Source
 Source Type
 """""""""""
 
-The user can seed the fieldlines either as a single point or a series of points
+The user can seed the integral curves either as a single point or a series of points
 along a line.
 
 Point
@@ -77,8 +77,8 @@ Punctures
 
 While integrating the streamline to be used the for Poincaré plot, the user has
 the option to require a minimum number of initial puncture points for the
-analysis. Similarly they may limit it in case of run-a-way fieldlines that can
-not be fully analyzed.
+analysis. Similarly they may limit it in case of run-a-way integral curve that
+can not be fully analyzed.
 
 Minimum
     Minimum number of punctures for the analysis.
@@ -176,7 +176,7 @@ Perform O-Line Analysis
       P(0) != P(n)).
 
 Show chaotic fieldlines as points
-    Because chaotic fieldlines can not be classified, they are not displayed
+    Because chaotic curves can not be classified, they are not displayed
     unless this is checked. 
 
 Show islands only
@@ -241,7 +241,7 @@ Poloidal Windings
     Use the poloidal winding value 
 
 Fieldline Order
-    Use input order of the seeds used to generate the fieldlines 
+    Use input order of the seeds used to generate the integral curves. 
 
 Point Order
     Use the puncture point index 
