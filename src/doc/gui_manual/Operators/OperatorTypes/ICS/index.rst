@@ -10,7 +10,7 @@ core-collapse supernova simulation from the GenASiS code.
 
 IMAGE HERE
 
-The generation of the curves form the basis of VisIt's Integral Curve
+The generation of the curves forms the basis of VisIt's Integral Curve
 System (ICS), made up of the :ref:`Integral Curve operator`, the :ref:`LCS
 operator`, the :ref:`Limit Cycle operator`, and the :ref:`Poincare operator`.
 Much of the underlying infrastructure and interface is the same for each
