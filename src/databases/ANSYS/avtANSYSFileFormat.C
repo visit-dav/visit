@@ -449,7 +449,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
         }
         else if(STRNCASECMP(line, "EBLOCK", 6) == 0)
         {
-              line [1023] = '\0';
+              line [MAX_ANSYS_LINE-1] = '\0';
               int numFields = -1;
               char *comma = strstr(line, ",");
               nverts = -1;
