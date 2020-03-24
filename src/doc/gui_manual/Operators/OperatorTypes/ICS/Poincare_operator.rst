@@ -77,8 +77,8 @@ Punctures
 
 While integrating the streamline to be used the for Poincaré plot, the user has
 the option to require a minimum number of initial puncture points for the
-analysis. Similarly they may limit it in case of run-a-way integral curve that
-can not be fully analyzed.
+analysis. Similarly the user may limit the integration in case of run-a-way
+integral curve that can not be fully analyzed.
 
 Minimum
     Minimum number of punctures for the analysis.
@@ -95,7 +95,7 @@ Puncture plot type
       to the toroidal-poloidal periodicity a third periodicity exists that is
       based on the integration time. 
 
-    When selecting double Poincaré plot puncture points are accepted if and
+    When selecting double, Poincaré plot puncture points are accepted if and
     only if the period is within the tolerance of the period (the period is
     set as part of the Poincaré Pathline Options). 
 
@@ -103,7 +103,7 @@ Puncture plot type
          period must be within the tolerance value. 
 
 Maximum Number of steps
-   Because of the possibility for very long integration times integration
+   Because of the possibility for very long integration times, integration
    limits must be utilized.
 
 Puncture Plane
@@ -128,7 +128,7 @@ None - Puncture only
 Full
     This will analyze each fieldline’s geometry and attempt to reconstruct the
     cross sectional profile of the surface which the fieldline lies on.
-    Further, the analysis attempt to identify the topology of the surface. 
+    Further, the analysis attempts to identify the topology of the surface. 
 
 Maximum toroidal winding
     Limit the search of the toroidal winding to lower order values. Zero
