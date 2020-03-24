@@ -327,7 +327,7 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
             {
                 if (regions[i])
                 {
-                    char mesh[128], mesh2[128], var[128], var2[128];
+                    char mesh[128], mesh2[128], var[128], var2[128], edef[128];
                     sprintf(mesh, "reg%d/mesh", i+1);
                     sprintf(mesh2, "reg%d/LatLon_mesh", i+1);
                     sprintf(var, "reg%d/%s", i+1, vname.c_str());
@@ -337,6 +337,29 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
 
                     sprintf(var, "reg%d/LatLonR_coords", i+1);
                     AddVectorVarToMetaData(md, var, mesh, AVT_NODECENT, 3);
+
+                    //Add lat/lon/depth for the xyz mesh.
+                    Expression exprLat, exprLon, exprDepth;
+                    sprintf(var, "reg%d/Lat", i+1);
+                    sprintf(edef, "<reg%d/LatLonR_coords>[0]", i+1);
+                    exprLat.SetName(var);
+                    exprLat.SetType(Expression::ScalarMeshVar);
+                    exprLat.SetDefinition(edef);
+                    md->AddExpression(&exprLat);
+
+                    sprintf(var, "reg%d/Lon", i+1);
+                    sprintf(edef, "<reg%d/LatLonR_coords>[1]", i+1);
+                    exprLon.SetName(var);
+                    exprLon.SetType(Expression::ScalarMeshVar);
+                    exprLon.SetDefinition(edef);
+                    md->AddExpression(&exprLon);
+
+                    sprintf(var, "reg%d/Depth", i+1);
+                    sprintf(edef, "<reg%d/LatLonR_coords>[2]", i+1);
+                    exprDepth.SetName(var);
+                    exprDepth.SetType(Expression::ScalarMeshVar);
+                    exprDepth.SetDefinition(edef);
+                    md->AddExpression(&exprDepth);
                 }
             }
         }

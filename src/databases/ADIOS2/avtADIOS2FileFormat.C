@@ -60,9 +60,7 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
     bool isWDM = (std::string(list[0]).find(".ssc") != std::string::npos);
     bool stagingMode = isSST || isWDM;
 
-    cout<<__FILE__<<" "<<__LINE__<<" isSST "<<isSST<<endl;
-    cout<<__FILE__<<" "<<__LINE__<<" isWDM "<<isWDM<<endl;
-    cout<<__FILE__<<" "<<__LINE__<<" isHDF5 "<<isHDF5<<endl;
+    debug5<<"ADIOS2: isSST, isWDM, isHDF5"<<isSST<<" "<<isWDM<<" "<<isHDF5<<std::endl;
     Flavor flavor = FAIL;
     if (list != NULL || nList > 0)
     {
@@ -80,18 +78,17 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
             bool stagingMode  = ADIOS2Helper_IsStagingEngine(engineName);
 
             io.SetEngine(engineName);
-            //cout<<__FILE__<<" "<<__LINE__<<" Connect to stream "<<fileName<<" ..."
-            //    <<" engine "<<engineName<<" ..."<<endl;
+            debug5<<" Connect to stream "<<fileName<<" ..."<<" engine "<<engineName<<" ..."<<std::endl;
             reader = io.Open(fileName, adios2::Mode::Read);
             if (stagingMode)
             {
-                cout<<__FILE__<<" "<<__LINE__<<" Get first step "<<endl;
+                debug5<<" Get first step "<<endl;
                 adios2::StepStatus status =
                     reader.BeginStep(adios2::StepMode::Read, -1.0f);
                 if (status == adios2::StepStatus::OK)
                 {
-                    std::cout<<" Identifier received streaming step = "
-                        <<reader.CurrentStep()<<endl;
+                    debug5<<" Identifier received streaming step = "
+                          <<reader.CurrentStep()<<std::endl;
                     variables = io.AvailableVariables();
                     attributes = io.AvailableAttributes();
 
@@ -117,9 +114,9 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                 variables = io.AvailableVariables();
                 attributes = io.AvailableAttributes();
 #if MDSERVER
-                std::cout<<" MDSERVER Identifier has " << variables.size() << " variables"<<endl;
+                debug5<<" MDSERVER Identifier has " << variables.size() << " variables"<<std::endl;
 #else
-                std::cout<<" Identifier has " << variables.size() << " variables"<<endl;
+                debug5<<" Identifier has " << variables.size() << " variables"<<endl;
 #endif
                 // add formats here that support reading from HDF5
                 if (avtGTCFileFormat::Identify(fileName.c_str()))
@@ -148,7 +145,7 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         }
         ENDTRY
 
-        cout<<"FLAVOR= "<<flavor<<endl;
+        debug5<<"ADIOS2 FLAVOR= "<<flavor<<endl;
         switch(flavor)
         {
           case GTC:
@@ -169,7 +166,6 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                     list, nList, nBlock);
             break;
           case BASIC:
-              cout<<"OPEN A BASIC READER"<<endl;
             ffi = avtADIOS2BaseFileFormat::CreateInterfaceADIOS2(
                     list, nList, nBlock, adios, reader, io, variables, attributes);
             break;
@@ -178,6 +174,5 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         }
     }
 
-    //cout<<"RETURN ADIOS READER"<<endl;
     return ffi;
 }
