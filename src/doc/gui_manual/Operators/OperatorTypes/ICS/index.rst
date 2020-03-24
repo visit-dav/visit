@@ -3,10 +3,10 @@ Integral Curve System
 
 Within the VisIt infrastructure is the ability to generate integral curves:
 streamlines and pathlines. An integral curve is a curve that begins at a seed
-location and is tangent at every point in a vector field. An integral curve
-is computed by numerical integration of the seed location through the vector
-field. The image below shows integral curves through the magnetic field of a
-core-collapse supernova simulation from the GenASiS code.
+location and is tangent at every point in a vector field. It is computed by
+numerical integration of the seed location through the vector field. The image
+below shows integral curves through the magnetic field of a core-collapse
+supernova simulation from the GenASiS code.
 
 IMAGE HERE
 
@@ -19,19 +19,7 @@ generated, which are then visualized and analyzed.
 
 The ICS allows for the computation of Lagrangian Coherent Structures (LCS)
 using a variety techniques developed by George Haller and his group at ETH
-Zürich. Haller proposed that the ridges of Finite Time Lyapunov Exponents
-(FTLE) are indicators of hyperbolic LCS (repelling and attracting). In two
-dimensional flows, hyperbolic LCS's turn out to be stationary curves of the
-averaged material shear while elliptic LCS's are stationary curves of the
-averaged strain. The LCS operator coupled with the Integral Curve (Hyperbolic
-LCS) and Limit Cycle (Elliptical LCS) operators provide a mechanism to
-calculate these structures and have been developed in cooperation between the
-VisIt ICS team and the Haller Group.
-
-INCLUDE IMAGE of elliptical and hyperbolic LCS
-
-For complete details on computing elliptical LCS (closed orbits) and hyperbolic
-LCS (stretch and shrink lines) see the following paper: `K. Onu, F. Huhn, & G.
+Zürich. For more information, see the following paper: `K. Onu, F. Huhn, & G.
 Haller, LCS Tool: A Computational platform for Lagrangian coherent structures,
 J. of Computational Science, 7 (2015) 26-36
 <http://georgehaller.com/reprints/lcstool.pdf>`_
@@ -54,12 +42,11 @@ The following is a description of those common features. Please note: on a mac
 system, the contents of the Source and Integration tabs are combined into a
 single Integration tab.
 
-
 Source
 ^^^^^^
 
-The set of points to seed the integral curves in the operator. See specific
-operator for details.
+The set of points to seed the integral curves. See specific operator for
+details.
 
 .. _common ICS field:
 
@@ -70,7 +57,7 @@ Sets the field type so that the native elements are used when interpolating the
 vector fields. Each operator provides the following options:
 
 Default
-    Use VisIt's native VTK mesh structure performing linear interpolation on
+    Use VisIt's native VTK mesh structure to perform linear interpolation on
     the vector field.
     
 Flash
@@ -112,7 +99,6 @@ Integration
 Specify settings for the numerical integrator. See each operator for varied
 settings.
 
-
 .. _common ICS integrator:
 
 Integrator
@@ -147,7 +133,7 @@ Step Length
 
 The length of the integration step. Most integrators use a fixed step length.
 Runge-Kutta-Dormand-Prince uses adaptive step size, which can be clipped by
-this value.
+the step length.
 
 .. _common ICS tolerances:
 
@@ -163,14 +149,6 @@ RKDP
     the current point. The absolute tolerance can be truly absolute or relative
     to the bounding box.
 
-Adams-Bashforth
-    NOT REALLY CLEAR WHAT THIS IS BECAUSE AB USES A FIXED-STEP SIZE. MAYBE THIS
-    IS A CLIP?
-
-MD3-C1
-    NOT REALLY CLEAR WHAT THIS IS BECAUSE AB USES A FIXED-STEP SIZE. MAYBE THIS
-    IS A CLIP?
-
 Termination
 """""""""""
 
@@ -183,7 +161,7 @@ Appearance
 ^^^^^^^^^^
 
 Specify appearance settings for the curves. See specific operator for details
-on most settings.
+on extra settings.
 
 .. _common ICS streamlines:
 
@@ -192,23 +170,22 @@ Streamlines vs Pathlines
 
 The user may select the integral curve to be based on an instantaneous or
 time-varying vector field producing streamlines or pathlines, respectively. A
-streamline is path rendered by an integrator that uses the same vector field for
-the entire integration. A pathline uses the vector field that is in-step with
-the integrator, so as the integrator steps through time, it uses the
-vector field at that new time step.
+streamline is path rendered by an integrator that uses the same vector field
+for the entire integration. A pathline uses the vector field that is in-step
+with the integrator, so that as the integrator steps through time, it uses the
+vector field at each new time step. Pathline options are:
     
-Pathline Options:
-    
-    * Override starting time - instead of starting with the current time step,
-    utilize another time for the start time.
+Override starting time
+    Instead of starting with the current time step, utilize another time for
+    the start time. Parameters are:
    
-       * Time - new starting time.
+    * Time - new starting time.
       
-    * Interpolation over time - indicated whether the mesh changes over time. 
-   
-       * Mesh is static over time - typically the case, but cannot be assumed.
-         Confirm this before selecting.
-       * Mesh varies over time (Default).
+Interpolation over time
+    Interpolate the integral curve with a static mesh for all time or with a
+    varying mesh at each time step. The mesh is typically static, but this
+    cannot always be assumed and should be verified for each dataset before
+    use.
 
 .. _common ICS advanced:
 
@@ -224,19 +201,19 @@ The user may select one of four different parallelization options when
 integrating curves in parallel:
 
 Parallelize over curves
-    Distribute the curves between the processors. 
+    Distribute the curves between the processors. Parameters are:
 
     * Domain cache size - number of blocks to hold in memory for level of
       details (LOD). 
    
 Parallelize over domains
-    Distribute the domains between the processors. 
+    Distribute the domains between the processors. Parameters are:
 
     * Communication threshold - number of integral curve to process before
       communication occurs. 
    
 Parallelize over curves and domains
-    Distribute the curves and domains between the processors.
+    Distribute the curves and domains between the processors. Parameters are:
  
     * Communication threshold - number of integral curve to process before
       communication occurs. 
