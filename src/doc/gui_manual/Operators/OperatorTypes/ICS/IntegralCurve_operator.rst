@@ -301,27 +301,6 @@ From
 To
     If selected the cropping will end at the value selected.
 
-Below is an example python script that crops an integral curve and assumes the
-initial curve has been defined via the integral curve operator. ::
-
-   database = "localhost:/Projects/Data/myDatabase.vtk database"
-   md = GetMetaData( database )
-   # Assume the other attributes of the Integral Curve operator have been set
-   # for rendering a path line from time zero to the end time.
-   atts = IntegralCurveAttributes()
-   atts.cropValue = atts.Time
-   atts.cropEndFlag = 1
-   # Render ten steps for each interval
-   nsteps = 10
-   # loop through each time interval
-   for i in range(TimeSliderGetNStates()-1) :
-     time = md.times[i]
-     nextTime = md.times[i+1]
-     # Render ten steps for each interval
-     for j in range(nsteps) :
-       atts.cropEnd = time + (nextTime-time) * (j+1) / nsteps
-       SetOperatorOptions(atts)
-
 Streamlines vs Pathlines
 """"""""""""""""""""""""
 
