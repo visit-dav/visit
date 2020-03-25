@@ -10,8 +10,17 @@
       ${CGNS_LIBRARY_DIR}
     </LDFLAGS>
     <FilePatterns>
+      *.cgns.*.*
       *.cgns
     </FilePatterns>
+    <Files components="M">
+      avtCGNSFileReader.C
+      avtCGNSFileFormat.C
+    </Files>
+    <Files components="E">
+      avtCGNSFileReader.C
+      avtCGNSFileFormat.C
+    </Files>
     <Attribute name="" purpose="" persistent="true">
     </Attribute>
   </Plugin>

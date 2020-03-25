@@ -4,6 +4,14 @@
 
 #****************************************************************************
 # Modifications:
+#  Kathleen Biagas, Thu Feb 27 2020
+#  Remove if test that is handled by the parent dir's CMakeLists.txt
+#  (VISIT_DBIO_ONLY, VISIT_ENGINE_ONLY, AND VISIT_SERVER_COMPONENTS_ONLY)
+#  Only add datagen if VISIT_ENABLE_DATAGEN is true.
+#  Only add mrgtree2dot and add_visit_searchpath if VISIT_ENABLE_SILO_TOOLS
+#  is true.
+#  Only add DataManualExamples if VISIT_ENABLE_DATA_MANUAL_EXAMPLES is
+#  true.
 #
 #****************************************************************************
 
@@ -15,26 +23,29 @@ macro(VISIT_DATA_ADD_FOLDER type)
     endif()
 endmacro()
 
+add_subdirectory(convert)
 
-if(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-    add_subdirectory(convert)
-else()
+if(VISIT_ENABLE_DATAGEN)
     add_subdirectory(datagen)
-    # We always want these to be built
-    if(SILO_FOUND)
-        add_subdirectory(mrgtree2dot)
-        if(NOT WIN32)
-            add_subdirectory(add_visit_searchpath)
-        endif()
+endif()
+
+if(SILO_FOUND AND VISIT_ENABLE_SILO_TOOLS)
+    add_subdirectory(mrgtree2dot)
+    if(NOT WIN32)
+        add_subdirectory(add_visit_searchpath)
     endif()
-    add_subdirectory(convert)
-    if(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
-        add_subdirectory(writer)
-        add_subdirectory(ultrawrapper)
-    endif()
-    if(HDF5_FOUND AND NOT WIN32)
-        add_subdirectory(xdmf_writer)
-    endif()
+endif()
+
+if(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
+    add_subdirectory(writer)
+    add_subdirectory(ultrawrapper)
+endif()
+
+if(HDF5_FOUND AND NOT WIN32)
+    add_subdirectory(xdmf_writer)
+endif()
+
+if(VISIT_ENABLE_DATA_MANUAL_EXAMPLES)
     add_subdirectory(DataManualExamples)
 endif()
 

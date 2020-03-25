@@ -97,6 +97,9 @@ function build_szip
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         cf_szip="--disable-shared --enable-static"
     fi
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        cf_szip="$cf_szip --disable-production"
+    fi
 
     extra_ac_flags=""
     # detect coral systems, which older versions of autoconf don't detect

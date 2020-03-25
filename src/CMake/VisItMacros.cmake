@@ -5,7 +5,7 @@
 #****************************************************************************
 #  A place to store macros used by plugins, so that PluginVsInstall.cmake.in
 #  will not have to rewrite them.  Should reduce maintenance headache for
-#  that file.  This file should only include those that 
+#  that file.  This file should only include those that
 #  PluginVsInstall.cmake.in also uses without modification.
 #
 #*****************************************************************************
@@ -51,7 +51,7 @@ IF (WIN32)
 ENDIF (WIN32)
 
 FUNCTION(ADD_TARGET_INCLUDE target)
-      set_property(TARGET ${target} 
+      set_property(TARGET ${target}
                    APPEND
                    PROPERTY INCLUDE_DIRECTORIES ${ARGN})
 ENDFUNCTION(ADD_TARGET_INCLUDE)
@@ -104,9 +104,9 @@ FUNCTION(ADD_PARALLEL_LIBRARY target)
     ENDIF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
 ENDFUNCTION(ADD_PARALLEL_LIBRARY)
 
-MACRO(VISIT_PLUGIN_TARGET_RTOD type) 
+MACRO(VISIT_PLUGIN_TARGET_RTOD type)
     IF(WIN32)
-        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES 
+        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY_RELEASE
                 "${VISIT_PLUGIN_DIR}/${type}"
             RUNTIME_OUTPUT_DIRECTORY_DEBUG
@@ -122,7 +122,7 @@ ENDMACRO(VISIT_PLUGIN_TARGET_RTOD)
 
 
 ##############################################################################
-# Function that creates a generic XML tool Code Gen Target 
+# Function that creates a generic XML tool Code Gen Target
 # (helper for functions below, don't call directly )
 ##############################################################################
 FUNCTION(ADD_XML_TOOLS_GEN_TARGET gen_name
@@ -132,22 +132,22 @@ FUNCTION(ADD_XML_TOOLS_GEN_TARGET gen_name
                                   gen_type)
     ####
     # only create code gen targets if:
-    #  we aren't on windows 
+    #  we aren't on windows
     #  our cmake for gen targets option is on
     ####
-    if(NOT WIN32 AND VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
+    if(VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
         set(gen_target_name "gen_${gen_type}_${gen_name}")
 
         MESSAGE(STATUS "Adding ${tool_name} generation target: ${gen_target_name}")
 
         if(WIN32)
             # need to test this in the future
-            set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/visit.exe -${tool_name})
+            set(xml_gen_tool visit_exe -${tool_name})
         else()
             set(xml_gen_tool ${CMAKE_BINARY_DIR}/bin/${tool_name})
         endif()
 
-        # construct path to source file, we need to run 
+        # construct path to source file, we need to run
         # in the dir where we want the code to gen
         set(xml_input ${src_dir}/${gen_name}.xml)
 
@@ -156,23 +156,33 @@ FUNCTION(ADD_XML_TOOLS_GEN_TARGET gen_name
         endif()
 
         add_custom_target(${gen_target_name}
-                          COMMAND ${xml_gen_tool} -clobber ${xml_input}
-                          DEPENDS  ${xml_file} xml2atts
-                          WORKING_DIRECTORY ${dest_dir}
-                          COMMENT "Running ${tool_name} on ${gen_name}" VERBATIM)
+            COMMAND ${xml_gen_tool} -clobber ${xml_input}
+            DEPENDS  ${xml_file} ${tool_name}
+            WORKING_DIRECTORY ${dest_dir}
+            COMMENT "Running ${tool_name} on ${gen_name}" VERBATIM)
+
+        if(WIN32)
+            set_target_properties(${gen_target_name} PROPERTIES
+                FOLDER "generators/${gen_type}")
+            add_dependencies(${gen_target_name} visit_exe)
+        endif()
 
         # connect this target to roll up target for all python gen
         set(top_level_target "gen_${gen_type}_all")
         if(NOT TARGET ${top_level_target})
             add_custom_target(${top_level_target})
+            if(WIN32)
+                set_target_properties(${top_level_target} PROPERTIES
+                    FOLDER "generators/all")
+            endif()
         endif()
-    
+
         add_dependencies(${top_level_target} ${gen_target_name})
     endif()
 ENDFUNCTION(ADD_XML_TOOLS_GEN_TARGET)
 
 #############################################################################
-# Function that creates XML tools C++ Code Gen Target 
+# Function that creates XML tools C++ Code Gen Target
 ##############################################################################
 FUNCTION(ADD_CPP_GEN_TARGET gen_name
                             src_dir
@@ -187,7 +197,7 @@ FUNCTION(ADD_CPP_GEN_TARGET gen_name
 ENDFUNCTION(ADD_CPP_GEN_TARGET)
 
 ##############################################################################
-# Function that creates XML tools Python Code Gen Target 
+# Function that creates XML tools Python Code Gen Target
 ##############################################################################
 FUNCTION(ADD_PYTHON_GEN_TARGET gen_name
                                src_dir
@@ -202,7 +212,7 @@ FUNCTION(ADD_PYTHON_GEN_TARGET gen_name
 ENDFUNCTION(ADD_PYTHON_GEN_TARGET)
 
 ##############################################################################
-# Function that creates XML tools Java Code Gen Target 
+# Function that creates XML tools Java Code Gen Target
 ##############################################################################
 FUNCTION(ADD_JAVA_GEN_TARGET gen_name
                              src_dir
@@ -217,7 +227,7 @@ FUNCTION(ADD_JAVA_GEN_TARGET gen_name
 ENDFUNCTION(ADD_JAVA_GEN_TARGET)
 
 ##############################################################################
-# Function that creates XML tools Info Code Gen Target 
+# Function that creates XML tools Info Code Gen Target
 ##############################################################################
 FUNCTION(ADD_INFO_GEN_TARGET gen_name
                              src_dir
@@ -232,7 +242,7 @@ FUNCTION(ADD_INFO_GEN_TARGET gen_name
 ENDFUNCTION(ADD_INFO_GEN_TARGET)
 
 ##############################################################################
-# Function that creates XML tools Info Code Gen Target 
+# Function that creates XML tools Info Code Gen Target
 ##############################################################################
 FUNCTION(ADD_CMAKE_GEN_TARGET gen_name
                               src_dir

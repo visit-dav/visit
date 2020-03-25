@@ -96,16 +96,16 @@ diff -c a/libsrc/FXdmfValuesBinary.cxx Xdmf/libsrc/XdmfValuesBinary.cxx
       FullFileName << DataSetName << ends;
       char * path = FullFileName.rdbuf()->str();
 !     XdmfDebug("Opening Binary Data for Reading : " << FullFileName);
-  
-  
+
+
       //char * path = new char [ strlen(this->DOM->GetWorkingDirectory())+strlen(DataSetName) + 1 ];
 --- 282,288 ----
       }
       FullFileName << DataSetName << ends;
       char * path = FullFileName.rdbuf()->str();
 !     XdmfDebug("Opening Binary Data for Reading : " << path);
-  
-  
+
+
       //char * path = new char [ strlen(this->DOM->GetWorkingDirectory())+strlen(DataSetName) + 1 ];
 EOF
     if [[ $? != 0 ]] ; then
@@ -121,7 +121,7 @@ function apply_xdmf_osx_patch
 {
     info "Patching Xdmf 2.1.1 for Xcode 9 and up . . ."
     patch -p0 << \EOF
-diff -c Xdmf/libsrc/orig/XdmfDsmComm.cxx Xdmf/libsrc/XdmfDsmComm.cxx 
+diff -c Xdmf/libsrc/orig/XdmfDsmComm.cxx Xdmf/libsrc/XdmfDsmComm.cxx
 *** Xdmf/libsrc/orig/XdmfDsmComm.cxx	Thu Aug 23 22:05:42 2018
 --- Xdmf/libsrc/XdmfDsmComm.cxx	Thu Aug 23 21:27:43 2018
 ***************
@@ -172,8 +172,11 @@ function apply_xdmf1_patch
     if [[ ${XDMF_VERSION} == 2.1.1 ]] ; then
         if [[ "$OPSYS" == "Darwin" ]] ; then
                 XCODE_VERSION="$(/usr/bin/xcodebuild -version)"
+                # this will catch Xcode 10 +, we don't have to worry about
+                # XCode 1, it shouldn't be in the wild and even if it was
+                # zero hope that current bv stack will build using
                 if [[ "$XCODE_VERSION" == "Xcode 9"* ||
-                      "$XCODE_VERSION" == "Xcode 10"* ]] ; then
+                      "$XCODE_VERSION" == "Xcode 1"* ]] ; then
                     apply_xdmf_osx_patch
                 fi
         fi
@@ -213,7 +216,7 @@ function build_xdmf
     fi
 
     cd $XDMF_BUILD_DIR || error "Can't cd to Xdmf build dir."
-    rm -f CMakeCache.txt #remove any CMakeCache that may have existed 
+    rm -f CMakeCache.txt #remove any CMakeCache that may have existed
 
     #
     # Configure Xdmf
@@ -293,7 +296,7 @@ function build_xdmf
 function bv_xdmf_is_enabled
 {
     if [[ $DO_XDMF == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }

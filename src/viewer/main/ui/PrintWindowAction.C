@@ -28,14 +28,16 @@
 // ****************************************************************************
 // Method: PrintWindowAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::OpenMDServerRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon Mar 2 2020
+//   Set outputFormat to QPrinter::NativeFormat when not outputting to file.
+//
 // ****************************************************************************
 
 void
@@ -122,6 +124,7 @@ PrintWindowAction::Execute()
     }
     else
     {
+        printer.setOutputFormat(QPrinter::NativeFormat);
         printer.setOutputFileName(QString());
         debug1 << "\toutputFilename=(empty)" << endl;
     }
@@ -135,9 +138,9 @@ PrintWindowAction::Execute()
     avtImageType imgT = ColorRGBImage;
     bool doZBuffer = false;
     bool leftEye = true;
-    avtImage_p image = windowMgr->CreateSingleImageType(imgT, doZBuffer, 
+    avtImage_p image = windowMgr->CreateSingleImageType(imgT, doZBuffer,
         windowIndex,
-        GetViewerState()->GetSaveWindowAttributes()->GetWidth(), 
+        GetViewerState()->GetSaveWindowAttributes()->GetWidth(),
         GetViewerState()->GetSaveWindowAttributes()->GetHeight(),
         GetViewerState()->GetSaveWindowAttributes()->GetScreenCapture(),
         leftEye);

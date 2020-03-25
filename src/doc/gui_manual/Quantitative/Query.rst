@@ -83,15 +83,25 @@ Built-in queries
 Database Queries
 """"""""""""""""
 
-2D area
+2D Area
     The 2D area query calculates the area of the 2D plot highlighted in the
     **Plot list** and prints the result to the **Query results**. VisIt can
     produce a Curve plot of this query with respect to time.
 
-3D surfacea area
+3D Surface Area
     The 3D surface area calculates the area of the plot highlighted in the
     **Plot list** and prints the result to the **Query results**. VisIt can
     produce a Curve plot of this query with respect to time.
+
+Connected Component Area
+    Performs the same operation as either 2/3D area query except individually
+    for each *component* of a disconnected mesh. The query result is a list of
+    values, one for each component.
+
+Connected Component Length
+    Performs an operation similar to *Connected Component Area* except that it
+    works only for 1D components and returns their length. The query result is
+    a list of values, one for each component.
 
 Area Between Curves
     The Area Between Curves query calculates the area between 2 curve plots.
@@ -106,6 +116,11 @@ Centroid
     will be assumed to be density. If the query is performed on a plot such as
     a Mesh plot or FilledBoundary plot, uniform density will be used. The
     results are print to the **Query results**. 
+
+Connected Component Centroid
+    Performs the same operation as either *Centroid* query except individually
+    for each *component* of a disconnected mesh. The query result is a list of
+    values, one for each component.
 
 Chord Length Distribution
     The Chord Length Distribution query calculates a probability density
@@ -280,11 +295,21 @@ Variable Sum
     **Query results**. VisIt can produce a Curve plot of this query with
     respect to time.
 
+Connected Component Variable Sum
+    Performs the same operation as *Variable Sum* query except individually for
+    each *component* of a disconnected mesh. The query result is a list of
+    values, one for each component.
+
 Volume
     The Volume query calculates the volume of the mesh used by the plot
     highlighted in the **Plot list** and prints the value to the
     **Query results**. VisIt can use this query to produce a Curve plot of
     volume with respect to time.
+
+Connected Component Volume
+    Performs the same operation as *Volume* query except individually for each
+    *component* of a disconnected mesh. The query result is a list of values,
+    one for each component.
 
 Watertight
     The Watertight query determines if a three-dimensional surface mesh, of the
@@ -296,9 +321,15 @@ Watertight
 
 Weighted Variable Sum
     The Weighted Variable Sum query adds up the variable values, weighted by
-    cell size, for all cells using the plot highlighted in the **Plot list**
-    and prints the results to the **Query results**. VisIt can produce a Curve
-    plot of this query with respect to time.
+    cell size (volume in 3D, area in 2D, length in 1D), for all cells using the
+    plot highlighted in the **Plot list** and prints the results to the
+    **Query results**. VisIt can produce a Curve plot of this query with respect
+    to time.
+
+Connected Component Weighted Variable Sum
+    Performs the same operation as *Weighted Variable Sum* query except
+    individually for each *component* of a disconnected mesh. The query
+    result is a list of values, one for each component.
 
 ZoneCenter
     The ZoneCenter query calculates the zone center for a certain cell in the
@@ -308,37 +339,39 @@ ZoneCenter
 Point Queries
 """""""""""""
 
-NodePick
-    The NodePick query performs node picking at the specified world coordinate
-    which, if used in 3D, need not be on the surface of a 3D dataset.The plot
-    to be picked must be highlighted in the **Plot list**. Information about
-    the picked node, if there is one, is printed to the **Query results** and
-    the **Pick Window**.
-
 Pick
-    The Pick query performs zone picking at the specified world coordinate 
-    which, if used in 3D, need not be on the surface of a 3D dataset.The plot 
-    to be picked must be highlighted in the **Plot list**. Information about 
-    the picked node, if there is one, is printed to the **Query results** and 
-    the **Pick Window**.
+    In general, the Pick query allows users to query a single zone or node at
+    a user specified location in the dataset. There are several options for
+    determining how this zone or node is chosen:
 
-PickByNode
-    The PickByNode query performs node pick using the highlighted plot in the
-    **Plot list** and specified domain and node values. You can give a global
-    node number if you turn on the **Use Global Node** check box. A pick point
-    is added to the vis window and the query results appear in the
-    **Query results** and the **Pick Window**. Note: this is the query to use
-    if you want to query the database for the value of a variable at a certain
-    node. VisIt can produce a Curve plot of this query with respect to time.
+    1. **Pick using coordinates**
+    2. **Pick using domain and element id**
+    3. **Pick using unique element label**
 
-PickByZone
-    The PickByZone query performs zone pick using the highlighted plot in the
-    Plot list and specified domain and zone values. You can give a global node
-    number if you turn on the **Use Global ** **Zone** check box. A pick point
-    is added to the vis window and the query results appear in the
-    **Query results** and the **Pick Window**. Note: this is the query to use
-    if you want to query the database for the value of a variable at a certain
-    cell. VisIt can produce a Curve plot of this query with respect to time.
+    It's important to make sure that the plot you wish to query is highlighted
+    in the **Plot list**. Information from your picked element, when available,
+    will appear in both the **Pick Window** and the **Query results** window.
+    If querying a 3D dataset, the queried element need not be on the surface
+    of the mesh.
+
+    The Pick query also provides the option to generate a curve with respect
+    to time, allowing the user to set the start time, stop time, and stride.
+    **Note on performance**: when generating a curve over time, users have
+    the option to preserve either the picked *coordinate* or the picked *element*.
+    While each of these choices will produce very different results, it's worth
+    keeping in mind that preserving the picked *element* will be substantially
+    faster than preserving the picked *coordinate* when working with datasets
+    with large numbers of time steps.
+
+TrajectoryByNode and TrajectoryByZone
+    The TrajectoryByNode and TrajectoryByZone queries first perform a Pick
+    using domain and element id on their respective elements, and they then generate
+    a curve *plotting one variable with respect to another*.
+    You'll notice that, next to the **Variables** parameter, there is a text box containing
+    default variables **var_for_x** and **var_for_y**. Replace these defaults with your
+    desired variables for the query, and the resulting curve will plot your replacement
+    for **var_for_x** with respect to **var_for_y**.
+
 
 Line Queries
 """"""""""""

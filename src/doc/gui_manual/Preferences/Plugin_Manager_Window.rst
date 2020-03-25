@@ -17,6 +17,8 @@ selecting **Plugin Manager** from the **Main** window's **Options** menu.
 
    The plugin manager window
    
+.. _Preferences_Enabling_Plugins:
+
 Enabling and Disabling Plugins
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
