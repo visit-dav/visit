@@ -50,6 +50,8 @@
 
 #include "PMDIteration.h"
 
+#include <DebugStream.h>
+
 vector <PMDIteration> iterations;
 
 // ***************************************************************************
@@ -325,7 +327,7 @@ void PMDIteration::ScanFields(hid_t fileId)
 			break;
 
 			default:
-			cerr << "visitLinks: node '" << name <<
+			debug5 << "visitLinks: node '" << name <<
 			"' has an unknown type " << object_info.type << std::endl;
 			break;
 			}
@@ -372,7 +374,7 @@ void PMDIteration::ScanParticles(hid_t fileId)
 
 		if (err!=0)
 		{
-			cerr << " No group named particles of path: " << path << endl;
+			debug5 << " No group named particles of path: " << path << endl;
 		}
 		else
 		{

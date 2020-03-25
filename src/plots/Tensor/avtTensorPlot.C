@@ -10,12 +10,17 @@
 
 #include <vtkSphereSource.h>
 
+#include <avtCallback.h>
 #include <avtGhostZoneFilter.h>
-#include <avtTensorGlyphMapper.h>
 #include <avtLookupTable.h>
-#include <avtTensorFilter.h>
+#include <avtResampleFilter.h>
 #include <avtVariableLegend.h>
+#include <avtTensorFilter.h>
+#include <avtTensorGlyphMapper.h>
 
+#include <InvalidLimitsException.h>
+
+#include <string>
 
 // ****************************************************************************
 //  Method: avtTensorPlot constructor
@@ -34,18 +39,20 @@ avtTensorPlot::avtTensorPlot()
 {
     colorsInitialized = false;
     TensorFilter = new avtTensorFilter(true, 10);
+    resampleFilter = NULL;
     ghostFilter  = new avtGhostZoneFilter();
+    ghostFilter->GhostDataMustBeRemoved();
     avtLUT       = new avtLookupTable();
 
     //
     // The tensor glyph mapper does funny things with normals.  Its best
     // just to remove the normals from the sphere source altogether.
     //
-    vtkSphereSource *src = vtkSphereSource::New();
-    tensorMapper  = new avtTensorGlyphMapper(src->GetOutputPort());
+    vtkSphereSource *sphere = vtkSphereSource::New();
+    tensorMapper  = new avtTensorGlyphMapper(sphere->GetOutputPort());
     // bump up the reference count
-    src->Register(NULL);
-    src->Delete();
+    sphere->Register(NULL);
+    sphere->Delete();
 
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Tensor");
@@ -58,7 +65,6 @@ avtTensorPlot::avtTensorPlot()
     //
     varLegendRefPtr = varLegend;
 }
-
 
 // ****************************************************************************
 //  Method: avtTensorPlot destructor
@@ -80,6 +86,11 @@ avtTensorPlot::~avtTensorPlot()
         delete TensorFilter;
         TensorFilter = NULL;
     }
+    if (resampleFilter != NULL)
+    {
+        delete resampleFilter;
+        resampleFilter = NULL;
+    }
     if (ghostFilter != NULL)
     {
         delete ghostFilter;
@@ -92,7 +103,6 @@ avtTensorPlot::~avtTensorPlot()
     }
 }
 
-
 // ****************************************************************************
 //  Method:  avtTensorPlot::Create
 //
@@ -104,12 +114,35 @@ avtTensorPlot::~avtTensorPlot()
 //
 // ****************************************************************************
 
-avtPlot*
+avtPlot *
 avtTensorPlot::Create()
 {
     return new avtTensorPlot;
 }
 
+// ****************************************************************************
+//  Method:  avtTensorPlot::SetCellCountMultiplierForSRThreshold
+//
+//  Purpose: Sets the number of polygons each point in the plot's output will
+//  be glyphed into.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    August 11, 2004 
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 12 14:15:55 PDT 2004
+//    Changed some code to get it to compile.
+//
+//    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
+//    Changed to Set... (Get is now done in avtPlot.C)
+//
+// ****************************************************************************
+
+void
+avtTensorPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
+{
+    cellCountMultiplierForSRThreshold = 96.0;
+}
 
 // ****************************************************************************
 //  Method: avtTensorPlot::GetMapper
@@ -129,7 +162,6 @@ avtTensorPlot::GetMapper(void)
 {
     return tensorMapper;
 }
-
 
 // ****************************************************************************
 //  Method: avtTensorPlot::ApplyOperators
@@ -160,7 +192,6 @@ avtTensorPlot::ApplyOperators(avtDataObject_p input)
     return input;
 }
 
-
 // ****************************************************************************
 //  Method: avtTensorPlot::ApplyRenderingTransformation
 //
@@ -187,10 +218,30 @@ avtDataObject_p
 avtTensorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     ghostFilter->SetInput(input);
-    TensorFilter->SetInput(ghostFilter->GetOutput());
+
+    avtDataObject_p dob = ghostFilter->GetOutput();
+
+    if (atts.GetGlyphLocation() == TensorAttributes::UniformInSpace)
+    {
+        avtDataAttributes &atts = dob->GetInfo().GetAttributes();
+        if (atts.GetTopologicalDimension() < atts.GetSpatialDimension())
+        {
+            avtCallback::IssueWarning("The option to place tensor glyphs "
+              "uniformly in space only works when the spatial dimension "
+              "matches the topological dimension.  The glyph locations will "
+              "instead be a function of mesh resolution.");
+        }
+        else
+        {
+            resampleFilter->SetInput(dob);
+            dob = resampleFilter->GetOutput();
+        }
+    }
+    
+    TensorFilter->SetInput(dob);
+
     return TensorFilter->GetOutput();
 }
-
 
 // ****************************************************************************
 //  Method: avtTensorPlot::CustomizeBehavior
@@ -207,9 +258,11 @@ avtTensorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 void
 avtTensorPlot::CustomizeBehavior(void)
 {
+    SetLimitsMode(atts.GetLimitsMode());
+    behavior->SetShiftFactor(0.6);
     behavior->SetLegend(varLegendRefPtr);
+    behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
 }
-
 
 // ****************************************************************************
 //  Method: avtTensorPlot::CustomizeMapper
@@ -232,6 +285,8 @@ avtTensorPlot::CustomizeBehavior(void)
 void
 avtTensorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 {
+    SetMapperColors();
+
     behavior->SetRenderOrder(DOES_NOT_MATTER);
     behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
 
@@ -240,7 +295,6 @@ avtTensorPlot::CustomizeMapper(avtDataObjectInformation &doi)
     //
     SetLegendRanges();
 }
-
 
 // ****************************************************************************
 //  Method: avtTensorPlot::SetAtts
@@ -271,7 +325,8 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
     // See if the colors will need to be updated.
     bool updateColors = (!colorsInitialized) ||
        (atts.GetColorTableName() != newAtts->GetColorTableName()) ||
-       (atts.GetInvertColorTable() != newAtts->GetInvertColorTable());
+       (atts.GetInvertColorTable() != newAtts->GetInvertColorTable() ||
+       (atts.GetColorByEigenValues() != newAtts->GetColorByEigenValues()));
 
     // See if any attributes that require the plot to be regenerated were
     // changed and copy the state object.
@@ -288,35 +343,45 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
     {
         TensorFilter->SetNTensors(atts.GetNTensors());
     }
+    TensorFilter->SetLimitToOriginal(atts.GetOrigOnly());
+
+    // If the resample filter is not NULL, then we are calling SetAtts
+    // for a second consecutive time.  The second call must be for SR
+    // mode.  If we ever allow for pipeline re-execution, this code
+    // will need to be changed and the resample filter will need to
+    // have a new method added that allows for its atts to be set.
+    // (They can only be set in the constructor right now.)
+    if (resampleFilter == NULL)
+    {
+        InternalResampleAttributes resatts;
+        resatts.SetUseTargetVal(true);
+        resatts.SetDefaultVal(0.);
+        resatts.SetDistributedResample(true);
+        resatts.SetTargetVal(atts.GetNTensors());
+        resampleFilter = new avtResampleFilter(&resatts);
+    }
 
     tensorMapper->SetScaleByMagnitude(atts.GetScaleByMagnitude());
     tensorMapper->SetAutoScale(atts.GetAutoScale());
-    tensorMapper->SetScale(atts.GetScale());
+    tensorMapper->SetScale(atts.GetScale() * atts.GetAnimationScale());
 
-    if (atts.GetColorByEigenvalues())
-    {
-        tensorMapper->ColorByMagOn();
-    }
-    else
-    {
-        const unsigned char *col = atts.GetTensorColor().GetColor();
-        tensorMapper->ColorByMagOff(col);
-    }
+    SetMapperColors();
 
     // Update the plot's colors if needed.
-    if (atts.GetColorByEigenvalues() &&
+    if (atts.GetColorByEigenValues() &&
        (updateColors || atts.GetColorTableName() == "Default"))
     {
         colorsInitialized = true;
         SetColorTable(atts.GetColorTableName().c_str());
     }
 
+    SetLimitsMode(atts.GetLimitsMode());
+
     //
     // Update the legend.
     //
     SetLegend(atts.GetUseLegend());
 }
-
 
 // ****************************************************************************
 //  Method: avtTensorPlot::SetColorTable
@@ -343,7 +408,7 @@ bool
 avtTensorPlot::SetColorTable(const char *ctName)
 {
     bool retval = false;
-    if (atts.GetColorByEigenvalues())
+    if (atts.GetColorByEigenValues())
     {
         bool namesMatch = (atts.GetColorTableName() == std::string(ctName));
         bool invert = atts.GetInvertColorTable();
@@ -368,7 +433,6 @@ avtTensorPlot::SetColorTable(const char *ctName)
 
     return retval;
 }
-
 
 // ****************************************************************************
 //  Method: avtTensorPlot::SetLegend
@@ -400,7 +464,6 @@ avtTensorPlot::SetLegend(bool legendOn)
     }
 }
 
-
 // ****************************************************************************
 //  Method: avtTensorPlot::SetLegendRanges
 //
@@ -416,15 +479,23 @@ void
 avtTensorPlot::SetLegendRanges()
 {
     double min = 0., max = 1.;
-    tensorMapper->GetRange(min, max);
+
+    if (atts.GetLimitsMode() == TensorAttributes::OriginalData)
+    {
+        tensorMapper->GetRange(min, max);
+    }
+    else
+    {
+        tensorMapper->GetCurrentRange(min, max);
+    }
+    varLegend->SetRange(min, max);
 
     //
     // Set the range for the legend's text and colors.
     //
+    tensorMapper->GetVarRange(min, max);
     varLegend->SetVarRange(min, max);
-    varLegend->SetRange(min, max);
 }
-
 
 // ****************************************************************************
 //  Method: avtTensorPlot::ReleaseData
@@ -446,12 +517,120 @@ avtTensorPlot::ReleaseData(void)
     {
         TensorFilter->ReleaseData();
     }
+    if (resampleFilter != NULL)
+    {
+        resampleFilter->ReleaseData();
+    }
     if (ghostFilter != NULL)
     {
         ghostFilter->ReleaseData();
     }
 }
 
+// ****************************************************************************
+//  Method: avtTensorPlot::SetMapperColors
+//
+//  Purpose:
+//    Tells the tensorMapper how to color the data. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 12, 2004 
+//
+// ****************************************************************************
+
+void
+avtTensorPlot::SetMapperColors()
+{
+    if (atts.GetColorByEigenValues())
+    {
+        tensorMapper->ColorByMagOn();
+    }
+    else
+    {
+        const unsigned char *col = atts.GetTensorColor().GetColor();
+        avtLUT->SetLUTColors(col, 1);
+        tensorMapper->ColorByMagOff(col);
+    }
+}
+
+// ****************************************************************************
+//  Method: avtTensorPlot::SetLimitsMode
+//
+//  Purpose:  To determine the proper limits the mapper should be using.
+//
+//  Arguments:
+//    limitsMode  Specifies which type of limits.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     December 22, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtTensorPlot::SetLimitsMode(int limitsMode)
+{
+    double min, max;
+    //
+    //  Retrieve the actual range of the data
+    //
+    tensorMapper->GetVarRange(min, max);
+
+    float userMin = atts.GetMinFlag() ? atts.GetMin() : min;
+    float userMax = atts.GetMaxFlag() ? atts.GetMax() : max;
+      
+    if (dataExtents.size() == 2)
+    {
+        tensorMapper->SetMin(dataExtents[0]);
+        tensorMapper->SetMax(dataExtents[1]);
+    }
+    else if (atts.GetMinFlag() && atts.GetMaxFlag())
+    {
+        if (userMin >= userMax)
+        {
+            EXCEPTION1(InvalidLimitsException, false); 
+        }
+        else
+        {
+            tensorMapper->SetMin(userMin);
+            tensorMapper->SetMax(userMax);
+        }
+    } 
+    else if (atts.GetMinFlag())
+    {
+        tensorMapper->SetMin(userMin);
+        if (userMin > userMax)
+        {
+            tensorMapper->SetMax(userMin);
+        }
+        else
+        {
+            tensorMapper->SetMaxOff();
+        }
+    }
+    else if (atts.GetMaxFlag())
+    {
+        tensorMapper->SetMax(userMax);
+        if (userMin > userMax)
+        {
+            tensorMapper->SetMin(userMax);
+        }
+        else
+        {
+            tensorMapper->SetMinOff();
+        }
+    }
+    else
+    {
+        tensorMapper->SetMinOff();
+        tensorMapper->SetMaxOff();
+    }
+
+    tensorMapper->SetLimitsMode(limitsMode);
+
+    SetLegendRanges();
+}
 
 // ****************************************************************************
 //  Method: avtTensorPlot::GetExtraInfoForPick
@@ -472,5 +651,3 @@ avtTensorPlot::GetExtraInfoForPick()
 
     return extraPickInfo;
 }
-
-

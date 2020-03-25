@@ -29,6 +29,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed an issue where the pick operator would choose ghost zones while picking from mili datasets.</li>
   <li>Fixed bugs with the Blueprint plugin for cases where domain data also exists in the root file.</li>
   <li>Fixed ability to save a movie template via the Save Movie Wizard on Windows.</li>
+  <li>Fixed bugs with the avtLinesFileFormat reader. The reader can now distinguish 2D from 3D, and it will not remove identical consecutive points that exist on different lines.</li>
+  <li>Fixed a crash with the generation of ghost zones using global node ids where there were NULL domains.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -39,6 +41,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Enhanced VTK plugin to support reading and writing VisIt expressions as non-specific FIELD variable named "VisItExpressions" of type string. To see an example, look at the example file named <code>higher_order_triangles.vtk</code> in <a href="https://github.com/visit-dav/visit/blob/develop/data/vtk_test_data.7z?raw=true">vtk_test_data.7z</a></li>
   <li>Enhanced the Pick Through Time to use a substantially faster algorithm by default. This algorithm will be enabled when preserving the picked element id. When preserving the picked coordinate, the original algorithm will be used instead.</li>
   <li>Enhanced the new default Pick Through Time algorithm to handle vectors, tensors, and arrays. For vectors, the magnitude is used. For tensors and arrays, the major eigenvalue is used.</li>
+  <li>Expressions in the GUI Expression window will now appear alphabetically sorted.</li>
 </ul>
 
 <a name="Dev_changes"></a>

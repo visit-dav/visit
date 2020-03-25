@@ -2,7 +2,7 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// .NAME vtkTensorReduceFilter -- Reduce the number of tensors.
+// .NAME vtkReduceFilter -- Reduce the number of tensors.
 //
 // .SECTION Description
 // Allows a dataset to be reduced by keeping only one out of every N points.
@@ -14,14 +14,14 @@
 //  many to process for every one saved (SetStride).
 //
 
-#ifndef __vtkTensorReduceFilter_h
-#define __vtkTensorReduceFilter_h
+#ifndef __vtkReduceFilter_h
+#define __vtkReduceFilter_h
 #include <visit_vtk_exports.h>
 
 #include "vtkPolyDataAlgorithm.h"
 
 // ***************************************************************************
-//  Class: vtkVisItCutter
+//  Class: vtkReduceFilter
 //
 //  Modifications:
 //    Eric Brugger, Thu Jan 10 12:02:36 PST 2013
@@ -29,34 +29,46 @@
 //
 // ***************************************************************************
 
-class VISIT_VTK_API vtkTensorReduceFilter : public vtkPolyDataAlgorithm
+class VISIT_VTK_API vtkReduceFilter : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkTensorReduceFilter, vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkReduceFilter, vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Instantiate a stride filter that throws away nine of every ten elements.
-  static vtkTensorReduceFilter *New();
+  static vtkReduceFilter *New();
 
+  void ReduceVectors();
+  void ReduceTensors();
   void SetStride(int);
   void SetNumberOfElements(int);
+  void SetLimitToOriginal(bool);
 
 protected:
-  vtkTensorReduceFilter();
-  ~vtkTensorReduceFilter() {};
+  vtkReduceFilter();
+  ~vtkReduceFilter() {};
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
                           vtkInformationVector *) override;
   virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
+  enum ReduceType
+  {
+    rVectors,
+    rTensors,
+  };
+
+  ReduceType reduceType;
+
   int stride;
   int numEls;
+  bool origOnly;
 
 private:
-  vtkTensorReduceFilter(const vtkTensorReduceFilter&);
-  void operator=(const vtkTensorReduceFilter&);
+  vtkReduceFilter(const vtkReduceFilter&);
+  void operator=(const vtkReduceFilter&);
 };
 
 #endif
