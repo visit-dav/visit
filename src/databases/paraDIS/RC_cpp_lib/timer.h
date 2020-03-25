@@ -16,7 +16,7 @@
 #endif
 #include <stdio.h>
 #include <ctime>
-#ifdef WIN32
+#ifdef _WIN32
 #include <sys/timeb.h>
 #include <Winsock2.h>
 #endif
