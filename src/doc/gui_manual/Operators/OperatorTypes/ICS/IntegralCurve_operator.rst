@@ -84,24 +84,6 @@ field requires that any orientation discontinuity be corrected prior to linear
 interpolation. That is, all vectors must be rotated to match the orientation of
 the trajectory. The ICS code will do this processing for standard fields
 (e.g non-higher order elements).
-    
-Integrator
-""""""""""
-
-See :ref:`common ICS integrator` attributes that are common to all ICS
-operators.
-    
-Step Length
-"""""""""""
-
-See :ref:`common ICS step length` attributes that are common to all ICS
-operators.
-    
-Tolerances
-""""""""""
-
-See :ref:`common ICS tolerances` attributes that are common to all ICS 
-operators.
 
 Termination
 """""""""""

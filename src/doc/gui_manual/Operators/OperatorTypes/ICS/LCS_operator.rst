@@ -59,24 +59,6 @@ Integration Direction
 """""""""""""""""""""
 
 Sets the integration direction through time: either forward or backward.
-    
-Integrator
-""""""""""
-
-See :ref:`common ICS integrator` attributes that are common to all ICS
-operators.
-    
-Step Length
-"""""""""""
-
-See :ref:`common ICS step length` attributes that are common to all ICS
-operators.
-    
-Tolerances
-""""""""""
-
-See :ref:`common ICS tolerances` attributes that are common to all ICS
-operators.
 
 Appearance
 ^^^^^^^^^^
