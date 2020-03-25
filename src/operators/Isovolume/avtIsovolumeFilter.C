@@ -9,13 +9,9 @@
 #include <avtIsovolumeFilter.h>
 
 #ifdef HAVE_LIBVTKH
-#include <vtkm/filter/ClipWithField.h>
 #include <vtkh/vtkh.hpp>
 #include <vtkh/DataSet.hpp>
 #include <vtkh/filters/IsoVolume.hpp>
-#include <vtkm/filter/CleanGrid.h>
-
-#include <vtkm/io/writer/VTKDataSetWriter.h>
 #endif
 
 #include <vtkVisItClipper.h>
@@ -468,6 +464,19 @@ avtIsovolumeFilter::ModifyContract(avtContract_p in_spec)
     return spec;
 }
 
+// ****************************************************************************
+//  Method: avtIsovolumeFilter::VTKmAble
+//
+//  Purpose:
+//      Determine if VTKm can be used.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 25, 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
 bool
 avtIsovolumeFilter::VTKmAble(avtDataRepresentation *in_dr) const
 {
@@ -519,6 +528,19 @@ avtIsovolumeFilter::VTKmAble(avtDataRepresentation *in_dr) const
 
     return useVTKm;
 }
+
+// ****************************************************************************
+//  Method: avtIsovolumeFilter::ExecuteData_VTK
+//
+//  Purpose:
+//      Perform isoVolume using VTK
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 25, 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
 
 avtDataRepresentation *
 avtIsovolumeFilter::ExecuteData_VTK(avtDataRepresentation *in_dr, std::vector<double> bounds, std::vector<bool> clips)
@@ -600,8 +622,23 @@ avtIsovolumeFilter::ExecuteData_VTK(avtDataRepresentation *in_dr, std::vector<do
     return out_dr;
 }
 
+// ****************************************************************************
+//  Method: avtIsovolumeFilter::ExecuteData_VTKM
+//
+//  Purpose:
+//      Perform isoVolume using VTKm
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 25, 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
 avtDataRepresentation *
-avtIsovolumeFilter::ExecuteData_VTKM(avtDataRepresentation *in_dr, std::vector<double> bounds, std::vector<bool> clips)
+avtIsovolumeFilter::ExecuteData_VTKM(avtDataRepresentation *in_dr,
+                                     std::vector<double> bounds,
+                                     std::vector<bool> clips)
 {
 #ifndef HAVE_LIBVTKH
     return NULL;
