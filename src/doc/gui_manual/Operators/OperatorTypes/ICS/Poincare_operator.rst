@@ -3,13 +3,12 @@
 Poincaré operator
 ~~~~~~~~~~~~~~~~~
 
-The Poincaré operator constructs a Poincaré section for toroidal geometry, i.e.
-for integral curves that lie on toroidal geometry (cylindrical
-coordinates). The basis of constructing a connected plot is to accurately
-determine the number of toroidal and poloidal windings (i.e. the winding pair).
-This process is iterative, starting with a minimum number of puncture points
-and continuing until the toroidal and poloidal windings are known or the
-maximum number of punctures is reached. If an accurate winding pair is
+The Poincaré operator constructs a Poincaré section for toroidal geometry. The
+basis of constructing a connected plot is to accurately determine the number of
+toroidal and poloidal windings (i.e. the winding pair). This process is
+iterative, starting with a minimum number of puncture points through a Poincaré
+section and continuing until the toroidal and poloidal windings are known or
+the maximum number of punctures is reached. If an accurate winding pair is
 determined, then the puncture points are connected based on it. For more
 information, refer to the following resources.
 
@@ -29,36 +28,20 @@ Source
 Source Type
 """""""""""
 
-The user can seed the integral curves either as a single point or a series of points
-along a line.
-
-Point
-    Seed from a point. The point location can be set interactively using the
-    interactive point tool. Parameters are: 
-
-    * Location - Cartesian point with three values separated with a space. 
+The source type controls how the seeds for curves are created. There are
+various options, the names of which are self-descriptive such as creating them
+along a *line*. Only those options that require further clarification are
+described further here. 
 
 Point List
-    Seed from a list of points.
+    Seed from a list of points. In addition to *Add Point*, *Delete Point*, and
+    *Delete All Points*, the user can *Read Text File* that is formatted with
+    one point per each line either as "X Y Z" or "X, Y, Z".
 
-    * Add Point - add a point which can then be edited by the user. Double
-      clicking on the entry enters the editing mode.
-    * Delete Point - delete the currently selected entry.
-    * Delete All Points - delete all the points in the list.
-    * Read Text File - read in a list of points from a text file. The format
-      must have one point per line as either "X Y Z" or "X, Y, Z"
-
-Line
-    Seed from a line defined by its end points. The line location can be set
-    interactively using the interactive line tool.
- 
-    * Start - X Y Z location of the line starting point.
-    * End - X Y Z location of the line ending point.
-    * Sampling - Specify the type of sampling and the number of samples.
-
-Note: if the Field is set to be the M3D-C1 integrator the point locations will
-be converted from Cartesian to Cylindrical coordinates. And in the 2D case, phi
-will be set to 0. 
+.. warning:
+    If the Field is set to M3D-C1 integrator the point locations will be
+    converted from Cartesian to Cylindrical coordinates. In the 2D case, phi
+    will be set to 0. 
 
 Field
 """""
@@ -80,14 +63,8 @@ the option to require a minimum number of initial puncture points for the
 analysis. Similarly the user may limit the integration in case of run-a-way
 integral curve that can not be fully analyzed.
 
-Minimum
-    Minimum number of punctures for the analysis.
-
-Maximum
-    Maximum number of punctures for the analysis. 
-
 Puncture plot type
-    The type of the puncture lot. Options are:
+    The type of the puncture plot. Options are:
 
     * Single - the analysis is based on the standard double periodic system
       (toroidal-poloidal periodicity)
@@ -102,32 +79,23 @@ Puncture plot type
        * Period tolerance - when an integral curve punctures the plane, the
          period must be within the tolerance value. 
 
-Maximum Number of steps
-   Because of the possibility for very long integration times, integration
-   limits must be utilized.
-
-Puncture Plane
-    The typical puncture plane is the poloidal plane but in some cases seeing
-    the punctures in the toroidal plane may be useful.
-
-Note: when selecting “Toroidal” the “Analysis” must also be set to “Punctures
-only” as there is currently no analysis in the toroidal plane. See below.
+.. warning:
+    When selecting “Toroidal” the “Analysis” must also be set to “Punctures
+    only” as there is currently no analysis in the toroidal plane.
 
 Analysis
 ^^^^^^^^
 
-Analysis Type
-"""""""""""""
-
-The user may turn the analysis on or off. Options are:
+The user may adjust settings for how Poincaré analysis is to be done. Some
+options include:
 
 None - Puncture only
     This will result in constructing a traditional Poincaré plot using only
-    points. 
+    points.
 
 Full
-    This will analyze each fieldline’s geometry and attempt to reconstruct the
-    cross sectional profile of the surface which the fieldline lies on.
+    This will analyze each curves' geometry and attempt to reconstruct the
+    cross sectional profile of the surface which the curve lies on.
     Further, the analysis attempts to identify the topology of the surface. 
 
 Maximum toroidal winding
@@ -148,29 +116,25 @@ Winding pair confidence (Range 0-1, Default 0.9)
 
 Detect Rational Surface
     Allows for the construction of rational surfaces via an iterative process.
+    Typically, they can be constructed with 5-10 iterations. 
 
-    * Maximums iterations – sets the number of iterations for constructing the
-    rational surface. Typically, it can be found with 5-10 iterations. 
-
-Note: The rational surface construction is experimental code and does not
-always work!!!! 
+.. danger:
+    The rational surface construction is experimental code and does not
+    always work.
 
 Detect O Points
     Allows for the detection of O points in “island chains” via an iterative
-    process.
-    
-    * Maximum iterations - sets the number of iterations for locating the O
-      point. Typically, it can be found with 5 iterations. 
+    process. Typically, they can be detected with 5 iterations. 
 
-Note: The critical point detection is experimental code and does not always
-work!!!! 
+.. danger:
+    The critical point detection is experimental code and does not always work.
 
 Perform O-Line Analysis
     Calculate the poloidal winding relative the O-Line (central axis) which
     provides a more accurate winding value.
 
     * O-Line toroidal windings (Default 1) – sets the toroidal winding value,
-      i.e. the period (for the central axis the period would be 1). 
+      i.e. the period (for the central axis the period is 1). 
     * O-Line Axis Point File - allows the user to select a text file containing
       the points along the axis from 0 to 360 degrees (note there is no overlap
       P(0) != P(n)).
@@ -187,7 +151,7 @@ Show ridgelines
 
 Verbose
     Dumps information regarding the analysis to the terminal. The final summary
-    may be useful. For example: :: 
+    may be useful. For example, :: 
    
    Surface id = 0 < 2.35019 0 0.664124 > 121:11 121:11 (11) flux surface with 4
      nodes (Complete) 
@@ -208,11 +172,10 @@ The appearance tab specifies how the integral curve will be rendered. In additio
 to the :ref:`common ICS appearance` attributes common to all ICS operators, the
 Poincaré operator supports the following attributes.
 
-Data Value
-""""""""""
+Data
+""""
 
-Allows the user to set the data value associated with each data point and the
-overall limits
+The data type controls how the integral curves are colored. Options are:
 
 None
     Solid color from the single color 
@@ -245,6 +208,7 @@ Fieldline Order
 
 Point Order
     Use the puncture point index 
+
 Plane
     Use the plane value (integer from 0 to N where N is the number of planes) 
 
@@ -263,10 +227,7 @@ Display
 """""""
 
 Allows the users to display the results in a single plane or multiple planes.
-Further, one can reconstruct the 3D surface that the fieldline lies on.
-
-Mesh Type
-    Display the results as Curves or Surfaces.
+Further, one can reconstruct the 3D surface that the curve lies on.
 
 Overlapping Curve Sections
 """"""""""""""""""""""""""
@@ -279,16 +240,19 @@ Raw
     Display all of the punctures points in a connected fashion. 
 
 Remove
-    Display all of the punctures points in a connected fashion removing the
+    Display all of the punctures points in a connected fashion, removing the
     overlapping sections. 
 
 Merge
-    Display all of the punctures points in a connected fashion merging the
+    Display all of the punctures points in a connected fashion, merging the
     overlapping sections. Experimental. 
 
 Smooth
-    Display all of the punctures points in a connected fashion removing the
-    overlapping sections while smoothing between points. Experimental. 
+    Display all of the punctures points in a connected fashion, removing the
+    overlapping sections while smoothing between points.
+
+.. danger:
+    Smooth is experimental and does not always work.
 
 Streamlines vs Pathlines
 """"""""""""""""""""""""
