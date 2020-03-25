@@ -4,17 +4,16 @@ Lagrangian Coherent Structure operator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The LCS operator utilizes Lyapunov Exponents based on the Cauchy-Green Tensor
-to highlight LCS's in vector fields. The Cauchy-Green tensor is used as an
-equivalent definition because it is independent of the mesh discretization. As
-such, when performing an FTLE calculation, the time can be specified as one
-would for a traditional FTLE, and the resulting value will be based on the
+to highlight Lagrangian Coherent Structures in vector fields. When performing a
+Finite Time Lyapunov Exponent (FTLE) calculation, the time can be specified as
+one would for a traditional FTLE, and the resulting value will be based on the
 maximal Eigen value.
 
 However, when performing the calculation with Finite Space Lyapunov Exponents
 (FSLE), instead of assuming a uniform mesh discretization and specifying the
 dispersion distance, we specify a dispersion factor. In a traditional FTLE,
 this is the dispersion distance divided by the initial distance. In the
-equivalent definition the dispersion distance is the maximal Eigen value. Thus
+equivalent definition, the dispersion distance is the maximal Eigen value. Thus
 when the maximal Eigen value is greater than the specified dispersion factor,
 then the exponent is calculated.
 
@@ -29,20 +28,9 @@ Source
 Source types
 """"""""""""
 
-The user can seed the integral curves using the native mesh or define their own
-rectilinear grid.
-   
-Native Mesh
-    Create seeds at the nodes of the native mesh. 
-
-Regular Grid
-    Create seeds at the nodes of a user-defined rectilinear grid. Parameters
-    are:
-
-    * Resolution - Three space-separated values defining the number of samples
-      in each dimension.
-    * Data extents - Specify the starting and ending extents, using either the
-      native mesh's extents (Full) or user-defined extents (Subset).
+The source type controls how the seeds for curves are created. The user can
+seed the integral curves using the native mesh or define a rectilinear grid.
+See points are the nodes of the mesh.
 
 Auxilary Grid
 """""""""""""
@@ -51,23 +39,9 @@ When calculating the Jacobian for the Cauchy-Green tensor, one can use the
 neighboring points from the native mesh or one can specify an auxiliary grid
 that allows for the detection of finer features but at greater computational
 expense. Using an auxiliary grid is advantageous because it is independent of
-the native mesh. It gives more accurate results for higher order elements.
-Haller et al. found that for analytic flows (double gyre flow, ABC flow), the
-eigenvalues can be calculated from the native mesh. For simulation flows, using
-the auxiliary grid for eigenvalue calculations gives better results.
-
-None
-    No auxiliary grid
-
-2D
-    Use a 2D auxiliary grid (i.e. X and Y directions). Can be used with 2D or
-    3D fields.
-
-3D
-    Use a 3D auxiliary grid 
-
-Spacing
-    The differential spacing between the node and auxiliary grid points. 
+the native mesh, so it gives more accurate results for higher order elements.
+For simulation flows, using the auxiliary grid for eigenvalue calculations
+gives better results.
 
 Field
 """""
@@ -84,13 +58,7 @@ operator supports the following attributes.
 Integration Direction
 """""""""""""""""""""
 
-Sets the integration direction through time. Options are:
-    
-Forward
-    Integrate forward in time.
-
-Backward
-    Integrate backward in time.
+Sets the integration direction through time: either forward or backward.
     
 Integrator
 """"""""""
@@ -120,17 +88,8 @@ operator supports the following attributes.
 Seed Generation
 """""""""""""""
 
-Threshold limit
-    Exclude seeds that are not within the threshold
-
-Radial limit
-    Exclude seeds that are closer to other seeds than the radial limit.
-
-Boundary limit
-    Exclude seeds closer than the specified boundary limit.
-
-Maximum number of seeds
-    The maximum number of seeds generated 
+Filter the number of seeds generated from the mesh (either native or
+rectilinear, see above). There are various self-descriptive filtering options.
 
 Streamlines vs Pathlines
 """"""""""""""""""""""""
