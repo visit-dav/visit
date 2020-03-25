@@ -3,13 +3,11 @@
 Limit Cycle operator
 ~~~~~~~~~~~~~~~~~~~~
 
-The Limit Cycle Operator allows one to search for closed material lines (limit
-cycles) which are elliptic LCS's. To perform this search one defines a Poincaré
-section where a series of integral curves are advected. In a Limit Cycle, most
-integral curves will return to the Poincaré section at which point their
-integration will be stopped. Some integral curves may not return to the
-Poincaré section. To limit run-a-way integration, the user can control the
-termination criteria.
+The Limit Cycle Operator detects limit cycles within a vector field. Integral
+curves are seeded at a Poincaré section and integrated through the vector
+field. Curves that return to the Poincaré section indicate a limit cycle, and
+the integration of the curve will stop. Some integral curves will not return
+to the Poincaré section, which can be terminated with termination criteria. 
 
 For the integral curves that return to the Poincaré section a signed return
 distance is calculated. Curves with a return distance below the cycle tolerance
@@ -24,23 +22,8 @@ Source
 Source Type
 """""""""""
 
-The user can seed the integral curves using samples on a line. This line
-defines a Poincaré section used to detect limit cycles. Source options are:
-
-Line
-    Source is specified with the line end points. The line location can be set
-    interactively using the interactive line tool. Options are:
-    
-    * Start - X Y Z location of the line starting point.
-    * End - X Y Z location of the line ending point.
-    
-Sampling type
-"""""""""""""
-
-The Limit Cycle operator only supports uniform samples from the line.
-
-Samples along line
-    Number of uniform samples to take along the line defined above.
+The source type controls how the seeds for curves are created. The Limit Cycle
+operator only supports uniform samples on a line.
 
 Field
 """""
@@ -57,32 +40,13 @@ Cycle operator supports the following attributes.
 Integration Direction
 """""""""""""""""""""
 
-Sets the integration direction through time. Options are:
-    
-Forward
-    Integrate forward in time.
-
-Backward
-    Integrate backward in time.
-
-Both
-    Integrate both forward and backward in time, producing two integral curves.
-
-Forward Directionless
-    Integrate forward in time assuming a directionless vector field.
-
-Backward Directionless
-    Integrate backward in time assuming a directionless vector field.
-
-Both Directionless
-    Integrate both forward and backward in time assuming a directionless vector
-    field, producing two integral curves.
-
-Eigen vectors are an example of a directionless vector field. To integrate
-using a directionless field requires that any orientation discontinuity be
-corrected prior to linear interpolation. That is, all vectors must be rotated 
-to match the orientation of the trajectory. The ICS will do this
-processing for standard fields (e.g non-higher order elements).
+Sets the integration direction through time. The user can choose from a
+combination of forward, backward, and directionless. Eigen vectors are an
+example of a directionless vector field. To integrate using a directionless
+field requires that any orientation discontinuity be corrected prior to linear
+interpolation. That is, all vectors must be rotated to match the orientation of
+the trajectory. The ICS code will do this processing for standard fields
+(e.g non-higher order elements).
 
 Integrator
 """"""""""
@@ -142,37 +106,13 @@ Show the signed return distances for the first iteration
 Instead of plotting the limit cycles, plot the return distances along the
 Poincaré section.
 
-Data Value
-""""""""""
+Data
+""""
 
-Allows the user to set the data value associated with each data point on the
-integral curve. Options are:
-
-Solid
-    Every curve is given the same color.
-
-Seed ID
-    Each curve is given a different color.
-
-Speed
-    Each curve's color varies by the magnitude of the vector field at each
-    point along the curve.
-
-Vorticity Magnitude
-    Each curve's color varies by the magnitude of the vorticity at each point
-    along the curve.
-
-Arc Length
-    Each curve is colored according to its path length.
-
-Absolute time
-    Each curve's color varies by the absolute time associated with each
-    integration step at each point along the curve.
-
-Relative time
-    Each curve's color varies by the relative time associated with each
-    integration step at each point along the curve assuming the seed point is
-    at time zero (t = 0).
+The data type controls how the integral curves are colored. There are various
+options, the names of which are self-descriptive such as coloring the curves
+a *solid* color or according to a *seed*. Only those options that require
+further clarification are described further here.
 
 Average Distance from seed
     Each curve is colored according to the average distance of all the points
