@@ -3172,6 +3172,28 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
             return NULL;
         }
 
+#if 0
+  // This was requested to be removed by Paraview folks.
+  // We're not sure if there will be a performance penalty for removing
+  // this block, as it states in the comment below. So, blocking it out
+  // for now, for ease of retrieval if needed, and will enter a ticket to
+  // remove this at a later date.
+
+        //
+        // VTK creates a trivial producer for each data set.  It later does
+        // garbage collection and that takes a long time if we have a lot
+        // of trivial producers.  Make one trivial producer for all
+        // data sets here.
+        //
+        static vtkTrivialProducer* tp = NULL;
+        if(tp == NULL)
+        {
+            tp = vtkTrivialProducer::New();
+            vtkVisItUtility::RegisterStaticVTKObject(tp);
+        }
+        tp->SetOutput(mesh);
+        tp->SetOutput(NULL);
+#endif
         AssociateBounds(mesh);
 
         if (CachingRecommended(mesh) && Interface->CanCacheVariable(real_meshname))
