@@ -19,10 +19,10 @@ generated, which are then visualized and analyzed.
 
 The ICS allows for the computation of Lagrangian Coherent Structures (LCS)
 using a variety techniques developed by George Haller and his group at ETH
-Zürich. For more information, see the following paper: `K. Onu, F. Huhn, & G.
-Haller, LCS Tool: A Computational platform for Lagrangian coherent structures,
-J. of Computational Science, 7 (2015) 26-36
-<http://georgehaller.com/reprints/lcstool.pdf>`_
+Zürich. For more information, see :download:`K. Onu, F. Huhn, & G. Haller, LCS
+Tool: A Computational platform for Lagrangian coherent structures, J. of
+Computational Science, 7 (2015) 26-36
+<pdfs/lcstool.pdf>`.
 
 .. toctree::
     :maxdepth: 1
