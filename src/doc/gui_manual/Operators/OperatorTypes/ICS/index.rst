@@ -1,7 +1,7 @@
 Integral Curve System
 =====================
 
-Within the VisIt infrastructure is the ability to generate integral curves:
+Within the _VisIt infrastructure is the ability to generate integral curves:
 streamlines and pathlines. An integral curve is a curve that begins at a seed
 location and is tangent at every point in a vector field. It is computed by
 numerical integration of the seed location through the vector field. The image
@@ -10,7 +10,7 @@ supernova simulation from the GenASiS code.
 
 IMAGE HERE
 
-The generation of the curves forms the basis of VisIt's Integral Curve
+The generation of the curves forms the basis of _VisIt's Integral Curve
 System (ICS), made up of the :ref:`Integral Curve operator`, the :ref:`LCS
 operator`, the :ref:`Limit Cycle operator`, and the :ref:`Poincare operator`.
 Much of the underlying infrastructure and interface is the same for each
@@ -18,11 +18,17 @@ operator. The user selects a series of seed locations where curves are
 generated, which are then visualized and analyzed.
 
 The ICS allows for the computation of Lagrangian Coherent Structures (LCS)
-using a variety techniques developed by `George Haller
+using a variety of techniques developed by `George Haller
 <http://georgehaller.com/>`_ and his group at ETH Zürich. For more information,
 see :download:`K. Onu, F. Huhn, & G. Haller, LCS Tool: A Computational platform
 for Lagrangian coherent structures, J. of Computational Science, 7 (2015) 26-36
 <pdfs/lcstool.pdf>`.
+
+Many of the terms used in the ICS are familiar to experts in dynamical systems,
+but may be new to many users. The user can refer to a :download:`glossary
+<pdfs/terms_glossary.pdf>` sepcific to dynamical systems and can reference
+_VisIt's :ref:`Glossary` for some terms that are specific to _VisIt's ICS. Any
+additional terms can be defined through a simple online search.
 
 .. toctree::
     :maxdepth: 1
@@ -126,7 +132,7 @@ RKDP, Adams-Bashforth, and MD3-C1 make use of the tolerance options.
 RKDP
     The step size adapts to ensure that the maximum error at each step is less
     than the maximum between the absolute tolerance and the relative tolerance
-    times the value of the vector field at the current point.The absolute
+    times the value of the vector field at the current point. The absolute
     tolerance can be truly absolute or relative to the bounding box.
 
 Termination
@@ -150,10 +156,10 @@ Streamlines vs Pathlines
 
 The user may select the integral curve to be based on an instantaneous or
 time-varying vector field producing streamlines or pathlines, respectively. A
-streamline is path rendered by an integrator that uses the same vector field
+streamline is a path rendered by an integrator that uses the same vector field
 for the entire integration. A pathline uses the vector field that is in-step
-with the integrator, so that as the integrator steps through time, it uses the
-vector field at each new time step. Pathline options are:
+with the integrator, so that as the integrator steps through time, it uses data
+from the vector field at each new time step. Pathline options are:
     
 Override starting time
     Instead of starting with the current time step, utilize another time for
