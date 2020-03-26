@@ -169,8 +169,8 @@ ConvertVTKToVTKm(vtkDataSet *data)
         // Add the unstructured cell set.
         vtkm::cont::ArrayHandle<vtkm::Id> connectivity;
         vtkm::cont::ArrayHandle<vtkm::IdComponent> nIndices;
-        vtkm::cont::ArrayHandle<vtkm::UInt8> shapes; 
-        vtkm::cont::ArrayHandle<vtkm::Id> offsets; 
+        vtkm::cont::ArrayHandle<vtkm::UInt8> shapes;
+        vtkm::cont::ArrayHandle<vtkm::Id> offsets;
 
         connectivity.Allocate(nConnectivity - nCells);
         nIndices.Allocate(nCells);
@@ -299,7 +299,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 vtkm::cont::ArrayHandle<vtkm::Float64> fieldArray;
                 fieldArray.Allocate(nVals);
-  
+
                 for (vtkm::Id j = 0; j < nVals; ++j)
                     fieldArray.GetPortalControl().Set(j, vals[j]);
 
@@ -313,31 +313,31 @@ ConvertVTKToVTKm(vtkDataSet *data)
             if (array->GetDataType() == VTK_FLOAT)
             {
                 vtkIdType nVals = array->GetNumberOfTuples();
-                vtkm::Vec<vtkm::Float32,3> *vals = 
+                vtkm::Vec<vtkm::Float32,3> *vals =
                     reinterpret_cast<vtkm::Vec<vtkm::Float32,3> *>(array->GetVoidPointer(0));
 
                 // Wrap the vector data as an array handle.
                 // This is good as long as the VTK object is around. Is it safe?
-                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > fieldArray = 
+                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > fieldArray =
                     vtkm::cont::make_ArrayHandle(vals, nVals);
 
                 ds.AddField(
-                    vtkm::cont::Field(array->GetName(), 
+                    vtkm::cont::Field(array->GetName(),
                     vtkm::cont::Field::Association::POINTS, fieldArray));
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
                 vtkIdType nVals = array->GetNumberOfTuples();
-                vtkm::Vec<vtkm::Float64,3> *vals = 
+                vtkm::Vec<vtkm::Float64,3> *vals =
                     reinterpret_cast<vtkm::Vec<vtkm::Float64,3> *>(array->GetVoidPointer(0));
 
                 // Wrap the vector data as an array handle.
                 // This is good as long as the VTK object is around. Is it safe?
-                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > fieldArray = 
+                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > fieldArray =
                     vtkm::cont::make_ArrayHandle(vals, nVals);
 
                 ds.AddField(
-                    vtkm::cont::Field(array->GetName(), 
+                    vtkm::cont::Field(array->GetName(),
                     vtkm::cont::Field::Association::POINTS, fieldArray));
             }
         }
@@ -377,7 +377,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 vtkm::cont::ArrayHandle<vtkm::Float64> fieldArray;
                 fieldArray.Allocate(nVals);
-  
+
                 for (vtkm::Id j = 0; j < nVals; ++j)
                     fieldArray.GetPortalControl().Set(j, vals[j]);
 
@@ -393,7 +393,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 vtkm::cont::ArrayHandle<vtkm::UInt8> fieldArray;
                 fieldArray.Allocate(nVals);
-  
+
                 for (vtkm::Id j = 0; j < nVals; ++j)
                     fieldArray.GetPortalControl().Set(j, vals[j]);
 
@@ -413,31 +413,31 @@ ConvertVTKToVTKm(vtkDataSet *data)
             if (array->GetDataType() == VTK_FLOAT)
             {
                 vtkIdType nVals = array->GetNumberOfTuples();
-                vtkm::Vec<vtkm::Float32,3> *vals = 
+                vtkm::Vec<vtkm::Float32,3> *vals =
                     reinterpret_cast<vtkm::Vec<vtkm::Float32,3> *>(array->GetVoidPointer(0));
 
                 // Wrap the vector data as an array handle.
                 // This is good as long as the VTK object is around. Is it safe?
-                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > fieldArray = 
+                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > fieldArray =
                     vtkm::cont::make_ArrayHandle(vals, nVals);
 
                 ds.AddField(
-                    vtkm::cont::Field(array->GetName(), 
+                    vtkm::cont::Field(array->GetName(),
                     vtkm::cont::Field::Association::CELL_SET, fieldArray));
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
                 vtkIdType nVals = array->GetNumberOfTuples();
-                vtkm::Vec<vtkm::Float64,3> *vals = 
+                vtkm::Vec<vtkm::Float64,3> *vals =
                     reinterpret_cast<vtkm::Vec<vtkm::Float64,3> *>(array->GetVoidPointer(0));
 
                 // Wrap the vector data as an array handle.
                 // This is good as long as the VTK object is around. Is it safe?
-                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > fieldArray = 
+                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > fieldArray =
                     vtkm::cont::make_ArrayHandle(vals, nVals);
 
                 ds.AddField(
-                    vtkm::cont::Field(array->GetName(), 
+                    vtkm::cont::Field(array->GetName(),
                     vtkm::cont::Field::Association::CELL_SET, fieldArray));
             }
         }
@@ -457,11 +457,11 @@ ConvertVTKToVTKm(vtkDataSet *data)
 //   Makes a vtkPoints object from the coordinates in the VTKm dataset.
 //
 // Arguments:
-//   data : The VTKm dataset. 
+//   data : The VTKm dataset.
 //
 // Returns:    A vtkPoints object if one can be created.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar  9 13:20:01 PST 2017
@@ -592,7 +592,7 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
 //
 // Returns:    A VTK version of the VTKm dataset.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar  9 13:19:08 PST 2017
@@ -747,7 +747,7 @@ static vtkDataSet *
 ConvertVTKmToVTK(vtkh::DataSet *data)
 {
     vtkDataSet *ret = NULL;
- 
+
     if (data->GetNumberOfDomains() == 0)
         return NULL;
 
@@ -803,6 +803,42 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
                         vids[2] = static_cast<vtkIdType>(ids[2]);
                         vids[3] = static_cast<vtkIdType>(ids[3]);
                         ugrid->InsertNextCell(VTK_QUAD, 4, vids);
+                    }
+                    else if (cellShape == vtkm::CELL_SHAPE_TETRA)
+                    {
+                        vtkm::Vec<vtkm::Id,4> ids;
+                        cse.GetIndices(cellid, ids);
+                        vtkIdType vids[4];
+                        for (int i = 0; i < 4; i++)
+                            vids[i] = static_cast<vtkIdType>(ids[i]);
+                        ugrid->InsertNextCell(VTK_TETRA, 4, vids);
+                    }
+                    else if (cellShape == vtkm::CELL_SHAPE_HEXAHEDRON)
+                    {
+                        vtkm::Vec<vtkm::Id,8> ids;
+                        cse.GetIndices(cellid, ids);
+                        vtkIdType vids[8];
+                        for (int i = 0; i < 8; i++)
+                            vids[i] = static_cast<vtkIdType>(ids[i]);
+                        ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, vids);
+                    }
+                    else if (cellShape == vtkm::CELL_SHAPE_WEDGE)
+                    {
+                        vtkm::Vec<vtkm::Id,6> ids;
+                        cse.GetIndices(cellid, ids);
+                        vtkIdType vids[6];
+                        for (int i = 0; i < 6; i++)
+                            vids[i] = static_cast<vtkIdType>(ids[i]);
+                        ugrid->InsertNextCell(VTK_WEDGE, 6, vids);
+                    }
+                    else if (cellShape == vtkm::CELL_SHAPE_PYRAMID)
+                    {
+                        vtkm::Vec<vtkm::Id,5> ids;
+                        cse.GetIndices(cellid, ids);
+                        vtkIdType vids[5];
+                        for (int i = 0; i < 5; i++)
+                            vids[i] = static_cast<vtkIdType>(ids[i]);
+                        ugrid->InsertNextCell(VTK_PYRAMID, 5, vids);
                     }
                     else
                     {
@@ -908,7 +944,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
             //
             // Use the field's association to try and attach the data to
             // the right place in the VTK dataset.
-            // 
+            //
             vtkDataSetAttributes *attr = ds->GetPointData();
             if (vtkm_ds.GetField(i).GetAssociation() ==
                 vtkm::cont::Field::Association::CELL_SET)
