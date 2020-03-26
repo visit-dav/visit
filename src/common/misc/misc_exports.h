@@ -6,6 +6,7 @@
 #define MISC_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 # if defined(MISC_EXPORTS) || defined(visitcommon_EXPORTS)
 #   define MISC_API  __declspec(dllexport)
 #   define MISC_API2 __declspec(dllexport)
@@ -13,6 +14,10 @@
 #   define MISC_API  __declspec(dllimport)
 #   define MISC_API2 __declspec(dllimport)
 # endif
+#else
+#define MISC_API
+#define MISC_API2
+#endif
 # if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
 #   pragma warning(disable:4251)
