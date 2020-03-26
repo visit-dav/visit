@@ -12,15 +12,15 @@ the maximum number of punctures is reached. If an accurate winding pair is
 determined, then the puncture points are connected based on it. For more
 information, refer to the following resources.
 
-A.R. Sanderson, G. Chen, X. Tricoche, E. Cohen. “Understanding Quasi-Periodic
+:download:`A.R. Sanderson, G. Chen, X. Tricoche, E. Cohen. “Understanding Quasi-Periodic
 Fieldlines and Their Topology in Toroidal Magnetic Fields,” In Topological
 Methods in Data Analysis and Visualization II, Edited by R. Peikert and H.
-Carr and H. Hauser and R. Fuchs, Springer, pp. 125--140. 2012.
+Carr and H. Hauser and R. Fuchs, Springer, pp. 125--140. 2012. <pdfs/Fusion_topo11.pdf>`
 
-A.R. Sanderson, G. Chen, X. Tricoche, D. Pugmire, S. Kruger, J. Breslau.
+:download:`A.R. Sanderson, G. Chen, X. Tricoche, D. Pugmire, S. Kruger, J. Breslau.
 “Analysis of Recurrent Patterns in Toroidal Magnetic Fields,” In Proceedings
 Visualization / Information Visualization 2010, IEEE Transactions on
-Visualization and Computer Graphics, Vol. 16, No. 4, pp. 1431-1440. 2010.
+Visualization and Computer Graphics, Vol. 16, No. 4, pp. 1431-1440. 2010. <pdfs/Fusion_vis10.pdf>`
 
 Source
 ^^^^^^
