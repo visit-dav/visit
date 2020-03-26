@@ -134,6 +134,13 @@ PyInt_AS_LONG(PyObject *o)
 }
 
 //-----------------------------------------------------------------------------
+static PyObject*
+PyNumber_Int(PyObject *o)
+{
+    return PyNumber_Long(o);
+}
+
+//-----------------------------------------------------------------------------
 // Note: Make sure to use PyMethodDef *, to match PyMethodDef table[]
 static PyObject *
 Py_FindMethod(PyMethodDef * /*table*/, PyObject *ob, char *name)
