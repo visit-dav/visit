@@ -6,10 +6,14 @@
 #define DATABASE_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(AVTDATABASE_EXPORTS) || defined(avtdatabase_ser_EXPORTS) || defined(avtdatabase_par_EXPORTS)
 #define DATABASE_API __declspec(dllexport)
 #else
 #define DATABASE_API __declspec(dllimport)
+#endif
+#else
+#define DATABASE_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about possible loss of data
