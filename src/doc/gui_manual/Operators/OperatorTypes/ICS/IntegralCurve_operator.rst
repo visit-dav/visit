@@ -22,21 +22,6 @@ Point List
     *Delete All Points*, the user can *Read Text File* that is formatted with
     one point per each line either as "X Y Z" or "X, Y, Z".
    
-Circle
-    Seed from a circle defined by a plane and a radius.
-
-    * Up Axis - X Y Z vector. The "up axis" serves as the "Y" axis embedded in
-      the plane. (The vector orthogonal to both the "up axis" and the "normal"
-      serves as the "X" axis embedded in the plane.)
-   
-Plane
-    Seed from a plane. The plane location can be set interactively using the
-    interactive plane tool.
-
-    * Up Axis - X Y Z vector. The "up axis" serves as the "Y" axis embedded in
-      the plane. (The vector orthogonal to both the "up axis" and the "normal"
-      serves as the "X" axis embedded in the plane.)
-   
 Selection
     Seed with a named selection.
     
@@ -44,6 +29,11 @@ Field Data
     The seed points are defined by another operator and passed to the Integral
     Curve operator. The array containing the seed point(s) must begin its name
     with "Seed Points".
+
+Up Axis
+    The "up axis" serves as the "Y" axis embedded in the plane. (The vector
+    orthogonal to both the "up axis" and the "normal" serves as the "X" axis
+    embedded in the plane.)
 
 Sampling type
 """""""""""""
