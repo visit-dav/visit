@@ -31,6 +31,17 @@
 using std::istringstream;
 using std::string;
 
+static bool getline_cr(std::ifstream& istr, char* str, std::streamsize count)
+{
+    istr.getline(str, count);
+    bool ret = static_cast<bool>(istr);
+    size_t sz = strlen(str);
+    if (ret && str[sz - 1] == '\r')
+    {
+        str[sz - 1] = '\0';
+    }
+    return ret;
+}
 
 // ****************************************************************************
 //  Method: avtLAMMPS constructor
@@ -124,7 +135,7 @@ avtLAMMPSDumpFileFormat::OpenFileAtBeginning()
 {
     if (!in.is_open())
     {
-        in.open(filename.c_str());
+        in.open(filename.c_str(), std::ios::binary);
         if (!in)
         {
             EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -491,7 +502,7 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
     // read all the atoms
     for (int a=0; a<nAtoms[timestep]; a++)
     {
-        in.getline(buff,1000);
+        getline_cr(in,buff,1000);
         istringstream sin(buff);
         for (int v=0; v<nVars; v++)
         {
@@ -565,7 +576,7 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
 
     while (in)
     {
-        in.getline(buff,1000);
+        getline_cr(in,buff,1000);
         if (strncmp(buff, "ITEM:", 5) != 0)
             continue;
 
@@ -573,7 +584,7 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
         if (item == "TIMESTEP")
         {
             nTimeSteps++;
-            in.getline(buff,1000);
+            getline_cr(in,buff,1000);
             cycles.push_back(strtol(buff, NULL, 10));
         }
         else if (item.substr(0,19) == "BOX BOUNDS xy xz yz")
@@ -582,18 +593,18 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
             in >> xMin >> xMax >> xy;
             in >> yMin >> yMax >> xz;
             in >> zMin >> zMax >> yz;
-            in.getline(buff, 1000); // get rest of Z line
+            getline_cr(in,buff, 1000); // get rest of Z line
         }
         else if (item.substr(0,10) == "BOX BOUNDS")
         {
             in >> xMin >> xMax;
             in >> yMin >> yMax;
             in >> zMin >> zMax;
-            in.getline(buff, 1000); // get rest of Z line
+            getline_cr(in,buff, 1000); // get rest of Z line
         }
         else if (item == "NUMBER OF ATOMS")
         {
-            in.getline(buff,1000);
+            getline_cr(in,buff,1000);
             int n = strtol(buff, NULL, 10);
             nAtoms.push_back(n);
         }
@@ -723,9 +734,9 @@ avtLAMMPSDumpFileFormat::FileExtensionIdentify(const std::string &filename)
 bool
 avtLAMMPSDumpFileFormat::FileContentsIdentify(const std::string &filename)
 {
-    ifstream in(filename.c_str());
+    ifstream in(filename.c_str(), std::ios::binary);
     char buff[1000];
-    in.getline(buff, 1000);
+    getline_cr(in,buff, 1000);
     in.close();
     if (strncmp(buff, "ITEM:", 5) == 0)
         return true;

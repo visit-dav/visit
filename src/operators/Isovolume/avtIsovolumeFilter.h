@@ -67,7 +67,10 @@ class avtIsovolumeFilter : public avtPluginDataTreeIterator
                           ModifyContract(avtContract_p);
 
   private:
+    bool VTKmAble(avtDataRepresentation *in) const;
     virtual vtkDataSet   *ExecuteSingleClip(vtkDataSet *, float, bool);
+    virtual avtDataRepresentation   *ExecuteData_VTK(avtDataRepresentation *in, std::vector<double> bounds, std::vector<bool> clips);
+    virtual avtDataRepresentation   *ExecuteData_VTKM(avtDataRepresentation *in, std::vector<double> bounds, std::vector<bool> clips);
 };
 
 
