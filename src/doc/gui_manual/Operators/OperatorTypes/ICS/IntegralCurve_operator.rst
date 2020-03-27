@@ -4,7 +4,7 @@ Integral Curve operator
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 The Integral Curve Operator allows the user to compute an integral curve from a
-seed point through a vector field without any asusmption on its structure.
+seed point through a vector field without any analysis of its structure.
 
 Source
 ^^^^^^
@@ -12,7 +12,7 @@ Source
 Source type
 """""""""""
 
-The source type controls how the seeds for curves are created. There are
+The source type controls how the seeds for the curves are created. There are
 various options, the names of which are self-descriptive such as creating them
 along a *line* or around a *sphere*. Only those options that require further
 clarification are described further here. 
@@ -27,13 +27,11 @@ Selection
     
 Field Data
     The seed points are defined by another operator and passed to the Integral
-    Curve operator. The array containing the seed point(s) must begin its name
+    Curve operator. The array containing the seed points must begin its name
     with "Seed Points".
 
 Up Axis
-    The "up axis" serves as the "Y" axis embedded in the plane. (The vector
-    orthogonal to both the "up axis" and the "normal" serves as the "X" axis
-    embedded in the plane.)
+    The "up axis" serves as the "Y" axis embedded in the plane or circle.
 
 Sampling type
 """""""""""""
@@ -45,12 +43,12 @@ reproduced by supplying a random number seed.
 Boundary vs Interior Samples
 """"""""""""""""""""""""""""
 
-Samples from a geometric object can be either taken from the boundary, or the
-interior. For example, in the case of a plane sampling source, the samples can
-either lie along the edges of the planar region, or within the bounded
+Samples from a geometric object can be taken either from the boundary or the
+interior. For example, when sampling a plane, the samples can
+either lie along the edges of the planar region or within the bounded
 rectangle, as shown below.
 
-IMAGE HERE
+.. figure:: images/boundary_interior_sampling.png
     
 Field
 """""
@@ -69,11 +67,11 @@ Integration Direction
 
 Sets the integration direction through time. The user can choose from a
 combination of forward, backward, and directionless. Eigen vectors are an
-example of a directionless vector field. To integrate using a directionless
-field requires that any orientation discontinuity be corrected prior to linear
-interpolation. That is, all vectors must be rotated to match the orientation of
-the trajectory. The ICS code will do this processing for standard fields
-(e.g non-higher order elements).
+example of a directionless vector field. In order to integrate using a
+directionless field, any orientation discontinuity must be corrected prior to
+linear interpolation. That is, all vectors must be rotated to match the
+orientation of the trajectory. The ICS code will do this processing for
+standard fields (e.g non-higher order elements).
 
 Termination
 """""""""""
@@ -90,7 +88,7 @@ Appearance
 
 The appearance tab specifies how the integral curve will be rendered. In
 addition to the :ref:`common ICS appearance` attributes common to all ICS
-operators, the Integral Curve operator supports the following attributes.
+operators, the Integral Curve operator supports the following attributes:
 
 Data
 """"
@@ -115,21 +113,21 @@ difference schemes. Options are self-descriptive, with additional information
 provided here as needed.
 
 Delete points before
-    Delete all points that come before a "critical" point defined by a velocity
+    Delete all points that come before a critical point defined by a velocity
     threshold. This cleaning will reveal when an integral curve may stop
     advecting because of some other reason than the critical point. i.e. the
     advection continues temporally but not spatially, so this cleaning will
     remove all duplicate points leaving the last temporal value. If the last
-    point temporal value is different than the value as dictated by the elapsed
+    point's temporal value is different than the value as dictated by the elapsed
     time or max steps, then the advection may have reached a critical point but
     terminated because of some other reason. 
 
 Delete points after
-    Delete all points that come after a "critical" point defined by a velocity
+    Delete all points that come after a critical point defined by a velocity
     threshold. This cleaning will reveal when an integral curve reaches a
-    critical point. i.e. the advection continues temporally but not spatially,
+    critical point (i.e. the advection continues temporally but not spatially,
     so this cleaning will remove all duplicate points leaving the first
-    temporal value. 
+    temporal value).
 
 .. warning:
     Cleanup will always be called if the user displays integral curves using
@@ -143,23 +141,14 @@ Integral curves can be cropped so that they appear to grow over time. This
 option is useful for creating animations. Users can crop the curves based on
 several criteria and within a desired time range.
 
-Streamlines vs Pathlines
-""""""""""""""""""""""""
-
-See :ref:`common ICS streamlines` attributes that are common to all ICS
-operators.
-
 Advanced
 ^^^^^^^^
-
-The Integral Curve Operator shares the same :ref:`common ICS parallel`
-attributes as all the other ICS operators.
 
 Warnings
 """"""""
 
 In addition to the :ref:`common ICS warnings` common to all ICS operators, the
-Integral Curve operator supports the following warnings.
+Integral Curve operator supports the following warnings:
 
 Issue warning if the advection limit is not reached
     If the maximum time or distance is not reached, issue a warning.
