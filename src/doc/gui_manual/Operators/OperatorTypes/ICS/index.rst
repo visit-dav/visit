@@ -14,18 +14,18 @@ The generation of integral curves forms the basis of VisIt_'s Integral Curve
 System (ICS), made up of the :ref:`Integral Curve operator`, the :ref:`LCS
 operator`, the :ref:`Limit Cycle operator`, and the :ref:`Poincare operator`.
 Much of the underlying infrastructure and interface is the same for each
-operator. The user selects a series of seed locations where curves are
+operator: the user selects a series of seed locations where curves are
 generated, which are then visualized and analyzed.
 
 The ICS allows for the computation of Lagrangian Coherent Structures (LCS)
 using a variety of techniques developed by `George Haller
-<http://georgehaller.com/>`_ and his group at ETH Zürich. For more information,
-see :download:`K. Onu, F. Huhn, & G. Haller, LCS Tool: A Computational platform
-for Lagrangian coherent structures, J. of Computational Science, 7 (2015) 26-36
-<pdfs/lcstool.pdf>`.
+<http://georgehaller.com/>`_ and his group at ETH Zürich. For more information
+on LCS, see :download:`K. Onu, F. Huhn, & G. Haller, LCS Tool: A Computational
+platform for Lagrangian coherent structures, J. of Computational Science, 7
+(2015) 26-36 <pdfs/lcstool.pdf>`.
 
-Many of the terms used in the ICS are familiar to experts in dynamical systems,
-but may be new to many users. The user can refer to a :download:`glossary
+Many of the terms used in the ICS are familiar to experts in dynamical systems
+but may be new to many users. Users can refer to a :download:`glossary
 <pdfs/terms_glossary.pdf>` sepcific to dynamical systems and can reference
 VisIt_'s :ref:`Glossary` for some terms that are specific to VisIt_'s ICS. Any
 additional terms can be defined through a simple online search.
@@ -44,14 +44,16 @@ Parameters
 Common to all ICS operators is a four tab GUI: Source, Integration,
 Appearance, and Advanced (the Poincaré operator also has an Analysis tab).
 These tabs contain many functions that are common across all four operators.
-The following is a description of those common features. Please note: on a mac
-system, the contents of the Source and Integration tabs are combined into a
-single Integration tab.
+The following is a description of those common features.
+
+.. note:
+    On MacOS, the contents of the Source and Integration tabs are combined into
+    a single Integration tab.
 
 Source
 ^^^^^^
 
-The set of points to seed the integral curves. See specific operator for
+The set of points that seed the integral curves. See specific operator for
 details.
 
 .. _common ICS field:
@@ -63,7 +65,7 @@ Sets the field type so that the native elements are used when interpolating the
 vector fields. Each operator provides the following options:
 
 Default
-    Use VisIt's native VTK mesh structure to perform linear interpolation on
+    Use VisIt_'s native VTK mesh structure to perform linear interpolation on
     the vector field.
     
 Flash
@@ -71,7 +73,7 @@ Flash
 
     * Constant - A constant multiple applied to the velocity.
     * Velocity - When combined with Leap-Frog integration, this sets the
-    initial velocity used in the integration.
+      initial velocity used in the integration.
    
 M3D-C1 2D
     Evaluates the 3D magnetic field via a 2D poloidal 6th order polynomial.
@@ -94,8 +96,7 @@ Nektar++
         
 NIMROD
     Evaluates the 3D magnetic field via a 2D poloidal 3rd order Lagrange-type
-    element and 1D toroidal finite Fourier series element (future
-    implementation).
+    element and 1D toroidal finite Fourier series element.
 
 .. _common ICS integration:
 
@@ -146,8 +147,8 @@ details.
 Appearance
 ^^^^^^^^^^
 
-Specify appearance settings for the curves. See specific operator for details
-on extra settings.
+Specify appearance settings for the curves. See each operator for varied
+settings.
 
 .. _common ICS streamlines:
 
@@ -163,9 +164,7 @@ from the vector field at each new time step. Pathline options are:
     
 Override starting time
     Instead of starting with the current time step, utilize another time for
-    the start time. Parameters are:
-   
-    * Time - new starting time.
+    the start time.
       
 Interpolation over time
     Interpolate the integral curve with a static mesh for all time or with a
@@ -190,7 +189,7 @@ Parallelize over curves
     Distribute the curves between the processors. Parameters are:
 
     * Domain cache size - number of blocks to hold in memory for level of
-      details (LOD). 
+      details. 
    
 Parallelize over domains
     Distribute the domains between the processors. Parameters are:
@@ -199,23 +198,18 @@ Parallelize over domains
       communication occurs. 
    
 Parallelize over curves and domains
-    Distribute the curves and domains between the processors. Parameters are:
- 
-    * Communication threshold - number of integral curve to process before
-      communication occurs. 
-    * Domain cache size - number of blocks to hold in memory for level of
-      details (LOD). 
-    * Work group size - master slave also (currently disabled). 
+    Distribute both the curves and domains between the processors.
    
-Have VisIt select the best algorithm
-    VisIt automagically selects the best parallelization algorithm.
+Have VisIt_ select the best algorithm
+    VisIt_ automagically selects the best parallelization algorithm.
 
 .. _common ICS warnings:
 
 Warnings
 """"""""
 
-Alert for various conditions that may occur during the integration.
+Alerts for various conditions that may occur during the integration or
+analysis.
 
 Issue warning when the maximum number of steps is reached
     The maximum number of steps limits run-a-way integration.
