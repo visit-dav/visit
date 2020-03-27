@@ -35,14 +35,15 @@
 //   Alister Maguire, Wed Oct 16 08:41:57 MST 2019
 //   Added dataOriginAvail and includeDataOrigin argument.
 //
+//   Alister Maguire, Mon Mar  9 12:03:51 PDT 2020
+//   Removed dataOriginAvail and includeDataOrigin.
+//
 // ****************************************************************************
 
-QvisTimeQueryOptionsWidget::QvisTimeQueryOptionsWidget(QWidget *parent,
-    bool includeDataOrigin)
+QvisTimeQueryOptionsWidget::QvisTimeQueryOptionsWidget(QWidget *parent)
     : QGroupBox(parent), GUIBase()
 {
     maxTime = 99;
-    dataOriginAvail = includeDataOrigin;
 
     setCheckable(true);
     setChecked(false);
@@ -65,14 +66,16 @@ QvisTimeQueryOptionsWidget::QvisTimeQueryOptionsWidget(QWidget *parent,
 //   Alister Maguire, Wed Oct 16 08:41:57 MST 2019
 //   Added dataOriginAvail and includeDataOrigin argument.
 //
+//   Alister Maguire, Mon Mar  9 12:03:51 PDT 2020
+//   Removed dataOriginAvail and includeDataOrigin.
+//
 // ****************************************************************************
 
 QvisTimeQueryOptionsWidget::QvisTimeQueryOptionsWidget(const QString & title, 
-    QWidget *parent, bool includeDataOrigin)
+    QWidget *parent)
     : QGroupBox(title, parent), GUIBase()
 {
     maxTime = 99;
-    dataOriginAvail = includeDataOrigin;
 
     setCheckable(true);
     setChecked(false);
@@ -95,6 +98,9 @@ QvisTimeQueryOptionsWidget::QvisTimeQueryOptionsWidget(const QString & title,
 //   Alister Maguire, Wed Oct 16 08:41:57 MST 2019
 //   Added the dataOrigin section to determine whether to use
 //   actual or original data.
+//
+//   Alister Maguire, Mon Mar  9 12:03:51 PDT 2020
+//   Removed dataOrigin section.
 //
 // ****************************************************************************
 
@@ -153,40 +159,6 @@ QvisTimeQueryOptionsWidget::CreateWindowContents()
     stride->setValue(1);
     stride->setButtonSymbols(QAbstractSpinBox::PlusMinus);
     gLayout->addWidget(stride, 2, 1);
-
-    //
-    // For now, we only want to include the data origin when it's
-    // been asked for.
-    //
-    if (dataOriginAvail)
-    {
-        //
-        // Data origin.
-        //
-        dataOriginBox = new QGroupBox();
-        dataOriginLabel = new QLabel(tr("Data options:"));
-        gLayout->addWidget(dataOriginLabel, 3, 0);
-        gLayout->addWidget(dataOriginBox, 3, 1);
-        QVBoxLayout *vcdLayout = new QVBoxLayout(dataOriginBox);
-        QGridLayout *gcdLayout = new QGridLayout();
-        gcdLayout->setMargin(0);
-        vcdLayout->addLayout(gcdLayout);
-
-        dataOriginType = new QButtonGroup();
-        QRadioButton *ad = new QRadioButton(tr("Original Data"));
-        dataOriginType->addButton(ad, 0);
-        QRadioButton *od = new QRadioButton(tr("Actual Data"));
-        od->setChecked(true);
-        dataOriginType->addButton(od, 1);
-        gcdLayout->addWidget(ad, 0, 0);
-        gcdLayout->addWidget(od, 0, 1);
-    }
-    else
-    {
-        dataOriginBox = NULL;
-        dataOriginLabel = NULL;
-        dataOriginType = NULL;
-    }
 }
 
 
@@ -334,6 +306,9 @@ QvisTimeQueryOptionsWidget::SetMax(const int val)
 //
 //   Alister Maguire, Wed Oct 16 08:41:57 MST 2019
 //   Set the use_actual_data flag.
+//
+//   Alister Maguire, Mon Mar  9 12:03:51 PDT 2020
+//   Removed use_actual_data flag. This logic is now handled elsewhere.
 //   
 // ****************************************************************************
 
@@ -344,16 +319,6 @@ QvisTimeQueryOptionsWidget::GetTimeQueryOptions(MapNode &options)
     options["start_time"] = startTime->value();
     options["end_time"] = endTime->value();
     options["stride"] = stride->value();
-
-    if (dataOriginAvail)
-    {
-        options["use_actual_data"] = dataOriginType->checkedId();
-    }
-    else
-    {
-        options["use_actual_data"] = 1;
-    }
-
     return true;
 }
 

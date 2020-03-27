@@ -22,7 +22,6 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <Expression.h>
-#include <ExpressionList.h>
 #include <DebugStream.h>
 #include <stdlib.h>
 
