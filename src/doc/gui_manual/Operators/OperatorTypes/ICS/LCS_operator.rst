@@ -60,7 +60,7 @@ Appearance
 ^^^^^^^^^^
 
 The appearance tab specifies how the LCS's will be rendered. In addition to the
-:ref:`common_ICS_appearance` attributes common to all ICS operators, the LCS
+:ref:`common ICS appearance` attributes common to all ICS operators, the LCS
 operator supports the following attributes.
 
 Seed Generation
