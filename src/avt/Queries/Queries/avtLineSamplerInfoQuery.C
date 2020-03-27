@@ -7,12 +7,16 @@
 // ************************************************************************* //
 
 #include <avtLineSamplerInfoQuery.h>
+
+#include <vtkCellArray.h>
+#include <vtkPolyData.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
+#include <vtkCellArrayIterator.h>
+
 #include <avtDatasetExaminer.h>
 #include <avtParallel.h>
-#include <vtkPolyData.h>
-#include <vtkPoints.h>
-#include <vtkPointData.h>
-#include <vtkCellArray.h>
+
 #include <NonQueryableInputException.h>
 #ifdef PARALLEL
 #include <mpi.h>
@@ -250,10 +254,6 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
     
     vtkPolyData *ds = (vtkPolyData *) data;
     vtkPoints *points = ds->GetPoints();
-    vtkCellArray *vertices = ds->GetVerts();
-    vtkIdType *verts = vertices->GetPointer();
-    vtkCellArray *lines = ds->GetLines();
-    vtkIdType *segments = lines->GetPointer();
 
     float *scalar =
       (float *) data->GetPointData()->GetScalars()->GetVoidPointer(0);
@@ -261,17 +261,17 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
     double pt[3] = {0,0,0};
     double p0[3] = {0,0,0};
 
-    vtkIdType *vertPtr = verts;
 
     if ( ds->GetNumberOfVerts() > 0 )
     {
+      auto verts = vtk::TakeSmartPointer(ds->GetVerts()->NewIterator());
       std::vector<float> steps;
         
-      for (int i=0; i<ds->GetNumberOfVerts(); i++)
+      for (verts->GoToFirstCell(); !verts->IsDoneWithTraversal(); verts->GoToNextCell());
       {
-        int nPts = *vertPtr;  // = 1 for a vertex
-        vertPtr++; //Now segptr points at vtx0.
-
+        vtkIdType nPts;  // = 1 for a vertex
+        const vtkIdType *vertPtr; 
+        verts->GetCurrentCell(nPts, vertPtr);
         points->GetPoint(vertPtr[0], pt);
       
         if (dumpCoordinates)
@@ -286,8 +286,6 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
           float s = scalar[vertPtr[0]];
           steps.push_back(s);
         }
-
-        vertPtr += nPts;
       }
 
       lsData.push_back(0.0); // No cord length as individual points
@@ -299,17 +297,21 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
       }
     }
     
-    vtkIdType *segPtr = segments;
 
-    for (int i=0; i<ds->GetNumberOfLines(); i++)
+    if ( ds->GetNumberOfLines() > 0 )
     {
-        int nPts = *segPtr;
-        segPtr++; //Now segptr points at vtx0.
+      auto lines = vtk::TakeSmartPointer(ds->GetLines()->NewIterator());
+        
+      for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell());
+      {
+        vtkIdType nPts;
+        const vtkIdType *segPtr; 
+        lines->GetCurrentCell(nPts, segPtr);
         
         float cordLength = 0.0;
         std::vector<float> steps;
         
-        for (int j = 0; j < nPts; j++)
+        for (vtkIdType j = 0; j < nPts; j++)
         {
             points->GetPoint(segPtr[j], pt);
 
@@ -347,7 +349,6 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
             lsData.push_back( (float) (nPts) );
             lsData.insert( lsData.end(), steps.begin(), steps.end() );
         }
-
-        segPtr += nPts;
+      }
     }
 }

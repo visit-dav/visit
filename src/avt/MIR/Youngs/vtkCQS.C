@@ -164,8 +164,8 @@ int vtkCQS::RequestData(vtkInformation *request,
                 int nf = cell->GetNumberOfFaces();
                 for(int f=0;f<nf;f++)
                 {
-                    int* faceIds = 0;
-                    int nfp = cell->GetFace(f)->GetNumberOfPoints();
+                    const vtkIdType *faceIds = 0;
+                    vtkIdType nfp = cell->GetFace(f)->GetNumberOfPoints();
                     cell3d->GetFacePoints(f,faceIds);
                     if( nfp == 3 ) // face is a triangle
                     {

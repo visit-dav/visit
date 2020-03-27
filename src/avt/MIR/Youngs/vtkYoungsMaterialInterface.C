@@ -491,8 +491,7 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
             cell.nEdges = vtkcell->GetNumberOfEdges();
             for(int i=0;i<cell.nEdges;i++)
             {
-                int tmp[4];
-                int * edgePoints = tmp;
+                const vtkIdType *edgePoints = nullptr;
                 cell3D->GetEdgePoints(i,edgePoints);
                 cell.edges[i][0] = edgePoints[0];
                 DBG_ASSERT( cell.edges[i][0]>=0 && cell.edges[i][0]<cell.np );
@@ -942,8 +941,7 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
                             nextCell.nEdges = vtkcell->GetNumberOfEdges();
                             for(int i=0;i<nextCell.nEdges;i++)
                             {
-                                int tmp[4];
-                                int * edgePoints = tmp;
+                                const vtkIdType * edgePoints = nullptr;
                                 cell3D->GetEdgePoints(i,edgePoints);
                                 nextCell.edges[i][0] = edgePoints[0];
                                 DBG_ASSERT( nextCell.edges[i][0]>=0 && nextCell.edges[i][0]<nextCell.np );

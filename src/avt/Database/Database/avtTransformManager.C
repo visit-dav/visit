@@ -2456,12 +2456,14 @@ avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
 
     for (int i = 0; i < ugrid->GetNumberOfCells(); i++)
     {
-        vtkIdType nCellPts=0, *cellPts=0;
-        ugrid->GetCellPoints(i, nCellPts, cellPts);
+        vtkIdType nCellPts=0;
+        vtkIdList *cellPts=0;
+        ugrid->GetCellPoints(i, cellPts);
+        nCellPts = cellPts->GetNumberOfIds();
         for (int j = 0; j < nCellPts; j++)
         {
             double pt[3];
-            pts->GetPoint(cellPts[j], pt);
+            pts->GetPoint(cellPts->GetId(j), pt);
             std::map<double, std::map<double, std::map<double, vtkIdType> > >::const_iterator e0it = uniqpts.find(pt[0]);
             if (e0it == uniqpts.end())
                 continue;
@@ -2471,9 +2473,9 @@ avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
             std::map<double, vtkIdType>::const_iterator e2it = e1it->second.find(pt[2]);
             if (e2it == e1it->second.end())
                 continue;
-            cellPts[j] = e2it->second;
+            cellPts->SetId(j, e2it->second);
         }
-        ugrid->ReplaceCell(i, nCellPts, cellPts);
+        ugrid->ReplaceCell(i, nCellPts, cellPts->GetPointer(0));
     }
 
     pts->Initialize();

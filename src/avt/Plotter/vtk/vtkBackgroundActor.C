@@ -9,6 +9,7 @@
 #include <vtkMatrix4x4.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkViewport.h>
 
 

@@ -17,6 +17,7 @@
 #include <ref_ptr.h>
 
 class vtkDataSet;
+class vtkCellArrayIterator;
 
 struct avtInterpolationWeight
 {
@@ -78,8 +79,7 @@ class IVP_API avtCellLocator
                     avtInterpolationWeights* iw ) const;
 
     vtkDataSet*    dataSet;
-    vtkIdType*     cellIdxPtr;
-    vtkIdType*     cellLocPtr;
+    vtkCellArrayIterator *cellPtr;
     int*           strDimPtr;
     bool           normal2D;
     bool           normal3D;

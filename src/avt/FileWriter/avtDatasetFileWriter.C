@@ -14,6 +14,7 @@
 #include <vtkAppendFilter.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkDataSetWriter.h>
@@ -1118,10 +1119,12 @@ SortLineSegments(vtkPolyData *pd, std::vector< std::vector<int> > &ls)
         seg_list[i] = -1;
     }
 
-    vtkCellArray *lines = pd->GetLines();
-    vtkIdType npts, *ids;
-    for (lines->InitTraversal() ; lines->GetNextCell(npts, ids) ; )
+    auto lines = vtk::TakeSmartPointer(pd->GetLines()->NewIterator());
+    vtkIdType npts;
+    const vtkIdType *ids;
+    for (lines->GoToFirstCell() ; !lines->IsDoneWithTraversal(); lines->GoToNextCell())
     {
+        lines->GetCurrentCell(npts, ids);
         if (npts == 2)
         {
             AddSegment(seg_list, ids[0], ids[1]);

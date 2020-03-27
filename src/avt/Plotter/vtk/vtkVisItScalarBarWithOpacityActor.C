@@ -200,7 +200,8 @@ void vtkVisItScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
 
   for (int i = 0; i < numColors; ++i)
   {
-      unsigned char *rgba, *rgb;
+      const unsigned char *rgba;
+      unsigned char *rgb;
       vtkIdType ptIds[4];
 
       // Compute the next index used for the opacity array.

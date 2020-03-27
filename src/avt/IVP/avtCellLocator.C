@@ -8,6 +8,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
@@ -58,16 +59,14 @@ avtCellLocator::SetDataSet(vtkDataSet *ds)
     dataSet = ds;
     dataSet->Register( NULL );
 
-    cellIdxPtr = NULL;
-    cellLocPtr = NULL;
+    cellPtr = NULL;
     strDimPtr  = NULL;
     normal2D = false;
     normal3D = false;
 
     if( vtkUnstructuredGrid* ug = vtkUnstructuredGrid::SafeDownCast( dataSet ) )
     {
-        cellIdxPtr = ug->GetCells()->GetPointer();
-        cellLocPtr = ug->GetCellLocationsArray()->GetPointer(0);
+        cellPtr = vtk::TakeSmartPointer(ug->GetCells()->NewIterator());
     }
     else if( vtkStructuredGrid* sg = vtkStructuredGrid::SafeDownCast( dataSet ) )
     {
@@ -132,8 +131,7 @@ avtCellLocator::ReleaseDataSet()
         dataSet->Delete();
         dataSet = NULL;
 
-        cellIdxPtr = NULL;
-        cellLocPtr = NULL;
+        cellPtr = NULL;
         strDimPtr  = NULL;
         normal2D = false;
         normal3D = false;
@@ -253,9 +251,9 @@ void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids,
 
     // copy cell indices
 
-    if( cellLocPtr )
+    if( cellPtr )
     {
-        vtkIdType* direct = cellIdxPtr + cellLocPtr[cellid];
+        vtkIdType* direct = cellPtr->GetCellAtId(cellid)->GetPointer(0);
 
         npts = *(direct++);
 

@@ -1301,7 +1301,8 @@ void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
   //
   //polygons & cell colors for color bar
   //
-  unsigned char *rgba, *rgb;
+  const unsigned char *rgba = nullptr;
+  unsigned char *rgb;
   vtkIdType ptIds[4];
   double *lutRange = this->LookupTable->GetRange();
   double tMin = lutRange[0];
@@ -1383,7 +1384,7 @@ vtkVisItScalarBarActor::ShouldCollapseDiscrete(void)
   if (this->definedLabels.size() == 1)
     return false;
 
-  unsigned char *rgba;
+  const unsigned char *rgba = nullptr;
   unsigned char  rgba_base[4];
   LevelColorMap::iterator it;
   if ((it = this->labelColorMap.find(this->definedLabels[0])) != 

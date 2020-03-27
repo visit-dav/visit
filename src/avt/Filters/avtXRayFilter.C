@@ -19,6 +19,7 @@
 #include <vtkAppendPolyData.h>
 #include <vtkCell.h>
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkCharArray.h>
 #include <vtkDataSet.h>
@@ -1435,12 +1436,9 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
         vtkPoints *points = ugrid->GetPoints();
 
         vtkUnsignedCharArray *cellTypes = ugrid->GetCellTypesArray();
-        vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
-        vtkCellArray *cells = ugrid->GetCells();
+        auto cells = vtk::TakeSmartPointer(ugrid->GetCells()->NewIterator());
 
-        vtkIdType *nl = cells->GetPointer();
         unsigned char *ct = cellTypes->GetPointer(0);
-        vtkIdType *cl = cellLocations->GetPointer(0);
 
         for (i = 0 ; i < linesForThisPass ; i++)
         {
@@ -1480,7 +1478,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 int nInter = 0;
                 double inter[100];
 
-                vtkIdType *ids = &(nl[cl[iCell]+1]);
+                vtkIdType *ids = cells->GetCellAtId(iCell)->GetPointer(0);
                 if (ct[iCell] == VTK_HEXAHEDRON)
                 {
                     avtXRayFilter_GetCellPointsMacro(8); 
@@ -3376,10 +3374,8 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
         vtkPoints *points = ugrid->GetPoints();
 
         vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
-        vtkCellArray *cells = ugrid->GetCells();
+        auto cells = vtk::TakeSmartPointer(ugrid->GetCells()->NewIterator());
 
-        vtkIdType *nl = cells->GetPointer();
-        vtkIdType *cl = cellLocations->GetPointer(0);
 
         double p0[3], p1[3], p2[3], p3[3], p4[3], p5[3], p6[3], p7[3];
         for (size_t i = 0; i < cells_matched.size(); i++)
@@ -3387,7 +3383,7 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
             if (line_id[i] == strip_id)
             {
                 int iCell = cells_matched[i];
-                vtkIdType *ids = &(nl[cl[iCell]+1]);
+                vtkIdType *ids = cells->GetCellAtId(iCell)->GetPointer(0);
                 avtXRayFilter_GetCellPointsMacro(8);
                 fprintf(f, "%g %g %g\n", p0[0], p0[1], p0[2]);
                 fprintf(f, "%g %g %g\n", p1[0], p1[1], p1[2]);

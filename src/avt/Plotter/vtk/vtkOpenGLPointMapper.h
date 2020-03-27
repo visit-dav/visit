@@ -33,8 +33,8 @@ protected:
   vtkTimeStamp PHelperUpdateTime;
 
 private:
-  vtkOpenGLPointMapper(const vtkOpenGLPointMapper&) VTK_DELETE_FUNCTION;
-  void operator=(const vtkOpenGLPointMapper&) VTK_DELETE_FUNCTION;
+  vtkOpenGLPointMapper(const vtkOpenGLPointMapper&) = delete;
+  void operator=(const vtkOpenGLPointMapper&) = delete;
 
 };
 

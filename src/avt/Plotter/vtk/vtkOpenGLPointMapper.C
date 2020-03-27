@@ -31,16 +31,16 @@ public:
   static vtkImposterHelper* New();
   vtkTypeMacro(vtkImposterHelper, vtkOpenGLSphereMapper)
 
-  vtkUnsignedCharArray *MapScalars(double alpha) VTK_OVERRIDE;
+  vtkUnsignedCharArray *MapScalars(double alpha) override;
 
 protected:
   vtkImposterHelper();
-  ~vtkImposterHelper() VTK_OVERRIDE;
+  ~vtkImposterHelper() override;
 
 
 private:
-  vtkImposterHelper(const vtkImposterHelper&) VTK_DELETE_FUNCTION;
-  void operator=(const vtkImposterHelper&)    VTK_DELETE_FUNCTION;
+  vtkImposterHelper(const vtkImposterHelper&) = delete;
+  void operator=(const vtkImposterHelper&) = delete;
 
 };
 
@@ -101,12 +101,11 @@ public:
 
 protected:
   vtkPointHelper();
-  ~vtkPointHelper() VTK_OVERRIDE;
+  ~vtkPointHelper() override;
 
 private:
-  vtkPointHelper(const vtkPointHelper&)
-    VTK_DELETE_FUNCTION;
-  void operator=(const vtkPointHelper&) VTK_DELETE_FUNCTION;
+  vtkPointHelper(const vtkPointHelper&)=delete;
+  void operator=(const vtkPointHelper&)=delete;
 };
 
 //-----------------------------------------------------------------------------

@@ -18,6 +18,7 @@
 #include <vtkRenderer.h>
 #include <vtkTextActor.h>
 #include <vtkTextProperty.h>
+#include <vtkUnsignedCharArray.h>
 #include <avtVector.h>
 
 #define LINE_SIZE 1.

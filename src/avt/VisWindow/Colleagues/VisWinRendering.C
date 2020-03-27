@@ -8,18 +8,21 @@
 
 #include <VisWinRendering.h>
 
+#include <vtkCallbackCommand.h>
 #include <vtkCullerCollection.h>
-#include <vtkImageData.h>
-#include <vtkPointData.h>
 #include <vtkFloatArray.h>
+#include <vtkImageData.h>
+#include <vtkInformation.h>
+#include <vtkInteractorStyle.h>
 #include <vtkMapper.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
-#include <vtkInteractorStyle.h>
+#include <vtkSmartPointer.h>
 #include <vtkToolkits.h>
-#include <vtkInformation.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <RenderingAttributes.h>
 
@@ -33,8 +36,6 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
-#include <vtkCallbackCommand.h>
-#include <vtkSmartPointer.h>
 #include <vtk_glew.h>
 
 // We'd do it another way in VTK8

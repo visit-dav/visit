@@ -9,6 +9,7 @@
 #include <avtDatasetVerifier.h>
 
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
@@ -378,25 +379,15 @@ void
 avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts, vtkCellArray *arr, 
                                       const char *name)
 {
-    int numEntries = arr->GetNumberOfConnectivityEntries();
-    vtkIdType *start_ptr = arr->GetPointer();
-    vtkIdType *ptr       = start_ptr;
-    int ncells = arr->GetNumberOfCells();
-    for (int i = 0 ; i < ncells ; i++)
+    auto cellIter = vtk::TakeSmartPointer(arr->NewIterator());
+    for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal(); cellIter->GoToNextCell())
     {
-        int npts = *ptr;
-        if ((ptr+npts-start_ptr) > numEntries)
+        vtkIdType npts;
+        const vtkIdType *ptIds;
+        cellIter->GetCurrentCell(npts, ptIds);
+        for (vtkIdType j = 0 ; j < npts ; j++)
         {
-            char msg[1024];
-            sprintf(msg, "In domain %d, connectivity values go beyond declared "
-                         "allocation.  Unrecoverable error.", dom);
-            avtCallback::IssueWarning(msg);
-            return;
-        }
-        ptr++;
-        for (int j = 0 ; j < npts ; j++)
-        {
-            if (*ptr < 0 || *ptr >= nTotalPts)
+            if (ptIds[j] < 0 || ptIds[j] >= nTotalPts)
             {
                 if (!issuedSafeModeWarning)
                 {
@@ -405,13 +396,11 @@ avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts, vtkCellArray *arr,
                                  "has a bad value. Cell %d references point %lld "
                                  "and the maximum value is %d.  Note that "
                                  "only the first error encountered is reported.",
-                            dom, name, i, *ptr, nTotalPts);
+                            dom, name, cellIter->GetCurrentCellId(), ptIds[j], nTotalPts);
                     avtCallback::IssueWarning(msg);
                     issuedSafeModeWarning = true;
                 }
-                *ptr = 0;
             }
-            ptr++;
         }
     }
 }

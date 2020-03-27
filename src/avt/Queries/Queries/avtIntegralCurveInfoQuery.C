@@ -9,11 +9,14 @@
 #include <avtIntegralCurveInfoQuery.h>
 #include <avtDatasetExaminer.h>
 #include <avtParallel.h>
-#include <vtkDoubleArray.h>
-#include <vtkPolyData.h>
-#include <vtkPoints.h>
-#include <vtkPointData.h>
+
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
+#include <vtkPolyData.h>
+
 #include <NonQueryableInputException.h>
 #ifdef PARALLEL
 #include <mpi.h>
@@ -296,19 +299,20 @@ avtIntegralCurveInfoQuery::Execute(vtkDataSet *data, const int chunk)
 
     vtkPolyData *ds = (vtkPolyData *) data;
     vtkPoints *points   = ds->GetPoints();
-    vtkCellArray *lines = ds->GetLines();
-    vtkIdType *segptr = lines->GetPointer();
     vtkDoubleArray *scalar =
       (vtkDoubleArray *) data->GetPointData()->GetArray("colorVar");
 
-    unsigned int nLines = ds->GetNumberOfLines();
+    vtkIdType nLines = ds->GetNumberOfLines();
     double pt0[3], pt1[3];
-    
-    for (unsigned int i=0; i<nLines; ++i)
+   
+    if (nLines > 0)
     {
-        unsigned int nPts = *segptr;
-        ++segptr;  // Segptr now points to the first vertex index.
-
+      auto lines = vtk::TakeSmartPointer(ds->GetLines()->NewIterator());
+      for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell())
+      {
+        vtkIdType nPts;
+        const vtkIdType *segptr; 
+        lines->GetCurrentCell(nPts, segptr);
         double arcLength = 0.0;
         std::vector<double> steps;
         
@@ -318,7 +322,7 @@ avtIntegralCurveInfoQuery::Execute(vtkDataSet *data, const int chunk)
         slData.push_back(pt0[1]);
         slData.push_back(pt0[2]);
 
-        for (unsigned int j=0; j<nPts; ++j)
+        for (vtkIdType j=0; j<nPts; ++j)
         {
             points->GetPoint(segptr[j], pt1);
             arcLength += (avtVector( pt1 ) - avtVector( pt0 )).length();
@@ -355,7 +359,6 @@ avtIntegralCurveInfoQuery::Execute(vtkDataSet *data, const int chunk)
             slData.push_back((double)(nPts));
             slData.insert(slData.end(), steps.begin(), steps.end());
         }
-
-        segptr += nPts;
+      }
     }
 }

@@ -501,7 +501,8 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
             }
             else
             {
-                vtkIdType *pts, npts;
+                const vtkIdType *pts;
+                vtkIdType npts;
                 ugrid->GetCellPoints(i, npts, pts);
                 out_pd->InsertNextCell(ugrid->GetCellType(i), npts, pts);
             }

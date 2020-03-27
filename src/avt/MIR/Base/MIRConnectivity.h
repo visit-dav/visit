@@ -24,8 +24,9 @@ class vtkDataSet;
 // ****************************************************************************
 struct MIRConnectivity
 {
+    vtkIdType *conn_offsets;
     vtkIdType *connectivity;
-    int  ncells;
+    vtkIdType  ncells;
     int *celltype;
     int *cellindex;
        
