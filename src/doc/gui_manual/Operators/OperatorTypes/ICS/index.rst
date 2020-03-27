@@ -50,11 +50,13 @@ The following is a description of those common features.
     On MacOS, the contents of the Source and Integration tabs are combined into
     a single Integration tab.
 
+.. _common ICS source:
+
 Source
 ^^^^^^
 
-The set of points that seed the integral curves. See specific operator for
-details.
+The set of points that seed the integral curves. See each operator for varied
+settings.
 
 .. _common ICS field:
 

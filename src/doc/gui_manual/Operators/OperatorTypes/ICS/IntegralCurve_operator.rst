@@ -9,6 +9,10 @@ seed point through a vector field without any analysis of its structure.
 Source
 ^^^^^^
 
+The set of points that seed the integral curves. In addition to the
+:ref:`common ICS source` attributes common to all ICS operators, the
+Integral Curve operator supports the following attributes:
+
 Source type
 """""""""""
 
@@ -49,11 +53,6 @@ either lie along the edges of the planar region or within the bounded
 rectangle, as shown below.
 
 .. figure:: images/boundary_interior_sampling.png
-    
-Field
-"""""
-
-See :ref:`common ICS field` attributes that are common to all ICS operators.
 
 Integration
 ^^^^^^^^^^^
@@ -144,11 +143,11 @@ several criteria and within a desired time range.
 Advanced
 ^^^^^^^^
 
+In addition to the :ref:`common ICS advanced` attributes common to all ICS
+operators, the Integral Curve operator supports the following attributes:
+
 Warnings
 """"""""
-
-In addition to the :ref:`common ICS warnings` common to all ICS operators, the
-Integral Curve operator supports the following warnings:
 
 Issue warning if the advection limit is not reached
     If the maximum time or distance is not reached, issue a warning.

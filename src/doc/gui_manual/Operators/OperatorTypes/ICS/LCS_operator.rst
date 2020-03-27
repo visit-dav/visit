@@ -17,20 +17,21 @@ equivalent definition, the dispersion distance is the maximal Eigen value. Thus
 when the maximal Eigen value is greater than the specified dispersion factor,
 then the exponent is calculated.
 
-For more details see the following paper: `A Comparison of Finite-Time and
-Finite-Size Lyapunov Exponents by Ronald Peikert, Armin Pobitzer, Filip Sadlo
-and Benjamin Schindler,
-<http://www.scivis.ethz.ch/publications/pdf/2014/peikert2014comparison.pdf>`_
+More details can be found :download:`in this paper <pdfs/peikert2014fsle.pdf>`.
 
 Source
 ^^^^^^
+
+The set of points that seed the integral curves that reveal the Lagrangian
+Coherent Structures. In addition to the :ref:`common ICS source` attributes
+common to all ICS operators, the LCS operator supports the following attributes:
 
 Source types
 """"""""""""
 
 The source type controls how the seeds for curves are created. The user can
 seed the integral curves using the native mesh or define a rectilinear grid.
-See points are the nodes of the mesh.
+The nodes of the mesh are the seed points.
 
 Auxilary Grid
 """""""""""""
@@ -43,17 +44,12 @@ the native mesh, so it gives more accurate results for higher order elements.
 For simulation flows, using the auxiliary grid for eigenvalue calculations
 gives better results.
 
-Field
-"""""
-
-See :ref:`common ICS field` attributes that are common to all ICS operators.
-
 Integration
 ^^^^^^^^^^^
 
 Specify settings for numerical integrators. In addition to the
 :ref:`common ICS integration` attributes common to all ICS operators, the LCS
-operator supports the following attributes.
+operator supports the following attributes:
 
 Integration Direction
 """""""""""""""""""""
@@ -63,7 +59,7 @@ Sets the integration direction through time: either forward or backward.
 Appearance
 ^^^^^^^^^^
 
-The appearance tab specifies how the LCS will be rendered. In addition to the
+The appearance tab specifies how the LCS's will be rendered. In addition to the
 :ref:`common_ICS_appearance` attributes common to all ICS operators, the LCS
 operator supports the following attributes.
 
@@ -71,25 +67,16 @@ Seed Generation
 """""""""""""""
 
 Filter the number of seeds generated from the mesh (either native or
-rectilinear, see above). There are various self-descriptive filtering options.
-
-Streamlines vs Pathlines
-""""""""""""""""""""""""
-
-See :ref:`common ICS streamlines` attributes that are common to all ICS
-operators.
+rectilinear). There are various self-descriptive filtering options.
 
 Advanced
 ^^^^^^^^
 
-The LCS Operator shares the same :ref:`common ICS parallel` attributes as all
-the other ICS operators.
+In addition to the :ref:`common ICS advanced` attributes common to all ICS
+operators, the LCS Operator supports the following attributes:
 
 Warnings
 """"""""
-
-In addition to the :ref:`common ICS warnings` common to all ICS operators, the
-LCS Operator supports the following warnings.
 
 Issue warning if the advection limit is not reached
     If the maximum time or distance is not reached, issue a warning.
