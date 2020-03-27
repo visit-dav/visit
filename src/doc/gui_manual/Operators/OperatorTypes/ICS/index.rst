@@ -58,8 +58,6 @@ Source
 The set of points that seed the integral curves. See each operator for varied
 settings.
 
-.. _common ICS field:
-
 Field
 """""
 
@@ -112,24 +110,18 @@ Integration
 Specify settings for the numerical integrator. See each operator for varied
 settings.
 
-.. _common ICS integrator:
-
 Integrator
 """"""""""
 
 Sets the integration scheme. There are various options common among numerical
 integration packages, such as *Leap Frog* and *Runge-Kutta*. More details on
 the different schemes can be found through a simple online search.
-       
-.. _common ICS step length:
 
 Step Length
 """""""""""
 
 Most integrators use a fixed step length. Runge-Kutta-Dormand-Prince (RKDP)
 uses adaptive step size, which can be clipped by the step length.
-
-.. _common ICS tolerances:
 
 Tolerances
 """"""""""
@@ -156,8 +148,6 @@ Appearance
 Specify appearance settings for the curves. See each operator for varied
 settings.
 
-.. _common ICS streamlines:
-
 Streamlines vs Pathlines
 """"""""""""""""""""""""
 
@@ -183,8 +173,6 @@ Interpolation over time
 Advanced
 ^^^^^^^^
 
-.. _common ICS parallel:
-
 Parallel integration
 """"""""""""""""""""
 
@@ -208,8 +196,6 @@ Parallelize over curves and domains
    
 Have VisIt_ select the best algorithm
     VisIt_ automagically selects the best parallelization algorithm.
-
-.. _common ICS warnings:
 
 Warnings
 """"""""
