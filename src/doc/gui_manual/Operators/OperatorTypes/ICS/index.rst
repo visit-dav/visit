@@ -1,14 +1,14 @@
 Integral Curve System
 =====================
 
-Within the VisIt_ infrastructure is the ability to generate integral curves:
-streamlines and pathlines. An integral curve is a curve that begins at a seed
+Within the VisIt_ infrastructure is the ability to generate integral curves. An
+integral curve is a curve that begins at a seed
 location and is tangent at every point in a vector field. It is computed by
-numerical integration of the seed location through the vector field. The image
-below shows integral curves through the magnetic field of a core-collapse
-supernova simulation from the GenASiS code.
+numerical integration of the seed location through the vector field. For
+example, the image below shows integral curves through the magnetic field of a
+core-collapse supernova simulation from the GenASiS code.
 
-IMAGE HERE
+.. figure:: images/astro-streamlines.png
 
 The generation of the curves forms the basis of VisIt_'s Integral Curve
 System (ICS), made up of the :ref:`Integral Curve operator`, the :ref:`LCS
