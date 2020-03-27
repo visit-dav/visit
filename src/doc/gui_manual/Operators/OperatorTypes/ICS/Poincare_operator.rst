@@ -10,7 +10,7 @@ iterative, starting with a minimum number of puncture points through a Poincaré
 section and continuing until the toroidal and poloidal windings are known or
 the maximum number of punctures is reached. If an accurate winding pair is
 determined, then the puncture points are connected based on it. For more
-information, refer to the following resources.
+information, refer to the following resources:
 
 :download:`A.R. Sanderson, G. Chen, X. Tricoche, E. Cohen. “Understanding Quasi-Periodic
 Fieldlines and Their Topology in Toroidal Magnetic Fields,” In Topological
@@ -24,6 +24,10 @@ Visualization and Computer Graphics, Vol. 16, No. 4, pp. 1431-1440. 2010. <pdfs/
 
 Source
 ^^^^^^
+
+The set of points that seed the integral curves that reveal the Poincaré section.
+In addition to the :ref:`common ICS source` attributes common to all ICS
+operators, the Poincaré operator supports the following attributes:
 
 Source Type
 """""""""""
@@ -43,11 +47,6 @@ Point List
     converted from Cartesian to Cylindrical coordinates. In the 2D case, phi
     will be set to 0. 
 
-Field
-"""""
-
-See :ref:`common ICS field` attributes that are common to all ICS operators.
-
 Integration
 ^^^^^^^^^^^
 
@@ -58,10 +57,10 @@ Poincaré operator supports the following attributes.
 Punctures
 """""""""
 
-While integrating the streamline to be used the for Poincaré plot, the user has
-the option to require a minimum number of initial puncture points for the
-analysis. Similarly the user may limit the integration in case of run-a-way
-integral curve that can not be fully analyzed.
+While integrating the integral curve to be used the for Poincaré plot, the user
+has the option to require a minimum number of initial punctures through the
+Poincaré section for the analysis. The user may limit the integration
+in case of run-a-way integral curve that can not be fully analyzed.
 
 Puncture plot type
     The type of the puncture plot. Options are:
@@ -227,7 +226,7 @@ Display
 """""""
 
 Allows the users to display the results in a single plane or multiple planes.
-Further, one can reconstruct the 3D surface that the curve lies on.
+Further, one can reconstruct the 3D surface that the curves lies on.
 
 Overlapping Curve Sections
 """"""""""""""""""""""""""
@@ -254,14 +253,8 @@ Smooth
 .. danger:
     Smooth is experimental and does not always work.
 
-Streamlines vs Pathlines
-""""""""""""""""""""""""
-
-See :ref:`common ICS streamlines` attributes that are common to all ICS
-operators.
-
 Advanced
 ^^^^^^^^
 
-See :ref:`common ICS advanced` tab attributes that are common to all ICS
+See :ref:`common ICS advanced` attributes that are common to all ICS
 operators.
