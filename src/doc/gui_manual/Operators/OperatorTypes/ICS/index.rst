@@ -1,7 +1,7 @@
 Integral Curve System
 =====================
 
-Within the _VisIt infrastructure is the ability to generate integral curves:
+Within the VisIt_ infrastructure is the ability to generate integral curves:
 streamlines and pathlines. An integral curve is a curve that begins at a seed
 location and is tangent at every point in a vector field. It is computed by
 numerical integration of the seed location through the vector field. The image
@@ -10,7 +10,7 @@ supernova simulation from the GenASiS code.
 
 IMAGE HERE
 
-The generation of the curves forms the basis of _VisIt's Integral Curve
+The generation of the curves forms the basis of VisIt_'s Integral Curve
 System (ICS), made up of the :ref:`Integral Curve operator`, the :ref:`LCS
 operator`, the :ref:`Limit Cycle operator`, and the :ref:`Poincare operator`.
 Much of the underlying infrastructure and interface is the same for each
@@ -27,7 +27,7 @@ for Lagrangian coherent structures, J. of Computational Science, 7 (2015) 26-36
 Many of the terms used in the ICS are familiar to experts in dynamical systems,
 but may be new to many users. The user can refer to a :download:`glossary
 <pdfs/terms_glossary.pdf>` sepcific to dynamical systems and can reference
-_VisIt's :ref:`Glossary` for some terms that are specific to _VisIt's ICS. Any
+VisIt_'s :ref:`Glossary` for some terms that are specific to VisIt_'s ICS. Any
 additional terms can be defined through a simple online search.
 
 .. toctree::
