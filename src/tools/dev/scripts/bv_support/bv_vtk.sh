@@ -1080,6 +1080,7 @@ function build_vtk
     vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingAnnotation:STRING=YES"
     vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingFreeType:STRING=YES"
     vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingOpenGL2:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingVolumeOpenGL2:STRING=YES"
     vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_libxml2:STRING=YES"
 
     # Tell VTK where to locate qmake if we're building graphical support. We
