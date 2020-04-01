@@ -46,6 +46,8 @@ class VISIT_VTK_API vtkVisItPolyDataNormals : public vtkPolyDataAlgorithm
     void ExecutePointWithSplitting(vtkPolyData*, vtkPolyData*);
     void ExecuteCell(vtkPolyData *, vtkPolyData*);
 
+    void TransferCellData(vtkPolyData *, vtkPolyData *);
+
     float FeatureAngle;
     bool  Splitting;
     bool  ComputePointNormals;
