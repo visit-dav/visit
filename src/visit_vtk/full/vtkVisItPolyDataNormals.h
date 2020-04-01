@@ -21,6 +21,11 @@ class vtkInformationVector;
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 12, 2003
 //
+//  Modifications:
+//
+//    Alister Maguire, Wed Apr  1 14:49:06 PDT 2020
+//    Added TransferCellData.
+//
 // ****************************************************************************
 class VISIT_VTK_API vtkVisItPolyDataNormals : public vtkPolyDataAlgorithm
 {
