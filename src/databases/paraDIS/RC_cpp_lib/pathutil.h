@@ -3,6 +3,23 @@
 #include "stringutil.h"
 
 #include <limits.h>
+#ifdef _WIN32
+#include <direct.h>
+#define getcwd _getcwd
+#else
+#include <unistd.h>
+#endif
+
+#if defined(PATH_MAX)
+#define PARADIS_PATH_MAX PATH_MAX
+#elif defined(MAXPATHLEN)
+#define PARADIS_PATH_MAX MAXPATHLEN
+#elif defined(MAX_PATH)
+#define PARADIS_PATH_MAX MAX_PATH
+#else
+#define PARADIS_PATH_MAX 16384
+#endif
+
 //===============================================================
 /*!
   Returns the full path to the directory containing the given file or directory, without the trailing "/", unless the result is "/" itself.  
@@ -21,8 +38,8 @@ inline string Dirname(string filename) {
  
   if (dirname[0] != '/')  {
     // need to switch to absolute path
-    char wd[PATH_MAX]; // this is why I hate C programming -- there is no way to be sure about buffer overflows with this kind of crap lingering around
-    char* res = getcwd(wd, PATH_MAX); (void) res;
+    char wd[PARADIS_PATH_MAX]; // this is why I hate C programming -- there is no way to be sure about buffer overflows with this kind of crap lingering around
+    char* res = getcwd(wd, PARADIS_PATH_MAX); (void) res;
 
     string::size_type loc = dirname.find("/");
     if (loc == string::npos) {
