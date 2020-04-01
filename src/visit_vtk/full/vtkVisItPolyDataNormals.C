@@ -16,6 +16,11 @@
 #include <vtkPolyData.h>
 #include <vtkPolygon.h>
 #include <vtkTriangle.h>
+#include <vtkTriangleStrip.h>
+
+#include <vtkPolyDataNormals.h>
+#include <vtkCell.h>
+#include <vtkPoints.h>
 
 
 vtkStandardNewMacro(vtkVisItPolyDataNormals);
@@ -915,88 +920,107 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
 //    Make sure there is one normal for every primitive, not just one normal
 //    for every polygon.
 //
+//    Alister Maguire, Wed Apr  1 13:39:03 PDT 2020
+//    Restructured to properly handle triangle strips.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
 {
-    int  i;
+    //
+    // First, we need to transfer over our cell data.
+    //
+    TransferCellData(input, output);
 
-    // Get all the input and output objects we'll need to reference
-    output->ShallowCopy(input);
+    //
+    // If our input contained triangle strips, we likely
+    // have a new cell count.
+    //
+    int numOutCells = output->GetNumberOfCells();
+    vtkCellArray *outPolys = output->GetPolys();
 
-    vtkPoints    *inPts = input->GetPoints();
+    //
+    // Our cell arrays have a specific ordering: vertices and lines,
+    // polys, and triangle strips (which have now been replaced with
+    // triangles).
+    //
+    int numPrimitivesWithoutNormals = 0;
+    numPrimitivesWithoutNormals     = input->GetVerts()->GetNumberOfCells();
+    numPrimitivesWithoutNormals     = input->GetLines()->GetNumberOfCells();
 
-    int nCells  = input->GetNumberOfCells();
+    //
+    // All of this data can just be copied over.
+    //
+    output->SetPoints(input->GetPoints());
+    output->GetPointData()->CopyNormalsOff();
+    output->GetPointData()->ShallowCopy(input->GetPointData());
+    output->GetFieldData()->ShallowCopy(input->GetFieldData());
 
-    // Create the normals array
+    //
+    // Create our normals array.
+    //
     vtkFloatArray *newNormals;
     newNormals = vtkFloatArray::New();
     newNormals->SetNumberOfComponents(3);
-    newNormals->SetNumberOfTuples(nCells);
+    newNormals->SetNumberOfTuples(numOutCells);
     newNormals->SetName("Normals");
     float *newNormalPtr = (float*)newNormals->GetPointer(0);
 
-    // The verts and lines come before the polys.  So add normals for them.
-    int numPrimitivesWithoutNormals = 0;
-    numPrimitivesWithoutNormals += input->GetVerts()->GetNumberOfCells();
-    numPrimitivesWithoutNormals += input->GetLines()->GetNumberOfCells();
-    for (i = 0 ; i < numPrimitivesWithoutNormals ; i++)
+    //
+    // Add normals for verts and lines.
+    //
+    for (vtkIdType i = 0; i < numPrimitivesWithoutNormals; ++i)
     {
         newNormalPtr[0] = 0.;
         newNormalPtr[1] = 0.;
         newNormalPtr[2] = 1.;
-        newNormalPtr += 3;
+        newNormalPtr   += 3;
     }
 
-    vtkCellArray *inCA  = input->GetPolys();
-    vtkIdType *connPtr = inCA->GetPointer();
-    int nPolys = inCA->GetNumberOfCells();
-    for (i = 0 ; i < nPolys ; i++)
-    {
-        //
-        // Technically, we can always use only the first three vertices, but
-        // it is not a big hit to do the quads better, and it accomodates for
-        // degenerate quads directly.  The code is the same algorithm as
-        // vtkPolygon::ComputeNormal, but changed to make it work better.
-        //
-        int nVerts = *connPtr++;
-        vtkIdType *cell = connPtr;
+    //
+    // Iterative over our newly generated polys, and create normals.
+    //
 
-        double v0[3], v1[3], v2[3];
+    vtkPoints *inPts = input->GetPoints();
+    vtkIdType nPts   = 0;
+    vtkIdType *pts   = NULL;
+    for (outPolys->InitTraversal(); outPolys->GetNextCell(nPts, pts);)
+    {
+        double p0[3], p1[3], p2[3];
         double normal[3] = {0, 0, 0};
-        if (nVerts == 3)
+        if (nPts == 3)
         {
-            inPts->GetPoint(cell[0], v0);
-            inPts->GetPoint(cell[1], v1);
-            inPts->GetPoint(cell[2], v2);
-            vtkTriangle::ComputeNormalDirection(v0, v1, v2, normal);
+            inPts->GetPoint(pts[0], p0);
+            inPts->GetPoint(pts[1], p1);
+            inPts->GetPoint(pts[2], p2);
+            vtkTriangle::ComputeNormalDirection(p0, p1, p2, normal);
         }
         else
         {
             // Accumulate the normals calculated from every adjacent edge pair.
-            inPts->GetPoint(cell[0],v1);
-            inPts->GetPoint(cell[1],v2);
+            inPts->GetPoint(pts[0],p1);
+            inPts->GetPoint(pts[1],p2);
             
             double ax, ay, az, bx, by, bz;
-            for (int j = 0 ; j < nVerts ; j++) 
+            for (int j = 0 ; j < nPts ; j++) 
             {
-                v0[0] = v1[0]; v0[1] = v1[1]; v0[2] = v1[2];
-                v1[0] = v2[0]; v1[1] = v2[1]; v1[2] = v2[2];
-                inPts->GetPoint(cell[(j+2) % nVerts],v2);
+                p0[0] = p1[0]; p0[1] = p1[1]; p0[2] = p1[2];
+                p1[0] = p2[0]; p1[1] = p2[1]; p1[2] = p2[2];
+                inPts->GetPoint(pts[(j+2) % nPts],p2);
 
-                ax = v2[0] - v1[0]; ay = v2[1] - v1[1]; az = v2[2] - v1[2];
-                bx = v0[0] - v1[0]; by = v0[1] - v1[1]; bz = v0[2] - v1[2];
+                ax = p2[0] - p1[0]; ay = p2[1] - p1[1]; az = p2[2] - p1[2];
+                bx = p0[0] - p1[0]; by = p0[1] - p1[1]; bz = p0[2] - p1[2];
 
                 normal[0] += (ay * bz - az * by);
                 normal[1] += (az * bx - ax * bz);
                 normal[2] += (ax * by - ay * bx);
             }
-            normal[0] /= nVerts;
-            normal[1] /= nVerts;
-            normal[2] /= nVerts;
+            normal[0] /= nPts;
+            normal[1] /= nPts;
+            normal[2] /= nPts;
         }
 
-        // Calculate the length, and throw out degenerate cases
+        // Calculate the length, and throw out degenerate cases.
         double nx = normal[0];
         double ny = normal[1];
         double nz = normal[2];
@@ -1015,24 +1039,145 @@ vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
             newNormalPtr[2] = 1.f;
         }
         newNormalPtr += 3;
-
-        //
-        // Step through connectivity
-        //
-        connPtr += nVerts;
-    }
-        
-    // The triangle strips come after the polys.  So add normals for them.
-    numPrimitivesWithoutNormals = 0;
-    numPrimitivesWithoutNormals += input->GetStrips()->GetNumberOfCells();
-    for (i = 0 ; i < numPrimitivesWithoutNormals ; i++)
-    {
-        newNormalPtr[0] = 0.f;
-        newNormalPtr[1] = 0.f;
-        newNormalPtr[2] = 1.f;
-        newNormalPtr += 3;
     }
 
     output->GetCellData()->SetNormals(newNormals);
     newNormals->Delete();
+}
+
+
+// ****************************************************************************
+//  Method:  vtkVisItPolyDataNormals::TransferCellData
+//
+//  Purpose:
+//    Transfer cell data from our input poly data to our output. In the
+//    simplest cases, this is merely a copy. When triangle strips are
+//    present, we need to decompose them.
+//
+//  Arguments:
+//    input     Our input poly data.
+//    output    Our output poly data.
+//
+//  Returns:
+//    The total number of cells transfered.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Wed Apr  1 13:39:03 PDT 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *output)
+{
+    //
+    // First, copy the structure of our input, but let's
+    // make sure to get rid of triangle strips; we'll
+    // decompose them into triangles later.
+    //
+    //output->CopyStructure(input);
+    output->SetStrips(NULL);
+
+    //
+    // Gather the data arrays we'll need for later.
+    //
+    vtkCellArray *inPolys  = input->GetPolys();
+    vtkIdType *polysPtr    = inPolys->GetPointer();
+    int nPolys             = inPolys->GetNumberOfCells();
+
+    vtkCellArray *inStrips = input->GetStrips();
+    int nStrips            = inStrips->GetNumberOfCells();
+
+    vtkCellData *outCD     = output->GetCellData();
+    vtkCellData *inCD      = input->GetCellData();
+    vtkCellArray *outPolys = vtkCellArray::New();
+
+    //
+    // The cell arrays have a specific structure: vertices and lines come
+    // first, then polygons, then triangle strips.
+    //
+    int numPrimitivesWithoutNormals = 0;
+    numPrimitivesWithoutNormals     = input->GetVerts()->GetNumberOfCells();
+    numPrimitivesWithoutNormals     = input->GetLines()->GetNumberOfCells();
+    int newNCells                   = nPolys + numPrimitivesWithoutNormals;
+
+    //
+    // If we have triangle strips, we need to decompose them into
+    // triangles and extend our cell array so that we can compute
+    // proper normals.
+    //
+    if (nStrips > 0)
+    {
+        outCD->CopyAllocate(inCD);
+
+        if (nPolys > 0)
+        {
+            //
+            // We have polys AND strips. Let's first copy over
+            // the polys.
+            //
+            outPolys->DeepCopy(inPolys);
+            vtkNew<vtkIdList> ids;
+            ids->SetNumberOfIds(nPolys);
+            for (vtkIdType i = numPrimitivesWithoutNormals; i < nPolys; i++)
+            {
+                ids->SetId(i, i);
+            }
+            outCD->CopyData(inCD, ids, ids);
+        }
+        else
+        {
+            //
+            // We only have strips. We'll likely need more space then this,
+            // but our VTK version doesn't have AllocateEstimate. This is
+            // a starting point.
+            //
+            //TODO: change to AllocateEstimate after VTK upgrade.
+            outPolys->Allocate(nStrips);
+        }
+
+        vtkIdType nTriPts   = 0;
+        vtkIdType *triPts   = NULL;
+        vtkIdType inCellIdx = newNCells;
+
+        //
+        // Decompose our triangle strips, append the resulting trianlges
+        // to outPolys, and copy over the cell data.
+        //
+        for (inStrips->InitTraversal(); inStrips->GetNextCell(nTriPts, triPts);
+             inCellIdx++)
+        {
+            vtkTriangleStrip::DecomposeStrip(nTriPts, triPts, outPolys);
+
+            for (vtkIdType i = 0; i < nTriPts - 2; ++i)
+            {
+                outCD->CopyData(inCD, inCellIdx, newNCells++);
+            }
+        }
+
+        //
+        // Since we're manually copying everything, grab the verts and lines
+        // here.
+        //
+        for (vtkIdType i = 0; i < numPrimitivesWithoutNormals; ++i)
+        {
+            outCD->CopyData(inCD, i, i);
+        }
+    }
+    else
+    {
+        //
+        // No strips. Just copy everything over.
+        //
+        outCD->ShallowCopy(inCD);
+        outPolys->DeepCopy(inPolys);
+    }
+
+    //
+    // We can copy all of this data straight over.
+    //
+    output->SetPolys(outPolys);
+    output->SetVerts(input->GetVerts());
+    output->SetLines(input->GetLines());
 }
