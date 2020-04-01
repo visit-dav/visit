@@ -106,7 +106,7 @@ def copy_new_baselines(cur_dir):
             found = False
             ibase = 0
             while (ibase < nbase and not found):
-                base_file = os.path.join(base_dirs[ibase], mode_dirs[imode], file)
+                base_file = os.path.join(out_dir, "baselines", mode_dirs[imode], base_dirs[ibase], file)
                 if (os.path.exists(base_file)):
                     found = True
                     #
