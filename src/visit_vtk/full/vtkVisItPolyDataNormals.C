@@ -19,7 +19,6 @@
 #include <vtkTriangleStrip.h>
 #include <vtkPoints.h>
 
-
 vtkStandardNewMacro(vtkVisItPolyDataNormals);
 
 // ****************************************************************************
@@ -721,8 +720,8 @@ vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     // triangles).
     //
     int numPrimitivesWithoutNormals = 0;
-    numPrimitivesWithoutNormals     = input->GetVerts()->GetNumberOfCells();
-    numPrimitivesWithoutNormals     = input->GetLines()->GetNumberOfCells();
+    numPrimitivesWithoutNormals    += input->GetVerts()->GetNumberOfCells();
+    numPrimitivesWithoutNormals    += input->GetLines()->GetNumberOfCells();
 
     //
     // All of this data can just be copied over.
@@ -867,8 +866,8 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
     // first, then polygons, then triangle strips.
     //
     int numPrimitivesWithoutNormals = 0;
-    numPrimitivesWithoutNormals     = input->GetVerts()->GetNumberOfCells();
-    numPrimitivesWithoutNormals     = input->GetLines()->GetNumberOfCells();
+    numPrimitivesWithoutNormals    += input->GetVerts()->GetNumberOfCells();
+    numPrimitivesWithoutNormals    += input->GetLines()->GetNumberOfCells();
     int newNCells                   = nPolys + numPrimitivesWithoutNormals;
 
     //
