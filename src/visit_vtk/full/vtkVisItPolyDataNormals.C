@@ -200,6 +200,11 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
         dnormals[i*3+2] = 0.;
     }
 
+    //
+    // Iterate over our newly generated polys, and create normals.
+    // At this point, all triangle strips have been decomposed into
+    // polys, so this is all we need to worry about.
+    //
     vtkIdType *outPolyPtr = outPolys->GetPointer();
     int nPolys = outPolys->GetNumberOfCells();
     for (int i = 0 ; i < nPolys ; i++)
