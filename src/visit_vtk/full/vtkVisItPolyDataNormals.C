@@ -839,9 +839,6 @@ vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
 //    input     Our input poly data.
 //    output    Our output poly data.
 //
-//  Returns:
-//    The total number of cells transfered.
-//
 //  Programmer:  Alister Maguire
 //  Creation:    Wed Apr  1 13:39:03 PDT 2020
 //
