@@ -890,13 +890,14 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
             // the polys.
             //
             outPolys->DeepCopy(inPolys);
-            vtkNew<vtkIdList> ids;
+            vtkIdList *ids = vtkIdList::New();
             ids->SetNumberOfIds(nPolys);
             for (vtkIdType i = numPrimitivesWithoutNormals; i < nPolys; i++)
             {
                 ids->SetId(i, i);
             }
             outCD->CopyData(inCD, ids, ids);
+            ids->Delete();
         }
         else
         {
@@ -952,4 +953,5 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
     output->SetPolys(outPolys);
     output->SetVerts(input->GetVerts());
     output->SetLines(input->GetLines());
+    outPolys->Delete();
 }
