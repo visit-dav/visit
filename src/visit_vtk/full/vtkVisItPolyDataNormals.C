@@ -17,9 +17,6 @@
 #include <vtkPolygon.h>
 #include <vtkTriangle.h>
 #include <vtkTriangleStrip.h>
-
-#include <vtkPolyDataNormals.h>
-#include <vtkCell.h>
 #include <vtkPoints.h>
 
 
