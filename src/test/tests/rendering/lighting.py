@@ -79,6 +79,19 @@ def TestNormals():
     v.viewNormal = (-0.03622833898009251, 0.7402344653499199, 0.6713720606063838)
     SetView3D(v)
 
+    light0 = GetLight(0)
+    light0.enabledFlag = 1
+    light0.type = light0.Camera  # Ambient, Object, Camera
+    light0.direction = (0, 0, -1)
+    light0.brightness = .65
+    SetLight(0, light0)
+    light1 = GetLight(1)
+    light1.enabledFlag = 1
+    light1.type = light1.Ambient  # Ambient, Object, Camera
+    light1.direction = (0, 0, -1)
+    light0.brightness = .65
+    SetLight(1, light1)
+
     #
     # In the past, our normals filter wasn't able to handle triangle strips.
     # This test ensures that we now can.
