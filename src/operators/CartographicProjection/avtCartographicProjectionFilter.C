@@ -6,6 +6,7 @@
 #include <vtkGeoTransform.h>
 #include <vtkPolyData.h>
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkStructuredGrid.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItUtility.h>
@@ -227,6 +228,7 @@ avtCartographicProjectionFilter::ExecuteData(avtDataRepresentation *in_dr)
       ds->ShallowCopy(in_ds);
     break;
     case VTK_POLY_DATA:
+    { // new scope
 // some special treatment is done here for polylines which - when projected -
 // "fall on the other side of the Earth".
 // Detect an line segment within the polyline which has a very long length and split.
@@ -235,15 +237,15 @@ avtCartographicProjectionFilter::ExecuteData(avtDataRepresentation *in_dr)
       static_cast<vtkPolyData *>(ds)->SetPolys(ca_n);
       ca_n->Delete();
 
-      ca = static_cast<vtkPolyData *>(in_ds)->GetPolys();
-      vtkIdType npts, *pts;
+      auto ca = vtk::TakeSmartPointer(static_cast<vtkPolyData *>(in_ds)->GetPolys()->NewIterator());
+      vtkIdType npts;
+      const vtkIdType *pts;
 
-      ca->InitTraversal();
 // for each polygon, change for big changes in coordinates and split lines
-      for(int i =0; i < ca->GetNumberOfCells (); i++)
+      for(ca->GoToFirstCell(); !ca->IsDoneWithTraversal(); ca->GoToNextCell())
          {
          changeOfSigns = 0;
-         ca->GetNextCell(npts, pts);
+         ca->GetCurrentCell(npts, pts);
          k = npts-1;
 // start from end and split if necessary
          for(int j =npts-1; j >0; j--)
@@ -268,6 +270,7 @@ avtCartographicProjectionFilter::ExecuteData(avtDataRepresentation *in_dr)
           ca_n->InsertNextCell(k+1, pts); // what is left-over after all the splits
           }
          }
+    } // end VTK_POLY_DATA new scope
     break;
     default:
       debug4 << "not supported for this grid type"  <<endl;

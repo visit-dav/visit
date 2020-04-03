@@ -711,7 +711,8 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
             for (int i = 0 ; i < ncells ; i++)
             {
                 int celltype = ugrid->GetCellType(i);
-                vtkIdType *pts, npts;
+                vtkIdType npts;
+                const vtkIdType *pts;
                 ugrid->GetCellPoints(i, npts, pts);
                 out_pd->InsertNextCell(celltype, npts, pts);
             }

@@ -203,7 +203,8 @@ avtTubeFilter::ExecuteData(avtDataRepresentation *in_dr)
         for (vtkIdType i = 0 ; i < ncells ; i++)
         {
             int celltype = ugrid->GetCellType(i);
-            vtkIdType *pts, npts;
+            vtkIdType npts;
+            const vtkIdType *pts;
             ugrid->GetCellPoints(i, npts, pts);
             ugridAsPD->InsertNextCell(celltype, npts, pts);
         }

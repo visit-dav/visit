@@ -11,6 +11,7 @@
 #include <vtkDataSet.h>
 #include <vtkCellData.h>
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkGeometryFilter.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -367,7 +368,6 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
     // Extract some input data
     //
     vtkPoints    *inPts = in->GetPoints();
-    vtkCellArray *inVerts = in->GetVerts();
     vtkPointData *inPD  = in->GetPointData();
     vtkCellData  *inCD  = in->GetCellData();
     int nPts   = in->GetNumberOfPoints();
@@ -423,17 +423,16 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
         int outpt = outPts->InsertNextPoint(pt);
         outPD->CopyData(inPD, p, outpt);
     }
-    vtkIdType *vertPtr = inVerts->GetPointer();
-    for (int v=0; v<nVerts; v++)
+    auto inVerts = vtk::TakeSmartPointer(in->GetVerts()->NewIterator());
+    for (inVerts->GoToFirstCell(); !inVerts->IsDoneWithTraversal(); inVerts->GoToNextCell())
     {
-        if (*vertPtr == 1)
+        vtkIdList *vertPtr = inVerts->GetCurrentCell();
+        if (vertPtr->GetNumberOfIds() == 1)
         {
-            vtkIdType id = *(vertPtr+1);
-            int outcell = outVerts->InsertNextCell(1);
-            outVerts->InsertCellPoint(id);
-            outCD->CopyData(inCD, v, outcell);
+            vtkIdType outcell = outVerts->InsertNextCell(1);
+            outVerts->InsertCellPoint(vertPtr->GetId(0));
+            outCD->CopyData(inCD, inVerts->GetCurrentCellId(), outcell);
         }
-        vertPtr += (*vertPtr+1);
     }
 
     int natoms = in->GetNumberOfPoints();
@@ -731,7 +730,6 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
     // Extract some input data
     //
     vtkPoints    *inPts = in->GetPoints();
-    vtkCellArray *inVerts = in->GetVerts();
     vtkPointData *inPD  = in->GetPointData();
     vtkCellData  *inCD  = in->GetCellData();
     int nPts   = in->GetNumberOfPoints();
@@ -786,21 +784,19 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
         int outpt = outPts->InsertNextPoint(pt);
         outPD->CopyData(inPD, p, outpt);
     }
-    vtkIdType *vertPtr = inVerts->GetPointer();
-    for (int v=0; v<nVerts; v++)
+    auto inVerts = vtk::TakeSmartPointer(in->GetVerts()->NewIterator());
+    for (inVerts->GoToFirstCell(); !inVerts->IsDoneWithTraversal(); inVerts->GoToNextCell())
     {
-        if (*vertPtr == 1)
+        vtkIdList *vertPtr = inVerts->GetCurrentCell();
+        if (vertPtr->GetNumberOfIds() == 1)
         {
-            vtkIdType id = *(vertPtr+1);
             int outcell = outVerts->InsertNextCell(1);
-            outVerts->InsertCellPoint(id);
-            outCD->CopyData(inCD, v, outcell);
+            outVerts->InsertCellPoint(vertPtr->GetId(0));
+            outCD->CopyData(inCD, inVerts->GetCurrentCellId(), outcell);
         }
-        vertPtr += (*vertPtr+1);
     }
 
     int natoms = in->GetNumberOfPoints();
-
 
     //
     // Extract unit cell vectors in case we want to add bonds
