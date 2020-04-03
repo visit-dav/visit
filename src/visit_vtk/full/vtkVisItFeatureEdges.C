@@ -213,9 +213,11 @@ int vtkVisItFeatureEdges::RequestData(
     polyNormals->SetNumberOfComponents(3);
     polyNormals->Allocate(3*newPolys->GetNumberOfCells());
 
-    for (cellId=0, newPolys->InitTraversal(); newPolys->GetNextCell(npts,pts);
-    cellId++)
+    auto iter = vtk::TakeSmartPointer(newPolys->NewIterator());
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
       {
+      vtkIdType cellId = iter->GetCurrentCellId();
+      iter->GetCurrentCell(npts,pts);
       vtkPolygon::ComputeNormal(inPts,npts,pts,n);
       polyNormals->InsertTuple(cellId,n);
       }
@@ -230,9 +232,11 @@ int vtkVisItFeatureEdges::RequestData(
   vtkIdType progressInterval=numCells/20+1;
 
   numBEdges = numNonManifoldEdges = numFedges = numManifoldEdges = 0;
-  for (cellId=0, newPolys->InitTraversal();
-       newPolys->GetNextCell(npts,pts) && !abort; cellId++)
+  auto iter = vtk::TakeSmartPointer(newPolys->NewIterator());
+  for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal() && !abort; iter->GoToNextCell())
     {
+    vtkIdType cellId = iter->GetCurrentCellId();
+    iter->GetCurrentCell(npts,pts);
     if ( ! (cellId % progressInterval) ) //manage progress / early abort
       {
       this->UpdateProgress ((double)cellId / numCells);

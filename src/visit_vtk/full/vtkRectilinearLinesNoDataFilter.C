@@ -32,7 +32,8 @@ using  std::vector;
     p.SetComponent(2, z.GetComponent(bk));                                    \
     ++p;                                                                      \
     outPointData->CopyData(inPointData, ((bk*nY) + bj)*nX + bi, pointId++);   \
-    *ol++ = 2;                                                                \
+    currentOffset += 2;                                                       \
+    *ol++ = currentOffset;                                                    \
     *cl++ = pointId-2;                                                        \
     *cl++ = pointId-1;                                                        \
     cellId++;                                                                 \
@@ -51,6 +52,12 @@ vtkRectilinearLinesNoDataFilter_AddLines(int nX, int nY, int nZ,
     int cellId = 0;
 
     p.InitTraversal();
+
+    // set first offset 
+    *ol++ = 0;
+    // Each subsequent offsets will be previous + numPtsInCell, so
+    // create something to hold incrementer
+    vtkIdType currentOffset = 0;
 
     // This case is mutually exclusive with the other ones below....
     if ((nX==1 && nY==1) || (nX==1 && nZ==1) || (nY==1 && nZ==1))
@@ -302,9 +309,6 @@ vtkRectilinearLinesNoDataFilter::RequestData(
             vtkGeneralAccessor(zc), 
             vtkGeneralAccessor(pts->GetData())); 
     }
-
-    // last entry of offsets array should be set to the length of the connectivity array.
-    *ol++ = numOutCells*2;
 
     //
     // Clean up.....

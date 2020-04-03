@@ -728,18 +728,18 @@ vtkCellIntersections::QuadraticHexahedronIntersectWithLine(
                              vtkQuadraticHexahedron *cell, double p1[3], 
                              double p2[3], double& t, double x[3])
 {
-  int  i, intersection = 0;
+  int  i, intersection = 0, faceNum;
   double tTemp, xTemp[3];
   double pt0[3], pt1[3], pt2[3], pt3[3];
   t = VTK_DOUBLE_MAX;
 
-  vtkIdType allFaces[6][4] = { { 0, 1, 5, 4 }, { 1, 2, 6, 5 },
-                               { 4, 5, 6, 7 }, { 3, 0, 4, 7 },
-                               { 0, 1, 2, 3 }, { 2, 3, 7, 6 } };
-  for (vtkIdType faceNum = 0; faceNum < 6; faceNum++)
+  int allFaces[6][4] = { { 0, 1, 5, 4 }, { 1, 2, 6, 5 },
+                    { 4, 5, 6, 7 }, { 3, 0, 4, 7 },
+                    { 0, 1, 2, 3 }, { 2, 3, 7, 6 } };
+  for (faceNum = 0; faceNum < 6; faceNum++)
     {
     tTemp = VTK_DOUBLE_MAX;
-    vtkIdType *faceIds = allFaces[faceNum];
+    int *faceIds = allFaces[faceNum];
     cell->Points->GetPoint(faceIds[0], pt0);
     cell->Points->GetPoint(faceIds[1], pt1);
     cell->Points->GetPoint(faceIds[2], pt2);

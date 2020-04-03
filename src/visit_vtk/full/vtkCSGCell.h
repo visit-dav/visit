@@ -58,8 +58,8 @@ protected:
 
 
 private:
-  vtkCSGCell(const vtkCSGCell&);  // Not implemented.
-  void operator=(const vtkCSGCell&);  // Not implemented.
+  vtkCSGCell(const vtkCSGCell&) = delete;
+  void operator=(const vtkCSGCell&) = delete;
 };
 
 #endif

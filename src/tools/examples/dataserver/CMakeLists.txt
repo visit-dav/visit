@@ -39,7 +39,6 @@ SET(VTK_EXTRA_LIBS
 VTK::tiff
 VTK::jpeg
 VTK::png
-${VTK_FREETYPE_LIBRARIES}
 )
 
 ADD_EXECUTABLE(usedataserver usedataserver.cpp VisItDataServer.cpp ${STATIC_SOURCES})

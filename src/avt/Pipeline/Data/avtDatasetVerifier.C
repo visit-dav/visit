@@ -382,13 +382,14 @@ avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts, vtkCellArray *arr,
     auto cellIter = vtk::TakeSmartPointer(arr->NewIterator());
     for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal(); cellIter->GoToNextCell())
     {
-        vtkIdType npts;
-        const vtkIdType *ptIds;
-        cellIter->GetCurrentCell(npts, ptIds);
+        vtkIdList *ptIds = cellIter->GetCurrentCell();
+        vtkIdType npts = ptIds->GetNumberOfIds();
+        bool replaceCell = false;
         for (vtkIdType j = 0 ; j < npts ; j++)
         {
-            if (ptIds[j] < 0 || ptIds[j] >= nTotalPts)
+            if (ptIds->GetId(j) < 0 || ptIds->GetId(j) >= nTotalPts)
             {
+                replaceCell = true;
                 if (!issuedSafeModeWarning)
                 {
                     char msg[1024];
@@ -396,12 +397,15 @@ avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts, vtkCellArray *arr,
                                  "has a bad value. Cell %d references point %lld "
                                  "and the maximum value is %d.  Note that "
                                  "only the first error encountered is reported.",
-                            dom, name, cellIter->GetCurrentCellId(), ptIds[j], nTotalPts);
+                            dom, name, cellIter->GetCurrentCellId(), ptIds->GetId(j), nTotalPts);
                     avtCallback::IssueWarning(msg);
                     issuedSafeModeWarning = true;
                 }
+                ptIds->SetId(j, 0);
             }
         }
+        if(replaceCell)
+            cellIter->ReplaceCurrentCell(ptIds);
     }
 }
 

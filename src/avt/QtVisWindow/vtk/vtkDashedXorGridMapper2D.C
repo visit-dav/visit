@@ -8,6 +8,7 @@
 
 #include <vtkActor2D.h>
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCellLinks.h>
 #include <vtkDataSet.h>
 #include <vtkFieldData.h>
@@ -17,6 +18,7 @@
 #include <vtkPolyDataMapper2D.h>
 #include <vtkProperty2D.h>
 #include <vtkScalarsToColors.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkViewport.h>
 #include <vtkWindow.h>
 

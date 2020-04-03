@@ -1,9 +1,7 @@
     int numPts;
     vtkPolyData *input= vtkPolyData::SafeDownCast(this->GetInput());
-    vtkIdType npts, *pts;
     int j;
     vtkPoints *p, *displayPts;
-    vtkCellArray *aPrim;
     vtkUnsignedCharArray *c=NULL;
     unsigned char *rgba;
     double *ftmp;
@@ -95,9 +93,12 @@
     }
 
     // Draw the lines.
-    aPrim = input->GetLines();
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); cellNum++)
+    auto aPrim = vtk::TakeSmartPointer(input->GetLines()->NewIterator());
+    vtkIdType npts;
+    const vtkIdType *pts;
+    for (aPrim->GoToFirstCell(); !aPrim->IsDoneWithTraversal(); aPrim->GoToNextCell(), cellNum++)
     { 
+        aPrim->GetCurrentCell(npts,pts);
         if (c && cellScalars) 
         {
             rgba = c->GetPointer(4*cellNum);

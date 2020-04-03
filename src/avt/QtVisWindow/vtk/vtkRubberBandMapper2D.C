@@ -8,12 +8,14 @@
 
 #include <vtkActor2D.h>
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCoordinate.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkProperty2D.h>
 #include <vtkScalarsToColors.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkViewport.h>
 #include <vtkWindow.h>
 

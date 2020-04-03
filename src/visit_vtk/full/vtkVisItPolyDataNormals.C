@@ -145,8 +145,6 @@ void
 vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
   vtkPolyData *input, vtkPolyData *output)
 {
-    int i;
-
     // Get all the input and output objects we'll need to reference
     vtkCellArray *inCA  = input->GetPolys();
     vtkPointData *inPD  = input->GetPointData();
@@ -170,8 +168,8 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
     vtkPoints *outPts = vtkPoints::New(inPts->GetDataType());
     outPts->SetNumberOfPoints(nPoints);
     outPD->CopyAllocate(inPD,nPoints);
-    int ptIdx = 0;
-    for (i = 0 ; i < nPoints ; i++)
+    vtkIdType ptIdx = 0;
+    for (vtkIdType i = 0 ; i < nPoints ; i++)
     {
         double pt[3];
         inPts->GetPoint(i, pt);
@@ -189,7 +187,7 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
     newNormals->SetName("Normals");
     // Accumulate in double-array since VTK computes double normal
     double *dnormals = new double[nPoints*3];
-    for (i = 0 ; i < nPoints ; i++)
+    for (vtkIdType i = 0 ; i < nPoints ; i++)
     {
         dnormals[i*3+0] = 0.;
         dnormals[i*3+1] = 0.;
@@ -243,7 +241,7 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
     // Renormalize the normals; they've only been accumulated so far,
     // and store in the vtkFloatArray.
     float *newNormalPtr = (float*)newNormals->GetPointer(0);
-    for (i = 0 ; i < nPoints ; i++)
+    for (vtkIdType i = 0 ; i < nPoints ; i++)
     {
         double nx = dnormals[i*3+0];
         double ny = dnormals[i*3+1];
@@ -271,7 +269,7 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
     output->SetLines(input->GetLines());
 
     // copy the data from the lines and vertices now.
-    for (i = 0 ; i < nOtherCells ; i++)
+    for (vtkIdType i = 0 ; i < nOtherCells ; i++)
         outCD->CopyData(inCD, i, i);
 }
 
@@ -448,20 +446,18 @@ void
 vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
                                                    vtkPolyData *output)
 {
-    int i, j;
-
     // Get all the input and output objects we'll need to reference
-    vtkCellArray *inCA  = input->GetPolys();
+    vtkCellArray *inPolys  = input->GetPolys();
     vtkPointData *inPD  = input->GetPointData();
     vtkCellData  *inCD  = input->GetCellData();
     vtkPoints    *inPts = input->GetPoints();
 
-    int nCells  = inCA->GetNumberOfCells();
-    int nOtherCells = input->GetVerts()->GetNumberOfCells() +
-                      input->GetLines()->GetNumberOfCells();
-    int nTotalCells = nCells + nOtherCells;
+    vtkIdType nCells  = inPolys->GetNumberOfCells();
+    vtkIdType nOtherCells = input->GetVerts()->GetNumberOfCells() +
+                            input->GetLines()->GetNumberOfCells();
+    vtkIdType nTotalCells = nCells + nOtherCells;
 
-    int nPoints = input->GetNumberOfPoints();
+    vtkIdType nPoints = input->GetNumberOfPoints();
 
     vtkPointData *outPD = output->GetPointData();
     vtkCellData  *outCD = output->GetCellData();
@@ -478,32 +474,30 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
     NormalList normalList(nPoints);
 
     outCD->CopyAllocate(inCD, nTotalCells);
-    vtkIdTypeArray *offsets = vtkIdTypeArray::New();
-    offsets->SetNumberOfValues(inCA->GetNumberOfOffsets());
-    vtkIdType *ol = offsets->GetPointer(0);
 
-    vtkIdTypeArray *connectivity = vtkIdTypeArray::New();
-    connectivity->SetNumberOfValues(inCA->GetNumberOfConnectivityIds());
-    vtkIdType *cl = connectivity->GetPointer(0);
 
-    auto connPtr = vtk::TakeSmartPointer(inCA->NewIterator());
+    // Set up the output cell array
+    vtkNew<vtkCellArray> outPolys;
+    // the cell structure is going to remain the same in terms of num cells and
+    // num points in each cell, so copy input's data to output
+    outPolys->SetData(inPolys->GetOffsetsArray(), inPolys->GetConnectivityArray());
+    
+    // smart pointer to the output's cell array
+    auto connPtr = vtk::TakeSmartPointer(outPolys->NewIterator());
+    connPtr->GoToFirstCell();
 
-    int newPointIndex = nPoints;
-    for (vtkIdType i = 0 ; i < nCells ; i++)
+    vtkIdType *cell = NULL;
+
+    vtkIdType newPointIndex = nPoints;
+    for (vtkIdType i = 0 ; i < nCells ; i++, connPtr->GoToNextCell())
     {
-        vtkIdType nVerts;
-        const vtkIdType *ptIds;
-        connPtr->GetCellAtId(i, nVerts, ptIds);
-
         outCD->CopyData(inCD, i+nOtherCells, i+nOtherCells);
-        vtkIdType *cell = const_cast<vtkIdType*>(ptIds);
 
-        // Extract the cell vertices
-        *ol++ = nVerts;
-        for (vtkIdType j = 0 ; j < nVerts ; j++)
-        {
-            *cl++ = cell[j];
-        }
+        // get the cell's id list so it may (possibly) be changed
+        vtkIdList *ptIds = connPtr->GetCurrentCell();
+        vtkIdType nVerts = ptIds->GetNumberOfIds();
+
+        cell = ptIds->GetPointer(0);
 
         //
         // Technically, we can always use only the first three vertices, but
@@ -527,7 +521,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
             inPts->GetPoint(cell[1],v2);
             
             double ax, ay, az, bx, by, bz;
-            for (j = 0 ; j < nVerts ; j++) 
+            for (vtkIdType j = 0 ; j < nVerts ; j++) 
             {
                 v0[0] = v1[0]; v0[1] = v1[1]; v0[2] = v1[2];
                 v1[0] = v2[0]; v1[1] = v2[1]; v1[2] = v2[2];
@@ -559,9 +553,10 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
         // Loop over all points of the cell, deciding if we need
         // to split it or can merge with an old one.  Use the feature
         // angle set before execution.
+        bool replaceCell = 0;
         for (vtkIdType j = 0 ; j < nVerts ; j++)
         {
-            int p = cell[j];
+            vtkIdType p = cell[j];
             bool found = false;
             NormalEntry *ne = &normalList.normals[p];
             while (ne->oldId >= 0 && ne != NULL)
@@ -576,6 +571,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
 
                 ne      = ne->next;
                 cell[j] = ne->newId;
+                replaceCell = true;
             }
 
             if (ne->oldId < 0) // first cell adjacent to this point in space
@@ -623,6 +619,8 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
                 ne->next = normalList.GetNewEntry();
                 ne = ne->next;
 
+                // modified the original point id of the current cell
+                replaceCell = true;
                 cell[j] = newPointIndex;
                 ne->oldId = p;
                 ne->newId = newPointIndex;
@@ -636,14 +634,11 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
                 newPointIndex++;
             }
         }
+        if (replaceCell)
+            connPtr->ReplaceCurrentCell(ptIds);
     }
 
-    vtkCellArray *polys = vtkCellArray::New();
-    polys->SetData(offsets, connectivity);
-    offsets->Delete();
-    connectivity->Delete();
-    output->SetPolys(polys);
-    polys->Delete();
+    output->SetPolys(outPolys);
 
     // Create the output points array
     int nOutPts = normalList.GetTotalNumberOfEntries();
@@ -660,7 +655,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
     float *newNormalPtr = (float*)newNormals->GetPointer(0);
 
     // Add all the original points and normals
-    for (i = 0 ; i < nPoints ; i++)
+    for (vtkIdType i = 0 ; i < nPoints ; i++)
     {
         NormalEntry *ne = &normalList.normals[i];
         if (ne->oldId < 0)
@@ -684,10 +679,10 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
     // Add all the new (duplicated) points
     int outIndex = nPoints;
     int nLists = normalList.GetNumberOfExtraLists();
-    for (i = 0 ; i < nLists ; i++)
+    for (int i = 0 ; i < nLists ; i++)
     {
         NormalEntry *list = normalList.GetExtraList(i);
-        for (j = 0 ; j < NORMAL_LIST_LEN ; j++)
+        for (int j = 0 ; j < NORMAL_LIST_LEN ; j++)
         {
             if (outIndex >= nOutPts)
                 break;
@@ -712,7 +707,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
     output->SetLines(input->GetLines());
 
     // copy the data from the lines and vertices now.
-    for (i = 0 ; i < nOtherCells ; i++)
+    for (vtkIdType i = 0 ; i < nOtherCells ; i++)
         outCD->CopyData(inCD, i, i);
 }
 

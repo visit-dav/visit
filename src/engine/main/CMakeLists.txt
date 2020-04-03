@@ -166,9 +166,8 @@ target_link_libraries(engine_ser_exe
     ${engine_ser_exe_EPlot_ser}
     engine_ser
     visit_verdict
-    vtkjpeg
-    vtkpng
-    ${VTK_FREETYPE_LIBRARIES}
+    VTK::jpeg
+    VTK::png
     ${ALL_THIRDPARTY_IO_LIB}
     ${TCMALLOC_LIB}
     ${CMAKE_THREAD_LIBS}
@@ -270,9 +269,8 @@ if(VISIT_PARALLEL)
         ${engine_par_exe_EPlot_par}
         engine_par
         visit_verdict
-        vtkjpeg
-        vtkpng
-        ${VTK_FREETYPE_LIBRARIES}
+        VTK::jpeg
+        VTK::png
         ${ALL_THIRDPARTY_IO_LIB}
         ${ICET_STATIC_LIB}
         ${TCMALLOC_LIB}

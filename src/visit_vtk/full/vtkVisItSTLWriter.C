@@ -16,6 +16,7 @@
 
 #include <vtkByteSwap.h>
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
 #include <vtkTriangle.h>
@@ -80,8 +81,10 @@ void vtkVisItSTLWriter::WriteAsciiSTL(vtkPoints *pts, vtkCellArray *polys)
 //  Write out triangle polygons.  In not a triangle polygon, only first 
 //  three vertices are written.
 //
-  for (polys->InitTraversal(); polys->GetNextCell(npts,indx); )
+  auto iter = vtk::TakeSmartPointer(polys->NewIterator());
+  for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
     {
+    iter->GetCurrentCell(npts,indx);
     pts->GetPoint(indx[0], v1);
     pts->GetPoint(indx[1], v2);
     pts->GetPoint(indx[2], v3);
@@ -128,8 +131,10 @@ void vtkVisItSTLWriter::WriteBinarySTL(vtkPoints *pts, vtkCellArray *polys)
   //  Write out triangle polygons.  In not a triangle polygon, only first 
   //  three vertices are written.
   //
-  for (polys->InitTraversal(); polys->GetNextCell(npts,indx); )
+  auto iter = vtk::TakeSmartPointer(polys->NewIterator());
+  for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
     {
+    iter->GetCurrentCell(npts,indx);
     pts->GetPoint(indx[0], v1);
     pts->GetPoint(indx[1], v2);
     pts->GetPoint(indx[2], v3);

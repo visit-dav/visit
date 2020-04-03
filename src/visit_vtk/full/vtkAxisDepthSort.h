@@ -53,8 +53,8 @@ class VISIT_VTK_API vtkAxisDepthSort : public vtkPolyDataAlgorithm
                                       vtkInformationVector *) override;
 
   private:
-                                  vtkAxisDepthSort(const vtkAxisDepthSort &);
-                                  void operator=(const vtkAxisDepthSort &);
+                                  vtkAxisDepthSort(const vtkAxisDepthSort &) = delete;
+                                  void operator=(const vtkAxisDepthSort &) = delete;
 };
 
 

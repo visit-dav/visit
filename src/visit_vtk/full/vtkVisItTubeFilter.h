@@ -233,8 +233,8 @@ protected:
   double Theta;
 
 private:
-  vtkVisItTubeFilter(const vtkVisItTubeFilter&);  // Not implemented.
-  void operator=(const vtkVisItTubeFilter&);  // Not implemented.
+  vtkVisItTubeFilter(const vtkVisItTubeFilter&) = delete;
+  void operator=(const vtkVisItTubeFilter&) = delete;
 };
 
 #endif

@@ -33,7 +33,7 @@ add_library(vtkqt ${VTKQT_SOURCES})
 
 # Specify the libraries to link against on Windows & Mac
 target_link_libraries(vtkqt 
-    VTK::CommonCore vtkGUISupportQt vtkGUISupportQtOpenGL VTK::IOImage
+    VTK::CommonCore VTK::GUISupportQt VTK::GUISupportQtOpenGL VTK::IOImage
     VTK::RenderingOpenGL2 VTK::RenderingFreeType ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES})
 

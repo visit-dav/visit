@@ -9,6 +9,7 @@
 #include "vtkUnstructuredGridBoundaryFilter.h"
 
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
@@ -2726,10 +2727,11 @@ void LoopOverUnhashedCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   newCellId;
     vtkIdType   npts;
     const vtkIdType   *pts;
-    for (cellId=0, Connectivity->InitTraversal();
-         Connectivity->GetNextCell(npts,pts);
-         cellId++)
+    auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
+    for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
     {
+        vtkIdType cellId = connPtr->GetCurrentCellId();
+        connPtr->GetCurrentCell(npts, pts);
         int cellType = input->GetCellType(cellId);
         switch (cellType)
         {
@@ -2802,10 +2804,11 @@ LoopOverAllCells(vtkUnstructuredGrid *input, BHashEntryList &list,
     vtkIdType   cellId;
     vtkIdType   npts;
     const vtkIdType   *pts;
-    for (cellId=0, Connectivity->InitTraversal();
-         Connectivity->GetNextCell(npts,pts);
-         cellId++)
+    auto connPtr = vtk::TakeSmartPointer(Connectivity->NewIterator());
+    for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
     {
+        vtkIdType cellId = connPtr->GetCurrentCellId();
+        connPtr->GetCurrentCell(npts, pts);
         int cellType = input->GetCellType(cellId);
         int cellVal  = cellData[cellId];
 

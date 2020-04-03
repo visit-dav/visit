@@ -75,12 +75,10 @@ protected:
   float SkewFactor;
 
 private:
-  vtkSkewLookupTable(const vtkSkewLookupTable&);
-  void operator=(const vtkSkewLookupTable&);
+  vtkSkewLookupTable(const vtkSkewLookupTable&) = delete;
+  void operator=(const vtkSkewLookupTable&) = delete;
 };
 
 
 #endif
-
-
 

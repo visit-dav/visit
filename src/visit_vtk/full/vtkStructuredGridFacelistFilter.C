@@ -146,13 +146,22 @@ vtkStructuredGridFacelistFilter::RequestData(
   outCellData->CopyAllocate(inCellData);
 
   vtkCellArray *polys = vtkCellArray::New();
-  vtkIdTypeArray *offsets = vtkIdTypeArray::New();
+
   vtkIdTypeArray *connectivity = vtkIdTypeArray::New();
-  offsets->SetNumberOfValues(numOutCells+1);
   connectivity->SetNumberOfValues(numOutCells*4);
-  vtkIdType *ol = offsets->GetPointer(0);
   vtkIdType *cl = connectivity->GetPointer(0);
   
+  vtkIdTypeArray *offsets = vtkIdTypeArray::New();
+  // size of offsets array always numCells + 1
+  // last value holds size of connectivity array
+  offsets->SetNumberOfValues(numOutCells+1);
+  vtkIdType *ol = offsets->GetPointer(0);
+  // set up first offset
+  *ol++ = 0;
+  // subsequent offsets are incremented from previous by num pts in cell
+  // set up a holder for the increment
+  vtkIdType currentOffset = 0;
+
   //
   // Left face
   //
@@ -161,7 +170,8 @@ vtkStructuredGridFacelistFilter::RequestData(
   {
     for (j = 0 ; j < nZ-1 ; j++)
     {
-      *ol++ = 4;
+      currentOffset += 4;
+      *ol++ = currentOffset;
       *cl++ = PointIndex(0, i, j, nX, nY, nZ);
       *cl++ = PointIndex(0, i, j+1, nX, nY, nZ);
       *cl++ = PointIndex(0, i+1, j+1, nX, nY, nZ);
@@ -181,7 +191,8 @@ vtkStructuredGridFacelistFilter::RequestData(
     {
       for (j = 0 ; j < nZ-1 ; j++)
       {
-        *ol++ = 4;
+        currentOffset += 4;
+        *ol++ = currentOffset;
         *cl++ = PointIndex(nX-1, i, j, nX, nY, nZ);
         *cl++ = PointIndex(nX-1, i+1, j, nX, nY, nZ);
         *cl++ = PointIndex(nX-1, i+1, j+1, nX, nY, nZ);
@@ -200,7 +211,8 @@ vtkStructuredGridFacelistFilter::RequestData(
   {
     for (j = 0 ; j < nZ-1 ; j++)
     {
-      *ol++ = 4;
+      currentOffset += 4;
+      *ol++ = currentOffset;
       *cl++ = PointIndex(i, 0, j, nX, nY, nZ);
       *cl++ = PointIndex(i+1, 0, j, nX, nY, nZ);
       *cl++ = PointIndex(i+1, 0, j+1, nX, nY, nZ);
@@ -220,7 +232,8 @@ vtkStructuredGridFacelistFilter::RequestData(
     {
       for (j = 0 ; j < nZ-1 ; j++)
       {
-        *ol++ = 4;
+        currentOffset += 4;
+        *ol++ = currentOffset;
         *cl++ = PointIndex(i, nY-1, j, nX, nY, nZ);
         *cl++ = PointIndex(i, nY-1, j+1, nX, nY, nZ);
         *cl++ = PointIndex(i+1, nY-1, j+1, nX, nY, nZ);
@@ -239,7 +252,8 @@ vtkStructuredGridFacelistFilter::RequestData(
   {
     for (j = 0 ; j < nY-1 ; j++)
     {
-      *ol++ = 4;
+      currentOffset += 4;
+      *ol++ = currentOffset;
       *cl++ = PointIndex(i, j, 0, nX, nY, nZ);
       *cl++ = PointIndex(i, j+1, 0, nX, nY, nZ);
       *cl++ = PointIndex(i+1, j+1, 0, nX, nY, nZ);
@@ -259,7 +273,8 @@ vtkStructuredGridFacelistFilter::RequestData(
     {
       for (j = 0 ; j < nY-1 ; j++)
       {
-        *ol++ = 4;
+        currentOffset += 4;
+        *ol++ = currentOffset;
         *cl++ = PointIndex(i, j, nZ-1, nX, nY, nZ);
         *cl++ = PointIndex(i+1, j, nZ-1, nX, nY, nZ);
         *cl++ = PointIndex(i+1, j+1, nZ-1, nX, nY, nZ);
@@ -271,9 +286,6 @@ vtkStructuredGridFacelistFilter::RequestData(
     }
   }
  
-  // last entry of offsets array should be the length of the connectivity array.
-  *ol++ = numOutCells*4;
-
   polys->SetData(offsets, connectivity);
   offsets->Delete();
   connectivity->Delete();

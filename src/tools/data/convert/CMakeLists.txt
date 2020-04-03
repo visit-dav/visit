@@ -69,9 +69,8 @@ ${ICET_LIBRARY_DIR}
 )
 
 SET(VTK_EXTRA_LIBS
-vtkjpeg
-vtkpng
-${VTK_FREETYPE_LIBRARIES}
+VTK::jpeg
+VTK::png
 )
 
 IF(VISIT_STATIC)

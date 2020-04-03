@@ -45,7 +45,6 @@ SET(VTK_EXTRA_LIBS
 VTK::tiff
 VTK::jpeg
 VTK::png
-${VTK_FREETYPE_LIBRARIES}
 )
 
 ADD_EXECUTABLE(visitprotocol dump_protocol.C ${STATIC_SOURCES})

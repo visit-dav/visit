@@ -15,6 +15,7 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkVisItTubeFilter.h"
 
 #include "vtkCellArray.h"
+#include "vtkCellArrayIterator.h"
 #include "vtkCellData.h"
 #include "vtkFloatArray.h"
 #include "vtkMath.h"
@@ -213,9 +214,11 @@ int vtkVisItTubeFilter::RequestData(
     //
     this->Theta = 2.0*vtkMath::Pi() / this->NumberOfSides;
     vtkPolyLine *lineNormalGenerator = vtkPolyLine::New();
-    for (inCellId=0, inLines->InitTraversal(); 
-         inLines->GetNextCell(npts,pts) && !abort; inCellId++)
+    auto iter = vtk::TakeSmartPointer(inLines->NewIterator());
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal() && !abort; iter->GoToNextCell())
     {
+        inCellId = iter->GetCurrentCellId();
+        iter->GetCurrentCell(npts, pts);
         this->UpdateProgress((double)inCellId/numLines);
         abort = this->GetAbortExecute();
 

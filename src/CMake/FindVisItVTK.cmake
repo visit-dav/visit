@@ -76,41 +76,39 @@ MESSAGE(STATUS "Checking for VTK in ${VTK_DIR}")
 
 # Set up our list of required and optional vtk modules
 SET(REQ_VTK_MODS 
-        VTK::CommonCore
-        VTK::CommonDataModel
-        VTK::FiltersCore
-        VTK::FiltersFlowPaths
-        VTK::FiltersHybrid
-        VTK::FiltersModeling
-        VTK::IOLegacy
-        VTK::IOPLY
-        VTK::IOXML
-        VTK::InteractionStyle
-        VTK::RenderingAnnotation
-        VTK::RenderingOpenGL2
-        VTK::glew)
-
-# we used to require this?        VTK::RenderingVolumeOpenGL2
+        CommonCore
+        CommonDataModel
+        FiltersCore
+        FiltersFlowPaths
+        FiltersHybrid
+        FiltersModeling
+        IOLegacy
+        IOPLY
+        IOXML
+        InteractionStyle
+        RenderingAnnotation
+        RenderingOpenGL2
+        RenderingVolumeOpenGL2
+        glew)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    LIST(APPEND REQ_VTK_MODS VTK::GUISupportQtOpenGL)
+    LIST(APPEND REQ_VTK_MODS GUISupportQtOpenGL)
 ENDIF()
 
 # Optional
-#SET(OPT_VTK_MODS
-#       VTK::GeovisCore # Cartographic Projection
-#       VTK::IOEnSight  # EnSight
-#       VTK::libxml2    # Xdmf
-#   )
+SET(OPT_VTK_MODS
+       GeovisCore # Cartographic Projection Operator
+       IOEnSight  # EnSight Database
+       libxml2    # Xdmf Database
+   )
 
-# We don't list our required modules in the find_package call because it
-# does funny things with VTK_INCLUDES, and the OPTIONAL_COMPONENTS arg
-# causes an error if anything in the optional list is not found, would be better
-# if it issued a warning instead. Perhaps one day it will be fixed, and we can 
-# use this: find_package(VTK 6.0 REQUIRED ${REQ_VTK_MODS} OPTIONAL_COMPONENTS ${OPT_VTK_MODS} NO_MODULE PATHS ${VTK_DIR})
 
 set(Qt5_DIR ${VISIT_QT_DIR}/lib/cmake/Qt5)
-find_package(VTK ${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION} REQUIRED NO_MODULE PATHS ${VTK_DIR})
+find_package(VTK ${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}
+    REQUIRED ${REQ_VTK_MODS}
+    OPTIONAL_COMPONENTS ${OPT_VTK_MODS}
+    NO_MODULE
+    PATHS ${VTK_DIR})
 
 # Ensure we have all the required modules:
 FOREACH(module ${REQ_VTK_MODS})
@@ -153,14 +151,14 @@ ELSE(VISIT_VTK_SKIP_INSTALL)
         SET(pathnameandprefixlib "${VTK_INSTALL_PREFIX}/lib/")
     ENDIF(NOT WIN32)
     MACRO(SETUP_INSTALL vtklib)
-        SET(LIBNAME   ${pathnameandprefix}${vtklib}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
+        SET(LIBNAME   ${pathnameandprefix}vtk${vtklib}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
         IF(EXISTS ${LIBNAME})
             THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
         ENDIF(EXISTS ${LIBNAME})
 
         IF(WIN32)
             # install .lib versions, too
-            SET(LIBNAME   ${pathnameandprefixlib}${vtklib}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
+            SET(LIBNAME   ${pathnameandprefixlib}vtk${vtklib}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
             IF(EXISTS ${LIBNAME})
                 THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
             ENDIF(EXISTS ${LIBNAME})
