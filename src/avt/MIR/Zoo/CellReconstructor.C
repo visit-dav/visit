@@ -32,16 +32,18 @@
 //    Hank Childs, Fri Jun  9 15:05:25 PDT 2006
 //    Reorder initializers to match declaration order in class definition.
 //
+//    Kathleen Biagas, Thu Apr  2 17:16:39 PDT 2020
+//    Removed MIRConnectivity from constructor, as it isn't used.
+//
 // ****************************************************************************
 CellReconstructor::CellReconstructor(vtkDataSet *d,
                                      avtMaterial *m,
                                      ResampledMat &r,
                                      int np, int nc,
                                      bool matsSharePoints,
-                                     MIRConnectivity &mc,
                                      ZooMIR &z)
     : mesh(d), mat(m), rm(r), nPoints(np), nCells(nc),
-      conn(mc), mir(z),
+      mir(z),
       nMaterials(mat->GetNMaterials()),
       allMaterialsSharePoints(matsSharePoints),
       edges(nPoints/2),

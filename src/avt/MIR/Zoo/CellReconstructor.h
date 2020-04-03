@@ -37,12 +37,15 @@
 //    Output actual volumes/areas, not VF's, and return total vol/area, 
 //    in ReconstructCell.
 //
+//    Kathleen Biagas, Thu Apr  2 17:16:39 PDT 2020
+//    Removed MIRConnectivity from constructor, as it isn't used.
+//
 // ****************************************************************************
 class CellReconstructor
 {
   public:
     CellReconstructor(vtkDataSet*, avtMaterial*, ResampledMat&, int, int, bool,
-                      MIRConnectivity&, ZooMIR&);
+                      ZooMIR&);
     virtual ~CellReconstructor();
     virtual double ReconstructCell(int, int, int, vtkIdType*, double*) = 0;
 
@@ -53,7 +56,6 @@ class CellReconstructor
     ResampledMat                           &rm;
     int                                     nPoints;
     int                                     nCells;
-    MIRConnectivity                        &conn;
     ZooMIR                                 &mir;
     int                                     nMaterials;
 
