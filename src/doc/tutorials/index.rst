@@ -31,6 +31,7 @@ Contents:
     Scripting
     Aneurysm
     PotentialFlow
+    RemoteUsage
     
 
 .. Indices and tables
