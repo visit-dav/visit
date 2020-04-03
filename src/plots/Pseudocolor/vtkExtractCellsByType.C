@@ -18,6 +18,7 @@
 #include "vtkPointData.h"
 #include "vtkCellData.h"
 #include "vtkCellArray.h"
+#include "vtkCellArrayIterator.h"
 #include "vtkPointSet.h"
 #include "vtkPolyData.h"
 #include "vtkUnstructuredGrid.h"
@@ -224,17 +225,19 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
 
   // Verts
   outCD->CopyAllocate(inCD);
-  vtkIdType i, npts, *pts;
-  vtkCellArray *inVerts = input->GetVerts();
+  vtkIdType npts;
+  const vtkIdType *pts;
   if ( this->ExtractCellType(VTK_VERTEX) || this->ExtractCellType(VTK_POLY_VERTEX) )
   {
+    auto inVerts = vtk::TakeSmartPointer(input->GetVerts()->NewIterator());
     vtkCellArray *verts = vtkCellArray::New();
-    for ( inVerts->InitTraversal(); inVerts->GetNextCell(npts,pts); ++currentInputCellId )
+    for ( inVerts->GoToFirstCell(); !inVerts->IsDoneWithTraversal(); inVerts->GoToNextCell(), ++currentInputCellId )
     {
+      inVerts->GetCurrentCell(npts,pts);
       if ( this->ExtractCellType(input->GetCellType(currentInputCellId)) )
       {
         ptIds->Reset();
-        for (i=0; i<npts; ++i)
+        for (vtkIdType i=0; i<npts; ++i)
         {
           if ( ptMap[pts[i]] < 0 )
           {
@@ -251,20 +254,21 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
   }
   else
   {
-    currentInputCellId += inVerts->GetNumberOfCells();
+    currentInputCellId += input->GetNumberOfVerts();
   }
 
   // Lines
-  vtkCellArray *inLines = input->GetLines();
   if ( this->ExtractCellType(VTK_LINE) || this->ExtractCellType(VTK_POLY_LINE) )
   {
+    auto inLines = vtk::TakeSmartPointer(input->GetLines()->NewIterator());
     vtkCellArray *lines = vtkCellArray::New();
-    for ( inLines->InitTraversal(); inLines->GetNextCell(npts,pts); ++currentInputCellId )
+    for ( inLines->GoToFirstCell(); !inLines->IsDoneWithTraversal(); inLines->GoToNextCell(), ++currentInputCellId )
     {
+      inLines->GetCurrentCell(npts,pts);
       if ( this->ExtractCellType(input->GetCellType(currentInputCellId)) )
       {
         ptIds->Reset();
-        for (i=0; i<npts; ++i)
+        for (vtkIdType i=0; i<npts; ++i)
         {
           if ( ptMap[pts[i]] < 0 )
           {
@@ -281,21 +285,22 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
   }
   else
   {
-    currentInputCellId += inLines->GetNumberOfCells();
+    currentInputCellId += input->GetNumberOfLines();
   }
 
   // Polys
-  vtkCellArray *inPolys = input->GetPolys();
   if ( this->ExtractCellType(VTK_TRIANGLE) || this->ExtractCellType(VTK_QUAD) ||
        this->ExtractCellType(VTK_POLYGON) )
   {
+    auto inPolys = vtk::TakeSmartPointer(input->GetPolys()->NewIterator());
     vtkCellArray *polys = vtkCellArray::New();
-    for ( inPolys->InitTraversal(); inPolys->GetNextCell(npts,pts); ++currentInputCellId )
+    for ( inPolys->GoToFirstCell(); !inPolys->IsDoneWithTraversal(); inPolys->GoToNextCell(), ++currentInputCellId )
     {
+      inPolys->GetCurrentCell(npts,pts);
       if ( this->ExtractCellType(input->GetCellType(currentInputCellId)) )
       {
         ptIds->Reset();
-        for (i=0; i<npts; ++i)
+        for (vtkIdType i=0; i<npts; ++i)
         {
           if ( ptMap[pts[i]] < 0 )
           {
@@ -312,7 +317,7 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
   }
   else
   {
-    currentInputCellId += inPolys->GetNumberOfCells();
+    currentInputCellId += input->GetNumberOfPolys();
   }
 
   // Triangle strips
@@ -320,11 +325,13 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
   if ( this->ExtractCellType(VTK_TRIANGLE_STRIP) )
   {
     vtkCellArray *strips = vtkCellArray::New();
+    auto inStrips = vtk::TakeSmartPointer(input->GetStrips()->NewIterator());
     // All cells are of type VTK_TRIANGLE_STRIP
-    for ( inStrips->InitTraversal(); inStrips->GetNextCell(npts,pts); ++currentInputCellId )
+    for ( inStrips->GoToFirstCell(); !inStrips->IsDoneWithTraversal(); inStrips->GoToNextCell(), ++currentInputCellId )
     {
+      inStrips->GetCurrentCell(npts,pts);
       ptIds->Reset();
-      for (i=0; i<npts; ++i)
+      for (vtkIdType i=0; i<npts; ++i)
       {
         if ( ptMap[pts[i]] < 0 )
         {

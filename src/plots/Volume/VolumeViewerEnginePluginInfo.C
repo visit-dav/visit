@@ -33,10 +33,12 @@ VolumeAttributes *VolumeViewerEnginePluginInfo::defaultAtts = NULL;
 //
 // ****************************************************************************
 
+#if 0
 #include <vtkRenderingVolumeOpenGL2ObjectFactory.h>
 
 static vtkRenderingVolumeOpenGL2ObjectFactory *volFactory = NULL;
 static int volFactory_count = 0;
+#endif
 
 void
 VolumeViewerEnginePluginInfo::InitializeGlobalObjects()
@@ -46,6 +48,7 @@ VolumeViewerEnginePluginInfo::InitializeGlobalObjects()
         VolumeViewerEnginePluginInfo::clientAtts  = new VolumeAttributes;
         VolumeViewerEnginePluginInfo::defaultAtts = new VolumeAttributes;
     }
+#if 0
     // Want to ensure only 1 factory gets registered for this lib
     if (++volFactory_count == 1)
     {
@@ -53,6 +56,7 @@ VolumeViewerEnginePluginInfo::InitializeGlobalObjects()
         vtkObjectFactory::RegisterFactory(volFactory);
         volFactory->Delete();
     }
+#endif
 }
 
 
@@ -216,9 +220,11 @@ VolumeViewerEnginePluginInfo::GetMenuName() const
 VolumeViewerEnginePluginInfo::~VolumeViewerEnginePluginInfo()
 {
     // Want to ensure only 1 factory gets unregistered for this lib
+#if 0
     if (--volFactory_count == 0)
     {
         vtkObjectFactory::UnRegisterFactory(volFactory);
     }
+#endif
 }
 

@@ -10,6 +10,7 @@
 
 #include <vtkAppendPolyData.h>
 #include <vtkCellData.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkConeSource.h>
 #include <vtkExtractCellsByType.h>
 #include <vtkGeometryFilter.h>
@@ -751,20 +752,20 @@ avtPseudocolorGeometryFilter::AddEndPoints(vtkPolyData *input,
         scale = (radiusFactor-1) / (range[1]-range[0]);
     }
 
-    vtkCellArray *lines  = input->GetLines();
     vtkPoints    *points = input->GetPoints();
 
     vtkIdType numPts;
-    vtkIdType *ptIndexs;
+    const vtkIdType *ptIndexs;
 
     vtkIdType lineIndex = 0;
-    lines->InitTraversal();
 
     vtkCellData  *inputCellData  = input->GetCellData();
     vtkPointData *inputPointData = input->GetPointData();
 
-    while (lines->GetNextCell(numPts, ptIndexs))
+    auto lines = vtk::TakeSmartPointer(input->GetLines()->NewIterator());
+    for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell(), ++lineIndex)
     {
+        lines->GetCurrentCell(numPts, ptIndexs);
         vtkPolyData *outPD;
 
         double p0[3], p1[3];
@@ -901,7 +902,6 @@ avtPseudocolorGeometryFilter::AddEndPoints(vtkPolyData *input,
                 outPD->Delete();
             }
         }
-        ++lineIndex;
     }
     appender->Update();
     output->ShallowCopy(appender->GetOutput());

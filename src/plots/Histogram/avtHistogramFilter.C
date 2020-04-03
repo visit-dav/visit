@@ -14,6 +14,7 @@
 #include <vtkPointData.h>
 #include <vtkPointDataToCellData.h>
 #include <vtkPolyData.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 
 #include <PickAttributes.h>

@@ -243,7 +243,8 @@ avtSubsetFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
                 // insert the cells
                 out_pd->Allocate(subsetCounts[s]);
 
-                vtkIdType npts, *pts;
+                vtkIdType npts;
+                const vtkIdType *pts;
                 int numNewCells = 0;
                 for (int j = 0; j < ntotalcells; j++)
                 {

@@ -19,6 +19,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkTextMapper.h>
 #include <vtkTextProperty.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 
 #include <DebugStream.h>

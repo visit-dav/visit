@@ -13,8 +13,8 @@
       avtDefaultRenderer.C
     </Files>
     <LIBS components="V">
-      vtkRenderingVolume
-      vtkRenderingVolumeOpenGL2
+      VTK::RenderingVolume
+      VTK::RenderingVolumeOpenGL2
     </LIBS>
     <Files components="E">
       VolumeFunctions.C
@@ -26,13 +26,13 @@
     </Files>
     <LIBS components="ESer">
       avtexpressions_ser
-      vtkRenderingVolume
-      vtkRenderingVolumeOpenGL2
+      VTK::RenderingVolume
+      VTK::RenderingVolumeOpenGL2
     </LIBS>
     <LIBS components="EPar">
       avtexpressions_par
-      vtkRenderingVolume
-      vtkRenderingVolumeOpenGL2
+      VTK::RenderingVolume
+      VTK::RenderingVolumeOpenGL2
     </LIBS>
     <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="VolumeAttributes.code">
       <Enum name="Renderer">
