@@ -121,6 +121,11 @@ ResampledMat::Resample()
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 15, 2003
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Apr  2 17:21:51 PDT 2020
+//    MIRConnectivity has changed to keep in line with storage in VTK 9's
+//    vtkCellArray class: separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 void
 ResampledMat::CountMatsAtAdjacentNodes()
@@ -135,10 +140,13 @@ ResampledMat::CountMatsAtAdjacentNodes()
     // and subsample the zone volume fractions to the nodes and the faces.
     //
     const vtkIdType *c_ptr = conn->connectivity;
+    const vtkIdType *o_ptr = conn->offsets;
+    // offsets[i] = index for cell i into connectivit
     for (int c=0; c<nCells; c++)
     {
-        int        nPts = (int)*c_ptr;
-        const vtkIdType *ids  = c_ptr+1;
+        // using c+1 with o_ptr is safe, because offsets size is nCells +1
+        vtkIdType       nPts = o_ptr[c+1]-o_ptr[c];
+        const vtkIdType *ids = &c_ptr[o_ptr[c]];
 
         //
         // Create a list of materials and their corresponding volume
@@ -173,8 +181,6 @@ ResampledMat::CountMatsAtAdjacentNodes()
                                                              bitForBit(matno);
             }
         }
-
-        c_ptr += *c_ptr+1;
     }
 }
 
@@ -220,6 +226,11 @@ ResampledMat::CountMatArrayLength()
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 15, 2003
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Apr  2 17:21:51 PDT 2020
+//    MIRConnectivity has changed to keep in line with storage in VTK 9's
+//    vtkCellArray class: separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 void
 ResampledMat::AccumulateVFsToMatArray()
@@ -233,10 +244,13 @@ ResampledMat::AccumulateVFsToMatArray()
     memset(matArrayNodeVF, 0, matArrayLen * sizeof(float));
     memset(nCellsAdjacentToNode, 0, nPoints);
     const vtkIdType *c_ptr = conn->connectivity;
+    // offsets[i] = index for cell i into connectivity
+    const vtkIdType *o_ptr = conn->offsets;
     for (int c=0; c<nCells; c++)
     {
-        int        nPts = (int)*c_ptr;
-        const vtkIdType *ids  = c_ptr+1;
+        // using c+1 with o_ptr is safe, because offsets size is nCells +1
+        vtkIdType       nPts = o_ptr[c+1]-o_ptr[c];
+        const vtkIdType *ids = &c_ptr[o_ptr[c]];
 
         for (int n=0; n<nPts; n++)
         {
@@ -279,8 +293,6 @@ ResampledMat::AccumulateVFsToMatArray()
                 matArrayMatNo[index] = matno;
             }
         }
-
-        c_ptr += *c_ptr+1;
     }
 }
 
@@ -321,6 +333,11 @@ ResampledMat::RenormalizeMatArray()
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 15, 2003
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Apr  2 17:21:51 PDT 2020
+//    MIRConnectivity has changed to keep in line with storage in VTK 9's
+//    vtkCellArray class: separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 void
 ResampledMat::CountMatsAtAdjacentCells()
@@ -331,11 +348,13 @@ ResampledMat::CountMatsAtAdjacentCells()
     matsAtCellOneAway = new unsigned char[nBPE * nCells];
     memset(matsAtCellOneAway, 0, nBPE*nCells);
     const vtkIdType *c_ptr = conn->connectivity;
+    const vtkIdType *o_ptr = conn->offsets;
+    // offsets[i] = index for cell i into connectivity
     for (int c=0; c<nCells; c++)
     {
-        int        nPts = (int)*c_ptr;
-        const vtkIdType *ids  = c_ptr+1;
-
+        // using c+1 with o_ptr is safe, because offsets size is nCells +1
+        vtkIdType       nPts = o_ptr[c+1]-o_ptr[c];
+        const vtkIdType *ids = &c_ptr[o_ptr[c]];
         unsigned char *cm = &matsAtCellOneAway[nBPE*c];
         for (int n=0; n<nPts; n++)
         {
@@ -345,8 +364,6 @@ ResampledMat::CountMatsAtAdjacentCells()
                 cm[b] |= nm[b];
             }
         }
-
-        c_ptr += *c_ptr+1;
     }
 }
 

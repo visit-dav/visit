@@ -296,6 +296,11 @@ DiscreteMIR::Reconstruct2DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
 //
 //    Mark C. Miller, Tue Aug 30 00:10:03 PDT 2011
 //    Fixed compiler warnings converting to 'int' from 'float'.
+//
+//    Kathleen Biagas, Thu Apr  2 17:21:51 PDT 2020
+//    MIRConnectivity has changed to keep in line with storage in VTK 9's
+//    vtkCellArray class: separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 bool
 DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
@@ -510,6 +515,7 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
     // cells.  They'll need some special handling to connect with
     // mixed cells.
     vtkIdType *conn_ptr = conn.connectivity;
+    vtkIdType *off_ptr = conn.offsets;
     zonesList.reserve(nCells);
     for(int k = 0; k < dimensions[2]; ++k)
         for(int j = 0; j < dimensions[1]; ++j)
@@ -518,10 +524,11 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
                 Cell cell(i, j, k);
                 int cellid = id(cell);
 
-                int nIds = *conn_ptr;
-                const vtkIdType *ids = conn_ptr+1;
+                int nIds = *(off_ptr+1) -*off_ptr;
+                const vtkIdType *ids = conn_ptr;
 
-                conn_ptr += nIds+1;
+                conn_ptr += nIds;
+                ++off_ptr;
 
                 if(matlist[cellid] < 0)
                     continue;
@@ -1228,6 +1235,11 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
 //    Mark C. Miller, Tue Jan 15 13:22:29 PST 2013
 //    Adjusted logic to overwrite mix values to use SetTuple instead of 
 //    assuming a float* array.
+//
+//    Kathleen Biagas, Thu Apr  2 17:21:51 PDT 2020
+//    MIRConnectivity has changed to keep in line with storage in VTK 9's
+//    vtkCellArray class: separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 vtkDataSet *
 DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
@@ -1425,18 +1437,24 @@ DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     // Now insert the connectivity array.
     //
     vtkIdTypeArray *nlist = vtkIdTypeArray::New();
-    nlist->SetNumberOfValues(totalsize + ncells);
-    vtkIdType *nl = nlist->GetPointer(0);
+    nlist->SetNumberOfValues(totalsize);
+    vtkIdType *nl = nlist->WritePointer(0,totalsize);
+
+    //offsets
+    vtkIdTypeArray *olist = vtkIdTypeArray::New();
+    // offsets array is always ncells+1
+    olist->SetNumberOfValues(ncells+1);
+    vtkIdType *ol = olist->WritePointer(0,ncells+1);
+    // set first offset
+    *ol++ = 0;
+    // subsequent offsets are previous incremented by node count of current cell
+    // offset will hold the increment
+    vtkIdType offset = 0;
 
     vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
     cellTypes->SetNumberOfValues(ncells);
     unsigned char *ct = cellTypes->GetPointer(0);
 
-    vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
-    cellLocations->SetNumberOfValues(ncells);
-    vtkIdType *cl = cellLocations->GetPointer(0);
-
-    int offset = 0;
     for (int i=0; i<ncells; i++)
     {
         int c = cellList[i];
@@ -1444,22 +1462,21 @@ DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         *ct++ = zonesList[c].celltype;
 
         const int nnodes = zonesList[c].nnodes;
-        *nl++ = nnodes;
         const vtkIdType *indices = &indexList[zonesList[c].startindex];
         for (int j=0; j<nnodes; j++)
             *nl++ = indices[j];
 
-        *cl++ = offset;
-        offset += nnodes+1;
+        offset += nnodes;
+        *ol++ = nnodes;
     }
 
     vtkCellArray *cells = vtkCellArray::New();
-    cells->SetCells(ncells, nlist);
+    cells->SetData(olist, nlist);
     nlist->Delete();
+    olist->Delete();
 
-    rv->SetCells(cellTypes, cellLocations, cells);
+    rv->SetCells(cellTypes, cells);
     cellTypes->Delete();
-    cellLocations->Delete();
     cells->Delete();
 
     //
@@ -1618,6 +1635,10 @@ DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
 //
 //  Note:  Copied from ZooMIR/TetMIR implementation by Jeremey Meredith.
 //
+//    Kathleen Biagas, Thu Apr  2 17:21:51 PDT 2020
+//    MIRConnectivity has changed to keep in line with storage in VTK 9's
+//    vtkCellArray class: separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 bool
 DiscreteMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
@@ -1669,11 +1690,12 @@ DiscreteMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
     int        nCells  = conn.ncells;
     const int *matlist = mat->GetMatlist();
     vtkIdType *conn_ptr = conn.connectivity;
+    vtkIdType *off_ptr = conn.offsets;
     zonesList.resize(nCells);
     for (int c=0; c<nCells; c++)
     {
-        int        nIds = (int)*conn_ptr;
-        const vtkIdType *ids  = conn_ptr+1;
+        vtkIdType        nIds = *(off_ptr+1)-*off_ptr;
+        const vtkIdType *ids  = conn_ptr;
 
         ReconstructedZone &zone = zonesList[c];
         zone.origzone   = c;
@@ -1685,7 +1707,8 @@ DiscreteMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
 
         for (int n=0; n<nIds; n++)
             indexList.push_back(ids[n]);
-        conn_ptr += nIds+1;
+        conn_ptr += nIds;
+        ++off_ptr;
     }
 
     visitTimer->StopTimer(timerHandle, "MIR: Reconstructing clean mesh");
