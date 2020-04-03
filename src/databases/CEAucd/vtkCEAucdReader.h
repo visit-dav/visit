@@ -33,10 +33,10 @@
 #ifndef __vtkCEAucdReader_h
 #define __vtkCEAucdReader_h
 
-#include <vtkUnstructuredGridAlgorithm.h>
 #include <fstream>
 #include <vector>
 
+#include <vtkUnstructuredGridAlgorithm.h>
 class vtkIntArray;
 class vtkFloatArray;
 class vtkIdTypeArray;
@@ -120,7 +120,7 @@ class vtkCEAucdReader : public vtkUnstructuredGridAlgorithm
       vtkSetStringMacro(ActivePointArray);
       vtkGetStringMacro(ActivePointArray);
       
-      void SetFileStream( ifstream* istr );
+      void SetFileStream( std::ifstream* istr );
 
      // Description:
      // The following methods allow selective reading of solutions fields.  by
@@ -173,7 +173,7 @@ class vtkCEAucdReader : public vtkUnstructuredGridAlgorithm
       vtkIdType * PointsInMaterial;
       vtkIdType * CellIndexInMaterial;
       
-      ifstream *FileStream;
+      std::ifstream *FileStream;
       long GlobalOffset;
       long FileSize;
       bool OwnStream;

@@ -6,6 +6,6 @@
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
     <LIBS>
-      vtkIOGeometry
+      VTK::IOGeometry
     </LIBS>
   </Plugin>

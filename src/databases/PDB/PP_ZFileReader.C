@@ -27,6 +27,7 @@
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>

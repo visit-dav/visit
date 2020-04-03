@@ -18,6 +18,7 @@
 #include <FileFunctions.h>
 
 #include "vtkCellArray.h"
+#include "vtkCellArrayIterator.h"
 #include "vtkCellData.h"
 #include "vtkFloatArray.h"
 #include "vtkInformation.h"
@@ -462,10 +463,8 @@ int vtkVisItOBJReader::RequestData(
       tcoord_polys->InitTraversal();
       normal_polys->InitTraversal();
       int i,j;
-      vtkIdType dummy_warning_prevention_mechanism[1];
-      vtkIdType n_pts=-1,*pts=dummy_warning_prevention_mechanism;
-      vtkIdType n_tcoord_pts=-1,*tcoord_pts=dummy_warning_prevention_mechanism;
-      vtkIdType n_normal_pts=-1,*normal_pts=dummy_warning_prevention_mechanism;
+      vtkIdType n_pts=-1, n_tcoord_pts=-1, n_normal_pts=-1;
+      const vtkIdType *pts=nullptr, *tcoord_pts=nullptr, *normal_pts=nullptr;
       for (i=0;i<polys->GetNumberOfCells();i++) 
         {
         polys->GetNextCell(n_pts,pts); 
@@ -484,6 +483,8 @@ int vtkVisItOBJReader::RequestData(
           }
         else 
           {
+          vtkNew<vtkIdList> newCellPts;
+          newCellPts->SetNumberOfIds(n_pts);
           // copy the corresponding points, tcoords and normals across
           for (j=0;j<n_pts;j++) 
             {
@@ -499,10 +500,10 @@ int vtkVisItOBJReader::RequestData(
               }
             // copy the vertex into the new structure and update
             // the vertex index in the polys structure (pts is a pointer into it)
-            pts[j] = new_points->InsertNextPoint(points->GetPoint(pts[j]));
+            newCellPts->SetId(j, new_points->InsertNextPoint(points->GetPoint(pts[j])));
             }
           // copy this poly (pointing at the new points) into the new polys list 
-          new_polys->InsertNextCell(n_pts,pts);
+          new_polys->InsertNextCell(newCellPts);
           new_groupIds->InsertNextValue(groupIds->GetValue(i));
           }
         }

@@ -14,7 +14,7 @@
 #include <vtkPointData.h>
 #include <FileFunctions.h>
 
-#include <sys/stat.h>
+#include <fstream>
 
 #ifndef STRNCEQUAL
   #ifdef _WIN32
@@ -23,6 +23,8 @@
     #define STRNCEQUAL(a,b,c) strncasecmp(a, b, c)
   #endif
 #endif
+
+using std::ifstream;
 
 vtkStandardNewMacro(vtkStimulateReader);
 
@@ -68,12 +70,7 @@ int vtkStimulateReader::RequestInformation(
 int vtkStimulateReader::OpenFile(void)
 {
   // Close file from any previous image
-  if (this->File)
-    {
-    this->File->close();
-    delete this->File;
-    this->File = NULL;
-    }
+  this->CloseFile();
 
   char spr_name[1024];
   char sdt_name[1024];

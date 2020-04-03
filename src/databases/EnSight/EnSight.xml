@@ -1,10 +1,7 @@
 <?xml version="1.0"?>
   <Plugin name="EnSight" type="database" label="EnSight" version="1.0" enabled="true" dbtype="MTMD" haswriter="false">
-    <CXXFLAGS>
-      $(ENSIGHT_FLAGS)
-    </CXXFLAGS>
     <LIBS>
-      vtkIOEnSight
+      VTK::IOEnSight
     </LIBS>
     <FilePatterns>
       *.case

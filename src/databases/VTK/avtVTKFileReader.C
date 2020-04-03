@@ -28,6 +28,7 @@
 #include <vtkStringArray.h>
 #include <vtkStructuredGrid.h>
 #include <vtkStructuredPoints.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkXMLImageDataReader.h>
 #include <vtkXMLPolyDataReader.h>

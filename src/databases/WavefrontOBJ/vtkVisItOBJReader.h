@@ -44,8 +44,8 @@ protected:
 
   char *FileName;
 private:
-  vtkVisItOBJReader(const vtkVisItOBJReader&);  // Not implemented.
-  void operator=(const vtkVisItOBJReader&);  // Not implemented.
+  vtkVisItOBJReader(const vtkVisItOBJReader&) = delete;
+  void operator=(const vtkVisItOBJReader&) = delete;
 };
 
 #endif

@@ -10,11 +10,12 @@
 
 #include <string>
 
+#include <vtkCellArray.h>
 #include <vtkFloatArray.h>
+#include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkPolyData.h>
-#include <vtkCellArray.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <avtDatabaseMetaData.h>
 

@@ -9,6 +9,7 @@
 #include <avtRAWWriter.h>
 
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -197,10 +198,12 @@ avtRAWWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if(nDomains > 1)
         fprintf(file, "Object%d\n", chunk + 1);
 
-    pd->GetPolys()->InitTraversal();
-    vtkIdType nids, *ids = 0;
-    while(pd->GetPolys()->GetNextCell(nids, ids))
+    vtkIdType nids;
+    const vtkIdType *ids = nullptr;
+    auto iter = vtk::TakeSmartPointer(pd->GetPolys()->NewIterator());
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
     {
+        iter->GetCurrentCell(nids, ids);
         if(nids == 3)
         {
             float *ptr = (float *)pd->GetPoints()->GetVoidPointer(0);

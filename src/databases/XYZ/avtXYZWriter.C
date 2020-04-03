@@ -12,6 +12,7 @@
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 #include <vtkCellArray.h>
+#include <vtkCellTypes.h>
 #include <AtomicProperties.h>
 #include <avtDatabaseMetaData.h>
 #include <DebugStream.h>
