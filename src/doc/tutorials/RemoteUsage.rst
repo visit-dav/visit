@@ -41,14 +41,20 @@ Installing RealVNC on an LLNL managed Windows system
 Installing RealVNC on an LLNL managed Mac system
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Directions for a Mac
+1. Start MacPatch from *Applications->MacPatch.app*.
+2. Select the **Software** tab and scroll down until you find the *RealVNC Viewer*.
+3. Click the *Install* button in the right column to install the package.
+
+.. figure:: images/MacPatch.png
+
+   MacPatch: LLNL Managed Software
+
+Starting up the RealVNC client
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There is a lot of additional content on using
 `RealVNC <https://hpc.llnl.gov/software/visualization-software/vnc-realvnc>`_
 at Livermore Computing.
-
-Starting up the RealVNC client
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 At this point we will focus on running RealVNC on Windows. Other than
 starting the Viewer, everything should be pretty much the same for
@@ -105,7 +111,7 @@ Recommended resolutions are:
 
 * Dell laptop running Windows: 1280 x 720
 * A high-resolution external monitor: 1920 x 1200
-* A Mac laptop: XXXXxYYYY
+* A Mac laptop: 1680 x 1050 (Retina Display) or 1440 x 900 
 
 When using VisIt_ you should ssh to another CZ machine so that you don't
 overload the VNC server. You should use version 3.1.1 of VisIt_ for the
