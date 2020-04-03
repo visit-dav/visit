@@ -13,6 +13,7 @@
 
 #include <avtADIOS2BaseFileFormat.h>
 #include <avtGTCFileFormat.h>
+#include <avtPixie3DFileFormat.h>
 #include <avtLAMMPSFileFormat.h>
 #include <avtSpecFEMFileFormat.h>
 #include <avtMEUMMAPSFileFormat.h>
@@ -54,7 +55,7 @@ avtFileFormatInterface *
 ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
 {
     avtFileFormatInterface *ffi = NULL;
-    enum Flavor {GTC, BASIC, MEUMMAPS, LAMMPS, SPECFEM, FAIL};
+    enum Flavor {GTC, BASIC, MEUMMAPS, LAMMPS, SPECFEM, PIXIE3D, FAIL};
     bool isSST = (std::string(list[0]).find(".sst") != std::string::npos);
     bool isHDF5 = (std::string(list[0]).find(".h5") != std::string::npos);
     bool isWDM = (std::string(list[0]).find(".ssc") != std::string::npos);
@@ -101,6 +102,8 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                         flavor = LAMMPS;
                     else if (avtMEUMMAPSFileFormat::IdentifyADIOS2(variables,attributes))
                         flavor = MEUMMAPS;
+                    else if (avtPixie3DFileFormat::IdentifyADIOS2(variables,attributes))
+                        flavor = PIXIE3D;
 
                     // generic with staging engines
                     else
@@ -127,6 +130,8 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                     flavor = MEUMMAPS;
                 else if (avtSpecFEMFileFormat::Identify(fileName.c_str()))
                     flavor = SPECFEM;
+                else if (avtPixie3DFileFormat::Identify(fileName.c_str()))
+                    flavor = PIXIE3D;
 
                 // generic with HDF5 file
                 else if (isHDF5)
@@ -148,6 +153,10 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         debug5<<"ADIOS2 FLAVOR= "<<flavor<<endl;
         switch(flavor)
         {
+          case PIXIE3D:
+            ffi = avtPixie3DFileFormat::CreateInterfaceADIOS2(
+                    list, nList, nBlock, adios, reader, io, variables, attributes);
+            break;
           case GTC:
             ffi = avtGTCFileFormat::CreateInterfaceADIOS2(
                     list, nList, nBlock, adios, reader, io, variables, attributes);

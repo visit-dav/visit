@@ -87,7 +87,7 @@ avtADIOS2BaseFileFormat::CreateInterfaceADIOS2(
         int nList,
         int nBlock,
         std::shared_ptr<adios2::ADIOS> adios,
-        adios2::Engine &reader, 
+        adios2::Engine &reader,
         adios2::IO &io,
         std::map<std::string, adios2::Params> &variables,
         std::map<std::string, adios2::Params> &attributes
@@ -100,11 +100,11 @@ avtADIOS2BaseFileFormat::CreateInterfaceADIOS2(
         ffl[i] =  new avtMTSDFileFormat*[nBlock];
         for (int j = 0; j < nBlock; j++)
         {
-        cout << "----------- ADIOS Base create interface for  " 
-             << list[i*nBlock +j] 
+        cout << "----------- ADIOS Base create interface for  "
+             << list[i*nBlock +j]
              << " -----------------" << endl;
 
-            if (!i && !j) 
+            if (!i && !j)
             {
                 ffl[i][j] =  new avtADIOS2BaseFileFormat(adios, reader, io, variables, attributes, list[i*nBlock +j]);
             }
@@ -145,7 +145,7 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
     {
         numTimeSteps = 100000;
     }
-    else 
+    else
     {
         map<string, adios2::Params> vars = io.AvailableVariables();
         for (auto &v : vars)
@@ -162,9 +162,9 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
 
 avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(std::shared_ptr<adios2::ADIOS> adios,
         adios2::Engine &reader,
-        adios2::IO &io, 
+        adios2::IO &io,
         std::map<std::string, adios2::Params> &variables,
-        std::map<std::string, adios2::Params> &attributes, 
+        std::map<std::string, adios2::Params> &attributes,
         const char *filename)
     : adios(adios),
       numTimeSteps(1),
@@ -181,7 +181,7 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(std::shared_ptr<adios2::ADIOS> 
     {
         numTimeSteps = 100000;
     }
-    else 
+    else
     {
         for (auto &v : variables)
         {
@@ -193,8 +193,8 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(std::shared_ptr<adios2::ADIOS> 
             }
         }
     }
-    cout << "----------- ADIOS Base reader for " 
-         << filename << " with " << numTimeSteps 
+    cout << "----------- ADIOS Base reader for "
+         << filename << " with " << numTimeSteps
          << "steps -----------------" << endl;
 }
 
@@ -445,10 +445,10 @@ avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
             reader.EndStep(); // release previous step
             prev_timestate = timestate;
             adios2::StepStatus status = adios2::StepStatus::NotReady;
-            while (status == adios2::StepStatus::NotReady) 
+            while (status == adios2::StepStatus::NotReady)
             {
                 status = reader.BeginStep(adios2::StepMode::Read, 10.0f);
-                if (status == adios2::StepStatus::EndOfStream || 
+                if (status == adios2::StepStatus::EndOfStream ||
                     status == adios2::StepStatus::OtherError)
                 {
                     reader.Close();
