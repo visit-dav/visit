@@ -1,6 +1,6 @@
 .. _LCS operator:
 
-Lagrangian Coherent Structure operator
+Lagrangian Coherent Structure (LCS) operator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The LCS operator utilizes Lyapunov Exponents based on the Cauchy-Green Tensor

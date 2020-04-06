@@ -65,7 +65,7 @@ Punctures
 While integrating the integral curve to be used the for Poincaré plot, the user
 has the option to require a minimum number of initial punctures through the
 Poincaré section for the analysis. The user may limit the integration
-in case of run-a-way integral curve that can not be fully analyzed.
+in case of run-a-way integral curve that cannot be fully analyzed.
 
 Puncture plot type
     The type of the puncture plot. Options are:
@@ -144,7 +144,7 @@ Perform O-Line Analysis
       P(0) != P(n)).
 
 Show chaotic fieldlines as points
-    Because chaotic curves can not be classified, they are not displayed
+    Because chaotic curves cannot be classified, they are not displayed
     unless this is checked. 
 
 Show islands only

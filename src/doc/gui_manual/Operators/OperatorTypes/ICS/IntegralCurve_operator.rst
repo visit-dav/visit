@@ -31,8 +31,8 @@ Selection
     
 Field Data
     The seed points are defined by another operator and passed to the Integral
-    Curve operator. The array containing the seed points must begin its name
-    with "Seed Points".
+    Curve operator. The name of the array containing the seed points must begin
+    with the string "Seed Points".
 
 Up Axis
     The "up axis" serves as the "Y" axis embedded in the plane or circle.
@@ -94,7 +94,7 @@ Data
 
 The data type controls how the integral curves are colored. There are various
 options, the names of which are self-descriptive such as coloring the curves
-a *solid* color or according to a *seed*. Only those options that require
+with a *solid* color or according to a *seed*. Only those options that require
 further clarification are described further here.
 
 Average Distance from seed
@@ -114,12 +114,12 @@ provided here as needed.
 Delete points before
     Delete all points that come before a critical point defined by a velocity
     threshold. This cleaning will reveal when an integral curve may stop
-    advecting because of some other reason than the critical point. i.e. the
-    advection continues temporally but not spatially, so this cleaning will
+    advecting because of some other reason than the critical point (i.e. the
+    advection continues temporally but not spatially), so this cleaning will
     remove all duplicate points leaving the last temporal value. If the last
     point's temporal value is different than the value as dictated by the elapsed
     time or max steps, then the advection may have reached a critical point but
-    terminated because of some other reason. 
+    terminated because of some other reason.
 
 Delete points after
     Delete all points that come after a critical point defined by a velocity

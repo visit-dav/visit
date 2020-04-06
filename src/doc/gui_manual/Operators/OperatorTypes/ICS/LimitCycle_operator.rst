@@ -6,9 +6,9 @@ Limit Cycle operator
 The Limit Cycle Operator detects limit cycles within a vector field. Integral
 curves are seeded at a Poincaré section and integrated through the vector
 field. Curves that return to the Poincaré section indicate a limit cycle, and
-the integration of the curve will stop. Some integral curves will not return
-to the Poincaré section, which can be terminated according to termination
-criteria. 
+the integration of the curve will stop. Those integral curves that do not
+return to the Poincaré section are terminated according to separate termination
+criteria.
 
 A signed return distance is calculated for the integral curves that return to
 the Poincaré section. Curves with a return distance below the cycle tolerance
