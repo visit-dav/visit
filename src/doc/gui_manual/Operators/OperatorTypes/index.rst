@@ -22,6 +22,7 @@ operators that you rarely use.
     Elevate_operator
     Explode_operator
     ExternalSurface_operator
+    ICS/index
     Index_Select_operator
     InverseGhostZone_operator
     Isosurface_operator
