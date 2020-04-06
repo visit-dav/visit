@@ -328,7 +328,7 @@ coordinates of this node to seed a set of streamlines.
 Plotting streamlines of velocity
 """"""""""""""""""""""""""""""""
 
-1. Go to *Add->Pseudocolor->operators->IntergralCurve->velocity*.
+1. Go to *Add->Pseudocolor->operators->IntegralCurve->velocity*.
 
 .. figure:: images/Aneurysm-CreateStreamlinePlot.png
 

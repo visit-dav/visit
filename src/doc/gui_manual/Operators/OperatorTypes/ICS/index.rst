@@ -1,3 +1,5 @@
+.. _Integral Cycle System:
+
 Integral Curve System
 =====================
 
@@ -45,10 +47,6 @@ Common to all ICS operators is a four tab GUI: Source, Integration,
 Appearance, and Advanced (the Poincaré operator also has an Analysis tab).
 These tabs contain many functions that are common across all four operators.
 The following is a description of those common features.
-
-.. note:
-    On MacOS, the contents of the Source and Integration tabs are combined into
-    a single Integration tab.
 
 .. _common ICS source:
 
