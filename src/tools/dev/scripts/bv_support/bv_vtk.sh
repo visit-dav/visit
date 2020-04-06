@@ -1105,10 +1105,10 @@ function build_vtk
 
             vopts="${vopts} -DVTK_WRAP_PYTHON:BOOL=true"
             vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=2"
-            vopts="${vopts} -DPYTHON_EXECUTABLE:FILEPATH=${py}"
-            vopts="${vopts} -DPYTHON_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
-            vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
-            vopts="${vopts} -DPYTHON_LIBRARY:FILEPATH=${pylib}"
+            #vopts="${vopts} -DPYTHON_EXECUTABLE:FILEPATH=${py}"
+            #vopts="${vopts} -DPYTHON_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
+            vopts="${vopts} -DPython2_INCLUDE_DIR:PATH=${pyinc}"
+            vopts="${vopts} -DPython2_LIBRARY:FILEPATH=${pylib}"
             #            vopts="${vopts} -DPYTHON_UTIL_LIBRARY:FILEPATH="
         else
             warn "Forgetting python filters because we are doing a static build."
