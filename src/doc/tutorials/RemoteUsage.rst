@@ -22,9 +22,9 @@ running on your local system and a portion is running on a remote
 compute resource such as a supercomputing center. This will always give
 better performance than running on a remote system using X display forwarding,
 since interactions with the graphical user interface will be faster and
-VisIt_ will be able to leverage the graphics processing unit on your desktop.
-The portion running on your local system is refered to as the client and
-the portion running on the remote compute resource is refered to as the
+VisIt_ will be able to leverage the graphics processing unit on your local
+system. The portion running on your local system is refered to as the client
+and the portion running on the remote compute resource is refered to as the
 server. The client is responsible for the graphical user interface and
 the rendering window, while the server is responsible for accessing the
 data on the remote system, processing it, and sending back geometry to be
@@ -210,15 +210,9 @@ You are now ready to connect to the remote system.
    The *Enter Password* window
 
 5. The *File open* will now open to your home directory on the remote system.
-6. Change the *Path* to "/usr/gapps/visit/data".
-7. Scroll the *Files* list down and select "globe.silo".
-8. Click *Ok*.
 
-.. figure:: images/Remote-ClientServer5.png
-
-   The *File open* window
-
-You are now ready to create plots and do everything you are used to doing.
+You are now ready to open files, create plots and do everything you are
+used to doing with VisIt_.
 
 File locations when running client/server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -229,6 +223,7 @@ saved on the local system. Some examples include:
 
 * Images
 * Movies
+* Host profiles
 * Settings
 * Color tables
 
