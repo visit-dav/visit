@@ -44,6 +44,9 @@
 #    Alister Maguire, Wed Jun  5 11:01:31 PDT 2019
 #    Added opacity attenuation test. 
 #
+#    Alister Maguire, Fri Mar 20 15:36:37 PDT 2020
+#    Added gradient lighting reduction test.
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotations():
@@ -360,6 +363,42 @@ def TestVolumeSampling():
 
     DeleteAllPlots()
 
+
+def TestGradientLightingReduction():
+
+    view = GetView3D()
+    view.viewNormal = (0.746662961825451, 0.1647201021100829, 0.6444856161303283)
+    SetView3D(view)
+
+    OpenDatabase(silo_data_path("globe.silo"))
+    AddPlot("Volume", "v")
+    DrawPlots()
+
+    #
+    # Trilinear ray casting used to have very harsh results with
+    # gradient lighting reduction. Let's make sure they're better
+    # now.
+    #
+    v = VolumeAttributes()
+    v.lightingFlag = 1
+    v.rendererType = v.RayCasting
+    v.sampling     = v.Trilinear
+
+    v.lowGradientLightingReduction = v.Lower
+    SetPlotOptions(v)
+    Test("graidentLighting_00")
+
+    v.lowGradientLightingReduction = v.Medium
+    SetPlotOptions(v)
+    Test("graidentLighting_01")
+
+    v.lowGradientLightingReduction = v.Higher
+    SetPlotOptions(v)
+    Test("graidentLighting_02")
+
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("globe.silo"))
+
 #FIXME: For some reason, if you render using the ray caster, 
 #       attempting to render using the default renderer afterwards
 #       will result in a blank test result. I have not been able
@@ -375,5 +414,6 @@ InitAnnotations()
 TestVolumeScaling()
 TestVolumeSampling()
 TestOpacityAttenuation()
+TestGradientLightingReduction()
 
 Exit()
