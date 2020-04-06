@@ -11,6 +11,40 @@ capabilities native to VisIt_, such as running VisIt_ in client/server mode,
 and some make use external mechanisms such as VNC. We will also touch
 briefly on using interactive versus batch allocations.
 
+VisIt_ can run remotely in following ways:
+
+* Through a VNC client.
+* In client/server mode.
+* With X display forwarding through ssh.
+
+When VisIt_ is running in a client/server mode, a portion of VisIt_ is
+running on your local system and a portion is running on a remote
+compute resource such as a supercomputing center. This will always give
+better performance than running on a remote system using X display forwarding,
+since interactions with the graphical user interface will be faster and
+VisIt_ will be able to leverage your graphics accelerator on your desktop.
+The portion running on your local system is refered to as the client and
+the portion running on the remote compute resource is refered to as the
+server. The client is responsible for the graphical user interface and
+the rendering window, while the server is responsible for accessing the
+data on the remote system, processing it, and sending back geometry to be
+rendered or images to be displayed.
+
+When VisIt_ is running with X display forwarding through ssh, it is
+completely running on the remote system and sending all its graphics
+commands over ssh. In one sense this is the easiest to use since you
+just launch VisIt_ on you remote system and you are ready to go. Since
+you are typically already logged into the remote system and already in
+the directory of interest there is no additional setup required, such
+as entering passwords or navigating the remote directory structure.
+Unfortunately it is also the lowest performing option. Graphical user
+interfaces typically send lots of small messages back between the remote
+system and the local display. If there is a high latency between them
+then simple operations such as clicking on buttons and bringing up
+new windows may take a long time. Furthermore, the rendering performance
+of the visualization windows suffers because VisIt_ can't leverage the
+graphics card on the local system.
+
 Using VisIt_ with VNC
 ---------------------
 
@@ -123,3 +157,85 @@ properly with VNC.
 Using client/server
 -------------------
 
+When running in client/server mode, VisIt_ makes use of host profiles that
+provide information on how to run VisIt_ on the remote system, such as where
+VisIt_ is installed and information about the batch system. VisIt_ comes
+with host profiles for many different supercomputing systems. This portion
+of the tutorial will use the Livermore Computing Center at LLNL.
+
+Installing the host profiles for your computer center
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The first thing you will need to do is make sure you have the host profiles
+installed for the remote system. You can check this by bringing up the
+*Host profiles* window.
+
+1. Select *Options->Host profiles...* to bring up the *Host profiles* window.
+2. If the list of *Hosts* is blank or doesn't contain the host of interest, you will need proceed with steps 4 - 8.
+3. Click the *Dismiss* button.
+4. Select *Options->Host profiles and configuration setup...* to bring up the *Setup Host Profiles and Configuration*.
+
+.. figure:: images/Remote-ClientServer1.png
+
+   The *Setup Host Profiles and Configuration*
+
+5. Click on the *Lawrence Livermore National Laboratory (LLNL) open network*.
+6. Click *Install*.
+7. Restart VisIt_.
+8. Select *Options->Host profiles...* to bring up the *Host profiles* window.
+9. You should now see the host profiles for LLNL.
+10. Click the *Dismiss* button.
+
+.. figure:: images/Remote-ClientServer2.png
+
+   The *Host profiles* window with the host profiles for LLNL
+
+Connecting to a remote system
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You are now ready to connect to the remote system.
+
+1. Click on the *Open* icon in the *Sources* section of the main window to bring up the *File open* window.
+2. Click on the *Host*  pulldown menu and select *LLNL Quartz*.
+3. This will bring up a window to enter your password.
+
+.. figure:: images/Remote-ClientServer3.png
+
+   The *File open* window
+
+4. If your username is different on the remote system from the one on your local system you will need to click on *Change username* and change your username.
+
+.. figure:: images/Remote-ClientServer4.png
+
+   The *Enter Password* window
+
+5. The *File open* will now open to your home directory on the remote system.
+6. Change the *Path* to "/usr/gapps/visit/data".
+7. Scroll the *Files* list down and select "globe.silo".
+8. Click *Ok*.
+
+.. figure:: images/Remote-ClientServer5.png
+
+   The *File open* window
+
+You are now ready to create plots and do everything you are used to doing.
+
+File locations when running client/server
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When running in client/server mode some files are stored on the local
+system and some are stored on the remote system. Most files are stored or
+saved on the local system. Some examples include:
+
+* Images
+* Movies
+* Settings
+* Color tables
+
+The main exception is when exporting data. Those results are saved on the
+remote system. This is usually what you want since you will most likely want
+to open it on the remote system for further processing.
+
+The window that exports databases is unable to browse the remote file
+system, so you will need to carefully type in the path to the directory
+to save it in.
