@@ -9,7 +9,7 @@ Remote Usage
 VisIt_ can be used remotely in several different manners. Some make use of
 capabilities native to VisIt_, such as running VisIt_ in client/server mode,
 and some make use external mechanisms such as VNC. We will also touch
-briefly on using interactive versus batch allocations.
+briefly on using batch allocations in an interactive manner.
 
 VisIt_ can run remotely in the following ways:
 
@@ -318,3 +318,41 @@ will need to do the following.
 .. figure:: images/Remote-XForwarding1.png
 
    The X-Win32 control panel
+
+Using batch systems interactively
+---------------------------------
+
+When VisIt_ normally uses the batch system, it submits the parallel compute
+engine to the batch system and then the compute engine runs until it exits.
+Sometimes VisIt_ exits because of a crash. Once that happens you will loose
+the rest of the batch allocation and you will need to submit a batch job,
+which may not always happen immediately. One way around this is to get a
+batch job and then run all of VisIt_ in batch system using X display
+forwarding (ideally from within a VNC client).
+
+One such mechanism is mxterm, a utility available at LLNL. It submits a
+batch job and pops up an xterm. From the xterm, the user can start VisIt_
+as many times as they want until the batch job time limit expires. There
+may be similar mechanisms available at other supercomputing centers. If
+not, it would be fairly straightforward to create such a script for the
+batch system at your supercomputing center.
+
+Using mxterm
+~~~~~~~~~~~~
+
+The basic mxterm command is: ::
+
+    mxterm <nnodes> <ntasks> <nminutes> <-q queue_name>
+
+An example that gets 1 node with 36 tasks for 30 minutes in the pdebug queue. ::
+
+    mxterm 1 36 30 -q pdebug
+
+When the job starts an xterm window will appear on your screen.
+
+When using an mxterm, you will need to use the mxterm profile when starting
+your compute engine.
+
+.. figure:: images/Remote-Mxterm1.png
+
+   Selecting the mxterm host profile
