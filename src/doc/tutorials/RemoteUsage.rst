@@ -22,7 +22,7 @@ running on your local system and a portion is running on a remote
 compute resource such as a supercomputing center. This will always give
 better performance than running on a remote system using X display forwarding,
 since interactions with the graphical user interface will be faster and
-VisIt_ will be able to leverage your graphics accelerator on your desktop.
+VisIt_ will be able to leverage the graphics processing unit on your desktop.
 The portion running on your local system is refered to as the client and
 the portion running on the remote compute resource is refered to as the
 server. The client is responsible for the graphical user interface and
@@ -43,7 +43,7 @@ system and the local display. If there is a high latency between them
 then simple operations such as clicking on buttons and bringing up
 new windows may take a long time. Furthermore, the rendering performance
 of the visualization windows suffers because VisIt_ can't leverage the
-graphics card on the local system.
+graphics processing unit on the local system.
 
 Using VisIt_ with VNC
 ---------------------
@@ -171,9 +171,9 @@ installed for the remote system. You can check this by bringing up the
 *Host profiles* window.
 
 1. Select *Options->Host profiles...* to bring up the *Host profiles* window.
-2. If the list of *Hosts* is blank or doesn't contain the host of interest, you will need proceed with steps 4 - 8.
+2. If the list of *Hosts* is blank or doesn't contain the host of interest, you will need proceed with steps 4 - 10.
 3. Click the *Dismiss* button.
-4. Select *Options->Host profiles and configuration setup...* to bring up the *Setup Host Profiles and Configuration*.
+4. Select *Options->Host profiles and configuration setup...* to bring up the *Setup Host Profiles and Configuration* window.
 
 .. figure:: images/Remote-ClientServer1.png
 
