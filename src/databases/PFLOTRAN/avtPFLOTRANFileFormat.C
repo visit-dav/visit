@@ -27,7 +27,6 @@
 
 #include <InvalidDBTypeException.h>
 
-#include <DBOptionsAttributes.h>
 #include <Expression.h>
 
 #include <InvalidVariableException.h>

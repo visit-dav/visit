@@ -76,7 +76,7 @@ using namespace Nektar;
 //
 // ****************************************************************************
 
-avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttributes *readOpts)
+avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
   : avtMTSDFileFormat(&filename, 1),
     m_refinement(0), m_ignoreCurvedElements(1), refinedDataSet(0)
 {

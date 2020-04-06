@@ -16,7 +16,6 @@
 
 #include "conduit.hpp"
 
-class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtBlueprintWriter

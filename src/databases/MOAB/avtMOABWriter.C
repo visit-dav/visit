@@ -30,7 +30,7 @@ using     std::vector;
 //
 // ****************************************************************************
 
-avtMOABWriter::avtMOABWriter(DBOptionsAttributes *)
+avtMOABWriter::avtMOABWriter(const DBOptionsAttributes *)
 {
 }
 

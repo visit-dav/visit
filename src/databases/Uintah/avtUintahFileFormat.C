@@ -60,7 +60,7 @@ const double NAN_REPLACE_VAL = 1.0E9;
 //
 // ****************************************************************************
 avtUintahFileFormat::avtUintahFileFormat(const char *filename,
-                                         DBOptionsAttributes* attrs) :
+                                         const DBOptionsAttributes* attrs) :
   avtMTMDFileFormat(filename)
 {
   // int t1 = visitTimer->StartTimer();

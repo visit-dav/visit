@@ -101,7 +101,7 @@ struct ConnectRecord
 class avtProteinDataBankFileFormat : public avtSTSDFileFormat
 {
   public:
-                       avtProteinDataBankFileFormat(const char *, DBOptionsAttributes *);
+                       avtProteinDataBankFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtProteinDataBankFileFormat() {;};
 
     virtual const char    *GetType(void)   { return "ProteinDataBank"; };

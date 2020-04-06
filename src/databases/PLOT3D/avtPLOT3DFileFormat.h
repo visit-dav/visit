@@ -44,7 +44,7 @@ class     vtkPLOT3DReader;
 class avtPLOT3DFileFormat : public avtMTMDFileFormat
 {
   public:
-                          avtPLOT3DFileFormat(const char *, DBOptionsAttributes *);
+                          avtPLOT3DFileFormat(const char *, const DBOptionsAttributes *);
     virtual              ~avtPLOT3DFileFormat();
     
     virtual int            GetNTimesteps(void);

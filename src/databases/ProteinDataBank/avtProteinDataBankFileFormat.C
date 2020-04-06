@@ -58,7 +58,7 @@ TrimTrailingSpaces(char *s)
 // ****************************************************************************
 
 avtProteinDataBankFileFormat::avtProteinDataBankFileFormat(const char *fn,
-                                                DBOptionsAttributes *readOpts)
+                                                const DBOptionsAttributes *readOpts)
     : avtSTSDFileFormat(fn)
 {
     filename = fn;

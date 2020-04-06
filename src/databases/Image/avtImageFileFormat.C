@@ -73,7 +73,7 @@ using     std::string;
 //
 // ****************************************************************************
 
-avtImageFileFormat::avtImageFileFormat(const char *filename, DBOptionsAttributes *)
+avtImageFileFormat::avtImageFileFormat(const char *filename, const DBOptionsAttributes *)
     : avtSTSDFileFormat(filename)
 {
     fname = filename;

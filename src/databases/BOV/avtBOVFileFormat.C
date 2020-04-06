@@ -110,7 +110,7 @@ static bool fillSpace = true;
 // ****************************************************************************
  
 avtBOVFileFormat::avtBOVFileFormat(const char *fname, 
-    DBOptionsAttributes *opts)
+    const DBOptionsAttributes *opts)
     : avtSTMDFileFormat(&fname, 1)
 {
     //
