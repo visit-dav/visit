@@ -730,7 +730,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
 
     // Create the data group
     QGroupBox *dataGroup = new QGroupBox(pageAppearance);
-    dataGroup->setTitle(tr("Data"));
+    dataGroup->setTitle(tr("Coloring"));
     mainLayout->addWidget(dataGroup, 0, 0);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
@@ -738,7 +738,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataLayout->setColumnStretch(2,10);
 
     // Create the data value.
-    dataLayout->addWidget(new QLabel(tr("Data value"), dataGroup), 0, 0);
+    dataLayout->addWidget(new QLabel(tr("Color by"), dataGroup), 0, 0);
 
     dataValueComboBox = new QComboBox(dataGroup);
     dataValueComboBox->addItem(tr("Solid"), IntegralCurveAttributes::Solid);
