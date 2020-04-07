@@ -692,14 +692,14 @@ QvisLimitCycleWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataLayout->addWidget(new QLabel(tr("Color by"), dataGroup), 0, 0);
 
     dataValueComboBox = new QComboBox(dataGroup);
-    dataValueComboBox->addItem(tr("Solid"), LimitCycleAttributes::Solid);
-    dataValueComboBox->addItem(tr("Seed point ID"), LimitCycleAttributes::SeedPointID);
-    dataValueComboBox->addItem(tr("Speed"), LimitCycleAttributes::Speed);
+    dataValueComboBox->addItem(tr("Solid Color"), LimitCycleAttributes::Solid);
+    dataValueComboBox->addItem(tr("Random Color"), LimitCycleAttributes::SeedPointID);
+    dataValueComboBox->addItem(tr("Vector magnitude"), LimitCycleAttributes::Speed);
     dataValueComboBox->addItem(tr("Vorticity magnitude"), LimitCycleAttributes::Vorticity);
     dataValueComboBox->addItem(tr("Arc length"), LimitCycleAttributes::ArcLength);
-    dataValueComboBox->addItem(tr("Absolute time"), LimitCycleAttributes::TimeAbsolute);
-    dataValueComboBox->addItem(tr("Relative time"), LimitCycleAttributes::TimeRelative);
-    dataValueComboBox->addItem(tr("Ave. dist. from seed"), LimitCycleAttributes::AverageDistanceFromSeed);
+    dataValueComboBox->addItem(tr("Absolute integration time"), LimitCycleAttributes::TimeAbsolute);
+    dataValueComboBox->addItem(tr("Relative integration time"), LimitCycleAttributes::TimeRelative);
+    dataValueComboBox->addItem(tr("Avg. dist. from seed"), LimitCycleAttributes::AverageDistanceFromSeed);
     dataValueComboBox->addItem(tr("Correlation distance"), LimitCycleAttributes::CorrelationDistance);
     dataValueComboBox->addItem(tr("Difference"), LimitCycleAttributes::Difference);
     dataValueComboBox->addItem(tr("Variable"), LimitCycleAttributes::Variable);
