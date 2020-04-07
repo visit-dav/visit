@@ -88,13 +88,12 @@ Show the signed return distances for the first iteration
 Instead of plotting the limit cycles, plot the return distances along the
 Poincaré section.
 
-Data
-""""
+Coloring
+""""""""
 
-The data type controls how the integral curves are colored. There are various
-options, the names of which are self-descriptive such as coloring the curves
-a *solid* color or according to a *seed*. Only those options that require
-further clarification are described further here.
+There are various coloring options, the names of which are self-descriptive
+such as coloring the curves with a *solid* color or according to a *seed*. Only
+those options that require further clarification are described further here.
 
 Average Distance from seed
     Each curve is colored according to the average distance of all the points
