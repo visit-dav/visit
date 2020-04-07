@@ -446,16 +446,18 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->addWidget(samplingTypeButtons[1], sRow, 2);
     connect(samplingTypeButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(samplingTypeChanged(int)));
 
+    sRow++;
+
     fillLabel = new QLabel(tr("Sampling along:"), samplingGroup);
-    samplingLayout->addWidget(fillLabel, sRow, 3);
+    samplingLayout->addWidget(fillLabel, sRow, 0);
     fillButtonGroup = new QButtonGroup(samplingGroup);
     fillButtons[0] = new QRadioButton(tr("Boundary"), samplingGroup);
     fillButtons[1] = new QRadioButton(tr("Interior"), samplingGroup);
     fillButtons[0]->setChecked(true);
     fillButtonGroup->addButton(fillButtons[0], 0);
     fillButtonGroup->addButton(fillButtons[1], 1);
-    samplingLayout->addWidget(fillButtons[0], sRow, 4);
-    samplingLayout->addWidget(fillButtons[1], sRow, 5);
+    samplingLayout->addWidget(fillButtons[0], sRow, 1);
+    samplingLayout->addWidget(fillButtons[1], sRow, 2);
     connect(fillButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(fillChanged(int)));
 
     sRow++;
@@ -508,6 +510,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->addWidget(sampleDensity[1], sRow, 3);
     samplingLayout->addWidget(sampleDensityLabel[2], sRow, 4);
     samplingLayout->addWidget(sampleDensity[2], sRow, 5);
+
     sRow++;
 
     sampleDistanceLabel[0] = new QLabel(tr("Sample distance 0"), samplingGroup);
@@ -525,6 +528,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->addWidget(sampleDistance[1], sRow, 3);
     samplingLayout->addWidget(sampleDistanceLabel[2], sRow, 4);
     samplingLayout->addWidget(sampleDistance[2], sRow, 5);
+    
     sRow++;
 
     // Create the field group box.
