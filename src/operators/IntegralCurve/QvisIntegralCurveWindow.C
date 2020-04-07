@@ -741,14 +741,14 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataLayout->addWidget(new QLabel(tr("Color by"), dataGroup), 0, 0);
 
     dataValueComboBox = new QComboBox(dataGroup);
-    dataValueComboBox->addItem(tr("Solid"), IntegralCurveAttributes::Solid);
-    dataValueComboBox->addItem(tr("Seed point ID"), IntegralCurveAttributes::SeedPointID);
-    dataValueComboBox->addItem(tr("Speed"), IntegralCurveAttributes::Speed);
+    dataValueComboBox->addItem(tr("Solid Color"), IntegralCurveAttributes::Solid);
+    dataValueComboBox->addItem(tr("Random Color"), IntegralCurveAttributes::SeedPointID);
+    dataValueComboBox->addItem(tr("Vector magnitude"), IntegralCurveAttributes::Speed);
     dataValueComboBox->addItem(tr("Vorticity magnitude"), IntegralCurveAttributes::Vorticity);
     dataValueComboBox->addItem(tr("Arc length"), IntegralCurveAttributes::ArcLength);
-    dataValueComboBox->addItem(tr("Absolute time"), IntegralCurveAttributes::TimeAbsolute);
-    dataValueComboBox->addItem(tr("Relative time"), IntegralCurveAttributes::TimeRelative);
-    dataValueComboBox->addItem(tr("Ave. dist. from seed"), IntegralCurveAttributes::AverageDistanceFromSeed);
+    dataValueComboBox->addItem(tr("Absolute integration time"), IntegralCurveAttributes::TimeAbsolute);
+    dataValueComboBox->addItem(tr("Relative integration time"), IntegralCurveAttributes::TimeRelative);
+    dataValueComboBox->addItem(tr("Avg. dist. from seed"), IntegralCurveAttributes::AverageDistanceFromSeed);
     dataValueComboBox->addItem(tr("Correlation distance"), IntegralCurveAttributes::CorrelationDistance);
     dataValueComboBox->addItem(tr("Closed Curve"), IntegralCurveAttributes::ClosedCurve);
     dataValueComboBox->addItem(tr("Difference"), IntegralCurveAttributes::Difference);
