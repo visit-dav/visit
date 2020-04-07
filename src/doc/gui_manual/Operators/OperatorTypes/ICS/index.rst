@@ -214,4 +214,5 @@ Issue warning when stiffness is detected
     that tolerances can't be met. 
 
 Issue warning when a curve doesn't terminate at a critical point
-    The curve circles around the critical point without converging.
+    For example, the curve may circle around a critical point without
+    converging.

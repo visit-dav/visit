@@ -910,27 +910,22 @@ QvisLimitCycleWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(issueWarningForStiffness, 2, 0);
     QLabel *stiffnessLabel = new QLabel(tr("Issue warning when a stiffness condition is detected."), warningsGrp);
     warningsGLayout->addWidget(stiffnessLabel, 2, 1, 1, 2);
-    QLabel *stiffnessDescLabel1 = new QLabel(tr("(Stiffness refers to one vector component being so much "), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel1, 3, 1, 1, 2);
-    QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel2, 4, 1, 1, 2);
 
     issueWarningForCriticalPoints = new QCheckBox(central);
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
-    warningsGLayout->addWidget(issueWarningForCriticalPoints, 5, 0);
+    warningsGLayout->addWidget(issueWarningForCriticalPoints, 3, 0);
     QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
-    warningsGLayout->addWidget(critPointLabel, 5, 1, 1, 2);
-    QLabel *critPointDescLabel = new QLabel(tr("(I.e. the curve circles around the critical point without stopping.)"), warningsGrp);
-    warningsGLayout->addWidget(critPointDescLabel, 6, 1, 1, 2);
+    warningsGLayout->addWidget(critPointLabel, 3, 1, 1, 2);
+    
     criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
     criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-    warningsGLayout->addWidget(criticalPointThresholdLabel, 7, 1);
+    warningsGLayout->addWidget(criticalPointThresholdLabel, 4, 1);
     criticalPointThreshold = new QLineEdit(warningsGrp);
     criticalPointThreshold->setAlignment(Qt::AlignLeft);
     connect(criticalPointThreshold, SIGNAL(returnPressed()),
             this, SLOT(criticalPointThresholdProcessText()));
-    warningsGLayout->addWidget(criticalPointThreshold, 7, 2);
+    warningsGLayout->addWidget(criticalPointThreshold, 4, 2);
 }
 
 // ****************************************************************************
