@@ -528,7 +528,7 @@ QvisLimitCycleWindow::CreateAppearanceTab(QWidget *pageAppearance)
     cycleLayout->addWidget(maxIterations, 1,1);
 
 
-    showPartialResults = new QCheckBox(tr("Show partial results (limit cycle may not be present)"), cycleGroup);
+    showPartialResults = new QCheckBox(tr("Show partial results"), cycleGroup);
     connect(showPartialResults, SIGNAL(toggled(bool)), this, SLOT(showPartialResultsChanged(bool)));
     cycleLayout->addWidget(showPartialResults, 2,0, 1,2);
 
