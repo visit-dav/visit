@@ -774,7 +774,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
 
     // Create the data group box.
     QGroupBox *dataGroup = new QGroupBox(central);
-    dataGroup->setTitle(tr("Data"));
+    dataGroup->setTitle(tr("Coloring"));
     mainLayout->addWidget(dataGroup, 0, 0);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
@@ -783,7 +783,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataLayout->setColumnStretch(2, 10);
 
 
-    dataValueLabel = new QLabel(tr("Data value:"), dataGroup);
+    dataValueLabel = new QLabel(tr("Color by"), dataGroup);
     dataLayout->addWidget(dataValueLabel, 0, 0);
 
     dataValueCombo = new QComboBox(dataGroup);
