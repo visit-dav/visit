@@ -21,9 +21,6 @@
 #include <GL/glx.h>
 #endif
 
-#include <vtkAutoInit.h>
-VTK_MODULE_INIT(vtkRenderingOpenGL2);
-
 
 #ifdef Q_OS_OSX
 #include "osxHelper.h"

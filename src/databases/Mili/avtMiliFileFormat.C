@@ -793,7 +793,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             if (sandBuffer[i] > 0.5)
             {
                 vtkIdType nCellPts = 0;
-                vtkIdType *cellPts = NULL;
+                const vtkIdType *cellPts = NULL;
 
                 rv->GetCellPoints(i, nCellPts, cellPts);
                 

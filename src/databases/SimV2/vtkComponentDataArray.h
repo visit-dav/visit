@@ -99,7 +99,7 @@ public:
         temporaryTuple = NULL;
     }
 
-    bool HasStandardMemoryLayout() override { return false; }
+    bool HasStandardMemoryLayout() const override { return false; }
 
     void SetNumberOfTuples(vtkIdType nt) override
     {

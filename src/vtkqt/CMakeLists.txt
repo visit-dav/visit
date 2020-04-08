@@ -36,6 +36,7 @@ target_link_libraries(vtkqt
     VTK::CommonCore VTK::GUISupportQt VTK::GUISupportQtOpenGL VTK::IOImage
     VTK::RenderingOpenGL2 VTK::RenderingFreeType ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES})
+vtk_module_autoinit(TARGETS vtkqt MODULES VTK::RenderingOpenGL2)
 
 if(HAVE_OSMESA)
     target_link_libraries(vtkqt ${OSMESA_LIBRARIES})

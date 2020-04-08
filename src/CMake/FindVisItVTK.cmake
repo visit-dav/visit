@@ -112,8 +112,8 @@ find_package(VTK ${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}
 
 # Ensure we have all the required modules:
 FOREACH(module ${REQ_VTK_MODS})
-    IF(NOT TARGET ${module})
-        MESSAGE(ERROR "VisIt requires ${module}")
+    IF(NOT TARGET VTK::${module})
+        MESSAGE(ERROR " VisIt requires VTK::${module}")
     ENDIF()
 ENDFOREACH()
 

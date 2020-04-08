@@ -13,6 +13,7 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDataAttributes.h>
@@ -577,7 +578,8 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
         int cellCount = 0;
         for(vtkIdType i = 0; i < ct->GetNumberOfTuples(); ++i)
         {
-            vtkIdType npts, *pts = 0;
+            vtkIdType npts;
+            const vtkIdType *pts = 0;
             ds->GetCellPoints(i, npts, pts);
 
             // Store the cell type in terms of the VISIT simulation types.
@@ -751,7 +753,8 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, visit_handle vmmd)
         int beamCells = 0;
         for(vtkIdType i = 0; i < ds->GetLines()->GetNumberOfCells(); ++i)
         {
-            vtkIdType *pts = 0, npts;
+            const vtkIdType *pts = 0;
+            vtkIdType npts;
             ds->GetLines()->GetCell(i, npts, pts);
             beamCells += npts-1;
         }
@@ -769,7 +772,8 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, visit_handle vmmd)
         {
             *connPtr++ = VISIT_CELL_POINT;
 
-            vtkIdType *pts = 0, npts;
+            const vtkIdType *pts = 0;
+            vtkIdType npts;
             ds->GetVerts()->GetCell(i, npts, pts);
 
             *connPtr++ = pts[0];
@@ -779,7 +783,8 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, visit_handle vmmd)
         // Get the lines and make beam cells from them.
         for(vtkIdType i = 0; i < ds->GetLines()->GetNumberOfCells(); ++i)
         {
-            vtkIdType *pts = 0, npts;
+            const vtkIdType *pts = 0;
+            vtkIdType npts;
             ds->GetLines()->GetCell(i, npts, pts);
 
             //
@@ -798,7 +803,8 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, visit_handle vmmd)
         }
         
         // Get the polys and make triangles or quads from them.
-        vtkIdType *pts = 0, npts;
+        const vtkIdType *pts = 0;
+        vtkIdType npts;
         ds->GetPolys()->InitTraversal();
         while(ds->GetPolys()->GetNextCell(npts, pts) != 0)
         {
