@@ -6,10 +6,10 @@ Remote Usage
 .. toctree::
     :maxdepth: 2
 
-VisIt_ can be used remotely in several different manners. Some make use of
+VisIt_ can be used remotely in several different manners. Some use 
 capabilities native to VisIt_, such as running VisIt_ in client/server mode,
-and some make use external mechanisms such as VNC. We will also touch
-briefly on using batch allocations in an interactive manner.
+and some use external mechanisms, such as VNC. We will also touch briefly
+on using batch allocations in an interactive manner.
 
 VisIt_ can run remotely in the following ways:
 
@@ -29,6 +29,65 @@ VisIt_ can run remotely in the following ways:
   * More complex to set up.
   * Provides highest interactivity performance.
 
+.. _UsingDisplayForwarding:
+
+Using X Display forwarding though ssh
+-------------------------------------
+
+When VisIt_ is running with X display forwarding through ssh, it is
+completely running on the remote system and sending all its graphics
+commands over ssh. In one sense this is the easiest to use since you
+just launch VisIt_ on you remote system and you are ready to go. Since
+you are typically already logged into the remote system and already in
+the directory of interest there is no additional setup required, such
+as entering passwords or navigating the remote directory structure.
+Unfortunately it is also the lowest performing option. Graphical user
+interfaces typically send lots of small messages back between the remote
+system and the local display. If there is a high latency between them
+then simple operations such as clicking on buttons and bringing up
+new windows may take a long time. Furthermore, the rendering performance
+of the visualization windows suffers because VisIt_ can't leverage the
+graphics processing unit on the local system.
+
+When using X Display forwarding you need to have an X Server running on
+the display of your local system. In the case of Linux and MacOS, both
+will have X Servers running by default. In the case of Windows you will
+need to install a X Server on your system and enable it. Fortunately,
+most people will already have an X Server installed on their system if
+they are using ssh to login to the supercomputing center.
+
+Typically, X display forwarding is enabled by default and all you need
+to do is launch VisIt_ on the remote system once you have ssh'ed to the
+remote system.
+
+When starting ssh from a command line you will need to use the "-Y"
+option. ::
+
+    ssh -Y
+
+Some X Servers may need to have their default options set for use with
+VisIt_. This is primarily because VisIt_ uses OpenGL for rendering and
+not all X Servers are configured properly to work with OpenGL.
+
+Configuring X-Win32 for use with VisIt_
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The default setting X-Win32 sometimes are not set to work well with
+OpenGL. This isn't always the case and will depend on the graphics
+card installed on your system. If VisIt_ crashes on your system you
+will need to do the following.
+
+1. Bring up the X-Win32 control panel.
+2. Go to the *Window* tab.
+3. Turn off *Use Direct2D*.
+4. Turn on *Use Software Renderer for OpenGL*.
+5. Click *Apply*.
+6. At this point you should exit all the windows associated with X-Win32 and re-establish you connections to the remote system.
+
+.. figure:: images/Remote-XForwarding1.png
+
+   The X-Win32 control panel
+
 .. _UsingVNC:
 
 Using VNC
@@ -36,7 +95,7 @@ Using VNC
 
 When using VNC it looks and behaves just like you were logged into an X
 Window display running at the supercomputing site that is constrained
-to a single window and is seperate from the windowing system running
+to a single window and is separate from the windowing system running
 on your local system. It provides all the conveniences of X display
 forwarding but at a much higher interactivity level since the networking
 between the remote computer and the VNC server will provide high
@@ -45,9 +104,8 @@ with the supercomputer center through the VNC client. The one draw back
 is that the VNC server compresses the video stream it sends to the VNC
 client in order to provide high interactivity. This may result in small
 compression artifacts in the images you see in the VNC client.
-See :numref:`Figure %s<VNCClientImage>` for an example.
 
-This using VNC portion of the tutorial will focus on using RealVNC at the
+This portion of the tutorial on using VNC will focus on using RealVNC at the
 Lawrence Livermore National Laboratory (LLNL). Using VNC at other computer
 centers will be similar, but unique to each site.
 
@@ -256,68 +314,6 @@ to open it on the remote system for further processing.
 The window that exports databases is unable to browse the remote file
 system, so you will need to carefully type in the path to the directory
 to save it in.
-
-.. _UsingDisplayForwarding:
-
-Using X Display forwarding though ssh
--------------------------------------
-
-When VisIt_ is running with X display forwarding through ssh, it is
-completely running on the remote system and sending all its graphics
-commands over ssh. In one sense this is the easiest to use since you
-just launch VisIt_ on you remote system and you are ready to go. Since
-you are typically already logged into the remote system and already in
-the directory of interest there is no additional setup required, such
-as entering passwords or navigating the remote directory structure.
-Unfortunately it is also the lowest performing option. Graphical user
-interfaces typically send lots of small messages back between the remote
-system and the local display. If there is a high latency between them
-then simple operations such as clicking on buttons and bringing up
-new windows may take a long time. Furthermore, the rendering performance
-of the visualization windows suffers because VisIt_ can't leverage the
-graphics processing unit on the local system.
-
-When using X Display forwarding you need to have an X Server running on
-the display of your local system. In the case of Linux and MacOS, both
-will have X Servers running by default. In the case of Windows you will
-need to install a X Server on your system and enable it. Fortunately,
-most people will already have an X Server installed on their system if
-they are using ssh to login to the supercomputing center.
-
-Typically, X display forwarding is enabled by default and all you need
-to do is launch VisIt_ on the remote system once you have ssh'ed to the
-remote system.
-
-Sometimes you will need to provide some additional command line options
-to your ssh command (typically on Mac OS). The different possibilities
-include: ::
-
-    ssh -X
-    ssh -Y
-    ssh -XY
-
-Some X Servers may need to have their default options set for use with
-VisIt_. This is primarily because VisIt_ uses OpenGL for rendering and
-not all X Servers are configured properly to work with OpenGL.
-
-Configuring X-Win32 for use with VisIt_
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The default setting X-Win32 sometimes are not set to work well with
-OpenGL. This isn't always the case and will depend on the graphics
-card installed on your system. If VisIt_ crashes on your system you
-will need to do the following.
-
-1. Bring up the X-Win32 control panel.
-2. Go to the *Window* tab.
-3. Turn off *Use Direct2D*.
-4. Turn on *Use Software Renderer for OpenGL*.
-5. Click *Apply*.
-6. At this point you should exit all the windows associated with X-Win32 and re-establish you connections to the remote system.
-
-.. figure:: images/Remote-XForwarding1.png
-
-   The X-Win32 control panel
 
 Using batch systems interactively
 ---------------------------------
