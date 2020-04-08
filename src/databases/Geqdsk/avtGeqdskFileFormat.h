@@ -30,7 +30,7 @@ class DBOptionsAttributes;
 class avtGeqdskFileFormat : public avtMTSDFileFormat
 {
   public:
-                       avtGeqdskFileFormat(const char *, DBOptionsAttributes *);
+                       avtGeqdskFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtGeqdskFileFormat() {;};
 
     //

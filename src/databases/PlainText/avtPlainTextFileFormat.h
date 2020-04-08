@@ -31,7 +31,7 @@ class DBOptionsAttributes;
 class avtPlainTextFileFormat : public avtSTSDFileFormat
 {
   public:
-                       avtPlainTextFileFormat(const char *filename, DBOptionsAttributes *);
+                       avtPlainTextFileFormat(const char *filename, const DBOptionsAttributes *);
     virtual           ~avtPlainTextFileFormat() {;};
 
     //

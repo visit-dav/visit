@@ -247,7 +247,7 @@ using std::vector;
 // ****************************************************************************
 
 avtNek5000FileFormat::avtNek5000FileFormat(const char *filename,
-                                           DBOptionsAttributes *atts)
+                                           const DBOptionsAttributes *atts)
     : avtMTMDFileFormat(filename)
 {
     int t0 = visitTimer->StartTimer();

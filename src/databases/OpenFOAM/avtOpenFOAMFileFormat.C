@@ -53,7 +53,7 @@ using     std::map;
 // ****************************************************************************
 
 avtOpenFOAMFileFormat::avtOpenFOAMFileFormat(const char *filename, 
-    DBOptionsAttributes *readOpts) : avtMTMDFileFormat(filename), timeSteps()
+    const DBOptionsAttributes *readOpts) : avtMTMDFileFormat(filename), timeSteps()
 {
     convertCellToPoint = false;
     readZones = false;

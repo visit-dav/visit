@@ -36,7 +36,7 @@ struct mhdf_FileDesc ;
 class avtMOABFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtMOABFileFormat(const char *, DBOptionsAttributes *);
+                       avtMOABFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtMOABFileFormat() {;};
 
     //

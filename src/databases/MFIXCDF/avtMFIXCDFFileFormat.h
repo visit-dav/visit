@@ -41,7 +41,7 @@ class vtkUnsignedCharArray;
 class avtMFIXCDFFileFormat : public avtSTMDFileFormat
 {
 public:
-    avtMFIXCDFFileFormat(const char *, DBOptionsAttributes *);
+    avtMFIXCDFFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtMFIXCDFFileFormat();
 
     virtual double GetTime(void);

@@ -52,7 +52,7 @@ using     std::vector;
 // ****************************************************************************
 
 avtPlainTextFileFormat::avtPlainTextFileFormat(const char *fn,
-                                               DBOptionsAttributes *readOpts)
+                                               const DBOptionsAttributes *readOpts)
     : avtSTSDFileFormat(fn)
 {
     fileRead = false;

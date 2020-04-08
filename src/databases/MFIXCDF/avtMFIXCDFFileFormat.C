@@ -204,7 +204,7 @@ int openFile( const char* filename )
 //
 // ****************************************************************************
 
-avtMFIXCDFFileFormat::avtMFIXCDFFileFormat(const char *filename, DBOptionsAttributes *readOpts)
+avtMFIXCDFFileFormat::avtMFIXCDFFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1)
 {
     // INITIALIZE DATA MEMBERS
