@@ -176,10 +176,10 @@ The appearance tab specifies how the integral curve will be rendered. In additio
 to the :ref:`common ICS appearance` attributes common to all ICS operators, the
 Poincaré operator supports the following attributes.
 
-Data
-""""
+Coloring
+""""""""
 
-The data type controls how the integral curves are colored. Options are:
+The various coloring options are:
 
 None
     Solid color from the single color 
