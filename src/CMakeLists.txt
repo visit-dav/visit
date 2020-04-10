@@ -1219,34 +1219,32 @@ IF(VISIT_PYTHON_SCRIPTING AND VISIT_STATIC)
 ENDIF(VISIT_PYTHON_SCRIPTING AND VISIT_STATIC)
 
 # Disable Python filters if we don't have Python.
-IF(VISIT_PYTHON_FILTERS AND NOT PYTHONLIBS_FOUND)
-    SET(VISIT_PYTHON_FILTERS OFF)
-    MESSAGE(STATUS "Python Engine Filters disabled because Python was not found.")
-ENDIF(VISIT_PYTHON_FILTERS AND NOT PYTHONLIBS_FOUND)
+if(VISIT_PYTHON_FILTERS)
+  set(msg "Python Engine Filters disabled because")
+  if ( NOT PYTHONLIBS_FOUND)
+    set(VISIT_PYTHON_FILTERS OFF)
+    set(msg "${msg} Python was not found.")
+  elseif (VISIT_STATIC)
+    set(VISIT_PYTHON_FILTERS OFF)
+    set(msg "${msg} a static build of VisIt was selected.")
+  elseif (NOT VTK_PYTHON_WRAPPERS_FOUND)
+    set(VISIT_PYTHON_FILTERS OFF)
+    set(msg "${msg} VTK python wrappers are not installed.")
+  elseif (VISIT_NOLINK_MPI_WITH_LIBRARIES)
+    # Disable python filters if 'VISIT_NOLINK_MPI_WITH_LIBRARIES' is true.
+    # The mpicom python module (a shared lib) must be linked to mpi.
+    set(VISIT_PYTHON_FILTERS OFF)
+    set(msg "${msg} VISIT_NOLINK_MPI_WITH_LIBRARIES was selected.")
+  elseif (VISIT_DBIO_ONLY)
+    set(VISIT_PYTHON_FILTERS OFF)
+    set(msg "${msg} VISIT_DBIO_ONLY was selected.")
+  endif()
+  if (NOT VISIT_PYTHON_FILTERS)
+      message(STATUS ${msg})
+  endif()
+  unset(msg)
+endif()
 
-# VTK Python's wrappers are not available with a static build of VTK.
-IF(VISIT_PYTHON_FILTERS AND VISIT_STATIC)
-    SET(VISIT_PYTHON_FILTERS OFF)
-    MESSAGE(STATUS "Python Engine Filters disabled because a static build of VisIt was selected.")
-ENDIF(VISIT_PYTHON_FILTERS AND VISIT_STATIC)
-
-# Disable python filters if the VTK Python's wrappers are not found.
-IF(VISIT_PYTHON_FILTERS AND NOT VTK_PYTHON_WRAPPERS_FOUND)
-    SET(VISIT_PYTHON_FILTERS OFF)
-    MESSAGE(STATUS "Python Engine Filters disabled because VTK python wrappers are not installed.")
-ENDIF(VISIT_PYTHON_FILTERS AND NOT VTK_PYTHON_WRAPPERS_FOUND)
-
-# Disable python filters if 'VISIT_NOLINK_MPI_WITH_LIBRARIES' is true.
-# The mpicom python module (a shared lib) must be linked to mpi.
-IF(VISIT_PYTHON_FILTERS AND VISIT_NOLINK_MPI_WITH_LIBRARIES)
-    SET(VISIT_PYTHON_FILTERS OFF)
-    MESSAGE(STATUS "Python Engine Filters disabled because VISIT_NOLINK_MPI_WITH_LIBRARIES was selected.")
-ENDIF(VISIT_PYTHON_FILTERS AND VISIT_NOLINK_MPI_WITH_LIBRARIES)
-
-IF(VISIT_PYTHON_FILTERS AND VISIT_DBIO_ONLY)
-    SET(VISIT_PYTHON_FILTERS OFF)
-    MESSAGE(STATUS "Python Engine Filters disabled because VISIT_DBIO_ONLY was selected.")
-ENDIF(VISIT_PYTHON_FILTERS AND VISIT_DBIO_ONLY)
 
 # Configure Qt and Qwt support.
 IF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)

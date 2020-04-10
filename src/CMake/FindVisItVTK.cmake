@@ -156,11 +156,11 @@ ELSE(VISIT_VTK_SKIP_INSTALL)
         endif()
         IF(EXISTS ${LIBNAME})
             THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
-        ENDIF(EXISTS ${LIBNAME})
+        ENDIF()
 
         IF(WIN32)
             # install .lib versions, too
-            SET(LIBNAME   ${pathnameandprefixlib}vtk${vtk_component)-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
+            SET(LIBNAME   ${pathnameandprefixlib}vtk${vtk_component}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
             IF(EXISTS ${LIBNAME})
                 THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
             ENDIF(EXISTS ${LIBNAME})
@@ -201,7 +201,7 @@ ELSE(VISIT_VTK_SKIP_INSTALL)
 ENDIF(VISIT_VTK_SKIP_INSTALL)
 
 # check for python wrappers
-set(VTK_PY_WRAPPERS_DIR ${VTK_PREFIX_PATH}/${VTK_PYTHON_PATH})
+set(VTK_PY_WRAPPERS_DIR ${VTK_PREFIX_PATH}/${VTK_PYTHONPATH})
 MESSAGE(STATUS "  VTK_PY_WRAPPERS_DIR=${VTK_PY_WRAPPERS_DIR}")
 
 IF(EXISTS ${VTK_PY_WRAPPERS_DIR}/vtkmodules)
