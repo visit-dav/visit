@@ -51,6 +51,25 @@
 #########################################################
 
 #####################
+# Common Objects
+#####################
+
+
+#####################
+# Common Objects that we can't Code-Gen, or have customizations:
+#####################
+
+# SET(PY_GEN_ANNOTATION_OBJECTS
+#     ImageObject 
+#     LegendAttributesObject
+#     LineObject
+#     Line3DObject
+#     Text2DObject
+#     Text3DObject
+#     TimeSliderObject
+#     )
+
+#####################
 # Metadata Objects
 #####################
 
@@ -58,9 +77,9 @@
 #####################
 # Metadata Objects that we can't Code-Gen, or have customizations:
 #####################
-# avtMeshMetaData
-# avtSimulationInformation
-# avtSpeciesMetaData
+# avtMeshMetaData -- OK?
+# avtSimulationInformation -- OK?
+# avtSpeciesMetaData -- OK?
 
 SET(PY_GEN_METADATA_OBJECTS
     avtArrayMetaData
@@ -71,11 +90,11 @@ SET(PY_GEN_METADATA_OBJECTS
     avtLabelMetaData
     avtMatSpeciesMetaData
     avtMaterialMetaData
-    # avtMeshMetaData (see above note)
+    avtMeshMetaData # (see above note)
     avtScalarMetaData
     avtSimulationCommandSpecification
-    # avtSimulationInformation # (see above note)
-    # avtSpeciesMetaData # (see above note)
+    avtSimulationInformation # (see above note)
+    avtSpeciesMetaData # (see above note)
     avtSubsetsMetaData
     avtSymmetricTensorMetaData
     avtTensorMetaData
@@ -90,11 +109,11 @@ SET(PY_GEN_METADATA_OBJECTS
 #####################
 # State Objects that we can't Code-Gen, or have customizations:
 #####################
-# ColorControlPointList
-# DatabaseCorrelation
-# SaveSubWindowAttributes
-# View2DAttributes
-# View2DAttributes
+# ColorControlPointList -- OK? 
+# DatabaseCorrelation - NOT OK
+# SaveSubWindowAttributes -- OK?
+# View2DAttributes -- OK?
+# View2DAttributes -- OK?
 
 SET(PY_GEN_STATE_OBJECTS
     AnimationAttributes
@@ -109,10 +128,10 @@ SET(PY_GEN_STATE_OBJECTS
     ColorAttribute
     ColorAttributeList
     ColorControlPoint
-    # ColorControlPointList  # (see above note)
+    ColorControlPointList  # (see above note)
     ColorTableAttributes 
     ConstructDataBinningAttributes
-    # DatabaseCorrelation # (see above note)
+    DatabaseCorrelation # (see above note)
     DBOptionsAttributes
     EngineProperties
     ExportDBAttributes
@@ -143,15 +162,16 @@ SET(PY_GEN_STATE_OBJECTS
     RenderingAttributes
     SaveWindowAttributes
     SaveSubWindowAttributes 
-    # SaveSubWindowsAttributes # (see above note)
+    SaveSubWindowsAttributes # (see above note)
     SelectionProperties
     SelectionSummary
     SelectionVariableSummary
     SelectionList
     ThresholdOpAttributes
-    # View2DAttributes # (see above note)
-    # View3DAttributes # (see above note)
+    View2DAttributes # (see above note)
+    View3DAttributes # (see above note)
     ViewAttributes
+    AxisTitles
     ViewAxisArrayAttributes
     ViewerClientAttributes
     ViewerClientInformation
@@ -169,6 +189,14 @@ SET(PY_GEN_RPC_OBJECTS ViewerRPC)
 #########################################################
 # Add our code gen targets
 #########################################################
+# Annotation Objects
+foreach(obj_name ${PY_GEN_ANNOTATION_OBJECTS})
+    ADD_PYTHON_GEN_TARGET(${obj_name}
+                          ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
+                          ${CMAKE_CURRENT_SOURCE_DIR}/visitpy)
+endforeach()
+
+
 # Metadata Objects
 foreach(obj_name ${PY_GEN_METADATA_OBJECTS})
     ADD_PYTHON_GEN_TARGET(${obj_name}
@@ -186,7 +214,7 @@ endforeach()
 # RPC Objects
 foreach(obj_name ${PY_GEN_RPC_OBJECTS})
     ADD_PYTHON_GEN_TARGET(${obj_name}
-                          ${VISIT_SOURCE_DIR}/viewer/rpcstate/
+                          ${VISIT_SOURCE_DIR}/viewer/rpc/
                           ${CMAKE_CURRENT_SOURCE_DIR}/visitpy)
 endforeach()
 #########################################################
@@ -195,26 +223,27 @@ endforeach()
 
 
 SET(COMMON_SOURCES
+# # Annotation Wrappers, plan is to wrap these in pure python
+# # since they can't be code gened
+# common/PyImageObject.C
+# common/PyLegendAttributesObject.C
+# common/PyLineObject.C
+# common/PyLine3DObject.C
+# common/PyText2DObject.C
+# common/PyText3DObject.C
+# common/PyTimeSliderObject.C
 common/CallbackHandlers.C
 common/CallbackManager.C
 common/Logging.C
 common/MethodDoc.C
-common/PyImageObject.C
-common/PyLegendAttributesObject.C
-common/PyLineObject.C
-common/PyLine3DObject.C
 common/PySILRestrictionBase.C
 common/PySILRestriction.C
-common/PyText2DObject.C
-common/PyText3DObject.C
-common/PyTimeSliderObject.C
 common/ViewerRPCArguments.C
 common/ViewerRPCCallbacks.C
 common/visitmodule.C
 )
 
 SET(PY_SOURCES
-common/Py2and3Support.C
 common/PyMapNode.C
 common/PyVariant.C
 )
@@ -348,7 +377,7 @@ TARGET_LINK_LIBRARIES(visitpy
 avtdbatts
 viewerrpc
 visitcommon
-${PYTHON_LIBRARY}
+${PYTHON_LIBRARIES}
 )
 
 # Create the CLI
@@ -368,7 +397,7 @@ viewerrpc
 avtdbatts
 visitcommon
 visitpy
-${PYTHON_LIBRARY}
+${PYTHON_LIBRARIES}
 ${CMAKE_THREAD_LIBS}
 )
 IF(NOT WIN32)

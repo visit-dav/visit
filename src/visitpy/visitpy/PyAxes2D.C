@@ -5,6 +5,7 @@
 #include <PyAxes2D.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PyAxisAttributes.h>
 #include <PyAxisAttributes.h>
 
@@ -36,7 +37,6 @@ struct Axes2DObject
 // Internal prototypes
 //
 static PyObject *NewAxes2D(int);
-
 std::string
 PyAxes2D_ToString(const Axes2D *atts, const char *prefix)
 {
@@ -400,14 +400,7 @@ Axes2D_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-Axes2D_compare(PyObject *v, PyObject *w)
-{
-    Axes2D *a = ((Axes2DObject *)v)->data;
-    Axes2D *b = ((Axes2DObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *Axes2D_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAxes2D_getattr(PyObject *self, char *name)
 {
@@ -517,42 +510,64 @@ static PyTypeObject Axes2DType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "Axes2D",                    // tp_name
-    sizeof(Axes2DObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)Axes2D_dealloc,  // tp_dealloc
-    (printfunc)Axes2D_print,     // tp_print
-    (getattrfunc)PyAxes2D_getattr, // tp_getattr
-    (setattrfunc)PyAxes2D_setattr, // tp_setattr
-    (cmpfunc)Axes2D_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)Axes2D_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    Axes2D_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "Axes2D",                   /* tp_name */
+    sizeof(Axes2DObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)Axes2D_dealloc,    /* tp_dealloc */
+    (printfunc)Axes2D_print,       /* tp_print */
+    (getattrfunc)PyAxes2D_getattr, /* tp_getattr */
+    (setattrfunc)PyAxes2D_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)Axes2D_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    Axes2D_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)Axes2D_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+Axes2D_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &Axes2DType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    Axes2D *a = ((Axes2DObject *)self)->data;
+    Axes2D *b = ((Axes2DObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

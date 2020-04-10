@@ -5,6 +5,7 @@
 #include <PyAxisAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PyAxisTitles.h>
 #include <PyAxisLabels.h>
 #include <PyAxisTickMarks.h>
@@ -37,7 +38,6 @@ struct AxisAttributesObject
 // Internal prototypes
 //
 static PyObject *NewAxisAttributes(int);
-
 std::string
 PyAxisAttributes_ToString(const AxisAttributes *atts, const char *prefix)
 {
@@ -237,14 +237,7 @@ AxisAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-AxisAttributes_compare(PyObject *v, PyObject *w)
-{
-    AxisAttributes *a = ((AxisAttributesObject *)v)->data;
-    AxisAttributes *b = ((AxisAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *AxisAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAxisAttributes_getattr(PyObject *self, char *name)
 {
@@ -320,42 +313,64 @@ static PyTypeObject AxisAttributesType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "AxisAttributes",                    // tp_name
-    sizeof(AxisAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)AxisAttributes_dealloc,  // tp_dealloc
-    (printfunc)AxisAttributes_print,     // tp_print
-    (getattrfunc)PyAxisAttributes_getattr, // tp_getattr
-    (setattrfunc)PyAxisAttributes_setattr, // tp_setattr
-    (cmpfunc)AxisAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)AxisAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    AxisAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "AxisAttributes",                   /* tp_name */
+    sizeof(AxisAttributesObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)AxisAttributes_dealloc,    /* tp_dealloc */
+    (printfunc)AxisAttributes_print,       /* tp_print */
+    (getattrfunc)PyAxisAttributes_getattr, /* tp_getattr */
+    (setattrfunc)PyAxisAttributes_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)AxisAttributes_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    AxisAttributes_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)AxisAttributes_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+AxisAttributes_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &AxisAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    AxisAttributes *a = ((AxisAttributesObject *)self)->data;
+    AxisAttributes *b = ((AxisAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

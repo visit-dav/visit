@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <Python.h>
+#include <Py2and3Support.h>
 
 // get select
 #if defined(_WIN32)
@@ -46,10 +47,10 @@
 #else
   #define VISITCLI_API
 #endif
+
 // For the VisIt module.
 extern "C" void cli_initvisit(int, bool, int, char **, int, char **);
 extern "C" void cli_runscript(const char *);
-extern "C" VISITCLI_API int Py_Main(int, char **);
 
 // ****************************************************************************
 // Function: main
@@ -190,6 +191,7 @@ main(int argc, char *argv[])
     char **argv_py_style = new char *[argc];
     
     bool scriptOnly = false;
+    bool noWin = false;
                       
     int i=0;
         
@@ -212,6 +214,12 @@ main(int argc, char *argv[])
     // Parse the arguments
     for(i = 0; i < argc; ++i)
     {
+        // std::cout << "cli main: argv[i] " << argv[i] << std::endl;
+        // if(strcmp(argv[i], "-nowin") == 0)
+        // {
+        //  noWin = true;
+        // }
+        // else
         if(strcmp(argv[i], "-debug") == 0)
         {
             debugLevel = 1;
@@ -504,7 +512,14 @@ main(int argc, char *argv[])
             argc_py_style++;
         }
 
-        PySys_SetArgv(argc_py_style, argv_py_style);
+        if(argc_py_style == 0)
+        {
+            PySys_SetArgv(1, const_cast<char**>(&argv[0]));
+        }
+        else
+        {
+            PySys_SetArgv(argc_py_style, argv_py_style);
+        }
                 
         PyRun_SimpleString((char*)"import sys");
         PyRun_SimpleString((char*)"import os");
@@ -517,12 +532,14 @@ main(int argc, char *argv[])
         oss << "sys.path.append(pjoin(r'" << vlibdir  <<"','site-packages'))";
         PyRun_SimpleString(oss.str().c_str());
 
-        PyRun_SimpleString((char*)"import visit");
-
         // Initialize the VisIt module.
-        cli_initvisit(bufferDebug ? -debugLevel : debugLevel, verbose, argc2, argv2,
+        cli_initvisit(bufferDebug ? -debugLevel : debugLevel,
+                      verbose,
+                      argc2, argv2,
                       argc_after_s, argv_after_s);
 
+        // import visit after the module is fully inited
+        PyRun_SimpleString((char*)"import visit");
 
         // add original args to visit.argv_full, just in case 
         // some one needs to access them.
@@ -601,7 +618,16 @@ main(int argc, char *argv[])
                                   "__visit_source_stack__ = [] \n");
 
 
-        PyRun_SimpleString((char*)"visit.Launch()");
+        // if(noWin)
+        // {
+        //     std::cout << "visit.LaunchNowin()" << std::endl;
+        //     PyRun_SimpleString((char*)"visit.LaunchNowin()");
+        // }
+        // else
+        // {
+            std::cout << "visit.Launch()" << std::endl;
+            PyRun_SimpleString((char*)"visit.Launch()");
+            // }
 
         // reload symbols from visit, since they may have changed
         PyRun_SimpleString((char*)"from visit import *");

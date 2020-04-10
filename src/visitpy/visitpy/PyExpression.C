@@ -5,6 +5,7 @@
 #include <PyExpression.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyExpression
@@ -34,7 +35,6 @@ struct ExpressionObject
 // Internal prototypes
 //
 static PyObject *NewExpression(int);
-
 std::string
 PyExpression_ToString(const Expression *atts, const char *prefix)
 {
@@ -424,14 +424,7 @@ Expression_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-Expression_compare(PyObject *v, PyObject *w)
-{
-    Expression *a = ((ExpressionObject *)v)->data;
-    Expression *b = ((ExpressionObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *Expression_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyExpression_getattr(PyObject *self, char *name)
 {
@@ -552,42 +545,64 @@ static PyTypeObject ExpressionType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "Expression",                    // tp_name
-    sizeof(ExpressionObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)Expression_dealloc,  // tp_dealloc
-    (printfunc)Expression_print,     // tp_print
-    (getattrfunc)PyExpression_getattr, // tp_getattr
-    (setattrfunc)PyExpression_setattr, // tp_setattr
-    (cmpfunc)Expression_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)Expression_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    Expression_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "Expression",                   /* tp_name */
+    sizeof(ExpressionObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)Expression_dealloc,    /* tp_dealloc */
+    (printfunc)Expression_print,       /* tp_print */
+    (getattrfunc)PyExpression_getattr, /* tp_getattr */
+    (setattrfunc)PyExpression_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)Expression_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    Expression_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)Expression_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+Expression_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &ExpressionType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    Expression *a = ((ExpressionObject *)self)->data;
+    Expression *b = ((ExpressionObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

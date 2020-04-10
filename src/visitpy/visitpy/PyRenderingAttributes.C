@@ -5,6 +5,7 @@
 #include <PyRenderingAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -35,7 +36,6 @@ struct RenderingAttributesObject
 // Internal prototypes
 //
 static PyObject *NewRenderingAttributes(int);
-
 std::string
 PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *prefix)
 {
@@ -1370,14 +1370,7 @@ RenderingAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-RenderingAttributes_compare(PyObject *v, PyObject *w)
-{
-    RenderingAttributes *a = ((RenderingAttributesObject *)v)->data;
-    RenderingAttributes *b = ((RenderingAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *RenderingAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyRenderingAttributes_getattr(PyObject *self, char *name)
 {
@@ -1614,42 +1607,64 @@ static PyTypeObject RenderingAttributesType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "RenderingAttributes",                    // tp_name
-    sizeof(RenderingAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)RenderingAttributes_dealloc,  // tp_dealloc
-    (printfunc)RenderingAttributes_print,     // tp_print
-    (getattrfunc)PyRenderingAttributes_getattr, // tp_getattr
-    (setattrfunc)PyRenderingAttributes_setattr, // tp_setattr
-    (cmpfunc)RenderingAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)RenderingAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    RenderingAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "RenderingAttributes",                   /* tp_name */
+    sizeof(RenderingAttributesObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)RenderingAttributes_dealloc,    /* tp_dealloc */
+    (printfunc)RenderingAttributes_print,       /* tp_print */
+    (getattrfunc)PyRenderingAttributes_getattr, /* tp_getattr */
+    (setattrfunc)PyRenderingAttributes_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)RenderingAttributes_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    RenderingAttributes_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)RenderingAttributes_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+RenderingAttributes_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &RenderingAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    RenderingAttributes *a = ((RenderingAttributesObject *)self)->data;
+    RenderingAttributes *b = ((RenderingAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

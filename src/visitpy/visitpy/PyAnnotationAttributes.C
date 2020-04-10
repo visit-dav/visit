@@ -5,6 +5,7 @@
 #include <PyAnnotationAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PyAxes2D.h>
 #include <PyAxes3D.h>
 #include <PyFontAttributes.h>
@@ -43,7 +44,6 @@ struct AnnotationAttributesObject
 // Internal prototypes
 //
 static PyObject *NewAnnotationAttributes(int);
-
 std::string
 PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *prefix)
 {
@@ -1074,14 +1074,7 @@ AnnotationAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-AnnotationAttributes_compare(PyObject *v, PyObject *w)
-{
-    AnnotationAttributes *a = ((AnnotationAttributesObject *)v)->data;
-    AnnotationAttributes *b = ((AnnotationAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *AnnotationAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAnnotationAttributes_getattr(PyObject *self, char *name)
 {
@@ -1256,42 +1249,64 @@ static PyTypeObject AnnotationAttributesType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "AnnotationAttributes",                    // tp_name
-    sizeof(AnnotationAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)AnnotationAttributes_dealloc,  // tp_dealloc
-    (printfunc)AnnotationAttributes_print,     // tp_print
-    (getattrfunc)PyAnnotationAttributes_getattr, // tp_getattr
-    (setattrfunc)PyAnnotationAttributes_setattr, // tp_setattr
-    (cmpfunc)AnnotationAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)AnnotationAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    AnnotationAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "AnnotationAttributes",                   /* tp_name */
+    sizeof(AnnotationAttributesObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)AnnotationAttributes_dealloc,    /* tp_dealloc */
+    (printfunc)AnnotationAttributes_print,       /* tp_print */
+    (getattrfunc)PyAnnotationAttributes_getattr, /* tp_getattr */
+    (setattrfunc)PyAnnotationAttributes_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)AnnotationAttributes_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    AnnotationAttributes_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)AnnotationAttributes_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+AnnotationAttributes_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &AnnotationAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    AnnotationAttributes *a = ((AnnotationAttributesObject *)self)->data;
+    AnnotationAttributes *b = ((AnnotationAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
