@@ -5,7 +5,6 @@
 #ifndef PY_2_AND_3_SUPPORT
 #define PY_2_AND_3_SUPPORT
 #include <Python.h>
-#include <vector>
 
 #if PY_MAJOR_VERSION >= 3
 #define IS_PY3K
@@ -47,6 +46,7 @@ PyString_AsString(PyObject *py_obj)
                                                           "strict"); // Owned reference
         if(temp_bytes != NULL)
         {
+            
             res = strdup(PyBytes_AS_STRING(temp_bytes));
             Py_DECREF(temp_bytes);
         }
@@ -72,6 +72,13 @@ static PyObject *
 PyString_FromString(const char *s)
 {
     return PyUnicode_FromString(s);
+}
+
+//-----------------------------------------------------------------------------
+static Py_ssize_t
+PyString_Size(PyObject *s)
+{
+    return PyUnicode_GetLength(s);
 }
 
 //-----------------------------------------------------------------------------
@@ -143,8 +150,11 @@ PyNumber_Int(PyObject *o)
 //-----------------------------------------------------------------------------
 // Note: Make sure to use PyMethodDef *, to match PyMethodDef table[]
 static PyObject *
-Py_FindMethod(PyMethodDef * /*table*/, PyObject *ob, char *name)
+Py_FindMethod(PyMethodDef *table, PyObject *ob, char *name)
 {
+    /* cannot comment out to avoid unused warning b/c C*/
+    (void)table;
+    
     PyObject *py_name_str = PyString_FromString(name);
     PyObject *res = PyObject_GenericGetAttr(ob, py_name_str);
     Py_DECREF(py_name_str);
@@ -163,13 +173,13 @@ Py_FlushLine(void)
        return PyFile_WriteString("\n", f);
 }
 
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+#ifdef __cplusplus
+// B/c these work as func sign overrides, they can only be used in C++ code
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-        #ifdef IS_PY3K
-   
-        #else
-            Py_SetProgramName(argv[0]);
-        #endif
-            
 //-----------------------------------------------------------------------------
 static void
 Py_SetProgramName(char *name)
@@ -184,8 +194,12 @@ static void
 PySys_SetArgv(int argc, char **argv)
 {
     // alloc ptrs for encoded ver
-    std::vector<wchar_t*> wargv(argc);
-    
+    wchar_t** wargv= (wchar_t**) malloc(sizeof(wchar_t*) * argc);
+    // keep things C only since we cases where
+    // the cpp compiler is not being used. (py_visit_writer.c)
+
+    // std::vector<wchar_t*> wargv(argc);
+
     for(int i = 0; i < argc; i++)
     {
         wargv[i] = Py_DecodeLocale(argv[i], NULL);
@@ -197,7 +211,15 @@ PySys_SetArgv(int argc, char **argv)
     {
         PyMem_RawFree(wargv[i]);
     }
+
+    free(wargv);
 }
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+#endif
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 
 //#############################################################################
