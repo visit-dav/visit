@@ -19,7 +19,7 @@
 #   Only install Python if we are not using the system Python.
 #
 #   Kathleen Bonnell, Wed Mar 17 10:01:22 MT 2010
-#   Exclude '.svn' from being included when installing directories. 
+#   Exclude '.svn' from being included when installing directories.
 #
 #   Kathleen Bonnell, Wed Mar 24 16:26:32 MST 2010
 #   Change install on windows due to different directory structure.
@@ -29,7 +29,7 @@
 #   This allows us to install python modules directly to VisIt's python.
 #
 #   Kathleen Bonnell, Wed Apr 20 11:03:05 MST 2011
-#   Change PYTHON_ADD_MODULE to use extension '.pyd' and PY_MODULE_TYPE 
+#   Change PYTHON_ADD_MODULE to use extension '.pyd' and PY_MODULE_TYPE
 #   SHARED (instead of MODULE) on Windows.
 #
 #   Kathleen Bonnell, Tue May 3 15:13:27 MST 2011
@@ -56,8 +56,11 @@
 #   handle windows path and path-with-spaces issues. Don't change
 #   library output directory on widnows for PYTHON_ADD_HYBRID_MODULE.
 #
-#   Kathleen Biagas, Tue Jun 5 14:49:52 PDT 2012 
-#   Fix problem with setting of PYTHON_VERSION on windows. 
+#   Kathleen Biagas, Tue Jun 5 14:49:52 PDT 2012
+#   Fix problem with setting of PYTHON_VERSION on windows.
+#
+#   Cyrus Harrison, Fri Apr 10 13:47:15 PDT 2020
+#   Python 3 Support.
 #
 #****************************************************************************/
 
@@ -102,7 +105,80 @@ MESSAGE(STATUS "Looking for Python")
 # Find the interpreter first
 if(PYTHON_DIR AND NOT PYTHON_EXECUTABLE)
     set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python)
+    # if this doesn't exist, we may be using python3, which
+    # in many variants only creates "python3" exe, not "python"
+    if(NOT EXISTS "${PYTHON_EXECUTABLE}")
+        set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python3)
+    endif()
 endif()
+
+# find_package(PythonInterp REQUIRED)
+# if(PYTHONINTERP_FOUND)
+#
+#         MESSAGE(STATUS "PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE}")
+#
+#         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+#                                 "import sys;from distutils.sysconfig import get_python_inc;sys.stdout.write(get_python_inc())"
+#                         OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
+#                         ERROR_VARIABLE ERROR_FINDING_INCLUDES)
+#         MESSAGE(STATUS "PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR}")
+#
+#         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+#                                 "import sys;from distutils.sysconfig import get_python_lib;sys.stdout.write(get_python_lib())"
+#                         OUTPUT_VARIABLE PYTHON_SITE_PACKAGES_DIR
+#                         ERROR_VARIABLE ERROR_FINDING_SITE_PACKAGES_DIR)
+#         MESSAGE(STATUS "PYTHON_SITE_PACKAGES_DIR ${PYTHON_SITE_PACKAGES_DIR}")
+#
+#         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+#                                 "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"
+#                         OUTPUT_VARIABLE PYTHON_LIB_DIR
+#                         ERROR_VARIABLE ERROR_FINDING_LIB_DIR)
+#         MESSAGE(STATUS "PYTHON_LIB_DIR ${PYTHON_LIB_DIR}")
+#
+#
+#         # check if we need "-undefined dynamic_lookup" by inspecting LDSHARED flags
+#         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+#                                 "import sys;import sysconfig;sys.stdout.write(sysconfig.get_config_var('LDSHARED'))"
+#                         OUTPUT_VARIABLE PYTHON_LDSHARED_FLAGS
+#                         ERROR_VARIABLE ERROR_FINDING_PYTHON_LDSHARED_FLAGS)
+#
+#         MESSAGE(STATUS "PYTHON_LDSHARED_FLAGS ${PYTHON_LDSHARED_FLAGS}")
+#
+#         if(PYTHON_LDSHARED_FLAGS MATCHES "-undefined dynamic_lookup")
+#              MESSAGE(STATUS "PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG is ON")
+#             set(PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG ON)
+#         else()
+#              MESSAGE(STATUS "PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG is OFF")
+#             set(PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG OFF)
+#         endif()
+#
+#         # check for python libs differs for windows python installs
+#         if(NOT WIN32)
+#             # use shared python if we are using shared libs
+#             if(BUILD_SHARED_LIBS)
+#                 set(PYTHON_GLOB_TEST "${PYTHON_LIB_DIR}/libpython*${CMAKE_SHARED_LIBRARY_SUFFIX}")
+#             else()
+#                 set(PYTHON_GLOB_TEST "${PYTHON_LIB_DIR}/libpython*${CMAKE_STATIC_LIBRARY_SUFFIX}")
+#             endif()
+#         else()
+#             if(PYTHON_LIB_DIR)
+#                 set(PYTHON_GLOB_TEST "${PYTHON_LIB_DIR}/python*.lib")
+#             else()
+#                 get_filename_component(PYTHON_ROOT_DIR ${PYTHON_EXECUTABLE} DIRECTORY)
+#                 set(PYTHON_GLOB_TEST "${PYTHON_ROOT_DIR}/libs/python*.lib")
+#             endif()
+#         endif()
+#
+#         FILE(GLOB PYTHON_GLOB_RESULT ${PYTHON_GLOB_TEST})
+#         get_filename_component(PYTHON_LIBRARY "${PYTHON_GLOB_RESULT}" ABSOLUTE)
+#         MESSAGE(STATUS "{PythonLibs from PythonInterp} using: PYTHON_LIBRARY=${PYTHON_LIBRARY}")
+#         find_package(PythonLibs)
+#
+#         if(NOT PYTHONLIBS_FOUND)
+#             MESSAGE(FATAL_ERROR "Failed to find Python Libraries using PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
+#         endif()
+#
+# endif()
 
 find_package(PythonInterp REQUIRED)
 if(PYTHONINTERP_FOUND)
@@ -114,6 +190,10 @@ if(PYTHONINTERP_FOUND)
                         OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
                         ERROR_VARIABLE ERROR_FINDING_INCLUDES)
         MESSAGE(STATUS "PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR}")
+        
+        if(NOT EXISTS ${PYTHON_INCLUDE_DIR})
+            MESSAGE(FATAL_ERROR "Reported PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR} does not exist!")
+        endif()
 
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
                                 "import sys;from distutils.sysconfig import get_python_lib;sys.stdout.write(get_python_lib())"
@@ -121,12 +201,21 @@ if(PYTHONINTERP_FOUND)
                         ERROR_VARIABLE ERROR_FINDING_SITE_PACKAGES_DIR)
         MESSAGE(STATUS "PYTHON_SITE_PACKAGES_DIR ${PYTHON_SITE_PACKAGES_DIR}")
 
+        if(NOT EXISTS ${PYTHON_SITE_PACKAGES_DIR})
+            MESSAGE(FATAL_ERROR "Reported PYTHON_SITE_PACKAGES_DIR ${PYTHON_SITE_PACKAGES_DIR} does not exist!")
+        endif()
+
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
                                 "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"
                         OUTPUT_VARIABLE PYTHON_LIB_DIR
                         ERROR_VARIABLE ERROR_FINDING_LIB_DIR)
         MESSAGE(STATUS "PYTHON_LIB_DIR ${PYTHON_LIB_DIR}")
 
+        # if we are on macOS or linux, expect PYTHON_LIB_DIR to exist
+        # windows logic does not need PYTHON_LIB_DIR
+        if(NOT WIN32 AND NOT EXISTS ${PYTHON_LIB_DIR})
+            MESSAGE(FATAL_ERROR "Reported PYTHON_LIB_DIR ${PYTHON_LIB_DIR} does not exist!")
+        endif()
 
         # check if we need "-undefined dynamic_lookup" by inspecting LDSHARED flags
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
@@ -146,10 +235,14 @@ if(PYTHONINTERP_FOUND)
 
         # check for python libs differs for windows python installs
         if(NOT WIN32)
-            # use shared python if we are using shared libs
-            if(BUILD_SHARED_LIBS)
-                set(PYTHON_GLOB_TEST "${PYTHON_LIB_DIR}/libpython*${CMAKE_SHARED_LIBRARY_SUFFIX}")
-            else()
+            # we may build a shared python module against a static python
+            # check for both shared and static libs cases
+
+            # check for shared first
+            set(PYTHON_GLOB_TEST "${PYTHON_LIB_DIR}/libpython*${CMAKE_SHARED_LIBRARY_SUFFIX}")
+            FILE(GLOB PYTHON_GLOB_RESULT ${PYTHON_GLOB_TEST})
+            # then for static if shared is not found
+            if(NOT PYTHON_GLOB_RESULT)
                 set(PYTHON_GLOB_TEST "${PYTHON_LIB_DIR}/libpython*${CMAKE_STATIC_LIBRARY_SUFFIX}")
             endif()
         else()
@@ -160,12 +253,29 @@ if(PYTHONINTERP_FOUND)
                 set(PYTHON_GLOB_TEST "${PYTHON_ROOT_DIR}/libs/python*.lib")
             endif()
         endif()
-            
+
         FILE(GLOB PYTHON_GLOB_RESULT ${PYTHON_GLOB_TEST})
+
+        # make sure we found something
+        if(NOT PYTHON_GLOB_RESULT)
+            message(FATAL_ERROR "Failed to find main python library using pattern: ${PYTHON_GLOB_TEST}")
+        endif()
+
+        if(NOT WIN32)
+            # life is ok on windows, but elsewhere
+            # the glob result might be a list due to symlinks, etc
+            # if it is a list, select the first entry as py lib
+            list(LENGTH PYTHON_GLOB_RESULT PYTHON_GLOB_RESULT_LEN)
+            if(${PYTHON_GLOB_RESULT_LEN} GREATER 1)
+                list(GET PYTHON_GLOB_RESULT 0 PYTHON_GLOB_RESULT)
+            endif()
+        endif()
+
         get_filename_component(PYTHON_LIBRARY "${PYTHON_GLOB_RESULT}" ABSOLUTE)
+
         MESSAGE(STATUS "{PythonLibs from PythonInterp} using: PYTHON_LIBRARY=${PYTHON_LIBRARY}")
         find_package(PythonLibs)
-        
+
         if(NOT PYTHONLIBS_FOUND)
             MESSAGE(FATAL_ERROR "Failed to find Python Libraries using PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
         endif()
@@ -174,8 +284,7 @@ endif()
 
 
 find_package_handle_standard_args(Python  DEFAULT_MSG
-
-                                  PYTHON_LIBRARY PYTHON_INCLUDE_DIR)
+                                  PYTHON_LIBRARIES PYTHON_INCLUDE_DIR)
 ###
 # Old Code to find python libs
 ###
@@ -316,8 +425,8 @@ find_package_handle_standard_args(Python  DEFAULT_MSG
 # because they are meant to specify the location of a single library.
 # We now set the variables listed by the documentation for this
 # module.
-SET(PYTHON_LIBRARIES "${PYTHON_LIBRARY}")
-SET(PYTHON_DEBUG_LIBRARIES "${PYTHON_DEBUG_LIBRARY}")
+#SET(PYTHON_LIBRARIES "${PYTHON_LIBRARY}")
+#SET(PYTHON_DEBUG_LIBRARIES "${PYTHON_DEBUG_LIBRARY}")
 
 
 INCLUDE(FindPackageHandleStandardArgs)
@@ -326,7 +435,7 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(PYTHONLIBS DEFAULT_MSG PYTHON_LIBRARIES PYTHON
 message(STATUS "PYTHONLIBS_FOUND = ${PYTHONLIBS_FOUND}")
 
 # PYTHON_ADD_MODULE(<name> src1 src2 ... srcN) is used to build modules for python.
-# PYTHON_WRITE_MODULES_HEADER(<filename>) writes a header file you can include 
+# PYTHON_WRITE_MODULES_HEADER(<filename>) writes a header file you can include
 # in your sources to initialize the static python modules
 
 GET_PROPERTY(_TARGET_SUPPORTS_SHARED_LIBS
@@ -351,7 +460,7 @@ FUNCTION(PYTHON_ADD_MODULE _NAME )
         SET_TARGET_PROPERTIES(${_NAME} PROPERTIES SUFFIX ".pyd")
     ENDIF(WIN32)
 
-#    TARGET_LINK_LIBRARIES(${_NAME} ${PYTHON_LIBRARIES})
+    TARGET_LINK_LIBRARIES(${_NAME} ${PYTHON_LIBRARIES})
 
   ENDIF(PYTHON_ENABLE_MODULE_${_NAME})
 ENDFUNCTION(PYTHON_ADD_MODULE)
@@ -554,11 +663,11 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                 ELSE(VISIT_HEADERS_SKIP_INSTALL)
                     INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}
                         DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python/include
-                        FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
-                                         GROUP_READ GROUP_WRITE 
+                        FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                                         GROUP_READ GROUP_WRITE
                                          WORLD_READ
-                        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                                              GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                               WORLD_READ             WORLD_EXECUTE
                         PATTERN ".svn" EXCLUDE
                         )
@@ -571,11 +680,11 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                 #
                 INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}
                   DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/include
-                  FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
-                                   GROUP_READ GROUP_WRITE 
+                  FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                                   GROUP_READ GROUP_WRITE
                                    WORLD_READ
-                  DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                                        GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                  DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                        GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                         WORLD_READ             WORLD_EXECUTE
                   PATTERN ".svn" EXCLUDE
                 )
@@ -583,17 +692,17 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                 # CDH
                 # The WIN32 & NOT WIN32 cases seem almost the same here?
                 # The only diff I can see is the "*.h" glob is used?
-                # 
+                #
                 IF(VISIT_HEADERS_SKIP_INSTALL)
                     MESSAGE(STATUS "Skipping python headers installation")
                 ELSE(VISIT_HEADERS_SKIP_INSTALL)
                 INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}/
                     DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python
-                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
-                                     GROUP_READ GROUP_WRITE 
+                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                                     GROUP_READ GROUP_WRITE
                                      WORLD_READ
-                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                                          GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                          GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                           WORLD_READ             WORLD_EXECUTE
                     FILES_MATCHING PATTERN "*.h"
                     PATTERN ".svn" EXCLUDE
@@ -607,26 +716,26 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                 #
                 INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}/
                     DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/include
-                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
-                                     GROUP_READ GROUP_WRITE 
+                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                                     GROUP_READ GROUP_WRITE
                                      WORLD_READ
-                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                                          GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                          GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                           WORLD_READ             WORLD_EXECUTE
                     FILES_MATCHING PATTERN "*.h"
                     PATTERN ".svn" EXCLUDE
                 )
                 INSTALL(DIRECTORY ${VISIT_PYTHON_DIR}/lib
                     DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python
-                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
-                                     GROUP_READ GROUP_WRITE 
+                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                                     GROUP_READ GROUP_WRITE
                                      WORLD_READ
-                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                                          GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                          GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                           WORLD_READ             WORLD_EXECUTE
                     PATTERN ".svn"   EXCLUDE
                 )
             ENDIF (NOT WIN32)
-        ENDIF((NOT ${PYTHON_DIR} STREQUAL "/usr")) 
+        ENDIF((NOT ${PYTHON_DIR} STREQUAL "/usr"))
     ENDIF(Python_FRAMEWORKS)
 ENDIF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
