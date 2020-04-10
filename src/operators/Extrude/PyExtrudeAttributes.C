@@ -5,6 +5,7 @@
 #include <PyExtrudeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyExtrudeAttributes
@@ -34,7 +35,6 @@ struct ExtrudeAttributesObject
 // Internal prototypes
 //
 static PyObject *NewExtrudeAttributes(int);
-
 std::string
 PyExtrudeAttributes_ToString(const ExtrudeAttributes *atts, const char *prefix)
 {
@@ -292,14 +292,7 @@ ExtrudeAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ExtrudeAttributes_compare(PyObject *v, PyObject *w)
-{
-    ExtrudeAttributes *a = ((ExtrudeAttributesObject *)v)->data;
-    ExtrudeAttributes *b = ((ExtrudeAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ExtrudeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyExtrudeAttributes_getattr(PyObject *self, char *name)
 {
@@ -383,42 +376,64 @@ static PyTypeObject ExtrudeAttributesType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ExtrudeAttributes",                    // tp_name
-    sizeof(ExtrudeAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ExtrudeAttributes_dealloc,  // tp_dealloc
-    (printfunc)ExtrudeAttributes_print,     // tp_print
-    (getattrfunc)PyExtrudeAttributes_getattr, // tp_getattr
-    (setattrfunc)PyExtrudeAttributes_setattr, // tp_setattr
-    (cmpfunc)ExtrudeAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ExtrudeAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ExtrudeAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "ExtrudeAttributes",                   /* tp_name */
+    sizeof(ExtrudeAttributesObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)ExtrudeAttributes_dealloc,    /* tp_dealloc */
+    (printfunc)ExtrudeAttributes_print,       /* tp_print */
+    (getattrfunc)PyExtrudeAttributes_getattr, /* tp_getattr */
+    (setattrfunc)PyExtrudeAttributes_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)ExtrudeAttributes_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    ExtrudeAttributes_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)ExtrudeAttributes_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+ExtrudeAttributes_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &ExtrudeAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ExtrudeAttributes *a = ((ExtrudeAttributesObject *)self)->data;
+    ExtrudeAttributes *b = ((ExtrudeAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

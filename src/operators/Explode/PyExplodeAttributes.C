@@ -5,6 +5,7 @@
 #include <PyExplodeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PyExplodeAttributes.h>
 
 // ****************************************************************************
@@ -35,7 +36,6 @@ struct ExplodeAttributesObject
 // Internal prototypes
 //
 static PyObject *NewExplodeAttributes(int);
-
 std::string
 PyExplodeAttributes_ToString(const ExplodeAttributes *atts, const char *prefix)
 {
@@ -712,7 +712,11 @@ ExplodeAttributes_SetBoundaryNames(PyObject *self, PyObject *args)
         {
             PyObject *item = PyTuple_GET_ITEM(tuple, i);
             if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
+            {
+                char *item_cstr = PyString_AsString(item);
+                vec[i] = std::string(item_cstr);
+                PyString_AsString_Cleanup(item_cstr);
+            }
             else
                 vec[i] = std::string("");
         }
@@ -720,7 +724,9 @@ ExplodeAttributes_SetBoundaryNames(PyObject *self, PyObject *args)
     else if(PyString_Check(tuple))
     {
         vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
+        char *tuple_cstr = PyString_AsString(tuple);
+        vec[0] = std::string(tuple_cstr);
+        PyString_AsString_Cleanup(tuple_cstr);
     }
     else
         return NULL;
@@ -915,14 +921,7 @@ ExplodeAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ExplodeAttributes_compare(PyObject *v, PyObject *w)
-{
-    ExplodeAttributes *a = ((ExplodeAttributesObject *)v)->data;
-    ExplodeAttributes *b = ((ExplodeAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ExplodeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyExplodeAttributes_getattr(PyObject *self, char *name)
 {
@@ -1052,42 +1051,64 @@ static PyTypeObject ExplodeAttributesType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ExplodeAttributes",                    // tp_name
-    sizeof(ExplodeAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ExplodeAttributes_dealloc,  // tp_dealloc
-    (printfunc)ExplodeAttributes_print,     // tp_print
-    (getattrfunc)PyExplodeAttributes_getattr, // tp_getattr
-    (setattrfunc)PyExplodeAttributes_setattr, // tp_setattr
-    (cmpfunc)ExplodeAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ExplodeAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ExplodeAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "ExplodeAttributes",                   /* tp_name */
+    sizeof(ExplodeAttributesObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)ExplodeAttributes_dealloc,    /* tp_dealloc */
+    (printfunc)ExplodeAttributes_print,       /* tp_print */
+    (getattrfunc)PyExplodeAttributes_getattr, /* tp_getattr */
+    (setattrfunc)PyExplodeAttributes_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)ExplodeAttributes_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    ExplodeAttributes_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)ExplodeAttributes_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+ExplodeAttributes_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &ExplodeAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ExplodeAttributes *a = ((ExplodeAttributesObject *)self)->data;
+    ExplodeAttributes *b = ((ExplodeAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

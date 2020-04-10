@@ -5,6 +5,7 @@
 #include <PyCracksClipperAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyCracksClipperAttributes
@@ -34,7 +35,6 @@ struct CracksClipperAttributesObject
 // Internal prototypes
 //
 static PyObject *NewCracksClipperAttributes(int);
-
 std::string
 PyCracksClipperAttributes_ToString(const CracksClipperAttributes *atts, const char *prefix)
 {
@@ -307,14 +307,7 @@ CracksClipperAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-CracksClipperAttributes_compare(PyObject *v, PyObject *w)
-{
-    CracksClipperAttributes *a = ((CracksClipperAttributesObject *)v)->data;
-    CracksClipperAttributes *b = ((CracksClipperAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *CracksClipperAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyCracksClipperAttributes_getattr(PyObject *self, char *name)
 {
@@ -406,42 +399,64 @@ static PyTypeObject CracksClipperAttributesType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "CracksClipperAttributes",                    // tp_name
-    sizeof(CracksClipperAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)CracksClipperAttributes_dealloc,  // tp_dealloc
-    (printfunc)CracksClipperAttributes_print,     // tp_print
-    (getattrfunc)PyCracksClipperAttributes_getattr, // tp_getattr
-    (setattrfunc)PyCracksClipperAttributes_setattr, // tp_setattr
-    (cmpfunc)CracksClipperAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)CracksClipperAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    CracksClipperAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "CracksClipperAttributes",                   /* tp_name */
+    sizeof(CracksClipperAttributesObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)CracksClipperAttributes_dealloc,    /* tp_dealloc */
+    (printfunc)CracksClipperAttributes_print,       /* tp_print */
+    (getattrfunc)PyCracksClipperAttributes_getattr, /* tp_getattr */
+    (setattrfunc)PyCracksClipperAttributes_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)CracksClipperAttributes_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    CracksClipperAttributes_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)CracksClipperAttributes_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+CracksClipperAttributes_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &CracksClipperAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    CracksClipperAttributes *a = ((CracksClipperAttributesObject *)self)->data;
+    CracksClipperAttributes *b = ((CracksClipperAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

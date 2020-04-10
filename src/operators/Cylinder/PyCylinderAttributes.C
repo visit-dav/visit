@@ -5,6 +5,7 @@
 #include <PyCylinderAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyCylinderAttributes
@@ -34,7 +35,6 @@ struct CylinderAttributesObject
 // Internal prototypes
 //
 static PyObject *NewCylinderAttributes(int);
-
 std::string
 PyCylinderAttributes_ToString(const CylinderAttributes *atts, const char *prefix)
 {
@@ -277,14 +277,7 @@ CylinderAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-CylinderAttributes_compare(PyObject *v, PyObject *w)
-{
-    CylinderAttributes *a = ((CylinderAttributesObject *)v)->data;
-    CylinderAttributes *b = ((CylinderAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *CylinderAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyCylinderAttributes_getattr(PyObject *self, char *name)
 {
@@ -360,42 +353,64 @@ static PyTypeObject CylinderAttributesType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "CylinderAttributes",                    // tp_name
-    sizeof(CylinderAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)CylinderAttributes_dealloc,  // tp_dealloc
-    (printfunc)CylinderAttributes_print,     // tp_print
-    (getattrfunc)PyCylinderAttributes_getattr, // tp_getattr
-    (setattrfunc)PyCylinderAttributes_setattr, // tp_setattr
-    (cmpfunc)CylinderAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)CylinderAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    CylinderAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "CylinderAttributes",                   /* tp_name */
+    sizeof(CylinderAttributesObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)CylinderAttributes_dealloc,    /* tp_dealloc */
+    (printfunc)CylinderAttributes_print,       /* tp_print */
+    (getattrfunc)PyCylinderAttributes_getattr, /* tp_getattr */
+    (setattrfunc)PyCylinderAttributes_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)CylinderAttributes_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    CylinderAttributes_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)CylinderAttributes_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+CylinderAttributes_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &CylinderAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    CylinderAttributes *a = ((CylinderAttributesObject *)self)->data;
+    CylinderAttributes *b = ((CylinderAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

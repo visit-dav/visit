@@ -5,6 +5,7 @@
 #include <PyLimitCycleAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyLimitCycleAttributes
@@ -34,7 +35,6 @@ struct LimitCycleAttributesObject
 // Internal prototypes
 //
 static PyObject *NewLimitCycleAttributes(int);
-
 std::string
 PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *prefix)
 {
@@ -2342,14 +2342,7 @@ LimitCycleAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-LimitCycleAttributes_compare(PyObject *v, PyObject *w)
-{
-    LimitCycleAttributes *a = ((LimitCycleAttributesObject *)v)->data;
-    LimitCycleAttributes *b = ((LimitCycleAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *LimitCycleAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyLimitCycleAttributes_getattr(PyObject *self, char *name)
 {
@@ -2738,42 +2731,64 @@ static PyTypeObject LimitCycleAttributesType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "LimitCycleAttributes",                    // tp_name
-    sizeof(LimitCycleAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)LimitCycleAttributes_dealloc,  // tp_dealloc
-    (printfunc)LimitCycleAttributes_print,     // tp_print
-    (getattrfunc)PyLimitCycleAttributes_getattr, // tp_getattr
-    (setattrfunc)PyLimitCycleAttributes_setattr, // tp_setattr
-    (cmpfunc)LimitCycleAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)LimitCycleAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    LimitCycleAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "LimitCycleAttributes",                   /* tp_name */
+    sizeof(LimitCycleAttributesObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)LimitCycleAttributes_dealloc,    /* tp_dealloc */
+    (printfunc)LimitCycleAttributes_print,       /* tp_print */
+    (getattrfunc)PyLimitCycleAttributes_getattr, /* tp_getattr */
+    (setattrfunc)PyLimitCycleAttributes_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)LimitCycleAttributes_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    LimitCycleAttributes_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)LimitCycleAttributes_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+LimitCycleAttributes_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &LimitCycleAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    LimitCycleAttributes *a = ((LimitCycleAttributesObject *)self)->data;
+    LimitCycleAttributes *b = ((LimitCycleAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

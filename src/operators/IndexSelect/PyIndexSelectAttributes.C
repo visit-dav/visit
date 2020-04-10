@@ -5,6 +5,7 @@
 #include <PyIndexSelectAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyIndexSelectAttributes
@@ -34,7 +35,6 @@ struct IndexSelectAttributesObject
 // Internal prototypes
 //
 static PyObject *NewIndexSelectAttributes(int);
-
 std::string
 PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *prefix)
 {
@@ -698,14 +698,7 @@ IndexSelectAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-IndexSelectAttributes_compare(PyObject *v, PyObject *w)
-{
-    IndexSelectAttributes *a = ((IndexSelectAttributesObject *)v)->data;
-    IndexSelectAttributes *b = ((IndexSelectAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *IndexSelectAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyIndexSelectAttributes_getattr(PyObject *self, char *name)
 {
@@ -859,42 +852,64 @@ static PyTypeObject IndexSelectAttributesType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "IndexSelectAttributes",                    // tp_name
-    sizeof(IndexSelectAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)IndexSelectAttributes_dealloc,  // tp_dealloc
-    (printfunc)IndexSelectAttributes_print,     // tp_print
-    (getattrfunc)PyIndexSelectAttributes_getattr, // tp_getattr
-    (setattrfunc)PyIndexSelectAttributes_setattr, // tp_setattr
-    (cmpfunc)IndexSelectAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)IndexSelectAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    IndexSelectAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "IndexSelectAttributes",                   /* tp_name */
+    sizeof(IndexSelectAttributesObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)IndexSelectAttributes_dealloc,    /* tp_dealloc */
+    (printfunc)IndexSelectAttributes_print,       /* tp_print */
+    (getattrfunc)PyIndexSelectAttributes_getattr, /* tp_getattr */
+    (setattrfunc)PyIndexSelectAttributes_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)IndexSelectAttributes_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    IndexSelectAttributes_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)IndexSelectAttributes_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+IndexSelectAttributes_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &IndexSelectAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    IndexSelectAttributes *a = ((IndexSelectAttributesObject *)self)->data;
+    IndexSelectAttributes *b = ((IndexSelectAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

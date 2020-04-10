@@ -5,6 +5,7 @@
 #include <PyAMRStitchCellAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyAMRStitchCellAttributes
@@ -34,7 +35,6 @@ struct AMRStitchCellAttributesObject
 // Internal prototypes
 //
 static PyObject *NewAMRStitchCellAttributes(int);
-
 std::string
 PyAMRStitchCellAttributes_ToString(const AMRStitchCellAttributes *atts, const char *prefix)
 {
@@ -128,14 +128,7 @@ AMRStitchCellAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-AMRStitchCellAttributes_compare(PyObject *v, PyObject *w)
-{
-    AMRStitchCellAttributes *a = ((AMRStitchCellAttributesObject *)v)->data;
-    AMRStitchCellAttributes *b = ((AMRStitchCellAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *AMRStitchCellAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAMRStitchCellAttributes_getattr(PyObject *self, char *name)
 {
@@ -206,42 +199,64 @@ static PyTypeObject AMRStitchCellAttributesType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "AMRStitchCellAttributes",                    // tp_name
-    sizeof(AMRStitchCellAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)AMRStitchCellAttributes_dealloc,  // tp_dealloc
-    (printfunc)AMRStitchCellAttributes_print,     // tp_print
-    (getattrfunc)PyAMRStitchCellAttributes_getattr, // tp_getattr
-    (setattrfunc)PyAMRStitchCellAttributes_setattr, // tp_setattr
-    (cmpfunc)AMRStitchCellAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)AMRStitchCellAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    AMRStitchCellAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "AMRStitchCellAttributes",                   /* tp_name */
+    sizeof(AMRStitchCellAttributesObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)AMRStitchCellAttributes_dealloc,    /* tp_dealloc */
+    (printfunc)AMRStitchCellAttributes_print,       /* tp_print */
+    (getattrfunc)PyAMRStitchCellAttributes_getattr, /* tp_getattr */
+    (setattrfunc)PyAMRStitchCellAttributes_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)AMRStitchCellAttributes_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    AMRStitchCellAttributes_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)AMRStitchCellAttributes_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+AMRStitchCellAttributes_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &AMRStitchCellAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    AMRStitchCellAttributes *a = ((AMRStitchCellAttributesObject *)self)->data;
+    AMRStitchCellAttributes *b = ((AMRStitchCellAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
