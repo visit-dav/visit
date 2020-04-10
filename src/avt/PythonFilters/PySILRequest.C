@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PyDataRequest.h>
 #include <PySILRestrictionBase.h>
 
@@ -285,46 +286,79 @@ static char *SILRequest_Doc = "This class provides access to the avt pipeline SI
 //
 //
 
+// static PyTypeObject PySILRequestType =
+// {
+//     //
+//     // Type header
+//     //
+//     PyObject_HEAD_INIT(&PyType_Type)
+//     0,                                   // ob_size
+//     "SILRequest",                        // tp_name
+//     sizeof(PySILRequestObject),          // tp_basicsize
+//     0,                                   // tp_itemsize
+//     //
+//     // Standard methods
+//     //
+//     (destructor)SILRequest_dealloc,      // tp_dealloc
+//     (printfunc)0,                        // tp_print
+//     (getattrfunc)SILRequest_getattr,     // tp_getattr
+//     (setattrfunc)0,                      // tp_setattr
+//     (cmpfunc)0,                          // tp_compare
+//     (reprfunc)0,                         // tp_repr
+//     //
+//     // Type Categories
+//     //
+//     0,                                   // tp_as_number
+//     0,                                   // tp_as_sequence
+//     0,                                   // tp_as_mapping
+//     //
+//     // More methods
+//     //
+//     0,                                   // tp_hash
+//     0,                                   // tp_call
+//     0,                                   // tp_str
+//     0,                                   // tp_getattro
+//     0,                                   // tp_setattro
+//     0,                                   // tp_as_buffer
+//     Py_TPFLAGS_CHECKTYPES,               // tp_flags
+//     SILRequest_Doc,                      // tp_doc
+//     0,                                   // tp_traverse
+//     0,                                   // tp_clear
+//     0,                                   // tp_richcompare
+//     0                                    // tp_weaklistoffset
+// };
+
+
 static PyTypeObject PySILRequestType =
 {
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "SILRequest",                        // tp_name
-    sizeof(PySILRequestObject),          // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)SILRequest_dealloc,      // tp_dealloc
-    (printfunc)0,                        // tp_print
-    (getattrfunc)SILRequest_getattr,     // tp_getattr
-    (setattrfunc)0,                      // tp_setattr
-    (cmpfunc)0,                          // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type Categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    0,                                   // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    SILRequest_Doc,                      // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "SILRequest",                      /* tp_name */
+    sizeof(PySILRequestObject),        /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)SILRequest_dealloc,    /* tp_dealloc */
+    0,                                 /* tp_print */
+    (getattrfunc)SILRequest_getattr,   /* tp_getattr */
+    0,                                 /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    0,                                 /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    SILRequest_Doc,                    /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+    0,                                 /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
 
 

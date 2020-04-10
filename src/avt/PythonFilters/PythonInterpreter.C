@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "Python.h"
+#include <Py2and3Support.h>
 #include "PythonInterpreter.h"
 #include <fstream>
 #include <sstream>
@@ -441,6 +442,10 @@ PythonInterpreter::PyObjectToInteger(PyObject *py_obj, int &res)
 //  Programmer:   Cyrus Harrison
 //  Creation:     April 15, 2009
 //
+//  Modifications:
+//    Cyrus Harrison, Thu Mar 26 06:28:25 PDT 2020
+//    Python 3 port.
+//
 // ****************************************************************************
 
 bool
@@ -450,7 +455,9 @@ PythonInterpreter::PyObjectToString(PyObject *py_obj, std::string &res)
     if(py_obj_str == NULL)
         return false;
 
-    res = PyString_AS_STRING(py_obj_str);
+    char *str_val = PyString_AsString(py_obj_str);
+    res = std::string(str_val);
+    PyString_AsString_Cleanup(str_val);
     Py_DECREF(py_obj_str);
     return true;
 }
@@ -464,6 +471,11 @@ PythonInterpreter::PyObjectToString(PyObject *py_obj, std::string &res)
 //
 //  Programmer:   Cyrus Harrison
 //  Creation:     April 15, 2009
+//
+//
+//  Modifications:
+//    Cyrus Harrison, Thu Mar 26 06:28:25 PDT 2020
+//    Python 3 port.
 //
 // ****************************************************************************
 
@@ -512,7 +524,10 @@ PythonInterpreter::PyTracebackToString(PyObject *py_etype,
     }
 
     // convert python string object to std::string
-    res = PyString_AS_STRING(py_str);
+    
+    char *str_val = PyString_AsString(py_str);
+    res = std::string(str_val);
+    PyString_AsString_Cleanup(str_val);
 
     Py_DECREF(py_buffer);
     Py_DECREF(py_res);
