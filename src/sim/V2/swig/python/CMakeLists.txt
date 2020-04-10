@@ -29,6 +29,8 @@ INCLUDE_DIRECTORIES(
     ${VISIT_BINARY_DIR}/sim/V2/swig/python
     ${VISIT_BINARY_DIR}/include
     ${PYTHON_INCLUDE_PATH}
+    # for python 2 + 3 helper header
+    ${VISIT_INCLUDE_DIR}/visitpy/common
     )
 
 SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake/ ${CMAKE_MODULE_PATH})
