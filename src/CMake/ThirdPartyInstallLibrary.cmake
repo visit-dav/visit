@@ -143,11 +143,19 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
 
     IF(${isSHAREDLIBRARY} STREQUAL "YES")
         GET_FILENAME_COMPONENT(LIBREALPATH ${tmpLIBFILE} REALPATH)
-        ## MESSAGE("***tmpLIBFILE=${tmpLIBFILE}, LIBREALPATH=${LIBREALPATH}")
+        #message("*tmpLIBFILE=${tmpLIBFILE}")
+        #message("*LIBREALPATH=${LIBREALPATH}")
+
         IF(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
+
             # We need to install a library and its symlinks
             GET_FILENAME_COMPONENT(curPATH ${LIBREALPATH} PATH)
-            IF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
+
+            IF((NOT ${curPATH} STREQUAL "/usr/lib") AND
+               (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND
+               (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND
+               (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
+
                 # Extract proper base name by comparing the input lib path w/ the real path.
                 GET_FILENAME_COMPONENT(realNAME ${LIBREALPATH} NAME)
                 GET_FILENAME_COMPONENT(inptNAME ${tmpLIBFILE}  NAME)
@@ -166,42 +174,71 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                     SET(allNAMES ${allNAMES} "${curNAME}${LIBEXT}")  # Mac way
                 ENDFOREACH(X)
 
+                # the .so.1 version of the vtk 9.0 libs isn't being found by the
+                # above process, but the 'soname' is the .so.1 version so find it by
+                # using objdump
+                if (${inptNAME} MATCHES "libvtk")
+                    execute_process(COMMAND objdump -p ${LIBREALPATH}
+                                    COMMAND grep SONAME
+                                    RESULT_VARIABLE tmp_SONAME_RESULT
+                                    OUTPUT_VARIABLE tmp_SONAME
+                                    ERROR_VARIABLE  tmp_SONAME_ERROR)
+                    if(tmp_SONAME)
+                        string(REPLACE "SONAME" "" tmp_SONAME ${tmp_SONAME})
+                        string(STRIP  ${tmp_SONAME} tmp_SONAME)
+                        set(allNAMES ${allNAMES} "${curPATH}/${tmp_SONAME}")
+                    endif()
+                endif()
+
                 LIST(REMOVE_DUPLICATES allNAMES)
 
                 # Add the names that exist to the install.
                 FOREACH(curNAMEWithExt ${allNAMES})
-                    ## MESSAGE("** Checking ${curNAMEWithExt}")
+                    #MESSAGE("*** Checking ${curNAMEWithExt}")
                     IF(EXISTS ${curNAMEWithExt})
-                        ## MESSAGE("** Need to install ${curNAMEWithExt}")
+                        #MESSAGE("**** Need to install ${curNAMEWithExt}")
                         IF(IS_DIRECTORY ${curNAMEWithExt})
                             # It is a framework, install as a directory
                             INSTALL(DIRECTORY ${curNAMEWithExt}
                                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-                                DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                                FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                                DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                                      GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                                      WORLD_READ             WORLD_EXECUTE
+                                FILE_PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                                      GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                                      WORLD_READ             WORLD_EXECUTE
                                 CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                             )
-                        ELSE(IS_DIRECTORY ${curNAMEWithExt})
+                        else()
                             INSTALL(FILES ${curNAMEWithExt}
                                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-                                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                            WORLD_READ             WORLD_EXECUTE
                                 CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                             )
                         ENDIF(IS_DIRECTORY ${curNAMEWithExt})
                     ENDIF(EXISTS ${curNAMEWithExt})
                 ENDFOREACH(curNAMEWithExt)
-            # ENDIF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*"))
-            ENDIF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
+            ENDIF()
         ELSE(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
             GET_FILENAME_COMPONENT(curPATH ${LIBREALPATH} PATH)
-            IF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
+            IF((NOT ${curPATH} STREQUAL "/usr/lib") AND
+               (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND
+               (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND
+               (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
+
                 # We need to install just the library
                 IF(IS_DIRECTORY ${tmpLIBFILE})
                     # It is a framework, install as a directory.
                     INSTALL(DIRECTORY ${tmpLIBFILE}
                         DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-                        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                              WORLD_READ             WORLD_EXECUTE
+                        FILE_PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                              WORLD_READ             WORLD_EXECUTE
                         CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                         PATTERN "Qt*_debug" EXCLUDE # Exclude Qt*_debug libraries in framework.
                     )
@@ -209,14 +246,16 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                     # Create an install target for just the library file
                     INSTALL(FILES ${tmpLIBFILE}
                         DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-                        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                    WORLD_READ WORLD_EXECUTE
                         CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                     )
                 ENDIF(IS_DIRECTORY ${tmpLIBFILE})
-#            MESSAGE("**We need to install lib ${tmpLIBFILE}")
-            ENDIF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
+            #MESSAGE("**We need to install lib ${tmpLIBFILE}")
+            ENDIF()
         ENDIF(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
-    ELSE(${isSHAREDLIBRARY} STREQUAL "YES")
+    ELSE() # Not a shared library
         # We have a .a that we need to install to archives.
         IF(VISIT_INSTALL_THIRD_PARTY)
 #            MESSAGE("***INSTALL ${LIBFILE} to ${VISIT_INSTALLED_VERSION_ARCHIVES}")
