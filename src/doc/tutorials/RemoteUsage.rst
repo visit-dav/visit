@@ -190,8 +190,12 @@ Now we are ready to login to one of the systems.
 
 This will bring up a Linux desktop. The resolution of the desktop will
 probably be low if you have never used the VNC server before. This is so
-that it isn't too large if you are on a laptop. To change the resolution
-of the display dynamically, bring up a terminal and use the xrandr command.
+that it isn't too large if you are on a laptop.
+
+.. _SettingScreenResolution:
+
+To change the resolution of the display dynamically, bring up a terminal
+and use the xrandr command.
 
 1. Select *Applications->Terminal*
 2. Enter "xrandr" in the terminal to get a list of supported resolutions.
@@ -219,6 +223,51 @@ properly with VNC.
 
    VisIt_ running on the VNC Viewer
 
+Troubleshooting VNC issues
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sometimes you can't see anything because the default screen is too large.
+There are two solutions to this issue, one is to reduce the resolution of
+the desktop and the other is to have the window scale automatically. To
+reduce the desktop resolution:
+
+1. Use the scroll bars to navigate to upper left hand corner and bring up a terminal.
+2. From the terminal use the "xrandr" command to change the resolution as described :ref:`here<SettingScreenResolution>`.
+
+To have the desktop scale automatically:
+
+1. Go to the slide-out menu at the top center and rest your mouse below the title bar.
+
+.. figure:: images/Remote-VNCViewer4.png
+
+   The slide-out menu
+
+2. Click the *Scale automatically* icon.
+
+.. figure:: images/Remote-VNCViewer5.png
+
+   Clicking on the Scale automatically icon
+
+3. The window should now resize and you can use the VNC client.
+
+Sometimes the response gets really slow when the VNC server is under heavy
+load. One solution is to reduce the picture quality.
+
+1. Go to the slide-out menu at the top center and rest your mouse below the title bar.
+2. Click the *Properties* icon.
+
+.. figure:: images/Remote-VNCViewer6.png
+
+   Clicking on the Properties icon
+
+3. Click on the *Options* tab.
+4. Set the *Picture quality* to *Low*.
+5. Click *Ok*.
+
+.. figure:: images/Remote-VNCViewer7.png
+
+   Setting the Picture quality to Low
+
 .. _UsingClientServer:
 
 Using client/server
@@ -230,8 +279,8 @@ compute resource such as a supercomputing center. This will always give
 better performance than running on a remote system using X display forwarding,
 since interactions with the graphical user interface will be faster and
 VisIt_ will be able to leverage the graphics processing unit on your local
-system. The portion running on your local system is refered to as the client
-and the portion running on the remote compute resource is refered to as the
+system. The portion running on your local system is referred to as the client
+and the portion running on the remote compute resource is referred to as the
 server. The client is responsible for the graphical user interface and
 the rendering window, while the server is responsible for accessing the
 data on the remote system, processing it, and sending back geometry to be
@@ -320,7 +369,7 @@ Using batch systems interactively
 
 When VisIt_ normally uses the batch system, it submits the parallel compute
 engine to the batch system and then the compute engine runs until it exits.
-Sometimes VisIt_ exits because of a crash. Once that happens you will loose
+Sometimes VisIt_ exits because of a crash. Once that happens you will lose
 the rest of the batch allocation and you will need to submit a batch job,
 which may not always happen immediately. One way around this is to get a
 batch job and then run all of VisIt_ in batch system using X display
