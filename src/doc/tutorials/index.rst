@@ -32,6 +32,7 @@ Contents:
     Aneurysm
     PotentialFlow
     RemoteUsage
+    MakingMovies
     
 
 .. Indices and tables
