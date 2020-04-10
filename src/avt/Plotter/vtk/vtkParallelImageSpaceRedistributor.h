@@ -94,9 +94,9 @@ class PLOTTER_API vtkParallelImageSpaceRedistributor :
     vtkPolyData     *GetDataVTK(unsigned char *asChar,
                                 unsigned int asCharLength);
     int              WhichProcessorsForCell(double *pts, vtkIdType npts,
-                                     vtkIdType *cellPts, std::vector<int>&);
+                                     const vtkIdType *cellPts, std::vector<int>&);
     void             IncrementOutgoingCellCounts(double *pts, vtkIdType npts,
-                                     vtkIdType *cellPts, std::vector<int>&,
+                                     const vtkIdType *cellPts, std::vector<int>&,
                                      std::vector<int>&);
     vtkMatrix4x4    *CreateWorldToDisplayMatrix();
 };
