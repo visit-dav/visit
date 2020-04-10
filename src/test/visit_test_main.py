@@ -37,18 +37,22 @@ from xml.etree.ElementTree import ParseError
 
 # check for pil
 pil_available = True
+pil_import_error = None
 try:
     from PIL import Image, ImageChops, ImageStat
 except ImportError as pilImpErr:
+    pil_import_error = pilImpErr
     pil_available=False
 
 # check for VTK
 VTK_available = True
+VTK_import_error = None
 try:
     from vtk import vtkPNGReader, vtkPNMReader, vtkJPEGReader, vtkTIFFReader, \
                     vtkImageResize, vtkImageDifference
     import array
 except ImportError as vtkImpErr:
+    VTK_import_error = vtkImpErr
     VTK_available=False
 
 # used to acccess visit_test_common
@@ -1119,24 +1123,24 @@ def GetBackgroundImage(file):
     activeList = []
 
     plots = ListPlots(1)
-    plotInfos = string.split(plots,"#")
+    plotInfos = plots.split("#")
     for entry in plotInfos:
 
         if entry == "":
             continue;
 
-        plotParts = string.split(entry,"|")
+        plotParts = entry.split("|")
         plotHeader = plotParts[0]
         plotInfo = plotParts[1]
 
         # get CLI's plot id for this plot
-        plotId = string.split(plotHeader,"[")
+        plotId = plotHeader.split("[")
         plotId = plotId[1]
-        plotId = string.split(plotId,"]")
+        plotId = plotId.split("]")
         plotId = int(plotId[0])
 
         # get this plot's active & hidden status
-        words = string.split(plotInfo,";")
+        words = plotInfo.split(";")
         hidden = -1
         active = -1
         for word in words:
@@ -1614,8 +1618,8 @@ def FilterTestText(inText, baseText):
         # threshold, eliminate the word from effecting text difference by
         # setting it identical to corresponding baseline word.
         #
-        baseWords = string.split(baseText)
-        inWords = string.split(tmpText)
+        baseWords = baseText.split()
+        inWords = tmpText.split()
         outText=""
         transTab = string.maketrans(string.digits, string.digits)
         inStart = 0
@@ -2458,7 +2462,7 @@ def TestSimStartAndConnect(testname, sim):
 # ----------------------------------------------------------------------------
 
 def TestSimMetaData(testname, md):
-    lines = string.split(str(md), "\n")
+    lines = str(md).split("\n")
     txt = ""
     for line in lines:
         if "exprList" in line:
@@ -2579,7 +2583,7 @@ class TestEnv(object):
         else:
             cls.skiplist = None
         # parse modes for various possible modes
-        for mode in string.split(cls.params["modes"],","):
+        for mode in cls.params["modes"].split(","):
             if mode == "scalable":
                 cls.params["scalable"] = True
             if mode == "parallel":
@@ -2588,11 +2592,11 @@ class TestEnv(object):
             if mode == "pdb":
                 cls.params["silo_mode"] = "pdb"
             if (cls.params["use_pil"] or cls.params["threshold_diff"]) and not pil_available:
-                Log("WARNING: unable to import modules from PIL: %s" % str(pilImpErr))
+                Log("WARNING: unable to import modules from PIL: %s" % str(pil_import_error))
                 cls.params["use_pil"] = False
                 cls.params["threshold_diff"] = False
             if (cls.params["threshold_diff"]) and not VTK_available:
-                Log("WARNING: unable to import modules from VTK: %s" % str(vtkImpErr))
+                Log("WARNING: unable to import modules from VTK: %s" % str(VT_import_error))
                 cls.params["threshold_diff"] = False
         if cls.params["fuzzy_match"]:
             # default tols for scalable mode
@@ -2686,7 +2690,7 @@ def InitTestEnv():
     # default file
     params_file="params.json"
     for arg in sys.argv:
-        subargs = string.split(arg,"=")
+        subargs = arg.split("=")
         if (subargs[0] == "--params"):
             params_file = subargs[1]
     # main setup
@@ -2715,7 +2719,7 @@ def InitTestEnv():
             mp = GetMachineProfile(TestEnv.params["data_host"])
             # Make some modifications to the machine profile.
             if TestEnv.params["parallel_launch"] not in ("mpirun", "srun"):
-                plaunch = string.split(TestEnv.params["parallel_launch"], " ")
+                plaunch = TestEnv.params["parallel_launch"].split(" ")
                 idx = 0
                 try:
                     while idx < len(plaunch):
@@ -2784,6 +2788,7 @@ SILO_MODE = TestEnv.SILO_MODE
 #
 # Run our test script using "Source"
 #
+import visit
 visit.Source(TestEnv.params["script"])
 
 

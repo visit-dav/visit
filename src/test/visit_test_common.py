@@ -129,9 +129,10 @@ def abs_path(*args):
             toks = arg.split("/")
             rargs.extend(toks)
     res = os.path.abspath(pjoin(*rargs))
-    # for now, avoid unicode b/c it
+    # for py 2 only avoid unicode b/c it
     # doesn't work w/ RestoreSession w/ diff sources
-    res = res.encode('ascii','ignore')
+    if (sys.version_info < (3, 0)):
+        res = res.encode('ascii','ignore')
     return res
 
 # ----------------------------------------------------------------------------
