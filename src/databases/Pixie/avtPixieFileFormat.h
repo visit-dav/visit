@@ -102,7 +102,7 @@ class avtPixieFileFormat : public avtMTSDFileFormat
 
     typedef std::map<std::string, VarInfo> VarInfoMap;
 public:
-                       avtPixieFileFormat(const char *, DBOptionsAttributes *);
+                       avtPixieFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtPixieFileFormat();
 
     virtual void           GetCycles(std::vector<int> &);

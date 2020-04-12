@@ -74,7 +74,7 @@ using std::string;
 // ****************************************************************************
 
 avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
-    DBOptionsAttributes *readOpts)
+    const DBOptionsAttributes *readOpts)
     : avtMTMDFileFormat(fname),
        visitMetaFile(),
        xFileName(),

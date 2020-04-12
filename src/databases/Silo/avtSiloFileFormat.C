@@ -262,7 +262,7 @@ static int db_get_index(DBnamescheme const *ns, int natnum);
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
-                                     DBOptionsAttributes *rdatts)
+                                     const DBOptionsAttributes *rdatts)
     : avtSTMDFileFormat(&toc_name, 1)
 {
     //

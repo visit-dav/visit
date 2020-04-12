@@ -85,7 +85,7 @@ double avtH5PartWriter::INVALID_TIME = -DBL_MAX;
 //
 // ****************************************************************************
 
-avtH5PartWriter::avtH5PartWriter(DBOptionsAttributes *writeOpts)
+avtH5PartWriter::avtH5PartWriter(const DBOptionsAttributes *writeOpts)
 {
     // Defaults
     variablePathPrefix = std::string("Step#");

@@ -89,7 +89,7 @@ class
 avtSiloWriter : public virtual avtDatabaseWriter
 {
   public:
-                   avtSiloWriter(DBOptionsAttributes *);
+                   avtSiloWriter(const DBOptionsAttributes *);
     virtual       ~avtSiloWriter();
 
   protected:

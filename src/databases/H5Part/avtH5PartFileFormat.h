@@ -72,7 +72,7 @@ class avtHistogramSpecification;
 class avtH5PartFileFormat : public avtMTSDFileFormat
 {
   public:
-                       avtH5PartFileFormat(const char *, DBOptionsAttributes *);
+                       avtH5PartFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtH5PartFileFormat();
 
 #ifdef HAVE_LIBFASTQUERY

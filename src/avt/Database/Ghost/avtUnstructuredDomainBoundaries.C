@@ -331,6 +331,9 @@ CopyPointer(T *src, T *dest, int components,
 //    Kathleen Biagas, Mon Aug 15 14:09:55 PDT 2016
 //    VTK-8, API for updating GhostLevel changed.
 //
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
+//
 // ****************************************************************************
 
 vector<vtkDataSet*>
@@ -342,7 +345,11 @@ avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
         return ExchangeMeshT<float>(domainNum, meshes);
     }
 
-    vtkPoints *pts = vtkUnstructuredGrid::SafeDownCast(meshes[0])->GetPoints();
+    int nonNullDomain = 0;
+    while (nonNullDomain < meshes.size() && meshes[nonNullDomain] == NULL)
+        nonNullDomain++;
+    vtkPoints *pts = vtkUnstructuredGrid::SafeDownCast(meshes[nonNullDomain])->GetPoints();
+
     switch (pts->GetDataType())
     {
         case VTK_FLOAT:
@@ -387,6 +394,8 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
     {
         int recvDom = domainNum[d];
         vtkUnstructuredGrid *mesh = (vtkUnstructuredGrid*)(meshes[d]);
+        if (mesh == NULL)
+            continue;
         int nOldPoints = mesh->GetNumberOfPoints();
 
         // Find how many points are given to domain recvDom.
@@ -583,6 +592,9 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
 //    Brad Whitlock, Sun Apr 22 10:36:38 PDT 2012
 //    Double support.
 //
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
+//
 // ****************************************************************************
 
 vector<vtkDataArray*>
@@ -602,7 +614,10 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
     // This one's a little more complicated because there are different
     // types of scalars we might encounter. If more cases arise,
     // expand this function.
-    switch (scalars[0]->GetDataType())
+    int nonNullDomain = 0;
+    while (nonNullDomain < domainNum.size() && scalars[nonNullDomain] == NULL)
+        nonNullDomain++;
+    switch (scalars[nonNullDomain]->GetDataType())
     {
         case VTK_INT:
             return ExchangeData_int(domainNum, isPointData, scalars);
@@ -642,24 +657,30 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
 //  Creation:    April 21, 2015
 //
 //  Modifications:
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
 //
 // ****************************************************************************
 
 vector<vtkDataArray*>
 avtUnstructuredDomainBoundaries::ExchangeVector(vector<int> domainNum, bool isPointData, vector<vtkDataArray*> vectors)
 {
-    int dataType = (vectors.empty() ? -1 : vectors[0]->GetDataType());
-    
-#ifdef PARALLEL
-    // Let's get them all to agree on one data type.
-    int myDataType = dataType;
-    MPI_Allreduce(&myDataType, &dataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-#endif
-    
-    if (dataType < 0)
-        return vectors;
-    
-    switch (dataType)
+    // We're in a bit of a sticky situation if we don't have any actual data.
+    // Without a valid vtkDataArray, we don't know which ExchangeData to
+    // call. But if there's no data, nothing will actually be exchanged
+    // aside from basic communications (eg: domain2proc, MPI_Barrier),
+    // so we'll choose to call one. 
+    if (!vectors.size())
+    {
+        return ExchangeFloatVector(domainNum, isPointData, vectors);
+    }
+    // This one's a little more complicated because there are different
+    // types of vectors we might encounter. If more cases arise,
+    // expand this function.
+    int nonNullDomain = 0;
+    while (nonNullDomain < domainNum.size() && vectors[nonNullDomain] == NULL)
+        nonNullDomain++;
+    switch (vectors[nonNullDomain]->GetDataType())
     {
         case VTK_FLOAT:
             return ExchangeFloatVector(domainNum, isPointData, vectors);
@@ -786,6 +807,10 @@ avtUnstructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 //  Programmer:  Hank Childs
 //  Creation:    March 9, 2007
 //
+//  Modifications:
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
+//
 // ****************************************************************************
 
 vector<avtMaterial*>
@@ -794,8 +819,8 @@ avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
 {
     bool haveMixedMaterials = false;
     for (size_t i = 0; i < domainNum.size(); i++)
-        if (mats[i]->GetMixlen() != 0)
-            haveMixedMaterials = true;
+        if (mats[i] != NULL && mats[i]->GetMixlen() != 0)
+                haveMixedMaterials = true;
 
     int max = UnifyMaximumValue(haveMixedMaterials ? 1 : 0);
     haveMixedMaterials = (max > 0 ? true : false);
@@ -825,11 +850,14 @@ avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
 //  Creation:    February 13, 2007
 //
 //  Modifications:
-//
 //    Mark C. Miller, Mon Feb  9 17:11:23 PST 2015
 //    Adjust memcpy calls to copy minimum size of old/new buffers. I used
 //    MIN instead of always using old sizes because I was not absolutely sure
 //    whether the new sizes could indeed be smaller.
+//
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
+//
 // ****************************************************************************
 
 #ifndef MIN
@@ -857,6 +885,8 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
     for (size_t i = 0; i < domainNum.size(); ++i)
     {
         avtMaterial *oldMat = mats[i];
+        if (oldMat == NULL)
+            continue;
  
         //
         // Estimate the sizes we will need for the new object.
@@ -1024,6 +1054,9 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
 //    Renamed method to ExchangeCleanMaterials.  This method is now only called
 //    if we know that the materials are clean.
 //
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
+//
 // ****************************************************************************
 
 vector<avtMaterial*>
@@ -1036,6 +1069,9 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
     vector<vtkDataArray *> materialArrays(domainNum.size());
     for (size_t i = 0 ; i < domainNum.size() ; i++)
     {
+        if (mats[i] == NULL)
+            continue;
+ 
         // This should never happen, but it doesn't hurt to check.
         if (mats[i]->GetMixlen() != 0)
         {
@@ -1063,6 +1099,9 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
 
     for (size_t i = 0 ; i < domainNum.size() ; i++)
     {
+        if (mats[i] == NULL)
+            continue;
+ 
         int nMaterials = mats[i]->GetNMaterials();
         int nZones = result[i]->GetNumberOfTuples();
         int *matPtr = (int *)(result[i]->GetVoidPointer(0));
@@ -1357,6 +1396,9 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
 //    Brad Whitlock, Sun Apr 22 10:38:45 PDT 2012
 //    Remove MSVC 6 code.
 //
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
+//
 // ****************************************************************************
 
 template <typename T>
@@ -1372,15 +1414,21 @@ avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
 
     CommunicateDataInformation<T> (domain2proc, domainNum, data, isPointData,
                                    gainedData, nGainedTuples);
-    int nComponents = 0;
 
     vector<vtkDataArray*> out(data.size(), NULL);
-    if (data.size())
-        nComponents = data[0]->GetNumberOfComponents();
+
+    int nComponents = 0;
+    int nonNullDomain =0;
+    while (nonNullDomain < data.size() && data[nonNullDomain] == NULL)
+        nonNullDomain++;
+    if (nonNullDomain < data.size())
+        nComponents = data[nonNullDomain]->GetNumberOfComponents();
 
     for (size_t i = 0; i < domainNum.size(); ++i)
     {
         int recvDom = domainNum[i];
+        if (data[i] == NULL)
+            continue;
         out[i] = data[i]->NewInstance();
 
         out[i]->DeepCopy(data[i]);
@@ -2494,6 +2542,10 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -2515,8 +2567,11 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
 #endif
 
     int nComponents = 0;
-    if (data.size())
-        nComponents = data[0]->GetNumberOfComponents();
+    int nonNullDomain = 0;
+    while (nonNullDomain < data.size() && data[nonNullDomain] == NULL)
+        nonNullDomain++;
+    if (nonNullDomain < data.size())
+        nComponents = data[nonNullDomain]->GetNumberOfComponents();
 
     gainedData = new T**[nTotalDomains];
     nGainedTuples = new int*[nTotalDomains];

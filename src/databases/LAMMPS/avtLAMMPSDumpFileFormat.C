@@ -31,6 +31,17 @@
 using std::istringstream;
 using std::string;
 
+static bool getline_cr(std::ifstream& istr, char* str, std::streamsize count)
+{
+    istr.getline(str, count);
+    bool ret = static_cast<bool>(istr);
+    size_t sz = strlen(str);
+    if (ret && str[sz - 1] == '\r')
+    {
+        str[sz - 1] = '\0';
+    }
+    return ret;
+}
 
 // ****************************************************************************
 //  Method: avtLAMMPS constructor
@@ -124,7 +135,7 @@ avtLAMMPSDumpFileFormat::OpenFileAtBeginning()
 {
     if (!in.is_open())
     {
-        in.open(filename.c_str());
+        in.open(filename.c_str(), std::ios::binary);
         if (!in)
         {
             EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -175,7 +186,7 @@ avtLAMMPSDumpFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 
     avtMeshMetaData *mmd_bbox = new avtMeshMetaData("unitCell", 1, 0,0,0,
                                                     3, 1,
-                                                    AVT_UNSTRUCTURED_MESH);
+                                                    AVT_POINT_MESH);
     for (int i=0; i<9; i++)
         mmd_bbox->unitCellVectors[i] = 0;
     mmd_bbox->unitCellVectors[0] = xMax - xMin;
@@ -275,7 +286,6 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *name)
  
         vtkCellArray *lines = vtkCellArray::New();
         pd->SetLines(lines);
-        lines->Delete();
         for (int k = 0 ; k < 12 ; k++)
         {
             lines->InsertNextCell(2);
@@ -283,6 +293,7 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *name)
             lines->InsertCellPoint(voxVerticesFromEdges[k][1]);
         }
 
+        lines->FastDelete();
         return pd;
     }
 
@@ -294,9 +305,7 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *name)
     vtkPoints   *pts = vtkPoints::New();
 
     pts->SetNumberOfPoints(nAtoms[timestep]);
-    pd->SetPoints(pts);
-    pts->Delete();
-    for (int j = 0 ; j < nAtoms[timestep] ; j++)
+    for (vtkIdType j = 0 ; j < nAtoms[timestep] ; j++)
     {
         double x = vars[xIndex][j];
         double y = vars[yIndex][j];
@@ -309,16 +318,27 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *name)
             z = zMin + (zMax-zMin) * z;
         pts->SetPoint(j, x, y, z);
     }
+    pd->SetPoints(pts);
+    pts->FastDelete();
+
+    const vtkIdType numCells = nAtoms[timestep];
+    const vtkIdType arrayLen = numCells * 2; // vertices
+    vtkIdTypeArray *rawCellArray = vtkIdTypeArray::New();
+    rawCellArray->SetNumberOfValues(arrayLen);
+
+    vtkIdType pointId = 0;
+    for (vtkIdType k = 0; k < arrayLen; k += 2, ++pointId)
+    {
+        rawCellArray->SetValue(k, 1);
+        rawCellArray->SetValue(k + 1, pointId);
+    }
  
     vtkCellArray *verts = vtkCellArray::New();
+    verts->SetCells(numCells, rawCellArray);
     pd->SetVerts(verts);
-    verts->Delete();
-    for (int k = 0 ; k < nAtoms[timestep] ; k++)
-    {
-        verts->InsertNextCell(1);
-        verts->InsertCellPoint(k);
-    }
 
+    rawCellArray->FastDelete();
+    verts->FastDelete();
 
     return pd;
 }
@@ -482,7 +502,7 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
     // read all the atoms
     for (int a=0; a<nAtoms[timestep]; a++)
     {
-        in.getline(buff,1000);
+        getline_cr(in,buff,1000);
         istringstream sin(buff);
         for (int v=0; v<nVars; v++)
         {
@@ -556,7 +576,7 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
 
     while (in)
     {
-        in.getline(buff,1000);
+        getline_cr(in,buff,1000);
         if (strncmp(buff, "ITEM:", 5) != 0)
             continue;
 
@@ -564,7 +584,7 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
         if (item == "TIMESTEP")
         {
             nTimeSteps++;
-            in.getline(buff,1000);
+            getline_cr(in,buff,1000);
             cycles.push_back(strtol(buff, NULL, 10));
         }
         else if (item.substr(0,19) == "BOX BOUNDS xy xz yz")
@@ -573,18 +593,18 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
             in >> xMin >> xMax >> xy;
             in >> yMin >> yMax >> xz;
             in >> zMin >> zMax >> yz;
-            in.getline(buff, 1000); // get rest of Z line
+            getline_cr(in,buff, 1000); // get rest of Z line
         }
         else if (item.substr(0,10) == "BOX BOUNDS")
         {
             in >> xMin >> xMax;
             in >> yMin >> yMax;
             in >> zMin >> zMax;
-            in.getline(buff, 1000); // get rest of Z line
+            getline_cr(in,buff, 1000); // get rest of Z line
         }
         else if (item == "NUMBER OF ATOMS")
         {
-            in.getline(buff,1000);
+            getline_cr(in,buff,1000);
             int n = strtol(buff, NULL, 10);
             nAtoms.push_back(n);
         }
@@ -714,9 +734,9 @@ avtLAMMPSDumpFileFormat::FileExtensionIdentify(const std::string &filename)
 bool
 avtLAMMPSDumpFileFormat::FileContentsIdentify(const std::string &filename)
 {
-    ifstream in(filename.c_str());
+    ifstream in(filename.c_str(), std::ios::binary);
     char buff[1000];
-    in.getline(buff, 1000);
+    getline_cr(in,buff, 1000);
     in.close();
     if (strncmp(buff, "ITEM:", 5) == 0)
         return true;
