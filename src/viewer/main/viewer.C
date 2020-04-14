@@ -11,6 +11,7 @@
 #include <cstdlib>
 
 #include <qapplication.h>
+#include <QtGui/QSurfaceFormat>
 #include <QStringList>
 
 #include <VisItViewer.h>

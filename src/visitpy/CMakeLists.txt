@@ -214,7 +214,6 @@ common/visitmodule.C
 )
 
 SET(PY_SOURCES
-common/Py2and3Support.C
 common/PyMapNode.C
 common/PyVariant.C
 )

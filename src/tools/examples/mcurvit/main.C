@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QDir>
 
+#include <QtGui/QSurfaceFormat>
 #include <QVTKOpenGLWidget.h>
 
 #include <visitstream.h>

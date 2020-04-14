@@ -2031,6 +2031,10 @@ FUNCTION(CREATE_PLUGIN_DEPENDENCIES target comp type)
     #MESSAGE("${cachevar} = ${${cachevar}}")
 ENDFUNCTION(CREATE_PLUGIN_DEPENDENCIES)
 
+find_package(tiff)
+find_package(jpeg)
+find_package(png)
+
 ADD_SUBDIRECTORY(third_party_builtin)
 ADD_SUBDIRECTORY(common)
 ADD_SUBDIRECTORY(visit_vtk)
@@ -2321,3 +2325,6 @@ ENDIF (NOT WIN32)
 if(VISIT_INSTALL_THIRD_PARTY)
     include(${VISIT_SOURCE_DIR}/CMake/PluginVsInstallHelpers.cmake)
 endif()
+
+
+LINK_DIRECTORIES(/usr/local/lib)

@@ -264,8 +264,8 @@ TARGET_LINK_LIBRARIES(viewer_exe
     ${viewer_exe_IPlot}
     ${viewer_exe_VPlot}
     viewer
-    vtkpng
-    vtkjpeg
+    ${JPEG_LIBRARIES}
+    ${PNG_LIBRARIES}
     ${VTK_FREETYPE_LIBRARIES}
 )
 

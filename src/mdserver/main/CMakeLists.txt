@@ -107,9 +107,9 @@ TARGET_LINK_LIBRARIES(mdserver
     visit_verdict
     vtkCommonCore
     vtkIOCore
-    vtktiff
-    vtkpng
-    vtkjpeg
+    ${TIFF_LIBRARIES}
+    ${PNG_LIBRARIES}
+    ${JPEG_LIBRARIES}
     ${ZLIB_LIBRARY}
     ${CMAKE_THREAD_LIBS}
     ${DL_LIB}

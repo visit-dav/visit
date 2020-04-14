@@ -233,7 +233,7 @@ ${ZLIB_INCLUDE_DIR}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} /usr/local/lib)
 
 # Unless we're doing a VISIT_DBIO_ONLY build then we need avtmath
 IF(NOT VISIT_DBIO_ONLY)
