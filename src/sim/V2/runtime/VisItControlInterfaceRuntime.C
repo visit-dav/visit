@@ -157,7 +157,7 @@ static int simv2_initialize_helper(void *e, int argc, char *argv[], bool batch)
 
             engine->InitializeViewer(plotPlugins, operatorPlugins, noconfig);
         }
-        LoadBalancer::SetScheme(LOAD_BALANCE_RESTRICTED);
+        LoadBalancer::SetScheme(LOAD_BALANCE_ABSOLUTE);
     }
     CATCHALL
     {
