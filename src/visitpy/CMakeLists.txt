@@ -58,9 +58,6 @@
 #####################
 # Metadata Objects that we can't Code-Gen, or have customizations:
 #####################
-# avtMeshMetaData
-# avtSimulationInformation
-# avtSpeciesMetaData
 
 SET(PY_GEN_METADATA_OBJECTS
     avtArrayMetaData
@@ -71,11 +68,11 @@ SET(PY_GEN_METADATA_OBJECTS
     avtLabelMetaData
     avtMatSpeciesMetaData
     avtMaterialMetaData
-    # avtMeshMetaData (see above note)
+    avtMeshMetaData
     avtScalarMetaData
     avtSimulationCommandSpecification
-    # avtSimulationInformation # (see above note)
-    # avtSpeciesMetaData # (see above note)
+    avtSimulationInformation # (see above note)
+    avtSpeciesMetaData 
     avtSubsetsMetaData
     avtSymmetricTensorMetaData
     avtTensorMetaData
@@ -105,14 +102,14 @@ SET(PY_GEN_STATE_OBJECTS
     AxisAttributes
     AxisLabels
     AxisTickMarks
-    AxisTitle
+    AxisTitles
     ColorAttribute
     ColorAttributeList
     ColorControlPoint
-    # ColorControlPointList  # (see above note)
+    #ColorControlPointList  # (see above note)
     ColorTableAttributes 
     ConstructDataBinningAttributes
-    # DatabaseCorrelation # (see above note)
+    #DatabaseCorrelation # (see above note)
     DBOptionsAttributes
     EngineProperties
     ExportDBAttributes
@@ -143,14 +140,14 @@ SET(PY_GEN_STATE_OBJECTS
     RenderingAttributes
     SaveWindowAttributes
     SaveSubWindowAttributes 
-    # SaveSubWindowsAttributes # (see above note)
+    #SaveSubWindowsAttributes # (see above note)
     SelectionProperties
     SelectionSummary
     SelectionVariableSummary
     SelectionList
     ThresholdOpAttributes
-    # View2DAttributes # (see above note)
-    # View3DAttributes # (see above note)
+    #View2DAttributes # (see above note)
+    #View3DAttributes # (see above note)
     ViewAttributes
     ViewAxisArrayAttributes
     ViewerClientAttributes
@@ -186,7 +183,7 @@ endforeach()
 # RPC Objects
 foreach(obj_name ${PY_GEN_RPC_OBJECTS})
     ADD_PYTHON_GEN_TARGET(${obj_name}
-                          ${VISIT_SOURCE_DIR}/viewer/rpcstate/
+                          ${VISIT_SOURCE_DIR}/viewer/rpc/
                           ${CMAKE_CURRENT_SOURCE_DIR}/visitpy)
 endforeach()
 #########################################################
