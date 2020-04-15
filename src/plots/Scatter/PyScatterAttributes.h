@@ -5,6 +5,7 @@
 #ifndef PY_SCATTERATTRIBUTES_H
 #define PY_SCATTERATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ScatterAttributes.h>
 
 //

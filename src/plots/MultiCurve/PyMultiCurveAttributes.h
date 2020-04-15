@@ -5,6 +5,7 @@
 #ifndef PY_MULTICURVEATTRIBUTES_H
 #define PY_MULTICURVEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <MultiCurveAttributes.h>
 
 //

@@ -5,6 +5,7 @@
 #ifndef PY_AXISALIGNEDSLICE4DATTRIBUTES_H
 #define PY_AXISALIGNEDSLICE4DATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <AxisAlignedSlice4DAttributes.h>
 
 //

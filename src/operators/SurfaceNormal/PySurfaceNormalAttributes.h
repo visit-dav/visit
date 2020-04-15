@@ -5,6 +5,7 @@
 #ifndef PY_SURFACENORMALATTRIBUTES_H
 #define PY_SURFACENORMALATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <SurfaceNormalAttributes.h>
 
 //

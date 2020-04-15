@@ -5,6 +5,7 @@
 #ifndef PY_SPREADSHEETATTRIBUTES_H
 #define PY_SPREADSHEETATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <SpreadsheetAttributes.h>
 
 //

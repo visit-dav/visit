@@ -5,6 +5,7 @@
 #ifndef PY_CLIPATTRIBUTES_H
 #define PY_CLIPATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ClipAttributes.h>
 
 //
