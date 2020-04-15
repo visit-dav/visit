@@ -85,6 +85,7 @@ class DATABASE_API avtMTMDFileFormat : public avtFileFormat
 
     virtual void           ActivateTimestep(int ts)
                                { avtFileFormat::ActivateTimestep(); };
+    using avtFileFormat::ActivateTimestep;
     virtual bool           PopulateIOInformation(int ts, const std::string &meshname,
                                                  avtIOInformation& ioInfo) { return false; }
 

@@ -61,7 +61,7 @@ using     std::string;
 //
 // ****************************************************************************
 
-avtMOABFileFormat::avtMOABFileFormat(const char *filename, DBOptionsAttributes *readOpts)
+avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1), readOptions(readOpts), fileLoaded(false), file_descriptor(NULL), pcomm(NULL)
 {
     // INITIALIZE DATA MEMBERS

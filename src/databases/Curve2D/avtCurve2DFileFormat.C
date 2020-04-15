@@ -57,7 +57,7 @@ using std::string;
 //
 // ****************************************************************************
 
-avtCurve2DFileFormat::avtCurve2DFileFormat(const char *fname, DBOptionsAttributes *)
+avtCurve2DFileFormat::avtCurve2DFileFormat(const char *fname, const DBOptionsAttributes *)
     : avtSTSDFileFormat(fname)
 {
     filename = fname;

@@ -46,7 +46,7 @@ using     std::vector;
 //
 // ****************************************************************************
 
-avtPLYWriter::avtPLYWriter(DBOptionsAttributes *atts)
+avtPLYWriter::avtPLYWriter(const DBOptionsAttributes *atts)
 {
     doBinary = atts->GetBool("Binary format");
     doColor = atts->GetBool("Output colors");

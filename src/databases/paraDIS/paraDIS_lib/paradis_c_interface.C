@@ -173,7 +173,7 @@ extern "C" {
     return pci_gDataSet->GetNode(nodenum)->GetNumNeighborSegments(); 
   }  
 
-  int64_t  paraDIS_GetNodeHash(uint32_t nodenum){
+  boost::int64_t  paraDIS_GetNodeHash(uint32_t nodenum){
     paraDIS_init(NULL);
     return pci_gDataSet->GetNode(nodenum)->Hash(); 
   }  

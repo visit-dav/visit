@@ -29,7 +29,6 @@
 #include <avtParallelContext.h>
 #include <FileFunctions.h>
 
-#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 

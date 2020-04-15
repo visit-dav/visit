@@ -27,7 +27,7 @@ class DBOptionsAttributes;
 class avtPLYFileFormat : public avtSTSDFileFormat
 {
   public:
-    avtPLYFileFormat(const char *filename, DBOptionsAttributes*&);
+    avtPLYFileFormat(const char *filename, const DBOptionsAttributes*);
     virtual           ~avtPLYFileFormat();
 
 
