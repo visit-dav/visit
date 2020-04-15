@@ -6,6 +6,8 @@
 #define PY_VARIANT_H
 #include <Python.h>
 #include <Variant.h>
+#include "Py2and3Support.h"
+
 //
 // Helper to convert a VisIt variant to a builtin python type.
 //

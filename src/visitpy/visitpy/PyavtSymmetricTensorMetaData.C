@@ -5,6 +5,7 @@
 #include <PyavtSymmetricTensorMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyavtSymmetricTensorMetaData
@@ -34,7 +35,6 @@ struct avtSymmetricTensorMetaDataObject
 // Internal prototypes
 //
 static PyObject *NewavtSymmetricTensorMetaData(int);
-
 std::string
 PyavtSymmetricTensorMetaData_ToString(const avtSymmetricTensorMetaData *atts, const char *prefix)
 {
@@ -124,14 +124,7 @@ avtSymmetricTensorMetaData_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-avtSymmetricTensorMetaData_compare(PyObject *v, PyObject *w)
-{
-    avtSymmetricTensorMetaData *a = ((avtSymmetricTensorMetaDataObject *)v)->data;
-    avtSymmetricTensorMetaData *b = ((avtSymmetricTensorMetaDataObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *avtSymmetricTensorMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtSymmetricTensorMetaData_getattr(PyObject *self, char *name)
 {
@@ -208,42 +201,64 @@ static PyTypeObject avtSymmetricTensorMetaDataType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "avtSymmetricTensorMetaData",                    // tp_name
-    sizeof(avtSymmetricTensorMetaDataObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)avtSymmetricTensorMetaData_dealloc,  // tp_dealloc
-    (printfunc)avtSymmetricTensorMetaData_print,     // tp_print
-    (getattrfunc)PyavtSymmetricTensorMetaData_getattr, // tp_getattr
-    (setattrfunc)PyavtSymmetricTensorMetaData_setattr, // tp_setattr
-    (cmpfunc)avtSymmetricTensorMetaData_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)avtSymmetricTensorMetaData_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    avtSymmetricTensorMetaData_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "avtSymmetricTensorMetaData",                   /* tp_name */
+    sizeof(avtSymmetricTensorMetaDataObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)avtSymmetricTensorMetaData_dealloc,    /* tp_dealloc */
+    (printfunc)avtSymmetricTensorMetaData_print,       /* tp_print */
+    (getattrfunc)PyavtSymmetricTensorMetaData_getattr, /* tp_getattr */
+    (setattrfunc)PyavtSymmetricTensorMetaData_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)avtSymmetricTensorMetaData_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    avtSymmetricTensorMetaData_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)avtSymmetricTensorMetaData_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+avtSymmetricTensorMetaData_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &avtSymmetricTensorMetaDataType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    avtSymmetricTensorMetaData *a = ((avtSymmetricTensorMetaDataObject *)self)->data;
+    avtSymmetricTensorMetaData *b = ((avtSymmetricTensorMetaDataObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

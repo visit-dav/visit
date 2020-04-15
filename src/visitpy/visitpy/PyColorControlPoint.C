@@ -5,6 +5,7 @@
 #include <PyColorControlPoint.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyColorControlPoint
@@ -34,7 +35,6 @@ struct ColorControlPointObject
 // Internal prototypes
 //
 static PyObject *NewColorControlPoint(int);
-
 std::string
 PyColorControlPoint_ToString(const ColorControlPoint *atts, const char *prefix)
 {
@@ -179,14 +179,7 @@ ColorControlPoint_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ColorControlPoint_compare(PyObject *v, PyObject *w)
-{
-    ColorControlPoint *a = ((ColorControlPointObject *)v)->data;
-    ColorControlPoint *b = ((ColorControlPointObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ColorControlPoint_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyColorControlPoint_getattr(PyObject *self, char *name)
 {
@@ -254,42 +247,64 @@ static PyTypeObject ColorControlPointType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ColorControlPoint",                    // tp_name
-    sizeof(ColorControlPointObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ColorControlPoint_dealloc,  // tp_dealloc
-    (printfunc)ColorControlPoint_print,     // tp_print
-    (getattrfunc)PyColorControlPoint_getattr, // tp_getattr
-    (setattrfunc)PyColorControlPoint_setattr, // tp_setattr
-    (cmpfunc)ColorControlPoint_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ColorControlPoint_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ColorControlPoint_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "ColorControlPoint",                   /* tp_name */
+    sizeof(ColorControlPointObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)ColorControlPoint_dealloc,    /* tp_dealloc */
+    (printfunc)ColorControlPoint_print,       /* tp_print */
+    (getattrfunc)PyColorControlPoint_getattr, /* tp_getattr */
+    (setattrfunc)PyColorControlPoint_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)ColorControlPoint_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    ColorControlPoint_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)ColorControlPoint_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+static PyObject *
+ColorControlPoint_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &ColorControlPointType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ColorControlPoint *a = ((ColorControlPointObject *)self)->data;
+    ColorControlPoint *b = ((ColorControlPointObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

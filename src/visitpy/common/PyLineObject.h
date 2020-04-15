@@ -6,6 +6,7 @@
 #define PY_LINEOBJECT_H
 #include <Python.h>
 #include <AnnotationObject.h>
+#include "Py2and3Support.h"
 
 //
 // Functions exposed to the VisIt module.

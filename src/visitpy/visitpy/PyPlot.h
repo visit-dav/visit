@@ -5,6 +5,7 @@
 #ifndef PY_PLOT_H
 #define PY_PLOT_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <Plot.h>
 #include <visitpy_exports.h>
 

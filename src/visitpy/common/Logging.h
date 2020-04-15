@@ -5,6 +5,7 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 #include <string>
+#include "Py2and3Support.h"
 
 // Macro functions
 void Macro_SetString(const std::string &s);

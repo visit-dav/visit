@@ -5,6 +5,7 @@
 #ifndef PY_SILRESTRICTION_H
 #define PY_SILRESTRICTION_H
 #include <Python.h>
+#include "Py2and3Support.h"
 
 //
 // Functions exposed to the VisIt module.

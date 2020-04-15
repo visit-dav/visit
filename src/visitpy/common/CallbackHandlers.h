@@ -7,6 +7,7 @@
 #include <CallbackManager.h>
 #include <ViewerProxy.h>
 #include <ViewerRPCCallbacks.h>
+#include "Py2and3Support.h"
 
 //
 // This function registers callback handlers for the supported state objects.

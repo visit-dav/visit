@@ -692,6 +692,47 @@ static char *Text2DObject_Purpose = "This class defines defines an interface to 
 //
 // The type description structure
 //
+static PyTypeObject Text2DObjectType = 
+{
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "Text2DObject",               /* tp_name */
+    sizeof(Text2DObjectObject),               /* tp_basicsize */
+    0,                              /* tp_itemsize */    (destructor)Text2DObject_dealloc,      /* tp_dealloc */
+    0,                              /* tp_vectorcall_offset */
+    (getattrfunc)Text2DObject_getattr,                              /* tp_getattr */
+    (setattrfunc)Text2DObject_setattr,                              /* tp_setattr */
+    0,                              /* tp_as_async */
+    (reprfunc)Text2DObject_str,           /* tp_repr */
+    0,                              /* tp_as_number */
+    0,                              /* tp_as_sequence */
+    0,                              /* tp_as_mapping */
+    0,                              /* tp_hash */
+    0,                              /* tp_call */
+    (reprfunc)Text2DObject_str,                              /* tp_str */
+    0,                              /* tp_getattro */
+    0,                              /* tp_setattro */
+    0,                              /* tp_as_buffer */
+    0,                              /* tp_flags */
+    Text2DObject_Purpose,                   /* tp_doc */
+    0,                              /* tp_traverse */
+    0,                              /* tp_clear */
+    0,                              /* tp_richcompare */
+    0,                              /* tp_weaklistoffset */
+    0,                              /* tp_iter */
+    0,                              /* tp_iternext */
+    0,                              /* tp_methods */
+    0,                              /* tp_members */
+    0,                              /* tp_getset */
+    0,                              /* tp_base */
+    0,                              /* tp_dict */
+    0,                              /* tp_descr_get */
+    0,                              /* tp_descr_set */
+    0,                              /* tp_dictoffset */
+    0,                              /* tp_init */
+    0,                              /* tp_alloc */
+    0,                      /* tp_new */
+};
+/**
 static PyTypeObject Text2DObjectType =
 {
     //
@@ -733,7 +774,7 @@ static PyTypeObject Text2DObjectType =
     0,                                   // tp_richcompare
     0                                    // tp_weaklistoffset
 };
-
+*/
 //
 // Helper functions for object allocation.
 //

@@ -6,6 +6,7 @@
 #define PY_SILRESTRICTIONBASE_H
 #include <Python.h>
 #include <avtSILRestriction.h>
+#include "Py2and3Support.h"
 
 //
 // Functions exposed to the VisIt module.

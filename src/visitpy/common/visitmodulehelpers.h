@@ -6,6 +6,7 @@
 #define VISIT_MODULE_HELPERS_H
 #include <ViewerProxy.h>
 #include <Python.h>
+#include "Py2and3Support.h"
 
 //
 // Visible Prototypes.

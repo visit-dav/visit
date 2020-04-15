@@ -13,6 +13,8 @@
 
 #include <SimpleObserver.h>
 #include <ObserverToCallback.h>
+#include "Py2and3Support.h"
+
 
 class AttributeSubject;
 class Threading;

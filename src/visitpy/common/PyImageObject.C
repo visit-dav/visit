@@ -390,7 +390,7 @@ ImageObject_SetImage(PyObject *self, PyObject *args)
         {
             PyObject *item = PyTuple_GET_ITEM(tuple, i);
             if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
+                vec[i] = std::string(PyString_AsString(item));
             else
                 vec[i] = std::string("");
         }
@@ -398,7 +398,7 @@ ImageObject_SetImage(PyObject *self, PyObject *args)
     else if(PyString_Check(tuple))
     {
         vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
+        vec[0] = std::string(PyString_AsString(tuple));
     }
     else
         return NULL;
@@ -665,6 +665,49 @@ static char *ImageObject_Purpose = "Image Annotation Object";
 //
 // The type description structure
 //
+static PyTypeObject ImageObjectType = 
+{
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "ImageObject",                  /* tp_name */
+    sizeof(ImageObjectObject),      /* tp_basicsize */
+    0,                              /* tp_itemsize */
+    (destructor)ImageObject_dealloc,/* tp_dealloc */
+    0,                              /* tp_vectorcall_offset */
+    (getattrfunc)ImageObject_getattr,/* tp_getattr */
+    (setattrfunc)ImageObject_setattr,/* tp_setattr */
+    0,                              /* tp_as_async */
+    (reprfunc)ImageObject_str,      /* tp_repr */
+    0,                              /* tp_as_number */
+    0,                              /* tp_as_sequence */
+    0,                              /* tp_as_mapping */
+    0,                              /* tp_hash */
+    0,                              /* tp_call */
+    (reprfunc)ImageObject_str,      /* tp_str */
+    0,                              /* tp_getattro */
+    0,                              /* tp_setattro */
+    0,                              /* tp_as_buffer */
+    0,                              /* tp_flags */
+    ImageObject_Purpose,            /* tp_doc */
+    0,                              /* tp_traverse */
+    0,                              /* tp_clear */
+    0,                              /* tp_richcompare */
+    0,                              /* tp_weaklistoffset */
+    0,                              /* tp_iter */
+    0,                              /* tp_iternext */
+    0,                              /* tp_methods */
+    0,                              /* tp_members */
+    0,                              /* tp_getset */
+    0,                              /* tp_base */
+    0,                              /* tp_dict */
+    0,                              /* tp_descr_get */
+    0,                              /* tp_descr_set */
+    0,                              /* tp_dictoffset */
+    0,                              /* tp_init */
+    0,                              /* tp_alloc */
+    0,                              /* tp_new */
+};
+
+/**
 static PyTypeObject ImageObjectType =
 {
     //
@@ -706,7 +749,7 @@ static PyTypeObject ImageObjectType =
     0,                                   // tp_richcompare
     0                                    // tp_weaklistoffset
 };
-
+*/
 //
 // Helper functions for object allocation.
 //

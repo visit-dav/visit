@@ -7,6 +7,7 @@
 #include <Python.h>
 #include <MapNode.h>
 #include <visitpy_exports.h>
+#include "Py2and3Support.h"
 
 //
 // Helper to convert a VisIt MapNode to a python dictonary.

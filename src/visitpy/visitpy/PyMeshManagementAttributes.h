@@ -5,6 +5,7 @@
 #ifndef PY_MESHMANAGEMENTATTRIBUTES_H
 #define PY_MESHMANAGEMENTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <MeshManagementAttributes.h>
 #include <visitpy_exports.h>
 

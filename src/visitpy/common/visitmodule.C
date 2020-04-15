@@ -209,9 +209,10 @@
 //
 extern "C"
 {
-    void VISITMODULE_API initvisit();
-    void VISITMODULE_API cli_initvisit(int, bool, int, char **, int, char **);
+    PyMODINIT_FUNC VISITMODULE_API PyInit_visit();
+    void cli_initvisit(int, bool, int, char **, int, char **);
     void VISITMODULE_API cli_runscript(const char *);
+    void VISITMODULE_API populate_context();
 
     // Expose these functions so we can call them from a facade
     // VisIt module from "import visit" inside of Python.
@@ -730,7 +731,7 @@ GetStringVectorFromPyObject(PyObject *obj, stringVector &vec)
         {
             PyObject *item = PyTuple_GET_ITEM(obj, i);
             if(PyString_Check(item))
-                vec.push_back(PyString_AS_STRING(item));
+                vec.push_back(PyString_AsString(item));
             else
             {
                 VisItErrorFunc("The tuple must contain all strings.");
@@ -746,7 +747,7 @@ GetStringVectorFromPyObject(PyObject *obj, stringVector &vec)
         {
             PyObject *item = PyList_GET_ITEM(obj, i);
             if(PyString_Check(item))
-                vec.push_back(PyString_AS_STRING(item));
+                vec.push_back(PyString_AsString(item));
             else
             {
                 VisItErrorFunc("The list must contain all strings.");
@@ -757,7 +758,7 @@ GetStringVectorFromPyObject(PyObject *obj, stringVector &vec)
     }
     else if(PyString_Check(obj))
     {
-        vec.push_back(PyString_AS_STRING(obj));
+        vec.push_back(PyString_AsString(obj));
     }
     else
     {
@@ -925,7 +926,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
     {
         std::string name;
         if (PyString_Check(key))
-            name = PyString_AS_STRING(key);
+            name = PyString_AsString(key);
         else
         {
             VisItErrorFunc("The key for an option must be a string.");
@@ -999,7 +1000,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
             break;
           case DBOptionsAttributes::String:
             if (PyString_Check(value))
-                opts.SetString(name, PyString_AS_STRING(value));
+                opts.SetString(name, PyString_AsString(value));
             else
             {
                 sprintf(msg, "Expected string to set '%s'", name.c_str());
@@ -1042,7 +1043,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
             {
                 if (PyString_Check(value))
                 {
-                    std::string sval(PyString_AS_STRING(value));
+                    std::string sval(PyString_AsString(value));
                     size_t rpos = sval.find("#");
                     if (rpos != std::string::npos)
                         sval = sval.erase(rpos-1); // remove the space before #
@@ -9768,7 +9769,7 @@ GetNamesHelper(PyObject *self, PyObject *args, stringVector &names)
             {
                 PyObject *item = PyTuple_GET_ITEM(tuple, i);
                 if(PyString_Check(item))
-                    names.push_back(PyString_AS_STRING(item));
+                    names.push_back(PyString_AsString(item));
                 else
                     names.push_back("invalid");
             }
@@ -11875,7 +11876,7 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
          VisItErrorFunc("Query requires first argument to be the query name.");
          return NULL;
     }
-    queryName = PyString_AS_STRING(PyTuple_GetItem(args, 0));
+    queryName = PyString_AsString(PyTuple_GetItem(args, 0));
 
  
     // parse other arguments.  First check if second arg (if present) is
@@ -12022,7 +12023,7 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
                             "PythonQuery: Failed to pickle passed 'args' value.");
             return NULL;
         }
-        args_pickled = std::string(PyString_AS_STRING(res));
+        args_pickled = std::string(PyString_AsString(res));
         // decref b/c we created a new python string
         Py_DECREF(res);
     }
@@ -12588,7 +12589,7 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
          VisItErrorFunc("QueryOverTime: requires first argument to be the query name."); 
          return NULL;
     }
-    queryName = PyString_AS_STRING(PyTuple_GetItem(args, 0));
+    queryName = PyString_AsString(PyTuple_GetItem(args, 0));
 
  
     // parse other arguments.  First check if second arg (if present) is
@@ -16131,7 +16132,7 @@ PopulateMethodArgs(ClientMethod *m, PyObject *obj)
     }
     else if(PyString_Check(obj))
     {
-        m->AddArgument(std::string(PyString_AS_STRING(obj)));
+        m->AddArgument(std::string(PyString_AsString(obj)));
     }
     else if(PyTuple_Check(obj))
     {
@@ -18743,12 +18744,14 @@ InitializeModule()
     ENDTRY
     
     AddDefaultMethods();
+    AddProxyMethods();
+    AddExtensions();
     AddMethod(NULL, (PyCFunction)NULL);
-    moduleInitialized = true;
+    //moduleInitialized = true;
     return 0;
 }
 
-static int 
+static int
 InitializeViewerProxy(ViewerProxy* proxy)
 {
     /// if viewer already initalized do not enter..
@@ -18822,19 +18825,6 @@ InitializeViewerProxy(ViewerProxy* proxy)
         if(!LogFile_Open(logName))
             fprintf(stderr, "Could not open %s log file.\n", logName);
     }
-
-    //remove NULL command
-    VisItMethods.pop_back();
-    // Add the default methods to the module's method table.
-    AddProxyMethods();
-    // Add extension methods to the module's method table.
-    AddExtensions();
-    // Mark the end of the method table.
-    AddMethod(NULL, (PyCFunction)NULL);
-
-    // Set the module initialized flag.
-    //moduleInitialized = true;
-    initvisit();
 
     return 0;
 }
@@ -19269,7 +19259,6 @@ cli_initvisit(int debugLevel, bool verbose, int argc, char **argv,
     cli_argv = argv;
     cli_argc_after_s = argc_after_s;
     cli_argv_after_s = argv_after_s;
-    initvisit();
 }
 
 // ****************************************************************************
@@ -19431,24 +19420,30 @@ GetViewerMethods()
 //
 // ****************************************************************************
 
-void initvisitmodule()
-{
-    initvisit();
-}
+//void 
+//void initvisit()
+//{
+//    PyInit_visit();
+//}
 
-void
-initvisit()
+
+PyMODINIT_FUNC
+PyInit_visit()
 {
+
     int initCode = 0; (void) initCode;
     PyObject *main_module = NULL;
     PyObject *gdict = NULL; (void) gdict;
     PyEval_InitThreads();
+
     // save a pointer to the main PyThreadState object
     mainThreadState = PyThreadState_Get();
+
     ///http://porky.linuxjournal.com:8080/LJ/073/3641.html
     ///according to the above article PyEval_InitThreads() is
     ///acquiring lock and needs to be released.
     //PyEval_ReleaseLock();
+
     //
     // Initialize the module, but only do it one time.
     //
@@ -19459,17 +19454,30 @@ initvisit()
         SYNC_CREATE();
 #endif
         THREAD_INIT();
+        VisItMethods.reserve(1000);
         initCode = InitializeModule();
     }
+    static struct PyModuleDef visit_mod_def = {
+        PyModuleDef_HEAD_INIT,
+        "visit_startup",     /* m_name */
+        "VisIt Python Startup Module",  /* m_doc */
+        -1,                  /* m_size */
+        &VisItMethods[0],    /* m_methods */
+        NULL,                /* m_reload */
+        NULL,                /* m_traverse */
+        NULL,                /* m_clear */
+        NULL,                /* m_free */
+    };
 
     main_module = PyImport_AddModule("__main__"); //borrowed
     gdict = PyModule_GetDict(main_module); //borrowed
 
     PyObject *d;
-
     // Add the VisIt module to Python. Note that we're passing the address
     // of the first element of a vector.
-    visitModule = Py_InitModule("visit", &VisItMethods[0]);
+     
+    visitModule = PyModule_Create(&visit_mod_def);
+    //visitModule = Py_InitModule("visit", &VisItMethods[0]);
 
     // Add the Python error message.
     d = PyModule_GetDict(visitModule);
@@ -19477,6 +19485,7 @@ initvisit()
     PyDict_SetItemString(d, "VisItException", VisItError);
     VisItInterrupt = PyErr_NewException((char*)"visit.VisItInterrupt", NULL, NULL);
     PyDict_SetItemString(d, "VisItInterrupt", VisItInterrupt);
+    return visitModule;
 }
 
 // ****************************************************************************
