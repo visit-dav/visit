@@ -14,16 +14,18 @@
 #include <vtkh/filters/IsoVolume.hpp>
 #endif
 
-#include <vtkVisItClipper.h>
-#include <vtkDataSet.h>
-#include <vtkDataArray.h>
-#include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkCellDataToPointData.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkUnstructuredGrid.h>
 #include <vtkStructuredGrid.h>
-#include <vtkCellDataToPointData.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
+
+#include <vtkVisItClipper.h>
 
 #include <avtAccessor.h>
 #include <avtIntervalTree.h>
@@ -600,7 +602,8 @@ avtIsovolumeFilter::ExecuteData_VTK(avtDataRepresentation *in_dr, std::vector<do
         for (vtkIdType i = 0 ; i < ncells ; i++)
         {
             int celltype = ugrid->GetCellType(i);
-            vtkIdType *pts, npts;
+            const vtkIdType *pts;
+            vtkIdType npts;
             ugrid->GetCellPoints(i, npts, pts);
             out_pd->InsertNextCell(celltype, npts, pts);
         }
