@@ -6,7 +6,6 @@ function bv_hdf4_initialize
 function bv_hdf4_enable
 {
     DO_HDF4="yes"
-    DO_SZIP="yes"
 }
 
 function bv_hdf4_disable
@@ -16,29 +15,25 @@ function bv_hdf4_disable
 
 function bv_hdf4_depends_on
 {
-    echo "szip zlib"
+    echo ""
 }
 
 function bv_hdf4_info
 {
-    export HDF4_FILE=${HDF4_FILE:-"hdf-4.2.5.tar.gz"}
-    export HDF4_VERSION=${HDF4_VERSION:-"4.2.5"}
+    export HDF4_FILE=${HDF4_FILE:-"CMake-hdf-4.2.15.tar.gz"}
+    export HDF4_VERSION=${HDF4_VERSION:-"4.2.15"}
     export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION:-"4.2"}
-    export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"hdf-4.2.5"}
-    export HDF4_URL=${HDF4_URL:-"http://www.hdfgroup.org/ftp/HDF/HDF_Current/src"}
-    export HDF4_MD5_CHECKSUM="7241a34b722d29d8561da0947c06069f"
-    export HDF4_SHA256_CHECKSUM="73b0021210bae8c779f9f1435a393ded0f344cfb01f7ee8b8794ec9d41dcd427"
+    export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"CMake-hdf-4.2.15-build"}
+    export HDF4_ROOT_DIR=${HDF4_ROOT_DIR:-"CMake-hdf-4.2.15"}
+    export HDF4_SRC_DIR=${HDF4_SRC_DIR:-"CMake-hdf-4.2.15/hdf-4.2.15"}
+    export HDF4_URL=${HDF4_URL:-"https://support.hdfgroup.org/ftp/HDF/releases/HDF4.2.15/src/CMake-hdf-4.2.15.tar.gz"}
+    #export HDF4_MD5_CHECKSUM=""
+    #export HDF4_SHA256_CHECKSUM=""
 }
 
 function bv_hdf4_initialize_vars
 {
-    info "testing hdf4 requirements"
-    local lexv=`which lex`
-    local yaccv=`which yacc`
-
-    if [[ "$lexv" == "" || "$yaccv" == "" ]]; then
-        error "HDF4 is enabled, but lex and yacc have not been found in system path."
-    fi 
+  echo ""
 }
 
 function bv_hdf4_print
@@ -47,6 +42,7 @@ function bv_hdf4_print
     printf "%s%s\n" "HDF4_VERSION=" "${HDF4_VERSION}"
     printf "%s%s\n" "HDF4_COMPATIBILITY_VERSION=" "${HDF4_COMPATIBILITY_VERSION}"
     printf "%s%s\n" "HDF4_BUILD_DIR=" "${HDF4_BUILD_DIR}"
+    printf "%s%s\n" "HDF4_SRC_DIR=" "${HDF4_SRC_DIR}"
 }
 
 function bv_hdf4_print_usage
@@ -64,18 +60,13 @@ function bv_hdf4_host_profile
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR \${VISITHOME}/hdf4/$HDF4_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
-        if [[ "$DO_SZIP" == "yes" ]] ; then
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz TYPE STRING)" \
-                >> $HOSTCONF
-        fi
     fi
 }
 
 function bv_hdf4_ensure
 {
     if [[ "$DO_HDF4" == "yes" ]] ; then
-        ensure_built_or_ready "hdf4" $HDF4_VERSION $HDF4_BUILD_DIR $HDF4_FILE $HDF4_URL
+        ensure_built_or_ready "hdf4" $HDF4_VERSION $HDF4_ROOT_DIR $HDF4_FILE $HDF4_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_HDF4="no"
@@ -96,12 +87,17 @@ function bv_hdf4_dry_run
 #                          Function 8.3, build_hdf4                           #
 # *************************************************************************** #
 
+function apply_hdf4_patch
+{
+    return 0
+}
+
 function build_hdf4
 {
     #
     # Prepare build dir
     #
-    prepare_build_dir $HDF4_BUILD_DIR $HDF4_FILE
+    prepare_build_dir $HDF4_ROOT_DIR $HDF4_FILE
     untarred_hdf4=$?
     # 0, already exists, 1 untarred src, 2 error
 
@@ -127,68 +123,68 @@ function build_hdf4
     #    fi
     #fi
 
+    info "Configuring HDF4 . . . "
+    cd "$START_DIR"
+    # Make the build directory for an out-of-source build.
+    if [[ ! -d $HDF4_BUILD_DIR ]] ; then
+        echo "Making build directory $HDF4_BUILD_DIR"
+        mkdir $HDF4_BUILD_DIR
+    fi
+
+    hopts="-C $START_DIR/${HDF4_SRC_DIR}/config/cmake/cacheinit.cmake "
+    hopts="${hopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+    hopts="${hopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/hdf4/${HDF4_VERSION}/${VISITARCH}"
+    if test "x${DO_STATIC_BUILD}" = "xyes" ; then
+        hopts="${hopts} -DBUILD_SHARED_LIBS:BOOL=OFF -DBUILD_STATIC_LIBS:BOOL=ON"
+    else
+        hopts="${hopts} -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_STATIC_LIBS=OFF -DONLY_SHARED_LIBS:BOOL=ON"
+    fi
+
     #
     # Set  Fortran compiler
     #
     # Disable Fortran on Darwin since it causes HDF4 builds to fail.
     if [[ "$OPSYS" == "Darwin" ]]; then
-        FORTRANARGS="--disable-fortran"
+        hopts="${hopts} -DHDF4_BUILD_FORTRAN:BOOL=OFF"
     elif [[ "$FC_COMPILER" == "no" ]] ; then
-        FORTRANARGS="--disable-fortran"
+        hopts="${hopts} -DHDF4_BUILD_FORTRAN:BOOL=OFF"
     else
-        FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
+        # Is this correct? 
+        hopts="${hopts} -DHDF4_BUILD_FORTRAN:BOOL=ON"
+        hopts="${hopts} -DCMAKE_Fortran_COMPILER=$FF_COMPILER"
+        hopts="${hopts} -DCMAKE_Fortran_FLAGS=$FF_FLAGS"
     fi
+ 
+    hopts="${hopts} -DBUILD_TESTING:BOOL=OFF"
+    hopts="${hopts} -DHDF4_BUILD_JAVA:BOOL=OFF"
+    hopts="${hopts} -DHDF4_ALLOW_EXTERNAL_SUPPORT:STRING=TGZ"
+    hopts="${hopts} -DHDF4_PACKAGE_EXTLIBS:BOOL=ON" 
+    hopts="${hopts} -DHDF4_BUILD_EXAMPLES:BOOL=OFF"
+    hopts="${hopts} -DHDF4_BUILD_GENERATORS:BOOL=OFF"
+    hopts="${hopts} -DHDF4_ENABLE_NETCDF:BOOL=OFF"
+    hopts="${hopts} -DHDF4_BUILD_TOOLS:BOOL=OFF"
+    hopts="${hopts} -DHDF4_BUILD_UTILS:BOOL=OFF"
+    hopts="${hopts} -DTGZPATH:PATH=$START_DIR/${HDF4_ROOT_DIR}"
 
-    hdf4_build_mode=""
-    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
-        hdf4_build_mode="--disable-production"
-    fi
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+    cd ${HDF4_BUILD_DIR}
 
     #
-    # Configure HDF4
+    # Write a simple script that we invoke with bash which calls cmake with all of the
+    # arguments. 
     #
-    info "Configuring HDF4 . . ."
-    cd $HDF4_BUILD_DIR || error "Can't cd to hdf4 build dir."
-    info "Invoking command to configure HDF4"
-    MAKEOPS=""
-    if [[ "$OPSYS" == "Darwin" || "$OPSYS" == "AIX" ]]; then
-        export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
-        # In order to ensure $FORTRANARGS is expanded to build the arguments to
-        # configure, we wrap the invokation in 'sh -c "..."' syntax
-        sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-        $FORTRANARGS $hdf4_build_mode \
-        --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
-        --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
-        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
-        --disable-dependency-tracking --disable-netcdf"
-        if [[ $? != 0 ]] ; then
-            warn "HDF4 configure failed.  Giving up"\
-                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
-            return 1
-        fi
-        MAKEOPS="-i"
-    else
-        export LD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
-        # In order to ensure $FORTRANARGS is expanded to build the arguments to
-        # configure, we wrap the invokation in 'sh -c "..."' syntax
-        issue_command sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" LIBS=\"-lm\" \
-        $FORTRANARGS $hdf4_build_mode \
-        --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
-        --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
-        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" --disable-netcdf"
-        if [[ $? != 0 ]] ; then
-            warn "HDF4 configure failed.  Giving up.\n"\
-                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
-            return 1
-        fi
+
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
     fi
+    echo "\"${CMAKE_BIN}\"" ${hopts} ../${HDF4_SRC_DIR} > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "HDF4 configuration failed."
 
     #
     # Build HDF4
     #
-    info "Building HDF4 . . . (~2 minutes)"
+    info "Building HDF4 . . ."
 
     $MAKE $MAKEOPS
     if [[ $? != 0 ]] ; then
@@ -217,9 +213,7 @@ function build_hdf4
                       -Wl,-headerpad_max_install_names \
                       -Wl,-install_name,$INSTALLNAMEPATH/libdf.${SO_EXT} \
                       -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
-                      -Wl,-current_version,$HDF4_VERSION \
-                      -L"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib" \
-                      -lvtkjpeg-${VTK_SHORT_VERSION} -lsz -lz
+                      -Wl,-current_version,$HDF4_VERSION 
         if [[ $? != 0 ]] ; then
             warn \
                 "HDF4 dynamic library build failed for libdf.${SO_EXT}.  Giving up"
@@ -233,9 +227,7 @@ function build_hdf4
                       -Wl,-install_name,$INSTALLNAMEPATH/libmfhdf.${SO_EXT} \
                       -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
                       -Wl,-current_version,$HDF4_VERSION \
-                      -L"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib" \
-                      -L"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib" \
-                      -lvtkjpeg-${VTK_SHORT_VERSION} -ldf -lsz -lz
+                      -L"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib" 
         if [[ $? != 0 ]] ; then
             warn \
                 "HDF4 dynamic library build failed for libmfhdf.${SO_EXT}.  Giving up"
@@ -283,7 +275,7 @@ function bv_hdf4_build
         if [[ $? == 0 ]] ; then
             info "Skipping HDF4 build.  HDF4 is already installed."
         else
-            info "Building HDF4 (~2 minutes)"
+            info "Building HDF4 (~10 minutes)"
             build_hdf4
             if [[ $? != 0 ]] ; then
                 error "Unable to build or install HDF4.  Bailing out."

@@ -17,14 +17,14 @@
 
 # Use the HDF4_DIR hint from the config-site .cmake file 
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-IF (WIN32)
+if(WIN32)
   if(HDF4_LIBNAMES_AFFIX_DLL)
       SET_UP_THIRD_PARTY(HDF4 lib include hdfdll mfhdfdll xdrdll)
   else()
       SET_UP_THIRD_PARTY(HDF4 lib include hdf mfhdf xdr)
   endif()
-ELSE (WIN32)
-  SET_UP_THIRD_PARTY(HDF4 lib include mfhdf df)
-ENDIF (WIN32)
+else()
+  SET_UP_THIRD_PARTY(HDF4 lib include mfhdf hdf)
+endif()
