@@ -549,7 +549,7 @@ FUNCTION(VISIT_OPTION_DEFAULT var)
   ENDIF(NOT "${default_base_val}" STREQUAL "${opt_ARGS}")
 ENDFUNCTION(VISIT_OPTION_DEFAULT var)
 
-SET(VTK_MINIMUM_VERSION "8.1.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
+SET(VTK_MINIMUM_VERSION "9.0.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
 
 SET(NEKTAR++_MINIMUM_VERSION "4.0.0" CACHE INTERNAL "minimum version of Nektar++ that VisIt can use")
 
@@ -590,7 +590,7 @@ ENDIF (NOT WIN32)
 
 #-----------------------------------------------------------------------------
 # If the config-site file above has not set a VTK version set a
-# default VTK version of 8.1.0.
+# default VTK version of the minimum required.
 #-----------------------------------------------------------------------------
 IF(NOT VTK_VERSION)
   IF(VISIT_VTK_VERSION)
@@ -599,15 +599,15 @@ IF(NOT VTK_VERSION)
       ENDIF()
       SETUP_APP_VERSION(VTK ${VISIT_VTK_VERSION})
   ELSE()
-      MESSAGE(STATUS "VISIT_VTK_VERSION NOT FOUND assuming 8.1.0")
-      SETUP_APP_VERSION(VTK 8.1.0)
+      MESSAGE(STATUS "VISIT_VTK_VERSION NOT FOUND assuming ${VTK_MINIMUM_VERSION}")
+      SETUP_APP_VERSION(VTK ${VTK_MINIMUM_VERSION})
   ENDIF()
 ENDIF()
 
 
 #-----------------------------------------------------------------------------
 # If the config-site file above has not set a NEKTAR++ version set a
-# default NEKTAR++ version of 4.0.0.
+# default NEKTAR++ version of the minimum required.
 #-----------------------------------------------------------------------------
 IF(EXISTS ${VISIT_NEKTAR++_DIR})
   IF(NOT NEKTAR++_VERSION)
@@ -617,8 +617,8 @@ IF(EXISTS ${VISIT_NEKTAR++_DIR})
       ENDIF()
       SETUP_APP_VERSION(NEKTAR++ ${VISIT_NEKTAR++_VERSION})
     ELSE()
-      MESSAGE(STATUS "VISIT_NEKTAR++_VERSION NOT FOUND assuming 4.0.0")
-      SETUP_APP_VERSION(NEKTAR++ 4.0.0)
+      MESSAGE(STATUS "VISIT_NEKTAR++_VERSION NOT FOUND assuming ${NEKTAR++_MINIMUM_VERSION}")
+      SETUP_APP_VERSION(NEKTAR++ ${NEKTAR++_MINIMUM_VERSION})
     ENDIF()
   ENDIF()
 ENDIF()
@@ -1178,6 +1178,16 @@ CHECK_INCLUDE_FILES (sys/stat.h  HAVE_SYS_STAT_H)
 CHECK_INCLUDE_FILES (unistd.h    HAVE_UNISTD_H)
 CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
 
+# zlib
+# Needs to come before VTK/Qt because they depend on it.
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
+
+# szip and jpeg
+IF(WIN32)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
+ENDIF(WIN32)
+
 # Configure VTK support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
 
@@ -1204,19 +1214,23 @@ include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
 #   Disable python filters.
 #-----------------------------------------------------------------------------
 
-# If we did not find Python then turn off VISIT_PYTHON_SCRIPTING
-IF(VISIT_PYTHON_SCRIPTING AND NOT PYTHONLIBS_FOUND)
-    SET(VISIT_PYTHON_SCRIPTING OFF)
-    MESSAGE(STATUS "Python scripting disabled because Python was not found.")
-ENDIF(VISIT_PYTHON_SCRIPTING AND NOT PYTHONLIBS_FOUND)
-
-# Disable Python scripting if we're doing a static build for engine-only or server-components-only.
-IF(VISIT_PYTHON_SCRIPTING AND VISIT_STATIC)
-    IF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-        SET(VISIT_PYTHON_SCRIPTING OFF)
-        MESSAGE(STATUS "Python scripting disabled because an engine-only or server-components-only build was selected.")
-    ENDIF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-ENDIF(VISIT_PYTHON_SCRIPTING AND VISIT_STATIC)
+if(VISIT_PYTHON_SCRIPTING)
+    set(msg "Python scripting disabled because ")
+    if (NOT PYTHONLIBS_FOUND)
+        # If we did not find Python then turn off VISIT_PYTHON_SCRIPTING
+        set(VISIT_PYTHON_SCRIPTING OFF)
+        string(APPEND msg "Python was not found.")
+    elseif(VISIT_STATIC AND (VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY))
+        # Disable Python scripting if we're doing a static build for engine-only
+        # or server-components-only.
+        set(VISIT_PYTHON_SCRIPTING OFF)
+        string(APPEND msg "an engine-only or server-components-only build was selected.")
+    endif()
+    if(NOT VISIT_PYTHON_SCRIPTING)
+        message(STATUS ${msg})
+    endif()
+    unset(msg)
+endif(VISIT_PYTHON_SCRIPTING)
 
 # Disable Python filters if we don't have Python.
 if(VISIT_PYTHON_FILTERS)
@@ -1268,14 +1282,7 @@ ENDIF(VISIT_PARALLEL)
 # Include TCMALLOC support if we can.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTCMALLOC.cmake)
 
-# zlib
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
 
-# szip and jpeg
-IF(WIN32)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
-ENDIF(WIN32)
 
 # dl and large file support.
 IF(CMAKE_HOST_UNIX)

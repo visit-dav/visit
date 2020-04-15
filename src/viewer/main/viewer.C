@@ -21,7 +21,7 @@
 #include <ViewerState.h>
 #include <VisItException.h>
 
-#include <QVTKOpenGLWidget.h>
+#include <QVTKOpenGLNativeWidget.h>
 
 // ****************************************************************************
 // Method: Viewer_LogQtMessages
@@ -207,7 +207,7 @@ ViewerMain(int argc, char *argv[])
         int argc2 = real_argc + nExtraArgs;
 
         // Setting default QSurfaceFormat required with QVTKOpenGLwidget
-        auto surfaceFormat = QVTKOpenGLWidget::defaultFormat();
+        auto surfaceFormat = QVTKOpenGLNativeWidget::defaultFormat();
         surfaceFormat.setSamples(0);
         surfaceFormat.setAlphaBufferSize(0);
         QSurfaceFormat::setDefaultFormat(surfaceFormat);

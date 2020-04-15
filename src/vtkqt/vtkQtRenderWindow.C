@@ -6,7 +6,7 @@
 
 #include <vtkQtRenderWindow.h>
 
-#include <QVTKOpenGLWidget.h>
+#include <QVTKOpenGLNativeWidget.h>
 
 #include <vtkGenericOpenGLRenderWindow.h>
 #include <QVTKInteractor.h>
@@ -88,7 +88,10 @@ public:
         // alpha channel (at least for OS X). However, not asking for
         // the channel seems to be benign. In addition, the 2D view
         // bounds and picking are off.
-        gl = new QVTKOpenGLWidget(w);
+
+// VTK seems to recommend dusing NativeWidget, so give it a try, but we may need
+// to use QVTKOpenGLStereoWidget which is the old QVTKOpenGLWidget renamed
+        gl = new QVTKOpenGLNativeWidget(w);
         if (!gl->renderWindow())
         {
             vtkGenericOpenGLRenderWindow *renWin = vtkGenericOpenGLRenderWindow::New();
@@ -105,7 +108,7 @@ public:
     {
     }
 
-    QVTKOpenGLWidget     *gl;
+    QVTKOpenGLNativeWidget     *gl;
     
     void          (*resizeEventCallback)(void *);
     void           *resizeEventData;
