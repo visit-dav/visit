@@ -7,7 +7,7 @@ Please include a summary of the change
 
 ### Type of change
 
-Please select one below--Bug fix, new feature, new documentation, or other (please explaine).
+Please choose one of the following: Bug fix, new feature, new documentation, or other (please explain).
 
 ### How Has This Been Tested?
 
