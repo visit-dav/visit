@@ -13,7 +13,7 @@
 set(_TMP_PY_OUTPUT)
 set(_TMP_PY_RETURN)
 exec_program("${PYTHON_EXECUTABLE}"
-  ARGS "-c 'import numpy; print numpy.get_include()'"
+  ARGS "-c 'import numpy; print(numpy.get_include())'"
   OUTPUT_VARIABLE _TMP_PY_OUTPUT
   RETURN_VALUE _TMP_PY_RETURN)
 set(NUMPY_INCLUDE_FOUND FALSE)
@@ -27,7 +27,7 @@ set(NUMPY_INCLUDE_DIR "${_TMP_PY_OUTPUT}")
 set(_TMP_PY_OUTPUT)
 set(_TMP_PY_RETURN)
 exec_program("${PYTHON_EXECUTABLE}"
-  ARGS "-c 'import numpy; print numpy.version.version'"
+  ARGS "-c 'import numpy; print(numpy.version.version)'"
   OUTPUT_VARIABLE _TMP_PY_OUTPUT
   RETURN_VALUE _TMP_PY_RETURN)
 set(NUMPY_VERSION_FOUND FALSE)
