@@ -5,7 +5,7 @@
 #include <QApplication>
 #include <QDir>
 
-#include <QVTKOpenGLWidget.h>
+#include <QVTKOpenGLNativeWidget.h>
 
 #include <visitstream.h>
 #include <VisItViewer.h>
@@ -119,7 +119,7 @@ MCVMain(int argc, char *argv[])
         // Setting the default QSurfaceFormat required with QVTKOpenGLwidget.
         // This causes Qt to create an OpenGL 3.2 context.
         //
-        auto surfaceFormat = QVTKOpenGLWidget::defaultFormat();
+        auto surfaceFormat = QVTKOpenGLNativeWidget::defaultFormat();
         surfaceFormat.setSamples(0);
         surfaceFormat.setAlphaBufferSize(0);
         QSurfaceFormat::setDefaultFormat(surfaceFormat);

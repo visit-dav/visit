@@ -76,14 +76,14 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-    export VTK_FILE=${VTK_FILE:-"VTK-9.0.0.rc1.tar.gz"}
-    export VTK_VERSION=${VTK_VERSION:-"9.0.0.rc1"}
+    export VTK_FILE=${VTK_FILE:-"VTK-9.0.0.rc2.tar.gz"}
+    export VTK_VERSION=${VTK_VERSION:-"9.0.0.rc2"}
     export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.0"}
     export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
     export VTK_URL=${VTK_URL:-"https://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
-    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-9.0.0.rc1"}
+    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-9.0.0.rc2"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
-    export VTK_MD5_CHECKSUM="d41d8cd98f00b204e9800998ecf8427e"
+    #export VTK_MD5_CHECKSUM="d41d8cd98f00b204e9800998ecf8427e"
     #export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
 }
 
@@ -144,6 +144,70 @@ function bv_vtk_dry_run
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
+function apply_vtkprobeopenglversion_patch
+{
+  # patch vtk's Rendering/OpenGL2/CMakeLists.txt to fix a compile problem
+  # with vtkProbeOpenGLVersion when Mesa is used as GL.
+
+   patch -p0 << \EOF
+*** Rendering/OpenGL2/CMakeLists.txt.orig
+--- Rendering/OpenGL2/CMakeLists.txt
+***************
+*** 351,372 ****
+    vtk_module_link(VTK::RenderingOpenGL2 PUBLIC "-framework UIKit")
+  endif ()
+
+! if (NOT ANDROID AND
+!     NOT APPLE_IOS AND
+!     NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten" AND
+!     NOT VTK_OPENGL_USE_GLES)
+!   set(probe_no_install)
+!   if (NOT _vtk_build_INSTALL_HEADERS)
+!     set(probe_no_install
+!       NO_INSTALL)
+!   endif ()
+!   vtk_module_add_executable(vtkProbeOpenGLVersion
+!     ${probe_no_install}
+!     vtkProbeOpenGLVersion.cxx)
+!   target_link_libraries(vtkProbeOpenGLVersion
+!     PRIVATE
+!       VTK::RenderingOpenGL2)
+!   vtk_module_autoinit(
+!     TARGETS vtkProbeOpenGLVersion
+!     MODULES VTK::RenderingOpenGL2)
+! endif ()
+--- 351,372 ----
+    vtk_module_link(VTK::RenderingOpenGL2 PUBLIC "-framework UIKit")
+  endif ()
+
+! #if (NOT ANDROID AND
+! #    NOT APPLE_IOS AND
+! #    NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten" AND
+! #    NOT VTK_OPENGL_USE_GLES)
+! #  set(probe_no_install)
+! #  if (NOT _vtk_build_INSTALL_HEADERS)
+! #    set(probe_no_install
+! #      NO_INSTALL)
+! #  endif ()
+! #  vtk_module_add_executable(vtkProbeOpenGLVersion
+! #    ${probe_no_install}
+! #    vtkProbeOpenGLVersion.cxx)
+! #  target_link_libraries(vtkProbeOpenGLVersion
+! #    PRIVATE
+! #      VTK::RenderingOpenGL2)
+! #  vtk_module_autoinit(
+! #    TARGETS vtkProbeOpenGLVersion
+! #    MODULES VTK::RenderingOpenGL2)
+! #endif ()
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkOpenGLSphereMapper.h failed."
+      return 1
+    fi
+    return 0;
+
+}
 
 function apply_vtkopenglspheremapper_h_patch
 {
@@ -877,6 +941,11 @@ EOF
 
 function apply_vtk_patch
 {
+    apply_vtkprobeopenglversion_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
     # will have to test if these or versions thereof are still required
     #apply_vtkopenglspheremapper_h_patch
     #if [[ $? != 0 ]] ; then
@@ -935,20 +1004,20 @@ function build_vtk
     #
     # Apply patches
     #
-    #info "Patching VTK . . ."
-    #cd $VTK_BUILD_DIR || error "Can't cd to VTK build dir."
-    #apply_vtk_patch
-    #if [[ $? != 0 ]] ; then
-    #    if [[ $untarred_vtk == 1 ]] ; then
-    #        warn "Giving up on VTK build because the patch failed."
-    #        return 1
-    #    else
-    #        warn "Patch failed, but continuing.  I believe that this script\n" \
-    #             "tried to apply a patch to an existing directory that had\n" \
-    #             "already been patched ... that is, the patch is\n" \
-    #             "failing harmlessly on a second application."
-    #    fi
-    #fi
+    info "Patching VTK . . ."
+    cd $VTK_BUILD_DIR || error "Can't cd to VTK build dir."
+    apply_vtk_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_vtk == 1 ]] ; then
+            warn "Giving up on VTK build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
 
     # move back up to the start dir
     cd "$START_DIR"
@@ -1019,6 +1088,7 @@ function build_vtk
     vopts="${vopts} -DVTK_DEBUG_LEAKS:BOOL=${vtk_debug_leaks}"
     vopts="${vopts} -DVTK_LEGACY_REMOVE:BOOL=true"
     vopts="${vopts} -DVTK_BUILD_TESTING:BOOL=false"
+    vopts="${vopts} -DBUILD_TESTING:BOOL=false"
     vopts="${vopts} -DVTK_BUILD_DOCUMENTATION:BOOL=false"
     vopts="${vopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
@@ -1054,6 +1124,8 @@ function build_vtk
 
     # allow VisIt to override any of vtk's classes
     vopts="${vopts} -DVTK_ALL_NEW_OBJECT_FACTORY:BOOL=true"
+    # disable downloads (also disables testing)
+    vopts="${vopts} -DVTK_FORBID_DOWNLOADS:BOOL=true"
 
     # Turn off module groups
     vopts="${vopts} -DVTK_GROUP_ENABLE_Imaging:STRING=DONT_WANT"
@@ -1061,7 +1133,6 @@ function build_vtk
     vopts="${vopts} -DVTK_GROUP_ENABLE_Qt:STRING=DONT_WANT"
     vopts="${vopts} -DVTK_GROUP_ENABLE_Rendering:STRING=DONT_WANT"
     vopts="${vopts} -DVTK_GROUP_ENABLE_StandAlone:STRING=DONT_WANT"
-    vopts="${vopts} -DVTK_GROUP_ENABLE_Tk:STRING=DONT_WANT"
     vopts="${vopts} -DVTK_GROUP_ENABLE_Views:STRING=DONT_WANT"
     vopts="${vopts} -DVTK_GROUP_ENABLE_Web:STRING=DONT_WANT"
 
@@ -1088,9 +1159,8 @@ function build_vtk
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
-                vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQtOpenGL:BOOL:STRING=YES"
-                vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_BIN_DIR}/qmake"
-                vopts="${vopts} -DCMAKE_PREFIX_PATH=${QT_INSTALL_DIR}/lib/cmake"
+                vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQt:BOOL:STRING=YES"
+                vopts="${vopts} -DQt5_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
             fi
         fi
     fi
@@ -1119,9 +1189,10 @@ function build_vtk
     if [[ "$DO_MESAGL" == "yes" ]] ; then
         vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
         vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
-        vopts="${vopts} -DOPENGL_gl_LIBRARY:PATH=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
-        vopts="${vopts} -DOPENGL_glu_LIBRARY:PATH=${MESAGL_GLU_LIB}"
-        vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=\"${MESAGL_OSMESA_LIB};${LLVM_LIB}\""
+        vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
+        vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
+        vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
+        vopts="${vopts} -DOSMESA_LIBRARY:STRING=\"${MESAGL_OSMESA_LIB};${LLVM_LIB}\""
         vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
 
         if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
@@ -1139,7 +1210,7 @@ function build_vtk
     fi
 
     # zlib support, use the one we build
-    vopts="${vopts} -DVTK_USE_SYSTEM_ZLIB:BOOL=ON"
+    vopts="${vopts} -DVTK_MODULE_USE_EXTERNAL_VTK_zlib:BOOL=ON"
     vopts="${vopts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
     if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
         vopts="${vopts} -DZLIB_LIBRARY_RELEASE:FILEPATH=${ZLIB_LIBRARY}"
