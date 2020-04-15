@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <Python.h>
+#include "../common/Py2and3Support.h"
 
 // get select
 #if defined(_WIN32)
@@ -31,6 +32,7 @@
 #include <StringHelpers.h>
 #include <VisItException.h>
 #include <DebugStream.h>
+#include <cstdlib>
 
 #include <string>
 #include <vector>
@@ -49,7 +51,7 @@
 // For the VisIt module.
 extern "C" void cli_initvisit(int, bool, int, char **, int, char **);
 extern "C" void cli_runscript(const char *);
-extern "C" VISITCLI_API int Py_Main(int, char **);
+extern "C" VISITCLI_API int Py_Main(int, wchar_t **);
 
 // ****************************************************************************
 // Function: main
@@ -517,12 +519,13 @@ main(int argc, char *argv[])
         oss << "sys.path.append(pjoin(r'" << vlibdir  <<"','site-packages'))";
         PyRun_SimpleString(oss.str().c_str());
 
-        PyRun_SimpleString((char*)"import visit");
 
         // Initialize the VisIt module.
         cli_initvisit(bufferDebug ? -debugLevel : debugLevel, verbose, argc2, argv2,
                       argc_after_s, argv_after_s);
 
+
+        PyRun_SimpleString((char*)"import visit");
 
         // add original args to visit.argv_full, just in case 
         // some one needs to access them.
@@ -539,6 +542,7 @@ main(int argc, char *argv[])
 
         PyDict_SetItemString(visit_dict, "argv_full", py_argv_full);
 
+        
         if(pyside || pyside_gui)
         {
             int error = 0;
@@ -565,8 +569,8 @@ main(int argc, char *argv[])
 
         if(pyside_gui)
         {
-            //pysideviewer needs to be executed before visit import
-            //so that visit will use the window..
+            // pysideviewer needs to be executed before visit import
+            // so that visit will use the window..
             // we will only have one instance, init it
             int error = PyRun_SimpleString((char*)"import visit.pyside_gui");
 
@@ -578,8 +582,10 @@ main(int argc, char *argv[])
             }
 
             PyRun_SimpleString((char*)"args = sys.argv");
+
             if(uifile) //if external file then start VisIt in embedded mode
                 PyRun_SimpleString((char*)"args.append('-pyuiembedded')"); //default to embedded
+
             PyRun_SimpleString((char*)"tmp = visit.pyside_gui.PySideGUI.instance(args)");
             PyRun_SimpleString((char*)"visit.InitializeViewerProxy(tmp.GetViewerProxyPtr())");
             PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindow");
@@ -593,18 +599,22 @@ main(int argc, char *argv[])
             if(!uifile && !pyside_viewer)
                 PyRun_SimpleString((char*)"GetUIWindow().show()");
         }
-
+        
         // setup source file and source stack variables
+        
         PyRun_SimpleString((char*)"import os\n"
                                   "__visit_script_file__  = '<None>'\n"
                                   "__visit_source_file__  = None\n"
                                   "__visit_source_stack__ = [] \n");
 
-
+        
         PyRun_SimpleString((char*)"visit.Launch()");
 
         // reload symbols from visit, since they may have changed
         PyRun_SimpleString((char*)"from visit import *");
+
+        // embed IPython
+        PyRun_SimpleString((char*)"import IPython; IPython.embed()");
 
         // If a visitrc file exists, execute it.
         std::string visitSystemRc(GetSystemVisItRCFile());
