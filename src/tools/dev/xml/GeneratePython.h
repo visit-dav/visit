@@ -2970,6 +2970,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         h << "#ifndef PY_" << name.toUpper() << "_H" << Endl;
         h << "#define PY_" << name.toUpper() << "_H" << Endl;
         h << "#include <Python.h>" << Endl;
+        h << "#include <Py2and3Support.h>" << Endl;
         h << "#include <"<<name<<".h>" << Endl;
         if (custombase)
             h << "#include <Py"<<baseClass<<".h>" << Endl;
