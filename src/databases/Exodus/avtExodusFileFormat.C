@@ -1447,7 +1447,7 @@ avtExodusFileFormat::RegisterFileList(const char *const *list, int nlist)
 //    detection.
 // ****************************************************************************
 
-avtExodusFileFormat::avtExodusFileFormat(const char *name, DBOptionsAttributes *rdatts)
+avtExodusFileFormat::avtExodusFileFormat(const char *name, const DBOptionsAttributes *rdatts)
    : avtMTSDFileFormat(&name, 1)
 {
     fileList = -1;

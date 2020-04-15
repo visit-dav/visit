@@ -156,6 +156,9 @@ avtUnstructuredPointBoundaries::CheckGenerated(int d1, int d2)
 //    Brad Whitlock, Thu Jun 26 14:21:20 PDT 2014
 //    Permit ghosting for 2D cells so wireframe material plots work properly.
 //
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
+//
 // ****************************************************************************
 
 void
@@ -167,6 +170,8 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
     vtkIdList *pl = vtkIdList::New();
     for (size_t i = 0; i < domainNum.size(); ++i)
     {
+        if (meshes[i] == NULL)
+            continue;
         int sendDom = domainNum[i];
         for (int recvDom = 0; recvDom < nTotalDomains; ++recvDom)
         {
@@ -186,8 +191,8 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
 
             vtkDataSet *ds = meshes[i];
             
-            set<int> cells;
-            set<int> points;
+            set<vtkIdType> cells;
+            set<vtkIdType> points;
 
             // For each shared point, find the cells to give.
             // From those cells, find what points to give.
@@ -197,7 +202,7 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
 
                 for (int k = 0; k < cl->GetNumberOfIds(); ++k)
                 {
-                    int cellId = cl->GetId(k);
+                    vtkIdType cellId = cl->GetId(k);
 #if 0
                     //
                     // We shouldn't ghost 2D cells.
@@ -209,18 +214,18 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
 #endif
                     cells.insert(cellId);
                     ds->GetCellPoints(cellId, pl);
-                    for (int m = 0; m < pl->GetNumberOfIds(); ++m)
+                    for (vtkIdType m = 0; m < pl->GetNumberOfIds(); ++m)
                         points.insert(pl->GetId(m));
                 }
             }
 
             vector<int> givenCells, givenPoints;
 #if defined(_MSC_VER) && (_MSC_VER <= 1200) // MSVC 6
-            for(std::set<int>::const_iterator cell_it = cells.begin();
+            for(std::set<vtkIdType>::const_iterator cell_it = cells.begin();
                 cell_it != cells.end(); ++cell_it)
                 givenCells.push_back(*cell_it);
 
-            for(std::set<int>::const_iterator point_it = points.begin();
+            for(std::set<vtkIdType>::const_iterator point_it = points.begin();
                 point_it != points.end(); ++point_it)
                 givenPoints.push_back(*point_it);
 #else

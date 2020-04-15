@@ -4,7 +4,7 @@
 
 #include <avtVTKFileFormat.h>
 
-avtVTK_STSDFileFormat::avtVTK_STSDFileFormat(const char *filename, DBOptionsAttributes *opts) : 
+avtVTK_STSDFileFormat::avtVTK_STSDFileFormat(const char *filename, const DBOptionsAttributes *opts) : 
     avtSTSDFileFormat(filename)
 {
     GetCycleFromFilename(filename);
@@ -12,7 +12,7 @@ avtVTK_STSDFileFormat::avtVTK_STSDFileFormat(const char *filename, DBOptionsAttr
 }
 
 avtVTK_STSDFileFormat::avtVTK_STSDFileFormat(const char *filename, 
-    DBOptionsAttributes *opts, avtVTKFileReader *r) : 
+    const DBOptionsAttributes *opts, avtVTKFileReader *r) : 
     avtSTSDFileFormat(filename)
 {
     GetCycleFromFilename(filename);
@@ -142,7 +142,7 @@ avtVTK_STSDFileFormat::IsEmpty()
 // ****************************************************************************
 // ****************************************************************************
 
-avtVTK_STMDFileFormat::avtVTK_STMDFileFormat(const char *filename, DBOptionsAttributes *opts) : 
+avtVTK_STMDFileFormat::avtVTK_STMDFileFormat(const char *filename, const DBOptionsAttributes *opts) : 
     avtSTMDFileFormat(&filename, 1)
 {
     GetCycleFromFilename(filename);
@@ -150,7 +150,7 @@ avtVTK_STMDFileFormat::avtVTK_STMDFileFormat(const char *filename, DBOptionsAttr
 }
 
 avtVTK_STMDFileFormat::avtVTK_STMDFileFormat(const char *filename,
-    DBOptionsAttributes *opts, avtVTKFileReader *r) : 
+    const DBOptionsAttributes *opts, avtVTKFileReader *r) : 
     avtSTMDFileFormat(&filename, 1)
 {
     GetCycleFromFilename(filename);

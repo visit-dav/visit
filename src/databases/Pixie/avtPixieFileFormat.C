@@ -187,7 +187,7 @@ static void DetectTyphonIO(int fileId)
 //
 // ****************************************************************************
 
-avtPixieFileFormat::avtPixieFileFormat(const char *filename, DBOptionsAttributes *readOpts)
+avtPixieFileFormat::avtPixieFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
     : avtMTSDFileFormat(&filename, 1), variables(), meshes(),
       timeStatePrefix("/Timestep ")
 {

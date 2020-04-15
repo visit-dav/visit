@@ -18,7 +18,6 @@
 #include "StringHelpers.h"
 #include "TimingsManager.h"
 
-#include "DBOptionsAttributes.h"
 #include "Expression.h"
 #include "FileFunctions.h"
 #include "InvalidVariableException.h"

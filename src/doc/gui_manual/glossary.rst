@@ -1,3 +1,5 @@
+.. _Glossary:
+
 Glossary
 ========
 
@@ -10,6 +12,11 @@ Glossary
        setting of **Always** means to always enable the feature. A setting
        of **Auto**, which is typically the default, means the allow VisIt_ 
        to decide when it thinks it is best to enable or disable the feature.
+    
+   Integral Curve
+       An integral curve is a curve that begins at a seed location and is
+       tangent at every point in a vector field. It is computed by numerical
+       integration of the seed location through the vector field.
 
    Node
    Point
@@ -17,6 +24,12 @@ Glossary
        These terms refer to the *corners* or *ends* of mesh elements.
 
    Node-centered
+
+   Pathlines
+       A path rendered by an integrator that uses the vector field that is
+       *in-step* with the integrator, so that as the integrator steps through
+       time, it uses data from the vector field at each new time step.
+
    Point-centered
        These terms refer to a piecewise-linear (one degree of freedom at each
        of mesh element *corner*) interpolation scheme used to define a variable
@@ -31,6 +44,11 @@ Glossary
        :abbr:`MPI (Message Passing Interface)` rank.
 
    SIL
+
+   Streamlines
+       A path rendered by an integrator that uses the *same* vector field for
+       the entire integration.
+
    Subset Inclusion Lattice
        A **Subset Inclusion Lattice** or **SIL** is a term used to describe
        the often complex, graph like relationships among a variety of subsets

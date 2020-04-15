@@ -1737,7 +1737,7 @@ avtTecplotFileFormat::ReadFile()
 // ****************************************************************************
 
 avtTecplotFileFormat::avtTecplotFileFormat(const char *fname,
-                                           DBOptionsAttributes *readOpts)
+                                           const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&fname, 1), expressions()
 {
     file_read = false;

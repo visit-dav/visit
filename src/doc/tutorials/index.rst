@@ -31,6 +31,8 @@ Contents:
     Scripting
     Aneurysm
     PotentialFlow
+    RemoteUsage
+    MakingMovies
     
 
 .. Indices and tables

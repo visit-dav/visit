@@ -33,7 +33,6 @@
 #include <avtDatabaseMetaData.h>
 #include <avtGhostData.h>
 
-#include <DBOptionsAttributes.h>
 #include <Expression.h>
 
 #include <InvalidDBTypeException.h>

@@ -6,10 +6,14 @@
 #define VISIT_VTK_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(VISIT_VTK_EXPORTS) || defined(visit_vtk_EXPORTS)
 #define VISIT_VTK_API __declspec(dllexport)
 #else
 #define VISIT_VTK_API __declspec(dllimport)
+#endif
+#else
+#define VISIT_VTK_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface

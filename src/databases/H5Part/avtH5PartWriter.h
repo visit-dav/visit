@@ -48,7 +48,7 @@ struct H5PartFile;
 class avtH5PartWriter : public virtual avtDatabaseWriter
 {
   public:
-                   avtH5PartWriter(DBOptionsAttributes *);
+                   avtH5PartWriter(const DBOptionsAttributes *);
     virtual       ~avtH5PartWriter();
 
   protected:

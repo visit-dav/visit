@@ -6,10 +6,14 @@
 #define IVP_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 #if defined(AVTIVP_EXPORTS) || defined(avtivp_ser_EXPORTS) || defined(avtivp_par_EXPORTS)
 #define IVP_API __declspec(dllexport)
 #else
 #define IVP_API __declspec(dllimport)
+#endif
+#else
+#define IVP_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
