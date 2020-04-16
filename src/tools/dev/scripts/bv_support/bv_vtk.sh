@@ -1071,6 +1071,26 @@ function build_vtk
         lf="${lf},-current_version,${VTK_VERSION}"
     fi
 
+    # Use Mesa as GL?
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+        vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+        vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=\"${MESAGL_OPENGL_LIB}\""
+        vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING=\"${MESAGL_OPENGL_LIB}\""
+        vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
+        vopts="${vopts} -DOSMESA_LIBRARY:STRING=\"${MESAGL_OSMESA_LIB}\""
+        vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+
+        # Add LLVM lib location to the linker flags
+        lf="${lf} -L${LLVM_LIB_DIR}"
+
+        if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+            if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
+                vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
+            fi
+        fi
+    fi
+
     # Add some extra arguments to the VTK cmake command line via the
     # VTK_EXTRA_OPTIONS environment variable.
     if test -n "$VTK_EXTRA_OPTIONS" ; then
@@ -1185,22 +1205,6 @@ function build_vtk
         fi
     fi
 
-    # Use Mesa as GL?
-    if [[ "$DO_MESAGL" == "yes" ]] ; then
-        vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
-        vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
-        vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
-        vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
-        vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
-        vopts="${vopts} -DOSMESA_LIBRARY:STRING=\"${MESAGL_OSMESA_LIB};${LLVM_LIB}\""
-        vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
-
-        if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
-            if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
-                vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
-            fi
-        fi
-    fi
 
     # Use OSPRay?
     if [[ "$DO_OSPRAY" == "yes" ]] ; then
