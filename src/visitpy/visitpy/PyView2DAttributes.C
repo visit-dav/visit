@@ -615,6 +615,48 @@ View2DAttributes_str(PyObject *v)
 }
 
 //
+// The type description structure
+//
+static PyNumberMethods View2DAttributes_as_number = {
+    (binaryfunc)View2DAttributes_Add, /*nb_add*/
+    (binaryfunc)0, /*nb_subtract*/
+    (binaryfunc)View2DAttributes_Mul, /*nb_multiply*/
+    (binaryfunc)0,    /*nb_remainder*/
+    (binaryfunc)0,    /*nb_divmod*/
+    (ternaryfunc)0,    /*nb_power*/
+    (unaryfunc)0,    /*nb_negative*/
+    (unaryfunc)0,    /*nb_positive*/
+    (unaryfunc)0,    /*nb_absolute*/
+    (inquiry)0,    /*nb_bool*/
+    (unaryfunc)0,    /*nb_invert*/
+    (binaryfunc)0,    /*nb_lshift*/
+    (binaryfunc)0,    /*nb_rshift*/
+    (binaryfunc)0,    /*nb_and*/
+    (binaryfunc)0,    /*nb_xor*/
+    (binaryfunc)0,    /*nb_or*/
+    (unaryfunc)0,    /*nb_int*/
+    0,            /*nb_reserved*/
+    (unaryfunc)0,    /*nb_float*/
+    0,            /*nb_inplace_add*/
+    0,            /*nb_inplace_subtract*/
+    0,            /*nb_inplace_multiply*/
+    0,            /*nb_inplace_remainder*/
+    0,            /*nb_inplace_power*/
+    0,            /*nb_inplace_lshift*/
+    0,            /*nb_inplace_rshift*/
+    0,            /*nb_inplace_and*/
+    0,            /*nb_inplace_xor*/
+    0,            /*nb_inplace_or*/
+    (binaryfunc)0, /*nb_floor_divide;*/
+    (binaryfunc)0, /*nb_true_divide;*/
+    (binaryfunc)0, /*nb_inplace_floor_divide;*/
+    (binaryfunc)0, /*nb_inplace_true_divide;*/
+    (unaryfunc)0, /*nb_index;*/
+    (binaryfunc)0, /*nb_matrix_multiply;*/
+    (binaryfunc)0 /*nb_inplace_matrix_multiply;*/
+};
+
+//
 // The doc string for the class.
 //
 #if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
@@ -641,7 +683,7 @@ static PyTypeObject View2DAttributesType =
     (setattrfunc)PyView2DAttributes_setattr, /* tp_setattr */
     0,                                 /* tp_reserved */
     0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
+    &View2DAttributes_as_number,      /* tp_as_number */
     0,                                 /* tp_as_sequence */
     0,                                 /* tp_as_mapping */
     0,                                 /* tp_hash  */
