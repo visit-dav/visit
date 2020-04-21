@@ -27,7 +27,7 @@ SET(REQUIRED_VTK_LIBS
 VTK::CommonCore 
 VTK::CommonDataModel
 VTK::CommonExecutionModel
-vtk::FiltersGeometry 
+VTK::FiltersGeometry 
 VTK::FiltersHybrid
 VTK::FiltersSources
 VTK::IOImage

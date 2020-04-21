@@ -47,7 +47,9 @@ if(WIN32 AND VISIT_MESA_REPLACE_OPENGL AND VISIT_MESAGL_DIR)
     return()
 endif()
 
-if (VISIT_MESAGL_DIR)
+message("FindMesaGL.cmake")
+
+if (VISIT_MESAGL_DIR AND NOT MESAGL_LIBRARY)
 
   find_library(MESAGL_LIBRARY GL  PATH ${VISIT_MESAGL_DIR}/lib NO_DEFAULT_PATH)
   if (MESAGL_LIBRARY)
@@ -157,6 +159,8 @@ if (VISIT_MESAGL_DIR)
     endif()
   endif(VISIT_LLVM_DIR)
 
+  # prevent VTK's FindOpenGL from finding the wrong opengl.
+  set(OPENGL_opengl_LIBRARY "" CACHE INTERNAL)
 
   install(DIRECTORY ${VISIT_BINARY_DIR}/lib/mesagl
           DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
@@ -172,4 +176,8 @@ if (VISIT_MESAGL_DIR)
       include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
       THIRD_PARTY_INSTALL_INCLUDE(mesagl ${VISIT_MESAGL_DIR}/include)
   endif()
-endif(VISIT_MESAGL_DIR)
+endif()
+
+if(OPENGL_LIBRARIES)
+  message("OPENGL_LIBRARIES: ${OPENGL_LIBRARIES}")
+endif()

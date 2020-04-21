@@ -10,7 +10,7 @@
       *.bp
     </FilePatterns>
     <LIBS>
-      vtkFiltersHybrid
+      VTK::FiltersHybrid
     </LIBS>
     <Files components="M">
       avtADIOSFileFormat.C

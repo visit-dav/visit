@@ -41,7 +41,7 @@
 
 # Use the OSMESA_DIR hint from the config-site .cmake file
 
-if (VISIT_OSMESA_DIR)
+if (VISIT_OSMESA_DIR AND NOT OSMESA_LIBRARY)
     find_library(OSMESA_LIBRARY OSMesa
                  PATH ${VISIT_OSMESA_DIR}/lib
                  NO_DEFAULT_PATH)
@@ -178,7 +178,6 @@ if (VISIT_OSMESA_DIR)
     endif()
     # end Check for OSMesa size limit --- IS THIS STILL NECESSARY?
 
-
     if (VISIT_LLVM_DIR)
         find_library(LLVM_LIBRARY LLVM
                          PATH ${VISIT_LLVM_DIR}/lib
@@ -206,8 +205,6 @@ if (VISIT_OSMESA_DIR)
         endif()
     endif(VISIT_LLVM_DIR)
 
-    message(STATUS "OSMESA_LIBRARIES: ${OSMESA_LIBRARIES}")
-
     install(DIRECTORY ${VISIT_BINARY_DIR}/lib/osmesa
             DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
             DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
@@ -228,5 +225,8 @@ if (VISIT_OSMESA_DIR)
                              WORLD_READ             WORLD_EXECUTE
             CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
 
-endif(VISIT_OSMESA_DIR) 
+endif()
 
+if(OSMESA_LIBRARIES)
+    message(STATUS "OSMESA_LIBRARIES: ${OSMESA_LIBRARIES}")
+endif()

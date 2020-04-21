@@ -23,3 +23,4 @@ elseif(HAVE_EGL)
 endif()
 
 VISIT_INSTALL_TARGETS(visit_vtk_offscreen)
+target_link_libraries(visit_vtk_offscreen VTK::CommonCore)

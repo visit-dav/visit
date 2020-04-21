@@ -1073,16 +1073,13 @@ function build_vtk
 
     # Use Mesa as GL?
     if [[ "$DO_MESAGL" == "yes" ]] ; then
-        vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
         vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
-        vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=\"${MESAGL_OPENGL_LIB}\""
-        vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING=\"${MESAGL_OPENGL_LIB}\""
+        vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
+        vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
         vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
-        vopts="${vopts} -DOSMESA_LIBRARY:STRING=\"${MESAGL_OSMESA_LIB}\""
+        vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+        vopts="${vopts} -DOSMESA_LIBRARY:STRING=\"${MESAGL_OSMESA_LIB};${LLVM_LIB}\""
         vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
-
-        # Add LLVM lib location to the linker flags
-        lf="${lf} -L${LLVM_LIB_DIR}"
 
         if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
