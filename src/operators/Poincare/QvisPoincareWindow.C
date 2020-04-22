@@ -265,7 +265,6 @@ QvisPoincareWindow::CreateSourceTab(QWidget *pageSource)
     fieldType->addItem(tr("M3D-C1 3D"));
     fieldType->addItem(tr("Nek5000"));
     fieldType->addItem(tr("Nektar++"));
-    fieldType->addItem(tr("NIMROD"));
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);
@@ -1311,12 +1310,6 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
               integrationType->setCurrentIndex(PoincareAttributes::M3DC12DIntegrator);
               UpdateIntegrationAttributes();
             }
-            else if (atts->GetFieldType() == PoincareAttributes::NIMRODField)
-            {
-              atts->SetIntegrationType(PoincareAttributes::AdamsBashforth);
-              integrationType->setCurrentIndex(PoincareAttributes::AdamsBashforth);
-              UpdateIntegrationAttributes();
-            }
             else if (atts->GetIntegrationType() == PoincareAttributes::M3DC12DIntegrator)
             {
               atts->SetIntegrationType(PoincareAttributes::DormandPrince);
@@ -2072,7 +2065,6 @@ QvisPoincareWindow::UpdateFieldAttributes()
       TurnOn(velocitySource, velocitySourceLabel);
       break;
 
-    case PoincareAttributes::NIMRODField:
     default:
       TurnOff(fieldConstant, fieldConstantLabel);
       TurnOff(velocitySource, velocitySourceLabel);
