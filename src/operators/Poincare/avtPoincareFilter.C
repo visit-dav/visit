@@ -494,9 +494,7 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
     IssueWarningForCriticalPoints(atts.GetIssueCriticalPointsWarnings(), atts.GetCriticalPointThreshold());
 
     if (atts.GetFieldType() == PoincareAttributes::M3DC12DField ||
-        atts.GetFieldType() == PoincareAttributes::M3DC13DField ||
-//      atts.GetIntegrationType() == PoincareAttributes::NIMRODField ||
-        0 )
+        atts.GetFieldType() == PoincareAttributes::M3DC13DField)
       ConvertToCartesian( true );
     else
       ConvertToCartesian( false );
