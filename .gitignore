@@ -1,3 +1,4 @@
+*.core
 *.pyc
 *.swp
 build_branch_*/
