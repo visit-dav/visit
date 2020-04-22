@@ -321,7 +321,6 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     fieldType->addItem(tr("M3D-C1 3D"));
     fieldType->addItem(tr("Nek5000"));
     fieldType->addItem(tr("Nektar++"));
-    fieldType->addItem(tr("NIMROD"));
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);
@@ -1076,12 +1075,6 @@ QvisLimitCycleWindow::UpdateWindow(bool doAll)
               integrationType->setCurrentIndex(LimitCycleAttributes::M3DC12DIntegrator);
               UpdateIntegrationAttributes();
             }
-            else if (atts->GetFieldType() == LimitCycleAttributes::NIMRODField)
-            {
-              atts->SetIntegrationType(LimitCycleAttributes::AdamsBashforth);
-              integrationType->setCurrentIndex(LimitCycleAttributes::AdamsBashforth);
-              UpdateIntegrationAttributes();
-            }
             else if (atts->GetIntegrationType() == LimitCycleAttributes::M3DC12DIntegrator)
             {
               atts->SetIntegrationType(LimitCycleAttributes::DormandPrince);
@@ -1428,7 +1421,6 @@ QvisLimitCycleWindow::UpdateFieldAttributes()
       TurnOn(velocitySource, velocitySourceLabel);
       break;
 
-    case LimitCycleAttributes::NIMRODField:
     default:
       TurnOff(fieldConstant, fieldConstantLabel);
       TurnOff(velocitySource, velocitySourceLabel);
