@@ -1861,8 +1861,7 @@ distinguish it from functions that may utilize the full range of integers.
     |                                        |  M3DC12DField,              |
     |                                        |  M3DC13DField,              |
     |                                        |  Nek5000Field,              |
-    |                                        |  NektarPPField,             |
-    |                                        |  NIMRODField                |
+    |                                        |  NektarPPField              |
     +----------------------------------------+-----------------------------+
     | fieldConstant                          | 1                           |
     +----------------------------------------+-----------------------------+
@@ -2140,8 +2139,7 @@ distinguish it from functions that may utilize the full range of integers.
     |                                       |  M3DC12DField,             |
     |                                       |  M3DC13DField,             |
     |                                       |  Nek5000Field,             |
-    |                                       |  NektarPPField,            |
-    |                                       |  NIMRODField               |
+    |                                       |  NektarPPField             |
     +---------------------------------------+----------------------------+
     | fieldConstant                         | 1                          |
     +---------------------------------------+----------------------------+
@@ -2389,8 +2387,7 @@ distinguish it from functions that may utilize the full range of integers.
     |                                        |  M3DC12DField,             |
     |                                        |  M3DC13DField,             |
     |                                        |  Nek5000Field,             |
-    |                                        |  NektarPPField,            |
-    |                                        |  NIMRODField               |
+    |                                        |  NektarPPField             |
     +----------------------------------------+----------------------------+
     | fieldConstant                          | 1                          |
     +----------------------------------------+----------------------------+
@@ -3071,8 +3068,7 @@ distinguish it from functions that may utilize the full range of integers.
     |                                       |  M3DC12DField,              |
     |                                       |  M3DC13DField,              |
     |                                       |  Nek5000Field,              |
-    |                                       |  NektarPPField,             |
-    |                                       |  NIMRODField                |
+    |                                       |  NektarPPField              |
     +---------------------------------------+-----------------------------+
     | forceNodeCenteredData                 | 0                           |
     +---------------------------------------+-----------------------------+
