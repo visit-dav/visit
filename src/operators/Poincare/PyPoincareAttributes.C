@@ -194,7 +194,7 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     snprintf(tmpStr, 1000, "%spointDensity = %d\n", prefix, atts->GetPointDensity());
     str += tmpStr;
     const char *fieldType_names = "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
-        "NektarPPField, NIMRODField";
+        "NektarPPField";
     switch (atts->GetFieldType())
     {
       case PoincareAttributes::Default:
@@ -219,10 +219,6 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           break;
       case PoincareAttributes::NektarPPField:
           snprintf(tmpStr, 1000, "%sfieldType = %sNektarPPField  # %s\n", prefix, prefix, fieldType_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::NIMRODField:
-          snprintf(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       default:
@@ -1220,7 +1216,7 @@ PoincareAttributes_SetFieldType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,6]. "
                         "You can also use the following names: "
                         "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
-                        "NektarPPField, NIMRODField.");
+                        "NektarPPField.");
         return NULL;
     }
 
@@ -3109,8 +3105,6 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(PoincareAttributes::Nek5000Field));
     if(strcmp(name, "NektarPPField") == 0)
         return PyInt_FromLong(long(PoincareAttributes::NektarPPField));
-    if(strcmp(name, "NIMRODField") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::NIMRODField));
 
     if(strcmp(name, "forceNodeCenteredData") == 0)
         return PoincareAttributes_GetForceNodeCenteredData(self, NULL);

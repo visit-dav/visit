@@ -560,7 +560,6 @@ QvisIntegralCurveWindow::CreateSourceTab(QWidget *pageSource)
     fieldType->addItem(tr("M3D-C1 3D"));
     fieldType->addItem(tr("Nek5000"));
     fieldType->addItem(tr("Nektar++"));
-    fieldType->addItem(tr("NIMROD"));
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);
@@ -1539,12 +1538,6 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
               integrationType->setCurrentIndex(IntegralCurveAttributes::M3DC12DIntegrator);
               UpdateIntegrationAttributes();
             }
-            else if (atts->GetFieldType() == IntegralCurveAttributes::NIMRODField)
-            {
-              atts->SetIntegrationType(IntegralCurveAttributes::AdamsBashforth);
-              integrationType->setCurrentIndex(IntegralCurveAttributes::AdamsBashforth);
-              UpdateIntegrationAttributes();
-            }
             else if (atts->GetIntegrationType() == IntegralCurveAttributes::M3DC12DIntegrator)
             {
               atts->SetIntegrationType(IntegralCurveAttributes::DormandPrince);
@@ -2074,7 +2067,6 @@ QvisIntegralCurveWindow::UpdateFieldAttributes()
       TurnOn(velocitySource, velocitySourceLabel);
       break;
 
-    case IntegralCurveAttributes::NIMRODField:
     default:
       TurnOff(fieldConstant, fieldConstantLabel);
       TurnOff(velocitySource, velocitySourceLabel);

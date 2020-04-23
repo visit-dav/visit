@@ -95,10 +95,6 @@ Nek5000
 Nektar++
     Evaluates the 3D vector field using `Nektar++ <https://www.nektar.info/>`_
     spectral elements.
-        
-NIMROD
-    Evaluates the 3D magnetic field via a 2D poloidal 3rd order Lagrange-type
-    element and 1D toroidal finite Fourier series element.
 
 .. _common ICS integration:
 
