@@ -413,15 +413,20 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
 //   No need to ExpandPath if filename is empty. This change prevents
 //   unnecessary warning message.
 //
+//   Kathleen Biagas, Thu Apr 23 15:01:18 PDT 2020
+//   Return if filename is empty.
+//
 // ****************************************************************************
 
 bool
 avtImageColleague::UpdateImage(std::string filename)
 {
+    if(filename.empty())
+        return false;
+
     bool retval = true;
 
-    if (!filename.empty())
-        filename = FileFunctions::ExpandPath(filename);
+    filename = FileFunctions::ExpandPath(filename);
 
     // Get a reader for filename if possible.
     vtkImageReader2 *r =

@@ -55,7 +55,7 @@ vtkDataSetGradient::~vtkDataSetGradient()
 {
 }
 
-int vtkDataSetGradient::RequestData(vtkInformation *request,
+int vtkDataSetGradient::RequestData(vtkInformation * vtkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector)
 {
@@ -67,17 +67,13 @@ int vtkDataSetGradient::RequestData(vtkInformation *request,
     vtkDataSet *_output = vtkDataSet::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
     vtkDataSet* _input = vtkDataSet::SafeDownCast( inInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
-    if( _input==0 || _output==0 )
+    if( _input==nullptr || _output==nullptr )
     {
         vtkErrorMacro(<<"Missing input or output \n");
         return 0;
     }
 
-    // get array to compute gradient from
-    // JSM: WAS:
-    //vtkDataArray* inArray = this->GetInputArrayToProcess( 0, _input );
-    // but that didn't compile with our VTK; changed to:
-    vtkDataArray* inArray = this->GetInputArrayToProcess( 0, inputVector );
+    vtkDataArray* inArray = this->GetInputArrayToProcess( 0, _input );
     if( inArray==0 )
     {
         inArray = _input->GetPointData()->GetScalars();

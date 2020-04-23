@@ -448,7 +448,7 @@ vtkRectilinearGridFacelistFilter::RequestData(
 
   vtkCellArray *polys = vtkCellArray::New();
 
-  vtkIdTypeArray *offsets = vtkIdTypeArray::New();
+  vtkNew<vtkIdTypeArray> offsets;
   offsets->SetNumberOfValues(numOutCells+1);
   vtkIdType *ol = offsets->GetPointer(0);
   // Set first offset entry
@@ -457,7 +457,7 @@ vtkRectilinearGridFacelistFilter::RequestData(
   // Create a holder for the incrementation
   vtkIdType currentOffset = 0;
 
-  vtkIdTypeArray *connectivity = vtkIdTypeArray::New();
+  vtkNew<vtkIdTypeArray> connectivity; 
   connectivity->SetNumberOfValues(numOutCells*4);
   vtkIdType *cl = connectivity->GetPointer(0);
   
@@ -604,8 +604,6 @@ vtkRectilinearGridFacelistFilter::RequestData(
   }
 
   polys->SetData(offsets, connectivity);
-  offsets->Delete();
-  connectivity->Delete();
   outCellData->Squeeze();
   outPD->SetPolys(polys);
   polys->Delete();

@@ -132,6 +132,9 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
         char str[256];
         sprintf(str, "material%05d", mapUsedMatToMat[m]);
         ds->GetCellData()->SetActiveScalars(str);
+        // KSB: VTK (as of version 9) complains if this isn't set, because the
+        // grad filter calls GetInputArrayToProcess
+        grad->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_CELLS, str);
 
         char str2[256];
         sprintf(str2, "grad%05d", mapUsedMatToMat[m]);

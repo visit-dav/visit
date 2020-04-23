@@ -525,8 +525,15 @@ vtkCSGGrid::GetMaxCellSize()
 double *
 vtkCSGGrid::GetPoint(vtkIdType ptId)
 {
-  vtkErrorMacro("For a vtkCSGGrid, GetPoint() means GetBoundary()");
-  vtkErrorMacro("Use GetBoundary() to avoid this message");
+ 
+  // Kathleen Biagas, Thu Apr 23 15:07:26 PDT 2020
+  // Comment out vtkErrorMacro here. This isn't really an error condition,
+  // but a design choice. If it really is intended as an error, then
+  // places in VisIt that call this method should be modified. Otherwise
+  // the error macros are just noise.
+  //
+  //vtkErrorMacro("For a vtkCSGGrid, GetPoint() means GetBoundary()");
+  //vtkErrorMacro("Use GetBoundary() to avoid this message");
   int dummy, n;
   double *p = 0;
   this->GetBoundary(ptId, &dummy, &n, &p);

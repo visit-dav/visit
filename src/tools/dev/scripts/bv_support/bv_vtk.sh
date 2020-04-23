@@ -1114,7 +1114,8 @@ function build_vtk
     vopts="${vopts} -DCMAKE_EXE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
-    vopts="${vopts} -DVTK_REPORT_OPENGL_ERRORS:BOOL=true"
+    # setting this to true causes errors when building debug versions of visit.
+    vopts="${vopts} -DVTK_REPORT_OPENGL_ERRORS:BOOL=false"
     if test "${OPSYS}" = "Darwin" ; then
         vopts="${vopts} -DVTK_USE_COCOA:BOOL=ON"
         vopts="${vopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${vtk_inst_path}/lib"
@@ -1205,8 +1206,8 @@ function build_vtk
 
     # Use OSPRay?
     if [[ "$DO_OSPRAY" == "yes" ]] ; then
-        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingOSPRay:BOOL=ON"
-        vopts="${vopts} -DOSPRAY_INSTALL_DIR=${OSPRAY_INSTALL_DIR}"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:BOOL=ON"
+        vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}"
         vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}"
     fi
 

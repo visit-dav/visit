@@ -99,6 +99,9 @@ avtFindExternalExpression::~avtFindExternalExpression()
 //    Eric Brugger, Mon Jul 21 12:09:02 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Thu Apr 23 15:39:14 PDT 2020
+//    Don't use RelevantPointsfilter if there are no points.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -129,7 +132,7 @@ avtFindExternalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsI
     vtkDataSet *ds = tree->GetSingleLeaf();
 
     vtkPolyDataRelevantPointsFilter *pdrpf = NULL;
-    if (!doCells)
+    if (!doCells && ds->GetNumberOfPoints() > 0)
     {
         // If we have an unstructured grid, then the facelist filter sent
         // back the same point list.  Reduce the point list to just those

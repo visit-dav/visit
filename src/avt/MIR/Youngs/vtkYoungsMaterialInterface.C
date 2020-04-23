@@ -1044,33 +1044,31 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
 
         int conn_size = Mats[m].cellArrayCount - Mats[m].cellCount;
 
-        vtkIdTypeArray* connectivity = vtkIdTypeArray::New();
+        vtkNew<vtkIdTypeArray> offsets;
+        offsets->SetNumberOfValues(Mats[m].cellCount+1);
+        vtkIdType oid = 0;
+        offsets->SetValue(oid++, 0);
+
+        vtkNew<vtkIdTypeArray> connectivity;
         connectivity->SetNumberOfValues(conn_size);
-        vtkIdType* connPtr = connectivity->WritePointer(0,conn_size);
 
-        vtkIdTypeArray* offsets = vtkIdTypeArray::New();
-        offsets->SetNumberOfValues(Mats[m].cellCount +1);
-        vtkIdType* offPtr = connectivity->WritePointer(0,Mats[m].cellCount+1);
-        *offPtr++ = 0;
-
-        vtkIdType counter = 0;
-        vtkIdType currentOffset = 0;
-        for(vtkIdType i=0;i<Mats[m].cellCount;i++)
+        const vtkIdType *data = &Mats[m].cells[0];
+        const vtkIdType * const dEnd = data + Mats[m].cellArrayCount;
+        vtkIdType offset = 0;
+        vtkIdType cid = 0;
+        while(data < dEnd)
         {
-            vtkIdType nIds = Mats[m].cells[counter];
-            for(vtkIdType j=1;j<nIds+1;j++)
+            vtkIdType numPts = *data++;
+            offset += numPts;
+            offsets->SetValue(oid++, offset);
+            while(numPts-- > 0)
             {
-                 *connPtr++ = Mats[m].cells[counter+j];
+                connectivity->SetValue(cid++, *data++);
             }
-            counter += nIds+1;
-            currentOffset += nIds;
-            *offPtr++ = currentOffset;
         }
 
         vtkCellArray* cellArray = vtkCellArray::New();
         cellArray->SetData(offsets, connectivity);
-        offsets->Delete();
-        connectivity->Delete();
 
         // set cell types
         vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();

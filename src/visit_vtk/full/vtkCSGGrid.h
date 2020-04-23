@@ -697,8 +697,13 @@ void operator=(const vtkCSGGrid&);         // Not implemented.
 
 inline vtkIdType vtkCSGGrid::GetNumberOfPoints()
 {
-vtkErrorMacro("GetNumberOfPoints() means GetNumberOfBoundaries()");
-vtkErrorMacro("Use GetNumberOfBoundaries() to avoid this message");
+// Kathleen Biagas, Thu Apr 23 15:07:26 PDT 2020
+// Comment out vtkErrorMacro here. This isn't really an error condition,
+// but a design choice. If it really is intended as an error, then
+// places in VisIt that call this method should be modified. Otherwise
+// the error macros are just noise.
+//vtkErrorMacro("GetNumberOfPoints() means GetNumberOfBoundaries()");
+//vtkErrorMacro("Use GetNumberOfBoundaries() to avoid this message");
 return GetNumberOfBoundaries();
 };
 
