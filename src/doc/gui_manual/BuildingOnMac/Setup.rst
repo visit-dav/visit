@@ -17,7 +17,7 @@ Configuration
 ~~~~~~~~~~~~~
 
 1. In the ``opts`` directory copy one of the ``*.json`` files and rename it as desired.
-   ``cp mb-3.1.1-darwin-10.14-x86_64-release.json mb-3.1.2-darwin-10.14-x86_64-release.json``
+   For example: ``cp mb-3.1.1-darwin-10.14-x86_64-release.json mb-3.1.2-darwin-10.14-x86_64-release.json``
 
 2. Open the JSON configuration file (see :numref:`Figure %s<masonry_config_file>`)  created in **step 1** and modify or add the following options as needed:
    
@@ -100,7 +100,7 @@ Configuration
 
 Signing macOS Builds
 ~~~~~~~~~~~~~~~~~~~~
-In order `code sign <https://developer.apple.com/library/archive/technotes/tn2206/_index.html>`_ your VisIt_ build, you must be enrolled in the `Apple Developer Program <https://developer.apple.com/programs/>`_ and have a valid Developer ID certificate. Below are simple steps to get started, reference the links for more detailed information.
+To `code sign <https://developer.apple.com/library/archive/technotes/tn2206/_index.html>`_ your VisIt_ build, you must be enrolled in the `Apple Developer Program <https://developer.apple.com/programs/>`_ and have a valid Developer ID certificate. Below are simple steps to get started, reference the links for more detailed information.
 
 1. Enroll in the Apple Developer Program, if needed, and create your Developer ID certificates.
 
