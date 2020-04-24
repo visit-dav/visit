@@ -15,15 +15,17 @@
 #
 #****************************************************************************/
 
-# Use the JPEG_DIR hint from the config-site .cmake file 
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Use the JPEG_DIR hint from the config-site .cmake file
 
 IF (WIN32)
+  INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+
   if (JPEG_LIBNAME_PREFIX_LIB)
       SET_UP_THIRD_PARTY(JPEG lib include libjpeg)
   else() 
       SET_UP_THIRD_PARTY(JPEG lib include jpeg)
   endif()
+  # VTK's Find needs this var set.
+  set(JPEG_LIBRARY ${JPEG_LIBRARY_DIR}/${JPEG_LIB})
 ENDIF (WIN32)
 

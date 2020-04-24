@@ -315,6 +315,10 @@ avtVariableMapper::SetMaxOff(void)
 //    Kathleen Bonnell, Wed Mar 19 14:31:42 PST 2003    
 //    Removed test for constant range, no longer a problem for vtk. 
 //
+//    Kathleen Bonnell, Fri Apr 24 12:11:22 MST 2020 
+//    Test for bad range (max < min), and reset so that vtkLookupTable
+//    won't issue an error message.
+//
 // ****************************************************************************
 
 void
@@ -340,6 +344,9 @@ avtVariableMapper::SetMappersMinMax(void)
     {
         GetRange(mmin, mmax);
     }
+
+    if (mmax < mmin)
+        mmin = mmax = 0.;
 
     for (int i = 0 ; i < nMappers ; i++)
     {
