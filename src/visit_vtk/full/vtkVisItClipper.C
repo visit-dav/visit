@@ -563,9 +563,9 @@ public:
         return pd->GetCellType(cellId);
     }
 
-    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
+    inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
     {
-        vtkIdType *cellPts = NULL;
+        const vtkIdType *cellPts = NULL;
         pd->GetCellPoints(cellId, nCellPts, cellPts);
         return cellPts;
     }
@@ -587,9 +587,9 @@ public:
         return ug->GetCellType(cellId);
     }
 
-    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
+    inline const vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
     {
-        vtkIdType *cellPts = NULL;
+        const vtkIdType *cellPts = NULL;
         ug->GetCellPoints(cellId, nCellPts, cellPts);
         return cellPts;
     }
@@ -760,7 +760,7 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
         clipper->ModifyClip(input, cellId);
         int cellType = bridge.GetCellType(cellId);
         vtkIdType nCellPts = 0;
-        vtkIdType *cellPts = bridge.GetCellPoints(cellId, nCellPts);
+        const vtkIdType *cellPts = bridge.GetCellPoints(cellId, nCellPts);
 
         // If it's something we can't clip, save it for later
         switch (cellType)

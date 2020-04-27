@@ -623,7 +623,8 @@ vtkCellIntersections::TetraIntersectWithLine(vtkTetra *cell, double p1[3],
 {
   int i, intersection = 0;
   double tTemp, xTemp[3];
-  int faceNum, *faceIds;
+  vtkIdType faceNum;
+  const vtkIdType *faceIds;
 
   double pt0[3], pt1[3], pt2[3];
   t = VTK_DOUBLE_MAX;
@@ -691,7 +692,9 @@ int
 vtkCellIntersections::HexIntersectWithLine(vtkHexahedron *cell, double p1[3], 
     double p2[3], double& t, double x[3])
 {
-  int  i, intersection = 0, faceNum, *faceIds;
+  int  i, intersection = 0;
+  vtkIdType faceNum;
+  const vtkIdType *faceIds;
   double tTemp, xTemp[3];
   double pt0[3], pt1[3], pt2[3], pt3[3];
   t = VTK_DOUBLE_MAX;
@@ -772,7 +775,8 @@ vtkCellIntersections::WedgeIntersectWithLine(vtkWedge *cell, double p1[3],
   int i, intersection = 0;
   double tTemp, xTemp[3];
   double pt0[3], pt1[3], pt2[3], pt3[3];
-  int faceNum, *faceIds;
+  vtkIdType faceNum;
+  const vtkIdType *faceIds;
 
   t = VTK_DOUBLE_MAX;
 
@@ -835,8 +839,8 @@ vtkCellIntersections::PyramidIntersectWithLine(vtkPyramid *cell, double p1[3],
     double p2[3], double& t, double x[3])
 {
   int i, intersection = 0;
-  int faceNum;
-  int *faceIds;
+  vtkIdType faceNum;
+  const vtkIdType *faceIds;
   double xTemp[3], tTemp;
   double pt0[3], pt1[3], pt2[3], pt3[3];
 

@@ -13,7 +13,6 @@
 
 #include <vector>
 #include <map>
-#include <visitstream.h>
 
 // ****************************************************************************
 //  Class: avtOVERFLOWFileFormat

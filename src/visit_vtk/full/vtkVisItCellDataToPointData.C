@@ -270,7 +270,7 @@ int vtkVisItCellDataToPointData::RequestData(
         }
       else
         {
-        outPD->NullPoint(ptId);
+        outPD->NullData(ptId);
         }
       }
     }

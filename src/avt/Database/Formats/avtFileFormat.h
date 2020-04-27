@@ -10,7 +10,7 @@
 #define AVT_FILE_FORMAT_H
 
 #include <database_exports.h>
-
+#include <visitstream.h>
 // For NULL
 #include <stdlib.h>
 

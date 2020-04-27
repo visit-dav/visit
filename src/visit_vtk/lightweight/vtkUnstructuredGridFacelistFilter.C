@@ -440,26 +440,26 @@ static int tri_reorder_list[6][3] =
 // Function prototypes
 //
 
-static void AddTetrahedron(vtkIdType *, int, HashEntryList &);
-static void AddWedge(vtkIdType *, int, HashEntryList &);
-static void AddPyramid(vtkIdType *, int, HashEntryList &);
-static void AddHexahedron(vtkIdType *, int, HashEntryList &);
-static void AddVoxel(vtkIdType *, int, HashEntryList &);
+static void AddTetrahedron(const vtkIdType *, int, HashEntryList &);
+static void AddWedge(const vtkIdType *, int, HashEntryList &);
+static void AddPyramid(const vtkIdType *, int, HashEntryList &);
+static void AddHexahedron(const vtkIdType *, int, HashEntryList &);
+static void AddVoxel(const vtkIdType *, int, HashEntryList &);
 
-static void AddQuadraticTriangle(vtkIdType *, int, HashEntryList &);
-static void AddQuadraticQuad(vtkIdType *, int, HashEntryList &);
-static void AddQuadraticTetrahedron(vtkIdType *, int, HashEntryList &);
-static void AddQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
-static void AddQuadraticPyramid(vtkIdType *, int, HashEntryList &);
-static void AddQuadraticWedge(vtkIdType *, int, HashEntryList &);
+static void AddQuadraticTriangle(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticQuad(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticTetrahedron(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticHexahedron(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticPyramid(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticWedge(const vtkIdType *, int, HashEntryList &);
 
-static void AddQuadraticLinearQuad(vtkIdType *, int, HashEntryList &);
-static void AddQuadraticLinearWedge(vtkIdType *, int, HashEntryList &);
-static void AddBiQuadraticTriangle(vtkIdType *, int, HashEntryList &);
-static void AddBiQuadraticQuad(vtkIdType *, int, HashEntryList &);
-static void AddBiQuadraticQuadraticWedge(vtkIdType *, int, HashEntryList &);
-static void AddBiQuadraticQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
-static void AddTriQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
+static void AddQuadraticLinearQuad(const vtkIdType *, int, HashEntryList &);
+static void AddQuadraticLinearWedge(const vtkIdType *, int, HashEntryList &);
+static void AddBiQuadraticTriangle(const vtkIdType *, int, HashEntryList &);
+static void AddBiQuadraticQuad(const vtkIdType *, int, HashEntryList &);
+static void AddBiQuadraticQuadraticWedge(const vtkIdType *, int, HashEntryList &);
+static void AddBiQuadraticQuadraticHexahedron(const vtkIdType *, int, HashEntryList &);
+static void AddTriQuadraticHexahedron(const vtkIdType *, int, HashEntryList &);
 
 static void AddUnknownCell(vtkCell *, int, HashEntryList &);
 
@@ -1835,7 +1835,7 @@ LoopOverVertexCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
-    vtkIdType   *pts;
+    const vtkIdType   *pts;
     for (cellId=0, Connectivity->InitTraversal();
          Connectivity->GetNextCell(npts,pts);
          cellId++)
@@ -1887,7 +1887,7 @@ LoopOverLineCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
-    vtkIdType   *pts;
+    const vtkIdType   *pts;
     for (cellId=0, Connectivity->InitTraversal();
          Connectivity->GetNextCell(npts,pts);
          cellId++)
@@ -1948,7 +1948,7 @@ LoopOverPolygonCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
-    vtkIdType   *pts;
+    const vtkIdType   *pts;
     for (cellId=0, Connectivity->InitTraversal();
          Connectivity->GetNextCell(npts,pts);
          cellId++)
@@ -2006,7 +2006,7 @@ LoopOverStripCells(vtkUnstructuredGrid *input, vtkPolyData *output,
     vtkIdType   cellId;
     vtkIdType   newCellId;
     vtkIdType   npts;
-    vtkIdType   *pts;
+    const vtkIdType   *pts;
     for (cellId=0, Connectivity->InitTraversal();
          Connectivity->GetNextCell(npts,pts);
          cellId++)
@@ -2070,7 +2070,7 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list,
     numStripCells = 0;
     vtkIdType   cellId;
     vtkIdType   npts;
-    vtkIdType   *pts;
+    const vtkIdType   *pts;
     for (cellId=0, Connectivity->InitTraversal();
          Connectivity->GetNextCell(npts,pts);
          cellId++)
@@ -2191,7 +2191,7 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list,
 // ****************************************************************************
 
 void
-AddTetrahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+AddTetrahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[2];
@@ -2225,7 +2225,7 @@ AddTetrahedron(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddVoxel(vtkIdType *pts, int cellId, HashEntryList &list)
+AddVoxel(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2273,7 +2273,7 @@ AddVoxel(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+AddHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2321,7 +2321,7 @@ AddHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddWedge(vtkIdType *pts, int cellId, HashEntryList &list)
+AddWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2362,7 +2362,7 @@ AddWedge(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddPyramid(vtkIdType *pts, int cellId, HashEntryList &list)
+AddPyramid(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     vtkIdType nodes[4];
     nodes[0] = pts[0];
@@ -2403,7 +2403,7 @@ AddPyramid(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticTriangle(vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticTriangle(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2439,7 +2439,7 @@ AddQuadraticTriangle(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticQuad(vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2483,7 +2483,7 @@ AddQuadraticQuad(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticTetrahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticTetrahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     // Break up the surface of the quadratic tet into triangles.
     const int triangles[][3] = {
@@ -2517,7 +2517,7 @@ AddQuadraticTetrahedron(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     // Break up the surface of the quadratic hex into triangles.
     const int triangles[][3] = {
@@ -2554,7 +2554,7 @@ AddQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticPyramid(vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticPyramid(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     const int triangles[][3] = {
        {0,5,9},{5,10,9},{5,1,10},{9,10,4},
@@ -2598,7 +2598,7 @@ AddQuadraticPyramid(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticWedge(vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     const int triangles[][3] = {
         {0,6,8},{6,7,8},{6,1,7},{8,7,2},
@@ -2645,7 +2645,7 @@ AddQuadraticWedge(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticLinearQuad(vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticLinearQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2681,7 +2681,7 @@ AddQuadraticLinearQuad(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddQuadraticLinearWedge(vtkIdType *pts, int cellId, HashEntryList &list)
+AddQuadraticLinearWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     const int triangles[][3] = {
         {0,6,8},{6,7,8},{6,1,7},{8,7,2},
@@ -2725,7 +2725,7 @@ AddQuadraticLinearWedge(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddBiQuadraticTriangle(vtkIdType *pts, int cellId, HashEntryList &list)
+AddBiQuadraticTriangle(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2769,7 +2769,7 @@ AddBiQuadraticTriangle(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddBiQuadraticQuad(vtkIdType *pts, int cellId, HashEntryList &list)
+AddBiQuadraticQuad(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     vtkIdType nodes[3];
     nodes[0] = pts[0];
@@ -2821,7 +2821,7 @@ AddBiQuadraticQuad(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddBiQuadraticQuadraticWedge(vtkIdType *pts, int cellId, HashEntryList &list)
+AddBiQuadraticQuadraticWedge(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     const int triangles[][3] = {
         {0,6,8},{6,7,8},{6,1,7},{8,7,2},
@@ -2858,7 +2858,7 @@ AddBiQuadraticQuadraticWedge(vtkIdType *pts, int cellId, HashEntryList &list)
 // ****************************************************************************
 
 void
-AddBiQuadraticQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+AddBiQuadraticQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     const int triangles[][3] = {
         {0,8,16},{8,1,17},{17,5,12},{12,4,16},
@@ -2899,7 +2899,7 @@ AddBiQuadraticQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &lis
 // ****************************************************************************
 
 void
-AddTriQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+AddTriQuadraticHexahedron(const vtkIdType *pts, int cellId, HashEntryList &list)
 {
     const int triangles[][3] = {
         {0,8,16},{8,1,17},{17,5,12},{12,4,16},

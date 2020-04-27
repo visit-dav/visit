@@ -2454,10 +2454,12 @@ avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
            << "% of points are spatially unique." << endl;
     debug2 << "...now reconnecting mesh using unique points." << endl;
 
+    vtkNew<vtkIdList> cell;
     for (int i = 0; i < ugrid->GetNumberOfCells(); i++)
     {
-        vtkIdType nCellPts=0, *cellPts=0;
-        ugrid->GetCellPoints(i, nCellPts, cellPts);
+        ugrid->GetCellPoints(i, cell);
+        const vtkIdType nCellPts = cell->GetNumberOfIds();
+        vtkIdType *cellPts = cell->GetPointer(0);
         for (int j = 0; j < nCellPts; j++)
         {
             double pt[3];
@@ -2473,7 +2475,7 @@ avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
                 continue;
             cellPts[j] = e2it->second;
         }
-        ugrid->ReplaceCell(i, nCellPts, cellPts);
+        ugrid->ReplaceCell(i, static_cast<int>(nCellPts), cellPts);
     }
 
     pts->Initialize();

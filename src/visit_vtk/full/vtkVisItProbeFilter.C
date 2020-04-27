@@ -168,7 +168,7 @@ int vtkVisItProbeFilter::RequestData(
       }
     else
       {
-      outPD->NullPoint(ptId);
+      outPD->NullData(ptId);
       }
     }
   if (mcs>256)

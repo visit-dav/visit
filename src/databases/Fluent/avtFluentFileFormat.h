@@ -14,7 +14,6 @@
 #include <map>
 
 // Fluent plugin
-#include <visitstream.h>
 #include <stdlib.h>
 #include <sstream>
 

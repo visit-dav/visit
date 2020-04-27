@@ -6120,7 +6120,7 @@ vtkMultiBlockDataSet *visit_vtkOpenFOAMReaderPrivate::MakeBoundaryMesh(
         for (int faceI = abStartFace; faceI < abEndFace; faceI++)
           {
           vtkIdType nPoints;
-          vtkIdType *points;
+          const vtkIdType *points;
           this->AllBoundaries->GetCellPoints(faceI, nPoints, points);
           if (beI.BoundaryType == vtkFoamBoundaryEntry::PHYSICAL)
             {
@@ -6417,7 +6417,7 @@ void visit_vtkOpenFOAMReaderPrivate::InterpolateCellToPoint(vtkFloatArray *pData
   vtkCellLinks *cl = NULL;
   if (ug)
     {
-    cl = ug->GetCellLinks();
+    cl = vtkCellLinks::SafeDownCast(ug->GetCellLinks());
     }
 
   const int nComponents = iData->GetNumberOfComponents();
@@ -6429,7 +6429,7 @@ void visit_vtkOpenFOAMReaderPrivate::InterpolateCellToPoint(vtkFloatArray *pData
     for (int pointI = 0; pointI < nPoints; pointI++)
       {
       const int pI = (pointList ? pointList->GetValue(pointI) : pointI);
-      unsigned short nCells;
+      vtkIdType nCells;
       vtkIdType *cells;
       if (cl)
         {
@@ -6459,7 +6459,7 @@ void visit_vtkOpenFOAMReaderPrivate::InterpolateCellToPoint(vtkFloatArray *pData
     for (int pointI = 0; pointI < nPoints; pointI++)
       {
       const int pI = (pointList ? pointList->GetValue(pointI) : pointI);
-      unsigned short nCells;
+      vtkIdType nCells;
       vtkIdType *cells;
       if (cl)
         {
@@ -6496,7 +6496,7 @@ void visit_vtkOpenFOAMReaderPrivate::InterpolateCellToPoint(vtkFloatArray *pData
     for (int pointI = 0; pointI < nPoints; pointI++)
       {
       const int pI = (pointList ? pointList->GetValue(pointI) : pointI);
-      unsigned short nCells;
+      vtkIdType nCells;
       vtkIdType *cells;
       if (cl)
         {
