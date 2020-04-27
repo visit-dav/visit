@@ -128,8 +128,11 @@ def steps_bv(opts,ctx):
 
 def steps_checkout(opts,ctx):
     git_working = pjoin(opts["build_dir"], "visit")
+    git_cmd = "clone"
+    if opts["git"].has_key("depth"):
+        git_cmd += " --depth=%s" % opts["git"]["depth"]
     ctx.actions["src_checkout"] = git(git_url=visit_git_path(git_opts=opts["git"]),
-                                      git_cmd="clone --depth=1",
+                                      git_cmd=git_cmd,
                                       description="checkout visit src",
                                       working_dir=opts["build_dir"],
                                       halt_on_error=False)
@@ -180,8 +183,6 @@ def steps_configure(opts,build_type,ctx):
             cmake_opts += " -DVISIT_ENABLE_XDB:BOOL=ON"    
     if "build_visit" in opts:
         cmake_opts += " -DVISIT_CONFIG_SITE:PATH=%s/$(hostname).cmake" % config_dir
-    if "cmake_extra_args" in opts:
-        cmake_opts += opts["cmake_extra_args"]
     elif "config_site" in opts:
         cfg_site = opts["config_site"]
         cfg_site_abs = os.path.abspath(cfg_site)
@@ -190,6 +191,8 @@ def steps_configure(opts,build_type,ctx):
         else:
             cfg_site = cfg_site_abs
         cmake_opts += " -DVISIT_CONFIG_SITE:PATH=%s" % cfg_site
+    if "cmake_extra_args" in opts:
+        cmake_opts += opts["cmake_extra_args"]
     ctx.actions["cmake_" + build_type ] = cmake(src_dir=pjoin(opts["build_dir"],"visit/src"),
                                                 cmake_bin=cmake_bin(opts),
                                                 cmake_opts=cmake_opts,

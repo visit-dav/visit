@@ -290,8 +290,7 @@ IntegralCurveAttributes::ParallelizationAlgorithmType_FromString(const std::stri
 
 static const char *FieldType_strings[] = {
 "Default", "FlashField", "M3DC12DField",
-"M3DC13DField", "Nek5000Field", "NektarPPField",
-"NIMRODField"};
+"M3DC13DField", "Nek5000Field", "NektarPPField"};
 
 std::string
 IntegralCurveAttributes::FieldType_ToString(IntegralCurveAttributes::FieldType t)

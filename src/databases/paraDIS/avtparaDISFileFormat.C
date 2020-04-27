@@ -43,7 +43,7 @@ using     rclib::Point;
 // ****************************************************************************
  
 avtparaDISFileFormat::avtparaDISFileFormat(const char *filename,
-                                           DBOptionsAttributes *rdatts)
+                                           const DBOptionsAttributes *rdatts)
   : avtSTSDFileFormat(filename), mParallelData(filename), mDumpfile(filename, rdatts) {
 
   if (filename) {

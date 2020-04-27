@@ -5042,11 +5042,6 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="281"/>
-        <source>NIMROD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="288"/>
         <source>Constant</source>
         <translation type="unfinished"></translation>
@@ -7791,11 +7786,6 @@ by the Lineout operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="574"/>
-        <source>NIMROD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="581"/>
         <source>Constant</source>
         <translation type="unfinished"></translation>
@@ -8708,11 +8698,6 @@ by the Lineout operator</source>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="280"/>
         <source>Nek5000</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/LCS/QvisLCSWindow.C" line="281"/>
-        <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -13619,11 +13604,6 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="226"/>
-        <source>NIMROD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="222"/>
         <source>Flash</source>
         <translation type="unfinished"></translation>
@@ -14409,11 +14389,6 @@ Do you want to apply the %2 operator?
     <message>
         <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="263"/>
         <source>Nek5000</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="264"/>
-        <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -19470,11 +19445,6 @@ Coordinates plot.</source>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="541"/>
         <source>M3D-C1 3D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="543"/>
-        <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

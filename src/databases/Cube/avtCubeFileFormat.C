@@ -43,7 +43,7 @@ using std::stringstream;
 //  Modified:   Fri Apr 26 11:12:38 CEST 2013
 // ****************************************************************************
 
-avtCubeFileFormat::avtCubeFileFormat(const char *filename, DBOptionsAttributes *readOpts)
+avtCubeFileFormat::avtCubeFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
     : avtMTSDFileFormat(&filename, 1)
 {
   ExtendVolumeByOneCell = readOpts->GetBool("ExtendVolumeByOneCell");

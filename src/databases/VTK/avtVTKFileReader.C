@@ -114,7 +114,7 @@ double avtVTKFileReader::INVALID_TIME = -DBL_MAX;
 //
 // ****************************************************************************
 
-avtVTKFileReader::avtVTKFileReader(const char *fname, DBOptionsAttributes *) :
+avtVTKFileReader::avtVTKFileReader(const char *fname, const DBOptionsAttributes *) :
     vtk_meshname()
 {
     filename = new char[strlen(fname)+1];

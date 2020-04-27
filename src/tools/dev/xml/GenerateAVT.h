@@ -844,7 +844,7 @@ class AVTGeneratorPlugin : public PluginBase
             h << "{" << Endl;
             h << "  public:" << Endl;
             if (hasoptions)
-                h << "                       avt"<<name<<"FileFormat(const char *filename, DBOptionsAttributes *);" << Endl;
+                h << "                       avt"<<name<<"FileFormat(const char *filename, const DBOptionsAttributes *);" << Endl;
             else
                 h << "                       avt"<<name<<"FileFormat(const char *filename);" << Endl;
             h << "    virtual           ~avt"<<name<<"FileFormat() {;};" << Endl;
@@ -917,7 +917,7 @@ class AVTGeneratorPlugin : public PluginBase
             h << "{" << Endl;
             h << "  public:" << Endl;
             if (hasoptions)
-                h << "                       avt"<<name<<"FileFormat(const char *, DBOptionsAttributes *);" << Endl;
+                h << "                       avt"<<name<<"FileFormat(const char *, const DBOptionsAttributes *);" << Endl;
             else
                 h << "                       avt"<<name<<"FileFormat(const char *);" << Endl;
             h << "    virtual           ~avt"<<name<<"FileFormat() {;};" << Endl;
@@ -989,7 +989,7 @@ class AVTGeneratorPlugin : public PluginBase
             h << "{" << Endl;
             h << "  public:" << Endl;
             if (hasoptions)
-                h << "                       avt"<<name<<"FileFormat(const char *, DBOptionsAttributes *);" << Endl;
+                h << "                       avt"<<name<<"FileFormat(const char *, const DBOptionsAttributes *);" << Endl;
             else
                 h << "                       avt"<<name<<"FileFormat(const char *);" << Endl;
             h << "    virtual           ~avt"<<name<<"FileFormat() {;};" << Endl;
@@ -1058,7 +1058,7 @@ class AVTGeneratorPlugin : public PluginBase
             h << "{" << Endl;
             h << "  public:" << Endl;
             if (hasoptions)
-                h << "                       avt"<<name<<"FileFormat(const char *, DBOptionsAttributes *);" << Endl;
+                h << "                       avt"<<name<<"FileFormat(const char *, const DBOptionsAttributes *);" << Endl;
             else
                 h << "                       avt"<<name<<"FileFormat(const char *);" << Endl;
             h << "    virtual           ~avt"<<name<<"FileFormat() {;};" << Endl;
@@ -1137,7 +1137,7 @@ class AVTGeneratorPlugin : public PluginBase
             c << "// ****************************************************************************" << Endl;
             c << "" << Endl;
             if (hasoptions)
-                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename, DBOptionsAttributes *readOpts)" << Endl;
+                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename, const DBOptionsAttributes *readOpts)" << Endl;
             else
                 c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename)" << Endl;
             c << "    : avtSTSDFileFormat(filename)" << Endl;
@@ -1444,7 +1444,7 @@ class AVTGeneratorPlugin : public PluginBase
             c << "// ****************************************************************************" << Endl;
             c << "" << Endl;
             if (hasoptions)
-                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename, DBOptionsAttributes *readOpts)" << Endl;
+                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename, const DBOptionsAttributes *readOpts)" << Endl;
             else
                 c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename)" << Endl;
             c << "    : avtMTSDFileFormat(&filename, 1)" << Endl;
@@ -1775,7 +1775,7 @@ class AVTGeneratorPlugin : public PluginBase
             c << "// ****************************************************************************" << Endl;
             c << "" << Endl;
             if (hasoptions)
-                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename, DBOptionsAttributes *readOpts)" << Endl;
+                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename, const DBOptionsAttributes *readOpts)" << Endl;
             else
                 c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename)" << Endl;
             c << "    : avtSTMDFileFormat(&filename, 1)" << Endl;
@@ -2091,7 +2091,7 @@ class AVTGeneratorPlugin : public PluginBase
             c << "// ****************************************************************************" << Endl;
             c << "" << Endl;
             if (hasoptions)
-                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename, DBOptionsAttributes *readOpts)" << Endl;
+                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename, const DBOptionsAttributes *readOpts)" << Endl;
             else
                 c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename)" << Endl;
             c << "    : avtMTMDFileFormat(filename)" << Endl;
@@ -2537,7 +2537,7 @@ class AVTGeneratorPlugin : public PluginBase
         h << "{" << Endl;
         h << "  public:" << Endl;
         if (hasoptions)
-            h << "                   avt"<<name<<"Writer(DBOptionsAttributes *);" << Endl;
+            h << "                   avt"<<name<<"Writer(const DBOptionsAttributes *);" << Endl;
         else
             h << "                   avt"<<name<<"Writer();" << Endl;
         h << "    virtual       ~avt"<<name<<"Writer() {;};" << Endl;
@@ -2587,7 +2587,7 @@ class AVTGeneratorPlugin : public PluginBase
         c << "// ****************************************************************************" << Endl;
         c << "" << Endl;
         if (hasoptions)
-            c << "avt"<<name<<"Writer::avt"<<name<<"Writer(DBOptionsAttributes *)" << Endl;
+            c << "avt"<<name<<"Writer::avt"<<name<<"Writer(const DBOptionsAttributes *)" << Endl;
         else
             c << "avt"<<name<<"Writer::avt"<<name<<"Writer(void)" << Endl;
         c << "{" << Endl;

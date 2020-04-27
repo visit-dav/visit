@@ -71,7 +71,7 @@ double avtVTKWriter::INVALID_TIME = -DBL_MAX;
 //    Add tetrahedralize option.
 // ****************************************************************************
 
-avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts) :stem(), meshName(), fileNames()
+avtVTKWriter::avtVTKWriter(const DBOptionsAttributes *atts) :stem(), meshName(), fileNames()
 {
     doBinary = false;
     doXML = false;

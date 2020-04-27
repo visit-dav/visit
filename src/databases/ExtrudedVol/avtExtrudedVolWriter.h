@@ -31,7 +31,7 @@ class
 avtExtrudedVolWriter : public avtDatabaseWriter
 {
   public:
-                   avtExtrudedVolWriter(DBOptionsAttributes *);
+                   avtExtrudedVolWriter(const DBOptionsAttributes *);
     virtual       ~avtExtrudedVolWriter() {;};
 
   protected:
