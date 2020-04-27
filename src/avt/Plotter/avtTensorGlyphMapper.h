@@ -17,7 +17,6 @@ class     vtkVisItTensorGlyph;
 class     vtkAlgorithmOutput;
 class     vtkLookupTable;
 class     vtkPolyData;
-class     vtkVisItPolyDataNormals;
 
 
 // ****************************************************************************
