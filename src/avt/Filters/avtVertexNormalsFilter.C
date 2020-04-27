@@ -34,11 +34,14 @@
 //    Removed pointNormals variable.  Whether or not to do point normals is
 //    now decided dynamically.
 //
+//    Alister Maguire, Mon Apr 27 11:41:06 PDT 2020
+//    Added initialization of zonesHaveBeenSplit.
+//
 // ****************************************************************************
 
 avtVertexNormalsFilter::avtVertexNormalsFilter()
 {
-    ;
+    zonesHaveBeenSplit = false;
 }
 
 
@@ -140,7 +143,8 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //    they are present.
 //
 //    Alister Maguire, Wed Mar 18 15:16:33 PDT 2020
-//    Updated vtkVisItPolyDataNormals filter to handle triangle strips.
+//    Updated vtkVisItPolyDataNormals filter to handle triangle strips and
+//    added set for zonesHaveBeenSplit when appropriate.
 //
 // ****************************************************************************
 
@@ -194,6 +198,11 @@ avtVertexNormalsFilter::ExecuteData(avtDataRepresentation *in_dr)
 
         avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
             in_dr->GetDomain(), in_dr->GetLabel());
+
+        if (normals->GetStripsHaveBeenDecomposed())
+        {
+            zonesHaveBeenSplit = true;
+        }
 
         normals->Delete();
 
@@ -258,4 +267,30 @@ avtVertexNormalsFilter::FilterUnderstandsTransformedRectMesh()
     // Creating normals for a transformed rectilinar mesh is okay;
     // the normals will be transformed when the mesh is.
     return true;
+}
+
+
+// ****************************************************************************
+//  Method:  avtVertexNormalsFilter::UpdateDataObjectInfo
+//
+//  Purpose:
+//    Update the data object information.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    April 27, 2020
+//
+// ****************************************************************************
+
+void
+avtVertexNormalsFilter::UpdateDataObjectInfo(void)
+{
+    //
+    // We need to inform VisIt if the PolyDataNormalsFilter has split
+    // cells.
+    //
+    if (zonesHaveBeenSplit)
+    {
+        GetOutput()->GetInfo().GetValidity().InvalidateZones();
+        GetOutput()->GetInfo().GetValidity().ZonesSplit();
+    }
 }

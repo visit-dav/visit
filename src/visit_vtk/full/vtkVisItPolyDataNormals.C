@@ -30,12 +30,17 @@ vtkStandardNewMacro(vtkVisItPolyDataNormals);
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 13, 2003
 //
+//  Modifications:
+//    Alister Maguire, Mon Apr 27 11:25:42 PDT 2020
+//    Added initialization of StripsHaveBeenDecomposed.
+//
 // ****************************************************************************
 vtkVisItPolyDataNormals::vtkVisItPolyDataNormals()
 {
-    FeatureAngle        = 45.0;
-    Splitting           = true;
-    ComputePointNormals = true;
+    FeatureAngle             = 45.0;
+    Splitting                = true;
+    ComputePointNormals      = true;
+    StripsHaveBeenDecomposed = false;
 }
 
 
@@ -870,7 +875,7 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
     int numPrimitivesWithoutNormals = 0;
     numPrimitivesWithoutNormals    += input->GetVerts()->GetNumberOfCells();
     numPrimitivesWithoutNormals    += input->GetLines()->GetNumberOfCells();
-    int newNCells                   = nPolys + numPrimitivesWithoutNormals;
+    int nNonStripCells              = nPolys + numPrimitivesWithoutNormals;
 
     //
     // If we have triangle strips, we need to decompose them into
@@ -908,9 +913,10 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
             outPolys->Allocate(nStrips);
         }
 
-        vtkIdType nTriPts   = 0;
-        vtkIdType *triPts   = NULL;
-        vtkIdType inCellIdx = newNCells;
+        vtkIdType nTriPts    = 0;
+        vtkIdType *triPts    = NULL;
+        vtkIdType inCellIdx  = nNonStripCells;
+        vtkIdType outCellIdx = nNonStripCells;
 
         //
         // Decompose our triangle strips, append the resulting trianlges
@@ -923,7 +929,7 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
 
             for (vtkIdType i = 0; i < nTriPts - 2; ++i)
             {
-                outCD->CopyData(inCD, inCellIdx, newNCells++);
+                outCD->CopyData(inCD, inCellIdx, outCellIdx++);
             }
         }
 
@@ -934,6 +940,14 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
         for (vtkIdType i = 0; i < numPrimitivesWithoutNormals; ++i)
         {
             outCD->CopyData(inCD, i, i);
+        }
+
+        //
+        // Check if we've split cells; VisIt might need this information.
+        //
+        if (outCellIdx > nNonStripCells)
+        {
+            StripsHaveBeenDecomposed = true;
         }
     }
     else
