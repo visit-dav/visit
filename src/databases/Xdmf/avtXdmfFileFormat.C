@@ -1996,9 +1996,7 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
         vtkNew<vtkCellArray> cells;
         cells->SetData(offsetsArray, connectivityArray);
         // Resize the Array to the Proper Size
-        cells->GetData()->Resize(index - sub);
         data->SetCells(cell_types, cells);
-        cells->Delete();
         delete[] cell_types;
         delete[] xmfConnections;
     }
@@ -2052,7 +2050,7 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
 
         vtkNew<vtkIdTypeArray> connectivityArray;
         connectivityArray->SetNumberOfTuples(numCells * nodesPerElement);
-        vtkIdType *connectivity = connectivityArray->WritePointer(0, numCells+1);
+        vtkIdType *connectivity = connectivityArray->WritePointer(0, numCells*nodesPerElement);
 
         XdmfInt32 arrayOffset = 0;
         for(vtkIdType i=0; i<numCells; ++i)
@@ -2062,6 +2060,7 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
           topology->GetConnectivity()->GetValues(arrayOffset,
                                                  connectivity,
                                                  nodesPerElement);
+          connectivity += nodesPerElement;
           arrayOffset += nodesPerElement;
         }
         cells->SetData(offsetsArray, connectivityArray);

@@ -89,7 +89,7 @@ IF(VISIT_PYTHON_FILTERS)
 # Place symlinks to its components in lib/site-packages/
     MESSAGE(STATUS "Adding VTK python wrappers to lib/site-packages/")
     IF (NOT WIN32)
-        FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VISIT_VTK_DIR}/lib/python${PYTHON_VERSION}/site-packages/*")
+        FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VTK_PY_WRAPPERS_DIR}/*")
         FOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
             GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
             GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
