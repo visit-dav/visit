@@ -16,7 +16,6 @@
 
 class     vtkLookupTable;
 class     vtkVisItGlyph3D;
-class     vtkVisItPolyDataNormals;
 
 
 // ****************************************************************************
@@ -118,7 +117,6 @@ class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
     int                        limitsMode;
 
     vtkVisItGlyph3D           **glyphFilter;
-    vtkVisItPolyDataNormals  **normalsFilter;
     int                        nGlyphFilters;
 
     virtual void               CustomizeMappers(void);
