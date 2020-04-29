@@ -135,7 +135,7 @@ class Differencer:
         f.close()
 
     def GetNextLeft(self):
-        astr=cgi.escape(string.rstrip(self.nextleft))
+        astr=cgi.escape(self.nextleft.rstrip())
         self.nextleft = self.in1.readline()
         self.leftline = self.leftline+1
         if astr=="":
@@ -144,7 +144,7 @@ class Differencer:
             return astr
 
     def GetNextRight(self):
-        astr=cgi.escape(string.rstrip(self.nextright))
+        astr=cgi.escape(self.nextright.rstrip())
         self.nextright = self.in2.readline()
         self.rightline = self.rightline+1
         if astr=="":
