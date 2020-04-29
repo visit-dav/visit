@@ -124,17 +124,14 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   for (i = 0; i < 4; i++)
     {
     this->XAxes[i] = vtkVisItAxisActor::New();
-    this->XAxes[i]->SetMinorTicksVisible(true);
     this->XAxes[i]->SetAxisTypeToX();
     this->XAxes[i]->SetAxisPosition(i);
 
     this->YAxes[i] = vtkVisItAxisActor::New();
-    this->YAxes[i]->SetMinorTicksVisible(true);
     this->YAxes[i]->SetAxisTypeToY();
     this->YAxes[i]->SetAxisPosition(i);
 
     this->ZAxes[i] = vtkVisItAxisActor::New();
-    this->ZAxes[i]->SetMinorTicksVisible(true);
     this->ZAxes[i]->SetAxisTypeToZ();
     this->ZAxes[i]->SetAxisPosition(i);
     }
