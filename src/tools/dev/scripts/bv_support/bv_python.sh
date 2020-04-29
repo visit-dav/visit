@@ -1,6 +1,7 @@
 function bv_python_initialize
 {
     export DO_PYTHON="yes"
+    export DO_PYTHON2="no"
     export FORCE_PYTHON="no"
     export USE_SYSTEM_PYTHON="no"
     export BUILD_MPI4PY="no"
@@ -10,6 +11,7 @@ function bv_python_initialize
     add_extra_commandline_args "python" "alt-python-dir" 1 "Using alternate python directory"
     add_extra_commandline_args "python" "mpi4py" 0 "Build mpi4py"
     add_extra_commandline_args "python" "no-sphinx" 0 "Disable building sphinx"
+    add_extra_commandline_args "python" "use-python2" 0 "Use Python 2 instead of Python 3"
 }
 
 function bv_python_enable
@@ -102,6 +104,12 @@ function bv_python_mpi4py
     export BUILD_MPI4PY="yes"
 }
 
+function bv_python_use_python2
+{
+    echo "configuring to build python 2 (NOT python 3)"
+    export DO_PYTHON2="yes"
+}
+
 function bv_python_no_sphinx
 {
     echo "Disabling building sphinx"
@@ -132,29 +140,70 @@ function bv_python_depends_on
 
 function bv_python_info
 {
-    export PYTHON_FILE_SUFFIX="tgz"
-    export PYTHON_VERSION=${PYTHON_VERSION:-"2.7.14"}
-    export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION:-"2.7"}
-    export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
-    export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
-    export PYTHON_MD5_CHECKSUM="cee2e4b33ad3750da77b2e85f2f8b724"
-    export PYTHON_SHA256_CHECKSUM="304c9b202ea6fbd0a4a8e0ad3733715fbd4749f2204a9173a58ec53c32ea73e8"
+    # if python 2
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export PYTHON_URL=${PYTHON_URL:-"https://www.python.org/ftp/python/2.7.14"}
+        export PYTHON_FILE_SUFFIX="tgz"
+        export PYTHON_VERSION=${PYTHON_VERSION:-"2.7.14"}
+        export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION:-"2.7"}
+        export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
+        export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
+        export PYTHON_MD5_CHECKSUM="cee2e4b33ad3750da77b2e85f2f8b724"
+        export PYTHON_SHA256_CHECKSUM="304c9b202ea6fbd0a4a8e0ad3733715fbd4749f2204a9173a58ec53c32ea73e8"
+    else
+        export PYTHON_URL=${PYTHON3_URL:-"https://www.python.org/ftp/python/3.7.7"}
+        export PYTHON_FILE_SUFFIX="tgz"
+        export PYTHON_VERSION=${PYTHON_VERSION:-"3.7.7"}
+        # TODO: May need logic for "m" suffix
+        export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION:-"3.7m"}
+        export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
+        export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
+        export PYTHON_MD5_CHECKSUM="d348d978a5387512fbc7d7d52dd3a5ef"
+        export PYTHON_SHA256_CHECKSUM="8c8be91cd2648a1a0c251f04ea0bb4c2a5570feb9c45eaaa2241c785585b475a"
+    fi
 
-    export PIL_URL=${PIL_URL:-"http://effbot.org/media/downloads"}
-    export PIL_FILE=${PIL_FILE:-"Imaging-1.1.7.tar.gz"}
-    export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.7"}
-    export PIL_MD5_CHECKSUM="fc14a54e1ce02a0225be8854bfba478e"
-    export PIL_SHA256_CHECKSUM="895bc7c2498c8e1f9b99938f1a40dc86b3f149741f105cf7c7bd2e0725405211"
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export PIL_URL=${PIL_URL:-"http://effbot.org/media/downloads"}
+        export PIL_FILE=${PIL_FILE:-"Imaging-1.1.7.tar.gz"}
+        export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.7"}
+        export PIL_MD5_CHECKSUM="fc14a54e1ce02a0225be8854bfba478e"
+        export PIL_SHA256_CHECKSUM="895bc7c2498c8e1f9b99938f1a40dc86b3f149741f105cf7c7bd2e0725405211"
+    else
+        # python 3 Pillow, not PIL -- we need Pillow for Python 3 Support
+        export PILLOW_URL=${PIL_URL:-"https://files.pythonhosted.org/packages/ce/ef/e793f6ffe245c960c42492d0bb50f8d14e2ba223f1922a5c3c81569cec44/"}
+        export PILLOW_FILE=${PIL_FILE:-"Pillow-7.1.2.tar.gz"}
+        export PILLOW_BUILD_DIR=${PIL_BUILD_DIR:-"Pillow-7.1.2"}
+        export PILLOW_MD5_CHECKSUM="f1f7592c51260e5080d3cd71781ea675"
+        export PILLOW_SHA256_CHECKSUM="a0b49960110bc6ff5fead46013bcb8825d101026d466f3a4de3476defe0fb0dd"
+    fi
 
-    export PYPARSING_FILE=${PYPARSING_FILE:-"pyparsing-1.5.2.tar.gz"}
-    export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
-    export PYPARSING_MD5_CHECKSUM="13aed3cb21a427f8aeb0fe7ca472ba42"
-    export PYPARSING_SHA256_CHECKSUM="1021fd2cfdf9c3b6ac0191b018c15d591501b77d977baded59d8ef76d375f21c"
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export PYPARSING_URL=${PYPARSING_URL:-""}
+        export PYPARSING_FILE=${PYPARSING_FILE:-"pyparsing-1.5.2.tar.gz"}
+        export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
+        export PYPARSING_MD5_CHECKSUM="13aed3cb21a427f8aeb0fe7ca472ba42"
+        export PYPARSING_SHA256_CHECKSUM="1021fd2cfdf9c3b6ac0191b018c15d591501b77d977baded59d8ef76d375f21c"
+    else
+        export PYPARSING_URL=PYPARSING_URL:-""}
+        export PYPARSING_FILE=PYPARSING_FILE:-"pyparsing-2.4.6.tar.gz"}
+        export PYPARSING_BUILD_DIR=PYPARSING_BUILD_DIR:-"pyparsing-2.4.6"}
+        export PYPARSING_MD5_CHECKSUM="29733ea8cbee0291aad121c69c6e51a1"
+        export PYPARSING_SHA256_CHECKSUM="4c830582a84fb022400b85429791bc551f1f4871c33f23e44f353119e92f969f"
+    fi
 
-    export PYREQUESTS_FILE=${PYREQUESTS_FILE:-"requests-2.5.1.tar.gz"}
-    export PYREQUESTS_BUILD_DIR=${PYREQUESTS_BUILD_DIR:-"requests-2.5.1"}
-    export PYREQUESTS_MD5_CHECKSUM="a89558d5dd35a5cb667e9a6e5d4f06f1"
-    export PYREQUESTS_SHA256_CHECKSUM="1e5ea203d49273be90dcae2b98120481b2ecfc9f2ae512ce545baab96f57b58c"
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export PYREQUESTS_URL=PYREQUESTS_URL:-""}
+        export PYREQUESTS_FILE=${PYREQUESTS_FILE:-"requests-2.5.1.tar.gz"}
+        export PYREQUESTS_BUILD_DIR=${PYREQUESTS_BUILD_DIR:-"requests-2.5.1"}
+        export PYREQUESTS_MD5_CHECKSUM="a89558d5dd35a5cb667e9a6e5d4f06f1"
+        export PYREQUESTS_SHA256_CHECKSUM="1e5ea203d49273be90dcae2b98120481b2ecfc9f2ae512ce545baab96f57b58c"
+    else
+        export PYREQUESTS_URL=${REQUESTS_URL:-""}
+        export PYREQUESTS_FILE=PYREQUESTS_FILE:-"requests-2.22.0.tar.gz"}
+        export PYREQUESTS_BUILD_DIR=${PYREQUESTS_BUILD_DIR:-"requests-2.22.0"}
+        export PYREQUESTS_MD5_CHECKSUM="ee28bee2de76e9198fc41e48f3a7dd47"
+        export PYREQUESTS_SHA256_CHECKSUM="11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4"
+    fi
 
     export SEEDME_URL=${SEEDME_URL:-"https://seedme.org/sites/seedme.org/files/downloads/clients/"}
     export SEEDME_FILE=${SEEDME_FILE:-"seedme-python-client-v1.2.4.zip"}
@@ -162,23 +211,47 @@ function bv_python_info
     export SEEDME_MD5_CHECKSUM="84960d455073fd2f51c31b7fcbc64d58"
     export SEEDME_SHA256_CHECKSUM="71fb233d3b20e95ecd14db1d9cb5deefe775c6ac8bb0ab7604240df7f0e5c5f3"
 
-    export SETUPTOOLS_URL=${SETUPTOOLS_URL:-"https://pypi.python.org/packages/f7/94/eee867605a99ac113c4108534ad7c292ed48bf1d06dfe7b63daa51e49987/"}
-    export SETUPTOOLS_FILE=${SETUPTOOLS_FILE:-"setuptools-28.0.0.tar.gz"}
-    export SETUPTOOLS_BUILD_DIR=${SETUPTOOLS_BUILD_DIR:-"setuptools-28.0.0"}
-    export SETUPTOOLS_MD5_CHECKSUM="9b23df90e1510c7353a5cf07873dcd22"
-    export SETUPTOOLS_SHA256_CHECKSUM="e1a2850bb7ad820e4dd3643a6c597bea97a35de2909e9bf0afa3f337836b5ea3"
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export SETUPTOOLS_URL=${SETUPTOOLS_URL:-"https://pypi.python.org/packages/f7/94/eee867605a99ac113c4108534ad7c292ed48bf1d06dfe7b63daa51e49987/"}
+        export SETUPTOOLS_FILE=${SETUPTOOLS_FILE:-"setuptools-28.0.0.tar.gz"}
+        export SETUPTOOLS_BUILD_DIR=${SETUPTOOLS_BUILD_DIR:-"setuptools-28.0.0"}
+        export SETUPTOOLS_MD5_CHECKSUM="9b23df90e1510c7353a5cf07873dcd22"
+        export SETUPTOOLS_SHA256_CHECKSUM="e1a2850bb7ad820e4dd3643a6c597bea97a35de2909e9bf0afa3f337836b5ea3"
+    else
+        export SETUPTOOLS_URL=${SETUPTOOLS_URL:-""}
+        export SETUPTOOLS_FILE=SETUPTOOLS_FILE:-"setuptools-44.0.0.zip"}
+        export SETUPTOOLS_BUILD_DIR=SETUPTOOLS_BUILD_DIR:-"setuptools-44.0.0"}
+        export SETUPTOOLS_MD5_CHECKSUM="32b6cdce670ce462086d246bea181e9d"
+        export SETUPTOOLS_SHA256_CHECKSUM="e5baf7723e5bb8382fc146e33032b241efc63314211a3a120aaa55d62d2bb008"
+    fi
 
-    export CYTHON_URL=${CYTHON_URL:-"https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/"}
-    export CYTHON_FILE=${CYTHON_FILE:-"Cython-0.25.2.tar.gz"}
-    export CYTHON_BUILD_DIR=${CYTHON_BUILD_DIR:-"Cython-0.25.2"}
-    export CYTHON_MD5_CHECKSUM="642c81285e1bb833b14ab3f439964086"
-    export CYTHON_SHA256_CHECKSUM="f141d1f9c27a07b5a93f7dc5339472067e2d7140d1c5a9e20112a5665ca60306"
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export CYTHON_URL=${CYTHON_URL:-"https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/"}
+        export CYTHON_FILE=${CYTHON_FILE:-"Cython-0.25.2.tar.gz"}
+        export CYTHON_BUILD_DIR=${CYTHON_BUILD_DIR:-"Cython-0.25.2"}
+        export CYTHON_MD5_CHECKSUM="642c81285e1bb833b14ab3f439964086"
+        export CYTHON_SHA256_CHECKSUM="f141d1f9c27a07b5a93f7dc5339472067e2d7140d1c5a9e20112a5665ca60306"
+    else
+        export CYTHON_URL=${CYTHON_URL:-"https://files.pythonhosted.org/packages/99/36/a3dc962cc6d08749aa4b9d85af08b6e354d09c5468a3e0edc610f44c856b/"}
+        export CYTHON_FILE=${CYTHON_FILE:-"Cython-0.29.17.tar.gz"}
+        export CYTHON_BUILD_DIR=${CYTHON_BUILD_DIR:-"Cython-0.29.17"}
+        export CYTHON_MD5_CHECKSUM="0936311ccd09f1164ab2f46ca5cd8c3b"
+        export CYTHON_SHA256_CHECKSUM="6361588cb1d82875bcfbad83d7dd66c442099759f895cf547995f00601f9caf2"
+    fi
 
-    export NUMPY_URL=${NUMPY_URL:-"https://pypi.python.org/packages/a3/99/74aa456fc740a7e8f733af4e8302d8e61e123367ec660cd89c53a3cd4d70/"}
-    export NUMPY_FILE=${NUMPY_FILE:-"numpy-1.14.1.zip"}
-    export NUMPY_BUILD_DIR=${NUMPY_BUILD_DIR:-"numpy-1.14.1"}
-    export NUMPY_MD5_CHECKSUM="b8324ef90ac9064cd0eac46b8b388674"
-    export NUMPY_SHA256_CHECKSUM="fa0944650d5d3fb95869eaacd8eedbd2d83610c85e271bd9d3495ffa9bc4dc9c"
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export NUMPY_URL=${NUMPY_URL:-"https://pypi.python.org/packages/a3/99/74aa456fc740a7e8f733af4e8302d8e61e123367ec660cd89c53a3cd4d70/"}
+        export NUMPY_FILE=${NUMPY_FILE:-"numpy-1.14.1.zip"}
+        export NUMPY_BUILD_DIR=${NUMPY_BUILD_DIR:-"numpy-1.14.1"}
+        export NUMPY_MD5_CHECKSUM="b8324ef90ac9064cd0eac46b8b388674"
+        export NUMPY_SHA256_CHECKSUM="fa0944650d5d3fb95869eaacd8eedbd2d83610c85e271bd9d3495ffa9bc4dc9c"
+    else
+        export NUMPY_URL=${NUMPY_URL:-"https://github.com/numpy/numpy/releases/download/v1.16.6/"}
+        export NUMPY_FILE=${NUMPY_FILE:-"numpy-1.16.6.zip"}
+        export NUMPY_BUILD_DIR=${NUMPY_BUILD_DIR:-"numpy-1.16.6"}
+        export NUMPY_MD5_CHECKSUM="3dc21c84a295fe77eadf8f872685a7de"
+        export NUMPY_SHA256_CHECKSUM="e5cf3fdf13401885e8eea8170624ec96225e2174eb0c611c6f26dd33b489e3ff"
+    fi
 
     export MPI4PY_URL=${MPI4PY_URL:-"https://pypi.python.org/pypi/mpi4py"}
     export MPI4PY_FILE=${MPI4PY_FILE:-"mpi4py-2.0.0.tar.gz"}
@@ -186,31 +259,11 @@ function bv_python_info
     export MPI4PY_MD5_CHECKSUM="4f7d8126d7367c239fd67615680990e3"
     export MPI4PY_SHA256_CHECKSUM="6543a05851a7aa1e6d165e673d422ba24e45c41e4221f0993fe1e5924a00cb81"
 
-    export PYTHON3_URL=${PYTHON3_URL:-"https://www.python.org/ftp/python/3.7.5"}
-    export PYTHON3_FILE_SUFFIX="tgz"
-    export PYTHON3_VERSION=${PYTHON3_VERSION:-"3.7.5"}
-    export PYTHON3_COMPATIBILITY_VERSION=${PYTHON3_COMPATIBILITY_VERSION:-"3.7"}
-    export PYTHON3_FILE="Python-$PYTHON3_VERSION.$PYTHON3_FILE_SUFFIX"
-    export PYTHON3_BUILD_DIR="Python-$PYTHON3_VERSION"
-    export PYTHON3_MD5_CHECKSUM="1cd071f78ff6d9c7524c95303a3057aa"
-
     export PACKAGING_URL=${PACKAGING_URL:-""}
     export PACKAGING_FILE=${PACKAGING_FILE:-"packaging-19.2.tar.gz"}
     export PACKAGING_BUILD_DIR=${PACKAGING_BUILD_DIR:-"packaging-19.2"}
     export PACKAGING_MD5_CHECKSUM="867ce70984dc7b89bbbc3cac2a72b171"
     export PACKAGING_SHA256_CHECKSUM="28b924174df7a2fa32c1953825ff29c61e2f5e082343165438812f00d3a7fc47"
-
-    export SETUPTOOLS44_0_0_URL=${SETUPTOOLS44_0_0_URL:-""}
-    export SETUPTOOLS44_0_0_FILE=${SETUPTOOLS44_0_0_FILE:-"setuptools-44.0.0.zip"}
-    export SETUPTOOLS44_0_0_BUILD_DIR=${SETUPTOOLS44_0_0_BUILD_DIR:-"setuptools-44.0.0"}
-    export SETUPTOOLS44_0_0_MD5_CHECKSUM="32b6cdce670ce462086d246bea181e9d"
-    export SETUPTOOLS44_0_0_SHA256_CHECKSUM="e5baf7723e5bb8382fc146e33032b241efc63314211a3a120aaa55d62d2bb008"
-
-    export REQUESTS_URL=${REQUESTS_URL:-""}
-    export REQUESTS_FILE=${REQUESTS_FILE:-"requests-2.22.0.tar.gz"}
-    export REQUESTS_BUILD_DIR=${REQUESTS_BUILD_DIR:-"requests-2.22.0"}
-    export REQUESTS_MD5_CHECKSUM="ee28bee2de76e9198fc41e48f3a7dd47"
-    export REQUESTS_SHA256_CHECKSUM="11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4"
 
     export IMAGESIZE_URL=${IMAGESIZE_URL:-""}
     export IMAGESIZE_FILE=${IMAGESIZE_FILE:-"imagesize-1.1.0.tar.gz"}
@@ -296,12 +349,6 @@ function bv_python_info
     export SIX_MD5_CHECKSUM="e92c23c882c7d5564ce5773fe31b2771"
     export SIX_SHA256_CHECKSUM="30f610279e8b2578cab6db20741130331735c781b56053c59c4076da27f06b66"
 
-    export PYPARSING2_4_6_URL=${PYPARSING2_4_6_URL:-""}
-    export PYPARSING2_4_6_FILE=${PYPARSING2_4_6_FILE:-"pyparsing-2.4.6.tar.gz"}
-    export PYPARSING2_4_6_BUILD_DIR=${PYPARSING2_4_6_BUILD_DIR:-"pyparsing-2.4.6"}
-    export PYPARSING2_4_6_MD5_CHECKSUM="29733ea8cbee0291aad121c69c6e51a1"
-    export PYPARSING2_4_6_SHA256_CHECKSUM="4c830582a84fb022400b85429791bc551f1f4871c33f23e44f353119e92f969f"
-
     export URLLIB3_URL=${URLLIB3_URL:-""}
     export URLLIB3_FILE=${URLLIB3_FILE:-"urllib3-1.25.7.tar.gz"}
     export URLLIB3_BUILD_DIR=${URLLIB3_BUILD_DIR:-"urllib3-1.25.7"}
@@ -366,6 +413,7 @@ function bv_python_print_usage
     printf "%-20s %s [%s]\n" "--alt-python-dir" "Use Python from an alternative directory"
     printf "%-20s %s [%s]\n" "--mpi4py" "Build mpi4py with Python"
     printf "%-20s %s [%s]\n" "--no-sphinx" "Disable building sphinx"
+    printf "%-20s %s [%s]\n" "--use-python2" "Build Python 2 instead of Python 3"
 }
 
 function bv_python_host_profile
@@ -387,9 +435,6 @@ function bv_python_host_profile
         else
             echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR \${VISITHOME}/python/$PYTHON_VERSION/\${VISITARCH})" \
                  >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON3_DIR \${VISITHOME}/python/$PYTHON3_VERSION/\${VISITARCH})" \
-                 >> $HOSTCONF
-            #           echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
         fi
     fi
 }
@@ -397,13 +442,19 @@ function bv_python_host_profile
 function bv_python_initialize_vars
 {
     if [[ "$USE_SYSTEM_PYTHON" == "no" ]]; then
-        
         #assign any default values that other libraries should be aware of
         #when they build..
         #this is for when python is being built and system python was not selected..
         export VISIT_PYTHON_DIR=${VISIT_PYTHON_DIR:-"$VISITDIR/python/${PYTHON_VERSION}/${VISITARCH}"}
-        export PYTHON_COMMAND="${VISIT_PYTHON_DIR}/bin/python"
-        export PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/bin/python"
+
+        export PYHOME=${VISIT_PYTHON_DIR}
+        if [[ "$DO_PYTHON2" == "yes" ]] ; then
+            export PYTHON_COMMAND="${VISIT_PYTHON_DIR}/bin/python"
+        else
+            export PYTHON_COMMAND="${VISIT_PYTHON_DIR}/bin/python3"
+        fi
+        # CYRUS NOTE: PYTHON_LIBRARY_DIR looks wrong?
+        # export PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/bin/python"
         export PYTHON_INCLUDE_DIR="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}"
         export PYTHON_LIBRARY="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"
     fi
@@ -554,21 +605,14 @@ function build_python
     PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${PY_ZLIB_LIB}"
     PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
 
-    if [[ "$OPSYS" == "AIX" ]]; then
-        info "Configuring Python (AIX): ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
-             "--prefix=\"$PYTHON_PREFIX_DIR\" --disable-ipv6"
-        ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
-                    --prefix="$PYTHON_PREFIX_DIR" --disable-ipv6
-    else
-        info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
-             "LDFLAGS=\"$PYTHON_LDFLAGS\" CPPFLAGS=\"$PYTHON_CPPFLAGS\""\
-             "${PYTHON_SHARED} --prefix=\"$PYTHON_PREFIX_DIR\" --disable-ipv6"
-        ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
-                    LDFLAGS="$PYTHON_LDFLAGS" \
-                    CPPFLAGS="$PYTHON_CPPFLAGS" \
-                    ${PYTHON_SHARED} \
-                    --prefix="$PYTHON_PREFIX_DIR" --disable-ipv6
-    fi
+    info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
+         "LDFLAGS=\"$PYTHON_LDFLAGS\" CPPFLAGS=\"$PYTHON_CPPFLAGS\""\
+         "${PYTHON_SHARED} --prefix=\"$PYTHON_PREFIX_DIR\" --disable-ipv6"
+    ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
+                LDFLAGS="$PYTHON_LDFLAGS" \
+                CPPFLAGS="$PYTHON_CPPFLAGS" \
+                ${PYTHON_SHARED} \
+                --prefix="$PYTHON_PREFIX_DIR" --disable-ipv6
 
     if [[ $? != 0 ]] ; then
         warn "Python configure failed.  Giving up"
@@ -590,28 +634,6 @@ function build_python
         warn "Python build (make install) failed.  Giving up"
         return 1
     fi
-
-
-    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "AIX" ]]; then
-        # configure flag --enable-shared doesn't work on llnl aix5 systems
-        # we need to create the shared lib manually and place it in the
-        # proper loc
-        mv $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.$SO_EXT \
-           $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.static.a
-
-        $C_COMPILER -qmkshrobj -lm \
-                    $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.static.a \
-                    -o $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.$SO_EXT
-
-        if [[ $? != 0 ]] ; then
-            warn "Python dynamic library build failed.  Giving up"
-            return 1
-        fi
-
-        # we can safely remove this version of the static lib b/c it also exists under python2.6/config/
-        rm -f $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.static.a
-    fi
-
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/python"
@@ -658,7 +680,7 @@ EOF
 }
 
 # *************************************************************************** #
-#                            Function 7.1, build_pil                          #
+#                            Function 7.1 (a), build_pil                      #
 # *************************************************************************** #
 function build_pil
 {
@@ -702,32 +724,31 @@ function build_pil
     PYEXT_CFLAGS="${CFLAGS} ${C_OPT_FLAGS}"
     PYEXT_CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}"
 
-    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $PIL_BUILD_DIR > /dev/null
 
     if [[ "$OPSYS" == "Darwin" ]]; then
         info "Building PIL ...\n" \
          "CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS}" \
          " CPPFLAGS=-I/opt/X11/include" \
-         "  ${PYHOME}/bin/python ./setup.py build "
+         "  ${PYTHON_COMMAND} ./setup.py build "
         CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} \
          CPPFLAGS="-I/opt/X11/include" \
-        ${PYHOME}/bin/python ./setup.py build
+        ${PYTHON_COMMAND} ./setup.py build
     else
         info "Building PIL ...\n" \
          "CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS}" \
-         "  ${PYHOME}/bin/python ./setup.py build "
+         "  ${PYTHON_COMMAND} ./setup.py build "
         CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} \
-         ${PYHOME}/bin/python ./setup.py build
+         ${PYTHON_COMMAND} ./setup.py build
     fi
- 
+
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not build PIL"
         return 1
     fi
     info "Installing PIL ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install PIL"
@@ -743,6 +764,72 @@ function build_pil
     fi
 
     info "Done with PIL."
+    return 0
+}
+
+# *************************************************************************** #
+#                            Function 7.1 (b), build_pillow                   #
+# *************************************************************************** #
+function build_pillow
+{
+    if ! test -f ${PILLOW_FILE} ; then
+        download_file ${PILLOW_FILE} \
+                      "${PILLOW_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${PILLOW_FILE}"
+            return 1
+        fi
+    fi
+    if ! test -d ${PILLOW_BUILD_DIR} ; then
+        info "Extracting Pillow ..."
+        uncompress_untar ${PILLOW_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${PILLOW_FILE}"
+            return 1
+        fi
+    fi
+
+    # Pillow depends on Zlib
+    PY_ZLIB_INCLUDE="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/include"
+    PY_ZLIB_LIB="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
+
+    PYEXT_CFLAGS="${CFLAGS} ${C_OPT_FLAGS}"
+    PYEXT_CFLAGS="${CFLAGS} ${C_OPT_FLAGS} -I${PY_ZLIB_INCLUDE}"
+    PYEXT_CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS} -I${PY_ZLIB_INCLUDE}"
+    PYEXT_LDFLAGS="-L${PY_ZLIB_LIB}"
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        PYEXT_CFLAGS="${PYEXT_CFLAGS} -I/opt/X11/include"
+        PYEXT_CXXFLAGS="${PYEXT_CXXFLAGS} -I/opt/X11/include"
+    fi
+
+    pushd $PILLOW_BUILD_DIR > /dev/null
+
+    info "Building Pillow ...\n" \
+     "CC=${C_COMPILER} CXX=${CXX_COMPILER} " \
+     "  CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} LDFLAGS=${PYEXT_LDFLAGS} " \
+     "  ${PYTHON_COMMAND} ./setup.py build_ext --disable-jpeg install --prefix=${PYHOME}"
+
+    CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS="${PYEXT_CFLAGS}" \
+     CXXFLAGS="${PYEXT_CXXFLAGS}" \
+     LDFLAGS="${PYEXT_LDFLAGS}" \
+     ${PYTHON_COMMAND} ./setup.py build_ext --disable-jpeg install --prefix="${PYHOME}"
+
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not build and install Pillow"
+        return 1
+    fi
+    popd > /dev/null
+
+    # Pillow installs into site-packages dir of Visit's Python.
+    # Simply re-execute the python perms command.
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/python"
+        chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    info "Done with Pillow."
     return 0
 }
 
@@ -767,10 +854,9 @@ function build_pyparsing
         fi
     fi
 
-    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $PYPARSING_BUILD_DIR > /dev/null
     info "Installing pyparsing ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install pyparsing"
@@ -810,10 +896,9 @@ function build_requests
         fi
     fi
 
-    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $PYREQUESTS_BUILD_DIR > /dev/null
     info "Installing python requests module ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install requests module"
@@ -853,10 +938,9 @@ function build_seedme
         fi
     fi
 
-    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $SEEDME_BUILD_DIR > /dev/null
     info "Installing seedme python module ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install seedme module"
@@ -902,7 +986,7 @@ function build_mpi4py
     # install
     pushd $MPI4PY_BUILD_DIR > /dev/null
     info "Installing mpi4py (~ 2 min) ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install mpi4py"
@@ -978,10 +1062,9 @@ function build_numpy
     fi
 
     # install
-    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $SETUPTOOLS_BUILD_DIR > /dev/null
     info "Installing setuptools (~1 min) ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install setuptools"
@@ -991,7 +1074,7 @@ function build_numpy
 
     pushd $CYTHON_BUILD_DIR > /dev/null
     info "Installing cython (~ 2 min) ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install cython"
@@ -1002,7 +1085,7 @@ function build_numpy
     pushd $NUMPY_BUILD_DIR > /dev/null
     info "Installing numpy (~ 2 min) ..."
     sed -i 's#\\\\\"%s\\\\\"#%s#' numpy/distutils/system_info.py
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install numpy"
@@ -1019,126 +1102,6 @@ function build_numpy
     return 0
 }
 
-# *************************************************************************** #
-#                             build_python3                                   #
-# *************************************************************************** #
-
-function build_python3
-{
-    # download
-    if ! test -f ${PYTHON3_FILE} ; then
-        download_file ${PYTHON3_FILE} "${PYTHON3_URL}"
-        if [[ $? != 0 ]] ; then
-            warn "Could not download ${PYTHON3_FILE}"
-            return 1
-        fi
-    fi
-
-    prepare_build_dir $PYTHON3_BUILD_DIR $PYTHON3_FILE
-    untarred_python=$?
-    # 0, already exists, 1 untarred src, 2 error
-
-    if [[ $untarred_python == -1 ]] ; then
-        warn "Unable to prepare Python3 build directory. Giving Up!"
-        return 1
-    fi
-
-    cd $PYTHON3_BUILD_DIR || error "Can't cd to Python3 build dir."
-
-    #
-    # Configure Python3
-    #
-    cCompiler="${C_COMPILER}"
-    cFlags="${CFLAGS} ${C_OPT_FLAGS}"
-    cxxCompiler="${CXX_COMPILER}"
-    cxxFlags="{$CXXFLAGS} ${CXX_OPT_FLAGS}"
-    if [[ "$OPSYS" == "Linux" && "$C_COMPILER" == "xlc" ]]; then
-        cCompiler="gxlc"
-        cxxCompiler="gxlC"
-        cFlags=`echo ${CFLAGS} ${C_OPT_FLAGS} | sed "s/-qpic/-fPIC/g"`
-        cxxFlags=`echo $CXXFLAGS} ${CXX_OPT_FLAGS} | sed "s/-qpic/-fPIC/g"`
-    fi
-    PYTHON3_OPT="$cFlags"
-    PYTHON3_CFG=""
-    PYTHON3_LDFLAGS=""
-    PYTHON3_CPPFLAGS=""
-    PYTHON3_PREFIX_DIR="$VISITDIR/python/$PYTHON3_VERSION/$VISITARCH"
-    PYTHON3_LDFLAGS="${PYTHON3_LDFLAGS} -L${PY_ZLIB_LIB}"
-    PYTHON3_CPPFLAGS="${PYTHON3_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
-
-    # python 3.7 uses the --with-openssl flag, instead of flag injection
-    if [[ "$DO_OPENSSL" == "yes" ]]; then
-        PYTHON3_CFG="${PYTHON3_CFG} --with-openssl=$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/"
-    fi
-
-
-    if [[ "$OPSYS" == "AIX" ]]; then
-        info "Configuring Python3 (AIX): ./configure OPT=\"$PYTHON3_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
-             "--prefix=\"$PYTHON3_PREFIX_DIR\" --disable-ipv6"
-        ./configure OPT="$PYTHON3_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
-                    --prefix="$PYTHON3_PREFIX_DIR" --disable-ipv6
-    else
-        info "Configuring Python3 : ./configure OPT=\"$PYTHON3_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
-             "LDFLAGS=\"$PYTHON3_LDFLAGS\" CPPFLAGS=\"$PYTHON3_CPPFLAGS\""\
-             "${PYTHON3_SHARED} --prefix=\"$PYTHON3_PREFIX_DIR\" --disable-ipv6"
-        ./configure OPT="$PYTHON3_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
-                    LDFLAGS="$PYTHON3_LDFLAGS" \
-                    CPPFLAGS="$PYTHON3_CPPFLAGS" \
-                    ${PYTHON3_SHARED} \
-                    ${PYTHON3_CFG} \
-                    --prefix="$PYTHON3_PREFIX_DIR" --disable-ipv6
-    fi
-
-    if [[ $? != 0 ]] ; then
-        warn "Python3 configure failed.  Giving up"
-        return 1
-    fi
-
-    #
-    # Build Python.
-    #
-    info "Building Python3 . . . (~2 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
-    if [[ $? != 0 ]] ; then
-        warn "Python3 build failed.  Giving up"
-        return 1
-    fi
-    info "Installing Python3 . . ."
-    $MAKE install
-    if [[ $? != 0 ]] ; then
-        warn "Python3 build (make install) failed.  Giving up"
-        return 1
-    fi
-
-    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "AIX" ]]; then
-        # configure flag --enable-shared doesn't work on llnl aix5 systems
-        # we need to create the shared lib manually and place it in the
-        # proper loc
-        mv $VISITDIR/python/$PYTHON3_VERSION/$VISITARCH/lib/libpython$PYTHON3_COMPATIBILITY_VERSION.$SO_EXT \
-           $VISITDIR/python/$PYTHON3_VERSION/$VISITARCH/lib/libpython$PYTHON3_COMPATIBILITY_VERSION.static.a
-
-        $C_COMPILER -qmkshrobj -lm \
-                    $VISITDIR/python/$PYTHON3_VERSION/$VISITARCH/lib/libpython$PYTHON3_COMPATIBILITY_VERSION.static.a \
-                    -o $VISITDIR/python/$PYTHON3_VERSION/$VISITARCH/lib/libpython$PYTHON3_COMPATIBILITY_VERSION.$SO_EXT
-
-        if [[ $? != 0 ]] ; then
-            warn "Python3 dynamic library build failed.  Giving up"
-            return 1
-        fi
-
-        # we can safely remove this version of the static lib b/c it also exists under python3.7/config/
-        rm -f $VISITDIR/python/$PYTHON3_VERSION/$VISITARCH/lib/libpython$PYTHON3_COMPATIBILITY_VERSION.static.a
-    fi
-
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/python"
-        chgrp -R ${GROUP} "$VISITDIR/python"
-    fi
-    cd "$START_DIR"
-    info "Done with Python3"
-
-    return 0
-}
 
 # *************************************************************************** #
 #                                  build_sphinx                               #
@@ -1154,10 +1117,10 @@ function build_sphinx
         fi
     fi
 
-    if ! test -f ${SETUPTOOLS44_0_0_FILE} ; then
-        download_file ${SETUPTOOLS44_0_0_FILE} "${SETUPTOOLS44_0_0_URL}"
+    if ! test -f ${SETUPTOOLS_FILE} ; then
+        download_file ${SETUPTOOLS_FILE} "${SETUPTOOLS_URL}"
         if [[ $? != 0 ]] ; then
-            warn "Could not download ${SETUPTOOLS44_0_0_FILE}"
+            warn "Could not download ${SETUPTOOLS_URL}"
             return 1
         fi
     fi
@@ -1282,10 +1245,10 @@ function build_sphinx
         fi
     fi
 
-    if ! test -f ${PYPARSING2_4_6_FILE} ; then
-        download_file ${PYPARSING2_4_6_FILE} "${PYPARSING2_4_6_URL}"
+    if ! test -f ${PYPARSING_FILE} ; then
+        download_file ${PYPARSING_FILE} "${PYPARSING_URL}"
         if [[ $? != 0 ]] ; then
-            warn "Could not download ${PYPARSING2_4_6_FILE}"
+            warn "Could not download ${PYPARSING_FILE}"
             return 1
         fi
     fi
@@ -1356,20 +1319,20 @@ function build_sphinx
         fi
     fi
 
-    if ! test -d ${SETUPTOOLS44_0_0_BUILD_DIR} ; then
+    if ! test -d ${SETUPTOOLS_BUILD_DIR} ; then
         info "Extracting setuptools ..."
-        uncompress_untar ${SETUPTOOLS44_0_0_FILE}
+        uncompress_untar ${SETUPTOOLS_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${SETUPTOOLS44_0_0_FILE}"
+            warn "Could not extract ${SETUPTOOLS_FILE}"
             return 1
         fi
     fi
 
-    if ! test -d ${REQUESTS_BUILD_DIR} ; then
+    if ! test -d ${PYREQUESTS_BUILD_DIR} ; then
         info "Extracting requests ..."
-        uncompress_untar ${REQUESTS_FILE}
+        uncompress_untar ${PYREQUESTS_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${REQUESTS_FILE}"
+            warn "Could not extract ${PYREQUESTS_FILE}"
             return 1
         fi
     fi
@@ -1500,11 +1463,11 @@ function build_sphinx
         fi
     fi
 
-    if ! test -d ${PYPARSING2_4_6_BUILD_DIR} ; then
+    if ! test -d ${PYPARSING_BUILD_DIR} ; then
         info "Extracting pyparsing ..."
-        uncompress_untar ${PYPARSING2_4_6_FILE}
+        uncompress_untar ${PYPARSING_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${PYPARSING2_4_6_FILE}"
+            warn "Could not extract ${PYPARSING_FILE}"
             return 1
         fi
     fi
@@ -1582,11 +1545,10 @@ function build_sphinx
     ${SED_CMD} "s/docutils>=0.12/docutils<0.16,>=0.12/" ./setup.py
     popd > /dev/null
 
-    PY3HOME="${VISITDIR}/python/${PYTHON3_VERSION}/${VISITARCH}"
     # install
     pushd $SIX_BUILD_DIR > /dev/null
     info "Installing six ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install six"
@@ -1594,9 +1556,9 @@ function build_sphinx
     fi
     popd > /dev/null
 
-    pushd $PYPARSING2_4_6_BUILD_DIR > /dev/null
+    pushd $PYPARSING_BUILD_DIR > /dev/null
     info "Installing pyparsing ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install pyparsing"
@@ -1607,7 +1569,7 @@ function build_sphinx
     # Packaging depends on six, pyparsing.
     pushd $PACKAGING_BUILD_DIR > /dev/null
     info "Installing packaging ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install packaging"
@@ -1617,7 +1579,7 @@ function build_sphinx
 
     pushd $SETUPTOOLS44_0_0_BUILD_DIR > /dev/null
     info "Installing setuptools ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install setuptools"
@@ -1627,7 +1589,7 @@ function build_sphinx
 
     pushd $CERTIFI_BUILD_DIR > /dev/null
     info "Installing certifi ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install certifi"
@@ -1637,7 +1599,7 @@ function build_sphinx
 
     pushd $URLLIB3_BUILD_DIR > /dev/null
     info "Installing urllib3 ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install urllib3"
@@ -1647,7 +1609,7 @@ function build_sphinx
 
     pushd $IDNA_BUILD_DIR > /dev/null
     info "Installing idna ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install idna"
@@ -1657,7 +1619,7 @@ function build_sphinx
 
     pushd $CHARDET_BUILD_DIR > /dev/null
     info "Installing chardet ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install chardet"
@@ -1668,7 +1630,7 @@ function build_sphinx
     # Requests depends on certifi, urllib3, idna, chardet
     pushd $REQUESTS_BUILD_DIR > /dev/null
     info "Installing requests ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install requests"
@@ -1678,7 +1640,7 @@ function build_sphinx
 
     pushd $IMAGESIZE_BUILD_DIR > /dev/null
     info "Installing imagesize ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install imagesize"
@@ -1688,7 +1650,7 @@ function build_sphinx
 
     pushd $ALABASTER_BUILD_DIR > /dev/null
     info "Installing alabaster..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install alabaster"
@@ -1698,7 +1660,7 @@ function build_sphinx
 
     pushd $PYTZ_BUILD_DIR > /dev/null
     info "Installing pytz ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install pytz"
@@ -1708,7 +1670,7 @@ function build_sphinx
 
     pushd $BABEL_BUILD_DIR > /dev/null
     info "Installing babel ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install babel"
@@ -1718,7 +1680,7 @@ function build_sphinx
 
     pushd $SNOWBALLSTEMMER_BUILD_DIR > /dev/null
     info "Installing snowballstemmer ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install snowballstemmer"
@@ -1728,7 +1690,7 @@ function build_sphinx
 
     pushd $DOCUTILS_BUILD_DIR > /dev/null
     info "Installing docutils ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install docutils"
@@ -1738,7 +1700,7 @@ function build_sphinx
 
     pushd $PYGMENTS_BUILD_DIR > /dev/null
     info "Installing pygments ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install pygments"
@@ -1748,7 +1710,7 @@ function build_sphinx
 
     pushd $MARKUPSAFE_BUILD_DIR > /dev/null
     info "Installing markupsafe ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install markupsafe"
@@ -1758,7 +1720,7 @@ function build_sphinx
 
     pushd $JINJA2_BUILD_DIR > /dev/null
     info "Installing jinja2 ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install jinja2"
@@ -1768,7 +1730,7 @@ function build_sphinx
 
     pushd $SPHINXCONTRIB_QTHELP_BUILD_DIR > /dev/null
     info "Installing sphinxcontrib-qthelp ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install sphinxcontrib-qthelp"
@@ -1778,7 +1740,7 @@ function build_sphinx
 
     pushd $SPHINXCONTRIB_SERIALIZINGHTML_BUILD_DIR > /dev/null
     info "Installing sphinxcontrib-serializinghtml ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install sphinxcontrib-serializinghtml"
@@ -1788,7 +1750,7 @@ function build_sphinx
 
     pushd $SPHINXCONTRIB_HTMLHELP_BUILD_DIR > /dev/null
     info "Installing sphinxcontrib-htmlhelp ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install sphinxcontrib-htmlhelp"
@@ -1798,7 +1760,7 @@ function build_sphinx
 
     pushd $SPHINXCONTRIB_JSMATH_BUILD_DIR > /dev/null
     info "Installing sphinxcontrib-jsmath ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    $${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install sphinxcontrib-jsmath"
@@ -1808,7 +1770,7 @@ function build_sphinx
 
     pushd $SPHINXCONTRIB_DEVHELP_BUILD_DIR > /dev/null
     info "Installing sphinxcontrib-devhelp ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install sphinxcontrib-devhelp"
@@ -1818,7 +1780,7 @@ function build_sphinx
 
     pushd $SPHINXCONTRIB_APPLEHELP_BUILD_DIR > /dev/null
     info "Installing sphinxcontrib-applehelp ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install sphinxcontrib-applehelp"
@@ -1828,7 +1790,7 @@ function build_sphinx
 
     pushd $SPHINX_BUILD_DIR > /dev/null
     info "Installing sphinx ..."
-    ${PY3HOME}/bin/python3 ./setup.py install --prefix="${PY3HOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install sphinx"
@@ -1933,12 +1895,32 @@ function bv_python_build
                 return 0
             fi
 
-            info "Building the Python Imaging Library"
-            build_pil
-            if [[ $? != 0 ]] ; then
-                error "PIL build failed. Bailing out."
+            # setup PYHOME and PYTHON_COMMAND which is used in our build
+            # of these python modules
+            export PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
+
+            if [[ "$DO_PYTHON2" == "yes" ]]; then
+                export PYTHON_COMMAND="${PYHOME}/bin/python"
+            else
+                export PYTHON_COMMAND="${PYHOME}/bin/python3"
             fi
-            info "Done building the Python Imaging Library"
+
+            if [[ "$DO_PYTHON2" == "yes" ]]; then
+                info "Building the Python Imaging Library"
+                build_pil
+                if [[ $? != 0 ]] ; then
+                    error "PIL build failed. Bailing out."
+                fi
+                info "Done building the Python Imaging Library"
+            else
+                # use Pillow for when python 3
+                info "Building the Python Pillow Imaging Library"
+                build_pillow
+                if [[ $? != 0 ]] ; then
+                    error "Pillow build failed. Bailing out."
+                fi
+                info "Done building the Python Pillow Imaging Library"
+            fi
 
             info "Building the numpy module"
             build_numpy
@@ -1976,14 +1958,10 @@ function bv_python_build
             info "Done building the seedme python module."
 
             if [[ "$BUILD_SPHINX" == "yes" ]]; then
-                #
-                # Currently, we only need python3 for sphinx.
-                #
-                build_python3
-                if [[ $? != 0 ]] ; then
-                    error "python3 build failed. Bailing out."
+                
+                if [[ "$DO_PYTHON2" == "yes" ]]; then
+                    error "sphinx requires python 3 (but DO_PYTHON2=yes). Bailing out."
                 fi
-                info "Done building python3."
 
                 build_sphinx
                 if [[ $? != 0 ]] ; then
@@ -1996,6 +1974,7 @@ function bv_python_build
                     error "sphinx rtd python theme build failed. Bailing out."
                 fi
                 info "Done building the sphinx rtd python theme."
+
             fi
 
         fi
