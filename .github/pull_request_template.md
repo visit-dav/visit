@@ -7,12 +7,7 @@ Please include a summary of the change
 
 ### Type of change
 
-Please select one below (*Please click check boxes AFTER submitting ticket*)
-
-- [ ] Bug fix
-- [ ] New feature
-- [ ] New Documentation
-- [ ] Other (please describe below)
+Please choose one of the following: Bug fix, new feature, new documentation, or other (please explain).
 
 ### How Has This Been Tested?
 

@@ -31,6 +31,7 @@ Contents:
    StartupOptions/index
    Building/index
    BuildingOnWindows/index
+   BuildingOnMac/index
    Acknowledgments/index
    glossary
    Contributing/index

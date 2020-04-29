@@ -396,7 +396,7 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
     snprintf(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
     str += tmpStr;
     const char *fieldType_names = "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
-        "NektarPPField, NIMRODField";
+        "NektarPPField";
     switch (atts->GetFieldType())
     {
       case IntegralCurveAttributes::Default:
@@ -421,10 +421,6 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
           break;
       case IntegralCurveAttributes::NektarPPField:
           snprintf(tmpStr, 1000, "%sfieldType = %sNektarPPField  # %s\n", prefix, prefix, fieldType_names);
-          str += tmpStr;
-          break;
-      case IntegralCurveAttributes::NIMRODField:
-          snprintf(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       default:
@@ -1824,7 +1820,7 @@ IntegralCurveAttributes_SetFieldType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,6]. "
                         "You can also use the following names: "
                         "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
-                        "NektarPPField, NIMRODField.");
+                        "NektarPPField.");
         return NULL;
     }
 
@@ -3182,8 +3178,6 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(IntegralCurveAttributes::Nek5000Field));
     if(strcmp(name, "NektarPPField") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::NektarPPField));
-    if(strcmp(name, "NIMRODField") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::NIMRODField));
 
     if(strcmp(name, "fieldConstant") == 0)
         return IntegralCurveAttributes_GetFieldConstant(self, NULL);

@@ -53,7 +53,6 @@
         M3DC13DField
         Nek5000Field
         NektarPPField
-        NIMRODField
       </Enum>
       <Enum name="IntegrationType">
         Euler
