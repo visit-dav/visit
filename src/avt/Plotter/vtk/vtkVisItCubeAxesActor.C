@@ -101,6 +101,10 @@ vtkCxxSetObjectMacro(vtkVisItCubeAxesActor, Camera,vtkCamera);
 //   computed on first-build for all axes. (Fixes problem with not showing 
 //   enough precision in some cases).
 //
+//   Alister Maguire, Tue Apr 28 14:54:38 PDT 2020
+//   Replaced manual setting of visibility for each charactersitic with
+//   a call to SetVisisbility, which now handles this for us.
+//
 // *************************************************************************
 
 vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
@@ -120,26 +124,14 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   for (i = 0; i < 4; i++)
     {
     this->XAxes[i] = vtkVisItAxisActor::New();
-    this->XAxes[i]->SetTickVisibility(true);
-    this->XAxes[i]->SetMinorTicksVisible(true);
-    this->XAxes[i]->SetLabelVisibility(true);
-    this->XAxes[i]->SetTitleVisibility(true);
     this->XAxes[i]->SetAxisTypeToX();
     this->XAxes[i]->SetAxisPosition(i);
 
     this->YAxes[i] = vtkVisItAxisActor::New();
-    this->YAxes[i]->SetTickVisibility(true);
-    this->YAxes[i]->SetMinorTicksVisible(true);
-    this->YAxes[i]->SetLabelVisibility(true);
-    this->YAxes[i]->SetTitleVisibility(true);
     this->YAxes[i]->SetAxisTypeToY();
     this->YAxes[i]->SetAxisPosition(i);
 
     this->ZAxes[i] = vtkVisItAxisActor::New();
-    this->ZAxes[i]->SetTickVisibility(true);
-    this->ZAxes[i]->SetMinorTicksVisible(true);
-    this->ZAxes[i]->SetLabelVisibility(true);
-    this->ZAxes[i]->SetTitleVisibility(true);
     this->ZAxes[i]->SetAxisTypeToZ();
     this->ZAxes[i]->SetAxisPosition(i);
     }
@@ -168,25 +160,7 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   this->Inertia = 1;
   this->RenderCount = 0;
 
-  this->XAxisVisibility = true;
-  this->YAxisVisibility = true;
-  this->ZAxisVisibility = true;
-
-  this->XAxisTickVisibility = true;
-  this->YAxisTickVisibility = true;
-  this->ZAxisTickVisibility = true;
-
-  this->XAxisMinorTickVisibility = true;
-  this->YAxisMinorTickVisibility = true;
-  this->ZAxisMinorTickVisibility = true;
-
-  this->XAxisLabelVisibility = true;
-  this->YAxisLabelVisibility = true;
-  this->ZAxisLabelVisibility = true;
-
-  this->XAxisTitleVisibility = true;
-  this->YAxisTitleVisibility = true;
-  this->ZAxisTitleVisibility = true;
+  this->SetVisibility(true);
 
   this->DrawXGridlines = false;
   this->DrawYGridlines = false;
@@ -2341,4 +2315,73 @@ vtkVisItCubeAxesActor::SetLabelScale(double s0, double s1, double s2)
         this->scalingChanged = true;
         this->Modified();
     }
+}
+
+// ****************************************************************************
+// Method: vtkVisItCubeAxesActor::SetVisibility
+//
+// Purpose:
+//   Set visibility for all available attributes.
+//
+// Arguments:
+//   vis    Whether or not to make all attributes visible.
+//
+// Programmer: Alister Maguire
+// Creation:   Tue Apr 28 14:54:38 PDT 2020
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+vtkVisItCubeAxesActor::SetVisibility(bool vis)
+{
+  for (int i = 0; i < 4; ++i)
+  {
+    if (this->XAxes[i] != NULL)
+    {
+      this->XAxes[i]->SetTickVisibility(vis);
+      this->XAxes[i]->SetMinorTicksVisible(vis);
+      this->XAxes[i]->SetLabelVisibility(vis);
+      this->XAxes[i]->SetTitleVisibility(vis);
+    }
+
+    if (this->YAxes[i] != NULL)
+    {
+      this->YAxes[i]->SetTickVisibility(vis);
+      this->YAxes[i]->SetMinorTicksVisible(vis);
+      this->YAxes[i]->SetLabelVisibility(vis);
+      this->YAxes[i]->SetTitleVisibility(vis);
+    }
+
+    if (this->ZAxes[i] != NULL)
+    {
+      this->ZAxes[i]->SetTickVisibility(vis);
+      this->ZAxes[i]->SetMinorTicksVisible(vis);
+      this->ZAxes[i]->SetLabelVisibility(vis);
+      this->ZAxes[i]->SetTitleVisibility(vis);
+    }
+  }
+
+  this->XAxisVisibility          = vis;
+  this->YAxisVisibility          = vis;
+  this->ZAxisVisibility          = vis;
+
+  this->XAxisTickVisibility      = vis;
+  this->YAxisTickVisibility      = vis;
+  this->ZAxisTickVisibility      = vis;
+
+  this->XAxisMinorTickVisibility = vis;
+  this->YAxisMinorTickVisibility = vis;
+  this->ZAxisMinorTickVisibility = vis;
+
+  this->XAxisLabelVisibility     = vis;
+  this->YAxisLabelVisibility     = vis;
+  this->ZAxisLabelVisibility     = vis;
+
+  this->XAxisTitleVisibility     = vis;
+  this->YAxisTitleVisibility     = vis;
+  this->ZAxisTitleVisibility     = vis;
+
+  vtkActor::SetVisibility(vis);
 }
