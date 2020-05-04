@@ -29,6 +29,9 @@ class     vtkRectilinearGrid;
 //    Hank Childs, Fri Sep 24 10:18:38 PDT 2010
 //    Add a method for rectilinear generation.
 //
+//    Alister Maguire, Mon Apr 27 12:04:22 PDT 2020
+//    Added override of UpdateDataObjectInfo and added zonesHaveBeenSplit.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtSurfaceNormalExpression 
@@ -46,10 +49,12 @@ class EXPRESSION_API avtSurfaceNormalExpression
 
   protected:
     bool                      isPoint;
+    bool                      zonesHaveBeenSplit;
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return isPoint; };
     virtual int               GetVariableDimension(void) { return 3; };
     vtkDataArray             *RectilinearDeriveVariable(vtkRectilinearGrid *);
+    virtual void              UpdateDataObjectInfo(void);
 };
 
 

@@ -16,3 +16,111 @@ Initialization: yAxis
     yAxis.GetLabel().GetFont().SetBold(true);
     yAxis.GetLabel().GetFont().SetItalic(true);
 
+
+Target: xml2atts
+Function: CreateNode
+Declaration: bool CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
+Definition:
+// ****************************************************************************
+// Method: Axes2D::CreateNode
+//
+// Purpose: 
+//   This method creates a DataNode representation of the object so it can be
+//   saved to a config file.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//    Kathleen Biagas, Thu Apr 30 12:43:35 PDT 2020
+//    Changed from default to have x and y AxisNode always do a complete
+//    save so that their FontAttributes are always saved, since this class
+//    uses different font defaults than the actual FontAttributes defaults.
+//
+// ****************************************************************************
+
+bool
+Axes2D::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    Axes2D defaultObject;
+    bool addToParent = false;
+    // Create a node for Axes2D.
+    DataNode *node = new DataNode("Axes2D");
+
+    if(completeSave || !FieldsEqual(ID_visible, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("visible", visible));
+    }
+
+    if(completeSave || !FieldsEqual(ID_autoSetTicks, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("autoSetTicks", autoSetTicks));
+    }
+
+    if(completeSave || !FieldsEqual(ID_autoSetScaling, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("autoSetScaling", autoSetScaling));
+    }
+
+    if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lineWidth", lineWidth));
+    }
+
+    if(completeSave || !FieldsEqual(ID_tickLocation, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tickLocation", Location_ToString(tickLocation)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_tickAxes, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tickAxes", Ticks_ToString(tickAxes)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_xAxis, &defaultObject))
+    {
+        DataNode *xAxisNode = new DataNode("xAxis");
+        // Here is the change from default, send 'true' for 2nd arg
+        // instead of 'completeSave'
+        if(xAxis.CreateNode(xAxisNode, true, false))
+        {
+            addToParent = true;
+            node->AddNode(xAxisNode);
+        }
+        else
+            delete xAxisNode;
+    }
+
+    if(completeSave || !FieldsEqual(ID_yAxis, &defaultObject))
+    {
+        DataNode *yAxisNode = new DataNode("yAxis");
+        // Here is the change from default, send 'true' for 2nd arg
+        // instead of 'completeSave'
+        if(yAxis.CreateNode(yAxisNode, true, false))
+        {
+            addToParent = true;
+            node->AddNode(yAxisNode);
+        }
+        else
+            delete yAxisNode;
+    }
+
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+

@@ -851,6 +851,9 @@ static void *threaded_accept_callback(void *data)
 //   Fix pthread_create error return detection.
 //   Yield the thread when we're waiting for another thread to complete.
 //
+//   Kathleen Biagas, Wed Apr 29 16:29:39 PDT 2020
+//   Reduce amount of '.' printed to log file.
+//
 // ****************************************************************************
 
 int
@@ -925,6 +928,7 @@ RemoteProcess::MultiThreadedAcceptSocket()
         MUTEX_LOCK(cb.mutex);
         alive = cb.alive;
         MUTEX_UNLOCK(cb.mutex);
+        int count = 0;
         if(alive)
         {
             //
@@ -935,7 +939,8 @@ RemoteProcess::MultiThreadedAcceptSocket()
             do
             {
                 // Call the progress callback.
-                debug5 << ".";
+                if(count++ < 50)
+                     debug5 << ".";
                 noCancel = CallProgressCallback(1);
 
                 // Determine if we should keep looping. We have to access the

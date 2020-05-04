@@ -265,7 +265,6 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     fieldType->addItem(tr("M3D-C1 3D"));
     fieldType->addItem(tr("Nek5000"));
     fieldType->addItem(tr("Nektar++"));
-    fieldType->addItem(tr("NIMROD"));
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);
@@ -1219,12 +1218,6 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               integrationType->setCurrentIndex(LCSAttributes::M3DC12DIntegrator);
               UpdateIntegrationAttributes();
             }
-            else if (atts->GetFieldType() == LCSAttributes::NIMRODField)
-            {
-              atts->SetIntegrationType(LCSAttributes::AdamsBashforth);
-              integrationType->setCurrentIndex(LCSAttributes::AdamsBashforth);
-              UpdateIntegrationAttributes();
-            }
             else if (atts->GetIntegrationType() == LCSAttributes::M3DC12DIntegrator)
             {
               atts->SetIntegrationType(LCSAttributes::DormandPrince);
@@ -1414,7 +1407,6 @@ QvisLCSWindow::UpdateFieldAttributes()
       TurnOn(velocitySource, velocitySourceLabel);
       break;
 
-    case LCSAttributes::NIMRODField:
     default:
       TurnOff(fieldConstant, fieldConstantLabel);
       TurnOff(velocitySource, velocitySourceLabel);
