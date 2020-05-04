@@ -2374,6 +2374,9 @@ avtDatabase::NumStagesForFetch(avtDataRequest_p)
 //    Don't count key words when determining if the file count evenly divides
 //    the block count.
 //
+//    Eric Brugger, Fri May  1 12:39:32 PDT 2020
+//    Added logic to skip lines that start with !TIME and !ENSEMBLE.
+//
 // ****************************************************************************
 
 bool
@@ -2448,6 +2451,20 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
                 if (bang_nBlocksp)
                     *bang_nBlocksp = bang_nBlocks;
 
+                continue;
+            }
+
+            //
+            // Skip !TIME and !ENSEMBLE.
+            //
+            bnbp = strstr(str_auto, "!TIME ");
+            if (bnbp && bnbp == str_auto)
+            {
+                continue;
+            }
+            bnbp = strstr(str_auto, "!ENSEMBLE");
+            if (bnbp && bnbp == str_auto)
+            {
                 continue;
             }
 
