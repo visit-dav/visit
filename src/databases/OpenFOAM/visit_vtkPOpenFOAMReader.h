@@ -24,21 +24,24 @@
 // This class was developed by Takuya Oshima at Niigata University,
 // Japan (oshima@eng.niigata-u.ac.jp).
 
-#ifndef __visit_vtkPOpenFOAMReader_h
-#define __visit_vtkPOpenFOAMReader_h
+#ifndef visit_vtkPOpenFOAMReader_h
+#define visit_vtkPOpenFOAMReader_h
 
-#include "visit_vtkOpenFOAMReader.h"
+#include <vtkOpenFOAMReader.h>
 
 class vtkDataArraySelection;
 
-class visit_vtkPOpenFOAMReader : public visit_vtkOpenFOAMReader
+class visit_vtkPOpenFOAMReader : public vtkOpenFOAMReader
 {
 public:
-  //BTX
-  enum caseType { DECOMPOSED_CASE = 0, RECONSTRUCTED_CASE = 1 };
-  //ETX
-  static visit_vtkPOpenFOAMReader *New();
-  vtkTypeMacro(visit_vtkPOpenFOAMReader, visit_vtkOpenFOAMReader);
+  enum caseType
+  {
+    DECOMPOSED_CASE = 0,
+    RECONSTRUCTED_CASE = 1
+  };
+
+  static visit_vtkPOpenFOAMReader* New();
+  vtkTypeMacro(visit_vtkPOpenFOAMReader, vtkOpenFOAMReader);
 
   void PrintSelf(ostream &os, vtkIndent indent) override;
 
@@ -49,7 +52,7 @@ public:
 
 protected:
   visit_vtkPOpenFOAMReader();
-  ~visit_vtkPOpenFOAMReader();
+  ~visit_vtkPOpenFOAMReader() override;
 
   int RequestInformation(vtkInformation *, vtkInformationVector **,
     vtkInformationVector *) override;
@@ -62,8 +65,8 @@ private:
   int NumProcesses;
   int ProcessId;
 
-  visit_vtkPOpenFOAMReader(const visit_vtkPOpenFOAMReader &); // Not implemented.
-  void operator=(const visit_vtkPOpenFOAMReader &); // Not implemented.
+  visit_vtkPOpenFOAMReader(const visit_vtkPOpenFOAMReader &) = delete;
+  void operator=(const visit_vtkPOpenFOAMReader &) = delete;
 
   void GatherMetaData();
   void BroadcastStatus(int &);

@@ -19,7 +19,6 @@ OpenFOAMMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtOpenFOAMFileFormat.C
 avtOpenFOAMOptions.C
-visit_vtkOpenFOAMReader.cxx
 visit_vtkPOpenFOAMReader.cxx
 )
 
@@ -28,7 +27,6 @@ OpenFOAMEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtOpenFOAMFileFormat.C
 avtOpenFOAMOptions.C
-visit_vtkOpenFOAMReader.cxx
 visit_vtkPOpenFOAMReader.cxx
 )
 
@@ -64,19 +62,19 @@ SET(INSTALLTARGETS IOpenFOAMDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MOpenFOAMDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MOpenFOAMDatabase visitcommon avtdbatts avtdatabase_ser ${ZLIB_LIBRARY} VTK::CommonSystem VTK::vtksys )
+    TARGET_LINK_LIBRARIES(MOpenFOAMDatabase visitcommon avtdbatts avtdatabase_ser ${ZLIB_LIBRARY} VTK::CommonSystem VTK::vtksys VTK::IOGeometry)
     ADD_TARGET_DEFINITIONS(MOpenFOAMDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MOpenFOAMDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EOpenFOAMDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EOpenFOAMDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${ZLIB_LIBRARY} VTK::CommonSystem VTK::vtksys )
+TARGET_LINK_LIBRARIES(EOpenFOAMDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${ZLIB_LIBRARY} VTK::CommonSystem VTK::vtksys VTK::IOGeometry)
 ADD_TARGET_DEFINITIONS(EOpenFOAMDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EOpenFOAMDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EOpenFOAMDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EOpenFOAMDatabase_par visitcommon avtdatabase_par avtpipeline_par ${ZLIB_LIBRARY} VTK::CommonSystem VTK::vtksys )
+    TARGET_LINK_LIBRARIES(EOpenFOAMDatabase_par visitcommon avtdatabase_par avtpipeline_par ${ZLIB_LIBRARY} VTK::CommonSystem VTK::vtksys VTK::IOGeometry)
     ADD_TARGET_DEFINITIONS(EOpenFOAMDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EOpenFOAMDatabase_par)
 ENDIF(VISIT_PARALLEL)

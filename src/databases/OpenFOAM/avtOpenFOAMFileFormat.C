@@ -164,7 +164,9 @@ void
 avtOpenFOAMFileFormat::FreeUpResources(void)
 {
 }
-// **************************************************************************** //  Method: avtOpenFOAMFileFormat::PopulateDatabaseMetaData
+
+// ****************************************************************************
+//  Method: avtOpenFOAMFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
 //      This database meta-data object is like a table of contents for the

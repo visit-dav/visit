@@ -7,13 +7,11 @@
     <Files components="M">
       avtOpenFOAMFileFormat.C
       avtOpenFOAMOptions.C
-      visit_vtkOpenFOAMReader.cxx
       visit_vtkPOpenFOAMReader.cxx
     </Files>
     <Files components="E">
       avtOpenFOAMFileFormat.C
       avtOpenFOAMOptions.C
-      visit_vtkOpenFOAMReader.cxx
       visit_vtkPOpenFOAMReader.cxx
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
@@ -22,5 +20,6 @@
       ${ZLIB_LIBRARY}
       VTK::CommonSystem
       VTK::vtksys
+      VTK::IOGeometry
     </LIBS>
   </Plugin>

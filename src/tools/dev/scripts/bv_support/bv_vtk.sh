@@ -76,12 +76,12 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-    export VTK_FILE=${VTK_FILE:-"VTK-9.0.0.rc2.tar.gz"}
-    export VTK_VERSION=${VTK_VERSION:-"9.0.0.rc2"}
+    export VTK_FILE=${VTK_FILE:-"VTK-9.0.0.rc3.tar.gz"}
+    export VTK_VERSION=${VTK_VERSION:-"9.0.0.rc3"}
     export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.0"}
     export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
     export VTK_URL=${VTK_URL:-"https://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
-    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-9.0.0.rc2"}
+    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-9.0.0.rc3"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
     #export VTK_MD5_CHECKSUM="d41d8cd98f00b204e9800998ecf8427e"
     #export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
@@ -144,6 +144,330 @@ function bv_vtk_dry_run
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
+
+function apply_vtkopenfoamreader_header_patch
+{
+  # patch vtk's OpenFOAMReader to provide more meta data information
+  # useful for VisIt's plugin.
+
+   patch -p0 << \EOF
+*** IO/Geometry/vtkOpenFOAMReader.h.orig
+--- IO/Geometry/vtkOpenFOAMReader.h
+***************
+*** 48,53 ****
+--- 48,58 ----
+  #include "vtkIOGeometryModule.h" // For export macro
+  #include "vtkMultiBlockDataSetAlgorithm.h"
+  
++ //added by LLNL
++ #include <map>
++ #include <vector>
++ //end added by LLNL
++ 
+  class vtkCollection;
+  class vtkCharArray;
+  class vtkDataArraySelection;
+***************
+*** 348,353 ****
+--- 353,380 ----
+  
+    friend class vtkOpenFOAMReaderPrivate;
+  
++   // Added by LLNL
++   vtkStdString GetCellArrayClassName(const char *name);
++   vtkStdString GetPointArrayClassName(const char *name);
++   vtkStdString GetLagrangianArrayClassName(const char *name);
++ 
++   int GetNumberOfCellZones() 
++     { return static_cast<int>(this->CellZones.size()); }
++   int GetNumberOfFaceZones()
++     { return static_cast<int>(this->FaceZones.size()); }
++   int GetNumberOfPointZones()
++     { return static_cast<int>(this->PointZones.size()); }
++ 
++   vtkStdString GetCellZoneName(int);
++   vtkStdString GetFaceZoneName(int);
++   vtkStdString GetPointZoneName(int);
++ 
++   int GetCellArrayExists(const char *name);
++   int GetPointArrayExists(const char *name);
++   int GetLagrangianArrayExists(const char *name);
++ 
++   // end Added by LLNL
++ 
+  protected:
+    // refresh flag
+    bool Refresh;
+***************
+*** 423,428 ****
+--- 450,465 ----
+    // index of the active reader
+    int CurrentReaderIndex;
+  
++   // added by LLNL
++   std::vector<vtkStdString> CellZones;
++   std::vector<vtkStdString> FaceZones;
++   std::vector<vtkStdString> PointZones;
++ 
++   std::map<vtkStdString, vtkStdString> CellArrayClassName;
++   std::map<vtkStdString, vtkStdString> PointArrayClassName;
++   std::map<vtkStdString, vtkStdString> LagrangianArrayClassName;
++   // end added by LLNL
++ 
+    vtkOpenFOAMReader();
+    ~vtkOpenFOAMReader() override;
+    int RequestInformation(vtkInformation*, vtkInformationVector**, vtkInformationVector*) override;
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkOpenFOAMReader.h failed."
+      return 1
+    fi
+    return 0;
+}
+
+function apply_vtkopenfoamreader_source_patch
+{
+  # patch vtk's OpenFOAMReader to provide more meta data information
+  # useful for VisIt's plugin.
+
+   patch -p0 << \EOF
+*** IO/Geometry/vtkOpenFOAMReader.cxx.orig
+--- IO/Geometry/vtkOpenFOAMReader.cxx
+***************
+*** 4419,4424 ****
+--- 4419,4427 ----
+              this->LagrangianFieldFiles->InsertNextValue(fieldFile);
+              // object name
+              pointObjectNames->InsertNextValue(io.GetObjectName());
++             // added by LLNL
++             this->Parent->LagrangianArrayClassName[io.GetObjectName()] = cn;
++             // end added by LLNL
+            }
+          }
+          else
+***************
+*** 4434,4444 ****
+--- 4437,4453 ----
+                this->VolFieldFiles->InsertNextValue(fieldFile);
+                // object name
+                cellObjectNames->InsertNextValue(io.GetObjectName());
++               // added by LLNL
++               this->Parent->CellArrayClassName[io.GetObjectName()] = cn;
++               // end added by LLNL
+              }
+              else
+              {
+                this->PointFieldFiles->InsertNextValue(fieldFile);
+                pointObjectNames->InsertNextValue(io.GetObjectName());
++               // added by LLNL
++               this->Parent->PointArrayClassName[io.GetObjectName()] = cn;
++               // end added by LLNL
+              }
+            }
+          }
+***************
+*** 4644,4649 ****
+--- 4653,4705 ----
+  
+        delete boundaryDict;
+      }
++ 
++     // added by LLNL
++     if (this->Parent->GetReadZones())
++     {
++       vtkFoamDict *dictPtr= this->GatherBlocks("pointZones", true);
++       if (dictPtr!= NULL)
++       {
++         this->Parent->PointZones.clear();
++         vtkFoamDict &pointZoneDict = *dictPtr;
++         int nPointZones = static_cast<int>(pointZoneDict.size());
++ 
++         for (int i = 0; i < nPointZones; i++)
++         {
++           this->Parent->PointZones.push_back(pointZoneDict[i]->GetKeyword().c_str());
++         }
++         delete dictPtr;
++       }
++ 
++       dictPtr= this->GatherBlocks("faceZones", true);
++       if (dictPtr!= NULL)
++       {
++         this->Parent->FaceZones.clear();
++         vtkFoamDict &faceZoneDict = *dictPtr;
++         int nFaceZones = static_cast<int>(faceZoneDict.size());
++ 
++         for (int i = 0; i < nFaceZones; i++)
++         {
++           this->Parent->FaceZones.push_back(faceZoneDict[i]->GetKeyword().c_str());
++         }
++         delete dictPtr;
++       }
++ 
++       dictPtr= this->GatherBlocks("cellZones", true);
++       if (dictPtr!= NULL)
++       {
++         this->Parent->CellZones.clear();
++         vtkFoamDict &cellZoneDict = *dictPtr;
++         int nCellZones = static_cast<int>(cellZoneDict.size());
++ 
++         for (int i = 0; i < nCellZones; i++)
++         {
++           this->Parent->CellZones.push_back(cellZoneDict[i]->GetKeyword().c_str());
++         }
++         delete dictPtr;
++       }
++     }
++     // end added by LLNL
+    }
+  
+    // Add scalars and vectors to metadata
+***************
+*** 9344,9346 ****
+--- 9400,9519 ----
+      (static_cast<double>(this->Parent->CurrentReaderIndex) + amount) /
+      static_cast<double>(this->Parent->NumberOfReaders));
+  }
++ 
++ 
++ // added by LLNL
++ 
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetCellArrayClassName(const char *name)
++ {
++   vtkStdString ret;
++   if (name == NULL || name[0] == '\0')
++   {
++         return ret;
++   }
++   std::map<vtkStdString, vtkStdString>::const_iterator itr =
++     this->CellArrayClassName.find(vtkStdString(name));
++   if (itr != this->CellArrayClassName.end())
++   {
++     return itr->second;
++   }
++   else 
++   {
++     return ret;
++   }
++ }
++ 
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetPointArrayClassName(const char *name)
++ {
++   vtkStdString ret;
++   if (name == NULL || name[0] == '\0')
++   {
++         return ret;
++   }
++   std::map<vtkStdString, vtkStdString>::const_iterator itr =
++     this->PointArrayClassName.find(vtkStdString(name));
++   if (itr != this->PointArrayClassName.end())
++   {
++     return itr->second;
++   }
++   else 
++   {
++     return ret;
++   }
++ }
++ 
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetLagrangianArrayClassName(const char *name)
++ {
++   vtkStdString ret;
++   if (name == NULL || name[0] == '\0')
++   {
++         return ret;
++   }
++   std::map<vtkStdString, vtkStdString>::const_iterator itr =
++     this->LagrangianArrayClassName.find(vtkStdString(name));
++   if (itr != this->LagrangianArrayClassName.end())
++   {
++     return itr->second;
++   }
++   else 
++   {
++     return ret;
++   }
++ }
++ 
++ //-----------------------------------------------------------------------------
++ int vtkOpenFOAMReader::GetCellArrayExists(const char *name)
++ {
++   return this->CellDataArraySelection->ArrayExists(name);
++ }
++ 
++ //-----------------------------------------------------------------------------
++ int vtkOpenFOAMReader::GetPointArrayExists(const char *name)
++ {
++   return this->PointDataArraySelection->ArrayExists(name);
++ }
++ 
++ //-----------------------------------------------------------------------------
++ int vtkOpenFOAMReader::GetLagrangianArrayExists(const char *name)
++ {
++   return this->LagrangianDataArraySelection->ArrayExists(name);
++ }
++ 
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetCellZoneName(const int index)
++ {
++   vtkStdString ret;
++   if (index >= 0 && index < this->GetNumberOfCellZones())
++   {
++     ret = this->CellZones[index];
++   }
++   return ret;
++ }
++ 
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetFaceZoneName(const int index)
++ {
++   vtkStdString ret;
++   if (index >= 0 && index < this->GetNumberOfFaceZones())
++   {
++     ret = this->FaceZones[index];
++   }
++   return ret;
++ }
++ 
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetPointZoneName(const int index)
++ {
++   vtkStdString ret;
++   if (index >= 0 && index < this->GetNumberOfPointZones())
++   {
++     ret = this->PointZones[index];
++   }
++   return ret;
++ }
++ 
++ // end added by LLNL
++ 
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkOpenFOAMReader.cxx failed."
+      return 1
+    fi
+    return 0;
+}
+
+function apply_vtkopenfoamreader_patch
+{
+    apply_vtkopenfoamreader_header_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+    apply_vtkopenfoamreader_source_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
 function apply_vtkprobeopenglversion_patch
 {
   # patch vtk's Rendering/OpenGL2/CMakeLists.txt to fix a compile problem
@@ -942,6 +1266,11 @@ EOF
 function apply_vtk_patch
 {
     apply_vtkprobeopenglversion_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtkopenfoamreader_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
