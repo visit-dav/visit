@@ -5,11 +5,9 @@
 #include "vtkVisItPolyDataNormals.h"
 
 #include <vtkCellArray.h>
-#include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
-#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkMath.h>
@@ -235,6 +233,7 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
             dnormals[p*3+1] += normal[1];
             dnormals[p*3+2] += normal[2];
         }
+
         // Increment our connectivity pointer
         outPolyPtr += nPts;
     }
@@ -615,8 +614,6 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
                 newPointIndex++;
             }
         }
-        if (replaceCell)
-            connPtr->ReplaceCurrentCell(ptIds);
     }
 
     // Create the output points array
@@ -954,7 +951,6 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
         }
     }
     else
->>>>>>> develop
     {
         //
         // No strips. Just copy everything over.
