@@ -617,18 +617,8 @@ main(int argc, char *argv[])
                                   "__visit_source_file__  = None\n"
                                   "__visit_source_stack__ = [] \n");
 
-
-        // if(noWin)
-        // {
-        //     std::cout << "visit.LaunchNowin()" << std::endl;
-        //     PyRun_SimpleString((char*)"visit.LaunchNowin()");
-        // }
-        // else
-        // {
-            std::cout << "visit.Launch()" << std::endl;
-            PyRun_SimpleString((char*)"visit.Launch()");
-            // }
-
+        PyRun_SimpleString((char*)"visit.Launch()");
+        
         // reload symbols from visit, since they may have changed
         PyRun_SimpleString((char*)"from visit import *");
 

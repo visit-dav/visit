@@ -18810,18 +18810,13 @@ InitializeModule()
         }
 
         VisItInit::SetComponentName("cli");
-        
-        std::cout << "VisItInit::Initialize args" << std::endl;
-        for(int i=0;i<argc;i++)
-        {
-            std::cout << " argv[" << i << "] " << argv[i] << std::endl;
-        }
+
         VisItInit::Initialize(argc, argv, 0, 1, false);
     }
     CATCH(VisItException)
     {
+        // TODO: This case isn't handled.
         // Return that we could not initialize VisIt.
-        std::cout << "SOMETHING BAD HAPPENED!?" << std::endl;
         ret = true;
     }
     ENDTRY
@@ -18829,6 +18824,7 @@ InitializeModule()
     AddDefaultMethods();
     AddMethod(NULL, (PyCFunction)NULL);
     moduleInitialized = true;
+    
     return 0;
 }
 
@@ -18872,6 +18868,7 @@ InitializeViewerProxy(ViewerProxy* proxy)
             viewerEmbedded = true; //do not show window if it is embedded..
         GetViewerProxy()->AddArgument(cli_argv[i]);
     }
+
     //
     // Hook up observers
     //
@@ -18918,7 +18915,6 @@ InitializeViewerProxy(ViewerProxy* proxy)
 
     // Set the module initialized flag.
     //moduleInitialized = true;
-
     initialize_visit_python_module();
 
     return 0;
@@ -19362,14 +19358,8 @@ cli_initvisit(int debugLevel, bool verbose,
     cli_argc_after_s = argc_after_s;
     cli_argv_after_s = argv_after_s;
 
-    std::cout << " cli_initvisit args" << std::endl;
-    
-    for(int i=0; i< cli_argc ;i++)
-    {
-        std::cout << " cli_argv[" << i << "] " << cli_argv[i] << std::endl;
-    }
-
     initialize_visit_python_module();
+
 }
 
 // ****************************************************************************
@@ -19633,9 +19623,7 @@ void initvisitmodule(void)
 //---------------------------------------------------------------------------//
 
 //---------------------------------------------------------------------------//
-#if defined(IS_PY3K)
-//---------------------------------------------------------------------------//
-// Helper for updating the method table in Python 3
+// Helper for updating our module's method table
 //---------------------------------------------------------------------------//
 void
 UpdateModuleMethods(PyObject *module,std::vector<PyMethodDef> &methods)
@@ -19659,35 +19647,36 @@ UpdateModuleMethods(PyObject *module,std::vector<PyMethodDef> &methods)
         }
     }
 }
-#endif
 
 //---------------------------------------------------------------------------//
 // One module entry point supporting both python 2 and 3.
 //---------------------------------------------------------------------------//
-
+// cyrush note: 
+// This init dance is a multi step process
+// There is probably a way to break things part to make the flow
+// of the process much easier to understand, but right now I am 
+// relying on following the control flow of the tried and true python 2 logic.
+//
+// One Python 2 change I made was to update the method table instead of creating
+// a new module on subsequent calls.
 //---------------------------------------------------------------------------//
-// Proper init calls this method multiple times. However the Python 2
-// approach for re-initing with additional methods does not work in Python 3.
-//---------------------------------------------------------------------------//
-
 PyObject *
 initialize_visit_python_module()
 {
     debug1 << "initialize_visit_python_module" << std::endl;
-    std::cout << "initialize_visit_python_module" << std::endl;
 
-    PyEval_InitThreads();
-    // save a pointer to the main PyThreadState object
-    mainThreadState = PyThreadState_Get();
-    ///http://porky.linuxjournal.com:8080/LJ/073/3641.html
-    ///according to the above article PyEval_InitThreads() is
-    ///acquiring lock and needs to be released.
-    //PyEval_ReleaseLock();
     //
     // Initialize the module, but only do it one time.
     //
+
+    // note: these actions are more like a prep step
+    // before we create the actual python module.
     if(!moduleInitialized)
     {
+        PyEval_InitThreads();
+        // save a pointer to the main PyThreadState object
+        mainThreadState = PyThreadState_Get();
+        
         MUTEX_CREATE();
 #ifndef POLLING_SYNCHRONIZE
         SYNC_CREATE();
@@ -19696,17 +19685,72 @@ initialize_visit_python_module()
         InitializeModule();
     }
 
-//---------------------------------------------------------------------------//
-#if defined(IS_PY3K)
-//---------------------------------------------------------------------------//
-    // in python 3, we only init once, and update the methods for any
-    // subsequent calls
+    // now create the module
     if(visitModule == 0)
     {
-        // for our first init, point to the beginning of our methods
-        // table
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)  // python 3
+//---------------------------------------------------------------------------//
         visitmodule_def.m_methods = &VisItMethods[0];
         visitModule = PyModule_Create(&visitmodule_def);
+
+        //
+        // we need to add our visit module to sys.modules.
+        //
+        // the multi call style of initialize_visit_python_module
+        // worked in python 2 b/c the module was created and
+        // added to the system modules.
+        // 
+        // in python 3, the story is a bit more complex. 
+        // unless we add this to the sys.modules
+        // calling initialize_visit_python_module multiple times
+        // can cause dlopens and imports that don't share the 
+        // same static vars, leading to havoc (well leading to 
+        // a viewer launch that doesn't the proper args)
+        // Oue  
+        //
+
+        PyObject *sys_module = PyImport_AddModule("sys"); //borrowed
+        if(sys_module == NULL)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "Failed to import 'sys'");
+            return NULL;
+        }
+
+        PyObject *sys_dict   = PyModule_GetDict(sys_module); //borrowed
+        if(sys_module == NULL)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "Failed obtain 'sys.__dict__'");
+            return NULL;
+        }
+
+        PyObject *sys_mods_dict = PyDict_GetItemString(sys_dict,
+                                                       "modules"); //borrowed
+        if(sys_mods_dict == NULL)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "Failed to obtain 'sys.modules'");
+            return NULL;
+        }
+
+        if( PyDict_SetItemString(sys_mods_dict, "visit", visitModule) != 0 )
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "Failed to add 'visit' to 'sys.modules'");
+            return NULL;
+        }
+//---------------------------------------------------------------------------//
+#else // PYTHON 2
+//---------------------------------------------------------------------------//
+
+        visitModule = Py_InitModule((char*)"visit",
+                                           &VisItMethods[0]);
+//---------------------------------------------------------------------------//
+#endif
+//---------------------------------------------------------------------------//
+
         // Add our Python Exceptions
         PyObject *visit_mod_dict = PyModule_GetDict(visitModule);
         VisItError = PyErr_NewException((char*)"visit.VisItException", NULL, NULL);
@@ -19715,32 +19759,16 @@ initialize_visit_python_module()
         PyDict_SetItemString(visit_mod_dict, "VisItInterrupt", VisItInterrupt);
     }
 
+    // check for a problem
     if(visitModule == 0)
     {
         // error
         return NULL;
     }
 
-    // update our methods table for the visit module
+    // update our methods table for the visit module on subsequent calls
+    // to init
     UpdateModuleMethods(visitModule,VisItMethods);
-
-//---------------------------------------------------------------------------//
-#else // py 2
-//---------------------------------------------------------------------------//
-
-    // multiple calls to Py_InitModule have worked in Python 2
-    visitModule = Py_InitModule((char*)"visit",
-                                           &VisItMethods[0]);
-
-    // Add our Python Exceptions
-    PyObject *visit_mod_dict = PyModule_GetDict(visitModule);
-    VisItError = PyErr_NewException((char*)"visit.VisItException", NULL, NULL);
-    PyDict_SetItemString(visit_mod_dict, "VisItException", VisItError);
-    VisItInterrupt = PyErr_NewException((char*)"visit.VisItInterrupt", NULL, NULL);
-    PyDict_SetItemString(visit_mod_dict, "VisItInterrupt", VisItInterrupt);
-//---------------------------------------------------------------------------//
-#endif
-//---------------------------------------------------------------------------//
 
     return visitModule;
 }
