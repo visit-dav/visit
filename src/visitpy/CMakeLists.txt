@@ -110,10 +110,11 @@ SET(PY_GEN_METADATA_OBJECTS
 # State Objects that we can't Code-Gen, or have customizations:
 #####################
 # ColorControlPointList -- OK? 
-# DatabaseCorrelation - NOT OK
 # SaveSubWindowAttributes -- OK?
-# View2DAttributes -- OK?
-# View2DAttributes -- OK?
+#
+# DatabaseCorrelation - NOT OK
+# View2DAttributes -- NOT OK -- need as_number worked out
+# View3DAttributes -- NOT OK -- need as_number worked out
 
 SET(PY_GEN_STATE_OBJECTS
     AnimationAttributes
@@ -168,8 +169,8 @@ SET(PY_GEN_STATE_OBJECTS
     SelectionVariableSummary
     SelectionList
     ThresholdOpAttributes
-    View2DAttributes # (see above note)
-    View3DAttributes # (see above note)
+    #View2DAttributes # (see above note)
+    #View3DAttributes # (see above note)
     ViewAttributes
     AxisTitles
     ViewAxisArrayAttributes

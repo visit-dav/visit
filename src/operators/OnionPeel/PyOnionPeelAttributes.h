@@ -5,6 +5,7 @@
 #ifndef PY_ONIONPEELATTRIBUTES_H
 #define PY_ONIONPEELATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <OnionPeelAttributes.h>
 
 //

@@ -5,6 +5,7 @@
 #ifndef PY_PDFATTRIBUTES_H
 #define PY_PDFATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PDFAttributes.h>
 
 //

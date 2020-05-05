@@ -5,6 +5,7 @@
 #ifndef PY_DATABASECORRELATION_H
 #define PY_DATABASECORRELATION_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <DatabaseCorrelation.h>
 #include <visitpy_exports.h>
 
