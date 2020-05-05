@@ -57,7 +57,6 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPNektar++Field.h>
 #include <avtIVPNektar++TimeVaryingField.h>
 #endif
-#include <avtIVPNIMRODField.h>
 #include <avtIVPFlashField.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
@@ -2175,8 +2174,6 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
 
 #endif
       }
-      else if( fieldType == PICS_FIELD_NIMROD )
-         return new avtIVPNIMRODField(ds, *locator);
 
       else if (isFace) 
       {
@@ -3289,17 +3286,6 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         // Add in the other fields that the Nektar++ Interpolation needs
 
         // Assume the user has selected velocity as the primary variable.
-    }
-    else if ( fieldType == PICS_FIELD_NIMROD )
-    {
-        // Add in the other fields that the NIMROD Interpolation needs
-
-        // Assume the user has selected B as the primary variable.
-        // Which is ignored.
-
-        // Fourier series grid and data stored on the original mesh
-//        out_dr->AddSecondaryVariable("hidden/grid_fourier_series");  // grid
-//        out_dr->AddSecondaryVariable("hidden/data_fourier_series");  // data
     }
     else if ( fieldType == PICS_FIELD_FLASH )
     {

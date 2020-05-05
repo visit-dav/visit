@@ -128,8 +128,11 @@ def steps_bv(opts,ctx):
 
 def steps_checkout(opts,ctx):
     git_working = pjoin(opts["build_dir"], "visit")
+    git_cmd = "clone"
+    if opts["git"].has_key("depth"):
+        git_cmd += " --depth=%s" % opts["git"]["depth"]
     ctx.actions["src_checkout"] = git(git_url=visit_git_path(git_opts=opts["git"]),
-                                      git_cmd="clone --depth=1",
+                                      git_cmd=git_cmd,
                                       description="checkout visit src",
                                       working_dir=opts["build_dir"],
                                       halt_on_error=False)
@@ -180,8 +183,6 @@ def steps_configure(opts,build_type,ctx):
             cmake_opts += " -DVISIT_ENABLE_XDB:BOOL=ON"    
     if opts.has_key("build_visit"):
         cmake_opts += " -DVISIT_CONFIG_SITE:PATH=%s/$(hostname).cmake" % config_dir
-    if opts.has_key("cmake_extra_args"):
-        cmake_opts += opts["cmake_extra_args"]
     elif opts.has_key("config_site"):
         cfg_site = opts["config_site"]
         cfg_site_abs = os.path.abspath(cfg_site)
@@ -190,6 +191,8 @@ def steps_configure(opts,build_type,ctx):
         else:
             cfg_site = cfg_site_abs
         cmake_opts += " -DVISIT_CONFIG_SITE:PATH=%s" % cfg_site
+    if opts.has_key("cmake_extra_args"):
+        cmake_opts += opts["cmake_extra_args"]
     ctx.actions["cmake_" + build_type ] = cmake(src_dir=pjoin(opts["build_dir"],"visit/src"),
                                                 cmake_bin=cmake_bin(opts),
                                                 cmake_opts=cmake_opts,
@@ -207,6 +210,15 @@ def steps_build(opts,build_type,ctx):
                                  nthreads=opts["make_nthreads"],
                                  working_dir=build_dir)
     ctx.triggers["build"].append(a_vbuild)
+
+def steps_manuals(opts,build_type,ctx):
+    build_dir      = pjoin(opts["build_dir"],"build.%s" % build_type.lower())
+    a_make_manuals = "manuals_" + build_type.lower()
+    ctx.actions[a_make_manuals] = make(description="creating manuals",
+                                   nthreads=opts["make_nthreads"],
+                                   working_dir=build_dir,
+                                   target="manuals")
+    ctx.triggers["build"].append(a_make_manuals)
 
 def steps_install(opts,build_type,ctx):
     build_dir      = pjoin(opts["build_dir"],"build.%s" % build_type.lower())
@@ -298,6 +310,7 @@ def steps_visit(opts,ctx):
     for build_type in opts["build_types"]:
         steps_configure(opts,build_type,ctx)
         steps_build(opts,build_type,ctx)
+        steps_manuals(opts,build_type,ctx)
         steps_install(opts,build_type,ctx)
         steps_package(opts,build_type,ctx)
         steps_sanity_checks(opts,build_type,ctx)

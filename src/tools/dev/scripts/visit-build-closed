@@ -104,6 +104,10 @@
 #   I updated the 3.0.0 cmake paths to 3.1.0 and added a "make manuals"
 #   step to build the sphinx manuals. I also removed zin and shark.
 #
+#   Eric Brugger, Tue Feb 25 08:22:01 PST 2020
+#   Updated the compiler version in the cmake path for winnipeg and
+#   trinity.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -215,7 +219,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/misc/gapps/visit/thirdparty_shared/3.1.0/cmake/3.9.3/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/misc/gapps/visit/thirdparty_shared/3.1.0/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
 make manuals >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -367,7 +371,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/projects/views/visit/thirdparty_shared/3.1.0/cmake/3.9.3/linux-x86_64_gcc-7.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/usr/projects/views/visit/thirdparty_shared/3.1.0/cmake/3.9.3/linux-x86_64_gcc-8.2/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make manuals >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..

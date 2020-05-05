@@ -232,6 +232,9 @@
 //    Eric Brugger, Tue Feb 11 13:08:08 PST 2020
 //    Changed the date on the splash screen to February 2020.
 //
+//    Eric Brugger, Mon Mar  9 15:16:06 PDT 2020
+//    Changed the date on the splash screen to April 2020.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
