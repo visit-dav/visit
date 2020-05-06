@@ -55,11 +55,13 @@ TurnMaterialsOn()
 text = Query("Variable Sum")
 TestText("mat_149", text)
 
+DeleteAllPlots()
+CloseDatabase(data_path("silo_pdb_test_data/ucd3d.silo"))
+
 # Weighted volume query on cells of different dimension
 OpenDatabase(data_path("silo_pdb_test_data/multi_dim_cells.silo"))
 AddPlot("Pseudocolor", "coordx", 1, 1)
 DrawPlots()
-SetQueryFloatFormat("%g")
 text = Query("Weighted Variable Sum")
 TestText("vws_mult_dim", text)
 
