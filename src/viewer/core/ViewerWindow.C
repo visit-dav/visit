@@ -6629,6 +6629,11 @@ ViewerWindow::Pick(int x, int y, const INTERACTION_MODE pickMode)
 //    Brad Whitlock, Wed Apr 30 09:37:27 PDT 2008
 //    Support for internationalization.
 //
+//    Eric Brugger, Wed May  6 10:57:35 PDT 2020
+//    Add a check for no active non-hidden plots and return false if
+//    there aren't any. This fixes a crash. Add some error and warning
+//    messages if the operation failed.
+//
 // ****************************************************************************
 
 bool
@@ -6644,25 +6649,45 @@ ViewerWindow::GetPickAttributesForScreenPoint(double sx, double sy,
         ViewerPlotList *plist = GetPlotList();
         intVector plotIds;
         plist->GetActivePlotIDs(plotIds);
-        EngineKey key = plist->GetPlot(plotIds[0])->GetEngineKey();
-        if (GetViewerEngineManager()->EngineExists(key))
+
+        //
+        // Its an error if there aren't any active non-hidden plot.
+        //
+        if (plotIds.size() == 0)
         {
-            intVector netIds;
-            for (size_t i = 0; i < plotIds.size(); i++)
+            GetViewerMessaging()->Error(
+                TR("Choose center requires an active non-hidden plot. "
+                   "Please select a plot and try again."));
+            retval = false;
+        }
+        else
+        {
+            EngineKey key = plist->GetPlot(plotIds[0])->GetEngineKey();
+            if (GetViewerEngineManager()->EngineExists(key))
             {
-                netIds.push_back(plist->GetPlot(plotIds[i])->GetNetworkID());
+                intVector netIds;
+                for (size_t i = 0; i < plotIds.size(); i++)
+                {
+                    netIds.push_back(plist->GetPlot(plotIds[i])->GetNetworkID());
+                }
+                PickAttributes pick;
+                pick.SetIncidentElements(netIds);
+                double sc[3];
+                sc[0] = sx;
+                sc[1] = sy;
+                sc[2] = 0.;
+                pick.SetRayPoint1(sc);
+                GetViewerEngineManager()->Pick(key, -1, GetWindowId(),
+                                               &pick, pick);
+                pa = pick;
+                retval = pick.GetFulfilled();
+                if (retval == false)
+                {
+                    GetViewerMessaging()->Warning(
+                        TR("VisIt could not set the center of rotation. "
+                           "You might not have clicked on a plot."));
+                }
             }
-            PickAttributes pick;
-            pick.SetIncidentElements(netIds);
-            double sc[3];
-            sc[0] = sx;
-            sc[1] = sy;
-            sc[2] = 0.; 
-            pick.SetRayPoint1(sc);
-            GetViewerEngineManager()->Pick(key, -1, GetWindowId(),
-                                           &pick, pick);
-            pa = pick;
-            retval = pick.GetFulfilled();
         }
     }
     CATCH2(VisItException, e)
