@@ -6675,7 +6675,7 @@ ViewerWindow::GetPickAttributesForScreenPoint(double sx, double sy,
                 double sc[3];
                 sc[0] = sx;
                 sc[1] = sy;
-                sc[2] = 0.; 
+                sc[2] = 0.;
                 pick.SetRayPoint1(sc);
                 GetViewerEngineManager()->Pick(key, -1, GetWindowId(),
                                                &pick, pick);
