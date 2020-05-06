@@ -971,6 +971,10 @@ ChooseCenterOfRotationAction::FinishCB(void *data, bool success,
 //   Brad Whitlock, Tue Apr 29 11:54:47 PDT 2008
 //   Support for internationalization.
 //
+//   Eric Brugger, Wed May  6 10:57:35 PDT 2020
+//   Moved a warning message to ViewerWindow::GetPickAttributesForScreenPoint
+//   to eliminate the possiblity of getting multiple error messages.
+//
 // ****************************************************************************
 
 void
@@ -1013,12 +1017,6 @@ ChooseCenterOfRotationAction::FinishExecute(bool success,
         // Set the new center of rotation.
         windowMgr->SetCenterOfRotation(window->GetWindowId(),
                                        pt[0], pt[1], pt[2]);
-    }
-    else 
-    {
-        GetViewerMessaging()->Warning(
-            TR("VisIt could not set the center of rotation. "
-               "You might not have clicked on a plot."));
     }
 
      //
