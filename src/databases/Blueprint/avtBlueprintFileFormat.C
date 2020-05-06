@@ -544,6 +544,8 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
 //    Cyrus Harrison, Mon Mar  9 15:45:17 PDT 2020
 //    Use explicit map from registered mesh name to bp mesh and topo names.
 //
+//    Mark C. Miller, Tue May  5 22:23:51 PDT 2020
+//    Add expressions.
 // ****************************************************************************
 void
 avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md,
@@ -727,7 +729,32 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                 m_mfem_mesh_map[var_topo_name] = true;
             }
 
-            if (ncomps == 1)
+            // A field with a 'derivation' member is a VisIt expression
+            if (n_field.has_child("derivation") &&
+                n_field["derivation"].as_string() != "")
+            {
+                Expression expr;
+                expr.SetName(varname_wmesh);
+                if (ncomps == 1)
+                    expr.SetType(Expression::ScalarMeshVar);
+                else if (ndims == 2 && ncomps == 2)
+                    expr.SetType(Expression::VectorMeshVar);
+                else if (ndims == 2 && ncomps == 3)
+                    expr.SetType(Expression::SymmetricTensorMeshVar);
+                else if (ndims == 2 && ncomps == 4)
+                    expr.SetType(Expression::TensorMeshVar);
+                else if (ndims == 3 && ncomps == 3)
+                    expr.SetType(Expression::VectorMeshVar);
+                else if (ndims == 3 && ncomps == 6)
+                    expr.SetType(Expression::SymmetricTensorMeshVar);
+                else if (ndims == 3 && ncomps == 9)
+                    expr.SetType(Expression::TensorMeshVar);
+                else
+                    expr.SetType(Expression::ArrayMeshVar);
+                expr.SetDefinition(n_field["derivation"].as_string());
+                md->AddExpression(&expr);
+            }
+            else if (ncomps == 1)
                 md->Add(new avtScalarMetaData(varname_wmesh, var_mesh_name, cent));
             else if (ndims == 2 && ncomps == 2)
                 md->Add(new avtVectorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
