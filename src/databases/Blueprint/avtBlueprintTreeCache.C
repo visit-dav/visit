@@ -1037,9 +1037,10 @@ avtBlueprintTreeCache::SetProtocol(const std::string &protocol)
 // TODO: We should cache this, not regen every fetch
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-void gen_domain_to_file_map(int num_domains,
-                            int num_files,
-                            Node &out)
+static void
+gen_domain_to_file_map(int num_domains,
+                       int num_files,
+                       Node &out)
 {
     int num_domains_per_file = num_domains / num_files;
     int left_overs = num_domains % num_files;
