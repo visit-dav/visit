@@ -39,6 +39,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where 2D axes annotation font settings weren't always saved to config files.</li>
   <li>Fixed a bug where lines starting with !TIME and !ENSEMBLE ".visit" files weren't being processed properly and were interpreted as file names.</li>
   <li>Reduced amount of '.' written to log files while waiting for processes to connect.</li>
+  <li>Fixed a crash when performing a choose center operation when there weren't any non-hidden active plots while in scalable rendering mode. It now prints an error message requesting that the user select a non-hidden plot.</li>
 </ul>
 
 <a name="Enhancements"></a>
