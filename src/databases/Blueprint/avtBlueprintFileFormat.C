@@ -751,7 +751,20 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                     expr.SetType(Expression::TensorMeshVar);
                 else
                     expr.SetType(Expression::ArrayMeshVar);
-                expr.SetDefinition(n_field["derivation"].as_string());
+                // Find all variable references in defn and replace with
+                // parent mesh name. It would be good to auto-recenter here
+                // to if association of variable doesn't agree with target
+                std::string tmp = n_field["derivation"].as_string();
+                size_t ltidx=0;
+                while ((ltidx = tmp.find('<', ltidx)) != std::string::npos)
+                {
+                    size_t gtidx = tmp.find('>', ltidx+1);
+                    std::string vname(tmp, ltidx+1, gtidx-ltidx-1);
+                    tmp.erase(ltidx+1, gtidx-ltidx-1);
+                    tmp.insert(ltidx+1, var_mesh_name + "/" + vname);
+                    ltidx += var_mesh_name.length() + 1 + vname.length() + 1;
+                }
+                expr.SetDefinition(tmp);
                 md->AddExpression(&expr);
             }
             else if (ncomps == 1)
