@@ -105,7 +105,7 @@ PMDFile::~PMDFile()
 // Method: PMDFile::OpenFile
 //
 // Purpose:
-//      Open the OpenPMD file
+//      Open the openPMD file
 //
 // Programmer: Mathieu Lobet
 // Creation: Fri Oct 14 2016
@@ -162,7 +162,7 @@ void PMDFile::ScanFileAttributes()
     size_t   size;
     int      nPoints;
 
-    // OpenPMD files always contain a data group at the root
+    // openPMD files always contain a data group at the root
     groupId = H5Gopen(fileId, "/",H5P_DEFAULT);
 
     // Number of attributes
@@ -185,7 +185,7 @@ void PMDFile::ScanFileAttributes()
         // Size of an element (number of char for instance)
         size = H5Tget_size (atype);
 
-        if (strcmp(attrName,"openPMD")==0)
+        if (strcmp(attrName, "openPMD")==0)
         {
             char *buffer = new char[size + 1];
 
@@ -193,7 +193,7 @@ void PMDFile::ScanFileAttributes()
             H5Aread (attrId, atype, buffer);
             buffer[size] = '\0';
 
-            this->version = buffer;
+            this->version = buffer; // validate value and abort!
 
             delete [] buffer;
         }
@@ -263,7 +263,7 @@ void PMDFile::ScanIterations()
     hid_t        aspace;
     H5O_info_t   objectInfo;
 
-    // OpenPMD files always contain a data group at the root
+    // openPMD files always contain a data group at the root
     groupId = H5Gopen(fileId, "/data",H5P_DEFAULT);
 
     //H5Gget_num_objs(group_iterations->getId(), &nobj);
@@ -408,7 +408,7 @@ void PMDFile::Print()
 {
 
     cout << " File: " << this->filePath << endl;
-    cout << " OpenPMD Version: " << this->version << endl;
+    cout << " openPMD standard: " << this->version << endl;
 
     cout << endl;
     cout << " Number of iteration: " << this->GetNumberIterations()
@@ -441,7 +441,7 @@ int PMDFile::GetNumberIterations() const
 // Method: PMDFile::CloseFile
 //
 // Purpose:
-//      This method closes the opened OpenPMD file.
+//      This method closes the opened openPMD file.
 //
 // Programmer: Mathieu Lobet
 // Creation:   Fri Oct 14 2016
@@ -470,7 +470,7 @@ void PMDFile::CloseFile()
 //      numValues : number of element to read
 //      factor : multiplication factor applied to all elements of array
 //      fieldDataClass : Dataset type (H5T_FLOAT...)
-//      path : path to the data set in the OpenPMD file
+//      path : path to the data set in the openPMD file
 //
 // Returns:  <0 on failure, 0 on success.
 //

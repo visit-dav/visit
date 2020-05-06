@@ -60,8 +60,8 @@ using namespace std;
 //
 // Purpose:
 //	  This class enables to manage the different iterations of
-//	  an OpenPMD file.
-//	  When an OpenPMD file is read, a PMDIteration is created
+//	  an openPMD file.
+//	  When an openPMD file is read, a PMDIteration is created
 //	  for each iteration.
 //
 // Programmer: Mathieu Lobet
