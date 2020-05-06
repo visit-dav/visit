@@ -49,6 +49,7 @@
 
 #include "PMDFile.h"
 
+#include <cassert>
 #include <stdio.h>
 
 #include <DebugStream.h>
@@ -202,10 +203,11 @@ void PMDFile::ScanFileAttributes()
             char *buffer = new char[size + 1];
 
             // Read attribute
-            H5Aread (attrId, atype, buffer);
+            H5Aread (attrId, atype, buffer);  // not NULL-terminated
             buffer[size] = '\0';
 
-            strncpy(this->meshesPath,buffer,sizeof(buffer));
+            assert(sizeof(this->meshesPath) >= size+1); // FIXME: clean abort in non-debug builds, too
+            strncpy(this->meshesPath, buffer, size);  // Adds a null terminator
             delete [] buffer;
 
         }
@@ -214,10 +216,11 @@ void PMDFile::ScanFileAttributes()
             char *buffer = new char[size + 1];
 
             // Read attribute
-            H5Aread (attrId, atype, buffer);
+            H5Aread (attrId, atype, buffer);  // not NULL-terminated
             buffer[size] = '\0';
 
-            strncpy(this->particlesPath,buffer,sizeof(buffer));
+            assert(sizeof(this->particlesPath) >= size+1); // FIXME: clean abort in non-debug builds, too
+            strncpy(this->particlesPath, buffer, size);  // Adds a null terminator
 
             delete [] buffer;
         }
