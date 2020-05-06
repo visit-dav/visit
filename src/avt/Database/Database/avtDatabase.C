@@ -1444,6 +1444,9 @@ avtDatabase::Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Thu Jun  8 14:15:28 PDT 2017
 //    Skip invalid variables too
+//
+//    Eddie Rusu, Wed May  6 15:43:52 PDT 2020
+//    Added newer mesh quality metrics.
 // ****************************************************************************
 
 void
