@@ -1208,12 +1208,12 @@ PoincareAttributes_SetFieldType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the fieldType in the object.
-    if(ival >= 0 && ival < 7)
+    if(ival >= 0 && ival < 6)
         obj->data->SetFieldType(PoincareAttributes::FieldType(ival));
     else
     {
         fprintf(stderr, "An invalid fieldType value was given. "
-                        "Valid values are in the range of [0,6]. "
+                        "Valid values are in the range of [0,5]. "
                         "You can also use the following names: "
                         "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
                         "NektarPPField.");
