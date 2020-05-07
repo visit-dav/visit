@@ -163,8 +163,11 @@ void PMDFile::ScanFileAttributes()
     size_t   size;
     int      nPoints;
 
+    // is this a valid openPMD file with an "openPMD" attribute in / ?
+    bool     isValid = false;
+
     // openPMD files always contain a data group at the root
-    groupId = H5Gopen(fileId, "/",H5P_DEFAULT);
+    groupId = H5Gopen(fileId, "/", H5P_DEFAULT);
 
     // Number of attributes
     nbAttr = H5Aget_num_attrs(groupId);
@@ -197,34 +200,7 @@ void PMDFile::ScanFileAttributes()
             this->version = buffer;
 
             delete [] buffer;
-
-            // validate openPMD standard version range
-            char version_error[1024];
-            if (VersionGreaterThan("1.0.0", this->version)) // 1.0.0>file
-            {
-                // file format too old: < 1.0.0
-                snprintf(version_error, 1024,
-                         "Standard '%s' in openPMD file is too old! "
-                         "Supported version range: >=1.0.0,<2.0.0 ",
-                         this->version.c_str());
-                debug5 << "The current file ID '" << fileId
-                       << "' provides an unsupported openPMD standard: "
-                       << this->version << endl;
-                EXCEPTION1(InvalidDBTypeException, version_error);
-            }
-            if (!VersionGreaterThan("2.0.0", this->version)) // !2.0.0>file aka file>=2.0.0
-            {
-                // file format too new: >= 2.0.0
-                snprintf(version_error, 1024,
-                         "Standard '%s' in openPMD file is too new! "
-                         "Maybe try a newer version of VisIt? "
-                         "Supported version range: >=1.0.0,<2.0.0 ",
-                         this->version.c_str());
-                debug5 << "The current file ID '" << fileId
-                       << "' provides an unsupported openPMD standard: "
-                       << this->version << endl;
-                EXCEPTION1(InvalidDBTypeException, version_error);
-            }
+            isValid = true;
         }
         else if (strcmp(attrName,"meshesPath")==0)
         {
@@ -250,6 +226,49 @@ void PMDFile::ScanFileAttributes()
 
             delete [] buffer;
         }
+    }
+
+    // missing self-identification as openPMD file
+    if (!isValid)
+    {
+        char format_error[1024];
+        snprintf(format_error, 1024,
+                 "Not an openPMD file: Missing 'openPMD' identifier in /");
+        debug5 << "The current file ID '" << fileId
+               << "' is not an openPMD file" << endl;
+        CloseFile();
+        EXCEPTION1(InvalidDBTypeException, format_error);
+    }
+
+    // validate openPMD standard version range
+    if (VersionGreaterThan("1.0.0", this->version)) // 1.0.0>file
+    {
+        // file format too old: < 1.0.0
+        char version_error[1024];
+        snprintf(version_error, 1024,
+                 "Standard '%s' in openPMD file is too old! "
+                 "Supported version range: >=1.0.0,<2.0.0 ",
+                 this->version.c_str());
+        debug5 << "The current file ID '" << fileId
+               << "' provides an unsupported openPMD standard: "
+               << this->version << endl;
+        CloseFile();
+        EXCEPTION1(InvalidDBTypeException, version_error);
+    }
+    if (!VersionGreaterThan("2.0.0", this->version)) // !2.0.0>file aka file>=2.0.0
+    {
+        // file format too new: >= 2.0.0
+        char version_error[1024];
+        snprintf(version_error, 1024,
+                 "Standard '%s' in openPMD file is too new! "
+                 "Maybe try a newer version of VisIt? "
+                 "Supported version range: >=1.0.0,<2.0.0 ",
+                 this->version.c_str());
+        debug5 << "The current file ID '" << fileId
+               << "' provides an unsupported openPMD standard: "
+               << this->version << endl;
+        CloseFile();
+        EXCEPTION1(InvalidDBTypeException, version_error);
     }
 
 }
