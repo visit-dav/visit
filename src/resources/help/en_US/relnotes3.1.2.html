@@ -39,7 +39,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug preventing full removal of the axes when using OSPRay rendering.</li>
   <li>Fixed a bug where 2D axes annotation font settings weren't always saved to config files.</li>
   <li>Fixed a bug where lines starting with !TIME and !ENSEMBLE ".visit" files weren't being processed properly and were interpreted as file names.</li>
+  <li>Fixed a bug that was producing bad volumes on datasets with cells of multiple dimensions.</li>
   <li>Reduced amount of '.' written to log files while waiting for processes to connect.</li>
+  <li>Fixed a crash when performing a choose center operation when there weren't any non-hidden active plots while in scalable rendering mode. It now prints an error message requesting that the user select a non-hidden plot.</li>
+  <li>Forced VisIt to always use 'Light Mode' on macOS until 'Dark Mode' is supported for Qt.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -47,12 +50,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Removed the pbatch launch profile from the Lawrence Livermore National Laboratory's Max host profile.</li>
   <li>Added host profiles for the Lawrence Livermore National Laboratory's Magma system.</li>
+  <li>Added host profiles for the Lawrence Livermore National Laboratory's Boraxo system.</li>
   <li>Enhanced the CGNS plugin to support a mesh decomposed across multiple CGNS files, one block per file as might be typical of file-per-processor parallel I/O. This requires that each file contain just a single CGNS mesh block. In addition, if all files do not also contain the same number of time steps, results will be indeterminate. The collection of CGNS files can be grouped together into a .visit file or follow the naming convention "basename.cgns.nblocks.iblock", where basename is any string, cgns is the string "cgns", nblocks is the number of blocks, and iblock is the block index.</li>
   <li>Enhanced VTK plugin to support reading and writing VisIt expressions as non-specific FIELD variable named "VisItExpressions" of type string. To see an example, look at the example file named <code>higher_order_triangles.vtk</code> in <a href="https://github.com/visit-dav/visit/blob/develop/data/vtk_test_data.7z?raw=true">vtk_test_data.7z</a></li>
   <li>Enhanced the Pick Through Time to use a substantially faster algorithm by default. This algorithm will be enabled when preserving the picked element id. When preserving the picked coordinate, the original algorithm will be used instead.</li>
   <li>Enhanced the new default Pick Through Time algorithm to handle vectors, tensors, and arrays. For vectors, the magnitude is used. For tensors and arrays, the major eigenvalue is used.</li>
   <li>Expressions in the GUI Expression window will now appear alphabetically sorted.</li>
   <li>Enhanced Blueprint plugin to support expressions.</li>
+  <li>The Blueprint Plugin now supports Ascent outputs with multiple domains per file.</li>
 </ul>
 
 <a name="Dev_changes"></a>
