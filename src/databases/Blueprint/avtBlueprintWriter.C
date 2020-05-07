@@ -196,6 +196,7 @@ avtBlueprintWriter::WriteHeaders(const avtDatabaseMetaData *md,
     m_meshName = GetMeshName(md);
     m_time     = GetTime();
     m_cycle    = GetCycle();
+    exprList   = md->GetExprList();
 }
 
 
@@ -243,7 +244,7 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
 
     int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
-    avtBlueprintDataAdaptor::BP::VTKToBlueprint(mesh, ds, ndims);
+    avtBlueprintDataAdaptor::BP::VTKToBlueprint(mesh, ds, ndims, &exprList);
 
     Node verify_info;
     if(!blueprint::mesh::verify(mesh,verify_info))

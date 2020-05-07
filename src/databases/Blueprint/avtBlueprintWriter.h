@@ -11,6 +11,8 @@
 
 #include <avtDatabaseWriter.h>
 
+#include <ExpressionList.h>
+
 #include <string>
 #include <vector>
 
@@ -53,6 +55,8 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
     bool           m_genRoot;
     conduit::Node  n_root_file;
     std::string    m_root_file;
+
+    ExpressionList exprList;
 
     void           GenRootNode(conduit::Node &mesh,
                                const std::string output_dir);
