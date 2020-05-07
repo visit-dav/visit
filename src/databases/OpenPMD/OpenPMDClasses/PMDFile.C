@@ -53,13 +53,13 @@
 #include <stdio.h>
 
 #include <DebugStream.h>
+#include <InstallationFunctions.h>
 
 #ifndef TEST
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
 #include <InvalidTimeStepException.h>
-#include <InvalidDBTypeException.h>
 #endif
 
 // ***************************************************************************
@@ -144,6 +144,8 @@ void PMDFile::OpenFile(char * PMDFilePath)
 //
 // Modifications:
 // Nov. 9 2017 - M. Lobet - add buffer + `\0` for a correct reading
+// May  6 2020 - A. Huebl - now really fix the above bug :-)
+//                          add version verification for read files
 //
 // ***************************************************************************
 void PMDFile::ScanFileAttributes()
@@ -194,9 +196,41 @@ void PMDFile::ScanFileAttributes()
             H5Aread (attrId, atype, buffer);
             buffer[size] = '\0';
 
-            this->version = buffer; // validate value and abort!
+            this->version = buffer;
 
             delete [] buffer;
+
+            // validate openPMD standard version range
+            char version_error[1024];
+            if (VersionGreaterThan("1.0.0", this->version)) // 1.0.0>file
+            {
+                // file format too old: < 1.0.0
+                snprintf(version_error, 1024,
+                         "Standard '%s' in openPMD file is too old! "
+                         "Supported version range: >=1.0.0,<2.0.0 ",
+                         this->version.c_str());
+#ifndef TEST
+                EXCEPTION1(InvalidDBTypeException, version_error);
+#endif
+                debug5 << "The current file ID '" << fileId
+                       << "' provides an unsupported openPMD standard: "
+                       << this->version << endl;
+            }
+            if (!VersionGreaterThan("2.0.0", this->version)) // !2.0.0>file aka file>=2.0.0
+            {
+                // file format too old: >= 2.0.0
+                snprintf(version_error, 1024,
+                         "Standard '%s' in openPMD file is too new! "
+                         "Maybe try a newer version of VisIt? "
+                         "Supported version range: >=1.0.0,<2.0.0 ",
+                         this->version.c_str());
+#ifndef TEST
+                EXCEPTION1(InvalidDBTypeException, version_error);
+#endif
+                debug5 << "The current file ID '" << fileId
+                       << "' provides an unsupported openPMD standard: "
+                       << this->version << endl;
+            }
         }
         else if (strcmp(attrName,"meshesPath")==0)
         {
