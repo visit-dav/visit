@@ -160,7 +160,7 @@ if (VISIT_MESAGL_DIR AND NOT MESAGL_LIBRARY)
   endif(VISIT_LLVM_DIR)
 
   # prevent VTK's FindOpenGL from finding the wrong opengl.
-  set(OPENGL_opengl_LIBRARY "" CACHE INTERNAL)
+  set(OPENGL_opengl_LIBRARY "" CACHE INTERNAL "")
 
   install(DIRECTORY ${VISIT_BINARY_DIR}/lib/mesagl
           DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
