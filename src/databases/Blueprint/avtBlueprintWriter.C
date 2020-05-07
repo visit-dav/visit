@@ -244,7 +244,7 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
 
     int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
-    avtBlueprintDataAdaptor::BP::VTKToBlueprint(mesh, ds, ndims, &exprList);
+    avtBlueprintDataAdaptor::BP::VTKToBlueprint(mesh, ds, ndims);
 
     Node verify_info;
     if(!blueprint::mesh::verify(mesh,verify_info))
@@ -326,8 +326,9 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
 
         std::string ename = expr.GetName();
 printf("Adding expression \"%s\"\n", ename.c_str());
-        std::string expr_path = "expressions/" + ename;
-        bp_idx[expr_path + "/topology"] = mesh.name();
+        std::string expr_path = "mesh/expressions/" + ename;
+#warning HACK
+        bp_idx[expr_path + "/topology"] = "topo";
         int ncomps = 1;
         switch (expr.GetType())
         {
@@ -341,8 +342,6 @@ printf("Adding expression \"%s\"\n", ename.c_str());
         bp_idx[expr_path + "/number_of_components"] = ncomps;
         bp_idx[expr_path + "/definition"] = expr.GetDefinition();
     }
-
-
 
     // work around conduit bug
     if(mesh.has_path("state/cycle"))

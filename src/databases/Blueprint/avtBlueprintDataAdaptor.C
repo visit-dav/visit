@@ -1881,9 +1881,7 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
 // ****************************************************************************
 void avtBlueprintDataAdaptor::BP::VTKFieldsToBlueprint(conduit::Node &node,
                                                        const std::string topo_name,
-                                                       vtkDataSet* dataset,
-                                                       const int ndims,
-                                                       const ExpressionList *el)
+                                                       vtkDataSet* dataset)
 {
   vtkPointData *pd = dataset->GetPointData();
   vtkCellData *cd  = dataset->GetCellData();
@@ -1926,34 +1924,6 @@ void avtBlueprintDataAdaptor::BP::VTKFieldsToBlueprint(conduit::Node &node,
          VTKDataArrayToNode(node[field_path + "/values"], arr);
     }
   }
-
-printf("el->GetNumExpressions() = %d\n", el->GetNumExpressions());
-
-  for (int i = 0; i < el->GetNumExpressions(); i++)
-  {
-      Expression const expr = el->GetExpressions(i);
-
-      if (expr.GetFromOperator()) continue;
-      if (expr.GetAutoExpression()) continue;
-      if (expr.GetHidden()) continue;
-
-      std::string ename = expr.GetName();
-printf("Adding expression \"%s\"\n", ename.c_str());
-      std::string expr_path = "expressions/" + ename;
-      node[expr_path + "/topology"] = topo_name;
-      int ncomps = 1;
-      switch (expr.GetType())
-      {
-          case Expression::CurveMeshVar:  ncomps = 1;    break;
-          case Expression::ScalarMeshVar: ncomps = 1;   break;
-          case Expression::VectorMeshVar: ncomps = ndims;   break;
-          case Expression::SymmetricTensorMeshVar: ncomps = (ndims == 2 ? 3 : 6);   break;
-          case Expression::TensorMeshVar: ncomps = ndims * ndims;   break;
-          default: break;
-      }
-      node[expr_path + "/number_of_components"] = ncomps;
-      node[expr_path + "/definition"] = expr.GetDefinition();
-    }
 }
 
 // ****************************************************************************
@@ -1971,8 +1941,7 @@ printf("Adding expression \"%s\"\n", ename.c_str());
 void
 avtBlueprintDataAdaptor::BP::VTKToBlueprint(conduit::Node &mesh,
                                             vtkDataSet* dataset,
-                                            const int ndims,
-                                            const ExpressionList *el)
+                                            const int ndims)
 {
 
 
@@ -2048,6 +2017,6 @@ avtBlueprintDataAdaptor::BP::VTKToBlueprint(conduit::Node &mesh,
      vtkUnstructuredToNode(mesh[topo_path + "/elements"], grid, ndims);
    }
 
-   avtBlueprintDataAdaptor::BP::VTKFieldsToBlueprint(mesh, topo_name, dataset, ndims, el);
+   avtBlueprintDataAdaptor::BP::VTKFieldsToBlueprint(mesh, topo_name, dataset);
 
 }

@@ -19,12 +19,6 @@
 //-----------------------------------------------------------------------------
 #include "mfem.hpp"
 
-
-//-----------------------------------------------------------------------------
-// VisIt forward decls
-//-----------------------------------------------------------------------------
-class ExpressionList;
-
 //-----------------------------------------------------------------------------
 // vtk forward decls
 //-----------------------------------------------------------------------------
@@ -63,14 +57,11 @@ public:
     public:
       static void VTKFieldsToBlueprint(conduit::Node &node,
                                        const std::string topo_name,
-                                       vtkDataSet* dataset,
-                                       const int ndims,
-                                       const ExpressionList* el);
+                                       vtkDataSet* dataset);
 
       static void VTKToBlueprint(conduit::Node &mesh,
                                  vtkDataSet* dataset,
-                                 const int ndims,
-                                 const ExpressionList* el);
+                                 const int ndims);
   };
   /// Helpers for converting Mesh and Field Blueprint conforming data
   /// to mfem instances + helpers for refining mfem data to vtk.
