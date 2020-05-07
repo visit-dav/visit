@@ -208,7 +208,7 @@ avtOpenPMDFileFormat::GetCycles(std::vector<int> &cycles)
     for (std::vector<PMDIteration>::iterator it = iterations->begin() ;
          it != iterations->end(); ++it)
     {
-        cycle = atoi(it->name);
+        cycle = atoi(it->name.c_str());
 
         // Store the cycles in the vector.
         cycles.push_back(cycle);

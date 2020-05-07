@@ -83,11 +83,11 @@ class PMDIteration
 
 	// Iteration attributes
 	/// Iteration name
-	char	name[20];
+	string	name;
 	/// Mesh path in the iteration group
-	char	meshesPath[64];
+	string	meshesPath;
 	/// Particles path in the iteration group
-	char	particlesPath[64];
+	string	particlesPath;
 	/// Iteration time step
 	float  	dt;
 	/// Iteration corresponding time

@@ -79,8 +79,6 @@
 PMDFile::PMDFile()
 {
     fileId=-1;
-    this->version = "";
-    strcpy(this->meshesPath,"");
 }
 
 // ***************************************************************************
@@ -240,8 +238,7 @@ void PMDFile::ScanFileAttributes()
             H5Aread (attrId, atype, buffer);  // not NULL-terminated
             buffer[size] = '\0';
 
-            assert(sizeof(this->meshesPath) >= size+1); // FIXME: clean abort in non-debug builds, too
-            strncpy(this->meshesPath, buffer, size);  // Adds a null terminator
+            this->meshesPath = buffer;
             delete [] buffer;
 
         }
@@ -253,8 +250,7 @@ void PMDFile::ScanFileAttributes()
             H5Aread (attrId, atype, buffer);  // not NULL-terminated
             buffer[size] = '\0';
 
-            assert(sizeof(this->particlesPath) >= size+1); // FIXME: clean abort in non-debug builds, too
-            strncpy(this->particlesPath, buffer, size);  // Adds a null terminator
+            this->particlesPath = buffer;
 
             delete [] buffer;
         }
@@ -329,13 +325,13 @@ void PMDFile::ScanIterations()
             iterationId = H5Gopen2(groupId, iterationName, H5P_DEFAULT);
 
             // Save the iteration name
-            strcpy(iteration.name,iterationName);
+            iteration.name = iterationName;
 
             // Save mesh path
-            strcpy(iteration.meshesPath,this->meshesPath);
+            iteration.meshesPath = this->meshesPath;
 
             // Save particles path
-            strcpy(iteration.particlesPath,this->particlesPath);
+            iteration.particlesPath = this->particlesPath;
 
             // Number of attributes
             nbAttr = H5Aget_num_attrs(iterationId);

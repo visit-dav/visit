@@ -90,9 +90,9 @@ class PMDFile
 		/// openPMD standard version
 		string                  version;
 		/// Meshes path
-		char 					meshesPath[64];
+		string 					meshesPath;
 		// Particles path
-		char 					particlesPath[64];
+		string 					particlesPath;
 		/// Id of the file after opening
 		hid_t                   fileId;
 
