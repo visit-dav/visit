@@ -281,6 +281,8 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //
 //  Modifications:
 //
+//  Mark C. Miller, Thu May  7 15:04:11 PDT 2020
+//  Add expressions output
 // ****************************************************************************
 void
 avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
@@ -325,9 +327,11 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
         if (expr.GetHidden()) continue;
 
         std::string ename = expr.GetName();
-printf("Adding expression \"%s\"\n", ename.c_str());
+        // Replace any slash chars in expr name with underscores.
+        // If we don't, Conduit interprets slash chars as new nodes.
+        for (std::string::size_type j = 0; j < ename.size(); j++)
+            if (ename[j] == '/') ename[j] = '_';
         std::string expr_path = "mesh/expressions/" + ename;
-#warning HACK
         bp_idx[expr_path + "/topology"] = "topo";
         int ncomps = 1;
         switch (expr.GetType())
