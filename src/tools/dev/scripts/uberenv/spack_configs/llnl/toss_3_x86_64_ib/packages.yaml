@@ -1,0 +1,59 @@
+
+# -------------------------------------------------------------------------
+# This file controls default concretization preferences for Spack.
+#
+# Settings here are versioned with Spack and are intended to provide
+# sensible defaults out of the box. Spack maintainers should edit this
+# file to keep it current.
+#
+# Users can override these settings by editing the following files.
+#
+# Per-spack-instance settings (overrides defaults):
+#   $SPACK_ROOT/etc/spack/packages.yaml
+#
+# Per-user settings (overrides default and site settings):
+#   ~/.spack/packages.yaml
+# -------------------------------------------------------------------------
+packages:
+  all:
+    compiler: [gcc, intel, pgi, clang, xl, nag]
+    providers:
+      awk: [gawk]
+      blas: [openblas]
+      daal: [intel-daal]
+      elf: [elfutils]
+      golang: [gcc]
+      ipp: [intel-ipp]
+      java: [jdk]
+      lapack: [openblas]
+      mkl: [intel-mkl]
+      mpe: [mpe2]
+      mpi: [mvapich2]
+      opencl: [pocl]
+      openfoam: [openfoam-com, openfoam-org, foam-extend]
+      pil: [py-pillow]
+      scalapack: [netlib-scalapack]
+      szip: [libszip, libaec]
+      tbb: [intel-tbb]
+      jpeg: [libjpeg-turbo, libjpeg]
+  conduit:
+    version: [master]
+  python:
+    variants: ~dbm
+  cmake:
+    paths:
+      cmake@3.14.5: /usr/tce/packages/cmake/cmake-3.14.5/
+    buildable: False
+  perl:
+    buildable: False
+    paths:
+      perl: /usr
+  pkg-config:
+      buildable: False
+      paths:
+          pkg-config: /usr
+# LLNL toss3 mvapich2
+  mvapich2:
+    paths:
+      mvapich2@2.2%gcc@6.1.0:  /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/
+    buildable: False

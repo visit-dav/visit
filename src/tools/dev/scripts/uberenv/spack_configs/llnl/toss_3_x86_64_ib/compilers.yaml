@@ -1,0 +1,15 @@
+compilers:
+- compiler:
+    environment: {}
+    extra_rpaths: []
+    flags: {}
+    modules:
+    - gcc/6.1.0
+    operating_system: rhel7
+    paths:
+      cc:  /usr/tce/packages/gcc/gcc-6.1.0/bin/gcc
+      cxx: /usr/tce/packages/gcc/gcc-6.1.0/bin/g++
+      f77: /usr/tce/packages/gcc/gcc-6.1.0/bin/gfortran
+      fc:  /usr/tce/packages/gcc/gcc-6.1.0/bin/bin/gfortran
+    spec: gcc@6.1.0
+    target: x86_64

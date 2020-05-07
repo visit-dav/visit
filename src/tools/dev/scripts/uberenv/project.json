@@ -1,0 +1,6 @@
+{
+"package_name" : "visit",
+"uberenv_package_name" : "uberenv-visit",
+"spack_url": "https://github.com/visit-dav/spack",
+"spack_branch": "2020_04_visit_pkg_comments"
+}
