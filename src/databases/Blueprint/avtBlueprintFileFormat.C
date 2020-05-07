@@ -1215,14 +1215,14 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             AddBlueprintMeshAndFieldMetadata(metadata, itr.name(), n);
         }
 
-        // Rewind to process all expressions *after* all fields. This
+        // Process all expressions *after* all fields. This
         // helps filter expression content relative to all known meshes.
-        NodeConstIterator itr2 = m_root_node["blueprint_index"].children();
+        itr = m_root_node["blueprint_index"].children();
 
-        while (itr2.has_next())
+        while (itr.has_next())
         {
-            const Node &n = itr2.next();
-            AddBlueprintExpressionMetadata(metadata, itr2.name(), n);
+            const Node &n = itr.next();
+            AddBlueprintExpressionMetadata(metadata, itr.name(), n);
         }
     }
     catch(conduit::Error &e)

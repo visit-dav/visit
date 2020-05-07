@@ -59,7 +59,8 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
     ExpressionList exprList;
 
     void           GenRootNode(conduit::Node &mesh,
-                               const std::string output_dir);
+                               const std::string output_dir,
+                               const int ndims);
 
     virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
