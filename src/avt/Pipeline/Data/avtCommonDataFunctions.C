@@ -450,6 +450,7 @@ CGetNumberOfOriginalZones(avtDataRepresentation &data, void *arg, bool &)
 //    facelist filter.
 //
 // ****************************************************************************
+#include <vtkGeometryFilter.h>
 
 void
 CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey, bool &)
@@ -462,6 +463,11 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
     vtkDataSet *ds = data.GetDataVTK();
     if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
+        vtkNew<vtkGeometryFilter> geoFilter;
+        geoFilter->SetInputData(ds);
+        geoFilter->Update();
+        vtkPolyData *out_pd = geoFilter->GetOutput();
+#if 0
         vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) ds;
         vtkPolyData *out_pd = vtkPolyData::New();
         int avtTopoDim = 2;
@@ -507,9 +513,10 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
                 out_pd->InsertNextCell(ugrid->GetCellType(i), npts, pts);
             }
         }
+#endif
         avtDataRepresentation new_data(out_pd, data.GetDomain(), data.GetLabel());
         data = new_data;
-        out_pd->Delete();
+        //out_pd->Delete();
     }
 }
 
