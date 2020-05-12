@@ -152,7 +152,7 @@ void PMDFile::OpenFile(char * PMDFilePath)
 //
 // Modifications:
 // Nov. 9 2017 - M. Lobet - add buffer + `\0` for a correct reading
-// May 12 2020 - E. Brugger - add check for group open failure
+// May 12 2020 - E. Brugger - add check for openPMD attr on root group.
 //
 // ***************************************************************************
 void PMDFile::ScanFileAttributes()
