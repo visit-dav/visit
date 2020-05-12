@@ -1786,9 +1786,9 @@ static std::string log_ExportDBRPC(ViewerRPC *rpc)
     std::string s(constructor(PyExportDBAttributes_GetLogString()));
 
     // if ops were included, we need to call differently 
-    if(s.find("db_export_opts =") !=std::string::npos )
+    if(s.find("DBExportOpts =") !=std::string::npos )
     {
-        s += "ExportDatabase(ExportDBAtts, db_export_opts)\n";
+        s += "ExportDatabase(ExportDBAtts, DBExportOpts)\n";
     }
     else // export w/o opts
     {
