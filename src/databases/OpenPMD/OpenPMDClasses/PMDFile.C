@@ -132,7 +132,6 @@ void PMDFile::OpenFile(char * PMDFilePath)
     // Check for error opening the file
     if (fileId < 0)
     {
-        debug5 << "The current file is not an openPMD file" << endl;
         EXCEPTION1(InvalidDBTypeException,
                    "Not an openPMD file: Error opening the file");
     }
@@ -152,7 +151,8 @@ void PMDFile::OpenFile(char * PMDFilePath)
 //
 // Modifications:
 // Nov. 9 2017 - M. Lobet - add buffer + `\0` for a correct reading
-// May 12 2020 - E. Brugger - add check for group open failure
+// May 12 2020 - E. Brugger - add check for group open failure and existence
+//                            of attribute openPMD.
 //
 // ***************************************************************************
 void PMDFile::ScanFileAttributes()
@@ -171,6 +171,9 @@ void PMDFile::ScanFileAttributes()
     hid_t    aspace;
     size_t   size;
     int      nPoints;
+
+    // is this a valid openPMD file with an "openPMD" attribute in / ?
+    bool     isValid = false;
 
     // OpenPMD files always contain a data group at the root
     groupId = H5Gopen(fileId, "/",H5P_DEFAULT);
@@ -216,6 +219,7 @@ void PMDFile::ScanFileAttributes()
             this->version = buffer;
 
             delete [] buffer;
+            isValid = true;
         }
         else if (strcmp(attrName,"meshesPath")==0)
         {
@@ -243,6 +247,17 @@ void PMDFile::ScanFileAttributes()
         }
     }
 
+    // missing self-identification as openPMD file
+    if (!isValid)
+    {
+        char format_error[1024];
+        snprintf(format_error, 1024,
+                 "Not an openPMD file: Missing 'openPMD' identifier in /");
+        debug5 << "The current file ID '" << fileId
+               << "' is not an openPMD file" << endl;
+        CloseFile();
+        EXCEPTION1(InvalidDBTypeException, format_error);
+    }
 }
 
 // ***************************************************************************
