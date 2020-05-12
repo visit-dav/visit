@@ -38,5 +38,7 @@
     <string>Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC</string>
     <key>NSHighResolutionCapable</key>
     <string>True</string>
+    <key>NSRequiresAquaSystemAppearance</key>
+    <true/>
 </dict>
 </plist>
