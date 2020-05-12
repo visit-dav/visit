@@ -432,6 +432,9 @@
 #    Fix sphinx docs build for Windows: sphinx-build executable is in a
 #    different directory, don't build them in-source. Add install command.
 #
+#    Kathleen Biagas, Thu Feb 20 14:45:33 MST 2020
+#    Having trouble with sphinx-build exe (Win10), so use script instead.
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -2260,7 +2263,8 @@ if(VISIT_PYTHON3_DIR)
     # so location may need to be rethought, but other than building them
     # in exe/Release and in exe/Debug, thought this location was best.
     add_custom_target(manuals
-        COMMAND ${VISIT_PYTHON3_DIR}/Scripts/sphinx-build.exe 
+        COMMAND ${VISIT_PYTHON3_DIR}/python.exe
+                ${VISIT_PYTHON3_DIR}/Scripts/sphinx-build-script.py
         -b html ${VISIT_SOURCE_DIR}/doc 
         ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
     # Add command to ensure the manuals are installed to the correct location
