@@ -155,4 +155,13 @@ for example_name in mfem_ex9_examples:
     for protocol in mfem_ex9_protocols:
         test_mfem("blueprint_mfem", example_name, protocol)
 
+TestSection("Blueprint Expressions")
+OpenDatabase(braid_2d_json_root)
+AddPlot("Pseudocolor", "uniform_mesh/scalar_expr")
+AddPlot("Vector", "uniform_mesh/vector_expr")
+DrawPlots()
+Test("blueprint_expressions")
+DeleteAllPlots()
+CloseDatabase(braid_2d_json_root)
+
 Exit()
