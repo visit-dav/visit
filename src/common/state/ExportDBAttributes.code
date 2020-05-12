@@ -65,7 +65,7 @@ PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix
     if((!db_opts_dict_str.empty()) && // make sure its not an empty string
        (db_opts_dict_str.find("{}") != 0) ) // and not an empty dict
     {
-        str += "db_export_opts = ";
+        str += "DBExportOpts = ";
         str += db_opts_dict_str;
         str += "\n";
     }
