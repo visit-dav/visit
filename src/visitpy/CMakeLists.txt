@@ -106,6 +106,7 @@ visitpy/PyColorTableAttributes.C
 visitpy/PyConstructDataBinningAttributes.C 
 visitpy/PyDatabaseCorrelation.C 
 visitpy/PyDBOptionsAttributes.C
+visitpy/PyDBOptionsAttributes_Helpers.C
 visitpy/PyEngineProperties.C 
 visitpy/PyExportDBAttributes.C 
 visitpy/PyExpression.C 
