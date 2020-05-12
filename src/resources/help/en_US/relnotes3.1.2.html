@@ -43,6 +43,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Reduced amount of '.' written to log files while waiting for processes to connect.</li>
   <li>Fixed a crash when performing a choose center operation when there weren't any non-hidden active plots while in scalable rendering mode. It now prints an error message requesting that the user select a non-hidden plot.</li>
   <li>Forced VisIt to always use 'Light Mode' on macOS until 'Dark Mode' is supported for Qt.</li>
+  <li>Fixed a bug where the OpenPMD reader might cause opening an HDF5 file to hang.</li>
 </ul>
 
 <a name="Enhancements"></a>
