@@ -110,6 +110,7 @@ PMDFile::~PMDFile()
 // Creation: Fri Oct 14 2016
 //
 // Modifications:
+// May 12 2020 - E. Brugger - add check for file open failure
 //
 // ***************************************************************************
 void PMDFile::OpenFile(char * PMDFilePath)
@@ -126,6 +127,13 @@ void PMDFile::OpenFile(char * PMDFilePath)
     fileId = H5Fopen(PMDFilePath, H5F_ACC_RDONLY, H5P_DEFAULT);
 
     H5Pclose(fileAccessPropListID);
+
+    // Check for error opening the file
+    if (fileId < 0)
+    {
+        EXCEPTION1(InvalidDBTypeException,
+                   "Not an openPMD file: Error opening the file");
+    }
 
     // The path is copied in this->filePath if the file was well opened.
     strcpy(this->filePath,PMDFilePath);
@@ -168,6 +176,14 @@ void PMDFile::ScanFileAttributes()
 
     // openPMD files always contain a data group at the root
     groupId = H5Gopen(fileId, "/", H5P_DEFAULT);
+
+    // Check for openPMD attr in the root group
+    if (H5Aexists(groupId, "openPMD") <= 0)
+    {
+        CloseFile();
+        EXCEPTION1(InvalidDBTypeException,
+            "Not an openPMD file: Missing \"openPMD\" attribute in root group");
+    }
 
     // Number of attributes
     nbAttr = H5Aget_num_attrs(groupId);
