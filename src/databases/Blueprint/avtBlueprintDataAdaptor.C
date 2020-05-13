@@ -46,6 +46,8 @@
 // visit includes
 //-----------------------------------------------------------------------------
 #include "InvalidVariableException.h"
+#include "Expression.h"
+#include "ExpressionList.h"
 #include "UnexpectedValueException.h"
 
 //-----------------------------------------------------------------------------
