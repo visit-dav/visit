@@ -177,14 +177,6 @@ void PMDFile::ScanFileAttributes()
     // openPMD files always contain a data group at the root
     groupId = H5Gopen(fileId, "/", H5P_DEFAULT);
 
-    // Check for openPMD attr in the root group
-    if (H5Aexists(groupId, "openPMD") <= 0)
-    {
-        CloseFile();
-        EXCEPTION1(InvalidDBTypeException,
-            "Not an openPMD file: Missing \"openPMD\" attribute in root group");
-    }
-
     // Number of attributes
     nbAttr = H5Aget_num_attrs(groupId);
 
