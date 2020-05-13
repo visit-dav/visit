@@ -111,6 +111,7 @@ PMDFile::~PMDFile()
 // Creation: Fri Oct 14 2016
 //
 // Modifications:
+// May 12 2020 - E. Brugger - add check for file open failure
 //
 // ***************************************************************************
 void PMDFile::OpenFile(char * PMDFilePath)
@@ -128,6 +129,13 @@ void PMDFile::OpenFile(char * PMDFilePath)
 
     H5Pclose(fileAccessPropListID);
 
+    // Check for error opening the file
+    if (fileId < 0)
+    {
+        EXCEPTION1(InvalidDBTypeException,
+                   "Not an openPMD file: Error opening the file");
+    }
+
     // The path is copied in this->filePath if the file was well opened.
     strcpy(this->filePath,PMDFilePath);
 }
@@ -143,6 +151,7 @@ void PMDFile::OpenFile(char * PMDFilePath)
 //
 // Modifications:
 // Nov. 9 2017 - M. Lobet - add buffer + `\0` for a correct reading
+// May 12 2020 - E. Brugger - add check for existence of attribute openPMD
 //
 // ***************************************************************************
 void PMDFile::ScanFileAttributes()
@@ -164,6 +173,14 @@ void PMDFile::ScanFileAttributes()
 
     // OpenPMD files always contain a data group at the root
     groupId = H5Gopen(fileId, "/",H5P_DEFAULT);
+
+    // Check for openPMD attr in the root group
+    if (H5Aexists(groupId, "openPMD") <= 0)
+    {
+        CloseFile();
+        EXCEPTION1(InvalidDBTypeException,
+            "Not an openPMD file: Missing \"openPMD\" attribute in root group");
+    }
 
     // Number of attributes
     nbAttr = H5Aget_num_attrs(groupId);
@@ -222,7 +239,6 @@ void PMDFile::ScanFileAttributes()
             delete [] buffer;
         }
     }
-
 }
 
 // ***************************************************************************
