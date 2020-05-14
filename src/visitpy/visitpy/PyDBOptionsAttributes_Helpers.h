@@ -11,8 +11,8 @@
 //
 // Helpers for dealing with dict reps of our DB Options
 //
-PyObject * VISITPY_API  PyDBOptionsAttributes_CreateDictionaryFromDBOptions(const DBOptionsAttributes &opts, bool show_enum_opts);
-std::string VISITPY_API PyDBOptionsAttributes_CreateDictionaryStringFromDBOptions(const DBOptionsAttributes &opts, bool show_enum_opts);
+VISITPY_API PyObject *  PyDBOptionsAttributes_CreateDictionaryFromDBOptions(const DBOptionsAttributes &opts, bool show_enum_opts);
+VISITPY_API std::string PyDBOptionsAttributes_CreateDictionaryStringFromDBOptions(const DBOptionsAttributes &opts, bool show_enum_opts);
 
 #endif
 
