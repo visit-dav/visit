@@ -58,6 +58,9 @@
 #include "avtBlueprintTreeCache.h"
 #include "avtBlueprintDataAdaptor.h"
 
+#ifdef _WIN32
+#define strcasecmp stricmp
+#endif
 
 using std::string;
 using namespace conduit;
