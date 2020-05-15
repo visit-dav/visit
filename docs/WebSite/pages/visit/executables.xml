@@ -63,14 +63,9 @@
         <tr>
           <td>macOS Mojave 10.14.6 - Intel 64 bit<br />
           Darwin 10.14, Darwin Kernel Version 18.7.0, clang-1000.11.45.5, MPICH<br />
-          <i>(Works on Mac OS X 10.14 and later.)</i></td>
+          <i>(Works on Mac OS X 10.14 and later.)</i><br />
+          <i>(Dark mode has beeen disabled while we work on a fix.)</i></td>
           <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.2/visit3.1.2.darwin-x86_64-10_14.dmg">Download</a></td>
-        </tr>
-        <tr>
-          <td>Mac OS X 10.13 - Intel 64 bit<br />
-          Darwin 10.13, Darwin Kernel Version 17.7.0, clang-900.39.2, MPICH<br />
-          <i>(Works on Mac OS X 10.13 and later.)</i></td>
-          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.2/visit3.1.2.darwin-x86_64-10.13.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
@@ -91,6 +86,11 @@
           <td>Linux - x86_64 64 bit<br />
           Debian 9, 4.9.184-linuxkit #1 SMP, gcc 6.3<br />
           <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.2/visit3_1_2.linux-x86_64-debian9.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Debian 10, 4.19.76-linuxkit #1 SMP, gcc 8.3<br />
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.2/visit3_1_2.linux-x86_64-debian10.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
