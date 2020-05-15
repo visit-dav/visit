@@ -110,6 +110,7 @@ PMDFile::~PMDFile()
 // Creation: Fri Oct 14 2016
 //
 // Modifications:
+// May 12 2020 - E. Brugger - add check for file open failure
 //
 // ***************************************************************************
 void PMDFile::OpenFile(char * PMDFilePath)
@@ -126,6 +127,13 @@ void PMDFile::OpenFile(char * PMDFilePath)
     fileId = H5Fopen(PMDFilePath, H5F_ACC_RDONLY, H5P_DEFAULT);
 
     H5Pclose(fileAccessPropListID);
+
+    // Check for error opening the file
+    if (fileId < 0)
+    {
+        EXCEPTION1(InvalidDBTypeException,
+                   "Not an openPMD file: Error opening the file");
+    }
 
     // The path is copied in this->filePath if the file was well opened.
     strcpy(this->filePath,PMDFilePath);

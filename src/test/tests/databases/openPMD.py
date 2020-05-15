@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------------
 #  CLASSES: nightly
 #
-#  Test Case:  OpenPMD.py
+#  Test Case:  openPMD.py
 #
 #  Tests:      openPMD hdf5 files
 #
