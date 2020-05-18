@@ -2430,19 +2430,19 @@ avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
 
     // build list of unique points
     vtkPoints *pts = ugrid->GetPoints();
-    std::map<double, std::map<double, std::map<double, vtkIdType> > > uniqpts;
+    map<double, map<double, map<double, vtkIdType> > > uniqpts;
     int n = 0;
     for (int i = 0; i < pts->GetNumberOfPoints(); i++)
     {
         double pt[3];
         pts->GetPoint(i, pt);
-        std::map<double, std::map<double, std::map<double, vtkIdType> > >::iterator e0it = uniqpts.find(pt[0]);
+        map<double, map<double, map<double, vtkIdType> > >::iterator e0it = uniqpts.find(pt[0]);
         if (e0it != uniqpts.end())
         {
-            std::map<double, std::map<double, vtkIdType> >::iterator e1it = e0it->second.find(pt[1]);
+            map<double, map<double, vtkIdType> >::iterator e1it = e0it->second.find(pt[1]);
             if (e1it != e0it->second.end())
             {
-                std::map<double, vtkIdType>::iterator e2it = e1it->second.find(pt[2]);
+                map<double, vtkIdType>::iterator e2it = e1it->second.find(pt[2]);
                 if (e2it != e1it->second.end())
                     continue;
             }
@@ -2454,41 +2454,39 @@ avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
            << "% of points are spatially unique." << endl;
     debug2 << "...now reconnecting mesh using unique points." << endl;
 
+    vtkNew<vtkIdList> cell;
     for (int i = 0; i < ugrid->GetNumberOfCells(); i++)
     {
-        vtkIdType nCellPts=0;
-        vtkIdList *cellPts=0;
-        ugrid->GetCellPoints(i, cellPts);
-        nCellPts = cellPts->GetNumberOfIds();
-        for (int j = 0; j < nCellPts; j++)
+        ugrid->GetCellPoints(i, cell);
+        vtkIdType nCellPts= cell->GetNumberOfIds();
+        vtkIdType *cellPts=cell->GetPointer(0);
+        for (vtkIdType j = 0; j < nCellPts; j++)
         {
             double pt[3];
-            pts->GetPoint(cellPts->GetId(j), pt);
-            std::map<double, std::map<double, std::map<double, vtkIdType> > >::const_iterator e0it = uniqpts.find(pt[0]);
+            pts->GetPoint(cellPts[j], pt);
+            map<double, map<double, map<double, vtkIdType> > >::const_iterator e0it = uniqpts.find(pt[0]);
             if (e0it == uniqpts.end())
                 continue;
-            std::map<double, std::map<double, vtkIdType> >::const_iterator e1it = e0it->second.find(pt[1]);
+            map<double, map<double, vtkIdType> >::const_iterator e1it = e0it->second.find(pt[1]);
             if (e1it == e0it->second.end())
                 continue;
-            std::map<double, vtkIdType>::const_iterator e2it = e1it->second.find(pt[2]);
+            map<double, vtkIdType>::const_iterator e2it = e1it->second.find(pt[2]);
             if (e2it == e1it->second.end())
                 continue;
-            cellPts->SetId(j, e2it->second);
+            cellPts[j] = e2it->second;
         }
-        ugrid->ReplaceCell(i, nCellPts, cellPts->GetPointer(0));
+        ugrid->ReplaceCell(i, nCellPts, cellPts);
     }
 
     pts->Initialize();
     pts->SetNumberOfPoints(n);
-    std::map<double, 
-             std::map<double, std::map<double, vtkIdType> >
-            >::iterator e0it;
+    map<double, map<double, map<double, vtkIdType> > >::iterator e0it;
     for (e0it = uniqpts.begin(); e0it != uniqpts.end(); e0it++)
     {
-        std::map<double, std::map<double, vtkIdType> >::iterator e1it;
+        map<double, map<double, vtkIdType> >::iterator e1it;
         for (e1it = e0it->second.begin(); e1it != e0it->second.end(); e1it++)
         {
-            std::map<double, vtkIdType>::iterator e2it;
+            map<double, vtkIdType>::iterator e2it;
             for (e2it = e1it->second.begin(); e2it != e1it->second.end(); e2it++)
                 pts->SetPoint(e2it->second, e0it->first, e1it->first, e2it->first);
         }

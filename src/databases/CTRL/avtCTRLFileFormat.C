@@ -14,8 +14,8 @@
 #include <vtkFloatArray.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkUnstructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
 

@@ -443,7 +443,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
                 vtkIntArray *outmat = vtkIntArray::New();
                 outmat->SetName("avtSubsets");
                 outmat->SetNumberOfTuples(ncells);
-                int *buff = outmat->WritePointer(0,ncells);
+                int *buff = outmat->GetPointer(0);
                 for (int i=0; i<ncells; i++)
                     buff[i] = singleMat;
                 outmesh->GetCellData()->AddArray(outmat);
@@ -576,12 +576,12 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     // holds the connectivity
     vtkIdTypeArray *nlist = vtkIdTypeArray::New();
     nlist->SetNumberOfValues(totalsize);
-    vtkIdType *nl = nlist->WritePointer(0, totalsize);
+    vtkIdType *nl = nlist->GetPointer(0);
 
     // holds the offsets
     vtkIdTypeArray *olist = vtkIdTypeArray::New();
     olist->SetNumberOfValues(ncells+1);
-    vtkIdType *ol = olist->WritePointer(0,ncells+1);
+    vtkIdType *ol = olist->GetPointer(0);
     // first entry is always 0
     *ol++ = 0;
     // Subsequent offsets are incremented by the number of ids in
@@ -591,7 +591,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
 
     vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
     cellTypes->SetNumberOfValues(ncells);
-    unsigned char *ct = cellTypes->WritePointer(0, ncells);
+    unsigned char *ct = cellTypes->GetPointer(0);
 
     for (int i=0; i<ncells; i++)
     {
@@ -736,7 +736,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         vtkIntArray *outmat = vtkIntArray::New();
         outmat->SetName("avtSubsets");
         outmat->SetNumberOfTuples(ncells);
-        int *buff = outmat->WritePointer(0,ncells);
+        int *buff = outmat->GetPointer(0);
         for (int i=0; i<ncells; i++)
         {
             int matno = zonesList[cellList[i]].mat;

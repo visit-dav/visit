@@ -33,7 +33,7 @@
 #ifndef __vtkCEAucdReader_h
 #define __vtkCEAucdReader_h
 
-#include <fstream>
+#include <visitstream.h>
 #include <vector>
 
 #include <vtkUnstructuredGridAlgorithm.h>

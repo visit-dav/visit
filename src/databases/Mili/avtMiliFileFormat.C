@@ -782,7 +782,8 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             avtGhostData::AddGhostNodeType(ghostNodePtr[i],
                 NODE_NOT_APPLICABLE_TO_PROBLEM);
         }
-    
+
+        vtkNew<vtkIdList> cell;
         for (int i = 0; i < nCells; ++i)
         {
             ghostZonePtr[i] = 0;
@@ -792,11 +793,9 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             //
             if (sandBuffer[i] > 0.5)
             {
-                vtkIdType nCellPts = 0;
-                const vtkIdType *cellPts = NULL;
-
-                rv->GetCellPoints(i, nCellPts, cellPts);
-                
+                rv->GetCellPoints(i, cell);
+                const vtkIdType nCellPts = cell->GetNumberOfIds();
+                const vtkIdType *cellPts = cell->GetPointer(0);
                 if (nCellPts && cellPts)
                 {
                     for (int j = 0; j < nCellPts; ++j)

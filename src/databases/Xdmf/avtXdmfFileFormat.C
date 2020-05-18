@@ -1950,12 +1950,12 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
         /* Get the pointer. Make it Big enough ... too big for now */
         vtkNew<vtkIdTypeArray> offsetsArray;
         offsetsArray->SetNumberOfTuples(numCells+1);
-        vtkIdType *offsets = offsetsArray->WritePointer(0, numCells+1);
+        vtkIdType *offsets = offsetsArray->GetPointer(0);
         *offsets++ = 0;
 
         vtkNew<vtkIdTypeArray> connectivityArray;
         connectivityArray->SetNumberOfTuples(conn_length);
-        vtkIdType *connectivity = connectivityArray->WritePointer(0, conn_length);
+        vtkIdType *connectivity = connectivityArray->GetPointer(0);
 
         /* xmfConnections : N p1 p2 ... pN */
         /* i.e. Triangles : 3 0 1 2    3 3 4 5   3 6 7 8 */
@@ -2044,13 +2044,13 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
         /* Get the pointer */
         vtkNew<vtkIdTypeArray> offsetsArray;
         offsetsArray->SetNumberOfTuples(numCells+1);
-        vtkIdType *offsets = offsetsArray->WritePointer(0, numCells+1);
+        vtkIdType *offsets = offsetsArray->GetPointer(0);
         *offsets++ = 0;
         vtkIdType offset = 0;
 
         vtkNew<vtkIdTypeArray> connectivityArray;
         connectivityArray->SetNumberOfTuples(numCells * nodesPerElement);
-        vtkIdType *connectivity = connectivityArray->WritePointer(0, numCells*nodesPerElement);
+        vtkIdType *connectivity = connectivityArray->GetPointer(0);
 
         XdmfInt32 arrayOffset = 0;
         for(vtkIdType i=0; i<numCells; ++i)

@@ -488,7 +488,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
         bool replaceCurrentCell = false;
         currentCellPts = iter->GetCurrentCell();
         nPts = currentCellPts->GetNumberOfIds();
-        vtkIdType *pts = currentCellPts->WritePointer(0, nPts);
+        vtkIdType *pts = currentCellPts->GetPointer(0);
 
         //
         // Technically, we can always use only the first three vertices, but

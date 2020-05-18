@@ -1438,13 +1438,13 @@ DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     //
     vtkIdTypeArray *nlist = vtkIdTypeArray::New();
     nlist->SetNumberOfValues(totalsize);
-    vtkIdType *nl = nlist->WritePointer(0,totalsize);
+    vtkIdType *nl = nlist->GetPointer(0);
 
     //offsets
     vtkIdTypeArray *olist = vtkIdTypeArray::New();
     // offsets array is always ncells+1
     olist->SetNumberOfValues(ncells+1);
-    vtkIdType *ol = olist->WritePointer(0,ncells+1);
+    vtkIdType *ol = olist->GetPointer(0);
     // set first offset
     *ol++ = 0;
     // subsequent offsets are previous incremented by node count of current cell

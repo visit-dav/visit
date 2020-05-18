@@ -379,6 +379,15 @@ void
 avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts, vtkCellArray *arr, 
                                       const char *name)
 {
+    if (!arr->IsValid())
+    {
+        char msg[1024];
+        sprintf(msg, "In domain %d, connectivity data is in an invalid state. "
+                 "Unrecoverable error.", dom);
+        avtCallback::IssueWarning(msg);
+        return;
+    }
+
     auto cellIter = vtk::TakeSmartPointer(arr->NewIterator());
     for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal(); cellIter->GoToNextCell())
     {
@@ -394,7 +403,7 @@ avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts, vtkCellArray *arr,
                 {
                     char msg[1024];
                     sprintf(msg, "In domain %d, your connectivity array (%s) "
-                                 "has a bad value. Cell %d references point %lld "
+                                 "has a bad value. Cell %lld references point %lld "
                                  "and the maximum value is %d.  Note that "
                                  "only the first error encountered is reported.",
                             dom, name, cellIter->GetCurrentCellId(), ptIds->GetId(j), nTotalPts);
