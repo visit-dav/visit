@@ -21,7 +21,7 @@ import sys
 # -- Project information -----------------------------------------------------
 
 project = u'VisIt User Manual'
-copyright = u'2008-2019, LLNL, UCRL-SM-220449'
+copyright = u'2008-2020, LLNL, UCRL-SM-220449'
 author = u'LLNL'
 
 # The full version, including alpha/beta/rc tags

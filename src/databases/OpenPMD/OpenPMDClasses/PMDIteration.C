@@ -71,9 +71,6 @@ PMDIteration::PMDIteration()
 	this->dt		 = 0;
 	this->time	     = 0;
 	this->timeUnitSI = 1;
-	strcpy(this->name,"");
-	strcpy(this->meshesPath,"");
-	strcpy(this->particlesPath,"");
 }
 
 // ***************************************************************************
@@ -116,7 +113,7 @@ void PMDIteration::ScanFields(hid_t fileId)
 	hid_t				subGroupId;
 	hid_t				datasetId;
 	hid_t				datasetType;
-	char				path[64];
+	string				path;
 	hsize_t				nb_objects;
 	hsize_t				nb_sub_objects;
 	herr_t				err;
@@ -132,16 +129,16 @@ void PMDIteration::ScanFields(hid_t fileId)
 	fieldGroupStruct	fieldGroup;
 	PMDField			field;
 
-	strcpy (path,"/data/");
+	path = "/data/";
 	// Add iteration to the global path
-	strcat (path,name);
-	strcat (path,"/");
+	path.append(name);
+	path.append("/");
     // Add mesh path to the global path
-	strcat (path,this->meshesPath);
-	strcat (path,"/");
+	path.append(this->meshesPath);
+	path.append("/");
 
 	// Openning of the group "fields" of the current iteration
-	groupId = H5Gopen2(fileId, path , H5P_DEFAULT);
+	groupId = H5Gopen2(fileId, path.c_str(), H5P_DEFAULT);
 
 
 	// Get useful attributes fron the "fields" group
@@ -224,9 +221,9 @@ void PMDIteration::ScanFields(hid_t fileId)
 
 						// Save the group path
 						strcpy(field.groupPath,"/data/");
-						strcat(field.groupPath,this->name);
+						strcat(field.groupPath,this->name.c_str());
 						strcat(field.groupPath,"/");
-						strcat(field.groupPath,this->meshesPath);
+						strcat(field.groupPath,this->meshesPath.c_str());
 						strcat(field.groupPath,"/");
 						strcat(field.groupPath,tmp_name);
 
@@ -297,9 +294,9 @@ void PMDIteration::ScanFields(hid_t fileId)
 
 				// Save the group path
 				strcpy(field.groupPath,"/data/");
-				strcat(field.groupPath,this->name);
+				strcat(field.groupPath,this->name.c_str());
 				strcat(field.groupPath,"/");
-				strcat(field.groupPath,this->meshesPath);
+				strcat(field.groupPath,this->meshesPath.c_str());
 				strcat(field.groupPath,"/");
 
 				// Save the dataset path
@@ -327,7 +324,7 @@ void PMDIteration::ScanFields(hid_t fileId)
 			break;
 
 			default:
-			debug5 << "visitLinks: node '" << name <<
+			debug5 << "visitLinks: node '" << this->name <<
 			"' has an unknown type " << object_info.type << std::endl;
 			break;
 			}
@@ -352,7 +349,7 @@ void PMDIteration::ScanParticles(hid_t fileId)
 {
 
 	int			i;
-	char		path[64];
+	string		path;
 	char		objectName[64];
 	hid_t		groupId;
 	hid_t		particleGroupId;
@@ -362,15 +359,15 @@ void PMDIteration::ScanParticles(hid_t fileId)
 	H5O_info_t	objectInfo;
 
 	// Creation of the path to the group "particles" having all the species
-	strcpy (path,"/data/");
-	strcat (path,this->name);
-	strcat (path,"/");
-	strcat (path,this->particlesPath);
-	strcat (path,"/");
+	path.append("/data/");
+	path.append(this->name);
+	path.append("/");
+	path.append(this->particlesPath);
+	path.append("/");
 
-	if (strcmp(this->particlesPath,"no_particles")!=0)
+	if (this->particlesPath != "no_particles" && !this->particlesPath.empty())
 	{
-		err = H5Gget_objinfo (fileId, path, 0, NULL);
+		err = H5Gget_objinfo (fileId, path.c_str(), 0, NULL);
 
 		if (err!=0)
 		{
@@ -380,7 +377,7 @@ void PMDIteration::ScanParticles(hid_t fileId)
 		{
 
 			// Openning of the group "particles" of the current iteration
-			groupId = H5Gopen2(fileId, path , H5P_DEFAULT);
+			groupId = H5Gopen2(fileId, path.c_str(), H5P_DEFAULT);
 
 			// First we get the number of objects
 			err = H5Gget_num_objs(groupId, &numObjects);
@@ -414,7 +411,7 @@ void PMDIteration::ScanParticles(hid_t fileId)
 					strcpy(particle.name,objectName);
 
 					// Save the path
-					strcpy(particle.path,path);
+					strcpy(particle.path,path.c_str());
 					strcat(particle.path,"/");
 					strcat(particle.path,objectName);
 
