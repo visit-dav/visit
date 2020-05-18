@@ -6,7 +6,7 @@ Potential Flow
 .. toctree::
     :maxdepth: 2
 
-This tutorial demonstrates VisIt's features while exploring results from simple simulations of `potential flow <https://en.wikipedia.org/wiki/Potential_flow>`_ around an obstruction, specifically an airfoil. Potential flow assumes irrotational flow. That is, there is no rotational motion in the flow, no vortices or eddies. This assumption is valid for low velocities and certain types of gases/fluids and obstructions. When the flow does involve rotation, a more complex solution involving Navier-Stokes equations is required.
+This tutorial demonstrates VisIt's features while exploring results from simple simulations of `potential based flow <https://en.wikipedia.org/wiki/Potential_flow>`_ around an obstruction, specifically an airfoil. Potential flow assumes irrotational flow. That is, there is no rotational motion in the flow, no vortices or eddies. This assumption is valid for low velocities and certain types of gases/fluids and obstructions. When the flow does involve rotation, a more complex solution involving Navier-Stokes equations is required.
 
 The potential flow solver is a mini-app developed using the `MFEM <http://www.mfem.org/>`_ finite element library. The example is available for this tutorial thanks to Aaron Fischer and Mark Miller of `LLNL <http://www.llnl.gov>`_. The data set includes VTK output files for a set of solutions where the angle of attack of the velocity varies from -5 degrees to 25 degrees.
 

@@ -175,7 +175,7 @@ Lines
 '''''
 
 The lines section can be useful when visualizing the results from an
-:ref:`Integral Curve System` operation.
+:ref: `integral curve system <Integral_Curve_System>` operation.
 
 There are three options for **Line type**: **Lines** (default), **Tubes**, and
 **Ribbons**.
