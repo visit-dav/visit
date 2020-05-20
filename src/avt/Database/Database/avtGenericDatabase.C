@@ -253,11 +253,16 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //      during a -dump run.
 //
 //  Created: Mark C. Miller, Wed Dec 12 04:58:26 PST 2018
+//
+//  Modifications:
+//    Kathleen Biagas, Wed May 20 14:27:24 PDT 2020
+//    Modified to dump out every domain.
+//
 // ****************************************************************************
+
 static void
 DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
     string phaseName)
-
 {
     static int call_count = 0;
     std::ostringstream oss;
@@ -268,18 +273,20 @@ DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
     string dumpDir = avtDebugDumpOptions::GetDumpDirectory();
     if (dumpDir == "")
         dumpDir = ".";
-    oss << dumpDir << "/gdb." << std::setfill('0') << std::setw(4) << call_count << "." << phaseName << ".vtk";
-    string dumpFile = oss.str();
-    vtkDataSetWriter *dsw = vtkDataSetWriter::New();
+    vtkNew<vtkDataSetWriter> dsw;
     dsw->SetFileTypeToASCII();
-    dsw->SetFileName(dumpFile.c_str());
     for (int i = 0 ; i < ndoms; i++)
     {
-        vtkDataSet *ds = dsc.GetDataset(i, 0);
-        dsw->SetInputData(i, ds);
+        oss << dumpDir << "/gdb." << std::setfill('0') << std::setw(4)
+                       << call_count << "." << phaseName << ".dom"
+                       << std::setfill('0') << std::setw(4) << i << ".vtk";
+        dsw->SetFileName(oss.str().c_str());
+        dsw->SetInputData(dsc.GetDataset(i, 0));
+        dsw->Write();
+        // resuse the stream
+        oss.clear();
+        oss.str(std::string());
     }
-    dsw->Write();
-    dsw->Delete();
     call_count++;
 }
 
