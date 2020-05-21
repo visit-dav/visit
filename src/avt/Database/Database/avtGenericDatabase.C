@@ -265,7 +265,6 @@ DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
     string phaseName)
 {
     static int call_count = 0;
-    std::ostringstream oss;
 
     if (!avtDebugDumpOptions::DumpEnabled())
         return;
@@ -277,15 +276,13 @@ DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
     dsw->SetFileTypeToASCII();
     for (int i = 0 ; i < ndoms; i++)
     {
+        std::ostringstream oss;
         oss << dumpDir << "/gdb." << std::setfill('0') << std::setw(4)
                        << call_count << "." << phaseName << ".dom"
                        << std::setfill('0') << std::setw(4) << i << ".vtk";
         dsw->SetFileName(oss.str().c_str());
         dsw->SetInputData(dsc.GetDataset(i, 0));
         dsw->Write();
-        // resuse the stream
-        oss.clear();
-        oss.str(std::string());
     }
     call_count++;
 }
