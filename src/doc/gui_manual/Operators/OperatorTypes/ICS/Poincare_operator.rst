@@ -155,16 +155,16 @@ Show ridgelines
 
 Verbose
     Dumps information regarding the analysis to the terminal. The final summary
-    may be useful. For example, :: 
+    may be useful. For example,
+
+:: 
    
-   Surface id = 0 < 2.35019 0 0.664124 > 121:11 121:11 (11) flux surface with 4
-     nodes (Complete) 
+   Surface id = 0 < 2.35019 0 0.664124 > 121:11 121:11 (11) flux surface with 4 nodes (Complete) 
    Surface id = 0 
    seed location < 2.35019 0 0.664124 > 
    the winding pair 121:11 
    the toroidal:poloidal periods (as a winding pair) 121:11 
-   the multiplication faction (11) i.e. diving by this number will give the
-     base winding values, in this case 11:1. 
+   the multiplication faction (11) i.e. diving by this number will give the base winding values, in this case 11:1. 
    surface type: flux surface 
    number of nodes in each winding group: with 4 nodes 
    analysis state: complete. 
