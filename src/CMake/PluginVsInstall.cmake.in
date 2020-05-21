@@ -85,6 +85,9 @@
 #   Kevin Griffin, Thu Aug 8 18:30:27 PDT 2019
 #   Added the correct paths for the QT_QT*_INCLUDE_DIR variables for OSX.
 #
+#   Paul Selby, Thu 21 May 16:38:06 BST 2020
+#   Added TyphonIO
+#
 #****************************************************************************/
 
 ##
@@ -299,6 +302,10 @@ set(PDB_LIB @SILO_LIB@)
 set(SILO_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/silo/include)
 set(SILO_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(SILO_LIB @SILO_LIB@)
+
+SET(TYPHONIO_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/typhonio/include)
+SET(TYPHONIO_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
+SET(TYPHONIO_LIB @TYPHONIO_LIB@)
 
 set(XDMF_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/xdmf/include)
 set(XDMF_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})

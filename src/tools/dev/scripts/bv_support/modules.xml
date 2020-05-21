@@ -51,6 +51,7 @@
             <lib name="szip"/>
             <lib name="tbb"/>
             <lib name="tcmalloc"/>
+            <lib name="typhonio"/>
             <lib name="uintah"/>
             <lib name="vtkm"/>
             <lib name="vtkh"/>

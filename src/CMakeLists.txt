@@ -448,6 +448,9 @@
 #    Kathleen Biagas, Thu Feb 20 14:45:33 MST 2020
 #    Having trouble with sphinx-build exe (Win10), so use script instead.
 #
+#    Paul Selby, Thu 21 May 16:38:06 BST 2020
+#    Added TyphonIO
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -883,6 +886,8 @@ VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
 VISIT_3RDPARTY_VAR(PYSIDE_DIR    "Path containing the PySide installation")
 VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
 VISIT_3RDPARTY_DEP(SILO_LIBDEP   "Silo library dependencies")
+VISIT_3RDPARTY_VAR(TYPHONIO_DIR  "Path containing the TyphonIO library's include and lib")
+VISIT_3RDPARTY_DEP(TYPHONIO_LIBDEP "TyphonIO library dependencies")
 VISIT_3RDPARTY_VAR(UINTAH_DIR    "Path containing the Uintah library's include and lib")
 VISIT_3RDPARTY_VAR(PIDX_DIR      "Path containing the PIDX library's include and lib")
 VISIT_3RDPARTY_VAR(VTKM_DIR      "Path containing the VTKm library's include and lib")
@@ -1358,6 +1363,9 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure Silo support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
+
+    # Configure TyphonIO support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTyphonIO.cmake)
 
     # Configure Xdmf support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
