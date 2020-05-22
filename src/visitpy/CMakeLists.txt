@@ -224,15 +224,20 @@ endforeach()
 
 
 SET(COMMON_SOURCES
-# # Annotation Wrappers, plan is to wrap these in pure python
-# # since they can't be code gened
-# common/PyImageObject.C
-# common/PyLegendAttributesObject.C
-# common/PyLineObject.C
-# common/PyLine3DObject.C
-# common/PyText2DObject.C
-# common/PyText3DObject.C
-# common/PyTimeSliderObject.C
+# Annotation Wrappers are still custom, and hand ported
+# to python 3. They diverge from  code gen to map custom 
+# parts of the fields to the general annotation object.
+# while we could just implement this in python (instead of)
+# C++, replication the current logic would be a detailed
+# and tricky endeavor 
+common/PyImageObject.C
+common/PyLegendAttributesObject.C
+common/PyLineObject.C
+common/PyLine3DObject.C
+common/PyText2DObject.C
+common/PyText3DObject.C
+common/PyTimeSliderObject.C
+# end Annotation Wrappers
 common/CallbackHandlers.C
 common/CallbackManager.C
 common/Logging.C

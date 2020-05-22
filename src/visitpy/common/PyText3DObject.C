@@ -6,6 +6,9 @@
 #include <ObserverToCallback.h>
 #include <ColorAttribute.h>
 
+// CUSTOM:
+#include <Py2and3Support.h>
+
 // Macros that let us access the AnnotationObject and store the fields
 // we care about into the available fields.
 #define GetPreserveOrientation GetOptions().GetEntry("preserveOrientation")->AsBool
@@ -640,13 +643,13 @@ Text3DObject_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-Text3DObject_compare(PyObject *v, PyObject *w)
-{
-    AnnotationObject *a = ((Text3DObjectObject *)v)->data;
-    AnnotationObject *b = ((Text3DObjectObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
+// static int
+// Text3DObject_compare(PyObject *v, PyObject *w)
+// {
+//     AnnotationObject *a = ((Text3DObjectObject *)v)->data;
+//     AnnotationObject *b = ((Text3DObjectObject *)w)->data;
+//     return (*a == *b) ? 0 : -1;
+// }
 
 static PyObject *
 Text3DObject_getattr(PyObject *self, char *name)
@@ -743,6 +746,55 @@ static const char *Text3DObject_Purpose = "This class defines an interface for c
 static char *Text3DObject_Purpose = "This class defines an interface for controlling Text3D annotation objects.";
 #endif
 
+// //
+// // The type description structure
+// //
+// static PyTypeObject Text3DObjectType =
+// {
+//     //
+//     // Type header
+//     //
+//     PyObject_HEAD_INIT(&PyType_Type)
+//     0,                                   // ob_size
+//     "Text3DObject",                    // tp_name
+//     sizeof(Text3DObjectObject),        // tp_basicsize
+//     0,                                   // tp_itemsize
+//     //
+//     // Standard methods
+//     //
+//     (destructor)Text3DObject_dealloc,  // tp_dealloc
+//     (printfunc)Text3DObject_print,     // tp_print
+//     (getattrfunc)Text3DObject_getattr, // tp_getattr
+//     (setattrfunc)Text3DObject_setattr, // tp_setattr
+//     (cmpfunc)Text3DObject_compare,     // tp_compare
+//     (reprfunc)0,                         // tp_repr
+//     //
+//     // Type categories
+//     //
+//     0,                                   // tp_as_number
+//     0,                                   // tp_as_sequence
+//     0,                                   // tp_as_mapping
+//     //
+//     // More methods
+//     //
+//     0,                                   // tp_hash
+//     0,                                   // tp_call
+//     (reprfunc)Text3DObject_str,        // tp_str
+//     0,                                   // tp_getattro
+//     0,                                   // tp_setattro
+//     0,                                   // tp_as_buffer
+//     Py_TPFLAGS_CHECKTYPES,               // tp_flags
+//     Text3DObject_Purpose,              // tp_doc
+//     0,                                   // tp_traverse
+//     0,                                   // tp_clear
+//     0,                                   // tp_richcompare
+//     0                                    // tp_weaklistoffset
+// };
+
+// CUSTOM
+static PyObject *Text3DObject_richcompare(PyObject *self, PyObject *other, int op);
+
+// CUSTOM
 //
 // The type description structure
 //
@@ -751,42 +803,66 @@ static PyTypeObject Text3DObjectType =
     //
     // Type header
     //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "Text3DObject",                    // tp_name
-    sizeof(Text3DObjectObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)Text3DObject_dealloc,  // tp_dealloc
-    (printfunc)Text3DObject_print,     // tp_print
-    (getattrfunc)Text3DObject_getattr, // tp_getattr
-    (setattrfunc)Text3DObject_setattr, // tp_setattr
-    (cmpfunc)Text3DObject_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)Text3DObject_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    Text3DObject_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "Text3DObject",                   /* tp_name */
+    sizeof(Text3DObjectObject),          /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    (destructor)Text3DObject_dealloc,    /* tp_dealloc */
+    (printfunc)Text3DObject_print,       /* tp_print */
+    (getattrfunc)Text3DObject_getattr, /* tp_getattr */
+    (setattrfunc)Text3DObject_setattr, /* tp_setattr */
+    0,                                 /* tp_reserved */
+    0,                                 /* tp_repr */
+    0,                                 /* tp_as_number */
+    0,                                 /* tp_as_sequence */
+    0,                                 /* tp_as_mapping */
+    0,                                 /* tp_hash  */
+    0,                                 /* tp_call */
+    (reprfunc)Text3DObject_str,      /* tp_str */
+    0,                                 /* tp_getattro */
+    0,                                 /* tp_setattro */
+    0,                                 /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+    Text3DObject_Purpose,                /* tp_doc */
+    0,                                 /* tp_traverse */
+    0,                                 /* tp_clear */
+   (richcmpfunc)Text3DObject_richcompare,  /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
 };
+
+// CUSTOM
+static PyObject *
+Text3DObject_richcompare(PyObject *self, PyObject *other, int op)
+{
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &Text3DObjectType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    AnnotationObject *a = ((Text3DObjectObject *)self)->data;
+    AnnotationObject *b = ((Text3DObjectObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
+
 
 //
 // Helper functions for object allocation.

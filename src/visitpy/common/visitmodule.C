@@ -148,12 +148,12 @@
 #include <PySelectionList.h>
 #include <PySILRestrictionBase.h>
 #include <PySILRestriction.h>
-/*
+
 #include <PyLine3DObject.h>
 #include <PyText2DObject.h>
 #include <PyText3DObject.h>
 #include <PyTimeSliderObject.h>
-*/
+
 #include <PyQueryOverTimeAttributes.h>
 #include <PyViewAttributes.h>
 #include <PyViewAxisArrayAttributes.h>
@@ -14981,45 +14981,45 @@ CreateAnnotationWrapper(AnnotationObject *annot)
     // TODO: FIX WITH PURE PYTHON WRAPPERS
     
     PyObject *retval = NULL;
-    // if(annot->GetObjectType() == AnnotationObject::Text2D)
-    // {
-    //     // Create a text2d wrapper for the new annotation object.
-    //     retval = PyText2DObject_WrapPyObject(annot);
-    // }
-    // else if(annot->GetObjectType() == AnnotationObject::Text3D)
-    // {
-    //     // Create a text3d wrapper for the new annotation object.
-    //     retval = PyText3DObject_WrapPyObject(annot);
-    // }
-    // else if(annot->GetObjectType() == AnnotationObject::TimeSlider)
-    // {
-    //     // Create a time slider wrapper for the new annotation object.
-    //     retval = PyTimeSliderObject_WrapPyObject(annot);
-    // }
-    // else if(annot->GetObjectType() == AnnotationObject::Line2D)
-    // {
-    //     // Create a Line2D wrapper for the new annotation object.
-    //     retval = PyLineObject_WrapPyObject(annot);
-    // }
-    // else if(annot->GetObjectType() == AnnotationObject::Line3D)
-    // {
-    //     // Create a Line3D wrapper for the new annotation object.
-    //     retval = PyLine3DObject_WrapPyObject(annot);
-    // }
-    // else if(annot->GetObjectType() == AnnotationObject::Image)
-    // {
-    //     // Create a Image wrapper for the new annotation object.
-    //     retval = PyImageObject_WrapPyObject(annot);
-    // }
-    // else if(annot->GetObjectType() == AnnotationObject::LegendAttributes)
-    // {
-    //     // Create a Image wrapper for the new annotation object.
-    //     retval = PyLegendAttributesObject_WrapPyObject(annot);
-    // }
-    
+    if(annot->GetObjectType() == AnnotationObject::Text2D)
+    {
+        // Create a text2d wrapper for the new annotation object.
+        retval = PyText2DObject_WrapPyObject(annot);
+    }
+    else if(annot->GetObjectType() == AnnotationObject::Text3D)
+    {
+        // Create a text3d wrapper for the new annotation object.
+        retval = PyText3DObject_WrapPyObject(annot);
+    }
+    else if(annot->GetObjectType() == AnnotationObject::TimeSlider)
+    {
+        // Create a time slider wrapper for the new annotation object.
+        retval = PyTimeSliderObject_WrapPyObject(annot);
+    }
+    else if(annot->GetObjectType() == AnnotationObject::Line2D)
+    {
+        // Create a Line2D wrapper for the new annotation object.
+        retval = PyLineObject_WrapPyObject(annot);
+    }
+    else if(annot->GetObjectType() == AnnotationObject::Line3D)
+    {
+        // Create a Line3D wrapper for the new annotation object.
+        retval = PyLine3DObject_WrapPyObject(annot);
+    }
+    else if(annot->GetObjectType() == AnnotationObject::Image)
+    {
+        // Create a Image wrapper for the new annotation object.
+        retval = PyImageObject_WrapPyObject(annot);
+    }
+    else if(annot->GetObjectType() == AnnotationObject::LegendAttributes)
+    {
+        // Create a Image wrapper for the new annotation object.
+        retval = PyLegendAttributesObject_WrapPyObject(annot);
+    }
+
     // Add more cases here later...
 
-    // else
+    else
     {
         debug1 << "CreateAnnotationWrapper was asked to create a " << annot->GetObjectType()
                << " object and could not because that is an unsupported type." << endl;
