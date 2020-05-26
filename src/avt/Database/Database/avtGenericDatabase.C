@@ -258,6 +258,9 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    Kathleen Biagas, Wed May 20 14:27:24 PDT 2020
 //    Modified to dump out every domain.
 //
+//    Kathleen Biagas, Fri May 22 15:21:19 PDT 2020
+//    Handle parallel.
+//
 // ****************************************************************************
 
 static void
@@ -277,9 +280,16 @@ DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
     for (int i = 0 ; i < ndoms; i++)
     {
         std::ostringstream oss;
+#ifdef PARALLEL
         oss << dumpDir << "/gdb." << std::setfill('0') << std::setw(4)
-                       << call_count << "." << phaseName << ".dom"
-                       << std::setfill('0') << std::setw(4) << i << ".vtk";
+            << call_count << "." << phaseName << ".dom"
+            << std::setfill('0') << std::setw(4) << i
+            << ".proc" << std::setfill('0') << std::setw(4) << PAR_Rank() << ".vtk";
+#else
+        oss << dumpDir << "/gdb." << std::setfill('0') << std::setw(4)
+            << call_count << "." << phaseName << ".dom"
+            << std::setfill('0') << std::setw(4) << i << ".vtk";
+#endif
         dsw->SetFileName(oss.str().c_str());
         dsw->SetInputData(dsc.GetDataset(i, 0));
         dsw->Write();
@@ -8366,6 +8376,9 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
 //    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
 //    Modify to handle NULL meshes.
 //
+//    Kathleen Biagas, Fri May 22 15:41:44 PDT 2020
+//    Test for myMin > myMax.
+//
 // ****************************************************************************
 
 bool
@@ -8494,6 +8507,8 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     int myMax = numIdsPerProc * (rank+1);
     if (myMax > maxId)
         myMax = maxId;
+    if (myMin > myMax)
+        myMin = myMax;
 
     //
     // We will do the bookkeeping for this processor's range.  Set up
@@ -8968,6 +8983,9 @@ avtGenericDatabase::CommunicateGhostZonesWhileStreaming(
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
 //
+//    Kathleen Biagas, Fri May 22 15:41:44 PDT 2020
+//    Test for myMin > myMax.
+//
 // ****************************************************************************
 
 bool
@@ -9013,6 +9031,8 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
     int myMax = numIdsPerProc * (rank+1);
     if (myMax > maxId)
         myMax = maxId;
+    if (myMin > myMax)
+        myMin = myMax;
 
     //
     // We will do the bookkeeping for this processor's range.  Set up
