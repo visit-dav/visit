@@ -287,8 +287,8 @@ DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
             << ".proc" << std::setfill('0') << std::setw(4) << PAR_Rank() << ".vtk";
 #else
         oss << dumpDir << "/gdb." << std::setfill('0') << std::setw(4)
-                       << call_count << "." << phaseName << ".dom"
-                       << std::setfill('0') << std::setw(4) << i << ".vtk";
+            << call_count << "." << phaseName << ".dom"
+            << std::setfill('0') << std::setw(4) << i << ".vtk";
 #endif
         dsw->SetFileName(oss.str().c_str());
         dsw->SetInputData(dsc.GetDataset(i, 0));
