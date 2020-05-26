@@ -44,7 +44,7 @@ class     vtkPLOT3DReader;
 class avtPLOT3DFileFormat : public avtMTMDFileFormat
 {
   public:
-                          avtPLOT3DFileFormat(const char *, DBOptionsAttributes *);
+                          avtPLOT3DFileFormat(const char *, const DBOptionsAttributes *);
     virtual              ~avtPLOT3DFileFormat();
     
     virtual int            GetNTimesteps(void);
@@ -57,6 +57,7 @@ class avtPLOT3DFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
     virtual void           ActivateTimestep(int ts);
+    using avtMTMDFileFormat::ActivateTimestep;
   protected:
     vtkPLOT3DReader *reader;
     std::string           visitMetaFile;

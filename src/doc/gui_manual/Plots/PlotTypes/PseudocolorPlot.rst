@@ -174,8 +174,8 @@ modify the appearance of lines and points, and change rendering options
 Lines
 '''''
 
-The lines section can be useful when visualizing the results of a **Poincare**
-or **Integral Curve** operation. 
+The lines section can be useful when visualizing the results from an
+:ref: `integral curve system <Integral_Curve_System>` operation.
 
 There are three options for **Line type**: **Lines** (default), **Tubes**, and
 **Ribbons**.

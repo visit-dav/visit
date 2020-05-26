@@ -47,7 +47,7 @@ ifstream &operator >> (ifstream &s, string &str)
 // ****************************************************************************
 
 avtXmdvFileFormat::avtXmdvFileFormat(const char *filename, 
-                                     DBOptionsAttributes *)
+                                     const DBOptionsAttributes *)
     : avtSTSDFileFormat(filename)
 {
     readInData = false;

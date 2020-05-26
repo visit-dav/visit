@@ -87,7 +87,7 @@
 // ****************************************************************************
 
 avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
-        DBOptionsAttributes *readOpts) : avtMTSDFileFormat(&filename, 1)
+        const DBOptionsAttributes *readOpts) : avtMTSDFileFormat(&filename, 1)
 {
     // ibis::gVerbose = 1000;
     

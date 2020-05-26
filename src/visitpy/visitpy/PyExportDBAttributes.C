@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include "PyDBOptionsAttributes_Helpers.h"
 #include <PyDBOptionsAttributes.h>
 
 // ****************************************************************************
@@ -36,6 +37,17 @@ struct ExportDBAttributesObject
 // Internal prototypes
 //
 static PyObject *NewExportDBAttributes(int);
+// ****************************************************************************
+// Module: PyExportDBAttributes_ToString
+//
+// Purpose: 
+//   Custom to string method. Custom b/c of handled for opts dict.
+//
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Mon May 11 14:14:38 PDT 2020
+//
+// ****************************************************************************
 std::string
 PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix)
 {
@@ -80,11 +92,17 @@ PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sgroupSize = %d\n", prefix, atts->GetGroupSize());
     str += tmpStr;
-    { // new scope
-        std::string objPrefix(prefix);
-        objPrefix += "opts.";
-        str += PyDBOptionsAttributes_ToString(&atts->GetOpts(), objPrefix.c_str());
+
+    std::string db_opts_dict_str = PyDBOptionsAttributes_CreateDictionaryStringFromDBOptions(atts->GetOpts(),
+                                                                                     false);
+    if((!db_opts_dict_str.empty()) && // make sure its not an empty string
+       (db_opts_dict_str.find("{}") != 0) ) // and not an empty dict
+    {
+        str += "DBExportOpts = ";
+        str += db_opts_dict_str;
+        str += "\n";
     }
+
     return str;
 }
 

@@ -18,7 +18,6 @@
 #include "StringHelpers.h"
 #include "TimingsManager.h"
 
-#include "DBOptionsAttributes.h"
 #include "Expression.h"
 #include "FileFunctions.h"
 #include "InvalidVariableException.h"
@@ -58,6 +57,9 @@
 #include "avtBlueprintTreeCache.h"
 #include "avtBlueprintDataAdaptor.h"
 
+#ifdef _WIN32
+#define strcasecmp stricmp
+#endif
 
 using std::string;
 using namespace conduit;
@@ -543,7 +545,6 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
 //  Modifications:
 //    Cyrus Harrison, Mon Mar  9 15:45:17 PDT 2020
 //    Use explicit map from registered mesh name to bp mesh and topo names.
-//
 // ****************************************************************************
 void
 avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md,
@@ -684,8 +685,6 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
     // Now, handle any fields defined for this mesh
     //
 
-
-
     if(n_mesh_info.has_child("fields"))
     {
 
@@ -746,6 +745,93 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         }
     }
 }
+
+// ****************************************************************************
+// helper method used to add expression meta data for a blueprint mesh.
+//
+// Mark C. Miller, Wed May  6 12:26:33 PDT 2020
+// ****************************************************************************
+static void
+AddBlueprintExpressionMetadata(avtDatabaseMetaData *md, string const &mesh_name,
+    const Node &n_mesh_info)
+{
+    if (!n_mesh_info.has_child("expressions"))
+        return;
+
+    BP_PLUGIN_INFO("adding expressions for " <<  mesh_name);
+
+    NodeConstIterator exprs_itr = n_mesh_info["expressions"].children();
+
+    while (exprs_itr.has_next())
+    {
+        const Node &n_expr = exprs_itr.next();
+
+        if (n_expr.has_child("consumer") &&
+            strcasecmp(n_expr["consumer"].as_string().c_str(), "visit"))
+            continue;
+
+        string expname = exprs_itr.name();
+        string exp_topo_name = n_expr["topology"].as_string();
+        string exp_mesh_name = mesh_name + "_" + exp_topo_name;
+        string expname_wmesh = exp_mesh_name + "/" + expname;
+        int ncomps = n_expr["number_of_components"].to_int();
+
+        // Lookup what we already know about this mesh from database metadata
+        const avtMeshMetaData *mmd = md->GetMesh(mesh_name + "_" + exp_topo_name);
+        int ndims = mmd ? mmd->spatialDimension : 0;
+
+        Expression expr;
+        expr.SetName(expname_wmesh);
+        if (ncomps == 1)
+            expr.SetType(Expression::ScalarMeshVar);
+        else if (ndims == 2 && ncomps == 2)
+            expr.SetType(Expression::VectorMeshVar);
+        else if (ndims == 2 && ncomps == 3)
+            expr.SetType(Expression::SymmetricTensorMeshVar);
+        else if (ndims == 2 && ncomps == 4)
+            expr.SetType(Expression::TensorMeshVar);
+        else if (ndims == 3 && ncomps == 3)
+            expr.SetType(Expression::VectorMeshVar);
+        else if (ndims == 3 && ncomps == 6)
+            expr.SetType(Expression::SymmetricTensorMeshVar);
+        else if (ndims == 3 && ncomps == 9)
+            expr.SetType(Expression::TensorMeshVar);
+        else
+            expr.SetType(Expression::ArrayMeshVar);
+
+        // Find all variable references in defn and replace with
+        // parent mesh name. 
+
+        std::string defn = n_expr["definition"].as_string();
+        size_t ltidx=0;
+        while ((ltidx = defn.find('<', ltidx)) != std::string::npos)
+        {
+            size_t gtidx = defn.find('>', ltidx+1);
+            std::string vname(defn, ltidx+1, gtidx-ltidx-1);
+            size_t slash = vname.find('/', 0);
+
+            if (slash)
+            {
+                std::string b4slash(vname, 0, slash);
+
+                // Skip this variable if it already has a meshname
+                if (md->GetMesh(b4slash))
+                {
+                    ltidx += vname.length() + 1;
+                    continue;
+                }
+            }
+
+            defn.erase(ltidx+1, gtidx-ltidx-1);
+            defn.insert(ltidx+1, exp_mesh_name + "/" + vname);
+            ltidx += exp_mesh_name.length() + 1 + vname.length() + 1;
+        }
+
+        expr.SetDefinition(defn);
+        md->AddExpression(&expr);
+    }
+}
+
 
 // ****************************************************************************
 //  Method: is_hdf5_file()
@@ -1134,6 +1220,16 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             const Node &n = itr.next();
             AddBlueprintMeshAndFieldMetadata(metadata, itr.name(), n);
+        }
+
+        // Process all expressions *after* all fields. This
+        // helps filter expression content relative to all known meshes.
+        itr = m_root_node["blueprint_index"].children();
+
+        while (itr.has_next())
+        {
+            const Node &n = itr.next();
+            AddBlueprintExpressionMetadata(metadata, itr.name(), n);
         }
     }
     catch(conduit::Error &e)

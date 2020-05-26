@@ -113,10 +113,9 @@ do
    $cmd jvisit$version.tar.gz                             >> $output
    $cmd visit$version.darwin-x86_64-10_14.dmg             >> $output
    $cmd visit$version.darwin-x86_64-10_14.tar.gz          >> $output
-   $cmd visit$version.darwin-x86_64-10.13.dmg             >> $output
-   $cmd visit$version.darwin-x86_64-10.13.tar.gz          >> $output
    $cmd visit$version2.linux-x86_64-centos8.tar.gz        >> $output
    $cmd visit$version2.linux-x86_64-debian9.tar.gz        >> $output
+   $cmd visit$version2.linux-x86_64-debian10.tar.gz       >> $output
    $cmd visit$version2.linux-x86_64-fedora27.tar.gz       >> $output
    $cmd visit$version2.linux-x86_64-rhel7.tar.gz          >> $output
    $cmd visit$version2.linux-x86_64-rhel7-wmesa.tar.gz    >> $output

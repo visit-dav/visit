@@ -36,7 +36,7 @@ class vtkMultiBlockDataSet;
 class avtOpenFOAMFileFormat : public avtMTMDFileFormat
 {
   public:
-                           avtOpenFOAMFileFormat(const char *, DBOptionsAttributes *);
+                           avtOpenFOAMFileFormat(const char *, const DBOptionsAttributes *);
     virtual               ~avtOpenFOAMFileFormat() {;};
 
     virtual void           GetTimes(std::vector<double> &);

@@ -46,7 +46,7 @@ using     std::vector;
 //
 // ****************************************************************************
 
-avtBOVWriter::avtBOVWriter(DBOptionsAttributes *atts)
+avtBOVWriter::avtBOVWriter(const DBOptionsAttributes *atts)
 {
     switch(atts->GetEnum("Compression"))
     {

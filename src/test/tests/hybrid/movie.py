@@ -24,9 +24,9 @@ import os, string, subprocess, visit_utils, Image
 
 def GenerateMovie(movieArgs):
     if TestEnv.params["parallel"]:
-        args = [TestEnv.params["visit_bin"], "-movie", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + movieArgs
+        args = [TestEnv.params["visit_bin"], "-movie", "-noconfig", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + movieArgs
     else:
-        args = [TestEnv.params["visit_bin"], "-movie"] + movieArgs
+        args = [TestEnv.params["visit_bin"], "-movie", "-noconfig"] + movieArgs
     p = subprocess.check_output(args)
     return p
 
@@ -318,7 +318,10 @@ def test5():
     infile = string.replace(TestEnv.params["script"], "movie.py", "movie5.opt")
     FileSubstitution(infile, "movie5.opt", replacements)
 
-    output = GenerateMovie(["-templatefile", "movie5.opt", "-output", "test5_", "-format", "bmp", "-geometry", "300x300"])
+    # Note by KSB 03-11-2020
+    # Changed geometry from 300x300 to 600x600. On Windows 300x300 forces the inset windows (2 and 3) to be too
+    # small (76x63). They are resized to 116x63, and the resultant images are incorrect.
+    output = GenerateMovie(["-templatefile", "movie5.opt", "-output", "test5_", "-format", "bmp", "-geometry", "600x600"])
 
     files = GetFiles("test5_")
     img = []

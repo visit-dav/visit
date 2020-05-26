@@ -447,7 +447,7 @@ function bv_python_print
 
 function bv_python_print_usage
 {
-    printf "%-20s %s\n" "--python" "Build Python" 
+    printf "%-20s %s\n" "--python" "Build Python"
     printf "%-20s %s [%s]\n" "--system-python" "Use the system installed Python"
     printf "%-20s %s [%s]\n" "--alt-python-dir" "Use Python from an alternative directory"
     printf "%-20s %s [%s]\n" "--mpi4py" "Build mpi4py with Python"
@@ -532,11 +532,11 @@ diff -c Modules.orig/posixmodule.c Modules/posixmodule.c
 --- 360,369 ----
   #endif
   #endif
-  
-+ /* On OS X 10.4, we need to use a function to get access to environ; 
+
++ /* On OS X 10.4, we need to use a function to get access to environ;
 +  * otherwise we get an unresolved "_environ" when linking shared libs */
 + #define WITH_NEXT_FRAMEWORK
-+ 
++
   /* Return a dictionary corresponding to the POSIX environment table */
   #ifdef WITH_NEXT_FRAMEWORK
   /* On Darwin/MacOSX a shared library or framework has no access to
@@ -1763,7 +1763,7 @@ function build_sphinx_rtd
 function bv_python_is_enabled
 {
     if [[ $DO_PYTHON == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }

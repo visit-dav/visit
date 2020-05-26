@@ -35,9 +35,9 @@ class avtVTK_STSDFileFormat : public avtSTSDFileFormat
 {
 public:
                        avtVTK_STSDFileFormat(const char *filename, 
-                                             DBOptionsAttributes *);
+                                             const DBOptionsAttributes *);
                        avtVTK_STSDFileFormat(const char *filename, 
-                                             DBOptionsAttributes *,
+                                             const DBOptionsAttributes *,
                                              avtVTKFileReader *r);
     virtual           ~avtVTK_STSDFileFormat();
 
@@ -82,9 +82,9 @@ class avtVTK_STMDFileFormat : public avtSTMDFileFormat
 {
 public:
                        avtVTK_STMDFileFormat(const char *filename,
-                                             DBOptionsAttributes *);
+                                             const DBOptionsAttributes *);
                        avtVTK_STMDFileFormat(const char *filename, 
-                                             DBOptionsAttributes *,
+                                             const DBOptionsAttributes *,
                                              avtVTKFileReader *r);
     virtual           ~avtVTK_STMDFileFormat();
 

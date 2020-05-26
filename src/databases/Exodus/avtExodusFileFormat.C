@@ -129,6 +129,12 @@ static int CompareStrings(void const *_a, void const *_b)
 // optionally, sort it.
 //
 // Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+//
+//  Modifications:
+//    Kathleen Biagas, Wed Apr 29 11:19:52 PDT 2020
+//    Don't err out if len_string isn't present. Files created with newer
+//    versions of exodus libraries don't have this dim.
+//
 // ****************************************************************************
 
 char **GetStringListFromExodusIINCvar(int exfid, char const *var_name, bool sort_results = false)
@@ -137,9 +143,9 @@ char **GetStringListFromExodusIINCvar(int exfid, char const *var_name, bool sort
     char **retval = (char**) malloc(1 * sizeof(char*));
     retval[0] = 0;
 
-    int len_string_dimid;
+    int len_string_dimid = -1;
     ncerr = nc_inq_dimid(exfid, "len_string", &len_string_dimid);
-    if (ncerr != NC_NOERR) return retval;
+    if (ncerr != NC_NOERR) len_string_dimid = -1;
 
     int len_name_dimid = -1;
     ncerr = nc_inq_dimid(exfid, "len_name", &len_name_dimid);
@@ -1447,7 +1453,7 @@ avtExodusFileFormat::RegisterFileList(const char *const *list, int nlist)
 //    detection.
 // ****************************************************************************
 
-avtExodusFileFormat::avtExodusFileFormat(const char *name, DBOptionsAttributes *rdatts)
+avtExodusFileFormat::avtExodusFileFormat(const char *name, const DBOptionsAttributes *rdatts)
    : avtMTSDFileFormat(&name, 1)
 {
     fileList = -1;

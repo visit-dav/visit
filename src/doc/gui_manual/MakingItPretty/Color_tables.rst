@@ -330,10 +330,10 @@ the table below...
 ===============   =====================
 Values in Range   Map to this Hex Color
 ===============   =====================
--inf...-0.95           red
--0.95...0              green
-0...+0.95              blue
-+0.95...+inf           cyan
+-inf...-0.95           blue
+-0.95...0              cyan
+0...+0.95              green
++0.95...+inf           red
 ===============   =====================
 
 Using a 4-color **Discrete** color table alone, only the plot in
