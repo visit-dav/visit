@@ -508,9 +508,12 @@ avtPixieFileFormat::Initialize()
         {
             if (it->second.hasCoords)
             {
-                variables[it->second.coordX].isCoord = true;
-                variables[it->second.coordY].isCoord = true;
-                variables[it->second.coordZ].isCoord = true;
+                if (variables.count(it->second.coordX) == 1)
+                    variables[it->second.coordX].isCoord = true;
+                if (variables.count(it->second.coordY) == 1)
+                    variables[it->second.coordY].isCoord = true;
+                if (variables.count(it->second.coordZ) == 1)
+                    variables[it->second.coordZ].isCoord = true;
             }
         }
 
