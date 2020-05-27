@@ -234,7 +234,7 @@ launch the engine such as the number of processors.
     # Open a local, parallel compute engine before opening a database 
     # Use 4 processors on 2 nodes
     OpenComputeEngine("localhost", ("-np", "4", "-nn", "2"))
-    OpenDatabase("/usr/gapps/visit/data/multi_ucd3d.silo") 
+    OpenDatabase("/usr/local/visit/data/multi_ucd3d.silo") 
 
 The options for starting the compute engine are the same as the ones used
 on the command line. Here are the most common options for launching a
@@ -252,16 +252,13 @@ compute engine.
 
 
 The full list of parallel launch options can be obtained by typing
-'visit --fullhelp'. Here is a more complex example of launching a compute
+``visit --fullhelp``. Here is a more complex example of launching a compute
 engine.
-jjjgfullThe following example launches a compute engine using
-the "srun" job launcher in the "batch" partition, charging the "mybank"
-bank, using 72 processors on 2 nodes, and using a time limit of 1 hour.
 
 ::
 
-    # Use the "srun" job launcher, the "batch" partition, the "mybank" bank
-    # Use 72 processors on 2 nodes and a time limit of 1 hour
+    # Use the "srun" job launcher, the "batch" partition, the "mybank" bank,
+    # 72 processors on 2 nodes and a time limit of 1 hour
     OpenComputeEngine("localhost",("-l", "srun",
                                    "-p", "batch",
                                    "-b", "mybank",
@@ -276,8 +273,8 @@ didn't know this you could print "p" to get all the properties.
 
 ::
 
-    # Set the user name to "user1" and use the third profile
-    # Override a few properties of the third profile.
+    # Set the user name to "user1" and use the third profile,
+    # overriding a few of its properties
     p = GetMachineProfile("quartz.llnl.gov")
     p.userName="user1"
     p.activeProfile = 2
