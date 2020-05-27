@@ -150,15 +150,27 @@ PyNumber_Int(PyObject *o)
 //-----------------------------------------------------------------------------
 // Note: Make sure to use PyMethodDef *, to match PyMethodDef table[]
 static PyObject *
-Py_FindMethod(PyMethodDef *table, PyObject *ob, char *name)
+Py_FindMethod(PyMethodDef *table, PyObject *obj, char *name)
 {
-    /* cannot comment out to avoid unused warning b/c C*/
-    (void)table;
-    
-    PyObject *py_name_str = PyString_FromString(name);
-    PyObject *res = PyObject_GenericGetAttr(ob, py_name_str);
-    Py_DECREF(py_name_str);
-    return res;
+    // search our static table for a named method
+    // recipe adapted from:
+    // https://github.com/encukou/py3c/issues/22
+
+    for (int i = 0; table[i].ml_name != NULL; ++i)
+    {
+        if (strcmp(name, table[i].ml_name) == 0)
+        {
+            PyObject * res = PyCFunction_New(&table[i], obj);
+            // 
+            if (res == NULL)
+            {
+                res = Py_None;
+            }
+            Py_INCREF(res);
+            return res;
+        }
+    }
+    return NULL;
 }
 
 
