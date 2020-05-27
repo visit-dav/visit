@@ -214,7 +214,7 @@ name.
     OpenDatabase("thunder:/usr/local/visit/data/wave.visit", 17)
 
 Opening a compute engine
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 Sometimes it is advantageous to open a compute engine before opening a
 database. When you tell VisIt to open a database using the OpenDatabase
@@ -231,9 +231,57 @@ launch the engine such as the number of processors.
 
 ::
 
-    # Open a remote, parallel compute engine before opening a database 
-    OpenComputeEngine("mcr", ("-np", "4", "-nn", "2")) 
-    OpenDatabase("mcr:/usr/local/visit/data/multi_ucd3d.silo") 
+    # Open a local, parallel compute engine before opening a database 
+    # Use 4 processors on 2 nodes
+    OpenComputeEngine("localhost", ("-np", "4", "-nn", "2"))
+    OpenDatabase("/usr/local/visit/data/multi_ucd3d.silo") 
+
+The options for starting the compute engine are the same as the ones used
+on the command line. Here are the most common options for launching a
+compute engine.
+
+::
+
+    -l    <method>       Launch in parallel using the given method.
+    -np   <# procs>      The number of processors to use.
+    -nn   <# nodes>      The number of nodes to allocate.
+    -p    <part>         Partition to run in.
+    -b    <bank>         Bank from which to draw resources.
+    -t    <time>         Maximum job run time.
+    -machinefile <file>  Machine file.
+
+
+The full list of parallel launch options can be obtained by typing
+``visit --fullhelp``. Here is a more complex example of launching a compute
+engine.
+
+::
+
+    # Use the "srun" job launcher, the "batch" partition, the "mybank" bank,
+    # 72 processors on 2 nodes and a time limit of 1 hour
+    OpenComputeEngine("localhost",("-l", "srun",
+                                   "-p", "batch",
+                                   "-b", "mybank",
+                                   "-np", "72",
+                                   "-nn", "2",
+                                   "-t", "1:00:00"))
+
+You can also launch a compute engine using one of the existing host
+profiles defined for your system. In this particular case we know that
+the third profile is for the "parallel batch pbatch" profile. If you
+didn't know this you could print "p" to get all the properties.
+
+::
+
+    # Set the user name to "user1" and use the third profile,
+    # overriding a few of its properties
+    p = GetMachineProfile("quartz.llnl.gov")
+    p.userName="user1"
+    p.activeProfile = 2
+    p.GetLaunchProfiles(2).numProcessors = 72
+    p.GetLaunchProfiles(2).numNodes = 2
+    p.GetLaunchProfiles(2).timeLimit = "00:30:00"
+    OpenComputeEngine(p)
 
 Working with plots
 ------------------
