@@ -28,6 +28,9 @@ endif()
 # HTML output directory
 set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
 
+# linkcheck output directory
+set(SPHINX_LINKCHECK_DIR "${CMAKE_CURRENT_BINARY_DIR}/_linkcheck")
+
 if(WIN32)
     set(sphinx_launcher ${PYTHON_EXECUTABLE})
 endif()
@@ -40,10 +43,24 @@ configure_file(
 add_custom_target(user_manuals ALL
     ${sphinx_launcher}
     ${SPHINX_EXECUTABLE}
-        -a -q -b html
+        -a -q -b linkcheck
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${SPHINX_HTML_DIR}"
     COMMENT "Building Sphinx-HTML documentation for GUI and CLI")
+
+add_custom_target(_sphinx_linkcheck ALL
+    ${sphinx_launcher}
+    ${SPHINX_EXECUTABLE}
+        -a -b linkcheck
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${SPHINX_LINKCHECK_DIR}"
+    COMMENT "Running linkcheck builder on Sphinx documentation")
+
+add_custom_command(TARGET _sphinx_linkcheck
+    COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_SOURCE_DIR}/check_links.cmake"
+    COMMAND touch foo.txt
+    POST_BUILD
+    )
 
 if(WIN32)
     unset(sphinx_launcher)

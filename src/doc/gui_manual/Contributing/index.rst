@@ -364,7 +364,8 @@ this was implemented.
 Link checking using Sphinx linkcheck builder
 --------------------------------------------
 
-You can run checks on links in all files using Sphinx *builtin* linkcheck
+You can run checks on links in all files using Sphinx *builtin*
+`linkcheck <https://www.sphinx-doc.org/en/master/usage/configuration.html?highlight=linkcheck#options-for-the-linkcheck-builder>`_
 builder by running the command::
 
     sphinx-build -b linkcheck . _links -a
@@ -373,6 +374,16 @@ This will produce a file, ``output.txt``, in the ``_links`` output directory.
 There will be a lot of output regarding various links and the results of
 checking those links. You want to find those cases where a link's status is
 reported as ``broken`` and then try to correct them.
+
+For some reason, Sphinx' linkcheck builder winds up actually downloading
+links to `.tar.gz` and `.zip` files. This causes the linkcheck to take much
+more time to run than it ordinarily would. We have filed an issue ticket
+about this and for the time being are using the ``linkcheck_ignore`` *option*
+in ``conf.py`` to temporarily skip links to data files.
+
+In addition depending on *where* you run the linkcheck (e.g. behind a
+firewall or other cyber-security apparatus), you may get different results
+due to any cyber-security IP filtering.
 
 .. _contributing_forward:
 
