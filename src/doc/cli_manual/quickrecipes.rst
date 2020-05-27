@@ -231,10 +231,10 @@ launch the engine such as the number of processors.
 
 ::
 
-    # Open a remote, parallel compute engine before opening a database 
+    # Open a local, parallel compute engine before opening a database 
     # Use 4 processors on 2 nodes
-    OpenComputeEngine("quartz", ("-np", "4", "-nn", "2")) 
-    OpenDatabase("quartz:/usr/gapps/visit/data/multi_ucd3d.silo") 
+    OpenComputeEngine("localhost", ("-np", "4", "-nn", "2"))
+    OpenDatabase("/usr/gapps/visit/data/multi_ucd3d.silo") 
 
 The options for starting the compute engine are the same as the ones used
 on the command line. Here are the most common options for launching a
