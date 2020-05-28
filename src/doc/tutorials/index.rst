@@ -31,6 +31,7 @@ Contents:
     Scripting
     Aneurysm
     PotentialFlow
+    MRI
     RemoteUsage
     MakingMovies
     
