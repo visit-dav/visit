@@ -2142,13 +2142,13 @@ QvisSimulationWindow::parseCompositeCMD( const std::string cmd,
 //
 // Purpose:
 //   This method is called to parse a composite cmd to get the
-//   row, column, x, and y values.
+//   chart, cruve, and npts, and an array of x, and y values.
 //
 // Arguments:
 //   cmd      : The properly form command string.
 //
 // Programmer: Allen Sanderson
-// Creation:   6 May 2016
+// Creation:   29 May 2020
 //
 // Modifications:
 //
