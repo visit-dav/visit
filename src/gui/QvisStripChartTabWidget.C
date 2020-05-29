@@ -450,3 +450,30 @@ QvisStripChartTabWidget::addDataPoint( const unsigned int tabIndex,
     stripCharts[tabIndex]->addDataPoint(curveIndex, x, y);
 }
 
+// ****************************************************************************
+// Method: VisItSimStripChart::addDataPoints
+//
+// Purpose: 
+//   
+// Arguments:
+//   tabIndex   : index of the tab page
+//   curveIndex : index of the curve
+//   npts : number of points
+//   x    : data x value, i.e. the cycle
+//   y    : data y value, i.e. the current value of the variable being plotted.
+//
+// Programmer: Allen Sanderson
+// Creation:   29 May 2020
+//
+// Modifications:
+//   
+// ****************************************************************************
+void 
+QvisStripChartTabWidget::addDataPoints( const unsigned int tabIndex,
+                                        const unsigned int curveIndex,
+                                        const unsigned int npts,
+                                        const double *x, const double *y )
+{
+    stripCharts[tabIndex]->addDataPoints(curveIndex, npts, x, y);
+}
+

@@ -101,7 +101,7 @@ public:
             c = c.lighter( 107 );
         }
     }
-  
+
     unsigned int nBands; // Number of bands.
     double height;       // Interval between bands.
     double start;        // Location of the first band.
@@ -208,7 +208,7 @@ QvisStripChart::QvisStripChart( QWidget *parent ):
     // This call is not used but is left as demostration when on wants
     // to offset from a base value.
 //  setAxisScaleDraw( QwtPlot::xBottom, new TimeScaleDraw( cpuStat.upTime() ) );
-    
+
     setAxisLabelRotation( QwtPlot::xBottom, -50.0 );
     setAxisLabelAlignment( QwtPlot::xBottom, Qt::AlignLeft | Qt::AlignBottom );
 
@@ -236,7 +236,7 @@ QvisStripChart::QvisStripChart( QWidget *parent ):
     {
         std::ostringstream var;
         var << "VAR_" << c;
-      
+
         StripChartCurve *curve = new StripChartCurve( var.str().c_str() );
         curve->setColor( colors[c] );
         curve->setZ( curve->z() - c );
@@ -250,7 +250,7 @@ QvisStripChart::QvisStripChart( QWidget *parent ):
         // legend when it is created.
         hideCurve( vars[c].curve );
     }
-    
+
     connect( legend,
              SIGNAL( checked( const QVariant &, bool, int ) ),
              SLOT( legendChecked( const QVariant &, bool ) ) );
@@ -281,7 +281,7 @@ QvisStripChart::setCurveTitle( const unsigned int index,
         return;
     }
 
-    // If blank use a default name. 
+    // If blank use a default name.
     if( newTitle.isEmpty() )
     {
       std::ostringstream title;
@@ -402,7 +402,7 @@ QvisStripChart::legendChecked( const QVariant &itemInfo, bool on )
 // Class: QvisStripChart::toggleDisplayMode
 //
 // Purpose: Toogles between pick and pan/zoom mode.
-//    
+//
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -424,7 +424,7 @@ void QvisStripChart::toggleDisplayMode( bool mode )
 // Class: QvisStripChart::reset
 //
 // Purpose: Reset the view to the full extents.
-//    
+//
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -443,7 +443,7 @@ void QvisStripChart::reset()
 // Class: QvisStripChart::clear
 //
 // Purpose: Clear all of the strip chart data.
-//    
+//
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -454,7 +454,7 @@ void QvisStripChart::reset()
 void QvisStripChart::clear()
 {
     dataCount = 0;
-    
+
     for( unsigned int c=0; c<MAX_STRIP_CHART_VARS; ++c )
     {
         for( unsigned int i=0; i<HISTORY; ++i )
@@ -463,9 +463,9 @@ void QvisStripChart::clear()
 
     // Update the samples for all curves.
     updateSamples();
-    
+
     updateAxis();
-    
+
     replot();
 
     toggleDisplayMode(false);
@@ -475,7 +475,7 @@ void QvisStripChart::clear()
 // Class: QvisStripChart::setupTimeAxis
 //
 // Purpose: Sets up the time axis.
-//    
+//
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -495,7 +495,7 @@ void QvisStripChart::setupTimeAxis( double time, double timeStep )
 // Class: QvisStripChart::advanceDataCount
 //
 // Purpose: Advance the time and data histories. Which what moves the curves.
-//    
+//
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -506,7 +506,7 @@ void QvisStripChart::setupTimeAxis( double time, double timeStep )
 void QvisStripChart::advanceDataCount( double time )
 {
     // If a single samples set the full time axis so the time
-    // axis is consistant. 
+    // axis is consistant.
     if( dataCount == 0 )
       setupTimeAxis( time, 1 );
 
@@ -518,7 +518,7 @@ void QvisStripChart::advanceDataCount( double time )
     // Advance all of the time values.
     for( int i=HISTORY-1; i>0; --i )
         timeData[i] = timeData[i-1];
-    
+
     // For each curve advance all of the of the data values.
     for( unsigned int c=0; c<MAX_STRIP_CHART_VARS; ++c )
     {
@@ -540,7 +540,7 @@ void QvisStripChart::advanceDataCount( double time )
 // Class: QvisStripChart::addDataPoint
 //
 // Purpose: Add the next point to a curve.
-//    
+//
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -565,12 +565,69 @@ void QvisStripChart::addDataPoint( const unsigned int index,
 
     // Set the new Y value.
     vars[index].varData[0] = y;
-    
+
     // Update the samples for all curves.
     updateSamples();
-    
+
     updateAxis();
-    
+
+    replot();
+}
+
+//****************************************************************************
+// Class: QvisStripChart::addDataPoint
+//
+// Purpose: Add the next point to a curve.
+//
+//
+// Programmer: Allen Sanderson
+// Creation:   1 May 2020
+//
+// Modifications:
+//
+//****************************************************************************
+void QvisStripChart::addDataPoints( const unsigned int index,
+                                    const unsigned int npts,
+                                    const double *x, const double *y)
+{
+    if(index >= MAX_STRIP_CHART_VARS)
+    {
+        debug1 << "The curve index is above the maximum (MAX_STRIP_CHART_VARS)"
+               << endl;
+        return;
+    }
+
+    // If a new time advance the data count which also sets
+    // the new time.
+    if( timeData[0] != x[npts-1] )
+    {
+      advanceDataCount( x[npts-1] );
+
+      // Now fill in the times which may already be there.
+      for( unsigned int i=0; i<npts; ++i )
+        timeData[i] = x[npts-1-i];
+    }
+
+    // Set the new Y value.
+    for( unsigned int i=0; i<npts && i<HISTORY; ++i )
+    {
+      vars[index].varData[i] = y[npts-1-i];
+
+      // Update the data count.
+      if( dataCount < HISTORY )
+        ++dataCount;
+    }
+
+    for( unsigned int i=npts; i<HISTORY; ++i )
+    {
+      vars[index].varData[i] = 0;
+    }
+
+    // Update the samples for all curves.
+    updateSamples();
+
+    updateAxis();
+
     replot();
 }
 
@@ -578,7 +635,7 @@ void QvisStripChart::addDataPoint( const unsigned int index,
 // Class: QvisStripChart::updateSamples
 //
 // Purpose: Update the samples
-//    
+//
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -597,7 +654,7 @@ void QvisStripChart::updateSamples()
 // Class: QvisStripChart::updateAxis
 //
 // Purpose: Up date the y axis based on all of the curves.
-//    
+//
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -621,7 +678,7 @@ void QvisStripChart::updateAxis()
             {
                 if( c_min > vars[c].varData[i] )
                     c_min = vars[c].varData[i];
-              
+
                 if( c_max < vars[c].varData[i] )
                     c_max = vars[c].varData[i];
 
@@ -658,7 +715,7 @@ void QvisStripChart::updateAxis()
 //  Modifications: ffix
 //
 //    Hank Childs, Fri Sep 27 13:46:14 PDT 2002
-//    Put in a tolerance to stop numerical precision errors from creating 
+//    Put in a tolerance to stop numerical precision errors from creating
 //    jumpy behavior.
 //
 // ****************************************************************************
@@ -687,7 +744,7 @@ inline double fsign(double value, double sign)
 
   if (sign < 0.)
     value *= -1.;
-  
+
   return value;
 }
 
@@ -695,7 +752,7 @@ inline double fsign(double value, double sign)
 // Class: QvisStripChart::AdjustLabelsComputeRange
 //
 // Purpose: Gets an even range for labeling axis.
-//    
+//
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -703,7 +760,7 @@ inline double fsign(double value, double sign)
 // Modifications:
 //
 //****************************************************************************
-void QvisStripChart::AdjustLabelsComputeRange( double range[2], 
+void QvisStripChart::AdjustLabelsComputeRange( double range[2],
                                                double &interval,
                                                unsigned int &nTicks )
 {
@@ -729,7 +786,7 @@ void QvisStripChart::AdjustLabelsComputeRange( double range[2],
   }
 
   double fxt = pow(10., ffix(pow10));
-    
+
   // Find the number of integral points in the interval.
   double fnt  = diff / fxt;
   fnt  = ffix(fnt);
@@ -773,7 +830,7 @@ void QvisStripChart::AdjustLabelsComputeRange( double range[2],
       range[1] += interval;
       ++nTicks;
   }
-  
+
   // The last tick continues one interval forward so to fully include
   // all values.
   range[1] += interval;
