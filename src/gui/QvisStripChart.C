@@ -401,8 +401,8 @@ QvisStripChart::legendChecked( const QVariant &itemInfo, bool on )
 //****************************************************************************
 // Class: QvisStripChart::toggleDisplayMode
 //
-// Purpose: Toogles between pick and pan/zoom mode.
-//
+// Purpose:
+//     Toogles between pick and pan/zoom mode.
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -423,8 +423,8 @@ void QvisStripChart::toggleDisplayMode( bool mode )
 //****************************************************************************
 // Class: QvisStripChart::reset
 //
-// Purpose: Reset the view to the full extents.
-//
+// Purpose:
+//     Reset the view to the full extents.
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -442,8 +442,8 @@ void QvisStripChart::reset()
 //****************************************************************************
 // Class: QvisStripChart::clear
 //
-// Purpose: Clear all of the strip chart data.
-//
+// Purpose:
+//     Clear all of the strip chart data.
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -474,8 +474,8 @@ void QvisStripChart::clear()
 //****************************************************************************
 // Class: QvisStripChart::setupTimeAxis
 //
-// Purpose: Sets up the time axis.
-//
+// Purpose:
+//     Sets up the time axis.
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -494,8 +494,8 @@ void QvisStripChart::setupTimeAxis( double time, double timeStep )
 //****************************************************************************
 // Class: QvisStripChart::advanceDataCount
 //
-// Purpose: Advance the time and data histories. Which what moves the curves.
-//
+// Purpose:
+//     Advance the time and data histories. Which what moves the curves.
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -539,8 +539,8 @@ void QvisStripChart::advanceDataCount( double time )
 //****************************************************************************
 // Class: QvisStripChart::addDataPoint
 //
-// Purpose: Add the next point to a curve.
-//
+// Purpose:
+//     Add the next point to a curve.
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -575,10 +575,10 @@ void QvisStripChart::addDataPoint( const unsigned int index,
 }
 
 //****************************************************************************
-// Class: QvisStripChart::addDataPoint
+// Class: QvisStripChart::addDataPoints
 //
-// Purpose: Add the next point to a curve.
-//
+// Purpose:
+//     Add a series of points to a curve.
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2020
@@ -634,8 +634,8 @@ void QvisStripChart::addDataPoints( const unsigned int index,
 //****************************************************************************
 // Class: QvisStripChart::updateSamples
 //
-// Purpose: Update the samples
-//
+// Purpose:
+//     Update the samples
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -653,8 +653,8 @@ void QvisStripChart::updateSamples()
 //****************************************************************************
 // Class: QvisStripChart::updateAxis
 //
-// Purpose: Up date the y axis based on all of the curves.
-//
+// Purpose:
+//     Up date the y axis based on all of the curves.
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -711,12 +711,17 @@ void QvisStripChart::updateAxis()
     setAxisScale( QwtPlot::yLeft, range[0], range[1] );
 }
 
-// ****************************************************************************
-//  Modifications: ffix
+//****************************************************************************
+// Function: ffix
 //
-//    Hank Childs, Fri Sep 27 13:46:14 PDT 2002
-//    Put in a tolerance to stop numerical precision errors from creating
-//    jumpy behavior.
+// Purpose:
+//     Put in a tolerance to stop numerical precision errors from creating
+//     jumpy behavior.
+//
+// Programmer: Hank Childs
+// Creation:   Fri Sep 27 13:46:14 PDT 2002
+//
+//  Modifications:
 //
 // ****************************************************************************
 inline double ffix(double value)
@@ -730,12 +735,16 @@ inline double ffix(double value)
   return (double) ivalue;
 }
 
-
-// ****************************************************************************
-//  Modifications: fsign
+//****************************************************************************
+// Function: fsign
 //
-//    Hank Childs, Fri Sep 27 13:46:14 PDT 2002
-//    Assure the sign of two values are the same
+// Purpose:
+//     Assure the sign of two values are the same
+//
+// Programmer: Hank Childs
+// Creation:   Fri Sep 27 13:46:14 PDT 2002
+//
+//  Modifications:
 //
 // ****************************************************************************
 inline double fsign(double value, double sign)
@@ -751,8 +760,8 @@ inline double fsign(double value, double sign)
 //****************************************************************************
 // Class: QvisStripChart::AdjustLabelsComputeRange
 //
-// Purpose: Gets an even range for labeling axis.
-//
+// Purpose:
+//     Gets an even range for labeling axis.
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -779,7 +788,7 @@ void QvisStripChart::AdjustLabelsComputeRange( double range[2],
       pow10 = fsign((fabs(pow10) + eps), pow10);
   }
 
-  // ffix move you in the wrong direction if pow10 is negative.
+  // ffix moves you in the wrong direction if pow10 is negative.
   if (pow10 < 0.)
   {
       pow10 = pow10 - 1.;
