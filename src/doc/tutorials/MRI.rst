@@ -23,7 +23,7 @@ This tutorial uses the MRI dataset.
 Plotting areas of interest
 --------------------------
 
-First, we'll add a Pseudocolor plot and isoloate the visualization to an area that we're interseted in. In this case, it's a brain located within the dataset.
+First, we'll add a Pseudocolor plot and isoloate the visualization to an area that we're interseted in. In this case, it's a human brain located within the dataset.
 
 Create a Pseudocolor plot
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -35,7 +35,7 @@ Create a Pseudocolor plot
 
    Adding a Pseudocolor plot.
 
-After this, the Pseudocolor plot is rendered in VisIt_'s Viewer window. 
+The Pseudocolor plot should now be rendered in VisIt_'s Viewer window.
 Modify the view by rotating and zooming in the viewer window.
 
 Add an Isovolume operator
@@ -65,7 +65,7 @@ You'll notice that the visualization doesn't look very interesting at this point
 
 .. figure:: images/MRI_Blue_Brain.png
 
-   Visualizing the brain of our dataset.
+   Visualizing the underlying data of our dataset.
 
 
 Change the color table
@@ -90,7 +90,7 @@ The default color table doesn't add much to the visualization, so I suggest chan
 Exploring our MRI dataset
 -------------------------
 
-Now that we have located and visualized the brain within our dataset, we can further explore characteristics local to this region.
+Now that we have located and visualized the inner section of our dataset, we can further explore characteristics local to this region.
 
 Performing a Slice
 ~~~~~~~~~~~~~~~~~~
@@ -155,6 +155,8 @@ One more way to gain access to the subsections of your dataset is to perform a C
    Visualizing a Clip of our MRI dataset.
 
 
+Performing a spherical Clip
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Let's update the settings of our Clip so that we remove a spherical section of the data.
 
 1. Double click on the Clip to bring up the Clip attributes window again. Change the Slice type to Sphere. The attribute options should change significantly. Set the Center to "0 100 0", and set the radius to 150.
