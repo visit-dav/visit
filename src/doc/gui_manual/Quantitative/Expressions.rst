@@ -877,7 +877,7 @@ Principal Tensor Function: ``principal_tensor()`` : ``principal_tensor(expr0)``
     Creates a new *vector* expression which is everywhere the 
     principal stress components of the input argument, which must a *symmetric*
     tensor. The principal stress components are the
-    `eigenvalues of the stress tensor. <https://uclageo.com/CEE220/Section2.3.php>`_
+    `eigenvalues of the stress tensor. <https://uclageo.com/SoilMechanicsNotes/Section2.3.php>`_
     So, the vector expression computed here is the same as 
     :ref:`eigenvalue() <Eigenvalue_Expression_Function>`.
 

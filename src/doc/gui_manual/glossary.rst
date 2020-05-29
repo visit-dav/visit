@@ -23,13 +23,12 @@ Glossary
    Vertex
        These terms refer to the *corners* or *ends* of mesh elements.
 
-   Node-centered
-
    Pathlines
        A path rendered by an integrator that uses the vector field that is
        *in-step* with the integrator, so that as the integrator steps through
        time, it uses data from the vector field at each new time step.
 
+   Node-centered
    Point-centered
        These terms refer to a piecewise-linear (one degree of freedom at each
        of mesh element *corner*) interpolation scheme used to define a variable
@@ -43,12 +42,11 @@ Glossary
        years, in the currently available implementations, a parallel task is an
        :abbr:`MPI (Message Passing Interface)` rank.
 
-   SIL
-
    Streamlines
        A path rendered by an integrator that uses the *same* vector field for
        the entire integration.
 
+   SIL
    Subset Inclusion Lattice
        A **Subset Inclusion Lattice** or **SIL** is a term used to describe
        the often complex, graph like relationships among a variety of subsets

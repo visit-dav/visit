@@ -1,29 +1,32 @@
-<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
-<html>
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-  <meta http-equiv="Content-Language" content="en-us">
-  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-  <meta name="ProgId" content="FrontPage.Editor.Document">
-  <title>VisIt 3.1.2 Release Notes</title>
-</head>
-<body>
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[Release Notes for VisIt 3.1.2]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <IM>LLNL-WEB-810232</IM>
+  <lastchanged><![CDATA[May 18, 2020]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
 
-<center><b><font size="6">VisIt 3.1.2 Release Notes</font></b></center>
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
 
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
 
-<p><b>Sections</b></p>
-<ul>
-  <li><a href="#Bugs_fixed">Bug Fixes</a></li>
-  <li><a href="#Enhancements">Enhancements</a></li>
-  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
-  <li><a href="#Doc_changes">Changes to Visit documentation</a></li>
-</ul>
-
-<a name="Bugs_fixed"></a>
-<p><b><font size="4">Bugs fixed in version 3.1.2</font></b></p>
+<h2>Bugs fixed in version 3.1.2</h2>
 <ul>
   <li>Fixed a bug with the xml tools where they would fail when the full version was specified (eg xml2cmake -v 3.1.2).</li>
   <li>Fixed a bug printing to printers or PDF files on Windows.</li>
@@ -46,8 +49,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where the OpenPMD reader might cause opening an HDF5 file to hang.</li>
 </ul>
 
-<a name="Enhancements"></a>
-<p><b><font size="4">Enhancements in version 3.1.2</font></b></p>
+<h2>Enhancements in version 3.1.2</h2>
 <ul>
   <li>Removed the pbatch launch profile from the Lawrence Livermore National Laboratory's Max host profile.</li>
   <li>Added host profiles for the Lawrence Livermore National Laboratory's Magma and Boraxo systems.</li>
@@ -61,21 +63,23 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Changed the variable name <i>Patch/Rank</i> to <i>Patch/ProcId</i> in the Uintah reader.</li>
 </ul>
 
-<a name="Dev_changes"></a>
-<p><b><font size="4">Changes for VisIt developers in version 3.1.2</font></b></p>
+<h2>Changes for VisIt developers in version 3.1.2</h2>
 <ul>
   <li>The build_visit script was enhanced to allow VisIt to build on Ubuntu 19.10 systems using gcc 9.2.</li>
   <li>The build_visit script was enhanced to allow VisIt to build on Debian 10.</li>
 </ul>
 
-<a name="Doc_changes"></a>
-<p><b><font size="4">Documentation changes in version 3.1.2</font></b></p>
+<h2>Documentation changes in version 3.1.2</h2>
 <ul>
   <li>Added sphinx docs on Visit's Integral Curve System.</li>
   <li>Added sphinx docs for building VisIt on macOS using masonry.</li>
 </ul>
 
-<p>Click the following link to view the release notes for the previous version
-of VisIt: <a href=relnotes3.1.1.html>3.1.1</a>.</p>
-</body>
-</html>
+<p>For any additional questions, send e-mail to <a href="mailto:visit-users@ornl.gov">VisIt Users</a>.</p>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>
