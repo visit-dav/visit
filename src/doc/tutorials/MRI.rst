@@ -141,6 +141,31 @@ Another usefull operator that is similar to Slice is ThreeSlice. This operator c
 
    Visualizing a ThreeSlice of our MRI dataset.
 
+Performing a ThreeSlice using the point tool
+""""""""""""""""""""""""""""""""""""""""""""
+Along with directly entering the X, Y, Z coordinates for your ThreeSlice in the attributes window, Visit_ also provides the option of using an interactive Point tool for determing these coordinates.
+
+1. In the top left-hand corner of the visualization window, you'll find a button that activates the Point tool. *Click* this button.
+
+.. figure:: images/MRI_Point_Tool_Button.png
+
+   Activating the Point tool.
+
+2. Once activated, you will see a point surrounded by a red box within the visualization window.
+
+.. figure:: images/MRI_Point_Tool.png
+
+   The activated Point tool.
+
+3. Before changing the orientation of our Point tool, *Click* on the ThreeSlice attributes window so that VisIt_ understands that we want to associate this Point tool with these attributes.
+4. *Click* and drag the red box to change the location of the point defining the X, Y, Z coordinates of the ThreeSlice. VisIt_ will automatically update the plot.
+
+.. figure:: images/MRI_Point_Tool_2.png
+
+   Performing a ThreeSlice with the Point tool.
+
+5. *Click* the Point tool button again to deactivate the tool.
+
 
 Performing a Clip
 ~~~~~~~~~~~~~~~~~
@@ -237,7 +262,7 @@ VisIt_ also provides an interactive Plane tool that can be used to determine you
 
 .. figure:: images/MRI_Plane_Tool.png
 
-   Performing a Clip with the Plane Tool.
+   Performing a Clip with the Plane tool.
 
 
 Performing a Clip using the Sphere tool
