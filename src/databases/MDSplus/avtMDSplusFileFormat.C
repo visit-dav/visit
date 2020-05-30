@@ -37,7 +37,7 @@ using namespace std;
 //
 // ****************************************************************************
 
-avtMDSplusFileFormat::avtMDSplusFileFormat(const char *filename, DBOptionsAttributes *readOpts)
+avtMDSplusFileFormat::avtMDSplusFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
   : avtMTSDFileFormat(&filename, 1), m_socket(-1)
 {
     if (readOpts != NULL) {

@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 
+namespace avtCTRLNamespace
+{
 struct Atom
 {
     char element[3];
@@ -22,6 +24,7 @@ struct Atom
     float y;
     float z; 
 };
+}
 
 // ****************************************************************************
 //  Class: avtCTRLFileFormat
@@ -59,7 +62,7 @@ class avtCTRLFileFormat : public avtSTSDFileFormat
     std::string filename;
     bool metadata_read;
 
-    std::vector<Atom> atoms;
+    std::vector<avtCTRLNamespace::Atom> atoms;
     double alat;
     double unitCell[3][3];
 };

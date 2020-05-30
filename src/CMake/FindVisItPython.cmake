@@ -239,6 +239,12 @@ SET(PYTHON_DEBUG_LIBRARIES "${PYTHON_DEBUG_LIBRARY}")
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(PythonLibs DEFAULT_MSG PYTHON_LIBRARIES PYTHON_INCLUDE_PATH)
 
+IF(PYTHONLIBS_FOUND)
+    SET(PYTHON_FOUND TRUE)
+ELSE()
+    SET(PYTHON_FOUND FALSE)
+ENDIF()
+
 # PYTHON_ADD_MODULE(<name> src1 src2 ... srcN) is used to build modules for python.
 # PYTHON_WRITE_MODULES_HEADER(<filename>) writes a header file you can include 
 # in your sources to initialize the static python modules

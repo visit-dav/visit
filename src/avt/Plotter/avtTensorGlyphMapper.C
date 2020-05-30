@@ -15,7 +15,6 @@
 #include <vtkProperty.h>
 #include <vtkPolyData.h>
 #include <vtkVisItTensorGlyph.h>
-#include <vtkVisItPolyDataNormals.h>
 
 #include <avtExtents.h>
 

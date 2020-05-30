@@ -60,7 +60,7 @@ const double NAN_REPLACE_VAL = 1.0E9;
 //
 // ****************************************************************************
 avtUintahFileFormat::avtUintahFileFormat(const char *filename,
-                                         DBOptionsAttributes* attrs) :
+                                         const DBOptionsAttributes* attrs) :
   avtMTMDFileFormat(filename)
 {
   // int t1 = visitTimer->StartTimer();
@@ -784,7 +784,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 #endif
 
     scalar = new avtScalarMetaData();
-    scalar->name = "Patch/Rank";
+    scalar->name = "Patch/ProcId";
     scalar->meshName = mesh_for_this_var;
     scalar->centering = cent;
     scalar->hasDataExtents = false;
@@ -1680,7 +1680,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
 
   // Patch based data ids and bounds
   if( strncmp(varname, "Patch/Id", 8) == 0 ||
-      strncmp(varname, "Patch/Rank", 10) == 0 ||
+      strncmp(varname, "Patch/ProcId", 12) == 0 ||
       strncmp(varname, "Patch/Bounds/Low",  16) == 0 ||
       strncmp(varname, "Patch/Bounds/High", 17) == 0 )
   {
@@ -2431,8 +2431,8 @@ avtUintahFileFormat::addMeshNodeRankSIL( avtDatabaseMetaData *md,
     for( unsigned int i=0, j=1; i<nNodes; ++i, ++j ) {
       char msg[128];
       sprintf( msg, "Ranks_%04d_%04d",
-	       i*nRanksPerGroup,
-	       std::min(j*nRanksPerGroup, nProcs)-1 );
+               i*nRanksPerGroup,
+               std::min(j*nRanksPerGroup, nProcs)-1 );
       node_enum_id[i] = smd->AddEnumNameValue( msg, nRanks+i);
     }
 

@@ -33,6 +33,8 @@ using std::string;
 using std::vector;
 using std::pair;
 
+using avtProteinDataBankNamespace::Atom;
+
 string
 TrimTrailingSpaces(char *s)
 {
@@ -56,7 +58,7 @@ TrimTrailingSpaces(char *s)
 // ****************************************************************************
 
 avtProteinDataBankFileFormat::avtProteinDataBankFileFormat(const char *fn,
-                                                DBOptionsAttributes *readOpts)
+                                                const DBOptionsAttributes *readOpts)
     : avtSTSDFileFormat(fn)
 {
     filename = fn;

@@ -45,7 +45,7 @@ class QwtPlot;
 // Purpose:
 //   Simulation window.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Jeremy Meredith
 // Creation:   Wed Apr  9 11:49:35 PDT 2005
@@ -67,7 +67,7 @@ class GUI_API QvisSimulationWindow : public QvisPostableWindowObserver
     typedef QMap<QString, StatusAttributes*> SimulationStatusMap;
     typedef QMap<QString, avtDatabaseMetaData*> SimulationMetaDataMap;
 public:
-    QvisSimulationWindow(EngineList *engineList,    
+    QvisSimulationWindow(EngineList *engineList,
                      const QString &caption = QString::null,
                      const QString &shortName = QString::null,
                      QvisNotepadArea *notepad = 0);
@@ -102,7 +102,7 @@ private:
 
     void ConnectUIChildren(QObject *obj);
     void ConnectUI(QObject *ui);
-    
+
     void CreateCustomUIWindow();
     void UpdateUIComponent(QWidget *window,
                            const QString &name, const QString &value, bool e);
@@ -120,8 +120,13 @@ private:
     void parseCompositeCMD( const std::string cmd,
                             unsigned int &row, unsigned int &column,
                             double &x, double &y );
+    void parseCompositeCMD( const std::string cmd,
+                            unsigned int &chart,
+                            unsigned int &curve,
+                            unsigned int &npts,
+                            double * &x, double * &y );
     std::string getNextString( std::string &cmd, const std::string delimiter );
-                                                                              
+
 private slots:
     void closeEngine();
     void interruptEngine();
@@ -136,7 +141,7 @@ private slots:
     void executeStopCommand(const QString &value);
     void executeStepCommand(const QString &value);
 
-public:    
+public:
     void setStripChartVar(const QString &value);
 
 private:

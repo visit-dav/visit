@@ -20,7 +20,6 @@
 
 #include <avtDatabaseMetaData.h>
 
-#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <Expression.h>
 #include <FileFunctions.h>

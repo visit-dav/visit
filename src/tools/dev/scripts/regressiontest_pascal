@@ -243,6 +243,7 @@ fi
 # Update the repository.
 cd visit
 rm -f .git/index.lock >> ../buildlog 2>&1
+git checkout develop >> ../buildlog 2>&1
 git pull >> ../buildlog 2>&1
 git lfs pull >> ../buildlog 2>&1
 
@@ -409,10 +410,6 @@ for m in \$modes; do
     echo "Test \$m completed at: \`date\`"
 done
 
-# Tar up the results
-rm -f html.tar.gz
-tar -czvf  html.tar.gz \$dateTag
-
 EOF
 
 chmod 750 runit_${testHost}
@@ -425,6 +422,11 @@ rm -f postit_${testHost}
 cat <<EOF > postit_${testHost}
 #!/bin/sh
 
+if test "\$#" -ne 1; then
+    echo "Usage: \$0 date_tag"
+    exit
+fi
+
 dateTag=\$1
 
 if test "$serial" = "true" ; then
@@ -433,8 +435,12 @@ else
     modes="$testHost,$branch,serial $testHost,$branch,parallel $testHost,$branch,scalable,parallel,icet"
 fi
 
-cd $testDir/$workingDir/visit
-cd src/test
+cd $testDir/$workingDir/visit/src/test
+
+if test ! -d "\$dateTag"; then
+    echo "\$dateTag doesn't exist."
+    exit
+fi
 
 # Determine if the test suite passed or failed.
 hasFailed=""
@@ -466,24 +472,28 @@ if test "$post" = "true" ; then
         git push
     fi
 
-    # Copy the results to nersc
+    # Copy the results to the dashboard checkout on quartz. 
     cd src/test
-    scp -i ~/.ssh/weekly html.tar.gz $userNersc@$nerscHost:${branch}_html.tar.gz
-    if test "$debug" = "true" ; then
-        echo "Results copied to $nerscHost at: `date`" | mail -s "Results copied" $userEmail
-    fi
-
-    echo "Results copied to $nerscHost at: `date`"
-
-    # Post the results.
+    python ../tools/dev/scripts/visit-copy-test-results.py
     cd ../..
-    scp -i ~/.ssh/weekly src/tools/dev/scripts/visit-copy-test-results $userNersc@$nerscHost:
-    ssh -i ~/.ssh/weekly $userNersc@$nerscHost "./visit-copy-test-results ${branch}_html.tar.gz"
-    if test "$debug" = "true" ; then
-        echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
-    fi
 
-    echo "Results posted at: `date`"
+    # Update the main index.html.
+    src/tools/dev/scripts/visit-update-test-website
+
+    # Check the results into github.
+    cd src/test
+    newResults=\`ls -d *22:00\`
+    cd /usr/workspace/wsa/visit/dashboard/dashboard
+    git add \$newResults baselines index.html
+    git commit -m "Add new results to the dashboard."
+    git pull
+    git push
+    cd $testDir/$workingDir/visit
+    
+    # Move the new results to old_results.
+    cd src/test
+    mv \$newResults old_results
+    cd ../..
 
     # Send out an e-mail notifying the users of the test suite status.
     if test "\$hasFailed" = ""; then
@@ -492,15 +502,28 @@ if test "$post" = "true" ; then
         src/tools/dev/scripts/visit-notify-test-failure -host $testHost
     fi
 
-    # If its a sunday, purge old test results
-    if test "$(date +%A)" = "Sunday" ; then
-        scp -i ~/.ssh/weekly src/tools/dev/scripts/purge_old_test_results.sh $userNersc@$nerscHost:
-        ssh -i ~/.ssh/weekly $userNersc@$nerscHost "./purge_old_test_results.sh"
+    # If its the first day of the month, purge test results from 3 months ago.
+    if test "\$(date +%d)" = "01" ; then
+         month=\`date +%m\`
+         deleteMonth=\$(((month -1 + 12 - 3) % 12 + 1))
+         year=\`date +%Y\`
+         deleteYear=\$((year - 1 + (month + 12 - 4) / 12))
+         d1=\$( printf '%04d' \$deleteYear )
+         d2=\$( printf '%02d' \$deleteMonth )
+         dirs="\${d1}_\${d2}*"
+         cd src/test
+         echo "\$dirs"
+         #
+         # Leaving this commented out for the moment.
+         #
+         #git del \$dirs
+         #src/tools/dev/scripts/visit-update-test-website
+         #git add index.html
+         #git commit -m "Deleting old results."
+         #git pull
+         #git push
+         cd ../..
     fi
-
-    # Copy the update script to nersc and execute it.
-    scp -i ~/.ssh/weekly src/tools/dev/scripts/visit-update-test-website $userNersc@$nerscHost:
-    ssh -i ~/.ssh/weekly $userNersc@$nerscHost "./visit-update-test-website"
 
     # Set the permissions so that others may access the test directory.
     cd ../..

@@ -6,7 +6,11 @@
 #define Operator_PLUGIN_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 # define OP_EXPORT __declspec(dllexport)
+#else
+#define OP_EXPORT
+#endif
 #else
 # if __GNUC__ >= 4
 #   define OP_EXPORT __attribute__((visibility("default")))

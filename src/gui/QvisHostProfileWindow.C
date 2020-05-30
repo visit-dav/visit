@@ -488,6 +488,11 @@ QvisHostProfileWindow::CreateRemoteProfilesGroup()
 // Creation:   September 10, 2013
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr  8 11:56:47 PDT 2020
+//    Remove '/' betweeen remoteUrl and new url text, as remoteUrl contains a
+//    trailing '/'.  Having '//' in the url was causing a redirect error,
+//    and redirects aren't currently allowed/handled. Also remove extra call
+//    to manager->get using removteUrl, doesn't seem to be needed.
 //
 // ****************************************************************************
 
@@ -497,7 +502,8 @@ QvisHostProfileWindow::retrieveLatestProfiles()
     ///get content from url..
     QUrl url(remoteUrl->currentText());
 
-    if(!manager) {
+    if(!manager)
+    {
         manager = new QNetworkAccessManager();
 
         connect(manager, SIGNAL(finished(QNetworkReply*)),
@@ -507,12 +513,9 @@ QvisHostProfileWindow::retrieveLatestProfiles()
     remoteTree->clear();
     remoteData.clear();
 
-    QNetworkRequest maprequest(QUrl(remoteUrl->currentText() + "/networks.dat"));
+    QNetworkRequest maprequest(QUrl(remoteUrl->currentText() + "networks.dat"));
     QNetworkReply* reply = manager->get(maprequest);
     reply->waitForReadyRead(-1);
-
-    QNetworkRequest request(url);
-    manager->get(request);
 }
 
 // ****************************************************************************
@@ -600,11 +603,40 @@ QvisHostProfileWindow::addRemoteProfile(const QString& inputUrl, const QString &
 //    Kathleen Biagas, Tue Sep  3 20:08:13 PDT 2019
 //    Use networks.json file to parse for locations of .xml files.
 //
+//    Kathleen Biagas, Wed Apr  8 11:56:47 PDT 2020
+//    If an error was encountered, print error messages and return.
+//
+//    Remove '/' betweeen remoteUrl and new url text, as remoteUrl contains a
+//    trailing '/'.  Having '//' in the url was causing a redirect error,
+//    and redirects aren't currently allowed/handled.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
 {
+    if (reply->error())
+    {
+        QString msg = tr("There was an error attempting to download hosts.\n"
+                         "Please contact VisIt developers.\n\n"
+                         "url: %1\n\n%2.")
+                         .arg(reply->url().toString())
+                         .arg(reply->errorString());
+        Error(msg);
+        return;
+    }
+    else if(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() != 200)
+    {
+        QString msg = tr("There was an error attempting to download hosts.\n"
+                         "Please contact VisIt developers.\n\n"
+                         "url: %1.\n\nhttp error %2: %3.")
+                .arg(reply->url().toString())
+                .arg(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt())
+                .arg(reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString());
+        Error(msg);
+        return;
+    }
+
     QString results(reply->readAll());
 
     QString inputUrl = reply->url().toString();
@@ -626,7 +658,7 @@ QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
             profileMap[key] = values;
         }
         // change the url to retieve hosts directory structure from json file
-        QNetworkRequest request(QUrl(remoteUrl->currentText() + "/networks.json"));
+        QNetworkRequest request(QUrl(remoteUrl->currentText() + "networks.json"));
         manager->get(request);
     }
     else if(QFileInfo(inputUrl).fileName() == "networks.json")
@@ -648,7 +680,7 @@ QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
                     for(rapidjson::SizeType j = 0; j < hostDir.Size(); ++j)
                     {
                         QString fileN(hostDir[j]["name"].GetString());
-                        QNetworkRequest request(QUrl(remoteUrl->currentText() + "/" + network + "/" + fileN));
+                        QNetworkRequest request(QUrl(remoteUrl->currentText() + network + "/" + fileN));
                         manager->get(request);
                     }
                 }

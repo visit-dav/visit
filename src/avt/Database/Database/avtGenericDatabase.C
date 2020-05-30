@@ -253,14 +253,21 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //      during a -dump run.
 //
 //  Created: Mark C. Miller, Wed Dec 12 04:58:26 PST 2018
+//
+//  Modifications:
+//    Kathleen Biagas, Wed May 20 14:27:24 PDT 2020
+//    Modified to dump out every domain.
+//
+//    Kathleen Biagas, Fri May 22 15:21:19 PDT 2020
+//    Handle parallel.
+//
 // ****************************************************************************
+
 static void
 DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
     string phaseName)
-
 {
     static int call_count = 0;
-    std::ostringstream oss;
 
     if (!avtDebugDumpOptions::DumpEnabled())
         return;
@@ -268,18 +275,25 @@ DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
     string dumpDir = avtDebugDumpOptions::GetDumpDirectory();
     if (dumpDir == "")
         dumpDir = ".";
-    oss << dumpDir << "/gdb." << std::setfill('0') << std::setw(4) << call_count << "." << phaseName << ".vtk";
-    string dumpFile = oss.str();
-    vtkDataSetWriter *dsw = vtkDataSetWriter::New();
+    vtkNew<vtkDataSetWriter> dsw;
     dsw->SetFileTypeToASCII();
-    dsw->SetFileName(dumpFile.c_str());
     for (int i = 0 ; i < ndoms; i++)
     {
-        vtkDataSet *ds = dsc.GetDataset(i, 0);
-        dsw->SetInputData(i, ds);
+        std::ostringstream oss;
+#ifdef PARALLEL
+        oss << dumpDir << "/gdb." << std::setfill('0') << std::setw(4)
+            << call_count << "." << phaseName << ".dom"
+            << std::setfill('0') << std::setw(4) << i
+            << ".proc" << std::setfill('0') << std::setw(4) << PAR_Rank() << ".vtk";
+#else
+        oss << dumpDir << "/gdb." << std::setfill('0') << std::setw(4)
+            << call_count << "." << phaseName << ".dom"
+            << std::setfill('0') << std::setw(4) << i << ".vtk";
+#endif
+        dsw->SetFileName(oss.str().c_str());
+        dsw->SetInputData(dsc.GetDataset(i, 0));
+        dsw->Write();
     }
-    dsw->Write();
-    dsw->Delete();
     call_count++;
 }
 
@@ -3172,6 +3186,13 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
             return NULL;
         }
 
+#if 0
+  // This was requested to be removed by Paraview folks.
+  // We're not sure if there will be a performance penalty for removing
+  // this block, as it states in the comment below. So, blocking it out
+  // for now, for ease of retrieval if needed, and will enter a ticket to
+  // remove this at a later date.
+
         //
         // VTK creates a trivial producer for each data set.  It later does
         // garbage collection and that takes a long time if we have a lot
@@ -3186,7 +3207,7 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         }
         tp->SetOutput(mesh);
         tp->SetOutput(NULL);
-
+#endif
         AssociateBounds(mesh);
 
         if (CachingRecommended(mesh) && Interface->CanCacheVariable(real_meshname))
@@ -7622,6 +7643,9 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Kathleen Biagas, Wed Apr  1 16:33:37 PDT 2015
 //    Obtain FieldData arrays as AbstractArray.
 //
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
+//
 // ****************************************************************************
 
 bool
@@ -7735,7 +7759,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     for (int i = 0 ; i < (int)doms.size() ; i++)
     {
         list.push_back(ds.GetDataset(i, 0));
-        list[i]->Register(NULL);
+        if (list[i] != NULL)
+            list[i]->Register(NULL);
     }
     vector<vtkDataSet *> newList = dbi->ExchangeMesh(doms, list);
 
@@ -7745,6 +7770,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     //
     for (int i = 0 ; i < (int)doms.size() ; i++)
     {
+        if (list[i] == NULL)
+            continue;
         vtkFieldData *fd = list[i]->GetFieldData();
         for (int k = 0; k < fd->GetNumberOfArrays(); k++)
         {
@@ -7773,6 +7800,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (size_t i = 0 ; i < doms.size() ; i++)
         {
             vtkDataSet *ds1 = list[i];
+            if (ds1 == NULL)
+            {
+                scalars.push_back(NULL);
+                continue;
+            }
             vtkDataArray *s   = NULL;
             if (centering == AVT_NODECENT)
             {
@@ -7789,6 +7821,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (int i = 0 ; i < (int)doms.size() ; i++)
         {
             vtkDataSet *ds1 = ds.GetDataset(i, 0);
+            if (ds1 == NULL)
+                continue;
             vtkDataArray *s   = scalarsOut[i];
             if (centering == AVT_NODECENT)
             {
@@ -7813,6 +7847,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (size_t i = 0 ; i < doms.size() ; i++)
         {
             vtkDataSet *ds1 = list[i];
+            if (ds1 == NULL)
+            {
+                vectors.push_back(NULL);
+                continue;
+            }
             vtkDataArray *s   = NULL;
             if (vmd->centering == AVT_NODECENT)
             {
@@ -7829,6 +7868,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (int i = 0 ; i < (int)doms.size() ; i++)
         {
             vtkDataSet *ds1 = ds.GetDataset(i, 0);
+            if (ds1 == NULL)
+                continue;
             vtkDataArray *s   = vectorsOut[i];
             if (vmd->centering == AVT_NODECENT)
             {
@@ -7863,6 +7904,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 for (size_t j = 0 ; j < doms.size() ; j++)
                 {
                     vtkDataSet *ds1 = list[j];
+                    if (ds1 == NULL)
+                    {
+                        scalars.push_back(NULL);
+                        continue;
+                    }
                     vtkDataSetAttributes *atts = NULL;
                     if (isPointData)
                     {
@@ -7879,6 +7925,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 for (int j = 0 ; j < (int)doms.size() ; j++)
                 {
                     vtkDataSet *ds1 = ds.GetDataset(j, 0);
+                    if (ds1 == NULL)
+                        continue;
                     vtkDataSetAttributes *atts = NULL;
                     if (isPointData)
                     {
@@ -7898,6 +7946,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 vector<vtkDataArray *> scalars;
                 for (size_t j = 0 ; j < doms.size() ; j++)
                 {
+                    if (list[j] == NULL)
+                    {
+                        scalars.push_back(NULL);
+                        continue;
+                    }
                     scalars.push_back(list[j]->GetCellData()->GetArray(
                                                                  *curVar));
                 }
@@ -7906,6 +7959,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 for (int j = 0 ; j < (int)doms.size() ; j++)
                 {
                     vtkDataSet *ds1 = ds.GetDataset(j, 0);
+                    if (ds1 == NULL)
+                        continue;
                     ds1->GetCellData()->AddArray(scalarsOut[j]);
                     scalarsOut[j]->Delete();
                 }
@@ -7920,6 +7975,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 for (size_t j = 0 ; j < doms.size() ; j++)
                 {
                     vtkDataSet *ds1 = list[j];
+                    if (ds1 == NULL)
+                    {
+                        vectors.push_back(NULL);
+                        continue;
+                    }
                     vtkDataSetAttributes *atts = NULL;
                     if (isPointData)
                     {
@@ -7936,6 +7996,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 for (int j = 0 ; j < (int) doms.size() ; j++)
                 {
                     vtkDataSet *ds1 = ds.GetDataset(j, 0);
+                    if (ds1 == NULL)
+                        continue;
                     vtkDataSetAttributes *atts = NULL;
                     if (isPointData)
                     {
@@ -8012,8 +8074,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
             for (int i = 0 ; i < nummixvars ; i++)
             {
                 vector<avtMixedVariable*> mixvarList;
-                int  numDomains = (int)doms.size();
-                for (int j = 0 ; j < numDomains ; j++)
+                for (int j = 0 ; j < (int)doms.size(); j++)
                 {
                     avtMaterial *mat = matList[j];
                     if (mat != NULL && mat->GetMixlen() > 0)
@@ -8067,6 +8128,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (size_t j = 0 ; j < doms.size() ; j++)
         {
             vtkDataSet *ds1 = list[j];
+            if (ds1 == NULL)
+            {
+                nodeNums.push_back(NULL);
+                continue;
+            }
             nodeNums.push_back(ds1->GetPointData()->GetArray(
                                                 "avtOriginalNodeNumbers"));
         }
@@ -8075,6 +8141,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (int j = 0 ; j < (int)doms.size() ; j++)
         {
             vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            if (ds1 == NULL)
+                continue;
             ds1->GetPointData()->AddArray(nodeNumsOut[j]);
             nodeNumsOut[j]->Delete();
         }
@@ -8089,6 +8157,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (size_t j = 0 ; j < doms.size() ; j++)
         {
             vtkDataSet *ds1 = list[j];
+            if (ds1 == NULL)
+            {
+                cellNums.push_back(NULL);
+                continue;
+            }
             cellNums.push_back(ds1->GetCellData()->GetArray(
                                                 "avtOriginalCellNumbers"));
         }
@@ -8097,6 +8170,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (int j = 0 ; j < (int)doms.size() ; j++)
         {
             vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            if (ds1 == NULL)
+                continue;
             ds1->GetCellData()->AddArray(cellNumsOut[j]);
             cellNumsOut[j]->Delete();
         }
@@ -8111,6 +8186,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (size_t j = 0 ; j < doms.size() ; j++)
         {
             vtkDataSet *ds1 = list[j];
+            if (ds1 == NULL)
+            {
+                nodeNums.push_back(NULL);
+                continue;
+            }
             nodeNums.push_back(ds1->GetPointData()->GetArray(
                                                 "avtGlobalNodeNumbers"));
         }
@@ -8119,6 +8199,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (int j = 0 ; j < (int)doms.size() ; j++)
         {
             vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            if (ds1 == NULL)
+                continue;
             ds1->GetPointData()->AddArray(nodeNumsOut[j]);
             nodeNumsOut[j]->Delete();
         }
@@ -8133,6 +8215,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (size_t j = 0 ; j < doms.size() ; j++)
         {
             vtkDataSet *ds1 = list[j];
+            if (ds1 == NULL)
+            {
+                cellNums.push_back(NULL);
+                continue;
+            }
             cellNums.push_back(ds1->GetCellData()->GetArray(
                                                 "avtGlobalZoneNumbers"));
         }
@@ -8141,6 +8228,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (int j = 0 ; j < (int)doms.size() ; j++)
         {
             vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            if (ds1 == NULL)
+                continue;
             ds1->GetCellData()->AddArray(cellNumsOut[j]);
             cellNumsOut[j]->Delete();
         }
@@ -8153,7 +8242,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     //
     for (size_t i = 0 ; i < doms.size() ; i++)
     {
-        list[i]->Delete();
+        if (list[i] != NULL) list[i]->Delete();
     }
 
     src->DatabaseProgress(1, 0, progressString);
@@ -8283,6 +8372,13 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
 //
 //    Mark C. Miller, Wed Aug 22 08:43:26 PDT 2012
 //    Added logic to cleanup VTK objects before EXCEPTION
+//
+//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
+//    Modify to handle NULL meshes.
+//
+//    Kathleen Biagas, Fri May 22 15:41:44 PDT 2020
+//    Test for myMin > myMax.
+//
 // ****************************************************************************
 
 bool
@@ -8328,6 +8424,12 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     for (int i = 0 ; i < (int)doms.size() ; i++)
     {
         vtkUnstructuredGrid *d = (vtkUnstructuredGrid *) ds.GetDataset(i, 0);
+        if (d == NULL)
+        {
+            gni.push_back(NULL);
+            lni.push_back(NULL);
+            continue;
+        }
         vtkUnstructuredGrid *copy = vtkUnstructuredGrid::New();
         copy->CopyStructure(d);
         vtkDataArray *gn = GetGlobalNodeIds(doms[i], meshname.c_str(), ts);
@@ -8378,6 +8480,8 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     for (size_t i = 0 ; i < doms.size() ; i++)
     {
         vtkIntArray *int_gni = gni[i];
+        if (int_gni == NULL)
+            continue;
         int *ptr = int_gni->GetPointer(0);
         vtkIdType nvals = int_gni->GetNumberOfTuples();
         for (vtkIdType j = 0 ; j < nvals ; j++)
@@ -8403,6 +8507,8 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     int myMax = numIdsPerProc * (rank+1);
     if (myMax > maxId)
         myMax = maxId;
+    if (myMin > myMax)
+        myMin = myMax;
 
     //
     // We will do the bookkeeping for this processor's range.  Set up
@@ -8425,6 +8531,8 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     vector< intVector > local_ids_for_proc(num_procs);
     for (size_t i = 0 ; i < doms.size() ; i++)
     {
+        if (gni[i] == NULL)
+            continue;
         vtkIntArray *int_gni = gni[i];
         vtkIntArray *int_lni = lni[i];
         int *ptr  = int_gni->GetPointer(0);
@@ -8467,8 +8575,8 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     //
     for (size_t i = 0 ; i < doms.size() ; i++)
     {
-        gni[i]->Delete();
-        lni[i]->Delete();
+        if (gni[i] != NULL) gni[i]->Delete();
+        if (lni[i] != NULL) lni[i]->Delete();
     }
     gni.clear();
     lni.clear();
@@ -8875,6 +8983,9 @@ avtGenericDatabase::CommunicateGhostZonesWhileStreaming(
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
 //
+//    Kathleen Biagas, Fri May 22 15:41:44 PDT 2020
+//    Test for myMin > myMax.
+//
 // ****************************************************************************
 
 bool
@@ -8920,6 +9031,8 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
     int myMax = numIdsPerProc * (rank+1);
     if (myMax > maxId)
         myMax = maxId;
+    if (myMin > myMax)
+        myMin = myMax;
 
     //
     // We will do the bookkeeping for this processor's range.  Set up
