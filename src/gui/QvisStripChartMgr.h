@@ -63,6 +63,11 @@ public:
                        const unsigned int curveIndex,
                        double x, double y );
 
+    void addDataPoints( const unsigned int tabIndex,
+                        const unsigned int curveIndex,
+                        const unsigned int npts,
+                        double *x, double *y );
+
     virtual void CreateEntireWindow();
 
 public slots:
