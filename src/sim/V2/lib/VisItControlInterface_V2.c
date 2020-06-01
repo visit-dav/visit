@@ -4210,7 +4210,7 @@ VisItUI_setValueD(const char *name, double value, int enabled)
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
 
-        sprintf(cmd, "SetUI:s:%s:%lf:%d", name, value, enabled?1:0);
+        sprintf(cmd, "SetUI:s:%s:%f:%d", name, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
 
@@ -4232,7 +4232,7 @@ VisItUI_setValueV(const char *name, double x, double y, double z, int enabled)
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
 
-        sprintf(cmd, "SetUI:s:%s:%lf,%lf,%lf:%d", name, x, y, z, enabled?1:0);
+        sprintf(cmd, "SetUI:s:%s:%f,%f,%f:%d", name, x, y, z, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
 
@@ -4302,7 +4302,7 @@ VisItUI_setListValueD(const char *name,
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
 
-        sprintf(cmd, "SetUI:s:%s:%d | %lf | %d :%d",
+        sprintf(cmd, "SetUI:s:%s:%d | %f | %d :%d",
                 name, row, value, editable?1:0, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
@@ -4326,7 +4326,7 @@ VisItUI_setListValueV(const char *name,
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
 
-        sprintf(cmd, "SetUI:s:%s:%d | %lf,%lf,%lf | %d :%d",
+        sprintf(cmd, "SetUI:s:%s:%d | %f,%f,%f | %d :%d",
                 name, row, x, y, z, editable?1:0, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
@@ -4399,7 +4399,7 @@ VisItUI_setTableValueD(const char *name,
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
 
-        sprintf(cmd, "SetUI:s:%s:%d | %d | %lf :%d",
+        sprintf(cmd, "SetUI:s:%s:%d | %d | %f :%d",
                 name, row, column, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
@@ -4423,7 +4423,7 @@ VisItUI_setTableValueV(const char *name,
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
 
-        sprintf(cmd, "SetUI:s:%s:%d | %d | %lf,%lf,%lf :%d",
+        sprintf(cmd, "SetUI:s:%s:%d | %d | %f,%f,%f :%d",
                 name, row, column, x, y, z, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
@@ -4471,7 +4471,7 @@ VisItUI_addStripChartPoint(int chart, int curve, int cycle, double value)
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
 
-        sprintf(cmd, "SetUI:s:%s:%d | %d | %d | %lf :%d",
+        sprintf(cmd, "SetUI:s:%s:%d | %d | %d | %f :%d",
                 name, chart, curve, cycle, value, 1);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
@@ -4500,9 +4500,10 @@ VisItUI_addStripChartPoints(int chart, int curve, int npts, int *cycles, double 
 
         char subcmd[CMD_MAX_STR_LEN];
 
-        for( int i=0; i<npts; ++i )
+        int i;
+        for(i = 0; i < npts; ++i)
         {
-          sprintf(subcmd, " | %d | %lf", cycles[i], values[i]);
+          sprintf(subcmd, " | %d | %f", cycles[i], values[i]);
           cmd = realloc(cmd, strlen(cmd) + strlen(subcmd) + 1);
           strcat(cmd, subcmd);
         }
