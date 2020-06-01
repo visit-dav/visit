@@ -158,11 +158,11 @@ PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *pr
     else
         snprintf(tmpStr, 1000, "%sstereo = 0\n", prefix);
     str += tmpStr;
-    const char *compression_names = "None, PackBits, Jpeg, Deflate, LZW";
+    const char *compression_names = "NONE, PackBits, Jpeg, Deflate, LZW";
     switch (atts->GetCompression())
     {
       case SaveWindowAttributes::None:
-          snprintf(tmpStr, 1000, "%scompression = %sNone  # %s\n", prefix, prefix, compression_names);
+          snprintf(tmpStr, 1000, "%scompression = %sNONE  # %s\n", prefix, prefix, compression_names);
           str += tmpStr;
           break;
       case SaveWindowAttributes::PackBits:
@@ -899,6 +899,8 @@ PySaveWindowAttributes_getattr(PyObject *self, char *name)
         return SaveWindowAttributes_GetCompression(self, NULL);
     if(strcmp(name, "None") == 0)
         return PyInt_FromLong(long(SaveWindowAttributes::None));
+    if(strcmp(name, "NONE") == 0)
+        return PyInt_FromLong(long(SaveWindowAttributes::None));
     if(strcmp(name, "PackBits") == 0)
         return PyInt_FromLong(long(SaveWindowAttributes::PackBits));
     if(strcmp(name, "Jpeg") == 0)
@@ -1042,12 +1044,32 @@ static PyTypeObject SaveWindowAttributesType =
     0,                                 /* tp_getattro */
     0,                                 /* tp_setattro */
     0,                                 /* tp_as_buffer */
+#if defined(IS_PY3K) // python 3
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+#else // python 2
+    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
+#endif
     SaveWindowAttributes_Purpose,                /* tp_doc */
     0,                                 /* tp_traverse */
     0,                                 /* tp_clear */
    (richcmpfunc)SaveWindowAttributes_richcompare,  /* tp_richcompare */
     0,                                 /* tp_weaklistoffset */
+//
+// VisIt Methods End here, but here are extra struct init fields for ref
+//
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */ 
+    0,                         /* tp_methods */ 
+    0,                         /* tp_members */ 
+    0,                         /* tp_getset */ 
+    0,                         /* tp_base */ 
+    0,                         /* tp_dict */ 
+    0,                         /* tp_descr_get */ 
+    0,                         /* tp_descr_set */ 
+    0,                         /* tp_dictoffset */ 
+    0,                         /* tp_init */ 
+    0,                         /* tp_alloc */ 
+    0,                         /* tp_new */ 
 };
 
 static PyObject *

@@ -191,10 +191,9 @@ main(int argc, char *argv[])
     char **argv_py_style = new char *[argc];
     
     bool scriptOnly = false;
-    bool noWin = false;
-                      
+
     int i=0;
-        
+
     int argc2 = 0;
     int argc_after_s = 0; 
     char* uifile = 0;
@@ -214,12 +213,6 @@ main(int argc, char *argv[])
     // Parse the arguments
     for(i = 0; i < argc; ++i)
     {
-        // std::cout << "cli main: argv[i] " << argv[i] << std::endl;
-        // if(strcmp(argv[i], "-nowin") == 0)
-        // {
-        //  noWin = true;
-        // }
-        // else
         if(strcmp(argv[i], "-debug") == 0)
         {
             debugLevel = 1;

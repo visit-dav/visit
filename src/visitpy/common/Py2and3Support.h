@@ -156,19 +156,27 @@ Py_FindMethod(PyMethodDef *table, PyObject *obj, char *name)
     // recipe adapted from:
     // https://github.com/encukou/py3c/issues/22
 
+    PyObject * res = NULL;
     for (int i = 0; table[i].ml_name != NULL; ++i)
     {
         if (strcmp(name, table[i].ml_name) == 0)
         {
-            PyObject * res = PyCFunction_New(&table[i], obj);
-            // 
-            if (res == NULL)
+            res = PyCFunction_New(&table[i], obj);
+            if(res!= NULL)
             {
-                res = Py_None;
+                Py_INCREF(res);
+                return res;
             }
-            Py_INCREF(res);
-            return res;
         }
+    }
+
+    if(res == NULL)
+    {
+        char msg[1024];
+        snprintf(msg, 1024, "Could not find method with name `%s`", name);
+        printf("%s\n",msg);
+        // set error if we didn't find the method we expected to find
+        PyErr_SetString(PyExc_ValueError, msg);
     }
     return NULL;
 }

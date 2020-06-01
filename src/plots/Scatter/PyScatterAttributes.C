@@ -45,7 +45,7 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
 
     snprintf(tmpStr, 1000, "%svar1 = \"%s\"\n", prefix, atts->GetVar1().c_str());
     str += tmpStr;
-    const char *var1Role_names = "Coordinate0, Coordinate1, Coordinate2, Color, None";
+    const char *var1Role_names = "Coordinate0, Coordinate1, Coordinate2, Color, NONE";
     switch (atts->GetVar1Role())
     {
       case ScatterAttributes::Coordinate0:
@@ -65,7 +65,7 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
           str += tmpStr;
           break;
       case ScatterAttributes::None:
-          snprintf(tmpStr, 1000, "%svar1Role = %sNone  # %s\n", prefix, prefix, var1Role_names);
+          snprintf(tmpStr, 1000, "%svar1Role = %sNONE  # %s\n", prefix, prefix, var1Role_names);
           str += tmpStr;
           break;
       default:
@@ -107,7 +107,7 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
 
     snprintf(tmpStr, 1000, "%svar1SkewFactor = %g\n", prefix, atts->GetVar1SkewFactor());
     str += tmpStr;
-    const char *var2Role_names = "Coordinate0, Coordinate1, Coordinate2, Color, None";
+    const char *var2Role_names = "Coordinate0, Coordinate1, Coordinate2, Color, NONE";
     switch (atts->GetVar2Role())
     {
       case ScatterAttributes::Coordinate0:
@@ -127,7 +127,7 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
           str += tmpStr;
           break;
       case ScatterAttributes::None:
-          snprintf(tmpStr, 1000, "%svar2Role = %sNone  # %s\n", prefix, prefix, var2Role_names);
+          snprintf(tmpStr, 1000, "%svar2Role = %sNONE  # %s\n", prefix, prefix, var2Role_names);
           str += tmpStr;
           break;
       default:
@@ -171,7 +171,7 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
 
     snprintf(tmpStr, 1000, "%svar2SkewFactor = %g\n", prefix, atts->GetVar2SkewFactor());
     str += tmpStr;
-    const char *var3Role_names = "Coordinate0, Coordinate1, Coordinate2, Color, None";
+    const char *var3Role_names = "Coordinate0, Coordinate1, Coordinate2, Color, NONE";
     switch (atts->GetVar3Role())
     {
       case ScatterAttributes::Coordinate0:
@@ -191,7 +191,7 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
           str += tmpStr;
           break;
       case ScatterAttributes::None:
-          snprintf(tmpStr, 1000, "%svar3Role = %sNone  # %s\n", prefix, prefix, var3Role_names);
+          snprintf(tmpStr, 1000, "%svar3Role = %sNONE  # %s\n", prefix, prefix, var3Role_names);
           str += tmpStr;
           break;
       default:
@@ -235,7 +235,7 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
 
     snprintf(tmpStr, 1000, "%svar3SkewFactor = %g\n", prefix, atts->GetVar3SkewFactor());
     str += tmpStr;
-    const char *var4Role_names = "Coordinate0, Coordinate1, Coordinate2, Color, None";
+    const char *var4Role_names = "Coordinate0, Coordinate1, Coordinate2, Color, NONE";
     switch (atts->GetVar4Role())
     {
       case ScatterAttributes::Coordinate0:
@@ -255,7 +255,7 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
           str += tmpStr;
           break;
       case ScatterAttributes::None:
-          snprintf(tmpStr, 1000, "%svar4Role = %sNone  # %s\n", prefix, prefix, var4Role_names);
+          snprintf(tmpStr, 1000, "%svar4Role = %sNONE  # %s\n", prefix, prefix, var4Role_names);
           str += tmpStr;
           break;
       default:
@@ -1648,6 +1648,8 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ScatterAttributes::Color));
     if(strcmp(name, "None") == 0)
         return PyInt_FromLong(long(ScatterAttributes::None));
+    if(strcmp(name, "NONE") == 0)
+        return PyInt_FromLong(long(ScatterAttributes::None));
 
     if(strcmp(name, "var1MinFlag") == 0)
         return ScatterAttributes_GetVar1MinFlag(self, NULL);
@@ -1679,6 +1681,8 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Color") == 0)
         return PyInt_FromLong(long(ScatterAttributes::Color));
     if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(ScatterAttributes::None));
+    if(strcmp(name, "NONE") == 0)
         return PyInt_FromLong(long(ScatterAttributes::None));
 
     if(strcmp(name, "var2") == 0)
@@ -1714,6 +1718,8 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ScatterAttributes::Color));
     if(strcmp(name, "None") == 0)
         return PyInt_FromLong(long(ScatterAttributes::None));
+    if(strcmp(name, "NONE") == 0)
+        return PyInt_FromLong(long(ScatterAttributes::None));
 
     if(strcmp(name, "var3") == 0)
         return ScatterAttributes_GetVar3(self, NULL);
@@ -1747,6 +1753,8 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Color") == 0)
         return PyInt_FromLong(long(ScatterAttributes::Color));
     if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(ScatterAttributes::None));
+    if(strcmp(name, "NONE") == 0)
         return PyInt_FromLong(long(ScatterAttributes::None));
 
     if(strcmp(name, "var4") == 0)
@@ -2046,12 +2054,32 @@ static PyTypeObject ScatterAttributesType =
     0,                                 /* tp_getattro */
     0,                                 /* tp_setattro */
     0,                                 /* tp_as_buffer */
+#if defined(IS_PY3K) // python 3
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+#else // python 2
+    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
+#endif
     ScatterAttributes_Purpose,                /* tp_doc */
     0,                                 /* tp_traverse */
     0,                                 /* tp_clear */
    (richcmpfunc)ScatterAttributes_richcompare,  /* tp_richcompare */
     0,                                 /* tp_weaklistoffset */
+//
+// VisIt Methods End here, but here are extra struct init fields for ref
+//
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */ 
+    0,                         /* tp_methods */ 
+    0,                         /* tp_members */ 
+    0,                         /* tp_getset */ 
+    0,                         /* tp_base */ 
+    0,                         /* tp_dict */ 
+    0,                         /* tp_descr_get */ 
+    0,                         /* tp_descr_set */ 
+    0,                         /* tp_dictoffset */ 
+    0,                         /* tp_init */ 
+    0,                         /* tp_alloc */ 
+    0,                         /* tp_new */ 
 };
 
 static PyObject *

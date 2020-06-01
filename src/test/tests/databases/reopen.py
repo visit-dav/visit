@@ -49,7 +49,6 @@
 # ----------------------------------------------------------------------------
 from __future__ import print_function
 import os
-import string
 import sys
 import time
 import shutil
@@ -58,7 +57,7 @@ def GetTruncatedWindowInformationString():
     # Get the window information and convert it to a string.
     s = str(GetWindowInformation())
     # Only use the first 5 or so lines from the string.
-    lines = string.split(s, "\n")
+    lines = s.split("\n")
     s = ""
     for i in range(5):
         if(i < len(lines)):

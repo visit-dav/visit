@@ -66,7 +66,7 @@ databases=["ftle_double_gyre_1_domain", "ftle_double_gyre_2_domains"]
 src_type=[LCSAtts.RegularGrid, LCSAtts.NativeMesh]
 src_type_str=["RegularGrid", "NativeMesh"]
 
-aux_grid=[LCSAtts.None, LCSAtts.TwoDim]
+aux_grid=[LCSAtts.NONE, LCSAtts.TwoDim]
 aux_grid_str=["NoAuxGrid", "2DAuxGrid"]
 
 TestSection("Basic FTLE function")

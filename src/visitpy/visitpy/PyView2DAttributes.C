@@ -818,7 +818,11 @@ static PyTypeObject View2DAttributesType =
     0,                                 /* tp_getattro */
     0,                                 /* tp_setattro */
     0,                                 /* tp_as_buffer */
+#if defined(IS_PY3K) // python 3
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+#else // python 2
+    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
+#endif
     View2DAttributes_Purpose,                /* tp_doc */
     0,                                 /* tp_traverse */
     0,                                 /* tp_clear */

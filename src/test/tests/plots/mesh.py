@@ -172,7 +172,8 @@ def TestGlobe():
     SetPlotOptions(m)
     Test("mesh_globe_03")
 
-    m.smoothingLevel = m.None
+    print(m.NONE)
+    m.smoothingLevel = m.NONE
     m.opaqueMode = m.Auto
     m.showInternal = 1
     SetPlotOptions(m)

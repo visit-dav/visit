@@ -944,7 +944,14 @@ def Test(case_name, altSWA=0, alreadySaved=0):
             height = TestEnv.params["height"]
             g = GetGlobalAttributes()
             win = g.windows[g.activeWindow]
+            stuff = {}
+            stuff["width"] = width;
+            stuff["height"] = height;
+            print("WIDTH, HEIGHT {} {}".format(width,height))
             ResizeWindow(win, width, height)
+            winfo = GetWindowInformation()
+            stuff["winfo_windowSize"] = winfo.windowSize
+            json.dump(stuff,open("_BLAH_" + case_name + ".json","w" ))
         sa.family   = 0
         sa.fileName = cur
         sa.format   = sa.PNG
@@ -1369,25 +1376,25 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
     # open it using PIL Image
     newimg = Image.open(cur)
     size = newimg.size;
-
+    print("DiffUsingPIL!!!!!!")
     # open the baseline image
     try:
         if (os.path.isfile(altbase)):
             oldimg = Image.open(altbase)
             if (size != oldimg.size):
                 Log("Error: Baseline and current images are different sizes... resizing baseline to compensate")
-                oldimg = oldimg.resize(size, Image.BICUBIC)
+                # oldimg = oldimg.resize(size, Image.BICUBIC)
         elif (os.path.isfile(baseline)):
             oldimg = Image.open(baseline)
             if (size != oldimg.size):
                 Log("Error: Baseline and current images are different sizes... resizing baseline to compensate")
-                oldimg = oldimg.resize(size, Image.BICUBIC)
+                # oldimg = oldimg.resize(size, Image.BICUBIC)
         else:
             Log("Warning: No baseline image: %s" % baseline)
             if TestEnv.params["ctest"]:
                 Log(ctestReportMissingBaseline(baseline))
-            oldimg = Image.open(test_module_path('nobaseline.pnm'))
-            oldimg = oldimg.resize(size, Image.BICUBIC)
+            # oldimg = Image.open(test_module_path('nobaseline.pnm'))
+            # oldimg = oldimg.resize(size, Image.BICUBIC)
     except:
         oldimg = Image.open(test_module_path('nobaseline.pnm'))
         Log("Warning: Defective baseline image: %s" % baseline)

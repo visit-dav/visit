@@ -41,11 +41,11 @@ PyViewerClientAttributes_ToString(const ViewerClientAttributes *atts, const char
     std::string str;
     char tmpStr[1000];
 
-    const char *renderingType_names = "None, Image, Data";
+    const char *renderingType_names = "NONE, Image, Data";
     switch (atts->GetRenderingType())
     {
       case ViewerClientAttributes::None:
-          snprintf(tmpStr, 1000, "%srenderingType = %sNone  # %s\n", prefix, prefix, renderingType_names);
+          snprintf(tmpStr, 1000, "%srenderingType = %sNONE  # %s\n", prefix, prefix, renderingType_names);
           str += tmpStr;
           break;
       case ViewerClientAttributes::Image:
@@ -469,6 +469,8 @@ PyViewerClientAttributes_getattr(PyObject *self, char *name)
         return ViewerClientAttributes_GetRenderingType(self, NULL);
     if(strcmp(name, "None") == 0)
         return PyInt_FromLong(long(ViewerClientAttributes::None));
+    if(strcmp(name, "NONE") == 0)
+        return PyInt_FromLong(long(ViewerClientAttributes::None));
     if(strcmp(name, "Image") == 0)
         return PyInt_FromLong(long(ViewerClientAttributes::Image));
     if(strcmp(name, "Data") == 0)
@@ -583,12 +585,32 @@ static PyTypeObject ViewerClientAttributesType =
     0,                                 /* tp_getattro */
     0,                                 /* tp_setattro */
     0,                                 /* tp_as_buffer */
+#if defined(IS_PY3K) // python 3
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+#else // python 2
+    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
+#endif
     ViewerClientAttributes_Purpose,                /* tp_doc */
     0,                                 /* tp_traverse */
     0,                                 /* tp_clear */
    (richcmpfunc)ViewerClientAttributes_richcompare,  /* tp_richcompare */
     0,                                 /* tp_weaklistoffset */
+//
+// VisIt Methods End here, but here are extra struct init fields for ref
+//
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */ 
+    0,                         /* tp_methods */ 
+    0,                         /* tp_members */ 
+    0,                         /* tp_getset */ 
+    0,                         /* tp_base */ 
+    0,                         /* tp_dict */ 
+    0,                         /* tp_descr_get */ 
+    0,                         /* tp_descr_set */ 
+    0,                         /* tp_dictoffset */ 
+    0,                         /* tp_init */ 
+    0,                         /* tp_alloc */ 
+    0,                         /* tp_new */ 
 };
 
 static PyObject *

@@ -121,11 +121,11 @@ PyavtSubsetsMetaData_ToString(const avtSubsetsMetaData *atts, const char *prefix
     else
         snprintf(tmpStr, 1000, "%shasPartialCells = 0\n", prefix);
     str += tmpStr;
-    const char *decompMode_names = "None, Cover, Partition";
+    const char *decompMode_names = "NONE, Cover, Partition";
     switch (atts->decompMode)
     {
       case avtSubsetsMetaData::None:
-          snprintf(tmpStr, 1000, "%sdecompMode = %sNone  # %s\n", prefix, prefix, decompMode_names);
+          snprintf(tmpStr, 1000, "%sdecompMode = %sNONE  # %s\n", prefix, prefix, decompMode_names);
           str += tmpStr;
           break;
       case avtSubsetsMetaData::Cover:
@@ -665,6 +665,8 @@ PyavtSubsetsMetaData_getattr(PyObject *self, char *name)
         return avtSubsetsMetaData_GetDecompMode(self, NULL);
     if(strcmp(name, "None") == 0)
         return PyInt_FromLong(long(avtSubsetsMetaData::None));
+    if(strcmp(name, "NONE") == 0)
+        return PyInt_FromLong(long(avtSubsetsMetaData::None));
     if(strcmp(name, "Cover") == 0)
         return PyInt_FromLong(long(avtSubsetsMetaData::Cover));
     if(strcmp(name, "Partition") == 0)
@@ -784,12 +786,32 @@ static PyTypeObject avtSubsetsMetaDataType =
     0,                                 /* tp_getattro */
     0,                                 /* tp_setattro */
     0,                                 /* tp_as_buffer */
+#if defined(IS_PY3K) // python 3
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+#else // python 2
+    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
+#endif
     avtSubsetsMetaData_Purpose,                /* tp_doc */
     0,                                 /* tp_traverse */
     0,                                 /* tp_clear */
    (richcmpfunc)avtSubsetsMetaData_richcompare,  /* tp_richcompare */
     0,                                 /* tp_weaklistoffset */
+//
+// VisIt Methods End here, but here are extra struct init fields for ref
+//
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */ 
+    0,                         /* tp_methods */ 
+    0,                         /* tp_members */ 
+    0,                         /* tp_getset */ 
+    0,                         /* tp_base */ 
+    0,                         /* tp_dict */ 
+    0,                         /* tp_descr_get */ 
+    0,                         /* tp_descr_set */ 
+    0,                         /* tp_dictoffset */ 
+    0,                         /* tp_init */ 
+    0,                         /* tp_alloc */ 
+    0,                         /* tp_new */ 
 };
 
 static PyObject *

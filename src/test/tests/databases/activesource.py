@@ -19,7 +19,6 @@
 #
 # ----------------------------------------------------------------------------
 
-import string
 
 #
 # Look at the first few lines of the string representation of the
@@ -29,7 +28,7 @@ def TestWindowInformation(testname):
     # Get the window information and convert it to a string.
     s = str(GetWindowInformation())
     # Only use the first 5 or so lines from the string.
-    lines = string.split(s, "\n")
+    lines = s.split("\n")
     s = ""
     for i in range(5):
         if(i < len(lines)):
@@ -60,7 +59,8 @@ TestWindowInformation("activesource02")
 AddPlot("FilledBoundary", "material(mesh)")
 DrawPlots()
 Test("activesource03")
-SetTimeSliderState(TimeSliderGetNStates() / 2)
+# note: py3 div creates float
+SetTimeSliderState(int(TimeSliderGetNStates() / 2))
 Test("activesource04")
 TestWindowInformation("activesource05")
 

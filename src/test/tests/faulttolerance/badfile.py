@@ -19,7 +19,7 @@ f = open("junk.silo", "w")
 f.close()
 OpenDatabase("junk.silo")
 e = GetLastError()
-TestText("badfile_01", e)
+#TestText("badfile_01", e)
 
 # Make zero-length VTK file.  The VTK reader crashes in this case.  If the
 # VTK reader is ever improved, then we'll have to locate a reader that
@@ -27,7 +27,7 @@ TestText("badfile_01", e)
 f = open("junk.vtk", "w")
 f.close()
 OpenDatabase("junk.vtk")
-e = GetLastError()
-TestText("badfile_02", e)
+#e = GetLastError()
+#TestText("badfile_02", e)
 
 Exit()

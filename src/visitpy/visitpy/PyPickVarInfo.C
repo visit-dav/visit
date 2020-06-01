@@ -114,7 +114,7 @@ PyPickVarInfo_ToString(const PickVarInfo *atts, const char *prefix)
     else
         snprintf(tmpStr, 1000, "%smixVar = 0\n", prefix);
     str += tmpStr;
-    const char *centering_names = "Nodal, Zonal, None";
+    const char *centering_names = "Nodal, Zonal, NONE";
     switch (atts->GetCentering())
     {
       case PickVarInfo::Nodal:
@@ -126,7 +126,7 @@ PyPickVarInfo_ToString(const PickVarInfo *atts, const char *prefix)
           str += tmpStr;
           break;
       case PickVarInfo::None:
-          snprintf(tmpStr, 1000, "%scentering = %sNone  # %s\n", prefix, prefix, centering_names);
+          snprintf(tmpStr, 1000, "%scentering = %sNONE  # %s\n", prefix, prefix, centering_names);
           str += tmpStr;
           break;
       default:
@@ -840,6 +840,8 @@ PyPickVarInfo_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(PickVarInfo::Zonal));
     if(strcmp(name, "None") == 0)
         return PyInt_FromLong(long(PickVarInfo::None));
+    if(strcmp(name, "NONE") == 0)
+        return PyInt_FromLong(long(PickVarInfo::None));
 
     if(strcmp(name, "miscMessage") == 0)
         return PickVarInfo_GetMiscMessage(self, NULL);
@@ -952,12 +954,32 @@ static PyTypeObject PickVarInfoType =
     0,                                 /* tp_getattro */
     0,                                 /* tp_setattro */
     0,                                 /* tp_as_buffer */
+#if defined(IS_PY3K) // python 3
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+#else // python 2
+    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
+#endif
     PickVarInfo_Purpose,                /* tp_doc */
     0,                                 /* tp_traverse */
     0,                                 /* tp_clear */
    (richcmpfunc)PickVarInfo_richcompare,  /* tp_richcompare */
     0,                                 /* tp_weaklistoffset */
+//
+// VisIt Methods End here, but here are extra struct init fields for ref
+//
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */ 
+    0,                         /* tp_methods */ 
+    0,                         /* tp_members */ 
+    0,                         /* tp_getset */ 
+    0,                         /* tp_base */ 
+    0,                         /* tp_dict */ 
+    0,                         /* tp_descr_get */ 
+    0,                         /* tp_descr_set */ 
+    0,                         /* tp_dictoffset */ 
+    0,                         /* tp_init */ 
+    0,                         /* tp_alloc */ 
+    0,                         /* tp_new */ 
 };
 
 static PyObject *

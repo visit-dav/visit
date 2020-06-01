@@ -2379,7 +2379,12 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
         c << "    const char *" << name << "_names = \"";
         for(size_t j = 0; j < enumType->values.size(); ++j)
         {
-            c << enumType->values[j];
+            QString val_string = enumType->values[j];
+            if(val_string == "None")
+            {
+                val_string = "NONE";
+            }
+            c << val_string;
             if(j < enumType->values.size() - 1)
                 c << ", ";
             if(j  > 0 && j%4==0 && j != enumType->values.size()-1)
@@ -2398,9 +2403,16 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
 
         for(size_t i = 0; i < enumType->values.size(); ++i)
         {
+            // None is a special case, we can't have atts.None in py3, its 
+            // a syntax error, instead show as NONE
+            QString val_string = enumType->values[i];
+            if(val_string == "None")
+            {
+                val_string = "NONE";
+            }
             c << "      case " << classname << "::" << enumType->values[i] << ":\n";
             c << "          snprintf(tmpStr, 1000, \"%s" << name << " = %s"
-              << enumType->values[i] << "  # %s\\n\", prefix, prefix, "
+              << val_string << "  # %s\\n\", prefix, prefix, "
               << name << "_names);" << Endl;
             c << "          str += tmpStr;" << Endl;
             c << "          break;" << Endl;
@@ -2430,6 +2442,21 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             c << "        return PyInt_FromLong(long(";
             c << classname << "::" << enumType->values[i];
             c << "));" << Endl;
+            // add extra case for NONE:
+            // None is a special case, we can't have atts.None in py3, its 
+            // a syntax error, instead show as NONE
+            QString val_string = enumType->values[i];
+            if(val_string == "None")
+            {
+                c << "    ";
+                c << "if";
+                c << "(strcmp(name, \"";
+                c << "NONE";
+                c << "\") == 0)" << Endl;
+                c << "        return PyInt_FromLong(long(";
+                c << classname << "::" << enumType->values[i];
+                c << "));" << Endl;
+            }
         }
         c << Endl;
     }
@@ -3527,28 +3554,36 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "    0,                                 /* tp_getattro */" << Endl;
         c << "    0,                                 /* tp_setattro */" << Endl;
         c << "    0,                                 /* tp_as_buffer */" << Endl;
+        // python 2 v python 3, 
+        // in py 2, we need Py_TPFLAGS_CHECKTYPES to make sure things like as_number
+        // work
+        c << "#if defined(IS_PY3K) // python 3" << Endl;
         c << "    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */" << Endl;
+        c << "#else // python 2" << Endl;
+        c << "    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */" << Endl;
+        c << "#endif" << Endl;
         c << "    "<<name<<"_Purpose,                /* tp_doc */" << Endl;
         c << "    0,                                 /* tp_traverse */" << Endl;
         c << "    0,                                 /* tp_clear */" << Endl;
         c << "   (richcmpfunc)"<<name<<"_richcompare,  /* tp_richcompare */" << Endl;
         c << "    0,                                 /* tp_weaklistoffset */" << Endl;
+        c << "//" << Endl;
+        c << "// VisIt Methods End here, but here are extra struct init fields for ref" << Endl;
+        c << "//" << Endl;
+        c << "    0,                         /* tp_iter */" << Endl;
+        c << "    0,                         /* tp_iternext */ " << Endl;
+        c << "    0,                         /* tp_methods */ " << Endl;
+        c << "    0,                         /* tp_members */ " << Endl;
+        c << "    0,                         /* tp_getset */ " << Endl;
+        c << "    0,                         /* tp_base */ " << Endl;
+        c << "    0,                         /* tp_dict */ " << Endl;
+        c << "    0,                         /* tp_descr_get */ " << Endl;
+        c << "    0,                         /* tp_descr_set */ " << Endl;
+        c << "    0,                         /* tp_dictoffset */ " << Endl;
+        c << "    0,                         /* tp_init */ " << Endl;
+        c << "    0,                         /* tp_alloc */ " << Endl;
+        c << "    0,                         /* tp_new */ " << Endl;
         c << "};" << Endl;
-        // VisIt Methods End here, but here are example extra init fields for ref
-        //     0,                         /* tp_iter */
-        //     0,                         /* tp_iternext */
-        //     Noddy_methods,             /* tp_methods */
-        //     Noddy_members,             /* tp_members */
-        //     Noddy_getseters,           /* tp_getset */
-        //     0,                         /* tp_base */
-        //     0,                         /* tp_dict */
-        //     0,                         /* tp_descr_get */
-        //     0,                         /* tp_descr_set */
-        //     0,                         /* tp_dictoffset */
-        //     (initproc)Noddy_init,      /* tp_init */
-        //     0,                         /* tp_alloc */
-        //     0,                         /* tp_new */
-        // };
 
 //
 // static PyTypeObject NoddyType = {

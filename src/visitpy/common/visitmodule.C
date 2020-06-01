@@ -1602,11 +1602,9 @@ STATIC PyObject *
 visit_GetLastError(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
-
     const char *str = "";
     if(messageObserver)
         str = messageObserver->GetLastError().c_str();
-
     return PyString_FromString(str);
 }
 
@@ -19707,7 +19705,6 @@ initialize_visit_python_module()
         // can cause dlopens and imports that don't share the 
         // same static vars, leading to havoc (well leading to 
         // a viewer launch that doesn't the proper args)
-        // Oue  
         //
 
         PyObject *sys_module = PyImport_AddModule("sys"); //borrowed
@@ -19766,9 +19763,22 @@ initialize_visit_python_module()
         return NULL;
     }
 
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)  // python 3
+//---------------------------------------------------------------------------//
     // update our methods table for the visit module on subsequent calls
     // to init
     UpdateModuleMethods(visitModule,VisItMethods);
+    
+//---------------------------------------------------------------------------//
+#else // PYTHON 2
+//---------------------------------------------------------------------------//
+
+        visitModule = Py_InitModule((char*)"visit",
+                                           &VisItMethods[0]);
+//---------------------------------------------------------------------------//
+#endif
+//---------------------------------------------------------------------------//
 
     return visitModule;
 }

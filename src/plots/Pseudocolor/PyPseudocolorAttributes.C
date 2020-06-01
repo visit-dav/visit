@@ -285,11 +285,11 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
     str += tmpStr;
     snprintf(tmpStr, 1000, "%stubeRadiusVarRatio = %g\n", prefix, atts->GetTubeRadiusVarRatio());
     str += tmpStr;
-    const char *tailStyle_names = "None, Spheres, Cones";
+    const char *tailStyle_names = "NONE, Spheres, Cones";
     switch (atts->GetTailStyle())
     {
       case PseudocolorAttributes::None:
-          snprintf(tmpStr, 1000, "%stailStyle = %sNone  # %s\n", prefix, prefix, tailStyle_names);
+          snprintf(tmpStr, 1000, "%stailStyle = %sNONE  # %s\n", prefix, prefix, tailStyle_names);
           str += tmpStr;
           break;
       case PseudocolorAttributes::Spheres:
@@ -304,11 +304,11 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
           break;
     }
 
-    const char *headStyle_names = "None, Spheres, Cones";
+    const char *headStyle_names = "NONE, Spheres, Cones";
     switch (atts->GetHeadStyle())
     {
       case PseudocolorAttributes::None:
-          snprintf(tmpStr, 1000, "%sheadStyle = %sNone  # %s\n", prefix, prefix, headStyle_names);
+          snprintf(tmpStr, 1000, "%sheadStyle = %sNONE  # %s\n", prefix, prefix, headStyle_names);
           str += tmpStr;
           break;
       case PseudocolorAttributes::Spheres:
@@ -2232,6 +2232,8 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
         return PseudocolorAttributes_GetTailStyle(self, NULL);
     if(strcmp(name, "None") == 0)
         return PyInt_FromLong(long(PseudocolorAttributes::None));
+    if(strcmp(name, "NONE") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::None));
     if(strcmp(name, "Spheres") == 0)
         return PyInt_FromLong(long(PseudocolorAttributes::Spheres));
     if(strcmp(name, "Cones") == 0)
@@ -2240,6 +2242,8 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "headStyle") == 0)
         return PseudocolorAttributes_GetHeadStyle(self, NULL);
     if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::None));
+    if(strcmp(name, "NONE") == 0)
         return PyInt_FromLong(long(PseudocolorAttributes::None));
     if(strcmp(name, "Spheres") == 0)
         return PyInt_FromLong(long(PseudocolorAttributes::Spheres));
@@ -2527,12 +2531,32 @@ static PyTypeObject PseudocolorAttributesType =
     0,                                 /* tp_getattro */
     0,                                 /* tp_setattro */
     0,                                 /* tp_as_buffer */
+#if defined(IS_PY3K) // python 3
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+#else // python 2
+    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
+#endif
     PseudocolorAttributes_Purpose,                /* tp_doc */
     0,                                 /* tp_traverse */
     0,                                 /* tp_clear */
    (richcmpfunc)PseudocolorAttributes_richcompare,  /* tp_richcompare */
     0,                                 /* tp_weaklistoffset */
+//
+// VisIt Methods End here, but here are extra struct init fields for ref
+//
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */ 
+    0,                         /* tp_methods */ 
+    0,                         /* tp_members */ 
+    0,                         /* tp_getset */ 
+    0,                         /* tp_base */ 
+    0,                         /* tp_dict */ 
+    0,                         /* tp_descr_get */ 
+    0,                         /* tp_descr_set */ 
+    0,                         /* tp_dictoffset */ 
+    0,                         /* tp_init */ 
+    0,                         /* tp_alloc */ 
+    0,                         /* tp_new */ 
 };
 
 static PyObject *
