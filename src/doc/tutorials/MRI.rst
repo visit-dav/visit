@@ -13,9 +13,9 @@ Open the dataset
 ----------------
 
 FIXME: add links
-This tutorial uses the MRI dataset.
+This tutorial uses the `MRI <https://visit-dav.github.io/largedata/>`_ dataset.
 
-1. Download MRI dataset.
+1. Download `the MRI dataset <https://visit-dav.github.io/largedata/>`_.
 2. Click on the *Open* icon to bring up the File open window.
 3. Navigate your file system to the folder containing "s01_anatomy_stripped.img".
 4. Highlight the file "s01_anatomy_stripped.img" and then click *OK*.
