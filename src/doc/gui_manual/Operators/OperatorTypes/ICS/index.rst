@@ -1,4 +1,4 @@
-.. _Integral Cycle System:
+.. _Integral_Curve_System:
 
 Integral Curve System
 =====================
