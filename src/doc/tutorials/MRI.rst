@@ -12,7 +12,6 @@ This tutorial provides a short introduction to visualizing MRI data using VisIt_
 Open the dataset
 ----------------
 
-FIXME: add links
 This tutorial uses the `MRI <https://visit-dav.github.io/largedata/>`_ dataset.
 
 1. Download `the MRI dataset <https://visit-dav.github.io/largedata/>`_.
