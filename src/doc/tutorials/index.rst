@@ -19,6 +19,12 @@ Here are links to data used for the Potential Flow tutorial.
  * Tarfile: `potential_flow_tutorial_data.tar.gz <http://portal.nersc.gov/project/visit/cyrush/tutorial_data/potential_flow_tutorial_data.tar.gz>`_ (161 MB)
  * Zip: `potential_flow_tutorial_data.zip <http://portal.nersc.gov/project/visit/cyrush/tutorial_data/potential_flow_tutorial_data.zip>`_ (160 MB)
 
+Here are links to data used for the MRI tutorial.
+
+ * 7z file: `mri_tutorial_data.7z <https://github.com/visit-dav/largedata/blob/master/bindata/mri_tutorial_data.7z?raw=true>`_ (788KB)
+ * Tarfile: `mri_tutorial_data.tar.gz <https://github.com/visit-dav/largedata/blob/master/bindata/mri_tutorial_data.tar.gz?raw=true>`_ (1MB)
+ * Zip: `mri_tutorial_data.zip <https://github.com/visit-dav/largedata/blob/master/bindata/mri_tutorial_data.zip?raw=true>`_ (1MB)
+
 
 Contents:
 
