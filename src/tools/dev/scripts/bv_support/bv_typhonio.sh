@@ -2,21 +2,18 @@
 function bv_typhonio_initialize
 {
     export DO_TYPHONIO="no"
-    export ON_TYPHONIO="off"
 }
 
 #enable the module for install
 function bv_typhonio_enable
 { 
     DO_TYPHONIO="yes"
-    ON_TYPHONIO="on"
 }
 
 #disable the module for install
 function bv_typhonio_disable
 {
     DO_TYPHONIO="no"
-    ON_TYPHONIO="off"
 }
 
 #add any dependency with comma separation, both dependers and dependees
@@ -32,7 +29,7 @@ function bv_typhonio_info
     export TYPHONIO_FILE=${TYPHONIO_FILE:-"typhonio-${TYPHONIO_VERSION}.tar.gz"}
     export TYPHONIO_COMPATIBILITY_VERSION=${TYPHONIO_COMPATIBILITY_VERSION:-"1.6"}
     export TYPHONIO_BUILD_DIR=${TYPHONIO_BUILD_DIR:-"typhonio-${TYPHONIO_VERSION}"}
-    export TYPHONIO_URL=${TYPHONIO_URL:-https://github.com/UK-MAC/typhonio/archive}
+    export TYPHONIO_URL=${TYPHONIO_URL:-https://github.com/UK-MAC/typhonio/archive/v${TYPHONIO_VERSION}}
     export TYPHONIO_MD5_CHECKSUM="204d2820190b079a6bb297af5aa42f8c"
     export TYPHONIO_SHA256_CHECKSUM="59b31cac7e0acc4f3001fff0d5c575f77752ed6b767247211d6ed3584d132ada"
 }
@@ -49,14 +46,7 @@ function bv_typhonio_print
 #print how to install and uninstall module..
 function bv_typhonio_print_usage
 {
-    printf "%-15s %s [%s]\n" "--typhonio"   "Build TyphonIO" "$DO_TYPHONIO"
-}
-
-#how to show information for graphical editor
-function bv_typhonio_graphical
-{
-    local graphical_out="TyphonIO    $TYPHONIO_VERSION($TYPHONIO_FILE)    $ON_TYPHONIO"
-    echo $graphical_out
+    printf "%-20s %s [%s]\n" "--typhonio"   "Build TyphonIO" "$DO_TYPHONIO"
 }
 
 #values to add to host profile, write to $HOSTCONF
