@@ -928,10 +928,26 @@ static char *PickVarInfo_Purpose = "This class contains PickVarInfo.";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
+
 VISIT_PY_TYPE_OBJ(PickVarInfoType,         \
-                  "PickVarInfo",          \
+                  "PickVarInfo",           \
                   PickVarInfoObject,       \
                   PickVarInfo_dealloc,     \
                   PickVarInfo_print,       \
@@ -942,6 +958,9 @@ VISIT_PY_TYPE_OBJ(PickVarInfoType,         \
                   PickVarInfo_richcompare, \
                   0); /* as_number*/
 
+//
+// Helper function for comparing.
+//
 static PyObject *
 PickVarInfo_richcompare(PyObject *self, PyObject *other, int op)
 {

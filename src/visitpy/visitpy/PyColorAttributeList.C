@@ -265,10 +265,26 @@ static char *ColorAttributeList_Purpose = "This class contains a list of ColorAt
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
+
 VISIT_PY_TYPE_OBJ(ColorAttributeListType,         \
-                  "ColorAttributeList",          \
+                  "ColorAttributeList",           \
                   ColorAttributeListObject,       \
                   ColorAttributeList_dealloc,     \
                   ColorAttributeList_print,       \
@@ -279,6 +295,9 @@ VISIT_PY_TYPE_OBJ(ColorAttributeListType,         \
                   ColorAttributeList_richcompare, \
                   0); /* as_number*/
 
+//
+// Helper function for comparing.
+//
 static PyObject *
 ColorAttributeList_richcompare(PyObject *self, PyObject *other, int op)
 {

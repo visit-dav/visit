@@ -293,10 +293,26 @@ static char *SubdivideQuadsAttributes_Purpose = "Attributes for SubdivideQuads o
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
+
 VISIT_PY_TYPE_OBJ(SubdivideQuadsAttributesType,         \
-                  "SubdivideQuadsAttributes",          \
+                  "SubdivideQuadsAttributes",           \
                   SubdivideQuadsAttributesObject,       \
                   SubdivideQuadsAttributes_dealloc,     \
                   SubdivideQuadsAttributes_print,       \
@@ -307,6 +323,9 @@ VISIT_PY_TYPE_OBJ(SubdivideQuadsAttributesType,         \
                   SubdivideQuadsAttributes_richcompare, \
                   0); /* as_number*/
 
+//
+// Helper function for comparing.
+//
 static PyObject *
 SubdivideQuadsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {

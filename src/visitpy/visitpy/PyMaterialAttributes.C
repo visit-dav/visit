@@ -575,10 +575,26 @@ static char *MaterialAttributes_Purpose = "Attributes to control material interf
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
+
 VISIT_PY_TYPE_OBJ(MaterialAttributesType,         \
-                  "MaterialAttributes",          \
+                  "MaterialAttributes",           \
                   MaterialAttributesObject,       \
                   MaterialAttributes_dealloc,     \
                   MaterialAttributes_print,       \
@@ -589,6 +605,9 @@ VISIT_PY_TYPE_OBJ(MaterialAttributesType,         \
                   MaterialAttributes_richcompare, \
                   0); /* as_number*/
 
+//
+// Helper function for comparing.
+//
 static PyObject *
 MaterialAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {

@@ -159,10 +159,26 @@ static char *ConnCompReduceAttributes_Purpose = "This class contains attributes 
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
+
 VISIT_PY_TYPE_OBJ(ConnCompReduceAttributesType,         \
-                  "ConnCompReduceAttributes",          \
+                  "ConnCompReduceAttributes",           \
                   ConnCompReduceAttributesObject,       \
                   ConnCompReduceAttributes_dealloc,     \
                   ConnCompReduceAttributes_print,       \
@@ -173,6 +189,9 @@ VISIT_PY_TYPE_OBJ(ConnCompReduceAttributesType,         \
                   ConnCompReduceAttributes_richcompare, \
                   0); /* as_number*/
 
+//
+// Helper function for comparing.
+//
 static PyObject *
 ConnCompReduceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {

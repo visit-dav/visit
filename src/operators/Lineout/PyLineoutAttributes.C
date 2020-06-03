@@ -451,10 +451,26 @@ static char *LineoutAttributes_Purpose = "Attributes for the Lineout operator.";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
+
 VISIT_PY_TYPE_OBJ(LineoutAttributesType,         \
-                  "LineoutAttributes",          \
+                  "LineoutAttributes",           \
                   LineoutAttributesObject,       \
                   LineoutAttributes_dealloc,     \
                   LineoutAttributes_print,       \
@@ -465,6 +481,9 @@ VISIT_PY_TYPE_OBJ(LineoutAttributesType,         \
                   LineoutAttributes_richcompare, \
                   0); /* as_number*/
 
+//
+// Helper function for comparing.
+//
 static PyObject *
 LineoutAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
