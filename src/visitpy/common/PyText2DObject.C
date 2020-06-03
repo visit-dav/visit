@@ -694,56 +694,14 @@ static const char *Text2DObject_Purpose = "This class defines defines an interfa
 static char *Text2DObject_Purpose = "This class defines defines an interface to a 2D text object.";
 #endif
 
-// //
-// // The type description structure
-// //
-// static PyTypeObject Text2DObjectType =
-// {
-//     //
-//     // Type header
-//     //
-//     PyObject_HEAD_INIT(&PyType_Type)
-//     0,                                   // ob_size
-//     "Text2DObject",                    // tp_name
-//     sizeof(Text2DObjectObject),        // tp_basicsize
-//     0,                                   // tp_itemsize
-//     //
-//     // Standard methods
-//     //
-//     (destructor)Text2DObject_dealloc,  // tp_dealloc
-//     (printfunc)Text2DObject_print,     // tp_print
-//     (getattrfunc)Text2DObject_getattr, // tp_getattr
-//     (setattrfunc)Text2DObject_setattr, // tp_setattr
-//     (cmpfunc)Text2DObject_compare,     // tp_compare
-//     (reprfunc)0,                         // tp_repr
-//     //
-//     // Type categories
-//     //
-//     0,                                   // tp_as_number
-//     0,                                   // tp_as_sequence
-//     0,                                   // tp_as_mapping
-//     //
-//     // More methods
-//     //
-//     0,                                   // tp_hash
-//     0,                                   // tp_call
-//     (reprfunc)Text2DObject_str,          // tp_str
-//     0,                                   // tp_getattro
-//     0,                                   // tp_setattro
-//     0,                                   // tp_as_buffer
-//     Py_TPFLAGS_CHECKTYPES,               // tp_flags
-//     Text2DObject_Purpose,              // tp_doc
-//     0,                                   // tp_traverse
-//     0,                                   // tp_clear
-//     0,                                   // tp_richcompare
-//     0                                    // tp_weaklistoffset
-// };
-
 // CUSTOM
 static PyObject *Text2DObject_richcompare(PyObject *self, PyObject *other, int op);
 
 // CUSTOM
 
+//
+// Python Type Struct Def Macro from Py2and3Support.h
+//
 //         VISIT_PY_TYPE_OBJ( VPY_TYPE,
 //                            VPY_NAME,
 //                            VPY_OBJECT,
@@ -759,68 +717,17 @@ static PyObject *Text2DObject_richcompare(PyObject *self, PyObject *other, int o
 //
 // The type description structure
 //
-VISIT_PY_TYPE_OBJ( Text2DObjectType,      \
-                   "Text2DObject",      \
-                   Text2DObjectObject,    \
-                   Text2DObject_dealloc,   \
-                   Text2DObject_print,     \
-                   Text2DObject_getattr,   \
-                   Text2DObject_setattr,   \
-                   Text2DObject_str,       \
-                   Text2DObject_Purpose,   \
-                   Text2DObject_richcompare,  \
+VISIT_PY_TYPE_OBJ( Text2DObjectType,         \
+                   "Text2DObject",           \
+                   Text2DObjectObject,       \
+                   Text2DObject_dealloc,     \
+                   Text2DObject_print,       \
+                   Text2DObject_getattr,     \
+                   Text2DObject_setattr,     \
+                   Text2DObject_str,         \
+                   Text2DObject_Purpose,     \
+                   Text2DObject_richcompare, \
                    0); /* as_number*/
-// static PyTypeObject Text2DObjectType =
-// {
-//     //
-//     // Type header
-//     //
-//     PyVarObject_HEAD_INIT(&PyType_Type, 0)
-//     "Text2DObject",                   /* tp_name */
-//     sizeof(Text2DObjectObject),          /* tp_basicsize */
-//     0,                                 /* tp_itemsize */
-//     (destructor)Text2DObject_dealloc,    /* tp_dealloc */
-//     (printfunc)Text2DObject_print,       /* tp_print */
-//     (getattrfunc)Text2DObject_getattr, /* tp_getattr */
-//     (setattrfunc)Text2DObject_setattr, /* tp_setattr */
-//     0,                                 /* tp_reserved */
-//     0,                                 /* tp_repr */
-//     0,                                 /* tp_as_number */
-//     0,                                 /* tp_as_sequence */
-//     0,                                 /* tp_as_mapping */
-//     0,                                 /* tp_hash  */
-//     0,                                 /* tp_call */
-//     (reprfunc)Text2DObject_str,      /* tp_str */
-//     0,                                 /* tp_getattro */
-//     0,                                 /* tp_setattro */
-//     0,                                 /* tp_as_buffer */
-// #if defined(IS_PY3K) // python 3
-//     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-// #else // python 2
-//     Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-// #endif
-//     Text2DObject_Purpose,                /* tp_doc */
-//     0,                                 /* tp_traverse */
-//     0,                                 /* tp_clear */
-//    (richcmpfunc)Text2DObject_richcompare,  /* tp_richcompare */
-//     0,                                 /* tp_weaklistoffset */
-// //
-// // VisIt Methods End here, but here are extra struct init fields for ref
-// //
-//     0,                         /* tp_iter */
-//     0,                         /* tp_iternext */
-//     0,                         /* tp_methods */
-//     0,                         /* tp_members */
-//     0,                         /* tp_getset */
-//     0,                         /* tp_base */
-//     0,                         /* tp_dict */
-//     0,                         /* tp_descr_get */
-//     0,                         /* tp_descr_set */
-//     0,                         /* tp_dictoffset */
-//     0,                         /* tp_init */
-//     0,                         /* tp_alloc */
-//     0,                         /* tp_new */
-// };
 
 // CUSTOM
 static PyObject *

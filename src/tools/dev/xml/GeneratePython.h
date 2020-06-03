@@ -143,6 +143,9 @@ inline char toupper(char c)
 //    Kathleen Biagas, Tue Dec 20 16:04:19 PST 2016
 //    Added GlyphType.
 //
+//    Cyrus Harrison, Wed Jun  3 09:51:31 PDT 2020
+//    Update code gen to support both Python 2 and 3.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -3407,57 +3410,10 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "}" << Endl;
         c << Endl;
 
+        // chicken and egg
+        // rich compare uses the type object, so we forward declare
         c << "static PyObject *" << name
           << "_richcompare(PyObject *self, PyObject *other, int op);" << Endl;
-
-// +{
-// +    PyObject *res;
-// +
-// +    switch (op) {
-// +
-// +      case Py_EQ:
-// +        res = (a == b) ? Py_True : Py_False;
-// +        break;
-// +
-// +      case Py_NE:
-// +        res = (a != b) ? Py_True : Py_False;
-// +        break;
-// +
-// +      case Py_LT:
-// +        break;
-// +
-// +      case Py_LE:
-// +        res = (a <= b) ? Py_True : Py_False;
-// +        break;
-// +
-// +      case Py_GT:
-// +        res = (a > b) ? Py_True : Py_False;
-// +        break;
-// +
-// +      case Py_GE:
-// +        res = (a >= b) ? Py_True : Py_False;
-// +        break;
-// +
-// +      default:
-// +        res = Py_NotImplemented;
-// +        break;
-// +    }
-// Py_INCREF(Py_NotImplemented);
-// +        return Py_NotImplemented;
-
-// +static PyObject*
-// +py_io_channel_richcompare(PyObject *self, PyObject *other, int op)
-//  {
-// +    if (Py_TYPE(self) == Py_TYPE(other) &&
-// +          Py_TYPE(self) == &PyGIOChannel_Type) {
-// +        return _pyglib_generic_ptr_richcompare(((PyGIOChannel*)self)->channel,
-// +                                               ((PyGIOChannel*)other)->channel,
-// +                                               op);
-// +    } else {
-// +       Py_INCREF(Py_NotImplemented);
-// +       return Py_NotImplemented;
-// +    }
-//  }
 
         // Write the getattr function
         WriteGetAttrFunction(c);
@@ -3482,54 +3438,30 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "#endif" << Endl;
         c << Endl;
 
+        // add helpful comments about where VISIT_PY_TYPE_OBJ is defd and 
+        // how to use it
+        c << "//" << Endl
+          << "// Python Type Struct Def Macro from Py2and3Support.h" << Endl
+          << "//" << Endl
+          << "//         VISIT_PY_TYPE_OBJ( VPY_TYPE,"      << Endl
+          << "//                            VPY_NAME,"      << Endl
+          << "//                            VPY_OBJECT,"    << Endl
+          << "//                            VPY_DEALLOC,"   << Endl
+          << "//                            VPY_PRINT,"     << Endl
+          << "//                            VPY_GETATTR,"   << Endl
+          << "//                            VPY_SETATTR,"   << Endl
+          << "//                            VPY_STR,"       << Endl
+          << "//                            VPY_PURPOSE,"   << Endl
+          << "//                            VPY_RICHCOMP,"  << Endl
+          << "//                            VPY_AS_NUMBER)" << Endl
+          << Endl;
+
         c << "//" << Endl;
         c << "// The type description structure" << Endl;
-        c << "//" << Endl;
-        // c << "static PyTypeObject "<<name<<"Type =" << Endl;
-      //   c << "{" << Endl;
-      //   c << "    //" << Endl;
-      //   c << "    // Type header" << Endl;
-      //   c << "    //" << Endl;
-      //   c << "    PyVarObject_HEAD_INIT(&PyType_Type, 0)" << Endl;
-      //   c << "    0,                                   // ob_size" << Endl;
-      //   c << "    \""<<name<<"\",                    // tp_name" << Endl;
-      //   c << "    sizeof("<<name<<"Object),        // tp_basicsize" << Endl;
-      //   c << "    0,                                   // tp_itemsize" << Endl;
-      //   c << "    //" << Endl;
-      //   c << "    // Standard methods" << Endl;
-      //   c << "    //" << Endl;
-      //   c << "    (destructor)"<<name<<"_dealloc,  // tp_dealloc" << Endl;
-      //   c << "    (printfunc)"<<name<<"_print,     // tp_print" << Endl;
-      //   c << "    (getattrfunc)Py"<<name<<"_getattr, // tp_getattr" << Endl;
-      //   c << "    (setattrfunc)Py"<<name<<"_setattr, // tp_setattr" << Endl;
-      //   c << "    (cmpfunc)"<<name<<"_richcompare,     // tp_compare" << Endl;
-      //   c << "    (reprfunc)0,                         // tp_repr" << Endl;
-      //   c << "    //" << Endl;
-      //   c << "    // Type categories" << Endl;
-      //   c << "    //" << Endl;
-      //   c << "    0,                                   // tp_as_number" << Endl;
-      //   c << "    0,                                   // tp_as_sequence" << Endl;
-      //   c << "    0,                                   // tp_as_mapping" << Endl;
-      //   c << "    //" << Endl;
-      //   c << "    // More methods" << Endl;
-      //   c << "    //" << Endl;
-      //   c << "    0,                                   // tp_hash" << Endl;
-      //   c << "    0,                                   // tp_call" << Endl;
-      //   c << "    (reprfunc)" << name << "_str,        // tp_str" << Endl;
-      //
-      //   c << "    0,                                   // tp_getattro" << Endl;
-      //   c << "    0,                                   // tp_setattro" << Endl;
-      //   c << "    0,                                   // tp_as_buffer" << Endl;
-      //   c << "    Py_TPFLAGS_CHECKTYPES,               // tp_flags" << Endl;
-      //   c << "                  // tp_doc" << Endl;
-      //   c << "    0,                                   // tp_traverse" << Endl;
-      //   c << "    0,                                   // tp_clear" << Endl;
-      //   c << "    0,                                   // tp_richcompare" << Endl;
-      //   c << "    0                                    // tp_weaklistoffset" << Endl;
-      //   c << "};" << Endl;
+        c << "//" << Endl << Endl;
 
         c << "VISIT_PY_TYPE_OBJ("<<name<<"Type,         \\" << Endl;
-        c << "                  \""<<name<<"\",          \\" << Endl;
+        c << "                  \""<<name<<"\",           \\" << Endl;
         c << "                  "<<name<<"Object,       \\" << Endl;
         c << "                  "<<name<<"_dealloc,     \\" << Endl;
         c << "                  "<<name<<"_print,       \\" << Endl;
@@ -3539,164 +3471,11 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "                  "<<name<<"_Purpose,     \\" << Endl;
         c << "                  "<<name<<"_richcompare, \\" << Endl;
         c << "                  0); /* as_number*/"         << Endl;
-        // VISIT_PY_TYPE_OBJ( Text2DObjectType,      \
-        //            "Text2DObject",      \
-        //            Text2DObjectObject,    \
-        //            Text2DObject_dealloc,   \
-        //            Text2DObject_print,     \
-        //            Text2DObject_getattr,   \
-        //            Text2DObject_setattr,   \
-        //            Text2DObject_str,       \
-        //            Text2DObject_Purpose,   \
-        //            Text2DObject_richcompare,  \
-        //            0); /* as_number*/
-        //
-        // c << "static PyTypeObject "<<name<<"Type ="
-        // c << "{" << Endl;
-        // c << "    //" << Endl;
-        // c << "    // Type header" << Endl;
-        // c << "    //" << Endl;
-        // c << "    PyVarObject_HEAD_INIT(&PyType_Type, 0)" << Endl;
-        // c << "    \""<<name<<"\",                   /* tp_name */" << Endl;
-        // c << "    sizeof("<<name<<"Object),          /* tp_basicsize */" << Endl;
-        // c << "    0,                                 /* tp_itemsize */" << Endl;
-        // c << "    (destructor)"<<name<<"_dealloc,    /* tp_dealloc */" << Endl;
-        // c << "    (printfunc)"<<name<<"_print,       /* tp_print */" << Endl;
-        // c << "    (getattrfunc)Py"<<name<<"_getattr, /* tp_getattr */" << Endl;
-        // c << "    (setattrfunc)Py"<<name<<"_setattr, /* tp_setattr */" << Endl;
-        // c << "    0,                                 /* tp_reserved */" << Endl;
-        // c << "    0,                                 /* tp_repr */" << Endl;
-        // c << "    0,                                 /* tp_as_number */" << Endl;
-        // c << "    0,                                 /* tp_as_sequence */" << Endl;
-        // c << "    0,                                 /* tp_as_mapping */" << Endl;
-        // c << "    0,                                 /* tp_hash  */" << Endl;
-        // c << "    0,                                 /* tp_call */" << Endl;
-        // c << "    (reprfunc)" << name << "_str,      /* tp_str */" << Endl;
-        // c << "    0,                                 /* tp_getattro */" << Endl;
-        // c << "    0,                                 /* tp_setattro */" << Endl;
-        // c << "    0,                                 /* tp_as_buffer */" << Endl;
-        // // python 2 v python 3,
-        // // in py 2, we need Py_TPFLAGS_CHECKTYPES to make sure things like as_number
-        // // work
-        // c << "#if defined(IS_PY3K) // python 3" << Endl;
-        // c << "    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */" << Endl;
-        // c << "#else // python 2" << Endl;
-        // c << "    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */" << Endl;
-        // c << "#endif" << Endl;
-        // c << "    "<<name<<"_Purpose,                /* tp_doc */" << Endl;
-        // c << "    0,                                 /* tp_traverse */" << Endl;
-        // c << "    0,                                 /* tp_clear */" << Endl;
-        // c << "   (richcmpfunc)"<<name<<"_richcompare,  /* tp_richcompare */" << Endl;
-        // c << "    0,                                 /* tp_weaklistoffset */" << Endl;
-        // c << "//" << Endl;
-        // c << "// VisIt Methods End here, but here are extra struct init fields for ref" << Endl;
-        // c << "//" << Endl;
-        // c << "    0,                         /* tp_iter */" << Endl;
-        // c << "    0,                         /* tp_iternext */ " << Endl;
-        // c << "    0,                         /* tp_methods */ " << Endl;
-        // c << "    0,                         /* tp_members */ " << Endl;
-        // c << "    0,                         /* tp_getset */ " << Endl;
-        // c << "    0,                         /* tp_base */ " << Endl;
-        // c << "    0,                         /* tp_dict */ " << Endl;
-        // c << "    0,                         /* tp_descr_get */ " << Endl;
-        // c << "    0,                         /* tp_descr_set */ " << Endl;
-        // c << "    0,                         /* tp_dictoffset */ " << Endl;
-        // c << "    0,                         /* tp_init */ " << Endl;
-        // c << "    0,                         /* tp_alloc */ " << Endl;
-        // c << "    0,                         /* tp_new */ " << Endl;
-        // c << "};" << Endl;
-
-//
-// static PyTypeObject NoddyType = {
-//     PyVarObject_HEAD_INIT(NULL, 0)
-//     "noddy.Noddy",             /* tp_name */
-//     sizeof(Noddy),             /* tp_basicsize */
-//     0,                         /* tp_itemsize */
-//     (destructor)Noddy_dealloc, /* tp_dealloc */
-//     0,                         /* tp_print */
-//     0,                         /* tp_getattr */
-//     0,                         /* tp_setattr */
-//     0,                         /* tp_reserved */
-//     0,                         /* tp_repr */
-//     0,                         /* tp_as_number */
-//     0,                         /* tp_as_sequence */
-//     0,                         /* tp_as_mapping */
-//     0,                         /* tp_hash  */
-//     0,                         /* tp_call */
-//     0,                         /* tp_str */
-//     0,                         /* tp_getattro */
-//     0,                         /* tp_setattro */
-//     0,                         /* tp_as_buffer */
-//     Py_TPFLAGS_DEFAULT |
-//         Py_TPFLAGS_BASETYPE,   /* tp_flags */
-//     "Noddy objects",           /* tp_doc */
-//     0,                         /* tp_traverse */
-//     0,                         /* tp_clear */
-//     0,                         /* tp_richcompare */
-//     0,                         /* tp_weaklistoffset */
-//     0,                         /* tp_iter */
-//     0,                         /* tp_iternext */
-//     Noddy_methods,             /* tp_methods */
-//     Noddy_members,             /* tp_members */
-//     Noddy_getseters,           /* tp_getset */
-//     0,                         /* tp_base */
-//     0,                         /* tp_dict */
-//     0,                         /* tp_descr_get */
-//     0,                         /* tp_descr_set */
-//     0,                         /* tp_dictoffset */
-//     (initproc)Noddy_init,      /* tp_init */
-//     0,                         /* tp_alloc */
-//     Noddy_new,                 /* tp_new */
-// };
-        //
-        // c << "//" << Endl;
-        // c << "// The type description structure" << Endl;
-        // c << "//" << Endl;
-        // c << "static PyTypeObject "<<name<<"Type =" << Endl;
-        // c << "{" << Endl;
-        // c << "    //" << Endl;
-        // c << "    // Type header" << Endl;
-        // c << "    //" << Endl;
-        // c << "    PyVarObject_HEAD_INIT(&PyType_Type, 0)" << Endl;
-        // c << "    0,                                   // ob_size" << Endl;
-        // c << "    \""<<name<<"\",                    // tp_name" << Endl;
-        // c << "    sizeof("<<name<<"Object),        // tp_basicsize" << Endl;
-        // c << "    0,                                   // tp_itemsize" << Endl;
-        // c << "    //" << Endl;
-        // c << "    // Standard methods" << Endl;
-        // c << "    //" << Endl;
-        // c << "    (destructor)"<<name<<"_dealloc,  // tp_dealloc" << Endl;
-        // c << "    (printfunc)"<<name<<"_print,     // tp_print" << Endl;
-        // c << "    (getattrfunc)Py"<<name<<"_getattr, // tp_getattr" << Endl;
-        // c << "    (setattrfunc)Py"<<name<<"_setattr, // tp_setattr" << Endl;
-        // c << "    (cmpfunc)"<<name<<"_richcompare,     // tp_compare" << Endl;
-        // c << "    (reprfunc)0,                         // tp_repr" << Endl;
-        // c << "    //" << Endl;
-        // c << "    // Type categories" << Endl;
-        // c << "    //" << Endl;
-        // c << "    0,                                   // tp_as_number" << Endl;
-        // c << "    0,                                   // tp_as_sequence" << Endl;
-        // c << "    0,                                   // tp_as_mapping" << Endl;
-        // c << "    //" << Endl;
-        // c << "    // More methods" << Endl;
-        // c << "    //" << Endl;
-        // c << "    0,                                   // tp_hash" << Endl;
-        // c << "    0,                                   // tp_call" << Endl;
-        // c << "    (reprfunc)" << name << "_str,        // tp_str" << Endl;
-        // c << "    0,                                   // tp_getattro" << Endl;
-        // c << "    0,                                   // tp_setattro" << Endl;
-        // c << "    0,                                   // tp_as_buffer" << Endl;
-        // c << "    Py_TPFLAGS_CHECKTYPES,               // tp_flags" << Endl;
-        // c << "    "<<name<<"_Purpose,              // tp_doc" << Endl;
-        // c << "    0,                                   // tp_traverse" << Endl;
-        // c << "    0,                                   // tp_clear" << Endl;
-        // c << "    0,                                   // tp_richcompare" << Endl;
-        // c << "    0                                    // tp_weaklistoffset" << Endl;
-        // c << "};" << Endl;
         c << Endl;
 
-        // chicken and egg
-        // rich compare uses the type object, so we forward declare
+        c << "//" << Endl;
+        c << "// Helper function for comparing." << Endl;
+        c << "//" << Endl;
         c << "static PyObject *" << Endl;
         c << name << "_richcompare(PyObject *self, PyObject *other, int op)" << Endl;
         c << "{" << Endl;
@@ -3729,7 +3508,6 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "    return res;" << Endl;
         c << "}" << Endl;
         c << Endl;
-
 
         c << "//" << Endl;
         c << "// Helper functions for object allocation." << Endl;

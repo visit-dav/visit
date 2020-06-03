@@ -1448,52 +1448,6 @@ static const char *LegendAttributesObject_Purpose = "This class defines defines 
 static char *LegendAttributesObject_Purpose = "This class defines defines an interface to a legend annotation object.";
 #endif
 
-// OLD REMOVE
-// //
-// // The type description structure
-// //
-// static PyTypeObject LegendAttributesObjectType =
-// {
-//     //
-//     // Type header
-//     //
-//     PyObject_HEAD_INIT(&PyType_Type)
-//     0,                                   // ob_size
-//     "LegendAttributesObject",                    // tp_name
-//     sizeof(LegendAttributesObjectObject),        // tp_basicsize
-//     0,                                   // tp_itemsize
-//     //
-//     // Standard methods
-//     //
-//     (destructor)LegendAttributesObject_dealloc,  // tp_dealloc
-//     (printfunc)LegendAttributesObject_print,     // tp_print
-//     (getattrfunc)LegendAttributesObject_getattr, // tp_getattr
-//     (setattrfunc)LegendAttributesObject_setattr, // tp_setattr
-//     (cmpfunc)LegendAttributesObject_compare,     // tp_compare
-//     (reprfunc)0,                         // tp_repr
-//     //
-//     // Type categories
-//     //
-//     0,                                   // tp_as_number
-//     0,                                   // tp_as_sequence
-//     0,                                   // tp_as_mapping
-//     //
-//     // More methods
-//     //
-//     0,                                   // tp_hash
-//     0,                                   // tp_call
-//     (reprfunc)LegendAttributesObject_str,// tp_str
-//     0,                                   // tp_getattro
-//     0,                                   // tp_setattro
-//     0,                                   // tp_as_buffer
-//     Py_TPFLAGS_CHECKTYPES,               // tp_flags
-//     LegendAttributesObject_Purpose,              // tp_doc
-//     0,                                   // tp_traverse
-//     0,                                   // tp_clear
-//     0,                                   // tp_richcompare
-//     0                                    // tp_weaklistoffset
-// };
-// OLD REMOVE
 
 // CUSTOM
 static PyObject *LegendAttributesObject_richcompare(PyObject *self, PyObject *other, int op);
@@ -1501,6 +1455,9 @@ static PyObject *LegendAttributesObject_richcompare(PyObject *self, PyObject *ot
 
 // CUSTOM
 
+//
+// Python Type Struct Def Macro from Py2and3Support.h
+//
 //         VISIT_PY_TYPE_OBJ( VPY_TYPE,
 //                            VPY_NAME,
 //                            VPY_OBJECT,
@@ -1527,60 +1484,6 @@ VISIT_PY_TYPE_OBJ(LegendAttributesObjectType,
                   LegendAttributesObject_Purpose,
                   LegendAttributesObject_richcompare,
                   0); /* as_number */
-                  
-
-// //
-// static PyTypeObject LegendAttributesObjectType =
-// {
-//     //
-//     // Type header
-//     //
-//     PyVarObject_HEAD_INIT(&PyType_Type, 0)
-//     "LegendAttributesObject",                   /* tp_name */
-//     sizeof(LegendAttributesObjectObject),          /* tp_basicsize */
-//     0,                                 /* tp_itemsize */
-//     (destructor)LegendAttributesObject_dealloc,    /* tp_dealloc */
-//     (printfunc)LegendAttributesObject_print,       /* tp_print */
-//     (getattrfunc)LegendAttributesObject_getattr, /* tp_getattr */
-//     (setattrfunc)LegendAttributesObject_setattr, /* tp_setattr */
-//     0,                                 /* tp_reserved */
-//     0,                                 /* tp_repr */
-//     0,                                 /* tp_as_number */
-//     0,                                 /* tp_as_sequence */
-//     0,                                 /* tp_as_mapping */
-//     0,                                 /* tp_hash  */
-//     0,                                 /* tp_call */
-//     (reprfunc)LegendAttributesObject_str,      /* tp_str */
-//     0,                                 /* tp_getattro */
-//     0,                                 /* tp_setattro */
-//     0,                                 /* tp_as_buffer */
-// #if defined(IS_PY3K) // python 3
-//     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-// #else // python 2
-//     Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-// #endif
-//     LegendAttributesObject_Purpose,                /* tp_doc */
-//     0,                                 /* tp_traverse */
-//     0,                                 /* tp_clear */
-//    (richcmpfunc)LegendAttributesObject_richcompare,  /* tp_richcompare */
-//     0,                                 /* tp_weaklistoffset */
-// //
-// // VisIt Methods End here, but here are extra struct init fields for ref
-// //
-//     0,                         /* tp_iter */
-//     0,                         /* tp_iternext */
-//     0,                         /* tp_methods */
-//     0,                         /* tp_members */
-//     0,                         /* tp_getset */
-//     0,                         /* tp_base */
-//     0,                         /* tp_dict */
-//     0,                         /* tp_descr_get */
-//     0,                         /* tp_descr_set */
-//     0,                         /* tp_dictoffset */
-//     0,                         /* tp_init */
-//     0,                         /* tp_alloc */
-//     0,                         /* tp_new */
-// };
 
 // CUSTOM
 static PyObject *

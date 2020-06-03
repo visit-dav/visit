@@ -111,61 +111,8 @@ static char *DataSelection_Doc = "This class provides access to the avt pipeline
 #endif
 
 //
-// The type description structure
+// Python Type Struct Def Macro from Py2and3Support.h
 //
-
-//
-// Note: avtSILSpecification provides a comparison which could be exposed.
-//
-//
-
-// static PyTypeObject PyDataSelectionType =
-// {
-//     //
-//     // Type header
-//     //
-//     PyObject_HEAD_INIT(&PyType_Type)
-//     0,                                   // ob_size
-//     "DataSelection",                     // tp_name
-//     sizeof(PyDataSelectionObject),       // tp_basicsize
-//     0,                                   // tp_itemsize
-//     //
-//     // Standard methods
-//     //
-//     (destructor)DataSelection_dealloc,   // tp_dealloc
-//     (printfunc)0,                        // tp_print
-//     (getattrfunc)DataSelection_getattr,  // tp_getattr
-//     (setattrfunc)0,                      // tp_setattr
-//     (cmpfunc)0,                          // tp_compare
-//     (reprfunc)0,                         // tp_repr
-//     //
-//     // Type Categories
-//     //
-//     0,                                   // tp_as_number
-//     0,                                   // tp_as_sequence
-//     0,                                   // tp_as_mapping
-//     //
-//     // More methods
-//     //
-//     0,                                   // tp_hash
-//     0,                                   // tp_call
-//     0,                                   // tp_str
-//     0,                                   // tp_getattro
-//     0,                                   // tp_setattro
-//     0,                                   // tp_as_buffer
-//     Py_TPFLAGS_CHECKTYPES,               // tp_flags
-//     DataSelection_Doc,                   // tp_doc
-//     0,                                   // tp_traverse
-//     0,                                   // tp_clear
-//     0,                                   // tp_richcompare
-//     0                                    // tp_weaklistoffset
-// };
-
-
-//
-// The type description structure
-//
-
 //         VISIT_PY_TYPE_OBJ( VPY_TYPE,
 //                            VPY_NAME,
 //                            VPY_OBJECT,
@@ -178,6 +125,9 @@ static char *DataSelection_Doc = "This class provides access to the avt pipeline
 //                            VPY_RICHCOMP,
 //                            VPY_AS_NUMBER)
 
+//
+// The type description structure
+//
 VISIT_PY_TYPE_OBJ(PyDataSelectionType,   \
                   "DataSelection",       \
                   PyDataSelectionObject, \
@@ -189,40 +139,6 @@ VISIT_PY_TYPE_OBJ(PyDataSelectionType,   \
                   DataSelection_Doc,     \
                   0,                     \
                   0); /* as_number*/
-
-// static PyTypeObject PyDataSelectionType =
-// {
-//     //
-//     // Type header
-//     //
-//     PyVarObject_HEAD_INIT(&PyType_Type, 0)
-//     "DataSelection",                     /* tp_name */
-//     sizeof(PyDataSelectionObject),       /* tp_basicsize */
-//     0,                                 /* tp_itemsize */
-//     (destructor)DataSelection_dealloc,   /* tp_dealloc */
-//     0,                                 /* tp_print */
-//     (getattrfunc)DataSelection_getattr,  /* tp_getattr */
-//     0,                                 /* tp_setattr */
-//     0,                                 /* tp_reserved */
-//     0,                                 /* tp_repr */
-//     0,                                 /* tp_as_number */
-//     0,                                 /* tp_as_sequence */
-//     0,                                 /* tp_as_mapping */
-//     0,                                 /* tp_hash  */
-//     0,                                 /* tp_call */
-//     0,                                 /* tp_str */
-//     0,                                 /* tp_getattro */
-//     0,                                 /* tp_setattro */
-//     0,                                 /* tp_as_buffer */
-//     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-//     DataSelection_Doc,                   /* tp_doc */
-//     0,                                 /* tp_traverse */
-//     0,                                 /* tp_clear */
-//     0,                                 /* tp_richcompare */
-//     0,                                 /* tp_weaklistoffset */
-// };
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
