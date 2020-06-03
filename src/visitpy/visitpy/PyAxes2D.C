@@ -505,57 +505,17 @@ static char *Axes2D_Purpose = "Contains the properties for the 2D axes.";
 //
 // The type description structure
 //
-static PyTypeObject Axes2DType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "Axes2D",                   /* tp_name */
-    sizeof(Axes2DObject),          /* tp_basicsize */
-    0,                                 /* tp_itemsize */
-    (destructor)Axes2D_dealloc,    /* tp_dealloc */
-    (printfunc)Axes2D_print,       /* tp_print */
-    (getattrfunc)PyAxes2D_getattr, /* tp_getattr */
-    (setattrfunc)PyAxes2D_setattr, /* tp_setattr */
-    0,                                 /* tp_reserved */
-    0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
-    0,                                 /* tp_as_sequence */
-    0,                                 /* tp_as_mapping */
-    0,                                 /* tp_hash  */
-    0,                                 /* tp_call */
-    (reprfunc)Axes2D_str,      /* tp_str */
-    0,                                 /* tp_getattro */
-    0,                                 /* tp_setattro */
-    0,                                 /* tp_as_buffer */
-#if defined(IS_PY3K) // python 3
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-#else // python 2
-    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-#endif
-    Axes2D_Purpose,                /* tp_doc */
-    0,                                 /* tp_traverse */
-    0,                                 /* tp_clear */
-   (richcmpfunc)Axes2D_richcompare,  /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-//
-// VisIt Methods End here, but here are extra struct init fields for ref
-//
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */ 
-    0,                         /* tp_methods */ 
-    0,                         /* tp_members */ 
-    0,                         /* tp_getset */ 
-    0,                         /* tp_base */ 
-    0,                         /* tp_dict */ 
-    0,                         /* tp_descr_get */ 
-    0,                         /* tp_descr_set */ 
-    0,                         /* tp_dictoffset */ 
-    0,                         /* tp_init */ 
-    0,                         /* tp_alloc */ 
-    0,                         /* tp_new */ 
-};
+VISIT_PY_TYPE_OBJ(Axes2DType,         \
+                  "Axes2D",          \
+                  Axes2DObject,       \
+                  Axes2D_dealloc,     \
+                  Axes2D_print,       \
+                  PyAxes2D_getattr,   \
+                  PyAxes2D_setattr,   \
+                  Axes2D_str,         \
+                  Axes2D_Purpose,     \
+                  Axes2D_richcompare, \
+                  0); /* as_number*/
 
 static PyObject *
 Axes2D_richcompare(PyObject *self, PyObject *other, int op)

@@ -269,6 +269,89 @@ PyUnicode_From_UTF32_Unicode_Buffer(const char *unicode_buffer,
 }
 #endif
 
+
+#if defined(IS_PY3K) /* python 3 */
+#define  PY_VISIT_TPFLAGS_DEFAULT Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE
+#else /* python 2 */
+#define  PY_VISIT_TPFLAGS_DEFAULT Py_TPFLAGS_CHECKTYPES
+#endif
+
+//-----------------------------------------------------------------------------
+// PyVarObject_TAIL is used at the end of each PyVarObject def
+// to make sure we have the correct number of initializers across python
+// versions.
+//-----------------------------------------------------------------------------
+#ifdef Py_TPFLAGS_HAVE_FINALIZE
+#define PyVarObject_TAIL ,0
+#else
+#define PyVarObject_TAIL
+#endif
+
+
+#define VISIT_PY_TYPE_OBJ( VPY_TYPE,      \
+                           VPY_NAME,      \
+                           VPY_OBJECT,    \
+                           VPY_DEALLOC,   \
+                           VPY_PRINT,     \
+                           VPY_GETATTR,   \
+                           VPY_SETATTR,   \
+                           VPY_STR,       \
+                           VPY_PURPOSE,   \
+                           VPY_RICHCOMP,  \
+                           VPY_AS_NUMBER) \
+static PyTypeObject VPY_TYPE = \
+{ \
+    PyVarObject_HEAD_INIT(&PyType_Type, 0) \
+    VPY_NAME,                  /* tp_name */ \
+    sizeof(VPY_OBJECT),        /* tp_basicsize */ \
+    0,                         /* tp_itemsize */ \
+    (destructor)VPY_DEALLOC,   /* tp_dealloc */ \
+    (printfunc)VPY_PRINT,      /* tp_print */ \
+    (getattrfunc)VPY_GETATTR,  /* tp_getattr */ \
+    (setattrfunc)VPY_SETATTR,  /* tp_setattr */ \
+    0,                         /* tp_reserved */ \
+    0,                         /* tp_repr */ \
+    0,                         /* tp_as_number */ \
+    0,                         /* tp_as_sequence */ \
+    0,                         /* tp_as_mapping */ \
+    0,                         /* tp_hash  */ \
+    0,                         /* tp_call */ \
+    (reprfunc)VPY_STR,         /* tp_str */ \
+    0,                         /* tp_getattro */ \
+    0,                         /* tp_setattro */ \
+    0,                         /* tp_as_buffer */ \
+    PY_VISIT_TPFLAGS_DEFAULT,  /* tp_flags */ \
+    VPY_PURPOSE,               /* tp_doc */ \
+    0,                         /* tp_traverse */ \
+    0,                         /* tp_clear */ \
+    (richcmpfunc)VPY_RICHCOMP, /* tp_richcompare */ \
+    0,                         /* tp_weaklistoffset */ \
+    0,                         /* tp_iter */ \
+    0,                         /* tp_iternext */ \
+    0,                         /* tp_methods */ \
+    0,                         /* tp_members */ \
+    0,                         /* tp_getset */ \
+    0,                         /* tp_base */ \
+    0,                         /* tp_dict */ \
+    0,                         /* tp_descr_get */ \
+    0,                         /* tp_descr_set */  \
+    0,                         /* tp_dictoffset */ \
+    0,                         /* tp_init */  \
+    0,                         /* tp_alloc */  \
+    0,                         /* tp_new */  \
+    0,                         /* tp_free */ \
+    0,                         /* tp_is_gc */ \
+    0,                         /* tp_bases */ \
+    0,                         /* tp_mro */ \
+    0,                         /* tp_cache */ \
+    0,                         /* tp_subclasses */ \
+    0,                         /* tp_weaklist */ \
+    0,                         /* tp_del */ \
+    0                          /* tp_version_tag */ \
+    PyVarObject_TAIL                                \
+};
+
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // End Functions to help with Python 2/3 Compatibility.

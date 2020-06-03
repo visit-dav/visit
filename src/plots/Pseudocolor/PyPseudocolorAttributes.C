@@ -2507,57 +2507,17 @@ static char *PseudocolorAttributes_Purpose = "Attributes for the pseudocolor plo
 //
 // The type description structure
 //
-static PyTypeObject PseudocolorAttributesType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "PseudocolorAttributes",                   /* tp_name */
-    sizeof(PseudocolorAttributesObject),          /* tp_basicsize */
-    0,                                 /* tp_itemsize */
-    (destructor)PseudocolorAttributes_dealloc,    /* tp_dealloc */
-    (printfunc)PseudocolorAttributes_print,       /* tp_print */
-    (getattrfunc)PyPseudocolorAttributes_getattr, /* tp_getattr */
-    (setattrfunc)PyPseudocolorAttributes_setattr, /* tp_setattr */
-    0,                                 /* tp_reserved */
-    0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
-    0,                                 /* tp_as_sequence */
-    0,                                 /* tp_as_mapping */
-    0,                                 /* tp_hash  */
-    0,                                 /* tp_call */
-    (reprfunc)PseudocolorAttributes_str,      /* tp_str */
-    0,                                 /* tp_getattro */
-    0,                                 /* tp_setattro */
-    0,                                 /* tp_as_buffer */
-#if defined(IS_PY3K) // python 3
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-#else // python 2
-    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-#endif
-    PseudocolorAttributes_Purpose,                /* tp_doc */
-    0,                                 /* tp_traverse */
-    0,                                 /* tp_clear */
-   (richcmpfunc)PseudocolorAttributes_richcompare,  /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-//
-// VisIt Methods End here, but here are extra struct init fields for ref
-//
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */ 
-    0,                         /* tp_methods */ 
-    0,                         /* tp_members */ 
-    0,                         /* tp_getset */ 
-    0,                         /* tp_base */ 
-    0,                         /* tp_dict */ 
-    0,                         /* tp_descr_get */ 
-    0,                         /* tp_descr_set */ 
-    0,                         /* tp_dictoffset */ 
-    0,                         /* tp_init */ 
-    0,                         /* tp_alloc */ 
-    0,                         /* tp_new */ 
-};
+VISIT_PY_TYPE_OBJ(PseudocolorAttributesType,         \
+                  "PseudocolorAttributes",          \
+                  PseudocolorAttributesObject,       \
+                  PseudocolorAttributes_dealloc,     \
+                  PseudocolorAttributes_print,       \
+                  PyPseudocolorAttributes_getattr,   \
+                  PyPseudocolorAttributes_setattr,   \
+                  PseudocolorAttributes_str,         \
+                  PseudocolorAttributes_Purpose,     \
+                  PseudocolorAttributes_richcompare, \
+                  0); /* as_number*/
 
 static PyObject *
 PseudocolorAttributes_richcompare(PyObject *self, PyObject *other, int op)

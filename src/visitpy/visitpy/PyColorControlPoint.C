@@ -242,57 +242,17 @@ static char *ColorControlPoint_Purpose = "This class contains an RGBA color with
 //
 // The type description structure
 //
-static PyTypeObject ColorControlPointType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "ColorControlPoint",                   /* tp_name */
-    sizeof(ColorControlPointObject),          /* tp_basicsize */
-    0,                                 /* tp_itemsize */
-    (destructor)ColorControlPoint_dealloc,    /* tp_dealloc */
-    (printfunc)ColorControlPoint_print,       /* tp_print */
-    (getattrfunc)PyColorControlPoint_getattr, /* tp_getattr */
-    (setattrfunc)PyColorControlPoint_setattr, /* tp_setattr */
-    0,                                 /* tp_reserved */
-    0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
-    0,                                 /* tp_as_sequence */
-    0,                                 /* tp_as_mapping */
-    0,                                 /* tp_hash  */
-    0,                                 /* tp_call */
-    (reprfunc)ColorControlPoint_str,      /* tp_str */
-    0,                                 /* tp_getattro */
-    0,                                 /* tp_setattro */
-    0,                                 /* tp_as_buffer */
-#if defined(IS_PY3K) // python 3
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-#else // python 2
-    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-#endif
-    ColorControlPoint_Purpose,                /* tp_doc */
-    0,                                 /* tp_traverse */
-    0,                                 /* tp_clear */
-   (richcmpfunc)ColorControlPoint_richcompare,  /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-//
-// VisIt Methods End here, but here are extra struct init fields for ref
-//
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */ 
-    0,                         /* tp_methods */ 
-    0,                         /* tp_members */ 
-    0,                         /* tp_getset */ 
-    0,                         /* tp_base */ 
-    0,                         /* tp_dict */ 
-    0,                         /* tp_descr_get */ 
-    0,                         /* tp_descr_set */ 
-    0,                         /* tp_dictoffset */ 
-    0,                         /* tp_init */ 
-    0,                         /* tp_alloc */ 
-    0,                         /* tp_new */ 
-};
+VISIT_PY_TYPE_OBJ(ColorControlPointType,         \
+                  "ColorControlPoint",          \
+                  ColorControlPointObject,       \
+                  ColorControlPoint_dealloc,     \
+                  ColorControlPoint_print,       \
+                  PyColorControlPoint_getattr,   \
+                  PyColorControlPoint_setattr,   \
+                  ColorControlPoint_str,         \
+                  ColorControlPoint_Purpose,     \
+                  ColorControlPoint_richcompare, \
+                  0); /* as_number*/
 
 static PyObject *
 ColorControlPoint_richcompare(PyObject *self, PyObject *other, int op)

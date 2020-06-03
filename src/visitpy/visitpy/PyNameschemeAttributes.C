@@ -647,57 +647,17 @@ static char *NameschemeAttributes_Purpose = "Information and methods to manage n
 //
 // The type description structure
 //
-static PyTypeObject NameschemeAttributesType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "NameschemeAttributes",                   /* tp_name */
-    sizeof(NameschemeAttributesObject),          /* tp_basicsize */
-    0,                                 /* tp_itemsize */
-    (destructor)NameschemeAttributes_dealloc,    /* tp_dealloc */
-    (printfunc)NameschemeAttributes_print,       /* tp_print */
-    (getattrfunc)PyNameschemeAttributes_getattr, /* tp_getattr */
-    (setattrfunc)PyNameschemeAttributes_setattr, /* tp_setattr */
-    0,                                 /* tp_reserved */
-    0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
-    0,                                 /* tp_as_sequence */
-    0,                                 /* tp_as_mapping */
-    0,                                 /* tp_hash  */
-    0,                                 /* tp_call */
-    (reprfunc)NameschemeAttributes_str,      /* tp_str */
-    0,                                 /* tp_getattro */
-    0,                                 /* tp_setattro */
-    0,                                 /* tp_as_buffer */
-#if defined(IS_PY3K) // python 3
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-#else // python 2
-    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-#endif
-    NameschemeAttributes_Purpose,                /* tp_doc */
-    0,                                 /* tp_traverse */
-    0,                                 /* tp_clear */
-   (richcmpfunc)NameschemeAttributes_richcompare,  /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-//
-// VisIt Methods End here, but here are extra struct init fields for ref
-//
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */ 
-    0,                         /* tp_methods */ 
-    0,                         /* tp_members */ 
-    0,                         /* tp_getset */ 
-    0,                         /* tp_base */ 
-    0,                         /* tp_dict */ 
-    0,                         /* tp_descr_get */ 
-    0,                         /* tp_descr_set */ 
-    0,                         /* tp_dictoffset */ 
-    0,                         /* tp_init */ 
-    0,                         /* tp_alloc */ 
-    0,                         /* tp_new */ 
-};
+VISIT_PY_TYPE_OBJ(NameschemeAttributesType,         \
+                  "NameschemeAttributes",          \
+                  NameschemeAttributesObject,       \
+                  NameschemeAttributes_dealloc,     \
+                  NameschemeAttributes_print,       \
+                  PyNameschemeAttributes_getattr,   \
+                  PyNameschemeAttributes_setattr,   \
+                  NameschemeAttributes_str,         \
+                  NameschemeAttributes_Purpose,     \
+                  NameschemeAttributes_richcompare, \
+                  0); /* as_number*/
 
 static PyObject *
 NameschemeAttributes_richcompare(PyObject *self, PyObject *other, int op)

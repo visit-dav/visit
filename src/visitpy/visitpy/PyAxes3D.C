@@ -979,57 +979,17 @@ static char *Axes3D_Purpose = "Contains the properties for the 3D axes.";
 //
 // The type description structure
 //
-static PyTypeObject Axes3DType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "Axes3D",                   /* tp_name */
-    sizeof(Axes3DObject),          /* tp_basicsize */
-    0,                                 /* tp_itemsize */
-    (destructor)Axes3D_dealloc,    /* tp_dealloc */
-    (printfunc)Axes3D_print,       /* tp_print */
-    (getattrfunc)PyAxes3D_getattr, /* tp_getattr */
-    (setattrfunc)PyAxes3D_setattr, /* tp_setattr */
-    0,                                 /* tp_reserved */
-    0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
-    0,                                 /* tp_as_sequence */
-    0,                                 /* tp_as_mapping */
-    0,                                 /* tp_hash  */
-    0,                                 /* tp_call */
-    (reprfunc)Axes3D_str,      /* tp_str */
-    0,                                 /* tp_getattro */
-    0,                                 /* tp_setattro */
-    0,                                 /* tp_as_buffer */
-#if defined(IS_PY3K) // python 3
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-#else // python 2
-    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-#endif
-    Axes3D_Purpose,                /* tp_doc */
-    0,                                 /* tp_traverse */
-    0,                                 /* tp_clear */
-   (richcmpfunc)Axes3D_richcompare,  /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-//
-// VisIt Methods End here, but here are extra struct init fields for ref
-//
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */ 
-    0,                         /* tp_methods */ 
-    0,                         /* tp_members */ 
-    0,                         /* tp_getset */ 
-    0,                         /* tp_base */ 
-    0,                         /* tp_dict */ 
-    0,                         /* tp_descr_get */ 
-    0,                         /* tp_descr_set */ 
-    0,                         /* tp_dictoffset */ 
-    0,                         /* tp_init */ 
-    0,                         /* tp_alloc */ 
-    0,                         /* tp_new */ 
-};
+VISIT_PY_TYPE_OBJ(Axes3DType,         \
+                  "Axes3D",          \
+                  Axes3DObject,       \
+                  Axes3D_dealloc,     \
+                  Axes3D_print,       \
+                  PyAxes3D_getattr,   \
+                  PyAxes3D_setattr,   \
+                  Axes3D_str,         \
+                  Axes3D_Purpose,     \
+                  Axes3D_richcompare, \
+                  0); /* as_number*/
 
 static PyObject *
 Axes3D_richcompare(PyObject *self, PyObject *other, int op)

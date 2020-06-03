@@ -292,57 +292,17 @@ static char *AxisTickMarks_Purpose = "Contains the tick mark properties for one 
 //
 // The type description structure
 //
-static PyTypeObject AxisTickMarksType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "AxisTickMarks",                   /* tp_name */
-    sizeof(AxisTickMarksObject),          /* tp_basicsize */
-    0,                                 /* tp_itemsize */
-    (destructor)AxisTickMarks_dealloc,    /* tp_dealloc */
-    (printfunc)AxisTickMarks_print,       /* tp_print */
-    (getattrfunc)PyAxisTickMarks_getattr, /* tp_getattr */
-    (setattrfunc)PyAxisTickMarks_setattr, /* tp_setattr */
-    0,                                 /* tp_reserved */
-    0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
-    0,                                 /* tp_as_sequence */
-    0,                                 /* tp_as_mapping */
-    0,                                 /* tp_hash  */
-    0,                                 /* tp_call */
-    (reprfunc)AxisTickMarks_str,      /* tp_str */
-    0,                                 /* tp_getattro */
-    0,                                 /* tp_setattro */
-    0,                                 /* tp_as_buffer */
-#if defined(IS_PY3K) // python 3
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-#else // python 2
-    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-#endif
-    AxisTickMarks_Purpose,                /* tp_doc */
-    0,                                 /* tp_traverse */
-    0,                                 /* tp_clear */
-   (richcmpfunc)AxisTickMarks_richcompare,  /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-//
-// VisIt Methods End here, but here are extra struct init fields for ref
-//
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */ 
-    0,                         /* tp_methods */ 
-    0,                         /* tp_members */ 
-    0,                         /* tp_getset */ 
-    0,                         /* tp_base */ 
-    0,                         /* tp_dict */ 
-    0,                         /* tp_descr_get */ 
-    0,                         /* tp_descr_set */ 
-    0,                         /* tp_dictoffset */ 
-    0,                         /* tp_init */ 
-    0,                         /* tp_alloc */ 
-    0,                         /* tp_new */ 
-};
+VISIT_PY_TYPE_OBJ(AxisTickMarksType,         \
+                  "AxisTickMarks",          \
+                  AxisTickMarksObject,       \
+                  AxisTickMarks_dealloc,     \
+                  AxisTickMarks_print,       \
+                  PyAxisTickMarks_getattr,   \
+                  PyAxisTickMarks_setattr,   \
+                  AxisTickMarks_str,         \
+                  AxisTickMarks_Purpose,     \
+                  AxisTickMarks_richcompare, \
+                  0); /* as_number*/
 
 static PyObject *
 AxisTickMarks_richcompare(PyObject *self, PyObject *other, int op)

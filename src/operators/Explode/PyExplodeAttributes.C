@@ -1046,57 +1046,17 @@ static char *ExplodeAttributes_Purpose = "This class contains attributes for the
 //
 // The type description structure
 //
-static PyTypeObject ExplodeAttributesType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "ExplodeAttributes",                   /* tp_name */
-    sizeof(ExplodeAttributesObject),          /* tp_basicsize */
-    0,                                 /* tp_itemsize */
-    (destructor)ExplodeAttributes_dealloc,    /* tp_dealloc */
-    (printfunc)ExplodeAttributes_print,       /* tp_print */
-    (getattrfunc)PyExplodeAttributes_getattr, /* tp_getattr */
-    (setattrfunc)PyExplodeAttributes_setattr, /* tp_setattr */
-    0,                                 /* tp_reserved */
-    0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
-    0,                                 /* tp_as_sequence */
-    0,                                 /* tp_as_mapping */
-    0,                                 /* tp_hash  */
-    0,                                 /* tp_call */
-    (reprfunc)ExplodeAttributes_str,      /* tp_str */
-    0,                                 /* tp_getattro */
-    0,                                 /* tp_setattro */
-    0,                                 /* tp_as_buffer */
-#if defined(IS_PY3K) // python 3
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-#else // python 2
-    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-#endif
-    ExplodeAttributes_Purpose,                /* tp_doc */
-    0,                                 /* tp_traverse */
-    0,                                 /* tp_clear */
-   (richcmpfunc)ExplodeAttributes_richcompare,  /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-//
-// VisIt Methods End here, but here are extra struct init fields for ref
-//
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */ 
-    0,                         /* tp_methods */ 
-    0,                         /* tp_members */ 
-    0,                         /* tp_getset */ 
-    0,                         /* tp_base */ 
-    0,                         /* tp_dict */ 
-    0,                         /* tp_descr_get */ 
-    0,                         /* tp_descr_set */ 
-    0,                         /* tp_dictoffset */ 
-    0,                         /* tp_init */ 
-    0,                         /* tp_alloc */ 
-    0,                         /* tp_new */ 
-};
+VISIT_PY_TYPE_OBJ(ExplodeAttributesType,         \
+                  "ExplodeAttributes",          \
+                  ExplodeAttributesObject,       \
+                  ExplodeAttributes_dealloc,     \
+                  ExplodeAttributes_print,       \
+                  PyExplodeAttributes_getattr,   \
+                  PyExplodeAttributes_setattr,   \
+                  ExplodeAttributes_str,         \
+                  ExplodeAttributes_Purpose,     \
+                  ExplodeAttributes_richcompare, \
+                  0); /* as_number*/
 
 static PyObject *
 ExplodeAttributes_richcompare(PyObject *self, PyObject *other, int op)

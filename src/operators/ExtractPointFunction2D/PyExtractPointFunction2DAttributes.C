@@ -299,57 +299,17 @@ static char *ExtractPointFunction2DAttributes_Purpose = "Attributes for ExtractP
 //
 // The type description structure
 //
-static PyTypeObject ExtractPointFunction2DAttributesType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "ExtractPointFunction2DAttributes",                   /* tp_name */
-    sizeof(ExtractPointFunction2DAttributesObject),          /* tp_basicsize */
-    0,                                 /* tp_itemsize */
-    (destructor)ExtractPointFunction2DAttributes_dealloc,    /* tp_dealloc */
-    (printfunc)ExtractPointFunction2DAttributes_print,       /* tp_print */
-    (getattrfunc)PyExtractPointFunction2DAttributes_getattr, /* tp_getattr */
-    (setattrfunc)PyExtractPointFunction2DAttributes_setattr, /* tp_setattr */
-    0,                                 /* tp_reserved */
-    0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
-    0,                                 /* tp_as_sequence */
-    0,                                 /* tp_as_mapping */
-    0,                                 /* tp_hash  */
-    0,                                 /* tp_call */
-    (reprfunc)ExtractPointFunction2DAttributes_str,      /* tp_str */
-    0,                                 /* tp_getattro */
-    0,                                 /* tp_setattro */
-    0,                                 /* tp_as_buffer */
-#if defined(IS_PY3K) // python 3
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-#else // python 2
-    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-#endif
-    ExtractPointFunction2DAttributes_Purpose,                /* tp_doc */
-    0,                                 /* tp_traverse */
-    0,                                 /* tp_clear */
-   (richcmpfunc)ExtractPointFunction2DAttributes_richcompare,  /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-//
-// VisIt Methods End here, but here are extra struct init fields for ref
-//
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */ 
-    0,                         /* tp_methods */ 
-    0,                         /* tp_members */ 
-    0,                         /* tp_getset */ 
-    0,                         /* tp_base */ 
-    0,                         /* tp_dict */ 
-    0,                         /* tp_descr_get */ 
-    0,                         /* tp_descr_set */ 
-    0,                         /* tp_dictoffset */ 
-    0,                         /* tp_init */ 
-    0,                         /* tp_alloc */ 
-    0,                         /* tp_new */ 
-};
+VISIT_PY_TYPE_OBJ(ExtractPointFunction2DAttributesType,         \
+                  "ExtractPointFunction2DAttributes",          \
+                  ExtractPointFunction2DAttributesObject,       \
+                  ExtractPointFunction2DAttributes_dealloc,     \
+                  ExtractPointFunction2DAttributes_print,       \
+                  PyExtractPointFunction2DAttributes_getattr,   \
+                  PyExtractPointFunction2DAttributes_setattr,   \
+                  ExtractPointFunction2DAttributes_str,         \
+                  ExtractPointFunction2DAttributes_Purpose,     \
+                  ExtractPointFunction2DAttributes_richcompare, \
+                  0); /* as_number*/
 
 static PyObject *
 ExtractPointFunction2DAttributes_richcompare(PyObject *self, PyObject *other, int op)

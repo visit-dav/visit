@@ -435,57 +435,17 @@ static char *QueryAttributes_Purpose = "This class contains attributes used for 
 //
 // The type description structure
 //
-static PyTypeObject QueryAttributesType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "QueryAttributes",                   /* tp_name */
-    sizeof(QueryAttributesObject),          /* tp_basicsize */
-    0,                                 /* tp_itemsize */
-    (destructor)QueryAttributes_dealloc,    /* tp_dealloc */
-    (printfunc)QueryAttributes_print,       /* tp_print */
-    (getattrfunc)PyQueryAttributes_getattr, /* tp_getattr */
-    (setattrfunc)PyQueryAttributes_setattr, /* tp_setattr */
-    0,                                 /* tp_reserved */
-    0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
-    0,                                 /* tp_as_sequence */
-    0,                                 /* tp_as_mapping */
-    0,                                 /* tp_hash  */
-    0,                                 /* tp_call */
-    (reprfunc)QueryAttributes_str,      /* tp_str */
-    0,                                 /* tp_getattro */
-    0,                                 /* tp_setattro */
-    0,                                 /* tp_as_buffer */
-#if defined(IS_PY3K) // python 3
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-#else // python 2
-    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-#endif
-    QueryAttributes_Purpose,                /* tp_doc */
-    0,                                 /* tp_traverse */
-    0,                                 /* tp_clear */
-   (richcmpfunc)QueryAttributes_richcompare,  /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-//
-// VisIt Methods End here, but here are extra struct init fields for ref
-//
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */ 
-    0,                         /* tp_methods */ 
-    0,                         /* tp_members */ 
-    0,                         /* tp_getset */ 
-    0,                         /* tp_base */ 
-    0,                         /* tp_dict */ 
-    0,                         /* tp_descr_get */ 
-    0,                         /* tp_descr_set */ 
-    0,                         /* tp_dictoffset */ 
-    0,                         /* tp_init */ 
-    0,                         /* tp_alloc */ 
-    0,                         /* tp_new */ 
-};
+VISIT_PY_TYPE_OBJ(QueryAttributesType,         \
+                  "QueryAttributes",          \
+                  QueryAttributesObject,       \
+                  QueryAttributes_dealloc,     \
+                  QueryAttributes_print,       \
+                  PyQueryAttributes_getattr,   \
+                  PyQueryAttributes_setattr,   \
+                  QueryAttributes_str,         \
+                  QueryAttributes_Purpose,     \
+                  QueryAttributes_richcompare, \
+                  0); /* as_number*/
 
 static PyObject *
 QueryAttributes_richcompare(PyObject *self, PyObject *other, int op)

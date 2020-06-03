@@ -535,37 +535,66 @@ static char *Contract_Doc = "This class provides access to the avt pipeline cont
 //     0                                    // tp_weaklistoffset
 // };
 
-static PyTypeObject PyContractType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "Contract",                        /* tp_name */
-    sizeof(PyContractObject),          /* tp_basicsize */
-    0,                                 /* tp_itemsize */
-    (destructor)Contract_dealloc,      /* tp_dealloc */
-    (printfunc)Contract_print,         /* tp_print */
-    (getattrfunc)Contract_getattr,     /* tp_getattr */
-    0,                                 /* tp_setattr */
-    0,                                 /* tp_reserved */
-    0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
-    0,                                 /* tp_as_sequence */
-    0,                                 /* tp_as_mapping */
-    0,                                 /* tp_hash  */
-    0,                                 /* tp_call */
-    0,                                 /* tp_str */
-    0,                                 /* tp_getattro */
-    0,                                 /* tp_setattro */
-    0,                                 /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-    Contract_Doc,                      /* tp_doc */
-    0,                                 /* tp_traverse */
-    0,                                 /* tp_clear */
-    0,                                 /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-};
+
+//
+// The type description structure
+//
+
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+VISIT_PY_TYPE_OBJ(PyContractType,      \
+                  "Contract",          \
+                  PyContractObject,    \
+                  Contract_dealloc,    \
+                  Contract_print,      \
+                  Contract_getattr,    \
+                  0,                   \
+                  0,                   \
+                  Contract_Doc,        \
+                  0,                   \
+                  0); /* as_number*/
+
+// static PyTypeObject PyContractType =
+// {
+//     //
+//     // Type header
+//     //
+//     PyVarObject_HEAD_INIT(&PyType_Type, 0)
+//     "Contract",                        /* tp_name */
+//     sizeof(PyContractObject),          /* tp_basicsize */
+//     0,                                 /* tp_itemsize */
+//     (destructor)Contract_dealloc,      /* tp_dealloc */
+//     (printfunc)Contract_print,         /* tp_print */
+//     (getattrfunc)Contract_getattr,     /* tp_getattr */
+//     0,                                 /* tp_setattr */
+//     0,                                 /* tp_reserved */
+//     0,                                 /* tp_repr */
+//     0,                                 /* tp_as_number */
+//     0,                                 /* tp_as_sequence */
+//     0,                                 /* tp_as_mapping */
+//     0,                                 /* tp_hash  */
+//     0,                                 /* tp_call */
+//     0,                                 /* tp_str */
+//     0,                                 /* tp_getattro */
+//     0,                                 /* tp_setattro */
+//     0,                                 /* tp_as_buffer */
+//     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+//     Contract_Doc,                      /* tp_doc */
+//     0,                                 /* tp_traverse */
+//     0,                                 /* tp_clear */
+//     0,                                 /* tp_richcompare */
+//     0,                                 /* tp_weaklistoffset */
+// };
 
 
 

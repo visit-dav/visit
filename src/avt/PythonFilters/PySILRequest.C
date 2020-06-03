@@ -329,38 +329,62 @@ static char *SILRequest_Doc = "This class provides access to the avt pipeline SI
 // };
 
 
-static PyTypeObject PySILRequestType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "SILRequest",                      /* tp_name */
-    sizeof(PySILRequestObject),        /* tp_basicsize */
-    0,                                 /* tp_itemsize */
-    (destructor)SILRequest_dealloc,    /* tp_dealloc */
-    0,                                 /* tp_print */
-    (getattrfunc)SILRequest_getattr,   /* tp_getattr */
-    0,                                 /* tp_setattr */
-    0,                                 /* tp_reserved */
-    0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
-    0,                                 /* tp_as_sequence */
-    0,                                 /* tp_as_mapping */
-    0,                                 /* tp_hash  */
-    0,                                 /* tp_call */
-    0,                                 /* tp_str */
-    0,                                 /* tp_getattro */
-    0,                                 /* tp_setattro */
-    0,                                 /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-    SILRequest_Doc,                    /* tp_doc */
-    0,                                 /* tp_traverse */
-    0,                                 /* tp_clear */
-    0,                                 /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-};
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
 
+VISIT_PY_TYPE_OBJ(PySILRequestType,      \
+                  "SILRequest",          \
+                  PySILRequestObject,    \
+                  SILRequest_dealloc,    \
+                  0,                     \
+                  SILRequest_getattr,    \
+                  0,                     \
+                  0,                     \
+                  SILRequest_Doc,        \
+                  0,                     \
+                  0); /* as_number*/
+
+// static PyTypeObject PySILRequestType =
+// {
+//     //
+//     // Type header
+//     //
+//     PyVarObject_HEAD_INIT(&PyType_Type, 0)
+//     "SILRequest",                      /* tp_name */
+//     sizeof(PySILRequestObject),        /* tp_basicsize */
+//     0,                                 /* tp_itemsize */
+//     (destructor)SILRequest_dealloc,    /* tp_dealloc */
+//     0,                                 /* tp_print */
+//     (getattrfunc)SILRequest_getattr,   /* tp_getattr */
+//     0,                                 /* tp_setattr */
+//     0,                                 /* tp_reserved */
+//     0,                                 /* tp_repr */
+//     0,                                 /* tp_as_number */
+//     0,                                 /* tp_as_sequence */
+//     0,                                 /* tp_as_mapping */
+//     0,                                 /* tp_hash  */
+//     0,                                 /* tp_call */
+//     0,                                 /* tp_str */
+//     0,                                 /* tp_getattro */
+//     0,                                 /* tp_setattro */
+//     0,                                 /* tp_as_buffer */
+//     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+//     SILRequest_Doc,                    /* tp_doc */
+//     0,                                 /* tp_traverse */
+//     0,                                 /* tp_clear */
+//     0,                                 /* tp_richcompare */
+//     0,                                 /* tp_weaklistoffset */
+// };
+//
 
 ///////////////////////////////////////////////////////////////////////////////
 //

@@ -1376,25 +1376,24 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
     # open it using PIL Image
     newimg = Image.open(cur)
     size = newimg.size;
-    print("DiffUsingPIL!!!!!!")
     # open the baseline image
     try:
         if (os.path.isfile(altbase)):
             oldimg = Image.open(altbase)
             if (size != oldimg.size):
                 Log("Error: Baseline and current images are different sizes... resizing baseline to compensate")
-                # oldimg = oldimg.resize(size, Image.BICUBIC)
+                oldimg = oldimg.resize(size, Image.BICUBIC)
         elif (os.path.isfile(baseline)):
             oldimg = Image.open(baseline)
             if (size != oldimg.size):
                 Log("Error: Baseline and current images are different sizes... resizing baseline to compensate")
-                # oldimg = oldimg.resize(size, Image.BICUBIC)
+                oldimg = oldimg.resize(size, Image.BICUBIC)
         else:
             Log("Warning: No baseline image: %s" % baseline)
             if TestEnv.params["ctest"]:
                 Log(ctestReportMissingBaseline(baseline))
-            # oldimg = Image.open(test_module_path('nobaseline.pnm'))
-            # oldimg = oldimg.resize(size, Image.BICUBIC)
+            oldimg = Image.open(test_module_path('nobaseline.pnm'))
+            oldimg = oldimg.resize(size, Image.BICUBIC)
     except:
         oldimg = Image.open(test_module_path('nobaseline.pnm'))
         Log("Warning: Defective baseline image: %s" % baseline)
@@ -1433,7 +1432,7 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
 
 def CreateImagesForWeb(case_name, testFailed, baseimg, testimg, diffimg):
     """
-    Given test image set create coresponding thumbnails for web
+    Given test image set create corresponding thumbnails for web
     consumption
     """
     thumbsize = (100,100)

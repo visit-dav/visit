@@ -795,60 +795,84 @@ static char *Text3DObject_Purpose = "This class defines an interface for control
 static PyObject *Text3DObject_richcompare(PyObject *self, PyObject *other, int op);
 
 // CUSTOM
+
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
 //
 // The type description structure
 //
-static PyTypeObject Text3DObjectType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "Text3DObject",                   /* tp_name */
-    sizeof(Text3DObjectObject),          /* tp_basicsize */
-    0,                                 /* tp_itemsize */
-    (destructor)Text3DObject_dealloc,    /* tp_dealloc */
-    (printfunc)Text3DObject_print,       /* tp_print */
-    (getattrfunc)Text3DObject_getattr, /* tp_getattr */
-    (setattrfunc)Text3DObject_setattr, /* tp_setattr */
-    0,                                 /* tp_reserved */
-    0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
-    0,                                 /* tp_as_sequence */
-    0,                                 /* tp_as_mapping */
-    0,                                 /* tp_hash  */
-    0,                                 /* tp_call */
-    (reprfunc)Text3DObject_str,      /* tp_str */
-    0,                                 /* tp_getattro */
-    0,                                 /* tp_setattro */
-    0,                                 /* tp_as_buffer */
-#if defined(IS_PY3K) // python 3
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-#else // python 2
-    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-#endif
-    Text3DObject_Purpose,                /* tp_doc */
-    0,                                 /* tp_traverse */
-    0,                                 /* tp_clear */
-   (richcmpfunc)Text3DObject_richcompare,  /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-//
-// VisIt Methods End here, but here are extra struct init fields for ref
-//
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */ 
-    0,                         /* tp_methods */ 
-    0,                         /* tp_members */ 
-    0,                         /* tp_getset */ 
-    0,                         /* tp_base */ 
-    0,                         /* tp_dict */ 
-    0,                         /* tp_descr_get */ 
-    0,                         /* tp_descr_set */ 
-    0,                         /* tp_dictoffset */ 
-    0,                         /* tp_init */ 
-    0,                         /* tp_alloc */ 
-    0,                         /* tp_new */ 
-};
+VISIT_PY_TYPE_OBJ( Text3DObjectType,      \
+                   "Text3DObject",      \
+                   Text3DObjectObject,    \
+                   Text3DObject_dealloc,   \
+                   Text3DObject_print,     \
+                   Text3DObject_getattr,   \
+                   Text3DObject_setattr,   \
+                   Text3DObject_str,       \
+                   Text3DObject_Purpose,   \
+                   Text3DObject_richcompare,  \
+                   0); /* as_number*/
+// static PyTypeObject Text3DObjectType =
+// {
+//     //
+//     // Type header
+//     //
+//     PyVarObject_HEAD_INIT(&PyType_Type, 0)
+//     "Text3DObject",                   /* tp_name */
+//     sizeof(Text3DObjectObject),          /* tp_basicsize */
+//     0,                                 /* tp_itemsize */
+//     (destructor)Text3DObject_dealloc,    /* tp_dealloc */
+//     (printfunc)Text3DObject_print,       /* tp_print */
+//     (getattrfunc)Text3DObject_getattr, /* tp_getattr */
+//     (setattrfunc)Text3DObject_setattr, /* tp_setattr */
+//     0,                                 /* tp_reserved */
+//     0,                                 /* tp_repr */
+//     0,                                 /* tp_as_number */
+//     0,                                 /* tp_as_sequence */
+//     0,                                 /* tp_as_mapping */
+//     0,                                 /* tp_hash  */
+//     0,                                 /* tp_call */
+//     (reprfunc)Text3DObject_str,      /* tp_str */
+//     0,                                 /* tp_getattro */
+//     0,                                 /* tp_setattro */
+//     0,                                 /* tp_as_buffer */
+// #if defined(IS_PY3K) // python 3
+//     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+// #else // python 2
+//     Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
+// #endif
+//     Text3DObject_Purpose,                /* tp_doc */
+//     0,                                 /* tp_traverse */
+//     0,                                 /* tp_clear */
+//    (richcmpfunc)Text3DObject_richcompare,  /* tp_richcompare */
+//     0,                                 /* tp_weaklistoffset */
+// //
+// // VisIt Methods End here, but here are extra struct init fields for ref
+// //
+//     0,                         /* tp_iter */
+//     0,                         /* tp_iternext */
+//     0,                         /* tp_methods */
+//     0,                         /* tp_members */
+//     0,                         /* tp_getset */
+//     0,                         /* tp_base */
+//     0,                         /* tp_dict */
+//     0,                         /* tp_descr_get */
+//     0,                         /* tp_descr_set */
+//     0,                         /* tp_dictoffset */
+//     0,                         /* tp_init */
+//     0,                         /* tp_alloc */
+//     0,                         /* tp_new */
+// };
 
 // CUSTOM
 static PyObject *

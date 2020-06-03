@@ -458,57 +458,17 @@ static char *PrinterAttributes_Purpose = "This class contains the attributes use
 //
 // The type description structure
 //
-static PyTypeObject PrinterAttributesType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "PrinterAttributes",                   /* tp_name */
-    sizeof(PrinterAttributesObject),          /* tp_basicsize */
-    0,                                 /* tp_itemsize */
-    (destructor)PrinterAttributes_dealloc,    /* tp_dealloc */
-    (printfunc)PrinterAttributes_print,       /* tp_print */
-    (getattrfunc)PyPrinterAttributes_getattr, /* tp_getattr */
-    (setattrfunc)PyPrinterAttributes_setattr, /* tp_setattr */
-    0,                                 /* tp_reserved */
-    0,                                 /* tp_repr */
-    0,                                 /* tp_as_number */
-    0,                                 /* tp_as_sequence */
-    0,                                 /* tp_as_mapping */
-    0,                                 /* tp_hash  */
-    0,                                 /* tp_call */
-    (reprfunc)PrinterAttributes_str,      /* tp_str */
-    0,                                 /* tp_getattro */
-    0,                                 /* tp_setattro */
-    0,                                 /* tp_as_buffer */
-#if defined(IS_PY3K) // python 3
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-#else // python 2
-    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-#endif
-    PrinterAttributes_Purpose,                /* tp_doc */
-    0,                                 /* tp_traverse */
-    0,                                 /* tp_clear */
-   (richcmpfunc)PrinterAttributes_richcompare,  /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-//
-// VisIt Methods End here, but here are extra struct init fields for ref
-//
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */ 
-    0,                         /* tp_methods */ 
-    0,                         /* tp_members */ 
-    0,                         /* tp_getset */ 
-    0,                         /* tp_base */ 
-    0,                         /* tp_dict */ 
-    0,                         /* tp_descr_get */ 
-    0,                         /* tp_descr_set */ 
-    0,                         /* tp_dictoffset */ 
-    0,                         /* tp_init */ 
-    0,                         /* tp_alloc */ 
-    0,                         /* tp_new */ 
-};
+VISIT_PY_TYPE_OBJ(PrinterAttributesType,         \
+                  "PrinterAttributes",          \
+                  PrinterAttributesObject,       \
+                  PrinterAttributes_dealloc,     \
+                  PrinterAttributes_print,       \
+                  PyPrinterAttributes_getattr,   \
+                  PyPrinterAttributes_setattr,   \
+                  PrinterAttributes_str,         \
+                  PrinterAttributes_Purpose,     \
+                  PrinterAttributes_richcompare, \
+                  0); /* as_number*/
 
 static PyObject *
 PrinterAttributes_richcompare(PyObject *self, PyObject *other, int op)

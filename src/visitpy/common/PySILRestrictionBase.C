@@ -935,60 +935,88 @@ static char *SILRestriction_Purpose = "This class contains attributes used to re
 //     0                                    // tp_weaklistoffset
 // };
 
+// CUSTOM
+
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
 //
 // The type description structure
 //
-static PyTypeObject PySILRestrictionType =
-{
-    //
-    // Type header
-    //
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "SILRestriction",                           /* tp_name */
-    sizeof(PySILRestrictionObject),             /* tp_basicsize */
-    0,                                          /* tp_itemsize */
-    (destructor)SILRestriction_dealloc,         /* tp_dealloc */
-    (printfunc)SILRestriction_print,            /* tp_print */
-    (getattrfunc)SILRestriction_getattr,        /* tp_getattr */
-    0,                                          /* tp_setattr */
-    0,                                          /* tp_reserved */
-    0,                                          /* tp_repr */
-    0,                                          /* tp_as_number */
-    0,                                          /* tp_as_sequence */
-    0,                                          /* tp_as_mapping */
-    0,                                          /* tp_hash  */
-    0,                                          /* tp_call */
-    0,                                          /* tp_str */
-    0,                                          /* tp_getattro */
-    0,                                          /* tp_setattro */
-    0,                                          /* tp_as_buffer */
-#if defined(IS_PY3K) // python 3
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-#else // python 2
-    Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-#endif
-    SILRestriction_Purpose,                     /* tp_doc */
-    0,                                          /* tp_traverse */
-    0,                                          /* tp_clear */
-   (richcmpfunc)SILRestriction_richcompare,     /* tp_richcompare */
-    0,                                          /* tp_weaklistoffset */
-//
-// VisIt Methods End here, but here are extra struct init fields for ref
-//
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */ 
-    0,                         /* tp_methods */ 
-    0,                         /* tp_members */ 
-    0,                         /* tp_getset */ 
-    0,                         /* tp_base */ 
-    0,                         /* tp_dict */ 
-    0,                         /* tp_descr_get */ 
-    0,                         /* tp_descr_set */ 
-    0,                         /* tp_dictoffset */ 
-    0,                         /* tp_init */ 
-    0,                         /* tp_alloc */ 
-    0,                         /* tp_new */ 
-};
+VISIT_PY_TYPE_OBJ(PySILRestrictionType,        \
+                  "SILRestriction",            \
+                  PySILRestrictionObject,      \
+                  SILRestriction_dealloc,      \
+                  SILRestriction_print,        \
+                  SILRestriction_getattr,      \
+                  0,                           \
+                  0,                           \
+                  SILRestriction_Purpose,      \
+                  SILRestriction_richcompare,  \
+                  0); /* as_number*/
+// //
+// // The type description structure
+// //
+// static PyTypeObject PySILRestrictionType =
+// {
+//     //
+//     // Type header
+//     //
+//     PyVarObject_HEAD_INIT(&PyType_Type, 0)
+//     "SILRestriction",                           /* tp_name */
+//     sizeof(PySILRestrictionObject),             /* tp_basicsize */
+//     0,                                          /* tp_itemsize */
+//     (destructor)SILRestriction_dealloc,         /* tp_dealloc */
+//     (printfunc)SILRestriction_print,            /* tp_print */
+//     (getattrfunc)SILRestriction_getattr,        /* tp_getattr */
+//     0,                                          /* tp_setattr */
+//     0,                                          /* tp_reserved */
+//     0,                                          /* tp_repr */
+//     0,                                          /* tp_as_number */
+//     0,                                          /* tp_as_sequence */
+//     0,                                          /* tp_as_mapping */
+//     0,                                          /* tp_hash  */
+//     0,                                          /* tp_call */
+//     0,                                          /* tp_str */
+//     0,                                          /* tp_getattro */
+//     0,                                          /* tp_setattro */
+//     0,                                          /* tp_as_buffer */
+// #if defined(IS_PY3K) // python 3
+//     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
+// #else // python 2
+//     Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
+// #endif
+//     SILRestriction_Purpose,                     /* tp_doc */
+//     0,                                          /* tp_traverse */
+//     0,                                          /* tp_clear */
+//    (richcmpfunc)SILRestriction_richcompare,     /* tp_richcompare */
+//     0,                                          /* tp_weaklistoffset */
+// //
+// // VisIt Methods End here, but here are extra struct init fields for ref
+// //
+//     0,                         /* tp_iter */
+//     0,                         /* tp_iternext */
+//     0,                         /* tp_methods */
+//     0,                         /* tp_members */
+//     0,                         /* tp_getset */
+//     0,                         /* tp_base */
+//     0,                         /* tp_dict */
+//     0,                         /* tp_descr_get */
+//     0,                         /* tp_descr_set */
+//     0,                         /* tp_dictoffset */
+//     0,                         /* tp_init */
+//     0,                         /* tp_alloc */
+//     0,                         /* tp_new */
+// };
 
 
 // ****************************************************************************
