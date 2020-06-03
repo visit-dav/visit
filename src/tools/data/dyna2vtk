@@ -4,6 +4,12 @@ import sys
 import re
 import array
 
+#
+# This utility converts Dyna dyn files to vtk files. I have tested this with
+# 2 flavors of dyn files. The files only had hex elements. The converter
+# will need to be enhanced to handle shell, thick shell and beam elements.
+#
+
 def copy_file(dyn_file, vtk_file):
     dyn = open(dyn_file, "r")
     vtk = open(vtk_file, "wt")
