@@ -385,6 +385,8 @@ In addition depending on *where* you run the linkcheck (e.g. behind a
 firewall or other cyber-security apparatus), you may get different results
 due to any cyber-security IP filtering.
 
+All of the above is automated with the ``linkcheck`` make target also.
+
 .. _contributing_forward:
 
 Things To Consider Going Forward
