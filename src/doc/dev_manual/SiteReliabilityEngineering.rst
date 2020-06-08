@@ -196,7 +196,7 @@ Constructive Correction  Comprehensive Solution
 =======================  ======================
 Short term               Longer term
 Faster response          Slower response
-Low cost                 Higher cost
+Low cost/benefit         Higher cost/benefit
 Low risk                 Higher risk
 Unplanned                Planned
 Mitigation               Resolution
@@ -273,6 +273,61 @@ For any work the **Primary** performs, even if it is a rather trivial amount
 of work to resolve, there should be an associated issue for tracking that work.
 Tracking even the trivial issues can help identify patterns that we may be able
 to later mine to identify process improvements.
+
+Supported Methods of Interacting with the VisIt Team
+----------------------------------------------------
+
+Interactions with the VisIt team involve a *first contact* optionally followed-by
+*ongoing* communications. While first contact may take a variety of forms (see below),
+the VisIt_ project has some requirements for handling ongoing communication that we
+believe are best satisifed using the combination of either GitHub issues and/or
+``visit-users`` email list as described in the `previous section <sre_active_issues>`.
+
+The *officially supported* methods of first contact include
+
+  * Direct email to any (LLNL) VisIt developer.
+  * Telephone call to any (LLNL) VisIt developer.
+  * Office drop-ins to any (LLNL) VisIt developer.
+  * Email to `visit-users <mailto:visit-users@elist.ornl.gov>`_,
+    `visit-help-asc <mailto:visit-help-asc@elist.ornl.gov>`_, or
+    `visit-help-scidac <mailto:visit-help-scidac@elist.ornl.gov>`_ email lists.
+  * Telephone call to the `VisIt hotline <tel:42847>`_.
+  * Creation of a `GitHub issue <https://github.com/visit-dav/live-customer-response/issues>`_.
+
+Users making first contact through other means should be notified, as part of a
+*first response* to them, about our processes for handling ongoing communications.
+If they opt out, which is their perogative, *and* if our progress towards resolution
+requires ongoing interaction, then such issues may wind up going unresolved and shall
+be closed after due diligence in contacting the originating user and some agreed upon
+period of non-response.
+
+In other words, to the extent possible, users should feel free to make contact with
+us in whatever ways work best for them but ongoing dialog will be handled in whatever
+ways work best for the VisIt_ project.
+
+A question arises as to what methods of first contact are *officially supported*?
+Supported means there is an assurance that the particular method is being monitored
+by VisIt_ team members such that the response time can be maintained. Supported
+methods are encouraged and promoted in any documentation where VisIt_ support
+processes are discussed. Likewise, and for obvious reasons, unofficial methods of
+first contact are explicitly *not* encouraged or promoted.
+
+If the developer of first contact is not the primary SRE, then s/he should feel free,
+indeed should be encouraged, to `handoff <sre_handoff>` the inquiry to the primary SRE
+via email.
+
+Methods e and f require only email to monitor. So, the upshot of our current methods is that they all can be monitored via email.
+ 
+Other means of first contact such as MS Teams, Slack, Jabber, Twitter require monitoring
+something other than email. Are we prepared to take that on? Maybe its the curmudgeon in
+me but I am inclined not to. OTOH, I really don't want my curmudgeon-ness to stifle healthy
+creativity and change here either. Maybe there is a middle ground for these other platforms
+such that if some VisIt developer has a routine, ongoing, continuous presence there and is
+so inclined, first contacts there can essentially be handled manually by that developer by
+forwarding/handing off to SRE primary. So, that modality of first contact could be
+UNofficially supported but only by a willing developer willing to serve that role and, of
+course, not required. Maybe if after a time the traffic level is high enough, this approach
+could be revised to become something officially supported.
 
 .. _sre_response_vs_resolution:
 
