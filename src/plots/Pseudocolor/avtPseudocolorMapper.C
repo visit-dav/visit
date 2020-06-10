@@ -707,14 +707,19 @@ avtPseudocolorMapper::SetFullFrameScaling(bool useScale, const double *s)
 //  Programmer: Kathleen Biagas
 //  Creation:   November 5, 2019
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Jun 10 09:18:19 PDT 2020
+//    Only save labels if they are prefixed with "pc_".
+//
 // ****************************************************************************
 
 void
 avtPseudocolorMapper::SetLabels(vector<string> &l, bool fromTree)
 {
-    if (!fromTree)
-        return;
-
-    labels = l;
+    if (fromTree)
+    {
+        if (!l.empty() && l[0].compare(0, 3, string("pc_")) == 0)
+            labels = l;
+    }
 }
 
