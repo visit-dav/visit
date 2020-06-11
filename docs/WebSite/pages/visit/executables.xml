@@ -84,6 +84,11 @@
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
+          Ubuntu 20, 4.19.76-linuxkit #1 SMP, gcc 9.3</td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.2/visit3_1_2.linux-x86_64-ubuntu20.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
           Debian 9, 4.9.184-linuxkit #1 SMP, gcc 6.3<br />
           <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.2/visit3_1_2.linux-x86_64-debian9.tar.gz">Download</a></td>
         </tr>
