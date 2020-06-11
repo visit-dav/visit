@@ -45,6 +45,10 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state 
 #    behavior when an operator is added.
 #
+#    Kathleen Biagas, Wed Jun 10 17:39:23 PDT 2020
+#    Move RandomColor test to be first test run so that changes in mesh plot
+#    instances don't randomly make the test fail.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -351,12 +355,12 @@ def TestCustomColor():
         
 def Main():
     TurnOffAllAnnotations()
+    TestRandomColor()
     TestCurve()
     TestPointMesh()
     TestGlobe()
     TestRect3d()
     TestAutoOpaqueFlag()
-    TestRandomColor()
     TestCustomColor()
 
 # Added to allow this test to be run with compression too.
