@@ -274,43 +274,54 @@ of work to resolve, there should be an associated issue for tracking that work.
 Tracking even the trivial issues can help identify patterns that we may be able
 to later mine to identify process improvements.
 
-Supported Methods of Interacting with the VisIt Team
-----------------------------------------------------
+Supported Methods of Contact
+----------------------------
 
-Interactions with the VisIt team involve a *first contact* optionally followed-by
-*ongoing* communications. While first contact may take a variety of forms (see below),
-the VisIt_ project has some requirements for handling ongoing communication that we
-believe are best satisifed using the combination of either GitHub issues and/or
-``visit-users`` email list as described in the `previous section <sre_active_issues>`.
+An SRE inquiry with the VisIt team begins with a *first contact* and may optionally
+be followed by *ongoing* interactions. These two kinds of communication have different
+requirements and can involve different processes.
 
-The *officially supported* methods of first contact include
+To maximize accessibility for VisIt_ users, it makes the most sense to support a wide
+variety of methods of first contact. However, to maximize productivity for developers,
+it makes sense, at least for the VisIt_ project, to restrict methods of ongoing
+interactions to either email via `visit-users <mailto:visit-users@elist.ornl.gov>`_
+or to `GitHub issue <https://github.com/visit-dav/live-customer-response/issues>`_
+conversations as described `above <sre_active_issues>`.
 
-  * Direct email to any (LLNL) VisIt developer.
-  * Telephone call to any (LLNL) VisIt developer.
-  * Office drop-ins to any (LLNL) VisIt developer.
+To reduce the number of media platforms VisIt_ developers must manage, the
+*officially supported* methods of first contact are currently restricted to...
+
+  * Creation of a `GitHub issue <https://github.com/visit-dav/live-customer-response/issues>`_.
   * Email to `visit-users <mailto:visit-users@elist.ornl.gov>`_,
     `visit-help-asc <mailto:visit-help-asc@elist.ornl.gov>`_, or
     `visit-help-scidac <mailto:visit-help-scidac@elist.ornl.gov>`_ email lists.
   * Telephone call to the `VisIt hotline <tel:42847>`_.
-  * Creation of a `GitHub issue <https://github.com/visit-dav/live-customer-response/issues>`_.
 
-Users making first contact through other means should be notified, as part of a
+However, there are some *unofficially supported* methods of first contact including
+email, telephone calls, office drop-ins or hallway chats made *directly* with a
+specific VisIt_ developer. This also includes direct contact through various social
+media platforms such as Confluence, Jabber, MS Teams, Twitter, Slack, Google Hangouts,
+etc.  where users can wind up engaging specific VisIt_ developers that happen, by
+nothing more than coincidence, to also be using those platforms.
+
+What does it mean for a method of first contact to be *officially supported*?
+It means there is an assurance that the particular platform is being monitored by
+VisIt_ team members such that the response time goal can be maintained. In addition,
+supported methods are encouraged and promoted in any documentation where VisIt_
+support processes are discussed whereas, and for obvious reasons, unofficial methods
+of first contact are explicitly *not* encouraged, promoted or documented.
+
+
+
+Shouldn't we file issue tickets for phone calls? What about logging?
+
+
+
+Users making first contact through other means should be made aware, as part of a
 *first response* to them, about our processes for handling ongoing communications.
 If they opt out, which is their perogative, *and* if our progress towards resolution
 requires ongoing interaction, then such issues may wind up going unresolved and shall
-be closed after due diligence in contacting the originating user and some agreed upon
-period of non-response.
-
-In other words, to the extent possible, users should feel free to make contact with
-us in whatever ways work best for them but ongoing dialog will be handled in whatever
-ways work best for the VisIt_ project.
-
-A question arises as to what methods of first contact are *officially supported*?
-Supported means there is an assurance that the particular method is being monitored
-by VisIt_ team members such that the response time can be maintained. Supported
-methods are encouraged and promoted in any documentation where VisIt_ support
-processes are discussed. Likewise, and for obvious reasons, unofficial methods of
-first contact are explicitly *not* encouraged or promoted.
+be closed after 30 days of non-response.
 
 If the developer of first contact is not the primary SRE, then s/he should feel free,
 indeed should be encouraged, to `handoff <sre_handoff>` the inquiry to the primary SRE
