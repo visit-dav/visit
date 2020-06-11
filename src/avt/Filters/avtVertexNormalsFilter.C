@@ -146,6 +146,9 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //    Updated vtkVisItPolyDataNormals filter to handle triangle strips and
 //    added set for zonesHaveBeenSplit when appropriate.
 //
+//    Kathleen Biagas, Thu Jun  11 15:00:10 PDT 2020
+//    Don't process poly data containing only lines.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -176,7 +179,11 @@ avtVertexNormalsFilter::ExecuteData(avtDataRepresentation *in_dr)
     if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
     {
         vtkPolyData *pd = (vtkPolyData *)in_ds;
-
+        if (pd->GetNumberOfLines() == pd->GetNumberOfCells())
+        {
+            // don't really want normals for lines.
+            return in_dr;
+        }
         bool pointNormals = true;
         if (atts.ValidActiveVariable())
         {
