@@ -2,11 +2,11 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//   avtPseudocolorGeometryFilter.C
-// ************************************************************************* //
+// ****************************************************************************
+//   avtLineGlyphFilter.C
+// ****************************************************************************
 
-#include <avtPseudocolorGeometryFilter.h>
+#include <avtLineGlyphFilter.h>
 
 #include <vtkAppendPolyData.h>
 #include <vtkCellData.h>
@@ -20,7 +20,6 @@
 #include <vtkSphereSource.h>
 #include <vtkTubeFilter.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkVertexFilter.h>
 
 #include <string>
 #include <vector>
@@ -28,80 +27,117 @@
 using std::string;
 using std::vector;
 
-double GetBBoxSize( double *bbox )
-{
-    double vol = 1;
-    int    numDims = 0;
-    if (bbox[1] > bbox[0])
+namespace {
+    double GetBBoxSize( double *bbox )
     {
-        vol *= (bbox[1]-bbox[0]);
-        numDims++;
-    }
-    if (bbox[3] > bbox[2])
-    {
-        vol *= (bbox[3]-bbox[2]);
-        numDims++;
-    }
-    if (bbox[5] > bbox[4])
-    {
-        vol *= (bbox[5]-bbox[4]);
-        numDims++;
-    }
+        double vol = 1;
+        int    numDims = 0;
+        if (bbox[1] > bbox[0])
+        {
+            vol *= (bbox[1]-bbox[0]);
+            numDims++;
+        }
+        if (bbox[3] > bbox[2])
+        {
+            vol *= (bbox[3]-bbox[2]);
+            numDims++;
+        }
+        if (bbox[5] > bbox[4])
+        {
+            vol *= (bbox[5]-bbox[4]);
+            numDims++;
+        }
 
-    double length = pow(vol, 1.0/numDims);
-    return length;
+        double length = pow(vol, 1.0/numDims);
+        return length;
+    }
 }
 
 
 // ****************************************************************************
-//  Method: avtPseudocolorGeometryFilter constructor
+//  Method: avtLineGlyphFilter constructor
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 20, 2019
+//  Creation:   June 4, 2020
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-avtPseudocolorGeometryFilter::avtPseudocolorGeometryFilter()
+avtLineGlyphFilter::avtLineGlyphFilter() : labelPrefix()
 {
+    keepNonLine = false;
 }
 
 
 // ****************************************************************************
-//  Method: avtPseudocolorGeometryFilter destructor
+//  Method: avtLineGlyphFilter destructor
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 20, 2019
+//  Creation:   June 4, 2020
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-avtPseudocolorGeometryFilter::~avtPseudocolorGeometryFilter()
+avtLineGlyphFilter::~avtLineGlyphFilter()
 {
 }
 
 
 // ****************************************************************************
-//  Method: avtPseudocolorGeometryFilter::SetPlotAtts
+//  Method: avtLineGlyphFilter::SetLineGlyphAtts
 //
-//  Purpose:    Sets the PseudcolorAttributes needed for this filter.
+//  Purpose:    Sets the LineGlyphAttributes needed for this filter.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 20, 2019
+//  Creation:   June 4, 2020
 //
 // ****************************************************************************
 
 void
-avtPseudocolorGeometryFilter::SetPlotAtts(const PseudocolorAttributes *atts)
+avtLineGlyphFilter::SetLineGlyphAtts(const LineGlyphAttributes *atts)
 {
-    plotAtts = *atts;
+    lineGlyphAtts = *atts;
 }
 
 
 // ****************************************************************************
-//  Method: avtPseudocolorGeometryFilter::ExecuteData
+//  Method: avtLineGlyphFilter::SetLabelPrefix
+//
+//  Purpose:    Sets the label prefix to use when creating dataset labels.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 4, 2020
+//
+// ****************************************************************************
+
+void
+avtLineGlyphFilter::SetLabelPrefix(const string &lp)
+{
+    labelPrefix = lp;
+}
+
+
+// ****************************************************************************
+//  Method: avtLineGlyphFilter::SetKeepNonLine
+//
+//  Purpose:    Sets the flag indicating whether or not to keep non-line cells.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 4, 2020
+//
+// ****************************************************************************
+
+void
+avtLineGlyphFilter::SetKeepNonLine(const bool keep)
+{
+    keepNonLine = keep;
+}
+
+
+// ****************************************************************************
+//  Method: avtLineGlyphFilter::ExecuteData
 //
 //  Purpose:
 //      Separates vertex data into separate dataset for processing by the
@@ -113,24 +149,24 @@ avtPseudocolorGeometryFilter::SetPlotAtts(const PseudocolorAttributes *atts)
 //  Returns:    The output data tree.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 20, 2019
+//  Creation:   June 4, 2020
 //
 // ****************************************************************************
 
 avtDataTree_p
-avtPseudocolorGeometryFilter::ExecuteDataTree(avtDataRepresentation *inDR)
+avtLineGlyphFilter::ExecuteDataTree(avtDataRepresentation *inDR)
 {
     //
     // Get the VTK data set.
     //
     vtkDataSet *inDS = inDR->GetDataVTK();
     int domain       = inDR->GetDomain();
-    string domString = std::to_string(domain);
     string label     = inDR->GetLabel();
 
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    if ((GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0) ||
+        (label.compare(0, labelPrefix.size()+8, labelPrefix+string("_points_")) == 0))
     {
-        // nothing to do here, input is all points
+        // nothing to do here, input is all points,
         return new avtDataTree(inDS, domain, label);
     }
 
@@ -141,79 +177,42 @@ avtPseudocolorGeometryFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         return new avtDataTree(inDS, domain, label);
     }
 
-    if (plotAtts.GetPointType() == Point &&
-        plotAtts.GetLineType()  == PseudocolorAttributes::Line &&
-        plotAtts.GetHeadStyle() == PseudocolorAttributes::None &&
-        plotAtts.GetTailStyle() == PseudocolorAttributes::None)
+    if (lineGlyphAtts.GetLineType()  == LineGlyphAttributes::Line &&
+        lineGlyphAtts.GetHeadStyle() == LineGlyphAttributes::None &&
+        lineGlyphAtts.GetTailStyle() == LineGlyphAttributes::None)
     {
-        // nothing to do here, the mapper can handle points
+        // nothing to do here
         return new avtDataTree(inDS, domain, label);
-    }
-
-    vtkDataSet *vertsData = nullptr;
-    bool removeVertsFromInput = false;
-    bool inputIsAllVerts = false;
-
-    // Separate vertex cells into new dataset 'vertsData'
-    ProcessPoints(inDS, vertsData, removeVertsFromInput, inputIsAllVerts);
-
-    if (inputIsAllVerts)
-    {
-        // don't need input in the output, but need to designate as a points
-        // dataset (since topological dim doesn't indicate so)
-        label = string("pc_points_") + label + domString;
-        return new avtDataTree(inDS, domain, label);
-    }
-
-    if (vertsData != nullptr &&
-        !plotAtts.GetRenderSurfaces() &&
-        !plotAtts.GetRenderWireframe())
-    {
-        // don't need input in the output, but need to designate as a points
-        // dataset (since topological dim doesn't indicate so)
-        label = string("pc_points_") + label + domString;
-        return new avtDataTree(vertsData, domain, label);
     }
 
     vtkPolyData *processedLines = nullptr;
     bool removeLinesFromInput = false;
 
-    // Separate out line cells and apply glyphs if specified
-    if(plotAtts.GetRenderSurfaces())
-        ProcessLines(inDS, processedLines, removeLinesFromInput);
+    ProcessLines(inDS, processedLines, removeLinesFromInput);
 
-    if (vertsData == nullptr && processedLines == nullptr)
+    if (processedLines == nullptr)
     {
         // nothing was done
         return new avtDataTree(inDS, domain, label);
     }
 
+
     vtkDataSet *surfaceData = nullptr;
-    if (plotAtts.GetRenderSurfaces() || plotAtts.GetRenderWireframe())
+    if (keepNonLine)
     {
         surfaceData = inDS;
-        if (removeVertsFromInput || removeLinesFromInput)
+        if (removeLinesFromInput)
         {
             vtkNew<vtkExtractCellsByType> remover;
             remover->SetInputData(inDS);
             // want all cell types
             remover->AddAllCellTypes();
-            if (removeVertsFromInput)
-            {
-                // except Verts
-                remover->RemoveCellType(VTK_VERTEX);
-                remover->RemoveCellType(VTK_POLY_VERTEX);
-            }
-            if (removeLinesFromInput)
-            {
-                // except Lines
-                remover->RemoveCellType(VTK_LINE);
-                remover->RemoveCellType(VTK_POLY_LINE);
-            }
+            // except Lines
+            remover->RemoveCellType(VTK_LINE);
+            remover->RemoveCellType(VTK_POLY_LINE);
             remover->Update();
             surfaceData = remover->GetOutput();
-            // ugrid data may report 'not all verts' but may truly be all verts
-            // so need to double-check that remover produced cells.
+            // double-check that remover produced cells.
             if (surfaceData->GetNumberOfCells() > 0)
                 surfaceData->Register(NULL);
             else
@@ -221,25 +220,22 @@ avtPseudocolorGeometryFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         }
     }
 
+    // Check if label indicates it was previously processed by avtVertexGeometryFilter
+    string surfLabel = labelPrefix + string("_surf_");
+    string linesLabel = labelPrefix + string("_lines_");
+    if (label.compare(0, surfLabel.size(), surfLabel) == 0)
+       label = label.substr(surfLabel.size());
+
     vector<vtkDataSet *> outs;
     stringVector l;
 
     if (surfaceData != nullptr)
     {
         outs.push_back(surfaceData);
-        l.push_back(string("pc_surf_")+ label + domString);
+        l.push_back(surfLabel + label);
     }
-    if (processedLines != nullptr)
-    {
-        outs.push_back(processedLines);
-        l.push_back(string("pc_lines_")+ label + domString);
-    }
-
-    if (vertsData != nullptr)
-    {
-        outs.push_back(vertsData);
-        l.push_back(string("pc_points_")+ label + domString);
-    }
+    outs.push_back(processedLines);
+    l.push_back(linesLabel + label);
 
     return new avtDataTree(outs.size(), &outs[0], domain, l);
 }
@@ -247,19 +243,19 @@ avtPseudocolorGeometryFilter::ExecuteDataTree(avtDataRepresentation *inDR)
 
 
 // ****************************************************************************
-//  Method: avtPseudocolorGeometryFilter::UpdateDataObjectInfo
+//  Method: avtLineGlyphFilter::UpdateDataObjectInfo
 //
 //  Purpose:  Sets flags in the pipeline.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 20, 2019
+//  Creation:   June 4, 2020
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 void
-avtPseudocolorGeometryFilter::UpdateDataObjectInfo(void)
+avtLineGlyphFilter::UpdateDataObjectInfo(void)
 {
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() < 2)
         GetOutput()->GetInfo().GetValidity().InvalidateZones();
@@ -267,21 +263,21 @@ avtPseudocolorGeometryFilter::UpdateDataObjectInfo(void)
 
 
 // ****************************************************************************
-//  Method: avtPseudocolorGeometryFilter::PostExcecute
+//  Method: avtLineGlyphFilter::PostExcecute
 //
 //  Purpose:
 //    Sets the output's label attributes to reflect what is currently
 //    present in the tree.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 20, 2019
+//  Creation:   June 4, 2020
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 void
-avtPseudocolorGeometryFilter::PostExecute(void)
+avtLineGlyphFilter::PostExecute(void)
 {
     // Use labels to ensure lines/polys/verts aren't merged back together
     // during CompactTreeFilter
@@ -292,124 +288,7 @@ avtPseudocolorGeometryFilter::PostExecute(void)
 
 
 // ****************************************************************************
-//  Method: avtPseudocolorGeometryFilter::ProcessPoints
-//
-//  Purpose:
-//    Extracts vertex cells from input.
-//
-//  Arguments:
-//    inputDS               The input.
-//    vertsData             Place to store the dataset containing only vertex
-//                          cells.
-//    removeVertsFromInput  Flag indicating if vertex cells should be removed
-//                          from the input dataset.
-//    inputIsAllVerts       Flag indicating that input contained only vertex
-//                          cells.
-//
-//  Programmer: Kathleen Biagas
-//  Creation:   August 20, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtPseudocolorGeometryFilter::ProcessPoints(
-    const vtkDataSet *inputDS, vtkDataSet *&vertsData,
-    bool &removeVertsFromInput, bool &inputIsAllVerts)
-{
-    vtkDataSet *inDS = const_cast<vtkDataSet*>(inputDS);
-
-    // does the input contain vertex cells?
-    bool allVerts = false;
-    bool someVerts = false;
-
-    if (inDS->GetDataObjectType() == VTK_POLY_DATA)
-    {
-        // Check for verts only
-        vtkPolyData *pd  = vtkPolyData::SafeDownCast(inDS);
-        if (pd->GetNumberOfVerts() == pd->GetNumberOfCells())
-        {
-            allVerts = true;
-        }
-        else if (pd->GetNumberOfVerts() > 0)
-        {
-            someVerts = true;
-        }
-    }
-    else if (inDS->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
-    {
-        // Check for verts only
-        vtkUnstructuredGrid *ug  = vtkUnstructuredGrid::SafeDownCast(inDS);
-        if (ug->IsHomogeneous() && (ug->GetCellType(0) == VTK_VERTEX ||
-            ug->GetCellType(0) == VTK_POLY_VERTEX))
-        {
-            allVerts = true;
-        }
-        else
-        {
-            // will assume there may be some vertex cells
-            someVerts = true;
-        }
-    }
-    if (allVerts)
-    {
-        inputIsAllVerts = true;
-        return;
-    }
-
-    if (!someVerts)
-    {
-        removeVertsFromInput = false;
-        return;
-    }
-
-    // May have some verts, so extract them into a new dataset.
-    // and determine if vertex cells need to be removed from the input dataset.
-    removeVertsFromInput = false;
-    vertsData = nullptr;
-    if (plotAtts.GetRenderPoints())
-    {
-        // want all points converted to vertex cells
-        vtkNew<vtkVertexFilter> vertexFilter;
-        vertexFilter->VertexAtPointsOn();
-        vertexFilter->SetInputData(inDS);
-        vertexFilter->Update();
-        vertsData = vertexFilter->GetOutput();
-        if(vertsData->GetNumberOfCells() > 0)
-        {
-            vertsData->Register(NULL);
-            removeVertsFromInput = true;
-        }
-        else
-        {
-            vertsData = nullptr;
-        }
-    }
-    else
-    {
-        // want to extract only vertex cells
-        vtkNew<vtkExtractCellsByType> extractVerts;
-        extractVerts->AddCellType(VTK_VERTEX);
-        extractVerts->AddCellType(VTK_POLY_VERTEX);
-        extractVerts->SetInputData(inDS);
-        extractVerts->Update();
-        vertsData = extractVerts->GetOutput();
-        if(vertsData->GetNumberOfCells() > 0)
-        {
-            vertsData->Register(NULL);
-            removeVertsFromInput = true;
-        }
-        else
-        {
-            vertsData = nullptr;
-        }
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtPseudocolorGeometryFilter::ProcessLines
+//  Method: avtLineGlyphFilter::ProcessLines
 //
 //  Purpose:
 //    Applies glyphs to line cells and line endpoints.
@@ -422,23 +301,23 @@ avtPseudocolorGeometryFilter::ProcessPoints(
 //                          from the input dataset.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 20, 2019
+//  Creation:   June 4, 2020
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 void
-avtPseudocolorGeometryFilter::ProcessLines(const vtkDataSet *inputDS,
+avtLineGlyphFilter::ProcessLines(const vtkDataSet *inputDS,
     vtkPolyData *&processedLines, bool &removeLinesFromInput)
 {
     //
     // Find out whether we can/should apply glyphs.
     //
-    bool glyphingLines = plotAtts.GetLineType() != PseudocolorAttributes::Line;
+    bool glyphingLines = lineGlyphAtts.GetLineType() != LineGlyphAttributes::Line;
     bool glyphingEnds  =
-        !(plotAtts.GetTailStyle() == PseudocolorAttributes::None &&
-          plotAtts.GetHeadStyle() == PseudocolorAttributes::None);
+        !(lineGlyphAtts.GetTailStyle() == LineGlyphAttributes::None &&
+          lineGlyphAtts.GetHeadStyle() == LineGlyphAttributes::None);
 
     if (!glyphingLines && !glyphingEnds)
     {
@@ -538,11 +417,11 @@ avtPseudocolorGeometryFilter::ProcessLines(const vtkDataSet *inputDS,
     // Handle tubes or ribbons applied to lines
     //
     vtkNew<vtkPolyData> glyphedLines;
-    if (plotAtts.GetLineType() == PseudocolorAttributes::Tube)
+    if (lineGlyphAtts.GetLineType() == LineGlyphAttributes::Tube)
     {
         AddTubes(linesOnly, glyphedLines, bboxSize);
     }
-    else if (plotAtts.GetLineType() == PseudocolorAttributes::Ribbon)
+    else if (lineGlyphAtts.GetLineType() == LineGlyphAttributes::Ribbon)
     {
         AddRibbons(linesOnly, glyphedLines, bboxSize);
     }
@@ -584,7 +463,7 @@ avtPseudocolorGeometryFilter::ProcessLines(const vtkDataSet *inputDS,
 
 
 // ****************************************************************************
-//  Method: avtPseudocolorGeometryFilter::AddTubes
+//  Method: avtLineGlyphFilter::AddTubes
 //
 //  Purpose:  Applies vtkTubeFilter to input.
 //
@@ -596,29 +475,29 @@ avtPseudocolorGeometryFilter::ProcessLines(const vtkDataSet *inputDS,
 //    bboxSize  The size of the bounding box.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 20, 2019
+//  Creation:   June 4, 2020
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 void
-avtPseudocolorGeometryFilter::AddTubes(vtkPolyData *input,
+avtLineGlyphFilter::AddTubes(vtkPolyData *input,
                                        vtkPolyData *output,
                                        double bboxSize)
 {
     vtkNew<vtkTubeFilter> tubeFilter;
     tubeFilter->SetInputData(input);
-    if (plotAtts.GetTubeRadiusSizeType() == PseudocolorAttributes::Absolute)
-        tubeFilter->SetRadius(plotAtts.GetTubeRadiusAbsolute());
+    if (lineGlyphAtts.GetTubeRadiusSizeType() == LineGlyphAttributes::Absolute)
+        tubeFilter->SetRadius(lineGlyphAtts.GetTubeRadiusAbsolute());
     else
-        tubeFilter->SetRadius(plotAtts.GetTubeRadiusBBox() *bboxSize);
-    tubeFilter->SetNumberOfSides(plotAtts.GetTubeResolution());
+        tubeFilter->SetRadius(lineGlyphAtts.GetTubeRadiusBBox() *bboxSize);
+    tubeFilter->SetNumberOfSides(lineGlyphAtts.GetTubeResolution());
     tubeFilter->SetCapping(1);
 
-    if (plotAtts.GetTubeRadiusVarEnabled())
+    if (lineGlyphAtts.GetTubeRadiusVarEnabled())
     {
-        string radiusVar = plotAtts.GetTubeRadiusVar();
+        string radiusVar = lineGlyphAtts.GetTubeRadiusVar();
         if (!radiusVar.empty() && radiusVar != "default")
         {
             int fieldAssociation = vtkDataObject::FIELD_ASSOCIATION_POINTS;
@@ -630,7 +509,7 @@ avtPseudocolorGeometryFilter::AddTubes(vtkPolyData *input,
                                                radiusVar.c_str());
         }
         tubeFilter->SetVaryRadiusToVaryRadiusByScalar();
-        tubeFilter->SetRadiusFactor(plotAtts.GetTubeRadiusVarRatio());
+        tubeFilter->SetRadiusFactor(lineGlyphAtts.GetTubeRadiusVarRatio());
     }
     tubeFilter->Update();
 
@@ -639,7 +518,7 @@ avtPseudocolorGeometryFilter::AddTubes(vtkPolyData *input,
 
 
 // ****************************************************************************
-//  Method: avtPseudocolorGeometryFilter::AddRibbons
+//  Method: avtLineGlyphFilter::AddRibbons
 //
 //  Purpose:  Applies vtkRibbonFilter to input, stores in output.
 //
@@ -652,29 +531,29 @@ avtPseudocolorGeometryFilter::AddTubes(vtkPolyData *input,
 //    bboxSize  The size of the bounding box.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 20, 2019
+//  Creation:   June 4, 2020
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 void
-avtPseudocolorGeometryFilter::AddRibbons(vtkPolyData *input,
+avtLineGlyphFilter::AddRibbons(vtkPolyData *input,
                                          vtkPolyData *output,
                                          double bboxSize)
 {
     vtkNew<vtkRibbonFilter> ribbonFilter;
     ribbonFilter->SetInputData(input);
-    if(plotAtts.GetTubeRadiusSizeType() == PseudocolorAttributes::Absolute)
-        ribbonFilter->SetWidth(plotAtts.GetTubeRadiusAbsolute());
+    if(lineGlyphAtts.GetTubeRadiusSizeType() == LineGlyphAttributes::Absolute)
+        ribbonFilter->SetWidth(lineGlyphAtts.GetTubeRadiusAbsolute());
     else
-        ribbonFilter->SetWidth(plotAtts.GetTubeRadiusBBox()*bboxSize);
+        ribbonFilter->SetWidth(lineGlyphAtts.GetTubeRadiusBBox()*bboxSize);
 
-    ribbonFilter->SetVaryWidth(plotAtts.GetTubeRadiusVarEnabled());
+    ribbonFilter->SetVaryWidth(lineGlyphAtts.GetTubeRadiusVarEnabled());
 
-    if (plotAtts.GetTubeRadiusVarEnabled())
+    if (lineGlyphAtts.GetTubeRadiusVarEnabled())
     {
-        string widthVar(plotAtts.GetTubeRadiusVar());
+        string widthVar(lineGlyphAtts.GetTubeRadiusVar());
         if (widthVar != "" && widthVar != "\0" && widthVar != "default")
         {
             int fieldAssociation = vtkDataObject::FIELD_ASSOCIATION_POINTS;
@@ -693,7 +572,7 @@ avtPseudocolorGeometryFilter::AddRibbons(vtkPolyData *input,
 
 
 // ****************************************************************************
-//  Method: avtPseudocolorGeometryFilter::AddEndPoints
+//  Method: avtLineGlyphFilter::AddEndPoints
 //
 //  Purpose:  Applies glyphs to line endpoints.
 //
@@ -705,32 +584,31 @@ avtPseudocolorGeometryFilter::AddRibbons(vtkPolyData *input,
 //    bboxSize  The size of the bounding box.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 20, 2019
+//  Creation:   June 4, 2020
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 void
-avtPseudocolorGeometryFilter::AddEndPoints(vtkPolyData *input,
-                                           vtkPolyData *output,
-                                           double bboxSize)
+avtLineGlyphFilter::AddEndPoints(vtkPolyData *input, vtkPolyData *output,
+                                 double bboxSize)
 {
     vtkNew<vtkAppendPolyData> appender;
     double radius = 0.;
-    if(plotAtts.GetEndPointRadiusSizeType() == PseudocolorAttributes::Absolute)
-        radius = plotAtts.GetEndPointRadiusAbsolute();
+    if(lineGlyphAtts.GetEndPointRadiusSizeType() == LineGlyphAttributes::Absolute)
+        radius = lineGlyphAtts.GetEndPointRadiusAbsolute();
     else
-        radius = plotAtts.GetEndPointRadiusBBox() * bboxSize;
+        radius = lineGlyphAtts.GetEndPointRadiusBBox() * bboxSize;
 
     const avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
     string activeVar = datts.GetVariableName();
 
-    double ratio           = plotAtts.GetEndPointRatio();
-    bool varyRadius        = plotAtts.GetEndPointRadiusVarEnabled();
-    std::string radiusVar  = plotAtts.GetEndPointRadiusVar();
-    double  radiusFactor   = plotAtts.GetEndPointRadiusVarRatio();
-    int resolution         = plotAtts.GetEndPointResolution();
+    double ratio           = lineGlyphAtts.GetEndPointRatio();
+    bool varyRadius        = lineGlyphAtts.GetEndPointRadiusVarEnabled();
+    std::string radiusVar  = lineGlyphAtts.GetEndPointRadiusVar();
+    double  radiusFactor   = lineGlyphAtts.GetEndPointRadiusVarRatio();
+    int resolution         = lineGlyphAtts.GetEndPointResolution();
 
     vtkDataArray *radiusArray = NULL;
     double range[2] = {0,1}, scale = 1;
@@ -776,20 +654,20 @@ avtPseudocolorGeometryFilter::AddEndPoints(vtkPolyData *input,
         // tail and the second is for the head.
         for (int i = 0; i < 2; ++i)
         {
-            if ((i == 0 && plotAtts.GetTailStyle() != PseudocolorAttributes::None) ||
-                (i == 1 && plotAtts.GetHeadStyle() != PseudocolorAttributes::None))
+            if ((i == 0 && lineGlyphAtts.GetTailStyle() != LineGlyphAttributes::None) ||
+                (i == 1 && lineGlyphAtts.GetHeadStyle() != LineGlyphAttributes::None))
             {
                 int style, tip, tail;
 
                 if (i == 0)
                 {
-                    style = plotAtts.GetTailStyle();
+                    style = lineGlyphAtts.GetTailStyle();
                     tip  = 0;
                     tail = 1;
                 }
                 else
                 {
-                    style = plotAtts.GetHeadStyle();
+                    style = lineGlyphAtts.GetHeadStyle();
                     tip  = numPts - 1;
                     tail = numPts - 2;
                 }
@@ -805,7 +683,7 @@ avtPseudocolorGeometryFilter::AddEndPoints(vtkPolyData *input,
                               range[0]) * scale);
                 }
 
-                if (style == PseudocolorAttributes::Spheres)
+                if (style == LineGlyphAttributes::Spheres)
                 {
                     vtkNew<vtkSphereSource> sphere;
 
@@ -819,7 +697,7 @@ avtPseudocolorGeometryFilter::AddEndPoints(vtkPolyData *input,
                     outPD->Register(NULL);
 
                 }
-                else if (style == PseudocolorAttributes::Cones)
+                else if (style == LineGlyphAttributes::Cones)
                 {
                     points->GetPoint(ptIndexs[tail], p1);
 

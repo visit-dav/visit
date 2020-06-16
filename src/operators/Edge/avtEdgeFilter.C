@@ -170,13 +170,17 @@ avtEdgeFilter::ExecuteData(avtDataRepresentation *inDR)
 //    Add filter metadata used in export.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Kathleen Biagas, Thu Jun  11 10:56:41 PDT 2020
+//    Re-enable setting of topological dimension. The problem described in
+//    Jeremy's comment above no longer appears to be an issue.
+//
 // ****************************************************************************
 
 void
 avtEdgeFilter::UpdateDataObjectInfo(void)
 {
-    //if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 0)
-    //    GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(1);
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 0)
+        GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(1);
 
     GetOutput()->GetInfo().GetAttributes().AddFilterMetaData("Edge");
 }

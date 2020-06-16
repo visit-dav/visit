@@ -55,13 +55,13 @@
 
 #ifndef vtkExtractCellsByType_h
 #define vtkExtractCellsByType_h
-
+#include <visit_vtk_exports.h>
 #include <vtkDataSetAlgorithm.h>
 
 struct vtkCellTypeSet;
 class vtkIdTypeArray;
 
-class vtkExtractCellsByType : public vtkDataSetAlgorithm
+class VISIT_VTK_API vtkExtractCellsByType : public vtkDataSetAlgorithm
 {
 public:
   //@{
