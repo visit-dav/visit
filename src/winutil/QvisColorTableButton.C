@@ -72,8 +72,8 @@ QvisColorTableButton::QvisColorTableButton(QWidget *parent) :
         colorTableMenu = new QMenu(0);
         colorTableMenuActionGroup->addAction(colorTableMenu->addAction("Default"));
         colorTableMenu->addSeparator();
-        setMenu(colorTableMenu);
     }
+    setMenu(colorTableMenu);
     buttons.push_back(this);
 
     // Make the popup active when this button is clicked.
