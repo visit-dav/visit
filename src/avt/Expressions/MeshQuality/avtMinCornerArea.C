@@ -25,11 +25,17 @@
 //  Programmer: Matthew Wheeler
 //  Creation:   20 May, 2013
 //
+//  Modifications:
+//
+//  Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//  Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtMinCornerArea::avtMinCornerArea()
 {
     orderCCW = true;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 
