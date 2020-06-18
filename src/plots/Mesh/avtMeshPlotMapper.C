@@ -279,6 +279,10 @@ ColorsAreDifferent(double a[3], double b[3])
 //  Programmer: Kathleen Biagas
 //  Creation:   June 30, 2016
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Jun 18 09:12:22 PDT 2020
+//    Fix ambiguous if statement.
+//
 // ****************************************************************************
 
 void
@@ -291,9 +295,9 @@ avtMeshPlotMapper::SetMeshColor(double rgb[3])
         linesColor[2] = rgb[2];
         for (int i = 0; i < nMappers; ++i)
         {
-            if (actors[i] != NULL && !labels.empty() &&
+            if (actors[i] != NULL && (!labels.empty() &&
                 (labels[i].compare(0, 11, string("mesh_lines_")) == 0) ||
-                (labels[i].compare(0, 12, string("mesh_points_")) == 0))
+                (labels[i].compare(0, 12, string("mesh_points_")) == 0)))
             {
                 actors[i]->GetProperty()->SetColor(rgb);
             }
