@@ -79,6 +79,9 @@ the tools and resources to build from sources. Operational issues impacting
 VisIt_ but outside of this scope are typically delegated to other teams who
 are responsible for the associated processes and resources.
 
+Business Hours
+~~~~~~~~~~~~~~
+
 In the IT world where companies like Google, Apple and Amazon have whole teams
 dedicated to SRE activity, coverage is 24/7 and response time is measured in
 *minutes*. For the VisIt_ project where the majority of funded development takes
@@ -204,10 +207,11 @@ Mitigation               Resolution
 
 A constructive correction has value only when it represents a step towards the
 comprehensive solution, can sufficiently reduce the impact of the issue and can
-be rolled out to users significantly sooner than the comprehensive solution.
-Ordinarily, the constructive work is something the **Primary** handles as
-part of their SRE responsibilities. The comprehensive work is handled as part of
-normal product development.
+be rolled out to users significantly sooner and with lower cost than the
+comprehensive solution. Ordinarily, a constructive correction is something the
+**Primary** handles as part of their SRE activity. The comprehensive solution,
+which often involves more planning and resource allocation, is handled as part
+of normal product development activities.
 
 Constructive corrections can wind up falling through the cracks of traditional
 software project management and planning processes. However, such work also often
@@ -216,14 +220,14 @@ itself or the development or deployment processes supporting it. We refer to iss
 of this nature as general *low-hanging fruit* type issues.
 
 Apart from acknowledging their existence, a key part of this process is the
-allocation of resources for the sole purpose of supporting SRE activities
-and developing a practice of continuously crafting constructive corrective
-actions arising from SRE inquiries.
+allocation of a small fraction of our resources for the sole purpose of supporting
+SRE activities and developing a practice of continuously crafting constructive
+corrective actions arising from SRE inquiries.
 
 Consequently, another key role of the **Primary** is to use any time not working
 active SRE issues to fix other *low-hanging fruit* issues from the
 *product development* backlog. As a rule of thumb, low-hanging
-fruit is considered to be anything that the **Primary** believes is fixable
+fruit is considered to be anything that the team believes is fixable
 within a half-day's (4 hours) worth of effort. When there are many such tasks in
 the system to work on, the **Primary** is free to use his/her judgment to decide
 which s/he can most productively address.
@@ -271,25 +275,30 @@ to mitigate this by informing ``visit-users`` members of this behavior.
 
 For any work the **Primary** performs, even if it is a rather trivial amount
 of work to resolve, there should be an associated issue for tracking that work.
-Tracking even the trivial issues can help identify patterns that we may be able
-to later mine to identify process improvements.
+Tracking even the trivial issues will help to build a database of issues we
+may be able to later mine to identify pattenrs and further process improvements.
+
+Given this integration of ``visit-users`` emails with GitHub conversations, for the
+remainder of this document we simply use the term *conversation* to refer to the
+communication involved in an active SRE issue.
 
 Supported Methods of Contact
 ----------------------------
 
 An SRE inquiry with the VisIt team begins with a *first contact* and may optionally
-be followed by *ongoing* interactions. These two kinds of communication have different
+be followed by *ongoing* conversation. These two kinds of communication have different
 requirements and can involve different processes.
 
-To maximize accessibility for VisIt_ users, it makes the most sense to support a wide
-variety of methods of first contact. However, to maximize productivity for developers,
-it makes sense, at least for the VisIt_ project, to restrict methods of ongoing
-interactions to either email via `visit-users <mailto:visit-users@elist.ornl.gov>`_
-or to `GitHub issue <https://github.com/visit-dav/live-customer-response/issues>`_
-conversations as described `above <sre_active_issues>`.
+To maximize accessibility for VisIt_ users, we try to support a wide variety of methods
+of first contact. However, to maximize productivity for developers, we restrict methods
+of ongoing conversations to those described in the :ref:`preceding section. <sre_active_issues>`
 
-To reduce the number of media platforms VisIt_ developers must manage, the
-*officially supported* methods of first contact are currently restricted to...
+First Contacts
+~~~~~~~~~~~~~~
+
+The *officially supported* methods of first contact are currently restricted to those
+methods which do not single out a specific team member and instead go to the team as
+a whole. This includes...
 
   * Creation of a `GitHub issue <https://github.com/visit-dav/live-customer-response/issues>`_.
   * Email to `visit-users <mailto:visit-users@elist.ornl.gov>`_,
@@ -297,12 +306,23 @@ To reduce the number of media platforms VisIt_ developers must manage, the
     `visit-help-scidac <mailto:visit-help-scidac@elist.ornl.gov>`_ email lists.
   * Telephone call to the `VisIt hotline <tel:42847>`_.
 
-However, there are some *unofficially supported* methods of first contact including
-email, telephone calls, office drop-ins or hallway chats made *directly* with a
-specific VisIt_ developer. This also includes direct contact through various social
-media platforms such as Confluence, Jabber, MS Teams, Twitter, Slack, Google Hangouts,
-etc.  where users can wind up engaging specific VisIt_ developers that happen, by
-nothing more than coincidence, to also be using those platforms.
+Users making first contact through other means should be made aware, as part of a
+*first response* to them, about our processes for handling ongoing communications.
+If they opt out, which is their prerogative, *and* if our progress towards resolution
+requires ongoing interaction, then such issues may wind up going unresolved and shall
+be closed after 30 days of non-response.
+
+A key reason for preferring these whole-team oriented methods of first contact is that
+it enables us to properly allocate, track and manage our SRE effort. When users bypass
+these processes by singling out individual team members and contacting them directly, this
+impedes our goals in fully understanding and tracking SRE activity and effort.
+
+Nonetheless, users often do wind up making *first contact* with a specific member of the
+VisIt_ team through *unofficially* supported methods such as an email, a telephone call,
+an office drop-in or even a tackle in the hallway or parking lot. Furthermore, this can
+occur even on social media platforms such as Confluence, Jabber, MS Teams, Twitter, Slack,
+Google Hangouts, etc. where users can wind up engaging specific VisIt_ developers that
+happen, by nothing more than coincidence, to also be using those platforms.
 
 What does it mean for a method of first contact to be *officially supported*?
 It means there is an assurance that the particular platform is being monitored by
@@ -311,34 +331,36 @@ supported methods are encouraged and promoted in any documentation where VisIt_
 support processes are discussed whereas, and for obvious reasons, unofficial methods
 of first contact are explicitly *not* encouraged, promoted or documented.
 
+If the developer singled out in a first contact is not the primary SRE, then s/he
+should feel free, indeed should be encouraged and even expected, to
+:ref:`handoff <sre_handoffs>` the inquiry to the primary SRE.
 
+Template of a First Response
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Shouldn't we file issue tickets for phone calls? What about logging?
+Here is a simple template for a *first response* to an unofficial first contact.
+VisIt_ team members should be encouraged to use this or a similar response to
+disengage as quickly as practical and hand-off to the primary SRE.
 
+  Hello Francine,
 
+  Thank you for contacting the VisIt team. We are adopting some
+  `new processes <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/SiteReliabilityEngineering.html>`_
+  to handle user inquiries. In addition, I am currently booked with other tasks and
+  need to forward your inquiry via email to our on-duty SRE. If you do not get an email
+  response in the next four
+  `business hours <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/SiteReliabilityEngineering.html#business-hours>`_
+  indicating your inquiry is being addressed,
+  please feel free to contact me again and I will look into the status of your inquiry.
+  Also, please be aware that unless there are special circumstances preventing it,
+  on-going interactions regarding your inquiry will be handled either by
+  `email on the visit-users email list or a conversation in GitHub issue <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/SiteReliabilityEngineering.html#active-sre-issues-repo>`_.
 
-Users making first contact through other means should be made aware, as part of a
-*first response* to them, about our processes for handling ongoing communications.
-If they opt out, which is their perogative, *and* if our progress towards resolution
-requires ongoing interaction, then such issues may wind up going unresolved and shall
-be closed after 30 days of non-response.
+Ongoing Conversations
+~~~~~~~~~~~~~~~~~~~~~
 
-If the developer of first contact is not the primary SRE, then s/he should feel free,
-indeed should be encouraged, to `handoff <sre_handoff>` the inquiry to the primary SRE
-via email.
-
-Methods e and f require only email to monitor. So, the upshot of our current methods is that they all can be monitored via email.
- 
-Other means of first contact such as MS Teams, Slack, Jabber, Twitter require monitoring
-something other than email. Are we prepared to take that on? Maybe its the curmudgeon in
-me but I am inclined not to. OTOH, I really don't want my curmudgeon-ness to stifle healthy
-creativity and change here either. Maybe there is a middle ground for these other platforms
-such that if some VisIt developer has a routine, ongoing, continuous presence there and is
-so inclined, first contacts there can essentially be handled manually by that developer by
-forwarding/handing off to SRE primary. So, that modality of first contact could be
-UNofficially supported but only by a willing developer willing to serve that role and, of
-course, not required. Maybe if after a time the traffic level is high enough, this approach
-could be revised to become something officially supported.
+Our officially supported methods of handling ongoing conversations are described in
+the :ref:`preceding section. <sre_active_issues>`
 
 .. _sre_response_vs_resolution:
 
@@ -390,7 +412,7 @@ following activities...
   * Determining if the user's issue is known (e.g. an issue ticket already exists).
   * Updating a known issue with new information from this user, perhaps
     adjusting labels on the issue or putting the issue back into the
-    UN-reviewed state for further discussion at a VisIt_ project meeting.
+    un-reviewed state for further discussion at a VisIt_ project meeting.
   * Identifying and filing a new *product development* type issue ticket.
 
 To emphasize the last bullet, *resolution* does not always mean a customer's
