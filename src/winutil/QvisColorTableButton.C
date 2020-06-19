@@ -293,12 +293,15 @@ QvisColorTableButton::getColorTable() const
 //    control placement. This slot is now called when aboutToShow signal is
 //    triggered, so don't need to test for 'isDown'.
 //
+//    Kathleen Biagas, Fri Jun 19 12:06:22 PDT 2020
+//    isDown is actually important, Added it back to the if-test.
+//
 // ****************************************************************************
 
 void
 QvisColorTableButton::popupPressed()
 {
-    if(colorTableMenu)
+    if(isDown() && colorTableMenu)
     {
         // If the popup menu does not have anything in it, fill it up.
         if(!popupHasEntries)
