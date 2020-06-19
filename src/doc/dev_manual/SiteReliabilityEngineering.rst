@@ -276,7 +276,7 @@ to mitigate this by informing ``visit-users`` members of this behavior.
 For any work the **Primary** performs, even if it is a rather trivial amount
 of work to resolve, there should be an associated issue for tracking that work.
 Tracking even the trivial issues will help to build a database of issues we
-may be able to later mine to identify pattenrs and further process improvements.
+may be able to later mine to identify patterns and further process improvements.
 
 Given this integration of ``visit-users`` emails with GitHub conversations, for the
 remainder of this document we simply use the term *conversation* to refer to the
