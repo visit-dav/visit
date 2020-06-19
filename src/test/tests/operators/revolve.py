@@ -25,6 +25,7 @@ def TestRevolvingPoints():
     DrawPlots()
     Test("revolve_points_00")
     DeleteActivePlots()
+    CloseDatabase(silo_data_path("multi_point2d.silo"))
 
 def Main():
     TestRevolvingPoints()
