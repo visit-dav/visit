@@ -287,18 +287,31 @@ Supported Methods of Contact
 
 An SRE inquiry with the VisIt team begins with a *first contact* and may optionally
 be followed by *ongoing* conversation. These two kinds of communication have different
-requirements and can involve different processes.
+requirements and can involve different processes. This is due to the fact that we need
+to balance two priorities; *accessibility* for users and *productivity* for developers.
 
-To maximize accessibility for VisIt_ users, we try to support a wide variety of methods
-of first contact. However, to maximize productivity for developers, we restrict methods
-of ongoing conversations to those described in the :ref:`preceding section. <sre_active_issues>`
+To maximize accessibility for users, we should support a wide variety of methods of
+first contact. However, to maximize productivity for developers, we should restrict
+methods of ongoing conversations.
 
-First Contacts
-~~~~~~~~~~~~~~
+A key benefit of having the VisIt_ team *co-located* with our user community is
+that users can spontaneously make a first contact with any one of us by an office
+drop-in or a tackle in the hallway or parking lot. This can even occur on social
+media platforms such as Confluence, Jabber, MS Teams, etc. where users can wind
+up engaging specific VisIt_ developers that happen, by nothing more than
+coincidence, to also be using those platforms.
 
-The *officially supported* methods of first contact are currently restricted to those
-methods which do not single out a specific team member and instead go to the team as
-a whole. This includes...
+A challenge with these spontaneous methods of first contact is that they
+inadvertently single out a specific developer who is then expected to at least
+*respond* and possibly even to also *resolve* the issue. But, these actions
+and the effort they involve are the responsibility of the primary SRE.
+Consequently, spontaneous methods of first contact can wind up jeopardizing the
+goals of our SRE process by making it difficult to track, allocate and manage
+SRE effort.
+
+Therefore, the methods of first contact we officially support are those which
+engage the *whole team* instead of singling out a specific member. This
+includes...
 
   * Creation of a `GitHub issue <https://github.com/visit-dav/live-customer-response/issues>`_.
   * Email to `visit-users <mailto:visit-users@elist.ornl.gov>`_,
@@ -306,61 +319,24 @@ a whole. This includes...
     `visit-help-scidac <mailto:visit-help-scidac@elist.ornl.gov>`_ email lists.
   * Telephone call to the `VisIt hotline <tel:42847>`_.
 
-Users making first contact through other means should be made aware, as part of a
-*first response* to them, about our processes for handling ongoing communications.
-If they opt out, which is their prerogative, *and* if our progress towards resolution
-requires ongoing interaction, then such issues may wind up going unresolved and shall
-be closed after 30 days of non-response.
+Whenever users attempt a first contact through something other than the supported
+methods listed immediately above, the receiving developer should make an effort
+to :ref:`handoff <sre_handoffs>` the inquiry to the primary SRE as quickly and
+politely as practical.
 
-A key reason for preferring these whole-team oriented methods of first contact is that
-it enables us to properly allocate, track and manage our SRE effort. When users bypass
-these processes by singling out individual team members and contacting them directly, this
-impedes our goals in fully understanding and tracking SRE activity and effort.
+What does it mean for a method of first contact to be *supported*? It means
+there is an assurance that the particular platform is being monitored by VisIt_
+team members during normal business hours such that the response time goal can
+be maintained. In addition, supported methods are encouraged and promoted in
+any documentation where VisIt_ support processes are discussed.
 
-Nonetheless, users often do wind up making *first contact* with a specific member of the
-VisIt_ team through *unofficially* supported methods such as an email, a telephone call,
-an office drop-in or even a tackle in the hallway or parking lot. Furthermore, this can
-occur even on social media platforms such as Confluence, Jabber, MS Teams, Twitter, Slack,
-Google Hangouts, etc. where users can wind up engaging specific VisIt_ developers that
-happen, by nothing more than coincidence, to also be using those platforms.
-
-What does it mean for a method of first contact to be *officially supported*?
-It means there is an assurance that the particular platform is being monitored by
-VisIt_ team members such that the response time goal can be maintained. In addition,
-supported methods are encouraged and promoted in any documentation where VisIt_
-support processes are discussed whereas, and for obvious reasons, unofficial methods
-of first contact are explicitly *not* encouraged, promoted or documented.
-
-If the developer singled out in a first contact is not the primary SRE, then s/he
-should feel free, indeed should be encouraged and even expected, to
-:ref:`handoff <sre_handoffs>` the inquiry to the primary SRE.
-
-Template of a First Response
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Here is a simple template for a *first response* to an unofficial first contact.
-VisIt_ team members should be encouraged to use this or a similar response to
-disengage as quickly as practical and hand-off to the primary SRE.
-
-  Hello Francine,
-
-  Thank you for contacting the VisIt team. We are adopting some
-  `new processes <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/SiteReliabilityEngineering.html>`_
-  to handle user inquiries. In addition, I am currently booked with other tasks and
-  need to forward your inquiry via email to our on-duty SRE. If you do not get an email
-  response in the next four
-  `business hours <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/SiteReliabilityEngineering.html#business-hours>`_
-  indicating your inquiry is being addressed,
-  please feel free to contact me again and I will look into the status of your inquiry.
-  Also, please be aware that unless there are special circumstances preventing it,
-  on-going interactions regarding your inquiry will be handled either by
-  `email on the visit-users email list or a conversation in GitHub issue <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/SiteReliabilityEngineering.html#active-sre-issues-repo>`_.
-
-Ongoing Conversations
-~~~~~~~~~~~~~~~~~~~~~
-
-Our officially supported methods of handling ongoing conversations are described in
-the :ref:`preceding section. <sre_active_issues>`
+Balancing the priorites of user accessibility with developer productivity
+involves a compromise on the number of platforms we make an assurance to monitor. 
+Currently, this is limited to those listed above. However, the selected methods
+should be periodically reevaluated. If there is some platform which seems to
+be gaining popularity among users, it could either be added to the list of
+supported platforms or perhaps it could be integrated with email in the same way
+GitHub issue conversations have been.
 
 .. _sre_response_vs_resolution:
 
