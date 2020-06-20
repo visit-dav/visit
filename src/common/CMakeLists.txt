@@ -40,8 +40,12 @@
 #   Kathleen Biagas, Tue Dec 20 15:43:20 PST 2016
 #   Added GlyphTypes.
 #
-#    Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
-#    Add xml tools code gen targets
+#   Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
+#   Add xml tools code gen targets
+#
+#   Kathleen Biagas, Thu Jun  4 16:07:40 PDT 2020
+#   Add LineGlyphAttributes and PointGlyphAttributes.
+#
 #****************************************************************************
 
 
@@ -100,6 +104,7 @@ set(COMMON_STATE_GEN_OBJECTS
     LightAttributes
     LightList
     Line
+    LineGlyphAttributes
     LinearTransformAttributes
     MachineProfile
     MaterialAttributes
@@ -117,6 +122,7 @@ set(COMMON_STATE_GEN_OBJECTS
     PlotQueryInfo
     PluginManagerAttributes
     PointAttributes
+    PointGlyphAttributes
     PrinterAttributes
     ProcessAttributes
     QueryAttributes
@@ -352,6 +358,7 @@ state/LightAttributes.C
 state/LightList.C
 state/Line.C
 state/LinearTransformAttributes.C
+state/LineGlyphAttributes.C
 state/MapNode.C
 state/MaterialAttributes.C
 state/MeshManagementAttributes.C
@@ -370,6 +377,7 @@ state/PlotList.C
 state/PlotQueryInfo.C
 state/PluginManagerAttributes.C
 state/PointAttributes.C
+state/PointGlyphAttributes.C
 state/PrinterAttributes.C
 state/ProcessAttributes.C
 state/QueryAttributes.C

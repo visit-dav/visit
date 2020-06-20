@@ -184,4 +184,4 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 # -- Options for linkcheck builder ---------------------------------------
-linkcheck_ignore = [r'https?://.*\.zip',r'https?://.*\.tar\.gz']
+linkcheck_ignore = [r'https?://.*\.zip$',r'https?://.*\.tar\.gz$',r'https?://.*\.pdf\?#page=.*$']
