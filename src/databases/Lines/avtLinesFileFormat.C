@@ -61,6 +61,8 @@ avtLinesFileFormat::~avtLinesFileFormat()
     {
         lines[i]->Delete();
     }
+    
+    lines.clear();
 }
 
 // ****************************************************************************
