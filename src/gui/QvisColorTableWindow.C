@@ -156,6 +156,10 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //
 //   Mark C. Miller, Wed Feb 28 14:27:38 PST 2018
 //   Handle "smoothing" label correctly.
+//
+//   Kathleen Biagas, Mon Jun 22 10:08:41 PDT 2020
+//   Change colorNumColors spin box max to 256.
+//
 // ****************************************************************************
 
 void
@@ -244,7 +248,7 @@ QvisColorTableWindow::CreateWindowContents()
     innerColorLayout->addLayout(colorInfoLayout);
     colorNumColors = new QSpinBox(colorWidgetGroup);
     colorNumColors->setKeyboardTracking(false);
-    colorNumColors->setRange(2,200);
+    colorNumColors->setRange(2,256);
     colorNumColors->setSingleStep(1);
     connect(colorNumColors, SIGNAL(valueChanged(int)),
             this, SLOT(resizeColorTable(int)));

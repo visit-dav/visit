@@ -71,6 +71,11 @@ Swap3(double c[][3], int a, int b)
 //  Programmer:   Akira Haddox
 //  Creation:     June 11, 2002
 //
+//  Modifications:
+//
+//  Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//  Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtVerdictExpression::avtVerdictExpression()
@@ -79,6 +84,8 @@ avtVerdictExpression::avtVerdictExpression()
     EXCEPTION1(ExpressionException, "Verdict was not distributed with this "
                                     "release of VisIt.");
     #endif
+
+    canApplyToDirectDatabaseQOT = false;
 }
 
 
