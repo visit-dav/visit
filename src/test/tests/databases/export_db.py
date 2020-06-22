@@ -113,7 +113,10 @@ def test0():
 #    CloseDatabase(silo_data_path("wave.visit"))
 
 def VTK_check_binary(filename):
-    f = open(filename, "rt",encoding='utf-8', errors='ignore')
+    if (sys.version_info > (3, 0)):
+        f = open(filename, "rt", encoding='utf-8', errors='ignore')
+    else:
+        f = open(filename, "rt")
     line = ""
     for i in (0,1,2):
         line = f.readline()
