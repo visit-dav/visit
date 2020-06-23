@@ -69,7 +69,7 @@ and shows its new, empty definition in the **Definitions** area. The initial
 name for a new expression is *"unnamed"* followed by some integer suffix. After
 the user types a new name for the expression into the **Name** text field,
 the expression's name in the **Expression list** will update. If the user types
-a name that already exists in the expression list, then the name will
+a name that already exists in the expression list, then Visit_ will
 automatically append a number to the end of the name to avoid duplicate
 expression names.
 
