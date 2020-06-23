@@ -27,6 +27,8 @@
 #include <QvisVariableButton.h>
 #include <QvisPythonFilterEditor.h>
 
+#include <DebugStream.h>
+
 #define STDMIN(A,B) (((A)<(B)) ? (A) : (B))
 #define STDMAX(A,B) (((A)<(B)) ? (B) : (A))
 
