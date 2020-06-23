@@ -66,9 +66,12 @@ Creating a new expression
 Users can create a new expression by clicking on the **Expression Window's New**
 button. When the user clicks on the **New** button, VisIt_ adds a new expression
 and shows its new, empty definition in the **Definitions** area. The initial
-name for a new expression is *"unnamed"* followed by some integer suffix.
-As the user types a new name for the expression into the **Name** text field,
-the expression's name in the **Expression list** will update.
+name for a new expression is *"unnamed"* followed by some integer suffix. After
+the user types a new name for the expression into the **Name** text field,
+the expression's name in the **Expression list** will update. If the user types
+a name that already exists in the expression list, then the name will
+automatically append a number to the end of the name to avoid duplicate
+expression names.
 
 Each expression also has a **Type** that specifies the type of variable
 the expression produces. The available types are:

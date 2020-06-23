@@ -1284,6 +1284,7 @@ QvisExpressionsWindow::FinalizeExpressionNameChange()
     }
 
     // If the name has indeed changed, then update the list
+    // TODO: AND UPDATE THE EXPRESSION NAME AT THE TOP OF THE WINDOW
     if (text_from_expr_list != text_from_line_edit)
     {
         debug4 << "Changing name of the expression because name already in use." << std::endl;
