@@ -84,7 +84,8 @@ avtLinesFileFormat::FreeUpResources(void)
     {
         lines[i]->Delete();
     }
-    
+
+    lines.clear();
     readInFile = false;
 }
 
