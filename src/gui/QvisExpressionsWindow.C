@@ -554,6 +554,11 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //    changed an erroneous pointer-based string comparison to a true
 //    string based comparison.
 //
+//    Eddie Rusu, Tue Jun 23 14:02:35 PDT 2020
+//    Added FinalizeExpressionNameChange that detects when a user has finished
+//    editting an expression's name to detect for duplicate expression names
+//    in the gui.
+//
 // ****************************************************************************
 
 void
@@ -1242,7 +1247,19 @@ QvisExpressionsWindow::pyFilterSourceChanged()
     UpdatePythonExpression();
 }
 
-void QvisExpressionsWindow::FinalizeExpressionNameChange()
+// ****************************************************************************
+//  Method:  QvisExpressionsWindow::FinalizeExpressionNameChange
+//
+//  Purpose:
+//    When the user finishes editting the name of an expression in the gui,
+//    this function will check that name is unique. If it is not unique, then
+//    it will automatically update the name by appending a number to the end.
+//
+//  Programmer:  Eddie Rusu
+//  Creation:    Tue Jun 23 14:02:35 PDT 2020
+// ****************************************************************************
+void
+QvisExpressionsWindow::FinalizeExpressionNameChange()
 {
     // Get the text from the currently selected item in the expression box
     int index = exprListBox->currentRow();
