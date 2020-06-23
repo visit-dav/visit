@@ -61,8 +61,6 @@ avtLinesFileFormat::~avtLinesFileFormat()
     {
         lines[i]->Delete();
     }
-    
-    lines.clear();
 }
 
 // ****************************************************************************
@@ -87,6 +85,7 @@ avtLinesFileFormat::FreeUpResources(void)
         lines[i]->Delete();
     }
     
+    lines.clear();
     readInFile = false;
 }
 
