@@ -78,7 +78,6 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
   private slots:
     void    addExpression();
     void    delExpression();
-    void    nameTextChanged(const QString&);
     void    FinalizeExpressionNameChange();
 
     void    typeChanged(int);

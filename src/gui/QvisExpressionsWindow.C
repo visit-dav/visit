@@ -627,8 +627,6 @@ QvisExpressionsWindow::CreateWindowContents()
 
     connect(exprListBox, SIGNAL(itemSelectionChanged()),
             this, SLOT(UpdateWindowSingleItem()));
-    connect(nameEdit, SIGNAL(textEdited(const QString&)),
-            this, SLOT(nameTextChanged(const QString&)));
     connect(nameEdit, SIGNAL(editingFinished()),
             this, SLOT(FinalizeExpressionNameChange()));
 
@@ -1240,59 +1238,6 @@ void
 QvisExpressionsWindow::pyFilterSourceChanged()
 {
     UpdatePythonExpression();
-}
-
-
-// ****************************************************************************
-//  Method:  QvisExpressionsWindow::nameTextChanged
-//
-//  Purpose:
-//    Slot function when any change happens to the expression names.
-//
-//  Arguments:
-//    text       the new text.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    October 10, 2004
-//
-//  Modifications:
-//    Jeremy Meredith, Mon Oct 25 12:40:31 PDT 2004
-//    Always access the expression list by index, just in case there
-//    are two expressions with the same name.
-//
-//    Jeremy Meredith, Mon Oct 17 10:42:08 PDT 2005
-//    Never allow an empty name to get into the expression list.  This
-//    could cause crashes.  ('6295)
-//
-//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
-//    Initial Qt4 Port.
-//
-// ****************************************************************************
-void
-QvisExpressionsWindow::nameTextChanged(const QString &text)
-{
-    std::cout << "Entering QvisExpressionWindow::nameTextChanged(const QString&)" << std::endl;
-    // this->new_expr_name = text.trimmed();
-
-    // if (this->new_expr_name.isEmpty())
-    // {
-    //     int newid = 1;
-    //     bool okay = false;
-    //     while (!okay)
-    //     {
-    //         this->new_expr_name = tr("unnamed%1").arg(newid);
-    //         if ((*exprList)[this->new_expr_name.toStdString().c_str()])
-    //             newid++;
-    //         else
-    //             okay = true;
-    //     }
-    // }
-
-    // if (this->new_expr_name != this->current_expr_name)
-    // {
-    //     this->name_changed = true;
-    // }
-    std::cout << "Exiting  QvisExpressionWindow::nameTextChanged(const QString&)" << std::endl;
 }
 
 void QvisExpressionsWindow::FinalizeExpressionNameChange()
