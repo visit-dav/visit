@@ -1284,7 +1284,6 @@ QvisExpressionsWindow::FinalizeExpressionNameChange()
     }
 
     // If the name has indeed changed, then update the list
-    // TODO: AND UPDATE THE EXPRESSION NAME AT THE TOP OF THE WINDOW
     if (text_from_expr_list != text_from_line_edit)
     {
         debug4 << "Changing name of the expression because name already in use." << std::endl;
@@ -1304,12 +1303,15 @@ QvisExpressionsWindow::FinalizeExpressionNameChange()
                 okay = true;
         }
 
+        // Update the expression list with the new name
         Expression &e = (*exprList)[indexMap[index]];
-
         e.SetName(text_from_line_edit.toStdString());
         BlockAllSignals(true);
         exprListBox->item(index)->setText(text_from_line_edit);
         BlockAllSignals(false);
+
+        // Update the textbox at the top with the expression's name
+        nameEdit->setText(text_from_line_edit);
     }
 }
 
