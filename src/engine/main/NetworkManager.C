@@ -5204,6 +5204,10 @@ NetworkManager::CloneNetwork(const int id)
 //    DirectDatabase route, create a psuedo clone by starting an entirely
 //    new network based off of the cloning target.
 //
+//    Alister Maguire, Mon Mar  9 13:31:50 PDT 2020
+//    Assume we can use the direct route if query atts say yes and there are
+//    no expressions. Also, we can use this route for screen picks.
+//
 // ****************************************************************************
 
 void
@@ -5225,9 +5229,9 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     if (qA->GetCanUseDirectDatabaseRoute())
     {
         //
-        // The query atts think that we can use this route, but only
-        // a subset of expressions are capable of being used with this
-        // path. We need to check them before proceeding. 
+        // The query atts think that we can use this route, but we
+        // we need to make sure that the current expressions are
+        // compatible.
         //
         avtExpressionEvaluatorFilter *eef = 
             dynamic_cast<avtExpressionEvaluatorFilter *> 
@@ -5236,6 +5240,13 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         if (eef != NULL)
         {
             useDirectDatabaseQOT = eef->CanApplyToDirectDatabaseQOT(); 
+        }
+        else
+        {
+            //
+            // Assume we're safe.
+            //
+            useDirectDatabaseQOT = true;
         }
     }
 
@@ -5250,16 +5261,6 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         {
             useDirectDatabaseQOT = false;
         }
-    }
-
-    //
-    // A screen pick requires that we use actual data.
-    //
-    if (qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
-        qA->GetQueryAtts().GetName() == "Locate and Pick Node")
-    {
-        useActualData = true;
-        useDirectDatabaseQOT = false;
     }
 
     qA->SetCanUseDirectDatabaseRoute(useDirectDatabaseQOT);
@@ -5305,6 +5306,15 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     }
     else
     {
+        //
+        // A screen pick requires that we use actual data.
+        //
+        if (qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
+            qA->GetQueryAtts().GetName() == "Locate and Pick Node")
+        {
+            useActualData = true;
+        }
+
         //
         // We're using the TimeLoop route. This means we need a true clone.
         //
@@ -6702,6 +6712,9 @@ NetworkManager::CalculateCellCountTotal(vector<long long> &cellCounts,
 //    Brad Whitlock, Thu Sep 21 16:49:49 PDT 2017
 //    Added getAlpha.
 //
+//    Alister Maguire, Mon May 18 16:06:51 PDT 2020
+//    If OSPRay is enabled, pass the ospray settings to the render window.
+//
 // ****************************************************************************
 
 void
@@ -6741,6 +6754,17 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
     renderState.cellCounts.resize(nPlots, 0);
     renderState.handledCues = false;
     renderState.stereoType = -1;
+
+#ifdef VISIT_OSPRAY
+    //
+    // Pass the OSPRay settings through so that we use the correct
+    // backend when saving windows and such.
+    //
+    renderState.window->SetOsprayRendering(renderAtts.GetOsprayRendering());
+    renderState.window->SetOspraySPP(renderAtts.GetOspraySPP());
+    renderState.window->SetOsprayAO(renderAtts.GetOsprayAO());
+    renderState.window->SetOsprayShadows(renderAtts.GetOsprayShadows());
+#endif
 
     // Apply any rendering-related changes to the annotation attributes.
     // This may mean turning some of them off, etc. Keep track of whether

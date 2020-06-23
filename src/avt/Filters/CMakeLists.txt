@@ -52,6 +52,9 @@
 #   Remove avtPolylineToRibbonFilter, avtPolylineToTubeFilter,
 #   avtPolylineAddEndPointsFilter, avtPointToGlyphFilter.
 #
+#   Kathleen Biagas, Thu Jun  4 16:30:37 PDT 2020
+#   Add avtVertexExtractor, avtLineGlyphFilter.C
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -70,6 +73,7 @@ avtGhostZoneFilter.C
 avtImageCommunicator.C
 avtImageCompositer.C
 avtLinearTransformFilter.C
+avtLineGlyphFilter.C
 avtLineoutFilter.C
 avtLineScanFilter.C
 avtLineToPolylineFilter.C
@@ -100,6 +104,7 @@ avtTimeLoopCollectorFilter.C
 avtTimeLoopFilter.C
 avtTransform.C
 avtValueImageCompositer.C
+avtVertexExtractor.C
 avtVertexNormalsFilter.C
 avtVoxelExtractor.C
 avtWarpFilter.C
@@ -168,8 +173,7 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/engine/main
 ${VTKh_INCLUDE_DIRS}
-${VTKM_DIR}/include/vtkm-1.2
-${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
+${VTKm_INCLUDE_DIRS}
 ${VTK_INCLUDE_DIRS}
 )
 

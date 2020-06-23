@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                              avtMeshFilter.C                              //
-// ************************************************************************* //
+// ****************************************************************************
+//  avtMeshFilter.C
+// ****************************************************************************
 
 #include <avtMeshFilter.h>
 
@@ -175,6 +175,9 @@ avtMeshFilter::~avtMeshFilter()
 //    been modified to add line and vertex primitives, and to have a flag
 //    requesting use of OriginalCells, or not.
 //
+//    Kathleen Biagas, Wed Jun 10 13:08:13 PDT 2020
+//    Check for 'mesh_points' label, which indicates data is all vertex cells.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -192,7 +195,11 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
 
     if (topoDim == 0)
     {
-        label = string("points_") + label;
+        label = string("mesh_points_") + label;
+        return new avtDataTree(inDS, domain, label);
+    }
+    if (label.compare(0, 12, "mesh_points_") == 0)
+    {
         return new avtDataTree(inDS, domain, label);
     }
 
@@ -324,7 +331,7 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
 
             // this can occur due to use of 3DCellNums array by the lines
             // filter.  The Lines filter used to call vtkExtractEdges in
-            // this case, but that filter loses disconnected lines and 
+            // this case, but that filter loses disconnected lines and
             // vertices, so we will call the lines filter again and turn
             // off the use of OriginalCells.
             if (outDS->GetNumberOfLines() == 0)
@@ -374,13 +381,13 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
             outs[0] = opaquePolys;
             outs[1] = outDS;
             stringVector l;
-            l.push_back(string("polys_") + label);
-            l.push_back(string("lines_") + label);
+            l.push_back(string("mesh_polys_") + label);
+            l.push_back(string("mesh_lines_") + label);
             rv = new avtDataTree(2, outs, domain, l);
         }
         else
         {
-            rv = new avtDataTree(outDS, domain, string("lines_") + label);
+            rv = new avtDataTree(outDS, domain, string("mesh_lines_") + label);
         }
     }
 

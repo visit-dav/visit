@@ -218,7 +218,7 @@ function apply_qt_patch
     if [[ ${QT_VERSION} == 5.10.1 ]] ; then
         if [[ -f /etc/centos-release ]] ; then
             VER=`cat /etc/centos-release | cut -d' ' -f 4`
-            if [[ "${VER:0:3}" == "8.0" ]] ; then
+            if [[ "${VER:0:2}" == "8." ]] ; then
                 apply_qt_5101_centos8_patch
                 if [[ $? != 0 ]] ; then
                     return 1
@@ -226,7 +226,15 @@ function apply_qt_patch
             fi
         elif [[ -f /etc/lsb-release ]] ; then
             VER=`cat /etc/lsb-release | grep "DISTRIB_RELEASE" | cut -d'=' -f 2`
-            if [[ "${VER:0:3}" == "19." ]] ; then
+            if [[ "${VER:0:3}" == "19." || "${VER:0:3}" == "20." ]] ; then
+                apply_qt_5101_centos8_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        elif [[ -f /etc/issue ]] ; then
+            VER=`cat /etc/issue | grep "Debian" | cut -d' ' -f 3`
+            if [[ "${VER:0:2}" == "10" ]] ; then
                 apply_qt_5101_centos8_patch
                 if [[ $? != 0 ]] ; then
                     return 1
@@ -238,6 +246,13 @@ function apply_qt_patch
             apply_qt_5101_blueos_patch
             if [[ $? != 0 ]] ; then
                 return 1
+            fi
+
+            if [[ "$C_COMPILER" == "gcc" ]]; then
+                apply_qt_5101_gcc_9_2_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
             fi
         fi
 
@@ -395,6 +410,32 @@ EOF
     return 0;
 }
 
+function apply_qt_5101_gcc_9_2_patch
+{
+    info "Patching qt 5.10.1 for gcc 9.2"
+    patch -p0 <<EOF
+diff -c qtbase/src/corelib/global/qrandom.cpp.orig qtbase/src/corelib/global/qrandom.cpp
+*** qtbase/src/corelib/global/qrandom.cpp.orig	Mon Mar  9 17:09:47 2020
+--- qtbase/src/corelib/global/qrandom.cpp	Mon Mar  9 17:10:42 2020
+***************
+*** 220,225 ****
+--- 220,226 ----
+  #endif // Q_OS_WINRT
+  
+      static SystemGenerator &self();
++     typedef quint32 result_type;
+      void generate(quint32 *begin, quint32 *end) Q_DECL_NOEXCEPT_EXPR(FillBufferNoexcept);
+  
+      // For std::mersenne_twister_engine implementations that use something
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 gcc 9.2 patch failed."
+        return 1
+    fi
+    
+    return 0;
+}
+
 function build_qt
 {
     #
@@ -541,6 +582,10 @@ function build_qt
 
     if [[ "$OPSYS" == "Linux" ]] ; then
         qt_flags="${qt_flags} -qt-xcb -qt-xkbcommon"
+    fi
+
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]] ; then
+        qt_flags="${qt_flags} -debug"
     fi
 
     info "Configuring ${QT_VER_MSG}: " \

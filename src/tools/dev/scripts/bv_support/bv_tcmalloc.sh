@@ -59,15 +59,9 @@ function bv_tcmalloc_ensure
     if [[ "$DO_TCMALLOC" == "yes" ]] ; then
         ensure_built_or_ready "google-perftools" $TCMALLOC_VERSION $TCMALLOC_BUILD_DIR $TCMALLOC_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build google perftools.  ${TCMALLOC_FILE} not found."
             ANY_ERRORS="yes"
             DO_TCMALLOC="no"
-            if [[ "$DO_SVN" != "yes" ]] ; then
-                warn "You have requested to build the google perftools library."
-                warn "This is not currently available for download from the VisIt website and" 
-                warn "is only available through Subversion access."
-            fi
-            error
+            error "Unable to build google perftools."
         fi
     fi
 }

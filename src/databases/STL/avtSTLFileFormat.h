@@ -34,7 +34,7 @@ class     DBOptionsAttributes;
 class avtSTLFileFormat : public avtSTSDFileFormat
 {
   public:
-                          avtSTLFileFormat(const char *, DBOptionsAttributes*&);
+                          avtSTLFileFormat(const char *, const DBOptionsAttributes*);
     virtual              ~avtSTLFileFormat();
 
     virtual vtkDataSet   *GetMesh(const char *);

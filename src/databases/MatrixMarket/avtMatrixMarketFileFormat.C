@@ -19,7 +19,6 @@
 #include <avtDatabaseMetaData.h>
 #include <avtDatabase.h>
 
-#include <DBOptionsAttributes.h>
 #include <Expression.h>
 
 #include <InvalidVariableException.h>

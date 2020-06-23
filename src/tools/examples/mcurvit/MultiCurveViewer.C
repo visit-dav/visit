@@ -519,9 +519,9 @@ MultiCurveViewer::finishPlot()
         text.push_back("Multi Curve Plot");
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(0).SetText(text);
         double position[2];
-        position[0] = 0.3; position[1] = 0.92;
+        position[0] = 0.34; position[1] = 0.955;
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(0).SetPosition(position);
-        position[0] = 0.4;  // The text width
+        position[0] = 0.025;  // The text height
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(0).SetPosition2(position);
         ColorAttribute red;
         red.SetRgba(255, 0, 0, 255);
@@ -530,9 +530,9 @@ MultiCurveViewer::finishPlot()
 
         // Set the second title.
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(1).SetText(text);
-        position[0] = 0.3; position[1] = 0.02;
+        position[0] = 0.34; position[1] = 0.02;
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(1).SetPosition(position);
-        position[0] = 0.4;  // The text width
+        position[0] = 0.025;  // The text height
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(1).SetPosition2(position);
         red.SetRgba(0, 255, 0, 255);
         viewer->DelayedState()->GetAnnotationObjectList()->GetAnnotation(1).SetTextColor(red);

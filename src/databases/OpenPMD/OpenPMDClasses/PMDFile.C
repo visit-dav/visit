@@ -49,14 +49,17 @@
 
 #include "PMDFile.h"
 
+#include <cassert>
 #include <stdio.h>
 
+#include <DebugStream.h>
+#include <InstallationFunctions.h>
+
+#include <InvalidDBTypeException.h>
 #ifndef TEST
-#include <InvalidVariableException.h>
-#include <InvalidDBTypeException.h>
-#include <InvalidFilesException.h>
-#include <InvalidTimeStepException.h>
-#include <InvalidDBTypeException.h>
+#   include <InvalidVariableException.h>
+#   include <InvalidFilesException.h>
+#   include <InvalidTimeStepException.h>
 #endif
 
 // ***************************************************************************
@@ -75,9 +78,7 @@
 // ***************************************************************************
 PMDFile::PMDFile()
 {
-	fileId=-1;
-	this->version = "";
-	strcpy(this->meshesPath,"");
+    fileId=-1;
 }
 
 // ***************************************************************************
@@ -103,31 +104,39 @@ PMDFile::~PMDFile()
 // Method: PMDFile::OpenFile
 //
 // Purpose:
-//      Open the OpenPMD file
+//      Open the openPMD file
 //
 // Programmer: Mathieu Lobet
 // Creation: Fri Oct 14 2016
 //
 // Modifications:
+// May 12 2020 - E. Brugger - add check for file open failure
 //
 // ***************************************************************************
 void PMDFile::OpenFile(char * PMDFilePath)
 {
-	#ifdef VERBOSE_MODE
-	    cerr << "PMDFile::OpenFile" << endl;
-	#endif
+    #ifdef VERBOSE_MODE
+        cerr << "PMDFile::OpenFile" << endl;
+    #endif
 
-	hid_t fileAccessPropListID = H5Pcreate(H5P_FILE_ACCESS);
+    hid_t fileAccessPropListID = H5Pcreate(H5P_FILE_ACCESS);
 
-	herr_t err = H5Pset_fclose_degree(fileAccessPropListID, H5F_CLOSE_SEMI);
+    herr_t err = H5Pset_fclose_degree(fileAccessPropListID, H5F_CLOSE_SEMI);
 
-	// Open the file
-	fileId = H5Fopen(PMDFilePath, H5F_ACC_RDONLY, H5P_DEFAULT);
+    // Open the file
+    fileId = H5Fopen(PMDFilePath, H5F_ACC_RDONLY, H5P_DEFAULT);
 
-	H5Pclose(fileAccessPropListID);
+    H5Pclose(fileAccessPropListID);
 
-	// The path is copied in this->filePath if the file was well opened.
-	strcpy(this->filePath,PMDFilePath);
+    // Check for error opening the file
+    if (fileId < 0)
+    {
+        EXCEPTION1(InvalidDBTypeException,
+                   "Not an openPMD file: Error opening the file");
+    }
+
+    // The path is copied in this->filePath if the file was well opened.
+    strcpy(this->filePath,PMDFilePath);
 }
 
 // ***************************************************************************
@@ -141,84 +150,133 @@ void PMDFile::OpenFile(char * PMDFilePath)
 //
 // Modifications:
 // Nov. 9 2017 - M. Lobet - add buffer + `\0` for a correct reading
+// May  6 2020 - A. Huebl - now really fix the above bug :-)
+//                          add version verification for read files
 //
 // ***************************************************************************
 void PMDFile::ScanFileAttributes()
 {
 
 #ifdef VERBOSE_MODE
-	cerr << "PMDFile::ScanFileAttributes" << endl;
+    cerr << "PMDFile::ScanFileAttributes" << endl;
 #endif
 
-	int 			iAttr;
-	char 			attrName[64];
-	hsize_t			nbAttr;
-	hid_t			groupId;
-	hid_t			attrId;
-	hid_t 			atype;
-	hid_t 			aspace;
-	size_t 			size;
-	int				nPoints;
+    int      iAttr;
+    char     attrName[64];
+    hsize_t  nbAttr;
+    hid_t    groupId;
+    hid_t    attrId;
+    hid_t    atype;
+    hid_t    aspace;
+    size_t   size;
+    int      nPoints;
 
-	// OpenPMD files always contain a data group at the root
-	groupId = H5Gopen(fileId, "/",H5P_DEFAULT);
+    // is this a valid openPMD file with an "openPMD" attribute in / ?
+    bool     isValid = false;
 
-	// Number of attributes
-	nbAttr = H5Aget_num_attrs(groupId);
+    // openPMD files always contain a data group at the root
+    groupId = H5Gopen(fileId, "/", H5P_DEFAULT);
 
-	// Loop over the attributes
-	for (iAttr = 0; iAttr < nbAttr; iAttr++)
-	{
-		// Opening of the attribute
-		attrId = H5Aopen_idx(groupId, (unsigned int)iAttr );
+    // Number of attributes
+    nbAttr = H5Aget_num_attrs(groupId);
 
-		// Get the name of the attribute
-		H5Aget_name(attrId, 64, attrName);
-		// the dimensions of the attribute data
-		aspace = H5Aget_space(attrId);
-		// The type of the attribute
-		atype  = H5Aget_type(attrId);
-		// Number of elements in the attribute
-		nPoints = H5Sget_simple_extent_npoints(aspace);
-		// Size of an element (number of char for instance)
-		size = H5Tget_size (atype);
+    // Loop over the attributes
+    for (iAttr = 0; iAttr < nbAttr; iAttr++)
+    {
+        // Opening of the attribute
+        attrId = H5Aopen_idx(groupId, (unsigned int)iAttr );
 
-		if (strcmp(attrName,"openPMD")==0)
-		{
-			char *buffer = new char[size + 1];
+        // Get the name of the attribute
+        H5Aget_name(attrId, 64, attrName);
+        // the dimensions of the attribute data
+        aspace = H5Aget_space(attrId);
+        // The type of the attribute
+        atype  = H5Aget_type(attrId);
+        // Number of elements in the attribute
+        nPoints = H5Sget_simple_extent_npoints(aspace);
+        // Size of an element (number of char for instance)
+        size = H5Tget_size (atype);
 
-			// Read attribute
-			H5Aread (attrId, atype, buffer);
-			buffer[size] = '\0';
-
-			this->version = buffer;
-
-            delete buffer;
-		}
-		else if (strcmp(attrName,"meshesPath")==0)
-		{
-			char *buffer = new char[size + 1];
-
-			// Read attribute
-			H5Aread (attrId, atype, buffer);
-			buffer[size] = '\0';
-
-			strncpy(this->meshesPath,buffer,sizeof(buffer));
-			delete buffer;
-
-		}
-		else if (strcmp(attrName,"particlesPath")==0)
-		{
+        if (strcmp(attrName, "openPMD")==0)
+        {
             char *buffer = new char[size + 1];
 
-			// Read attribute
-			H5Aread (attrId, atype, buffer);
-			buffer[size] = '\0';
+            // Read attribute
+            H5Aread (attrId, atype, buffer);
+            buffer[size] = '\0';
 
-			strncpy(this->particlesPath,buffer,sizeof(buffer));
+            this->version = buffer;
 
-            delete buffer;
-		}
+            delete [] buffer;
+            isValid = true;
+        }
+        else if (strcmp(attrName,"meshesPath")==0)
+        {
+            char *buffer = new char[size + 1];
+
+            // Read attribute
+            H5Aread (attrId, atype, buffer);  // not NULL-terminated
+            buffer[size] = '\0';
+
+            this->meshesPath = buffer;
+            delete [] buffer;
+
+        }
+        else if (strcmp(attrName,"particlesPath")==0)
+        {
+            char *buffer = new char[size + 1];
+
+            // Read attribute
+            H5Aread (attrId, atype, buffer);  // not NULL-terminated
+            buffer[size] = '\0';
+
+            this->particlesPath = buffer;
+
+            delete [] buffer;
+        }
+    }
+
+    // missing self-identification as openPMD file
+    if (!isValid)
+    {
+        char format_error[1024];
+        snprintf(format_error, 1024,
+                 "Not an openPMD file: Missing 'openPMD' identifier in /");
+        debug5 << "The current file ID '" << fileId
+               << "' is not an openPMD file" << endl;
+        CloseFile();
+        EXCEPTION1(InvalidDBTypeException, format_error);
+    }
+
+    // validate openPMD standard version range
+    if (VersionGreaterThan("1.0.0", this->version)) // 1.0.0>file
+    {
+        // file format too old: < 1.0.0
+        char version_error[1024];
+        snprintf(version_error, 1024,
+                 "Standard '%s' in openPMD file is too old! "
+                 "Supported version range: >=1.0.0,<2.0.0 ",
+                 this->version.c_str());
+        debug5 << "The current file ID '" << fileId
+               << "' provides an unsupported openPMD standard: "
+               << this->version << endl;
+        CloseFile();
+        EXCEPTION1(InvalidDBTypeException, version_error);
+    }
+    if (!VersionGreaterThan("2.0.0", this->version)) // !2.0.0>file aka file>=2.0.0
+    {
+        // file format too new: >= 2.0.0
+        char version_error[1024];
+        snprintf(version_error, 1024,
+                 "Standard '%s' in openPMD file is too new! "
+                 "Maybe try a newer version of VisIt? "
+                 "Supported version range: >=1.0.0,<2.0.0 ",
+                 this->version.c_str());
+        debug5 << "The current file ID '" << fileId
+               << "' provides an unsupported openPMD standard: "
+               << this->version << endl;
+        CloseFile();
+        EXCEPTION1(InvalidDBTypeException, version_error);
     }
 
 }
@@ -240,106 +298,104 @@ void PMDFile::ScanFileAttributes()
 // ***************************************************************************
 void PMDFile::ScanIterations()
 {
+    #ifdef VERBOSE_MODE
+        cerr << "PMDFile::ScanIterations" << endl;
+    #endif
 
-	#ifdef VERBOSE_MODE
-	    cerr << "PMDFile::ScanIterations" << endl;
-	#endif
+    hsize_t      nbIterations; // Number of iterations
+    hsize_t      nbAttr;
+    hid_t        groupId;
+    hid_t        iterationId;
+    hid_t        attrId;
+    int          i;
+    int          iAttr;
+    int          length;
+    herr_t       err;
+    char         iterationName[64];
+    char         bufAttrName[64];
+    PMDIteration iteration;
+    double       val;
+    hid_t        atype;
+    hid_t        aspace;
+    H5O_info_t   objectInfo;
 
+    // openPMD files always contain a data group at the root
+    groupId = H5Gopen(fileId, "/data",H5P_DEFAULT);
 
-	hsize_t 		nbIterations; // Number of iterations
-	hsize_t			nbAttr;
-	hid_t    		groupId;
-	hid_t			iterationId;
-	hid_t			attrId;
-	int 			i;
-	int 			iAttr;
-	int 			length;
-	herr_t 			err;
-	char			iterationName[64];
-	char 			bufAttrName[64];
-	PMDIteration 	iteration;
-	double 			val;
-	hid_t 			atype;
-	hid_t 			aspace;
-	H5O_info_t 		objectInfo;
+    //H5Gget_num_objs(group_iterations->getId(), &nobj);
+    H5Gget_num_objs(groupId, &nbIterations);
 
-	// OpenPMD files always contain a data group at the root
-	groupId = H5Gopen(fileId, "/data",H5P_DEFAULT);
-
-	//H5Gget_num_objs(group_iterations->getId(), &nobj);
-	H5Gget_num_objs(groupId, &nbIterations);
-
-	// We scan by "hand" all groups in the group data that corresponds
+    // We scan by "hand" all groups in the group data that corresponds
     // to the different iterations
 
-	// iteration over the iteration group
+    // iteration over the iteration group
     for (i = 0; i < nbIterations; i++)
     {
 
-		// Get the object name
-		length = H5Gget_objname_by_idx(groupId, (hsize_t)i,
-			iterationName, (size_t) 64);
+        // Get the object name
+        length = H5Gget_objname_by_idx(groupId, (hsize_t)i,
+            iterationName, (size_t) 64);
 
-		// Get the type: group, dataset...
-		err = H5Oget_info_by_name(groupId, iterationName , &objectInfo,
+        // Get the type: group, dataset...
+        err = H5Oget_info_by_name(groupId, iterationName , &objectInfo,
                                   H5P_DEFAULT);
 
-		// Check that it is a group, we ignore dataset in the data group...
-		if (objectInfo.type == H5O_TYPE_GROUP)
-		{
+        // Check that it is a group, we ignore dataset in the data group...
+        if (objectInfo.type == H5O_TYPE_GROUP)
+        {
 
-		    // Openning of the iteration group
-			iterationId = H5Gopen2(groupId, iterationName, H5P_DEFAULT);
+            // Openning of the iteration group
+            iterationId = H5Gopen2(groupId, iterationName, H5P_DEFAULT);
 
-			// Save the iteration name
-			strcpy(iteration.name,iterationName);
+            // Save the iteration name
+            iteration.name = iterationName;
 
-			// Save mesh path
-			strcpy(iteration.meshesPath,this->meshesPath);
+            // Save mesh path
+            iteration.meshesPath = this->meshesPath;
 
-			// Save particles path
-			strcpy(iteration.particlesPath,this->particlesPath);
+            // Save particles path
+            iteration.particlesPath = this->particlesPath;
 
-			// Number of attributes
-			nbAttr = H5Aget_num_attrs(iterationId);
+            // Number of attributes
+            nbAttr = H5Aget_num_attrs(iterationId);
 
-			// Loop over the attributes
-		    for (iAttr = 0; iAttr < nbAttr; iAttr++)
-		    {
-				attrId = H5Aopen_idx(iterationId, (unsigned int)iAttr );
+            // Loop over the attributes
+            for (iAttr = 0; iAttr < nbAttr; iAttr++)
+            {
+                attrId = H5Aopen_idx(iterationId, (unsigned int)iAttr );
 
-				// Get the name of the attribute
-				H5Aget_name(attrId, 64, bufAttrName);
-				/* the dimensions of the attribute data */
-				aspace = H5Aget_space(attrId);
-				// The type of the attribute
-				atype  = H5Aget_type(attrId);
+                // Get the name of the attribute
+                H5Aget_name(attrId, 64, bufAttrName);
+                /* the dimensions of the attribute data */
+                aspace = H5Aget_space(attrId);
+                // The type of the attribute
+                atype  = H5Aget_type(attrId);
 
-				if (strcmp(bufAttrName,"dt")==0)
-				{
-					// Read attribute
-					H5Aread (attrId, atype, &val);
-					iteration.dt = val;
-				}
-				else if (strcmp(bufAttrName,"time")==0)
-				{
-					// Read attribute
-					H5Aread (attrId, atype, &val);
-					iteration.time = val;
-				}
-				else if (strcmp(bufAttrName,"timeUnitSI")==0)
-				{
-					// Read attribute
-					H5Aread (attrId, atype, &val);
-					iteration.timeUnitSI = val;
-				}
+                if (strcmp(bufAttrName,"dt")==0)
+                {
+                    // Read attribute
+                    H5Aread (attrId, atype, &val);
+                    iteration.dt = val;
+                }
+                else if (strcmp(bufAttrName,"time")==0)
+                {
+                    // Read attribute
+                    H5Aread (attrId, atype, &val);
+                    iteration.time = val;
+                }
+                else if (strcmp(bufAttrName,"timeUnitSI")==0)
+                {
+                    // Read attribute
+                    H5Aread (attrId, atype, &val);
+                    iteration.timeUnitSI = val;
+                }
 
-				H5Aclose(attrId);
-			}
+                H5Aclose(attrId);
+            }
 
-			// Add the iteration in the list of iterations
-			iterations.push_back(iteration);
-		}
+            // Add the iteration in the list of iterations
+            iterations.push_back(iteration);
+        }
     }
 
     H5Gclose(groupId);
@@ -361,11 +417,11 @@ void PMDFile::ScanIterations()
 // ***************************************************************************
 void PMDFile::ScanFields()
 {
-	for (std::vector<PMDIteration>::iterator it = iterations.begin() ;
-		 it != iterations.end(); ++it)
-	{
-	 	it->ScanFields(this->fileId);
-	}
+    for (std::vector<PMDIteration>::iterator it = iterations.begin() ;
+         it != iterations.end(); ++it)
+    {
+        it->ScanFields(this->fileId);
+    }
 }
 
 // ***************************************************************************
@@ -383,11 +439,11 @@ void PMDFile::ScanFields()
 // ***************************************************************************
 void PMDFile::ScanParticles()
 {
-	for (std::vector<PMDIteration>::iterator it = iterations.begin() ;
+    for (std::vector<PMDIteration>::iterator it = iterations.begin() ;
          it != iterations.end(); ++it)
-	{
-	 	it->ScanParticles(this->fileId);
-	}
+    {
+        it->ScanParticles(this->fileId);
+    }
 }
 
 // ***************************************************************************
@@ -407,17 +463,17 @@ void PMDFile::ScanParticles()
 void PMDFile::Print()
 {
 
-	cout << " File: " << this->filePath << endl;
-	cout << " OpenPMD Version: " << this->version << endl;
+    cout << " File: " << this->filePath << endl;
+    cout << " openPMD standard: " << this->version << endl;
 
-	cout << endl;
-	cout << " Number of iteration: " << this->GetNumberIterations()
+    cout << endl;
+    cout << " Number of iteration: " << this->GetNumberIterations()
              << endl;
-	for (std::vector<PMDIteration>::iterator it = iterations.begin() ;
+    for (std::vector<PMDIteration>::iterator it = iterations.begin() ;
          it != iterations.end(); ++it)
-	{
-	 	it->PrintInfo();
-	}
+    {
+        it->PrintInfo();
+    }
 }
 
 // ***************************************************************************
@@ -434,14 +490,14 @@ void PMDFile::Print()
 // ***************************************************************************
 int PMDFile::GetNumberIterations() const
 {
-	return iterations.size();
+    return iterations.size();
 }
 
 // ***************************************************************************
 // Method: PMDFile::CloseFile
 //
 // Purpose:
-//      This method closes the opened OpenPMD file.
+//      This method closes the opened openPMD file.
 //
 // Programmer: Mathieu Lobet
 // Creation:   Fri Oct 14 2016
@@ -451,7 +507,7 @@ int PMDFile::GetNumberIterations() const
 // ***************************************************************************
 void PMDFile::CloseFile()
 {
-	H5Fclose(fileId);
+    H5Fclose(fileId);
 }
 
 // ***************************************************************************
@@ -470,7 +526,7 @@ void PMDFile::CloseFile()
 //      numValues : number of element to read
 //      factor : multiplication factor applied to all elements of array
 //      fieldDataClass : Dataset type (H5T_FLOAT...)
-//      path : path to the data set in the OpenPMD file
+//      path : path to the data set in the openPMD file
 //
 // Returns:  <0 on failure, 0 on success.
 //
@@ -493,7 +549,7 @@ PMDFile::ReadScalarDataSet(void * array,
          << endl;
 #endif
 
-	int 	ndims;
+    int     ndims;
     int     dataSize;
     hid_t   datasetId;
     hid_t   datasetType;
@@ -514,17 +570,16 @@ PMDFile::ReadScalarDataSet(void * array,
     }
     else
     {
-
         // Data space
         datasetSpace = H5Dget_space(datasetId);
         // Data type
-        datasetType  = H5Dget_type(datasetId);
+        datasetType = H5Dget_type(datasetId);
         // Data size
         dataSize = H5Tget_size(datasetType);
         // Storage size
         datasetStorageSize = H5Dget_storage_size(datasetId);
         // Dimension from the data space
-        ndims        = H5Sget_simple_extent_ndims(datasetSpace);
+        ndims = H5Sget_simple_extent_ndims(datasetSpace);
 
         // Check the class of the dataset
         if (dataClass==H5T_FLOAT)
@@ -540,8 +595,8 @@ PMDFile::ReadScalarDataSet(void * array,
 #ifndef TEST
                     EXCEPTION1(InvalidVariableException, path);
 #endif
-                    cerr << " Problem when reading the dataset: "
-                         << path << endl;
+                    debug5 << " Problem when reading the dataset: "
+                           << path << endl;
                     return -4;
                 }
 
@@ -550,22 +605,21 @@ PMDFile::ReadScalarDataSet(void * array,
                 if (dataSize == 4)
                 {
                     float factorTmp = *(float*) (factor);
-    		        if (factorTmp != 1)
-    		        {
+                    if (factorTmp != 1)
+                    {
                         float * arrayTmp = (float*) (array);
                         //cerr << " Application of the factor: "
                         //     << factorTmp << endl;
 
-    		        	for (int i=0;i<numValues;i++)
-    		        	{
-    		        		arrayTmp[i] *= factorTmp;
-    		        	}
-    		        }
+                        for (int i=0;i<numValues;i++)
+                        {
+                            arrayTmp[i] *= factorTmp;
+                        }
+                    }
                 }
                 else if (dataSize == 8)
                 {
-
-									  // Factor is still a float
+                    // Factor is still a float
                     float factorTmp = *(float*) (factor);
                     if (factorTmp != 1)
                     {
@@ -580,8 +634,6 @@ PMDFile::ReadScalarDataSet(void * array,
                     }
                 }
                 //cerr << " End Application of the factor" << endl;
-
-
             }
             else
             {
@@ -593,8 +645,8 @@ PMDFile::ReadScalarDataSet(void * array,
 #ifndef TEST
                 EXCEPTION2(InvalidFilesException, (const char *) path,error);
 #endif
-            	cerr << " Invalid size for the current dataset:" << numValues
-                     << " " << long(datasetStorageSize) << endl;
+                debug5 << " Invalid size for the current dataset:" << numValues
+                       << " " << long(datasetStorageSize) << endl;
                 return -3;
             }
         }
@@ -605,18 +657,16 @@ PMDFile::ReadScalarDataSet(void * array,
                        (const char *) path,
                         "The current dataset is not of a valid class.");
 #endif
-            cerr << "The current dataset, " << path
-                 << ", is not a valid class: " << dataClass << endl;
+            debug5 << "The current dataset, " << path
+                   << ", is not a valid class: " << dataClass << endl;
             return -2;
         }
-
         //H5Dclose(datasetId);
         //H5Tclose(datasetType);
         //H5Sclose(datasetSpace);
-
     }
     //cerr << " End ReadScalarDataSet" << endl;
-   	return 0;
+    return 0;
 }
 
 // ***************************************************************************
@@ -671,8 +721,8 @@ PMDFile::ReadFieldScalarBlock(void * array,
         EXCEPTION2(InvalidFilesException, (const char *)
                    fieldBlock->dataSetPath,error);
 #endif
-        cerr << " Problem when opening the dataset: "
-             << fieldBlock->dataSetPath << endl;
+        debug5 << " Problem when opening the dataset: "
+               << fieldBlock->dataSetPath << endl;
         return -1;
     }
     else
@@ -681,13 +731,13 @@ PMDFile::ReadFieldScalarBlock(void * array,
         // Data space
         datasetSpace = H5Dget_space(datasetId);
         // Data type
-        datasetType  = H5Dget_type(datasetId);
+        datasetType = H5Dget_type(datasetId);
         // Data size
         dataSize = H5Tget_size(datasetType);
         // Storage size
         datasetStorageSize = H5Dget_storage_size(datasetId);
         // Dimension from the data space
-        ndims        = H5Sget_simple_extent_ndims(datasetSpace);
+        ndims = H5Sget_simple_extent_ndims(datasetSpace);
 
         // Check the class of the dataset
         if (fieldDataClass == H5T_FLOAT)
@@ -707,14 +757,18 @@ PMDFile::ReadFieldScalarBlock(void * array,
 
                 // Fill the parameters for the hyperslab
                 // using the fieldBlock properties
-                start[0] = fieldBlock->minNode[0];
-                start[1] = fieldBlock->minNode[1];
-                start[2] = fieldBlock->minNode[2];
-                block[0] = 1;   block[1] = 1;   block[2] = 1;
-                stride[0] = 1;  stride[1] = 1;  stride[2] = 1;
+                start[0]  = fieldBlock->minNode[0];
+                start[1]  = fieldBlock->minNode[1];
+                start[2]  = fieldBlock->minNode[2];
+                block[0]  = 1;
+                block[1]  = 1;
+                block[2]  = 1;
+                stride[0] = 1;
+                stride[1] = 1;
+                stride[2] = 1;
                 count[0]  = fieldBlock->nbNodes[0];
                 count[1]  = fieldBlock->nbNodes[1];
-                count[2] = fieldBlock->nbNodes[2];
+                count[2]  = fieldBlock->nbNodes[2];
 
                 //Define hyperslab in the dataset.
                 err = H5Sselect_hyperslab(datasetSpace, H5S_SELECT_SET,
@@ -722,7 +776,7 @@ PMDFile::ReadFieldScalarBlock(void * array,
 
                 if (err!=0)
                 {
-                    cerr << " Problem when defining "
+                    debug5 << " Problem when defining "
                     " the hyperslab in the dataset" << endl;
                     return -3;
                 }
@@ -755,8 +809,8 @@ PMDFile::ReadFieldScalarBlock(void * array,
                     EXCEPTION1(InvalidVariableException,
                                fieldBlock->dataSetPath);
 #endif
-                    cerr << " Problem when reading the dataset: "
-                         << fieldBlock->dataSetPath << endl;
+                    debug5 << " Problem when reading the dataset: "
+                           << fieldBlock->dataSetPath << endl;
                     return -4;
                 }
             }
@@ -786,8 +840,8 @@ PMDFile::ReadFieldScalarBlock(void * array,
 
                 if (err!=0)
                 {
-                    cerr << " Problem when defining the "
-                            "hyperslab in the dataset" << endl;
+                    debug5 << " Problem when defining the "
+                              "hyperslab in the dataset" << endl;
                     return -3;
                 }
 
@@ -800,9 +854,12 @@ PMDFile::ReadFieldScalarBlock(void * array,
                 // Define the memory dataspace.
                 memspace = H5Screate_simple(fieldBlock->ndims, mdim, NULL);
 
-                start[0] = 0;   start[1] = 0;
-                block[0] = 1;   block[1] = 1;
-                stride[0] = 1;  stride[1] = 1;
+                start[0] = 0;
+                start[1] = 0;
+                block[0] = 1;
+                block[1] = 1;
+                stride[0] = 1;
+                stride[1] = 1;
                 count[0]  = fieldBlock->nbNodes[0];
                 count[1]  = fieldBlock->nbNodes[1];
 
@@ -818,12 +875,11 @@ PMDFile::ReadFieldScalarBlock(void * array,
                     EXCEPTION1(InvalidVariableException,
                                fieldBlock->dataSetPath);
 #endif
-                    cerr << " Problem when reading the dataset: "
-                         << fieldBlock->dataSetPath
-                         << endl;
+                    debug5 << " Problem when reading the dataset: "
+                           << fieldBlock->dataSetPath
+                           << endl;
                     return -4;
                 }
-
             }
 
             // ___ Application of the factor to the data _____________________
@@ -862,8 +918,8 @@ PMDFile::ReadFieldScalarBlock(void * array,
                        (const char *) fieldBlock->dataSetPath,
                        "The current dataset is not of a valid class.");
 #endif
-            cerr << "The current dataset, " << fieldBlock->dataSetPath
-                 << ", is not a valid class: " << fieldDataClass << endl;
+            debug5 << "The current dataset, " << fieldBlock->dataSetPath
+                   << ", is not a valid class: " << fieldDataClass << endl;
             return -2;
         }
 
@@ -918,8 +974,8 @@ int PMDFile::ReadParticleScalarBlock(void * array,
     if ((datasetId = H5Dopen(this->fileId,particleBlock->dataSetPath,
                              H5P_DEFAULT))<0)
     {
-        cerr << " Problem when opening the dataset: "
-             << particleBlock->dataSetPath << endl;
+        debug5 << " Problem when opening the dataset: "
+               << particleBlock->dataSetPath << endl;
         return -1;
     }
     else
@@ -934,13 +990,13 @@ int PMDFile::ReadParticleScalarBlock(void * array,
         // Data space
         datasetSpace = H5Dget_space(datasetId);
         // Data type
-        datasetType  = H5Dget_type(datasetId);
+        datasetType = H5Dget_type(datasetId);
         // Data size
         dataSize = H5Tget_size(datasetType);
         // Storage size
         datasetStorageSize = H5Dget_storage_size(datasetId);
         // Dimension from the data space
-        ndims        = H5Sget_simple_extent_ndims(datasetSpace);
+        ndims  = H5Sget_simple_extent_ndims(datasetSpace);
 
         // Check the class of the dataset
         if ((H5Tget_class(datasetType) == dataSetClass)
@@ -964,8 +1020,8 @@ int PMDFile::ReadParticleScalarBlock(void * array,
 
             if (err!=0)
             {
-                cerr << " Problem when defining the hyperslab in the dataset"
-                     << endl;
+                debug5 << " Problem when defining the hyperslab in the dataset"
+                       << endl;
                 return -3;
             }
 
@@ -993,8 +1049,8 @@ int PMDFile::ReadParticleScalarBlock(void * array,
                 EXCEPTION1(InvalidVariableException,
                            particleBlock->dataSetPath);
 #endif
-                cerr << " Problem when reading the dataset: "
-                     << particleBlock->dataSetPath << endl;
+                debug5 << " Problem when reading the dataset: "
+                       << particleBlock->dataSetPath << endl;
                 return -4;
             }
 
@@ -1014,7 +1070,7 @@ int PMDFile::ReadParticleScalarBlock(void * array,
             }
             else if (dataSize==8)
             {
-							  // factor is still a float
+                              // factor is still a float
                 float factorTmp = *(float*) (factor);
                 if (factorTmp != 1)
                 {
@@ -1025,13 +1081,13 @@ int PMDFile::ReadParticleScalarBlock(void * array,
                     }
                 }
             }
-						else
-						{
-								cerr << " Error in PMDFile::ReadParticleScalarBlock"
-										 << endl;
-								cerr << " DataSize is not recognized"
-										 << endl;
-						}
+            else
+            {
+                    debug5 << " Error in PMDFile::ReadParticleScalarBlock"
+                             << endl;
+                    debug5 << " DataSize is not recognized"
+                             << endl;
+            }
 
         }
         else
@@ -1041,9 +1097,9 @@ int PMDFile::ReadParticleScalarBlock(void * array,
                        (const char *) particleBlock->dataSetPath,
                        "The current dataset is not a float dataset");
 #endif
-            cerr << "The current dataset, " << particleBlock->dataSetPath
-                 << ", is not of the specified class:" << H5T_FLOAT
-                 << endl;
+            debug5 << "The current dataset, " << particleBlock->dataSetPath
+                   << ", is not of the specified class:" << H5T_FLOAT
+                   << endl;
             return -2;
         }
 

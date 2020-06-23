@@ -21,8 +21,13 @@ You can then browse the root of the manual by pointing your browser to
 Remove it when you are constantly revising and rebuilding.
 
 Your changes to any files in :file:`trunk/docs/SphinxDocs` will go live
-`here <http://visit-sphinx-user-manual.readthedocs.io/en/latest/index.html>`_
-at approximately 50 minutes passed every even numbered hour.
+`here <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/>`_
+soon after you push them. If `RTD <https://readthedocs.org>`_ resources are
+busy, a rebuild of the docs may take as long as 15 minutes. If you are working
+on a branch and want to see your branch's docs rendered *and* you yourself do
+not have access to the RTD account that controls this, you may ask another
+developer who does to *activate* your branch there. Once the branch is merged,
+it should be *deactivated*.
 
 Quick Reference
 ---------------
@@ -127,9 +132,10 @@ use of Sphinx as we move forward. These are discussed at the
   (:ref:`see below <contributing_math>`).
 * Spell checking is supported too (:ref:`see below <contributing_spell>`) but
   you need to have 
-  `PyEnchant <https://pythonhosted.org/pyenchant/>`_ and
+  `PyEnchant <https://pypi.org/project/pyenchant/>`_ and
   `sphinx-contrib.spelling <http://sphinxcontrib-spelling.readthedocs.io/en/latest/index.html>`_
   installed.
+* Link checking is also supported (:ref:`see link checking <contributing_linkcheck>`).
 * Begin a line with ``..`` followed by space for single line comments::
 
     .. this is a single line comment
@@ -353,6 +359,34 @@ the above automatically. However, that involves implementing the above
 steps as a ``cmake`` program and involves more effort than available when
 this was implemented.
 
+.. _contributing_linkcheck:
+
+Link checking using Sphinx linkcheck builder
+--------------------------------------------
+
+You can run checks on links in all files using Sphinx *builtin*
+`linkcheck <https://www.sphinx-doc.org/en/master/usage/configuration.html?highlight=linkcheck#options-for-the-linkcheck-builder>`_
+builder by running the command::
+
+    sphinx-build -b linkcheck . _links -a
+
+This will produce a file, ``output.txt``, in the ``_links`` output directory.
+There will be a lot of output regarding various links and the results of
+checking those links. You want to find those cases where a link's status is
+reported as ``broken`` and then try to correct them.
+
+For some reason, Sphinx' linkcheck builder winds up actually downloading
+links to `.tar.gz` and `.zip` files. This causes the linkcheck to take much
+more time to run than it ordinarily would. We have filed an issue ticket
+about this and for the time being are using the ``linkcheck_ignore`` *option*
+in ``conf.py`` to temporarily skip links to data files.
+
+In addition depending on *where* you run the linkcheck (e.g. behind a
+firewall or other cyber-security apparatus), you may get different results
+due to any cyber-security IP filtering.
+
+All of the above is automated with the ``linkcheck`` make target also.
+
 .. _contributing_forward:
 
 Things To Consider Going Forward
@@ -426,7 +460,7 @@ Things To Consider Going Forward
   * With the following pieces....
 
     * VisIt_ python CLI
-    * `pyscreenshot <http://pyscreenshot.readthedocs.io/en/latest/>`_ 
+    * `pyscreenshot <https://pypi.org/project/pyscreenshot/>`_ 
     * A minor adjustment to VisIt_ GUI to allow a python CLI instance
       which used ``OpenGUI(args...)`` to inform the GUI that widgets
       are to be raised/mapped on state changes.

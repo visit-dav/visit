@@ -44,7 +44,7 @@ using     std::vector;
 //  Creation:   November 28, 2007 
 //
 // ****************************************************************************
-avtImagePluginWriter::avtImagePluginWriter(DBOptionsAttributes *dbOpts)
+avtImagePluginWriter::avtImagePluginWriter(const DBOptionsAttributes *dbOpts)
 {
     format = dbOpts->GetEnum("Format");
     normalize = dbOpts->GetBool("Normalize [0,255]");

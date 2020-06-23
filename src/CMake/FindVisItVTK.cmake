@@ -56,6 +56,9 @@
 #   Alister Maguire, Thu Sep 14 14:26:07 PDT 2017
 #   Added vtkRenderingVolumeOpenGL2
 #
+#   Kathleen Biagas, Fri Jan  17 2020
+#   Install vtkTestOpenGLVersion.exe on Windows when needed.
+# 
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -235,6 +238,19 @@ ELSE(EXISTS ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk)
 ENDIF(EXISTS ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk)
 
 MARK_AS_ADVANCED(VTK_PYTHON_WRAPPERS_FOUND)
+
+# prepare for drop-in replacement of mesa with opengl, if all pieces are in place
+if(WIN32 AND VISIT_MESA_REPLACE_OPENGL AND VISIT_MESAGL_DIR)
+    if(EXISTS ${VISIT_VTK_DIR}/bin/vtkTestOpenGLVersion.exe)
+        install(FILES ${VISIT_VTK_DIR}/bin/vtkTestOpenGLVersion.exe
+                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ WORLD_EXECUTE
+                CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
+                )
+    endif()
+endif()
 
 IF(NOT ${VTK_FOUND})
     MESSAGE(FATAL_ERROR "VTK is required to build VisIt.")

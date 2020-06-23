@@ -15,6 +15,8 @@
 #include <string>
 #include <visitstream.h>
 
+#include "visit_gzstream.h"
+
 
 class     vtkPolyData;
 
@@ -32,6 +34,12 @@ class     vtkPolyData;
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
 //
+//    Alister Maguire, Tue Mar 17 08:50:32 PDT 2020
+//    Added GetDimensionality.
+//
+//    Kevin Griffin, Mon Jun 22 15:29:05 PDT 2020
+//    Added FreeUpResources() from Philip Blakely's code to fix memory leak.
+//
 // ****************************************************************************
 
 class avtLinesFileFormat : public avtSTMDFileFormat
@@ -40,6 +48,7 @@ class avtLinesFileFormat : public avtSTMDFileFormat
                           avtLinesFileFormat(const char *);
     virtual              ~avtLinesFileFormat();
     
+    virtual void          FreeUpResources(void);    
     virtual const char   *GetType(void) { return "Lines File Format"; };
     
     virtual vtkDataSet   *GetMesh(int, const char *);
@@ -57,6 +66,7 @@ class avtLinesFileFormat : public avtSTMDFileFormat
     void                  ReadFile(void);
     bool                  GetPoint(istream &, float &, float &, float &,
                                    std::string &);
+    int                   GetDimensionality(visit_ifstream &);
 };
 
 

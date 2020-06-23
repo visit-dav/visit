@@ -50,7 +50,7 @@ typedef struct {
 //  Creation:   March 22, 2016
 //
 // ****************************************************************************
-avtXolotlFileFormat::avtXolotlFileFormat(const char *fn, DBOptionsAttributes *readOpts)
+avtXolotlFileFormat::avtXolotlFileFormat(const char *fn, const DBOptionsAttributes *readOpts)
     : avtMTSDFileFormat(&fn, 1)
 {
     fileId = -1;
@@ -747,7 +747,6 @@ avtXolotlFileFormat::GetMesh(int timestate, const char *meshname)
 {
     if (dimension == 0)
     {
-
         // What mesh do we need?
         int meshSizeIndex[2];
         if (debug) cerr << "Getting mesh: " << meshname << endl;
@@ -865,6 +864,8 @@ avtXolotlFileFormat::GetMesh(int timestate, const char *meshname)
         zc->Delete();
         return rgrid;
     }
+
+    return nullptr;
 }
 
 // ****************************************************************************

@@ -13,9 +13,10 @@
 
 #include <vtkUnstructuredGrid.h>
 
-#include <SpatialDomains/MeshGraph.h>
+#include <LibUtilities/BasicUtils/SessionReader.h>
 #include <MultiRegions/ExpList.h>
 #include <SpatialDomains/Geometry.h>
+#include <SpatialDomains/MeshGraph.h>
 
 #include <vector>
 
@@ -37,7 +38,7 @@ class DBOptionsAttributes;
 class avtNektarPPFileFormat : public avtMTSDFileFormat
 {
   public:
-                       avtNektarPPFileFormat(const char *, DBOptionsAttributes *);
+                       avtNektarPPFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtNektarPPFileFormat() {;};
 
     virtual void       Initialize();
@@ -70,6 +71,8 @@ class avtNektarPPFileFormat : public avtMTSDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
   protected:
+    Nektar::LibUtilities::SessionReaderSharedPtr m_vSession;
+
     // DATA MEMBERS
     std::vector<int>    m_cycles;
     std::vector<double> m_times;

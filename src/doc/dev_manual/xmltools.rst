@@ -3,8 +3,8 @@ XML Tools
 
 Overview
 --------------------------------
-VisIt developers use several xml-based code generation tools to implement
-VisIt's features. The source core for these tools is kept in 
+VisIt_ developers use several xml-based code generation tools to implement
+VisIt_'s features. The source core for these tools is kept in 
 ``src/tools/dev/xml/`` and ``src/tools/dev/xmledit/``.
 
 

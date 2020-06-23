@@ -7,7 +7,7 @@
       ${NETCDF_LIBRARY_DIR}
     </LDFLAGS>
     <LIBS>
-      ${NETCDF_CXX_LIB} ${NETCDF_LIB}
+      ${NETCDF_LIB}
     </LIBS>
     <FilePatterns>
       .nc

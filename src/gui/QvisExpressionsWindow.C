@@ -822,6 +822,9 @@ QvisExpressionsWindow::CreatePythonFilterEditor()
 //    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Alister Maguire, Mon Mar 16 11:24:19 PDT 2020
+//    Sort the expressions when updating the window.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::UpdateWindow(bool)
@@ -829,6 +832,8 @@ QvisExpressionsWindow::UpdateWindow(bool)
     BlockAllSignals(true);
 
     exprListBox->clear();
+    exprList->SortExpressions();
+
     indexMap.clear();
     int pos = 0;
     for (int i=0; i<exprList->GetNumExpressions(); i++)

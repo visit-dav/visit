@@ -11,19 +11,8 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **Helpful additional information**
-(*Please click check boxes AFTER submitting ticket*)
-- [ ] Did VisIt crash?
-- [ ] Did you get wrong results?
-
-**Impact**
-- [ ] High - User productivity significantly degraded
-- [ ] Medium - User productivity partially degraded
-- [ ] Low - User productivity trivially degraded
-
-**Likelihood**
-- [ ] High - occurrence is not specific to platform, data, config, a combination of operators, queries, etc.
-- [ ] Medium - neither low nor high likelihood
-- [ ] Low - occurrence is specific to combination of multiple factors such as configuration, data, platform, etc.
+ - Did VisIt crash: 
+ - Did you get wrong results: 
 
 ### To Reproduce
 Steps to reproduce the behavior. For example:

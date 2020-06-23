@@ -66,7 +66,7 @@ class avtBOVFileFormat : public avtSTMDFileFormat
 {
   public:
                                avtBOVFileFormat(const char *, 
-                                   DBOptionsAttributes *);
+                                   const DBOptionsAttributes *);
     virtual                   ~avtBOVFileFormat();
 
     virtual const char        *GetType(void) { return "Brick of values"; };

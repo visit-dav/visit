@@ -50,6 +50,8 @@
 
 #include "PMDParticle.h"
 
+#include <DebugStream.h>
+
 // ***************************************************************************
 // Method: PMDParticle::PMDParticle
 // Purpose:
@@ -189,9 +191,9 @@ void PMDParticle::ScanParticleGroup(hid_t particleGroupId)
 
             default:
 
-                  cerr << " Non-valid object type while "
+                  debug5 << " Non-valid object type while "
                           "scanning the 'particles' group: "
-                       << objectName << ", this object is ignored." << endl;
+                         << objectName << ", this object is ignored." << endl;
 
                   break;
             }
@@ -267,7 +269,7 @@ void PMDParticle::ScanCharge(hid_t particleGroupId, char * objectName)
                   }
                   else
                   {
-                        cerr << " Particle charge is not a 32bit-float" << endl;
+                        debug5 << " Particle charge is not a 32bit-float" << endl;
                   }
             }
             else if (strcmp(attrName,"shape")==0)
@@ -280,7 +282,7 @@ void PMDParticle::ScanCharge(hid_t particleGroupId, char * objectName)
                   }
                   else
                   {
-                        cerr << " Particle shape is not an integer" << endl;
+                        debug5 << " Particle shape is not an integer" << endl;
                   }
             }
             H5Aclose(attrId);
@@ -364,7 +366,7 @@ void PMDParticle::ScanMass(hid_t particleGroupId, char * objectName)
                   }
                   else
                   {
-                        cerr << " Particle mass is not a 32bit-float" << endl;
+                        debug5 << " Particle mass is not a 32bit-float" << endl;
                   }
             }
             H5Aclose(attrId);
@@ -992,7 +994,7 @@ PMDParticle::SetUnitSI(char * name,
     }
     else
     {
-          cerr << " PMDParticle::GetUnitSI: unitSI not a float" << endl;
+          debug5 << " PMDParticle::GetUnitSI: unitSI not a float" << endl;
     }
     return unitSI;
 }
@@ -1094,7 +1096,7 @@ PMDParticle::SetUnitDimension(char * name,
             }
         }
 
-        delete powers;
+        delete[] powers;
     }
     //cerr << unitLabel << endl;
     return unitLabel;

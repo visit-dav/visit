@@ -60,20 +60,21 @@ static const char *DataValue_strings[] = {
 "Solid", "SeedPointID", "Speed",
 "Vorticity", "ArcLength", "TimeAbsolute",
 "TimeRelative", "AverageDistanceFromSeed", "CorrelationDistance",
-"Difference", "Variable"};
+"ClosedCurve", "Difference", "Variable"
+};
 
 std::string
 IntegralCurveAttributes::DataValue_ToString(IntegralCurveAttributes::DataValue t)
 {
     int index = int(t);
-    if(index < 0 || index >= 11) index = 0;
+    if(index < 0 || index >= 12) index = 0;
     return DataValue_strings[index];
 }
 
 std::string
 IntegralCurveAttributes::DataValue_ToString(int t)
 {
-    int index = (t < 0 || t >= 11) ? 0 : t;
+    int index = (t < 0 || t >= 12) ? 0 : t;
     return DataValue_strings[index];
 }
 
@@ -81,7 +82,7 @@ bool
 IntegralCurveAttributes::DataValue_FromString(const std::string &s, IntegralCurveAttributes::DataValue &val)
 {
     val = IntegralCurveAttributes::Solid;
-    for(int i = 0; i < 11; ++i)
+    for(int i = 0; i < 12; ++i)
     {
         if(s == DataValue_strings[i])
         {
@@ -289,21 +290,21 @@ IntegralCurveAttributes::ParallelizationAlgorithmType_FromString(const std::stri
 
 static const char *FieldType_strings[] = {
 "Default", "FlashField", "M3DC12DField",
-"M3DC13DField", "Nek5000Field", "NektarPPField",
-"NIMRODField"};
+"M3DC13DField", "Nek5000Field", "NektarPPField"
+};
 
 std::string
 IntegralCurveAttributes::FieldType_ToString(IntegralCurveAttributes::FieldType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 7) index = 0;
+    if(index < 0 || index >= 6) index = 0;
     return FieldType_strings[index];
 }
 
 std::string
 IntegralCurveAttributes::FieldType_ToString(int t)
 {
-    int index = (t < 0 || t >= 7) ? 0 : t;
+    int index = (t < 0 || t >= 6) ? 0 : t;
     return FieldType_strings[index];
 }
 
@@ -311,7 +312,7 @@ bool
 IntegralCurveAttributes::FieldType_FromString(const std::string &s, IntegralCurveAttributes::FieldType &val)
 {
     val = IntegralCurveAttributes::Default;
-    for(int i = 0; i < 7; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         if(s == FieldType_strings[i])
         {
@@ -1814,7 +1815,7 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 11)
+            if(ival >= 0 && ival < 12)
                 SetDataValue(DataValue(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1886,7 +1887,7 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 7)
+            if(ival >= 0 && ival < 6)
                 SetFieldType(FieldType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
