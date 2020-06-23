@@ -1242,7 +1242,6 @@ QvisExpressionsWindow::pyFilterSourceChanged()
 
 void QvisExpressionsWindow::FinalizeExpressionNameChange()
 {
-    std::cout << "Entering QvisExpressionWindow::FinalizeExpressionNameChange()" << std::endl;
     // Get the text from the currently selected item in the expression box
     int index = exprListBox->currentRow();
     if (index <  0)
@@ -1268,7 +1267,7 @@ void QvisExpressionsWindow::FinalizeExpressionNameChange()
     // If the name has indeed changed, then update the list
     if (text_from_expr_list != text_from_line_edit)
     {
-        std::cout << "The name has actually been changed." << std::endl;
+        debug4 << "Changing name of the expression because name already in use." << std::endl;
         
         // Need to make sure that the new name is not already taken. If it is, then append a number
         // on the end. Increment that number however many times is necessary until we get a unique
@@ -1292,8 +1291,6 @@ void QvisExpressionsWindow::FinalizeExpressionNameChange()
         exprListBox->item(index)->setText(text_from_line_edit);
         BlockAllSignals(false);
     }
-
-    std::cout << "Exiting  QvisExpressionWindow::FinalizeExpressionNameChange()" << std::endl;
 }
 
 // ****************************************************************************
