@@ -1087,6 +1087,9 @@ QvisExpressionsWindow::apply()
 //    Brad Whitlock, Thu Oct 27 14:42:53 PDT 2011
 //    Make the name active so we can change it.
 //
+//    Eddie Rusu, Wed Jun 24 15:46:57 PDT 2020
+//    Adding and deleting expressions will not notify the viewer and will still
+//    update the expressions window.
 // ****************************************************************************
 
 void
@@ -1147,6 +1150,9 @@ QvisExpressionsWindow::addExpression()
 //    Cyrus Harrison, Mon Jul 21 16:22:30 PDT 2008
 //    Fixed a crash when last expression was deleted. 
 //
+//    Eddie Rusu, Wed Jun 24 15:46:57 PDT 2020
+//    Adding and deleting expressions will not notify the viewer and will still
+//    update the expressions window.
 // ****************************************************************************
 void
 QvisExpressionsWindow::delExpression()
@@ -1157,7 +1163,7 @@ QvisExpressionsWindow::delExpression()
         return;
 
     exprList->RemoveExpressions(indexMap[index]);
-    exprList->Notify();
+    UpdateWindow(false);
 
     // try to select sensible expression:
     // if del expr was last expr: before
