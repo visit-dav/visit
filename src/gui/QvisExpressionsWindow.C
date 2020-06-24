@@ -958,6 +958,7 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
         enable = false;
     }
 
+
     nameEdit->setEnabled(enable);
     delButton->setEnabled(enable);
 
@@ -1109,7 +1110,7 @@ QvisExpressionsWindow::addExpression()
     e.SetDefinition("");
     exprList->AddExpressions(e);
 
-    exprList->Notify();
+    UpdateWindow(false); // Add the expression to the expression box
 
     for (int i=0; i<exprListBox->count(); i++)
     {
