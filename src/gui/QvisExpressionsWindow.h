@@ -54,10 +54,6 @@ class QvisPythonFilterEditor;
 //    Brad Whitlock, Fri May  6 14:42:31 PDT 2011
 //    I added an override for loadSubject.
 //
-//    Eddie Rusu, Tue Jun 23 14:02:35 PDT 2020
-//    Added FinalizeExpressionNameChange that detects when a user has finished
-//    editting an expression's name to detect for duplicate expression names
-//    in the gui.
 // ****************************************************************************
 
 class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
@@ -82,7 +78,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
   private slots:
     void    addExpression();
     void    delExpression();
-    void    FinalizeExpressionNameChange();
+    void    nameTextChanged(const QString&);
 
     void    typeChanged(int);
     void    displayAllVarsChanged();
@@ -104,7 +100,6 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
 
     void    UpdateWindowSingleItem();
     void    UpdateWindowSensitivity();
-
 
   private:
 
@@ -160,7 +155,6 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     std::map<int,int>       indexMap;
     bool                    stdExprActive;
     bool                    pyExprActive;
-
 };
 
 #endif
