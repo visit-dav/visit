@@ -556,7 +556,7 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //
 //    Eddie Rusu, Tue Jun 23 14:02:35 PDT 2020
 //    Added FinalizeExpressionNameChange that detects when a user has finished
-//    editting an expression's name to detect for duplicate expression names
+//    editing an expression's name to detect for duplicate expression names
 //    in the gui.
 //
 // ****************************************************************************

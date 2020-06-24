@@ -56,7 +56,7 @@ class QvisPythonFilterEditor;
 //
 //    Eddie Rusu, Tue Jun 23 14:02:35 PDT 2020
 //    Added FinalizeExpressionNameChange that detects when a user has finished
-//    editting an expression's name to detect for duplicate expression names
+//    editing an expression's name to detect for duplicate expression names
 //    in the gui.
 // ****************************************************************************
 
@@ -104,7 +104,6 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
 
     void    UpdateWindowSingleItem();
     void    UpdateWindowSensitivity();
-
 
   private:
 
@@ -160,7 +159,6 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     std::map<int,int>       indexMap;
     bool                    stdExprActive;
     bool                    pyExprActive;
-
 };
 
 #endif
