@@ -1088,8 +1088,8 @@ QvisExpressionsWindow::apply()
 //    Make the name active so we can change it.
 //
 //    Eddie Rusu, Wed Jun 24 15:46:57 PDT 2020
-//    Adding and deleting expressions will not notify the viewer and will still
-//    update the expressions window.
+//    Adding and deleting expressions now only modifies the expressions window.
+//    The user must click apply to actually apply the changes to Visit.
 // ****************************************************************************
 
 void
@@ -1151,8 +1151,8 @@ QvisExpressionsWindow::addExpression()
 //    Fixed a crash when last expression was deleted. 
 //
 //    Eddie Rusu, Wed Jun 24 15:46:57 PDT 2020
-//    Adding and deleting expressions will not notify the viewer and will still
-//    update the expressions window.
+//    Adding and deleting expressions now only modifies the expressions window.
+//    The user must click apply to actually apply the changes to Visit.
 // ****************************************************************************
 void
 QvisExpressionsWindow::delExpression()
