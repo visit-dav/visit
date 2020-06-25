@@ -958,6 +958,7 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
         enable = false;
     }
 
+
     nameEdit->setEnabled(enable);
     delButton->setEnabled(enable);
 
@@ -1086,6 +1087,9 @@ QvisExpressionsWindow::apply()
 //    Brad Whitlock, Thu Oct 27 14:42:53 PDT 2011
 //    Make the name active so we can change it.
 //
+//    Eddie Rusu, Wed Jun 24 15:46:57 PDT 2020
+//    Adding and deleting expressions now only modifies the expressions window.
+//    The user must click apply to actually apply the changes to Visit.
 // ****************************************************************************
 
 void
@@ -1109,7 +1113,7 @@ QvisExpressionsWindow::addExpression()
     e.SetDefinition("");
     exprList->AddExpressions(e);
 
-    exprList->Notify();
+    UpdateWindow(false); // Add the expression to the expression box
 
     for (int i=0; i<exprListBox->count(); i++)
     {
@@ -1146,6 +1150,9 @@ QvisExpressionsWindow::addExpression()
 //    Cyrus Harrison, Mon Jul 21 16:22:30 PDT 2008
 //    Fixed a crash when last expression was deleted. 
 //
+//    Eddie Rusu, Wed Jun 24 15:46:57 PDT 2020
+//    Adding and deleting expressions now only modifies the expressions window.
+//    The user must click apply to actually apply the changes to Visit.
 // ****************************************************************************
 void
 QvisExpressionsWindow::delExpression()
@@ -1156,7 +1163,7 @@ QvisExpressionsWindow::delExpression()
         return;
 
     exprList->RemoveExpressions(indexMap[index]);
-    exprList->Notify();
+    UpdateWindow(false);
 
     // try to select sensible expression:
     // if del expr was last expr: before
