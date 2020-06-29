@@ -3146,7 +3146,10 @@ ControlPointList::DeleteHighestRank()
 // Creation:   Wed Jan 3 11:42:16 PDT 2001
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Mon Jun 22 16:28:50 PDT 2020
+//    Modified how position is determined in the equal case, to fix selection
+//    of control points.  Was: (index*(1.-offset))+(offset*0.5)
+//
 // ****************************************************************************
 
 int
@@ -3167,7 +3170,7 @@ ControlPointList::ChangeSelectedIndex(float pos, float width, int equal)
         index = Rank(i);
 
         if(equal)
-            position = (index *(1. - offset)) +(offset * 0.5);
+            position = (index *offset) +(offset * 0.5);
         else
             position = list[index].position;
 
