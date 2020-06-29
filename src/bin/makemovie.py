@@ -7,7 +7,6 @@ import os
 import select
 import signal
 import socket
-import string
 import sys
 
 if (sys.version_info > (3, 0)):
@@ -432,7 +431,7 @@ class EngineAttributesParser(XMLParser):
             elif type == "string":
                 value = StripLeadingTrailingQuotes(data)
             elif type == "stringVector":
-                fragments = string.split(data, "\"")
+                fragments = data.split("\"")
                 value = []
                 for s in fragments:
                    if len(s) > 0:
@@ -515,7 +514,7 @@ class WindowSizeParser(XMLParser):
             elif name == "windowImageSize" and type == "intArray":
                 length = self.dataAtts["length"]
                 if length == "2":
-                    fragments = string.split(data, " ")
+                    fragments = data.split(" ")
                     value = []
                     for s in fragments:
                        if len(s) > 0:
@@ -1029,7 +1028,7 @@ class MakeMovie(object):
                 server = smtplib.SMTP('localhost')
 
                 domain = "llnl.gov"
-                d = string.split(os.uname()[1], ".")
+                d = os.uname()[1].split(".")
                 if len(d) > 2:
                     name = ""
                     for i in range(1, len(d)):
@@ -1079,7 +1078,7 @@ class MakeMovie(object):
         extensions = (".session", ".vses", ".VSES", ".VSE", ".py", ".PY", ".xml", ".XML")
         extensionLocated = 0
         for ext in extensions:
-            pos = string.rfind(fileName, ext)
+            pos = fileName.rfind(ext)
             if(pos != -1):
                 fileName = fileName[:pos]
                 extensionLocated = 1
@@ -1089,7 +1088,7 @@ class MakeMovie(object):
         # If we located an extension then try and look for a path separator.
         if(extensionLocated == 1):
             for separator in ("/", "\\"):
-                pos = string.rfind(fileName, separator)
+                pos = fileName.rfind(separator)
                 if(pos != -1):
                     self.outputDir = fileName[:pos]
                     self.movieBase = fileName[pos+1:]
@@ -1112,7 +1111,7 @@ class MakeMovie(object):
 
     def SplitString(self, s, delim):
         retval = []
-        tokens = string.split(s, delim)
+        tokens = s.split(delim)
         for t in tokens:
             if len(t) > 0:
                 retval = retval + [t]
@@ -1234,7 +1233,7 @@ class MakeMovie(object):
         for arg in sys.argv:
             if splitEngineArgs == 1:
                 splitEngineArgs = 0
-                eargs = string.split(arg, ";")
+                eargs = arg.split(";")
                 for earg in eargs:
                     if len(earg) > 0:
                         commandLine = commandLine + [earg]
@@ -1312,7 +1311,7 @@ class MakeMovie(object):
             elif(commandLine[i] == "-source"):
                 if((i+1) < len(commandLine)):
                     filename = commandLine[i+1]
-                    if string.find(filename, ":") == -1:
+                    if filename.find(":") == -1:
                         filename = "localhost:" + filename
                     self.sources = self.sources + [filename]
                     i = i + 1
@@ -1616,7 +1615,7 @@ class MakeMovie(object):
             if outputName[0] == '/':
                 # Absolute path
                 entirePath = outputName
-            elif string.find(outputName, self.slash) != -1:
+            elif outputName.find(self.slash) != -1:
                 # Relative path
                 entirePath = os.path.abspath(os.curdir) + self.slash + outputName
             else:
@@ -1624,7 +1623,7 @@ class MakeMovie(object):
                 entirePath = os.path.abspath(os.curdir) + self.slash + outputName
 
             # Separate into outputDir, movieBase.
-            pos = string.rfind(entirePath, self.slash)
+            pos = entirePath.rfind(self.slash)
             if pos != -1:
                 self.outputDir = entirePath[:pos]
                 self.movieBase = entirePath[pos+1:]
@@ -1901,7 +1900,7 @@ class MakeMovie(object):
         newname = "%s.mangled" % name
         f = open(newname, "w")
         for line in lines:
-            index = string.find(line, "SaveWindow()")
+            index = line.find("SaveWindow()")
             if index == -1:
                 f.write(line)
             else:
@@ -1954,9 +1953,9 @@ class MakeMovie(object):
             reading = 0
             indent = 0
             for line in lines:
-                level = string.find(line, "<")
+                level = line.find("<")
                 if reading == 0:
-                    if string.find(line, "<Object name=\"RunningEngines\">") != -1:
+                    if line.find("<Object name=\"RunningEngines\">") != -1:
                         reading = 1
                         runningEngines = runningEngines + [line]
                         indent = level
@@ -2328,16 +2327,16 @@ class MakeMovie(object):
             if os.name == "nt":
                 prefix = sys.executable[:-7] + "resources" + self.slash
             else:
-                pos = string.find(sys.argv[0], "exe" + self.slash + "cli")
+                pos = sys.argv[0].find("exe" + self.slash + "cli")
                 if pos != -1:
                     # Development version
                     prefix = sys.argv[0][:pos+4]
                     exe_dir = self.slash + "exe" + self.slash
                     resources_dir = self.slash + "resources" + self.slash
-                    prefix = string.replace(prefix, exe_dir, resources_dir)
+                    prefix = prefix.replace(exe_dir, resources_dir)
                 else:
                     # Installed version
-                    pos = string.find(sys.exec_prefix, "lib" + self.slash + "python")
+                    pos = sys.exec_prefix.find("lib" + self.slash + "python")
                     prefix = sys.exec_prefix[:pos] + "resources" + self.slash
             templateBaseFile = prefix + "movietemplates" + self.slash + "visitmovietemplate.py"
             self.Debug(1, "GenerateFrames: sourcing template base class file %s" % templateBaseFile)
@@ -2370,8 +2369,8 @@ class MakeMovie(object):
                     print(tFile)
                     fileFound = 0
                     for name in (tFile, prefix + "movietemplates" + self.slash + tFile):
-                        if (sys.platform != "win32") and string.find(name, "~") != -1:
-                            name2 = string.replace(name, "~", os.getenv("HOME"))
+                        if (sys.platform != "win32") and name.find("~") != -1:
+                            name2 = name.replace("~", os.getenv("HOME"))
                         else:
                             name2 = name
                         tmpPY = os.path.abspath(name2)
@@ -2878,7 +2877,7 @@ class MakeMovie(object):
             if stereo == self.STEREO_LEFTRIGHT:
                 # All of the frames are named left*, right* so we need to temporarily
                 # rename them all to some common file base where left and right alternate.
-                lastSlash = string.find(imageFormatString, self.slash)
+                lastSlash = imageFormatString.find(self.slash)
                 if lastSlash != -1:
                     leftFmt = imageFormatString[:lastSlash+1] + "left_" + imageFormatString[lastSlash+1:] + ext
                     rightFmt = imageFormatString[:lastSlash+1] + "right_" + imageFormatString[lastSlash+1:] + ext
