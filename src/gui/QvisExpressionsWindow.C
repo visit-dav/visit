@@ -27,6 +27,8 @@
 #include <QvisVariableButton.h>
 #include <QvisPythonFilterEditor.h>
 
+#include <DebugStream.h>
+
 #define STDMIN(A,B) (((A)<(B)) ? (A) : (B))
 #define STDMAX(A,B) (((A)<(B)) ? (B) : (A))
 
@@ -552,6 +554,11 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //    changed an erroneous pointer-based string comparison to a true
 //    string based comparison.
 //
+//    Eddie Rusu, Tue Jun 23 14:02:35 PDT 2020
+//    Added FinalizeExpressionNameChange that detects when a user has finished
+//    editing an expression's name to detect for duplicate expression names
+//    in the gui.
+//
 // ****************************************************************************
 
 void
@@ -627,8 +634,8 @@ QvisExpressionsWindow::CreateWindowContents()
 
     connect(exprListBox, SIGNAL(itemSelectionChanged()),
             this, SLOT(UpdateWindowSingleItem()));
-    connect(nameEdit, SIGNAL(textChanged(const QString&)),
-            this, SLOT(nameTextChanged(const QString&)));
+    connect(nameEdit, SIGNAL(editingFinished()),
+            this, SLOT(FinalizeExpressionNameChange()));
 
     connect(newButton, SIGNAL(pressed()),
             this, SLOT(addExpression()));
@@ -951,6 +958,7 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
         enable = false;
     }
 
+
     nameEdit->setEnabled(enable);
     delButton->setEnabled(enable);
 
@@ -1079,6 +1087,9 @@ QvisExpressionsWindow::apply()
 //    Brad Whitlock, Thu Oct 27 14:42:53 PDT 2011
 //    Make the name active so we can change it.
 //
+//    Eddie Rusu, Wed Jun 24 15:46:57 PDT 2020
+//    Adding and deleting expressions now only modifies the expressions window.
+//    The user must click apply to actually apply the changes to Visit.
 // ****************************************************************************
 
 void
@@ -1102,7 +1113,7 @@ QvisExpressionsWindow::addExpression()
     e.SetDefinition("");
     exprList->AddExpressions(e);
 
-    exprList->Notify();
+    UpdateWindow(false); // Add the expression to the expression box
 
     for (int i=0; i<exprListBox->count(); i++)
     {
@@ -1139,6 +1150,9 @@ QvisExpressionsWindow::addExpression()
 //    Cyrus Harrison, Mon Jul 21 16:22:30 PDT 2008
 //    Fixed a crash when last expression was deleted. 
 //
+//    Eddie Rusu, Wed Jun 24 15:46:57 PDT 2020
+//    Adding and deleting expressions now only modifies the expressions window.
+//    The user must click apply to actually apply the changes to Visit.
 // ****************************************************************************
 void
 QvisExpressionsWindow::delExpression()
@@ -1149,7 +1163,7 @@ QvisExpressionsWindow::delExpression()
         return;
 
     exprList->RemoveExpressions(indexMap[index]);
-    exprList->Notify();
+    UpdateWindow(false);
 
     // try to select sensible expression:
     // if del expr was last expr: before
@@ -1240,62 +1254,70 @@ QvisExpressionsWindow::pyFilterSourceChanged()
     UpdatePythonExpression();
 }
 
-
 // ****************************************************************************
-//  Method:  QvisExpressionsWindow::nameTextChanged
+//  Method:  QvisExpressionsWindow::FinalizeExpressionNameChange
 //
 //  Purpose:
-//    Slot function when any change happens to the expression names.
+//    When the user finishes editting the name of an expression in the gui,
+//    this function will check that name is unique. If it is not unique, then
+//    it will automatically update the name by appending a number to the end.
 //
-//  Arguments:
-//    text       the new text.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    October 10, 2004
-//
-//  Modifications:
-//    Jeremy Meredith, Mon Oct 25 12:40:31 PDT 2004
-//    Always access the expression list by index, just in case there
-//    are two expressions with the same name.
-//
-//    Jeremy Meredith, Mon Oct 17 10:42:08 PDT 2005
-//    Never allow an empty name to get into the expression list.  This
-//    could cause crashes.  ('6295)
-//
-//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
-//    Initial Qt4 Port.
-//
+//  Programmer:  Eddie Rusu
+//  Creation:    Tue Jun 23 14:02:35 PDT 2020
 // ****************************************************************************
 void
-QvisExpressionsWindow::nameTextChanged(const QString &text)
+QvisExpressionsWindow::FinalizeExpressionNameChange()
 {
+    // Get the text from the currently selected item in the expression box
     int index = exprListBox->currentRow();
-
     if (index <  0)
         return;
+    QString text_from_expr_list = exprListBox->item(index)->text();
 
-    Expression &e = (*exprList)[indexMap[index]];
-
-    QString newname = text.trimmed();
-
-    if (newname.isEmpty())
+    // Get the text from the nameEdit field, automatically converting empty text to unnamed%1.
+    QString text_from_line_edit = nameEdit->text().trimmed();
+    if (text_from_line_edit.isEmpty())
     {
         int newid = 1;
         bool okay = false;
         while (!okay)
         {
-            newname = tr("unnamed%1").arg(newid);
-            if ((*exprList)[newname.toStdString().c_str()])
+            text_from_line_edit = tr("unnamed%1").arg(newid);
+            if ((*exprList)[text_from_line_edit.toStdString().c_str()])
                 newid++;
             else
                 okay = true;
         }
     }
 
-    e.SetName(newname.toStdString());
-    BlockAllSignals(true);
-    exprListBox->item(index)->setText(newname);
-    BlockAllSignals(false);
+    // If the name has indeed changed, then update the list
+    if (text_from_expr_list != text_from_line_edit)
+    {
+        // Need to make sure that the new name is not already taken. If it is, then append a number
+        // on the end. Increment that number however many times is necessary until we get a unique
+        // name.
+        std::string new_name_string = text_from_line_edit.toStdString();
+        int newid = 1;
+        bool okay = (*exprList)[new_name_string.c_str()] ? false : true;
+        while (!okay)
+        {
+            text_from_line_edit = tr((new_name_string + "%1").c_str()).arg(newid);
+            if ((*exprList)[text_from_line_edit.toStdString().c_str()])
+                newid++;
+            else
+                okay = true;
+        }
+
+        // Update the expression list with the new name
+        Expression &e = (*exprList)[indexMap[index]];
+        e.SetName(text_from_line_edit.toStdString());
+        BlockAllSignals(true);
+        exprListBox->item(index)->setText(text_from_line_edit);
+        BlockAllSignals(false);
+
+        // Update the textbox at the top with the expression's name
+        nameEdit->setText(text_from_line_edit);
+    }
 }
 
 // ****************************************************************************

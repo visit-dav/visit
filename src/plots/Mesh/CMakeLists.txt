@@ -81,6 +81,7 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
+${VISIT_INCLUDE_DIR}/avt/Plotter/vtk
 )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )

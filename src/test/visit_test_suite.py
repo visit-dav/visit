@@ -108,7 +108,7 @@ def parse_test_specific_vargs(test_file):
 # ----------------------------------------------------------------------------
 #  Method: parse_test_specific_limit
 #
-#  Programmer: Kathleen Biagas 
+#  Programmer: Kathleen Biagas
 #  Date:       Thu Nov 8, 2018
 # ----------------------------------------------------------------------------
 def parse_test_specific_limit(test_file):
@@ -411,7 +411,7 @@ def log_test_result(result_dir,result):
 #    Added sessionfiles option to rigoursly test session files
 #
 #    Kathleen Biagas, Thu Nov  8 10:33:45 PST 2018
-#    Added src_dir and cmake_cmd.  
+#    Added src_dir and cmake_cmd.
 #
 #    Eric Brugger, Wed Dec  5 13:05:18 PST 2018
 #    Changed the definition of tests_dir_def to the new location of the
@@ -431,7 +431,7 @@ def default_suite_options():
     skip_def        = pjoin(test_path(),"skip.json")
     # Set nprocs_def to 1, since multi-proc test mode seems to result in
     # crossed streams. In the past we have used: multiprocessing.cpu_count()
-    nprocs_def      = 1 
+    nprocs_def      = 1
     opts_full_defs = {
                       "use_pil":True,
                       "threshold_diff":False,
@@ -1028,9 +1028,16 @@ def resolve_test_paths(tests,tests_dir):
 #   Kathleen Biagas, Wed Dec 18 17:22:59 MST 2019
 #   On windows, glob any '*.py' tests names.
 #
+#
 #   Cyrus Harrison, Fri Apr 10 08:57:27 PDT 2020
 #   Allow passing test via full file path, in addition to rel to the 
 #   tests dir.
+#
+#   Kathleen Biagas, Wed Jun  3 09:28:11 PDT 2020
+#   Test for '*' on all platforms not just windows. Allows globbing from
+#   batch scripts (where the command-line-glob won't necessarily be expanded).
+#   And allows out-of-source testing to use file glob as well (surrounded by
+#   quotes).
 #
 # ----------------------------------------------------------------------------
 def main(opts,tests):

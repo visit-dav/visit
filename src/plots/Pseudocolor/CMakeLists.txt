@@ -29,9 +29,7 @@ PseudocolorViewerEnginePluginInfo.C
 PseudocolorViewerPluginInfo.C
 avtPseudocolorPlot.C
 avtPseudocolorFilter.C
-avtPseudocolorGeometryFilter.C
 avtPseudocolorMapper.C
-vtkExtractCellsByType.C
 ${COMMON_SOURCES}
 )
 
@@ -40,9 +38,7 @@ PseudocolorViewerEnginePluginInfo.C
 PseudocolorEnginePluginInfo.C
 avtPseudocolorPlot.C
 avtPseudocolorFilter.C
-avtPseudocolorGeometryFilter.C
 avtPseudocolorMapper.C
-vtkExtractCellsByType.C
 ${COMMON_SOURCES}
 )
 

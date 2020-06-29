@@ -21,11 +21,11 @@ function vercomp ()
             # fill empty fields in ver2 with zeros
             ver2[i]=0
         fi
-        if [[ 10#${ver1[i]} > 10#${ver2[i]} ]]
+        if [[ 10#${ver1[i]} -gt 10#${ver2[i]} ]]
         then
             return 1
         fi
-        if [[ 10#${ver1[i]} < 10#${ver2[i]} ]]
+        if [[ 10#${ver1[i]} -lt 10#${ver2[i]} ]]
         then
             return 2
         fi
