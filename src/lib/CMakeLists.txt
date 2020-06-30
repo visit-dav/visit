@@ -43,6 +43,9 @@
 #    Use ${PYSIDE_PYTHONPATH} (set by findpackage PySide) instead of 
 #    ${VISIT_PYSIDE_DIR}/lib/site-packages to support system PySide installs
 #
+#    Kathleen Biagas, Thu Jun 25 14:13:46 PDT 2020
+#    Check if Pyside installed in python before adding to lib/site-packages.
+#
 #----------------------------------------------------------------------------
 
 IF(VISIT_PYTHON_DIR)
@@ -122,7 +125,7 @@ IF(VISIT_PYTHON_FILTERS)
     ENDIF (NOT WIN32)
 ENDIF(VISIT_PYTHON_FILTERS)
 
-IF(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE)
+IF(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE AND NOT PYSIDE_IN_PYTHON)
     MESSAGE(STATUS "Adding PySide to lib/site-packages/")
     IF (NOT WIN32)
         FILE(GLOB PYSIDE_MODULE_ITEMS "${PYSIDE_PYTHONPATH}/*")
@@ -153,5 +156,5 @@ IF(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE)
             add_dependencies(visit_special_builds pyside_modules)
         endif()
     ENDIF (NOT WIN32)
-ENDIF(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE)
+ENDIF()
 
