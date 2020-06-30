@@ -61,7 +61,7 @@ function bv_llvm_initialize_vars
 {
     export VISIT_LLVM_DIR=${VISIT_LLVM_DIR:-"$VISITDIR/llvm/${BV_LLVM_VERSION}/${VISITARCH}"}
     LLVM_INCLUDE_DIR="${VISIT_LLVM_DIR}/include"
-    LLVM_LIB_DIR="${VISIT_LLVM_DIR}/lib"
+    export LLVM_LIB_DIR="${VISIT_LLVM_DIR}/lib"
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         LLVM_LIB="${LLVM_LIB_DIR}/libLLVM.a"
     else

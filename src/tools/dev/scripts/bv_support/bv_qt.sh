@@ -106,12 +106,12 @@ function bv_qt_info
 {
     bv_qt_enable
 
-    export QT_VERSION=${QT_VERSION:-"5.10.1"}
+    export QT_VERSION=${QT_VERSION:-"5.14.2"}
     export QT_FILE=${QT_FILE:-"qt-everywhere-src-${QT_VERSION}.tar.xz"}
     export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
     export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_BUILD_DIR}/bin"}
-    export QT_MD5_CHECKSUM="7e167b9617e7bd64012daaacb85477af"
-    export QT_SHA256_CHECKSUM="05ffba7b811b854ed558abf2be2ddbd3bb6ddd0b60ea4b5da75d277ac15e740a"
+    #export QT_MD5_CHECKSUM="7e167b9617e7bd64012daaacb85477af"
+    #export QT_SHA256_CHECKSUM="05ffba7b811b854ed558abf2be2ddbd3bb6ddd0b60ea4b5da75d277ac15e740a"
 }
 
 function bv_qt_print
@@ -205,9 +205,9 @@ function qt_license_prompt
 function apply_qt_patch
 {
     if [[ "$DO_MESAGL" == "yes" ]] ; then
-        if [[ ${QT_VERSION} == 5.10.1 ]] ; then
+        if [[ ${QT_VERSION} == 5.14.2 ]] ; then
             if [[ "$OPSYS" == "Linux" ]]; then
-                apply_qt_5101_linux_mesagl_patch
+                apply_qt_5142_linux_mesagl_patch
                 if [[ $? != 0 ]] ; then
                     return 1
                 fi
@@ -215,6 +215,7 @@ function apply_qt_patch
         fi
     fi
 
+    # these haven't been updated for 5.14.2, and may not be needed.
     if [[ ${QT_VERSION} == 5.10.1 ]] ; then
         if [[ -f /etc/centos-release ]] ; then
             VER=`cat /etc/centos-release | cut -d' ' -f 4`
@@ -247,76 +248,92 @@ function apply_qt_patch
             if [[ $? != 0 ]] ; then
                 return 1
             fi
-
-            if [[ "$C_COMPILER" == "gcc" ]]; then
-                apply_qt_5101_gcc_9_2_patch
-                if [[ $? != 0 ]] ; then
-                    return 1
-                fi
-            fi
-        fi
-
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            if [[ `sw_vers -productVersion` == 10.14.[0-9]* ]]; then
-                apply_qt_5101_macos_mojave_patch
-                if [[ $? != 0 ]] ; then
-                    return 1
-                fi
-            fi
         fi
     fi
 
     return 0
 }
 
-function apply_qt_5101_linux_mesagl_patch
+function apply_qt_5142_linux_mesagl_patch
 {   
-    info "Patching qt 5.10.1 for Linux and Mesa-as-GL"
+    info "Patching qt 5.14.2 for Linux and Mesa-as-GL"
     patch -p0 <<EOF
-    diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf
-    *** qtbase/mkspecs/linux-g++-64/qmake.conf.orig     Thu Feb  8 18:24:48 2018
-    --- qtbase/mkspecs/linux-g++-64/qmake.conf  Fri Feb 22 22:04:50 2019
-    ***************
-    *** 19,24 ****
+diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf
+*** qtbase/mkspecs/linux-g++-64/qmake.conf.orig
+--- qtbase/mkspecs/linux-g++-64/qmake.conf
+***************
+*** 18,24 ****
+  include(../common/g++-unix.conf)
   
   
-      QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
-    ! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
+! QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
   
-      load(qt_config)
-    --- 19,25 ----
+  load(qt_config)
+--- 18,25 ----
+  include(../common/g++-unix.conf)
   
   
-      QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
-    ! QMAKE_LIBDIR_OPENGL=$MESAGL_LIB_DIR $LLVM_LIB_DIR
-    ! QMAKE_INCDIR_OPENGL=$MESAGL_INCLUDE_DIR
+! QMAKE_LIBDIR_X11        = /usr/lib64
+! QMAKE_LIBDIR_OPENGL     = $MESAGL_LIB_DIR $LLVM_LIB_DIR 
+! QMAKE_INCDIR_OPENGL     = $MESAGL_INCLUDE_DIR
   
-      load(qt_config)
+  load(qt_config)
+
 EOF
     if [[ $? != 0 ]] ; then
-        warn "qt 5.10.1 linux mesagl patch failed."
+        warn "qt 5.14.2 linux mesagl patch 1 failed."
         return 1
     fi
     
     patch -p0 <<EOF
 diff -c qtbase/mkspecs/linux-icc-64/qmake.conf.orig qtbase/mkspecs/linux-icc-64/qmake.conf
-*** qtbase/mkspecs/linux-icc-64/qmake.conf.orig	Fri Nov 22 15:24:45 2019
---- qtbase/mkspecs/linux-icc-64/qmake.conf	Fri Nov 22 15:25:11 2019
+*** qtbase/mkspecs/linux-icc-64/qmake.conf.orig
+--- qtbase/mkspecs/linux-icc-64/qmake.conf
 ***************
-*** 13,16 ****
+*** 12,16 ****
+  
   # Change the all LIBDIR variables to use lib64 instead of lib
   
-  QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
 ! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
---- 13,17 ----
+--- 12,18 ----
+  
   # Change the all LIBDIR variables to use lib64 instead of lib
   
-  QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
-! QMAKE_LIBDIR_OPENGL=$MESAGL_LIB_DIR $LLVM_LIB_DIR
-! QMAKE_INCDIR_OPENGL=$MESAGL_INCLUDE_DIR
+! QMAKE_LIBDIR_X11        = /usr/lib64
+! QMAKE_LIBDIR_OPENGL     = $MESAGL_LIB_DIR $LLVM_LIB_DIR
+! QMAKE_INCDIR_OPENGL     = $MESAGL_INCLUDE_DIR
+! 
 EOF
     if [[ $? != 0 ]] ; then
-        warn "qt 5.10.1 linux mesagl patch failed."
+        warn "qt 5.14.2 linux mesagl patch 2failed."
+        return 1
+    fi
+    patch -p0 <<EOF
+diff -c qtbase/mkspecs/common/linux.conf.orig qtbase/mkspecs/common/linux.conf
+*** qtbase/mkspecs/common/linux.conf.orig
+--- qtbase/mkspecs/common/linux.conf
+***************
+*** 30,36 ****
+  QMAKE_LIBS_DYNLOAD      = -ldl
+  QMAKE_LIBS_X11          = -lXext -lX11 -lm
+  QMAKE_LIBS_EGL          = -lEGL
+! QMAKE_LIBS_OPENGL       = -lGL
+  QMAKE_LIBS_OPENGL_ES2   = -lGLESv2
+  QMAKE_LIBS_OPENVG       = -lOpenVG
+  QMAKE_LIBS_THREAD       = -lpthread
+--- 30,36 ----
+  QMAKE_LIBS_DYNLOAD      = -ldl
+  QMAKE_LIBS_X11          = -lXext -lX11 -lm
+  QMAKE_LIBS_EGL          = -lEGL
+! QMAKE_LIBS_OPENGL       = -lGL -lLLVM
+  QMAKE_LIBS_OPENGL_ES2   = -lGLESv2
+  QMAKE_LIBS_OPENVG       = -lOpenVG
+  QMAKE_LIBS_THREAD       = -lpthread
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.14.2 linux mesagl patch 3 failed."
         return 1
     fi
 
@@ -324,7 +341,7 @@ EOF
 }
 
 function apply_qt_5101_centos8_patch
-{   
+{   #KSB 6-11-2020 Not sure if this patch needs to be redone for 5.14.2 
     info "Patching qt 5.10.1 for Centos8"
     patch -p0 <<EOF
 diff -c qtbase/src/corelib/io/qfilesystemengine_unix.cpp.orig qtbase/src/corelib/io/qfilesystemengine_unix.cpp
@@ -366,70 +383,11 @@ EOF
 }
 
 function apply_qt_5101_blueos_patch
-{   
+{   # KSB 6-11-20, I think this can be removed for qt 5.14.2 
     info "Patching qt 5.10.1 for Blueos"
     sed -i "s/PNG_ARM_NEON_OPT=0/PNG_ARM_NEON_OPT=0 PNG_POWERPC_VSX_OPT=0/" qtbase/src/3rdparty/libpng/libpng.pro
     if [[ $? != 0 ]] ; then
         warn "qt 5.10.1 blueos patch failed."
-        return 1
-    fi
-    
-    return 0;
-}
-
-function apply_qt_5101_macos_mojave_patch
-{
-    info "Patching qt 5.10.1 for macOS 10.14 (Mojave)..."
-    patch -p0 <<EOF
-diff -c qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm.orig qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm
-*** qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm.orig	2020-01-16 11:06:12.000000000 -0800
---- qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm	2020-01-16 11:06:38.000000000 -0800
-***************
-*** 830,836 ****
-  
-  QFixed QCoreTextFontEngine::emSquareSize() const
-  {
-!     return QFixed::QFixed(int(CTFontGetUnitsPerEm(ctfont)));
-  }
-  
-  QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
---- 830,836 ----
-  
-  QFixed QCoreTextFontEngine::emSquareSize() const
-  {
-!     return QFixed(int(CTFontGetUnitsPerEm(ctfont)));
-  }
-  
-  QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "qt 5.10.1 macOS 10.14 patch failed."
-        return 1
-    fi
-    
-    return 0;
-}
-
-function apply_qt_5101_gcc_9_2_patch
-{
-    info "Patching qt 5.10.1 for gcc 9.2"
-    patch -p0 <<EOF
-diff -c qtbase/src/corelib/global/qrandom.cpp.orig qtbase/src/corelib/global/qrandom.cpp
-*** qtbase/src/corelib/global/qrandom.cpp.orig	Mon Mar  9 17:09:47 2020
---- qtbase/src/corelib/global/qrandom.cpp	Mon Mar  9 17:10:42 2020
-***************
-*** 220,225 ****
---- 220,226 ----
-  #endif // Q_OS_WINRT
-  
-      static SystemGenerator &self();
-+     typedef quint32 result_type;
-      void generate(quint32 *begin, quint32 *end) Q_DECL_NOEXCEPT_EXPR(FillBufferNoexcept);
-  
-      // For std::mersenne_twister_engine implementations that use something
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "qt 5.10.1 gcc 9.2 patch failed."
         return 1
     fi
     
@@ -552,10 +510,11 @@ function build_qt
     qt_flags="${qt_flags} -no-libjpeg"
     qt_flags="${qt_flags} -opensource"
     qt_flags="${qt_flags} -confirm-license"
+    qt_flags="${qt_flags} -c++std c++11"
 
     QT_VER_MSG="Qt5"
     qt_flags="${qt_flags} -skip 3d"
-    qt_flags="${qt_flags} -skip canvas3d"
+    qt_flags="${qt_flags} -skip activeqt"
     qt_flags="${qt_flags} -skip charts"
     qt_flags="${qt_flags} -skip connectivity"
     qt_flags="${qt_flags} -skip datavis3d"
@@ -563,11 +522,14 @@ function build_qt
     qt_flags="${qt_flags} -skip gamepad"
     qt_flags="${qt_flags} -skip graphicaleffects"
     qt_flags="${qt_flags} -skip location"
+    qt_flags="${qt_flags} -skip lottie"
     qt_flags="${qt_flags} -skip multimedia"
     qt_flags="${qt_flags} -skip networkauth"
     qt_flags="${qt_flags} -skip purchasing"
+    qt_flags="${qt_flags} -skip quick3d"
     qt_flags="${qt_flags} -skip quickcontrols"
     qt_flags="${qt_flags} -skip quickcontrols2"
+    qt_flags="${qt_flags} -skip quicktimeline"
     qt_flags="${qt_flags} -skip remoteobjects"
     qt_flags="${qt_flags} -skip scxml"
     qt_flags="${qt_flags} -skip sensors"
@@ -579,9 +541,10 @@ function build_qt
     qt_flags="${qt_flags} -no-qml-debug"
     qt_flags="${qt_flags} -qt-zlib"
     qt_flags="${qt_flags} -qt-libpng"
+    qt_flags="${qt_flags} -no-debug-and-release"
 
     if [[ "$OPSYS" == "Linux" ]] ; then
-        qt_flags="${qt_flags} -qt-xcb -qt-xkbcommon"
+        qt_flags="${qt_flags} -qt-xcb --xkbcommon=yes"
     fi
 
     if [[ "$VISIT_BUILD_MODE" == "Debug" ]] ; then

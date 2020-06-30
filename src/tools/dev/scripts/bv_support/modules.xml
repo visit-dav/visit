@@ -46,6 +46,7 @@
             <lib name="ospray"/>
             <lib name="p7zip"/>
             <lib name="pidx"/>
+            <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="stripack"/>
             <lib name="szip"/>
@@ -95,6 +96,7 @@
             <lib name="ospray"/>
             <lib name="p7zip"/>
             <lib name="pidx"/>
+            <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="tbb"/>
