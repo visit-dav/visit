@@ -261,7 +261,6 @@ function build_pyside
             chgrp -R ${GROUP} "$VISITDIR/pyside"
         fi
 
-        cd "$START_DIR"
     else
         cd "$PYSIDE_BUILD_DIR"
         # do a python build/install
@@ -270,18 +269,12 @@ function build_pyside
         # KSB Fix this, it will only work on some lc systems
         env CLANG_INSTALL_DIR="/usr/tce/packages/clang/clang-6.0.0/release" \
         LD_LIBRARY_PATH=${LLVM_LIB_DIR}:$LD_LIBRARY_PATH \
-        ${VISIT_PYTHON_DIR}/bin/python ./setup.py build  --ignore-git --no-user-cfg --parallel=8 \
-            --qmake=${QT_BIN_DIR}/qmake \
-            --cmake=${CMAKE_INSTALL}/cmake \
-            --openssl=$VISIT_DIR/openssl/$OPENSSL_VERSION/$VISITARCH/bin
-
-        ${VISIT_PYTHON_DIR}/bin/python ./setup.py install  --ignore-git --parallel=8 \
+        ${PYTHON_COMMAND} ./setup.py install  --ignore-git --parallel=8 \
             --qmake=${QT_BIN_DIR}/qmake \
             --cmake=${CMAKE_INSTALL}/cmake \
             --openssl=$VISIT_DIR/openssl/$OPENSSL_VERSION/$VISITARCH/bin
 
         if test $? -ne 0 ; then
-            popd > /dev/null
             warn "Could not install pyside"
             return 1
         fi
@@ -294,6 +287,7 @@ function build_pyside
     
     fi
 
+    cd "$START_DIR"
     info "Done with PySide"
 
     return 0
@@ -327,7 +321,7 @@ function bv_pyside_is_installed
         # check in python
         if [[ ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide2" ||
               ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/shiboken2"  ]]; then
-            info "pyside not installed completely"
+            info "pyside not installed"
             return 0
         fi
     fi
