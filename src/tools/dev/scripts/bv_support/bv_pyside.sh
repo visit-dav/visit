@@ -80,7 +80,7 @@ function bv_pyside_host_profile
         echo "##" >> $HOSTCONF
         echo "## PySide" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "SETUP_APP_VERSION(PYSIDE $PYSIDE_VERSION)"
+        echo "SETUP_APP_VERSION(PYSIDE $PYSIDE_VERSION)" >> $HOSTCONF
         if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then
             echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR $PYSIDE_INSTALL_DIR)" >> $HOSTCONF
         else
@@ -242,7 +242,7 @@ function build_pyside
 
         info "Configuring pyside . . ."
 
-        echo "env LD_LIBRARY_PATH=${LLVM_LIB_DIR}:$LD_LIBRARY_PATH" "\"${CMAKE_BIN}\"" ${popts} ../${PYSIDE_SOURCE_DIR} > bv_run_cmake.sh
+        echo "env LD_LIBRARY_PATH=${LLVM_LIB_DIR}:$LD_LIBRARY_PATH" "\"${CMAKE_BIN}\"" ${pyside_opts} ../${PYSIDE_SRC_DIR} > bv_run_cmake.sh
         cat bv_run_cmake.sh
         issue_command bash bv_run_cmake.sh || error "pyside configuration failed."
 
