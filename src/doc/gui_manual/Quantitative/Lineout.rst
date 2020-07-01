@@ -181,7 +181,7 @@ In the example below the sample points are placed based on where the line
 intersects the edges of the cells. The first point of the line has the
 average of the nodes of the cell that the point is within and the remaining
 points have the value of the average of the nodes of the cell the line is
-about to enter. This can lead to a jadded line even for a smoothly varying
+about to enter. This can lead to a jagged line even for a smoothly varying
 function.
 
 .. _lineoutexample7:
