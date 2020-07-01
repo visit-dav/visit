@@ -105,7 +105,7 @@ script lineout.py.
 Zonal centering with sampling
 """""""""""""""""""""""""""""
 
-In the case of sampling, the step function will become more an more apparent
+In the case of sampling, the step function will become more and more apparent
 as the number of sample points increases.
 
 In the example below there are only 12 samples points and the step function
@@ -130,15 +130,15 @@ quite apparent.
 Zonal centering without sampling
 """"""""""""""""""""""""""""""""
 
-In the case of non-sampling, the sample points are choosen where the line
+In the case of non-sampling, the sample points are chosen where the line
 intersects cell boundaries, which are lines in 2D and faces in 3D. The first
 point of the line has the zonal value of the cell it is within and the
 remaining points have the value of the cell the line is about to enter.
-In this case the step function nature of the function is completely lost.
+In this case the step function nature of the variable is completely lost.
 
 In the example below the sample points are placed based on where the line
-intersects the edges of the cells. The step function nature of the line is
-completely lost and the line looks smoother than the sampled case.
+intersects the edges of the cells. The step function nature of the variable
+is completely lost and the line looks smoother than the sampled case.
 
 .. _lineoutexample4:
 
@@ -149,14 +149,14 @@ completely lost and the line looks smoother than the sampled case.
 Nodal variables vary linearly within a cell. Using sampling produces high
 quality results as long as the number of sample points is chosen such
 that all the cells along the line contain at least one sample point. Using
-non sampling tends to produce poor results based on it's interpolation
+non sampling tends to produce poor results based on its interpolation
 method (described below) and may result in jagged lines, even for smoothly
 varying functions.
 
 Nodal centering with sampling
 """""""""""""""""""""""""""""
 
-In the example below the 12 samples points does a good job of capturing
+In the example below the 12 samples points do a good job of capturing
 the data along the line since all the cells are sampled at least once.
 
 .. _lineoutexample5:
