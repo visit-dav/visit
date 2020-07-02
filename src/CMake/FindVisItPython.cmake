@@ -78,29 +78,10 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 #  PYTHON_VERSION       = version number of found python
 #
 
-# Modified from CMakeFindFrameworks to take firstdir argument, which lets us
-# find our own framework path ahead of the system's.
-#MACRO(VISIT_FIND_FRAMEWORKS fwk firstdir)
-#  SET(${fwk}_FRAMEWORKS)
-#  IF(APPLE)
-#    FOREACH(dir ${firstdir}/${fwk}.framework)
-#      IF(EXISTS ${dir})
-#        SET(${fwk}_FRAMEWORKS ${${fwk}_FRAMEWORKS} ${dir})
-#      ENDIF(EXISTS ${dir})
-#    ENDFOREACH(dir)
-#  ENDIF(APPLE)
-#ENDMACRO(VISIT_FIND_FRAMEWORKS)
-
-# Search for the python framework on Apple.
-#IF(APPLE)
-#    VISIT_FIND_FRAMEWORKS(Python ${PYTHON_DIR})
-#ENDIF(APPLE)
-
 MESSAGE(STATUS "Looking for Python")
 
-
 ###
-# CODE STOLEN FROM CONDUIT TO FIND PYTHON INTERP AND LIBS
+# CODE FROM CONDUIT TO FIND PYTHON INTERP AND LIBS
 ###
 # Find the interpreter first
 if(PYTHON_DIR AND NOT PYTHON_EXECUTABLE)
@@ -111,74 +92,6 @@ if(PYTHON_DIR AND NOT PYTHON_EXECUTABLE)
         set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python3)
     endif()
 endif()
-
-# find_package(PythonInterp REQUIRED)
-# if(PYTHONINTERP_FOUND)
-#
-#         MESSAGE(STATUS "PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE}")
-#
-#         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-#                                 "import sys;from distutils.sysconfig import get_python_inc;sys.stdout.write(get_python_inc())"
-#                         OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
-#                         ERROR_VARIABLE ERROR_FINDING_INCLUDES)
-#         MESSAGE(STATUS "PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR}")
-#
-#         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-#                                 "import sys;from distutils.sysconfig import get_python_lib;sys.stdout.write(get_python_lib())"
-#                         OUTPUT_VARIABLE PYTHON_SITE_PACKAGES_DIR
-#                         ERROR_VARIABLE ERROR_FINDING_SITE_PACKAGES_DIR)
-#         MESSAGE(STATUS "PYTHON_SITE_PACKAGES_DIR ${PYTHON_SITE_PACKAGES_DIR}")
-#
-#         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-#                                 "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"
-#                         OUTPUT_VARIABLE PYTHON_LIB_DIR
-#                         ERROR_VARIABLE ERROR_FINDING_LIB_DIR)
-#         MESSAGE(STATUS "PYTHON_LIB_DIR ${PYTHON_LIB_DIR}")
-#
-#
-#         # check if we need "-undefined dynamic_lookup" by inspecting LDSHARED flags
-#         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-#                                 "import sys;import sysconfig;sys.stdout.write(sysconfig.get_config_var('LDSHARED'))"
-#                         OUTPUT_VARIABLE PYTHON_LDSHARED_FLAGS
-#                         ERROR_VARIABLE ERROR_FINDING_PYTHON_LDSHARED_FLAGS)
-#
-#         MESSAGE(STATUS "PYTHON_LDSHARED_FLAGS ${PYTHON_LDSHARED_FLAGS}")
-#
-#         if(PYTHON_LDSHARED_FLAGS MATCHES "-undefined dynamic_lookup")
-#              MESSAGE(STATUS "PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG is ON")
-#             set(PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG ON)
-#         else()
-#              MESSAGE(STATUS "PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG is OFF")
-#             set(PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG OFF)
-#         endif()
-#
-#         # check for python libs differs for windows python installs
-#         if(NOT WIN32)
-#             # use shared python if we are using shared libs
-#             if(BUILD_SHARED_LIBS)
-#                 set(PYTHON_GLOB_TEST "${PYTHON_LIB_DIR}/libpython*${CMAKE_SHARED_LIBRARY_SUFFIX}")
-#             else()
-#                 set(PYTHON_GLOB_TEST "${PYTHON_LIB_DIR}/libpython*${CMAKE_STATIC_LIBRARY_SUFFIX}")
-#             endif()
-#         else()
-#             if(PYTHON_LIB_DIR)
-#                 set(PYTHON_GLOB_TEST "${PYTHON_LIB_DIR}/python*.lib")
-#             else()
-#                 get_filename_component(PYTHON_ROOT_DIR ${PYTHON_EXECUTABLE} DIRECTORY)
-#                 set(PYTHON_GLOB_TEST "${PYTHON_ROOT_DIR}/libs/python*.lib")
-#             endif()
-#         endif()
-#
-#         FILE(GLOB PYTHON_GLOB_RESULT ${PYTHON_GLOB_TEST})
-#         get_filename_component(PYTHON_LIBRARY "${PYTHON_GLOB_RESULT}" ABSOLUTE)
-#         MESSAGE(STATUS "{PythonLibs from PythonInterp} using: PYTHON_LIBRARY=${PYTHON_LIBRARY}")
-#         find_package(PythonLibs)
-#
-#         if(NOT PYTHONLIBS_FOUND)
-#             MESSAGE(FATAL_ERROR "Failed to find Python Libraries using PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
-#         endif()
-#
-# endif()
 
 find_package(PythonInterp REQUIRED)
 if(PYTHONINTERP_FOUND)
@@ -285,149 +198,6 @@ endif()
 
 find_package_handle_standard_args(Python  DEFAULT_MSG
                                   PYTHON_LIBRARIES PYTHON_INCLUDE_DIR)
-###
-# Old Code to find python libs
-###
-# FOREACH(_CURRENT_VERSION 3.7 3.6 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
-#   STRING(REPLACE "." "" _CURRENT_VERSION_NO_DOTS ${_CURRENT_VERSION})
-#   IF(WIN32)
-#     FIND_LIBRARY(PYTHON_DEBUG_LIBRARY
-#       NAMES python${_CURRENT_VERSION_NO_DOTS}_d python
-#       PATHS
-#       ${PYTHON_DIR}/lib
-#       ${PYTHON_DIR}/libs
-#       [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_CURRENT_VERSION}\\InstallPath]/libs/Debug
-#       [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_CURRENT_VERSION}\\InstallPath]/libs)
-#   ENDIF(WIN32)
-#
-#   FIND_LIBRARY(PYTHON_LIBRARY
-#     NAMES python${_CURRENT_VERSION_NO_DOTS} python${_CURRENT_VERSION}
-#     PATHS
-#       ${PYTHON_DIR}/lib
-#       ${PYTHON_DIR}/libs
-#       [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_CURRENT_VERSION}\\InstallPath]/libs
-#     NO_DEFAULT_PATH
-#     NO_CMAKE_ENVIRONMENT_PATH
-#     NO_CMAKE_PATH
-#     NO_SYSTEM_ENVIRONMENT_PATH)
-#
-#   FIND_PROGRAM(PYTHON_EXECUTABLE
-#                NAMES python3.7 python3.6 python3 python2.7 python2.6 python2.5 python
-#                PATHS
-#                ${PYTHON_DIR}/bin
-#                ${PYTHON_DIR}
-#                [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_CURRENT_VERSION}\\InstallPath]
-#                NO_DEFAULT_PATH
-#                NO_CMAKE_ENVIRONMENT_PATH
-#                NO_CMAKE_PATH
-#                NO_SYSTEM_ENVIRONMENT_PATH)
-#
-#
-#   SET(PYTHON_FRAMEWORK_INCLUDES)
-#   IF(Python_FRAMEWORKS AND NOT PYTHON_INCLUDE_PATH)
-#     FOREACH(dir ${Python_FRAMEWORKS})
-#       SET(PYTHON_FRAMEWORK_INCLUDES ${PYTHON_FRAMEWORK_INCLUDES}
-#         ${dir}/Versions/${_CURRENT_VERSION}/include/python${_CURRENT_VERSION})
-#     ENDFOREACH(dir)
-#   ENDIF(Python_FRAMEWORKS AND NOT PYTHON_INCLUDE_PATH)
-#
-#   FIND_PATH(PYTHON_INCLUDE_PATH
-#     NAMES Python.h
-#     PATHS
-#       ${PYTHON_FRAMEWORK_INCLUDES}
-#       ${PYTHON_DIR}/include
-#       [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_CURRENT_VERSION}\\InstallPath]/include
-#     PATH_SUFFIXES
-#       python${_CURRENT_VERSION}
-#     NO_DEFAULT_PATH
-#     NO_CMAKE_ENVIRONMENT_PATH
-#     NO_CMAKE_PATH
-#     NO_SYSTEM_ENVIRONMENT_PATH)
-#
-#   IF (PYTHON_LIBRARY AND PYTHON_INCLUDE_PATH)
-#       # The python library and include path could be for a path that does
-#       # not match the version from _CURRENT_VERSION so let's match again
-#       # against the detected filename.
-#       GET_FILENAME_COMPONENT(PYLIB ${PYTHON_LIBRARY} NAME)
-#       FOREACH(CV 3.7 3.6 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
-#           IF(WIN32)
-#               STRING(REPLACE "." "" CV2 ${CV})
-#           # Look for the debug version if it is there.
-#               if (CMAKE_BUILD_TYPE STREQUAL Debug)
-#                   SET(curPYLIB "python${CV2}_d.lib")
-#                   IF(${PYLIB} MATCHES ${curPYLIB})
-#                       SET(PYTHON_VERSION ${CV})
-#                       MESSAGE(STATUS "Python version: ${PYTHON_VERSION}")
-#                       BREAK()
-#                   ENDIF(${PYLIB} MATCHES ${curPYLIB})
-#               endif ()
-#
-#           # Look for the base version.
-#               SET(curPYLIB "python${CV2}.lib")
-#               IF(${PYLIB} MATCHES ${curPYLIB})
-#                   SET(PYTHON_VERSION ${CV})
-#                   MESSAGE(STATUS "Python version: ${PYTHON_VERSION}")
-#                   BREAK()
-#               ENDIF(${PYLIB} MATCHES ${curPYLIB})
-#           ELSE(WIN32)
-#           # Look for the base version.
-#               SET(curPYLIB "libpython${CV}.")
-#               IF(${PYLIB} MATCHES ${curPYLIB})
-#                   SET(PYTHON_VERSION ${CV})
-#                   MESSAGE(STATUS "Python version: ${PYTHON_VERSION}")
-#                   BREAK()
-#               ENDIF(${PYLIB} MATCHES ${curPYLIB})
-#           ENDIF(WIN32)
-#       ENDFOREACH(CV)
-#       BREAK()
-#   ENDIF (PYTHON_LIBRARY AND PYTHON_INCLUDE_PATH)
-#
-# ENDFOREACH(_CURRENT_VERSION)
-
-# If we want to be strict about python, add this clause:
-#IF(NOT PYTHON_VERSION)
-#MESSAGE(FATAL_ERROR "Python is required to build VisIt.")
-#ENDIF(NOT PYTHON_VERSION)
-#
-#
-# MARK_AS_ADVANCED(
-#   PYTHON_DEBUG_LIBRARY
-#   PYTHON_LIBRARY
-#   PYTHON_INCLUDE_PATH
-#   PYTHON_EXECUTABLE
-# )
-#
-# # Python Should be built and installed as a Framework on OSX
-# IF(Python_FRAMEWORKS)
-#   # Get the Python framework path from the include directory.
-#   STRING(REGEX MATCH "[A-za-z/\ -._0-9]*Python.framework" fdir ${PYTHON_INCLUDE_PATH})
-#   IF(${fdir} MATCHES "")
-#     SET(fdir ${PYTHON_DIR})
-#   ELSE(${fdir} MATCHES "")
-#     STRING(REPLACE "/Python.framework" "" fdir ${fdir})
-#   ENDIF(${fdir} MATCHES "")
-#
-#   # If a framework has been selected for the include path,
-#   # make sure "-framework" is used to link it.
-#   IF("${PYTHON_INCLUDE_PATH}" MATCHES "Python\\.framework")
-#     SET(PYTHON_LIBRARY "")
-#     SET(PYTHON_DEBUG_LIBRARY "")
-#   ENDIF("${PYTHON_INCLUDE_PATH}" MATCHES "Python\\.framework")
-#   IF(NOT PYTHON_LIBRARY)
-#     SET (PYTHON_LIBRARY "-F${fdir} -framework Python" CACHE FILEPATH "Python Framework" FORCE)
-#   ENDIF(NOT PYTHON_LIBRARY)
-#   IF(NOT PYTHON_DEBUG_LIBRARY)
-#     SET (PYTHON_DEBUG_LIBRARY "-F${fdir} -framework Python" CACHE FILEPATH "Python Framework" FORCE)
-#   ENDIF(NOT PYTHON_DEBUG_LIBRARY)
-# ENDIF(Python_FRAMEWORKS)
-
-# We use PYTHON_LIBRARY and PYTHON_DEBUG_LIBRARY for the cache entries
-# because they are meant to specify the location of a single library.
-# We now set the variables listed by the documentation for this
-# module.
-#SET(PYTHON_LIBRARIES "${PYTHON_LIBRARY}")
-#SET(PYTHON_DEBUG_LIBRARIES "${PYTHON_DEBUG_LIBRARY}")
-
 
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(PYTHONLIBS DEFAULT_MSG PYTHON_LIBRARIES PYTHON_INCLUDE_PATH)
@@ -473,57 +243,6 @@ FUNCTION(PYTHON_ADD_MODULE _NAME )
   ENDIF(PYTHON_ENABLE_MODULE_${_NAME})
 ENDFUNCTION(PYTHON_ADD_MODULE)
 
-################################################################
-# cyrush: 2019-12-18: PYTHON_WRITE_MODULES_HEADER is not used ?
-################################################################
-# FUNCTION(PYTHON_WRITE_MODULES_HEADER _filename)
-#
-#   GET_PROPERTY(PY_STATIC_MODULES_LIST  GLOBAL  PROPERTY PY_STATIC_MODULES_LIST)
-#
-#   GET_FILENAME_COMPONENT(_name "${_filename}" NAME)
-#   STRING(REPLACE "." "_" _name "${_name}")
-#   STRING(TOUPPER ${_name} _name)
-#
-#   SET(_filenameTmp "${_filename}.in")
-#   FILE(WRITE ${_filenameTmp} "/*Created by cmake, do not edit, changes will be lost*/\n")
-#   FILE(APPEND ${_filenameTmp}
-# "#ifndef ${_name}
-# #define ${_name}
-#
-# #include <Python.h>
-#
-# #ifdef __cplusplus
-# extern \"C\" {
-# #endif /* __cplusplus */
-#
-# ")
-#
-#   FOREACH(_currentModule ${PY_STATIC_MODULES_LIST})
-#     FILE(APPEND ${_filenameTmp} "extern void init${PYTHON_MODULE_PREFIX}${_currentModule}(void);\n\n")
-#   ENDFOREACH(_currentModule ${PY_STATIC_MODULES_LIST})
-#
-#   FILE(APPEND ${_filenameTmp}
-# "#ifdef __cplusplus
-# }
-# #endif /* __cplusplus */
-#
-# ")
-#
-#
-#   FOREACH(_currentModule ${PY_STATIC_MODULES_LIST})
-#     FILE(APPEND ${_filenameTmp} "int CMakeLoadPythonModule_${_currentModule}(void) \n{\n  static char name[]=\"${PYTHON_MODULE_PREFIX}${_currentModule}\"; return PyImport_AppendInittab(name, init${PYTHON_MODULE_PREFIX}${_currentModule});\n}\n\n")
-#   ENDFOREACH(_currentModule ${PY_STATIC_MODULES_LIST})
-#
-#   FILE(APPEND ${_filenameTmp} "#ifndef EXCLUDE_LOAD_ALL_FUNCTION\nvoid CMakeLoadAllPythonModules(void)\n{\n")
-#   FOREACH(_currentModule ${PY_STATIC_MODULES_LIST})
-#     FILE(APPEND ${_filenameTmp} "  CMakeLoadPythonModule_${_currentModule}();\n")
-#   ENDFOREACH(_currentModule ${PY_STATIC_MODULES_LIST})
-#   FILE(APPEND ${_filenameTmp} "}\n#endif\n\n#endif\n")
-#
-# # with CONFIGURE_FILE() cmake complains that you may not use a file created using FILE(WRITE) as input file for CONFIGURE_FILE()
-#   EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_filenameTmp}" "${_filename}" OUTPUT_QUIET ERROR_QUIET)
-#
-# ENDFUNCTION(PYTHON_WRITE_MODULES_HEADER)
 
 #
 # Function that calls a distutils based setup python script
