@@ -132,7 +132,7 @@ SET(PY_GEN_STATE_OBJECTS
     ColorControlPointList  # (see above note)
     ColorTableAttributes 
     ConstructDataBinningAttributes
-    DatabaseCorrelation # (see above note)
+    # DatabaseCorrelation # (see above note)
     DBOptionsAttributes
     EngineProperties
     ExportDBAttributes

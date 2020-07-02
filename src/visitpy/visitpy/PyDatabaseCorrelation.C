@@ -35,127 +35,90 @@ struct DatabaseCorrelationObject
 // Internal prototypes
 //
 static PyObject *NewDatabaseCorrelation(int);
+
+///////////////////////////////////////////////////////////////////////////////
+/// Custom PyDatabaseCorrelation_ToString
+///////////////////////////////////////////////////////////////////////////////
+
+
 std::string
 PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *prefix)
 {
     std::string str;
     char tmpStr[1000];
 
-    snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
+    // Make a reference.
+    const DatabaseCorrelation &correlation = *atts;
+
+    snprintf(tmpStr, 1000, "name = \"%s\"\n", atts->GetName().c_str());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%snumStates = %d\n", prefix, atts->GetNumStates());
+    snprintf(tmpStr, 1000, "numStates = %d\n", atts->GetNumStates());
     str += tmpStr;
     const char *method_names = "IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation";
-    switch (atts->GetMethod())
+    if(atts->GetMethod() == DatabaseCorrelation::IndexForIndexCorrelation)
+        {
+             snprintf(tmpStr, 1000, "method = IndexForIndexCorrelation  # %s\n", method_names);
+             str += tmpStr;
+        }
+    else if(atts->GetMethod() == DatabaseCorrelation::StretchedIndexCorrelation)
+        {
+             snprintf(tmpStr, 1000, "method = StretchedIndexCorrelation  # %s\n", method_names);
+             str += tmpStr;
+        }
+    else if(atts->GetMethod() == DatabaseCorrelation::TimeCorrelation)
+        {
+             snprintf(tmpStr, 1000, "method = TimeCorrelation  # %s\n", method_names);
+             str += tmpStr;
+        }
+    else if(atts->GetMethod() == DatabaseCorrelation::CycleCorrelation)
+        {
+             snprintf(tmpStr, 1000, "method = CycleCorrelation  # %s\n", method_names);
+             str += tmpStr;
+        }
+    else
+        {
+             snprintf(tmpStr, 1000, "method = UserDefinedCorrelation  # %s\n", method_names);
+             str += tmpStr;
+        }
+
+    size_t i, j, index = 0;
+    const stringVector &databaseNames = correlation.GetDatabaseNames();
+    for(i = 0; i < databaseNames.size(); ++i)
     {
-      case DatabaseCorrelation::IndexForIndexCorrelation:
-          snprintf(tmpStr, 1000, "%smethod = %sIndexForIndexCorrelation  # %s\n", prefix, prefix, method_names);
-          str += tmpStr;
-          break;
-      case DatabaseCorrelation::StretchedIndexCorrelation:
-          snprintf(tmpStr, 1000, "%smethod = %sStretchedIndexCorrelation  # %s\n", prefix, prefix, method_names);
-          str += tmpStr;
-          break;
-      case DatabaseCorrelation::TimeCorrelation:
-          snprintf(tmpStr, 1000, "%smethod = %sTimeCorrelation  # %s\n", prefix, prefix, method_names);
-          str += tmpStr;
-          break;
-      case DatabaseCorrelation::CycleCorrelation:
-          snprintf(tmpStr, 1000, "%smethod = %sCycleCorrelation  # %s\n", prefix, prefix, method_names);
-          str += tmpStr;
-          break;
-      case DatabaseCorrelation::UserDefinedCorrelation:
-          snprintf(tmpStr, 1000, "%smethod = %sUserDefinedCorrelation  # %s\n", prefix, prefix, method_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
+        snprintf(tmpStr, 1000, "database[%ld]=%s\n", i, databaseNames[i].c_str());
+        str += tmpStr;
+        snprintf(tmpStr, 1000, "    numStates=%d\n", correlation.GetDatabaseNStates()[i]);
+        str += tmpStr;
+        str += "    times={";
+        for(j = 0; j < (size_t)correlation.GetDatabaseNStates()[i]; ++j)
+        {
+            snprintf(tmpStr, 1000, "%g, ", correlation.GetDatabaseTimes()[index+j]);
+            str += tmpStr;
+        }
+        str += "}\n";
+        str += "    cycles={";
+        for(j = 0; j < (size_t)correlation.GetDatabaseNStates()[i]; ++j)
+        {
+            snprintf(tmpStr, 1000, "%d, ", correlation.GetDatabaseCycles()[index+j]);
+            str += tmpStr;
+        }
+        str += "}\n";
+
+        index += correlation.GetDatabaseNStates()[i];
+
+        str += "    indices={";
+        for(j = 0; j < (size_t)correlation.GetNumStates(); ++j)
+        {
+            snprintf(tmpStr, 1000, "%d, ", correlation.GetIndices()[i*correlation.GetNumStates() + j]);
+            str += tmpStr;
+        }
+        str += "}\n";
     }
 
-    {   const stringVector &databaseNames = atts->GetDatabaseNames();
-        snprintf(tmpStr, 1000, "%sdatabaseNames = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < databaseNames.size(); ++i)
-        {
-            snprintf(tmpStr, 1000, "\"%s\"", databaseNames[i].c_str());
-            str += tmpStr;
-            if(i < databaseNames.size() - 1)
-            {
-                snprintf(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        snprintf(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const intVector &databaseNStates = atts->GetDatabaseNStates();
-        snprintf(tmpStr, 1000, "%sdatabaseNStates = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < databaseNStates.size(); ++i)
-        {
-            snprintf(tmpStr, 1000, "%d", databaseNStates[i]);
-            str += tmpStr;
-            if(i < databaseNStates.size() - 1)
-            {
-                snprintf(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        snprintf(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const doubleVector &databaseTimes = atts->GetDatabaseTimes();
-        snprintf(tmpStr, 1000, "%sdatabaseTimes = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < databaseTimes.size(); ++i)
-        {
-            snprintf(tmpStr, 1000, "%g", databaseTimes[i]);
-            str += tmpStr;
-            if(i < databaseTimes.size() - 1)
-            {
-                snprintf(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        snprintf(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const intVector &databaseCycles = atts->GetDatabaseCycles();
-        snprintf(tmpStr, 1000, "%sdatabaseCycles = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < databaseCycles.size(); ++i)
-        {
-            snprintf(tmpStr, 1000, "%d", databaseCycles[i]);
-            str += tmpStr;
-            if(i < databaseCycles.size() - 1)
-            {
-                snprintf(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        snprintf(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const intVector &indices = atts->GetIndices();
-        snprintf(tmpStr, 1000, "%sindices = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < indices.size(); ++i)
-        {
-            snprintf(tmpStr, 1000, "%d", indices[i]);
-            str += tmpStr;
-            if(i < indices.size() - 1)
-            {
-                snprintf(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        snprintf(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
     {   const doubleVector &condensedTimes = atts->GetCondensedTimes();
-        snprintf(tmpStr, 1000, "%scondensedTimes = (", prefix);
+        snprintf(tmpStr, 1000, "condensedTimes = (");
         str += tmpStr;
-        for(size_t i = 0; i < condensedTimes.size(); ++i)
+        for(i = 0; i < condensedTimes.size(); ++i)
         {
             snprintf(tmpStr, 1000, "%g", condensedTimes[i]);
             str += tmpStr;
@@ -169,9 +132,9 @@ PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *pref
         str += tmpStr;
     }
     {   const intVector &condensedCycles = atts->GetCondensedCycles();
-        snprintf(tmpStr, 1000, "%scondensedCycles = (", prefix);
+        snprintf(tmpStr, 1000, "condensedCycles = (");
         str += tmpStr;
-        for(size_t i = 0; i < condensedCycles.size(); ++i)
+        for(i = 0; i < condensedCycles.size(); ++i)
         {
             snprintf(tmpStr, 1000, "%d", condensedCycles[i]);
             str += tmpStr;
@@ -187,30 +150,167 @@ PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *pref
     return str;
 }
 
-static PyObject *
-DatabaseCorrelation_Notify(PyObject *self, PyObject *args)
-{
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
-    obj->data->Notify();
-    Py_INCREF(Py_None);
-    return Py_None;
-}
 
-/*static*/ PyObject *
-DatabaseCorrelation_SetName(PyObject *self, PyObject *args)
-{
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+// std::string
+// PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *prefix)
+// {
+//     std::string str;
+//     char tmpStr[1000];
+//
+//     snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
+//     str += tmpStr;
+//     snprintf(tmpStr, 1000, "%snumStates = %d\n", prefix, atts->GetNumStates());
+//     str += tmpStr;
+//     const char *method_names = "IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation";
+//     switch (atts->GetMethod())
+//     {
+//       case DatabaseCorrelation::IndexForIndexCorrelation:
+//           snprintf(tmpStr, 1000, "%smethod = %sIndexForIndexCorrelation  # %s\n", prefix, prefix, method_names);
+//           str += tmpStr;
+//           break;
+//       case DatabaseCorrelation::StretchedIndexCorrelation:
+//           snprintf(tmpStr, 1000, "%smethod = %sStretchedIndexCorrelation  # %s\n", prefix, prefix, method_names);
+//           str += tmpStr;
+//           break;
+//       case DatabaseCorrelation::TimeCorrelation:
+//           snprintf(tmpStr, 1000, "%smethod = %sTimeCorrelation  # %s\n", prefix, prefix, method_names);
+//           str += tmpStr;
+//           break;
+//       case DatabaseCorrelation::CycleCorrelation:
+//           snprintf(tmpStr, 1000, "%smethod = %sCycleCorrelation  # %s\n", prefix, prefix, method_names);
+//           str += tmpStr;
+//           break;
+//       case DatabaseCorrelation::UserDefinedCorrelation:
+//           snprintf(tmpStr, 1000, "%smethod = %sUserDefinedCorrelation  # %s\n", prefix, prefix, method_names);
+//           str += tmpStr;
+//           break;
+//       default:
+//           break;
+//     }
+//
+//     {   const stringVector &databaseNames = atts->GetDatabaseNames();
+//         snprintf(tmpStr, 1000, "%sdatabaseNames = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < databaseNames.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "\"%s\"", databaseNames[i].c_str());
+//             str += tmpStr;
+//             if(i < databaseNames.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     {   const intVector &databaseNStates = atts->GetDatabaseNStates();
+//         snprintf(tmpStr, 1000, "%sdatabaseNStates = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < databaseNStates.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "%d", databaseNStates[i]);
+//             str += tmpStr;
+//             if(i < databaseNStates.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     {   const doubleVector &databaseTimes = atts->GetDatabaseTimes();
+//         snprintf(tmpStr, 1000, "%sdatabaseTimes = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < databaseTimes.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "%g", databaseTimes[i]);
+//             str += tmpStr;
+//             if(i < databaseTimes.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     {   const intVector &databaseCycles = atts->GetDatabaseCycles();
+//         snprintf(tmpStr, 1000, "%sdatabaseCycles = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < databaseCycles.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "%d", databaseCycles[i]);
+//             str += tmpStr;
+//             if(i < databaseCycles.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     {   const intVector &indices = atts->GetIndices();
+//         snprintf(tmpStr, 1000, "%sindices = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < indices.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "%d", indices[i]);
+//             str += tmpStr;
+//             if(i < indices.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     {   const doubleVector &condensedTimes = atts->GetCondensedTimes();
+//         snprintf(tmpStr, 1000, "%scondensedTimes = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < condensedTimes.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "%g", condensedTimes[i]);
+//             str += tmpStr;
+//             if(i < condensedTimes.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     {   const intVector &condensedCycles = atts->GetCondensedCycles();
+//         snprintf(tmpStr, 1000, "%scondensedCycles = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < condensedCycles.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "%d", condensedCycles[i]);
+//             str += tmpStr;
+//             if(i < condensedCycles.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     return str;
+// }
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_Notify
+///////////////////////////////////////////////////////////////////////////////
 
-    // Set the name in the object.
-    obj->data->SetName(std::string(str));
 
-    Py_INCREF(Py_None);
-    return Py_None;
-}
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetName
+///////////////////////////////////////////////////////////////////////////////
 
 /*static*/ PyObject *
 DatabaseCorrelation_GetName(PyObject *self, PyObject *args)
@@ -220,21 +320,10 @@ DatabaseCorrelation_GetName(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-DatabaseCorrelation_SetNumStates(PyObject *self, PyObject *args)
-{
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the numStates in the object.
-    obj->data->SetNumStates((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetNumStates
+///////////////////////////////////////////////////////////////////////////////
 
 /*static*/ PyObject *
 DatabaseCorrelation_GetNumStates(PyObject *self, PyObject *args)
@@ -244,31 +333,10 @@ DatabaseCorrelation_GetNumStates(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-DatabaseCorrelation_SetMethod(PyObject *self, PyObject *args)
-{
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetMethod
+///////////////////////////////////////////////////////////////////////////////
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the method in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetMethod(DatabaseCorrelation::CorrelationMethod(ival));
-    else
-    {
-        fprintf(stderr, "An invalid method value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation"
-                        ".");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
 
 /*static*/ PyObject *
 DatabaseCorrelation_GetMethod(PyObject *self, PyObject *args)
@@ -278,48 +346,9 @@ DatabaseCorrelation_GetMethod(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-DatabaseCorrelation_SetDatabaseNames(PyObject *self, PyObject *args)
-{
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
-
-    stringVector  &vec = obj->data->GetDatabaseNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-            {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
-            }
-            else
-                vec[i] = std::string("");
-        }
-    }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
-    else
-        return NULL;
-
-    // Mark the databaseNames in the object as modified.
-    obj->data->SelectDatabaseNames();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetDatabaseNames
+///////////////////////////////////////////////////////////////////////////////
 
 /*static*/ PyObject *
 DatabaseCorrelation_GetDatabaseNames(PyObject *self, PyObject *args)
@@ -333,56 +362,10 @@ DatabaseCorrelation_GetDatabaseNames(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-DatabaseCorrelation_SetDatabaseNStates(PyObject *self, PyObject *args)
-{
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
 
-    intVector  &vec = obj->data->GetDatabaseNStates();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
-    else
-        return NULL;
-
-    // Mark the databaseNStates in the object as modified.
-    obj->data->SelectDatabaseNStates();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetDatabaseNStates
+///////////////////////////////////////////////////////////////////////////////
 
 /*static*/ PyObject *
 DatabaseCorrelation_GetDatabaseNStates(PyObject *self, PyObject *args)
@@ -396,56 +379,9 @@ DatabaseCorrelation_GetDatabaseNStates(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-DatabaseCorrelation_SetDatabaseTimes(PyObject *self, PyObject *args)
-{
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
-
-    doubleVector  &vec = obj->data->GetDatabaseTimes();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
-    else
-        return NULL;
-
-    // Mark the databaseTimes in the object as modified.
-    obj->data->SelectDatabaseTimes();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetDatabaseTimes
+///////////////////////////////////////////////////////////////////////////////
 
 /*static*/ PyObject *
 DatabaseCorrelation_GetDatabaseTimes(PyObject *self, PyObject *args)
@@ -459,56 +395,9 @@ DatabaseCorrelation_GetDatabaseTimes(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-DatabaseCorrelation_SetDatabaseCycles(PyObject *self, PyObject *args)
-{
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
-
-    intVector  &vec = obj->data->GetDatabaseCycles();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
-    else
-        return NULL;
-
-    // Mark the databaseCycles in the object as modified.
-    obj->data->SelectDatabaseCycles();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetDatabaseCycles
+///////////////////////////////////////////////////////////////////////////////
 
 /*static*/ PyObject *
 DatabaseCorrelation_GetDatabaseCycles(PyObject *self, PyObject *args)
@@ -522,56 +411,10 @@ DatabaseCorrelation_GetDatabaseCycles(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-DatabaseCorrelation_SetIndices(PyObject *self, PyObject *args)
-{
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
 
-    intVector  &vec = obj->data->GetIndices();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
-    else
-        return NULL;
-
-    // Mark the indices in the object as modified.
-    obj->data->SelectIndices();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetIndices
+///////////////////////////////////////////////////////////////////////////////
 
 /*static*/ PyObject *
 DatabaseCorrelation_GetIndices(PyObject *self, PyObject *args)
@@ -585,56 +428,10 @@ DatabaseCorrelation_GetIndices(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-DatabaseCorrelation_SetCondensedTimes(PyObject *self, PyObject *args)
-{
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
 
-    doubleVector  &vec = obj->data->GetCondensedTimes();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
-    else
-        return NULL;
-
-    // Mark the condensedTimes in the object as modified.
-    obj->data->SelectCondensedTimes();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetCondensedTimes
+///////////////////////////////////////////////////////////////////////////////
 
 /*static*/ PyObject *
 DatabaseCorrelation_GetCondensedTimes(PyObject *self, PyObject *args)
@@ -648,56 +445,9 @@ DatabaseCorrelation_GetCondensedTimes(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-DatabaseCorrelation_SetCondensedCycles(PyObject *self, PyObject *args)
-{
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
-
-    intVector  &vec = obj->data->GetCondensedCycles();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
-    else
-        return NULL;
-
-    // Mark the condensedCycles in the object as modified.
-    obj->data->SelectCondensedCycles();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetCondensedCycles
+///////////////////////////////////////////////////////////////////////////////
 
 /*static*/ PyObject *
 DatabaseCorrelation_GetCondensedCycles(PyObject *self, PyObject *args)
@@ -713,28 +463,190 @@ DatabaseCorrelation_GetCondensedCycles(PyObject *self, PyObject *args)
 
 
 
-PyMethodDef PyDatabaseCorrelation_methods[DATABASECORRELATION_NMETH] = {
-    {"Notify", DatabaseCorrelation_Notify, METH_VARARGS},
-    {"SetName", DatabaseCorrelation_SetName, METH_VARARGS},
+////////////////////////////////////////////////////////////////////////////////
+/// NOTE THAT ALL SET METHODS AND MANY GET METHODS WERE REMOVED
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+/// BEGIN WRAPPED USER-DEFINED DATABASECORRELATION METHODS.
+////////////////////////////////////////////////////////////////////////////////
+
+static PyObject *
+DatabaseCorrelation_GetCorrelatedTimeStates(PyObject *self, PyObject *args)
+{
+    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "i", &state))
+        return NULL;
+
+    PyObject *retval = 0;
+    intVector states;
+    if(obj->data->GetCorrelatedTimeStates(state, states))
+    {
+        // Allocate a tuple the with enough entries to hold the correlated
+        // time states.
+        retval = PyTuple_New(states.size());
+        for(size_t i = 0; i < states.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyLong_FromLong(states[i]));
+    }
+    else
+        retval = PyTuple_New(0);
+
+    return retval;
+}
+
+static PyObject *
+DatabaseCorrelation_UsesDatabase(PyObject *self, PyObject *args)
+{
+    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    char *name = 0;
+    if (!PyArg_ParseTuple(args, "s", &name))
+        return NULL;
+
+    bool val = obj->data->UsesDatabase(name);
+    return PyLong_FromLong(long(val ? 1 : 0));
+}
+
+static PyObject *
+DatabaseCorrelation_GetNumDatabases(PyObject *self, PyObject *args)
+{
+    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    return PyLong_FromLong(long(obj->data->GetNumDatabases()));
+}
+
+static PyObject *
+DatabaseCorrelation_GetCorrelatedTimeState(PyObject *self, PyObject *args)
+{
+    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    char *db = 0;
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "si", &db, &state))
+        return NULL;
+
+    return PyLong_FromLong(long(obj->data->GetCorrelatedTimeState(db, state)));
+}
+
+static PyObject *
+DatabaseCorrelation_GetInverseCorrelatedTimeState(PyObject *self, PyObject *args)
+{
+    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    char *db = 0;
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "si", &db, &state))
+        return NULL;
+
+    return PyLong_FromLong(long(obj->data->GetInverseCorrelatedTimeState(db, state)));
+}
+
+static PyObject *
+DatabaseCorrelation_GetDatabaseCycleForState(PyObject *self, PyObject *args)
+{
+    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    char *db = 0;
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "si", &db, &state))
+        return NULL;
+
+    const intVector &cycles = obj->data->GetDatabaseCycles();
+    const stringVector &databaseNames = obj->data->GetDatabaseNames();
+    const intVector &nStates = obj->data->GetDatabaseNStates();
+    int retval = -1;
+    int index = 0;
+    if(state >= 0)
+    {
+        for(size_t i = 0; i < databaseNames.size(); ++i)
+        {
+            if(databaseNames[i] == db)
+            {
+                if(state < nStates[i])
+                    retval = cycles[index + state];
+                break;
+            }
+            index += nStates[i];
+        }
+    }
+
+    return PyLong_FromLong(long(retval));
+}
+
+static PyObject *
+DatabaseCorrelation_GetDatabaseTimeForState(PyObject *self, PyObject *args)
+{
+    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    char *db = 0;
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "si", &db, &state))
+        return NULL;
+
+    const doubleVector &times = obj->data->GetDatabaseTimes();
+    const stringVector &databaseNames = obj->data->GetDatabaseNames();
+    const intVector &nStates = obj->data->GetDatabaseNStates();
+    double retval = 0.;
+    int index = 0;
+    if(state >= 0)
+    {
+        for(size_t i = 0; i < databaseNames.size(); ++i)
+        {
+            if(databaseNames[i] == db)
+            {
+                if(state < nStates[i])
+                    retval = times[index + state];
+                break;
+            }
+            index += nStates[i];
+        }
+    }
+
+    return PyFloat_FromDouble(retval);
+}
+
+static PyObject *
+DatabaseCorrelation_GetCondensedCycleForState(PyObject *self, PyObject *args)
+{
+    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "i", &state))
+        return NULL;
+
+    return PyLong_FromLong(long(obj->data->GetCondensedCycleForState(state)));
+}
+
+static PyObject *
+DatabaseCorrelation_GetCondensedTimeForState(PyObject *self, PyObject *args)
+{
+    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "i", &state))
+        return NULL;
+
+    return PyFloat_FromDouble(obj->data->GetCondensedTimeForState(state));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// END WRAPPED USER-DEFINED DATABASECORRELATION METHODS.
+////////////////////////////////////////////////////////////////////////////////
+
+
+static struct PyMethodDef DatabaseCorrelation_methods[] = {
     {"GetName", DatabaseCorrelation_GetName, METH_VARARGS},
-    {"SetNumStates", DatabaseCorrelation_SetNumStates, METH_VARARGS},
     {"GetNumStates", DatabaseCorrelation_GetNumStates, METH_VARARGS},
-    {"SetMethod", DatabaseCorrelation_SetMethod, METH_VARARGS},
     {"GetMethod", DatabaseCorrelation_GetMethod, METH_VARARGS},
-    {"SetDatabaseNames", DatabaseCorrelation_SetDatabaseNames, METH_VARARGS},
     {"GetDatabaseNames", DatabaseCorrelation_GetDatabaseNames, METH_VARARGS},
-    {"SetDatabaseNStates", DatabaseCorrelation_SetDatabaseNStates, METH_VARARGS},
     {"GetDatabaseNStates", DatabaseCorrelation_GetDatabaseNStates, METH_VARARGS},
-    {"SetDatabaseTimes", DatabaseCorrelation_SetDatabaseTimes, METH_VARARGS},
-    {"GetDatabaseTimes", DatabaseCorrelation_GetDatabaseTimes, METH_VARARGS},
-    {"SetDatabaseCycles", DatabaseCorrelation_SetDatabaseCycles, METH_VARARGS},
-    {"GetDatabaseCycles", DatabaseCorrelation_GetDatabaseCycles, METH_VARARGS},
-    {"SetIndices", DatabaseCorrelation_SetIndices, METH_VARARGS},
-    {"GetIndices", DatabaseCorrelation_GetIndices, METH_VARARGS},
-    {"SetCondensedTimes", DatabaseCorrelation_SetCondensedTimes, METH_VARARGS},
-    {"GetCondensedTimes", DatabaseCorrelation_GetCondensedTimes, METH_VARARGS},
-    {"SetCondensedCycles", DatabaseCorrelation_SetCondensedCycles, METH_VARARGS},
-    {"GetCondensedCycles", DatabaseCorrelation_GetCondensedCycles, METH_VARARGS},
+
+    //
+    // User-defined functions that we've wrapped.
+    //
+    {"GetCorrelatedTimeStates", DatabaseCorrelation_GetCorrelatedTimeStates, METH_VARARGS},
+    {"UsesDatabase", DatabaseCorrelation_UsesDatabase, METH_VARARGS},
+    {"GetNumDatabases", DatabaseCorrelation_GetNumDatabases, METH_VARARGS},
+    {"GetCorrelatedTimeState", DatabaseCorrelation_GetCorrelatedTimeState, METH_VARARGS},
+    {"GetInverseCorrelatedTimeState", DatabaseCorrelation_GetInverseCorrelatedTimeState, METH_VARARGS},
+    {"GetDatabaseCycleForState", DatabaseCorrelation_GetDatabaseCycleForState, METH_VARARGS},
+    {"GetDatabaseTimeForState", DatabaseCorrelation_GetDatabaseTimeForState, METH_VARARGS},
+    {"GetCondensedCycleForState", DatabaseCorrelation_GetCondensedCycleForState, METH_VARARGS},
+    {"GetCondensedTimeForState", DatabaseCorrelation_GetCondensedTimeForState, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -753,6 +665,12 @@ DatabaseCorrelation_dealloc(PyObject *v)
 }
 
 static PyObject *DatabaseCorrelation_richcompare(PyObject *self, PyObject *other, int op);
+
+///////////////////////////////////////////////////////////////////////////////
+/// Custom PyDatabaseCorrelation_getattr
+///////////////////////////////////////////////////////////////////////////////
+
+
 PyObject *
 PyDatabaseCorrelation_getattr(PyObject *self, char *name)
 {
@@ -764,71 +682,32 @@ PyDatabaseCorrelation_getattr(PyObject *self, char *name)
         return DatabaseCorrelation_GetMethod(self, NULL);
     if(strcmp(name, "IndexForIndexCorrelation") == 0)
         return PyInt_FromLong(long(DatabaseCorrelation::IndexForIndexCorrelation));
-    if(strcmp(name, "StretchedIndexCorrelation") == 0)
+    else if(strcmp(name, "StretchedIndexCorrelation") == 0)
         return PyInt_FromLong(long(DatabaseCorrelation::StretchedIndexCorrelation));
-    if(strcmp(name, "TimeCorrelation") == 0)
+    else if(strcmp(name, "TimeCorrelation") == 0)
         return PyInt_FromLong(long(DatabaseCorrelation::TimeCorrelation));
-    if(strcmp(name, "CycleCorrelation") == 0)
+    else if(strcmp(name, "CycleCorrelation") == 0)
         return PyInt_FromLong(long(DatabaseCorrelation::CycleCorrelation));
-    if(strcmp(name, "UserDefinedCorrelation") == 0)
+    else if(strcmp(name, "UserDefinedCorrelation") == 0)
         return PyInt_FromLong(long(DatabaseCorrelation::UserDefinedCorrelation));
 
     if(strcmp(name, "databaseNames") == 0)
         return DatabaseCorrelation_GetDatabaseNames(self, NULL);
     if(strcmp(name, "databaseNStates") == 0)
         return DatabaseCorrelation_GetDatabaseNStates(self, NULL);
-    if(strcmp(name, "databaseTimes") == 0)
-        return DatabaseCorrelation_GetDatabaseTimes(self, NULL);
-    if(strcmp(name, "databaseCycles") == 0)
-        return DatabaseCorrelation_GetDatabaseCycles(self, NULL);
-    if(strcmp(name, "indices") == 0)
-        return DatabaseCorrelation_GetIndices(self, NULL);
-    if(strcmp(name, "condensedTimes") == 0)
-        return DatabaseCorrelation_GetCondensedTimes(self, NULL);
-    if(strcmp(name, "condensedCycles") == 0)
-        return DatabaseCorrelation_GetCondensedCycles(self, NULL);
 
-    return Py_FindMethod(PyDatabaseCorrelation_methods, self, name);
+    return Py_FindMethod(DatabaseCorrelation_methods, self, name);
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+/// Custom PyDatabaseCorrelation_setattr
+///////////////////////////////////////////////////////////////////////////////
 
 int
 PyDatabaseCorrelation_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
-
-    if(strcmp(name, "name") == 0)
-        obj = DatabaseCorrelation_SetName(self, tuple);
-    else if(strcmp(name, "numStates") == 0)
-        obj = DatabaseCorrelation_SetNumStates(self, tuple);
-    else if(strcmp(name, "method") == 0)
-        obj = DatabaseCorrelation_SetMethod(self, tuple);
-    else if(strcmp(name, "databaseNames") == 0)
-        obj = DatabaseCorrelation_SetDatabaseNames(self, tuple);
-    else if(strcmp(name, "databaseNStates") == 0)
-        obj = DatabaseCorrelation_SetDatabaseNStates(self, tuple);
-    else if(strcmp(name, "databaseTimes") == 0)
-        obj = DatabaseCorrelation_SetDatabaseTimes(self, tuple);
-    else if(strcmp(name, "databaseCycles") == 0)
-        obj = DatabaseCorrelation_SetDatabaseCycles(self, tuple);
-    else if(strcmp(name, "indices") == 0)
-        obj = DatabaseCorrelation_SetIndices(self, tuple);
-    else if(strcmp(name, "condensedTimes") == 0)
-        obj = DatabaseCorrelation_SetCondensedTimes(self, tuple);
-    else if(strcmp(name, "condensedCycles") == 0)
-        obj = DatabaseCorrelation_SetCondensedCycles(self, tuple);
-
-    if(obj != NULL)
-        Py_DECREF(obj);
-
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
-    return (obj != NULL) ? 0 : -1;
+    return -1;
 }
 
 static int
