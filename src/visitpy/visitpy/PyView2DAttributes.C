@@ -440,6 +440,9 @@ View2DAttributes_Mul(PyObject *v, PyObject *w)
 
     if(arg1isObject && arg2isObject)
     {
+        PyErr_SetString(PyExc_TypeError,
+                    "View2DAttributes_mult: Both  arguments are View2DAttributes!"
+                    " Expected one View2DAttributes object and one numeric argument.");
         return NULL;
     }
     else
@@ -467,7 +470,10 @@ View2DAttributes_Mul(PyObject *v, PyObject *w)
             val = PyLong_AsDouble(num);
         else
         {
-            cerr << "MUL: Expected numeric argument is not a number!" << endl;
+            PyErr_SetString(PyExc_TypeError,
+                        "View2DAttributes_mult: Expected numeric argument is not a number!"
+                        " Expected one View2DAttributes object and one numeric argument.");
+            return NULL;
         }
 
 
@@ -818,44 +824,8 @@ VISIT_PY_TYPE_OBJ(View2DAttributesType,          \
                   View2DAttributes_str,          \
                   View2DAttributes_Purpose,      \
                   View2DAttributes_richcompare,  \
-                  View2DAttributes_as_number);   \
+                  &View2DAttributes_as_number);
 
-
-// static PyTypeObject View2DAttributesType =
-// {
-//     //
-//     // Type header
-//     //
-//     PyVarObject_HEAD_INIT(&PyType_Type, 0)
-//     "View2DAttributes",                   /* tp_name */
-//     sizeof(View2DAttributesObject),          /* tp_basicsize */
-//     0,                                 /* tp_itemsize */
-//     (destructor)View2DAttributes_dealloc,    /* tp_dealloc */
-//     (printfunc)View2DAttributes_print,       /* tp_print */
-//     (getattrfunc)PyView2DAttributes_getattr, /* tp_getattr */
-//     (setattrfunc)PyView2DAttributes_setattr, /* tp_setattr */
-//     0,                                 /* tp_reserved */
-//     0,                                 /* tp_repr */
-//     &View2DAttributes_as_number,      /* tp_as_number */
-//     0,                                 /* tp_as_sequence */
-//     0,                                 /* tp_as_mapping */
-//     0,                                 /* tp_hash  */
-//     0,                                 /* tp_call */
-//     (reprfunc)View2DAttributes_str,      /* tp_str */
-//     0,                                 /* tp_getattro */
-//     0,                                 /* tp_setattro */
-//     0,                                 /* tp_as_buffer */
-// #if defined(IS_PY3K) // python 3
-//     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-// #else // python 2
-//     Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-// #endif
-//     View2DAttributes_Purpose,                /* tp_doc */
-//     0,                                 /* tp_traverse */
-//     0,                                 /* tp_clear */
-//    (richcmpfunc)View2DAttributes_richcompare,  /* tp_richcompare */
-//     0,                                 /* tp_weaklistoffset */
-// };
 
 static PyObject *
 View2DAttributes_richcompare(PyObject *self, PyObject *other, int op)

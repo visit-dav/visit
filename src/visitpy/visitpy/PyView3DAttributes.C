@@ -877,7 +877,8 @@ View3DAttributes_Add(PyObject *v, PyObject *w)
     bool arg2isObject = PyView3DAttributes_Check(w);
     if(!arg1isObject || !arg2isObject)
     {
-        cerr << "View3DAttributes_add: One or more arguments are not View3DAttributes!" << endl;
+        PyErr_SetString(PyExc_TypeError,
+                    "View3DAttributes_add: One or more arguments are not View3DAttributes!");
         return NULL;
     }
 
@@ -934,6 +935,9 @@ View3DAttributes_Mul(PyObject *v, PyObject *w)
 
     if(arg1isObject && arg2isObject)
     {
+        PyErr_SetString(PyExc_TypeError,
+                    "View3DAttributes_mult: Both  arguments are View3DAttributes!"
+                    " Expected one View3DAttributes object and one numeric argument.");
         return NULL;
     }
     else
@@ -959,7 +963,10 @@ View3DAttributes_Mul(PyObject *v, PyObject *w)
             val = PyLong_AsDouble(num);
         else
         {
-            cerr << "MUL: Expected numeric argument is not a number!" << endl;
+            PyErr_SetString(PyExc_TypeError,
+                        "View3DAttributes_mult: Expected numeric argument is not a number!"
+                        " Expected one View3DAttributes object and one numeric argument.");
+            return NULL;
         }
 
         c->GetViewNormal()[0] = a->GetViewNormal()[0] * val;
@@ -1365,43 +1372,8 @@ VISIT_PY_TYPE_OBJ(View3DAttributesType,          \
                   View3DAttributes_str,          \
                   View3DAttributes_Purpose,      \
                   View3DAttributes_richcompare,  \
-                  View3DAttributes_as_number);   \
+                  &View3DAttributes_as_number);
 
-// static PyTypeObject View3DAttributesType =
-// {
-//     //
-//     // Type header
-//     //
-//     PyVarObject_HEAD_INIT(&PyType_Type, 0)
-//     "View3DAttributes",                   /* tp_name */
-//     sizeof(View3DAttributesObject),          /* tp_basicsize */
-//     0,                                 /* tp_itemsize */
-//     (destructor)View3DAttributes_dealloc,    /* tp_dealloc */
-//     (printfunc)View3DAttributes_print,       /* tp_print */
-//     (getattrfunc)PyView3DAttributes_getattr, /* tp_getattr */
-//     (setattrfunc)PyView3DAttributes_setattr, /* tp_setattr */
-//     0,                                 /* tp_reserved */
-//     0,                                 /* tp_repr */
-//     &View3DAttributes_as_number,         // tp_as_number
-//     0,                                 /* tp_as_sequence */
-//     0,                                 /* tp_as_mapping */
-//     0,                                 /* tp_hash  */
-//     0,                                 /* tp_call */
-//     (reprfunc)View3DAttributes_str,      /* tp_str */
-//     0,                                 /* tp_getattro */
-//     0,                                 /* tp_setattro */
-//     0,                                 /* tp_as_buffer */
-// #if defined(IS_PY3K) // python 3
-//     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,             /* tp_flags */
-// #else // python 2
-//     Py_TPFLAGS_CHECKTYPES,               /* tp_flags */
-// #endif
-//     View3DAttributes_Purpose,                /* tp_doc */
-//     0,                                 /* tp_traverse */
-//     0,                                 /* tp_clear */
-//    (richcmpfunc)View3DAttributes_richcompare,  /* tp_richcompare */
-//     0,                                 /* tp_weaklistoffset */
-// };
 
 static PyObject *
 View3DAttributes_richcompare(PyObject *self, PyObject *other, int op)
