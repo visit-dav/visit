@@ -52,6 +52,7 @@
 #include <avtDomainBoundaries.h>
 #include <avtDomainNesting.h>
 #include <avtFileFormatInterface.h>
+#include <avtGhostNodeGenerator.h>
 #include <avtMemory.h>
 #include <avtMixedVariable.h>
 #include <avtParallel.h>
@@ -7252,6 +7253,11 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
             s = CommunicateGhostNodesFromGlobalNodeIds(ds, doms, spec, src);
         else if (canDoStreamingGhosts)  // Zones not Nodes
             s = CommunicateGhostZonesWhileStreaming(ds, doms, spec, src);
+        else
+        {
+            avtGhostNodeGenerator gnf;
+            s = gnf.CreateGhosts(ds);
+        }
     }
     else if (ghostType == GHOST_ZONE_DATA)
     {
