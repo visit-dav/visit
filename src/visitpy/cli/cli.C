@@ -533,6 +533,9 @@ main(int argc, char *argv[])
 
         // import visit after the module is fully inited
         PyRun_SimpleString((char*)"import visit");
+        PyRun_SimpleString((char*)"import visit_utils");
+        PyRun_SimpleString((char*)"from visit_utils.builtin import *");
+
 
         // add original args to visit.argv_full, just in case 
         // some one needs to access them.
