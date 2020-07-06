@@ -119,12 +119,17 @@ MakeSafeVariableName(const std::string &var)
 //    Brad Whitlock, Tue Apr 15 16:00:52 PDT 2008
 //    Added cgnsFileName, BaseNameToIndices, VisItNameToCGNSName.
 //
+//    Eric Brugger, Thu Jul  2 10:56:36 PDT 2020
+//    Corrected a bug that caused a crash when doing a Subset plot of "zones"
+//    when reading data decomposed across multiple CGNS files.
+//
 // ****************************************************************************
 
-avtCGNSFileReader::avtCGNSFileReader(const char *filename)
+avtCGNSFileReader::avtCGNSFileReader(const char *filename, bool isMTMD)
 {
     cgnsFileName = new char[strlen(filename) + 1];
     strcpy(cgnsFileName, filename);
+    cgnsIsMTMD = isMTMD;
 
     debug1 << "avtCGNSFileReader::avtCGNSFileReader: filename=" << cgnsFileName << endl;
     fn = INVALID_FILE_HANDLE;
@@ -1006,19 +1011,24 @@ avtCGNSFileReader::AddReferenceStateExpressions(avtDatabaseMetaData *md,
 //  Creation:   Tue Aug 30 16:08:44 PST 2005
 //
 //  Modifications:
-//   Maxim Loginov, Tue Mar  4 12:28:12 NOVT 2008
-//   Some constants from ReferenceState_t should be available as array mesh
-//   variables.
+//    Maxim Loginov, Tue Mar  4 12:28:12 NOVT 2008
+//    Some constants from ReferenceState_t should be available as array mesh
+//    variables.
 //
-//   Brad Whitlock, Wed Apr 16 10:07:16 PDT 2008
-//   Totally rewrote to support reading data from multiple bases. It's more
-//   modular too.
+//    Brad Whitlock, Wed Apr 16 10:07:16 PDT 2008
+//    Totally rewrote to support reading data from multiple bases. It's more
+//    modular too.
 //
-//   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
-//   Changed interface to DebugStream to obtain current debug level.
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 //
-//   Mark C. Miller, Mon Sep 21 14:17:47 PDT 2009
-//   Adding missing calls to actually set the times/cycles in the metadata.
+//    Mark C. Miller, Mon Sep 21 14:17:47 PDT 2009
+//    Adding missing calls to actually set the times/cycles in the metadata.
+//
+//    Eric Brugger, Thu Jul  2 10:56:36 PDT 2020
+//    Corrected a bug that caused a crash when doing a Subset plot of "zones"
+//    when reading data decomposed across multiple CGNS files.
+//
 // ****************************************************************************
 
 void
@@ -1154,14 +1164,30 @@ avtCGNSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             avtMeshMetaData *mmd = new avtMeshMetaData(it->second,
                 1, 1, 1, 0, baseInfo[bi].physicalDim, baseInfo[bi].cellDim, mt);
 
-            stringVector domainNames;
-            for(size_t di = 0; di < it->first.size(); ++di)
+            if (cgnsIsMTMD)
             {
-                int idx = it->first[di] - 1;
-                domainNames.push_back(baseInfo[bi].zoneNames[idx]);
+                //
+                // The normal case.
+                //
+                stringVector domainNames;
+                for(size_t di = 0; di < it->first.size(); ++di)
+                {
+                    int idx = it->first[di] - 1;
+                    domainNames.push_back(baseInfo[bi].zoneNames[idx]);
+                }
+                mmd->blockNames = domainNames;
+                mmd->numBlocks = (int)domainNames.size();
             }
-            mmd->blockNames = domainNames;
-            mmd->numBlocks = (int)domainNames.size();
+            else
+            {
+                //
+                // The parallel CGNS file case. Don't set the blockNames
+                // and set the number of blocks to 1. This is so that
+                // avtGenericDatabase::ReadDataset, when handling
+                // AVT_DOMAIN_SUBSET doesn't seg fault.
+                //
+                mmd->numBlocks = 1;
+            }
             mmd->blockOrigin = 1;
             mmd->groupOrigin = 1;
             mmd->cellOrigin = 1;
