@@ -77,7 +77,7 @@ PythonInterpreter::Initialize(int argc, char **argv)
 
 
     // setup up __main__ and capture StdErr
-    PyRun_SimpleString("import os,sys,traceback,StringIO\n");
+    PyRun_SimpleString("import os,sys,traceback\n");
     if(CheckError())
         return false;
 
@@ -91,12 +91,49 @@ PythonInterpreter::Initialize(int argc, char **argv)
     traceModule = PyImport_AddModule("traceback");
     PyObject *traceDict = PyModule_GetDict(traceModule);
     tracePrintException = PyDict_GetItemString(traceDict,"print_exception");
-    // get ref to StringIO.StringIO class
-    sioModule   = PyImport_AddModule("StringIO");
-    PyObject *sioDict= PyModule_GetDict(sioModule);
-    sioClass = PyDict_GetItemString(sioDict,"StringIO");
-    running = true;
+
+    // python2:
+    //  get ref to StringIO.StringIO class
+    // python3:
+    //  get ref to io.StringIO class
+    //
+#ifdef IS_PY3K
+    const char *sio_module_name = "io";
+    PyRun_SimpleString("import io\n");
+    if(CheckError())
+        return false;
+#else
+    const char *sio_module_name = "StringIO";
+    PyRun_SimpleString("import StringIO\n");
+    if(CheckError())
+        return false;
+#endif
+
+    sioModule = PyImport_ImportModule(sio_module_name);
     
+    if(sioModule == NULL)
+    {
+        return false;
+    }
+    
+    PyObject *sioDict = PyModule_GetDict(sioModule);
+    
+    if(sioDict == NULL)
+    {
+        return false;
+    }
+
+    // input the class
+    sioClass = PyDict_GetItemString(sioDict,"StringIO");
+
+
+    if(sioClass == NULL)
+    {
+        return false;
+    }
+
+    running = true;
+
     return true;
 }
 
