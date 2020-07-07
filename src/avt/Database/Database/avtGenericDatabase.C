@@ -52,6 +52,7 @@
 #include <avtDomainBoundaries.h>
 #include <avtDomainNesting.h>
 #include <avtFileFormatInterface.h>
+#include <avtGhostNodeGenerator.h>
 #include <avtMemory.h>
 #include <avtMixedVariable.h>
 #include <avtParallel.h>
@@ -7249,26 +7250,35 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     // proper subroutine to do it.
     //
     int portion2 = visitTimer->StartTimer();
-    bool s = false;
+    bool madeGhosts = false;
     if (ghostType == GHOST_NODE_DATA)
     {
         if (hasDomainBoundaryInfo)
-            s = CommunicateGhostNodesFromDomainBoundariesFromFile(ds, doms,
-                                                       spec, src, allDomains);
+            madeGhosts = CommunicateGhostNodesFromDomainBoundariesFromFile
+               (ds, doms, spec, src, allDomains);
         else if (canUseGlobalNodeIds)
-            s = CommunicateGhostNodesFromGlobalNodeIds(ds, doms, spec, src);
+            madeGhosts = CommunicateGhostNodesFromGlobalNodeIds
+                (ds, doms, spec, src);
         else if (canDoStreamingGhosts)  // Zones not Nodes
-            s = CommunicateGhostZonesWhileStreaming(ds, doms, spec, src);
+            madeGhosts = CommunicateGhostZonesWhileStreaming
+                (ds, doms, spec, src);
+        else
+        {
+            avtGhostNodeGenerator gnf;
+            madeGhosts = gnf.CreateGhosts(ds);
+        }
     }
     else if (ghostType == GHOST_ZONE_DATA)
     {
         if (hasDomainBoundaryInfo)
-            s = CommunicateGhostZonesFromDomainBoundariesFromFile(ds, doms,
-                                                                  spec, src);
+            madeGhosts = CommunicateGhostZonesFromDomainBoundariesFromFile
+                (ds, doms, spec, src);
         else if (canUseGlobalNodeIds)
-            s = CommunicateGhostZonesFromGlobalNodeIds(ds, doms, spec, src);
+            madeGhosts = CommunicateGhostZonesFromGlobalNodeIds
+                (ds, doms, spec, src);
         else if (canDoStreamingGhosts)
-            s = CommunicateGhostZonesWhileStreaming(ds, doms, spec, src);
+            madeGhosts = CommunicateGhostZonesWhileStreaming
+                (ds, doms, spec, src);
     }
     else
     {
@@ -7277,7 +7287,6 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     }
     visitTimer->StopTimer(portion2, "Time to actually communicate ghost data");
 
-    bool madeGhosts = s;
     if (madeGhosts)
     {
         //
