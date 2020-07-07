@@ -42,6 +42,7 @@ Formats/avtSTSDFileFormatInterface.C
 SET(GHOST_SOURCES
 Ghost/StructuredBoundary.C
 Ghost/avtDomainBoundaries.C
+Ghost/avtGhostNodeGenerator.C
 Ghost/avtIsenburgSGG.C
 Ghost/avtStreamingGhostGenerator.C
 Ghost/avtStructuredDomainBoundaries.C
