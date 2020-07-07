@@ -49,8 +49,6 @@ class DATABASE_API avtGhostNodeGenerator
 
     bool                            CreateGhosts(avtDatasetCollection &ds);
 
-  protected:
-
   private:
     bool                            IsValid(avtDatasetCollection &ds);
 };

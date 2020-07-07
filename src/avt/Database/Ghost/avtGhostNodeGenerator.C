@@ -90,10 +90,10 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
     MPI_Allgather(&nChunks, 1, MPI_INT, chunksPerProc, 1, MPI_INT, VISIT_MPI_COMM);
     int nChunksTotal = 0;
     for (int i = 0; i < nProcs; i++)
-        nChunksTotal += chunksPerProc[i];
-
-    for (int i = 0; i < nProcs; i++)
+    {
         debug2 << "ChunksPerProc[" << i << "]=" << chunksPerProc[i] << endl;
+        nChunksTotal += chunksPerProc[i];
+    }
     debug2 << "nChunksTotal=" << nChunksTotal << endl;
 #endif
     

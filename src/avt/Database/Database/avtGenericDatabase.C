@@ -7276,8 +7276,7 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     }
     visitTimer->StopTimer(portion2, "Time to actually communicate ghost data");
 
-    bool madeGhosts = s;
-    if (madeGhosts)
+    if (s)
     {
         //
         // This will tell everything downstream that we have created ghost
