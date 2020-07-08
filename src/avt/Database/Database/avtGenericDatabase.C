@@ -7100,7 +7100,12 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
 //    ExchangeVector.
 //
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
-//    clean up a warning
+//    Clean up a warning.
+//
+//    Eric Brugger, Wed Jul  8 16:18:50 PDT 2020
+//    Corrected a deadlock situation that could arise when not all the
+//    processors decided to change the ghost type. Now if any of them
+//    decide to change the ghost type, all of them will do it.
 //
 // ****************************************************************************
 
@@ -7187,23 +7192,42 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
                                     "  This also counts synchronization.");
 
     //
-    // The unstructured mesh domain boundaries code can create situations
-    // where ghost nodes identify faces as ghost that are actually real.
-    // Create ghost zones in this case.
+    // There are some situations where we need a different type of
+    // ghost information than requested. If we do, then we need to do
+    // this on all the processors or we may have a deadlock situation.
     //
+    int swapGhostType = 0;
     if (ghostType == GHOST_NODE_DATA)
     {
         if (hasDomainBoundaryInfo)
             if (!dbi->CreatesRobustGhostNodes())
-                ghostType = GHOST_ZONE_DATA;
+                swapGhostType = 1;
+        //
+        // The unstructured mesh domain boundaries code can create situations
+        // where ghost nodes identify faces as ghost that are actually real.
+        // Create ghost zones in this case.
+        //
         if (md->GetMesh(meshname)->meshType == AVT_UNSTRUCTURED_MESH)
-            ghostType = GHOST_ZONE_DATA;
+            swapGhostType = 1;
     }
     if (ghostType == GHOST_ZONE_DATA)
     {
         if (hasDomainBoundaryInfo)
             if (dbi->CanOnlyCreateGhostNodes())
-                ghostType = GHOST_NODE_DATA;
+                swapGhostType = 1;
+    }
+#ifdef PARALLEL
+    int swapGhostTypeGlobal;
+    MPI_Allreduce(&swapGhostType, &swapGhostTypeGlobal, 1,
+                  MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    swapGhostType = swapGhostTypeGlobal;
+#endif
+    if (swapGhostType == 1)
+    {
+        if (ghostType == GHOST_NODE_DATA)
+            ghostType = GHOST_ZONE_DATA;
+        else 
+            ghostType = GHOST_NODE_DATA;
     }
 
     //
