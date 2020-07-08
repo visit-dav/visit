@@ -944,14 +944,15 @@ def Test(case_name, altSWA=0, alreadySaved=0):
             height = TestEnv.params["height"]
             g = GetGlobalAttributes()
             win = g.windows[g.activeWindow]
-            stuff = {}
-            stuff["width"] = width;
-            stuff["height"] = height;
-            print("WIDTH, HEIGHT {} {}".format(width,height))
             ResizeWindow(win, width, height)
-            winfo = GetWindowInformation()
-            stuff["winfo_windowSize"] = winfo.windowSize
-            json.dump(stuff,open("_BLAH_" + case_name + ".json","w" ))
+            ## the following can be used to save a JSON file and compare
+            ## the desired vs reported window size
+            # winfo = GetWindowInformation()
+            # wsize_info  = {}
+            # wsize_info["width"] = width;
+            # wsize_info["height"] = height;
+            # wsize_info["winfo_windowSize"] = winfo.windowSize
+            # json.dump(wsize_info,open("_wsize_info" + case_name + ".json","w" ))
         sa.family   = 0
         sa.fileName = cur
         sa.format   = sa.PNG
