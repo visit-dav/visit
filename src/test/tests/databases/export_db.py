@@ -178,7 +178,7 @@ def test1():
     ExportDatabase(e, opts)
     time.sleep(1)
     line = "The binary_VTK.0.vtk file is NOT binary.\n\n"
-    visitfile = "".join(open("binary_VTK.visit").readlines())
+    visitfile = " ".join(open("binary_VTK.visit").readlines())
     if VTK_check_binary("binary_VTK/binary_VTK.0.vtk"):
         line = "The binary_VTK.0.vtk file is binary.\n\n"
     s = line + visitfile
