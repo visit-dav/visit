@@ -1826,6 +1826,8 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone, const 
                 cgsize_t start = 1, end = 1;
                 cgsize_t elementSizeInterior = 0;
                 int bound = 0, parent_flag = 0;
+                int elem_status = CG_OK;
+
                 if(cg_section_read(GetFileHandle(), base, zone, sec, sectionname, &et,
                     &start, &end, &bound, &parent_flag) != CG_OK)
                 {
@@ -1858,8 +1860,22 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone, const 
                     continue;
                 }
 
-                if(cg_elements_read(GetFileHandle(), base, zone, sec, elements, NULL)
-                   != CG_OK)
+                if (et == MIXED) {
+#if CGNS_VERSION >= 4000
+                    elem_status = cg_poly_elements_read(GetFileHandle(), base, zone, sec, elements, NULL, NULL);
+#else
+                    elem_status = cg_elements_read(GetFileHandle(), base, zone, sec, elements, NULL);
+#endif
+                }
+                else if (et == NFACE_n || et == NGON_n)
+                {
+                    // Not supported
+                    elem_status = CG_ERROR;
+                }
+                else {
+                    elem_status = cg_elements_read(GetFileHandle(), base, zone, sec, elements, NULL);
+                }
+                if (elem_status != CG_OK)
                 {
                     delete [] elements;
                     elements = 0;
