@@ -1860,7 +1860,8 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone, const 
                     continue;
                 }
 
-                if (et == MIXED) {
+                if (et == MIXED)
+                {
 #if CGNS_VERSION >= 4000
                     elem_status = cg_poly_elements_read(GetFileHandle(), base, zone, sec, elements, NULL, NULL);
 #else
@@ -1870,11 +1871,14 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone, const 
                 else if (et == NFACE_n || et == NGON_n)
                 {
                     // Not supported
+                    debug4 << mName << "NFACE_n and NGON_n element types not supported\n";
                     elem_status = CG_ERROR;
                 }
-                else {
+                else
+                {
                     elem_status = cg_elements_read(GetFileHandle(), base, zone, sec, elements, NULL);
                 }
+                
                 if (elem_status != CG_OK)
                 {
                     delete [] elements;
