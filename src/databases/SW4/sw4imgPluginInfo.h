@@ -3,11 +3,11 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               WPPImagePluginInfo.h
+//                               sw4imgPluginInfo.h
 // ****************************************************************************
 
-#ifndef WPPIMAGE_PLUGIN_INFO_H
-#define WPPIMAGE_PLUGIN_INFO_H
+#ifndef SW4IMG_PLUGIN_INFO_H
+#define SW4IMG_PLUGIN_INFO_H
 #include <DatabasePluginInfo.h>
 #include <database_plugin_exports.h>
 
@@ -15,10 +15,10 @@ class avtDatabase;
 class avtDatabaseWriter;
 
 // ****************************************************************************
-//  Class: WPPImageDatabasePluginInfo
+//  Class: sw4imgDatabasePluginInfo
 //
 //  Purpose:
-//    Classes that provide all the information about the WPPImage plugin.
+//    Classes that provide all the information about the sw4img plugin.
 //    Portions are separated into pieces relevant to the appropriate
 //    components of VisIt.
 //
@@ -29,7 +29,7 @@ class avtDatabaseWriter;
 //
 // ****************************************************************************
 
-class WPPImageGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
+class sw4imgGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
 {
   public:
     virtual const char *GetName() const;
@@ -42,22 +42,23 @@ class WPPImageGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
     virtual bool  OpensWholeDirectory() const;
 };
 
-class WPPImageCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual WPPImageGeneralPluginInfo
+class sw4imgCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual sw4imgGeneralPluginInfo
 {
   public:
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
+    virtual std::string               GetLicense() const;
 };
 
-class WPPImageMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual WPPImageCommonPluginInfo
+class sw4imgMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual sw4imgCommonPluginInfo
 {
   public:
     // this makes compilers happy... remove if we ever have functions here
     virtual void dummy();
 };
 
-class WPPImageEnginePluginInfo : public virtual EngineDatabasePluginInfo, public virtual WPPImageCommonPluginInfo
+class sw4imgEnginePluginInfo : public virtual EngineDatabasePluginInfo, public virtual sw4imgCommonPluginInfo
 {
   public:
     virtual avtDatabaseWriter        *GetWriter(void);
