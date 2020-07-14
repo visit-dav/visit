@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: IsovolumePluginInfo.h
-// ************************************************************************* //
+// ****************************************************************************
 
 #ifndef ISOVOLUME_PLUGIN_INFO_H
 #define ISOVOLUME_PLUGIN_INFO_H

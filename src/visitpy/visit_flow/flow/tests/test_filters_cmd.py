@@ -27,7 +27,7 @@ class TestCmd(unittest.TestCase):
         odir = pjoin("tests","_test_output")
         if not os.path.isdir(odir):
             os.mkdir(odir)
-        print ""
+        print("")
     def test_01_workspace_setup(self):
         odir = pjoin("tests","_test_output")
         w = Workspace()
@@ -43,7 +43,7 @@ class TestCmd(unittest.TestCase):
         shell_move["cmd"]   = "mv "
         shell_move["obase"] = pjoin(odir,"cmd_mv")
         w.connect("finput","shell_move:in")
-        print w.graph
+        print(w.graph)
         sspace = StateSpace({"index":10})
         sgen = StateVectorGenerator(sspace)
         w.execute(sgen)

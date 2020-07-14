@@ -3,6 +3,8 @@ PROJECT(Curve_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Curve)
+
 SET(COMMON_SOURCES
 CurvePluginInfo.C
 CurveCommonPluginInfo.C

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        ContourScriptingPluginInfo.C
+//  ContourScriptingPluginInfo.C
 // ************************************************************************* //
 #include <PyContourAttributes.h>
 #include <ContourPluginInfo.h>
@@ -13,7 +13,7 @@ VISIT_PLOT_PLUGIN_ENTRY(Contour,Scripting)
 // ****************************************************************************
 // Method: ContourScriptingPluginInfo::InitializePlugin
 //
-// Purpose: 
+// Purpose:
 //   Calls the initialization function for the plugin.
 //
 // Arguments:
@@ -24,7 +24,7 @@ VISIT_PLOT_PLUGIN_ENTRY(Contour,Scripting)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -37,7 +37,7 @@ ContourScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 // ****************************************************************************
 // Method: ContourScriptingPluginInfo::GetMethodTable
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the plugin's Python method table. These methods are
 //   added to the top-level visit module's methods.
 //
@@ -50,7 +50,7 @@ ContourScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -62,7 +62,7 @@ ContourScriptingPluginInfo::GetMethodTable(int *nMethods)
 // ****************************************************************************
 // Method: ContourScriptingPluginInfo::TypesMatch
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the input PyObject is Contour plot attributes.
 //
 // Arguments:
@@ -72,7 +72,7 @@ ContourScriptingPluginInfo::GetMethodTable(int *nMethods)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -84,7 +84,7 @@ ContourScriptingPluginInfo::TypesMatch(void *pyobject)
 // ****************************************************************************
 // Method: ContourScriptingPluginInfo::GetLogString
 //
-// Purpose: 
+// Purpose:
 //   Gets a string representation of the current attributes.
 //
 // Arguments:
@@ -94,7 +94,7 @@ ContourScriptingPluginInfo::TypesMatch(void *pyobject)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 char *
@@ -109,7 +109,7 @@ ContourScriptingPluginInfo::GetLogString()
 // ****************************************************************************
 // Method: ContourScriptingPluginInfo::SetDefaults
 //
-// Purpose: 
+// Purpose:
 //   Used to set the default values for a plugin's state object.
 //
 // Arguments:
@@ -119,7 +119,7 @@ ContourScriptingPluginInfo::GetLogString()
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

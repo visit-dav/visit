@@ -29,7 +29,6 @@
 #include <avtParallelContext.h>
 #include <FileFunctions.h>
 
-#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
@@ -196,6 +195,7 @@ avtBlueprintWriter::WriteHeaders(const avtDatabaseMetaData *md,
     m_meshName = GetMeshName(md);
     m_time     = GetTime();
     m_cycle    = GetCycle();
+    exprList   = md->GetExprList();
 }
 
 
@@ -263,7 +263,7 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if(m_genRoot)
     {
         BP_PLUGIN_INFO("BlueprintMeshWriter: generating root");
-        GenRootNode(mesh, m_output_dir);
+        GenRootNode(mesh, m_output_dir, ndims);
         m_genRoot = false;
     }
 }
@@ -280,10 +280,13 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //
 //  Modifications:
 //
+//  Mark C. Miller, Thu May  7 15:04:11 PDT 2020
+//  Add expressions output
 // ****************************************************************************
 void
 avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
-                                const std::string output_dir)
+                                const std::string output_dir,
+                                const int ndims)
 {
 
     int c = GetCycle();
@@ -312,6 +315,37 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
                                     "",
                                     m_nblocks,
                                     bp_idx["mesh"]);
+
+    // handle expressions 
+    for (int i = 0; i < exprList.GetNumExpressions(); i++)
+    {
+        Expression const expr = exprList.GetExpressions(i);
+
+        if (expr.GetFromOperator()) continue;
+        if (expr.GetAutoExpression()) continue;
+        if (expr.GetHidden()) continue;
+
+        std::string ename = expr.GetName();
+        // Replace any slash chars in expr name with underscores.
+        // If we don't, Conduit interprets slash chars as new nodes.
+        for (std::string::size_type j = 0; j < ename.size(); j++)
+            if (ename[j] == '/') ename[j] = '_';
+        std::string expr_path = "mesh/expressions/" + ename;
+        bp_idx[expr_path + "/topology"] = "topo";
+        int ncomps = 1;
+        switch (expr.GetType())
+        {
+            case Expression::CurveMeshVar:  ncomps = 1;    break;
+            case Expression::ScalarMeshVar: ncomps = 1;   break;
+            case Expression::VectorMeshVar: ncomps = ndims;   break;
+            case Expression::SymmetricTensorMeshVar: ncomps = (ndims == 2 ? 3 : 6);   break;
+            case Expression::TensorMeshVar: ncomps = ndims * ndims;   break;
+            default: break;
+        }
+        bp_idx[expr_path + "/number_of_components"] = ncomps;
+        bp_idx[expr_path + "/definition"] = expr.GetDefinition();
+    }
+
     // work around conduit bug
     if(mesh.has_path("state/cycle"))
     {

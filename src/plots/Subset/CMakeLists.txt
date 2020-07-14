@@ -3,6 +3,8 @@ PROJECT(Subset_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Subset)
+
 SET(COMMON_SOURCES
 SubsetPluginInfo.C
 SubsetCommonPluginInfo.C
@@ -27,6 +29,7 @@ SubsetViewerEnginePluginInfo.C
 SubsetViewerPluginInfo.C
 avtSubsetPlot.C
 avtSubsetFilter.C
+avtSubsetMapper.C
 ${COMMON_SOURCES}
 )
 
@@ -35,6 +38,7 @@ SubsetViewerEnginePluginInfo.C
 SubsetEnginePluginInfo.C
 avtSubsetPlot.C
 avtSubsetFilter.C
+avtSubsetMapper.C
 ${COMMON_SOURCES}
 )
 
@@ -77,6 +81,7 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
+${VISIT_INCLUDE_DIR}/avt/Plotter/vtk
 )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )

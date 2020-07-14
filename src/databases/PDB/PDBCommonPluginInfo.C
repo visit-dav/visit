@@ -65,8 +65,8 @@ PDBCommonPluginInfo::SetupDatabase(const char *const *list,
     //
     // Create a file format interface based on information in the files.
     //
-    avtFileFormatInterface *inter = PDB_CreateFileFormatInterface(list, 
-                                                                  nList, 
+    avtFileFormatInterface *inter = PDB_CreateFileFormatInterface(list,
+                                                                  nList,
                                                                   nBlock,
                                                                   readOptions);
 
@@ -107,6 +107,7 @@ PDBCommonPluginInfo::GetReadOptions() const
 {
     return GetPDBReadOptions();
 }
+
 // ****************************************************************************
 //  Method: PDBCommonPluginInfo::GetWriteOptions
 //
@@ -123,3 +124,4 @@ PDBCommonPluginInfo::GetWriteOptions() const
 {
     return GetPDBWriteOptions();
 }
+

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        SPHResampleScriptingPluginInfo.C
+//  SPHResampleScriptingPluginInfo.C
 // ************************************************************************* //
 #include <PySPHResampleAttributes.h>
 #include <SPHResamplePluginInfo.h>
@@ -13,7 +13,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(SPHResample,Scripting)
 // ****************************************************************************
 // Method: SPHResampleScriptingPluginInfo::InitializePlugin
 //
-// Purpose: 
+// Purpose:
 //   Calls the initialization function for the plugin.
 //
 // Arguments:
@@ -24,7 +24,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(SPHResample,Scripting)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -37,7 +37,7 @@ SPHResampleScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 // ****************************************************************************
 // Method: SPHResampleScriptingPluginInfo::GetMethodTable
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the plugin's Python method table. These methods are
 //   added to the top-level visit module's methods.
 //
@@ -50,7 +50,7 @@ SPHResampleScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -62,7 +62,7 @@ SPHResampleScriptingPluginInfo::GetMethodTable(int *nMethods)
 // ****************************************************************************
 // Method: SPHResampleScriptingPluginInfo::TypesMatch
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the input PyObject is SPHResample plot attributes.
 //
 // Arguments:
@@ -72,7 +72,7 @@ SPHResampleScriptingPluginInfo::GetMethodTable(int *nMethods)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -84,7 +84,7 @@ SPHResampleScriptingPluginInfo::TypesMatch(void *pyobject)
 // ****************************************************************************
 // Method: SPHResampleScriptingPluginInfo::GetLogString
 //
-// Purpose: 
+// Purpose:
 //   Gets a string representation of the current attributes.
 //
 // Arguments:
@@ -94,7 +94,7 @@ SPHResampleScriptingPluginInfo::TypesMatch(void *pyobject)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 char *
@@ -109,7 +109,7 @@ SPHResampleScriptingPluginInfo::GetLogString()
 // ****************************************************************************
 // Method: SPHResampleScriptingPluginInfo::SetDefaults
 //
-// Purpose: 
+// Purpose:
 //   Used to set the default values for a plugin's state object.
 //
 // Arguments:
@@ -119,7 +119,7 @@ SPHResampleScriptingPluginInfo::GetLogString()
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

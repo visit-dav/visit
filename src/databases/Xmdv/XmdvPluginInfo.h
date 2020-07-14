@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               XmdvPluginInfo.h
+//  XmdvPluginInfo.h
 // ****************************************************************************
 
 #ifndef XMDV_PLUGIN_INFO_H
@@ -48,8 +48,8 @@ class XmdvCommonPluginInfo : public virtual CommonDatabasePluginInfo, public vir
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual DBOptionsAttributes *GetReadOptions() const;
-    virtual DBOptionsAttributes *GetWriteOptions() const;
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class XmdvMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual XmdvCommonPluginInfo

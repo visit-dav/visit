@@ -26,23 +26,23 @@ Postfix:
     bool lineStyleFound = false;
     if (strcmp(name, "lineStyle") == 0)
     {
-        lineStyleFound = true; 
+        lineStyleFound = true;
     }
     else if (strcmp(name, "SOLID") == 0)
     {
-        lineStyleFound = true; 
+        lineStyleFound = true;
     }
     else if (strcmp(name, "DASH") == 0)
     {
-        lineStyleFound = true; 
+        lineStyleFound = true;
     }
     else if (strcmp(name, "DOT") == 0)
     {
-        lineStyleFound = true; 
+        lineStyleFound = true;
     }
     else if (strcmp(name, "DOTDASH") == 0)
     {
-        lineStyleFound = true; 
+        lineStyleFound = true;
     }
     if (lineStyleFound)
     {
@@ -76,7 +76,7 @@ Postfix:
                 CurveObj->data->SetCurveColorSource(CurveAttributes::Custom);
             else
                 CurveObj->data->SetCurveColorSource(CurveAttributes::Cycle);
-    
+
             Py_INCREF(Py_None);
             obj = Py_None;
         }
@@ -98,7 +98,7 @@ Postfix:
                 CurveObj->data->SetShowLines(false);
                 CurveObj->data->SetShowPoints(true);
             }
-    
+
             Py_INCREF(Py_None);
             obj = Py_None;
         }
@@ -186,12 +186,12 @@ Definition:
 // ****************************************************************************
 // Method: CurveAttributes::ProcessOldVersions
 //
-// Purpose: 
+// Purpose:
 //   This method creates modifies a DataNode representation of the object
 //   so it conforms to the newest representation of the object, which can
 //   can be read back in.
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   August 16, 2010
 //
 // Modifications:

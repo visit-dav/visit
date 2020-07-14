@@ -27,6 +27,9 @@
 //
 //  Modifications:
 //
+//    Alister Maguire, Mon Feb 24 14:25:20 MST 2020
+//    Removed canApplyToDirectDatabaseQOT. It now defaults to true.
+//
 // ****************************************************************************
 
 avtNormalizeExpression::avtNormalizeExpression()

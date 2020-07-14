@@ -36,7 +36,7 @@ class
 avtMOABWriter : public avtDatabaseWriter
 {
   public:
-                   avtMOABWriter(DBOptionsAttributes *);
+                   avtMOABWriter(const DBOptionsAttributes *);
     virtual       ~avtMOABWriter() {;};
 
   protected:

@@ -366,6 +366,10 @@ avtPickQuery::PostExecute(void)
 //    Provide secondary vars and request Node/Zones on all procs, to prevent
 //    engine crash/hang on pipeline re-execution.
 //
+//    Alister Maguire, Fri Jan  3 13:38:26 PST 2020
+//    We use both transform and inverse transform now. Check both of them
+//    when deciding the transform message.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -382,7 +386,11 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
 
     Preparation(inAtts);
 
-    if (needTransform && (transform == NULL))
+    //
+    // If we have one of the transforms, let's assume for now that it's
+    // the one we need.
+    //
+    if (needTransform && (transform == NULL && invTransform == NULL))
     {
         pickAtts.SetNeedTransformMessage(true);
     }
@@ -849,6 +857,10 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int elNum)
 //    Expanded use of 'Treat As ASCII' to handle label string case, removed
 //    use of avtLabelVariableSize.
 //
+//    Kathleen Biagas, Thu Dec 12 12:07:17 PST 2019
+//    Set pickVarInfo's VariableType from the one stored in avtDataAttributes.
+//    Don't overwrite what was set if the pick is marked as 'fulfilled'.
+//
 // ****************************************************************************
 
 void
@@ -861,6 +873,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
     int element = pickAtts.GetElementNumber();
     stringVector userVars = pickAtts.GetVariables();
     string vName;
+    string vType;
     char buff[80];
     intVector incidentElements = pickAtts.GetIncidentElements();
     double *temp = NULL;
@@ -896,7 +909,10 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
         }
 
         if (data.ValidVariable(vName))
+        {
             treatAsASCII = data.GetTreatAsASCII(vName.c_str());
+            vType = avtVarTypeToString(data.GetVariableType(vName.c_str()));
+        }
         else
             treatAsASCII = false;
 
@@ -990,6 +1006,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                     vals.push_back(mag);
                 }
             }
+            delete [] temp;
         }  // foundData
 
         if (pickAtts.GetFulfilled())
@@ -1000,20 +1017,6 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                 pickAtts.GetVarInfo(varNum).SetValues(vals);
                 pickAtts.GetVarInfo(varNum).SetCentering(centering);
                 pickAtts.GetVarInfo(varNum).SetTreatAsASCII(treatAsASCII);
-                if (pickAtts.GetVarInfo(varNum).GetVariableType() != "species")
-                {
-                    if (labelData)
-                        pickAtts.GetVarInfo(varNum).SetVariableType("label");
-                    else if (nComponents == 1)
-                        pickAtts.GetVarInfo(varNum).SetVariableType("scalar");
-                    else if (nComponents == 3)
-                        pickAtts.GetVarInfo(varNum).SetVariableType("vector");
-                    else if (nComponents == 9)
-                        pickAtts.GetVarInfo(varNum).SetVariableType("tensor");
-                    else
-                        pickAtts.GetVarInfo(varNum).SetVariableType("array");
-                }
-                delete [] temp;
             }
         }
         else
@@ -1026,17 +1029,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
             {
                 varInfo.SetNames(names);
                 varInfo.SetValues(vals);
-                delete [] temp;
-                if (labelData)
-                    varInfo.SetVariableType("label");
-                else if (nComponents == 1)
-                    varInfo.SetVariableType("scalar");
-                else if (nComponents == 3)
-                    varInfo.SetVariableType("vector");
-                else if (nComponents == 9)
-                    varInfo.SetVariableType("tensor");
-                else
-                    varInfo.SetVariableType("array");
+                varInfo.SetVariableType(vType);
             }
             pickAtts.AddVarInfo(varInfo);
         }
@@ -1871,6 +1864,14 @@ avtPickQuery::SetPickAttsForTimeQuery(const PickAttributes *pa)
 //  Programmer: Matt Larsen
 //  Creation:   July 8, 2016
 //
+//  Modifications:
+//
+//      Alister Maguire, Tue Oct 22 14:16:52 MST 2019
+//      Apply our transformation if we have it.
+//
+//      Alister Maguire, Wed Dec  4 09:00:28 MST 2019
+//      Make sure that we have a transform if it's needed. If not, bail.
+//
 // ****************************************************************************
 
 void
@@ -1878,10 +1879,29 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
                                         vtkDataSet *ds,
                                         const int &dom)
 {
+   //
+   // If we have a transform, we need to apply this
+   // to the extracted edges.
+   //
+   bool haveTransform = (transform == NULL) ? false : true;
+
    // Clear anything left over
    pickAtts.ClearLines();
    // Bail if highlights are not on
    if(!pickAtts.GetShowPickHighlight()) return;
+
+   //
+   // If we don't have a required transform, the highlight will
+   // be invalid.
+   //
+   if (needTransform && !haveTransform)
+   {
+      pickAtts.SetErrorMessage("The requested zone highlight was unable to be "
+         "performed due to a missing transform. Try picking without the zone "
+         "highlight enabled.");
+      pickAtts.SetError(true);
+      return;
+   }
 
    // Check to see if the cells were decomposed in some way
     vtkDataArray* origCellsArr = ds->GetCellData()->
@@ -1904,6 +1924,23 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
             double p2[3];
             edgePoints->GetPoint(0, p1);
             edgePoints->GetPoint(1, p2);
+
+            if (haveTransform)
+            {
+                avtVector tv1(p1);
+                avtVector tv2(p2);
+
+                tv1 = (*transform) * tv1;
+                tv2 = (*transform) * tv2;
+
+                p1[0] = tv1.x;
+                p1[1] = tv1.y;
+                p1[2] = tv1.z;
+                p2[0] = tv2.x;
+                p2[1] = tv2.y;
+                p2[2] = tv2.z;
+            }
+
             pickAtts.AddLine(p1, p2,i);
         }
         return;
@@ -1962,6 +1999,23 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
             double p1[3],p2[3];
             ds->GetPoint(p1Id, p1);
             ds->GetPoint(p2Id, p2);
+
+            if (haveTransform)
+            {
+                avtVector tv1(p1);
+                avtVector tv2(p2);
+
+                tv1 = (*transform) * tv1;
+                tv2 = (*transform) * tv2;
+
+                p1[0] = tv1.x;
+                p1[1] = tv1.y;
+                p1[2] = tv1.z;
+                p2[0] = tv2.x;
+                p2[1] = tv2.y;
+                p2[2] = tv2.z;
+            }
+
             pickAtts.AddLine(p1, p2,i);
         }
     }

@@ -12,6 +12,7 @@
 #include <database_exports.h>
 
 #include <vector>
+#include <vectortypes.h>
 
 #include <void_ref_ptr.h>
 #include <array_ref_ptr.h>
@@ -24,6 +25,8 @@ class    avtDatabaseMetaData;
 class    avtFileFormat;
 class    avtIOInformation;
 class    avtVariableCache;
+
+class    QueryOverTimeAttributes;
 
 
 // ****************************************************************************
@@ -191,6 +194,9 @@ class    avtVariableCache;
 //    Brad Whitlock, Thu Jun 19 10:50:25 PDT 2014
 //    Pass mesh name to PopulateIOInformation.
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added QOT methods as well as GetCycles and GetTimes.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -205,6 +211,28 @@ class DATABASE_API avtFileFormatInterface
     virtual void           *GetAuxiliaryData(const char *, int, int, 
                                              const char *, void *, 
                                              DestructorFunction &) = 0;
+
+    //
+    // Query over time specific methods. 
+    //
+    virtual vtkDataSet     *GetQOTMesh(const QueryOverTimeAttributes *,
+                                       int,
+                                       int *, 
+                                       int);
+    virtual vtkDataArray   *GetQOTVar(int,
+                                      const char *, 
+                                      int, 
+                                      int *, 
+                                      int);
+    virtual vtkDataArray   *GetQOTVectorVar(int,
+                                            const char *, 
+                                            int, 
+                                            int, 
+                                            int *, 
+                                            int);
+
+    virtual void            GetCycles(int, intVector &);
+    virtual void            GetTimes(int, doubleVector &);
 
     virtual const char     *GetFilename(int) = 0;
     virtual void            SetDatabaseMetaData(avtDatabaseMetaData *md,

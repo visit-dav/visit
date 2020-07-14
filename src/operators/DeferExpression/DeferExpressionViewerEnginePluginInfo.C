@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: DeferExpressionViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <DeferExpressionPluginInfo.h>
 #include <DeferExpressionAttributes.h>
@@ -28,8 +28,11 @@ DeferExpressionAttributes *DeferExpressionViewerEnginePluginInfo::defaultAtts = 
 void
 DeferExpressionViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    DeferExpressionViewerEnginePluginInfo::clientAtts  = new DeferExpressionAttributes;
-    DeferExpressionViewerEnginePluginInfo::defaultAtts = new DeferExpressionAttributes;
+    if (DeferExpressionViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        DeferExpressionViewerEnginePluginInfo::clientAtts  = new DeferExpressionAttributes;
+        DeferExpressionViewerEnginePluginInfo::defaultAtts = new DeferExpressionAttributes;
+    }
 }
 
 // ****************************************************************************

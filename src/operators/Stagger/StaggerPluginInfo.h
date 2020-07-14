@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: StaggerPluginInfo.h
-// ************************************************************************* //
+// ****************************************************************************
 
 #ifndef STAGGER_PLUGIN_INFO_H
 #define STAGGER_PLUGIN_INFO_H

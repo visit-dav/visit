@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: DataBinningViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <DataBinningPluginInfo.h>
 #include <DataBinningAttributes.h>
@@ -28,8 +28,11 @@ DataBinningAttributes *DataBinningViewerEnginePluginInfo::defaultAtts = NULL;
 void
 DataBinningViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    DataBinningViewerEnginePluginInfo::clientAtts  = new DataBinningAttributes;
-    DataBinningViewerEnginePluginInfo::defaultAtts = new DataBinningAttributes;
+    if (DataBinningViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        DataBinningViewerEnginePluginInfo::clientAtts  = new DataBinningAttributes;
+        DataBinningViewerEnginePluginInfo::defaultAtts = new DataBinningAttributes;
+    }
 }
 
 // ****************************************************************************
@@ -158,8 +161,8 @@ DataBinningViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts
 //
 //  Modifications:
 //    Brad Whitlock, Wed Jun 27 10:13:24 PDT 2012
-//    I transplanted this code from the old version of 
-//    DataBinningAttributes::CopyAttributes since we should just set the 
+//    I transplanted this code from the old version of
+//    DataBinningAttributes::CopyAttributes since we should just set the
 //    operator dimensions when we create the operator attributes.
 //
 // ****************************************************************************

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               XGCPluginInfo.h
+//  XGCPluginInfo.h
 // ****************************************************************************
 
 #ifndef XGC_PLUGIN_INFO_H

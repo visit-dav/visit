@@ -19,16 +19,16 @@
 // Purpose:
 //   Base class for Attribute
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 7 11:44:37 PDT 2008
 //
 // Modifications:
-//   
+//
 //    Mark C. Miller, Wed Aug 26 11:02:41 PDT 2009
 //    Added support for custom base class for derived state objects.
-//    
+//
 //    Hank Childs, Mon Nov  8 21:26:55 PST 2010
 //    Make default persistent value be true.
 //
@@ -56,7 +56,7 @@ public:
                   const QString &e, const QString &ei,
                   const QString &bc = "AttributeSubject")
         : name(n),
-          purpose(p), 
+          purpose(p),
           persistent(true),
           keyframe(true),
           exportAPI(e),

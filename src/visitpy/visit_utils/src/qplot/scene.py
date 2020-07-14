@@ -22,7 +22,7 @@ from visit_utils import ult
 
 from visit_utils.qannote import *
 
-from plots import *
+from .plots import *
 
 class PlotGrid(object):
     def __init__(self,params,scene):
@@ -45,10 +45,10 @@ class PlotGrid(object):
         dx = 100.0 / (x_bins-1)
         dy = 100.0 / (y_bins-1)
         cx,cy = 0.0,0.0
-        for i in xrange(x_bins):
+        for i in range(x_bins):
             painter.drawLine(QPointF(cx,0.0),QPointF(cx,100.0))
             cx+=dx
-        for i in xrange(y_bins):
+        for i in range(y_bins):
             painter.drawLine(QPointF(0.0,cy),QPointF(100.0,cy))
             cy+=dy
 
@@ -108,11 +108,11 @@ class PlotAxes(object):
             else:
                 xtlen = xtlen / ar
 
-            for i in xrange(x_ticks):
+            for i in range(x_ticks):
                 painter.drawLine(QPointF(cx,xtstart+xtlen),
                                  QPointF(cx,xtstart))
                 cx+=dx
-            for i in xrange(y_ticks):
+            for i in range(y_ticks):
                 painter.drawLine(QPointF(ytstart,cy),
                                  QPointF(ytstart-ytlen,cy))
                 cy+=dy
@@ -176,13 +176,13 @@ class PlotLabels(object):
         dy = (100.0 / th * vheight)/float(y_labels-1)
         lbl = ""
         fh_offset = fmtx.height() / 4.0
-        for i in xrange(x_labels):
+        for i in range(x_labels):
             lbl = fstr_x % vx
             fw_offset = fmtx.width(lbl) / 2.0
             painter.drawText(QPointF(cx-fw_offset,fixed_y+fh_offset*4.0),lbl)
             cx+=dx
             vx+=vdx
-        for i in xrange(y_labels):
+        for i in range(y_labels):
             if log_scale_y:
                 vy = math.pow(10.0,vyl)
             lbl = fstr_y % vy

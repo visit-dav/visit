@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                           WellBorePluginInfo.h                            //
+//  WellBorePluginInfo.h
 // ************************************************************************* //
 
 #ifndef WELLBORE_PLUGIN_INFO_H

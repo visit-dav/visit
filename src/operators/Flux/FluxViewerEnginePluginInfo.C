@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: FluxViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <FluxPluginInfo.h>
 #include <FluxAttributes.h>
@@ -28,8 +28,11 @@ FluxAttributes *FluxViewerEnginePluginInfo::defaultAtts = NULL;
 void
 FluxViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    FluxViewerEnginePluginInfo::clientAtts  = new FluxAttributes;
-    FluxViewerEnginePluginInfo::defaultAtts = new FluxAttributes;
+    if (FluxViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        FluxViewerEnginePluginInfo::clientAtts  = new FluxAttributes;
+        FluxViewerEnginePluginInfo::defaultAtts = new FluxAttributes;
+    }
 }
 
 // ****************************************************************************

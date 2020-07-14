@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               VLIPluginInfo.h
+//  VLIPluginInfo.h
 // ****************************************************************************
 
 #ifndef VLI_PLUGIN_INFO_H

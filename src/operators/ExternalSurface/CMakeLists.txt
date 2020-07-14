@@ -3,6 +3,8 @@ PROJECT(ExternalSurface_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(ExternalSurface)
+
 SET(COMMON_SOURCES
 ExternalSurfacePluginInfo.C
 ExternalSurfaceCommonPluginInfo.C

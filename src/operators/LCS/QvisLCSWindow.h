@@ -21,13 +21,15 @@ class QButtonGroup;
 // ****************************************************************************
 // Class: QvisLCSWindow
 //
-// Purpose: 
+// Purpose:
 //   Defines QvisLCSWindow class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 21 14:12:49 PST 2002
 //
 // Modifications:
+//   Kathleen Biagas, Fri Nov  8 08:07:40 PST 2019
+//   Added CreateSourceTab.
 //
 // ****************************************************************************
 
@@ -46,6 +48,7 @@ class QvisLCSWindow : public QvisOperatorWindow
 
   protected:
     void CreateIntegrationTab(QWidget *);
+    void CreateLCSTab(QWidget *);
     void CreateAppearanceTab(QWidget *);
     void CreateAdvancedTab(QWidget *);
 
@@ -93,7 +96,7 @@ class QvisLCSWindow : public QvisOperatorWindow
     void operationTypeChanged(int);
     void cauchyGreenTensorChanged(int);
     void eigenComponentChanged(int);
-    void operatorTypeChanged(int); 
+    void operatorTypeChanged(int);
 
     void terminationTypeButtonGroupChanged(int);
     void clampLogValuesChanged(bool);

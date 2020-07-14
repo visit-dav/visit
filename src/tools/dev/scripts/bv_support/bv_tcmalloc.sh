@@ -25,7 +25,7 @@ function bv_tcmalloc_info
     export TCMALLOC_COMPATIBILITY_VERSION=${TCMALLOC_COMPATIBILITY_VERSION:-"0.97"}
     export TCMALLOC_BUILD_DIR=${TCMALLOC_BUILD_DIR:-"google-perftools-0.97"}
     export TCMALLOC_MD5_CHECKSUM="5168bdca5557bc5630a866f132f8f7c1"
-    export TCMALLOC_SHA256_CHECKSUM=""
+    export TCMALLOC_SHA256_CHECKSUM="c879267296d91ccadf3aacb9340ca5801b41fbd37aad097b2b6081bf27bb505c"
 }
 
 function bv_tcmalloc_print
@@ -59,15 +59,9 @@ function bv_tcmalloc_ensure
     if [[ "$DO_TCMALLOC" == "yes" ]] ; then
         ensure_built_or_ready "google-perftools" $TCMALLOC_VERSION $TCMALLOC_BUILD_DIR $TCMALLOC_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build google perftools.  ${TCMALLOC_FILE} not found."
             ANY_ERRORS="yes"
             DO_TCMALLOC="no"
-            if [[ "$DO_SVN" != "yes" ]] ; then
-                warn "You have requested to build the google perftools library."
-                warn "This is not currently available for download from the VisIt website and" 
-                warn "is only available through Subversion access."
-            fi
-            error
+            error "Unable to build google perftools."
         fi
     fi
 }

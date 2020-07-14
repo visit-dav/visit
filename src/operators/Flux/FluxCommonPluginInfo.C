@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: FluxCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <FluxPluginInfo.h>
 #include <FluxAttributes.h>
@@ -13,16 +13,6 @@
 #include <ExpressionList.h>
 #include <avtDatabaseMetaData.h>
 #include <avtMeshMetaData.h>
-#include <avtSubsetsMetaData.h>
-#include <avtScalarMetaData.h>
-#include <avtVectorMetaData.h>
-#include <avtTensorMetaData.h>
-#include <avtSymmetricTensorMetaData.h>
-#include <avtArrayMetaData.h>
-#include <avtMaterialMetaData.h>
-#include <avtSpeciesMetaData.h>
-#include <avtCurveMetaData.h>
-#include <avtLabelMetaData.h>
 
 // ****************************************************************************
 //  Method: FluxCommonPluginInfo::AllocAttributes
@@ -58,7 +48,7 @@ FluxCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 FluxCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
@@ -76,14 +66,13 @@ FluxCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //
 // ****************************************************************************
 
-ExpressionList * 
+ExpressionList *
 FluxCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
-    int i;
     char name[1024], defn[1024];
     ExpressionList *el = new ExpressionList;
     int numMeshes = md->GetNumMeshes();
-    for (i = 0 ; i < numMeshes ; i++)
+    for (int i = 0; i < numMeshes; i++)
     {
         const avtMeshMetaData *mmd = md->GetMesh(i);
         if (mmd->hideFromGUI || !mmd->validVariable)

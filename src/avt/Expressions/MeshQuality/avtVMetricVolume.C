@@ -38,12 +38,16 @@ void Copy3(double coords[][3], double a[], int i)
 //    Added useVerdictHex flag, so that volume of hex can be calculated
 //    differently if desired.
 //
+//    Eddie Rusu, Tue Jan 14 13:41:26 PST 2020
+//    Set volume dependency to true for this metric.
+//
 // ****************************************************************************
 
 avtVMetricVolume::avtVMetricVolume()
 {
     useOnlyPositiveVolumes = false;
     useVerdictHex = true;
+    volumeDependent->SetComponent(0, 0, true); // Set volume dependency to true
 }
 
 
@@ -79,14 +83,17 @@ avtVMetricVolume::avtVMetricVolume()
 //    were using were inverted.
 //
 //    Kathleen Bonnell, Fri Sep 15 09:55:55 PDT 2006 
-//    Use different hex volume caluclation if useVerdictHex is false. 
+//    Use different hex volume caluclation if useVerdictHex is false.
+//
+//    Eddie Rusu, Wed Feb 19 16:33:46 PST 2020
+//    Returns 0 instead of -1 if no verdict or unchecked cell.
 //    
 // ****************************************************************************
 
 double avtVMetricVolume::Metric (double coords[][3], int type)
 {
-#ifdef HAVE_VERDICT 
     double rv = 0.;
+#ifdef HAVE_VERDICT 
     switch (type)
     {
       case VTK_VOXEL:   // Note that the verdict filter already swapped the
@@ -147,10 +154,8 @@ double avtVMetricVolume::Metric (double coords[][3], int type)
         rv *= -1.;
     }
 
-    return rv;
-#else
-    return -1.;
 #endif
+    return rv;
 }
 
 

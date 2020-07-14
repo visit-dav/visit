@@ -29,7 +29,7 @@ class TestLog(unittest.TestCase):
         lfile = pjoin(output_dir,"log.out")
         status.open_file(lfile)
         self.assertTrue(os.path.isfile(lfile))
-        print ""
+        print("")
         status.info("Message 1 l0\nMessage 1 l1\nMessage 1 l3")
         status.info("Message 2",center=True)
         status.info("Message 3",lvl=0)

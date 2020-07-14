@@ -61,20 +61,11 @@
 #   depencencies for this library, and CMake automagically pulls them in when
 #   compiling VisIt even if not listed, but not when building the plugins.
 #
+#   Kathleen Biagas, Wed Jan  8 11:22:17 MST 2020
+#   Removed InitVTKRenderingConfig.h.in, it only defined VISIT_MANTA which is
+#   no longer used.
+#
 #****************************************************************************/
-
-# create configuration file to pass off cmake options
-CONFIGURE_FILE(
-  "${VISIT_SOURCE_DIR}/avt/Plotter/vtk/InitVTKRenderingConfig.h.in"
-  "${VISIT_BINARY_DIR}/include/vtk/InitVTKRenderingConfig.h"
-)
-
-if(VISIT_INSTALL_THIRD_PARTY)
-    # ensure the config file gets installed
-    install(FILES ${VISIT_BINARY_DIR}/include/vtk/InitVTKRenderingConfig.h
-        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Plotter/vtk
-        PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ)
-endif()
 
 SET(AVTPLOTTER_OPENGL_SOURCES
 vtk/vtkOpenGLPointMapper.C
@@ -85,7 +76,6 @@ SET(AVTPLOTTER_VTK_SOURCES
 vtk/InitVTKRendering.C 
 vtk/vtkAxesActor2D.C 
 vtk/vtkBackgroundActor.C 
-vtk/vtkDepthSortPolyData2.C
 vtk/vtkLineLegend.C 
 vtk/vtkMultiFontVectorText.C 
 vtk/vtkParallelImageSpaceRedistributor.C 

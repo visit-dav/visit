@@ -22,7 +22,7 @@ class Expression;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API ExpressionList : public AttributeSubject
@@ -90,6 +90,7 @@ public:
     const stringVector GetAllVarNames(const std::string &dbN) const;
     unsigned int GetHashVal() const;
     int IndexOf(const char *) const;
+    virtual void SortExpressions(void);
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -103,7 +104,7 @@ private:
     AttributeGroupVector expressions;
 
     void SortNameHash(void) const;
-    void resetMe(void) const; 
+    void resetMe(void) const;
     // Accleration structures can change in const methods
     mutable std::vector<std::pair<unsigned int, size_t> > sortedNameHash;
     mutable bool sortedNameHashNeedsSorting;

@@ -21,7 +21,7 @@ class AnnotationObject;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API AnnotationObjectList : public AttributeSubject

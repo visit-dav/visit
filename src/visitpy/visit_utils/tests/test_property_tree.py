@@ -84,20 +84,20 @@ class TestPropertyTree(unittest.TestCase):
         p.here = 3.0
         p.there.now = 4.0
         p.deeper.test.path  = 5.0
-        props = p.properties().keys()
+        props = list(p.properties().keys())
         self.assertEqual(props,['deeper/test/path', 'there/now','here'])
     def test_09_prop_update(self):
         p = PropertyTree()
         p.here = 3.0
         p.there.now = 4.0
         p.deeper.test.path = 5.0
-        props = p.properties().keys()
+        props = list(p.properties().keys())
         p2 = PropertyTree()
         p2.value = True
         p2.last  = False
         p2.update(p)
-        print p2
-        props = p2.properties().keys()
+        print(p2)
+        props = list(p2.properties().keys())
         self.assertEqual(props,['deeper/test/path', 'there/now','last','value','here'])
         self.assertEqual(p2.value,True)
         self.assertEqual(p2.last,False)

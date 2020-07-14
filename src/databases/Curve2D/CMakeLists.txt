@@ -3,6 +3,8 @@ PROJECT(Curve2D_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(Curve2D)
+
 SET(COMMON_SOURCES
 Curve2DPluginInfo.C
 Curve2DCommonPluginInfo.C

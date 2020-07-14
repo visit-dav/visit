@@ -470,6 +470,6 @@ on a separate line. ::
 Advanced features
 -----------------
 
-1) You can set up your own buttons in the VisIt_ gui using the *CLI*. See `visitrc file <http://visitusers.org/index.php?title=Visitrc_file>`_.
+1) You can set up your own buttons in the VisIt_ gui using the *CLI*. See :ref:`visitrc_file`.
 2) You can set up callbacks in the *CLI* that get called whenever events happen in VisIt_. See `Python callbacks <http://visitusers.org/index.php?title=Python_callbacks>`_.
 3) You can create your own custom Qt *GUI* that uses VisIt_ for plotting. See `PySide recipes <http://visitusers.org/index.php?title=PySide_Recipes>`_.

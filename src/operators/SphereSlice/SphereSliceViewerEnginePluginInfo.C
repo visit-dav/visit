@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SphereSliceViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <SphereSlicePluginInfo.h>
 #include <SphereSliceAttributes.h>
@@ -28,8 +28,11 @@ SphereSliceAttributes *SphereSliceViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SphereSliceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SphereSliceViewerEnginePluginInfo::clientAtts  = new SphereSliceAttributes;
-    SphereSliceViewerEnginePluginInfo::defaultAtts = new SphereSliceAttributes;
+    if (SphereSliceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SphereSliceViewerEnginePluginInfo::clientAtts  = new SphereSliceAttributes;
+        SphereSliceViewerEnginePluginInfo::defaultAtts = new SphereSliceAttributes;
+    }
 }
 
 // ****************************************************************************

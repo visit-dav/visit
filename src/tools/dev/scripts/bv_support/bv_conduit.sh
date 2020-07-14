@@ -179,7 +179,7 @@ function build_conduit
         cfg_opts="${cfg_opts} -DHDF5_DIR:STRING=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/"
     fi
 
-    if [[ "$FC_COMPILER" == "yes" ]] ; then
+    if [[ "$FC_COMPILER" != "no" ]] ; then
         cfg_opts="${cfg_opts} -DENABLE_FORTRAN:BOOL=ON"
         cfg_opts="${cfg_opts} -DCMAKE_Fortran_COMPILER:STRING=${FC_COMPILER}"
     fi

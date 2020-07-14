@@ -21,7 +21,7 @@
 import os
 import sys
 import glob
-import commands
+import subprocess
 import re
 
 # The following functions returns true if cont (file or directory) is
@@ -45,10 +45,10 @@ lustrePrefix = "/usr/common"
 
 # Find MPI path
 hostname = os.uname()[1]
-if os.environ.has_key('NERSC_HOST'):
+if 'NERSC_HOST' in os.environ:
    hostname = (os.environ['NERSC_HOST']) + ".nersc.gov"
 configFilename = os.path.abspath(os.path.dirname(sys.argv[0]) + "/../config-site/" + hostname + ".cmake")
-(status, MPIRPathLine) = commands.getstatusoutput("grep VISIT_PARALLEL_RPATH " + configFilename + " | egrep -v ^#")
+(status, MPIRPathLine) = subprocess.getstatusoutput("grep VISIT_PARALLEL_RPATH " + configFilename + " | egrep -v ^#")
 
 MPIRPath = ""
 if status == 0:
@@ -56,7 +56,7 @@ if status == 0:
     MPIRPath = re.sub("\"[^\"]*$", "", MPIRPath)
     MPIRPath = ":"+re.sub(";", ":", MPIRPath)
 else:
-    print "Warning: Could not determine rpath for MPI. Assuming none is needed."
+    print("Warning: Could not determine rpath for MPI. Assuming none is needed.")
 
 # Check if the VisIt parallel engine executable exists
 if not os.access(execName, os.X_OK):
@@ -67,7 +67,7 @@ libList = [ execName ] + pluginNameList
 
 # Examine dependencies
 for lib in libList:
-   print "Examining dependencies for " + lib
+   print("Examining dependencies for " + lib)
    lddOut = os.popen("env LD_LIBRARY_PATH=%s ldd %s" % (visitExecDir+"/lib"+MPIRPath+":"+os.environ["LD_LIBRARY_PATH"], lib))
    for line in lddOut.readlines():
      if line.strip() != "statically linked":
@@ -85,11 +85,11 @@ for lib in libList:
             sys.exit("Error: File \"%s\" is not readable!" % libpath)
          else:
             if not libpath in libList:
-                print "Adding " + libpath + " to library list."
+                print("Adding " + libpath + " to library list.")
                 libList.append(libpath)
        else:
-         print "Couldn't parse library location in ldd output!"
-         print "Offending line: %s" % (line.strip())
+         print("Couldn't parse library location in ldd output!")
+         print("Offending line: %s" % (line.strip()))
          sys.exit()
 
 # Create direcotory for system libraties and copy all
@@ -100,17 +100,17 @@ for lib in libList:
 os.system("mkdir -p " + visitExecDir + "/system_libs")
 for lib in libList:
   if not dirContains(lustrePrefix, lib):
-    print "Copying lib " + lib
+    print("Copying lib " + lib)
     os.system("cp " + lib + " " + visitExecDir + "/system_libs/")
   else:
-    print "Skipping lib " + lib
+    print("Skipping lib " + lib)
 
 # Copy env command
-print "Copying env command"
+print("Copying env command")
 os.system("cp /usr/bin/env " + visitExecDir + "/bin/")
 
 # Change permissions
-print "Changing permissions"
+print("Changing permissions")
 os.system("chmod -R a+rX " + visitExecDir + "/system_libs/")
 os.system("chmod -R a+rX " + visitExecDir + "/bin/env")
 # The following is franklin.nersc.gov specific. Make VisIt  install

@@ -40,7 +40,139 @@
 #   Kathleen Biagas, Tue Dec 20 15:43:20 PST 2016
 #   Added GlyphTypes.
 #
+#   Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
+#   Add xml tools code gen targets
+#
+#   Kathleen Biagas, Thu Jun  4 16:07:40 PDT 2020
+#   Add LineGlyphAttributes and PointGlyphAttributes.
+#
 #****************************************************************************
+
+
+# Add XML Code Gen Targets
+
+# Note: These names are in alphabetical order
+
+set(COMMON_STATE_GEN_OBJECTS 
+    AnimationAttributes
+    AnnotationAttributes
+    AnnotationObject
+    AnnotationObjectList
+    AppearanceAttributes
+    Axes2D
+    Axes3D
+    AxesArray
+    AxisAttributes
+    AxisLabels
+    AxisRestrictionAttributes
+    AxisTickMarks
+    AxisTitles
+    BoxExtents
+    CinemaAttributes
+    ClientInformation
+    ClientInformationList
+    ClientMethod
+    ColorAttribute
+    ColorAttributeList
+    ColorControlPoint
+    ColorControlPointList
+    ColorTableAttributes
+    CompactSILRestrictionAttributes
+    ConstructDataBinningAttributes
+    ContourOpAttributes
+    DBOptionsAttributes
+    DBPluginInfoAttributes
+    DatabaseAttributes
+    DatabaseCorrelation
+    DatabaseCorrelationList
+    EngineList
+    EngineProperties
+    ExportDBAttributes
+    Expression
+    ExpressionList
+    FileOpenOptions
+    FontAttributes
+    GaussianControlPoint
+    GaussianControlPointList
+    GlobalAttributes
+    GlobalLineoutAttributes
+    HostProfileList
+    InteractorAttributes
+    InternalResampleAttributes
+    KeyframeAttributes
+    LaunchProfile
+    LightAttributes
+    LightList
+    Line
+    LineGlyphAttributes
+    LinearTransformAttributes
+    MachineProfile
+    MaterialAttributes
+    MeshManagementAttributes
+    MessageAttributes
+    MovieAttributes
+    NameschemeAttributes
+    NamespaceAttributes
+    PickAttributes
+    PickVarInfo
+    PlaneAttributes
+    Plot
+    PlotInfoAttributes
+    PlotList
+    PlotQueryInfo
+    PluginManagerAttributes
+    PointAttributes
+    PointGlyphAttributes
+    PrinterAttributes
+    ProcessAttributes
+    QueryAttributes
+    QueryList
+    QueryOverTimeAttributes
+    RenderingAttributes
+    SILArrayAttributes
+    SILAttributes
+    SILMatrixAttributes
+    SILRestrictionAttributes
+    SaveSubWindowAttributes
+    SaveSubWindowsAttributes
+    SaveWindowAttributes
+    SeedMeAttributes
+    SelectionList
+    SelectionProperties
+    SelectionSummary
+    SelectionVariableSummary
+    SimilarityTransformAttributes
+    SimulationCommand
+    SimulationUIValues
+    SphereAttributes
+    StatusAttributes
+    SurfaceFilterAttributes
+    SyncAttributes
+    ThresholdOpAttributes
+    TimeFormat
+    View2DAttributes
+    View3DAttributes
+    ViewAttributes
+    ViewAxisArrayAttributes
+    ViewCurveAttributes
+    ViewerClientAttributes
+    ViewerClientInformation
+    ViewerClientInformationElement
+    VisualCueInfo
+    VisualCueList
+    WindowAttributes
+    WindowInformation)
+
+
+# Common State Objects
+foreach(obj_name ${COMMON_STATE_GEN_OBJECTS})
+    ADD_CPP_GEN_TARGET(${obj_name}
+                       ${CMAKE_CURRENT_SOURCE_DIR}/state/
+                       ${CMAKE_CURRENT_SOURCE_DIR}/state/)
+endforeach()
+
+
+
 
 SET(COMM_SOURCES
 comm/BadHostException.C
@@ -226,6 +358,7 @@ state/LightAttributes.C
 state/LightList.C
 state/Line.C
 state/LinearTransformAttributes.C
+state/LineGlyphAttributes.C
 state/MapNode.C
 state/MaterialAttributes.C
 state/MeshManagementAttributes.C
@@ -244,6 +377,7 @@ state/PlotList.C
 state/PlotQueryInfo.C
 state/PluginManagerAttributes.C
 state/PointAttributes.C
+state/PointGlyphAttributes.C
 state/PrinterAttributes.C
 state/ProcessAttributes.C
 state/QueryAttributes.C

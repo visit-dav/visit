@@ -33,12 +33,12 @@ def filter_libs(libs):
 
 def get_value(key, allsections):
     for section in allsections:
-        if key in section[0].keys():
+        if key in list(section[0].keys()):
             return section[0][key]
     return None
 
 def translate_section(f, section):
-    keys = section.keys()
+    keys = list(section.keys())
     if "VISITHOME" in keys:
         f.write("SET(VISITHOME %s)\n" % translate_vars(section["VISITHOME"]))
         if "VISITARCH" in keys:
@@ -57,9 +57,9 @@ def translate_section(f, section):
                 else:
                     f.write("%s " % t)
             f.write(")\n")
-            if len(mpiflags.keys()) > 0:
+            if len(list(mpiflags.keys())) > 0:
                 f.write("SET(MPI_CFLAGS ")
-                for k in mpiflags.keys():
+                for k in list(mpiflags.keys()):
                      f.write("%s " % k)
                 f.write(")\n")
         if "CXX" in keys:
@@ -74,9 +74,9 @@ def translate_section(f, section):
                 else:
                     f.write("%s " % t)
             f.write(")\n")
-            if len(mpiflags.keys()) > 0:
+            if len(list(mpiflags.keys())) > 0:
                 f.write("SET(MPI_CXXFLAGS ")
-                for k in mpiflags.keys():
+                for k in list(mpiflags.keys()):
                      f.write("%s " % k)
                 f.write(")\n")
     elif "MPI_LIBS" in keys:
@@ -184,12 +184,12 @@ def process_file(filename):
     # Pass 1
     for i in range(len(lines)):
         line = string.replace(lines[i], "\n", "")
-        print line
+        print(line)
         if line == '':
             continue
         elif line[0] == '#':
             if in_section:
-                if len(section.keys()) > 0:
+                if len(list(section.keys())) > 0:
                     allsections = allsections + [(section, lines_in_section)]
                 section = {}
                 lines_in_section = []
@@ -204,10 +204,10 @@ def process_file(filename):
             section[key] = val
             lines_in_section = lines_in_section + [i]
     if in_section:
-        if len(section.keys()) > 0:
+        if len(list(section.keys())) > 0:
             allsections = allsections + [(section, lines_in_section)]
 
-    print allsections
+    print(allsections)
 
     # Write the path to cmake on the 1st line of the new file.
     defaultcmake = get_value("DEFAULT_CMAKE", allsections)

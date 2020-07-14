@@ -12,7 +12,7 @@ import llnl.visit.plots.PseudocolorAttributes;
 // Purpose:
 //   This is an example program that shows how to set plot attributes.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 15 16:09:03 PST 2002

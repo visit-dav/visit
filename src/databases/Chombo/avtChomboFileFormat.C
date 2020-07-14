@@ -97,7 +97,7 @@ using     std::string;
 // ****************************************************************************
 
 avtChomboFileFormat::avtChomboFileFormat(const char *filename,
-                                         DBOptionsAttributes *atts)
+                                         const DBOptionsAttributes *atts)
     : avtSTMDFileFormat(&filename, 1)
 {
     initializedReader = false;

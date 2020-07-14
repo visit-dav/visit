@@ -3,6 +3,8 @@ PROJECT(LineSurface_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(LineSurface)
+
 SET(COMMON_SOURCES
 LineSurfacePluginInfo.C
 LineSurfaceCommonPluginInfo.C

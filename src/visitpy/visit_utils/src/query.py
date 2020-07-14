@@ -17,7 +17,7 @@
 """
 
 
-from common import VisItException, require_visit
+from .common import VisItException, require_visit
 
 
 try:
@@ -36,7 +36,7 @@ def query(qname,args=None,rmode="value",echo = False, msg_lvl = 2,**kwargs):
      Raises an exception if an error occurs.
     """
     if echo:
-        print "[Query: %s(%s)]" % (qname,str(args))
+        print("[Query: %s(%s)]" % (qname,str(args)))
     prev_lvl = visit.SuppressMessages(msg_lvl)
     if args is None:
         qres = visit.Query(qname,**kwargs)
@@ -71,7 +71,7 @@ def python_query(source=None,file=None,vars=None,args=[],rmode="value",echo = Fa
      Rasies an exception if an error occurs.
     """
     if echo:
-        print "[PythonQuery]"
+        print("[PythonQuery]")
     prev_lvl = visit.SuppressMessages(msg_lvl)
     kwargs = {}
     if not source is None:

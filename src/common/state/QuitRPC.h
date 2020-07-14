@@ -13,7 +13,7 @@
 // Purpose:
 //   This is an RPC that tells a program to quit.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 26 15:50:11 PST 2002

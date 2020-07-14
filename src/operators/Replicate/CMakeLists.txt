@@ -3,6 +3,8 @@ PROJECT(Replicate_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Replicate)
+
 SET(COMMON_SOURCES
 ReplicatePluginInfo.C
 ReplicateCommonPluginInfo.C

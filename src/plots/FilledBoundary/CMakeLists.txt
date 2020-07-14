@@ -3,6 +3,8 @@ PROJECT(FilledBoundary_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(FilledBoundary)
+
 SET(COMMON_SOURCES
 FilledBoundaryPluginInfo.C
 FilledBoundaryCommonPluginInfo.C

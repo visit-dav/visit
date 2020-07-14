@@ -107,6 +107,9 @@ Definition:
 //   Alister Maguire, Tue Jul 16 11:00:45 PDT 2019
 //   I added a check to see if transparency is allowed.
 //
+//   Kathleen Biagas, Tue Nov  5 08:23:09 PST 2019
+//   Added check for certain pointType changes.
+//
 // ****************************************************************************
 bool
 PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &obj) const
@@ -163,14 +166,20 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             0 );
 
     //
-    // If we've switched to an opacity mode that contains transparency, we 
-    // need to re-compute the face and ghost removal. 
+    // If we've switched to an opacity mode that contains transparency, we
+    // need to re-compute the face and ghost removal.
     //
     OpacityType newOpacType = obj.GetOpacityType();
     bool alteringOpacChange = ((newOpacType != FullyOpaque &&
                                 OpacityType(opacityType) == FullyOpaque) ||
                                (newOpacType == FullyOpaque &&
                                 OpacityType(opacityType) != FullyOpaque));
+
+    // Certain point type changes require a recalculation.
+    bool currentPointTypeIsPoint =     pointType == Point;
+    bool newPointTypeIsPoint     = obj.pointType == Point;
+
+    bool changingPointType =  pointType != obj.pointType && currentPointTypeIsPoint != newPointTypeIsPoint;
 
     return (centering != obj.centering ||
             needSecondaryVar ||
@@ -182,6 +191,7 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
             wireframeColor != obj.wireframeColor ||
             pointColor != obj.pointColor ||
             alteringOpacChange ||
+            changingPointType ||
             0);
 
 }
@@ -377,5 +387,71 @@ PseudocolorAttributes::ProcessOldVersions(DataNode *parentNode,
         if (searchNode->GetNode("lineStyle") != 0)
             searchNode->RemoveNode("lineStyle");
     }
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+// ****************************************************************************
+// Method: PseudocolorAttributes::CreateCompatible
+//
+// Purpose:
+//   CreateCompatible method for the PseudocolorAttributes class.
+//   Can also create PointGlyphAttributes and LineGlyphAttributes.
+//
+// Programmer: Kathleen Biagas
+// Creation:   June 4, 2020
+//
+// Modifications:
+//
+// ****************************************************************************
+
+AttributeSubject *
+PseudocolorAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new PseudocolorAttributes(*this);
+    }
+    else if(tname == "PointGlyph")
+    {
+        PointGlyphAttributes *pga = new PointGlyphAttributes();
+        pga->SetPointSize(GetPointSize());
+        pga->SetPointType(GetPointType());
+        pga->SetPointSizeVarEnabled(GetPointSizeVarEnabled());
+        pga->SetPointSizeVar(GetPointSizeVar());
+        pga->SetPointSizePixels(GetPointSizePixels());
+        retval = pga;
+    }
+    else if(tname == "LineGlyph")
+    {
+        LineGlyphAttributes *lga = new LineGlyphAttributes();
+
+        lga->SetLineType(LineGlyphAttributes::LineType(GetLineType()));
+        lga->SetLineWidth(GetLineWidth());
+        lga->SetTubeResolution(GetTubeResolution());
+        lga->SetTubeRadiusSizeType(LineGlyphAttributes::SizeType(GetTubeRadiusSizeType()));
+        lga->SetTubeRadiusAbsolute(GetTubeRadiusAbsolute());
+        lga->SetTubeRadiusBBox(GetTubeRadiusBBox());
+        lga->SetTubeRadiusVarEnabled(GetTubeRadiusVarEnabled());
+        lga->SetTubeRadiusVar(GetTubeRadiusVar());
+        lga->SetTubeRadiusVarRatio(GetTubeRadiusVarRatio());
+        lga->SetTailStyle(LineGlyphAttributes::EndPointStyle(GetTailStyle()));
+        lga->SetHeadStyle(LineGlyphAttributes::EndPointStyle(GetHeadStyle()));
+        lga->SetEndPointRadiusSizeType(LineGlyphAttributes::SizeType(GetEndPointRadiusSizeType()));
+        lga->SetEndPointRadiusAbsolute(GetEndPointRadiusAbsolute());
+        lga->SetEndPointRadiusBBox(GetEndPointRadiusBBox());
+        lga->SetEndPointResolution(GetEndPointResolution());
+        lga->SetEndPointRatio(GetEndPointRatio());
+        lga->SetEndPointRadiusVarEnabled(GetEndPointRadiusVarEnabled());
+        lga->SetEndPointRadiusVar(GetEndPointRadiusVar());
+        lga->SetEndPointRadiusVarRatio(GetEndPointRadiusVarRatio());
+
+        retval = lga;
+    }
+
+    return retval;
 }
 

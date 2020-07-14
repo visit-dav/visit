@@ -3,6 +3,8 @@ PROJECT(Molecule_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Molecule)
+
 SET(COMMON_SOURCES
 MoleculePluginInfo.C
 MoleculeCommonPluginInfo.C

@@ -19,7 +19,7 @@ import llnl.visit.SaveWindowAttributes;
 //   This example program shows how to create annotation objects and set
 //   their properties.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Feb 27 09:38:43 PDT 2008
@@ -109,7 +109,7 @@ public class TryAnnotations extends RunViewer
             viewer.GetViewerMethods().AddAnnotationObject(AnnotationObject.ANNOTATIONTYPE_TEXT2D, "text");
             aol.SetText2DOptions("text", 0.4, 0.95, 0.05,
                 "Wave simulation",
-                new ColorAttribute(255,0,0,255), false, 
+                new ColorAttribute(255,0,0,255), false,
                 2, true, true, true, true);
             aol.Notify();
             viewer.GetViewerMethods().SetAnnotationObjectOptions();
@@ -121,12 +121,12 @@ public class TryAnnotations extends RunViewer
             //
             viewer.GetViewerMethods().AddAnnotationObject(AnnotationObject.ANNOTATIONTYPE_TEXT3D, "text3D");
             aol.SetText3DOptions("text3D",
-                0., 2.5, 1.5, 
+                0., 2.5, 1.5,
                 "Wave simulation, 3D text",
                 true, 0., 3,
                 true,
                 15., 0., 0.,
-                new ColorAttribute(255,255,0,255), false, 
+                new ColorAttribute(255,255,0,255), false,
                 true);
             aol.Notify();
             viewer.GetViewerMethods().SetAnnotationObjectOptions();
@@ -141,7 +141,7 @@ public class TryAnnotations extends RunViewer
                 2,
                 0,
                 2,
-                new ColorAttribute(255,0,0,255), false, 
+                new ColorAttribute(255,0,0,255), false,
                 true);
             aol.Notify();
             viewer.GetViewerMethods().SetAnnotationObjectOptions();
@@ -167,7 +167,7 @@ public class TryAnnotations extends RunViewer
                 16,       // arrow2Resolution
                 0.120831, // arrow2Radius
                 0.338327, // arrow2Height
-                new ColorAttribute(255,153,0,255), false, 
+                new ColorAttribute(255,153,0,255), false,
                 true);
             aol.Notify();
             viewer.GetViewerMethods().SetAnnotationObjectOptions();

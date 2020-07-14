@@ -3,6 +3,8 @@ PROJECT(StatisticalTrends_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(StatisticalTrends)
+
 SET(COMMON_SOURCES
 StatisticalTrendsPluginInfo.C
 StatisticalTrendsCommonPluginInfo.C

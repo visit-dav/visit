@@ -212,7 +212,7 @@ avtFLASHFileFormat::FinalizeHDF5(void)
 // ****************************************************************************
 
 avtFLASHFileFormat::avtFLASHFileFormat(const char *cfilename, 
-                                       DBOptionsAttributes *&opts)
+                                       const DBOptionsAttributes *opts)
     : avtSTMDFileFormat(&cfilename, 1)
 {
     filename  = cfilename;

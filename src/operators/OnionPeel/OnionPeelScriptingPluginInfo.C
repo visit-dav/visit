@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        OnionPeelScriptingPluginInfo.C
+//  OnionPeelScriptingPluginInfo.C
 // ************************************************************************* //
 #include <PyOnionPeelAttributes.h>
 #include <OnionPeelPluginInfo.h>
@@ -13,7 +13,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(OnionPeel,Scripting)
 // ****************************************************************************
 // Method: OnionPeelScriptingPluginInfo::InitializePlugin
 //
-// Purpose: 
+// Purpose:
 //   Calls the initialization function for the plugin.
 //
 // Arguments:
@@ -24,7 +24,7 @@ VISIT_OPERATOR_PLUGIN_ENTRY(OnionPeel,Scripting)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -37,7 +37,7 @@ OnionPeelScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 // ****************************************************************************
 // Method: OnionPeelScriptingPluginInfo::GetMethodTable
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the plugin's Python method table. These methods are
 //   added to the top-level visit module's methods.
 //
@@ -50,7 +50,7 @@ OnionPeelScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -62,7 +62,7 @@ OnionPeelScriptingPluginInfo::GetMethodTable(int *nMethods)
 // ****************************************************************************
 // Method: OnionPeelScriptingPluginInfo::TypesMatch
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the input PyObject is OnionPeel plot attributes.
 //
 // Arguments:
@@ -72,7 +72,7 @@ OnionPeelScriptingPluginInfo::GetMethodTable(int *nMethods)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -84,7 +84,7 @@ OnionPeelScriptingPluginInfo::TypesMatch(void *pyobject)
 // ****************************************************************************
 // Method: OnionPeelScriptingPluginInfo::GetLogString
 //
-// Purpose: 
+// Purpose:
 //   Gets a string representation of the current attributes.
 //
 // Arguments:
@@ -94,7 +94,7 @@ OnionPeelScriptingPluginInfo::TypesMatch(void *pyobject)
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 char *
@@ -109,7 +109,7 @@ OnionPeelScriptingPluginInfo::GetLogString()
 // ****************************************************************************
 // Method: OnionPeelScriptingPluginInfo::SetDefaults
 //
-// Purpose: 
+// Purpose:
 //   Used to set the default values for a plugin's state object.
 //
 // Arguments:
@@ -119,7 +119,7 @@ OnionPeelScriptingPluginInfo::GetLogString()
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

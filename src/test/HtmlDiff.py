@@ -24,7 +24,7 @@ class TextFile:
             self.filedes = open(self.fileName, "rt")
             self.opened = 1
         except IOError:
-            print "%s %s." % (msg, self.fileName)
+            print("%s %s." % (msg, self.fileName))
 
     def close(self):
         if(self.opened == 1):

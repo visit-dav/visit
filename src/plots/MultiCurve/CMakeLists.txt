@@ -3,6 +3,8 @@ PROJECT(MultiCurve_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(MultiCurve)
+
 SET(COMMON_SOURCES
 MultiCurvePluginInfo.C
 MultiCurveCommonPluginInfo.C

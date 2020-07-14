@@ -6,6 +6,7 @@ Lawrence Livermore National Laboratory (LLNL) closed network:llnl_closed
 Lawrence Livermore National Laboratory (LLNL) open network:llnl
 Los Alamos National Laboratory (LANL) open network:lanl
 Los Alamos National Laboratory (LANL) closed network:lanl_closed
+Leibniz Supercomputing Centre network:lrz
 Lousiana State University network:lsu
 National Center for Atmospheric Research (NCAR) network:ncar
 National Center for Supercomputing Applications (NCSA) network:ncsa
@@ -14,7 +15,6 @@ National Institute for Computational Sciences (NICS) newtwork:nics
 Oak Ridge National Laboratory (ORNL) network:ornl
 Ohio Supercomputer Center (OSC) network:ohio
 Princeton University network:princeton
-Sandia National Laboratory (SNL) closed network:sandia_closed
 Sandia National Laboratory (SNL) open network:sandia
 Stanford Linear Accelerator Center (SLAC) network:slac
 Swiss Federal Institue of Technology Zurich network:eth_zurich

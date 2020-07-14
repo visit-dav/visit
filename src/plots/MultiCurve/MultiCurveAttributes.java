@@ -25,7 +25,7 @@ import llnl.visit.ColorAttributeList;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class MultiCurveAttributes extends AttributeSubject implements Plugin

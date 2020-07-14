@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ConeViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ConePluginInfo.h>
 #include <ConeAttributes.h>
@@ -28,8 +28,11 @@ ConeAttributes *ConeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ConeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ConeViewerEnginePluginInfo::clientAtts  = new ConeAttributes;
-    ConeViewerEnginePluginInfo::defaultAtts = new ConeAttributes;
+    if (ConeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ConeViewerEnginePluginInfo::clientAtts  = new ConeAttributes;
+        ConeViewerEnginePluginInfo::defaultAtts = new ConeAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ElevateViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ElevatePluginInfo.h>
 #include <ElevateAttributes.h>
@@ -28,8 +28,11 @@ ElevateAttributes *ElevateViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ElevateViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ElevateViewerEnginePluginInfo::clientAtts  = new ElevateAttributes;
-    ElevateViewerEnginePluginInfo::defaultAtts = new ElevateAttributes;
+    if (ElevateViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ElevateViewerEnginePluginInfo::clientAtts  = new ElevateAttributes;
+        ElevateViewerEnginePluginInfo::defaultAtts = new ElevateAttributes;
+    }
 }
 
 // ****************************************************************************

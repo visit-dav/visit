@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: PseudocolorCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <PseudocolorPluginInfo.h>
 #include <PseudocolorAttributes.h>
@@ -43,16 +43,17 @@ PseudocolorCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 PseudocolorCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((PseudocolorAttributes *) to) = *((PseudocolorAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: PseudocolorCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ PseudocolorCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

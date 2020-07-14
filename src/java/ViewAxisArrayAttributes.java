@@ -17,7 +17,7 @@ package llnl.visit;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class ViewAxisArrayAttributes extends AttributeSubject

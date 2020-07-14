@@ -49,7 +49,7 @@ def ExerciseAtts():
     c.minFlag = 1
     c.maxFlag = 1
     c.max = 5
-    for i in xrange(1,5):
+    for i in range(1,5):
         c.min = i
         SetPlotOptions(c)
         Test("contour_minMax_%02d"%i)
@@ -63,7 +63,7 @@ def ExerciseAtts():
     c.contourNLevels = 4
     SetPlotOptions(c)
     DrawPlots()
-    for i in xrange(10):
+    for i in range(10):
         c.lineWidth = i
         SetPlotOptions(c)
         Test("contour_lineWidth_%02d"%i)
@@ -95,7 +95,7 @@ def ExerciseAtts():
     c.colorType = c.ColorByMultipleColors
     SetPlotOptions(c)
     Test("contour_colorMethod_04")
-    for i in xrange(5,0,-1):
+    for i in range(5,0,-1):
         levelColor = list(c.GetMultiColor(i-1))
         levelColor[3] = 65
         c.SetMultiColor((i-1),tuple(levelColor))

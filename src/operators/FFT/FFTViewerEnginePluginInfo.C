@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: FFTViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <FFTPluginInfo.h>
 #include <FFTAttributes.h>
@@ -28,8 +28,11 @@ FFTAttributes *FFTViewerEnginePluginInfo::defaultAtts = NULL;
 void
 FFTViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    FFTViewerEnginePluginInfo::clientAtts  = new FFTAttributes;
-    FFTViewerEnginePluginInfo::defaultAtts = new FFTAttributes;
+    if (FFTViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        FFTViewerEnginePluginInfo::clientAtts  = new FFTAttributes;
+        FFTViewerEnginePluginInfo::defaultAtts = new FFTAttributes;
+    }
 }
 
 // ****************************************************************************

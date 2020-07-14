@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ExtrudeViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ExtrudePluginInfo.h>
 #include <ExtrudeAttributes.h>
@@ -28,8 +28,11 @@ ExtrudeAttributes *ExtrudeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ExtrudeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ExtrudeViewerEnginePluginInfo::clientAtts  = new ExtrudeAttributes;
-    ExtrudeViewerEnginePluginInfo::defaultAtts = new ExtrudeAttributes;
+    if (ExtrudeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ExtrudeViewerEnginePluginInfo::clientAtts  = new ExtrudeAttributes;
+        ExtrudeViewerEnginePluginInfo::defaultAtts = new ExtrudeAttributes;
+    }
 }
 
 // ****************************************************************************

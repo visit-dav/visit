@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SphereSlicePluginInfo.h
-// ************************************************************************* //
+// ****************************************************************************
 
 #ifndef SPHERESLICE_PLUGIN_INFO_H
 #define SPHERESLICE_PLUGIN_INFO_H

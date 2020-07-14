@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: MultiresControlViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <MultiresControlPluginInfo.h>
 #include <MultiresControlAttributes.h>
@@ -28,8 +28,11 @@ MultiresControlAttributes *MultiresControlViewerEnginePluginInfo::defaultAtts = 
 void
 MultiresControlViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MultiresControlViewerEnginePluginInfo::clientAtts  = new MultiresControlAttributes;
-    MultiresControlViewerEnginePluginInfo::defaultAtts = new MultiresControlAttributes;
+    if (MultiresControlViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        MultiresControlViewerEnginePluginInfo::clientAtts  = new MultiresControlAttributes;
+        MultiresControlViewerEnginePluginInfo::defaultAtts = new MultiresControlAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -37,11 +37,11 @@ AttributeSubjectSerialize::SetConnection(Connection *c)
 //   Read an AttributeSubject from a connection
 //
 // Arguments:
-// 
 //
-// Returns:    
 //
-// Note:       
+// Returns:
+//
+// Note:
 //
 // Programmer: Hari Krishnan
 // Creation:   Tue Oct 14 13:22:05 PDT 2014
@@ -138,9 +138,9 @@ AttributeSubjectSerialize::Fill()
 // Arguments:
 //   subject : The subject to write.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Hari Krishnan
 // Creation:   Tue Oct 14 13:22:05 PDT 2014
@@ -228,14 +228,14 @@ AttributeSubjectSerialize::Flush(AttributeSubject *subject)
 // Method: AttributeSubjectSerialize::Write
 //
 // Purpose:
-//   
+//
 //
 // Arguments:
-//   
 //
-// Returns:    
 //
-// Note:       
+// Returns:
+//
+// Note:
 //
 // Programmer: Hari Krishnan
 // Creation:   Tue Oct 14 13:22:05 PDT 2014
@@ -280,14 +280,14 @@ AttributeSubjectSerialize::Write(int id, MapNode *mapnode)
 // Method: AttributeSubjectSerialize::WriteToBuffer
 //
 // Purpose:
-//   
+//
 //
 // Arguments:
-//   
 //
-// Returns:    
 //
-// Note:       
+// Returns:
+//
+// Note:
 //
 // Programmer: Hari Krishnan
 // Creation:   Tue Oct 14 13:22:05 PDT 2014
@@ -561,14 +561,14 @@ AttributeSubjectSerialize::WriteToBuffer(MapNode *mapnode,
 // Method: AttributeSubjectSerialize::Write
 //
 // Purpose:
-//   
+//
 //
 // Arguments:
-//   
 //
-// Returns:    
 //
-// Note:       
+// Returns:
+//
+// Note:
 //
 // Programmer: Hari Krishnan
 // Creation:   Tue Oct 14 13:22:05 PDT 2014
@@ -613,14 +613,14 @@ AttributeSubjectSerialize::Write(int id, JSONNode& node, JSONNode& metadata)
 // Method: AttributeSubjectSerialize::WriteToBuffer
 //
 // Purpose:
-//   
+//
 //
 // Arguments:
-//   
 //
-// Returns:    
 //
-// Note:       
+// Returns:
+//
+// Note:
 //
 // Programmer: Hari Krishnan
 // Creation:   Tue Oct 14 13:22:05 PDT 2014

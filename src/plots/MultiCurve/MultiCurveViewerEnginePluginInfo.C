@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: MultiCurveViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <MultiCurvePluginInfo.h>
 #include <avtMultiCurvePlot.h>
@@ -31,8 +31,11 @@ MultiCurveAttributes *MultiCurveViewerEnginePluginInfo::defaultAtts = NULL;
 void
 MultiCurveViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MultiCurveViewerEnginePluginInfo::clientAtts  = new MultiCurveAttributes;
-    MultiCurveViewerEnginePluginInfo::defaultAtts = new MultiCurveAttributes;
+    if (MultiCurveViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        MultiCurveViewerEnginePluginInfo::clientAtts  = new MultiCurveAttributes;
+        MultiCurveViewerEnginePluginInfo::defaultAtts = new MultiCurveAttributes;
+    }
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);
@@ -202,6 +205,9 @@ MultiCurveViewerEnginePluginInfo::GetMenuName() const
 //   I added code to enlarge the multi color field to 16 entries so that
 //   clients may set them.
 //
+//   Eric Brugger, Mon Jun 22 09:56:34 PDT 2020
+//   I enlarged the multi color field to 20 entries.
+//
 // ****************************************************************************
 #include <avtColorTables.h>
 #include <ColorTableAttributes.h>
@@ -222,6 +228,6 @@ MultiCurveViewerEnginePluginInfo::InitializeDefaultPalette(
             multiCurve->SetDefaultPalette(ctAtts->operator[](i));
         }
     }
-    multiCurve->EnlargeMultiColor(16);
+    multiCurve->EnlargeMultiColor(20);
 }
 

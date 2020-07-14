@@ -46,6 +46,8 @@
 // visit includes
 //-----------------------------------------------------------------------------
 #include "InvalidVariableException.h"
+#include "Expression.h"
+#include "ExpressionList.h"
 #include "UnexpectedValueException.h"
 
 //-----------------------------------------------------------------------------
@@ -1337,6 +1339,11 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
 //
 // Notes: Adapted from avtMFEMFileFormat and MFEM examples.
 //
+//  Modifications:
+//    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
+//    Casting geom to Geometry::Type where appropariate. This is required
+//    with the mfem upgrade to 4.0.
+//
 // ****************************************************************************
 vtkDataSet *
 avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
@@ -1362,7 +1369,7 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     {
         int geom = mesh->GetElementBaseGeometry(i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         npts  += refined_geo->RefPts.GetNPoints();
         neles += refined_geo->RefGeoms.Size() / ele_nverts;
     }
@@ -1376,7 +1383,7 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     for (int i = 0; i < mesh->GetNE(); i++)
     {
         int geom = mesh->GetElementBaseGeometry(i);
-        refined_geo = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         // refined points
         mesh->GetElementTransformation(i)->Transform(refined_geo->RefPts, pmat);
         for (int j = 0; j < pmat.Width(); j++)
@@ -1402,7 +1409,7 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     {
         int geom       = mesh->GetElementBaseGeometry(i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo    = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
 
         Array<int> &rg_idxs = refined_geo->RefGeoms;
 
@@ -1449,6 +1456,11 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
 //
 // Notes: Adapted from avtMFEMFileFormat and MFEM examples.
 //
+//  Modifications:
+//    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
+//    Casting geom to Geometry::Type where appropariate. This is required
+//    with the mfem upgrade to 4.0.
+//
 // ****************************************************************************
 vtkDataArray *
 avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
@@ -1472,7 +1484,7 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     {
         int geom = mesh->GetElementBaseGeometry(i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo    = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         npts  += refined_geo->RefPts.GetNPoints();
         neles += refined_geo->RefGeoms.Size() / ele_nverts;
     }
@@ -1493,7 +1505,7 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     for (int i = 0; i <  mesh->GetNE(); i++)
     {
         int geom       = mesh->GetElementBaseGeometry(i);
-        refined_geo    = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         if(ncomps == 1)
         {
             gf->GetValues(i, refined_geo->RefPts, scalar_vals, pmat);
@@ -1540,6 +1552,11 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
 //
 // Notes: Adapted from avtMFEMFileFormat and MFEM examples.
 //
+//  Modifications:
+//    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
+//    Casting geom to Geometry::Type where appropariate. This is required
+//    with the mfem upgrade to 4.0.
+//
 // ****************************************************************************
 vtkDataArray *
 avtBlueprintDataAdaptor::MFEM::RefineElementColoringToVTK(mfem::Mesh *mesh,
@@ -1561,7 +1578,7 @@ avtBlueprintDataAdaptor::MFEM::RefineElementColoringToVTK(mfem::Mesh *mesh,
     {
         int geom = mesh->GetElementBaseGeometry(i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo    = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         npts  += refined_geo->RefPts.GetNPoints();
         neles += refined_geo->RefGeoms.Size() / ele_nverts;
     }
@@ -1590,7 +1607,7 @@ avtBlueprintDataAdaptor::MFEM::RefineElementColoringToVTK(mfem::Mesh *mesh,
     {
         int geom = mesh->GetElementBaseGeometry(i);
         int nv = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo= GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo= GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         for (int j = 0; j < refined_geo->RefGeoms.Size(); j += nv)
         {
              rv->SetTuple1(ref_idx,coloring[i]+1);
@@ -1616,6 +1633,11 @@ avtBlueprintDataAdaptor::MFEM::RefineElementColoringToVTK(mfem::Mesh *mesh,
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
 //
+//  Modifications:
+//    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
+//    Casting geom to Geometry::Type where appropariate. This is required
+//    with the mfem upgrade to 4.0.
+//
 // ****************************************************************************
 vtkDataArray *
 avtBlueprintDataAdaptor::MFEM::RefineElementAttributeToVTK(mfem::Mesh *mesh,
@@ -1636,7 +1658,7 @@ avtBlueprintDataAdaptor::MFEM::RefineElementAttributeToVTK(mfem::Mesh *mesh,
     {
         int geom = mesh->GetElementBaseGeometry(i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo    = GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         npts  += refined_geo->RefPts.GetNPoints();
         neles += refined_geo->RefGeoms.Size() / ele_nverts;
     }
@@ -1651,7 +1673,7 @@ avtBlueprintDataAdaptor::MFEM::RefineElementAttributeToVTK(mfem::Mesh *mesh,
     {
         int geom = mesh->GetElementBaseGeometry(i);
         int nv = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo= GlobGeometryRefiner.Refine(geom, lod, 1);
+        refined_geo= GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         int attr = mesh->GetAttribute(i);
         for (int j = 0; j < refined_geo->RefGeoms.Size(); j += nv)
         {
@@ -1934,7 +1956,7 @@ avtBlueprintDataAdaptor::BP::VTKToBlueprint(conduit::Node &mesh,
       vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) dataset;
 
       mesh[coord_path+ "/type"] = "rectilinear";
-      mesh[topo_path + "/type"] = "structured";
+      mesh[topo_path + "/type"] = "rectilinear";
 
       if(ndims > 0)
       {
@@ -1987,8 +2009,8 @@ avtBlueprintDataAdaptor::BP::VTKToBlueprint(conduit::Node &mesh,
      BP_PLUGIN_INFO("VTKToBlueprint:: UntructuredGrid");
      vtkUnstructuredGrid *grid = (vtkUnstructuredGrid *) dataset;
 
-     mesh[topo_path + "/type"] = "unstructured";
      mesh[coord_path + "/type"] = "explicit";
+     mesh[topo_path + "/type"] = "unstructured";
 
      vtkPoints *vtk_pts = grid->GetPoints();
      vtkPointsToNode(mesh[coord_path + "/values"], vtk_pts, ndims);

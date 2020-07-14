@@ -10,19 +10,19 @@
      Init file for 'visit_utils' module.
 """
 
-import common
-import exprs
-import engine
-import encoding
-import status
-import ult
+from . import common
+from . import exprs
+from . import engine
+from . import encoding
+from . import status
+from . import ult
 
-import moab
-import slurm
+from . import moab
+from . import slurm
 
-import qannote
-import qplot
+from . import qannote
+from . import qplot
 
-from query import query, python_query
-from windows import Window, WindowManager
-from property_tree import PropertyTree
+from .query import query, python_query
+from .windows import Window, WindowManager
+from .property_tree import PropertyTree

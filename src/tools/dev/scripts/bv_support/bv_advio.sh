@@ -197,9 +197,13 @@ function build_advio
     if [[ "$OPSYS" == "Darwin" ]]; then
         ADVIO_DARWIN="--host=darwin"
     fi
+    ADVIO_DEBUG=""
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        ADVIO_DEBUG="--enable-debug"
+    fi
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        ./configure --prefix="$VISITDIR/AdvIO/$ADVIO_VERSION/$VISITARCH" --disable-gtktest $ADVIO_DARWIN
+        ./configure --prefix="$VISITDIR/AdvIO/$ADVIO_VERSION/$VISITARCH" --disable-gtktest $ADVIO_DARWIN $ADVIO_DEBUG
     if [[ $? != 0 ]] ; then
         warn "AdvIO configure failed.  Giving up"
         return 1

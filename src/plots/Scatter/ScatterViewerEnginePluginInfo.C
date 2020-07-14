@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ScatterViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ScatterPluginInfo.h>
 #include <avtScatterPlot.h>
@@ -29,8 +29,11 @@ ScatterAttributes *ScatterViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ScatterViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ScatterViewerEnginePluginInfo::clientAtts  = new ScatterAttributes;
-    ScatterViewerEnginePluginInfo::defaultAtts = new ScatterAttributes;
+    if (ScatterViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ScatterViewerEnginePluginInfo::clientAtts  = new ScatterAttributes;
+        ScatterViewerEnginePluginInfo::defaultAtts = new ScatterAttributes;
+    }
 }
 
 // ****************************************************************************

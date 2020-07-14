@@ -19,7 +19,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class SmoothOperatorAttributes : public AttributeSubject

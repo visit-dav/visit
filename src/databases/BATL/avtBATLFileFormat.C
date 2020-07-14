@@ -176,7 +176,7 @@ avtBATLFileFormat::FinalizeHDF5(void)
 // ****************************************************************************
 
 avtBATLFileFormat::avtBATLFileFormat(const char *cfilename,
-                                     DBOptionsAttributes *&opts)
+                                     const DBOptionsAttributes *opts)
     : avtSTMDFileFormat(&cfilename, 1)
 {
     debug5 << "avtBATLFileFormat Marker 1" << endl;

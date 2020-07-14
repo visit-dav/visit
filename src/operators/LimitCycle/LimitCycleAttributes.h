@@ -20,7 +20,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class LimitCycleAttributes : public AttributeSubject
@@ -68,8 +68,7 @@ public:
         M3DC12DField,
         M3DC13DField,
         Nek5000Field,
-        NektarPPField,
-        NIMRODField
+        NektarPPField
     };
     enum IntegrationType
     {

@@ -1,6 +1,9 @@
 import time
 import socket
-import thread
+if (sys.version_info > (3, 0)):
+    import _thread
+else:
+    import thread as _thread
 import threading
 import visitstate
 import atexit
@@ -69,7 +72,7 @@ class ViewerProxy:
         s.close() # close connection after message
 
         if not data:
-            print "Connection to VisIt failed"
+            print("Connection to VisIt failed")
             return False
 
         message = json.loads(data)
@@ -124,7 +127,7 @@ class ViewerProxy:
 
         # attempt handshake
         if not self.handshake(host,port,password,visType):
-            print "HandShake failed: unable to connect"
+            print("HandShake failed: unable to connect")
             return False
 
         #self.visit_host = "localhost";
@@ -147,17 +150,17 @@ class ViewerProxy:
         self.state.addListener(self.updateEvent)
 
         #run eventloop
-        thread.start_new_thread(self.eventLoop,())
+        _thread.start_new_thread(self.eventLoop,())
 
         #wait until VisIt API has loaded
         #TODO: replace this logic with semaphore wait..
-        print "Loading VisIt API..."
+        print("Loading VisIt API...")
         while(not LastEvent): time.sleep(.1)
 
         self.state.removeListener(self.updateEvent)
 
         self.sync()
-        print "The viewer proxy has loaded..."
+        print("The viewer proxy has loaded...")
 
     def close(self):
         self.inputConnection.close()
@@ -188,7 +191,7 @@ class ViewerProxy:
             data = self.inputConnection.recv(ViewerProxy.BUFSIZE)
 
             if not data:
-                print "Quitting ..."
+                print("Quitting ...")
                 break;
         
             input_buffer += data
@@ -226,7 +229,7 @@ class ViewerProxy:
                         res = json.loads(tmp)
                         self.state.update(res)
                     except:
-                        print "failed input", tmp
+                        print("failed input", tmp)
 
                 tmp = input_buffer.strip()
 

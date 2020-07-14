@@ -3,6 +3,8 @@ PROJECT(ToroidalPoloidalProjection_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(ToroidalPoloidalProjection)
+
 SET(COMMON_SOURCES
 ToroidalPoloidalProjectionPluginInfo.C
 ToroidalPoloidalProjectionCommonPluginInfo.C

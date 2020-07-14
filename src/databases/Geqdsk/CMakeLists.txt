@@ -3,6 +3,8 @@ PROJECT(Geqdsk_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(Geqdsk)
+
 SET(COMMON_SOURCES
 GeqdskPluginInfo.C
 GeqdskCommonPluginInfo.C

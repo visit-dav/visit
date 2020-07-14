@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: AMRStitchCellCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <AMRStitchCellPluginInfo.h>
 #include <AMRStitchCellAttributes.h>
@@ -43,7 +43,7 @@ AMRStitchCellCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 AMRStitchCellCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

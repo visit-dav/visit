@@ -5,7 +5,7 @@
 
 Source code repository for the VisIt Scientific Visualization and Data Analysis Application
 
-[Project Website](https://visit.llnl.gov) | [Nightly Test Status](http://portal.nersc.gov/project/visit/)
+[Project Website](https://visit.llnl.gov) | [Nightly Test Status](https://visit-dav.github.io/dashboard/)
 
 
 ##  Documentation
@@ -26,4 +26,4 @@ All new contributions must be made under the [BSD-3 License](LICENSE)
 
 See [LICENSE](LICENSE) and [NOTICE](NOTICE) for details.
 
-LLNL-CODE-442911
+LLNL-CODE-793424

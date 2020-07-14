@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ToroidalPoloidalProjectionViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ToroidalPoloidalProjectionPluginInfo.h>
 #include <ToroidalPoloidalProjection.h>
@@ -28,8 +28,11 @@ ToroidalPoloidalProjection *ToroidalPoloidalProjectionViewerEnginePluginInfo::de
 void
 ToroidalPoloidalProjectionViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ToroidalPoloidalProjectionViewerEnginePluginInfo::clientAtts  = new ToroidalPoloidalProjection;
-    ToroidalPoloidalProjectionViewerEnginePluginInfo::defaultAtts = new ToroidalPoloidalProjection;
+    if (ToroidalPoloidalProjectionViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ToroidalPoloidalProjectionViewerEnginePluginInfo::clientAtts  = new ToroidalPoloidalProjection;
+        ToroidalPoloidalProjectionViewerEnginePluginInfo::defaultAtts = new ToroidalPoloidalProjection;
+    }
 }
 
 // ****************************************************************************

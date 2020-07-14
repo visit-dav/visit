@@ -3,6 +3,8 @@ PROJECT(CracksClipper_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(CracksClipper)
+
 SET(COMMON_SOURCES
 CracksClipperPluginInfo.C
 CracksClipperCommonPluginInfo.C

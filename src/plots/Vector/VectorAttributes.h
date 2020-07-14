@@ -21,7 +21,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VectorAttributes : public AttributeSubject
@@ -38,11 +38,6 @@ public:
         Middle,
         Tail
     };
-    enum LimitsMode
-    {
-        OriginalData,
-        CurrentPlot
-    };
     enum GlyphType
     {
         Arrow,
@@ -52,6 +47,11 @@ public:
     {
         Cylinder,
         Line
+    };
+    enum LimitsMode
+    {
+        OriginalData,
+        CurrentPlot
     };
     enum GlyphLocation
     {
@@ -84,67 +84,67 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectVectorColor();
     void SelectColorTableName();
+    void SelectVectorColor();
 
     // Property setting methods
     void SetGlyphLocation(GlyphLocation glyphLocation_);
     void SetUseStride(bool useStride_);
-    void SetStride(int stride_);
     void SetNVectors(int nVectors_);
-    void SetLineWidth(int lineWidth_);
+    void SetStride(int stride_);
+    void SetOrigOnly(bool origOnly_);
+    void SetLimitsMode(LimitsMode limitsMode_);
+    void SetMinFlag(bool minFlag_);
+    void SetMin(double min_);
+    void SetMaxFlag(bool maxFlag_);
+    void SetMax(double max_);
+    void SetColorByMagnitude(bool colorByMagnitude_);
+    void SetColorTableName(const std::string &colorTableName_);
+    void SetInvertColorTable(bool invertColorTable_);
+    void SetVectorColor(const ColorAttribute &vectorColor_);
+    void SetUseLegend(bool useLegend_);
     void SetScale(double scale_);
     void SetScaleByMagnitude(bool scaleByMagnitude_);
     void SetAutoScale(bool autoScale_);
-    void SetHeadSize(double headSize_);
-    void SetHeadOn(bool headOn_);
-    void SetColorByMag(bool colorByMag_);
-    void SetUseLegend(bool useLegend_);
-    void SetVectorColor(const ColorAttribute &vectorColor_);
-    void SetColorTableName(const std::string &colorTableName_);
-    void SetInvertColorTable(bool invertColorTable_);
-    void SetVectorOrigin(OriginType vectorOrigin_);
-    void SetMinFlag(bool minFlag_);
-    void SetMaxFlag(bool maxFlag_);
-    void SetLimitsMode(LimitsMode limitsMode_);
-    void SetMin(double min_);
-    void SetMax(double max_);
-    void SetLineStem(LineStem lineStem_);
-    void SetGeometryQuality(Quality geometryQuality_);
-    void SetStemWidth(double stemWidth_);
-    void SetOrigOnly(bool origOnly_);
     void SetGlyphType(GlyphType glyphType_);
+    void SetHeadOn(bool headOn_);
+    void SetHeadSize(double headSize_);
+    void SetLineStem(LineStem lineStem_);
+    void SetLineWidth(int lineWidth_);
+    void SetStemWidth(double stemWidth_);
+    void SetVectorOrigin(OriginType vectorOrigin_);
+    void SetGeometryQuality(Quality geometryQuality_);
     void SetAnimationStep(int animationStep_);
 
     // Property getting methods
     GlyphLocation        GetGlyphLocation() const;
     bool                 GetUseStride() const;
-    int                  GetStride() const;
     int                  GetNVectors() const;
-    int                  GetLineWidth() const;
-    double               GetScale() const;
-    bool                 GetScaleByMagnitude() const;
-    bool                 GetAutoScale() const;
-    double               GetHeadSize() const;
-    bool                 GetHeadOn() const;
-    bool                 GetColorByMag() const;
-    bool                 GetUseLegend() const;
-    const ColorAttribute &GetVectorColor() const;
-          ColorAttribute &GetVectorColor();
+    int                  GetStride() const;
+    bool                 GetOrigOnly() const;
+    LimitsMode           GetLimitsMode() const;
+    bool                 GetMinFlag() const;
+    double               GetMin() const;
+    bool                 GetMaxFlag() const;
+    double               GetMax() const;
+    bool                 GetColorByMagnitude() const;
     const std::string    &GetColorTableName() const;
           std::string    &GetColorTableName();
     bool                 GetInvertColorTable() const;
-    OriginType           GetVectorOrigin() const;
-    bool                 GetMinFlag() const;
-    bool                 GetMaxFlag() const;
-    LimitsMode           GetLimitsMode() const;
-    double               GetMin() const;
-    double               GetMax() const;
-    LineStem             GetLineStem() const;
-    Quality              GetGeometryQuality() const;
-    double               GetStemWidth() const;
-    bool                 GetOrigOnly() const;
+    const ColorAttribute &GetVectorColor() const;
+          ColorAttribute &GetVectorColor();
+    bool                 GetUseLegend() const;
+    double               GetScale() const;
+    bool                 GetScaleByMagnitude() const;
+    bool                 GetAutoScale() const;
     GlyphType            GetGlyphType() const;
+    bool                 GetHeadOn() const;
+    double               GetHeadSize() const;
+    LineStem             GetLineStem() const;
+    int                  GetLineWidth() const;
+    double               GetStemWidth() const;
+    OriginType           GetVectorOrigin() const;
+    Quality              GetGeometryQuality() const;
     int                  GetAnimationStep() const;
 
     // Persistence methods
@@ -162,11 +162,6 @@ public:
 protected:
     static std::string OriginType_ToString(int);
 public:
-    static std::string LimitsMode_ToString(LimitsMode);
-    static bool LimitsMode_FromString(const std::string &, LimitsMode &);
-protected:
-    static std::string LimitsMode_ToString(int);
-public:
     static std::string GlyphType_ToString(GlyphType);
     static bool GlyphType_FromString(const std::string &, GlyphType &);
 protected:
@@ -176,6 +171,11 @@ public:
     static bool LineStem_FromString(const std::string &, LineStem &);
 protected:
     static std::string LineStem_ToString(int);
+public:
+    static std::string LimitsMode_ToString(LimitsMode);
+    static bool LimitsMode_FromString(const std::string &, LimitsMode &);
+protected:
+    static std::string LimitsMode_ToString(int);
 public:
     static std::string GlyphLocation_ToString(GlyphLocation);
     static bool GlyphLocation_FromString(const std::string &, GlyphLocation &);
@@ -190,6 +190,7 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
     bool ChangesRequireRecalculation(const VectorAttributes &obj);
     double GetAnimationScale() const;
 
@@ -197,30 +198,30 @@ public:
     enum {
         ID_glyphLocation = 0,
         ID_useStride,
-        ID_stride,
         ID_nVectors,
-        ID_lineWidth,
+        ID_stride,
+        ID_origOnly,
+        ID_limitsMode,
+        ID_minFlag,
+        ID_min,
+        ID_maxFlag,
+        ID_max,
+        ID_colorByMagnitude,
+        ID_colorTableName,
+        ID_invertColorTable,
+        ID_vectorColor,
+        ID_useLegend,
         ID_scale,
         ID_scaleByMagnitude,
         ID_autoScale,
-        ID_headSize,
-        ID_headOn,
-        ID_colorByMag,
-        ID_useLegend,
-        ID_vectorColor,
-        ID_colorTableName,
-        ID_invertColorTable,
-        ID_vectorOrigin,
-        ID_minFlag,
-        ID_maxFlag,
-        ID_limitsMode,
-        ID_min,
-        ID_max,
-        ID_lineStem,
-        ID_geometryQuality,
-        ID_stemWidth,
-        ID_origOnly,
         ID_glyphType,
+        ID_headOn,
+        ID_headSize,
+        ID_lineStem,
+        ID_lineWidth,
+        ID_stemWidth,
+        ID_vectorOrigin,
+        ID_geometryQuality,
         ID_animationStep,
         ID__LAST
     };
@@ -228,36 +229,36 @@ public:
 private:
     int            glyphLocation;
     bool           useStride;
-    int            stride;
     int            nVectors;
-    int            lineWidth;
+    int            stride;
+    bool           origOnly;
+    int            limitsMode;
+    bool           minFlag;
+    double         min;
+    bool           maxFlag;
+    double         max;
+    bool           colorByMagnitude;
+    std::string    colorTableName;
+    bool           invertColorTable;
+    ColorAttribute vectorColor;
+    bool           useLegend;
     double         scale;
     bool           scaleByMagnitude;
     bool           autoScale;
-    double         headSize;
-    bool           headOn;
-    bool           colorByMag;
-    bool           useLegend;
-    ColorAttribute vectorColor;
-    std::string    colorTableName;
-    bool           invertColorTable;
-    int            vectorOrigin;
-    bool           minFlag;
-    bool           maxFlag;
-    int            limitsMode;
-    double         min;
-    double         max;
-    int            lineStem;
-    int            geometryQuality;
-    double         stemWidth;
-    bool           origOnly;
     int            glyphType;
+    bool           headOn;
+    double         headSize;
+    int            lineStem;
+    int            lineWidth;
+    double         stemWidth;
+    int            vectorOrigin;
+    int            geometryQuality;
     int            animationStep;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VECTORATTRIBUTES_TMFS "ibiiidbbdbbbasbibbiddiidbii"
+#define VECTORATTRIBUTES_TMFS "ibiibibdbdbsbabdbbibdiidiii"
 
 #endif

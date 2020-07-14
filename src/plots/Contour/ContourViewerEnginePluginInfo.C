@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ContourViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ContourPluginInfo.h>
 #include <avtContourPlot.h>
@@ -29,8 +29,11 @@ ContourAttributes *ContourViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ContourViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ContourViewerEnginePluginInfo::clientAtts  = new ContourAttributes;
-    ContourViewerEnginePluginInfo::defaultAtts = new ContourAttributes;
+    if (ContourViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ContourViewerEnginePluginInfo::clientAtts  = new ContourAttributes;
+        ContourViewerEnginePluginInfo::defaultAtts = new ContourAttributes;
+    }
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);
@@ -192,7 +195,7 @@ ContourViewerEnginePluginInfo::GetMenuName() const
 // ****************************************************************************
 // Method: ContourViewerEnginePluginInfo::InitializeDefaultPalette
 //
-// Purpose: 
+// Purpose:
 //   Initializes the default palette in the contour attributes using the
 //   default discrete color table.
 //

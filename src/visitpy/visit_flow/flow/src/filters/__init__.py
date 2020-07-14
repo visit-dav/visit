@@ -11,27 +11,27 @@
 
 """
 
-import cmd
-import file_ops
+from . import cmd
+from . import file_ops
 # requires install of imagemagick command line tools.
-import imagick
-import script_pipeline
+from . import imagick
+from . import script_pipeline
 
 # check for import error only ...
 try:
     # requires numpy
-    import npy_ops
+    from . import npy_ops
 except ImportError as e:
     pass
 
 # check for import error only ...
 try:
     # these require pyopencl
-    import pyocl_env
-    import pyocl_ops
-    import pyocl_batch
-    import pyocl_compile
+    from . import pyocl_env
+    from . import pyocl_ops
+    from . import pyocl_batch
+    from . import pyocl_compile
 except ImportError as e:
     pass
 
-from management import *
+from .management import *

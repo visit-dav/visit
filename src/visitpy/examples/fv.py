@@ -22,7 +22,7 @@ import math, sys
 # Check the version.
 ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
-    print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
+    print("This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version()))
 
 # define a clamping function
 def clamp(v):
@@ -73,8 +73,8 @@ def fv():
 
 # Make sure we have the Volume plugin.
 if 'Volume' not in PlotPlugins():
-    print "This script requires the Volume plot plugin!"
+    print("This script requires the Volume plot plugin!")
 elif (not os.path.isfile("../../data/globe.silo")):
-    print "This script requires the file globe.silo to be built in the data directory"
+    print("This script requires the file globe.silo to be built in the data directory")
 else:
     fv()

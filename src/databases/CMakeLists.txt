@@ -170,6 +170,15 @@
 #    Eric Brugger, Wed Jun 26 08:57:57 PDT 2019
 #    Remove CCM plugin.
 #
+#    James Kress, Tue Aug 27; 15:21:30 EDT 2019
+#    Add Xolotl plugin
+#
+#    Kathleen Biagas, Thu Feb  6 10:55:13 PST 2020
+#    Added AVSucd plugin.
+#
+#    Kathleen Biagas, Thu Feb 27 2020 
+#    Only add SimV2 if VISIT_ENABLE_LIBSIM is true.
+#
 #****************************************************************************
 
 IF(NOT WIN32)
@@ -283,7 +292,7 @@ CHECK_THIRDPARTY_SATISFIED(NETCDF NETCDF)
 CHECK_THIRDPARTY_SATISFIED(S3D NETCDF_CXX)
 CHECK_THIRDPARTY_SATISFIED(Exodus NETCDF)
 
-CHECK_THIRDPARTY_SATISFIED(MFIXCDF NETCDF_CXX)
+CHECK_THIRDPARTY_SATISFIED(MFIXCDF NETCDF)
 CHECK_THIRDPARTY_SATISFIED(Xdmf XDMF)
 
 CHECK_THIRDPARTY_SATISFIED(Chombo HDF5)
@@ -303,6 +312,7 @@ CHECK_THIRDPARTY_SATISFIED(GTC HDF5)
 CHECK_THIRDPARTY_SATISFIED(H5Nimrod HDF5)
 CHECK_THIRDPARTY_SATISFIED(M3D HDF5)
 CHECK_THIRDPARTY_SATISFIED(M3DC1 HDF5)
+CHECK_THIRDPARTY_SATISFIED(OpenPMD HDF5)
 CHECK_THIRDPARTY_SATISFIED(PFLOTRAN HDF5)
 CHECK_THIRDPARTY_SATISFIED(Pixie HDF5)
 CHECK_THIRDPARTY_SATISFIED(PVLD HDF5)
@@ -314,6 +324,7 @@ CHECK_THIRDPARTY_SATISFIED(Velodyne HDF5)
 CHECK_THIRDPARTY_SATISFIED(Vs HDF5)
 CHECK_THIRDPARTY_SATISFIED(XGC HDF5)
 CHECK_THIRDPARTY_SATISFIED(MOAB MOAB)
+CHECK_THIRDPARTY_SATISFIED(Xolotl HDF5)
 
 # if we don't have the xdmf lib, we can fall back to VisIt's xdmf reader
 # that only uses hdf5
@@ -367,14 +378,15 @@ IF(VISIT_STATIC)
     SET(ALL_THIRDPARTY_IO_LIB ${TMP_THIRDPARTY_IO_LIB} CACHE INTERNAL "List of all I/O libs")
 ENDIF(VISIT_STATIC)
 
-# If we're not building statically, add SimV2.
-# If we're not building statically, add XDB -- if we enabled it.
-IF(NOT VISIT_STATIC)
-    SET(SIMV2_PLUGIN SimV2)
-ENDIF(NOT VISIT_STATIC)
-IF(VISIT_ENABLE_XDB)
-    SET(XDBPLUGIN FieldViewXDB)
-ENDIF(VISIT_ENABLE_XDB)
+# If we're not building statically, add SimV2 and XDB if enabled.
+if(NOT VISIT_STATIC)
+    if(VISIT_ENABLE_LIBSIM)
+        set(SIMV2_PLUGIN SimV2)
+    endif()
+    if(VISIT_ENABLE_XDB)
+        set(XDBPLUGIN FieldViewXDB)
+    endif()
+endif()
 
 # These are our required plugins (no external dependencies)
 SET(REQUIRED_DATABASE_PLUGINS
@@ -383,6 +395,7 @@ ANALYZE
 ANSYS
 AUXFile
 AugDecomp
+AVSucd
 BOV
 CEAucd
 Claw

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ExternalSurfaceViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ExternalSurfacePluginInfo.h>
 #include <ExternalSurfaceAttributes.h>
@@ -28,8 +28,11 @@ ExternalSurfaceAttributes *ExternalSurfaceViewerEnginePluginInfo::defaultAtts = 
 void
 ExternalSurfaceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ExternalSurfaceViewerEnginePluginInfo::clientAtts  = new ExternalSurfaceAttributes;
-    ExternalSurfaceViewerEnginePluginInfo::defaultAtts = new ExternalSurfaceAttributes;
+    if (ExternalSurfaceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ExternalSurfaceViewerEnginePluginInfo::clientAtts  = new ExternalSurfaceAttributes;
+        ExternalSurfaceViewerEnginePluginInfo::defaultAtts = new ExternalSurfaceAttributes;
+    }
 }
 
 // ****************************************************************************

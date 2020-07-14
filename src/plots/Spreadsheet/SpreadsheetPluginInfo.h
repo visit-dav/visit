@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                        SpreadsheetPluginInfo.h                            //
+//  SpreadsheetPluginInfo.h
 // ************************************************************************* //
 
 #ifndef SPREADSHEET_PLUGIN_INFO_H

@@ -364,6 +364,50 @@ Test("long_identity_expr")
 DeleteAllPlots()
 OpenDatabase(silo_data_path("rect2d.silo"))
 
+# Test divide expression
+DefineScalarExpression('divide1', 'divide(d,p)')
+AddPlot('Pseudocolor','divide1')
+DrawPlots()
+Test('divide1')
+
+DefineScalarExpression('divide2', 'divide(d,p,0.0,2.0)')
+AddPlot('Pseudocolor','divide2')
+DrawPlots()
+Test('divide2')
+DeleteAllPlots()
+
+DefineScalarExpression('divide3', 'divide(d,p,1.0,2.0)')
+AddPlot('Pseudocolor','divide3')
+DrawPlots()
+Test('divide3')
+DeleteAllPlots()
+
+# Test min/max expression
+DefineScalarExpression('min1', 'min(10.0, 5.0, d+p)')
+AddPlot('Pseudocolor', 'min1')
+DrawPlots()
+Test('min1')
+DeleteAllPlots()
+
+DefineScalarExpression('min2', 'min(d+p, 5.0, 10.0)')
+AddPlot('Pseudocolor', 'min2')
+DrawPlots()
+Test('min2')
+DeleteAllPlots()
+
+DefineScalarExpression('max1', 'max(10.0, 5.0, d+p)')
+AddPlot('Pseudocolor', 'max1')
+DrawPlots()
+Test('max1')
+DeleteAllPlots()
+
+DefineScalarExpression('min3', 'min(2.0, d+p, d*p+2*d)')
+AddPlot('Pseudocolor', 'min3')
+DrawPlots()
+Test('min3')
+DeleteAllPlots()
+
+# Test resrad
 DefineScalarExpression("resrad", "resrad(recenter(u), 0.1)")
 AddPlot("Pseudocolor", "resrad")
 DrawPlots()

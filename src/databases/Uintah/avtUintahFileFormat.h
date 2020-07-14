@@ -49,7 +49,7 @@ class TimeStepInfo;
 class avtUintahFileFormat : public avtMTMDFileFormat
 {
 public:
-  avtUintahFileFormat( const char * filename, DBOptionsAttributes* attrs);
+  avtUintahFileFormat( const char * filename, const DBOptionsAttributes* attrs);
   virtual           ~avtUintahFileFormat();
 
   virtual double        GetTime( int timestep );

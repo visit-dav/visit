@@ -3,6 +3,8 @@ PROJECT(S3D_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(S3D)
+
 SET(COMMON_SOURCES
 S3DPluginInfo.C
 S3DCommonPluginInfo.C

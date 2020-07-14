@@ -50,6 +50,12 @@ ColorTableAttributes *QvisColorTableButton::colorTableAtts = NULL;
 //   Brad Whitlock, Fri May  9 11:23:57 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Thu Jun 18 11:42:47 PDT 2020
+//   Call 'setMenu' to allow QPushButton to control showing and placment of
+//   colorTableMenu.  This will add an arrow to the button to indicate a menu
+//   is attached. Connect QMenu's 'aboutToShow' instead of QPushButton's
+//   'pressed' signal.
+//
 // ****************************************************************************
 
 QvisColorTableButton::QvisColorTableButton(QWidget *parent) :
@@ -67,10 +73,11 @@ QvisColorTableButton::QvisColorTableButton(QWidget *parent) :
         colorTableMenuActionGroup->addAction(colorTableMenu->addAction("Default"));
         colorTableMenu->addSeparator();
     }
+    setMenu(colorTableMenu);
     buttons.push_back(this);
 
     // Make the popup active when this button is clicked.
-    connect(this, SIGNAL(pressed()), this, SLOT(popupPressed()));
+    connect(colorTableMenu, SIGNAL(aboutToShow()), this, SLOT(popupPressed()));
 
     setText(colorTable);
     setIconSize(QSize(ICON_NX,ICON_NY));
@@ -281,7 +288,14 @@ QvisColorTableButton::getColorTable() const
 // Creation:   Sat Jun 16 20:10:16 PST 2001
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Thu Jun 18 11:39:24 PDT 2020
+//    Menu is now connected to this pushbutton via setMenu method, so it will
+//    control placement. This slot is now called when aboutToShow signal is
+//    triggered, so don't need to test for 'isDown'.
+//
+//    Kathleen Biagas, Fri Jun 19 12:06:22 PDT 2020
+//    isDown is actually important, Added it back to the if-test.
+//
 // ****************************************************************************
 
 void
@@ -293,11 +307,6 @@ QvisColorTableButton::popupPressed()
         if(!popupHasEntries)
             regeneratePopupMenu();
 
-        QPoint p1(mapToGlobal(rect().bottomLeft()));
-        QPoint p2(mapToGlobal(rect().topRight()));
-        QPoint buttonMiddle(p1.x() + ((p2.x() - p1.x()) >> 1),
-                            p1.y() + ((p2.y() - p1.y()) >> 1));
-
         // Disconnect all other color table buttons.
         for(size_t i = 0; i < buttons.size(); ++i)
         {
@@ -308,28 +317,6 @@ QvisColorTableButton::popupPressed()
         // Connect this colorbutton to the popup menu.
         connect(colorTableMenuActionGroup, SIGNAL(triggered(QAction *)),
                 this, SLOT(colorTableSelected(QAction *)));
-
-        // Figure out a good place to popup the menu.
-        int menuW = colorTableMenu->sizeHint().width();
-        int menuH = colorTableMenu->sizeHint().height();
-        int menuX = buttonMiddle.x();
-        int menuY = buttonMiddle.y() - (menuH >> 1);
-
-        // Fix the X dimension.
-        if(menuX < 0)
-           menuX = 0;
-        else if(menuX + menuW > QApplication::desktop()->width())
-           menuX -= (menuW + 5);
-
-        // Fix the Y dimension.
-        if(menuY < 0)
-           menuY = 0;
-        else if(menuY + menuH > QApplication::desktop()->height())
-           menuY -= ((menuY + menuH) - QApplication::desktop()->height());
-
-        // Show the popup menu.         
-        colorTableMenu->exec(QPoint(menuX, menuY));
-        setDown(false);
     }
 }
 

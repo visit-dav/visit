@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ThreeSliceViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ThreeSlicePluginInfo.h>
 #include <ThreeSliceAttributes.h>
@@ -28,8 +28,11 @@ ThreeSliceAttributes *ThreeSliceViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ThreeSliceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ThreeSliceViewerEnginePluginInfo::clientAtts  = new ThreeSliceAttributes;
-    ThreeSliceViewerEnginePluginInfo::defaultAtts = new ThreeSliceAttributes;
+    if (ThreeSliceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ThreeSliceViewerEnginePluginInfo::clientAtts  = new ThreeSliceAttributes;
+        ThreeSliceViewerEnginePluginInfo::defaultAtts = new ThreeSliceAttributes;
+    }
 }
 
 // ****************************************************************************

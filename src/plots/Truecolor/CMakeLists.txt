@@ -3,6 +3,8 @@ PROJECT(Truecolor_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Truecolor)
+
 SET(COMMON_SOURCES
 TruecolorPluginInfo.C
 TruecolorCommonPluginInfo.C

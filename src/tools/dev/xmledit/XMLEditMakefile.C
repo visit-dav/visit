@@ -53,7 +53,7 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     : QFrame(p)
 {
     QGridLayout *topLayout = new QGridLayout(this);
-    
+
     int row = 0;
 
     topLayout->addWidget(new QLabel(tr("CXXFLAGS"), this), row, 0);
@@ -87,7 +87,7 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     topLayout->addWidget(customGLibs, row, 0);
     topLayout->addWidget(GLibs, row, 1);
     row++;
-    
+
     customWFiles = new QCheckBox(tr("GUI Widget Files"), this);
     WFiles = new QLineEdit(this);
     topLayout->addWidget(customWFiles, row, 0);
@@ -105,7 +105,7 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     topLayout->addWidget(customVFiles, row, 0);
     topLayout->addWidget(VFiles, row,1);
     row++;
-    
+
     customVLibs = new QCheckBox(tr("Viewer Libs"), this);
     VLibs = new QLineEdit(this);
     topLayout->addWidget(customVLibs, row, 0);
@@ -129,13 +129,13 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     topLayout->addWidget(customMLibs, row, 0);
     topLayout->addWidget(MLibs, row, 1);
     row++;
-    
+
     customEFiles = new QCheckBox(tr("Engine Files"), this);
     EFiles = new QLineEdit(this);
     topLayout->addWidget(customEFiles, row, 0);
     topLayout->addWidget(EFiles, row,1);
     row++;
-    
+
     customELibsSer = new QCheckBox(tr("Engine Libs (ser)"), this);
     ELibsSer = new QLineEdit(this);
     topLayout->addWidget(customELibsSer, row, 0);
@@ -210,9 +210,9 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     connect(customEFiles, SIGNAL(clicked()),
             this, SLOT(customefilesChanged()));
     connect(customELibsSer, SIGNAL(clicked()),
-            this, SLOT(customelibsSerChanged()));                            
+            this, SLOT(customelibsSerChanged()));
     connect(customELibsPar, SIGNAL(clicked()),
-            this, SLOT(customelibsParChanged()));                            
+            this, SLOT(customelibsParChanged()));
     connect(customWFiles, SIGNAL(clicked()),
             this, SLOT(customwfilesChanged()));
     connect(customVWFiles, SIGNAL(clicked()),
@@ -221,7 +221,7 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
             this, SLOT(mdSpecificCodeChanged()));
     connect(engSpecificCode, SIGNAL(clicked()),
             this, SLOT(engSpecificCodeChanged()));
-    
+
 }
 
 // ****************************************************************************
@@ -523,7 +523,7 @@ XMLEditMakefile::libsTextChanged(const QString &text)
 // ****************************************************************************
 //  Method:  XMLEditMakefile::defsTextChanged
 //
-//  Programmer:  Kathleen Biagas 
+//  Programmer:  Kathleen Biagas
 //  Creation:    November 6, 2014
 //
 // ****************************************************************************

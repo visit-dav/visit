@@ -30,7 +30,7 @@ class TestImagick(unittest.TestCase):
         odir = pjoin("tests","_test_output")
         if not os.path.isdir(odir):
             os.mkdir(odir)
-        print ""
+        print("")
     @imagick_test
     def test_01_workspace_setup(self):
         odir = pjoin("tests","_test_output")

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               AMRPluginInfo.h
+//  AMRPluginInfo.h
 // ****************************************************************************
 
 #ifndef AMR_PLUGIN_INFO_H

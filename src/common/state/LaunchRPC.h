@@ -14,7 +14,7 @@
 // Purpose:
 //   This class encodes an RPC that tells the launcher to launch a process.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri May 2 16:17:26 PST 2003

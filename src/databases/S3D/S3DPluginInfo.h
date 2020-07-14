@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               S3DPluginInfo.h
+//  S3DPluginInfo.h
 // ****************************************************************************
 
 #ifndef S3D_PLUGIN_INFO_H

@@ -394,6 +394,8 @@ vtkPointGlyphMapper::vtkPointGlyphMapper()
 //----------------------------------------------------------------------------
 vtkPointGlyphMapper::~vtkPointGlyphMapper()
 {
+    if (this->Helper)
+        delete this->Helper;
 }
 
 //----------------------------------------------------------------------------

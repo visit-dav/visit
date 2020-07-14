@@ -24,6 +24,13 @@ except:
 from visit_utils.common import require_pyside
 from visit_utils.property_tree import PropertyTree
 
+
+def py2to3_compat_unichr(c):
+    if (sys.version_info > (3, 0)):
+        return chr(c)
+    else:
+        return unichr(c)
+
 @require_pyside
 def process_encoded_text(val):
     rexp = QRegExp("(\\\\0x[0-9a-fA-F]{4})")
@@ -34,7 +41,7 @@ def process_encoded_text(val):
     while curr != -1:
         res += val[prev:curr]
         cval = int(rexp.cap(1)[1:],base=16)
-        res +=  unichr(cval)
+        res +=  py2to3_compat_unichr(cval)
         prev = curr + rexp.matchedLength()
         curr = prev
         curr = rexp.indexIn(val,curr)

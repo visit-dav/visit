@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: RemoveCellsViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <RemoveCellsPluginInfo.h>
 #include <RemoveCellsAttributes.h>
@@ -28,8 +28,11 @@ RemoveCellsAttributes *RemoveCellsViewerEnginePluginInfo::defaultAtts = NULL;
 void
 RemoveCellsViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    RemoveCellsViewerEnginePluginInfo::clientAtts  = new RemoveCellsAttributes;
-    RemoveCellsViewerEnginePluginInfo::defaultAtts = new RemoveCellsAttributes;
+    if (RemoveCellsViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        RemoveCellsViewerEnginePluginInfo::clientAtts  = new RemoveCellsAttributes;
+        RemoveCellsViewerEnginePluginInfo::defaultAtts = new RemoveCellsAttributes;
+    }
 }
 
 // ****************************************************************************

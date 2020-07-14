@@ -187,8 +187,6 @@ private:
     // init & destroy helpers
     void    Init(const JSONNode&);
     void    Cleanup();
-    
-
 
     void    ParseObject(std::istream &iss);
     void    ParseArray(std::istream &iss);

@@ -395,16 +395,24 @@ build_rect2d(DBfile * dbfile, int size)
     //
     var3name = "u";
     var4name = "v";
-    xcenter = .5001;
-    ycenter = .5001;
+    xcenter = 0.5;
+    ycenter = 0.5;
     for (i = 0; i < nx + 1; i++)
     {
         for (j = 0; j < ny + 1; j++)
         {
             dist = sqrt((x[i] - xcenter) * (x[i] - xcenter) +
                         (y[j] - ycenter) * (y[j] - ycenter));
-            u[j * (nx + 1) + i] = (x[i] - xcenter) / dist;
-            v[j * (nx + 1) + i] = (y[j] - ycenter) / dist;
+            if (dist < 0.5/nx || dist < 0.5/ny)
+            {
+                u[j * (nx + 1) + i] = 1.0;
+                v[j * (nx + 1) + i] = 0.0;
+            }
+            else
+            {
+                u[j * (nx + 1) + i] = (x[i] - xcenter) / dist;
+                v[j * (nx + 1) + i] = (y[j] - ycenter) / dist;
+            }
         }
     }
 
@@ -596,6 +604,14 @@ build_rect2d(DBfile * dbfile, int size)
     DBPutMaterial(dbfile, matname, meshname, nmats, matnos, matlist, dims2,
                   ndims, mix_next, mix_mat, mix_zone, mix_vf, mixlen,
                   DB_FLOAT, optlist);
+
+    // Create a symmetric tensor variable
+    {
+        void *arr[] = {u,v,t};
+        char *arrnames[] = {"V0","V1","V2"};
+        DBPutQuadvar(dbfile, "tensor", meshname, 3, arrnames, arr, dims, ndims, NULL, 0,
+            DB_FLOAT, DB_NODECENT, NULL);
+    }
 
     if (ascii)
     {

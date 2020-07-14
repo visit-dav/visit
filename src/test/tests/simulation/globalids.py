@@ -21,7 +21,7 @@ def step(sim):
     keepGoing = True
     while keepGoing:
         buf = sim.p.stderr.readline()
-        print buf
+        print(buf)
         if "Command step" in buf:
             keepGoing = False
 
@@ -114,10 +114,10 @@ def test0(sim):
     # domains at each time step and thus the global ids.
     times = start_time()
     idx = 7
-    for i in xrange(3):
+    for i in range(3):
         # Advance some steps. This should make the plots update.
         nsteps = 5
-        for j in xrange(nsteps):
+        for j in range(nsteps):
             step(sim)
             DrawPlots()
         times = add_time(times)
@@ -165,7 +165,7 @@ def test1(sim):
     idx = 0
     times = start_time()
     ntests = 4
-    for i in xrange(3):
+    for i in range(3):
         ids = [idx+j for j in range(ntests)]
         # Show the Subset plot
         showplot(1)

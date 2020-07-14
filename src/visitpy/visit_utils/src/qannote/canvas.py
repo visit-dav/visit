@@ -14,7 +14,7 @@ import sys
 import time
 import os
 import platform
-import xinit
+from . import xinit
 
 
 try:

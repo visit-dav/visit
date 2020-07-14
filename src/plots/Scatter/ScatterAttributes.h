@@ -22,7 +22,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class ScatterAttributes : public AttributeSubject

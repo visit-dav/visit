@@ -3,6 +3,8 @@ PROJECT(PICS_Tester_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(PICS_Tester)
+
 SET(COMMON_SOURCES
 PICS_TesterPluginInfo.C
 PICS_TesterCommonPluginInfo.C

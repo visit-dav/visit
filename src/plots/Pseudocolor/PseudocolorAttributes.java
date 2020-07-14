@@ -21,7 +21,7 @@ import llnl.visit.ColorAttribute;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class PseudocolorAttributes extends AttributeSubject implements Plugin

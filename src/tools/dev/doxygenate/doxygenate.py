@@ -127,7 +127,7 @@ def doxygenate_source_tree(src,des):
     if os.path.exists(des_sub):
         shutil.rmtree(des_sub)
     # create the des sub dir
-    print "[Creating Destination Sub Directory: %s]" % des_sub
+    print("[Creating Destination Sub Directory: %s]" % des_sub)
     os.mkdir(des_sub)
     # extract *{h,C} files from src, and doxygenate into des
     files = glob.glob(pjoin(src,"*.h"))
@@ -135,16 +135,16 @@ def doxygenate_source_tree(src,des):
     for fsrc in files:
         dn,fn = os.path.split(fsrc)
         fdes = pjoin(des_sub,fn);
-        print "[Doxifing: %s to %s]" % (fsrc,fdes)
+        print("[Doxifing: %s to %s]" % (fsrc,fdes))
         doxygenate_file(fsrc,fdes)
     # Decend to subdirs
     dirs = [ d for d in glob.glob(pjoin(src,"*")) if os.path.isdir(d)]
     dirs.sort()
     for d in dirs:
         if check_if_excluded(d): 
-            print "[Skipping Excluded Path: %s]" % d
+            print("[Skipping Excluded Path: %s]" % d)
         else:
-            print "[Decending into: %s]" % d
+            print("[Decending into: %s]" % d)
             doxygenate_source_tree(d,des_sub)
 
 def prepare_directories(src,des):
@@ -153,24 +153,24 @@ def prepare_directories(src,des):
     des = os.path.abspath(des) + "/"
     # make src directory exists
     if not os.path.exists(src):
-        print "<Error>: Source Directory: %s does not exist!" % src
+        print("<Error>: Source Directory: %s does not exist!" % src)
         sys.exit(-1)
     # make sure it is a directory
     if not os.path.isdir(src):
-        print "<Error>: Source: %s is not a directory!" % src
+        print("<Error>: Source: %s is not a directory!" % src)
         sys.exit(-1)
     # if the des directory does not exist create it
     if not os.path.exists(des):
-        print "[Creating Destination Directory: %s]" % des
+        print("[Creating Destination Directory: %s]" % des)
         os.mkdir(des)
     elif not os.path.isdir(des): # check if it exists but is not a directory
-        print "<Error>: Destination: %s exists, but is not a directory!" % des
+        print("<Error>: Destination: %s exists, but is not a directory!" % des)
         sys.exit(-1)
     # at this point we are sure both exist and are directories, make sure
     # they are not the same directory
     if src == des:
-        print "<Error>: Source Directory == Destination Directory, ",
-        print "Refusing to destroy source tree!"
+        print("<Error>: Source Directory == Destination Directory, ", end=' ')
+        print("Refusing to destroy source tree!")
         sys.exit(-1)
     return src, des
 
@@ -222,12 +222,12 @@ def prepare_doxyfile(src,des):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print "usage: doxygenate [src_dir] [des_dir]"
+        print("usage: doxygenate [src_dir] [des_dir]")
         sys.exit(-1)
     try:
         src,des = prepare_directories(sys.argv[1],sys.argv[2])
         doxygenate_source_tree(src,des)
         prepare_doxyfile(src,des)
     except KeyboardInterrupt:
-        print "<Error>: Stopped by user"
+        print("<Error>: Stopped by user")
 

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ResampleViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ResamplePluginInfo.h>
 #include <ResampleAttributes.h>
@@ -28,8 +28,11 @@ ResampleAttributes *ResampleViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ResampleViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ResampleViewerEnginePluginInfo::clientAtts  = new ResampleAttributes;
-    ResampleViewerEnginePluginInfo::defaultAtts = new ResampleAttributes;
+    if (ResampleViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ResampleViewerEnginePluginInfo::clientAtts  = new ResampleAttributes;
+        ResampleViewerEnginePluginInfo::defaultAtts = new ResampleAttributes;
+    }
 }
 
 // ****************************************************************************

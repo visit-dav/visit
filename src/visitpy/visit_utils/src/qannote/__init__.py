@@ -10,7 +10,7 @@
 
 """
 
-import xinit
-from canvas import *
-from items import *
+from . import xinit
+from .canvas import *
+from .items import *
 

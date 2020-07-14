@@ -22,7 +22,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class MeshAttributes : public AttributeSubject

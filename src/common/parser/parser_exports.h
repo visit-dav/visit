@@ -6,6 +6,7 @@
 #define PARSER_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 # if defined(PARSER_EXPORTS) || defined(visitcommon_EXPORTS)
 #   define PARSER_API  __declspec(dllexport)
 #   define PARSER_API2 __declspec(dllexport)
@@ -13,6 +14,10 @@
 #   define PARSER_API  __declspec(dllimport)
 #   define PARSER_API2 __declspec(dllimport)
 # endif
+#else
+#define PARSER_API
+#define PARSER_API2
+#endif
 # if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
 #   pragma warning(disable:4251)

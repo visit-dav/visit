@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               PICS_TesterPluginInfo.h
+//  PICS_TesterPluginInfo.h
 // ****************************************************************************
 
 #ifndef PICS_TESTER_PLUGIN_INFO_H

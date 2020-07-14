@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: IndexSelectViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <IndexSelectPluginInfo.h>
 #include <IndexSelectAttributes.h>
@@ -28,8 +28,11 @@ IndexSelectAttributes *IndexSelectViewerEnginePluginInfo::defaultAtts = NULL;
 void
 IndexSelectViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    IndexSelectViewerEnginePluginInfo::clientAtts  = new IndexSelectAttributes;
-    IndexSelectViewerEnginePluginInfo::defaultAtts = new IndexSelectAttributes;
+    if (IndexSelectViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        IndexSelectViewerEnginePluginInfo::clientAtts  = new IndexSelectAttributes;
+        IndexSelectViewerEnginePluginInfo::defaultAtts = new IndexSelectAttributes;
+    }
 }
 
 // ****************************************************************************
@@ -166,10 +169,10 @@ IndexSelectViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts
     avtSILRestriction_p restriction = plot.GetSILRestriction();
     int silTopSet = restriction->GetTopSet();
 
-    // 
+    //
     // Determine the first valid category name, and determine if
-    // currently set category name is valid. 
-    // 
+    // currently set category name is valid.
+    //
     avtSILSet_p current = restriction->GetSILSet(silTopSet);
     const std::vector<int> &mapsOut = current->GetMapsOut();
     for (size_t j = 0; j < mapsOut.size() && !categoryNameValid; ++j)
@@ -177,7 +180,7 @@ IndexSelectViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts
         int cIndex = mapsOut[j];
         avtSILCollection_p collection =restriction->GetSILCollection(cIndex);
         if ((collection->GetRole() == SIL_DOMAIN) ||
-            (collection->GetRole() == SIL_BLOCK)) 
+            (collection->GetRole() == SIL_BLOCK))
         {
             if (collection->GetCategory() == categoryName)
             {
@@ -187,7 +190,7 @@ IndexSelectViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts
             {
                 firstCategoryName = collection->GetCategory();
             }
-            CompactSILRestrictionAttributes *silAtts = 
+            CompactSILRestrictionAttributes *silAtts =
                 restriction->MakeCompactAttributes();
             const unsignedCharVector &useSet =  silAtts->GetUseSet();
             //
@@ -197,7 +200,7 @@ IndexSelectViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts
             int colIndex = restriction->GetCollectionIndex(
                            collection->GetCategory(), silTopSet);
             avtSILCollection_p collection =
-                           restriction->GetSILCollection(colIndex); 
+                           restriction->GetSILCollection(colIndex);
             if (*collection != NULL)
             {
                 int nSets = collection->GetNumberOfSubsets();
@@ -229,19 +232,19 @@ IndexSelectViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts
             }
 
             delete silAtts;
-        } 
+        }
     }
 
-    // 
+    //
     // Use the currently set category and subsets name only if they
     // have they are valid.
-    // 
+    //
     if (subsetNameValid)
     {
         isAtts->SetSubsetName(subsetName);
         defaultAtts->SetSubsetName(subsetName);
     }
-    else 
+    else
     {
         isAtts->SetSubsetName(firstSubsetName);
         defaultAtts->SetSubsetName(firstSubsetName);
@@ -251,7 +254,7 @@ IndexSelectViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts
        isAtts->SetCategoryName(categoryName);
        defaultAtts->SetCategoryName(categoryName);
     }
-    else 
+    else
     {
         isAtts->SetCategoryName(firstCategoryName);
         defaultAtts->SetCategoryName(firstCategoryName);

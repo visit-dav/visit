@@ -14,7 +14,7 @@ Definition:
 //
 // ****************************************************************************
 
-ExpressionList * 
+ExpressionList *
 StatisticalTrendsCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
     int t, i;
@@ -116,7 +116,7 @@ StatisticalTrendsViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *at
           var.substr(strlen("operators/StatisticalTrends/"));
 
       for (int t = 0; t < numTypes; ++t)
-      { 
+      {
         if( strncmp(operatorWithVar.c_str(), typeString[t],
                     strlen(typeString[t])) == 0)
         {
@@ -174,7 +174,7 @@ StatisticalTrendsViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubj
           var.substr(strlen("operators/StatisticalTrends/"));
 
       for (int t = 0; t < numTypes; ++t)
-      { 
+      {
         if( strncmp(operatorWithVar.c_str(), typeString[t],
                     strlen(typeString[t])) == 0)
         {

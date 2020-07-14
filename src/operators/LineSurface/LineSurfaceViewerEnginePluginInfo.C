@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: LineSurfaceViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <LineSurfacePluginInfo.h>
 #include <LineSurfaceAttributes.h>
@@ -28,8 +28,11 @@ LineSurfaceAttributes *LineSurfaceViewerEnginePluginInfo::defaultAtts = NULL;
 void
 LineSurfaceViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    LineSurfaceViewerEnginePluginInfo::clientAtts  = new LineSurfaceAttributes;
-    LineSurfaceViewerEnginePluginInfo::defaultAtts = new LineSurfaceAttributes;
+    if (LineSurfaceViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        LineSurfaceViewerEnginePluginInfo::clientAtts  = new LineSurfaceAttributes;
+        LineSurfaceViewerEnginePluginInfo::defaultAtts = new LineSurfaceAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -3,6 +3,8 @@ PROJECT(ExtractPointFunction2D_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(ExtractPointFunction2D)
+
 SET(COMMON_SOURCES
 ExtractPointFunction2DPluginInfo.C
 ExtractPointFunction2DCommonPluginInfo.C

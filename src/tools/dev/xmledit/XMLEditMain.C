@@ -18,7 +18,7 @@ QString Endl("\n");
 
 
 // ****************************************************************************
-//  Main Function: XMLEditMain()  
+//  Main Function: XMLEditMain()
 //
 //  Purpose:
 //    initialize and start the main window
@@ -68,14 +68,14 @@ XMLEditMain( int argc, char **argv )
 // ****************************************************************************
 // Method: main/WinMain
 //
-// Purpose: 
+// Purpose:
 //   The program entry point function.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 23 13:15:31 PST 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 #if defined(_WIN32) && defined(VISIT_WINDOWS_APPLICATION)
@@ -84,7 +84,7 @@ XMLEditMain( int argc, char **argv )
 
 int WINAPI
 WinMain(HINSTANCE hInstance,     // handle to the current instance
-        HINSTANCE hPrevInstance, // handle to the previous instance    
+        HINSTANCE hPrevInstance, // handle to the previous instance
         LPSTR lpCmdLine,         // pointer to the command line
         int nCmdShow             // show state of window
 )

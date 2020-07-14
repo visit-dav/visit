@@ -27,6 +27,7 @@ function bv_zlib_info
     export ZLIB_COMPATIBILITY_VERSION=${ZLIB_COMPATIBILITY_VERSION:-"1.2"}
     export ZLIB_URL=${ZLIB_URL:-https://www.zlib.net}
     export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-${ZLIB_VERSION}"}
+    export ZLIB_MD5_CHECKSUM="85adef240c5f370b308da8c938951a68"
     export ZLIB_SHA256_CHECKSUM="4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066"
 }
 
@@ -108,12 +109,18 @@ function build_zlib
         STATICARGS=""
     fi
 
-    info "env CXX=$CXX_COMPILER CC=$C_COMPILER ./configure \
-        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATICARGS"
+    info "env CXX=$CXX_COMPILER CC=$C_COMPILER \
+         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
+         CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+         ./configure \
+        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATIC_ARGS"
 
     # Call configure
-    env CXX=$CXX_COMPILER CC=$C_COMPILER ./configure \
-        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATICARGS
+    env CXX=$CXX_COMPILER CC=$C_COMPILER \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" \
+        CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+        ./configure \
+        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATIC_ARGS
 
     if [[ $? != 0 ]] ; then
         warn "ZLIB configure failed.  Giving up"

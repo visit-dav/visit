@@ -15,7 +15,7 @@
 #
 ###############################################################################
 
-import mpistub
+from . import mpistub
 try:
     from mpicom import *
 except ImportError:

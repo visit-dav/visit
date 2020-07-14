@@ -3,6 +3,8 @@ PROJECT(GTC_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(GTC)
+
 SET(COMMON_SOURCES
 GTCPluginInfo.C
 GTCCommonPluginInfo.C

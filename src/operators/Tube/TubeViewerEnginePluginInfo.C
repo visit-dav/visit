@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TubeViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <TubePluginInfo.h>
 #include <TubeAttributes.h>
@@ -28,8 +28,11 @@ TubeAttributes *TubeViewerEnginePluginInfo::defaultAtts = NULL;
 void
 TubeViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    TubeViewerEnginePluginInfo::clientAtts  = new TubeAttributes;
-    TubeViewerEnginePluginInfo::defaultAtts = new TubeAttributes;
+    if (TubeViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        TubeViewerEnginePluginInfo::clientAtts  = new TubeAttributes;
+        TubeViewerEnginePluginInfo::defaultAtts = new TubeAttributes;
+    }
 }
 
 // ****************************************************************************

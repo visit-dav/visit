@@ -20,10 +20,10 @@ def visit_test(fn):
     we aren't running in the cli.
     """
     def run_fn(*args):
-        if "visit" in sys.modules.keys():
+        if "visit" in list(sys.modules.keys()):
             return fn(*args)
         else:
-            print "[VisIt module not found, skipping test that requires VisIt]"
+            print("[VisIt module not found, skipping test that requires VisIt]")
         return None
     return run_fn
 
@@ -34,10 +34,10 @@ def pyside_test(fn):
     we aren't running in the cli.
     """
     def run_fn(*args):
-        if "PySide2.QtCore" in sys.modules.keys():
+        if "PySide2.QtCore" in list(sys.modules.keys()):
             return fn(*args)
         else:
-            print "[PySide not found, skipping test that requires PySide]"
+            print("[PySide not found, skipping test that requires PySide]")
         return None
     return run_fn
 

@@ -47,7 +47,7 @@ Definition:
 //
 // ****************************************************************************
 
-avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn, 
+avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn,
                                    avtCentering c, int nv,
                                    const stringVector &cn)
     : avtVarMetaData(avtArrayMetaData::TmfsStruct, n, mn, c)

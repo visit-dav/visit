@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               XYZPluginInfo.h
+//  XYZPluginInfo.h
 // ****************************************************************************
 
 #ifndef XYZ_PLUGIN_INFO_H

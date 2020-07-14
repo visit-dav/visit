@@ -22,7 +22,7 @@ import java.util.Vector;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class RemoveCellsAttributes extends AttributeSubject implements Plugin

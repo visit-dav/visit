@@ -62,7 +62,7 @@ function bv_uintah_info
     export UINTAH_URL=${UINTAH_URL:-"https://gforge.sci.utah.edu/svn/uintah/releases/uintah_v${UINTAH_VERSION}"}
     export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
     export UINTAH_MD5_CHECKSUM="09cad7b2fcc7b1f41dabcf7ecae21f54"
-    export UINTAH_SHA256_CHECKSUM="33f9c74dcc505cde90515418c9c3b64b78686d228cb5af4cf04b56b0d2f434bc"
+    export UINTAH_SHA256_CHECKSUM="0801da6e5700fa826f2cbc6ed01f81f743f92df3e946cc6ba3748458f36f674e"
 }
 
 function bv_uintah_print

@@ -26,6 +26,14 @@
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Initialized canApplyToDirectDatabaseQOT. 
+//
+//    Alister Maguire, Mon Feb 24 14:25:20 MST 2020
+//    Removed canApplyToDirectDatabaseQOT. It now defaults to true.
+//
 // ****************************************************************************
 
 avtBinaryMathExpression::avtBinaryMathExpression()

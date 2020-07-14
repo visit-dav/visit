@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TransformViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <TransformPluginInfo.h>
 #include <TransformAttributes.h>
@@ -28,8 +28,11 @@ TransformAttributes *TransformViewerEnginePluginInfo::defaultAtts = NULL;
 void
 TransformViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    TransformViewerEnginePluginInfo::clientAtts  = new TransformAttributes;
-    TransformViewerEnginePluginInfo::defaultAtts = new TransformAttributes;
+    if (TransformViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        TransformViewerEnginePluginInfo::clientAtts  = new TransformAttributes;
+        TransformViewerEnginePluginInfo::defaultAtts = new TransformAttributes;
+    }
 }
 
 // ****************************************************************************

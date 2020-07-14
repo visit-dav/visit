@@ -34,7 +34,7 @@ def WaitForFile(filename, starttime, timelimit):
 
             lastFileSize = fileSize
         except:
-            print "Problem stat'ing ", filename
+            print("Problem stat'ing ", filename)
             pass
 
         time.sleep(delay)
@@ -67,7 +67,7 @@ sim.startsim()
 # Iterate through the images that we hoped the simulation would create.
 timelimit = 300
 starttime = time.time()
-for testindex in xrange(10):
+for testindex in range(10):
     filename = "updateplots%04d.png" % testindex
     if WaitForFile(filename, starttime, timelimit):
         OpenDatabase(filename)

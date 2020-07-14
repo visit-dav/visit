@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SurfaceCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <SurfacePluginInfo.h>
 #include <SurfaceAttributes.h>
@@ -43,16 +43,17 @@ SurfaceCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 SurfaceCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((SurfaceAttributes *) to) = *((SurfaceAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: SurfaceCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ SurfaceCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

@@ -29,7 +29,7 @@ if connected:
     Test("life02")
 
     # Run the simulation for awhile to get a different image
-    for i in xrange(100):
+    for i in range(100):
         sim.consolecommand("step")
     Test("life03")
 

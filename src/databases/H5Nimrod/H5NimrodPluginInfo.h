@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               H5NimrodPluginInfo.h
+//  H5NimrodPluginInfo.h
 // ****************************************************************************
 
 #ifndef H5NIMROD_PLUGIN_INFO_H

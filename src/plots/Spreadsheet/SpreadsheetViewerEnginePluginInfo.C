@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SpreadsheetViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <SpreadsheetPluginInfo.h>
 #include <avtSpreadsheetPlot.h>
@@ -29,8 +29,11 @@ SpreadsheetAttributes *SpreadsheetViewerEnginePluginInfo::defaultAtts = NULL;
 void
 SpreadsheetViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    SpreadsheetViewerEnginePluginInfo::clientAtts  = new SpreadsheetAttributes;
-    SpreadsheetViewerEnginePluginInfo::defaultAtts = new SpreadsheetAttributes;
+    if (SpreadsheetViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        SpreadsheetViewerEnginePluginInfo::clientAtts  = new SpreadsheetAttributes;
+        SpreadsheetViewerEnginePluginInfo::defaultAtts = new SpreadsheetAttributes;
+    }
 }
 
 // ****************************************************************************
@@ -146,7 +149,7 @@ SpreadsheetViewerEnginePluginInfo::Permits2DViewScaling() const
 // ****************************************************************************
 // Method: SpreadsheetViewerEnginePluginInfo::InitializePlotAtts
 //
-// Purpose: 
+// Purpose:
 //   Initializes the plot attributes.
 //
 // Arguments:
@@ -158,7 +161,7 @@ SpreadsheetViewerEnginePluginInfo::Permits2DViewScaling() const
 // Creation:   Wed Feb 21 11:36:13 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 SpreadsheetViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
@@ -172,7 +175,7 @@ SpreadsheetViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
 // ****************************************************************************
 // Method: SpreadsheetViewerEnginePluginInfo::ReInitializePlotAtts
 //
-// Purpose: 
+// Purpose:
 //   Makes sure that the subset name in the plot attributes is valid.
 //
 // Arguments:
@@ -184,7 +187,7 @@ SpreadsheetViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
 // Creation:   Wed Feb 21 11:36:13 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 SpreadsheetViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
@@ -196,7 +199,7 @@ SpreadsheetViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
 // ****************************************************************************
 // Method: SpreadsheetViewerEnginePluginInfo::ResetPlotAtts
 //
-// Purpose: 
+// Purpose:
 //   Resets the plot attributes.
 //
 // Arguments:
@@ -208,7 +211,7 @@ SpreadsheetViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
 // Creation:   Wed Feb 21 11:36:13 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -243,7 +246,7 @@ SpreadsheetViewerEnginePluginInfo::GetMenuName() const
 // ****************************************************************************
 // Method: SpreadsheetViewerEnginePluginInfo::PrivateSetPlotAtts
 //
-// Purpose: 
+// Purpose:
 //   Makes sure that the subset name in the plot attributes is valid.
 //
 // Arguments:
@@ -266,7 +269,7 @@ SpreadsheetViewerEnginePluginInfo::GetMenuName() const
 #include <avtPlotMetaData.h>
 
 void
-SpreadsheetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
+SpreadsheetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     const avtPlotMetaData &plot)
 {
     // Search for a SIL_DOMAIN category under the current silTopSet and add
@@ -283,9 +286,9 @@ SpreadsheetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     {
         int cIndex = mapsOut[j];
         avtSILCollection_p collection = silr->GetSILCollection(cIndex);
-        if(*collection != NULL && collection->GetRole() == SIL_DOMAIN) 
+        if(*collection != NULL && collection->GetRole() == SIL_DOMAIN)
         {
-            nSets = collection->GetNumberOfSubsets(); 
+            nSets = collection->GetNumberOfSubsets();
             for(int si = 0; si < nSets && !validName; ++si)
             {
                 if(!firstNameSet)
@@ -293,7 +296,7 @@ SpreadsheetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
                     firstName = silr->GetSILSet(collection->GetSubset(si))->GetName();
                     firstNameSet = true;
                 }
-                validName = (silr->GetSILSet(collection->GetSubset(si))->GetName() == 
+                validName = (silr->GetSILSet(collection->GetSubset(si))->GetName() ==
                              sAtts->GetSubsetName());
             }
             break;

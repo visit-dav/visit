@@ -106,9 +106,9 @@ class Simulation:
             if VisItSaveWindow(filename, 800, 800, VISIT_IMAGEFORMAT_JPEG) == VISIT_OKAY:
                 self.saveCounter = self.saveCounter + 1
                 if self.par_rank == 0:
-                    print "Saved",filename
+                    print("Saved",filename)
             else:
-                print "The image could not be saved to",filename
+                print("The image could not be saved to",filename)
 
     def ProcessVisItCommand(self):
         return (VisItProcessEngineCommand() == VISIT_OKAY)
@@ -157,12 +157,12 @@ class Simulation:
                 self.SimulateOneTimestep()
             elif visitstate == 1:
                 if VisItAttemptToCompleteConnection() == VISIT_OKAY:
-                    print "VisIt connected"
+                    print("VisIt connected")
                     self.runMode = VISIT_SIMMODE_STOPPED
 
                     self.ConnectCallbacks()
                 else:
-                    print "VisIt did not connect"
+                    print("VisIt did not connect")
             elif visitstate == 2:
                 if not self.ProcessVisItCommand():
                     VisItDisconnect()
@@ -171,7 +171,7 @@ class Simulation:
                 self.ProcessConsoleCommand()
                 self.DoPrompt()
             else:
-                print "Error: ", visitstate
+                print("Error: ", visitstate)
 
     def ConnectCallbacks(self):
         VisItSetCommandCallback(self.ControlCommandCallback, 0)
@@ -304,7 +304,7 @@ class ParallelSimulation(Simulation):
         self.par_rank = mpicom.rank()
         self.MP = self.M / self.par_size
         Simulation.Initialize(self, simname, visitdir)
-        print self.par_rank, self.v
+        print(self.par_rank, self.v)
 
     def GetInputFromConsole(self):
         cmd = ""

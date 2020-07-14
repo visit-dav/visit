@@ -14,7 +14,7 @@
 from visit_flow.core import sexe
 
 def skip_warning(name):
-    print "[%s not found: Skipping dependant test.]" % name
+    print("[%s not found: Skipping dependant test.]" % name)
 
 def ply_test(fn):
     """

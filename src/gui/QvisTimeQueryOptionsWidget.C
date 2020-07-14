@@ -9,6 +9,9 @@
 #include <QPushButton>
 #include <QSpinBox>
 #include <QVBoxLayout>
+#include <QButtonGroup>
+#include <QRadioButton>
+#include <QGroupBox>
 
 
 #include <DatabaseCorrelation.h>
@@ -28,6 +31,12 @@
 // Creation:   August 1, 2011 
 //
 // Modifications:
+//
+//   Alister Maguire, Wed Oct 16 08:41:57 MST 2019
+//   Added dataOriginAvail and includeDataOrigin argument.
+//
+//   Alister Maguire, Mon Mar  9 12:03:51 PDT 2020
+//   Removed dataOriginAvail and includeDataOrigin.
 //
 // ****************************************************************************
 
@@ -54,10 +63,17 @@ QvisTimeQueryOptionsWidget::QvisTimeQueryOptionsWidget(QWidget *parent)
 //
 // Modifications:
 //
+//   Alister Maguire, Wed Oct 16 08:41:57 MST 2019
+//   Added dataOriginAvail and includeDataOrigin argument.
+//
+//   Alister Maguire, Mon Mar  9 12:03:51 PDT 2020
+//   Removed dataOriginAvail and includeDataOrigin.
+//
 // ****************************************************************************
 
 QvisTimeQueryOptionsWidget::QvisTimeQueryOptionsWidget(const QString & title, 
-    QWidget *parent) : QGroupBox(title, parent), GUIBase()
+    QWidget *parent)
+    : QGroupBox(title, parent), GUIBase()
 {
     maxTime = 99;
 
@@ -78,6 +94,13 @@ QvisTimeQueryOptionsWidget::QvisTimeQueryOptionsWidget(const QString & title,
 // Creation:   August 1, 2011 
 //
 // Modifications:
+//
+//   Alister Maguire, Wed Oct 16 08:41:57 MST 2019
+//   Added the dataOrigin section to determine whether to use
+//   actual or original data.
+//
+//   Alister Maguire, Mon Mar  9 12:03:51 PDT 2020
+//   Removed dataOrigin section.
 //
 // ****************************************************************************
 
@@ -280,6 +303,12 @@ QvisTimeQueryOptionsWidget::SetMax(const int val)
 // Creation:   August 1, 2011 
 //
 // Modifications:
+//
+//   Alister Maguire, Wed Oct 16 08:41:57 MST 2019
+//   Set the use_actual_data flag.
+//
+//   Alister Maguire, Mon Mar  9 12:03:51 PDT 2020
+//   Removed use_actual_data flag. This logic is now handled elsewhere.
 //   
 // ****************************************************************************
 

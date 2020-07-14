@@ -70,7 +70,26 @@
 #    Alister Maguire, Wed May 22 08:49:30 PDT 2019
 #    Updated mili tests to reflect new plugin changes. 
 #
+#    Alister Maguire, Tue Oct  1 11:48:15 MST 2019
+#    Make sure to set use_actual_data to true when we want
+#    to use data from the pipeline output. 
+#
+#    Alister Maguire, Fri Oct 11 13:12:36 PDT 2019
+#    Added TestDirectDatabaseRoute. I also updated several tests to
+#    use actual data so that they continue to test the old QOT route. 
+#
+#    Kathleen Biagas, Thu Jan 30 13:37:50 MST 2020
+#    Added TestOperatorCreatedVar. (github bugs #2842, #3489).
+#
+#    Alister Maguire, Tue Feb 25 13:46:24 PST 2020
+#    Added tests for handling vectors in the direct database route.
+#
+#    Alister Maguire, Mon Mar  9 15:16:36 PDT 2020
+#    I've removed the use_actual_data flag for Pick queries as this
+#    is now handled internally.
+#
 # ----------------------------------------------------------------------------
+
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
 
 def InitAnnotation():
@@ -211,7 +230,7 @@ def TestOperators():
     DrawPlots()
    
     SetActiveWindow(1)
-    QueryOverTime("Volume", stride=10) 
+    QueryOverTime("Volume", stride=10, use_actual_data=1) 
     SetActiveWindow(2)
     InitAnnotation()
     Test("TimeQuery_ops_01")
@@ -232,7 +251,7 @@ def TestOperators():
     SetOperatorOptions(slice)
 
     DrawPlots()
-    QueryOverTime("2D area", stride=10)
+    QueryOverTime("2D area", stride=10, use_actual_data=1)
     SetActiveWindow(2)
     InitAnnotation()
     Test("TimeQuery_ops_02")
@@ -727,7 +746,233 @@ def TestReturnValue():
     DeleteAllPlots()
     ResetPickLetter()
 
-   
+def TestDirectDatabaseRoute():
+
+    #
+    # Cleanup any plots that haven't been deleted yet. 
+    #
+    SetActiveWindow(2)
+    DeleteAllPlots()
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
+    OpenDatabase(data_path("mili_test_data/single_proc/d3samp6_10_longrun.plt.mili"))
+    AddPlot("Pseudocolor", "Primal/Shared/edrate")
+    DrawPlots()
+
+    element    = 116
+    domain     = 0
+    element    = 116
+    preserve   = 0
+    start      = 0
+    stride     = 1
+    stop       = 10000
+    vars       = ("default")
+
+    #
+    # First, let's time the query. This hard to predict because of it being dependent
+    # on the machine's architecture, but we can make an educated guess. The direct
+    # route should take under a second, and the old route should take at least
+    # 30 seconds. We'll give ourselves a threshold of 10 seconds to be safe. 
+    #
+    import time
+    thresh = 10
+    timer_start = time.time()
+
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+
+    timer_stop = time.time()
+    res = timer_stop - timer_start
+
+    AssertLTE("Timing Direct Database Query", res, thresh)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_00")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    #
+    # Like the original QOT, the direct route creates a clone, but this clone
+    # differs in that its resulting dataset will NOT match the original dataset. 
+    # Let's make sure the active dataset is being updated to the old plot by 
+    # performing a new pick (not through time).  
+    #
+    PickByZone(do_time=0, domain=domain, element=element)
+    Test("Direct_Database_Route_01")
+
+    #
+    # Test basic range settings. 
+    #
+    start  = 100
+    stop   = 900
+    stride = 10
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    stride = 1
+    start  = 0
+    stop   = 10000
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_02")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    DeleteAllPlots()
+    AddPlot("Pseudocolor", "Primal/node/nodacc/ax")
+    DrawPlots()
+
+    # This tests two things: 
+    #    1. Plotting a node pick curve. 
+    #    2. Using a direct route query on magnitude expression. 
+    #
+    vars=("Primal/node/nodacc_magnitude")
+    PickByNode(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_03")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    DeleteAllPlots()
+    OpenDatabase(data_path("mili_test_data/single_proc/m_plot.mili"))
+    AddPlot("Pseudocolor", "Primal/brick/stress/sx")
+    DrawPlots()
+
+    #
+    # Test plotting multiple variables at once. 
+    #
+    element = 489
+    vars=("Primal/brick/stress/sz", "Primal/brick/stress/sx")
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_04")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    #
+    # Testing the multi curve plot. 
+    #
+    PickByZone(curve_plot_type=1, vars=vars, do_time=1, domain=domain, element=element,
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_05")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    #
+    # Test multi-domain data. 
+    #
+    DeleteAllPlots()
+    OpenDatabase(data_path("mili_test_data/multi_proc/d3samp6.plt.mili"))
+    AddPlot("Pseudocolor", "Primal/Shared/edrate")
+    DrawPlots()
+    domain = 1
+    element = 11
+    vars = ("default")
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_06")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    DeleteAllPlots()
+
+    #
+    # Now let's test a variable that is not defined on all
+    # timesteps. 
+    #
+    db = silo_data_path("wave_tv*.silo database") 
+    OpenDatabase(db)
+    SetTimeSliderState(17)
+    ReOpenDatabase(db)
+    AddPlot("Pseudocolor", "transient")
+    DrawPlots()
+
+    pick = GetPickAttributes()
+    pick.doTimeCurve = 1
+    pick.timePreserveCoord = 0
+    SetPickAttributes(pick)
+    PickByNode(element=327)
+
+    pick.doTimeCurve = 0
+    pick.timePreserveCoord = 1
+    SetPickAttributes(pick)
+
+    SetActiveWindow(2)
+    InitAnnotation()
+    Test("Direct_Database_Route_07")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
+    #
+    # Next, let's test a vector plot. The vectors should be reduced
+    # to their magnitudes.
+    #
+    AddPlot("Vector", "direction")
+    DrawPlots()
+
+    pick = GetPickAttributes()
+    pick.doTimeCurve = 1
+    pick.timePreserveCoord = 0
+    SetPickAttributes(pick)
+    PickByNode(element=10)
+
+    SetActiveWindow(2)
+    InitAnnotation()
+    Test("Direct_Database_Route_08")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
+def TestOperatorCreatedVar():
+    OpenDatabase(silo_data_path("wave.visit"))
+    DefineVectorExpression("normals", "cell_surface_normal(quadmesh)")
+
+    AddPlot("Pseudocolor", "operators/Flux/quadmesh")
+
+    fluxAtts = FluxAttributes()
+    fluxAtts.flowField = "direction"
+    SetOperatorOptions(fluxAtts)
+
+    AddOperator("Slice")
+    sliceAtts = SliceAttributes()
+    sliceAtts.axisType = sliceAtts.Arbitrary
+    sliceAtts.normal = (0, 1, 0)
+    sliceAtts.originType = sliceAtts.Percent
+    sliceAtts.originPercent = 50
+    sliceAtts.project2d = 0
+    SetOperatorOptions(sliceAtts)
+
+    AddOperator("DeferExpression")
+    deferAtts = DeferExpressionAttributes()
+    deferAtts.exprs = ("normals")
+    SetOperatorOptions(deferAtts)
+
+    # we want slice before flux, so demote it
+    DemoteOperator(1)
+
+    DrawPlots()
+
+    qt = GetQueryOverTimeAttributes()
+    qt.timeType = qt.Cycle
+    SetQueryOverTimeAttributes(qt)
+
+    QueryOverTime("Weighted Variable Sum")
+
+    SetActiveWindow(2)
+    InitAnnotation()
+    Test("OperatorCreatedVar_01")
+
+    DeleteAllPlots()
+
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
+    DeleteExpression("normals")
+    CloseDatabase(silo_data_path("wave.visit"))
+ 
 def TimeQueryMain():
     TestAllTimeQueries()
     TestFilledBoundary()
@@ -741,6 +986,8 @@ def TimeQueryMain():
     MultiVarTimePick()
     TestPickRangeTimeQuery()
     TestReturnValue()
+    TestDirectDatabaseRoute()
+    TestOperatorCreatedVar()
 
 # main
 InitAnnotation()

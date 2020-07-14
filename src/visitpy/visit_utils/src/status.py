@@ -11,6 +11,9 @@
 
 """
 
+from __future__ import print_function
+
+
 __lvl_sep = ["|******************************************************************************",
              "|------------------------------------------------------------------------------"]
 
@@ -37,7 +40,7 @@ def info(msg,lvl=1,ident=" ",center=False):
     """ Display a message. """
     global __ofile
     msg = __format(msg,lvl,ident,center)
-    print msg,
+    print(msg, end=' ')
     if not __ofile is None:
         __ofile.write(msg)
 

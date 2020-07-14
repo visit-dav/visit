@@ -3,6 +3,8 @@ PROJECT(Lines_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(Lines)
+
 SET(COMMON_SOURCES
 LinesPluginInfo.C
 LinesCommonPluginInfo.C

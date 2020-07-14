@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               GTCPluginInfo.h
+//  GTCPluginInfo.h
 // ****************************************************************************
 
 #ifndef GTC_PLUGIN_INFO_H

@@ -3,6 +3,8 @@ PROJECT(SphereSlice_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(SphereSlice)
+
 SET(COMMON_SOURCES
 SphereSlicePluginInfo.C
 SphereSliceCommonPluginInfo.C

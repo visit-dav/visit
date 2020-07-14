@@ -104,7 +104,7 @@ avtSpeciesMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         const avtMatSpeciesMetaData &s = GetSpecies(i);
-        out << "Material " << i << ", number of species = " 
+        out << "Material " << i << ", number of species = "
             << s.numSpecies << endl;
         Indent(out, indent);
         out << "Species names are: ";

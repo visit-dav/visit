@@ -29,13 +29,13 @@ from decorators import pyocl_test
 
 class TestPyOpenCLOps(unittest.TestCase):
     def setUp(self):
-        print ""
+        print("")
     @pyocl_test
     def test_01_simple_workspace(self):
         w = Workspace()
         w.register_filters(pyocl_ops)
-        v_a = npy.array(range(10),dtype=npy.float32)
-        v_b = npy.array(range(10),dtype=npy.float32)
+        v_a = npy.array(list(range(10)),dtype=npy.float32)
+        v_b = npy.array(list(range(10)),dtype=npy.float32)
         ctx  = w.add_context("pyocl_ops","root")
         ctx.start(0,0)
         ctx.registry_add(":src_a",v_a)
@@ -63,9 +63,9 @@ class TestPyOpenCLOps(unittest.TestCase):
         act_res = w.execute()
         test_res = npy.power((v_a + v_b),2.0)+ npy.power((v_a - v_b),2.0)
         dsum = npy.sum(act_res - test_res)
-        print "Filter Graph Result: %s" % str(act_res)
-        print "Test Result:         %s" % str(test_res)
-        print "Difference:          %s" % str(dsum)
+        print("Filter Graph Result: %s" % str(act_res))
+        print("Test Result:         %s" % str(test_res))
+        print("Difference:          %s" % str(dsum))
         self.assertTrue(dsum < 1e-6)
 
 if __name__ == '__main__':

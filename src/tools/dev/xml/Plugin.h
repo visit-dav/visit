@@ -91,6 +91,9 @@
 //    Kathleen Biagas, Thu Nov  6 11:24:21 PST 2014
 //    Add support for DEFINES tag.
 //
+//    Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
+//    Added hl argument for haslicense.
+//
 // ****************************************************************************
 
 class Plugin : public PluginBase
@@ -106,10 +109,10 @@ class Plugin : public PluginBase
     Attribute *atts;
   public:
     Plugin(const QString &n,const QString &l,const QString &t,
-           const QString &vt,const QString &dt,const QString &v, 
-           const QString &ifile, bool hw, bool ho, bool onlyengine,
+           const QString &vt,const QString &dt,const QString &v,
+           const QString &ifile, bool hw, bool ho, bool hl, bool onlyengine,
            bool noengine)
-        :  PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine),
+        :  PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,hl,onlyengine,noengine),
            defaultgfiles(),
            defaultsfiles(),
            defaultvfiles(),
@@ -183,6 +186,7 @@ class Plugin : public PluginBase
             WriteTagAttr(out, "dbtype", dbtype);
             WriteTagAttr(out, "haswriter", Bool2Text(haswriter));
             WriteTagAttr(out, "hasoptions", Bool2Text(hasoptions));
+            WriteTagAttr(out, "haslicense", Bool2Text(haslicense));
             WriteTagAttr(out, "filePatternsStrict", Bool2Text(filePatternsStrict));
             WriteTagAttr(out, "opensWholeDirectory", Bool2Text(opensWholeDirectory));
         }

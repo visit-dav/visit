@@ -3,6 +3,8 @@ PROJECT(Stagger_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Stagger)
+
 SET(COMMON_SOURCES
 StaggerPluginInfo.C
 StaggerCommonPluginInfo.C

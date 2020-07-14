@@ -33,6 +33,9 @@
 #   and CMake automagically pulls them in when compiling VisIt, even if not
 #   listed, but not when building the plugins.
 #
+#   Alister Maguire, Mon Dec  2 14:18:39 MST 2019
+#   Removed vtkPPMWriter. It's been replaced with vtkPNMWriter (not custom).
+#
 #****************************************************************************/
 
 IF(OPENEXR_FOUND)
@@ -47,26 +50,25 @@ vtkCSGCell.C
 vtkCSGGrid.C
 vtkConnectedTubeFilter.C
 vtkDataSetRemoveGhostCells.C
+vtkExtractCellsByType.C
 vtkLineoutFilter.C
 vtkLinesFromOriginalCells.C
 vtkMergeTree.C
 vtkMultiSplitter.C
 vtkOBJWriter.C
 vtkOnionPeelFilter.C
-vtkPPMWriter.C
 vtkPolyDataOnionPeelFilter.C
 vtkRGBWriter.C
 vtkRectilinearGridFacelistFilter.C
 vtkRectilinearLinesNoDataFilter.C
+vtkReduceFilter.C
 vtkSlicer.C
 vtkStructuredGridFacelistFilter.C
 vtkSurfaceFilter.C
 vtkSurfaceFromVolume.C
-vtkTensorReduceFilter.C
 vtkUniqueFeatureEdges.C
 vtkUnstructuredGridRelevantPointsFilter.C
 vtkVectorGlyph.C
-vtkVectorReduceFilter.C
 vtkVertexFilter.C
 vtkVisItCellDataToPointData.C
 vtkVisItClipper.C

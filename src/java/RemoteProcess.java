@@ -18,7 +18,7 @@ import java.util.Vector;
 //   This class contains the code to actually launch a VisIt process and
 //   exchange information with it via sockets.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 8 12:48:26 PDT 2002
@@ -290,7 +290,7 @@ class RemoteProcess implements Runnable
     /**
      * Waits for the process to launch by waiting for the error
      * stream to print some launch-related messages from the VisIt
-     * launcher script. This is a synchronization mechanism between 
+     * launcher script. This is a synchronization mechanism between
      * the threads that start the remote process.
      *
      * @return The messages that were read.

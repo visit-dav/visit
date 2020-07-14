@@ -48,6 +48,13 @@
 #   for this library, and CMake automagically pulls them in when compiling
 #   VisIt even if not listed, but not when building the plugins.
 #
+#   Kathleen Biagas, Tue Nov  5 08:12:29 PST 2019
+#   Remove avtPolylineToRibbonFilter, avtPolylineToTubeFilter,
+#   avtPolylineAddEndPointsFilter, avtPointToGlyphFilter.
+#
+#   Kathleen Biagas, Thu Jun  4 16:30:37 PDT 2020
+#   Add avtVertexExtractor, avtLineGlyphFilter.C
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -66,6 +73,7 @@ avtGhostZoneFilter.C
 avtImageCommunicator.C
 avtImageCompositer.C
 avtLinearTransformFilter.C
+avtLineGlyphFilter.C
 avtLineoutFilter.C
 avtLineScanFilter.C
 avtLineToPolylineFilter.C
@@ -74,11 +82,7 @@ avtMeshLogFilter.C
 avtMissingDataFilter.C
 avtMultiresFilter.C
 avtNamedSelectionFilter.C
-avtPointToGlyphFilter.C
-avtPolylineAddEndPointsFilter.C
 avtPolylineCleanupFilter.C
-avtPolylineToRibbonFilter.C
-avtPolylineToTubeFilter.C
 avtRayCompositer.C
 avtRayTracerBase.C
 avtRayTracer.C
@@ -100,6 +104,7 @@ avtTimeLoopCollectorFilter.C
 avtTimeLoopFilter.C
 avtTransform.C
 avtValueImageCompositer.C
+avtVertexExtractor.C
 avtVertexNormalsFilter.C
 avtVoxelExtractor.C
 avtWarpFilter.C
@@ -168,8 +173,7 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/engine/main
 ${VTKh_INCLUDE_DIRS}
-${VTKM_DIR}/include/vtkm-1.2
-${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
+${VTKm_INCLUDE_DIRS}
 ${VTK_INCLUDE_DIRS}
 )
 

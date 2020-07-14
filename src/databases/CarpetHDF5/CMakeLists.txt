@@ -3,6 +3,8 @@ PROJECT(CarpetHDF5_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(CarpetHDF5)
+
 SET(COMMON_SOURCES
 CarpetHDF5PluginInfo.C
 CarpetHDF5CommonPluginInfo.C

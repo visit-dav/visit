@@ -3,6 +3,8 @@ PROJECT(Mesh_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Mesh)
+
 SET(COMMON_SOURCES
 MeshPluginInfo.C
 MeshCommonPluginInfo.C
@@ -79,6 +81,7 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
+${VISIT_INCLUDE_DIR}/avt/Plotter/vtk
 )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )

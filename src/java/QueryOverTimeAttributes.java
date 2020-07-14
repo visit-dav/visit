@@ -19,12 +19,12 @@ import java.util.Vector;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 public class QueryOverTimeAttributes extends AttributeSubject
 {
-    private static int QueryOverTimeAttributes_numAdditionalAtts = 13;
+    private static int QueryOverTimeAttributes_numAdditionalAtts = 14;
 
     // Enum values
     public final static int TIMETYPE_CYCLE = 0;
@@ -49,6 +49,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
         pickAtts = new PickAttributes();
         cachedCurvePts = new Vector();
         useCachedPts = false;
+        canUseDirectDatabaseRoute = true;
     }
 
     public QueryOverTimeAttributes(int nMoreFields)
@@ -68,6 +69,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
         pickAtts = new PickAttributes();
         cachedCurvePts = new Vector();
         useCachedPts = false;
+        canUseDirectDatabaseRoute = true;
     }
 
     public QueryOverTimeAttributes(QueryOverTimeAttributes obj)
@@ -95,6 +97,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
         }
 
         useCachedPts = obj.useCachedPts;
+        canUseDirectDatabaseRoute = obj.canUseDirectDatabaseRoute;
 
         SelectAll();
     }
@@ -135,7 +138,8 @@ public class QueryOverTimeAttributes extends AttributeSubject
                 (queryAtts.equals(obj.queryAtts)) &&
                 (pickAtts.equals(obj.pickAtts)) &&
                 cachedCurvePts_equal &&
-                (useCachedPts == obj.useCachedPts));
+                (useCachedPts == obj.useCachedPts) &&
+                (canUseDirectDatabaseRoute == obj.canUseDirectDatabaseRoute));
     }
 
     // Property setting methods
@@ -217,6 +221,12 @@ public class QueryOverTimeAttributes extends AttributeSubject
         Select(12);
     }
 
+    public void SetCanUseDirectDatabaseRoute(boolean canUseDirectDatabaseRoute_)
+    {
+        canUseDirectDatabaseRoute = canUseDirectDatabaseRoute_;
+        Select(13);
+    }
+
     // Property getting methods
     public int             GetTimeType() { return timeType; }
     public boolean         GetStartTimeFlag() { return startTimeFlag; }
@@ -231,6 +241,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
     public PickAttributes  GetPickAtts() { return pickAtts; }
     public Vector          GetCachedCurvePts() { return cachedCurvePts; }
     public boolean         GetUseCachedPts() { return useCachedPts; }
+    public boolean         GetCanUseDirectDatabaseRoute() { return canUseDirectDatabaseRoute; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -261,6 +272,8 @@ public class QueryOverTimeAttributes extends AttributeSubject
             buf.WriteDoubleVector(cachedCurvePts);
         if(WriteSelect(12, buf))
             buf.WriteBool(useCachedPts);
+        if(WriteSelect(13, buf))
+            buf.WriteBool(canUseDirectDatabaseRoute);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -308,6 +321,9 @@ public class QueryOverTimeAttributes extends AttributeSubject
         case 12:
             SetUseCachedPts(buf.ReadBool());
             break;
+        case 13:
+            SetCanUseDirectDatabaseRoute(buf.ReadBool());
+            break;
         }
     }
 
@@ -334,6 +350,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
         str = str + indent + "pickAtts = {\n" + pickAtts.toString(indent + "    ") + indent + "}\n";
         str = str + doubleVectorToString("cachedCurvePts", cachedCurvePts, indent) + "\n";
         str = str + boolToString("useCachedPts", useCachedPts, indent) + "\n";
+        str = str + boolToString("canUseDirectDatabaseRoute", canUseDirectDatabaseRoute, indent) + "\n";
         return str;
     }
 
@@ -352,5 +369,6 @@ public class QueryOverTimeAttributes extends AttributeSubject
     private PickAttributes  pickAtts;
     private Vector          cachedCurvePts; // vector of Double objects
     private boolean         useCachedPts;
+    private boolean         canUseDirectDatabaseRoute;
 }
 

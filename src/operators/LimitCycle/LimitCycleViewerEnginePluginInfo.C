@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: LimitCycleViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <LimitCyclePluginInfo.h>
 #include <LimitCycleAttributes.h>
@@ -28,8 +28,11 @@ LimitCycleAttributes *LimitCycleViewerEnginePluginInfo::defaultAtts = NULL;
 void
 LimitCycleViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    LimitCycleViewerEnginePluginInfo::clientAtts  = new LimitCycleAttributes;
-    LimitCycleViewerEnginePluginInfo::defaultAtts = new LimitCycleAttributes;
+    if (LimitCycleViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        LimitCycleViewerEnginePluginInfo::clientAtts  = new LimitCycleAttributes;
+        LimitCycleViewerEnginePluginInfo::defaultAtts = new LimitCycleAttributes;
+    }
 }
 
 // ****************************************************************************
@@ -199,7 +202,7 @@ LimitCycleViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *at
 
       var = justTheVar;
     }
-    
+
     else if( strncmp(var.c_str(), "operators/LCS/",
                      strlen("operators/LCS/")) == 0)
     {
@@ -211,7 +214,7 @@ LimitCycleViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *at
     var += std::string(" - ") +
         std::string(typeString[atts_in->GetDataValue()]);
 
-    if( atts_in->GetDataValue() == LimitCycleAttributes::Variable ) 
+    if( atts_in->GetDataValue() == LimitCycleAttributes::Variable )
     {
         var += std::string(": ") + atts_in->GetDataVariable();
     }

@@ -20,7 +20,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class IntegralCurveAttributes : public AttributeSubject
@@ -49,6 +49,7 @@ public:
         TimeRelative,
         AverageDistanceFromSeed,
         CorrelationDistance,
+        ClosedCurve,
         Difference,
         Variable
     };
@@ -94,8 +95,7 @@ public:
         M3DC12DField,
         M3DC13DField,
         Nek5000Field,
-        NektarPPField,
-        NIMRODField
+        NektarPPField
     };
     enum IntegrationType
     {

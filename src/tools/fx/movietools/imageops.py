@@ -44,7 +44,7 @@ class ImageOpsBase:
             f.close()
             retval = 1
         except IOError:
-            print "Could not save the imageops!"
+            print("Could not save the imageops!")
         return retval
 
     #
@@ -59,14 +59,14 @@ class ImageOpsBase:
             f.close()
             retval = 1
         except IOError:
-            print "Could not read the imageops!"
+            print("Could not read the imageops!")
         return retval
 
     #
     # Prints the image operation list.
     #
     def showOperations(self):
-        print self.imageops
+        print(self.imageops)
 
     #
     # Sets the base format used in saving images.
@@ -90,9 +90,9 @@ class ImageOpsBase:
                 function = self.operations[functionName]
                 function(arguments)
             except TypeError:
-                print "ImageOpsBase.process(): Failed to execute: ", functionName, "(", arguments, ")"
+                print("ImageOpsBase.process(): Failed to execute: ", functionName, "(", arguments, ")")
             except KeyError:
-                print "ImageOpsBase.process(): \"%s\" is an invalid instruction." % functionName
+                print("ImageOpsBase.process(): \"%s\" is an invalid instruction." % functionName)
 
         return self.fileIndex
 
@@ -196,7 +196,7 @@ class ImageOps(ImageOpsBase):
         try:
             self.im = Image.open(filename)
         except IOError:
-            print "Could not open image: %s" % filename
+            print("Could not open image: %s" % filename)
             self.im = 0
 
     def _ImageOps__saveFileCallback(self, arguments):
@@ -204,33 +204,33 @@ class ImageOps(ImageOpsBase):
         if(self.im != 0):
             try:
                 name = self.getSaveName()
-                print "Saving frame as %s." % name
+                print("Saving frame as %s." % name)
                 self.im.save(name, self.saveType)
                 self.incrementFileIndex()
             except IOError:
-                print "Could not save the image!"
+                print("Could not save the image!")
         else:
-            print "Can't save image because no image was loaded."
+            print("Can't save image because no image was loaded.")
 
     def _ImageOps__saveFileAsCallback(self, arguments):
         #print "saveFileAs(", arguments, ")"
         if(self.im != 0):
             try:
                 name = arguments
-                print "Saving frame as %s." % name
+                print("Saving frame as %s." % name)
                 saveasType = movietools.getTypeFromExtension(name)
                 self.im.save(name, saveasType)
             except IOError:
-                print "Could not save the image!"
+                print("Could not save the image!")
         else:
-            print "Can't save image because no image was loaded."
+            print("Can't save image because no image was loaded.")
 
     def _ImageOps__interpolateCallback(self, arguments):
         #print "interpolate(", arguments, ")"
         f1 = arguments[0]
         f2 = arguments[1]
         nframes = arguments[2]
-        print "Interpolating %s and %s with %d steps" % (f1, f2, nframes)
+        print("Interpolating %s and %s with %d steps" % (f1, f2, nframes))
         if(movietools.interpolateFrames(f1, f2, self.baseFormat, nframes, self.fileIndex) == 1):
             self.fileIndex = self.fileIndex + nframes
 
@@ -249,23 +249,23 @@ class ImageOps(ImageOpsBase):
                 ntimes = arguments
                 for n in range(0,ntimes):
                     name = self.getSaveName()
-                    print "Saving frame as %s." % name
+                    print("Saving frame as %s." % name)
                     self.im.save(name, self.saveType)
                     self.incrementFileIndex()
             except IOError:
-                print "Could not save the image!"
+                print("Could not save the image!")
         else:
-            print "Can't repeat image because no image was loaded."
+            print("Can't repeat image because no image was loaded.")
 
     def _ImageOps__addTimeCallback(self, arguments):
         #print "addtime(", arguments, ")"
         if(self.im != 0):
             t = arguments[0]
             units = arguments[1]
-            print "Adding time annotation."
+            print("Adding time annotation.")
             movietools.drawTimeAnnotation(self.im, t, units)
         else:
-            print "Can't add time annotation because no image was loaded."
+            print("Can't add time annotation because no image was loaded.")
 
     def _ImageOps__drawTextCallback(self, arguments):
         if(self.im != 0):
@@ -276,7 +276,7 @@ class ImageOps(ImageOpsBase):
             fillColor = arguments[4]
             arial.drawText(self.im, x0, y0, text, scale, fillColor)
         else:
-            print "Can't draw text because no image is loaded."
+            print("Can't draw text because no image is loaded.")
 
     def _ImageOps__drawRotatedTextCallback(self, arguments):
         if(self.im != 0):
@@ -288,10 +288,10 @@ class ImageOps(ImageOpsBase):
             fillColor = arguments[5]
             arial.drawRotatedText(self.im, x0, y0, text, scale, angle, fillColor)
         else:
-            print "Can't draw rotated text because no image is loaded."
+            print("Can't draw rotated text because no image is loaded.")
 
     def _ImageOps__commentCallback(self, arguments):
-        print arguments
+        print(arguments)
 
     def _ImageOps__systemCallback(self, arguments):
         #print "system(", arguments, ")"

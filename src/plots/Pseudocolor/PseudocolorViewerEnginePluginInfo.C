@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: PseudocolorViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <PseudocolorPluginInfo.h>
 #include <avtPseudocolorPlot.h>
@@ -29,8 +29,11 @@ PseudocolorAttributes *PseudocolorViewerEnginePluginInfo::defaultAtts = NULL;
 void
 PseudocolorViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    PseudocolorViewerEnginePluginInfo::clientAtts  = new PseudocolorAttributes;
-    PseudocolorViewerEnginePluginInfo::defaultAtts = new PseudocolorAttributes;
+    if (PseudocolorViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        PseudocolorViewerEnginePluginInfo::clientAtts  = new PseudocolorAttributes;
+        PseudocolorViewerEnginePluginInfo::defaultAtts = new PseudocolorAttributes;
+    }
 }
 
 // ****************************************************************************

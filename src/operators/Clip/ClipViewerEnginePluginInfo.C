@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ClipViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ClipPluginInfo.h>
 #include <ClipAttributes.h>
@@ -28,8 +28,11 @@ ClipAttributes *ClipViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ClipViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ClipViewerEnginePluginInfo::clientAtts  = new ClipAttributes;
-    ClipViewerEnginePluginInfo::defaultAtts = new ClipAttributes;
+    if (ClipViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ClipViewerEnginePluginInfo::clientAtts  = new ClipAttributes;
+        ClipViewerEnginePluginInfo::defaultAtts = new ClipAttributes;
+    }
 }
 
 // ****************************************************************************

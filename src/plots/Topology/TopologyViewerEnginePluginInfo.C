@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TopologyViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <TopologyPluginInfo.h>
 #include <avtTopologyPlot.h>
@@ -29,8 +29,11 @@ TopologyAttributes *TopologyViewerEnginePluginInfo::defaultAtts = NULL;
 void
 TopologyViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    TopologyViewerEnginePluginInfo::clientAtts  = new TopologyAttributes;
-    TopologyViewerEnginePluginInfo::defaultAtts = new TopologyAttributes;
+    if (TopologyViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        TopologyViewerEnginePluginInfo::clientAtts  = new TopologyAttributes;
+        TopologyViewerEnginePluginInfo::defaultAtts = new TopologyAttributes;
+    }
 }
 
 // ****************************************************************************

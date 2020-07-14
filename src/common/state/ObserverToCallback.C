@@ -8,7 +8,7 @@
 // ****************************************************************************
 // Method: ObserverToCallback::ObserverToCallback
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the ObserverToCallback class.
 //
 // Arguments:
@@ -20,7 +20,7 @@
 // Creation:   Tue Jul 24 17:22:30 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ObserverToCallback::ObserverToCallback(Subject *subj,
@@ -33,14 +33,14 @@ ObserverToCallback::ObserverToCallback(Subject *subj,
 // ****************************************************************************
 // Method: ObserverToCallback::~ObserverToCallback
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the ObserverToCallback class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 24 17:23:50 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ObserverToCallback::~ObserverToCallback()
@@ -52,7 +52,7 @@ ObserverToCallback::~ObserverToCallback()
 // ****************************************************************************
 // Method: ObserverToCallback::Update
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the observer's subject is modified.
 //
 // Arguments:
@@ -62,7 +62,7 @@ ObserverToCallback::~ObserverToCallback()
 // Creation:   Tue Jul 24 17:24:11 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -77,14 +77,14 @@ ObserverToCallback::Update(Subject *subj)
 // ****************************************************************************
 // Method: ObserverToCallback::SetCallback
 //
-// Purpose: 
+// Purpose:
 //   Sets the object's callback function.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 24 17:25:16 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -96,14 +96,14 @@ ObserverToCallback::SetCallback(ObserverCallback *cb)
 // ****************************************************************************
 // Method: ObserverToCallback::SetCallbackData
 //
-// Purpose: 
+// Purpose:
 //   Sets the object's callback function data.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 24 17:25:16 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

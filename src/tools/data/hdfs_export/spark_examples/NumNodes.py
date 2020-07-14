@@ -8,7 +8,7 @@ from pyspark import SparkConf
 #
 if __name__ == "__main__":
   if len(sys.argv) < 3:
-    print >> sys.stderr, "Usage: NumNodes <dbfile> <mesh>"
+    print("Usage: NumNodes <dbfile> <mesh>", file=sys.stderr)
     exit(-1)
 
   sc = SparkContext()
@@ -26,5 +26,5 @@ if __name__ == "__main__":
   ghost_node_count = coord_data.filter(lambda line: line[19]=='1').count()
 
   # 9.2 seconds (on laptop VM running pyspark) cating output to /dev/null
-  print "Number of nodes is", all_node_count
-  print "Number of ghost nodes is", ghost_node_count
+  print("Number of nodes is", all_node_count)
+  print("Number of ghost nodes is", ghost_node_count)

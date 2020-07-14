@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: SpreadsheetViewerPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <SpreadsheetPluginInfo.h>
 
@@ -33,7 +33,7 @@ SpreadsheetViewerPluginInfo::XPMIconData() const
 // ****************************************************************************
 // Method: SpreadsheetViewerPluginInfo::AlternateDisplayCreate
 //
-// Purpose: 
+// Purpose:
 //   Creates an alternate display that will display data for the Spreadsheet
 //   plot.
 //
@@ -73,7 +73,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayCreate(ViewerPlot *plot)
 // ****************************************************************************
 // Method: SpreadsheetViewerPluginInfo::AlternateDisplayDestroy
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the alternate display must be destroyed.
 //
 // Arguments:
@@ -83,10 +83,10 @@ SpreadsheetViewerPluginInfo::AlternateDisplayCreate(ViewerPlot *plot)
 // Creation:   Wed Feb 21 10:55:03 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-void 
+void
 SpreadsheetViewerPluginInfo::AlternateDisplayDestroy(void *dpy)
 {
     if(dpy != 0)
@@ -99,7 +99,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayDestroy(void *dpy)
 // ****************************************************************************
 // Method: SpreadsheetViewerPluginInfo::AlternateDisplayClear
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the alternate display must be cleared of data.
 //
 // Arguments:
@@ -109,10 +109,10 @@ SpreadsheetViewerPluginInfo::AlternateDisplayDestroy(void *dpy)
 // Creation:   Wed Feb 21 10:55:03 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-void 
+void
 SpreadsheetViewerPluginInfo::AlternateDisplayClear(void *dpy)
 {
     if(dpy != 0)
@@ -125,7 +125,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayClear(void *dpy)
 // ****************************************************************************
 // Method: SpreadsheetViewerPluginInfo::AlternateDisplayHide
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the alternate display must be hidden.
 //
 // Arguments:
@@ -135,10 +135,10 @@ SpreadsheetViewerPluginInfo::AlternateDisplayClear(void *dpy)
 // Creation:   Wed Feb 21 10:55:03 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-void 
+void
 SpreadsheetViewerPluginInfo::AlternateDisplayHide(void *dpy)
 {
     if(dpy != 0)
@@ -151,7 +151,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayHide(void *dpy)
 // ****************************************************************************
 // Method: SpreadsheetViewerPluginInfo::AlternateDisplayShow
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the alternate display must be shown.
 //
 // Arguments:
@@ -161,10 +161,10 @@ SpreadsheetViewerPluginInfo::AlternateDisplayHide(void *dpy)
 // Creation:   Wed Feb 21 10:55:03 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-void 
+void
 SpreadsheetViewerPluginInfo::AlternateDisplayShow(void *dpy)
 {
     if(dpy != 0)
@@ -181,7 +181,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayShow(void *dpy)
 // ****************************************************************************
 // Method: SpreadsheetViewerPluginInfo::AlternateDisplayIconify
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the alternate display must be iconified.
 //
 // Arguments:
@@ -191,10 +191,10 @@ SpreadsheetViewerPluginInfo::AlternateDisplayShow(void *dpy)
 // Creation:   Wed Feb 21 10:55:03 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-void 
+void
 SpreadsheetViewerPluginInfo::AlternateDisplayIconify(void *dpy)
 {
     if(dpy != 0)
@@ -207,7 +207,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayIconify(void *dpy)
 // ****************************************************************************
 // Method: SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the alternate display must be de-iconified.
 //
 // Arguments:
@@ -217,10 +217,10 @@ SpreadsheetViewerPluginInfo::AlternateDisplayIconify(void *dpy)
 // Creation:   Wed Feb 21 10:55:03 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-void 
+void
 SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify(void *dpy)
 {
     if(dpy != 0)

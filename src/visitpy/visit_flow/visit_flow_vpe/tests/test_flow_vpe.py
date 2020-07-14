@@ -34,7 +34,7 @@ class TestFlowVPE(unittest.TestCase):
     def setUp(self):
         self.data_path = pjoin(tests_dir,"_data","rect2d.silo")
         visit.OpenDatabase(self.data_path)
-        print ""
+        print("")
     def setup_workspace(self,file):
         define_flow_vpe("flow",pjoin(examples_dir,file),"pyocl_ops",0,0)
         visit.AddPlot("Pseudocolor","flow")

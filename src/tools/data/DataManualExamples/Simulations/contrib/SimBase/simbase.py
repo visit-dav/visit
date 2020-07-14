@@ -153,8 +153,8 @@ class Simulation(object):
     
     def print_to_console(self,message):
         """Prints to the console and reissues the console prompt."""
-        print
-        print message
+        print()
+        print(message)
         self.main_doPrompt()
         return
     
@@ -209,15 +209,14 @@ class Simulation(object):
         if self.trace_qualifier is not None: simV2.VisItOpenTraceFile("trace.%d.txt" % self.trace_qualifier)
         simV2.VisItSetDirectory(self.visit_base)
         if not simV2.VisItSetupEnvironment():
-            print >> sys.stderr, \
-                "VisItSetupEnvironment: could not get environment\n\nVISIT_HOME is '%s', is this correct?" % \
-                (self.visit_base,)
+            print("VisItSetupEnvironment: could not get environment\n\nVISIT_HOME is '%s', is this correct?" % \
+                (self.visit_base,), file=sys.stderr)
             sys.exit(1)
         # We don't have to worry about the rank, because we only ever run a single compute kernel.
         if not simV2.VisItInitializeSocketAndDumpSimFile(
                         self.sim_name, self.sim_description, self.sim_path,
                         None, None, None   ):
-            print >> sys.stderr, 'VisItInitializeSocketAndDumpSimFile: failed for some reason'
+            print('VisItInitializeSocketAndDumpSimFile: failed for some reason', file=sys.stderr)
             sys.exit(1)
         return
    

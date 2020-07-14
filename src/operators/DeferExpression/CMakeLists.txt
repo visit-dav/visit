@@ -3,6 +3,8 @@ PROJECT(DeferExpression_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(DeferExpression)
+
 SET(COMMON_SOURCES
 DeferExpressionPluginInfo.C
 DeferExpressionCommonPluginInfo.C

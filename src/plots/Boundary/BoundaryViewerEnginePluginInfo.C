@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: BoundaryViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <BoundaryPluginInfo.h>
 #include <avtBoundaryPlot.h>
@@ -29,8 +29,11 @@ BoundaryAttributes *BoundaryViewerEnginePluginInfo::defaultAtts = NULL;
 void
 BoundaryViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    BoundaryViewerEnginePluginInfo::clientAtts  = new BoundaryAttributes;
-    BoundaryViewerEnginePluginInfo::defaultAtts = new BoundaryAttributes;
+    if (BoundaryViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        BoundaryViewerEnginePluginInfo::clientAtts  = new BoundaryAttributes;
+        BoundaryViewerEnginePluginInfo::defaultAtts = new BoundaryAttributes;
+    }
 }
 
 // ****************************************************************************

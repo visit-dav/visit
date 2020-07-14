@@ -23,7 +23,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class MultiCurveAttributes : public AttributeSubject

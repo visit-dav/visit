@@ -3,6 +3,8 @@ PROJECT(ThreeSlice_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(ThreeSlice)
+
 SET(COMMON_SOURCES
 ThreeSlicePluginInfo.C
 ThreeSliceCommonPluginInfo.C

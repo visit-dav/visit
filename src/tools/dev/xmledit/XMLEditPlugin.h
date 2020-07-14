@@ -67,6 +67,9 @@ class QGroupBox;
 //    Add some data members that facilitate greying out operator options when
 //    making non-operators.
 //
+//    Kathleen Biagas, Thu Jan  2 10:05:15 MST 2020
+//    Added hasLicense.
+//
 // ****************************************************************************
 
 class XMLEditPlugin : public QFrame
@@ -87,6 +90,7 @@ class XMLEditPlugin : public QFrame
     void hasIconChanged(bool);
     void hasWriterChanged(bool);
     void hasOptionsChanged(bool);
+    void hasLicenseChanged(bool);
     void enabledByDefaultChanged(bool);
     void pluginTypeChanged(int);
     void varTypesChanged();
@@ -109,6 +113,7 @@ class XMLEditPlugin : public QFrame
     QCheckBox       *hasIcon;
     QCheckBox       *hasWriter;
     QCheckBox       *hasOptions;
+    QCheckBox       *hasLicense;
     QCheckBox       *enabledByDefault;
     QLineEdit       *iconFile;
     QGroupBox       *plotPluginGroup;

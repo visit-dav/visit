@@ -14,6 +14,7 @@
 #include <clocale>
 #include <iomanip>
 #include <visit-config.h>
+#include <DebugStream.h>
 
 // ****************************************************************************
 // Method: ConfigManager::ConfigManager
@@ -1131,6 +1132,11 @@ ConfigManager::ReadFieldData(std::istream& in,
 //    Mark C. Miller, Tue Mar 31 18:54:53 PDT 2015
 //    Incorporate changes as per Brad's guidance to force locale to en_US
 //    when reading.
+//
+//    Alister Maguire, Wed Jun 24 15:37:46 PDT 2020
+//    Changed setlocale from en_US to en_US.UTF-8 for Ubuntu compatibility,
+//    and added a check to see if it succeeded or not.
+//
 // ****************************************************************************
 
 bool
@@ -1140,7 +1146,14 @@ ConfigManager::ReadObject(std::istream& in, DataNode *parentNode)
     std::string current_locale = setlocale(LC_ALL, 0);
 
     // Force US locale.
-    setlocale(LC_ALL, "en_US");
+    const char * result = setlocale(LC_ALL, "en_US.UTF-8");
+
+    // Did we succeed?
+    if (result == NULL)
+    {
+        debug1 << "setlocale failed! This may result in erroneous reads..."
+            << endl;
+    }
 
     // Read the settings.
     bool te = false;
@@ -1392,8 +1405,8 @@ ConfigManager::ReadField(std::istream& in,
 //   mn:             The MapNode node whose data will be written.
 //   indentLevel:    The indent level to use.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   November 28, 2018 
+// Programmer: Kathleen Biagas
+// Creation:   November 28, 2018
 //
 // Modifications:
 //
@@ -1430,8 +1443,8 @@ ConfigManager::WriteMapNode(std::ostream &out, const MapNode &mn, int indentLeve
 //   tagLength: The length of the field.
 //   noEndTag:  Flag
 //
-// Programmer: Kathleen Biagas 
-// Creation:   November 28, 2018 
+// Programmer: Kathleen Biagas
+// Creation:   November 28, 2018
 //
 // Modifications:
 //
@@ -1652,8 +1665,8 @@ ConfigManager::ReadMapNodeFieldData(std::istream& in, MapNode &mn,
 //   mn:        The MapNode used to store the field.
 //   te:        Indicates tag is and end tag.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   November 28, 2018 
+// Programmer: Kathleen Biagas
+// Creation:   November 28, 2018
 //
 // Modifications:
 //

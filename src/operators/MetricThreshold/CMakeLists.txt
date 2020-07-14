@@ -3,6 +3,8 @@ PROJECT(MetricThreshold_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(MetricThreshold)
+
 SET(COMMON_SOURCES
 MetricThresholdPluginInfo.C
 MetricThresholdCommonPluginInfo.C

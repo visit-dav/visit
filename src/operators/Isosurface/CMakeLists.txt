@@ -3,6 +3,8 @@ PROJECT(Isosurface_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Isosurface)
+
 SET(COMMON_SOURCES
 IsosurfacePluginInfo.C
 IsosurfaceCommonPluginInfo.C

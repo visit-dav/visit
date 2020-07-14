@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TruecolorViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <TruecolorPluginInfo.h>
 #include <avtTruecolorPlot.h>
@@ -29,8 +29,11 @@ TruecolorAttributes *TruecolorViewerEnginePluginInfo::defaultAtts = NULL;
 void
 TruecolorViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    TruecolorViewerEnginePluginInfo::clientAtts  = new TruecolorAttributes;
-    TruecolorViewerEnginePluginInfo::defaultAtts = new TruecolorAttributes;
+    if (TruecolorViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        TruecolorViewerEnginePluginInfo::clientAtts  = new TruecolorAttributes;
+        TruecolorViewerEnginePluginInfo::defaultAtts = new TruecolorAttributes;
+    }
 }
 
 // ****************************************************************************

@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TruecolorCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <TruecolorPluginInfo.h>
 #include <TruecolorAttributes.h>
@@ -43,16 +43,17 @@ TruecolorCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 TruecolorCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
     *((TruecolorAttributes *) to) = *((TruecolorAttributes *) from);
 }
+
 // ****************************************************************************
 // Method: TruecolorCommonPluginInfo::GetVariableTypes
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating the types of variables that can be put in the
 //   plot's variable list.
 //
@@ -63,7 +64,7 @@ TruecolorCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //  Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int

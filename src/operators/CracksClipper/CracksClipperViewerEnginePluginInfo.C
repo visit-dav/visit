@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: CracksClipperViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <CracksClipperPluginInfo.h>
 #include <CracksClipperAttributes.h>
@@ -28,8 +28,11 @@ CracksClipperAttributes *CracksClipperViewerEnginePluginInfo::defaultAtts = NULL
 void
 CracksClipperViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    CracksClipperViewerEnginePluginInfo::clientAtts  = new CracksClipperAttributes;
-    CracksClipperViewerEnginePluginInfo::defaultAtts = new CracksClipperAttributes;
+    if (CracksClipperViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        CracksClipperViewerEnginePluginInfo::clientAtts  = new CracksClipperAttributes;
+        CracksClipperViewerEnginePluginInfo::defaultAtts = new CracksClipperAttributes;
+    }
 }
 
 // ****************************************************************************

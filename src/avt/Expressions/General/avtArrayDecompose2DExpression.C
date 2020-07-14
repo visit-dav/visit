@@ -37,12 +37,18 @@
 //  Programmer: Hank Childs
 //  Creation:   July 21, 2005
 //
+//  Modifications:
+//
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Initialized canApplyToDirectDatabaseQOT. 
+//
 // ****************************************************************************
 
 avtArrayDecompose2DExpression::avtArrayDecompose2DExpression()
 {
     issuedWarning = false;
     usePosition = false;
+    canApplyToDirectDatabaseQOT = true;
     index[0] = 0;
     index[1] = 0;
     position[0] = 0;

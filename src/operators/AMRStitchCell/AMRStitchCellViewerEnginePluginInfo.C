@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: AMRStitchCellViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <AMRStitchCellPluginInfo.h>
 #include <AMRStitchCellAttributes.h>
@@ -28,8 +28,11 @@ AMRStitchCellAttributes *AMRStitchCellViewerEnginePluginInfo::defaultAtts = NULL
 void
 AMRStitchCellViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    AMRStitchCellViewerEnginePluginInfo::clientAtts  = new AMRStitchCellAttributes;
-    AMRStitchCellViewerEnginePluginInfo::defaultAtts = new AMRStitchCellAttributes;
+    if (AMRStitchCellViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        AMRStitchCellViewerEnginePluginInfo::clientAtts  = new AMRStitchCellAttributes;
+        AMRStitchCellViewerEnginePluginInfo::defaultAtts = new AMRStitchCellAttributes;
+    }
 }
 
 // ****************************************************************************

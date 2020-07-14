@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: FFTCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <FFTPluginInfo.h>
 #include <FFTAttributes.h>
@@ -43,7 +43,7 @@ FFTCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 FFTCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

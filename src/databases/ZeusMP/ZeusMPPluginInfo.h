@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               ZeusMPPluginInfo.h
+//  ZeusMPPluginInfo.h
 // ****************************************************************************
 
 #ifndef ZEUSMP_PLUGIN_INFO_H

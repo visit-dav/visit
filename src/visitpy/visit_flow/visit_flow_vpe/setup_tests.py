@@ -59,7 +59,7 @@ class ExecuteTests(Command):
         self.tests  = []
         # make sure the 'tests' subdir actually exists.
         if not os.path.isdir(self.tests_dir):
-            print "ExecuteTests: <Error> 'tests' subdir not found!"
+            print("ExecuteTests: <Error> 'tests' subdir not found!")
         else:
             self.find_tests()
             self.gen_tests_init()
@@ -75,7 +75,7 @@ class ExecuteTests(Command):
                 runner = TextTestRunner(verbosity=run_verbosity)
                 runner.run(tests)
             else:
-                print "ExecuteTests: <Warning> No test cases found!"
+                print("ExecuteTests: <Warning> No test cases found!")
         sys.path.pop(0)
     def find_tests(self):
         """
@@ -87,9 +87,9 @@ class ExecuteTests(Command):
                 test = '.'.join(['tests',test])
                 self.tests.append( (test,f))
         if len(self.tests) > 0 and self.verbose:
-            print "Detected Test Scripts:"
+            print("Detected Test Scripts:")
             for t in self.tests:
-                print " %s @ %s)" % (t[0],t[1])
+                print(" %s @ %s)" % (t[0],t[1]))
     def filter_tests(self,tests):
         """
         Filters detected tests according to pattern passed to

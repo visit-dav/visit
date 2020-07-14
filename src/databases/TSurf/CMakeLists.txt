@@ -3,6 +3,8 @@ PROJECT(TSurf_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(TSurf)
+
 SET(COMMON_SOURCES
 TSurfPluginInfo.C
 TSurfCommonPluginInfo.C

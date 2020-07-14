@@ -3,6 +3,8 @@ PROJECT(IntegralCurve_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(IntegralCurve)
+
 SET(COMMON_SOURCES
 IntegralCurvePluginInfo.C
 IntegralCurveCommonPluginInfo.C

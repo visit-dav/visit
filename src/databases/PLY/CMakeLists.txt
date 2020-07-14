@@ -3,6 +3,8 @@ PROJECT(PLY_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(PLY)
+
 SET(COMMON_SOURCES
 PLYPluginInfo.C
 PLYCommonPluginInfo.C

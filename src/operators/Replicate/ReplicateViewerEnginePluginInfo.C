@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ReplicateViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ReplicatePluginInfo.h>
 #include <ReplicateAttributes.h>
@@ -28,8 +28,11 @@ ReplicateAttributes *ReplicateViewerEnginePluginInfo::defaultAtts = NULL;
 void
 ReplicateViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ReplicateViewerEnginePluginInfo::clientAtts  = new ReplicateAttributes;
-    ReplicateViewerEnginePluginInfo::defaultAtts = new ReplicateAttributes;
+    if (ReplicateViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        ReplicateViewerEnginePluginInfo::clientAtts  = new ReplicateAttributes;
+        ReplicateViewerEnginePluginInfo::defaultAtts = new ReplicateAttributes;
+    }
 }
 
 // ****************************************************************************

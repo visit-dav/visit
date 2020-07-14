@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: BoxViewerEnginePluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <BoxPluginInfo.h>
 #include <BoxAttributes.h>
@@ -28,8 +28,11 @@ BoxAttributes *BoxViewerEnginePluginInfo::defaultAtts = NULL;
 void
 BoxViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    BoxViewerEnginePluginInfo::clientAtts  = new BoxAttributes;
-    BoxViewerEnginePluginInfo::defaultAtts = new BoxAttributes;
+    if (BoxViewerEnginePluginInfo::clientAtts == NULL)
+    {
+        BoxViewerEnginePluginInfo::clientAtts  = new BoxAttributes;
+        BoxViewerEnginePluginInfo::defaultAtts = new BoxAttributes;
+    }
 }
 
 // ****************************************************************************

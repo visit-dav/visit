@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                           TopologyPluginInfo.h                            //
+//  TopologyPluginInfo.h
 // ************************************************************************* //
 
 #ifndef TOPOLOGY_PLUGIN_INFO_H

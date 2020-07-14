@@ -25,7 +25,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class DBATTS_API avtSubsetsMetaData : public avtVarMetaData

@@ -3,6 +3,8 @@ PROJECT(BOV_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(BOV)
+
 SET(COMMON_SOURCES
 BOVPluginInfo.C
 BOVCommonPluginInfo.C

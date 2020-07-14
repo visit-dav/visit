@@ -3,6 +3,8 @@ PROJECT(WellLogs_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_DATABASE_CODE_GEN_TARGETS(WellLogs)
+
 SET(COMMON_SOURCES
 WellLogsPluginInfo.C
 WellLogsCommonPluginInfo.C

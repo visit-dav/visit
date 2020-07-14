@@ -150,6 +150,9 @@ avtLocateAndPickZoneQuery::SetInputParams(const MapNode &params)
 //    Kathleen Biagas, Tue Jun 21 09:56:46 PDT 2011
 //    RayPoints, vars, domain and element are retrieved now in SetInputParams.
 //
+//    Alister Maguire, Fri Jan  3 13:21:29 PST 2020
+//    Setting the transform in case the highlight needs it.
+//
 // ****************************************************************************
 
 void
@@ -187,6 +190,8 @@ avtLocateAndPickZoneQuery::PerformQuery(QueryAttributes *qa)
         zpq->SetNeedTransform(inVal.GetPointsWereTransformed());
         if (inAtts.HasInvTransform() && inAtts.GetCanUseInvTransform())
             zpq->SetInvTransform(inAtts.GetInvTransform());
+        if (inAtts.HasTransform() && inAtts.GetCanUseTransform())
+            zpq->SetTransform(inAtts.GetTransform());
         zpq->PerformQuery(qa);
 
         SetPickAtts(zpq->GetPickAtts());

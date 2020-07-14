@@ -91,7 +91,7 @@ class Simulation:
     def SimulateOneTimestep(self):
         self.cycle = self.cycle + 1
         self.time = self.time + 0.0134
-        print "Simulating time step: cycle=%d, time=%g" % (self.cycle,self.time)
+        print("Simulating time step: cycle=%d, time=%g" % (self.cycle,self.time))
 
     def DoPrompt(self):
         if self.par_rank == 0:
@@ -131,7 +131,7 @@ class Simulation:
                 self.SimulateOneTimestep()
             elif visitstate == 1:
                 if VisItAttemptToCompleteConnection() == VISIT_OKAY:
-                    print "VisIt connected"
+                    print("VisIt connected")
                     self.runMode = VISIT_SIMMODE_STOPPED
 
                     VisItSetCommandCallback(self.ControlCommandCallback, 0)
@@ -141,7 +141,7 @@ class Simulation:
                     VisItSetGetVariable(self.GetVariable, 0)
                     VisItSetGetMixedVariable(self.GetMixedVariable, 0)
                 else:
-                    print "VisIt did not connect"
+                    print("VisIt did not connect")
             elif visitstate == 2:
                 if not VisItProcessEngineCommand():
                     VisItDisconnect()
@@ -150,7 +150,7 @@ class Simulation:
                 self.ProcessConsoleCommand()
                 self.DoPrompt()
             else:
-                print "Error: ", visitstate
+                print("Error: ", visitstate)
         VisItCloseTraceFile()
 
     #

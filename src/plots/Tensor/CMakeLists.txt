@@ -3,6 +3,8 @@ PROJECT(Tensor_plot)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_PLOT_CODE_GEN_TARGETS(Tensor)
+
 SET(COMMON_SOURCES
 TensorPluginInfo.C
 TensorCommonPluginInfo.C

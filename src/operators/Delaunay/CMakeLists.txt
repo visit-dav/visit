@@ -3,6 +3,8 @@ PROJECT(Delaunay_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(Delaunay)
+
 SET(COMMON_SOURCES
 DelaunayPluginInfo.C
 DelaunayCommonPluginInfo.C

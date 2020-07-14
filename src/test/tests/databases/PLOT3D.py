@@ -76,8 +76,8 @@ def TestOpenOptions(gridFile, testname, options, testStart):
         # Grab the default options
         opts = GetDefaultFileOpenOptions("PLOT3D")
         # Set the passed options
-        for k,v in options.iteritems():
-            if k in opts.keys():
+        for k,v in options.items():
+            if k in list(opts.keys()):
                 opts[k] = v
         SetDefaultFileOpenOptions("PLOT3D", opts)
     OpenDatabase(data_path("PLOT3D_test_data/%s"%gridFile),0, "PLOT3D_1.0")
@@ -125,7 +125,7 @@ def TestTimeSeries():
     #SetView3D(v)
 
     #  step through time
-    for t in xrange(0, TimeSliderGetNStates(),2):
+    for t in range(0, TimeSliderGetNStates(),2):
         SetTimeSliderState(t)
         Query("Time")
         Test("plot3d_timeseries_1_%s" % GetQueryOutputValue())
@@ -153,7 +153,7 @@ def TestTimeSeries():
     #SetView3D(v)
     
     #  step through time
-    for t in xrange(0, TimeSliderGetNStates()):
+    for t in range(0, TimeSliderGetNStates()):
         SetTimeSliderState(t)
         Query("Time")
         Test("plot3d_timeseries_2_%s" % GetQueryOutputValue())

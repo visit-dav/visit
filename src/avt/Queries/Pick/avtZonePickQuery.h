@@ -28,6 +28,9 @@
 //  Modifications:
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Added avtDataAttributes arg to Preparation.
+//
+//    Alister Maguire, Tue Oct 22 14:20:27 MST 2019
+//    Added SetTransform. 
 //    
 // ****************************************************************************
 
@@ -41,6 +44,7 @@ class QUERY_API avtZonePickQuery : public avtPickQuery
                                              { return "avtZonePickQuery"; };
 
     virtual void                    SetInvTransform(const avtMatrix *m);
+    virtual void                    SetTransform(const avtMatrix *m);
 
   protected:
     virtual void                    Execute(vtkDataSet *, const int);

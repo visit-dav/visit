@@ -3,6 +3,8 @@ PROJECT(OnionPeel_operator)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
+ADD_OPERATOR_CODE_GEN_TARGETS(OnionPeel)
+
 SET(COMMON_SOURCES
 OnionPeelPluginInfo.C
 OnionPeelCommonPluginInfo.C
