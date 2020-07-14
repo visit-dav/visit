@@ -841,6 +841,34 @@ avtParallelContext::Collect(double *buff, int size)
 #endif
 }
 
+bool
+avtParallelContext::CollectSum(double *buff, int size)
+{
+#ifndef PARALLEL
+    (void)buff;
+    (void)size;
+    return true;
+#else
+    double *newbuff = new double[size];
+    // MPI_Reduce(buff, newbuff, size, MPI_DOUBLE, MPI_SUM, 0, this->GetCommunicator());
+    MPI_Allreduce(buff, newbuff, size, MPI_DOUBLE, MPI_SUM, this->GetCommunicator());
+    // int rank;
+    // MPI_Comm_rank(this->GetCommunicator(), &rank);
+    // if (rank == 0)
+    // {
+        for (int i = 0 ; i < size ; i++)
+        {
+            buff[i] = newbuff[i];
+        }
+    // }
+
+    delete [] newbuff;
+
+    // return (rank == 0 ? true : false);
+    return true;
+#endif
+}
+
 
 // ****************************************************************************
 //  Function: avtParallelContext::Collect

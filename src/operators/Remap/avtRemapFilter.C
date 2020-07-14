@@ -25,6 +25,8 @@
 
 #include <DebugStream.h>
 
+#include <avtParallel.h>
+
 
 // ****************************************************************************
 //  Method: avtRemapFilter constructor
@@ -231,6 +233,20 @@ avtRemapFilter::Execute(void)
     {
         ClipDomain(dataSets[i]);
     }
+
+#ifdef PARALLEL
+    int size = vars->GetNumberOfTuples();
+    double *vars_double = (double*) vars->GetVoidPointer(0);
+    CollectSum(vars_double, size);
+
+    // if (PAR_Rank() == 0)
+    // {
+    //     for (int i = 0; i < size; ++i) 
+    //     {
+    //         std::cout << i << ": " << vars_double[i] << ", " << vars->GetComponent(i, 0) << std::endl;
+    //     }
+    // }
+#endif
     
     SetOutputDataTree(new avtDataTree(rg, 0));
     debug5 << "DONE Remapping" << std::endl;

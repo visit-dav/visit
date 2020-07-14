@@ -506,6 +506,14 @@ Collect(double *buff, int size)
 }
 
 bool
+CollectSum(double *buff, int size)
+{
+    std::cout << "avtParallel::CollectSum" << std::endl;
+    return globalContext.CollectSum(buff, size);
+    // return true;
+}
+
+bool
 Collect(int *buff, int size)
 {
     return globalContext.Collect(buff, size);
