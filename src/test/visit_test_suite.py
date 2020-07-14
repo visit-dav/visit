@@ -997,17 +997,16 @@ def resolve_test_paths(tests,tests_dir):
                 res.append(t_abs_path)
             else:
                 print("[WARNING: could not find test file: {}]".format(t_abs_path))
-    if sys.platform.startswith("win"):
-        # use glob to match any *.py
-        expandedtests = []
-        for t in res:
-           if not '*' in t:
-              expandedtests.append(t)
-           else:
-              for match in glob.iglob(t):
-                 expandedtests.append(match)
-        if len(expandedtests) > 0:
-            res = expandedtests
+    # use glob to match any *.py
+    expandedtests = []
+    for t in res:
+       if not '*' in t:
+          expandedtests.append(t)
+       else:
+          for match in glob.iglob(t):
+             expandedtests.append(match)
+    if len(expandedtests) > 0:
+        res = expandedtests
     return res
 
 # ----------------------------------------------------------------------------
