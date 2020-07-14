@@ -50,6 +50,7 @@ vtkCSGCell.C
 vtkCSGGrid.C
 vtkConnectedTubeFilter.C
 vtkDataSetRemoveGhostCells.C
+vtkExtractCellsByType.C
 vtkLineoutFilter.C
 vtkLinesFromOriginalCells.C
 vtkMergeTree.C

@@ -52,6 +52,7 @@
 #include <avtDomainBoundaries.h>
 #include <avtDomainNesting.h>
 #include <avtFileFormatInterface.h>
+#include <avtGhostNodeGenerator.h>
 #include <avtMemory.h>
 #include <avtMixedVariable.h>
 #include <avtParallel.h>
@@ -258,6 +259,9 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    Kathleen Biagas, Wed May 20 14:27:24 PDT 2020
 //    Modified to dump out every domain.
 //
+//    Kathleen Biagas, Fri May 22 15:21:19 PDT 2020
+//    Handle parallel.
+//
 // ****************************************************************************
 
 static void
@@ -277,9 +281,16 @@ DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
     for (int i = 0 ; i < ndoms; i++)
     {
         std::ostringstream oss;
+#ifdef PARALLEL
         oss << dumpDir << "/gdb." << std::setfill('0') << std::setw(4)
-                       << call_count << "." << phaseName << ".dom"
-                       << std::setfill('0') << std::setw(4) << i << ".vtk";
+            << call_count << "." << phaseName << ".dom"
+            << std::setfill('0') << std::setw(4) << i
+            << ".proc" << std::setfill('0') << std::setw(4) << PAR_Rank() << ".vtk";
+#else
+        oss << dumpDir << "/gdb." << std::setfill('0') << std::setw(4)
+            << call_count << "." << phaseName << ".dom"
+            << std::setfill('0') << std::setw(4) << i << ".vtk";
+#endif
         dsw->SetFileName(oss.str().c_str());
         dsw->SetInputData(dsc.GetDataset(i, 0));
         dsw->Write();
@@ -7096,7 +7107,12 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
 //    ExchangeVector.
 //
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
-//    clean up a warning
+//    Clean up a warning.
+//
+//    Eric Brugger, Wed Jul  8 16:18:50 PDT 2020
+//    Corrected a deadlock situation that could arise when not all the
+//    processors decided to change the ghost type. Now if any of them
+//    decide to change the ghost type, all of them will do it.
 //
 // ****************************************************************************
 
@@ -7183,23 +7199,42 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
                                     "  This also counts synchronization.");
 
     //
-    // The unstructured mesh domain boundaries code can create situations
-    // where ghost nodes identify faces as ghost that are actually real.
-    // Create ghost zones in this case.
+    // There are some situations where we need a different type of
+    // ghost information than requested. If we do, then we need to do
+    // this on all the processors or we may have a deadlock situation.
     //
+    int swapGhostType = 0;
     if (ghostType == GHOST_NODE_DATA)
     {
         if (hasDomainBoundaryInfo)
             if (!dbi->CreatesRobustGhostNodes())
-                ghostType = GHOST_ZONE_DATA;
+                swapGhostType = 1;
+        //
+        // The unstructured mesh domain boundaries code can create situations
+        // where ghost nodes identify faces as ghost that are actually real.
+        // Create ghost zones in this case.
+        //
         if (md->GetMesh(meshname)->meshType == AVT_UNSTRUCTURED_MESH)
-            ghostType = GHOST_ZONE_DATA;
+            swapGhostType = 1;
     }
     if (ghostType == GHOST_ZONE_DATA)
     {
         if (hasDomainBoundaryInfo)
             if (dbi->CanOnlyCreateGhostNodes())
-                ghostType = GHOST_NODE_DATA;
+                swapGhostType = 1;
+    }
+#ifdef PARALLEL
+    int swapGhostTypeGlobal;
+    MPI_Allreduce(&swapGhostType, &swapGhostTypeGlobal, 1,
+                  MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    swapGhostType = swapGhostTypeGlobal;
+#endif
+    if (swapGhostType == 1)
+    {
+        if (ghostType == GHOST_NODE_DATA)
+            ghostType = GHOST_ZONE_DATA;
+        else 
+            ghostType = GHOST_NODE_DATA;
     }
 
     //
@@ -7239,26 +7274,35 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     // proper subroutine to do it.
     //
     int portion2 = visitTimer->StartTimer();
-    bool s = false;
+    bool madeGhosts = false;
     if (ghostType == GHOST_NODE_DATA)
     {
         if (hasDomainBoundaryInfo)
-            s = CommunicateGhostNodesFromDomainBoundariesFromFile(ds, doms,
-                                                       spec, src, allDomains);
+            madeGhosts = CommunicateGhostNodesFromDomainBoundariesFromFile
+               (ds, doms, spec, src, allDomains);
         else if (canUseGlobalNodeIds)
-            s = CommunicateGhostNodesFromGlobalNodeIds(ds, doms, spec, src);
+            madeGhosts = CommunicateGhostNodesFromGlobalNodeIds
+                (ds, doms, spec, src);
         else if (canDoStreamingGhosts)  // Zones not Nodes
-            s = CommunicateGhostZonesWhileStreaming(ds, doms, spec, src);
+            madeGhosts = CommunicateGhostZonesWhileStreaming
+                (ds, doms, spec, src);
+        else
+        {
+            avtGhostNodeGenerator gnf;
+            madeGhosts = gnf.CreateGhosts(ds);
+        }
     }
     else if (ghostType == GHOST_ZONE_DATA)
     {
         if (hasDomainBoundaryInfo)
-            s = CommunicateGhostZonesFromDomainBoundariesFromFile(ds, doms,
-                                                                  spec, src);
+            madeGhosts = CommunicateGhostZonesFromDomainBoundariesFromFile
+                (ds, doms, spec, src);
         else if (canUseGlobalNodeIds)
-            s = CommunicateGhostZonesFromGlobalNodeIds(ds, doms, spec, src);
+            madeGhosts = CommunicateGhostZonesFromGlobalNodeIds
+                (ds, doms, spec, src);
         else if (canDoStreamingGhosts)
-            s = CommunicateGhostZonesWhileStreaming(ds, doms, spec, src);
+            madeGhosts = CommunicateGhostZonesWhileStreaming
+                (ds, doms, spec, src);
     }
     else
     {
@@ -7267,7 +7311,6 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     }
     visitTimer->StopTimer(portion2, "Time to actually communicate ghost data");
 
-    bool madeGhosts = s;
     if (madeGhosts)
     {
         //
@@ -8366,6 +8409,9 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
 //    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
 //    Modify to handle NULL meshes.
 //
+//    Kathleen Biagas, Fri May 22 15:41:44 PDT 2020
+//    Test for myMin > myMax.
+//
 // ****************************************************************************
 
 bool
@@ -8494,6 +8540,8 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     int myMax = numIdsPerProc * (rank+1);
     if (myMax > maxId)
         myMax = maxId;
+    if (myMin > myMax)
+        myMin = myMax;
 
     //
     // We will do the bookkeeping for this processor's range.  Set up
@@ -8968,6 +9016,9 @@ avtGenericDatabase::CommunicateGhostZonesWhileStreaming(
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
 //
+//    Kathleen Biagas, Fri May 22 15:41:44 PDT 2020
+//    Test for myMin > myMax.
+//
 // ****************************************************************************
 
 bool
@@ -9013,6 +9064,8 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
     int myMax = numIdsPerProc * (rank+1);
     if (myMax > maxId)
         myMax = maxId;
+    if (myMin > myMax)
+        myMin = myMax;
 
     //
     // We will do the bookkeeping for this processor's range.  Set up

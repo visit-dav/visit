@@ -29,12 +29,16 @@
 //    Kathleen Bonnell, Fri Feb  3 11:24:40 PST 2006
 //    Initialize revolveAboutX.
 //
+//    Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtRevolvedVolume::avtRevolvedVolume()
 {
     haveIssuedWarning = false;
     revolveAboutX = true;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

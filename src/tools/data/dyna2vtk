@@ -1,0 +1,120 @@
+#! /usr/bin/env python
+import os
+import sys
+import re
+import array
+
+#
+# This utility converts Dyna dyn files to vtk files. I have tested this with
+# 2 flavors of dyn files. The files only had hex elements. The converter
+# will need to be enhanced to handle shell, thick shell and beam elements.
+#
+
+def copy_file(dyn_file, vtk_file):
+    dyn = open(dyn_file, "r")
+    vtk = open(vtk_file, "wt")
+
+    # Write out the VTK file header
+    vtk.write("# vtk DataFile Version 4.2\n")
+    vtk.write("vtk output\n")
+    vtk.write("ASCII\n")
+    vtk.write("DATASET UNSTRUCTURED_GRID\n")
+
+    # Flags indicating if we are processing the list of nodes or elements.
+    nodes = 0
+    elements = 0
+
+    # Array to hold the material numbers.
+    materials = array.array("i")
+
+    # Counts of the number of nodes and elements.
+    nnodes = -1
+    nelems = -1
+
+    # Read the file line by line.
+    line = dyn.readline()  
+    while line:
+        if (line[0:1] == "*"):
+            if ("CONTROL CARD #2" in line):
+                line = dyn.readline()
+                while line[0:1] == "*":
+                    line = dyn.readline()
+                line2 = line.strip()
+                line3 = re.sub(' +', ' ', line2)
+                nnodes = int(line3.split(" ")[1])
+                nelems = int(line3.split(" ")[2])
+                print("nnodes=%d, nelems=%d" % (nnodes, nelems))
+                line = dyn.readline()
+            elif ("NODE DEFINITIONS" in line):
+                vtk.write("\n")
+                vtk.write("POINTS %d float\n" % nnodes)
+                nodes = 1
+                dyn.readline()
+                line = dyn.readline()
+            elif ("ELEMENT CARDS FOR SOLID ELEMENTS" in line):
+                vtk.write("\n")
+                vtk.write("CELLS %d %d\n" % (nelems, nelems * 9))
+                elements = 1
+                dyn.readline()
+                line = dyn.readline()
+
+        # We are in the coordinate section, write out coordinates.
+        if (nodes == 1):
+            if (line[0:1] == "*"):
+                nodes = 0
+            else:
+                vtk.write("%s %s %s\n" %
+                          (line[13:33], line[33:53], line[53:74]))
+
+        # We are in the element section, write out an element.
+        if (elements == 1):
+            if (line[0:1] == "*"):
+                if (line[0:7] != "* Block"):
+                    elements = 0
+            else:
+                line2 = line.strip()
+                line3 = re.sub(' +', ' ', line2)
+                node_list = line3.split(" ")
+                mat = int(node_list[1])
+                n1 = int(node_list[2]) - 1
+                n2 = int(node_list[3]) - 1
+                n3 = int(node_list[4]) - 1
+                n4 = int(node_list[5]) - 1
+                n5 = int(node_list[6]) - 1
+                n6 = int(node_list[7]) - 1
+                n7 = int(node_list[8]) - 1
+                n8 = int(node_list[9]) - 1
+                materials.append(mat)
+                vtk.write("8 %d %d %d %d %d %d %d %d\n" %
+                          (n1, n2, n3, n4, n5, n6, n7, n8))
+
+        # Read the next line.
+        line = dyn.readline()
+
+    # Write out the cell types.
+    vtk.write("\n")
+    vtk.write("CELL_TYPES %d\n" % nelems)
+    for i in range(nelems): 
+        vtk.write("12\n")
+
+    # Write out the materials.
+    vtk.write("\n")
+    vtk.write("CELL_DATA %d\n" % nelems)
+    vtk.write("FIELD FieldData 1\n")
+    vtk.write("avtSubsets 1 %d int\n" % nelems)
+    for i in range(nelems):
+        if i == nelems - 1:
+            vtk.write("%d" % materials[i])
+        elif (i + 1) % 9 == 0:
+            vtk.write("%d\n" % materials[i])
+        else:
+            vtk.write("%d " % materials[i])
+
+    dyn.close()
+    vtk.close()
+
+if len(sys.argv) != 3:
+    print("usage: dyna2vtk dyna_file vtk_file\n")
+    quit()
+    
+copy_file(sys.argv[1], sys.argv[2])

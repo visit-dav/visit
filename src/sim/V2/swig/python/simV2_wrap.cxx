@@ -7061,6 +7061,64 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VisItUI_addStripChartPoints(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  int arg1 ;
+  int arg2 ;
+  int arg3 ;
+  int *arg4 = (int *) 0 ;
+  double *arg5 = (double *) 0 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:VisItUI_addStripChartPoints",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisItUI_addStripChartPoints" "', argument " "1"" of type '" "int""'");
+  } 
+  arg1 = static_cast< int >(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisItUI_addStripChartPoints" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisItUI_addStripChartPoints" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_int, 0 |  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "VisItUI_addStripChartPoints" "', argument " "4"" of type '" "int *""'"); 
+  }
+  arg4 = reinterpret_cast< int * >(argp4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_double, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "VisItUI_addStripChartPoints" "', argument " "5"" of type '" "double *""'"); 
+  }
+  arg5 = reinterpret_cast< double * >(argp5);
+  result = (int)VisItUI_addStripChartPoints(arg1,arg2,arg3,arg4,arg5);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_VisItAddPlot(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   char *arg1 = (char *) 0 ;
@@ -18046,6 +18104,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VisItUI_setTableValueV", _wrap_VisItUI_setTableValueV, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_setTableValueS", _wrap_VisItUI_setTableValueS, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_addStripChartPoint", _wrap_VisItUI_addStripChartPoint, METH_VARARGS, NULL},
+	 { (char *)"VisItUI_addStripChartPoints", _wrap_VisItUI_addStripChartPoints, METH_VARARGS, NULL},
 	 { (char *)"VisItAddPlot", _wrap_VisItAddPlot, METH_VARARGS, NULL},
 	 { (char *)"VisItAddOperator", _wrap_VisItAddOperator, METH_VARARGS, NULL},
 	 { (char *)"VisItDrawPlots", _wrap_VisItDrawPlots, METH_VARARGS, NULL},
