@@ -53,8 +53,7 @@ class avtRemapFilter : public avtDatasetToDatasetFilter,
     RemapAttributes     atts;
 
     virtual void        Execute(void);
-    void                TraverseDomainTree(avtDataTree_p);
-    void                ClipDomain(avtDataTree_p);
+    void                ClipDomain(vtkDataSet*);
     
   private:
   

@@ -128,6 +128,10 @@ avtRemapFilter::Equivalent(const AttributeGroup *a)
 //  Programmer: rusu1
 //  Creation:   Wed Apr  3 13:52:34 PDT 2019
 //
+//  Modifications:
+//      Eddie Rusu, Tue Jul 14 10:04:57 PDT 2020
+//      Execute uses GetAllLeaves() instead of recursive traverse domain.
+//
 // ****************************************************************************
 
 void
@@ -221,7 +225,12 @@ avtRemapFilter::Execute(void)
     // ------------------------------------ //
 
     avtDataTree_p inTree = GetInputDataTree();
-    TraverseDomainTree(inTree);
+    int totalNodes;
+    vtkDataSet **dataSets = inTree->GetAllLeaves(totalNodes);
+    for (int i = 0; i < totalNodes; ++i)
+    {
+        ClipDomain(dataSets[i]);
+    }
     
     SetOutputDataTree(new avtDataTree(rg, 0));
     debug5 << "DONE Remapping" << std::endl;
@@ -232,92 +241,31 @@ avtRemapFilter::Execute(void)
 
 
 // ****************************************************************************
-//  Method: avtRemapFilter::TraverseDomainTree
-//
-//  Purpose:
-//      Traverse the DomainTree.
-//
-//  Arguments:
-//      inTree     avtDataTree_p The root of the domain tree from Execute or
-//                 else a node in the domain tree called during recursion.
-//
-//  Programmer: rusu1
-//  Creation:   Wed Apr  3 13:52:34 PDT 2019
-//
-// ****************************************************************************
-
-void
-avtRemapFilter::TraverseDomainTree(avtDataTree_p inTree)
-{
-    debug3 << "avtRemapFilter::TraverseDomainTree" << std::endl;
-    if (*inTree == NULL)
-    {
-        debug4 << "inTree is null" << std::endl;
-        return;
-    }
-    
-    std::vector<int> domainIds;
-    inTree->GetAllDomainIds(domainIds);
-    
-    int numChildren = inTree->GetNChildren();
-    
-    if (numChildren <= 0 && !inTree->HasData())
-    {
-        debug4 << "No children and no data" << std::endl;
-        return;
-    }
-    
-    if (numChildren == 0)
-    {
-        debug5 << "Number of children is 0. Clipping this domain." << std::endl;
-        debug5 << "Domain Id: " << domainIds[0] << std::endl;
-        ClipDomain(inTree);
-        return;
-    }
-    else
-    {
-        debug5 << "Number of children is " << numChildren
-               << ". Looping over children." << std::endl;
-        for (int i = 0; i < numChildren; ++i)
-        {
-            if (inTree->ChildIsPresent(i))
-            {
-                TraverseDomainTree(inTree->GetChild(i));
-            }
-            else
-            {
-                debug4 << "Child " << i << " is not present. Skipping." << std::endl;
-            }
-        }
-    }
-}
-
-
-// ****************************************************************************
 //  Method: avtRemapFilter::ClipDomain
 //
 //  Purpose:
 //      Clip the input domain against the output rectilinear grid.
 //
 //  Arguments:
-//      inLeaf     avtDataTree_p leaf, as determined by TraverseDomainTree.
+//      in_ds_tmp     vtkDataSet*, as called in Execute
 //
-//  Programmer: rusu1
+//  Programmer: Eddie Rusu
 //  Creation:   Wed Apr  3 13:52:34 PDT 2019
+//
+//  Modifications:
+//      Eddie Rusu, Tue Jul 14 10:04:57 PDT 2020
+//      Clip domain receives the vtkDataSet directly instead of the leaf.
 //
 // ****************************************************************************
 
 void
-avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
+avtRemapFilter::ClipDomain(vtkDataSet *in_ds_tmp)
 {
     debug3 << "avtRemapFilter::ClipDomain" << std::endl;
 
-    // --------------------------------------------------- //
-    // --- Convert the avtDataTree_p into a vtkDataSet --- //
-    // --------------------------------------------------- //
-    avtDataRepresentation in_dr = inLeaf->GetDataRepresentation();
-    int domainId = in_dr.GetDomain();
-    vtkDataSet* in_ds_tmp = in_dr.GetDataVTK();
+    // Must create a new copy like this because we will modify the dataset
+    // by adding new variables to it. If we don't copy like this, then we will
+    // crash the engine.
     vtkDataSet* in_ds = in_ds_tmp->NewInstance();
     in_ds->ShallowCopy(in_ds_tmp);
     
@@ -328,7 +276,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
     if (in_ds == NULL || in_ds->GetCellData()->GetArray(vars->GetName()) == NULL ||
         in_ds->GetNumberOfPoints() == 0 || in_ds->GetNumberOfCells() == 0)
     {
-        debug4 << "Domain " << domainId << " is invalid." << std::endl;
+        debug4 << "This domain is invalid for remapping." << std::endl;
         return;
     }
     
