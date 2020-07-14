@@ -15,7 +15,9 @@ else:
     import thread as _thread
 
 import distutils.spawn
-from xmllib import *
+#from xmllib import *
+import xml
+import xml.sax
 
 from visit_utils import encoding
 
@@ -330,7 +332,7 @@ def MovieClassSaveWindow():
     return classSaveWindowObj.SaveImage2()
 
 ###############################################################################
-# Class: EngineAttributesParser
+# Class: EngineAttributesParserHandler
 #
 # Purpose:    This class parses session files for MachineProfiles in the
 #             "RunningEngines" node so we can extract information about the
@@ -345,18 +347,21 @@ def MovieClassSaveWindow():
 #    I changed host profiles to be a machine profile + nested launch profile.
 #    During this change I noticed the endtag parsing was making use of the
 #    latest "open tag", which is incorrect since self.dataName wasn't a stack.
-#    I changed it to instead use the explocit booleans we set during starttag,
+#    I changed it to instead use the explicit booleans we set during starttag,
 #    though a viable alternative would be to make dataName a stack of strings.
 #
 #    Brad Whitlock, Thu Oct 28 11:49:48 PDT 2010
 #    I added code to eliminate leading/trailing quotes from string data to
 #    work around a problem introduced in version 2.1.
 #
+#    Cyrus Harrison, Tue Jul 14 13:03:06 PDT 2020
+#    Port EngineAttributesParser to xml.sax 
+#    (xmllib deprecated since Python 2.0 and not supported in Python 3)
+#
 ###############################################################################
 
-class EngineAttributesParser(XMLParser):
+class EngineAttributesParserHandler(xml.sax.ContentHandler):
     def __init__(self):
-        XMLParser.__init__(self)
         self.elements = {"Object" : ("<Object>", "</Object>"), "Field" : ("<Field>", "</Field>")}
         self.attributes = {"name" : "", "type" : None, "length" : 0}
 
@@ -370,7 +375,7 @@ class EngineAttributesParser(XMLParser):
         self.dataAtts = None
 
 
-    def handle_starttag(self, tag, method, attributes):
+    def startElement(self, tag, method, attributes):
         if tag == "Object":
             if "name" in list(attributes.keys()):
                 self.dataName = attributes["name"]
@@ -387,7 +392,7 @@ class EngineAttributesParser(XMLParser):
             self.dataAtts = attributes
 
 
-    def handle_endtag(self, tag, method):
+    def endElement(self, tag):
         if tag == "Object":
             if self.readingLaunchProfile == 1:
                 self.readingLaunchProfile = 0
@@ -403,7 +408,7 @@ class EngineAttributesParser(XMLParser):
             self.readingField = 0
 
 
-    def handle_data(self, data):
+    def characters(self, data):
         def not_all_spaces(s):
             space = ""
             for i in range(len(s)):
@@ -420,24 +425,24 @@ class EngineAttributesParser(XMLParser):
             return retval
         if (self.readingEngineProperties == 1 or self.readingMachineProfile)\
             and self.readingField == 1 and len(data) > 0:
-            name = self.dataAtts["name"]
-            type = self.dataAtts["type"]
+            name  = self.dataAtts["name"]
+            etype = self.dataAtts["type"]
             value = None
-            if type == "bool":
+            if etype == "bool":
                 if data == "true":
                     value = 1
                 else:
                     value = 0
-            elif type == "string":
+            elif etype == "string":
                 value = StripLeadingTrailingQuotes(data)
-            elif type == "stringVector":
+            elif etype == "stringVector":
                 fragments = data.split("\"")
                 value = []
                 for s in fragments:
                    if len(s) > 0:
                        if not_all_spaces(s):
                            value = value + [s]
-            elif type == "int":
+            elif etype == "int":
                 value = int(data)
             else:
                 print("Unknown type: ", type)
@@ -445,7 +450,7 @@ class EngineAttributesParser(XMLParser):
             self.engineProperties[name] = value
 
 ###############################################################################
-# Class: WindowSizeParser
+# Class: WindowSizeParserHandler
 #
 # Purpose:    This class parses session files for the windowSize field in
 #             the ViewerWindow and builds a list of [width,height] values.
@@ -459,11 +464,14 @@ class EngineAttributesParser(XMLParser):
 #   OpenGL part of the window instead of the windowSize, which is the size of
 #   the whole window including the decorations and toolbar.
 #
+#   Cyrus Harrison, Tue Jul 14 13:03:06 PDT 2020
+#   Port WindowSizeParser to xml.sax
+#   (xmllib deprecated since Python 2.0 and not supported in Python 3)
+#
 ###############################################################################
 
-class WindowSizeParser(XMLParser):
+class WindowSizeParserHandler(xml.sax.ContentHandler):
     def __init__(self):
-        XMLParser.__init__(self)
         self.elements = {"Object" : ("<Object>", "</Object>"), "Field" : ("<Field>", "</Field>")}
         self.attributes = {"name" : "", "type" : None, "length" : 0}
 
@@ -474,7 +482,7 @@ class WindowSizeParser(XMLParser):
         self.objectNames = []
         self.dataAtts = None
 
-    def handle_starttag(self, tag, method, attributes):
+    def startElement(self, tag, method, attributes):
         if tag == "Object":
             if "name" in list(attributes.keys()):
                 name = attributes["name"]
@@ -485,7 +493,7 @@ class WindowSizeParser(XMLParser):
             self.readingField = 1
             self.dataAtts = attributes
 
-    def handle_endtag(self, tag, method):
+    def endElement(self, tag):
         if tag == "Object":
             name = self.objectNames[-1]
             if name == "ViewerWindowManager":
@@ -494,7 +502,7 @@ class WindowSizeParser(XMLParser):
         elif tag == "Field":
             self.readingField = 0
 
-    def handle_data(self, data):
+    def charaters(self, data):
         def not_all_spaces(s):
             space = ""
             for i in range(len(s)):
@@ -525,6 +533,204 @@ class WindowSizeParser(XMLParser):
                                except ValueError:
                                    continue
                     self.windowSizes = self.windowSizes + [value[:2]]
+
+
+###############################################################################
+# Class: EngineAttributesParser
+#
+# Purpose:    This class parses session files for MachineProfiles in the
+#             "RunningEngines" node so we can extract information about the
+#             compute engines that were running when the session file was
+#             saved.
+#
+# Programmer: Brad Whitlock
+# Date:       Tue Aug 3 16:11:01 PST 2004
+#
+# Modifications:
+#    Jeremy Meredith, Tue Jul 13 13:22:47 EDT 2010
+#    I changed host profiles to be a machine profile + nested launch profile.
+#    During this change I noticed the endtag parsing was making use of the
+#    latest "open tag", which is incorrect since self.dataName wasn't a stack.
+#    I changed it to instead use the explocit booleans we set during starttag,
+#    though a viable alternative would be to make dataName a stack of strings.
+#
+#    Brad Whitlock, Thu Oct 28 11:49:48 PDT 2010
+#    I added code to eliminate leading/trailing quotes from string data to
+#    work around a problem introduced in version 2.1.
+#
+###############################################################################
+#
+# class EngineAttributesParser(XMLParser):
+#     def __init__(self):
+#         XMLParser.__init__(self)
+#         self.elements = {"Object" : ("<Object>", "</Object>"), "Field" : ("<Field>", "</Field>")}
+#         self.attributes = {"name" : "", "type" : None, "length" : 0}
+#
+#         self.readingEngineProperties = 0
+#         self.readingMachineProfile = 0
+#         self.readingLaunchProfile = 0
+#         self.readingField = 0
+#         self.engineProperties = {}
+#         self.allEngineProperties = {}
+#         self.dataName = None
+#         self.dataAtts = None
+#
+#
+#     def handle_starttag(self, tag, method, attributes):
+#         if tag == "Object":
+#             if "name" in list(attributes.keys()):
+#                 self.dataName = attributes["name"]
+#                 if self.dataName == "RunningEngines":
+#                     self.readingEngineProperties = 1
+#                 elif self.dataName == "MachineProfile":
+#                     if self.readingEngineProperties == 1:
+#                         self.readingMachineProfile = 1
+#                 elif self.dataName == "LaunchProfile":
+#                     if self.readingMachineProfile == 1:
+#                         self.readingLaunchProfile = 1
+#         else:
+#             self.readingField = 1
+#             self.dataAtts = attributes
+#
+#
+#     def handle_endtag(self, tag, method):
+#         if tag == "Object":
+#             if self.readingLaunchProfile == 1:
+#                 self.readingLaunchProfile = 0
+#             elif self.readingMachineProfile == 1:
+#                 self.readingMachineProfile = 0
+#                 if "host" in list(self.engineProperties.keys()):
+#                     host = self.engineProperties["host"]
+#                     self.allEngineProperties[host] = self.engineProperties
+#                     #self.engineProperties = {}
+#             elif self.readingEngineProperties == 1:
+#                 self.readingEngineProperties = 0
+#         elif tag == "Field":
+#             self.readingField = 0
+#
+#
+#     def handle_data(self, data):
+#         def not_all_spaces(s):
+#             space = ""
+#             for i in range(len(s)):
+#                 space = space + " "
+#             return s != space
+#         def StripLeadingTrailingQuotes(s):
+#             retval = s
+#             if len(retval) > 0:
+#                 if retval[0] == '"':
+#                     retval = retval[1:]
+#             if len(retval) > 0:
+#                 if retval[-1] == '"':
+#                     retval = retval[:-1]
+#             return retval
+#         if (self.readingEngineProperties == 1 or self.readingMachineProfile)\
+#             and self.readingField == 1 and len(data) > 0:
+#             name = self.dataAtts["name"]
+#             type = self.dataAtts["type"]
+#             value = None
+#             if type == "bool":
+#                 if data == "true":
+#                     value = 1
+#                 else:
+#                     value = 0
+#             elif type == "string":
+#                 value = StripLeadingTrailingQuotes(data)
+#             elif type == "stringVector":
+#                 fragments = data.split("\"")
+#                 value = []
+#                 for s in fragments:
+#                    if len(s) > 0:
+#                        if not_all_spaces(s):
+#                            value = value + [s]
+#             elif type == "int":
+#                 value = int(data)
+#             else:
+#                 print("Unknown type: ", type)
+#                 return
+#             self.engineProperties[name] = value
+
+# ###############################################################################
+# # Class: WindowSizeParser
+# #
+# # Purpose:    This class parses session files for the windowSize field in
+# #             the ViewerWindow and builds a list of [width,height] values.
+# #
+# # Programmer: Brad Whitlock
+# # Date:       Fri Jun 24 10:03:23 PDT 2005
+# #
+# # Modifications:
+# #   Brad Whitlock, Tue Mar 7 15:55:40 PST 2006
+# #   I made it use a new windowImageSize field that contains the size of the
+# #   OpenGL part of the window instead of the windowSize, which is the size of
+# #   the whole window including the decorations and toolbar.
+# #
+# ###############################################################################
+#
+# class WindowSizeParser(XMLParser):
+#     def __init__(self):
+#         XMLParser.__init__(self)
+#         self.elements = {"Object" : ("<Object>", "</Object>"), "Field" : ("<Field>", "</Field>")}
+#         self.attributes = {"name" : "", "type" : None, "length" : 0}
+#
+#         self.readAtts = 0
+#         self.readingField = 0
+#         self.windowSizes = []
+#         self.activeWindow = 0
+#         self.objectNames = []
+#         self.dataAtts = None
+#
+#     def handle_starttag(self, tag, method, attributes):
+#         if tag == "Object":
+#             if "name" in list(attributes.keys()):
+#                 name = attributes["name"]
+#                 self.objectNames = self.objectNames + [name]
+#                 if name == "ViewerWindowManager":
+#                     self.readAtts = 1
+#         else:
+#             self.readingField = 1
+#             self.dataAtts = attributes
+#
+#     def handle_endtag(self, tag, method):
+#         if tag == "Object":
+#             name = self.objectNames[-1]
+#             if name == "ViewerWindowManager":
+#                 self.readAtts = 0
+#             self.objectNames = self.objectNames[:-1]
+#         elif tag == "Field":
+#             self.readingField = 0
+#
+#     def handle_data(self, data):
+#         def not_all_spaces(s):
+#             space = ""
+#             for i in range(len(s)):
+#                 space = space + " "
+#             return s != space
+#         if self.readAtts and self.readingField and len(data) > 0:
+#             name = self.dataAtts["name"]
+#             type = self.dataAtts["type"]
+#             value = []
+#             if name == "activeWindow" and type == "int":
+#                 try:
+#                     self.activeWindow = int(data)
+#                     if self.activeWindow < 0:
+#                         self.activeWindow = 0
+#                 except ValueError:
+#                     return
+#             elif name == "windowImageSize" and type == "intArray":
+#                 length = self.dataAtts["length"]
+#                 if length == "2":
+#                     fragments = data.split(" ")
+#                     value = []
+#                     for s in fragments:
+#                        if len(s) > 0:
+#                            if not_all_spaces(s):
+#                                try:
+#                                    val = int(s)
+#                                    value = value + [val]
+#                                except ValueError:
+#                                    continue
+#                     self.windowSizes = self.windowSizes + [value[:2]]
 
 
 ###############################################################################
@@ -1937,6 +2143,9 @@ class MakeMovie(object):
     #   Something higher up in the session file was choking the parsing so
     #   let's just focus on the RunningEngines section if we can.
     #
+    #   Cyrus Harrison, Tue Jul 14 13:03:06 PDT 2020
+    #   Use xml.sax for Python 3
+    #
     ###########################################################################
 
     def ReadEngineProperties(self, sessionfile):   
@@ -1963,13 +2172,24 @@ class MakeMovie(object):
                     runningEngines = runningEngines + [line]
                     if level <= indent:
                         break
-
             # Parse the running engines section, if present.
-            p = EngineAttributesParser()
+            # p = EngineAttributesParser()
+            # try:
+            #     for line in runningEngines:
+            #         p.feed(line)
+            #     p.close()
+            # New:
+            #
+            # Parse the running engines section, if present.
+            parser = xml.sax.make_parser()
+            ## turn off namepsaces
+            ## parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+            # override the default ContextHandler
+            h = EngineAttributesParserHandler()
+            parser.setContentHandler( h )
             try:
                 for line in runningEngines:
-                    p.feed(line)
-                p.close()
+                  parser.parseString(line)
             except:
                 print()
                 print("ERROR: We could not parse the session file for engine ")
@@ -1980,16 +2200,16 @@ class MakeMovie(object):
             if len(list(p.allEngineProperties.keys())) == 0:
                 # There were no hosts in the engine attributes so add the command
                 # line options for localhost.
-                p.allEngineProperties["localhost"] = self.engineCommandLineProperties
+                h.allEngineProperties["localhost"] = self.engineCommandLineProperties
             else:
                 # Override the EngineAttributesParser's engine attributes
                 # with options that were provided on the command line.
                 for host in list(p.allEngineProperties.keys()):
-                    dest = p.allEngineProperties[host]
+                    dest = h.allEngineProperties[host]
                     for key in list(self.engineCommandLineProperties.keys()):
                         dest[key] = self.engineCommandLineProperties[key]
             
-            return p.allEngineProperties
+            return h.allEngineProperties
         except VisItInterrupt:
             raise
         except:
@@ -2004,20 +2224,34 @@ class MakeMovie(object):
     # Programmer: Brad Whitlock
     # Date:       Fri Jun 24 10:06:24 PDT 2005
     #
+    # Modifications:
+    #   Cyrus Harrison, Tue Jul 14 13:03:06 PDT 2020
+    #   Use xml.sax for Python 3
+    #
     ###########################################################################
 
     def ReadWindowSizes(self, sessionFile):
         try:
-            # Read the file.
-            f = open(sessionFile, "r")
-            lines = f.readlines()
-            f.close()
+            
+            # Parse the running engines section, if present.
+            parser = xml.sax.make_parser()
+            ## turn off namepsaces
+            ## parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+            # override the default ContextHandler
+            h = WindowSizeParserHandler()
+            parser.setContentHandler( h )
+            parser.parse(open(sessionFile, "r"))
 
-            # Parse the file
-            p = WindowSizeParser()
-            for line in lines:
-                p.feed(line)
-            p.close()
+            # # Read the file.
+            # f = open(sessionFile, "r")
+            # lines = f.readlines()
+            # f.close()
+            #
+            # # Parse the file
+            # p = WindowSizeParser()
+            # for line in lines:
+            #     p.feed(line)
+            # p.close()
             
             return (p.activeWindow, p.windowSizes)
         except VisItInterrupt:
