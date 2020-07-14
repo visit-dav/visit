@@ -104,24 +104,21 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
     for (int i = 0; i < nChunks; i++)
     {
         vtkDataSet *d = ds.GetDataset(i, 0);
+        if (d == NULL)
+        {
+            dsExtents[i*6+0] = DBL_MAX;
+            dsExtents[i*6+1] = -DBL_MAX;
+            dsExtents[i*6+2] = DBL_MAX;
+            dsExtents[i*6+3] = -DBL_MAX;
+            dsExtents[i*6+4] = DBL_MAX;
+            dsExtents[i*6+5] = -DBL_MAX;
+            continue;
+        }
         vtkStructuredGrid *sgrid = (vtkStructuredGrid *) d;
         vtkPoints *points = sgrid->GetPoints();
 
         int ndims[3];
         sgrid->GetDimensions(ndims);
-
-        int zdims[3];
-        zdims[0] = ndims[0] - 1;
-        zdims[1] = ndims[1] - 1;
-        zdims[2] = ndims[2] - 1;
-
-        int nx = ndims[0];
-        int ny = ndims[1];
-        int nxy = nx * ny;
-
-        int nx2 = zdims[0];
-        int ny2 = zdims[1];
-        int nxy2 = nx2 * ny2;
 
         int nxyz = ndims[0] * ndims[1] * ndims[2];
         double coord[3];
@@ -175,6 +172,13 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
     for (int i = 0; i < nChunks; i++)
     {
         vtkDataSet *d = ds.GetDataset(i, 0);
+        if (d == NULL)
+        {
+            nFaces[i] = 0;
+            faceExternal[i] = new bool[0];
+            faceExtents[i] = new double[0];
+            continue;
+        }
         vtkStructuredGrid *sgrid = (vtkStructuredGrid *) d;
         vtkPoints *points = sgrid->GetPoints();
 
@@ -529,8 +533,11 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
     for (int i = 0; i < nChunks; i++)
     {
         vtkDataSet *d = ds.GetDataset(i, 0);
+        if (d == NULL)
+        {
+            continue;
+        }
         vtkStructuredGrid *sgrid = (vtkStructuredGrid *) d;
-        vtkPoints *points = sgrid->GetPoints();
 
         int ndims[3];
         sgrid->GetDimensions(ndims);
@@ -688,10 +695,14 @@ avtGhostNodeGenerator::IsValid(avtDatasetCollection &ds)
     // number of faces to consider is less than 20 million.
     //
     int valid = 1;
-    long long nFaces;
+    long long nFaces = 0;
     for (int i = 0; i < nChunks; i++)
     {
         vtkDataSet *d = ds.GetDataset(i, 0);
+        if (d == NULL)
+        {
+            continue;
+        }
         if (d->GetDataObjectType() != VTK_STRUCTURED_GRID)
         {
             valid = 0;
@@ -734,6 +745,8 @@ avtGhostNodeGenerator::IsValid(avtDatasetCollection &ds)
                   "faces to consider is greater than 20 million." << endl;
         return false;
     }
+
+    debug1 << "Performing ghost node creation." << endl;
 
     return true;
 }
