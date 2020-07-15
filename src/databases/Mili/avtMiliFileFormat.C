@@ -2638,7 +2638,6 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 {
     std::string derivedNodePath = "Derived/node";
 
-
     //
     // First, check if node displacement exists. If not, add it now.
     //
