@@ -2451,7 +2451,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                      idxItr != compIdxs.end(); ++idxItr)
                 {
                     //
-                    // Add the x, y, z expressions. 
+                    // Add the dimensional expressions. 
                     //
                     char name[1024];
                     snprintf(name, 1024, "%s/%s", mPath.c_str(), 
