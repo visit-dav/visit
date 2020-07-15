@@ -13,8 +13,8 @@
 #  Modifications:
 #
 #    Alister Maguire, Mon Aug  5 13:02:05 MST 2019
-#    Added a test that handles .mili files containing integers in 
-#    scientific notation. 
+#    Added a test that handles .mili files containing integers in
+#    scientific notation.
 #
 #    Alister Maguire, Thu Dec 19 13:40:07 PST 2019
 #    Added a test to make sure correct subrecord offsets are used.
@@ -34,16 +34,16 @@ def TestComponentVis():
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
     SetTimeSliderState(90)
-    
+
     AddPlot("Pseudocolor", "Primal/Shared/edrate")
     DrawPlots()
     Test("mili_brick_comp")
-    
+
     ChangeActivePlotsVar("Primal/beam/svec/svec_x")
     Test("mili_beam_comp")
     ChangeActivePlotsVar("Primal/node/nodacc/ax")
     Test("mili_nodacc_comp")
-    
+
     DeleteAllPlots()
 
 
@@ -74,10 +74,10 @@ def TestNonSharedElementSets():
     SetView3D(v)
     SetTimeSliderState(90)
 
-    # 
-    #  eps is a section of an element set that is only 
-    #  defined on beams. 
-    # 
+    #
+    #  eps is a section of an element set that is only
+    #  defined on beams.
+    #
     AddPlot("Pseudocolor", "Primal/beam/eps")
     DrawPlots()
     Test("mili_non_shared_es_01")
@@ -128,10 +128,10 @@ def TestVectors():
     AddPlot("Vector", "Primal/node/nodpos")
     DrawPlots()
     Test("mili_vectors_01")
-    
+
     ChangeActivePlotsVar("Primal/shell/bend")
     Test("mili_vectors_02")
-    
+
     ChangeActivePlotsVar("Primal/beam/svec")
     Test("mili_vectors_03")
     DeleteAllPlots()
@@ -144,19 +144,19 @@ def TestSandMesh():
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
     SetTimeSliderState(101)
-    
-    # 
-    # First, let's look at the sand variable on a non-sanded mesh. 
-    # It should be well structured. 
-    # 
+
+    #
+    # First, let's look at the sand variable on a non-sanded mesh.
+    # It should be well structured.
+    #
     AddPlot("Mesh", "mesh1")
     AddPlot("Pseudocolor", "Primal/Shared/sand")
     DrawPlots()
     Test("mili_sand_mesh_01")
     DeleteAllPlots()
-    
+
     #
-    # Now let's view the sand mesh. It's a mess. 
+    # Now let's view the sand mesh. It's a mess.
     #
     AddPlot("Mesh", "sand_mesh1")
     AddPlot("Pseudocolor", "Primal/Shared/sand")
@@ -164,19 +164,19 @@ def TestSandMesh():
     Test("mili_sand_mesh_02")
 
     #
-    # Now let's look at sand in its sanded state. 
+    # Now let's look at sand in its sanded state.
     #
     ChangeActivePlotsVar("sand_mesh/Primal/Shared/sand")
     DrawPlots()
     Test("mili_sand_mesh_03")
 
     #
-    # We need to make sure that other variables can also be 
-    # viewed in their sanded state. 
+    # We need to make sure that other variables can also be
+    # viewed in their sanded state.
     #
     ChangeActivePlotsVar("sand_mesh/Primal/shell/stress_mid/sx")
     Test("mili_sand_mesh_04")
-    
+
     DeleteAllPlots()
 
 
@@ -187,7 +187,7 @@ def TestMaterials():
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
     SetTimeSliderState(70)
-    
+
     AddPlot("FilledBoundary", "materials1(mesh1)")
     DrawPlots()
     Test("mili_materials_00")
@@ -246,7 +246,7 @@ def TestLabels():
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
     SetTimeSliderState(90)
-    
+
     AddPlot("Pseudocolor", "Primal/Shared/edrate")
     AddPlot("Label", "OriginalZoneLabels")
     DrawPlots()
@@ -264,14 +264,14 @@ def TestLabels():
 def TestSciNotation():
     TestSection("Sci notation read")
     #
-    # Some .mili files contain integers in scientific notation. 
-    # These need to be handled appropriately. 
+    # Some .mili files contain integers in scientific notation.
+    # These need to be handled appropriately.
     #
     OpenDatabase(single_domain_path + "/HexModel1.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
-    
+
     AddPlot("Pseudocolor", "Primal/brick/stress/sx")
     DrawPlots()
     Test("mili_from_sci_not")
@@ -326,7 +326,7 @@ def TestDerivedVariables():
 
 
 def Main():
-    TestComponentVis()    
+    TestComponentVis()
     TestNonSharedElementSets()
     TestSharedElementSets()
     TestMaterialVar()
