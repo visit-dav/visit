@@ -235,9 +235,15 @@ avtRemapFilter::Execute(void)
     }
 
 #ifdef PARALLEL
+
     int size = vars->GetNumberOfTuples();
     double *vars_double = (double*) vars->GetVoidPointer(0);
-    CollectSum(vars_double, size);
+    double *new_buff = new double[size];
+    SumDoubleArrayAcrossAllProcessors(vars_double, new_buff, size);
+    for (int i = 0; i < size; ++i)
+    {
+        vars_double[i] = new_buff[i];
+    }
 
     // if (PAR_Rank() == 0)
     // {

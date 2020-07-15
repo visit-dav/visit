@@ -35,7 +35,6 @@ PIPELINE_API void    PullInMPI_IOSymbols();
 PIPELINE_API void    Barrier(void);
 PIPELINE_API bool    Collect(float *, int);
 PIPELINE_API bool    Collect(double *, int);
-PIPELINE_API bool    CollectSum(double *, int);
 PIPELINE_API bool    Collect(int *, int);
 PIPELINE_API void    SumIntAcrossAllProcessors(int&);
 PIPELINE_API void    SumLongAcrossAllProcessors(long&);

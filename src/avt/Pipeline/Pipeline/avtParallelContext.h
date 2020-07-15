@@ -102,7 +102,6 @@ public:
     void    Barrier(void);
     bool    Collect(float *, int);
     bool    Collect(double *, int);
-    bool    CollectSum(double *, int);
     bool    Collect(int *, int);
     void    SumIntAcrossAllProcessors(int&);
     void    SumLongAcrossAllProcessors(long&);
