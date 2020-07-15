@@ -2614,6 +2614,77 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 
 
 // ****************************************************************************
+//  Method:  avtMiliFileFormat::AddMiliDerivedVariables
+//
+//  Purpose:
+//      Adds a number of derived variables as expressions.
+//
+//  Arguments:
+//    md          A pointer to the atDatabaseMetaData.
+//    meshId      The id of the mesh to add the derived variables to.
+//    meshName    The name of the mesh to add the derived variables to.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    July 15, 2020
+//
+//  Modifications
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
+                                           const int meshId,
+                                           const std::string meshName)
+{
+    std::string derivedNodePath = "Derived/node";
+
+
+    //
+    // First, check if node displacement exists. If not, add it now.
+    //
+    MiliVariableMetaData *noddisp = miliMetaData[meshId]->
+        GetVarMDByShortName("noddisp", "node");
+
+    if (noddisp == NULL)
+    {
+        //
+        // Node displacement is the difference between the node positions
+        // at the current time step and some previous time step.
+        // For now, we only allow comparison to the first time step.
+        //
+        Expression  initialMeshCoords;
+        std::string initMeshCoordsName = derivedNodePath + "/init_mesh_coords";
+        initialMeshCoords.SetName(initMeshCoordsName);
+        initialMeshCoords.SetDefinition
+            ("conn_cmfe(coord(<[0]i:" + meshName + ">)," + meshName + ")");
+        initialMeshCoords.SetType(Expression::VectorMeshVar);
+        initialMeshCoords.SetHidden(true);
+        md->AddExpression(&initialMeshCoords);
+
+        Expression nodeDisp;
+        std::string nodeDispName = derivedNodePath + "/displacement";
+        nodeDisp.SetName(nodeDispName);
+        nodeDisp.SetDefinition(
+           "displacement(" + meshName + ",<" + initMeshCoordsName + ">)");
+        nodeDisp.SetType(Expression::VectorMeshVar);
+        md->AddExpression(&nodeDisp);
+
+        std::string dimDispNames[] = {"dispx", "dispy", "dispz"};
+        for (int d = 0; d < dims; ++d)
+        {
+            char name[1024];
+            snprintf(name, 1024, "%s/%s", nodeDispName.c_str(),
+                dimDispNames[d].c_str());
+            Expression expr = ScalarExpressionFromVec(nodeDispName.c_str(),
+                                                      name,
+                                                      d);
+            md->AddExpression(&expr);
+        }
+    }
+}
+
+
+// ****************************************************************************
 //  Method:  avtMiliFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
@@ -2865,7 +2936,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 }
             }
         }
-        //TODO: add derived types when given the OK.
+        AddMiliDerivedVariables(md, meshId, std::string(meshName));
     }
 
     //
@@ -3989,6 +4060,7 @@ avtMiliFileFormat::CreateGenericExpression(const char *name,
 //  Arguments:
 //      vecPath      The vector's path in the visit menu.
 //      scalarPath   The new path to use for the scalar.
+//      dim          The dimension of the vector to use for this variable.
 //
 //  Author: Alister Maguire
 //  Date:   April 9, 2019

@@ -53,6 +53,9 @@ typedef std::unordered_map<string, int> StrToIntMap;
 //
 //  Modifications:
 //
+//    Alister Maguire, Wed Jul 15 13:16:38 PDT 2020
+//    Added AddMiliDerivedVariables.
+//
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
@@ -145,6 +148,10 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                                     avtCentering,
                                                     const intVector &,
                                                     const stringVector &);
+
+    void                  AddMiliDerivedVariables(avtDatabaseMetaData *,
+                                                  const int,
+                                                  const std::string);
 
     //
     // Json extraction methods.
