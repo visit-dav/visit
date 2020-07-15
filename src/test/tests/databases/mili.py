@@ -19,12 +19,16 @@
 #    Alister Maguire, Thu Dec 19 13:40:07 PST 2019
 #    Added a test to make sure correct subrecord offsets are used.
 #
+#    Alister Maguire, Wed Jul 15 13:38:17 PDT 2020
+#    Added test sections and derived variable test.
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Mili")
 single_domain_path = data_path("mili_test_data/single_proc/")
 multi_domain_path  = data_path("mili_test_data/multi_proc/")
 
 def TestComponentVis():
+    TestSection("Vector components")
     OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
@@ -44,6 +48,7 @@ def TestComponentVis():
 
 
 def TestSharedElementSets():
+    TestSection("Shared element sets")
     OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
@@ -62,6 +67,7 @@ def TestSharedElementSets():
 
 
 def TestNonSharedElementSets():
+    TestSection("Non-shared element sets")
     OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
@@ -79,6 +85,7 @@ def TestNonSharedElementSets():
 
 
 def TestMaterialVar():
+    TestSection("Material variables")
     OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
@@ -94,6 +101,7 @@ def TestMaterialVar():
 
 
 def TestTensors():
+    TestSection("Tensors")
     OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
@@ -110,6 +118,7 @@ def TestTensors():
 
 
 def TestVectors():
+    TestSection("Vectors")
     OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
@@ -129,6 +138,7 @@ def TestVectors():
 
 
 def TestSandMesh():
+    TestSection("Sand mesh")
     OpenDatabase(single_domain_path + "/m_plot.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
@@ -171,6 +181,7 @@ def TestSandMesh():
 
 
 def TestMaterials():
+    TestSection("Materials")
     OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
@@ -184,6 +195,7 @@ def TestMaterials():
 
 
 def TestMultiDomain():
+    TestSection("Multi-domain")
     OpenDatabase(multi_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
@@ -200,6 +212,7 @@ def TestMultiDomain():
 
 
 def TestParticles():
+    TestSection("Particles")
     OpenDatabase(single_domain_path + "/sslide14ball_l.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
@@ -212,6 +225,7 @@ def TestParticles():
 
 
 def TestStaticNodes():
+    TestSection("Static nodes")
     OpenDatabase(single_domain_path + "/m1_plot.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
@@ -226,6 +240,7 @@ def TestStaticNodes():
 
 
 def TestLabels():
+    TestSection("Labels")
     OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
@@ -247,6 +262,7 @@ def TestLabels():
 
 
 def TestSciNotation():
+    TestSection("Sci notation read")
     #
     # Some .mili files contain integers in scientific notation. 
     # These need to be handled appropriately. 
@@ -263,6 +279,7 @@ def TestSciNotation():
 
 
 def TestMultiSubrecRead():
+    TestSection("Multi-subrecord read")
     #
     # This tests a bug fix that occurred when loading variables
     # that span several subrecords at different offsets.
@@ -275,6 +292,36 @@ def TestMultiSubrecRead():
     AddPlot("Pseudocolor", "Primal/brick/stress/sx")
     DrawPlots()
     Test("mili_subrec_offset")
+    DeleteAllPlots()
+
+
+def TestDerivedVariables():
+    TestSection("Derived variables")
+    OpenDatabase(single_domain_path + "/m_plot.mili")
+    v = GetView3D()
+    v.viewNormal = (0.49, 0.19, 0.85)
+    SetView3D(v)
+
+    SetTimeSliderState(85)
+
+    AddPlot("Pseudocolor", "Derived/node/displacement/dispx")
+    DrawPlots()
+    Test("mili_derived_00")
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor", "Derived/node/displacement/dispy")
+    DrawPlots()
+    Test("mili_derived_01")
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor", "Derived/node/displacement/dispz")
+    DrawPlots()
+    Test("mili_derived_02")
+    DeleteAllPlots()
+
+    AddPlot("Vector", "Derived/node/displacement")
+    DrawPlots()
+    Test("mili_derived_03")
     DeleteAllPlots()
 
 
@@ -293,6 +340,7 @@ def Main():
     TestLabels()
     TestSciNotation()
     TestMultiSubrecRead()
+    TestDerivedVariables()
 
 Main()
 Exit()
