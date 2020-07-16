@@ -244,14 +244,6 @@ avtRemapFilter::Execute(void)
     {
         vars_double[i] = new_buff[i];
     }
-
-    // if (PAR_Rank() == 0)
-    // {
-    //     for (int i = 0; i < size; ++i) 
-    //     {
-    //         std::cout << i << ": " << vars_double[i] << ", " << vars->GetComponent(i, 0) << std::endl;
-    //     }
-    // }
 #endif
     
     SetOutputDataTree(new avtDataTree(rg, 0));
@@ -765,7 +757,8 @@ avtRemapFilter::GetBounds()
             GetSpatialExtents(rGridBounds);
         }
     }
-    if (fabs(rGridBounds[4]) < 1e-100 && fabs(rGridBounds[5]) < 1e-100)
+    if ((fabs(rGridBounds[4]) < 1e-100 && fabs(rGridBounds[5]) < 1e-100) ||
+        (rGridBounds[4] == +__DBL_MAX__ && rGridBounds[5] == -__DBL_MAX__))
     {
         debug5 << "2D Remapping" << std::endl;
         is3D = false;
