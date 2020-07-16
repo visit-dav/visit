@@ -21,11 +21,10 @@
 #include <avtExtents.h>
 #include <avtDataAttributes.h>
 #include <avtDataTree.h>
+#include <avtParallel.h>
 #include <vtkVisItClipper.h>
 
 #include <DebugStream.h>
-
-#include <avtParallel.h>
 
 
 // ****************************************************************************
@@ -134,6 +133,10 @@ avtRemapFilter::Equivalent(const AttributeGroup *a)
 //      Eddie Rusu, Tue Jul 14 10:04:57 PDT 2020
 //      Execute uses GetAllLeaves() instead of recursive traverse domain.
 //
+//  Modifications:
+//      Eddie Rusu, Thu Jul 16 11:09:52 PDT 2020
+//      Added parallel support.
+//
 // ****************************************************************************
 
 void
@@ -235,7 +238,6 @@ avtRemapFilter::Execute(void)
     }
 
 #ifdef PARALLEL
-
     int size = vars->GetNumberOfTuples();
     double *vars_double = (double*) vars->GetVoidPointer(0);
     double *new_buff = new double[size];
@@ -727,6 +729,13 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
 //
 //  Programmer: rusu1
 //  Creation:   Wed Apr  3 13:52:34 PDT 2019
+//
+//  Modifications:
+//      Eddie Rusu, Thu Jul 16 11:09:52 PDT 2020
+//      GetSpatialExtents uses +-DBL_MAX as initial placeholders while looking
+//      for the extents. If they are not found then the rGridBounds will contain
+//      +-DBL_MAX as inputs. So I check for this to ensure 3D determination is
+//      correct.
 //
 // ****************************************************************************
 void

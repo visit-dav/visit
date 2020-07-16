@@ -32,7 +32,9 @@
 //
 //  Modifications:
 //    Eddie Rusu, Tue Jul 14 13:01:44 PDT 2020
-//    Inherit from avtPluginDatasetToDatasetFilter
+//    Inherit from avtPluginDatasetToDatasetFilter. Removed no longer needed
+//    TraverseDomainTree. ClipDomain receives the vtkDataSet directly instead
+//    of the leaf.
 //
 // ****************************************************************************
 
