@@ -246,6 +246,7 @@ avtRemapFilter::Execute(void)
     {
         vars_double[i] = new_buff[i];
     }
+    delete [] new_buff;
 #endif
     
     SetOutputDataTree(new avtDataTree(rg, 0));
