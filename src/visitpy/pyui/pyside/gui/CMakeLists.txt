@@ -11,19 +11,27 @@
 #    Kathleen Biagas, Tue Jan 24 11:06:12 PST 2017
 #    Add support for Qt5.
 #
+#    Kathleen Biagas, Tue Jun 30 13:19:18 PDT 2020
+#    Update for pyside2-qt-5.14.2.
+#
 #*****************************************************************************
+get_property(QT_CORE_INCLUDE_DIRS TARGET Qt5::Core PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+get_property(QT_GUI_INCLUDE_DIRS TARGET Qt5::Gui PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+get_property(QT_OPENGL_INCLUDE_DIRS TARGET Qt5::OpenGL PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+get_property(QT_WIDGETS_INCLUDE_DIRS TARGET Qt5::Widgets PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 
 set(pyside_gui_include_paths
-    ${CMAKE_CURRENT_SOURCE_DIR}
     ${SHIBOKEN_INCLUDE_DIR}
-    ${SHIBOKEN_PYTHON_INCLUDE_DIR}
-    ${PYSIDE_INCLUDE_DIR}
-    ${pyside_qt_includes}
     ${PYSIDE_INCLUDE_DIR}
     ${PYSIDE_INCLUDE_DIR}/QtCore
     ${PYSIDE_INCLUDE_DIR}/QtGui
     ${PYSIDE_INCLUDE_DIR}/QtOpenGL
     ${PYSIDE_INCLUDE_DIR}/QtWidgets
+    ${QT_CORE_INCLUDE_DIRS}
+    ${QT_GUI_INCLUDE_DIRS}
+    ${QT_OPENGL_INCLUDE_DIRS}
+    ${QT_WIDGETS_INCLUDE_DIRS}
+    ${VISIT_BINARY_DIR}/include
     ${VISIT_SOURCE_DIR}/gui/
     ${VISIT_SOURCE_DIR}/gui/main
     ${VISIT_SOURCE_DIR}/viewer/subjectproxy
