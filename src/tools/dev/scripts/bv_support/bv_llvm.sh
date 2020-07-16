@@ -25,7 +25,7 @@ function bv_llvm_depends_on
 
 function bv_llvm_info
 {
-    export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"5.0.0"}
+    export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"6.0.1"}
     export BV_LLVM_FILE=${BV_LLVM_FILE:-"llvm-${BV_LLVM_VERSION}.src.tar.xz"}
     export BV_LLVM_URL=${BV_LLVM_URL:-"http://releases.llvm.org/${BV_LLVM_VERSION}/"}
     export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
@@ -101,88 +101,7 @@ function bv_llvm_dry_run
 
 function apply_llvm_patch
 {
-    # fixes a bug in LLVM 5.0.0
-    # where if the LLVM_BUILD_LLVM_DYLIB CMake var is set to ON,
-    # CMake will fail when checking an internal variable that is empty
-    # patch based on https://reviews.llvm.org/D31445
-
-    patch -p0 << \EOF
-*** tools/llvm-shlib/CMakeLists.txt.original     2018-06-14 16:16:13.185286160 -0500
---- tools/llvm-shlib/CMakeLists.txt      2018-06-14 16:16:59.773283611 -0500
-***************
-*** 36,42 ****
-
-  add_llvm_library(LLVM SHARED DISABLE_LLVM_LINK_LLVM_DYLIB SONAME ${SOURCES})
-
-! list(REMOVE_DUPLICATES LIB_NAMES)
-  if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR (MINGW) OR (HAIKU) OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")) # FIXME: It should be "GNU ld for elf"
-    configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/simple_version_script.map.in
---- 36,44 ----
-
-  add_llvm_library(LLVM SHARED DISABLE_LLVM_LINK_LLVM_DYLIB SONAME ${SOURCES})
-
-! if(LIB_NAMES)
-!     list(REMOVE_DUPLICATES LIB_NAMES)
-! endif()
-  if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR (MINGW) OR (HAIKU) OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")) # FIXME: It should be "GNU ld for elf"
-    configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/simple_version_script.map.in
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "llvm patch for tools/llvm-shlib/CMakeLists.txt failed"
-        return 1
-    fi
-
-    # fixes a bug in LLVM 5.0.0
-    # a vector<char> is cast to a vector<unsigned char>. This patch comes
-    # from http://lists.busybox.net/pipermail/buildroot/2018-May/221648.html
-    # This is presumably fixed in LLVM 6.0.0.
-
-    patch -p0 << \EOF
---- include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h.orig	2019-07-26 13:23:06.588925000 -0700
-+++ include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h	2019-07-26 13:23:53.990216000 -0700
-@@ -713,8 +713,8 @@
- 
-   uint32_t getTrampolineSize() const { return RemoteTrampolineSize; }
- 
--  Expected<std::vector<char>> readMem(char *Dst, JITTargetAddress Src,
--                                      uint64_t Size) {
-+  Expected<std::vector<uint8_t>> readMem(char *Dst, JITTargetAddress Src,
-+                                         uint64_t Size) {
-     // Check for an 'out-of-band' error, e.g. from an MM destructor.
-     if (ExistingError)
-       return std::move(ExistingError);
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "llvm patch for include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h failed"
-        return 1
-    fi
-
-    # fixes a bug in LLVM 5.0.0
-    # where a static_assert fails with icc 19.0.4.227. This patch removes
-    # the static_assert since it isn't critical for it to run.
-
-    patch -p0 << \EOF
-diff -c lib/IR/Attributes.cpp.orig lib/IR/Attributes.cpp
-*** lib/IR/Attributes.cpp.orig	Fri Nov 22 12:13:23 2019
---- lib/IR/Attributes.cpp	Fri Nov 22 12:13:45 2019
-***************
-*** 810,817 ****
-    static_assert(Attribute::EndAttrKinds <=
-                      sizeof(AvailableFunctionAttrs) * CHAR_BIT,
-                  "Too many attributes");
--   static_assert(attrIdxToArrayIdx(AttributeList::FunctionIndex) == 0U,
--                 "function should be stored in slot 0");
-    for (Attribute I : Sets[0]) {
-      if (!I.isStringAttribute())
-        AvailableFunctionAttrs |= 1ULL << I.getKindAsEnum();
---- 810,815 ----
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "llvm patch for lib/IR/Attributes.cpp failed"
-        return 1
-    fi
+    info "Currently no patches for llvm"
 }
 
 function build_llvm

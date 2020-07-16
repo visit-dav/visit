@@ -21,12 +21,12 @@ function bv_mesagl_depends_on
 
 function bv_mesagl_info
 {
-    export MESAGL_VERSION=${MESAGL_VERSION:-"17.2.8"}
-    export MESAGL_FILE=${MESAGL_FILE:-"mesa-$MESAGL_VERSION.tar.gz"}
-    export MESAGL_URL=${MESAGL_URL:-"https://mesa.freedesktop.org/archive/"}
+    export MESAGL_VERSION=${MESAGL_VERSION:-"17.3.9"}
+    export MESAGL_FILE=${MESAGL_FILE:-"mesa-$MESAGL_VERSION.tar.xz"}
+    export MESAGL_URL=${MESAGL_URL:-"https://archive.mesa3d.org/older-versions/17.x/"}
     export MESAGL_BUILD_DIR=${MESAGL_BUILD_DIR:-"mesa-$MESAGL_VERSION"}
-    export MESAGL_MD5_CHECKSUM="19832be1bc5784fc7bbad4d138537619"
-    export MESAGL_SHA256_CHECKSUM="c715c3a3d6fe26a69c096f573ec416e038a548f0405e3befedd5136517527a84"
+    #export MESAGL_MD5_CHECKSUM="19832be1bc5784fc7bbad4d138537619"
+    #export MESAGL_SHA256_CHECKSUM="c715c3a3d6fe26a69c096f573ec416e038a548f0405e3befedd5136517527a84"
 }
 
 function bv_mesagl_print
@@ -110,69 +110,30 @@ function apply_mesagl_patch
 {
     patch -p0 << \EOF
 diff -c configure.ac.orig configure.ac
-*** configure.ac.orig	Thu Oct 10 15:44:18 2019
---- configure.ac	Thu Oct 10 15:44:26 2019
+*** configure.ac.orig   Mon Jul 13 09:47:20 2020
+--- configure.ac        Mon Jul 13 09:50:37 2020
 ***************
-*** 2690,2696 ****
+*** 2653,2659 ****
+      dnl ourselves.
       dnl (See https://llvm.org/bugs/show_bug.cgi?id=6823)
-      if test "x$enable_llvm_shared_libs" = xyes; then
-          dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
-!         LLVM_SO_NAME=LLVM-`$LLVM_CONFIG --version`
-          AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
-  
-          if test "x$llvm_have_one_so" = xyes; then
---- 2690,2696 ----
+      dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
+!     LLVM_SO_NAME=LLVM-`$LLVM_CONFIG --version`
+      AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
+
+      if test "x$llvm_have_one_so" = xyes; then
+--- 2653,2659 ----
+      dnl ourselves.
       dnl (See https://llvm.org/bugs/show_bug.cgi?id=6823)
-      if test "x$enable_llvm_shared_libs" = xyes; then
-          dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
-!         LLVM_SO_NAME=LLVM-$LLVM_VERSION
-          AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
-  
-          if test "x$llvm_have_one_so" = xyes; then
+      dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
+!     LLVM_SO_NAME=LLVM-$LLVM_VERSION
+      AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
+
+      if test "x$llvm_have_one_so" = xyes; then
 EOF
     if [[ $? != 0 ]] ; then
         warn "MesaGL patch 1 failed."
         return 1
     fi
-
-    patch -p0 << \EOF
-diff -c src/gallium/winsys/sw/xlib/xlib_sw_winsys.c.orig src/gallium/winsys/sw/xlib/xlib_sw_winsys.c
-*** src/gallium/winsys/sw/xlib/xlib_sw_winsys.c.orig	Fri Jan 31 12:07:54 2020
---- src/gallium/winsys/sw/xlib/xlib_sw_winsys.c	Fri Jan 31 12:09:24 2020
-***************
-*** 396,401 ****
---- 396,402 ----
-  {
-     struct xlib_displaytarget *xlib_dt;
-     unsigned nblocksy, size;
-+    int ignore;
-  
-     xlib_dt = CALLOC_STRUCT(xlib_displaytarget);
-     if (!xlib_dt)
-***************
-*** 410,416 ****
-     xlib_dt->stride = align(util_format_get_stride(format, width), alignment);
-     size = xlib_dt->stride * nblocksy;
-  
-!    if (!debug_get_option_xlib_no_shm()) {
-        xlib_dt->data = alloc_shm(xlib_dt, size);
-        if (xlib_dt->data) {
-           xlib_dt->shm = True;
---- 411,418 ----
-     xlib_dt->stride = align(util_format_get_stride(format, width), alignment);
-     size = xlib_dt->stride * nblocksy;
-  
-!    if (!debug_get_option_xlib_no_shm() &&
-!        XQueryExtension(xlib_dt->display, "MIT-SHM", &ignore, &ignore, &ignore)) {
-        xlib_dt->data = alloc_shm(xlib_dt, size);
-        if (xlib_dt->data) {
-           xlib_dt->shm = True;
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "MesaGL patch 2 failed."
-        return 1
-    fi
-
     return 0;
 }
 
@@ -243,6 +204,7 @@ function build_mesagl
         --enable-llvm \
         --with-gallium-drivers=${MESAGL_GALLIUM_DRIVERS} \
         --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
+        --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
@@ -264,6 +226,7 @@ function build_mesagl
         --enable-llvm \
         --with-gallium-drivers=${MESAGL_GALLIUM_DRIVERS} \
         --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
+        --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
 
     if [[ $? != 0 ]] ; then

@@ -107,9 +107,11 @@ function bv_qt_info
     bv_qt_enable
 
     export QT_VERSION=${QT_VERSION:-"5.14.2"}
+    export QT_SHORT_VERSION=${QT_SHORT_VERSION:-"5.14"}
     export QT_FILE=${QT_FILE:-"qt-everywhere-src-${QT_VERSION}.tar.xz"}
     export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
     export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_BUILD_DIR}/bin"}
+    export QT_URL=${QT_URL:-"http://download.qt.io/archive/qt/${QT_SHORT_VERSION}/${QT_VERSION}/single/"}
     #export QT_MD5_CHECKSUM="7e167b9617e7bd64012daaacb85477af"
     #export QT_SHA256_CHECKSUM="05ffba7b811b854ed558abf2be2ddbd3bb6ddd0b60ea4b5da75d277ac15e740a"
 }
@@ -156,7 +158,7 @@ function bv_qt_host_profile
 function bv_qt_ensure
 {
     if [[ "$DO_QT" == "yes"  && "$USE_SYSTEM_QT" == "no" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
-        ensure_built_or_ready "qt"     $QT_VERSION    $QT_BUILD_DIR    $QT_FILE
+        ensure_built_or_ready "qt"     $QT_VERSION    $QT_BUILD_DIR    $QT_FILE    $QT_URL
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -510,11 +512,11 @@ function build_qt
     qt_flags="${qt_flags} -no-libjpeg"
     qt_flags="${qt_flags} -opensource"
     qt_flags="${qt_flags} -confirm-license"
-    qt_flags="${qt_flags} -c++std c++11"
 
     QT_VER_MSG="Qt5"
     qt_flags="${qt_flags} -skip 3d"
     qt_flags="${qt_flags} -skip activeqt"
+    qt_flags="${qt_flags} -skip androidextras"
     qt_flags="${qt_flags} -skip charts"
     qt_flags="${qt_flags} -skip connectivity"
     qt_flags="${qt_flags} -skip datavis3d"
@@ -541,13 +543,14 @@ function build_qt
     qt_flags="${qt_flags} -no-qml-debug"
     qt_flags="${qt_flags} -qt-zlib"
     qt_flags="${qt_flags} -qt-libpng"
-    qt_flags="${qt_flags} -no-debug-and-release"
 
     if [[ "$OPSYS" == "Linux" ]] ; then
         qt_flags="${qt_flags} -qt-xcb --xkbcommon=yes"
     fi
 
-    if [[ "$VISIT_BUILD_MODE" == "Debug" ]] ; then
+    if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
+        qt_flags="${qt_flags} -release"
+    else
         qt_flags="${qt_flags} -debug"
     fi
 
