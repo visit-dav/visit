@@ -3462,7 +3462,7 @@ avtDatabaseMetaData::VarIsCompound(const std::string &v) const
         }
     }
 
-    return true;
+    return false;
 }
 
 Function: ParseCompoundForVar
