@@ -117,7 +117,7 @@ avtsw4imgFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mmd->name = "Curvilinear grid";
     }
 
-    mmd->spatialDimension = 3; // should this be 2 or 3? It is 3 in the wpp image reader
+    mmd->spatialDimension = 3;
     mmd->topologicalDimension = 3;
 
     mmd->numBlocks = m_nblocks;
@@ -140,11 +140,10 @@ avtsw4imgFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         debug4 << "SW4> " << "Block = " << b << endl;
         debug4 << "SW4> " << "grid size = " << m_gridsize[b] << endl;
-        debug4 << "SW4> " << "no of pts = " << m_ni[b] << " " << m_nj[b] << " " << m_nk[b] << endl;
+        debug4 << "SW4> " << "no of pts = " << m_ni[b] << " " << m_nj[b]
+               << " " << m_nk[b] << endl;
         char buf[50];
         snprintf(buf,50,"block=%i, h=%f", b, m_gridsize[b]);
-//        string bname= buf;
-//        mmd->blockNames[b] = bname;
         mmd->blockNames[b] = buf;
     }
     md->Add(mmd);
@@ -153,113 +152,12 @@ avtsw4imgFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Scalar variable information
     avtScalarMetaData *smd1 = new avtScalarMetaData;
     smd1->name = m_mode;
-// copy the mesh name from above
+    // copy the mesh name from above
     smd1->meshName = mmd->name;
     smd1->centering = AVT_NODECENT;
     smd1->hasUnits = false;
     md->Add(smd1);
     debug4 << "SW4> " << "Populatedatabase done " << endl;
-    //
-    // CODE TO ADD A MESH
-    //
-    // string meshname = ...
-    //
-    // AVT_RECTILINEAR_MESH, AVT_CURVILINEAR_MESH, AVT_UNSTRUCTURED_MESH,
-    // AVT_POINT_MESH, AVT_SURFACE_MESH, AVT_UNKNOWN_MESH
-    // avtMeshType mt = AVT_RECTILINEAR_MESH;
-    //
-    // int nblocks = YOU_MUST_DECIDE;
-    // int block_origin = 0;
-    // int spatial_dimension = 2;
-    // int topological_dimension = 2;
-    // double *extents = NULL;
-    //
-    // Here's the call that tells the meta-data object that we have a mesh:
-    //
-    // AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-    //                   spatial_dimension, topological_dimension);
-    //
-
-    //
-    // CODE TO ADD A SCALAR VARIABLE
-    //
-    // string mesh_for_this_var = meshname; // ??? -- could be multiple meshes
-    // string varname = ...
-    //
-    // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-    // avtCentering cent = AVT_NODECENT;
-    //
-    //
-    // Here's the call that tells the meta-data object that we have a var:
-    //
-    // AddScalarVarToMetaData(md, varname, mesh_for_this_var, cent);
-    //
-
-    //
-    // CODE TO ADD A VECTOR VARIABLE
-    //
-    // string mesh_for_this_var = meshname; // ??? -- could be multiple meshes
-    // string varname = ...
-    // int vector_dim = 2;
-    //
-    // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-    // avtCentering cent = AVT_NODECENT;
-    //
-    //
-    // Here's the call that tells the meta-data object that we have a var:
-    //
-    // AddVectorVarToMetaData(md, varname, mesh_for_this_var, cent,vector_dim);
-    //
-
-    //
-    // CODE TO ADD A TENSOR VARIABLE
-    //
-    // string mesh_for_this_var = meshname; // ??? -- could be multiple meshes
-    // string varname = ...
-    // int tensor_dim = 9;
-    //
-    // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-    // avtCentering cent = AVT_NODECENT;
-    //
-    //
-    // Here's the call that tells the meta-data object that we have a var:
-    //
-    // AddTensorVarToMetaData(md, varname, mesh_for_this_var, cent,tensor_dim);
-    //
-
-    //
-    // CODE TO ADD A MATERIAL
-    //
-    // string mesh_for_mat = meshname; // ??? -- could be multiple meshes
-    // string matname = ...
-    // int nmats = ...;
-    // vector<string> mnames;
-    // for (int i = 0 ; i < nmats ; i++)
-    // {
-    //     char str[32];
-    //     sprintf(str, "mat%d", i);
-    //     -- or -- 
-    //     strcpy(str, "Aluminum");
-    //     mnames.push_back(str);
-    // }
-    // 
-    // Here's the call that tells the meta-data object that we have a mat:
-    //
-    // AddMaterialToMetaData(md, matname, mesh_for_mat, nmats, mnames);
-    //
-    //
-    // Here's the way to add expressions:
-    //Expression momentum_expr;
-    //momentum_expr.SetName("momentum");
-    //momentum_expr.SetDefinition("{u, v}");
-    //momentum_expr.SetType(Expression::VectorMeshVar);
-    //md->AddExpression(&momentum_expr);
-    //Expression KineticEnergy_expr;
-    //KineticEnergy_expr.SetName("KineticEnergy");
-    //KineticEnergy_expr.SetDefinition("0.5*(momentum*momentum)/(rho*rho)");
-    //KineticEnergy_expr.SetType(Expression::ScalarMeshVar);
-    //md->AddExpression(&KineticEnergy_expr);
-    //
 }
 
 
@@ -290,25 +188,28 @@ avtsw4imgFileFormat::GetMesh(int domain, const char *meshname)
         Initialize();
 
     debug4 << "SW4> " << "entering GetMesh " << endl;
-    debug4 << "SW4> " << "meshname = '" << meshname << "'" << " domain = " << domain << endl;
+    debug4 << "SW4> " << "meshname = '" << meshname << "'" << " domain = "
+           << domain << endl;
 
     if (m_CartGrid || domain != m_nblocks-1)
     {
-       debug4 << "SW4> " << "constructing a Cartesian grid, m_ni = " << m_ni[domain] << " m_nj = "
-              << m_nj[domain] << " m_nk = " << m_nk[domain] << " m_gridsize = " << m_gridsize[domain] << endl;
+        debug4 << "SW4> " << "constructing a Cartesian grid, m_ni = "
+               << m_ni[domain] << " m_nj = " << m_nj[domain] << " m_nk = "
+               << m_nk[domain] << " m_gridsize = " << m_gridsize[domain]
+               << endl;
 
-       vtkFloatArray *coords[3]= {0,0,0};
+        vtkFloatArray *coords[3]= {0,0,0};
         coords[0] = vtkFloatArray::New();
         coords[0]->SetNumberOfTuples(m_ni[domain]);
         coords[1] = vtkFloatArray::New();
         coords[1]->SetNumberOfTuples(m_nj[domain]);
         coords[2] = vtkFloatArray::New();
         coords[2]->SetNumberOfTuples(m_nk[domain]);
-// get the internal vtk data array pointers
+        // get the internal vtk data array pointers
         float* x = (float *)coords[0]->GetVoidPointer(0);
         float* y = (float *)coords[1]->GetVoidPointer(0);
         float* z = (float *)coords[2]->GetVoidPointer(0);
-// assign coordinates
+        // assign coordinates
         for( int i=0 ; i < m_ni[domain] ; i++ )
            x[i] = i*m_gridsize[domain]+m_xmin[domain];
         for( int i=0 ; i < m_nj[domain] ; i++ )
@@ -335,113 +236,106 @@ avtsw4imgFileFormat::GetMesh(int domain, const char *meshname)
     }
     else // curvilinear grid in Z for the last block
     {
-       char errmsg[500];
-// domain == m_nblocks-1 or bust
-       if( domain != m_nblocks-1 )
-       {
-          snprintf(errmsg,500,"Error getMesh() domain = %i, m_nblocks = %i", domain, m_nblocks);
-          EXCEPTION1( InvalidDBTypeException, errmsg );
-       }
+        char errmsg[500];
+        if( domain != m_nblocks-1 )
+        {
+            snprintf(errmsg, 500, "Error getMesh() domain = %i, m_nblocks = %i",
+                domain, m_nblocks);
+            EXCEPTION1( InvalidDBTypeException, errmsg );
+        }
 
-       debug4 << "SW4> " << "constructing a curvilinear grid, m_CartGrid = " << m_CartGrid << " domain = "
-              << domain << endl; 
-       debug4 << "SW4> " << "m_ni = " << m_ni[domain] << " m_nj = " << m_nj[domain]
-              << " m_nk = " << m_nk[domain] << endl;
+        debug4 << "SW4> " << "constructing a curvilinear grid, m_CartGrid = "
+               << m_CartGrid << " domain = " << domain << endl; 
+        debug4 << "SW4> " << "m_ni = " << m_ni[domain] << " m_nj = "
+               << m_nj[domain] << " m_nk = " << m_nk[domain] << endl;
 
-       int ndims=3;
-       int dims[3] = {1,1,1};
-       dims[0] = m_ni[domain];
-       dims[1] = m_nj[domain];
-       dims[2] = m_nk[domain];
-       int nnodes = dims[0]*dims[1]*dims[2];
-       debug4 << "SW4> " << "dims[0] = " << dims[0] << " dims[1] = " << dims[1] << " dims[2] = " << dims[2] << endl;
+        int ndims=3;
+        int dims[3] = {1,1,1};
+        dims[0] = m_ni[domain];
+        dims[1] = m_nj[domain];
+        dims[2] = m_nk[domain];
+        int nnodes = dims[0]*dims[1]*dims[2];
+        debug4 << "SW4> " << "dims[0] = " << dims[0] << " dims[1] = " << dims[1] << " dims[2] = " << dims[2] << endl;
 
-// POPULATE THE zarray variable with grid point coordinates...
+        // read z-coordinate from grid block on the sw4img file
+        int fd = OPEN(m_filename.c_str(),O_RDONLY|O_BINARY);
+        if( fd == -1 )
+        {
+            snprintf(errmsg,500,"Error opening grid file %s",m_filename.c_str());
+            EXCEPTION1( InvalidDBTypeException, errmsg );
+        }
 
-//      int pnt=0;
-//      for(int k = 0; k < dims[2]; ++k)
-//        for(int j = 0; j < dims[1]; ++j)
-//      for(int i = 0; i < dims[0]; ++i)
-//      {
-// // cartesian mesh (for testing)
-//        zarray[pnt] =  k*m_gridsize[domain]+m_zmin[domain];
-//        pnt++;
-//      }
+        // locate the grid block on file
+        off_t nr = LSEEK(fd,m_gridOffset,SEEK_CUR);
+        if( nr != m_gridOffset )
+        {
+            CLOSE(fd);
+            snprintf(errmsg,500,"Error accessing grid array in %s",m_filename.c_str());
+            EXCEPTION1( InvalidDBTypeException, errmsg );
+        }
 
-// read z-coordinate from grid block on the sw4img file
-       int fd = OPEN(m_filename.c_str(),O_RDONLY|O_BINARY);
-       if( fd == -1 )
-       {
-          snprintf(errmsg,500,"Error opening grid file %s",m_filename.c_str());
-          EXCEPTION1( InvalidDBTypeException, errmsg );
-       }
+        // allocate tmp memory for grid points
+        float *zarray = new float[nnodes];
+        // get the data
+        if( m_prec == 4 )
+        {
+            nr = read(fd,zarray,sizeof(float)*nnodes); // read straight into zarray
+            if( (size_t)nr != sizeof(float)*nnodes )
+            {
+                CLOSE(fd);
+                delete [] zarray;
+                snprintf(errmsg,500,"Error reading grid array in %s" , m_filename.c_str());
+                EXCEPTION1( InvalidDBTypeException, errmsg );
+            }
+        }
+        else
+        {
+            double* tmp=new double[nnodes];
+            nr = read(fd,tmp,sizeof(double)*nnodes); // read into tmp (double) array
+            if( (size_t)nr != sizeof(double)*nnodes )
+            {
+                CLOSE(fd);
+                delete [] zarray;
+                delete [] tmp;
+                snprintf(errmsg,500,"Error reading dp grid array in %s" , m_filename.c_str());
+                EXCEPTION1( InvalidDBTypeException, errmsg );
+            }
+            for( size_t i = 0 ; i < (size_t)nnodes ; i++ ) // copy over to zarray
+                zarray[i] = tmp[i];
+            delete[] tmp;
+        }
 
-// locate the grid block on file
-       off_t nr = LSEEK(fd,m_gridOffset,SEEK_CUR);
-       if( nr != m_gridOffset )
-       {
-          CLOSE(fd);
-          snprintf(errmsg,500,"Error accessing grid array in %s",m_filename.c_str());
-          EXCEPTION1( InvalidDBTypeException, errmsg );
-       }
+        // end reading z-ccordinates: close the file
+        CLOSE(fd);
 
-// allocate tmp memory for grid points
-       float *zarray = new float[nnodes];
-// get the data
-       if( m_prec == 4 )
-       {
-          nr = read(fd,zarray,sizeof(float)*nnodes); // read straight into zarray
-          if( (size_t)nr != sizeof(float)*nnodes )
-          {
-             CLOSE(fd);
-             delete [] zarray;
-             snprintf(errmsg,500,"Error reading grid array in %s" , m_filename.c_str());
-             EXCEPTION1( InvalidDBTypeException, errmsg );
-          }
-       }
-       else
-       {
-          double* tmp=new double[nnodes];
-          nr = read(fd,tmp,sizeof(double)*nnodes); // read into tmp (double) array
-          if( (size_t)nr != sizeof(double)*nnodes )
-          {
-             CLOSE(fd);
-             delete [] zarray;
-             delete [] tmp;
-             snprintf(errmsg,500,"Error reading dp grid array in %s" , m_filename.c_str());
-             EXCEPTION1( InvalidDBTypeException, errmsg );
-          }
-          for( size_t i = 0 ; i < (size_t)nnodes ; i++ ) // copy over to zarray
-             zarray[i] = tmp[i];
-          delete[] tmp;
-       }
-// end reading z-ccordinates: close the file
-       CLOSE(fd);
+        vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
+        vtkPoints * points = vtkPoints::New();
+        sgrid->SetPoints(points);
+        sgrid->SetDimensions(dims);
+        points->Delete();
+        points->SetNumberOfPoints(nnodes);
 
-       vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
-       vtkPoints * points = vtkPoints::New();
-       sgrid->SetPoints(points);
-       sgrid->SetDimensions(dims);
-       points->Delete();
-       points->SetNumberOfPoints(nnodes);
+        float *pts = (float *) points->GetVoidPointer(0);
+        float *zc = zarray;
 
-       float *pts = (float *) points->GetVoidPointer(0);
-       float *zc = zarray;
+        for(int k = 0; k < dims[2]; ++k)
+        {
+            for(int j = 0; j < dims[1]; ++j)
+            {
+                for(int i = 0; i < dims[0]; ++i)
+                {
+                    *pts++ = i*m_gridsize[domain]+m_xmin[domain]; // Cartesian in x and y
+                    *pts++ = j*m_gridsize[domain]+m_ymin[domain];
+                    *pts++ = *zc++;
+                }
+            }
+        }
 
-       for(int k = 0; k < dims[2]; ++k)
-          for(int j = 0; j < dims[1]; ++j)
-             for(int i = 0; i < dims[0]; ++i)
-             {
-                *pts++ = i*m_gridsize[domain]+m_xmin[domain]; // Cartesian in x and y
-                *pts++ = j*m_gridsize[domain]+m_ymin[domain];
-                *pts++ = *zc++;
-             }
+        // delete temporary arrays
+        delete [] zarray;
 
-// delete temporary arrays
-       delete [] zarray;
-
-       debug4 << "SW4> " << "done making a curvilinear mesh" << endl;
-       return sgrid;
+        debug4 << "SW4> " << "done making a curvilinear mesh" << endl;
+        return sgrid;
     }
 }
 
@@ -480,81 +374,50 @@ avtsw4imgFileFormat::GetVar(int domain, const char *varname)
     arr->SetNumberOfTuples(npts);
     float* data = (float *)arr->GetVoidPointer(0);
 
-    // if( m_data_stored )
-    // {
-    //     float *ptr = m_dataptr[domain];
-    //     for( size_t i = 0 ; i < npts ; i++ )
-    //         data[i] = ptr[i];
-    // }
-    // else
-    //    {
-
     int fd = OPEN(m_filename.c_str(),O_RDONLY|O_BINARY);
     if( fd == -1 )
     {
-       snprintf(errmsg,500,"Error opening file %s",m_filename.c_str());
-       EXCEPTION1( InvalidDBTypeException, errmsg );
+        snprintf(errmsg,500,"Error opening file %s",m_filename.c_str());
+        EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     off_t nr = LSEEK(fd,m_offset[domain],SEEK_CUR);
     if( nr != m_offset[domain] )
     {
-       CLOSE(fd);
-       snprintf(errmsg,500,"Error accessing array in %s",m_filename.c_str());
-       EXCEPTION1( InvalidDBTypeException, errmsg );
+        CLOSE(fd);
+        snprintf(errmsg,500,"Error accessing array in %s",m_filename.c_str());
+        EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     if( m_prec == 4 )
     {
-       nr = read(fd,data,sizeof(float)*npts);
-       if( (size_t)nr != sizeof(float)*npts )
-       {
-          CLOSE(fd);
-          snprintf(errmsg,500,"Error reading array in %s" , m_filename.c_str());
-          EXCEPTION1( InvalidDBTypeException, errmsg );
-       }
+        nr = read(fd,data,sizeof(float)*npts);
+        if( (size_t)nr != sizeof(float)*npts )
+        {
+            CLOSE(fd);
+            snprintf(errmsg,500,"Error reading array in %s" , m_filename.c_str());
+            EXCEPTION1( InvalidDBTypeException, errmsg );
+        }
     }
     else
     {
-       double* tmp=new double[npts];
-       nr = read(fd,tmp,sizeof(double)*npts);
-       if( (size_t)nr != sizeof(double)*npts )
-       {
-          CLOSE(fd); 
-          delete [] tmp;
-          snprintf(errmsg,500,"Error reading array in %s" , m_filename.c_str());
-          EXCEPTION1( InvalidDBTypeException, errmsg );
-       }
-       for( size_t i = 0 ; i < npts ; i++ )
-          data[i] = tmp[i];
-       delete[] tmp;
+        double* tmp=new double[npts];
+        nr = read(fd,tmp,sizeof(double)*npts);
+        if( (size_t)nr != sizeof(double)*npts )
+        {
+            CLOSE(fd); 
+            delete [] tmp;
+            snprintf(errmsg,500,"Error reading array in %s" , m_filename.c_str());
+            EXCEPTION1( InvalidDBTypeException, errmsg );
+        }
+        for( size_t i = 0 ; i < npts ; i++ )
+            data[i] = tmp[i];
+        delete[] tmp;
     }
-// close the file
+
+    // close the file
     CLOSE(fd);
 
-//    }
     debug4 << "SW4> " << "leaving GetVar " << endl;
     return arr;
-   
-    //
-    // If you have a file format where variables don't apply (for example a
-    // strictly polygonal format like the STL (Stereo Lithography) format,
-    // then uncomment the code below.
-    //
-    // EXCEPTION1(InvalidVariableException, varname);
-    //
-
-    //
-    // If you do have a scalar variable, here is some code that may be helpful.
-    //
-    // int ntuples = XXX; // this is the number of entries in the variable.
-    // vtkFloatArray *rv = vtkFloatArray::New();
-    // rv->SetNumberOfTuples(ntuples);
-    // for (int i = 0 ; i < ntuples ; i++)
-    // {
-    //      rv->SetTuple1(i, VAL);  // you must determine value for ith entry.
-    // }
-    //
-    // return rv;
-    //
 }
 
 
@@ -580,8 +443,8 @@ avtsw4imgFileFormat::GetVar(int domain, const char *varname)
 vtkDataArray *
 avtsw4imgFileFormat::GetVectorVar(int domain, const char *varname)
 {
-// there are no vector variables
-   return 0;
+    // there are no vector variables
+    return 0;
 }
 
 void avtsw4imgFileFormat::Initialize()
@@ -589,19 +452,19 @@ void avtsw4imgFileFormat::Initialize()
     debug4 << "SW4> " << "entering Initialize()" << endl;
     char errmsg[500];
 
-// should check for 3D in the filename and handle that case within this reader
+    // should check for 3D in the filename and handle that case within this reader
     size_t k=m_filename.rfind('.');
     size_t find3D = m_filename.find("3Dimg");
     if (find3D != string::npos && find3D == k+1)
     {
-       // We have a 'mode.3Dimg' type file -- this is for volimage
-       debug4 << "SW4> " << "opening volimage file, continuing..." << endl;
-       m_volimage = true;
+        // We have a 'mode.3Dimg' type file -- this is for volimage
+        debug4 << "SW4> " << "opening volimage file, continuing..." << endl;
+        m_volimage = true;
     }
     else
-    { 
-       debug4 << "SW4> " << "Not a volimage file, continuing..." << endl; 
-       m_volimage = false;
+    {
+        debug4 << "SW4> " << "Not a volimage file, continuing..." << endl; 
+        m_volimage = false;
     }
 
     int fd = OPEN( m_filename.c_str(), O_RDONLY|O_BINARY );
@@ -612,22 +475,22 @@ void avtsw4imgFileFormat::Initialize()
     }
     debug4 << "SW4> " << "file opened " << endl;
 
-// reading the header...
-// precision
+    // reading the header...
+    // precision
     size_t nr = read(fd,&m_prec,sizeof(int) );
     if( nr != sizeof(int) )
     {
         snprintf(errmsg,500,"Error reading precision in %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
-// number of patches (blocks)
+    // number of patches (blocks)
     nr = read(fd,&m_nblocks,sizeof(int) );
     if( nr != sizeof(int) )
     {
         snprintf(errmsg,500,"Error reading nblocks in %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
-// time
+    // time
     nr = read(fd,&m_time,sizeof(double) );
     if( nr != sizeof(double) )
     {
@@ -635,21 +498,21 @@ void avtsw4imgFileFormat::Initialize()
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     debug4 << "SW4> " << "prec = " << m_prec << " " << " m_nblocks = " << m_nblocks << " time= " << m_time << endl;
-// plane (0=x-const, 1=y-const, 2=z-const)
+    // plane (0=x-const, 1=y-const, 2=z-const)
     nr = read(fd,&m_plane,sizeof(int) );
     if( nr != sizeof(int) )
     {
         snprintf(errmsg,500,"Error reading plane in %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
-// plane_coord
+    // plane_coord
     nr = read(fd,&m_plane_coord,sizeof(double) );
     if( nr != sizeof(double) )
     {
         snprintf(errmsg,500,"Error reading plane_coordinate in %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
-// mode
+    // mode
     nr = read(fd,&m_mode_number,sizeof(int) );
     if( nr != sizeof(int) )
     {
@@ -658,77 +521,78 @@ void avtsw4imgFileFormat::Initialize()
     }
     switch (m_mode_number)
     {
-       case 1:
-          m_mode="ux"; break;
-       case 2:
-          m_mode="uy"; break;
-       case 3:
-          m_mode="uz"; break;
-       case 4:
-          m_mode="rho"; break;
-       case 5:
-          m_mode="lambda"; break;
-       case 6:
-          m_mode="mu"; break;
-       case 7:
-          m_mode="cp"; break;
-       case 8:
-          m_mode="cs"; break;
-       case 9:
-          m_mode="uex"; break;
-       case 10:
-          m_mode="uey"; break;
-       case 11:
-          m_mode="uez"; break;
-       case 12:
-          m_mode="div"; break;
-       case 13:
-          m_mode="curl"; break;
-       case 14:
-          m_mode="divt"; break;
-       case 15:
-          m_mode="curlt"; break;
-       case 16:
-          m_mode="lat"; break;
-       case 17:
-          m_mode="lon"; break;
-       case 18:
-          m_mode="topo"; break;
-       case 19:
-          m_mode="x"; break;
-       case 20:
-          m_mode="y"; break;
-       case 21:
-          m_mode="z"; break;
-       case 22:
-          m_mode="uxerr"; break;
-       case 23:
-          m_mode="uyerr"; break;
-       case 24:
-          m_mode="uzerr"; break;
-       case 25:
-          m_mode="magt"; break;
-       case 26:
-          m_mode="hmagt"; break;
-       case 27:
-          m_mode="hmaxt"; break;
-       case 28:
-          m_mode="vmaxt"; break;
-       case 29:
-          m_mode="mag"; break;
-       case 30:
-          m_mode="hmag"; break;
-       case 31:
-          m_mode="hmax"; break;
-       case 32:
-          m_mode="vmax"; break;
+        case 1:
+            m_mode="ux"; break;
+        case 2:
+            m_mode="uy"; break;
+        case 3:
+            m_mode="uz"; break;
+        case 4:
+            m_mode="rho"; break;
+        case 5:
+            m_mode="lambda"; break;
+        case 6:
+            m_mode="mu"; break;
+        case 7:
+            m_mode="cp"; break;
+        case 8:
+            m_mode="cs"; break;
+        case 9:
+            m_mode="uex"; break;
+        case 10:
+            m_mode="uey"; break;
+        case 11:
+            m_mode="uez"; break;
+        case 12:
+            m_mode="div"; break;
+        case 13:
+            m_mode="curl"; break;
+        case 14:
+            m_mode="divt"; break;
+        case 15:
+            m_mode="curlt"; break;
+        case 16:
+            m_mode="lat"; break;
+        case 17:
+            m_mode="lon"; break;
+        case 18:
+            m_mode="topo"; break;
+        case 19:
+            m_mode="x"; break;
+        case 20:
+            m_mode="y"; break;
+        case 21:
+            m_mode="z"; break;
+        case 22:
+            m_mode="uxerr"; break;
+        case 23:
+            m_mode="uyerr"; break;
+        case 24:
+            m_mode="uzerr"; break;
+        case 25:
+            m_mode="magt"; break;
+        case 26:
+            m_mode="hmagt"; break;
+        case 27:
+            m_mode="hmaxt"; break;
+        case 28:
+            m_mode="vmaxt"; break;
+        case 29:
+            m_mode="mag"; break;
+        case 30:
+            m_mode="hmag"; break;
+        case 31:
+            m_mode="hmax"; break;
+        case 32:
+            m_mode="vmax"; break;
 
-       default:
-          m_mode="unknown"; break;
+        default:
+            m_mode="unknown"; break;
     }
-    debug4 << "SW4> " << "mode number = " << m_mode_number << " mode = " << m_mode << endl;
+    debug4 << "SW4> " << "mode number = " << m_mode_number << " mode = "
+           << m_mode << endl;
     
-// grdinfo
+    // grdinfo
     nr = read(fd,&m_grdinfo,sizeof(int) );
     if( nr != sizeof(int) )
     {
@@ -739,23 +603,25 @@ void avtsw4imgFileFormat::Initialize()
     
     debug4 << "SW4> " << "grid info = " << m_grdinfo << endl;
 
-// file creation time    
+    // file creation time    
     char cgfn[25];
     nr = read(fd,&cgfn,25*sizeof(char) );
     if( nr != 25*sizeof(char) )
     {
-       snprintf(errmsg,500,"Error reading creation time stamp in %s",m_filename.c_str());
+       snprintf(errmsg, 500, "Error reading creation time stamp in %s",
+           m_filename.c_str());
        EXCEPTION1( InvalidDBTypeException, errmsg );
     }
 
-// the c-string is terminated by a null character
+    // the c-string is terminated by a null character
     cgfn[24]='\0';
     m_file_creation_time = cgfn;
-    debug4 << "SW4> " << "reading creation time stamp='" << m_file_creation_time << "'" << endl;
+    debug4 << "SW4> " << "reading creation time stamp='"
+           << m_file_creation_time << "'" << endl;
 
-// end of first part of header
+    // end of first part of header
 
-// 2nd part of header: grid size
+    // 2nd part of header: grid size
     m_gridsize.resize(m_nblocks);
     m_xmin.resize(m_nblocks);
     m_ymin.resize(m_nblocks);
@@ -766,21 +632,21 @@ void avtsw4imgFileFormat::Initialize()
     m_nk.resize(m_nblocks);
     m_offset.resize(m_nblocks);
 
-// size of the first part of the header
+    // size of the first part of the header
     off_t header_offset = 5*sizeof(int)+2*sizeof(double)+25*sizeof(char);
     int dims[6];
     debug4 << "SW4> " << "reading block headers " << endl;
     for( int b=0 ; b < m_nblocks ; b++ )
     {
         debug4 << "SW4> " << "b = " << b << endl;
-// grid size
+        // grid size
         nr = read(fd,&m_gridsize[b],sizeof(double));
         if( nr != sizeof(double) )
         {
             snprintf(errmsg,500,"Error reading gridsizes in %s",m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
-// z0
+        // z0
         nr = read(fd,&m_z0[b],sizeof(double));
         if( nr != sizeof(double) )
         {
@@ -820,32 +686,33 @@ void avtsw4imgFileFormat::Initialize()
             m_xmin[b] = (dims[0]-1)*m_gridsize[b];
             m_ymin[b] = (dims[2]-1)*m_gridsize[b];
             m_zmin[b] = (m_volimage) ?
-              m_z0[b] + (dims[4]-1)*m_gridsize[b] : m_plane_coord;
+                m_z0[b] + (dims[4]-1)*m_gridsize[b] : m_plane_coord;
         }
         debug4 << "SW4> " << "b = " << b << " dims[0] = " << dims[0]
                << " dims[1] = " << dims[1] << " dims[2] = " << dims[2]
                << " dims[3] = " << dims[3];
         if (m_volimage)
         {
-          debug4 << " dims[4] = " << dims[4] << " dims[5] = " << dims[5];
+            debug4 << " dims[4] = " << dims[4] << " dims[5] = " << dims[5];
         }
         debug4 << endl;
 
         debug4 << "SW4> " << "z0 = " << m_z0[b] << " x_min = "
                << m_xmin[b] << " y_min = " << m_ymin[b]
                << " z_min = " << m_zmin[b] << endl;
-// old
+        // old
         header_offset += 2*sizeof(double) + expect_dim*sizeof(int);
-        debug4 << "SW4> " << "block = " << b << " dims[0] = " << dims[0] << " dims[1] = " << dims[1] << " dims[2] = "
+        debug4 << "SW4> " << "block = " << b << " dims[0] = " << dims[0]
+               << " dims[1] = " << dims[1] << " dims[2] = "
                << dims[2] << " dims[3] = " << dims[3];
         if (m_volimage)
         {
-          debug4 << " dims[4] = " << dims[4] << " dims[5] = " << dims[5];
+            debug4 << " dims[4] = " << dims[4] << " dims[5] = " << dims[5];
         }
         debug4 << endl;
         debug4 << "SW4> " << " z_min = " << m_zmin[b] << endl;
     }
-// end 2nd part of header
+    // end 2nd part of header
 
     m_offset[0] = header_offset;
     int datasize;
@@ -854,63 +721,27 @@ void avtsw4imgFileFormat::Initialize()
     else
         datasize = sizeof(double);
 
-// calculate offsets for accessing data
+    // calculate offsets for accessing data
     for( int b=1 ; b < m_nblocks ; b++ )
         m_offset[b] = m_offset[b-1] + ((size_t) m_ni[b-1])*m_nj[b-1]*m_nk[b-1]*datasize;
 
-// assign m_gridOffset
+    // assign m_gridOffset
     if (m_CartGrid)
     {
-       m_gridOffset = -1;
+        m_gridOffset = -1;
     }
     else
     {
-// lp : index of the last black
-       int lb = m_nblocks-1;
-       m_gridOffset = m_offset[lb] + ((size_t) m_ni[lb])*m_nj[lb]*m_nk[lb]*datasize;
+        // lb : index of the last block
+        int lb = m_nblocks-1;
+        m_gridOffset = m_offset[lb] + ((size_t) m_ni[lb])*m_nj[lb]*m_nk[lb]*datasize;
     }
-    
-    
 
     debug4 << "SW4> " << " done headers, data stored =  " << m_data_stored << endl;
 
-// don't want to read the data yet
-    // if( m_data_stored )
-    // {
-    //     m_dataptr.resize(m_nblocks);
-    //     for( int b=0 ; b < m_nblocks ; b++ )
-    //     {
-    //         size_t npts = ((size_t) m_ni[b])*m_nj[b];
-    //         m_dataptr[b] = new float[npts];
-    //         if( m_prec == 4 )
-    //         {
-    //             nr = read(fd,&m_dataptr[b],npts*sizeof(float));
-    //             if( nr != npts*sizeof(float) )
-    //             {
-    //                 snprintf(errmsg,500,"Error reading float data array %s",m_filename.c_str());
-    //                 EXCEPTION1( InvalidDBTypeException, errmsg );
-    //             }
-    //         }
-    //         else
-    //         {
-    //             double* tmp = new double[npts];
-    //             nr = read(fd,&tmp,npts*sizeof(double));
-    //             if( nr != npts*sizeof(double) )
-    //             {
-    //                 snprintf(errmsg,500,"Error reading double data array %s",m_filename.c_str());
-    //                 EXCEPTION1( InvalidDBTypeException, errmsg );
-    //             }
-    //             for( size_t i = 0 ; i < npts ; i++ )
-    //                 m_dataptr[b][i] = tmp[i];
-    //             delete[] tmp;
-    //         }
-    //     }
-    // with sw4img, if gridinfo = 1, the last patch always corresponds to the z-coordinates of the curvilinear grid
-    // } // end data_stored
-
     CLOSE(fd); // closing the solution file
 
-// done intializing...
+    // done intializing...
     m_initialized = true;
     debug4 << "SW4> " << "leaving Initialize()" << endl;
 }

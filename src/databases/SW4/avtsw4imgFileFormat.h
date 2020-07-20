@@ -32,22 +32,6 @@ class avtsw4imgFileFormat : public avtSTMDFileFormat
                        avtsw4imgFileFormat(const char *);
     virtual           ~avtsw4imgFileFormat() {;};
 
-    //
-    // This is used to return unconvention data -- ranging from material
-    // information to information about block connectivity.
-    //
-    // virtual void      *GetAuxiliaryData(const char *var, int domain,
-    //                                     const char *type, void *args, 
-    //                                     DestructorFunction &);
-    //
-
-    //
-    // If you know the cycle number, overload this function.
-    // Otherwise, VisIt will make up a reasonable one for you.
-    //
-    // virtual int         GetCycle(void);
-    //
-
     virtual const char    *GetType(void)   { return "sw4img"; };
     virtual void           FreeUpResources(void); 
 
@@ -56,8 +40,6 @@ class avtsw4imgFileFormat : public avtSTMDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
   protected:
-    // DATA MEMBERS
-
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
     // imagevolume data
@@ -66,17 +48,13 @@ class avtsw4imgFileFormat : public avtSTMDFileFormat
     bool m_data_stored;
     bool m_volimage;
     bool m_CartGrid;
-//    bool m_grid_stored; // not currently used
     double m_time;
     std::vector<float*> m_dataptr;
     std::vector<float*> m_gridptr;
     std::string m_filename;
-//    std::string m_gridname; // not needed anymore?
-//    std::string m_gridfilename; // not needed anymore?
     int m_prec;
     int m_nblocks; // total number of data patches on file (the grid data is not considered a separate patch)
     int m_gridOffset; // file offset to grid z-coords (if m_grdinfo == 1)
-//    int m_nAllBlocks; // total number of patches on file (including the grid patch if it exists)
     
     int m_plane;
     double m_plane_coord;
@@ -94,8 +72,6 @@ class avtsw4imgFileFormat : public avtSTMDFileFormat
     std::vector<int> m_nj;
     std::vector<int> m_nk;
     std::vector<off_t> m_offset;
-//    std::vector<off_t> m_gridoffset; // not needed since we do not read a separate gridd file anymore
-
 };
 
 

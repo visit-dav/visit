@@ -119,8 +119,8 @@ std::vector<std::string>
 sw4imgGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-    defaultPatterns.push_back("sw4img");
-    defaultPatterns.push_back("3Dimg");
+    defaultPatterns.push_back("*.sw4img");
+    defaultPatterns.push_back("*.3Dimg");
 
     return defaultPatterns;
 }
