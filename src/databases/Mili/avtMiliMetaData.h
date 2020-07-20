@@ -6,7 +6,7 @@
 //                             avtMiliMetaData.h                             //
 // ************************************************************************* //
 
-#ifndef AVT_MILI_META_DATA_H 
+#ifndef AVT_MILI_META_DATA_H
 #define AVT_MILI_META_DATA_H
 
 #include <avtTypes.h>
@@ -24,12 +24,12 @@ extern "C" {
 using std::string;
 
 //
-// Info needed by the vtkLabel class. 
+// Info needed by the vtkLabel class.
 //
 typedef struct LabelPositionInfo
 {
     int          numBlocks;
-    intVector    rangesBegin;      
+    intVector    rangesBegin;
     intVector    rangesEnd;
     intVector    idsBegin;
     intVector    idsEnd;
@@ -37,7 +37,7 @@ typedef struct LabelPositionInfo
 
 
 //
-// Ease of use info for shared variables. 
+// Ease of use info for shared variables.
 //
 typedef struct SharedVariableInfo
 {
@@ -52,10 +52,10 @@ typedef struct SharedVariableInfo
 //  Class: SubrecInfo
 //
 //  Purpose:
-//      A container to store info about the subrecords. 
+//      A container to store info about the subrecords.
 //
-//      Subrecords contain information about the data that resides within 
-//      a mili database. This container holds a minimal amount of that 
+//      Subrecords contain information about the data that resides within
+//      a mili database. This container holds a minimal amount of that
 //      information that we need on the visit end.
 //
 //  Programmer:  Alister Maguire
@@ -78,39 +78,39 @@ class SubrecInfo
                            const int *);
 
     void         GetSubrec(const int,
-                           int &, 
+                           int &,
                            int &,
                            intVector &);
 
   private:
 
-    int                      numSubrecs;        
+    int                      numSubrecs;
     intVector                numElements;
     intVector                numDataBlocks;
-    std::vector< intVector > dataBlockRanges;   
+    std::vector< intVector > dataBlockRanges;
 
     //
-    // Because the subrecords can be segmented across domains, 
-    // we need to map the subrecord Ids to their vector indicies. 
+    // Because the subrecords can be segmented across domains,
+    // we need to map the subrecord Ids to their vector indicies.
     //
     std::map<int, int>       indexMap;
-}; 
+};
 
 
 // ****************************************************************************
 //  Class: MiliVariableMetaData
 //
 //  Purpose:
-//      A container for mili variable meta data. 
+//      A container for mili variable meta data.
 //
 //      Special cases:
-//          material variables: defined on materials only. 
+//          material variables: defined on materials only.
 //          global: a single value across the entire mesh.
-//          shared: a variable that is shared across cell types. 
-//          element sets: arrays of integration points. Before rendering, 
-//              a single integration point is chosen for display. 
-//          sand: elements that have been destroyed during a simulation. 
-//          cause: a value denoting the cause of destruction. 
+//          shared: a variable that is shared across cell types.
+//          element sets: arrays of integration points. Before rendering,
+//              a single integration point is chosen for display.
+//          sand: elements that have been destroyed during a simulation.
+//          cause: a value denoting the cause of destruction.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Jan 16, 2019
@@ -168,16 +168,16 @@ class MiliVariableMetaData
 
     int                        GetNumType(void)
                                  { return numType; };
-         
-    int                        GetComponentDims(void) 
-                                 { return componentDims; }; 
+
+    int                        GetComponentDims(void)
+                                 { return componentDims; };
 
     int                        GetVectorSize(void)
                                  { return vectorSize; };
 
     int                        GetMeshAssociation(void)
-                                 { return meshAssociation; }; 
-    
+                                 { return meshAssociation; };
+
     bool                       IsElementSet(void)
                                  { return isElementSet; };
 
@@ -198,7 +198,7 @@ class MiliVariableMetaData
 
     void                       AddSubrecId(int, int);
     intVector                  GetSubrecIds(int);
-    
+
     virtual const string       &GetPath(void);
 
     void                       AddVectorComponent(string compName)
@@ -216,7 +216,7 @@ class MiliVariableMetaData
     string                    longName;
     string                    shortName;
     string                    path;
-    
+
     int                       varTypeAvt;
     int                       varTypeMili;
 
@@ -225,7 +225,7 @@ class MiliVariableMetaData
     int                       numType;
     int                       vectorSize;
     int                       componentDims;
- 
+
     //
     // Subrecord ids
     //
@@ -247,14 +247,14 @@ class MiliVariableMetaData
 //  Class: MiliElementSetMetaData
 //
 //  Purpose:
-//      A container for mili element set variables.  
+//      A container for mili element set variables.
 //
 //      The primary purpose of this is to extend the MiliVariableMetaData
-//      class to handle "groups" within element sets. In a nut-shell, 
-//      element sets are considered a single vector variable, but their 
-//      vector components are often grouped into separate variables for 
-//      visualization purposes. This adds a layer of complications that 
-//      this class seeks to help ease.  
+//      class to handle "groups" within element sets. In a nut-shell,
+//      element sets are considered a single vector variable, but their
+//      vector components are often grouped into separate variables for
+//      visualization purposes. This adds a layer of complications that
+//      this class seeks to help ease.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    May 6, 2019
@@ -341,12 +341,12 @@ class MiliElementSetMetaData : public MiliVariableMetaData
 //  Class: MiliClassMetaData
 //
 //  Purpose:
-//      A container for mili class meta data. 
+//      A container for mili class meta data.
 //
-//      Mili variables are defined and retrieved by "Classes" they are 
+//      Mili variables are defined and retrieved by "Classes" they are
 //      associated with. Some of the classes are cell types, others are
-//      material, node, etc. Variables can be defined across multiple 
-//      classes.  
+//      material, node, etc. Variables can be defined across multiple
+//      classes.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Jan 16, 2019
@@ -365,7 +365,7 @@ class MiliClassMetaData
                                                         int);
                                      ~MiliClassMetaData(void);
 
-    enum ClassType 
+    enum ClassType
       { CELL, NODE, MATERIAL, GLOBAL, SURFACE, PARTICLE, UNKNOWN };
 
     string                            GetLongName(void)
@@ -388,11 +388,11 @@ class MiliClassMetaData
     ClassType                         GetClassType(void)
                                         { return classType; };
 
-    void                              SetConnectivityOffset(int, 
+    void                              SetConnectivityOffset(int,
                                                             int);
     int                               GetConnectivityOffset(int);
 
-    void                              PopulateLabelIds(int, 
+    void                              PopulateLabelIds(int,
                                                        int *,
                                                        int,
                                                        int *);
@@ -436,7 +436,7 @@ class MiliClassMetaData
 //  Class: MiliMaterialMetaData
 //
 //  Purpose:
-//      A container for mili material meta data. 
+//      A container for mili material meta data.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Jan 16, 2019
@@ -457,7 +457,7 @@ class MiliMaterialMetaData
 
     string                              GetColor(void)
                                           { return hexColor; };
- 
+
   private:
     string      name;
     float       color[3];
@@ -469,9 +469,9 @@ class MiliMaterialMetaData
 //  Class: avtMiliMetaData
 //
 //  Purpose:
-//      A container for storing and accessing all mili meta data. This is the 
+//      A container for storing and accessing all mili meta data. This is the
 //      main interface between avtMiliFileFormat and the meta data info that
-//      is retrieved from the .mili file and the subrecord database. 
+//      is retrieved from the .mili file and the subrecord database.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Jan 16, 2019
@@ -492,7 +492,7 @@ class avtMiliMetaData
 
     void                             SetNumClasses(int);
     int                              GetNumClasses(void)
-                                       { return numClasses; }; 
+                                       { return numClasses; };
 
     void                             SetNumVariables(int nVars);
     int                              GetNumVariables(void)
@@ -506,17 +506,17 @@ class avtMiliMetaData
                                          std::vector<MiliClassMetaData *> &);
     void                             GetNodeBasedClassMD(
                                          std::vector<MiliClassMetaData *> &);
- 
+
     void                             GetCellTypeCounts(intVector &,
                                                        intVector &);
 
-    void                             AddVarMD(int, 
+    void                             AddVarMD(int,
                                               MiliVariableMetaData *);
     MiliVariableMetaData            *GetVarMDByIdx(int varIdx);
-    MiliVariableMetaData            *GetVarMDByShortName(const char *, 
+    MiliVariableMetaData            *GetVarMDByShortName(const char *,
                                                          const char *);
     MiliVariableMetaData            *GetVarMDByPath(const char *);
-    int                              GetVarMDIdxByShortName(const char *, 
+    int                              GetVarMDIdxByShortName(const char *,
                                                             const char *);
     int                              GetVarMDIdxByPath(const char *);
 
@@ -525,7 +525,7 @@ class avtMiliMetaData
                                                       int,
                                                       Subrecord *);
 
-    void                             AddMaterialMD(int, 
+    void                             AddMaterialMD(int,
                                                    MiliMaterialMetaData *);
     void                             SetNumMaterials(int);
     int                              GetNumMaterials(void)
@@ -597,12 +597,12 @@ class avtMiliMetaData
     std::vector< SubrecInfo >        subrecInfo;
 
     //
-    // Shared variable info. 
+    // Shared variable info.
     //
     std::vector<SharedVariableInfo *> sharedVariables;
 
     //
-    // The number of available mili cell types. 
+    // The number of available mili cell types.
     //
     const int                         numMiliCellTypes = 8;
 };

@@ -2826,6 +2826,10 @@ class MainLauncher(object):
     #   Eric Brugger, Thu Jan  9 16:30:42 PST 2020
     #   Add lib/mesagl to the LD_LIBRARY_PATH for mcurvit.
     #
+    #   Eric Brugger, Tue Jul 14 12:51:01 PDT 2020
+    #   Add code to unsetenv LD_PRELOAD to protect against users setting
+    #   it for the GL library, which would break rendering.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -2902,6 +2906,9 @@ class MainLauncher(object):
 
         # Unset QT_PLUGIN_PATH
         UNSETENV("QT_PLUGIN_PATH")
+
+        # Unset LD_PRELOAD
+        UNSETENV("LD_PRELOAD")
 
         # Turn off trapping of floating point exceptions.
         SETENV("TRAP_FPE", "")
