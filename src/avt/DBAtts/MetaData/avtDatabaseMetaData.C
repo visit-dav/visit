@@ -6162,9 +6162,6 @@ avtDatabaseMetaData::DetermineSubsetType(const std::string &inVar) const
 //    Support selection of domains, even if we only have
 //    a single domain.
 //
-//    Alister Maguire, Mon Jul 20 14:35:47 PDT 2020
-//    Move compound check to last to avoid name mangling issues.
-//
 // ****************************************************************************
 
 std::string
@@ -6184,6 +6181,14 @@ avtDatabaseMetaData::MeshForVar(const std::string &invar) const
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
     var = ParsingExprList::GetRealVariable(var);
+
+    // If the variable is compound, parse out the variable name.
+    if (VarIsCompound(var))
+    {
+        std::string meshName;
+        ParseCompoundForMesh(var, meshName);
+        return meshName;
+    }
 
     // Look through the meshes.
     int nmeshes = GetNumMeshes();
@@ -6292,19 +6297,6 @@ avtDatabaseMetaData::MeshForVar(const std::string &invar) const
         {
             return GetLabels(i).meshName;
         }
-    }
-
-    // If the variable is compound, parse out the variable name.
-    //
-    // IMPORTANT: this check needs to come AFTER all previous checks
-    // since this variable might actually be an un-mangled name that
-    // includes parentheses. The previous checks will handle mangling
-    // when needed, whereas this check will not.
-    if (VarIsCompound(var))
-    {
-        std::string meshName;
-        ParseCompoundForMesh(var, meshName);
-        return meshName;
     }
 
     EXCEPTION1(InvalidVariableException, var);
@@ -7051,6 +7043,11 @@ avtDatabaseMetaData::IssueWarning(const char *msg) const
 //  Programmer: Kathleen Bonnell
 //  Creation:   September 5, 2002
 //
+//  Modifications:
+//
+//    Alister Maguire, Mon Jul 20 16:27:19 PDT 2020
+//    Check if the discovered mesh name is actually a known mesh.
+//
 // ****************************************************************************
 
 bool
@@ -7064,7 +7061,21 @@ avtDatabaseMetaData::VarIsCompound(const std::string &v) const
     {
         return false;
     }
-    return true;
+
+    std::string meshName = v.substr(beg + 1, end - beg - 1);
+
+    int nmeshes = GetNumMeshes();
+    for (int i = 0 ; i < nmeshes ; i++)
+    {
+        if (VariableNamesEqual(GetMeshes(i).name, meshName) ||
+            VariableNamesEqual(GetMeshes(i).blockTitle, meshName) ||
+            VariableNamesEqual(GetMeshes(i).groupTitle, meshName))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 // ****************************************************************************
