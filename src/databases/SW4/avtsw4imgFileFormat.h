@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                            avtsw4imgFileFormat.h                           //
+//                          avtsw4imgFileFormat.h                            //
 // ************************************************************************* //
 
 #ifndef AVT_sw4img_FILE_FORMAT_H
