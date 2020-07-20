@@ -1028,8 +1028,15 @@ function build_mili
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
     fi
 
+    # The 19.2 configure script does not play well with our fortran mac patch.
+    # We can use an older configure script that includes this patch already.
+    config_script=configure
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        config_script=configure_15_1
+    fi
+
     info "Invoking command to configure Mili"
-    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+    ./${config_script} CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 ac_cv_prog_FOUND_GMAKE=make $extra_ac_flags \
                 --prefix="$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
