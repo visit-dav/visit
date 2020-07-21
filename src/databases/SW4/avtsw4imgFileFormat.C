@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -198,17 +199,17 @@ avtsw4imgFileFormat::GetMesh(int domain, const char *meshname)
                << m_nk[domain] << " m_gridsize = " << m_gridsize[domain]
                << endl;
 
-        vtkFloatArray *coords[3]= {0,0,0};
-        coords[0] = vtkFloatArray::New();
+        vtkDoubleArray *coords[3]= {0,0,0};
+        coords[0] = vtkDoubleArray::New();
         coords[0]->SetNumberOfTuples(m_ni[domain]);
-        coords[1] = vtkFloatArray::New();
+        coords[1] = vtkDoubleArray::New();
         coords[1]->SetNumberOfTuples(m_nj[domain]);
-        coords[2] = vtkFloatArray::New();
+        coords[2] = vtkDoubleArray::New();
         coords[2]->SetNumberOfTuples(m_nk[domain]);
         // get the internal vtk data array pointers
-        float* x = (float *)coords[0]->GetVoidPointer(0);
-        float* y = (float *)coords[1]->GetVoidPointer(0);
-        float* z = (float *)coords[2]->GetVoidPointer(0);
+        double* x = (double *)coords[0]->GetVoidPointer(0);
+        double* y = (double *)coords[1]->GetVoidPointer(0);
+        double* z = (double *)coords[2]->GetVoidPointer(0);
         // assign coordinates
         for( int i=0 ; i < m_ni[domain] ; i++ )
            x[i] = i*m_gridsize[domain]+m_xmin[domain];
@@ -249,7 +250,6 @@ avtsw4imgFileFormat::GetMesh(int domain, const char *meshname)
         debug4 << "SW4> " << "m_ni = " << m_ni[domain] << " m_nj = "
                << m_nj[domain] << " m_nk = " << m_nk[domain] << endl;
 
-        int ndims=3;
         int dims[3] = {1,1,1};
         dims[0] = m_ni[domain];
         dims[1] = m_nj[domain];
@@ -274,65 +274,85 @@ avtsw4imgFileFormat::GetMesh(int domain, const char *meshname)
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
 
-        // allocate tmp memory for grid points
-        float *zarray = new float[nnodes];
-        // get the data
-        if( m_prec == 4 )
-        {
-            nr = read(fd,zarray,sizeof(float)*nnodes); // read straight into zarray
-            if( (size_t)nr != sizeof(float)*nnodes )
-            {
-                CLOSE(fd);
-                delete [] zarray;
-                snprintf(errmsg,500,"Error reading grid array in %s" , m_filename.c_str());
-                EXCEPTION1( InvalidDBTypeException, errmsg );
-            }
-        }
-        else
-        {
-            double* tmp=new double[nnodes];
-            nr = read(fd,tmp,sizeof(double)*nnodes); // read into tmp (double) array
-            if( (size_t)nr != sizeof(double)*nnodes )
-            {
-                CLOSE(fd);
-                delete [] zarray;
-                delete [] tmp;
-                snprintf(errmsg,500,"Error reading dp grid array in %s" , m_filename.c_str());
-                EXCEPTION1( InvalidDBTypeException, errmsg );
-            }
-            for( size_t i = 0 ; i < (size_t)nnodes ; i++ ) // copy over to zarray
-                zarray[i] = tmp[i];
-            delete[] tmp;
-        }
-
-        // end reading z-ccordinates: close the file
-        CLOSE(fd);
-
+        // Create the structured grid.
         vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
         vtkPoints * points = vtkPoints::New();
         sgrid->SetPoints(points);
         sgrid->SetDimensions(dims);
         points->Delete();
-        points->SetNumberOfPoints(nnodes);
 
-        float *pts = (float *) points->GetVoidPointer(0);
-        float *zc = zarray;
-
-        for(int k = 0; k < dims[2]; ++k)
+        // get the data
+        if( m_prec == 4 )
         {
-            for(int j = 0; j < dims[1]; ++j)
+            float *zarray = new float[nnodes];
+            nr = read(fd,zarray,sizeof(float)*nnodes);
+            if( (size_t)nr != sizeof(float)*nnodes )
             {
-                for(int i = 0; i < dims[0]; ++i)
+                CLOSE(fd);
+                delete [] zarray;
+                sgrid->Delete();
+                snprintf(errmsg,500,"Error reading grid array in %s" , m_filename.c_str());
+                EXCEPTION1( InvalidDBTypeException, errmsg );
+            }
+
+            points->SetDataType(VTK_FLOAT);
+            points->SetNumberOfPoints(nnodes);
+
+            float *pts = (float *) points->GetVoidPointer(0);
+            float *zc = zarray;
+
+            for(int k = 0; k < dims[2]; ++k)
+            {
+                for(int j = 0; j < dims[1]; ++j)
                 {
-                    *pts++ = i*m_gridsize[domain]+m_xmin[domain]; // Cartesian in x and y
-                    *pts++ = j*m_gridsize[domain]+m_ymin[domain];
-                    *pts++ = *zc++;
+                    for(int i = 0; i < dims[0]; ++i)
+                    {
+                        *pts++ = i*m_gridsize[domain]+m_xmin[domain]; // Cartesian in x and y
+                        *pts++ = j*m_gridsize[domain]+m_ymin[domain];
+                        *pts++ = *zc++;
+                    }
                 }
             }
+
+            delete [] zarray;
+        }
+        else
+        {
+            double *zarray = new double[nnodes];
+            nr = read(fd,zarray,sizeof(double)*nnodes);
+            if( (size_t)nr != sizeof(double)*nnodes )
+            {
+                CLOSE(fd);
+                delete [] zarray;
+                sgrid->Delete();
+                snprintf(errmsg,500,"Error reading dp grid array in %s" , m_filename.c_str());
+                EXCEPTION1( InvalidDBTypeException, errmsg );
+            }
+
+            points->SetDataType(VTK_DOUBLE);
+            points->SetNumberOfPoints(nnodes);
+
+            double *pts = (double *) points->GetVoidPointer(0);
+            double *zc = zarray;
+
+            for(int k = 0; k < dims[2]; ++k)
+            {
+                for(int j = 0; j < dims[1]; ++j)
+                {
+                    for(int i = 0; i < dims[0]; ++i)
+                    {
+                        *pts++ = i*m_gridsize[domain]+m_xmin[domain]; // Cartesian in x and y
+                        *pts++ = j*m_gridsize[domain]+m_ymin[domain];
+                        *pts++ = *zc++;
+                    }
+                }
+            }
+
+            delete [] zarray;
         }
 
-        // delete temporary arrays
-        delete [] zarray;
+        // end reading z-ccordinates: close the file
+        CLOSE(fd);
 
         debug4 << "SW4> " << "done making a curvilinear mesh" << endl;
         return sgrid;
@@ -369,10 +389,7 @@ avtsw4imgFileFormat::GetVar(int domain, const char *varname)
     debug4 << "SW4> " << "after Initialize() " << endl;
     char errmsg[500];
 
-    vtkFloatArray* arr = vtkFloatArray::New();
-    size_t npts = (size_t) m_ni[domain]*m_nj[domain]*m_nk[domain];
-    arr->SetNumberOfTuples(npts);
-    float* data = (float *)arr->GetVoidPointer(0);
+    vtkDataArray* ret = NULL;
 
     int fd = OPEN(m_filename.c_str(),O_RDONLY|O_BINARY);
     if( fd == -1 )
@@ -389,35 +406,46 @@ avtsw4imgFileFormat::GetVar(int domain, const char *varname)
     }
     if( m_prec == 4 )
     {
+        vtkFloatArray* arr = vtkFloatArray::New();
+        size_t npts = (size_t) m_ni[domain]*m_nj[domain]*m_nk[domain];
+        arr->SetNumberOfTuples(npts);
+        float* data = (float *)arr->GetVoidPointer(0);
+
         nr = read(fd,data,sizeof(float)*npts);
         if( (size_t)nr != sizeof(float)*npts )
         {
             CLOSE(fd);
+            arr->Delete();
             snprintf(errmsg,500,"Error reading array in %s" , m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
+
+        ret = arr;
     }
     else
     {
-        double* tmp=new double[npts];
-        nr = read(fd,tmp,sizeof(double)*npts);
+        vtkDoubleArray* arr = vtkDoubleArray::New();
+        size_t npts = (size_t) m_ni[domain]*m_nj[domain]*m_nk[domain];
+        arr->SetNumberOfTuples(npts);
+        double* data = (double *)arr->GetVoidPointer(0);
+
+        nr = read(fd,data,sizeof(double)*npts);
         if( (size_t)nr != sizeof(double)*npts )
         {
             CLOSE(fd); 
-            delete [] tmp;
+            arr->Delete();
             snprintf(errmsg,500,"Error reading array in %s" , m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
-        for( size_t i = 0 ; i < npts ; i++ )
-            data[i] = tmp[i];
-        delete[] tmp;
+
+        ret = arr;
     }
 
     // close the file
     CLOSE(fd);
 
     debug4 << "SW4> " << "leaving GetVar " << endl;
-    return arr;
+    return ret;
 }
 
 
