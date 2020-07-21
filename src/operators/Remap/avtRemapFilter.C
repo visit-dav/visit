@@ -258,7 +258,6 @@ avtRemapFilter::Execute(void)
     }
     else
     {
-        rg->Delete();
         SetOutputDataTree(new avtDataTree(NULL, -1));
     }
 
