@@ -133,7 +133,6 @@ avtRemapFilter::Equivalent(const AttributeGroup *a)
 //      Eddie Rusu, Tue Jul 14 10:04:57 PDT 2020
 //      Execute uses GetAllLeaves() instead of recursive traverse domain.
 //
-//  Modifications:
 //      Eddie Rusu, Thu Jul 16 11:09:52 PDT 2020
 //      Added parallel support.
 //
@@ -239,14 +238,14 @@ avtRemapFilter::Execute(void)
 
 #ifdef PARALLEL
     int size = vars->GetNumberOfTuples();
-    double *vars_double = (double*) vars->GetVoidPointer(0);
-    double *new_buff = new double[size];
-    SumDoubleArrayAcrossAllProcessors(vars_double, new_buff, size);
+    double *varsDouble = (double*) vars->GetVoidPointer(0);
+    double *newBuff = new double[size];
+    SumDoubleArrayAcrossAllProcessors(varsDouble, newBuff, size);
     for (int i = 0; i < size; ++i)
     {
-        vars_double[i] = new_buff[i];
+        varsDouble[i] = newBuff[i];
     }
-    delete [] new_buff;
+    delete [] newBuff;
 #endif
     
     SetOutputDataTree(new avtDataTree(rg, 0));
