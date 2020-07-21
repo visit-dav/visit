@@ -240,18 +240,30 @@ avtRemapFilter::Execute(void)
     int size = vars->GetNumberOfTuples();
     double *varsDouble = (double*) vars->GetVoidPointer(0);
     double *newBuff = new double[size];
-    SumDoubleArrayAcrossAllProcessors(varsDouble, newBuff, size);
-    for (int i = 0; i < size; ++i)
+    // SumDoubleArrayAcrossAllProcessors(varsDouble, newBuff, size);
+    SumDoubleArray(varsDouble, newBuff, size);
+    if (PAR_Rank() == 0)
     {
-        varsDouble[i] = newBuff[i];
+        for (int i = 0; i < size; ++i)
+        {
+            varsDouble[i] = newBuff[i];
+        }
     }
     delete [] newBuff;
 #endif
-    
-    SetOutputDataTree(new avtDataTree(rg, 0));
-    debug5 << "DONE Remapping" << std::endl;
+
+    if (PAR_Rank() == 0)
+    {
+        SetOutputDataTree(new avtDataTree(rg, 0));
+    }
+    else
+    {
+        rg->Delete();
+        SetOutputDataTree(new avtDataTree(NULL, -1));
+    }
 
     CleanClippingFunctions();
+    debug5 << "DONE Remapping" << std::endl;
     return;
 }
 
