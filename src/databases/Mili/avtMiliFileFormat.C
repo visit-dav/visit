@@ -2706,6 +2706,10 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 //      We don't need to add the OriginalZone/NodeLabels for the
 //      sand mesh.
 //
+//      Alister Maguire, Tue Jul 21 10:52:18 PDT 2020
+//      No need to add the materials for each mesh. Only add to the
+//      non-sand mesh.
+//
 // ****************************************************************************
 
 void
@@ -2796,13 +2800,6 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             sandMesh->hasSpatialExtents    = false;
 
             md->Add(sandMesh);
-
-            AddMaterialToMetaData(md,
-                                  matName,
-                                  sandMeshName,
-                                  numMats,
-                                  matNames,
-                                  matColors);
         }
 
         //
