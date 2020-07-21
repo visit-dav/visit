@@ -162,16 +162,19 @@
 #    Remove VCellMTMD plugin, no longer needed/used. (Per Jim Schaff at UCHC).
 #
 #    Mark C. Miller, Tue May  8 21:18:35 PDT 2018
-#    Add ffp plugin (from Olivier Cessenat)
+#    Add ffp plugin (from Olivier Cessenat).
 #
 #    Mark C. Miller, Fri Apr 12 10:03:55 PDT 2019
-#    Remove Vista plugin
+#    Remove Vista plugin.
 #
 #    Eric Brugger, Wed Jun 26 08:57:57 PDT 2019
 #    Remove CCM plugin.
 #
 #    James Kress, Tue Aug 27; 15:21:30 EDT 2019
-#    Add Xolotl plugin
+#    Add Xolotl plugin.
+#
+#    Eric Brugger, Mon Jul 13 14:46:38 PDT 2020
+#    Add the SW4 plugin and remove the WPPImage plugin.
 #
 #****************************************************************************
 
@@ -428,6 +431,7 @@ SAR
 SAS
 SPCTH
 STL
+SW4
 Shapefile
 ${SIMV2_PLUGIN}
 Spheral
@@ -436,7 +440,6 @@ TSurf
 Tecplot
 VASP
 VTK
-WPPImage
 WavefrontOBJ
 WellLogs
 XSF
