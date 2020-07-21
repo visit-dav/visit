@@ -7067,9 +7067,7 @@ avtDatabaseMetaData::VarIsCompound(const std::string &v) const
     int nmeshes = GetNumMeshes();
     for (int i = 0 ; i < nmeshes ; i++)
     {
-        if (VariableNamesEqual(GetMeshes(i).name, meshName) ||
-            VariableNamesEqual(GetMeshes(i).blockTitle, meshName) ||
-            VariableNamesEqual(GetMeshes(i).groupTitle, meshName))
+        if (VariableNamesEqual(GetMeshes(i).name, meshName))
         {
             return true;
         }
