@@ -26,6 +26,7 @@ PYTHON_ADD_DISTUTILS_SETUP(visit_utils_py_setup
                            src/windows.py
                            # builtin module
                            src/builtin/__init__.py
+                           src/builtin/convert2to3.py
                            src/builtin/evalfuncs.py
                            src/builtin/writescript.py
                            # qannote module
