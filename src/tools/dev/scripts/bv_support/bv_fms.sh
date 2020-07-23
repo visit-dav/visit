@@ -60,14 +60,14 @@ function bv_fms_host_profile
 
         CONDUIT_LIBDEP=""
         if [[ "$DO_CONDUIT" == "yes" ]] ; then
-            CONDUIT_LIBDEP="\${VISIT_CONDUIT_LIBDEP}"
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_FMS_INCDEP CONDUIT_INCLUDE_DIR TYPE STRING)" \
-                    >> $HOSTCONF
+            CONDUIT_LIBDEP="\${VISITHOME}/conduit/$CONDUIT_VERSION/\${VISITARCH}/lib conduit \${VISIT_CONDUIT_LIBDEP}"
+#            echo \
+#                "VISIT_OPTION_DEFAULT(VISIT_FMS_INCDEP CONDUIT_INCLUDE_DIR TYPE STRING)" \
+#                    >> $HOSTCONF
         fi
 
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_FMS_LIBDEP $CONDUIT_LIBDEP TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_FMS_LIBDEP \${VISITHOME}/mfem/$MFEM_VERSION/\${VISITARCH}/lib mfem $CONDUIT_LIBDEP TYPE STRING)" \
                 >> $HOSTCONF
     fi
 }

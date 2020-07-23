@@ -445,6 +445,9 @@
 #      VISIT_BUILD_DIAGNOSTICS    => VISIT_ENABLE_DIAGNOSTICS
 #      VISIT_BUILD_AVTEXAMPLES    => VISIT_ENABLE_EXAMPLES
 #
+#    Brad Whitlock, Wed Jul 22 16:15:59 PDT 2020
+#    I added support for the FMS library.
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -855,6 +858,9 @@ VISIT_3RDPARTY_DEP(CONDUIT_LIBDEP "Conduit library dependencies")
 VISIT_3RDPARTY_VAR(DAMARIS_DIR   "Path containing the Damaris library's include and lib")
 VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the FastBit library's include and lib")
 VISIT_3RDPARTY_VAR(FASTQUERY_DIR   "Path containing the FastQuery library's include and lib")
+VISIT_3RDPARTY_VAR(FMS_DIR       "Path containing the FMS library's include and lib")
+VISIT_3RDPARTY_DEP(FMS_INCDEP    "FMS include dependencies")
+VISIT_3RDPARTY_DEP(FMS_LIBDEP    "FMS library dependencies")
 VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
 VISIT_3RDPARTY_VAR(GFORTRAN_DIR  "Path containing the GFortran library's include and lib")
 VISIT_3RDPARTY_VAR(HDF4_DIR      "Path containing the HDF4 library's include and lib")
@@ -1316,6 +1322,9 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure FastQuery support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastQuery.cmake)
+
+    # Configure FMS support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFMS.cmake)
 
     # Configure gdal support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGDAL.cmake)

@@ -179,6 +179,9 @@
 #    Kathleen Biagas, Thu Feb 27 2020 
 #    Only add SimV2 if VISIT_ENABLE_LIBSIM is true.
 #
+#    Brad Whitlock, Wed Jul 22 17:47:11 PDT 2020
+#    I added the FMS reader.
+#
 #****************************************************************************
 
 IF(NOT WIN32)
@@ -341,6 +344,7 @@ CHECK_THIRDPARTY_SATISFIED(Boxlib2D BOXLIB)
 CHECK_THIRDPARTY_SATISFIED(Boxlib3D BOXLIB)
 
 CHECK_THIRDPARTY_SATISFIED(FITS CFITSIO)
+CHECK_THIRDPARTY_SATISFIED(FMS FMS)
 CHECK_THIRDPARTY_SATISFIED(GDAL GDAL)
 
 CHECK_THIRDPARTY_SATISFIED(Cosmos HDF4)
