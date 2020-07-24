@@ -7,7 +7,7 @@
 // ************************************************************************* //
 
 #include <TessellatePluginInfo.h>
-#include <TessellateOperatorAttributes.h>
+#include <TessellateAttributes.h>
 
 // ****************************************************************************
 //  Method: TessellateCommonPluginInfo::AllocAttributes
@@ -25,7 +25,7 @@
 AttributeSubject *
 TessellateCommonPluginInfo::AllocAttributes()
 {
-    return new TessellateOperatorAttributes;
+    return new TessellateAttributes;
 }
 
 // ****************************************************************************
@@ -47,5 +47,5 @@ void
 TessellateCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
-    *((TessellateOperatorAttributes *) to) = *((TessellateOperatorAttributes *) from);
+    *((TessellateAttributes *) to) = *((TessellateAttributes *) from);
 }

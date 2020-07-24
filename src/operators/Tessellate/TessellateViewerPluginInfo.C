@@ -7,7 +7,7 @@
 // ************************************************************************* //
 
 #include <TessellatePluginInfo.h>
-#include <TessellateOperatorAttributes.h>
+#include <TessellateAttributes.h>
 
 VISIT_OPERATOR_PLUGIN_ENTRY_EV(Tessellate,Viewer)
 

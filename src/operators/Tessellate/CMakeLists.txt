@@ -6,7 +6,7 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 SET(COMMON_SOURCES
 TessellatePluginInfo.C
 TessellateCommonPluginInfo.C
-TessellateOperatorAttributes.C
+TessellateAttributes.C
 )
 
 SET(LIBI_SOURCES
@@ -84,6 +84,9 @@ ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
+${VTKh_INCLUDE_DIRS}
+${VTKM_DIR}/include/vtkm-1.2
+${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
 )
@@ -106,7 +109,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     IF(VISIT_PYTHON_SCRIPTING)
         SET(LIBS_SOURCES
             TessellateScriptingPluginInfo.C
-            PyTessellateOperatorAttributes.C
+            PyTessellateAttributes.C
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(STessellateOperator ${LIBS_SOURCES})
@@ -119,8 +122,8 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     ENDIF(VISIT_PYTHON_SCRIPTING)
 
     IF(VISIT_JAVA)
-        FILE(COPY TessellateOperatorAttributes.java DESTINATION ${JavaClient_BINARY_DIR}/src/operators)
-        ADD_CUSTOM_TARGET(JavaTessellate ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} TessellateOperatorAttributes.java
+        FILE(COPY TessellateAttributes.java DESTINATION ${JavaClient_BINARY_DIR}/src/operators)
+        ADD_CUSTOM_TARGET(JavaTessellate ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} TessellateAttributes.java
             DEPENDS JavaClient
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     ENDIF(VISIT_JAVA)

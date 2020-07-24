@@ -5,7 +5,7 @@
 // ************************************************************************* //
 //                        TessellateScriptingPluginInfo.C
 // ************************************************************************* //
-#include <PyTessellateOperatorAttributes.h>
+#include <PyTessellateAttributes.h>
 #include <TessellatePluginInfo.h>
 
 VISIT_OPERATOR_PLUGIN_ENTRY(Tessellate,Scripting)
@@ -31,7 +31,7 @@ void
 TessellateScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
     void *data)
 {
-    PyTessellateOperatorAttributes_StartUp((TessellateOperatorAttributes *)subj, data);
+    PyTessellateAttributes_StartUp((TessellateAttributes *)subj, data);
 }
 
 // ****************************************************************************
@@ -56,7 +56,7 @@ TessellateScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 void *
 TessellateScriptingPluginInfo::GetMethodTable(int *nMethods)
 {
-    return PyTessellateOperatorAttributes_GetMethodTable(nMethods);
+    return PyTessellateAttributes_GetMethodTable(nMethods);
 }
 
 // ****************************************************************************
@@ -78,7 +78,7 @@ TessellateScriptingPluginInfo::GetMethodTable(int *nMethods)
 bool
 TessellateScriptingPluginInfo::TypesMatch(void *pyobject)
 {
-    return PyTessellateOperatorAttributes_Check((PyObject *)pyobject);
+    return PyTessellateAttributes_Check((PyObject *)pyobject);
 }
 
 // ****************************************************************************
@@ -100,7 +100,7 @@ TessellateScriptingPluginInfo::TypesMatch(void *pyobject)
 char *
 TessellateScriptingPluginInfo::GetLogString()
 {
-    std::string s(PyTessellateOperatorAttributes_GetLogString());
+    std::string s(PyTessellateAttributes_GetLogString());
     char *v = new char[s.size() + 1];
     strcpy(v, s.c_str());
     return v;
@@ -125,5 +125,5 @@ TessellateScriptingPluginInfo::GetLogString()
 void
 TessellateScriptingPluginInfo::SetDefaults(const AttributeSubject *atts)
 {
-    PyTessellateOperatorAttributes_SetDefaults((const TessellateOperatorAttributes *)atts);
+    PyTessellateAttributes_SetDefaults((const TessellateAttributes *)atts);
 }

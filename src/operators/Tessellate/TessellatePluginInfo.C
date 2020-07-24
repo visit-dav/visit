@@ -7,7 +7,7 @@
 // ************************************************************************* //
 
 #include <TessellatePluginInfo.h>
-#include <TessellateOperatorAttributes.h>
+#include <TessellateAttributes.h>
 
 #include <visit-config.h>
 VISIT_PLUGIN_VERSION(Tessellate,OP_EXPORT)

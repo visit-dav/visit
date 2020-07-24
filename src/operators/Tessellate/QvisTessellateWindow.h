@@ -8,7 +8,7 @@
 #include <QvisOperatorWindow.h>
 #include <AttributeSubject.h>
 
-class TessellateOperatorAttributes;
+class TessellateAttributes;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
@@ -36,7 +36,7 @@ class QvisTessellateWindow : public QvisOperatorWindow
     Q_OBJECT
   public:
     QvisTessellateWindow(const int type,
-                         TessellateOperatorAttributes *subj,
+                         TessellateAttributes *subj,
                          const QString &caption = QString::null,
                          const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
@@ -53,7 +53,7 @@ class QvisTessellateWindow : public QvisOperatorWindow
     QCheckBox *mergePoints;
     QLabel *chordErrorLabel;
 
-    TessellateOperatorAttributes *atts;
+    TessellateAttributes *atts;
 };
 
 

@@ -4,7 +4,7 @@
 
 #include "QvisTessellateWindow.h"
 
-#include <TessellateOperatorAttributes.h>
+#include <TessellateAttributes.h>
 
 #include <QCheckBox>
 #include <QLabel>
@@ -32,7 +32,7 @@
 // ****************************************************************************
 
 QvisTessellateWindow::QvisTessellateWindow(const int type,
-                         TessellateOperatorAttributes *subj,
+                         TessellateAttributes *subj,
                          const QString &caption,
                          const QString &shortName,
                          QvisNotepadArea *notepad)
@@ -129,10 +129,10 @@ QvisTessellateWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case TessellateOperatorAttributes::ID_chordError:
+          case TessellateAttributes::ID_chordError:
             chordError->setText(DoubleToQString(atts->GetChordError()));
             break;
-          case TessellateOperatorAttributes::ID_mergePoints:
+          case TessellateAttributes::ID_mergePoints:
             mergePoints->blockSignals(true);
             mergePoints->setChecked(atts->GetMergePoints());
             mergePoints->blockSignals(false);
@@ -163,7 +163,7 @@ QvisTessellateWindow::GetCurrentValues(int which_widget)
     bool doAll = (which_widget == -1);
 
     // Do chordError
-    if(which_widget == TessellateOperatorAttributes::ID_chordError || doAll)
+    if(which_widget == TessellateAttributes::ID_chordError || doAll)
     {
         double val;
         if(LineEditGetDouble(chordError, val))
@@ -187,7 +187,7 @@ QvisTessellateWindow::GetCurrentValues(int which_widget)
 void
 QvisTessellateWindow::chordErrorProcessText()
 {
-    GetCurrentValues(TessellateOperatorAttributes::ID_chordError);
+    GetCurrentValues(TessellateAttributes::ID_chordError);
     Apply();
 }
 

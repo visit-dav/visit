@@ -11,7 +11,7 @@
 
 #include <avtPluginDataTreeIterator.h>
 
-#include <TessellateOperatorAttributes.h>
+#include <TessellateAttributes.h>
 
 
 // ****************************************************************************
@@ -41,7 +41,7 @@ class avtTessellateFilter : public avtPluginDataTreeIterator
     virtual bool         Equivalent(const AttributeGroup*);
 
   protected:
-    TessellateOperatorAttributes   atts;
+    TessellateAttributes   atts;
 
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
 };

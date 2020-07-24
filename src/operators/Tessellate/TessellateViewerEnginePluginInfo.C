@@ -7,13 +7,13 @@
 // ************************************************************************* //
 
 #include <TessellatePluginInfo.h>
-#include <TessellateOperatorAttributes.h>
+#include <TessellateAttributes.h>
 
 //
 // Storage for static data elements.
 //
-TessellateOperatorAttributes *TessellateViewerEnginePluginInfo::clientAtts = NULL;
-TessellateOperatorAttributes *TessellateViewerEnginePluginInfo::defaultAtts = NULL;
+TessellateAttributes *TessellateViewerEnginePluginInfo::clientAtts = NULL;
+TessellateAttributes *TessellateViewerEnginePluginInfo::defaultAtts = NULL;
 
 // ****************************************************************************
 //  Method:  TessellateViewerEnginePluginInfo::InitializeGlobalObjects
@@ -30,8 +30,8 @@ TessellateViewerEnginePluginInfo::InitializeGlobalObjects()
 {
     if (TessellateViewerEnginePluginInfo::clientAtts == NULL)
     {
-        TessellateViewerEnginePluginInfo::clientAtts  = new TessellateOperatorAttributes;
-        TessellateViewerEnginePluginInfo::defaultAtts = new TessellateOperatorAttributes;
+        TessellateViewerEnginePluginInfo::clientAtts  = new TessellateAttributes;
+        TessellateViewerEnginePluginInfo::defaultAtts = new TessellateAttributes;
     }
 }
 
@@ -90,7 +90,7 @@ TessellateViewerEnginePluginInfo::GetDefaultAtts()
 void
 TessellateViewerEnginePluginInfo::SetClientAtts(AttributeSubject *atts)
 {
-    *clientAtts = *(TessellateOperatorAttributes *)atts;
+    *clientAtts = *(TessellateAttributes *)atts;
     clientAtts->Notify();
 }
 
@@ -111,7 +111,7 @@ TessellateViewerEnginePluginInfo::SetClientAtts(AttributeSubject *atts)
 void
 TessellateViewerEnginePluginInfo::GetClientAtts(AttributeSubject *atts)
 {
-    *(TessellateOperatorAttributes *)atts = *clientAtts;
+    *(TessellateAttributes *)atts = *clientAtts;
 }
 
 // ****************************************************************************
@@ -137,9 +137,9 @@ TessellateViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                                               const bool fromDefault)
 {
     if (fromDefault)
-        *(TessellateOperatorAttributes*)atts = *defaultAtts;
+        *(TessellateAttributes*)atts = *defaultAtts;
     else
-        *(TessellateOperatorAttributes*)atts = *clientAtts;
+        *(TessellateAttributes*)atts = *clientAtts;
 
     UpdateOperatorAtts(atts, plot);
 }

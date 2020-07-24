@@ -11,7 +11,7 @@
 #include <OperatorPluginInfo.h>
 #include <operator_plugin_exports.h>
 
-class TessellateOperatorAttributes;
+class TessellateAttributes;
 
 // ****************************************************************************
 //  Class: TessellatePluginInfo
@@ -69,8 +69,8 @@ class TessellateViewerEnginePluginInfo : public virtual ViewerEngineOperatorPlug
 
     static void InitializeGlobalObjects();
   private:
-    static TessellateOperatorAttributes *defaultAtts;
-    static TessellateOperatorAttributes *clientAtts;
+    static TessellateAttributes *defaultAtts;
+    static TessellateAttributes *clientAtts;
 };
 
 class TessellateViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual TessellateViewerEnginePluginInfo

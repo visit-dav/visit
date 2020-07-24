@@ -7,7 +7,7 @@
 // ************************************************************************* //
 
 #include <TessellatePluginInfo.h>
-#include <TessellateOperatorAttributes.h>
+#include <TessellateAttributes.h>
 #include <QApplication>
 #include <QvisTessellateWindow.h>
 
@@ -55,7 +55,7 @@ QvisPostableWindowObserver *
 TessellateGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject *attr,
     const QString &caption, const QString &shortName, QvisNotepadArea *notepad)
 {
-    return new QvisTessellateWindow(type, (TessellateOperatorAttributes *)attr,
+    return new QvisTessellateWindow(type, (TessellateAttributes *)attr,
         caption, shortName, notepad);
 }
 

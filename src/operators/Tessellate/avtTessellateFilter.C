@@ -71,7 +71,7 @@ avtTessellateFilter::Create()
 void
 avtTessellateFilter::SetAtts(const AttributeGroup *a)
 {
-    atts = *(const TessellateOperatorAttributes*)a;
+    atts = *(const TessellateAttributes*)a;
 }
 
 
@@ -90,7 +90,7 @@ avtTessellateFilter::SetAtts(const AttributeGroup *a)
 bool
 avtTessellateFilter::Equivalent(const AttributeGroup *a)
 {
-    return (atts == *(TessellateOperatorAttributes*)a);
+    return (atts == *(TessellateAttributes*)a);
 }
 
 
