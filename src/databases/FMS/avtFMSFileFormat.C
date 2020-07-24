@@ -13,20 +13,19 @@
 #include <string>
 #include <sstream>
 
-#include <vtkFloatArray.h>
-#include <vtkUnstructuredGrid.h>
-
 #include <avtDatabaseMetaData.h>
+#include <avtParallel.h>
 
 #include <DebugStream.h>
 #include <Expression.h>
+#include <StringHelpers.h>
 
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 
 #include <avtResolutionSelection.h>
 
-//#include <StringHelpers.h>
+#include <vtkFloatArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCell.h>
 #include <vtkLine.h>
@@ -36,11 +35,324 @@
 #include <vtkTetra.h>
 #include <vtkPoints.h>
 
+#include <fmsio.h>
+
 using     std::string;
 using     std::ostringstream;
 using     std::vector;
 
+// TODO: transplant these to MFEM
+// Define some functions for going back and forth FMS<-->MFEM
+namespace mfem
+{
+
+// Converts FmsDomain to mfem::Mesh.
+// Q: shall we convert all fields over too? Or, have different versions that do the fields.
+mfem::Mesh *
+MeshFromFmsDomain(FmsDomain domain, bool addFields)
+{
+    // TODO: Write me.
+    return nullptr;
+}
+
+mfem::Mesh *
+MeshFromFmsDomain(FmsDomain domain, const std::vector<std::string> &fieldNames)
+{
+    // TODO: Write me.
+    return nullptr;
+}
+
+} // end namespace mfem
+
 using namespace mfem;
+
+
+class avtFMSFileFormat::Internals
+{
+public:
+    Internals();
+    ~Internals();
+
+    bool LoadRoot(const std::string &filename);
+    bool LoadFMS(const std::string &filename);
+
+    int TotalDomains() const;
+    
+    mfem::Mesh *GetDomain(const char *domain_name, int domain);
+    mfem::Mesh *GetDomainWithField(const char *domain_name, int domain, const std::string &fieldName);
+
+    void ComputeTotalDomains();
+
+protected:
+    bool GlobalToLocalDomain(int dom, size_t &dbi, int &localDomain) const;
+    std::string FilenameForDomain(int domain) const;
+    bool ReadDomain(int domain);
+
+    std::string                              protocol;
+    std::vector<std::string>                 filenames;
+    std::vector<int>                         domainCount;
+    std::map<std::string, FmsDataCollection> dcCache;
+    std::map<int, mfem::Mesh *>              mfemCache;
+};
+
+avtFMSFileFormat::Internals::Internals() : protocol("ascii"), filenames(), domainCount(), dcCache(), mfemCache()
+{
+}
+
+avtFMSFileFormat::Internals::~Internals()
+{
+    // Delete FMS objects.
+    for(std::map<std::string, FmsDataCollection>::iterator it = dcCache.begin();
+        it != dcCache.end(); it++)
+    {
+        FmsDataCollectionDestroy(&(it->second));
+    }
+
+    // Delete MFEM objects.
+    for(std::map<int, mfem::Mesh*>::iterator it = mfemCache.begin();
+        it != mfemCache.end(); it++)
+    {
+        delete it->second;
+    }
+}
+
+bool
+avtFMSFileFormat::Internals::LoadRoot(const std::string &filename)
+{
+    // Open the file.
+    ifstream ifile(filename);
+    if (ifile.fail())
+    {
+        return false;
+    }
+
+    char line[1024];
+    while(!ifile.eof())
+    {
+        ifile.getline(line, 1024);
+
+        char *comment = strstr(line, "#");
+        if(comment != nullptr)
+            comment[0] = '\0';
+
+        std::string fn(line);
+        StringHelpers::trim(fn);
+
+        filenames.push_back(fn);
+    }
+
+    return true;
+}
+
+bool
+avtFMSFileFormat::Internals::LoadFMS(const std::string &filename)
+{
+    filenames.push_back(filename);
+}
+
+int
+avtFMSFileFormat::Internals::TotalDomains() const
+{
+    int n = 0;
+    for(size_t i = 0; i < domainCount.size(); ++i)
+        n += domainCount[i];
+    return n;
+}
+
+void
+avtFMSFileFormat::Internals::ComputeTotalDomains()
+{
+    if(domainCount.empty())
+        return;
+
+    std::vector<int> mywork;
+    int N = static_cast<int>(filenames.size());
+    for(int i = 0; i < N; ++i)
+    {
+        if(i % PAR_Size() == PAR_Rank())
+            mywork.push_back(i);
+    }
+
+    std::vector<int> inputDomainCount(0, filenames.size());
+    domainCount.resize(filenames.size(), 0);
+
+    // Read the files assigned in mywork so we can get their number of domains.
+    for(size_t i = 0; i < mywork.size(); ++i)
+    {
+        FmsDataCollection dc;
+        if(FmsIORead(filenames[mywork[i]].c_str(), protocol.c_str(), &dc) == 0)
+        {
+            // Save the data collection.
+            dcCache[filenames[mywork[i]]] = dc;
+
+            // Save its number of domains too.
+            int nDomains = 0;
+            FmsMesh mesh;
+            if(FmsDataCollectionGetMesh(dc, &mesh) == 0)
+            {
+                FmsInt nDomainNames = 0;
+                if(FmsMeshGetNumDomainNames(mesh, &nDomainNames) == 0)
+                    nDomains = static_cast<int>(nDomainNames);
+            }
+
+            inputDomainCount[i] = nDomains;
+        }
+    }
+
+    // Sum the counts across all ranks.
+    SumIntArrayAcrossAllProcessors(&inputDomainCount[0], &domainCount[0], domainCount.size());
+}
+
+bool
+avtFMSFileFormat::Internals::GlobalToLocalDomain(int dom, size_t &dbi,
+    int &localDomain) const
+{
+    int start = 0;
+    for(dbi = 0; dbi < domainCount.size(); ++dbi)
+    {
+        int nb = domainCount[dbi];
+        int end = start + nb;
+        if(dom >= start && dom < end)
+        {
+            localDomain = dom - start;
+            return true;
+        }
+        start += nb;
+    }
+    return false;
+}
+
+std::string
+avtFMSFileFormat::Internals::FilenameForDomain(int domain) const
+{
+    std::string fn;
+    size_t dbi = 0;
+    int localDomain = 0;
+    if(GlobalToLocalDomain(domain, dbi, localDomain))
+        fn = filenames[dbi];
+    return fn;
+}
+
+bool
+avtFMSFileFormat::Internals::ReadDomain(int domain)
+{
+    bool retval = false;
+    std::string fn(FilenameForDomain(domain));
+    if(!fn.empty())
+    {
+        if(dcCache.find(fn) == dcCache.end())
+        {
+            FmsDataCollection dc;
+            if(FmsIORead(fn.c_str(), protocol.c_str(), &dc) == 0)
+            {
+                // Save the data collection.
+                dcCache[fn] = dc;
+
+                retval = true;
+            }
+        }
+        else
+        {
+            // The file has already been read.
+            retval = true;
+        }
+    }
+    return retval;
+}
+
+mfem::Mesh *
+avtFMSFileFormat::Internals::GetDomain(const char *domain_name, int domain)
+{
+    std::vector<std::string> fields;
+
+    mfem::Mesh *retval = nullptr;
+    if(ReadDomain(domain))
+    {
+        std::map<int, mfem::Mesh *>::iterator it = mfemCache.find(domain);
+        if(it != mfemCache.end())
+        {
+            // We already cached the MFEM dataset.
+            retval = it->second;
+        }
+        else
+        {
+            // Convert the MFEM dataset from FMS.
+            std::string fn;
+            size_t dbi = 0;
+            int localDomain = 0;
+            if(GlobalToLocalDomain(domain, dbi, localDomain))
+                fn = filenames[dbi];
+
+            FmsDataCollection dc = dcCache[fn];
+            FmsMesh mesh;
+            if(FmsDataCollectionGetMesh(dc, &mesh) == 0)
+            {
+                FmsInt num_domains = 0;
+                FmsDomain *domains = nullptr;
+
+                // Get all the domains in this mesh having the right name.
+                if(FmsMeshGetDomainsByName(mesh, domain_name,
+                                           &num_domains, &domains) == 0)
+                {
+                    retval = mfem::MeshFromFmsDomain(domains[localDomain], fields);
+
+                    // Cache the object for later.
+                    mfemCache[domain] = retval;
+                }
+            }
+        }
+    }
+
+    return retval;
+}
+
+mfem::Mesh *
+avtFMSFileFormat::Internals::GetDomainWithField(const char *domain_name, 
+    int domain, const std::string &fieldName)
+{
+    std::vector<std::string> fields;
+    fields.push_back(fieldName);
+
+    mfem::Mesh *retval = nullptr;
+    if(ReadDomain(domain))
+    {
+        // Convert the MFEM dataset from FMS.
+        std::string fn;
+        size_t dbi = 0;
+        int localDomain = 0;
+        if(GlobalToLocalDomain(domain, dbi, localDomain))
+            fn = filenames[dbi];
+
+        FmsDataCollection dc = dcCache[fn];
+        FmsMesh mesh;
+        if(FmsDataCollectionGetMesh(dc, &mesh) == 0)
+        {
+            FmsInt num_domains = 0;
+            FmsDomain *domains = nullptr;
+
+            // Get all the domains in this mesh having the right name.
+            if(FmsMeshGetDomainsByName(mesh, domain_name,
+                                       &num_domains, &domains) == 0)
+            {
+                std::map<int, mfem::Mesh *>::iterator it = mfemCache.find(domain);
+                if(it == mfemCache.end())
+                {
+                    retval = mfem::MeshFromFmsDomain(domains[localDomain], fields);
+                    // Cache the object for later.
+                    mfemCache[domain] = retval;
+                }
+
+                // Look for fieldName on the MFEM object.
+
+                // If it does not have fieldName, try to add it from
+                // the FMSDomain.
+            }
+        }
+    }
+
+    return retval; 
+}
+
 
 // ****************************************************************************
 //  Method: avtFMSFileFormat constructor
@@ -54,9 +366,8 @@ avtFMSFileFormat::avtFMSFileFormat(const char *filename)
     : avtSTMDFileFormat(&filename, 1)
 {
     selectedLOD = 0;
-#if 0
-    root        = NULL;
-#endif
+
+    d = new Internals;
 }
 
 // ****************************************************************************
@@ -69,6 +380,7 @@ avtFMSFileFormat::avtFMSFileFormat(const char *filename)
 
 avtFMSFileFormat::~avtFMSFileFormat()
 {
+    delete d;
     FreeUpResources();
 }
 

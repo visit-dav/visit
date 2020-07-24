@@ -67,7 +67,9 @@ protected:
     bool                   HasInvariantSIL(void) const      { return false; };
   
 private:
-    int                              selectedLOD;
+    class Internals;
+    Internals                       *d;
+    int                             selectedLOD;
 
     mfem::Mesh                     *FetchMesh(const std::string &mesh_name,
                                               int chunk);
