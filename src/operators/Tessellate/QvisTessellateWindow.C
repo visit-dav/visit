@@ -8,12 +8,7 @@
 
 #include <QCheckBox>
 #include <QLabel>
-#include <QLayout>
 #include <QLineEdit>
-#include <QSpinBox>
-#include <QButtonGroup>
-#include <QRadioButton>
-#include <QvisVariableButton.h>
 
 
 // ****************************************************************************

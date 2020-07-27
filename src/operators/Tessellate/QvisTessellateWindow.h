@@ -12,9 +12,6 @@ class TessellateAttributes;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
-class QSpinBox;
-class QButtonGroup;
-class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisTessellateWindow
