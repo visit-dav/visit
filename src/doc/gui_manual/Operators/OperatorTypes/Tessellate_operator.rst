@@ -6,7 +6,7 @@ Tessellate operator
 The Tessellate operator is an operator that tessellates high order elements
 so that they appear curved.
 
-.. _tessellate
+.. _tessellate:
 
 .. figure:: images/tessellate.png
 
@@ -33,7 +33,7 @@ remove the element from the mesh.
 Changing the tessellation accuracy
 """"""""""""""""""""""""""""""""""
 
-The Tessalation accuracy is controlled by the **Chord error**. It is the
+The tessalation accuracy is controlled by the **Chord error**. It is the
 ratio of a chord to the distance from the curve and is independent of the
 scale of the object. The default **Chord error** is 0.035, which will
 typically still exhibit some discritization. A **Chord error** of 0.01
