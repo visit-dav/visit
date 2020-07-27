@@ -8,6 +8,7 @@
 
 #include <QCheckBox>
 #include <QLabel>
+#include <QLayout>
 #include <QLineEdit>
 
 
