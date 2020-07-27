@@ -81,7 +81,7 @@ QvisTessellateWindow::CreateWindowContents()
     chordErrorLabel = new QLabel(tr("Chord error"), central);
     mainLayout->addWidget(chordErrorLabel,0,0);
     chordError = new QLineEdit(central);
-    connect(chordError, SIGNAL(returnPressed()),
+    connect(chordError, SIGNAL(editingFinished()),
             this, SLOT(chordErrorProcessText()));
     mainLayout->addWidget(chordError, 0,1);
 
