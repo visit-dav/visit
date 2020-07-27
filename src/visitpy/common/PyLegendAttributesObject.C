@@ -972,16 +972,6 @@ LegendAttributesObject_dealloc(PyObject *v)
    if(obj->owns)
        delete obj->data;
 }
-// OLD REMOVE
-// static int
-// LegendAttributesObject_compare(PyObject *v, PyObject *w)
-// {
-//     AnnotationObject *a = ((LegendAttributesObjectObject *)v)->data;
-//     AnnotationObject *b = ((LegendAttributesObjectObject *)w)->data;
-//     return (*a == *b) ? 0 : -1;
-// }
-// OLD REMOVE
-
 
 static PyObject *
 LegendAttributesObject_getattr(PyObject *self, char *name)
