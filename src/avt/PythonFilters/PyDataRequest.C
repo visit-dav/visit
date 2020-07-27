@@ -10,7 +10,6 @@
 #include <PyDataSelection.h>
 #include <PythonInterpreter.h>
 #include <avtGhostData.h>
-#include <Py2and3Support.h>
 #include <string>
 
 // ****************************************************************************
