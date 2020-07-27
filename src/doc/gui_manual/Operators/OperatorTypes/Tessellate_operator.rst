@@ -36,8 +36,8 @@ Changing the tessellation accuracy
 The tessalation accuracy is controlled by the **Chord error**. It is the
 ratio of a chord to the distance from the curve and is independent of the
 scale of the object. The default **Chord error** is 0.035, which will
-typically still exhibit some discritization. A **Chord error** of 0.01
-will just about eliminate any discritization artifacts.
+typically do a good job. Reducing the **Chord error** will improve the
+discretization.
 
 .. _tessellatewindow:
 
