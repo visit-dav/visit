@@ -39,18 +39,18 @@ v.imageZoom = 1
 v.perspective = 1
 SetView3D(v)
 
-Test("quadratric_triangle_01")
+Test("quadratic_triangle_01")
 
 AddOperator("Tessellate", 1)
 DrawPlots()
 
-Test("quadratric_triangle_02")
+Test("quadratic_triangle_02")
 
 tess = TessellateAttributes()
 tess.chordError = 0.01
 SetOperatorOptions(tess, 0, 1)
 
-Test("quadratric_triangle_03")
+Test("quadratic_triangle_03")
 
 CloseDatabase(data_path("vtk_test_data/quadratic_triangle.vtk"))
 DeleteAllPlots()
@@ -75,18 +75,18 @@ v.imageZoom = 1
 v.perspective = 1
 SetView3D(v)
 
-Test("biquadratric_quad_01")
+Test("biquadratic_quad_01")
 
 AddOperator("Tessellate", 1)
 DrawPlots()
 
-Test("biquadratric_quad_02")
+Test("biquadratic_quad_02")
 
 tess = TessellateAttributes()
 tess.chordError = 0.01
 SetOperatorOptions(tess, 0, 1)
 
-Test("biquadratric_quad_03")
+Test("biquadratic_quad_03")
 
 CloseDatabase(data_path("vtk_test_data/biquadratic_quad.vtk"))
 DeleteAllPlots()
@@ -111,7 +111,7 @@ v.imageZoom = 1
 v.perspective = 1
 SetView3D(v)
 
-Test("quadratric_linear_quad_01")
+Test("quadratic_linear_quad_01")
 
 CloseDatabase(data_path("vtk_test_data/quadratic_linear_quad.vtk"))
 DeleteAllPlots()
@@ -136,20 +136,56 @@ v.imageZoom = 1
 v.perspective = 1
 SetView3D(v)
 
-Test("quadratric_quad_01")
+Test("quadratic_quad_01")
 
 AddOperator("Tessellate", 1)
 DrawPlots()
 
-Test("quadratric_quad_02")
+Test("quadratic_quad_02")
 
 tess = TessellateAttributes()
 tess.chordError = 0.01
 SetOperatorOptions(tess, 0, 1)
 
-Test("quadratric_quad_03")
+Test("quadratic_quad_03")
 
 CloseDatabase(data_path("vtk_test_data/quadratic_quad.vtk"))
+DeleteAllPlots()
+
+# Mixed biquadratic_quad and quadratic_triangle
+OpenDatabase(data_path("vtk_test_data/quadratic_mixed.vtk"))
+
+AddPlot("Pseudocolor", "x_c")
+AddPlot("Mesh", "mesh")
+DrawPlots()
+
+v = GetView3D()
+v.viewNormal = (0.200511, 0.543812, 0.814901)
+v.focus = (0, 0.5, 1)
+v.viewUp = (-0.232184, 0.834474, -0.499744)
+v.viewAngle = 30
+v.parallelScale = 1.5
+v.nearPlane = -3
+v.farPlane = 3
+v.imagePan = (0, 0)
+v.imageZoom = 1
+v.perspective = 1
+SetView3D(v)
+
+Test("quadratric_mixed_01")
+
+AddOperator("Tessellate", 1)
+DrawPlots()
+
+Test("quadratric_mixed_02")
+
+tess = TessellateAttributes()
+tess.chordError = 0.01
+SetOperatorOptions(tess, 0, 1)
+
+Test("quadratric_mixed_03")
+
+CloseDatabase(data_path("vtk_test_data/quadratic_mixed.vtk"))
 DeleteAllPlots()
 
 # Quadratic_hex
@@ -172,18 +208,18 @@ v.imageZoom = 1
 v.perspective = 1
 SetView3D(v)
 
-Test("quadratric_hex_01")
+Test("quadratic_hex_01")
 
 AddOperator("Tessellate", 1)
 DrawPlots()
 
-Test("quadratric_hex_02")
+Test("quadratic_hex_02")
 
 tess = TessellateAttributes()
 tess.chordError = 0.01
 SetOperatorOptions(tess, 0, 1)
 
-Test("quadratric_hex_03")
+Test("quadratic_hex_03")
 
 AddOperator("Clip", 1)
 clip = ClipAttributes()
@@ -192,7 +228,7 @@ SetOperatorOptions(clip, 0, 1)
 
 DrawPlots()
 
-Test("quadratric_hex_04")
+Test("quadratic_hex_04")
 
 CloseDatabase(data_path("vtk_test_data/quadratic_hex.vtk"))
 DeleteAllPlots()
@@ -217,7 +253,7 @@ v.imageZoom = 1
 v.perspective = 1
 SetView3D(v)
 
-Test("triquadratric_hex_01")
+Test("triquadratic_hex_01")
 
 CloseDatabase(data_path("vtk_test_data/triquadratic_hex.vtk"))
 DeleteAllPlots()
