@@ -18,12 +18,14 @@ SET(LIBM_SOURCES
 FMSMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtFMSFileFormat.C
+mfem_fms.cpp
 )
 
 SET(LIBE_SOURCES
 FMSEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtFMSFileFormat.C
+mfem_fms.cpp
 )
 
 INCLUDE_DIRECTORIES(

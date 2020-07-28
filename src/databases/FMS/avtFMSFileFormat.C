@@ -37,33 +37,185 @@
 
 #include <fmsio.h>
 
+#include <mfem_fms.hpp>
+
+#include <vector>
+#include <map>
+#include <string>
+
 using     std::string;
 using     std::ostringstream;
 using     std::vector;
 
-// TODO: transplant these to MFEM
-// Define some functions for going back and forth FMS<-->MFEM
-namespace mfem
-{
 
-// Converts FmsDomain to mfem::Mesh.
-// Q: shall we convert all fields over too? Or, have different versions that do the fields.
-mfem::Mesh *
-MeshFromFmsDomain(FmsDomain domain, bool addFields)
-{
-    // TODO: Write me.
-    return nullptr;
+#define MAKE_DATA_INSTEAD_OF_READING_IT
+#ifdef MAKE_DATA_INSTEAD_OF_READING_IT
+void TestMakeFmsHexMesh(FmsDataCollection *dc_ptr) {
+  FmsMesh mesh;
+  FmsMeshConstruct(&mesh);
+
+  FmsDomain *domains;
+  FmsMeshAddDomains(mesh, "domain", 1, &domains);
+  FmsDomainSetNumVertices(domains[0], 12);
+
+  FmsDomainSetNumEntities(domains[0], FMS_EDGE, FMS_INT32, 20);
+  const int edge_vert[] = {
+    0,1,  // 1
+    1,2,  // 2
+    0,3,  // 3
+    1,4,  // 4
+    2,5,  // 5
+    3,4,  // 6
+    4,5,  // 7
+    0,6,  // 8
+    1,7,  // 9
+    2,8,  // 10
+    3,9,  // 11
+    4,10, // 12
+    5,11, // 13
+    6,7,  // 14
+    7,8,  // 15
+    6,9,  // 16
+    7,10, // 17
+    8,11, // 18
+    9,10, // 19
+    10,11 // 20
+  };
+  FmsDomainAddEntities(domains[0], FMS_EDGE, NULL, FMS_INT32, edge_vert, 20);
+
+  FmsDomainSetNumEntities(domains[0], FMS_QUADRILATERAL, FMS_INT32, 11);
+  const int face_edge[] = {
+    0,3,5,2,     // 1
+    1,4,6,3,     // 2
+    7,2,10,15,   // 3
+    8,3,11,16,   // 4
+    9,17,12,4,   // 5
+    13,15,18,16, // 6
+    14,16,19,17, // 7
+    0,8,13,7,    // 8
+    1,9,14,8,    // 9
+    5,11,18,10,  // 10
+    6,12,19,11   // 11
+  };
+  FmsDomainAddEntities(domains[0], FMS_QUADRILATERAL, NULL, FMS_INT32,
+                       face_edge, 11);
+
+  FmsDomainSetNumEntities(domains[0], FMS_HEXAHEDRON, FMS_INT32, 2);
+  const int hex_face[] = {
+    7,9,0,5,2,3,
+    8,10,1,6,3,4,
+  };
+  FmsDomainAddEntities(domains[0], FMS_HEXAHEDRON, NULL, FMS_INT32, hex_face,
+                       2);
+
+  FmsComponent volume, boundary;
+  FmsMeshAddComponent(mesh, "volume", &volume);
+  FmsComponentAddDomain(volume, domains[0]);
+
+  FmsMeshAddComponent(mesh, "boundary", &boundary);
+  FmsInt part_id;
+  FmsComponentAddPart(boundary, domains[0], &part_id);
+  const int bdr_face[] = {0,1,2,4,5,6,7,8,9,10};
+  FmsComponentAddPartEntities(boundary, part_id, FMS_QUADRILATERAL, FMS_INT32,
+                              FMS_INT32, FMS_INT32, NULL, bdr_face, NULL, 10);
+
+  FmsComponentAddRelation(volume, 1); // 1 = index of "boundary" component
+
+  FmsTag attributes, bdr_attributes;
+  FmsMeshAddTag(mesh, "attributes", &attributes);
+  FmsTagSetComponent(attributes, volume);
+  const int hex_attr[] = {1,2};
+  FmsTagSet(attributes, FMS_UINT8, FMS_INT32, hex_attr, 2);
+  const int described_attr[] = {1,2};
+  const char *attr_descr[] = {"material 1", "material 2"};
+  FmsTagAddDescriptions(attributes, FMS_INT32, described_attr, attr_descr, 2);
+
+  FmsMeshAddTag(mesh, "bdr_attributes", &bdr_attributes);
+  FmsTagSetComponent(bdr_attributes, boundary);
+  const int bdr_attr[] = {1,1,2,3,4,4,5,5,6,6};
+  FmsTagSet(bdr_attributes, FMS_UINT8, FMS_INT32, bdr_attr, 10);
+  const int bdr_described_attr[] = {1,2,3,4,5,6};
+  const char *bdr_attr_descr[] = {
+    "face 1", "face 2", "face 3", "face 4", "face 5", "face 6"
+  };
+  FmsTagAddDescriptions(bdr_attributes, FMS_INT32, bdr_described_attr,
+                        bdr_attr_descr, 6);
+
+  FmsMeshFinalize(mesh);
+  FmsMeshValidate(mesh);
+
+  FmsDataCollectionCreate(mesh, "data collection", dc_ptr);
+  FmsDataCollection dc = *dc_ptr;
+
+  FmsFieldDescriptor coords_fd;
+  FmsDataCollectionAddFieldDescriptor(dc, "coords descriptor", &coords_fd);
+  FmsFieldDescriptorSetComponent(coords_fd, volume);
+  FmsInt order = 1;
+  FmsFieldDescriptorSetFixedOrder(coords_fd, FMS_CONTINUOUS,
+                                  FMS_NODAL_GAUSS_CLOSED, order);
+
+  FmsField coords;
+  FmsDataCollectionAddField(dc, "coords", &coords);
+  const double coords_data[] = {
+    0.,0.,0.,
+    1.,0.,0.,
+    2.,0.,0.,
+    0.,0.,1.,
+    1.,0.,1.,
+    2.,0.,1.,
+    0.,1.,0.,
+    1.,1.,0.,
+    2.,1.,0.,
+    0.,1.,1.,
+    1.,1.,1.,
+    2.,1.,1.
+  };
+  FmsFieldSet(coords, coords_fd, 3, FMS_BY_VDIM, FMS_DOUBLE, coords_data);
+
+  FmsComponentSetCoordinates(volume, coords);
+
+#if 1
+   // BJW: Add some fields.
+   
+  FmsFieldDescriptor scalar_fd;
+  FmsDataCollectionAddFieldDescriptor(dc, "scalar", &scalar_fd);
+  FmsFieldDescriptorSetComponent(scalar_fd, volume);
+  FmsInt sorder = 1;
+  FmsFieldDescriptorSetFixedOrder(scalar_fd, FMS_CONTINUOUS,
+                                  FMS_NODAL_GAUSS_CLOSED, sorder);
+  FmsField scalar;
+  FmsDataCollectionAddField(dc, "scalar", &scalar);
+  const double scalar_data[] = {
+    0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.
+  };
+  FmsFieldSet(scalar, scalar_fd, 1, FMS_BY_VDIM, FMS_DOUBLE, scalar_data);
+
+   // BJW: Add some metadata.
+
+   // NOTE: We can add fmsMetaData to fields too.
+   //       I would add units and extents.
+
+   /** @brief Make sure the meta-data structure associated with a field is
+       allocated and return it in @a mdata.
+   int FmsFieldAttachMetaData(FmsField field, FmsMetaData *mdata);
+   */
+
+  // Make a metadata on the data collection.
+  FmsMetaData md;
+  FmsDataCollectionAttachMetaData(*dc_ptr, &md);
+
+  double time[] = {1.23456};
+  FmsMetaDataSetScalars(md, "time", FMS_DOUBLE, 1, (void **)&time);
+  int cycle [] = {123456};
+  FmsMetaDataSetIntegers(md, "cycle", FMS_INT32, 1, (void **)&cycle);
+
+  // Eh, maybe this would be better to add to the coordinates field.
+  FmsMetaDataSetString(md, "units", "cm");
+ 
+#endif
 }
 
-mfem::Mesh *
-MeshFromFmsDomain(FmsDomain domain, const std::vector<std::string> &fieldNames)
-{
-    // TODO: Write me.
-    return nullptr;
-}
-
-} // end namespace mfem
-
+#endif
 using namespace mfem;
 
 
@@ -76,8 +228,11 @@ public:
     bool LoadRoot(const std::string &filename);
     bool LoadFMS(const std::string &filename);
 
+    size_t size() const { return filenames.size(); }
+
     int TotalDomains() const;
-    
+    bool GetDataCollection(FmsDataCollection *dc);
+
     mfem::Mesh *GetDomain(const char *domain_name, int domain);
     mfem::Mesh *GetDomainWithField(const char *domain_name, int domain, const std::string &fieldName);
 
@@ -87,6 +242,7 @@ protected:
     bool GlobalToLocalDomain(int dom, size_t &dbi, int &localDomain) const;
     std::string FilenameForDomain(int domain) const;
     bool ReadDomain(int domain);
+    bool ReadDataCollection(const std::string &fn, FmsDataCollection *dc);
 
     std::string                              protocol;
     std::vector<std::string>                 filenames;
@@ -141,13 +297,15 @@ avtFMSFileFormat::Internals::LoadRoot(const std::string &filename)
         filenames.push_back(fn);
     }
 
-    return true;
+    return !filenames.empty();
 }
 
 bool
 avtFMSFileFormat::Internals::LoadFMS(const std::string &filename)
 {
-    filenames.push_back(filename);
+    if(!filename.empty())
+        filenames.push_back(filename);
+    return !filenames.empty();
 }
 
 int
@@ -162,29 +320,34 @@ avtFMSFileFormat::Internals::TotalDomains() const
 void
 avtFMSFileFormat::Internals::ComputeTotalDomains()
 {
-    if(domainCount.empty())
+    const char *mName = "avtFMSFileFormat::Internals::ComputeTotalDomains";
+    if(!domainCount.empty())
         return;
 
     std::vector<int> mywork;
     int N = static_cast<int>(filenames.size());
+    debug5 << mName << ": mywork={";
     for(int i = 0; i < N; ++i)
     {
         if(i % PAR_Size() == PAR_Rank())
+        {
             mywork.push_back(i);
+            debug5 << i << ", ";
+        }
     }
+    debug5 << "}" << endl;
 
-    std::vector<int> inputDomainCount(0, filenames.size());
+    std::vector<int> inputDomainCount(filenames.size(), 0);
     domainCount.resize(filenames.size(), 0);
 
     // Read the files assigned in mywork so we can get their number of domains.
     for(size_t i = 0; i < mywork.size(); ++i)
     {
         FmsDataCollection dc;
-        if(FmsIORead(filenames[mywork[i]].c_str(), protocol.c_str(), &dc) == 0)
+        debug5 << mName << ": Reading " << filenames[mywork[i]];
+        int nDomains = 0;
+        if(ReadDataCollection(filenames[mywork[i]], &dc))
         {
-            // Save the data collection.
-            dcCache[filenames[mywork[i]]] = dc;
-
             // Save its number of domains too.
             int nDomains = 0;
             FmsMesh mesh;
@@ -197,10 +360,26 @@ avtFMSFileFormat::Internals::ComputeTotalDomains()
 
             inputDomainCount[i] = nDomains;
         }
+        debug5 << ", nDomains=" << nDomains << endl;
     }
+
+    debug5 << mName << ": inputDomainCount={";
+    for(size_t i = 0; i < inputDomainCount.size(); ++i)
+        debug5 << inputDomainCount[i] << ", ";
+    debug5 << "}" << endl;
+    debug5 << mName << ": domainCount={";
+    for(size_t i = 0; i < domainCount.size(); ++i)
+        debug5 << domainCount[i] << ", ";
+    debug5 << "}" << endl;
+
 
     // Sum the counts across all ranks.
     SumIntArrayAcrossAllProcessors(&inputDomainCount[0], &domainCount[0], domainCount.size());
+
+    debug5 << mName << ": domainCount={";
+    for(size_t i = 0; i < domainCount.size(); ++i)
+        debug5 << domainCount[i] << ", ";
+    debug5 << "}" << endl;
 }
 
 bool
@@ -230,7 +409,33 @@ avtFMSFileFormat::Internals::FilenameForDomain(int domain) const
     int localDomain = 0;
     if(GlobalToLocalDomain(domain, dbi, localDomain))
         fn = filenames[dbi];
+    else
+        fn = filenames[0];
     return fn;
+}
+
+bool
+avtFMSFileFormat::Internals::ReadDataCollection(const std::string &fn, FmsDataCollection *dc)
+{
+    bool retval = false;
+#ifdef MAKE_DATA_INSTEAD_OF_READING_IT
+    // Just for now...
+    TestMakeFmsHexMesh(dc);
+
+    // Cache the data collection.
+    dcCache[fn] = *dc;
+
+    retval = true;
+#else
+    if(FmsIORead(fn.c_str(), protocol.c_str(), dc) == 0)
+    {
+        // Save the data collection.
+        dcCache[fn] = *dc;
+
+        retval = true;
+    }
+#endif
+    return retval;
 }
 
 bool
@@ -243,19 +448,36 @@ avtFMSFileFormat::Internals::ReadDomain(int domain)
         if(dcCache.find(fn) == dcCache.end())
         {
             FmsDataCollection dc;
-            if(FmsIORead(fn.c_str(), protocol.c_str(), &dc) == 0)
-            {
-                // Save the data collection.
-                dcCache[fn] = dc;
-
-                retval = true;
-            }
+            retval = ReadDataCollection(fn, &dc);
         }
         else
         {
             // The file has already been read.
             retval = true;
         }
+    }
+    return retval;
+}
+
+bool
+avtFMSFileFormat::Internals::GetDataCollection(FmsDataCollection *dc)
+{
+    bool retval = false;
+
+    // See if we can just compute the number of domains to make sure we know 
+    // how domains are distributed.
+
+    // I'd kind of like a FmsIOQueryNumberOfDomains(const char *filename, const char *protocol, int &nDomains) function so we can more cheaply determine the number of domains without reading the entire FmsDataCollection.
+
+    // This may not be parallel safe though because of where it is called.
+    ComputeTotalDomains();
+
+    auto it = dcCache.begin();
+    if(it != dcCache.end())
+    { 
+        *dc = it->second;
+        // We have an FmsDataCollection from some file in the series.
+        retval = true;
     }
     return retval;
 }
@@ -284,6 +506,13 @@ avtFMSFileFormat::Internals::GetDomain(const char *domain_name, int domain)
                 fn = filenames[dbi];
 
             FmsDataCollection dc = dcCache[fn];
+#if 1
+            if(mfem::ConvertFmsToMfem(dc, &retval) == 0)
+            {
+                // Cache the object for later.
+                mfemCache[domain] = retval;
+            }
+#else
             FmsMesh mesh;
             if(FmsDataCollectionGetMesh(dc, &mesh) == 0)
             {
@@ -294,12 +523,19 @@ avtFMSFileFormat::Internals::GetDomain(const char *domain_name, int domain)
                 if(FmsMeshGetDomainsByName(mesh, domain_name,
                                            &num_domains, &domains) == 0)
                 {
+
+                    // Loop over ndomains?
+
+                    mfem::Mesh *mesh = nullptr;
+                    ConvertFmsToMfem(domains[localDomain], &mesh);
+
                     retval = mfem::MeshFromFmsDomain(domains[localDomain], fields);
 
                     // Cache the object for later.
                     mfemCache[domain] = retval;
                 }
             }
+#endif
         }
     }
 
@@ -314,6 +550,7 @@ avtFMSFileFormat::Internals::GetDomainWithField(const char *domain_name,
     fields.push_back(fieldName);
 
     mfem::Mesh *retval = nullptr;
+#if 0
     if(ReadDomain(domain))
     {
         // Convert the MFEM dataset from FMS.
@@ -337,6 +574,9 @@ avtFMSFileFormat::Internals::GetDomainWithField(const char *domain_name,
                 std::map<int, mfem::Mesh *>::iterator it = mfemCache.find(domain);
                 if(it == mfemCache.end())
                 {
+                    mfem::Mesh *mesh = nullptr;
+                    ConvertFmsToMfem(domains[localDomain], &mesh);
+
                     retval = mfem::MeshFromFmsDomain(domains[localDomain], fields);
                     // Cache the object for later.
                     mfemCache[domain] = retval;
@@ -349,16 +589,15 @@ avtFMSFileFormat::Internals::GetDomainWithField(const char *domain_name,
             }
         }
     }
-
+#endif
     return retval; 
 }
-
 
 // ****************************************************************************
 //  Method: avtFMSFileFormat constructor
 //
-//  Programmer: harrison37 -- generated by xml2avt
-//  Creation:   Fri May 23 15:16:20 PST 2014
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Jul 27 17:30:23 PST 2020
 //
 // ****************************************************************************
 
@@ -368,13 +607,26 @@ avtFMSFileFormat::avtFMSFileFormat(const char *filename)
     selectedLOD = 0;
 
     d = new Internals;
+
+    // Load the filenames into d.
+    bool ok = true;
+    size_t len = strlen(filename);
+    const char *ext = strstr(filename, ".fms_root");
+    if(ext != nullptr)
+        ok = d->LoadRoot(filename);
+    else
+        ok = d->LoadFMS(filename);
+    if(!ok)
+    {
+        EXCEPTION1(InvalidFilesException, filename);
+    }
 }
 
 // ****************************************************************************
 //  Method: avtFMSFileFormat destructor
 //
-//  Programmer: harrison37 -- generated by xml2avt
-//  Creation:   Fri May 23 15:16:20 PST 2014
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Jul 27 17:30:23 PST 2020
 //
 // ****************************************************************************
 
@@ -394,27 +646,37 @@ avtFMSFileFormat::~avtFMSFileFormat()
 //      it has associated with it.  This method is the mechanism for doing
 //      that.
 //
-//  Programmer: harrison37 -- generated by xml2avt
-//  Creation:   Fri May 23 15:16:20 PST 2014
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Jul 27 17:30:23 PST 2020
+//
+// ****************************************************************************
+
+void
+avtFMSFileFormat::FreeUpResources(void)
+{
+}
+
+// ****************************************************************************
+// Method: avtFMSFileFormat::ActivateTimestep
+//
+// Purpose:
+//   Activates the time step.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 24 11:16:52 PDT 2020
+//
+// Modifications:
 //
 // ****************************************************************************
 
 void
 avtFMSFileFormat::ActivateTimestep(void)
 {
+    debug5 << "avtFMSFileFormat::ActivateTimestep" << endl;
     avtSTMDFileFormat::ActivateTimestep();
-#if 0
-    if(root)
-        FreeUpResources();
-    std::string root_file(GetFilename());
-    root = new JSONRoot(root_file);
-#endif
-}
 
-
-void
-avtFMSFileFormat::FreeUpResources(void)
-{
+    // Make sure that we know how many domains are in each file.
+    d->ComputeTotalDomains();
 }
 
 // ****************************************************************************
@@ -425,21 +687,163 @@ avtFMSFileFormat::FreeUpResources(void)
 //      file.  By populating it, you are telling the rest of VisIt what
 //      information it can request from you.
 //
-//  Programmer: harrison37 -- generated by xml2avt
-//  Creation:   Fri May 23 15:16:20 PST 2014
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Jul 27 17:30:23 PST 2020
 //
 //
 //  Modifications:
-//   Cyrus Harrison, Wed Sep 24 10:47:00 PDT 2014
-//   Move abs path logic into JSONRoot.
 //
-//   Mark C. Miller, Tue Sep 20 18:12:29 PDT 2016
-//   Add expressions
 // ****************************************************************************
 void
 avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
+    const char *mName = "avtFMSFileFormat::PopulateDatabaseMetaData";
+
+    // We do not know what domains will have been read thusfar, if any.
+
+    // For non-0 time steps, ActivateTimestep may not have been called. THAT WOULD BE A HUGE PROBLEM! NEED A TIME SERIES TO CHECK.
+    FmsDataCollection dc;
+    if(!d->GetDataCollection(&dc))
+    {
+        EXCEPTION1(InvalidFilesException, GetFilename());
+    }
+
+    // Q: Do we need to segregate the domains/dataset into different meshes?
+
+// Q: is there a solution time,cycle,etc in the metadata?
+
+    auto mmd = new avtMeshMetaData;
+    mmd->name = "mesh";
+    mmd->meshType = AVT_UNSTRUCTURED_MESH;
+    mmd->spatialDimension = 3;// TODO: compute these from the type of entities in the mesh.
+    mmd->topologicalDimension = 3;
+    mmd->cellOrigin = 0;
+    mmd->nodeOrigin = 0;
+    mmd->numBlocks = d->TotalDomains();
+    mmd->blockTitle = "domains";
+    mmd->blockPieceName = "domain";
+    mmd->xUnits = "";
+    mmd->yUnits = "";
+    mmd->zUnits = "";
+    mmd->xLabel = "X";
+    mmd->yLabel = "Y";
+    mmd->zLabel = "Z";
+    md->Add(mmd);
+
+    // Now we have a data collection so we can make metadata from it.
+    // Assumption: all data collections have the same set of fields.
+
+    std::vector<std::string> scalars, vectors;
+    FmsField *fields = nullptr;
+    FmsInt num_fields = 0;
+    if(FmsDataCollectionGetFields(dc, &fields, &num_fields) == 0)
+    {
+        debug5 << mName << ": num_fields = " << num_fields << endl;
+
+        for(FmsInt i = 0; i < num_fields; ++i)
+        {
+            FmsFieldDescriptor fd;
+            FmsInt num_vec_comp = 0;
+            FmsLayoutType layout_type;
+            FmsScalarType data_type;
+            const void *data = nullptr;
+
+            if(FmsFieldGet(fields[i], &fd, &num_vec_comp, &layout_type, &data_type, &data) == 0)
+            {
+                const char *fd_name = nullptr;
+                FmsFieldDescriptorGetName(fd, &fd_name);
+
+                debug5 << mName << ": We got field \"" << fd_name << "\"" << endl;
+
+                FmsFieldType field_type;
+                FmsBasisType basis_type;
+                FmsInt order = 0;
+                int err = FmsFieldDescriptorGetFixedOrder(fd, &field_type, &basis_type, &order);
+                debug5 << "\terr="<<err<<endl;
+                if(fd_name != nullptr && err == 0)
+                {
+// TODO: read up on these field types. Are they centerings plus other info?
+                    avtCentering centering = AVT_NODECENT;
+                    if(field_type == FMS_DISCONTINUOUS ||
+                       field_type == FMS_DISCONTINUOUS_WEIGHTED)
+                    {
+                        centering = AVT_ZONECENT;
+                    }
+
+                    if(data_type == FMS_FLOAT || data_type == FMS_DOUBLE)
+                    {
+
+// Q: Are there any min/max,units, etc in the metadata?
+
+                        if(num_vec_comp == 1)
+                        {
+                            avtScalarMetaData *smd = new avtScalarMetaData;
+                            smd->name = fd_name;
+                            smd->meshName = mmd->name;
+                            smd->centering = centering;
+                            md->Add(smd);
+                        }
+                        else if(num_vec_comp == 2 || num_vec_comp == 3)
+                        {
+                            avtVectorMetaData *vmd = new avtVectorMetaData;
+                            vmd->name = fd_name;
+                            vmd->meshName = mmd->name;
+                            vmd->centering = centering;
+                            md->Add(vmd);
+                        }
+                        else
+                        {
+                            debug5 << "Unsupported number of components: " << num_vec_comp << endl;
+                        }
+                    }
+                    else if(data_type == FMS_COMPLEX_FLOAT || data_type == FMS_COMPLEX_DOUBLE)
+                    {
+                        if(num_vec_comp == 1)
+                        {
+                            // Expose the data as "real" and "imaginary" parts.
+
+                            avtScalarMetaData *smd = new avtScalarMetaData;
+                            smd->name = std::string(fd_name) + ".real";
+                            smd->meshName = mmd->name;
+                            smd->centering = centering;
+                            md->Add(smd);
+
+                            avtScalarMetaData *smdi = new avtScalarMetaData;
+                            smdi->name = std::string(fd_name) + ".imag";
+                            smdi->meshName = mmd->name;
+                            smdi->centering = centering;
+                            md->Add(smdi);
+                        }
+                        else
+                        {
+                            debug5 << mName << ": Unsupported number of components "
+                                   << num_vec_comp << " on complex data." << endl;
+                        }
+                    }
+                    else
+                    {
+                        debug5 << mName << ": Unsupported field type." << endl;
+                    }
+                }
+                else
+                {
+                    debug5 << mName << ": Could not get field descriptor information." << endl;
+                }
+            }
+            else
+            {
+                debug5 << mName << ": FmsFieldGet failed." << endl;
+            }
+        }
+    }
+    else
+    {
+        debug5 << mName << ": Could not get the fields." << endl;
+    }
+
 #if 0
+
+
     ///
     /// Open the root file
     ///
@@ -548,39 +952,6 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
         }
     }
-
-    vector<string>expr_names;
-    root_md.Expressions(expr_names);
-    for(size_t i = 0; i < expr_names.size(); i++)
-    {
-        JSONRootExpr &jexpr = root_md.Expression(expr_names[i]);
-        
-        Expression::ExprType vartype = Expression::Unknown;
-        if      (!strncasecmp(jexpr.Type().c_str(), "scalar", 6))
-            vartype = Expression::ScalarMeshVar;
-        else if (!strncasecmp(jexpr.Type().c_str(), "vector", 6))
-            vartype = Expression::VectorMeshVar;
-        else if (!strncasecmp(jexpr.Type().c_str(), "tensor", 6))
-            vartype = Expression::TensorMeshVar;
-        else if (!strncasecmp(jexpr.Type().c_str(), "array", 5))
-            vartype = Expression::ArrayMeshVar;
-        else if (!strncasecmp(jexpr.Type().c_str(), "material", 8))
-            vartype = Expression::Material;
-        else if (!strncasecmp(jexpr.Type().c_str(), "species", 7))
-            vartype = Expression::Species;
-        else
-        {
-            debug5 << "Warning: unknown expression type \"" << jexpr.Type() << "\" for expression "
-                   << "\"" << expr_names[i] << "\"...skipping it." << endl;
-            continue;
-        }
-
-        Expression expr;
-        expr.SetName(expr_names[i]);
-        expr.SetDefinition(jexpr.Defn());
-        expr.SetType(vartype);
-        md->AddExpression(&expr);
-    }
 #endif
 }
 
@@ -671,8 +1042,8 @@ avtFMSFileFormat::GetTime()
 //      meshname    The name of the mesh of interest.  This can be ignored if
 //                  there is only one mesh.
 //
-//  Programmer: harrison37 -- generated by xml2avt
-//  Creation:   Fri May 23 15:16:20 PST 2014
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Jul 27 17:30:23 PST 2020
 //
 // ****************************************************************************
 vtkDataSet *
@@ -697,8 +1068,8 @@ avtFMSFileFormat::GetMesh(int domain, const char *meshname)
 //                 regardless of block origin.
 //      varname    The name of the variable requested.
 //
-//  Programmer: harrison37 -- generated by xml2avt
-//  Creation:   Fri May 23 15:16:20 PST 2014
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Jul 27 17:30:23 PST 2020
 //
 // ****************************************************************************
 vtkDataArray *
@@ -721,8 +1092,8 @@ avtFMSFileFormat::GetVar(int domain, const char *varname)
 //                 regardless of block origin.
 //      varname    The name of the variable requested.
 //
-//  Programmer: harrison37 -- generated by xml2avt
-//  Creation:   Fri May 23 15:16:20 PST 2014
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Jul 27 17:30:23 PST 2020
 //
 // ****************************************************************************
 
@@ -754,7 +1125,7 @@ Mesh *
 avtFMSFileFormat::FetchMesh(const std::string &mesh_name,int domain)
 {
 #if 1
-    return nullptr;
+    return d->GetDomain(mesh_name.c_str(), domain);
 #else
     if(root == NULL)
     {
@@ -820,9 +1191,17 @@ avtFMSFileFormat::FetchMesh(const std::string &mesh_name,int domain)
 vtkDataSet *
 avtFMSFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int lod)
 {
+    const char *mName = "avtFMSFileFormat::GetRefinedMesh";
+
     // get base mesh
     Mesh *mesh = FetchMesh(mesh_name,domain);
-     
+
+    if(mesh == nullptr)
+    {
+        debug5 << mName << ": We could not fetch the mesh." << endl;
+        return nullptr;
+    }
+
     // create output objects
     vtkUnstructuredGrid *res_ds  = vtkUnstructuredGrid::New(); 
     vtkPoints           *res_pts = vtkPoints::New();

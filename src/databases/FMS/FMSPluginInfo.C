@@ -119,7 +119,8 @@ std::vector<std::string>
 FMSGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-    defaultPatterns.push_back("*.FMS_root");
+    defaultPatterns.push_back("*.fms");
+    defaultPatterns.push_back("*.fms_root");
 
     return defaultPatterns;
 }

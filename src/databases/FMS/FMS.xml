@@ -13,12 +13,15 @@
     </LIBS>
     <FilePatterns>
       *.fms
+      *.fms_root
     </FilePatterns>
     <Files components="M">
       avtFMSFileFormat.C
+      mfem_fms.cpp
     </Files>
     <Files components="E">
       avtFMSFileFormat.C
+      mfem_fms.cpp
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
