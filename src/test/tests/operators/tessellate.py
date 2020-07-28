@@ -172,18 +172,18 @@ v.imageZoom = 1
 v.perspective = 1
 SetView3D(v)
 
-Test("quadratric_mixed_01")
+Test("quadratic_mixed_01")
 
 AddOperator("Tessellate", 1)
 DrawPlots()
 
-Test("quadratric_mixed_02")
+Test("quadratic_mixed_02")
 
 tess = TessellateAttributes()
 tess.chordError = 0.01
 SetOperatorOptions(tess, 0, 1)
 
-Test("quadratric_mixed_03")
+Test("quadratic_mixed_03")
 
 CloseDatabase(data_path("vtk_test_data/quadratic_mixed.vtk"))
 DeleteAllPlots()
