@@ -1193,7 +1193,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
                 fps = 1. / windowInfo->GetLastRenderMin();
             else
                 fps = 0.;
-            tmp.sprintf("%1.3g", fps);
+            tmp.asprintf("%1.3g", fps);
             fpsMaxLabel->setText(tmp);
             break;
         case WindowInformation::ID_lastRenderAvg:
@@ -1211,7 +1211,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
             {
                 fpsLabel->setText(tr("Frames per second:"));
             }
-            tmp.sprintf("%1.3g", fps);
+            tmp.asprintf("%1.3g", fps);
             fpsAvgLabel->setText(tmp);
             break;
         case WindowInformation::ID_lastRenderMax:
@@ -1220,11 +1220,11 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
                 fps = 1. / windowInfo->GetLastRenderMax();
             else
                 fps = 0.;
-            tmp.sprintf("%1.3g", fps);
+            tmp.asprintf("%1.3g", fps);
             fpsMinLabel->setText(tmp);
             break;
         case WindowInformation::ID_numPrimitives:
-            tmp.sprintf("%d", windowInfo->GetNumPrimitives());
+            tmp.asprintf("%d", windowInfo->GetNumPrimitives());
             approxNumPrimitives->setText(tmp);
             break;
         case WindowInformation::ID_extents:

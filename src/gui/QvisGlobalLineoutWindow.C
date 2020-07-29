@@ -282,7 +282,7 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
             createWindow->setChecked(atts->GetCreateWindow());
             break;
           case GlobalLineoutAttributes::ID_windowId:
-            temp.sprintf("%d", atts->GetWindowId());
+            temp.asprintf("%d", atts->GetWindowId());
             windowId->setText(temp);
             break;
           case GlobalLineoutAttributes::ID_samplingOn:
@@ -299,7 +299,7 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
             samplingOn->setChecked(atts->GetSamplingOn());
             break;
           case GlobalLineoutAttributes::ID_numSamples:
-            temp.sprintf("%d", atts->GetNumSamples());
+            temp.asprintf("%d", atts->GetNumSamples());
             numSamples->setText(temp);
             break;
           case GlobalLineoutAttributes::ID_createReflineLabels:

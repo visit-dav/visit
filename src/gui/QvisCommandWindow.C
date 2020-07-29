@@ -268,7 +268,7 @@ QvisCommandWindow::CreateWindowContents()
         addMacroButtonsGroup->addButton(addMacroButtons[i], i);
 
         // Add the top vbox as a new tab.
-        n.sprintf("%d", i+1);
+        n.asprintf("%d", i+1);
         tabWidget->addTab(widget, n);
     }
 
@@ -444,7 +444,7 @@ QString
 QvisCommandWindow::fileName(int index) const
 {
     QString n;
-    n.sprintf("%sscript%d.py", GetUserVisItDirectory().c_str(), index);
+    n.asprintf("%sscript%d.py", GetUserVisItDirectory().c_str(), index);
     return n;
 }
 

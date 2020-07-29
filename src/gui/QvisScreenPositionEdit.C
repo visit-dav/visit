@@ -208,7 +208,7 @@ void
 QvisScreenPositionEdit::updateText(double x, double y)
 {
     QString tmp;
-    tmp.sprintf("%g %g", x, y);
+    tmp.asprintf("%g %g", x, y);
     lineEdit->setText(tmp);
 }
 
