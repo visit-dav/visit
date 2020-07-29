@@ -37,8 +37,6 @@
 
 #include <fmsio.h>
 
-#include <mfem_fms.hpp>
-
 #include <vector>
 #include <map>
 #include <string>
@@ -507,7 +505,12 @@ avtFMSFileFormat::Internals::GetDomain(const char *domain_name, int domain)
 
             FmsDataCollection dc = dcCache[fn];
 #if 1
-            if(mfem::ConvertFmsToMfem(dc, &retval) == 0)
+            // Get the mesh from the data collection.
+            FmsMesh fms_mesh;
+            FmsDataCollectionGetMesh(dc, &fms_mesh);
+
+            // Convert the mesh to an MFEM mesh.
+            if(mfem::FmsMeshToMesh(fms_mesh, &retval) == 0)
             {
                 // Cache the object for later.
                 mfemCache[domain] = retval;
@@ -1288,7 +1291,7 @@ avtFMSFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int l
         pt_idx += refined_geo->RefPts.GetNPoints();
    }
    
-   delete mesh;
+//   delete mesh;
        
    return res_ds;
 }
@@ -1456,7 +1459,7 @@ avtFMSFileFormat::GetRefinedVar(const std::string &var_name,
     }
     
     delete gf;
-    delete mesh;
+    //delete mesh;
 
     return rv;
 #endif

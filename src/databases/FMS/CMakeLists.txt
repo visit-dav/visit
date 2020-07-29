@@ -18,14 +18,12 @@ SET(LIBM_SOURCES
 FMSMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtFMSFileFormat.C
-mfem_fms.cpp
 )
 
 SET(LIBE_SOURCES
 FMSEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtFMSFileFormat.C
-mfem_fms.cpp
 )
 
 INCLUDE_DIRECTORIES(
@@ -63,19 +61,19 @@ SET(INSTALLTARGETS IFMSDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MFMSDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MFMSDatabase visitcommon avtdbatts avtdatabase_ser ${FMS_LIB} )
+    TARGET_LINK_LIBRARIES(MFMSDatabase visitcommon avtdbatts avtdatabase_ser ${FMS_LIB} ${MFEM_LIB})
     ADD_TARGET_DEFINITIONS(MFMSDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MFMSDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EFMSDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EFMSDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${FMS_LIB} )
+TARGET_LINK_LIBRARIES(EFMSDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${FMS_LIB} ${MFEM_LIB})
 ADD_TARGET_DEFINITIONS(EFMSDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EFMSDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EFMSDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EFMSDatabase_par visitcommon avtdatabase_par avtpipeline_par ${FMS_LIB} )
+    TARGET_LINK_LIBRARIES(EFMSDatabase_par visitcommon avtdatabase_par avtpipeline_par ${FMS_LIB} ${MFEM_LIB})
     ADD_TARGET_DEFINITIONS(EFMSDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EFMSDatabase_par)
 ENDIF(VISIT_PARALLEL)

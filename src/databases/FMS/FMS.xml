@@ -10,6 +10,7 @@
     </LDFLAGS>
     <LIBS>
       ${FMS_LIB}
+      ${MFEM_LIB}
     </LIBS>
     <FilePatterns>
       *.fms
@@ -17,11 +18,9 @@
     </FilePatterns>
     <Files components="M">
       avtFMSFileFormat.C
-      mfem_fms.cpp
     </Files>
     <Files components="E">
       avtFMSFileFormat.C
-      mfem_fms.cpp
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

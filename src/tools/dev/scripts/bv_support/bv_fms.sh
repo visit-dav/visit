@@ -15,7 +15,7 @@ function bv_fms_disable
 
 function bv_fms_depends_on
 {
-    local depends_on="mfem zlib"
+    local depends_on=""
 
     if [[ "$DO_CONDUIT" == "yes" ]] ; then
         depends_on="$depends_on conduit"
@@ -57,18 +57,6 @@ function bv_fms_host_profile
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_FMS_DIR \${VISITHOME}/fms/$FMS_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
-
-        CONDUIT_LIBDEP=""
-        if [[ "$DO_CONDUIT" == "yes" ]] ; then
-            CONDUIT_LIBDEP="\${VISITHOME}/conduit/$CONDUIT_VERSION/\${VISITARCH}/lib conduit \${VISIT_CONDUIT_LIBDEP}"
-#            echo \
-#                "VISIT_OPTION_DEFAULT(VISIT_FMS_INCDEP CONDUIT_INCLUDE_DIR TYPE STRING)" \
-#                    >> $HOSTCONF
-        fi
-
-        echo \
-            "VISIT_OPTION_DEFAULT(VISIT_FMS_LIBDEP \${VISITHOME}/mfem/$MFEM_VERSION/\${VISITARCH}/lib mfem $CONDUIT_LIBDEP TYPE STRING)" \
-                >> $HOSTCONF
     fi
 }
 
@@ -130,7 +118,7 @@ function build_fms
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
-    echo "\"${CMAKE_BIN}\"" ${vopts} .. > bv_run_cmake.sh
+    echo "\"${CMAKE_BIN}\" ${vopts} .." > bv_run_cmake.sh
     cat bv_run_cmake.sh
     issue_command bash bv_run_cmake.sh || error "FMS configuration failed."
 
