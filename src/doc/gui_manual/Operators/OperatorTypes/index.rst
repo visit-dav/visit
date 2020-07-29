@@ -37,6 +37,7 @@ operators that you rarely use.
     Slice_operator
     Smooth_operator
     SphereSlice_operator
+    Tessellate_operator
     ThreeSlice_operator
     Threshold_operator
     Transform_operator
