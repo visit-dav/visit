@@ -5,6 +5,7 @@
 #ifndef PY_DUALMESHATTRIBUTES_H
 #define PY_DUALMESHATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <DualMeshAttributes.h>
 
 //

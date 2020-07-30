@@ -352,6 +352,7 @@ IF(VISIT_PYTHON_FILTERS)
     INCLUDE_DIRECTORIES(
         ${PYTHON_INCLUDE_PATH}
         ${VISIT_SOURCE_DIR}/avt/PythonFilters
+        ${VISIT_SOURCE_DIR}/visitpy/common/
     )
 ENDIF(VISIT_PYTHON_FILTERS)
 

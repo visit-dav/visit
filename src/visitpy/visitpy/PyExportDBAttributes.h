@@ -5,6 +5,7 @@
 #ifndef PY_EXPORTDBATTRIBUTES_H
 #define PY_EXPORTDBATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ExportDBAttributes.h>
 #include <visitpy_exports.h>
 

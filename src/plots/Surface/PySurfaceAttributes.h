@@ -5,6 +5,7 @@
 #ifndef PY_SURFACEATTRIBUTES_H
 #define PY_SURFACEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <SurfaceAttributes.h>
 
 //

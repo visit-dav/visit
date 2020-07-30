@@ -5,6 +5,7 @@
 #include <PyOnionPeelAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyOnionPeelAttributes
@@ -34,7 +35,6 @@ struct OnionPeelAttributesObject
 // Internal prototypes
 //
 static PyObject *NewOnionPeelAttributes(int);
-
 std::string
 PyOnionPeelAttributes_ToString(const OnionPeelAttributes *atts, const char *prefix)
 {
@@ -432,14 +432,7 @@ OnionPeelAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-OnionPeelAttributes_compare(PyObject *v, PyObject *w)
-{
-    OnionPeelAttributes *a = ((OnionPeelAttributesObject *)v)->data;
-    OnionPeelAttributes *b = ((OnionPeelAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *OnionPeelAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyOnionPeelAttributes_getattr(PyObject *self, char *name)
 {
@@ -538,49 +531,70 @@ static char *OnionPeelAttributes_Purpose = "Attributes for the onion peel operat
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject OnionPeelAttributesType =
+
+VISIT_PY_TYPE_OBJ(OnionPeelAttributesType,         \
+                  "OnionPeelAttributes",           \
+                  OnionPeelAttributesObject,       \
+                  OnionPeelAttributes_dealloc,     \
+                  OnionPeelAttributes_print,       \
+                  PyOnionPeelAttributes_getattr,   \
+                  PyOnionPeelAttributes_setattr,   \
+                  OnionPeelAttributes_str,         \
+                  OnionPeelAttributes_Purpose,     \
+                  OnionPeelAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+OnionPeelAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "OnionPeelAttributes",                    // tp_name
-    sizeof(OnionPeelAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)OnionPeelAttributes_dealloc,  // tp_dealloc
-    (printfunc)OnionPeelAttributes_print,     // tp_print
-    (getattrfunc)PyOnionPeelAttributes_getattr, // tp_getattr
-    (setattrfunc)PyOnionPeelAttributes_setattr, // tp_setattr
-    (cmpfunc)OnionPeelAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)OnionPeelAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    OnionPeelAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &OnionPeelAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    OnionPeelAttributes *a = ((OnionPeelAttributesObject *)self)->data;
+    OnionPeelAttributes *b = ((OnionPeelAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

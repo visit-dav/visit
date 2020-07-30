@@ -5,6 +5,7 @@
 #ifndef PY_COORDSWAPATTRIBUTES_H
 #define PY_COORDSWAPATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <CoordSwapAttributes.h>
 
 //

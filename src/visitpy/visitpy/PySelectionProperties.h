@@ -5,6 +5,7 @@
 #ifndef PY_SELECTIONPROPERTIES_H
 #define PY_SELECTIONPROPERTIES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <SelectionProperties.h>
 #include <visitpy_exports.h>
 

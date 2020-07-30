@@ -57,7 +57,7 @@ ViewerRPCCallbacks::~ViewerRPCCallbacks()
             //       even if it causes the object to get deleted. Other objects
             //       work okay so our reference counting seems good.
             bool lastInstance = Py_REFCNT(pycb_data[r]) == 1 &&
-                                PyInstance_Check(pycb_data[r]);
+                                PyType_Check(pycb_data[r]);
             if(!lastInstance)
 #endif
                 Py_DECREF(pycb_data[r]);

@@ -5,6 +5,7 @@
 #ifndef PY_STAGGERATTRIBUTES_H
 #define PY_STAGGERATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <StaggerAttributes.h>
 
 //

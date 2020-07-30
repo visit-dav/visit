@@ -5,6 +5,7 @@
 #include <PyAnimationAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyAnimationAttributes
@@ -34,7 +35,6 @@ struct AnimationAttributesObject
 // Internal prototypes
 //
 static PyObject *NewAnimationAttributes(int);
-
 std::string
 PyAnimationAttributes_ToString(const AnimationAttributes *atts, const char *prefix)
 {
@@ -269,14 +269,7 @@ AnimationAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-AnimationAttributes_compare(PyObject *v, PyObject *w)
-{
-    AnimationAttributes *a = ((AnimationAttributesObject *)v)->data;
-    AnimationAttributes *b = ((AnimationAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *AnimationAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAnimationAttributes_getattr(PyObject *self, char *name)
 {
@@ -363,49 +356,70 @@ static char *AnimationAttributes_Purpose = "This class contains the animation at
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject AnimationAttributesType =
+
+VISIT_PY_TYPE_OBJ(AnimationAttributesType,         \
+                  "AnimationAttributes",           \
+                  AnimationAttributesObject,       \
+                  AnimationAttributes_dealloc,     \
+                  AnimationAttributes_print,       \
+                  PyAnimationAttributes_getattr,   \
+                  PyAnimationAttributes_setattr,   \
+                  AnimationAttributes_str,         \
+                  AnimationAttributes_Purpose,     \
+                  AnimationAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+AnimationAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "AnimationAttributes",                    // tp_name
-    sizeof(AnimationAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)AnimationAttributes_dealloc,  // tp_dealloc
-    (printfunc)AnimationAttributes_print,     // tp_print
-    (getattrfunc)PyAnimationAttributes_getattr, // tp_getattr
-    (setattrfunc)PyAnimationAttributes_setattr, // tp_setattr
-    (cmpfunc)AnimationAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)AnimationAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    AnimationAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &AnimationAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    AnimationAttributes *a = ((AnimationAttributesObject *)self)->data;
+    AnimationAttributes *b = ((AnimationAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

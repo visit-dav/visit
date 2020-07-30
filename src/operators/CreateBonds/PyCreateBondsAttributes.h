@@ -5,6 +5,7 @@
 #ifndef PY_CREATEBONDSATTRIBUTES_H
 #define PY_CREATEBONDSATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <CreateBondsAttributes.h>
 
 //

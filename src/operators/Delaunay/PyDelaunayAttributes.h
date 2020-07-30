@@ -5,6 +5,7 @@
 #ifndef PY_DELAUNAYATTRIBUTES_H
 #define PY_DELAUNAYATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <DelaunayAttributes.h>
 
 //

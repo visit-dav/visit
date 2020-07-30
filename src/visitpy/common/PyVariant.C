@@ -2,6 +2,7 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
+#include <Py2and3Support.h>
 #include <PyVariant.h>
 
 

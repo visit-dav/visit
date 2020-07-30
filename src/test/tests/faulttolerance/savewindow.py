@@ -38,9 +38,9 @@ for i in range(6):
     try:
         SaveWindow()
     except Exception as inst:
-	s = s + "save %d had exception \"%s\"\n"%(i,inst);
+        s = s + "save %d had exception \"%s\"\n"%(i,inst);
     else:
-	s = s + "save %d succeeded\n"%i;
+        s = s + "save %d succeeded\n"%i;
 
 TestText("SaveWindowEngineCrash", s)
 

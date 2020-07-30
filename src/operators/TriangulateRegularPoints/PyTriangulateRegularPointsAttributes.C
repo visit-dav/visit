@@ -5,6 +5,7 @@
 #include <PyTriangulateRegularPointsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyTriangulateRegularPointsAttributes
@@ -34,7 +35,6 @@ struct TriangulateRegularPointsAttributesObject
 // Internal prototypes
 //
 static PyObject *NewTriangulateRegularPointsAttributes(int);
-
 std::string
 PyTriangulateRegularPointsAttributes_ToString(const TriangulateRegularPointsAttributes *atts, const char *prefix)
 {
@@ -192,14 +192,7 @@ TriangulateRegularPointsAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-TriangulateRegularPointsAttributes_compare(PyObject *v, PyObject *w)
-{
-    TriangulateRegularPointsAttributes *a = ((TriangulateRegularPointsAttributesObject *)v)->data;
-    TriangulateRegularPointsAttributes *b = ((TriangulateRegularPointsAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *TriangulateRegularPointsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyTriangulateRegularPointsAttributes_getattr(PyObject *self, char *name)
 {
@@ -268,49 +261,70 @@ static char *TriangulateRegularPointsAttributes_Purpose = "Attributes for the tr
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject TriangulateRegularPointsAttributesType =
+
+VISIT_PY_TYPE_OBJ(TriangulateRegularPointsAttributesType,         \
+                  "TriangulateRegularPointsAttributes",           \
+                  TriangulateRegularPointsAttributesObject,       \
+                  TriangulateRegularPointsAttributes_dealloc,     \
+                  TriangulateRegularPointsAttributes_print,       \
+                  PyTriangulateRegularPointsAttributes_getattr,   \
+                  PyTriangulateRegularPointsAttributes_setattr,   \
+                  TriangulateRegularPointsAttributes_str,         \
+                  TriangulateRegularPointsAttributes_Purpose,     \
+                  TriangulateRegularPointsAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+TriangulateRegularPointsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "TriangulateRegularPointsAttributes",                    // tp_name
-    sizeof(TriangulateRegularPointsAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)TriangulateRegularPointsAttributes_dealloc,  // tp_dealloc
-    (printfunc)TriangulateRegularPointsAttributes_print,     // tp_print
-    (getattrfunc)PyTriangulateRegularPointsAttributes_getattr, // tp_getattr
-    (setattrfunc)PyTriangulateRegularPointsAttributes_setattr, // tp_setattr
-    (cmpfunc)TriangulateRegularPointsAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)TriangulateRegularPointsAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    TriangulateRegularPointsAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &TriangulateRegularPointsAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    TriangulateRegularPointsAttributes *a = ((TriangulateRegularPointsAttributesObject *)self)->data;
+    TriangulateRegularPointsAttributes *b = ((TriangulateRegularPointsAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

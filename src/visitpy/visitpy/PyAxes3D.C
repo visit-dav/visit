@@ -5,6 +5,7 @@
 #include <PyAxes3D.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PyAxisAttributes.h>
 #include <PyAxisAttributes.h>
 #include <PyAxisAttributes.h>
@@ -37,7 +38,6 @@ struct Axes3DObject
 // Internal prototypes
 //
 static PyObject *NewAxes3D(int);
-
 std::string
 PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
 {
@@ -830,14 +830,7 @@ Axes3D_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-Axes3D_compare(PyObject *v, PyObject *w)
-{
-    Axes3D *a = ((Axes3DObject *)v)->data;
-    Axes3D *b = ((Axes3DObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *Axes3D_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAxes3D_getattr(PyObject *self, char *name)
 {
@@ -984,49 +977,70 @@ static char *Axes3D_Purpose = "Contains the properties for the 3D axes.";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject Axes3DType =
+
+VISIT_PY_TYPE_OBJ(Axes3DType,         \
+                  "Axes3D",           \
+                  Axes3DObject,       \
+                  Axes3D_dealloc,     \
+                  Axes3D_print,       \
+                  PyAxes3D_getattr,   \
+                  PyAxes3D_setattr,   \
+                  Axes3D_str,         \
+                  Axes3D_Purpose,     \
+                  Axes3D_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+Axes3D_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "Axes3D",                    // tp_name
-    sizeof(Axes3DObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)Axes3D_dealloc,  // tp_dealloc
-    (printfunc)Axes3D_print,     // tp_print
-    (getattrfunc)PyAxes3D_getattr, // tp_getattr
-    (setattrfunc)PyAxes3D_setattr, // tp_setattr
-    (cmpfunc)Axes3D_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)Axes3D_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    Axes3D_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &Axes3DType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    Axes3D *a = ((Axes3DObject *)self)->data;
+    Axes3D *b = ((Axes3DObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

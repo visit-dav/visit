@@ -5,6 +5,7 @@
 #ifndef PY_SURFCOMPPREPATTRIBUTES_H
 #define PY_SURFCOMPPREPATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <SurfCompPrepAttributes.h>
 
 //

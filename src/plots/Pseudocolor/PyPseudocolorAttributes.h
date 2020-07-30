@@ -5,6 +5,7 @@
 #ifndef PY_PSEUDOCOLORATTRIBUTES_H
 #define PY_PSEUDOCOLORATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PseudocolorAttributes.h>
 
 //

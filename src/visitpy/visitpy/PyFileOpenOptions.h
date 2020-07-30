@@ -5,6 +5,7 @@
 #ifndef PY_FILEOPENOPTIONS_H
 #define PY_FILEOPENOPTIONS_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <FileOpenOptions.h>
 #include <visitpy_exports.h>
 

@@ -5,6 +5,7 @@
 #ifndef PY_TOROIDALPOLOIDALPROJECTION_H
 #define PY_TOROIDALPOLOIDALPROJECTION_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ToroidalPoloidalProjection.h>
 
 //
