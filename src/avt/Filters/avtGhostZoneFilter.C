@@ -320,7 +320,7 @@ avtGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
     vtkDataSetRemoveGhostCells *filter = vtkDataSetRemoveGhostCells::New();
     filter->SetGhostNodeTypesToRemove(ghostNodeTypesToRemove);
     filter->SetGhostZoneTypesToRemove(ghostZoneTypesToRemove);
-    filter->SetforceConfirmRegion(confirmRegion);
+    filter->SetForceConfirmRegion(confirmRegion);
     filter->SetInputData(in_ds);
 
     //
