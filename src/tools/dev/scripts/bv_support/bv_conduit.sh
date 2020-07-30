@@ -173,17 +173,20 @@ function build_conduit
             fi
         fi
     fi
-    
-    
+
     if [[ "$DO_HDF5" == "yes" ]] ; then
         cfg_opts="${cfg_opts} -DHDF5_DIR:STRING=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/"
+    fi
+
+    if [[ "$DO_PYTHON" == "yes" ]] ; then
+        cfg_opts="${cfg_opts} -DPYTHON_EXECUTABLE:STRING=$PYTHON_COMMAND"
     fi
 
     if [[ "$FC_COMPILER" != "no" ]] ; then
         cfg_opts="${cfg_opts} -DENABLE_FORTRAN:BOOL=ON"
         cfg_opts="${cfg_opts} -DCMAKE_Fortran_COMPILER:STRING=${FC_COMPILER}"
     fi
-    
+
     #
     # Conduit Relay MPI Support
     #

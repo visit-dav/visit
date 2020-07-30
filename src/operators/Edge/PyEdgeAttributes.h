@@ -5,6 +5,7 @@
 #ifndef PY_EDGEATTRIBUTES_H
 #define PY_EDGEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <EdgeAttributes.h>
 
 //

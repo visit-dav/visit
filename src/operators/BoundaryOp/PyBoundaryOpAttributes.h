@@ -5,6 +5,7 @@
 #ifndef PY_BOUNDARYOPATTRIBUTES_H
 #define PY_BOUNDARYOPATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <BoundaryOpAttributes.h>
 
 //

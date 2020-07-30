@@ -5,6 +5,7 @@
 #include <PySaveWindowAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PySaveSubWindowsAttributes.h>
 #include <PyDBOptionsAttributes.h>
 
@@ -36,7 +37,6 @@ struct SaveWindowAttributesObject
 // Internal prototypes
 //
 static PyObject *NewSaveWindowAttributes(int);
-
 std::string
 PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *prefix)
 {
@@ -158,11 +158,11 @@ PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *pr
     else
         snprintf(tmpStr, 1000, "%sstereo = 0\n", prefix);
     str += tmpStr;
-    const char *compression_names = "None, PackBits, Jpeg, Deflate, LZW";
+    const char *compression_names = "NONE, PackBits, Jpeg, Deflate, LZW";
     switch (atts->GetCompression())
     {
       case SaveWindowAttributes::None:
-          snprintf(tmpStr, 1000, "%scompression = %sNone  # %s\n", prefix, prefix, compression_names);
+          snprintf(tmpStr, 1000, "%scompression = %sNONE  # %s\n", prefix, prefix, compression_names);
           str += tmpStr;
           break;
       case SaveWindowAttributes::PackBits:
@@ -834,14 +834,7 @@ SaveWindowAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-SaveWindowAttributes_compare(PyObject *v, PyObject *w)
-{
-    SaveWindowAttributes *a = ((SaveWindowAttributesObject *)v)->data;
-    SaveWindowAttributes *b = ((SaveWindowAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *SaveWindowAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySaveWindowAttributes_getattr(PyObject *self, char *name)
 {
@@ -905,6 +898,8 @@ PySaveWindowAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "compression") == 0)
         return SaveWindowAttributes_GetCompression(self, NULL);
     if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(SaveWindowAttributes::None));
+    if(strcmp(name, "NONE") == 0)
         return PyInt_FromLong(long(SaveWindowAttributes::None));
     if(strcmp(name, "PackBits") == 0)
         return PyInt_FromLong(long(SaveWindowAttributes::PackBits));
@@ -1023,49 +1018,70 @@ static char *SaveWindowAttributes_Purpose = "This class contains the attributes 
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject SaveWindowAttributesType =
+
+VISIT_PY_TYPE_OBJ(SaveWindowAttributesType,         \
+                  "SaveWindowAttributes",           \
+                  SaveWindowAttributesObject,       \
+                  SaveWindowAttributes_dealloc,     \
+                  SaveWindowAttributes_print,       \
+                  PySaveWindowAttributes_getattr,   \
+                  PySaveWindowAttributes_setattr,   \
+                  SaveWindowAttributes_str,         \
+                  SaveWindowAttributes_Purpose,     \
+                  SaveWindowAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+SaveWindowAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "SaveWindowAttributes",                    // tp_name
-    sizeof(SaveWindowAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)SaveWindowAttributes_dealloc,  // tp_dealloc
-    (printfunc)SaveWindowAttributes_print,     // tp_print
-    (getattrfunc)PySaveWindowAttributes_getattr, // tp_getattr
-    (setattrfunc)PySaveWindowAttributes_setattr, // tp_setattr
-    (cmpfunc)SaveWindowAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)SaveWindowAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    SaveWindowAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &SaveWindowAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    SaveWindowAttributes *a = ((SaveWindowAttributesObject *)self)->data;
+    SaveWindowAttributes *b = ((SaveWindowAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

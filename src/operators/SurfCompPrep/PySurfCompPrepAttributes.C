@@ -5,6 +5,7 @@
 #include <PySurfCompPrepAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PySurfCompPrepAttributes
@@ -34,7 +35,6 @@ struct SurfCompPrepAttributesObject
 // Internal prototypes
 //
 static PyObject *NewSurfCompPrepAttributes(int);
-
 std::string
 PySurfCompPrepAttributes_ToString(const SurfCompPrepAttributes *atts, const char *prefix)
 {
@@ -686,14 +686,7 @@ SurfCompPrepAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-SurfCompPrepAttributes_compare(PyObject *v, PyObject *w)
-{
-    SurfCompPrepAttributes *a = ((SurfCompPrepAttributesObject *)v)->data;
-    SurfCompPrepAttributes *b = ((SurfCompPrepAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *SurfCompPrepAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySurfCompPrepAttributes_getattr(PyObject *self, char *name)
 {
@@ -840,49 +833,70 @@ static char *SurfCompPrepAttributes_Purpose = "Attributes for the SurfCompPrep o
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject SurfCompPrepAttributesType =
+
+VISIT_PY_TYPE_OBJ(SurfCompPrepAttributesType,         \
+                  "SurfCompPrepAttributes",           \
+                  SurfCompPrepAttributesObject,       \
+                  SurfCompPrepAttributes_dealloc,     \
+                  SurfCompPrepAttributes_print,       \
+                  PySurfCompPrepAttributes_getattr,   \
+                  PySurfCompPrepAttributes_setattr,   \
+                  SurfCompPrepAttributes_str,         \
+                  SurfCompPrepAttributes_Purpose,     \
+                  SurfCompPrepAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+SurfCompPrepAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "SurfCompPrepAttributes",                    // tp_name
-    sizeof(SurfCompPrepAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)SurfCompPrepAttributes_dealloc,  // tp_dealloc
-    (printfunc)SurfCompPrepAttributes_print,     // tp_print
-    (getattrfunc)PySurfCompPrepAttributes_getattr, // tp_getattr
-    (setattrfunc)PySurfCompPrepAttributes_setattr, // tp_setattr
-    (cmpfunc)SurfCompPrepAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)SurfCompPrepAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    SurfCompPrepAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &SurfCompPrepAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    SurfCompPrepAttributes *a = ((SurfCompPrepAttributesObject *)self)->data;
+    SurfCompPrepAttributes *b = ((SurfCompPrepAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

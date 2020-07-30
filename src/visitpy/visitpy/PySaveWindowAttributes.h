@@ -5,6 +5,7 @@
 #ifndef PY_SAVEWINDOWATTRIBUTES_H
 #define PY_SAVEWINDOWATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <SaveWindowAttributes.h>
 #include <visitpy_exports.h>
 

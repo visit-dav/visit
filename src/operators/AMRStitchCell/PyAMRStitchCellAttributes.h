@@ -5,6 +5,7 @@
 #ifndef PY_AMRSTITCHCELLATTRIBUTES_H
 #define PY_AMRSTITCHCELLATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <AMRStitchCellAttributes.h>
 
 //

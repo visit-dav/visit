@@ -5,6 +5,7 @@
 #include <PyViewerClientInformationElement.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyViewerClientInformationElement
@@ -34,7 +35,6 @@ struct ViewerClientInformationElementObject
 // Internal prototypes
 //
 static PyObject *NewViewerClientInformationElement(int);
-
 std::string
 PyViewerClientInformationElement_ToString(const ViewerClientInformationElement *atts, const char *prefix)
 {
@@ -284,14 +284,7 @@ ViewerClientInformationElement_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ViewerClientInformationElement_compare(PyObject *v, PyObject *w)
-{
-    ViewerClientInformationElement *a = ((ViewerClientInformationElementObject *)v)->data;
-    ViewerClientInformationElement *b = ((ViewerClientInformationElementObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ViewerClientInformationElement_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyViewerClientInformationElement_getattr(PyObject *self, char *name)
 {
@@ -364,49 +357,70 @@ static char *ViewerClientInformationElement_Purpose = "This class contains the r
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject ViewerClientInformationElementType =
+
+VISIT_PY_TYPE_OBJ(ViewerClientInformationElementType,         \
+                  "ViewerClientInformationElement",           \
+                  ViewerClientInformationElementObject,       \
+                  ViewerClientInformationElement_dealloc,     \
+                  ViewerClientInformationElement_print,       \
+                  PyViewerClientInformationElement_getattr,   \
+                  PyViewerClientInformationElement_setattr,   \
+                  ViewerClientInformationElement_str,         \
+                  ViewerClientInformationElement_Purpose,     \
+                  ViewerClientInformationElement_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+ViewerClientInformationElement_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ViewerClientInformationElement",                    // tp_name
-    sizeof(ViewerClientInformationElementObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ViewerClientInformationElement_dealloc,  // tp_dealloc
-    (printfunc)ViewerClientInformationElement_print,     // tp_print
-    (getattrfunc)PyViewerClientInformationElement_getattr, // tp_getattr
-    (setattrfunc)PyViewerClientInformationElement_setattr, // tp_setattr
-    (cmpfunc)ViewerClientInformationElement_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ViewerClientInformationElement_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ViewerClientInformationElement_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &ViewerClientInformationElementType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ViewerClientInformationElement *a = ((ViewerClientInformationElementObject *)self)->data;
+    ViewerClientInformationElement *b = ((ViewerClientInformationElementObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

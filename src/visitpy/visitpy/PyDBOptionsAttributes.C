@@ -5,6 +5,7 @@
 #include <PyDBOptionsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyDBOptionsAttributes
@@ -34,7 +35,6 @@ struct DBOptionsAttributesObject
 // Internal prototypes
 //
 static PyObject *NewDBOptionsAttributes(int);
-
 std::string
 PyDBOptionsAttributes_ToString(const DBOptionsAttributes *atts, const char *prefix)
 {
@@ -183,14 +183,7 @@ DBOptionsAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-DBOptionsAttributes_compare(PyObject *v, PyObject *w)
-{
-    DBOptionsAttributes *a = ((DBOptionsAttributesObject *)v)->data;
-    DBOptionsAttributes *b = ((DBOptionsAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *DBOptionsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyDBOptionsAttributes_getattr(PyObject *self, char *name)
 {
@@ -251,49 +244,70 @@ static char *DBOptionsAttributes_Purpose = "Attributes of database options";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject DBOptionsAttributesType =
+
+VISIT_PY_TYPE_OBJ(DBOptionsAttributesType,         \
+                  "DBOptionsAttributes",           \
+                  DBOptionsAttributesObject,       \
+                  DBOptionsAttributes_dealloc,     \
+                  DBOptionsAttributes_print,       \
+                  PyDBOptionsAttributes_getattr,   \
+                  PyDBOptionsAttributes_setattr,   \
+                  DBOptionsAttributes_str,         \
+                  DBOptionsAttributes_Purpose,     \
+                  DBOptionsAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+DBOptionsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "DBOptionsAttributes",                    // tp_name
-    sizeof(DBOptionsAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)DBOptionsAttributes_dealloc,  // tp_dealloc
-    (printfunc)DBOptionsAttributes_print,     // tp_print
-    (getattrfunc)PyDBOptionsAttributes_getattr, // tp_getattr
-    (setattrfunc)PyDBOptionsAttributes_setattr, // tp_setattr
-    (cmpfunc)DBOptionsAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)DBOptionsAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    DBOptionsAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &DBOptionsAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    DBOptionsAttributes *a = ((DBOptionsAttributesObject *)self)->data;
+    DBOptionsAttributes *b = ((DBOptionsAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

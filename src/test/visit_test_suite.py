@@ -971,6 +971,43 @@ def rsync_post(src_dir,rsync_dest):
                     echo=opts["verbose"])
 
 
+# ----------------------------------------------------------------------------
+#  Method: resolve_test_paths
+#  Purpose: Help resolve tests paths
+#
+#  Programmer: Cyrus Harrison + Kathleen Biagas
+#  Date:       Fri Apr 10 09:16:38 PDT 2020
+#
+#  Note: This code was refactored from main()
+#
+#  Modifications:
+#
+# ----------------------------------------------------------------------------
+def resolve_test_paths(tests,tests_dir):
+    res = []
+    for t in tests:
+        # first check if we were passed the full path to a test script
+        t_abs_path = abs_path(t)
+        if os.path.isfile(t_abs_path):
+            res.append(t_abs_path)
+        # if not, assume it is relative to tests dir
+        else:
+            t_abs_path = abs_path(pjoin(tests_dir, "..",t))
+            if not os.path.isfile(t_abs_path):
+                res.append(t_abs_path)
+            else:
+                print("[WARNING: could not find test file: {}]".format(t_abs_path))
+    # use glob to match any *.py
+    expandedtests = []
+    for t in res:
+       if not '*' in t:
+          expandedtests.append(t)
+       else:
+          for match in glob.iglob(t):
+             expandedtests.append(match)
+    if len(expandedtests) > 0:
+        res = expandedtests
+    return res
 
 # ----------------------------------------------------------------------------
 #  Method: main
@@ -989,6 +1026,11 @@ def rsync_post(src_dir,rsync_dest):
 #
 #   Kathleen Biagas, Wed Dec 18 17:22:59 MST 2019
 #   On windows, glob any '*.py' tests names.
+#
+#
+#   Cyrus Harrison, Fri Apr 10 08:57:27 PDT 2020
+#   Allow passing test via full file path, in addition to rel to the 
+#   tests dir.
 #
 #   Kathleen Biagas, Wed Jun  3 09:28:11 PDT 2020
 #   Test for '*' on all platforms not just windows. Allows globbing from
@@ -1013,18 +1055,9 @@ def main(opts,tests):
         ridx  = pjoin(opts["result_dir"],"results.json")
         tests = load_test_cases_from_index(opts["tests_dir"],ridx,True)
     elif len(tests) == 0:
-        tests = find_test_cases(opts["tests_dir"],opts["classes"])
-    tests = [ abs_path(pjoin(opts["tests_dir"], "..",t)) for t in tests]
-    # use glob to match any *.py
-    expandedtests = []
-    for t in tests:
-       if not '*' in t:
-          expandedtests.append(t)
-       else:
-          for match in glob.iglob(t):
-             expandedtests.append(match)
-    if len(expandedtests) > 0:
-        tests = expandedtests
+        tests = find_test_cases(opts["tests_dir"],opts["classes"]) 
+    # reckon test paths using helper
+    tests = resolve_test_paths(tests,opts["tests_dir"])
     prepare_result_dirs(opts["result_dir"])
     ststamp = timestamp(sep=":")
     stime   = time.time()

@@ -5,6 +5,7 @@
 #include <PyTensorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -35,7 +36,6 @@ struct TensorAttributesObject
 // Internal prototypes
 //
 static PyObject *NewTensorAttributes(int);
-
 std::string
 PyTensorAttributes_ToString(const TensorAttributes *atts, const char *prefix)
 {
@@ -732,14 +732,7 @@ TensorAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-TensorAttributes_compare(PyObject *v, PyObject *w)
-{
-    TensorAttributes *a = ((TensorAttributesObject *)v)->data;
-    TensorAttributes *b = ((TensorAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *TensorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyTensorAttributes_getattr(PyObject *self, char *name)
 {
@@ -878,49 +871,70 @@ static char *TensorAttributes_Purpose = "Attributes for the tensor plot";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject TensorAttributesType =
+
+VISIT_PY_TYPE_OBJ(TensorAttributesType,         \
+                  "TensorAttributes",           \
+                  TensorAttributesObject,       \
+                  TensorAttributes_dealloc,     \
+                  TensorAttributes_print,       \
+                  PyTensorAttributes_getattr,   \
+                  PyTensorAttributes_setattr,   \
+                  TensorAttributes_str,         \
+                  TensorAttributes_Purpose,     \
+                  TensorAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+TensorAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "TensorAttributes",                    // tp_name
-    sizeof(TensorAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)TensorAttributes_dealloc,  // tp_dealloc
-    (printfunc)TensorAttributes_print,     // tp_print
-    (getattrfunc)PyTensorAttributes_getattr, // tp_getattr
-    (setattrfunc)PyTensorAttributes_setattr, // tp_setattr
-    (cmpfunc)TensorAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)TensorAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    TensorAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &TensorAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    TensorAttributes *a = ((TensorAttributesObject *)self)->data;
+    TensorAttributes *b = ((TensorAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
