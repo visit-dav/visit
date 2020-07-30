@@ -57,7 +57,7 @@ vtkDataSetRemoveGhostCells::vtkDataSetRemoveGhostCells():
     output(NULL),
     GhostNodeTypesToRemove(255),
     GhostZoneTypesToRemove(255),
-    forceConfirmRegion(false) { }
+    ForceConfirmRegion(false) { }
 
 // ****************************************************************************
 //  Modifications:
@@ -613,7 +613,7 @@ vtkDataSetRemoveGhostCells::StructuredGridExecute()
  
   vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *)
                               inGrid->GetCellData()->GetArray("avtGhostZones");
-  if ((forceConfirmRegion || GhostZoneTypesToRemove != 255) && arr != NULL)
+  if ((ForceConfirmRegion || GhostZoneTypesToRemove != 255) && arr != NULL)
   {
     unsigned char *ghosts = arr->GetPointer(0);
     int dims[3];
