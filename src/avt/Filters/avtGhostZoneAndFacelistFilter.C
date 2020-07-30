@@ -270,7 +270,10 @@ avtGhostZoneAndFacelistFilter::SetMustCreatePolyData(bool val)
 //    from earlier mass renamings of avtContract.
 //
 //    Alister Maguire, Tue Jul 16 14:12:20 PDT 2019
-//    Added a check for the forceRemoveFacesBeforeGhosts flag. 
+//    Added a check for the forceRemoveFacesBeforeGhosts flag.
+//
+//    Kevin Griffin, Wed Jul 29 17:01:33 PDT 2020
+//    Set region confirmation for Curvilinear meshes.
 //
 // ****************************************************************************
 
@@ -286,7 +289,10 @@ avtGhostZoneAndFacelistFilter::Execute(void)
     // circumstances.  ['3352].
     avtDataAttributes &a = dObj->GetInfo().GetAttributes();
     useGhostFilter = (a.GetContainsGhostZones()!=AVT_NO_GHOSTS ? true : false);
-
+    
+    if(a.GetMeshType() == avtMeshType::AVT_CURVILINEAR_MESH)
+        ghostFilter->SetConfirmRegion(true);
+    
     avtDataset_p ds; 
     CopyTo(ds, dObj);
     avtSourceFromAVTDataset termsrc(ds);
