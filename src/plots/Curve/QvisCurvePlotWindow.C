@@ -372,7 +372,7 @@ QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     //
 #define CREATE_PIXMAP(pixobj, name, xpm) \
     QPixmap pixobj; \
-    if(!QPixmapCache::find(name, pixobj)) \
+    if(!QPixmapCache::find(name, &pixobj)) \
     { \
         char *augmentedData[35], augmentedForeground[15]; \
         for(int i = 0; i < 35; ++i) \

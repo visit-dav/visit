@@ -457,7 +457,7 @@ QvisDatabaseCorrelationListWindow::newCorrelation()
     QString newName;
     do
     {
-        newName.sprintf("Correlation%02d", newCorrelationCounter++);
+        newName.asprintf("Correlation%02d", newCorrelationCounter++);
     } while(correlationList->FindCorrelation(newName.toStdString()) != 0);
 
     //

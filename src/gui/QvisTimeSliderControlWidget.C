@@ -637,7 +637,7 @@ QvisTimeSliderControlWidget::UpdateTimeFieldText(int timeState)
                 // If we did not set the time yet, do it with the index.
                 if(timeNeedsToBeSet)
                 {
-                    timeString.sprintf("%d", timeState);
+                    timeString.asprintf("%d", timeState);
                     SetTimeFieldText(timeString);
                 }
             }
@@ -646,7 +646,7 @@ QvisTimeSliderControlWidget::UpdateTimeFieldText(int timeState)
         {
             // There was no correlation but we know the time state that we want to
             // display so let's show that in the time line edit.
-            timeString.sprintf("%d", timeState);
+            timeString.asprintf("%d", timeState);
             SetTimeFieldText(timeString);
         }
     }
@@ -677,7 +677,7 @@ void
 QvisTimeSliderControlWidget::SetTimeFieldText(const QString &text)
 {
     int w  = timeField->width();
-    int nw = timeField->fontMetrics().width("  " + text);
+    int nw = timeField->fontMetrics().horizontalAdvance("  " + text);
     if(w < nw)
         timeField->setMinimumWidth(nw);
     timeField->setText(text);
@@ -708,7 +708,7 @@ QString
 QvisTimeSliderControlWidget::FormattedCycleString(const int cycle) const
 {
     QString retval;
-    retval.sprintf("%04d", cycle);
+    retval.asprintf("%04d", cycle);
     return retval;
 }
 
@@ -739,8 +739,8 @@ QvisTimeSliderControlWidget::FormattedTimeString(const double t, bool accurate) 
     if(accurate)
     {
         QString formatString;
-        formatString.sprintf("%%.%dg", timeStateFormat.GetPrecision());
-        retval.sprintf(formatString.toStdString().c_str(), t);
+        formatString.asprintf("%%.%dg", timeStateFormat.GetPrecision());
+        retval.asprintf(formatString.toStdString().c_str(), t);
     }
     return retval;
 }
@@ -862,7 +862,7 @@ QvisTimeSliderControlWidget::SetTimeSliderState(int state)
          else
          {
              QString msg;
-             msg.sprintf(" %d.", state);
+             msg.asprintf(" %d.", state);
              Message(tr("The active time slider is already at state") + msg);
          }
     }

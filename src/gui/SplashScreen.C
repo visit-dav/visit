@@ -334,7 +334,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
     lLayout->addWidget(new QLabel(C, this));
 
     QString versionText;
-    versionText.sprintf("VisIt %s, ", visitcommon::Version().c_str());
+    versionText.asprintf("VisIt %s, ", visitcommon::Version().c_str());
     versionText += QString(visitcommon::VersionControlVersionString().c_str());
 
     // Create a lookup of month names so the internationalization

@@ -340,7 +340,7 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
             maxMatsPerZoneLabel->setEnabled(atts->GetSimplifyHeavilyMixedZones());
             break;
           case MaterialAttributes::ID_maxMaterialsPerZone:
-            temp.sprintf("%d", atts->GetMaxMaterialsPerZone());
+            temp.asprintf("%d", atts->GetMaxMaterialsPerZone());
             maxMatsPerZone->setText(temp);
             break;
           case MaterialAttributes::ID_isoVolumeFraction:
