@@ -70,6 +70,7 @@ private:
     class Internals;
     Internals                       *d;
     int                             selectedLOD;
+    static const char *MESH_NAME;
 
     mfem::Mesh                     *FetchMesh(const std::string &mesh_name,
                                               int chunk);

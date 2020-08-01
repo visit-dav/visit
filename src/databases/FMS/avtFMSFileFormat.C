@@ -27,7 +27,9 @@
 
 #include <vtkFloatArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkUnsignedIntArray.h>
 #include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkLine.h>
 #include <vtkTriangle.h>
 #include <vtkHexahedron.h>
@@ -45,8 +47,10 @@ using     std::string;
 using     std::ostringstream;
 using     std::vector;
 
+// Controls whether to create original cell ids.
+#define CREATE_ORIGINAL_CELL_IDS
 
-#define MAKE_DATA_INSTEAD_OF_READING_IT
+//#define MAKE_DATA_INSTEAD_OF_READING_IT
 #ifdef MAKE_DATA_INSTEAD_OF_READING_IT
 void TestMakeFmsHexMesh(FmsDataCollection *dc_ptr) {
   FmsMesh mesh;
@@ -217,6 +221,13 @@ void TestMakeFmsHexMesh(FmsDataCollection *dc_ptr) {
 using namespace mfem;
 
 
+/**
+Let's make some simplifying assumptions.It looks like MFEM does not have 
+multiple domains in its Mesh class. The DataCollection contains a single 
+Mesh. Related domains in the FmsDataCollection all will be exposed as a 
+single mesh.
+*/
+
 class avtFMSFileFormat::Internals
 {
 public:
@@ -229,41 +240,30 @@ public:
     size_t size() const { return filenames.size(); }
 
     int TotalDomains() const;
-    bool GetDataCollection(FmsDataCollection *dc);
 
+    mfem::DataCollection *GetDataCollection(int domain);   
     mfem::Mesh *GetDomain(const char *domain_name, int domain);
-    mfem::Mesh *GetDomainWithField(const char *domain_name, int domain, const std::string &fieldName);
+    mfem::GridFunction *GetField(const char *domain_name, int domain, const std::string &fieldName);
 
     void ComputeTotalDomains();
 
 protected:
-    bool GlobalToLocalDomain(int dom, size_t &dbi, int &localDomain) const;
-    std::string FilenameForDomain(int domain) const;
     bool ReadDomain(int domain);
-    bool ReadDataCollection(const std::string &fn, FmsDataCollection *dc);
+    std::string FilenameForDomain(int domain) const;
 
-    std::string                              protocol;
-    std::vector<std::string>                 filenames;
-    std::vector<int>                         domainCount;
-    std::map<std::string, FmsDataCollection> dcCache;
-    std::map<int, mfem::Mesh *>              mfemCache;
+    std::string                                   protocol;
+    std::vector<std::string>                      filenames;
+    std::map<std::string, mfem::DataCollection *> mfemCache;
 };
 
-avtFMSFileFormat::Internals::Internals() : protocol("ascii"), filenames(), domainCount(), dcCache(), mfemCache()
+avtFMSFileFormat::Internals::Internals() : protocol("yaml"), filenames(), mfemCache()
 {
 }
 
 avtFMSFileFormat::Internals::~Internals()
 {
-    // Delete FMS objects.
-    for(std::map<std::string, FmsDataCollection>::iterator it = dcCache.begin();
-        it != dcCache.end(); it++)
-    {
-        FmsDataCollectionDestroy(&(it->second));
-    }
-
     // Delete MFEM objects.
-    for(std::map<int, mfem::Mesh*>::iterator it = mfemCache.begin();
+    for(std::map<std::string, mfem::DataCollection*>::iterator it = mfemCache.begin();
         it != mfemCache.end(); it++)
     {
         delete it->second;
@@ -309,147 +309,68 @@ avtFMSFileFormat::Internals::LoadFMS(const std::string &filename)
 int
 avtFMSFileFormat::Internals::TotalDomains() const
 {
-    int n = 0;
-    for(size_t i = 0; i < domainCount.size(); ++i)
-        n += domainCount[i];
-    return n;
-}
-
-void
-avtFMSFileFormat::Internals::ComputeTotalDomains()
-{
-    const char *mName = "avtFMSFileFormat::Internals::ComputeTotalDomains";
-    if(!domainCount.empty())
-        return;
-
-    std::vector<int> mywork;
-    int N = static_cast<int>(filenames.size());
-    debug5 << mName << ": mywork={";
-    for(int i = 0; i < N; ++i)
-    {
-        if(i % PAR_Size() == PAR_Rank())
-        {
-            mywork.push_back(i);
-            debug5 << i << ", ";
-        }
-    }
-    debug5 << "}" << endl;
-
-    std::vector<int> inputDomainCount(filenames.size(), 0);
-    domainCount.resize(filenames.size(), 0);
-
-    // Read the files assigned in mywork so we can get their number of domains.
-    for(size_t i = 0; i < mywork.size(); ++i)
-    {
-        FmsDataCollection dc;
-        debug5 << mName << ": Reading " << filenames[mywork[i]];
-        int nDomains = 0;
-        if(ReadDataCollection(filenames[mywork[i]], &dc))
-        {
-            // Save its number of domains too.
-            int nDomains = 0;
-            FmsMesh mesh;
-            if(FmsDataCollectionGetMesh(dc, &mesh) == 0)
-            {
-                FmsInt nDomainNames = 0;
-                if(FmsMeshGetNumDomainNames(mesh, &nDomainNames) == 0)
-                    nDomains = static_cast<int>(nDomainNames);
-            }
-
-            inputDomainCount[i] = nDomains;
-        }
-        debug5 << ", nDomains=" << nDomains << endl;
-    }
-
-    debug5 << mName << ": inputDomainCount={";
-    for(size_t i = 0; i < inputDomainCount.size(); ++i)
-        debug5 << inputDomainCount[i] << ", ";
-    debug5 << "}" << endl;
-    debug5 << mName << ": domainCount={";
-    for(size_t i = 0; i < domainCount.size(); ++i)
-        debug5 << domainCount[i] << ", ";
-    debug5 << "}" << endl;
-
-
-    // Sum the counts across all ranks.
-    SumIntArrayAcrossAllProcessors(&inputDomainCount[0], &domainCount[0], domainCount.size());
-
-    debug5 << mName << ": domainCount={";
-    for(size_t i = 0; i < domainCount.size(); ++i)
-        debug5 << domainCount[i] << ", ";
-    debug5 << "}" << endl;
-}
-
-bool
-avtFMSFileFormat::Internals::GlobalToLocalDomain(int dom, size_t &dbi,
-    int &localDomain) const
-{
-    int start = 0;
-    for(dbi = 0; dbi < domainCount.size(); ++dbi)
-    {
-        int nb = domainCount[dbi];
-        int end = start + nb;
-        if(dom >= start && dom < end)
-        {
-            localDomain = dom - start;
-            return true;
-        }
-        start += nb;
-    }
-    return false;
+    return filenames.size();
 }
 
 std::string
 avtFMSFileFormat::Internals::FilenameForDomain(int domain) const
 {
-    std::string fn;
-    size_t dbi = 0;
-    int localDomain = 0;
-    if(GlobalToLocalDomain(domain, dbi, localDomain))
-        fn = filenames[dbi];
-    else
-        fn = filenames[0];
-    return fn;
-}
-
-bool
-avtFMSFileFormat::Internals::ReadDataCollection(const std::string &fn, FmsDataCollection *dc)
-{
-    bool retval = false;
-#ifdef MAKE_DATA_INSTEAD_OF_READING_IT
-    // Just for now...
-    TestMakeFmsHexMesh(dc);
-
-    // Cache the data collection.
-    dcCache[fn] = *dc;
-
-    retval = true;
-#else
-    if(FmsIORead(fn.c_str(), protocol.c_str(), dc) == 0)
-    {
-        // Save the data collection.
-        dcCache[fn] = *dc;
-
-        retval = true;
-    }
-#endif
-    return retval;
+    return filenames[domain];
 }
 
 bool
 avtFMSFileFormat::Internals::ReadDomain(int domain)
 {
+    const char *mName = "avtFMSFileFormat::Internals::ReadDomain";
     bool retval = false;
     std::string fn(FilenameForDomain(domain));
     if(!fn.empty())
     {
-        if(dcCache.find(fn) == dcCache.end())
+        if(mfemCache.find(fn) == mfemCache.end())
         {
+            debug5 << mName << ": Data collection is not cached. Reading " << fn << endl;
             FmsDataCollection dc;
-            retval = ReadDataCollection(fn, &dc);
+#ifdef MAKE_DATA_INSTEAD_OF_READING_IT
+            TestMakeFmsHexMesh(&dc);
+#else
+            if(FmsIORead(fn.c_str(), protocol.c_str(), &dc) == 0)
+#endif
+            {
+debug5 << mName << ": Data collection was read." << endl;
+
+                TRY
+                {
+                    // Convert the FMS data collection to MFEM.
+                    mfem::DataCollection *mdc = nullptr;
+                    if(mfem::FmsDataCollectionToDataCollection(dc, &mdc) == 0)
+                    {
+debug5 << mName << ": Caching MFEM data collection for domain " << domain << endl;
+                        // Save the data collection.
+                        mfemCache[fn] = mdc;
+
+                        retval = true;
+                    }
+                    else
+                    {
+debug5 << mName << ": FAIL! MFEM data collection for domain " << domain << " did not convert." << endl;
+                    }
+                }
+                CATCH2(mfem::ErrorException, e)
+                {
+                    debug5 << mName << ": MFEM exception: \"" << e.what() << "\"" << endl;
+                    retval = false;
+                }
+                ENDTRY
+
+                // For now, assume that the mfem data collection does not point 
+                // to data from the FMS data collection.
+                FmsDataCollectionDestroy(&dc);
+            }
         }
         else
         {
+debug5 << mName << ": Data collection was already read." << endl;
+
             // The file has already been read.
             retval = true;
         }
@@ -457,144 +378,62 @@ avtFMSFileFormat::Internals::ReadDomain(int domain)
     return retval;
 }
 
-bool
-avtFMSFileFormat::Internals::GetDataCollection(FmsDataCollection *dc)
+mfem::DataCollection *
+avtFMSFileFormat::Internals::GetDataCollection(int domain)
 {
-    bool retval = false;
+    mfem::DataCollection *retval = nullptr;
 
-    // See if we can just compute the number of domains to make sure we know 
-    // how domains are distributed.
-
-    // I'd kind of like a FmsIOQueryNumberOfDomains(const char *filename, const char *protocol, int &nDomains) function so we can more cheaply determine the number of domains without reading the entire FmsDataCollection.
-
-    // This may not be parallel safe though because of where it is called.
-    ComputeTotalDomains();
-
-    auto it = dcCache.begin();
-    if(it != dcCache.end())
-    { 
-        *dc = it->second;
-        // We have an FmsDataCollection from some file in the series.
-        retval = true;
+    if(ReadDomain(domain))
+    {
+        std::string fn(FilenameForDomain(domain));
+        auto it = mfemCache.find(fn);
+        if(it != mfemCache.end())
+        {
+            retval = it->second;
+        }
     }
+
     return retval;
 }
+
 
 mfem::Mesh *
 avtFMSFileFormat::Internals::GetDomain(const char *domain_name, int domain)
 {
-    std::vector<std::string> fields;
-
     mfem::Mesh *retval = nullptr;
     if(ReadDomain(domain))
     {
-        std::map<int, mfem::Mesh *>::iterator it = mfemCache.find(domain);
+        std::string fn(FilenameForDomain(domain));
+        auto it = mfemCache.find(fn);
         if(it != mfemCache.end())
         {
-            // We already cached the MFEM dataset.
-            retval = it->second;
-        }
-        else
-        {
-            // Convert the MFEM dataset from FMS.
-            std::string fn;
-            size_t dbi = 0;
-            int localDomain = 0;
-            if(GlobalToLocalDomain(domain, dbi, localDomain))
-                fn = filenames[dbi];
-
-            FmsDataCollection dc = dcCache[fn];
-#if 1
-            // Get the mesh from the data collection.
-            FmsMesh fms_mesh;
-            FmsDataCollectionGetMesh(dc, &fms_mesh);
-
-            // Convert the mesh to an MFEM mesh.
-            if(mfem::FmsMeshToMesh(fms_mesh, &retval) == 0)
-            {
-                // Cache the object for later.
-                mfemCache[domain] = retval;
-            }
-#else
-            FmsMesh mesh;
-            if(FmsDataCollectionGetMesh(dc, &mesh) == 0)
-            {
-                FmsInt num_domains = 0;
-                FmsDomain *domains = nullptr;
-
-                // Get all the domains in this mesh having the right name.
-                if(FmsMeshGetDomainsByName(mesh, domain_name,
-                                           &num_domains, &domains) == 0)
-                {
-
-                    // Loop over ndomains?
-
-                    mfem::Mesh *mesh = nullptr;
-                    ConvertFmsToMfem(domains[localDomain], &mesh);
-
-                    retval = mfem::MeshFromFmsDomain(domains[localDomain], fields);
-
-                    // Cache the object for later.
-                    mfemCache[domain] = retval;
-                }
-            }
-#endif
+            // We already cached the MFEM data collection. Return its mesh.
+            retval = it->second->GetMesh();
         }
     }
 
     return retval;
 }
 
-mfem::Mesh *
-avtFMSFileFormat::Internals::GetDomainWithField(const char *domain_name, 
+mfem::GridFunction *
+avtFMSFileFormat::Internals::GetField(const char *domain_name, 
     int domain, const std::string &fieldName)
 {
-    std::vector<std::string> fields;
-    fields.push_back(fieldName);
-
-    mfem::Mesh *retval = nullptr;
-#if 0
+    mfem::GridFunction *retval = nullptr;
     if(ReadDomain(domain))
     {
-        // Convert the MFEM dataset from FMS.
-        std::string fn;
-        size_t dbi = 0;
-        int localDomain = 0;
-        if(GlobalToLocalDomain(domain, dbi, localDomain))
-            fn = filenames[dbi];
-
-        FmsDataCollection dc = dcCache[fn];
-        FmsMesh mesh;
-        if(FmsDataCollectionGetMesh(dc, &mesh) == 0)
+        std::string fn(FilenameForDomain(domain));
+        auto it = mfemCache.find(fn);
+        if(it != mfemCache.end())
         {
-            FmsInt num_domains = 0;
-            FmsDomain *domains = nullptr;
-
-            // Get all the domains in this mesh having the right name.
-            if(FmsMeshGetDomainsByName(mesh, domain_name,
-                                       &num_domains, &domains) == 0)
-            {
-                std::map<int, mfem::Mesh *>::iterator it = mfemCache.find(domain);
-                if(it == mfemCache.end())
-                {
-                    mfem::Mesh *mesh = nullptr;
-                    ConvertFmsToMfem(domains[localDomain], &mesh);
-
-                    retval = mfem::MeshFromFmsDomain(domains[localDomain], fields);
-                    // Cache the object for later.
-                    mfemCache[domain] = retval;
-                }
-
-                // Look for fieldName on the MFEM object.
-
-                // If it does not have fieldName, try to add it from
-                // the FMSDomain.
-            }
+            retval = it->second->GetField(fieldName);
         }
     }
-#endif
-    return retval; 
+
+    return retval;
 }
+
+const char *avtFMSFileFormat::MESH_NAME = "mesh";
 
 // ****************************************************************************
 //  Method: avtFMSFileFormat constructor
@@ -608,6 +447,9 @@ avtFMSFileFormat::avtFMSFileFormat(const char *filename)
     : avtSTMDFileFormat(&filename, 1)
 {
     selectedLOD = 0;
+
+    // Make MFEM throw instead of aborting.
+    mfem::set_error_action(MFEM_ERROR_THROW);
 
     d = new Internals;
 
@@ -676,10 +518,6 @@ void
 avtFMSFileFormat::ActivateTimestep(void)
 {
     debug5 << "avtFMSFileFormat::ActivateTimestep" << endl;
-    avtSTMDFileFormat::ActivateTimestep();
-
-    // Make sure that we know how many domains are in each file.
-    d->ComputeTotalDomains();
 }
 
 // ****************************************************************************
@@ -704,9 +542,10 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     // We do not know what domains will have been read thusfar, if any.
 
-    // For non-0 time steps, ActivateTimestep may not have been called. THAT WOULD BE A HUGE PROBLEM! NEED A TIME SERIES TO CHECK.
-    FmsDataCollection dc;
-    if(!d->GetDataCollection(&dc))
+    int nd = static_cast<int>(d->TotalDomains());
+    int domain = PAR_Rank() % nd;
+    const auto dc = d->GetDataCollection(domain);
+    if(dc == nullptr)
     {
         EXCEPTION1(InvalidFilesException, GetFilename());
     }
@@ -716,13 +555,13 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 // Q: is there a solution time,cycle,etc in the metadata?
 
     auto mmd = new avtMeshMetaData;
-    mmd->name = "mesh";
+    mmd->name = MESH_NAME;
     mmd->meshType = AVT_UNSTRUCTURED_MESH;
     mmd->spatialDimension = 3;// TODO: compute these from the type of entities in the mesh.
     mmd->topologicalDimension = 3;
     mmd->cellOrigin = 0;
     mmd->nodeOrigin = 0;
-    mmd->numBlocks = d->TotalDomains();
+    mmd->numBlocks = nd;
     mmd->blockTitle = "domains";
     mmd->blockPieceName = "domain";
     mmd->xUnits = "";
@@ -731,10 +570,45 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mmd->xLabel = "X";
     mmd->yLabel = "Y";
     mmd->zLabel = "Z";
+    mmd->LODs = 100; // The MultiresControl operator does not let us go above 1 without this.
+#ifdef CREATE_ORIGINAL_CELL_IDS
+    mmd->containsOriginalCells = true;
+#endif
     md->Add(mmd);
 
-    // Now we have a data collection so we can make metadata from it.
-    // Assumption: all data collections have the same set of fields.
+    // Use the cached MFEM data collection to add variables.
+    auto m = dc->GetFieldMap();
+    for(auto it = m.begin(); it != m.end(); it++)
+    {
+        // NOTE: assume node centered except when we get a DISCONTINUOUS
+        // FE collection. This does not account for TANGENTIAL,NORMAL cases.
+        avtCentering centering = AVT_NODECENT;
+        if(it->second->FESpace()->FEColl()->GetContType() ==
+            FiniteElementCollection::DISCONTINUOUS)
+        {
+            centering = AVT_ZONECENT;
+        }
+
+        if(it->second->VectorDim() == 1)
+        {
+            avtScalarMetaData *smd = new avtScalarMetaData;
+            smd->name = it->first;
+            smd->meshName = mmd->name;
+            smd->centering = centering;
+            md->Add(smd);
+        }
+        else
+        {
+            avtVectorMetaData *vmd = new avtVectorMetaData;
+            vmd->name = it->first;
+            vmd->meshName = mmd->name;
+            vmd->centering = centering;
+            md->Add(vmd);
+        }
+    }
+
+#if 0
+// Interrogate the FMS data collection to add scalars.
 
     std::vector<std::string> scalars, vectors;
     FmsField *fields = nullptr;
@@ -843,6 +717,7 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         debug5 << mName << ": Could not get the fields." << endl;
     }
+#endif
 
 #if 0
 
@@ -964,35 +839,21 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Purpose:
 //      Returns if we have the current cycle.
 //
-//  Programmer: Cyrus Harrison
-//  Creation:   Wed Oct 15 10:52:22 PDT 2014
+//  Programmer: Brad Whitlock
+//  Creation:   Thu Jul 30 16:03:09 PDT 2020
 //
 // ****************************************************************************
 int
 avtFMSFileFormat::GetCycle() 
 {
-#if 0
-    // VisIt doesn't support diff times / cycles for meshes
-    // we loop over all meshes to see if any have valid cycle info
-    if(root)
-    {
-        std::vector<std::string> dset_names;
-        root->DataSets(dset_names);
-        // enumerate datasets
-        bool not_found = true;
-        for(size_t i=0; i<dset_names.size() && not_found ;i++)
-        {
-            JSONRootDataSet &dset =  root->DataSet(dset_names[i]);
-            if(dset.HasCycle())
-            {
-                return dset.Cycle();
-            }
-        }
-    }
-#endif
+    int nd = static_cast<int>(d->TotalDomains());
+    int domain = PAR_Rank() % nd;
+    auto dc = d->GetDataCollection(domain);
+    if(dc != nullptr)
+        return dc->GetCycle();
+
     return avtFileFormat::INVALID_CYCLE;
 }
-
 
 // ****************************************************************************
 //  Method: avtFMSFileFormat::GetTime
@@ -1000,35 +861,21 @@ avtFMSFileFormat::GetCycle()
 //  Purpose:
 //      Returns if we have the current cycle.
 //
-//  Programmer: Cyrus Harrison
-//  Creation:   Wed Oct 15 10:52:22 PDT 2014
+//  Programmer: Brad Whitlock
+//  Creation:   Thu Jul 30 16:03:09 PDT 2020
 //
 // ****************************************************************************
 double
 avtFMSFileFormat::GetTime() 
 {
-#if 0
-    // VisIt doesn't support diff times / cycles for meshes
-    // we loop over all meshes to see if any have valid time info
-    if(root)
-    {
-        std::vector<std::string> dset_names;
-        root->DataSets(dset_names);
-        // enumerate datasets
-        bool not_found = true;
-        for(size_t i=0; i<dset_names.size() && not_found ;i++)
-        {
-            JSONRootDataSet &dset =  root->DataSet(dset_names[i]);
-            if(dset.HasTime())
-            {
-                return dset.Time();
-            }
-        }
-    }
-#endif
+    int nd = static_cast<int>(d->TotalDomains());
+    int domain = PAR_Rank() % nd;
+    auto dc = d->GetDataCollection(domain);
+    if(dc != nullptr)
+        return dc->GetTime();
+
     return avtFileFormat::INVALID_TIME;
 }
-
 
 // ****************************************************************************
 //  Method: avtFMSFileFormat::GetMesh
@@ -1054,8 +901,6 @@ avtFMSFileFormat::GetMesh(int domain, const char *meshname)
 {
     return GetRefinedMesh(string(meshname),domain,selectedLOD+1);
 }
-
-
 
 // ****************************************************************************
 //  Method: avtFMSFileFormat::GetVar
@@ -1118,56 +963,16 @@ avtFMSFileFormat::GetVectorVar(int domain, const char *varname)
 //    domain:    domain id
 //
 //
-//  Programmer: Cyrus Harrison
-//  Creation:   Sat Jul  5 11:38:31 PDT 2014
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Jul 27 17:30:23 PST 2020
 //
 // Modifications:
 //
 // ****************************************************************************
-Mesh *
-avtFMSFileFormat::FetchMesh(const std::string &mesh_name,int domain)
+mfem::Mesh *
+avtFMSFileFormat::FetchMesh(const std::string &mesh_name, int domain)
 {
-#if 1
     return d->GetDomain(mesh_name.c_str(), domain);
-#else
-    if(root == NULL)
-    {
-        //failed to open mesh file
-        ostringstream msg;
-        msg << "Failed to open MFEM mesh:"
-            << " root metadata is missing!";
-        EXCEPTION1(InvalidFilesException, msg.str());
-    }
-
-    string mesh_path = root->DataSet(mesh_name).Mesh().Path().Expand(domain);
-    string cat_path = root->DataSet(mesh_name).CatPath().Get();
-
-    if (cat_path != "")
-    {
-        std::istringstream imeshstr;
-        FetchDataFromCatFile(cat_path, mesh_path, imeshstr); 
-
-        // failed to get to mesh data from cat file
-        if (imeshstr)
-            return new Mesh(imeshstr, 1, 0, false);
-    }
-
-    visit_ifstream imesh(mesh_path.c_str());
-    if(imesh().fail())
-    {
-        //failed to open mesh file
-        ostringstream msg;
-        msg << "Failed to open MFEM mesh:"
-            << " mesh name: " << mesh_name 
-            << " domain: "    << domain
-            << " mesh path: \"" << mesh_path << "\"";
-        if (cat_path != "")
-            msg << " cat path: \"" << cat_path << "\"";
-        EXCEPTION1(InvalidFilesException, msg.str());
-    }
-   
-    return new Mesh(imesh(), 1, 0, false);
-#endif
 }
 
 // ****************************************************************************
@@ -1257,7 +1062,14 @@ avtFMSFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int l
     res_pts->Delete();  
     // create the cells for the refined topology   
     res_ds->Allocate(neles);
-    
+
+#ifdef CREATE_ORIGINAL_CELL_IDS
+    // Make some original cell ids so we can try to eliminate the mesh lines.
+    std::vector<unsigned int> originalCells;
+    originalCells.reserve(neles);
+    unsigned int udomain = static_cast<unsigned int>(domain);
+#endif
+
     pt_idx=0;
     for (int i = 0; i <  mesh->GetNE(); i++)
     {
@@ -1286,11 +1098,27 @@ avtFMSFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int l
             res_ds->InsertNextCell(ele_cell->GetCellType(),
                                    ele_cell->GetPointIds());
             ele_cell->Delete();
+
+#ifdef CREATE_ORIGINAL_CELL_IDS
+            originalCells.push_back(udomain);
+            originalCells.push_back(static_cast<unsigned int>(i));
+#endif
         }
 
         pt_idx += refined_geo->RefPts.GetNPoints();
    }
-   
+
+#ifdef CREATE_ORIGINAL_CELL_IDS
+    vtkUnsignedIntArray *origZones = vtkUnsignedIntArray::New();
+    origZones->SetName("avtOriginalCellNumbers");
+    origZones->SetNumberOfComponents(2);
+    origZones->SetNumberOfTuples(originalCells.size()/2);
+    memcpy(origZones->GetVoidPointer(0), &originalCells[0],
+           sizeof(unsigned int) * originalCells.size());
+    res_ds->GetCellData()->AddArray(origZones);
+    origZones->Delete();
+#endif
+
 //   delete mesh;
        
    return res_ds;
@@ -1325,75 +1153,25 @@ avtFMSFileFormat::GetRefinedVar(const std::string &var_name,
                                  int domain,
                                  int lod)
 {
-#if 0
-    if(root == NULL)
-    {
-        //failed to open mesh file
-        ostringstream msg;
-        msg << "Failed to fetch MFEM grid function:"
-            << " root metadata is missing!";
-        EXCEPTION1(InvalidFilesException, msg.str());
-    }
-
-    // find mesh for var
-    string mesh_name="main";
-    vector<string> dset_names;
-    root->DataSets(dset_names);
-    for(size_t i=0;i<dset_names.size();i++)
-    {
-        JSONRootDataSet &dset = root->DataSet(dset_names[i]);
-        vector<string> field_names;
-        dset.Fields(field_names);
-        for(size_t j=0;j<field_names.size();j++)
-        {
-            if(field_names[j] == var_name)
-                mesh_name = dset_names[i];
-        }
-    }
-
-    // check for special vars
-    if(var_name == "element_coloring")
-        return GetRefinedElementColoring(mesh_name,domain,lod);
-    else if(var_name == "element_attribute") // handle with materials in the future?
-        return GetRefinedElementAttribute(mesh_name,domain,lod);
+    const char *mName = "avtFMSFileFormat::GetRefinedVar";
 
     // get base mesh
-    Mesh *mesh = FetchMesh(mesh_name,domain);
+    mfem::Mesh *mesh = FetchMesh(MESH_NAME, domain);
 
-    JSONRootEntry &field = root->DataSet(mesh_name).Field(var_name);
-    string field_path = field.Path().Expand(domain);
-    bool var_is_nodal = field.Tag("assoc") == "nodes";
-    int  ncomps       = atoi(field.Tag("comps").c_str());
-    string cat_path = root->DataSet(mesh_name).CatPath().Get();
-
-    GridFunction *gf = 0;
-    if (cat_path != "")
+    if(mesh == nullptr)
     {
-        std::istringstream igfstr;
-        FetchDataFromCatFile(cat_path, field_path, igfstr); 
-
-        if (igfstr)
-            gf = new GridFunction(mesh,igfstr);   
+        debug5 << mName << ": We could not fetch the mesh." << endl;
+        return nullptr;
     }
 
-    if (!gf)
+    GridFunction *gf = d->GetField(MESH_NAME, domain, var_name);
+    if(gf == nullptr)
     {
-        visit_ifstream igf(field_path.c_str());
-        if (igf().fail())
-        {
-            //failed to open gf file
-            ostringstream msg;
-            msg << "Failed to open MFEM grid function: "
-                << " field name: \""       << mesh_name << "\""
-                << " domain: "             << domain
-                << " grid function path: \"" << field_path << "\"";
-            if (cat_path != "")
-                msg << " cat path: \"" << cat_path << "\"";
-
-            EXCEPTION1(InvalidFilesException, msg.str());
-        }
-        gf = new GridFunction(mesh,igf());   
+        EXCEPTION1(InvalidFilesException, std::string("Could not get ")+var_name);
     }
+
+    int ncomps = gf->VectorDim();
+    bool var_is_nodal = (gf->FESpace()->FEColl()->GetContType() != mfem::FiniteElementCollection::DISCONTINUOUS);
 
     int npts=0;
     int neles=0;
@@ -1458,12 +1236,7 @@ avtFMSFileFormat::GetRefinedVar(const std::string &var_name,
         }
     }
     
-    delete gf;
-    //delete mesh;
-
     return rv;
-#endif
-    return nullptr;
 }
 
 // ****************************************************************************
