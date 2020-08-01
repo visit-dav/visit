@@ -136,6 +136,7 @@ function build_mfem
     else
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
+    vopts="${vopts} -DMFEM_USE_EXCEPTIONS:BOOL=ON"
     if [[ "$DO_CONDUIT" == "yes" ]] ; then
         vopts="${vopts} -DMFEM_USE_CONDUIT=ON -DCONDUIT_DIR=${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}"
     fi
