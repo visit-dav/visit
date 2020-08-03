@@ -235,6 +235,9 @@
 //    Eric Brugger, Tue May 12 07:59:37 PDT 2020
 //    Changed the date on the splash screen to May 2020.
 //
+//    Eric Brugger, Mon Aug  3 06:49:50 PDT 2020
+//    Changed the date on the splash screen to August 2020.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -355,7 +358,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 5;
+    int currentMonth = 8;
     lLayout->addWidget(new QLabel(versionText, this));
     lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2020", this));
 
