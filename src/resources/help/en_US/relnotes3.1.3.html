@@ -26,20 +26,20 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Fixed a bug preventing SaveWindow from saving OSPRay rendered images.</li>
   <li>Fixed a bug with the Pixie reader when it read 3D curvilinear meshes in parallel.</li>
-  <li>Fixed parallel engine crash when creating ghosts from global ids.</li>
-  <li>Fixed the issue with the progress dialog staying visible when a client connection fails.</li>
-  <li>Added a menu indicator icon to Color Table buttons so it is more obvious the button can be pushed to see available options.<li>
-  <li>Fixed a bug preventing the ability to Pick Through Time using mesh quality metrics.</li>
+  <li>Fixed a bug where the parallel engine crashed when creating ghost zones from global ids.</li>
+  <li>Fixed a bug with the progress dialog staying visible when a client connection fails.</li>
+  <li>Added a menu indicator icon to the Color Table buttons so that it is more obvious that the button can be pushed to see available options.<li>
+  <li>Fixed a bug preventing the user from being able to performa a Pick Through Time using mesh quality metrics.</li>
   <li>Fixed a couple of bugs with the MutilCurve plot. Fixed a bug where portions of the axes were missing or incomplete after switching the orientation. Fixed a bug where there were no tickmarks when displaying 16 curves.</li>
-  <li>Fixed a bug in ColorTable window that limited number of color control points to 200.</li>
+  <li>Fixed a bug in the ColorTable window that limited the number of color control points to 200.</li>
   <li>Added Philip Blakely's code to fix the memory leak in the Lines Database.</li>
-  <li>Fixed a bug in ColorTable window that prevented colors on 'equal' control points from being changed.</li>
-  <li>Duplicate expressions in the gui are now handled gracefully with an automatic name change.</li>
+  <li>Fixed a bug in the ColorTable window that prevented colors on 'equal' control points from being changed.</li>
+  <li>Modified the GUI so that duplicate expressions are now handled gracefully with an automatic name change.</li>
   <li>Fixed a bug preventing VisIt from correctly reading some types of files on Ubuntu when using non-English language settings.</li>
   <li>Adding and deleting expressions in the expressions window now only takes effect when actually clicking the apply button.</li>
   <li>Fixed a bug with the CGNS reader that caused VisIt to crash when doing a Subset plot of "zones" when reading data decomposed across multiple CGNS files.</li>
-  <li>Fixed a bug preventing database plugins from being able to plot variables of the form "variable_name(subname)".</li>
-  <li>Fixed a bug which caused the Mili database plugin to add duplicate materials.</li>
+  <li>Fixed a bug preventing database readers from being able to plot variables of the form "variable_name(subname)".</li>
+  <li>Fixed a bug that caused the Mili database reader to add duplicate materials.</li>
   <li>Fixed a bug which caused external surfaces to be lost in the pseudocolor plot when using a gradient expression on a Curvilinear mesh (Structured Grid).</li>
 </ul>
 
