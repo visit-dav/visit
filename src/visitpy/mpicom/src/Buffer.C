@@ -8,6 +8,8 @@
 #include <sstream>
 #include <iostream>
 
+#include "Py2and3Support.h"
+
 using namespace std;
 
 PyObject *Buffer::pickleModule = NULL;
@@ -18,7 +20,7 @@ PyObject *Buffer::pickleLoads = NULL;
 /*****************************************************************************
  * Function: Buffer Constructor
  *
- * Purpose: 
+ * Purpose:
  *   Creates an empty mpi buffer.
  *
  * Programmer: Cyrus Harrison
@@ -75,7 +77,7 @@ Buffer::Buffer(int buffer_size)
 /*****************************************************************************
  * Function: Buffer Constructor
  *
- * Purpose: 
+ * Purpose:
  *   Creates an mpi buffer of given type and size.
  *
  * Programmer: Cyrus Harrison
@@ -114,7 +116,7 @@ Buffer::Buffer(PyObject *py_obj)
 /*****************************************************************************
  * Function: Buffer Destructor
  *
- * Purpose: 
+ * Purpose:
  *   Destroys an mpi buffer.
  *
  * Programmer: Cyrus Harrison
@@ -232,7 +234,7 @@ Buffer::Init(int type_id, int data_size)
 /*****************************************************************************
  * Function: Buffer::Init
  *
- * Purpose: 
+ * Purpose:
  *   Inits buffer from a python object.
  *
  * Programmer: Cyrus Harrison
@@ -245,7 +247,7 @@ Buffer::Init(int type_id, int data_size)
  *
  *   Cyrus Harrison, Tue Oct 11 10:48:06 PDT 2011
  *   Use long instead of int.
- * 
+ *
  * ***************************************************************************/
 void
 Buffer::Init(PyObject *py_obj)
@@ -271,12 +273,13 @@ Buffer::Init(PyObject *py_obj)
     }
     else if(PyString_Check(py_obj))
     {
-        char *py_data = PyString_AS_STRING(py_obj);
+        char *py_data = PyString_AsString(py_obj);
         int slen = strlen(py_data) +1;
         Init(STRING,slen);
         char *ptr = DataAsCharPtr();
         memset(ptr,0,slen*sizeof(char));
         memcpy(ptr,py_data,(slen-1)*sizeof(char));
+        PyString_AsString_Cleanup(py_data);
     }
     else if(PySequence_Check(py_obj))
     {
@@ -287,7 +290,7 @@ Buffer::Init(PyObject *py_obj)
         if(length == 0)
             pickle=true;
 
-        // check for list type all numeric entries 
+        // check for list type all numeric entries
         for(int i=0; i < length && !pickle; i++)
         {
             PyObject *py_itm = PySequence_Fast_GET_ITEM(py_seq,i); // borrowed
@@ -508,7 +511,7 @@ Buffer::PickleReady()
  *
  * Purpose:
  *   Decrements the ref count of the pickle module ref and cleans up
- *   borrowed references. 
+ *   borrowed references.
  *
  * Note: This was created to clean up static members if necessary, in most
  *       cases these member will persist.
@@ -538,7 +541,7 @@ Buffer::PickleCleanup()
  * Function: Buffer::TotalBufferSize
  *
  * Purpose:
- *   Calculates buffer size, including header, for given data type and 
+ *   Calculates buffer size, including header, for given data type and
  *   data length.
  *
  * Programmer: Cyrus Harrison

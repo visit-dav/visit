@@ -5,6 +5,7 @@
 #ifndef PY_VIEWCURVEATTRIBUTES_H
 #define PY_VIEWCURVEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ViewCurveAttributes.h>
 #include <visitpy_exports.h>
 

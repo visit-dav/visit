@@ -20,7 +20,8 @@
 #    Pass '-noconfig' to generated command line in GenerateCinema.
 #
 # ----------------------------------------------------------------------------
-import os, string, subprocess
+import os
+import subprocess
 
 def GenerateCinema(cinemaArgs):
     if TestEnv.params["parallel"]:
@@ -53,7 +54,7 @@ def ListToString(files):
 
 def GetFile(manyfilenames, filename):
     for f in manyfilenames:
-        if string.find(f, filename) != -1:
+        if f.find(filename) != -1:
             return f
     return ""
 
@@ -165,10 +166,10 @@ def test1(db):
     for phi in phi_values:
         pattern = params["name_pattern"]
         if sys.platform.startswith("win"):
-            pattern = string.replace(pattern, "/", "\\")
-        name = string.replace(pattern, "{phi}", phi)
-        name = string.replace(name, "{theta}", theta)
-        name = string.replace(name, "{time}", time)
+            pattern = pattern.replace("/", "\\")
+        name = pattern.replace("{phi}", phi)
+        name = name.replace("{theta}", theta)
+        name = name.replace("{time}", time)
 
         img = os.path.join(cdb, GetFile(files, name))
         OpenDatabase(img)

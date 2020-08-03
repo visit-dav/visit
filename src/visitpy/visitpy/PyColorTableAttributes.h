@@ -5,6 +5,7 @@
 #ifndef PY_COLORTABLEATTRIBUTES_H
 #define PY_COLORTABLEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ColorTableAttributes.h>
 #include <visitpy_exports.h>
 

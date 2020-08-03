@@ -77,6 +77,7 @@ function error
              "message to the visit-users@ornl.gov list.  You will probably "\
              "need to compress the ${LOG_FILE} using a program like gzip "\
              "so it will fit within the size limits for email attachments."
+        info "Log file full path: " `pwd`/${LOG_FILE}
     fi
     exit 1
 }

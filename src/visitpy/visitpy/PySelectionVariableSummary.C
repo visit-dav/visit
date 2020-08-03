@@ -5,6 +5,7 @@
 #include <PySelectionVariableSummary.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PySelectionVariableSummary
@@ -34,7 +35,6 @@ struct SelectionVariableSummaryObject
 // Internal prototypes
 //
 static PyObject *NewSelectionVariableSummary(int);
-
 std::string
 PySelectionVariableSummary_ToString(const SelectionVariableSummary *atts, const char *prefix)
 {
@@ -230,14 +230,7 @@ SelectionVariableSummary_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-SelectionVariableSummary_compare(PyObject *v, PyObject *w)
-{
-    SelectionVariableSummary *a = ((SelectionVariableSummaryObject *)v)->data;
-    SelectionVariableSummary *b = ((SelectionVariableSummaryObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *SelectionVariableSummary_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySelectionVariableSummary_getattr(PyObject *self, char *name)
 {
@@ -306,49 +299,70 @@ static char *SelectionVariableSummary_Purpose = "Contains a summary of a variabl
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject SelectionVariableSummaryType =
+
+VISIT_PY_TYPE_OBJ(SelectionVariableSummaryType,         \
+                  "SelectionVariableSummary",           \
+                  SelectionVariableSummaryObject,       \
+                  SelectionVariableSummary_dealloc,     \
+                  SelectionVariableSummary_print,       \
+                  PySelectionVariableSummary_getattr,   \
+                  PySelectionVariableSummary_setattr,   \
+                  SelectionVariableSummary_str,         \
+                  SelectionVariableSummary_Purpose,     \
+                  SelectionVariableSummary_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+SelectionVariableSummary_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "SelectionVariableSummary",                    // tp_name
-    sizeof(SelectionVariableSummaryObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)SelectionVariableSummary_dealloc,  // tp_dealloc
-    (printfunc)SelectionVariableSummary_print,     // tp_print
-    (getattrfunc)PySelectionVariableSummary_getattr, // tp_getattr
-    (setattrfunc)PySelectionVariableSummary_setattr, // tp_setattr
-    (cmpfunc)SelectionVariableSummary_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)SelectionVariableSummary_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    SelectionVariableSummary_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &SelectionVariableSummaryType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    SelectionVariableSummary *a = ((SelectionVariableSummaryObject *)self)->data;
+    SelectionVariableSummary *b = ((SelectionVariableSummaryObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

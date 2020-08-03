@@ -5,6 +5,7 @@
 #ifndef PY_ZONEDUMPATTRIBUTES_H
 #define PY_ZONEDUMPATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ZoneDumpAttributes.h>
 
 //

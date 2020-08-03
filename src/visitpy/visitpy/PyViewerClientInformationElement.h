@@ -5,6 +5,7 @@
 #ifndef PY_VIEWERCLIENTINFORMATIONELEMENT_H
 #define PY_VIEWERCLIENTINFORMATIONELEMENT_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ViewerClientInformationElement.h>
 #include <visitpy_exports.h>
 

@@ -5,6 +5,7 @@
 #ifndef PY_POINCAREATTRIBUTES_H
 #define PY_POINCAREATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PoincareAttributes.h>
 
 //

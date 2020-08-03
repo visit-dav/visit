@@ -5,6 +5,7 @@
 #ifndef PY_FIVEFOLDTETSUBDIVISIONATTRIBUTES_H
 #define PY_FIVEFOLDTETSUBDIVISIONATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <FiveFoldTetSubdivisionAttributes.h>
 
 //

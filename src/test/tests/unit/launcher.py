@@ -18,7 +18,6 @@
 import os
 import socket
 import subprocess
-import string
 import getpass
 
 # The launch cases we want to test.
@@ -54,7 +53,7 @@ debuggers = [[], ["-totalview", "engine_par"], ["-valgrind", "engine_par"], ["-s
 def GetLauncherCommand(args):
     p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
-    ru = string.find(stdout, "RUN USING")
+    ru = stdout.find("RUN USING")
     if ru != -1:
         cmd = stdout[ru + 11:-2]
     else:
@@ -77,7 +76,7 @@ def hostname():
     return socket.gethostname()
 
 def nodename():
-    return string.split(hostname(), ".")[0]
+    return hostname().split(".")[0]
 
 def sectorname():
     s = nodename()

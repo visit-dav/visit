@@ -5,6 +5,7 @@
 #ifndef PY_SELECTIONLIST_H
 #define PY_SELECTIONLIST_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <SelectionList.h>
 #include <visitpy_exports.h>
 

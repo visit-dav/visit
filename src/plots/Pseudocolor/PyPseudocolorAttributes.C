@@ -5,6 +5,7 @@
 #include <PyPseudocolorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <GlyphTypes.h>
@@ -39,7 +40,6 @@ struct PseudocolorAttributesObject
 // Internal prototypes
 //
 static PyObject *NewPseudocolorAttributes(int);
-
 std::string
 PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *prefix)
 {
@@ -285,11 +285,11 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
     str += tmpStr;
     snprintf(tmpStr, 1000, "%stubeRadiusVarRatio = %g\n", prefix, atts->GetTubeRadiusVarRatio());
     str += tmpStr;
-    const char *tailStyle_names = "None, Spheres, Cones";
+    const char *tailStyle_names = "NONE, Spheres, Cones";
     switch (atts->GetTailStyle())
     {
       case PseudocolorAttributes::None:
-          snprintf(tmpStr, 1000, "%stailStyle = %sNone  # %s\n", prefix, prefix, tailStyle_names);
+          snprintf(tmpStr, 1000, "%stailStyle = %sNONE  # %s\n", prefix, prefix, tailStyle_names);
           str += tmpStr;
           break;
       case PseudocolorAttributes::Spheres:
@@ -304,11 +304,11 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
           break;
     }
 
-    const char *headStyle_names = "None, Spheres, Cones";
+    const char *headStyle_names = "NONE, Spheres, Cones";
     switch (atts->GetHeadStyle())
     {
       case PseudocolorAttributes::None:
-          snprintf(tmpStr, 1000, "%sheadStyle = %sNone  # %s\n", prefix, prefix, headStyle_names);
+          snprintf(tmpStr, 1000, "%sheadStyle = %sNONE  # %s\n", prefix, prefix, headStyle_names);
           str += tmpStr;
           break;
       case PseudocolorAttributes::Spheres:
@@ -2095,14 +2095,7 @@ PseudocolorAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-PseudocolorAttributes_compare(PyObject *v, PyObject *w)
-{
-    PseudocolorAttributes *a = ((PseudocolorAttributesObject *)v)->data;
-    PseudocolorAttributes *b = ((PseudocolorAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *PseudocolorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyPseudocolorAttributes_getattr(PyObject *self, char *name)
 {
@@ -2239,6 +2232,8 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
         return PseudocolorAttributes_GetTailStyle(self, NULL);
     if(strcmp(name, "None") == 0)
         return PyInt_FromLong(long(PseudocolorAttributes::None));
+    if(strcmp(name, "NONE") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::None));
     if(strcmp(name, "Spheres") == 0)
         return PyInt_FromLong(long(PseudocolorAttributes::Spheres));
     if(strcmp(name, "Cones") == 0)
@@ -2247,6 +2242,8 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "headStyle") == 0)
         return PseudocolorAttributes_GetHeadStyle(self, NULL);
     if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::None));
+    if(strcmp(name, "NONE") == 0)
         return PyInt_FromLong(long(PseudocolorAttributes::None));
     if(strcmp(name, "Spheres") == 0)
         return PyInt_FromLong(long(PseudocolorAttributes::Spheres));
@@ -2508,49 +2505,70 @@ static char *PseudocolorAttributes_Purpose = "Attributes for the pseudocolor plo
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject PseudocolorAttributesType =
+
+VISIT_PY_TYPE_OBJ(PseudocolorAttributesType,         \
+                  "PseudocolorAttributes",           \
+                  PseudocolorAttributesObject,       \
+                  PseudocolorAttributes_dealloc,     \
+                  PseudocolorAttributes_print,       \
+                  PyPseudocolorAttributes_getattr,   \
+                  PyPseudocolorAttributes_setattr,   \
+                  PseudocolorAttributes_str,         \
+                  PseudocolorAttributes_Purpose,     \
+                  PseudocolorAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+PseudocolorAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "PseudocolorAttributes",                    // tp_name
-    sizeof(PseudocolorAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)PseudocolorAttributes_dealloc,  // tp_dealloc
-    (printfunc)PseudocolorAttributes_print,     // tp_print
-    (getattrfunc)PyPseudocolorAttributes_getattr, // tp_getattr
-    (setattrfunc)PyPseudocolorAttributes_setattr, // tp_setattr
-    (cmpfunc)PseudocolorAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)PseudocolorAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    PseudocolorAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &PseudocolorAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    PseudocolorAttributes *a = ((PseudocolorAttributesObject *)self)->data;
+    PseudocolorAttributes *b = ((PseudocolorAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.
