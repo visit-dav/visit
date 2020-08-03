@@ -26,21 +26,20 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Fixed a bug preventing SaveWindow from saving OSPRay rendered images.</li>
   <li>Fixed a bug with the Pixie reader when it read 3D curvilinear meshes in parallel.</li>
-  <li>Fixed a bug where the parallel engine crashed when creating ghost zones from global ids.</li>
-  <li>Fixed a bug with the progress dialog staying visible when a client connection fails.</li>
-  <li>Added a menu indicator icon to the Color Table buttons so that it is more obvious that the button can be pushed to see available options.<li>
-  <li>Fixed a bug preventing the user from being able to performa a Pick Through Time using mesh quality metrics.</li>
+  <li>Fixed parallel engine crash when creating ghosts from global ids.</li>
+  <li>Fixed the issue with the progress dialog staying visible when a client connection fails.</li>
+  <li>Added a menu indicator icon to Color Table buttons so it is more obvious the button can be pushed to see available options.<li>
+  <li>Fixed a bug preventing the ability to Pick Through Time using mesh quality metrics.</li>
   <li>Fixed a couple of bugs with the MutilCurve plot. Fixed a bug where portions of the axes were missing or incomplete after switching the orientation. Fixed a bug where there were no tickmarks when displaying 16 curves.</li>
-  <li>Fixed a bug in the ColorTable window that limited the number of color control points to 200.</li>
+  <li>Fixed a bug in ColorTable window that limited number of color control points to 200.</li>
   <li>Added Philip Blakely's code to fix the memory leak in the Lines Database.</li>
-  <li>Fixed a bug in the ColorTable window that prevented colors on 'equal' control points from being changed.</li>
-  <li>Modified the GUI so that duplicate expressions are now handled gracefully with an automatic name change.</li>
+  <li>Fixed a bug in ColorTable window that prevented colors on 'equal' control points from being changed.</li>
+  <li>Duplicate expressions in the gui are now handled gracefully with an automatic name change.</li>
   <li>Fixed a bug preventing VisIt from correctly reading some types of files on Ubuntu when using non-English language settings.</li>
   <li>Adding and deleting expressions in the expressions window now only takes effect when actually clicking the apply button.</li>
   <li>Fixed a bug with the CGNS reader that caused VisIt to crash when doing a Subset plot of "zones" when reading data decomposed across multiple CGNS files.</li>
-  <li>Fixed a bug preventing database readers from being able to plot variables of the form "variable_name(subname)".</li>
-  <li>Fixed a bug that caused the Mili database reader to add duplicate materials.</li>
-  <li>Fixed a bug which caused external surfaces to be lost in the pseudocolor plot when using a gradient expression on a Curvilinear mesh (Structured Grid).</li>
+  <li>Fixed a bug preventing database plugins from being able to plot variables of the form "variable_name(subname)".</li>
+  <li>Fixed a bug which caused the Mili database plugin to add duplicate materials.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -52,12 +51,12 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Lineout operator documentation was improved in the GUI manual to describe in detail how the sampling and interpolation is performed.</li>
   <li>Added the ability to generate ghost nodes for datasets that consist of collections of structured grids by matching the coordinates of the nodes on the exterior of individual structured grids. The coordinates must match exactly for them to be matched. Ghost nodes allow internal faces to be eliminated from Mesh, Filled Boundary, Pseudocolor and Subset plots. This improves rendering performance by reducing the amount of geometry to render. It also improves image quality for images rendered with transparency since it eliminates geometry that you are most likely not interested in seeing.</li>
   <li>Updated the host profiles for the Sandia National Laboratories computer systems, adding host profiles for new systems and removing ones for obsolete systems.</li>
-  <li>Added support for the FILETYPE keyword to the Tecplot reader. The FULL type is the only type supported. An error is generated if it isn't.</li>
-  <li>Added parallel support for Remap operator.</li>
+  <li>Added support for the FILETYPE keyword to the Tecplot reader. The FULL type is the only type supported. If the FILETYPE keyword is specified and the type isn't FULL, an error is generated.</li>
   <li>Modified the startup script to unsetenv LD_PRELOAD to protect against users setting it for the GL library, which would break rendering.</li>
   <li>The Mili database reader was enhanced to create node displacements as derived variables when needed.</li>
   <li>Added the SW4 reader and deleted the WPPImage reader.</li>
   <li>Added the Tessellate operator, which tessellates high order elements into linear elements. The following high order cell types are supported: QUADRATIC_EDGE, CUBIC_LINE, LAGRANGE_TRIANGLE, QUADRATIC_TRIANGLE, BIQUADRATIC_TRIANGLE, LAGRANGE_QUADRILATERAL, BIQUADRATIC_QUAD, QUADRATIC_QUAD, LAGRANGE_TETRAHEDRON, QUATRADIC_TETRA, LAGRANGE_HEXAHEDRON and QUADRATIC_HEXAHEDRON. All unsupported types will be removed from the mesh.</li>
+  <li>Added parallel support for Remap operator.</li>
 </ul>
 
 <a name="Dev_changes"></a>
