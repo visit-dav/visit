@@ -236,11 +236,15 @@ avtRemapFilter::Execute(void)
         ClipDomain(dataSets[i]);
     }
 
+
+    // ---------------------------------------------- //
+    // --- Gather information in parallel setting --- //
+    // ---------------------------------------------- //
+
 #ifdef PARALLEL
     int size = vars->GetNumberOfTuples();
     double *varsDouble = (double*) vars->GetVoidPointer(0);
     double *newBuff = new double[size];
-    // SumDoubleArrayAcrossAllProcessors(varsDouble, newBuff, size);
     SumDoubleArray(varsDouble, newBuff, size);
     if (PAR_Rank() == 0)
     {
