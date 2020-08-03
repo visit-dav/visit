@@ -258,7 +258,7 @@ avtRemapFilter::Execute(void)
     }
     else
     {
-        SetOutputDataTree(new avtDataTree(NULL, -1));
+        SetOutputDataTree(new avtDataTree());
     }
 
     CleanClippingFunctions();
