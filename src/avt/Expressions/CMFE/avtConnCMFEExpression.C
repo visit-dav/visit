@@ -135,7 +135,7 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
                    "because they have a different number of domains.");
 
     int nc1 = in1->GetNChildren();
-    int nc2 = in1->GetNChildren();
+    int nc2 = in2->GetNChildren();
 
     debug5 << "avtConnCMFEExpression::ExecuteTree: nc1=" << nc1 << " nc2= " << nc2 << std::endl;
     if (nc1 != nc2)
