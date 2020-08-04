@@ -245,18 +245,25 @@ public:
     mfem::Mesh *GetDomain(const char *domain_name, int domain);
     mfem::GridFunction *GetField(const char *domain_name, int domain, const std::string &fieldName);
 
+    std::string GetCoordinateFieldName() const;
+    bool GetFieldUnits(const std::string &name, std::string &units) const;
+
     void ComputeTotalDomains();
 
 protected:
     bool ReadDomain(int domain);
     std::string FilenameForDomain(int domain) const;
+    void PopulateFieldUnits(FmsDataCollection dc);
 
     std::string                                   protocol;
     std::vector<std::string>                      filenames;
     std::map<std::string, mfem::DataCollection *> mfemCache;
+    std::map<std::string,std::string>             fieldUnits;
+    std::string                                   coordFieldName;
 };
 
-avtFMSFileFormat::Internals::Internals() : protocol("yaml"), filenames(), mfemCache()
+avtFMSFileFormat::Internals::Internals() : protocol("yaml"), filenames(), 
+    mfemCache(), fieldUnits(), coordFieldName()
 {
 }
 
@@ -318,6 +325,135 @@ avtFMSFileFormat::Internals::FilenameForDomain(int domain) const
     return filenames[domain];
 }
 
+//---------------------------------------------------------------------------
+static bool
+FmsMetaDataGetString(FmsMetaData mdata, const std::string &key, std::string &value)
+{   
+    if (!mdata) false;
+
+    bool retval = false;
+    FmsMetaDataType type;
+    FmsInt i, size;
+    FmsMetaData *children = nullptr;
+    const char *mdata_name = nullptr;
+    const char *str_value = nullptr;
+
+    if(FmsMetaDataGetType(mdata, &type) == 0)
+    {
+        switch(type)
+        {
+        case FMS_STRING:
+            if(FmsMetaDataGetString(mdata, &mdata_name, &str_value) == 0)
+            {
+                if(strcasecmp(key.c_str(), mdata_name) == 0)
+                {
+                    retval = true;
+                    value = str_value;
+                }
+            }
+            break;
+        case FMS_META_DATA:
+            if(FmsMetaDataGetMetaData(mdata, &mdata_name, &size, &children) == 0)
+            {
+                // Recurse to look for the key we want.
+                for(i = 0; i < size && !retval; i++)
+                    retval = FmsMetaDataGetString(children[i], key, value);
+            }
+            break;
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: avtFMSFileFormat::Internals::PopulateFieldUnits
+//
+// Purpose:
+//   Look through the FMS data collection and populate a map of field units.
+//
+// Arguments:
+//   dc : The FMS data collection
+//
+// Returns:    
+//
+// Note:       We look at the FMS data since MFEM does not appear to provide 
+//             units.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug  3 17:53:10 PDT 2020
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtFMSFileFormat::Internals::PopulateFieldUnits(FmsDataCollection dc)
+{
+    FmsField *fields = nullptr;
+    FmsInt num_fields = 0;
+    if(FmsDataCollectionGetFields(dc, &fields, &num_fields) == 0)
+    {
+        for(FmsInt i = 0; i < num_fields; ++i)
+        {
+            const char *name = nullptr;
+            FmsFieldGetName(fields[i], &name);
+
+            FmsMetaData mdata;
+            if(FmsFieldGetMetaData(fields[i], &mdata) == 0)
+            {
+                std::string units;
+                if(FmsMetaDataGetString(mdata, "units", units))
+                {
+                    fieldUnits[name] = units;
+                }
+            }
+        }
+    }
+
+    // Look through the components and figure out the name of the coordinate field.
+    FmsMesh fms_mesh;
+    if(FmsDataCollectionGetMesh(dc, &fms_mesh) == 0)
+    {
+        FmsInt num_comp;
+        FmsMeshGetNumComponents(fms_mesh, &num_comp);
+        for (FmsInt comp_id = 0; comp_id < num_comp; comp_id++)
+        {
+            FmsField coords = NULL;
+            FmsComponent comp;
+            FmsMeshGetComponent(fms_mesh, comp_id, &comp);
+            FmsComponentGetCoordinates(comp, &coords);
+            if(coords)
+            {
+                const char *name = nullptr;
+                FmsFieldGetName(coords, &name);
+                // save the name of the coordinate field.
+                coordFieldName = name;
+                break;
+            }
+        }
+    }
+}
+
+bool
+avtFMSFileFormat::Internals::GetFieldUnits(const std::string &name, std::string &units) const
+{
+    bool retval = false;
+    const auto it = fieldUnits.find(name);
+    if(it != fieldUnits.end())
+    {
+        units = it->second;
+        retval = true;
+    }
+    return retval;
+}
+
+std::string
+avtFMSFileFormat::Internals::GetCoordinateFieldName() const
+{
+    return coordFieldName;
+}
+
 bool
 avtFMSFileFormat::Internals::ReadDomain(int domain)
 {
@@ -361,6 +497,11 @@ debug5 << mName << ": FAIL! MFEM data collection for domain " << domain << " did
                     retval = false;
                 }
                 ENDTRY
+
+                // MFEM data collection does not store units. Let's keep track
+                // of them separately.
+                if(retval)
+                    PopulateFieldUnits(dc);
 
                 // For now, assume that the mfem data collection does not point 
                 // to data from the FMS data collection.
@@ -552,21 +693,22 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     // Q: Do we need to segregate the domains/dataset into different meshes?
 
-// Q: is there a solution time,cycle,etc in the metadata?
+    std::string coordUnits;
+    d->GetFieldUnits(d->GetCoordinateFieldName(), coordUnits);
 
     auto mmd = new avtMeshMetaData;
     mmd->name = MESH_NAME;
     mmd->meshType = AVT_UNSTRUCTURED_MESH;
-    mmd->spatialDimension = 3;// TODO: compute these from the type of entities in the mesh.
-    mmd->topologicalDimension = 3;
+    mmd->spatialDimension = dc->GetMesh()->SpaceDimension();
+    mmd->topologicalDimension = dc->GetMesh()->Dimension();
     mmd->cellOrigin = 0;
     mmd->nodeOrigin = 0;
     mmd->numBlocks = nd;
     mmd->blockTitle = "domains";
     mmd->blockPieceName = "domain";
-    mmd->xUnits = "";
-    mmd->yUnits = "";
-    mmd->zUnits = "";
+    mmd->xUnits = coordUnits;
+    mmd->yUnits = coordUnits;
+    mmd->zUnits = coordUnits;
     mmd->xLabel = "X";
     mmd->yLabel = "Y";
     mmd->zLabel = "Z";
@@ -595,6 +737,8 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             smd->name = it->first;
             smd->meshName = mmd->name;
             smd->centering = centering;
+            d->GetFieldUnits(it->first, smd->units);
+            smd->hasUnits = !smd->units.empty();
             md->Add(smd);
         }
         else
@@ -603,6 +747,8 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             vmd->name = it->first;
             vmd->meshName = mmd->name;
             vmd->centering = centering;
+            d->GetFieldUnits(it->first, vmd->units);
+            vmd->hasUnits = !vmd->units.empty();
             md->Add(vmd);
         }
     }
