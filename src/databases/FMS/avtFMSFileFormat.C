@@ -245,25 +245,27 @@ public:
     mfem::Mesh *GetDomain(const char *domain_name, int domain);
     mfem::GridFunction *GetField(const char *domain_name, int domain, const std::string &fieldName);
 
-    std::string GetCoordinateFieldName() const;
+    const std::string &GetCoordinateFieldName() const;
     bool GetFieldUnits(const std::string &name, std::string &units) const;
+    const std::string &GetDatabaseComment() const;
 
     void ComputeTotalDomains();
 
 protected:
     bool ReadDomain(int domain);
     std::string FilenameForDomain(int domain) const;
-    void PopulateFieldUnits(FmsDataCollection dc);
+    void ExamineMetaData(FmsDataCollection dc);
 
     std::string                                   protocol;
     std::vector<std::string>                      filenames;
     std::map<std::string, mfem::DataCollection *> mfemCache;
     std::map<std::string,std::string>             fieldUnits;
     std::string                                   coordFieldName;
+    std::string                                   databaseComment;
 };
 
 avtFMSFileFormat::Internals::Internals() : protocol("yaml"), filenames(), 
-    mfemCache(), fieldUnits(), coordFieldName()
+    mfemCache(), fieldUnits(), coordFieldName(), databaseComment()
 {
 }
 
@@ -367,10 +369,11 @@ FmsMetaDataGetString(FmsMetaData mdata, const std::string &key, std::string &val
 }
 
 // ****************************************************************************
-// Method: avtFMSFileFormat::Internals::PopulateFieldUnits
+// Method: avtFMSFileFormat::Internals::ExamineMetaData
 //
 // Purpose:
-//   Look through the FMS data collection and populate a map of field units.
+//   Look through the FMS data collection metadata for metadata that would
+//   not have been preserved via the MFEM data collection. 
 //
 // Arguments:
 //   dc : The FMS data collection
@@ -388,8 +391,9 @@ FmsMetaDataGetString(FmsMetaData mdata, const std::string &key, std::string &val
 // ****************************************************************************
 
 void
-avtFMSFileFormat::Internals::PopulateFieldUnits(FmsDataCollection dc)
+avtFMSFileFormat::Internals::ExamineMetaData(FmsDataCollection dc)
 {
+    // Populate the field units.
     FmsField *fields = nullptr;
     FmsInt num_fields = 0;
     if(FmsDataCollectionGetFields(dc, &fields, &num_fields) == 0)
@@ -433,6 +437,14 @@ avtFMSFileFormat::Internals::PopulateFieldUnits(FmsDataCollection dc)
             }
         }
     }
+
+    // See if there is a database comment.
+    FmsMetaData mdata;
+    if(FmsDataCollectionGetMetaData(dc, &mdata) == 0)
+    {        
+        if(!FmsMetaDataGetString(mdata, "Description", databaseComment))
+            FmsMetaDataGetString(mdata, "Comment", databaseComment);
+    }
 }
 
 bool
@@ -448,10 +460,16 @@ avtFMSFileFormat::Internals::GetFieldUnits(const std::string &name, std::string 
     return retval;
 }
 
-std::string
+const std::string &
 avtFMSFileFormat::Internals::GetCoordinateFieldName() const
 {
     return coordFieldName;
+}
+
+const std::string &
+avtFMSFileFormat::Internals::GetDatabaseComment() const
+{
+    return databaseComment;
 }
 
 bool
@@ -498,10 +516,10 @@ debug5 << mName << ": FAIL! MFEM data collection for domain " << domain << " did
                 }
                 ENDTRY
 
-                // MFEM data collection does not store units. Let's keep track
-                // of them separately.
+                // Look at the FMS metadata to see if there is additional 
+                // metadata we can use.
                 if(retval)
-                    PopulateFieldUnits(dc);
+                    ExamineMetaData(dc);
 
                 // For now, assume that the mfem data collection does not point 
                 // to data from the FMS data collection.
@@ -691,6 +709,8 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         EXCEPTION1(InvalidFilesException, GetFilename());
     }
 
+    md->SetDatabaseComment(d->GetDatabaseComment());
+
     // Q: Do we need to segregate the domains/dataset into different meshes?
 
     std::string coordUnits;
@@ -712,7 +732,7 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mmd->xLabel = "X";
     mmd->yLabel = "Y";
     mmd->zLabel = "Z";
-    mmd->LODs = 100; // The MultiresControl operator does not let us go above 1 without this.
+    mmd->LODs = 50; // The MultiresControl operator does not let us go above 1 without this.
 #ifdef CREATE_ORIGINAL_CELL_IDS
     mmd->containsOriginalCells = true;
 #endif
