@@ -8,5 +8,9 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET_UP_THIRD_PARTY(FMS lib include fms)
+IF(EXISTS ${VISIT_FMS_DIR}/lib64)
+    SET_UP_THIRD_PARTY(FMS lib64 include fms)
+ELSE()
+    SET_UP_THIRD_PARTY(FMS lib include fms)
+ENDIF()
 

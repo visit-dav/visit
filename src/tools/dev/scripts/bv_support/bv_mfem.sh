@@ -68,9 +68,7 @@ function bv_mfem_host_profile
             CONDUIT_LIBDEP="\${VISIT_CONDUIT_LIBDEP}"
             INCDEP="CONDUIT_INCLUDE_DIR"
         fi
-        FMS_LIBDEP=""
         if [[ "$DO_FMS" == "yes" ]] ; then
-            FMS_LIBDEP="\${VISIT_FMS_LIBDEP}"
             INCDEP="$INCDEP FMS_INCLUDE_DIR"
         fi
 
@@ -80,7 +78,7 @@ function bv_mfem_host_profile
                     >> $HOSTCONF
         fi
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP $FMS_LIBDEP $CONDUIT_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP $CONDUIT_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
                 >> $HOSTCONF
     fi
 }
