@@ -123,7 +123,7 @@ def main():
     test0(datapath)
     test1(datapath)
     test2(datapath)
-    #test3(datapath)
+    test3(datapath)
 
 main()
 Exit()

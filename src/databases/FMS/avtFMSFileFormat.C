@@ -264,7 +264,7 @@ protected:
     std::string                                   databaseComment;
 };
 
-avtFMSFileFormat::Internals::Internals() : protocol("yaml"), filenames(), 
+avtFMSFileFormat::Internals::Internals() : protocol(), filenames(), 
     mfemCache(), fieldUnits(), coordFieldName(), databaseComment()
 {
 }
@@ -487,7 +487,7 @@ avtFMSFileFormat::Internals::ReadDomain(int domain)
 #ifdef MAKE_DATA_INSTEAD_OF_READING_IT
             TestMakeFmsHexMesh(&dc);
 #else
-            if(FmsIORead(fn.c_str(), protocol.c_str(), &dc) == 0)
+            if(FmsIORead(fn.c_str(), protocol.empty() ? nullptr : protocol.c_str(), &dc) == 0)
 #endif
             {
 debug5 << mName << ": Data collection was read." << endl;
@@ -706,6 +706,7 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     const auto dc = d->GetDataCollection(domain);
     if(dc == nullptr)
     {
+        debug5 << mName << ": " << GetFilename() << " could not be read." << endl;
         EXCEPTION1(InvalidFilesException, GetFilename());
     }
 
