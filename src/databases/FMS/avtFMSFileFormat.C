@@ -331,7 +331,7 @@ avtFMSFileFormat::Internals::FilenameForDomain(int domain) const
 static bool
 FmsMetaDataGetString(FmsMetaData mdata, const std::string &key, std::string &value)
 {   
-    if (!mdata) false;
+    if (!mdata) return false;
 
     bool retval = false;
     FmsMetaDataType type;
