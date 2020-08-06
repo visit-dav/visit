@@ -782,7 +782,7 @@ avtRemapFilter::GetBounds()
         }
     }
     if ((fabs(rGridBounds[4]) < 1e-100 && fabs(rGridBounds[5]) < 1e-100) ||
-        (rGridBounds[4] == +__DBL_MAX__ && rGridBounds[5] == -__DBL_MAX__))
+        (rGridBounds[4] == +DBL_MAX && rGridBounds[5] == -DBL_MAX))
     {
         debug5 << "2D Remapping" << std::endl;
         is3D = false;
