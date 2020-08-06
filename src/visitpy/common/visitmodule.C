@@ -217,13 +217,13 @@ extern "C"
     // standard form python module enty points used
     // by their loader
 #if defined(IS_PY3K)
-    PyObject *VISITMODULE_API PyInit_visit();
+    VISITMODULE_API PyObject * PyInit_visit();
 #else
     void      VISITMODULE_API initvisit();
 #endif
 
     // our main entry point
-    PyObject *VISITMODULE_API initialize_visit_python_module();
+    VISITMODULE_API PyObject * initialize_visit_python_module();
 
     void VISITMODULE_API cli_initvisit(int, bool, int, char **, int, char **);
     void VISITMODULE_API cli_runscript(const char *);

@@ -415,6 +415,9 @@ IF(NOT WIN32)
             TARGET_LINK_LIBRARIES(cli util)
         ENDIF(NOT AIX)
     ENDIF(NOT APPLE)
+else()
+    # resolve inconsistent dll-linkage problem
+    set_target_properties(cli PROPERTIES COMPILE_DEFINITIONS "visitmodule_EXPORTS")
 ENDIF(NOT WIN32)
 
 # If we're building statically then the cli can't be linked until the plugin
