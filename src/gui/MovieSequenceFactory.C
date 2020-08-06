@@ -382,7 +382,7 @@ MovieSequenceFactory::SequencePixmap(int id, QPixmap &pix) const
         key.asprintf("%s_%d", 
             it->second->SequenceName().c_str(),
             it->second->SequenceId());
-		QPixmap *p = NULL;
+        QPixmap *p = NULL;
         if(QPixmapCache::find(key, p))
         {
             pix = *p;
