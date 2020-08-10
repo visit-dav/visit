@@ -294,6 +294,37 @@ def test8(datapath):
     DeleteAllPlots()
     CloseDatabase(db1)
 
+def test9(datapath):
+    TestSection("Root file")
+    prefix = "FMS_9_"
+    db1 = pjoin(datapath,"multidom.fms_root")
+    OpenDatabase(db1)
+
+    # Get the metadata
+    md = GetMetaData(db1)
+    TestText(prefix+"_00", FilterMetaData(str(md)))
+
+    # Show the mesh (curved)
+    AddPlot("Mesh", "mesh")
+    m = MeshAttributes()
+    m.lineWidth = 2
+    SetPlotOptions(m)
+    DrawPlots()
+    AddPlot("Pseudocolor", "coords_magnitude")
+    pc = PseudocolorAttributes()
+    pc.colorTableName = "hot_desaturated"
+    SetPlotOptions(pc)
+    DrawPlots()
+    Test(prefix + "_01")
+
+    DeleteActivePlots()
+    AddPlot("Subset", "domains")
+    DrawPlots()
+    Test(prefix + "_02")
+
+    # Cleanup
+    DeleteAllPlots()
+    CloseDatabase(db1)
 
 def main():
     RequiredDatabasePlugin("FMS")
@@ -314,6 +345,8 @@ def main():
     test7(datapath)
     # time varying data
     test8(datapath)
+    # root
+    test9(datapath)
 
 main()
 Exit()
