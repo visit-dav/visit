@@ -201,7 +201,6 @@ avtFMSFileFormat::Internals::LoadRoot(const std::string &filename)
         {
             if(fn[0] != '/')
                 fn = dname + fn;
-cout << "fn = " << fn << endl;
             filenames.push_back(fn);
         }
     }
