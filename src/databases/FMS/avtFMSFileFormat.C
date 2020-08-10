@@ -514,6 +514,11 @@ debug5 << mName << ": FAIL! MFEM data collection for domain " << domain << " did
                     debug5 << mName << ": MFEM exception: \"" << e.what() << "\"" << endl;
                     retval = false;
                 }
+                CATCHALL
+                {
+                    debug5 << mName << ": An unspecified exception was caught." << endl;
+                    retval = false;
+                }
                 ENDTRY
 
                 // Look at the FMS metadata to see if there is additional 

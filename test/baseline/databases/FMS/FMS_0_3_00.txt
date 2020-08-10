@@ -78,9 +78,6 @@ GetVectors(0).hideFromGUI = 0
 GetVectors(0).centering = GetVectors(0).AVT_NODECENT  # AVT_NODECENT, AVT_ZONECENT, AVT_NO_VARIABLE, AVT_UNKNOWN_CENT
 GetVectors(0).hasUnits = 1
 GetVectors(0).units = "cm"
-GetVectors(0).hasDataExtents = 0
-GetVectors(0).minDataExtents = 0
-GetVectors(0).maxDataExtents = 0
 GetVectors(0).matRestricted = ()
 GetVectors(0).varDim = 0
 #tensors does not contain any avtTensorMetaData objects.
