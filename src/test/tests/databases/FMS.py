@@ -315,6 +315,7 @@ def test9(datapath):
     pc.colorTableName = "hot_desaturated"
     SetPlotOptions(pc)
     DrawPlots()
+    ResetView()
     Test(prefix + "_01")
 
     DeleteActivePlots()
