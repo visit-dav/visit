@@ -539,6 +539,7 @@ def ExternalSurface():
 
     ChangeActivePlotsVar("dUdy")
     Test("pseudocolor_external_surface")
+    DeleteAllPlots()
     CloseDatabase(data_path("external_surface_test_data/data.nv0_step00000.root"))
     
 def Main():
