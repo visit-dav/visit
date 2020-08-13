@@ -37,10 +37,13 @@ using std::vector;
 // ****************************************************************************
 
 QvisEngineWindow::QvisEngineWindow(EngineList *engineList,
-    const QString &caption, const QString &shortName, QvisNotepadArea *notepad) :
+                                   const QString &caption,
+                                   const QString &shortName,
+                                   QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(engineList, caption, shortName, notepad,
                                QvisPostableWindowObserver::NoExtraButtons),
-    statusMap(), activeEngine("")
+    statusMap(),
+    activeEngine("")
 {
     engines = engineList;
     caller = engines;
