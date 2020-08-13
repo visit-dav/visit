@@ -444,9 +444,12 @@
 #      VISIT_DATA_MANUAL_EXAMPLES => VISIT_ENABLE_DATA_MANUAL_EXAMPLES
 #      VISIT_BUILD_DIAGNOSTICS    => VISIT_ENABLE_DIAGNOSTICS
 #      VISIT_BUILD_AVTEXAMPLES    => VISIT_ENABLE_EXAMPLES
-
+#
 #    Kathleen Biagas, Thu Feb 20 14:45:33 MST 2020
 #    Having trouble with sphinx-build exe (Win10), so use script instead.
+#
+#    Alister Maguire, Thu Aug 13 13:41:20 PDT 2020
+#    Updated the manuals target so that it builds in the binary directory.
 #
 #****************************************************************************
 
@@ -2301,7 +2304,7 @@ if(VISIT_PYTHON3_DIR AND VISIT_ENABLE_MANUALS)
         CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
   else()
     add_custom_target(manuals
-                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build -b html ${VISIT_SOURCE_DIR}/doc ${VISIT_SOURCE_DIR}/resources/help/en_US/manual -a)
+                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build -b html ${VISIT_SOURCE_DIR}/doc ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
   endif()
 endif()
 
