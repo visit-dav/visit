@@ -866,11 +866,11 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // NOTE: assume node centered except when we get a DISCONTINUOUS
         // FE collection. This does not account for TANGENTIAL,NORMAL cases.
         avtCentering centering = AVT_NODECENT;
-        if(it->second->FESpace()->FEColl()->GetContType() ==
-            FiniteElementCollection::DISCONTINUOUS)
-        {
-            centering = AVT_ZONECENT;
-        }
+//        if(it->second->FESpace()->FEColl()->GetContType() ==
+//            FiniteElementCollection::DISCONTINUOUS)
+//        {
+//            centering = AVT_ZONECENT;
+//        }
 
         if(it->second->VectorDim() == 1)
         {
@@ -1235,7 +1235,7 @@ avtFMSFileFormat::GetRefinedVar(const std::string &var_name,
     }
 
     int ncomps = gf->VectorDim();
-    bool var_is_nodal = (gf->FESpace()->FEColl()->GetContType() != mfem::FiniteElementCollection::DISCONTINUOUS);
+    bool var_is_nodal = true; //(gf->FESpace()->FEColl()->GetContType() != mfem::FiniteElementCollection::DISCONTINUOUS);
 
     int npts=0;
     int neles=0;
