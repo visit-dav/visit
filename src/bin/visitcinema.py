@@ -2,8 +2,9 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
-
-import math, os, string, sys
+import math
+import os
+import sys
 
 ###############################################################################
 # Class: VisItCinema
@@ -261,7 +262,7 @@ class VisItCinema(object):
         for arg in sys.argv:
             if splitEngineArgs == 1:
                 splitEngineArgs = 0
-                eargs = string.split(arg, ";")
+                eargs = arg.split(";")
                 for earg in eargs:
                     if len(earg) > 0:
                         commandLine = commandLine + [earg]
@@ -298,7 +299,7 @@ class VisItCinema(object):
             elif(commandLine[i] == "-geometry"):
                 if((i+1) < len(commandLine)):
                     try:
-                        geom = [int(x) for x in string.split(commandLine[i+1], "x")]
+                        geom = [int(x) for x in commandLine[i+1].split("x")]
                         self.width,self.height = geom
                     except:
                         pass
@@ -977,7 +978,7 @@ class VisItCinema(object):
         f.write('  },\n')
         # Write user-supplied params like time, etc.
         keys = sorted(params.keys())
-        kpath = string.join(["{"+str(k)+"}" for k in keys], "/")
+        kpath = "/".join(["{"+str(k)+"}" for k in keys])
         f.write('  "name_pattern":"%s/{vis}/{image}.png",\n' % kpath)
         f.write('  "parameter_list":{\n')
         for k in keys:

@@ -5,6 +5,7 @@
 #include <PyFiveFoldTetSubdivisionAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyFiveFoldTetSubdivisionAttributes
@@ -34,7 +35,6 @@ struct FiveFoldTetSubdivisionAttributesObject
 // Internal prototypes
 //
 static PyObject *NewFiveFoldTetSubdivisionAttributes(int);
-
 std::string
 PyFiveFoldTetSubdivisionAttributes_ToString(const FiveFoldTetSubdivisionAttributes *atts, const char *prefix)
 {
@@ -410,14 +410,7 @@ FiveFoldTetSubdivisionAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-FiveFoldTetSubdivisionAttributes_compare(PyObject *v, PyObject *w)
-{
-    FiveFoldTetSubdivisionAttributes *a = ((FiveFoldTetSubdivisionAttributesObject *)v)->data;
-    FiveFoldTetSubdivisionAttributes *b = ((FiveFoldTetSubdivisionAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *FiveFoldTetSubdivisionAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyFiveFoldTetSubdivisionAttributes_getattr(PyObject *self, char *name)
 {
@@ -502,49 +495,70 @@ static char *FiveFoldTetSubdivisionAttributes_Purpose = "Attributes for five fol
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject FiveFoldTetSubdivisionAttributesType =
+
+VISIT_PY_TYPE_OBJ(FiveFoldTetSubdivisionAttributesType,         \
+                  "FiveFoldTetSubdivisionAttributes",           \
+                  FiveFoldTetSubdivisionAttributesObject,       \
+                  FiveFoldTetSubdivisionAttributes_dealloc,     \
+                  FiveFoldTetSubdivisionAttributes_print,       \
+                  PyFiveFoldTetSubdivisionAttributes_getattr,   \
+                  PyFiveFoldTetSubdivisionAttributes_setattr,   \
+                  FiveFoldTetSubdivisionAttributes_str,         \
+                  FiveFoldTetSubdivisionAttributes_Purpose,     \
+                  FiveFoldTetSubdivisionAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+FiveFoldTetSubdivisionAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "FiveFoldTetSubdivisionAttributes",                    // tp_name
-    sizeof(FiveFoldTetSubdivisionAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)FiveFoldTetSubdivisionAttributes_dealloc,  // tp_dealloc
-    (printfunc)FiveFoldTetSubdivisionAttributes_print,     // tp_print
-    (getattrfunc)PyFiveFoldTetSubdivisionAttributes_getattr, // tp_getattr
-    (setattrfunc)PyFiveFoldTetSubdivisionAttributes_setattr, // tp_setattr
-    (cmpfunc)FiveFoldTetSubdivisionAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)FiveFoldTetSubdivisionAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    FiveFoldTetSubdivisionAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &FiveFoldTetSubdivisionAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    FiveFoldTetSubdivisionAttributes *a = ((FiveFoldTetSubdivisionAttributesObject *)self)->data;
+    FiveFoldTetSubdivisionAttributes *b = ((FiveFoldTetSubdivisionAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

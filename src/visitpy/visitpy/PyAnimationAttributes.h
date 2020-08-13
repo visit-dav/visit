@@ -5,6 +5,7 @@
 #ifndef PY_ANIMATIONATTRIBUTES_H
 #define PY_ANIMATIONATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <AnimationAttributes.h>
 #include <visitpy_exports.h>
 

@@ -5,6 +5,7 @@
 #include <PyPlotList.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PyPlot.h>
 
 // ****************************************************************************
@@ -35,7 +36,6 @@ struct PlotListObject
 // Internal prototypes
 //
 static PyObject *NewPlotList(int);
-
 std::string
 PyPlotList_ToString(const PlotList *atts, const char *prefix)
 {
@@ -210,14 +210,7 @@ PlotList_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-PlotList_compare(PyObject *v, PyObject *w)
-{
-    PlotList *a = ((PlotListObject *)v)->data;
-    PlotList *b = ((PlotListObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *PlotList_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyPlotList_getattr(PyObject *self, char *name)
 {
@@ -272,49 +265,70 @@ static char *PlotList_Purpose = "This class contains a list of plots.";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject PlotListType =
+
+VISIT_PY_TYPE_OBJ(PlotListType,         \
+                  "PlotList",           \
+                  PlotListObject,       \
+                  PlotList_dealloc,     \
+                  PlotList_print,       \
+                  PyPlotList_getattr,   \
+                  PyPlotList_setattr,   \
+                  PlotList_str,         \
+                  PlotList_Purpose,     \
+                  PlotList_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+PlotList_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "PlotList",                    // tp_name
-    sizeof(PlotListObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)PlotList_dealloc,  // tp_dealloc
-    (printfunc)PlotList_print,     // tp_print
-    (getattrfunc)PyPlotList_getattr, // tp_getattr
-    (setattrfunc)PyPlotList_setattr, // tp_setattr
-    (cmpfunc)PlotList_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)PlotList_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    PlotList_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &PlotListType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    PlotList *a = ((PlotListObject *)self)->data;
+    PlotList *b = ((PlotListObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

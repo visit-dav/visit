@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PyDataSelection.h>
 #include <vector>
 
@@ -110,56 +111,34 @@ static char *DataSelection_Doc = "This class provides access to the avt pipeline
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-
-//
-// Note: avtSILSpecification provides a comparison which could be exposed.
-//
-//
-
-static PyTypeObject PyDataSelectionType =
-{
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "DataSelection",                     // tp_name
-    sizeof(PyDataSelectionObject),       // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)DataSelection_dealloc,   // tp_dealloc
-    (printfunc)0,                        // tp_print
-    (getattrfunc)DataSelection_getattr,  // tp_getattr
-    (setattrfunc)0,                      // tp_setattr
-    (cmpfunc)0,                          // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type Categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    0,                                   // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    DataSelection_Doc,                   // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
-
+VISIT_PY_TYPE_OBJ(PyDataSelectionType,   \
+                  "DataSelection",       \
+                  PyDataSelectionObject, \
+                  DataSelection_dealloc, \
+                  0,                     \
+                  DataSelection_getattr, \
+                  0,                     \
+                  0,                     \
+                  DataSelection_Doc,     \
+                  0,                     \
+                  0); /* as_number*/
 
 ///////////////////////////////////////////////////////////////////////////////
 //

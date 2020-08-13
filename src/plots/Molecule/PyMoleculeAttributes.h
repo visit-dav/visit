@@ -5,6 +5,7 @@
 #ifndef PY_MOLECULEATTRIBUTES_H
 #define PY_MOLECULEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <MoleculeAttributes.h>
 
 //

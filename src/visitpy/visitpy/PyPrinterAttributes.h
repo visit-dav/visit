@@ -5,6 +5,7 @@
 #ifndef PY_PRINTERATTRIBUTES_H
 #define PY_PRINTERATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PrinterAttributes.h>
 #include <visitpy_exports.h>
 

@@ -5,6 +5,7 @@
 #ifndef PY_WELLBOREATTRIBUTES_H
 #define PY_WELLBOREATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <WellBoreAttributes.h>
 
 //

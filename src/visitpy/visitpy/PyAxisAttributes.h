@@ -5,6 +5,7 @@
 #ifndef PY_AXISATTRIBUTES_H
 #define PY_AXISATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <AxisAttributes.h>
 #include <visitpy_exports.h>
 

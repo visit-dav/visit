@@ -5,6 +5,7 @@
 #include <PyMetricThresholdAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyMetricThresholdAttributes
@@ -34,14 +35,13 @@ struct MetricThresholdAttributesObject
 // Internal prototypes
 //
 static PyObject *NewMetricThresholdAttributes(int);
-
 std::string
 PyMetricThresholdAttributes_ToString(const MetricThresholdAttributes *atts, const char *prefix)
 {
     std::string str;
     char tmpStr[1000];
 
-    const char *preset_names = "None, Aspect_Ratio, Aspect_Gamma, Skew, Taper, "
+    const char *preset_names = "NONE, Aspect_Ratio, Aspect_Gamma, Skew, Taper, "
         "Volume, Stretch, Diagonal, Dimension, "
         "Oddy, Condition, Jacobian, Scaled_Jacobian, "
         "Shear, Shape, Relative_Size, Shape_and_Size, "
@@ -49,7 +49,7 @@ PyMetricThresholdAttributes_ToString(const MetricThresholdAttributes *atts, cons
     switch (atts->GetPreset())
     {
       case MetricThresholdAttributes::None:
-          snprintf(tmpStr, 1000, "%spreset = %sNone  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sNONE  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Aspect_Ratio:
@@ -731,20 +731,15 @@ MetricThresholdAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-MetricThresholdAttributes_compare(PyObject *v, PyObject *w)
-{
-    MetricThresholdAttributes *a = ((MetricThresholdAttributesObject *)v)->data;
-    MetricThresholdAttributes *b = ((MetricThresholdAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *MetricThresholdAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyMetricThresholdAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "preset") == 0)
         return MetricThresholdAttributes_GetPreset(self, NULL);
     if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(MetricThresholdAttributes::None));
+    if(strcmp(name, "NONE") == 0)
         return PyInt_FromLong(long(MetricThresholdAttributes::None));
     if(strcmp(name, "Aspect_Ratio") == 0)
         return PyInt_FromLong(long(MetricThresholdAttributes::Aspect_Ratio));
@@ -910,49 +905,70 @@ static char *MetricThresholdAttributes_Purpose = "This class contains attributes
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject MetricThresholdAttributesType =
+
+VISIT_PY_TYPE_OBJ(MetricThresholdAttributesType,         \
+                  "MetricThresholdAttributes",           \
+                  MetricThresholdAttributesObject,       \
+                  MetricThresholdAttributes_dealloc,     \
+                  MetricThresholdAttributes_print,       \
+                  PyMetricThresholdAttributes_getattr,   \
+                  PyMetricThresholdAttributes_setattr,   \
+                  MetricThresholdAttributes_str,         \
+                  MetricThresholdAttributes_Purpose,     \
+                  MetricThresholdAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+MetricThresholdAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "MetricThresholdAttributes",                    // tp_name
-    sizeof(MetricThresholdAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)MetricThresholdAttributes_dealloc,  // tp_dealloc
-    (printfunc)MetricThresholdAttributes_print,     // tp_print
-    (getattrfunc)PyMetricThresholdAttributes_getattr, // tp_getattr
-    (setattrfunc)PyMetricThresholdAttributes_setattr, // tp_setattr
-    (cmpfunc)MetricThresholdAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)MetricThresholdAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    MetricThresholdAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &MetricThresholdAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    MetricThresholdAttributes *a = ((MetricThresholdAttributesObject *)self)->data;
+    MetricThresholdAttributes *b = ((MetricThresholdAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

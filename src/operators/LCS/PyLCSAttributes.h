@@ -5,6 +5,7 @@
 #ifndef PY_LCSATTRIBUTES_H
 #define PY_LCSATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <LCSAttributes.h>
 
 //

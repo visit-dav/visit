@@ -5,6 +5,7 @@
 #include <PyColorTableAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <PyColorControlPointList.h>
 
 // ****************************************************************************
@@ -35,7 +36,6 @@ struct ColorTableAttributesObject
 // Internal prototypes
 //
 static PyObject *NewColorTableAttributes(int);
-
 std::string
 PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *prefix)
 {
@@ -109,7 +109,11 @@ ColorTableAttributes_SetNames(PyObject *self, PyObject *args)
         {
             PyObject *item = PyTuple_GET_ITEM(tuple, i);
             if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
+            {
+                char *item_cstr = PyString_AsString(item);
+                vec[i] = std::string(item_cstr);
+                PyString_AsString_Cleanup(item_cstr);
+            }
             else
                 vec[i] = std::string("");
         }
@@ -117,7 +121,9 @@ ColorTableAttributes_SetNames(PyObject *self, PyObject *args)
     else if(PyString_Check(tuple))
     {
         vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
+        char *tuple_cstr = PyString_AsString(tuple);
+        vec[0] = std::string(tuple_cstr);
+        PyString_AsString_Cleanup(tuple_cstr);
     }
     else
         return NULL;
@@ -364,14 +370,7 @@ ColorTableAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ColorTableAttributes_compare(PyObject *v, PyObject *w)
-{
-    ColorTableAttributes *a = ((ColorTableAttributesObject *)v)->data;
-    ColorTableAttributes *b = ((ColorTableAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ColorTableAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyColorTableAttributes_getattr(PyObject *self, char *name)
 {
@@ -442,49 +441,70 @@ static char *ColorTableAttributes_Purpose = "This class contains the list of col
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject ColorTableAttributesType =
+
+VISIT_PY_TYPE_OBJ(ColorTableAttributesType,         \
+                  "ColorTableAttributes",           \
+                  ColorTableAttributesObject,       \
+                  ColorTableAttributes_dealloc,     \
+                  ColorTableAttributes_print,       \
+                  PyColorTableAttributes_getattr,   \
+                  PyColorTableAttributes_setattr,   \
+                  ColorTableAttributes_str,         \
+                  ColorTableAttributes_Purpose,     \
+                  ColorTableAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+ColorTableAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ColorTableAttributes",                    // tp_name
-    sizeof(ColorTableAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ColorTableAttributes_dealloc,  // tp_dealloc
-    (printfunc)ColorTableAttributes_print,     // tp_print
-    (getattrfunc)PyColorTableAttributes_getattr, // tp_getattr
-    (setattrfunc)PyColorTableAttributes_setattr, // tp_setattr
-    (cmpfunc)ColorTableAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ColorTableAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ColorTableAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &ColorTableAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ColorTableAttributes *a = ((ColorTableAttributesObject *)self)->data;
+    ColorTableAttributes *b = ((ColorTableAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

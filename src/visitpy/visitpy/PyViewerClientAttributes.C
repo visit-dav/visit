@@ -5,6 +5,7 @@
 #include <PyViewerClientAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyViewerClientAttributes
@@ -34,18 +35,17 @@ struct ViewerClientAttributesObject
 // Internal prototypes
 //
 static PyObject *NewViewerClientAttributes(int);
-
 std::string
 PyViewerClientAttributes_ToString(const ViewerClientAttributes *atts, const char *prefix)
 {
     std::string str;
     char tmpStr[1000];
 
-    const char *renderingType_names = "None, Image, Data";
+    const char *renderingType_names = "NONE, Image, Data";
     switch (atts->GetRenderingType())
     {
       case ViewerClientAttributes::None:
-          snprintf(tmpStr, 1000, "%srenderingType = %sNone  # %s\n", prefix, prefix, renderingType_names);
+          snprintf(tmpStr, 1000, "%srenderingType = %sNONE  # %s\n", prefix, prefix, renderingType_names);
           str += tmpStr;
           break;
       case ViewerClientAttributes::Image:
@@ -461,20 +461,15 @@ ViewerClientAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ViewerClientAttributes_compare(PyObject *v, PyObject *w)
-{
-    ViewerClientAttributes *a = ((ViewerClientAttributesObject *)v)->data;
-    ViewerClientAttributes *b = ((ViewerClientAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ViewerClientAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyViewerClientAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "renderingType") == 0)
         return ViewerClientAttributes_GetRenderingType(self, NULL);
     if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(ViewerClientAttributes::None));
+    if(strcmp(name, "NONE") == 0)
         return PyInt_FromLong(long(ViewerClientAttributes::None));
     if(strcmp(name, "Image") == 0)
         return PyInt_FromLong(long(ViewerClientAttributes::Image));
@@ -564,49 +559,70 @@ static char *ViewerClientAttributes_Purpose = "This class contains attributes us
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject ViewerClientAttributesType =
+
+VISIT_PY_TYPE_OBJ(ViewerClientAttributesType,         \
+                  "ViewerClientAttributes",           \
+                  ViewerClientAttributesObject,       \
+                  ViewerClientAttributes_dealloc,     \
+                  ViewerClientAttributes_print,       \
+                  PyViewerClientAttributes_getattr,   \
+                  PyViewerClientAttributes_setattr,   \
+                  ViewerClientAttributes_str,         \
+                  ViewerClientAttributes_Purpose,     \
+                  ViewerClientAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+ViewerClientAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ViewerClientAttributes",                    // tp_name
-    sizeof(ViewerClientAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ViewerClientAttributes_dealloc,  // tp_dealloc
-    (printfunc)ViewerClientAttributes_print,     // tp_print
-    (getattrfunc)PyViewerClientAttributes_getattr, // tp_getattr
-    (setattrfunc)PyViewerClientAttributes_setattr, // tp_setattr
-    (cmpfunc)ViewerClientAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ViewerClientAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ViewerClientAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &ViewerClientAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ViewerClientAttributes *a = ((ViewerClientAttributesObject *)self)->data;
+    ViewerClientAttributes *b = ((ViewerClientAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

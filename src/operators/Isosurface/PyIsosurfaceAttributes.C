@@ -5,6 +5,7 @@
 #include <PyIsosurfaceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyIsosurfaceAttributes
@@ -34,7 +35,6 @@ struct IsosurfaceAttributesObject
 // Internal prototypes
 //
 static PyObject *NewIsosurfaceAttributes(int);
-
 std::string
 PyIsosurfaceAttributes_ToString(const IsosurfaceAttributes *atts, const char *prefix)
 {
@@ -514,14 +514,7 @@ IsosurfaceAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-IsosurfaceAttributes_compare(PyObject *v, PyObject *w)
-{
-    IsosurfaceAttributes *a = ((IsosurfaceAttributesObject *)v)->data;
-    IsosurfaceAttributes *b = ((IsosurfaceAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *IsosurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyIsosurfaceAttributes_getattr(PyObject *self, char *name)
 {
@@ -626,49 +619,70 @@ static char *IsosurfaceAttributes_Purpose = "Attributes for the isosurface opera
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject IsosurfaceAttributesType =
+
+VISIT_PY_TYPE_OBJ(IsosurfaceAttributesType,         \
+                  "IsosurfaceAttributes",           \
+                  IsosurfaceAttributesObject,       \
+                  IsosurfaceAttributes_dealloc,     \
+                  IsosurfaceAttributes_print,       \
+                  PyIsosurfaceAttributes_getattr,   \
+                  PyIsosurfaceAttributes_setattr,   \
+                  IsosurfaceAttributes_str,         \
+                  IsosurfaceAttributes_Purpose,     \
+                  IsosurfaceAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+IsosurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "IsosurfaceAttributes",                    // tp_name
-    sizeof(IsosurfaceAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)IsosurfaceAttributes_dealloc,  // tp_dealloc
-    (printfunc)IsosurfaceAttributes_print,     // tp_print
-    (getattrfunc)PyIsosurfaceAttributes_getattr, // tp_getattr
-    (setattrfunc)PyIsosurfaceAttributes_setattr, // tp_setattr
-    (cmpfunc)IsosurfaceAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)IsosurfaceAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    IsosurfaceAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &IsosurfaceAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    IsosurfaceAttributes *a = ((IsosurfaceAttributesObject *)self)->data;
+    IsosurfaceAttributes *b = ((IsosurfaceAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

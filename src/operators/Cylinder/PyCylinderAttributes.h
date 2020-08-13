@@ -5,6 +5,7 @@
 #ifndef PY_CYLINDERATTRIBUTES_H
 #define PY_CYLINDERATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <CylinderAttributes.h>
 
 //

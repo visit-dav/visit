@@ -5,6 +5,7 @@
 #include <PyavtVectorMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyavtVectorMetaData
@@ -34,7 +35,6 @@ struct avtVectorMetaDataObject
 // Internal prototypes
 //
 static PyObject *NewavtVectorMetaData(int);
-
 std::string
 PyavtVectorMetaData_ToString(const avtVectorMetaData *atts, const char *prefix)
 {
@@ -124,14 +124,7 @@ avtVectorMetaData_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-avtVectorMetaData_compare(PyObject *v, PyObject *w)
-{
-    avtVectorMetaData *a = ((avtVectorMetaDataObject *)v)->data;
-    avtVectorMetaData *b = ((avtVectorMetaDataObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *avtVectorMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtVectorMetaData_getattr(PyObject *self, char *name)
 {
@@ -201,49 +194,70 @@ static char *avtVectorMetaData_Purpose = "Contains vector metadata attributes";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject avtVectorMetaDataType =
+
+VISIT_PY_TYPE_OBJ(avtVectorMetaDataType,         \
+                  "avtVectorMetaData",           \
+                  avtVectorMetaDataObject,       \
+                  avtVectorMetaData_dealloc,     \
+                  avtVectorMetaData_print,       \
+                  PyavtVectorMetaData_getattr,   \
+                  PyavtVectorMetaData_setattr,   \
+                  avtVectorMetaData_str,         \
+                  avtVectorMetaData_Purpose,     \
+                  avtVectorMetaData_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+avtVectorMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "avtVectorMetaData",                    // tp_name
-    sizeof(avtVectorMetaDataObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)avtVectorMetaData_dealloc,  // tp_dealloc
-    (printfunc)avtVectorMetaData_print,     // tp_print
-    (getattrfunc)PyavtVectorMetaData_getattr, // tp_getattr
-    (setattrfunc)PyavtVectorMetaData_setattr, // tp_setattr
-    (cmpfunc)avtVectorMetaData_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)avtVectorMetaData_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    avtVectorMetaData_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &avtVectorMetaDataType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    avtVectorMetaData *a = ((avtVectorMetaDataObject *)self)->data;
+    avtVectorMetaData *b = ((avtVectorMetaDataObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

@@ -5,6 +5,7 @@
 #include <PyConstructDataBinningAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyConstructDataBinningAttributes
@@ -34,7 +35,6 @@ struct ConstructDataBinningAttributesObject
 // Internal prototypes
 //
 static PyObject *NewConstructDataBinningAttributes(int);
-
 std::string
 PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *atts, const char *prefix)
 {
@@ -249,7 +249,11 @@ ConstructDataBinningAttributes_SetVarnames(PyObject *self, PyObject *args)
         {
             PyObject *item = PyTuple_GET_ITEM(tuple, i);
             if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
+            {
+                char *item_cstr = PyString_AsString(item);
+                vec[i] = std::string(item_cstr);
+                PyString_AsString_Cleanup(item_cstr);
+            }
             else
                 vec[i] = std::string("");
         }
@@ -257,7 +261,9 @@ ConstructDataBinningAttributes_SetVarnames(PyObject *self, PyObject *args)
     else if(PyString_Check(tuple))
     {
         vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
+        char *tuple_cstr = PyString_AsString(tuple);
+        vec[0] = std::string(tuple_cstr);
+        PyString_AsString_Cleanup(tuple_cstr);
     }
     else
         return NULL;
@@ -778,14 +784,7 @@ ConstructDataBinningAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ConstructDataBinningAttributes_compare(PyObject *v, PyObject *w)
-{
-    ConstructDataBinningAttributes *a = ((ConstructDataBinningAttributesObject *)v)->data;
-    ConstructDataBinningAttributes *b = ((ConstructDataBinningAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ConstructDataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyConstructDataBinningAttributes_getattr(PyObject *self, char *name)
 {
@@ -945,49 +944,70 @@ static char *ConstructDataBinningAttributes_Purpose = "Attributes for constructi
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject ConstructDataBinningAttributesType =
+
+VISIT_PY_TYPE_OBJ(ConstructDataBinningAttributesType,         \
+                  "ConstructDataBinningAttributes",           \
+                  ConstructDataBinningAttributesObject,       \
+                  ConstructDataBinningAttributes_dealloc,     \
+                  ConstructDataBinningAttributes_print,       \
+                  PyConstructDataBinningAttributes_getattr,   \
+                  PyConstructDataBinningAttributes_setattr,   \
+                  ConstructDataBinningAttributes_str,         \
+                  ConstructDataBinningAttributes_Purpose,     \
+                  ConstructDataBinningAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+ConstructDataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ConstructDataBinningAttributes",                    // tp_name
-    sizeof(ConstructDataBinningAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ConstructDataBinningAttributes_dealloc,  // tp_dealloc
-    (printfunc)ConstructDataBinningAttributes_print,     // tp_print
-    (getattrfunc)PyConstructDataBinningAttributes_getattr, // tp_getattr
-    (setattrfunc)PyConstructDataBinningAttributes_setattr, // tp_setattr
-    (cmpfunc)ConstructDataBinningAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ConstructDataBinningAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ConstructDataBinningAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &ConstructDataBinningAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ConstructDataBinningAttributes *a = ((ConstructDataBinningAttributesObject *)self)->data;
+    ConstructDataBinningAttributes *b = ((ConstructDataBinningAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

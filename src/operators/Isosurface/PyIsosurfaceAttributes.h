@@ -5,6 +5,7 @@
 #ifndef PY_ISOSURFACEATTRIBUTES_H
 #define PY_ISOSURFACEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <IsosurfaceAttributes.h>
 
 //

@@ -47,14 +47,17 @@ vtkStandardNewMacro(vtkDataSetRemoveGhostCells);
 //    Hank Childs, Sun Oct 28 10:48:50 PST 2007
 //    Initialize GhostZoneTypesToRemove.
 //
+//    Kevin Griffin, Wed Jul 29 16:39:43 PDT 2020
+//    Using member initialization list instead of assignments.
+//
 // ****************************************************************************
 
-vtkDataSetRemoveGhostCells::vtkDataSetRemoveGhostCells()
-{
-    GhostNodeTypesToRemove = 255;
-    GhostZoneTypesToRemove = 255;
-}
-
+vtkDataSetRemoveGhostCells::vtkDataSetRemoveGhostCells():
+    input(NULL),
+    output(NULL),
+    GhostNodeTypesToRemove(255),
+    GhostZoneTypesToRemove(255),
+    ForceConfirmRegion(false) { }
 
 // ****************************************************************************
 //  Modifications:
@@ -580,6 +583,10 @@ vtkDataSetRemoveGhostCells::RectilinearGridExecute()
 //    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
 //    Call Update on the filter, not the data object.
 //
+//    Kevin Griffin, Thu Jul 30 08:32:29 PDT 2020
+//    Added flag to force checking to make sure that the zones planned
+//    to be removed are uniformly of the type to remove (call ConfirmRegion).
+//
 // ***************************************************************************
 
 void
@@ -600,13 +607,13 @@ vtkDataSetRemoveGhostCells::StructuredGridExecute()
  
    int i, voi[6];
    for (i = 0; i < 6; i++)
-     {
+   {
      voi[i] = (int) realDims->GetComponent(i, 0);
-     }
+   }
  
   vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *)
                               inGrid->GetCellData()->GetArray("avtGhostZones");
-  if (GhostZoneTypesToRemove != 255 && arr != NULL)
+  if ((ForceConfirmRegion || GhostZoneTypesToRemove != 255) && arr != NULL)
   {
     unsigned char *ghosts = arr->GetPointer(0);
     int dims[3];

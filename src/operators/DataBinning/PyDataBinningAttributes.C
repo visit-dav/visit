@@ -5,6 +5,7 @@
 #include <PyDataBinningAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyDataBinningAttributes
@@ -34,7 +35,6 @@ struct DataBinningAttributesObject
 // Internal prototypes
 //
 static PyObject *NewDataBinningAttributes(int);
-
 std::string
 PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *prefix)
 {
@@ -999,14 +999,7 @@ DataBinningAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-DataBinningAttributes_compare(PyObject *v, PyObject *w)
-{
-    DataBinningAttributes *a = ((DataBinningAttributesObject *)v)->data;
-    DataBinningAttributes *b = ((DataBinningAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *DataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyDataBinningAttributes_getattr(PyObject *self, char *name)
 {
@@ -1222,49 +1215,70 @@ static char *DataBinningAttributes_Purpose = "The attributes for the DataBinning
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject DataBinningAttributesType =
+
+VISIT_PY_TYPE_OBJ(DataBinningAttributesType,         \
+                  "DataBinningAttributes",           \
+                  DataBinningAttributesObject,       \
+                  DataBinningAttributes_dealloc,     \
+                  DataBinningAttributes_print,       \
+                  PyDataBinningAttributes_getattr,   \
+                  PyDataBinningAttributes_setattr,   \
+                  DataBinningAttributes_str,         \
+                  DataBinningAttributes_Purpose,     \
+                  DataBinningAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+DataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "DataBinningAttributes",                    // tp_name
-    sizeof(DataBinningAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)DataBinningAttributes_dealloc,  // tp_dealloc
-    (printfunc)DataBinningAttributes_print,     // tp_print
-    (getattrfunc)PyDataBinningAttributes_getattr, // tp_getattr
-    (setattrfunc)PyDataBinningAttributes_setattr, // tp_setattr
-    (cmpfunc)DataBinningAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)DataBinningAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    DataBinningAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &DataBinningAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    DataBinningAttributes *a = ((DataBinningAttributesObject *)self)->data;
+    DataBinningAttributes *b = ((DataBinningAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

@@ -115,16 +115,16 @@ class Differencer:
         f = os.popen("/usr/bin/diff -f '%s' '%s' 2>/dev/null"%(self.fn1,self.fn2))
         op = f.read(1)
         while op != '':
-            arguments = string.split(f.readline())
+            arguments = f.readline().split()
             line = int(arguments[0])
             arg  = 1
             if len(arguments) > 1: arg = int(arguments[1]) + 1 - line
             if (op != 'd'):
                 length = 0;
-                buff = string.strip(f.readline())
+                buff = f.readline().strip()
                 while buff == "" or buff[0] != '.':
                     length = length + 1
-                    buff = string.strip(f.readline())
+                    buff = f.readline().strip()
             else:
                 length = arg
 
@@ -135,7 +135,7 @@ class Differencer:
         f.close()
 
     def GetNextLeft(self):
-        astr=cgi.escape(string.rstrip(self.nextleft))
+        astr=cgi.escape(self.nextleft.rstrip())
         self.nextleft = self.in1.readline()
         self.leftline = self.leftline+1
         if astr=="":
@@ -144,7 +144,7 @@ class Differencer:
             return astr
 
     def GetNextRight(self):
-        astr=cgi.escape(string.rstrip(self.nextright))
+        astr=cgi.escape(self.nextright.rstrip())
         self.nextright = self.in2.readline()
         self.rightline = self.rightline+1
         if astr=="":

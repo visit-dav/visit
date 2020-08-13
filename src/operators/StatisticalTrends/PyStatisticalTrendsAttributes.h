@@ -5,6 +5,7 @@
 #ifndef PY_STATISTICALTRENDSATTRIBUTES_H
 #define PY_STATISTICALTRENDSATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <StatisticalTrendsAttributes.h>
 
 //
