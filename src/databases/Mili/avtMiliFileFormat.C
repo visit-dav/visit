@@ -875,6 +875,10 @@ avtMiliFileFormat::ExtractMeshIdFromPath(const string &varPath)
 //
 //  Modifications
 //
+//    Alister Maguire, Thu Aug 13 08:41:53 PDT 2020
+//    Fixed a bug preventing numClassesPerCellType to be adjusted
+//    correctly.
+//
 // ****************************************************************************
 
 void
@@ -943,6 +947,7 @@ avtMiliFileFormat::ReadMesh(int dom)
         stringVector classNames;
         for (int i = 0 ; i < numCellTypes ; i++)
         {
+            int adjustedNumClassesPerCellType = numClassesPerCellType[i];
             for (int j = 0 ; j < numClassesPerCellType[i]; j++)
             {
                 int nCells = 0;
@@ -959,7 +964,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                 //
                 if (rval != OK)
                 {
-                    numClassesPerCellType[i] = 0;
+                    --adjustedNumClassesPerCellType;
                     continue;
                 }
 
@@ -973,6 +978,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                     SetNumElements(dom, nCells);
                 offset += nCells;
             }
+            numClassesPerCellType[i] = adjustedNumClassesPerCellType;
         }
 
         miliMetaData[meshId]->SetNumCells(dom, nDomCells);
