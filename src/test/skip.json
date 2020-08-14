@@ -30,6 +30,7 @@
                     {"category":"simulation","file":"var.py"},
                     {"category":"simulation","file":"scalar.py"},
                     {"category":"simulation","file":"unstructured.py"},
+                    {"platform":"win", "category":"databases","file":"ffp.py","cases":["ffp_03"]},
                     {"platform":"win", "category":"databases","file":"moab.py"},
                     {"platform":"win", "category":"databases","file":"oldsilo.py"},
                     {"platform":"win", "category":"databases","file":"rect.py"},
