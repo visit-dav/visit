@@ -63,6 +63,8 @@
 #include <string>
 #include <vector>
 
+#include <Environment.h>
+
 /* ========================================================================= */
 /* ==                                MACROS                               == */
 /* ========================================================================= */
@@ -603,12 +605,12 @@ static FILE* openFile(const char* name, const char* path=NULL)
     static const char* DEFAULT_PATH= ".:..:../..:../metadata:../../metadata:"
                                "../../../metadata:./data:../data:../../data:"
                                "/local:/local/data:/data";
-    static char* STARPATH = NULL;
-    static char* HOME_DIR = NULL;
+    static const char* STARPATH = NULL;
+    static const char* HOME_DIR = NULL;
 
     if(firstTime) {
-        STARPATH = getenv("STARPATH");
-        HOME_DIR = getenv("HOME");
+        STARPATH = Environment::get("STARPATH").c_str();
+        HOME_DIR = Environment::get("HOME").c_str();
 
         firstTime = false;
     }

@@ -8,6 +8,8 @@
 
 #include <Utility.h>
 
+#include <Environment.h>
+
 #include <visit-config.h>
 #include <stdio.h>
 #include <string.h>
@@ -650,6 +652,9 @@ ConvertArgsToTunneledValues(const std::map<int,int> &portTunnelMap,
 // Creation:   Fri Apr 24 15:21:18 PDT 2009
 //
 // Modifications:
+//
+//   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
+//   Changed getenv to Environment::get.
 //   
 // ****************************************************************************
 
@@ -658,7 +663,7 @@ GetSSHClient(std::string &sshClient)
 {
     bool retval = false;
     const char *s = NULL;
-    if((s = getenv("SSH_CLIENT")) != NULL)
+    if((s = Environment::get("SSH_CLIENT").c_str()) != NULL)
     {
         stringVector sv = SplitValues(s, ' ');
         if(sv.size() > 0)
@@ -667,7 +672,7 @@ GetSSHClient(std::string &sshClient)
             sshClient = sv[0];
         }
     }
-    else if((s = getenv("SSH2_CLIENT")) != NULL)
+    else if((s = Environment::get("SSH2_CLIENT").c_str()) != NULL)
     {
         stringVector sv = SplitValues(s, ' ');
         if(sv.size() > 0)
@@ -676,7 +681,7 @@ GetSSHClient(std::string &sshClient)
             sshClient = sv[0];
         }
     }
-    else if((s = getenv("SSH_CONNECTION")) != NULL)
+    else if((s = Environment::get("SSH_CONNECTION").c_str()) != NULL)
     {
         stringVector sv = SplitValues(s, ' ');
         if(sv.size() > 0)

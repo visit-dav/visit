@@ -15,6 +15,8 @@
 #  endif
 #endif
 
+#include <Environment.h>
+
 #include <cmath>
 #include <ctime>
 #include <cstdio>
@@ -38,7 +40,7 @@ enum blendDirection {FRONT_TO_BACK = 0, BACK_TO_FRONT = 1};
 bool CheckThreadedBlend_Communicator()
 {
     bool use = true;
-    const char* env_use = std::getenv("OSPRAY_SERIAL_BLEND");
+    const char* env_use = Environment::get("OSPRAY_SERIAL_BLEND").c_str();
     if (env_use) { 
         use = atoi(env_use) <= 0; 
     }
@@ -100,7 +102,7 @@ const bool avtOSPRayIC_IceT::usage =
 bool avtOSPRayIC_IceT::CheckUsage()
 {
     bool use_icet = false;
-    const char* env_use_icet = std::getenv("OSPRAY_USE_ICET");
+    const char* env_use_icet = Environment::get("OSPRAY_USE_ICET").c_str();
     if (env_use_icet) { 
         use_icet = atoi(env_use_icet) > 0; 
     }
@@ -126,7 +128,7 @@ IceTEnum       avtOSPRayIC_IceT::CheckStrategy()
     if (avtOSPRayIC_IceT::Valid()) {
         IceTEnum ret;
         int strategy = 3;
-        const char* env_icet_strategy = std::getenv("OSPRAY_ICET_STRATEGY");
+        const char* env_icet_strategy = Environment::get("OSPRAY_ICET_STRATEGY").c_str();
         if (env_icet_strategy) { strategy = atoi(env_icet_strategy); }
         switch (strategy) {
         case 0:

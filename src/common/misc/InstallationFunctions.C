@@ -179,6 +179,9 @@ GetDefaultConfigFile(const char *filename, const char *home)
 //   Brad Whitlock, Wed Feb 16 09:29:44 PDT 2005
 //   Moved from ConfigManager class.
 //
+//   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
+//   Changed getenv to Environment::get.
+//
 // ****************************************************************************
 
 char *
@@ -195,7 +198,7 @@ GetSystemConfigFile(const char *filename)
     {
 #if defined(_WIN32)
         // Try and get the system config filename from the environment settings.
-        sysConfigName = getenv("VISITSYSTEMCONFIG");
+        sysConfigName = Environment::get("VISITSYSTEMCONFIG").c_str();
 #endif
 
         // If we still don't have the name of a system config file, use 

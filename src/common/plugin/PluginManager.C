@@ -21,6 +21,7 @@
 #include <InstallationFunctions.h>
 #include <PluginBroadcaster.h>
 #include <visitstream.h>
+#include <Environment.h>
 
 #if __APPLE__
 #include <AvailabilityMacros.h>
@@ -1358,6 +1359,9 @@ AddUniquePluginDir(stringVector &pluginDirs, const std::string &path)
 //    Brad Whitlock, Wed Dec 23 15:40:03 PST 2009
 //    Don't bother doing anything if VisIt is static.
 //
+//    Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
+//    Changed getenv to Environment::get.
+//
 // ****************************************************************************
 
 void
@@ -1368,7 +1372,7 @@ PluginManager::SetPluginDir(const char *PluginDir)
     if (PluginDir == 0)
     {
         // Get the plugin directory from the environment.
-        plugindir = getenv("VISITPLUGINDIR");
+        plugindir = Environment::get("VISITPLUGINDIR").c_str();
         if (!plugindir)
         {
             // No environment variable found.  If we have directories in the

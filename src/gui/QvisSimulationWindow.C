@@ -13,6 +13,7 @@
 #include <avtSimulationInformation.h>
 #include <avtSimulationCommandSpecification.h>
 #include <QualifiedFilename.h>
+#include <Environment.h>
 
 #include <QvisSimulationCommandWindow.h>
 #include <QvisSimulationMessageWindow.h>
@@ -1905,22 +1906,25 @@ QvisSimulationWindow::GetEngineListIndex(const QString &key) const
 //   Shelly Prevost, Mon Mar 13 14:49:07 PST 2006
 //   Changed the default directory to check for ui files from UI to ui.
 //
+//   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
+//   Changed getenv to Environment::get.
+//
 // ****************************************************************************
 QString
 QvisSimulationWindow::GetUIFileDirectory() const
 {
     // First look in user defined variable
-    QString dirName(getenv("VISITSIMDIR"));
+    QString dirName(Environment::get("VISITSIMDIR").c_str());
     // if still not defined then look in the users home directory
     if (dirName.isEmpty())
     {
-        dirName = getenv("HOME");
+        dirName = Environment::get("HOME").c_str();
         if (!dirName.isEmpty()) dirName += "/.visit/ui/";
     }
     // if not defined then look in global location
     if ( dirName.isEmpty())
     {
-        dirName = getenv("VISITDIR");
+        dirName = Environment::get("VISITDIR").c_str();
         if (!dirName.isEmpty()) dirName += "/ui/";
     }
 

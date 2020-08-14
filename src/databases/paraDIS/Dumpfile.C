@@ -17,6 +17,8 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <Environment.h>
+
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
 #include <boost/format.hpp>
@@ -36,7 +38,7 @@ Dumpfile::Dumpfile(const char* filename, const DBOptionsAttributes *rdatts) {
     Write out files
   */ 
   mVerbosity = (rdatts == NULL) ? 0: rdatts->GetInt(PARADIS_VERBOSITY); 
-  char *cp = getenv("PARADIS_VERBOSITY"); 
+  const char *cp = Environment::get("PARADIS_VERBOSITY").c_str(); 
   if (cp) mVerbosity=atoi(cp); 
   else cp = (char*)"unset"; 
   dbprintf(1, "PARADIS_VERBOSITY variable is %s, verbosity of dumpfile reader set to %d\n", cp, mVerbosity); 
@@ -50,7 +52,7 @@ Dumpfile::Dumpfile(const char* filename, const DBOptionsAttributes *rdatts) {
   if (mVerbosity) {
     mDebugFile = (rdatts == NULL) ? string("") : rdatts->GetString(PARADIS_DEBUG_FILE);
   }
-  cp = getenv("PARADIS_DEBUG_FILE");
+  cp = Environment::get("PARADIS_DEBUG_FILE").c_str();
   if (cp) mDebugFile = cp; 
   else {
     if (mVerbosity < 2) {
@@ -64,7 +66,7 @@ Dumpfile::Dumpfile(const char* filename, const DBOptionsAttributes *rdatts) {
   dbprintf(1, "PARADIS_DEBUG_FILE variable is %s\n", cp); 
   
   int enable = (rdatts == NULL) ? 0 : rdatts->GetBool(PARADIS_ENABLE_DEBUG_OUTPUT); 
-  cp = getenv("PARADIS_ENABLE_DEBUG_OUTPUT"); 
+  cp = Environment::get("PARADIS_ENABLE_DEBUG_OUTPUT").c_str(); 
   if (cp) enable = atoi(cp); 
   else  {
     if (mVerbosity < 2) {
@@ -84,7 +86,7 @@ Dumpfile::Dumpfile(const char* filename, const DBOptionsAttributes *rdatts) {
   
   if (rdatts) 
     paraDIS_SetThreshold(rdatts->GetDouble(PARADIS_NN_ARM_THRESHOLD)); 
-  cp = getenv("PARADIS_NN_ARM_THRESHOLD"); 
+  cp = Environment::get("PARADIS_NN_ARM_THRESHOLD").c_str(); 
   if (cp)  {
     paraDIS_SetThreshold(atof(cp));
   }

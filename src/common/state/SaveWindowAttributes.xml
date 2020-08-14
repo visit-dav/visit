@@ -30,11 +30,11 @@
       ScreenProportions
     </Enum>
     <Enum name="PixelData">
-      ColorRGB=1
-      ColorRGBA=2
-      Luminance=4
-      Value=8
-      Depth=16
+      ColorRGB = 1,
+      ColorRGBA = 2,
+      Luminance = 4,
+      Value = 8,
+      Depth = 16
     </Enum>
     <Field name="outputToCurrentDirectory" label="Output to current directory" type="bool" init="true">
       true
@@ -100,4 +100,7 @@
     </Function>
     <Function name="CurrentFormatSupportsAlpha" user="true" member="true">
     </Function>
+    <Include file="source" quoted="false">
+      Environment.h
+    </Include>
   </Attribute>

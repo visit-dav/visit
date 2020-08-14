@@ -15,6 +15,8 @@
 
 #include "VisItPythonConnection.h"
 
+#include <Environment.h>
+
 
 // ****************************************************************************
 //  Constructor:  VisItPythonConnection::VisItPythonConnection
@@ -148,6 +150,9 @@ bool VisItPythonConnection::WaitForPrompt()
 //    Jeremy Meredith, Wed Jul 18 15:38:14 EDT 2007
 //    Allow extra arguments, and thus switch from execlp to execvp.
 //
+//    Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
+//    Changed getenv to Environment::get.
+//
 // ****************************************************************************
 bool VisItPythonConnection::Open(vector<string> extraargs)
 {
@@ -204,7 +209,7 @@ bool VisItPythonConnection::Open(vector<string> extraargs)
         close(to_sim);
 
         char visitpath[1024] = "visit";
-        char *visithome = getenv("VISITHOME");
+        const char *visithome = Environtment::get("VISITHOME").c_str();
         if (visithome)
         {
             sprintf(visitpath, "%s/bin/visit", visithome);

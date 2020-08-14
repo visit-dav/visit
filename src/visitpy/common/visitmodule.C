@@ -48,6 +48,7 @@
 #include <Logging.h>
 #include <SingleAttributeConfigManager.h>
 #include <InstallationFunctions.h>
+#include <Environment.h>
 
 //
 // State object include files.
@@ -16142,7 +16143,7 @@ visit_LoadUltra(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
 
-    std::string parserFile = std::string(getenv("VISITULTRAHOME")) +
+    std::string parserFile = Environment::get("VISITULTRAHOME") +
                         std::string("/ultraparse.py");
 
     PyObject *argTuple = PyTuple_New(1);
@@ -19050,9 +19051,9 @@ LaunchViewer(const char *visitProgram)
     //
     
     std::string visit_plugin_dir;
-    if(getenv("VISITPLUGINDIR") != NULL)
+    if(Environment::get("VISITPLUGINDIR").c_str() != NULL)
     {
-        visit_plugin_dir = std::string(getenv("VISITPLUGINDIR"));
+        visit_plugin_dir = Environment::get("VISITPLUGINDIR");
     }
     else
     {

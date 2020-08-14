@@ -11,6 +11,7 @@
 #include <StackTimer.h>
 #include <TimingsManager.h>
 #include <ImproperUseException.h>
+#include <Environment.h>
 
 #include <vtkCamera.h>
 #include <vtkMatrix4x4.h>
@@ -29,7 +30,7 @@
 
 static bool CheckThreadedBlend_MetaData() {
     bool use = true;
-    const char* env_use = std::getenv("OSPRAY_SERIAL_BLEND");
+    const char* env_use = Environment::get("OSPRAY_SERIAL_BLEND").c_str();
     if (env_use) { use = atoi(env_use) <= 0; }
     return use;
 }

@@ -20,11 +20,11 @@
 #include <avtStructuredDomainNesting.h>
 #include <avtVariableCache.h>
 
+#include <Environment.h>
 #include <DebugStream.h>
 #include <Expression.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidVariableException.h>
-
 
 #include <AMRreaderWithLevels.h>
 
@@ -93,6 +93,9 @@ GetTime()
 //   Change how the reader is instantiated. Add enableAMR to indicate whether
 //   new AMR enhancements will be enabled.
 //
+//   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
+//   Changed getenv to Environment::get.
+//
 // ****************************************************************************
 
 avtAMRFileFormat::avtAMRFileFormat(const char *filename)
@@ -101,7 +104,7 @@ avtAMRFileFormat::avtAMRFileFormat(const char *filename)
     reader_ = NULL;
 
     // Enable the new features by default unless we're purposefully disabling it.
-    enableAMR = getenv("AMRDISABLENEW")==NULL;
+    enableAMR = Environment::get("AMRDISABLENEW").c_str()==NULL;
 
     // Check the file only if we're in strict mode. This will prevent many files
     // from being opened upfront.

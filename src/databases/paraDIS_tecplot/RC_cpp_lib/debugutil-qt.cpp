@@ -45,6 +45,8 @@
 #include "QDir"
 #include <sys/stat.h>
 
+#include <Environment.h>
+
 using namespace std; 
 
 static  int    sVerbose = 0;
@@ -96,8 +98,8 @@ void real_dbfprintf(FILE *stream, int level, QString filename, int lineno, QStri
 static int check_verbose(void)
 {
   if (!sCheck) {
-    if (getenv("DEBUG_VERBOSE")) {
-      sVerbose = atoi(getenv("DEBUG_VERBOSE"));
+    if (Environment::get("DEBUG_VERBOSE").c_str()) {
+      sVerbose = atoi(Environment::get("DEBUG_VERBOSE").c_str());
     }
     sCheck = 1;
   }

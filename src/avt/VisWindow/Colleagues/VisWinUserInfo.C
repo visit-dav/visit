@@ -12,6 +12,8 @@
 #include <vtkTextActor.h>
 #include <vtkTextProperty.h>
 
+#include <Environment.h>
+
 #include <VisWinUserInfo.h>
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
@@ -304,6 +306,9 @@ VisWinUserInfo::SetVisibility(bool val)
 //   If we can't get the username, use the string "user" as the username so
 //   the code doesn't crash.
 //
+//   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
+//   Changed getenv to Environment::get.
+//
 // ****************************************************************************
 
 void
@@ -321,9 +326,9 @@ VisWinUserInfo::UpdateUserText()
         GetUserName((LPTSTR)username, (LPDWORD)&maxLen);
         user = username;
 #else
-        user = getenv("USER");
+        user = Environment::get("USER").c_str();
         if (user == NULL)
-            user = getenv("LOGNAME");
+            user = Environment::get("LOGNAME").c_str();
         if(user == NULL)
             user = "user";
 #endif

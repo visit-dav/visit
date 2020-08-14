@@ -40,6 +40,7 @@
 #include <avtParallel.h>
 
 #include <FileFunctions.h>
+#include <Environment.h>
 
 using std::string;
 using std::vector;
@@ -266,6 +267,9 @@ avtZipWrapperFileFormatInterface::CleanUpAtExit()
 //    Brad Whitlock, Wed Jun 25 11:12:50 PDT 2008
 //    Check a few places for a good place to make a temp dir.
 //
+//    Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
+//    Changed getenv to Environment::get.
+//
 // ****************************************************************************
 
 void
@@ -296,9 +300,9 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     // Decide on root temporary directory
     if (tmpDir == "$TMPDIR" && procNum == 0)
     {
-        if (getenv("TMPDIR"))
+        if (Environment::get("TMPDIR").c_str())
         {
-            tmpDir = getenv("TMPDIR");
+            tmpDir = Environment::get("TMPDIR").c_str();
         }
         else
         {
@@ -321,20 +325,20 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
             }
             // Last resort, use HOME.
             if(!foundDir)
-                tmpDir = getenv("HOME");
+                tmpDir = Environment::get("HOME").c_str();
         }
     }
 
     // Decide on user name moniker
     if (userName == "$USER" && procNum == 0)
     {
-        if (getenv("USER"))
+        if (Environment::get("USER").c_str())
         {
-            userName = getenv("USER");
+            userName = Environment::get("USER").c_str();
         }
-        else if (getenv("USERNAME"))
+        else if (Environment::get("USERNAME").c_str())
         {
-            userName = getenv("USERNAME");
+            userName = Environment::get("USERNAME").c_str();
         }
         else
         {
