@@ -1430,10 +1430,7 @@ QvisHelpWindow::displayPage(const QString &page, bool reload)
                 helpBrowser->clear();
                 if (!QDesktopServices::openUrl(QUrl::fromLocalFile(file)))
                 {
-                    //
-                    // TODO: where do these messages get displayed??
-                    //
-                    Message(tr("The VisIt Manuals were unable to be "
+                    Error(tr("The VisIt Manuals were unable to be "
                         "opened."));
                 }
             }
