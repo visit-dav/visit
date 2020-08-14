@@ -187,7 +187,7 @@ class AVTGeneratorPlugin : public PluginBase
         h << "                                avt"<<name<<"Plot();" << Endl;
         h << "    virtual                    ~avt"<<name<<"Plot();" << Endl;
         h << Endl;
-        h << "    virtual const char         *GetName(void) { return \""<<name<<"Plot\"; };" << Endl;
+        h << "    virtual const char         *GetName(void) { return \""<<name<<"Plot\"; }" << Endl;
         h << Endl;
         h << "    static avtPlot             *Create();" << Endl;
         h << Endl;
@@ -200,13 +200,13 @@ class AVTGeneratorPlugin : public PluginBase
         h << "    avt...Mapper               *myMapper;" << Endl;
         h << "    avt"<<name<<"Filter              *"<<name<<"Filter;" << Endl;
         h << Endl;
-        h << "    virtual avtMapper          *GetMapper(void);" << Endl;
+        h << "    virtual avtMapperBase      *GetMapper(void);" << Endl;
         h << "    virtual avtDataObject_p     ApplyOperators(avtDataObject_p);" << Endl;
         h << "    virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);"<< Endl;
         h << "    virtual void                CustomizeBehavior(void);" << Endl;
         h << "    virtual void                CustomizeMapper(avtDataObjectInformation &);" << Endl;
         h << Endl;
-        h << "    virtual avtLegend_p         GetLegend(void) { return NULL; };" << Endl;
+        h << "    virtual avtLegend_p         GetLegend(void) { return NULL; }" << Endl;
         h << "};" << Endl;
         h << Endl;
         h << Endl;
@@ -298,7 +298,7 @@ class AVTGeneratorPlugin : public PluginBase
         c << "//" << Endl;
         c << "// ****************************************************************************" << Endl;
         c << Endl;
-        c << "avtMapper *" << Endl;
+        c << "avtMapperBase *" << Endl;
         c << "avt"<<name<<"Plot::GetMapper(void)" << Endl;
         c << "{" << Endl;
         c << "    return myMapper;" << Endl;
@@ -461,9 +461,9 @@ class AVTGeneratorPlugin : public PluginBase
             h << Endl;
             h << "    static avtFilter    *Create();" << Endl;
             h << Endl;
-            h << "    virtual const char  *GetType(void)  { return \"avt"<<name<<"Filter\"; };" << Endl;
+            h << "    virtual const char  *GetType(void)  { return \"avt"<<name<<"Filter\"; }" << Endl;
             h << "    virtual const char  *GetDescription(void)" << Endl;
-            h << "                             { return \""<<label<<"\"; };" << Endl;
+            h << "                             { return \""<<label<<"\"; }" << Endl;
             h << Endl;
             h << "    virtual void         SetAtts(const AttributeGroup*);" << Endl;
             h << "    virtual bool         Equivalent(const AttributeGroup*);" << Endl;
@@ -515,9 +515,9 @@ class AVTGeneratorPlugin : public PluginBase
             h << "                              avt"<<name<<"Filter(YOUR INITIALIZATION ARGS);" << Endl;
             h << "    virtual                  ~avt"<<name<<"Filter();" << Endl;
             h << Endl;
-            h << "    virtual const char       *GetType(void)   { return \"avt"<<name<<"Filter\"; };" << Endl;
+            h << "    virtual const char       *GetType(void)   { return \"avt"<<name<<"Filter\"; }" << Endl;
             h << "    virtual const char       *GetDescription(void)" << Endl;
-            h << "                                  { return \"Performing "<<label<<"\"; };" << Endl;
+            h << "                                  { return \"Performing "<<label<<"\"; }" << Endl;
             h << Endl;
             h << "    ADD THE SET METHODS YOU NEED HERE" << Endl;
             h << Endl;
@@ -847,7 +847,7 @@ class AVTGeneratorPlugin : public PluginBase
                 h << "                       avt"<<name<<"FileFormat(const char *filename, const DBOptionsAttributes *);" << Endl;
             else
                 h << "                       avt"<<name<<"FileFormat(const char *filename);" << Endl;
-            h << "    virtual           ~avt"<<name<<"FileFormat() {;};" << Endl;
+            h << "    virtual           ~avt"<<name<<"FileFormat() {;}" << Endl;
             h << "" << Endl;
             h << "    //" << Endl;
             h << "    // This is used to return unconvention data -- ranging from material" << Endl;
@@ -866,7 +866,7 @@ class AVTGeneratorPlugin : public PluginBase
             h << "    // virtual double    GetTime(void);" << Endl;
             h << "    //" << Endl;
             h << "" << Endl;
-            h << "    virtual const char    *GetType(void)   { return \""<<name<<"\"; };" << Endl;
+            h << "    virtual const char    *GetType(void)   { return \""<<name<<"\"; }" << Endl;
             h << "    virtual void           FreeUpResources(void); " << Endl;
             h << "" << Endl;
             h << "    virtual vtkDataSet    *GetMesh(const char *);" << Endl;
@@ -920,7 +920,7 @@ class AVTGeneratorPlugin : public PluginBase
                 h << "                       avt"<<name<<"FileFormat(const char *, const DBOptionsAttributes *);" << Endl;
             else
                 h << "                       avt"<<name<<"FileFormat(const char *);" << Endl;
-            h << "    virtual           ~avt"<<name<<"FileFormat() {;};" << Endl;
+            h << "    virtual           ~avt"<<name<<"FileFormat() {;}" << Endl;
             h << "" << Endl;
             h << "    //" << Endl;
             h << "    // This is used to return unconvention data -- ranging from material" << Endl;
@@ -941,7 +941,7 @@ class AVTGeneratorPlugin : public PluginBase
             h << "" << Endl;
             h << "    virtual int            GetNTimesteps(void);" << Endl;
             h << "" << Endl;
-            h << "    virtual const char    *GetType(void)   { return \""<<name<<"\"; };" << Endl;
+            h << "    virtual const char    *GetType(void)   { return \""<<name<<"\"; }" << Endl;
             h << "    virtual void           FreeUpResources(void); " << Endl;
             h << "" << Endl;
             h << "    virtual vtkDataSet    *GetMesh(int, const char *);" << Endl;
@@ -992,7 +992,7 @@ class AVTGeneratorPlugin : public PluginBase
                 h << "                       avt"<<name<<"FileFormat(const char *, const DBOptionsAttributes *);" << Endl;
             else
                 h << "                       avt"<<name<<"FileFormat(const char *);" << Endl;
-            h << "    virtual           ~avt"<<name<<"FileFormat() {;};" << Endl;
+            h << "    virtual           ~avt"<<name<<"FileFormat() {;}" << Endl;
             h << "" << Endl;
             h << "    //" << Endl;
             h << "    // This is used to return unconvention data -- ranging from material" << Endl;
@@ -1010,7 +1010,7 @@ class AVTGeneratorPlugin : public PluginBase
             h << "    // virtual int         GetCycle(void);" << Endl;
             h << "    //" << Endl;
             h << "" << Endl;
-            h << "    virtual const char    *GetType(void)   { return \""<<name<<"\"; };" << Endl;
+            h << "    virtual const char    *GetType(void)   { return \""<<name<<"\"; }" << Endl;
             h << "    virtual void           FreeUpResources(void); " << Endl;
             h << "" << Endl;
             h << "    virtual vtkDataSet    *GetMesh(int, const char *);" << Endl;
@@ -1061,7 +1061,7 @@ class AVTGeneratorPlugin : public PluginBase
                 h << "                       avt"<<name<<"FileFormat(const char *, const DBOptionsAttributes *);" << Endl;
             else
                 h << "                       avt"<<name<<"FileFormat(const char *);" << Endl;
-            h << "    virtual           ~avt"<<name<<"FileFormat() {;};" << Endl;
+            h << "    virtual           ~avt"<<name<<"FileFormat() {;}" << Endl;
             h << "" << Endl;
             h << "    //" << Endl;
             h << "    // This is used to return unconvention data -- ranging from material" << Endl;
@@ -1082,7 +1082,7 @@ class AVTGeneratorPlugin : public PluginBase
             h << "" << Endl;
             h << "    virtual int            GetNTimesteps(void);" << Endl;
             h << "" << Endl;
-            h << "    virtual const char    *GetType(void)   { return \""<<name<<"\"; };" << Endl;
+            h << "    virtual const char    *GetType(void)   { return \""<<name<<"\"; }" << Endl;
             h << "    virtual void           FreeUpResources(void); " << Endl;
             h << "" << Endl;
             h << "    virtual vtkDataSet    *GetMesh(int, int, const char *);" << Endl;
@@ -2540,7 +2540,7 @@ class AVTGeneratorPlugin : public PluginBase
             h << "                   avt"<<name<<"Writer(const DBOptionsAttributes *);" << Endl;
         else
             h << "                   avt"<<name<<"Writer();" << Endl;
-        h << "    virtual       ~avt"<<name<<"Writer() {;};" << Endl;
+        h << "    virtual       ~avt"<<name<<"Writer() {;}" << Endl;
         h << "" << Endl;
         h << "  protected:" << Endl;
         h << "    std::string    stem;" << Endl;
