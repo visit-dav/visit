@@ -10,6 +10,7 @@
 
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
+#include <Environment.h>
 
 #include <cstdlib>
 #include <cstring>
