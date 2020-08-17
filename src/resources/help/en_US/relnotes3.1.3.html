@@ -40,6 +40,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with the CGNS reader that caused VisIt to crash when doing a Subset plot of "zones" when reading data decomposed across multiple CGNS files.</li>
   <li>Fixed a bug preventing database plugins from being able to plot variables of the form "variable_name(subname)".</li>
   <li>Fixed a bug which caused the Mili database plugin to add duplicate materials.</li>
+  <li>Fixed a bug preventing some multi-processor mili datasets from being properly read.</li>
+  <li>Fixed a bug which caused external surfaces to be lost in the pseudocolor plot when using a gradient expression on a Curvilinear mesh (Structured Grid)</li>
+ <li>Changed the vertical scroll bar mode for the plot list to <b>ScrollPerPixel</b> and to use a single step so that the bottom of the plot list is not cutoff.</li>
+  <li>Fixed a bug preventing VisIt from displaying the manuals when using an out-of-source build.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -58,6 +62,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added the Tessellate operator, which tessellates high order elements into linear elements. The following high order cell types are supported: QUADRATIC_EDGE, CUBIC_LINE, LAGRANGE_TRIANGLE, QUADRATIC_TRIANGLE, BIQUADRATIC_TRIANGLE, LAGRANGE_QUADRILATERAL, BIQUADRATIC_QUAD, QUADRATIC_QUAD, LAGRANGE_TETRAHEDRON, QUATRADIC_TETRA, LAGRANGE_HEXAHEDRON and QUADRATIC_HEXAHEDRON. All unsupported types will be removed from the mesh.</li>
   <li>Added parallel support for Remap operator.</li>
   <li>Added host profiles for the Lawrence Livermore National Laboratory's Tron system. Removed the host profiles for the Lawrence Livermore National Laboratory's Cmax system.</li>
+  <li>Enhanced the VisIt Help menu such that the VisIt Manuals are opened in the user's default web browser instead of being rendered in the GUI window.</li>
 </ul>
 
 <a name="Dev_changes"></a>
