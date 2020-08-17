@@ -37,6 +37,7 @@
 #include <vtkQuad.h>
 #include <vtkTetra.h>
 #include <vtkPoints.h>
+#include <vtkPolyData.h>
 
 #include <fmsio.h>
 
@@ -713,6 +714,10 @@ avtFMSFileFormat::Internals::GetField(const char *domain_name,
 }
 
 const char *avtFMSFileFormat::MESH_NAME = "mesh";
+const char *avtFMSFileFormat::BDR_MESH_NAME = "boundary";
+const char *avtFMSFileFormat::DOF_MESH_NAME = "dofs";
+const char *avtFMSFileFormat::ELEMENT_ATTRIBUTE_NAME = "element_attribute";
+const char *avtFMSFileFormat::ELEMENT_COLORING_NAME = "element_coloring";
 
 // ****************************************************************************
 //  Method: avtFMSFileFormat constructor
@@ -859,19 +864,61 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 #endif
     md->Add(mmd);
 
+    // If there are boundary elements, add them as a 2nd mesh.
+    if(dc->GetMesh()->GetNBE() > 0)
+    {
+        auto bmmd = new avtMeshMetaData;
+        bmmd->name = BDR_MESH_NAME;
+        bmmd->meshType = AVT_UNSTRUCTURED_MESH;
+        bmmd->spatialDimension = dc->GetMesh()->SpaceDimension();
+        bmmd->topologicalDimension = dc->GetMesh()->Dimension()-1;
+        bmmd->cellOrigin = 0;
+        bmmd->nodeOrigin = 0;
+        bmmd->numBlocks = nd;
+        bmmd->blockTitle = "domains";
+        bmmd->blockPieceName = "domain";
+        bmmd->xUnits = coordUnits;
+        bmmd->yUnits = coordUnits;
+        bmmd->zUnits = coordUnits;
+        bmmd->xLabel = "X";
+        bmmd->yLabel = "Y";
+        bmmd->zLabel = "Z";
+        bmmd->LODs = 50; // The MultiresControl operator does not let us go above 1 without this.
+#ifdef CREATE_ORIGINAL_CELL_IDS
+        bmmd->containsOriginalCells = bmmd->topologicalDimension > 1;
+#endif
+        md->Add(bmmd);
+    }
+
+    // Add a mesh for the dofs.
+    auto dmmd = new avtMeshMetaData;
+    dmmd->name = DOF_MESH_NAME;
+    dmmd->meshType = AVT_POINT_MESH;
+    dmmd->spatialDimension = dc->GetMesh()->SpaceDimension();
+    dmmd->topologicalDimension = 0;
+    dmmd->cellOrigin = 0;
+    dmmd->nodeOrigin = 0;
+    dmmd->numBlocks = nd;
+    dmmd->blockTitle = "domains";
+    dmmd->blockPieceName = "domain";
+    dmmd->xUnits = coordUnits;
+    dmmd->yUnits = coordUnits;
+    dmmd->zUnits = coordUnits;
+    dmmd->xLabel = "X";
+    dmmd->yLabel = "Y";
+    dmmd->zLabel = "Z";
+    dmmd->LODs = 0;
+    md->Add(dmmd);
+
+    // Add attribute and coloring to the main mesh.
+    AddScalarVarToMetaData(md, ELEMENT_ATTRIBUTE_NAME, MESH_NAME, AVT_ZONECENT);
+    AddScalarVarToMetaData(md, ELEMENT_COLORING_NAME, MESH_NAME, AVT_ZONECENT);
+
     // Use the cached MFEM data collection to add variables.
     auto m = dc->GetFieldMap();
     for(auto it = m.begin(); it != m.end(); it++)
     {
-        // NOTE: assume node centered except when we get a DISCONTINUOUS
-        // FE collection. This does not account for TANGENTIAL,NORMAL cases.
         avtCentering centering = AVT_NODECENT;
-//        if(it->second->FESpace()->FEColl()->GetContType() ==
-//            FiniteElementCollection::DISCONTINUOUS)
-//        {
-//            centering = AVT_ZONECENT;
-//        }
-
         if(it->second->VectorDim() == 1)
         {
             avtScalarMetaData *smd = new avtScalarMetaData;
@@ -940,6 +987,46 @@ avtFMSFileFormat::GetTime()
 }
 
 // ****************************************************************************
+// Callback functions for GetRefinedMesh.
+// ****************************************************************************
+
+static int
+mesh_GetNE(mfem::Mesh *mesh)
+{
+    return mesh->GetNE();
+}
+
+static int
+mesh_GetElementBaseGeometry(mfem::Mesh *mesh, int elem)
+{
+    return mesh->GetElementBaseGeometry(elem);
+}
+
+static mfem::ElementTransformation *
+mesh_GetElementTransformation(mfem::Mesh *mesh, int elem)
+{
+    return mesh->GetElementTransformation(elem);
+}
+
+static int
+mesh_GetNBE(mfem::Mesh *mesh)
+{
+    return mesh->GetNBE();
+}
+
+static int
+mesh_GetBdrElementBaseGeometry(mfem::Mesh *mesh, int elem)
+{
+    return mesh->GetBdrElementBaseGeometry(elem);
+}
+
+static mfem::ElementTransformation *
+mesh_GetBdrElementTransformation(mfem::Mesh *mesh, int elem)
+{
+    return mesh->GetBdrElementTransformation(elem);
+}
+
+// ****************************************************************************
 //  Method: avtFMSFileFormat::GetMesh
 //
 //  Purpose:
@@ -961,7 +1048,26 @@ avtFMSFileFormat::GetTime()
 vtkDataSet *
 avtFMSFileFormat::GetMesh(int domain, const char *meshname)
 {
-    return GetRefinedMesh(string(meshname),domain,selectedLOD+1);
+    vtkDataSet *ds = nullptr;
+    if(strcmp(meshname, BDR_MESH_NAME) == 0)
+    {
+        ds = GetRefinedMesh(BDR_MESH_NAME,domain,selectedLOD+1,
+                 mesh_GetNBE,
+                 mesh_GetBdrElementBaseGeometry,
+                 mesh_GetBdrElementTransformation);
+    }
+    else if(strcmp(meshname, DOF_MESH_NAME) == 0)
+    {
+        ds = GetDOFMesh(domain);
+    }
+    else
+    {
+        ds = GetRefinedMesh(string(meshname),domain,selectedLOD+1,
+                 mesh_GetNE,
+                 mesh_GetElementBaseGeometry,
+                 mesh_GetElementTransformation);
+    }
+    return ds;
 }
 
 // ****************************************************************************
@@ -984,8 +1090,15 @@ avtFMSFileFormat::GetMesh(int domain, const char *meshname)
 // ****************************************************************************
 vtkDataArray *
 avtFMSFileFormat::GetVar(int domain, const char *varname)
-{   
-   return GetRefinedVar(string(varname),domain,selectedLOD+1);
+{
+    vtkDataArray *arr = nullptr;
+    if(strcmp(varname, ELEMENT_ATTRIBUTE_NAME) == 0)
+        arr = GetRefinedElementAttribute(MESH_NAME, domain, selectedLOD+1);
+    else if(strcmp(varname, ELEMENT_COLORING_NAME) == 0)
+        arr = GetRefinedElementColoring(MESH_NAME, domain, selectedLOD+1);
+    else
+        arr = GetRefinedVar(string(varname),domain,selectedLOD+1);
+    return arr;
 }
 
 // ****************************************************************************
@@ -1063,7 +1176,11 @@ avtFMSFileFormat::FetchMesh(const std::string &mesh_name, int domain)
 // ****************************************************************************
 
 vtkDataSet *
-avtFMSFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int lod)
+avtFMSFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int lod,
+    int (*get_num_elements)(mfem::Mesh *),
+    int (*get_element_base_geometry)(mfem::Mesh *, int),
+    mfem::ElementTransformation *(*get_element_transformation)(mfem::Mesh *, int)
+    )
 {
     const char *mName = "avtFMSFileFormat::GetRefinedMesh";
 
@@ -1090,27 +1207,28 @@ avtFMSFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int l
     // find the # of output points and cells at the selected level of 
     // refinement (we may want to cache this...)
     //
-    for (int i = 0; i < mesh->GetNE(); i++)
+    int NE = (*get_num_elements)(mesh);
+    for (int i = 0; i < NE; i++)
     {
-        int geom = mesh->GetElementBaseGeometry(i);
+        int geom = (*get_element_base_geometry)(mesh, i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
         refined_geo = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         npts  += refined_geo->RefPts.GetNPoints();
         neles += refined_geo->RefGeoms.Size() / ele_nverts;
     }
 
-    // create the points for the refined topoloy   
+    // create the points for the refined topology   
     res_pts->Allocate(npts);
     res_pts->SetNumberOfPoints((vtkIdType) npts);
    
-    // create the points for the refined topoloy
+    // create the points for the refined topology
     int pt_idx=0;
-    for (int i = 0; i < mesh->GetNE(); i++)
+    for (int i = 0; i < NE; i++)
     {
-        int geom = mesh->GetElementBaseGeometry(i);
+        int geom = (*get_element_base_geometry)(mesh, i);
         refined_geo = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
         // refined points
-        mesh->GetElementTransformation(i)->Transform(refined_geo->RefPts, pmat);
+        (*get_element_transformation)(mesh,i)->Transform(refined_geo->RefPts, pmat);
         for (int j = 0; j < pmat.Width(); j++)
         {
             double pt_vals[3]={0.0,0.0,0.0};
@@ -1134,12 +1252,13 @@ avtFMSFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int l
     std::vector<unsigned int> originalCells;
     originalCells.reserve(neles);
     unsigned int udomain = static_cast<unsigned int>(domain);
+    bool doOriginalCells = true;
 #endif
 
     pt_idx=0;
-    for (int i = 0; i <  mesh->GetNE(); i++)
+    for (int i = 0; i < NE; i++)
     {
-        int geom       = mesh->GetElementBaseGeometry(i);
+        int geom = (*get_element_base_geometry)(mesh, i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
         refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
 
@@ -1151,7 +1270,10 @@ avtFMSFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int l
         {
             switch (geom)
             {
-                case Geometry::SEGMENT:      ele_cell = vtkLine::New();       break;
+                case Geometry::SEGMENT:
+                    ele_cell = vtkLine::New();
+                    doOriginalCells = false;
+                    break;
                 case Geometry::TRIANGLE:     ele_cell = vtkTriangle::New();   break;
                 case Geometry::SQUARE:       ele_cell = vtkQuad::New();       break;
                 case Geometry::TETRAHEDRON:  ele_cell = vtkTetra::New();      break;
@@ -1175,17 +1297,20 @@ avtFMSFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int l
    }
 
 #ifdef CREATE_ORIGINAL_CELL_IDS
-    vtkUnsignedIntArray *origZones = vtkUnsignedIntArray::New();
-    origZones->SetName("avtOriginalCellNumbers");
-    origZones->SetNumberOfComponents(2);
-    origZones->SetNumberOfTuples(originalCells.size()/2);
-    memcpy(origZones->GetVoidPointer(0), &originalCells[0],
-           sizeof(unsigned int) * originalCells.size());
-    res_ds->GetCellData()->AddArray(origZones);
-    origZones->Delete();
+    if(doOriginalCells)
+    {
+        vtkUnsignedIntArray *origZones = vtkUnsignedIntArray::New();
+        origZones->SetName("avtOriginalCellNumbers");
+        origZones->SetNumberOfComponents(2);
+        origZones->SetNumberOfTuples(originalCells.size()/2);
+        memcpy(origZones->GetVoidPointer(0), &originalCells[0],
+               sizeof(unsigned int) * originalCells.size());
+        res_ds->GetCellData()->AddArray(origZones);
+        origZones->Delete();
+    }
 #endif
 
-   return res_ds;
+    return res_ds;
 }
 
 // ****************************************************************************
@@ -1384,9 +1509,7 @@ avtFMSFileFormat::GetRefinedElementColoring(const std::string &mesh_name,
              ref_idx++;
         }
    }
-   
-   delete mesh;
-   
+
    return rv;
 }
 
@@ -1459,12 +1582,71 @@ avtFMSFileFormat::GetRefinedElementAttribute(const std::string &mesh_name,
              ref_idx++;
         }
    }
-   
-   delete mesh;
-   
+
    return rv;
 }
 
+// ****************************************************************************
+// Method: avtFMSFileFormat::GetDOFMesh
+//
+// Purpose:
+//   Make a mesh that shows the dof locations.
+//
+// Arguments:
+//   domain : The domain for which we want dof locations.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 17 15:10:23 PDT 2020
+//
+// Modifications:
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtFMSFileFormat::GetDOFMesh(int domain)
+{
+    vtkPolyData *pd = nullptr;
+    Mesh *mesh = FetchMesh(MESH_NAME,domain);
+
+    auto unrefined_coords = mesh->GetNodes();
+    if(unrefined_coords != nullptr)
+    {
+        int vdim = unrefined_coords->VectorDim();
+        int total_dofs = unrefined_coords->Size() / vdim;
+        const auto fes = unrefined_coords->FESpace();
+
+        // Populate the points with the raw dof locations.
+        vtkPoints *pts = vtkPoints::New();
+        pts->SetNumberOfPoints(total_dofs);
+        for(int dof = 0; dof < total_dofs; dof++)
+        {
+            double pt[3]={0., 0., 0.};
+            for(int v = 0; v < vdim; v++)
+                pt[v] = unrefined_coords->operator()(fes->DofToVDof(dof,v));
+            pts->SetPoint(dof, pt);
+        }
+
+        // Now, make the resulting polydata.
+        pd = vtkPolyData::New();
+        pd->SetPoints(pts);
+        pts->Delete();
+ 
+        vtkCellArray *verts = vtkCellArray::New();
+        pd->SetVerts(verts);
+        verts->Delete();
+        for (int dof = 0 ; dof < total_dofs ; dof++)
+        {
+            verts->InsertNextCell(1);
+            verts->InsertCellPoint(dof);
+        }
+    }
+
+    return pd;
+}
 
 // ****************************************************************************
 //  Method: avtFMSFileFormat::RegisterDataSelections

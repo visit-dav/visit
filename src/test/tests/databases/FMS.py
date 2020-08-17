@@ -16,7 +16,7 @@
 def FilterMetaData(s):
     lines = string.split(s, "\n")
     txt = ""
-    ignores=("exprList.","#expressions",".enum","simInfo.","blockNameScheme",".missingData","DataExtents =")
+    ignores=("exprList.","#expressions",".enum","simInfo.","blockNameScheme",".missingData","DataExtents =",".rectilinearGrid",".unitCell")
     for line in lines:
         keep = True
         for ig in ignores:
@@ -27,7 +27,7 @@ def FilterMetaData(s):
             txt = txt + (line + "\n")
     return txt
 
-def test_mesh_plus_dofs(prefix, db1, db2, order):
+def test_mesh_plus_dofs(prefix, db1, order):
     OpenDatabase(db1)
 
     # Get the metadata
@@ -59,7 +59,7 @@ def test_mesh_plus_dofs(prefix, db1, db2, order):
     Test(prefix + "_01")
 
     # Overlay the dofs
-    OpenDatabase(db2)
+    DefineScalarExpression("X", "coords(dofs)[0]")
     AddPlot("Pseudocolor", "X")
     pc = PseudocolorAttributes()
     pc.pointSizePixels = 12
@@ -74,7 +74,6 @@ def test_mesh_plus_dofs(prefix, db1, db2, order):
     DrawPlots()
     Test(prefix + "_02")
     DeleteActivePlots()
-    CloseDatabase(db2)
 
     AddPlot("Pseudocolor", "zid")
     SetPlotOptions(pc)
@@ -83,16 +82,14 @@ def test_mesh_plus_dofs(prefix, db1, db2, order):
 
 def domain_test(datapath, prefix, protocol, order):
     db1 = pjoin(datapath,"domains_"+protocol+"_order_"+order+".fms")
-    db2 = pjoin(datapath,"domains_"+protocol+"_order_"+order+".3D")
-    test_mesh_plus_dofs(prefix, db1, db2, order)
+    test_mesh_plus_dofs(prefix, db1, order)
     # Cleanup
     DeleteAllPlots()
     CloseDatabase(db1)
 
 def quads_test(datapath, prefix, protocol, order):
     db1 = pjoin(datapath,"quads_"+protocol+"_order_"+order+".fms")
-    db2 = pjoin(datapath,"quads_"+protocol+"_order_"+order+".3D")
-    test_mesh_plus_dofs(prefix, db1, db2, order)
+    test_mesh_plus_dofs(prefix, db1, order)
 
     ChangeActivePlotsVar("r1")
     DrawPlots()

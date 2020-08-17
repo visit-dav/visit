@@ -71,18 +71,33 @@ private:
     Internals                       *d;
     int                             selectedLOD;
     static const char *MESH_NAME;
+    static const char *BDR_MESH_NAME;
+    static const char *DOF_MESH_NAME;
+    static const char *ELEMENT_ATTRIBUTE_NAME;
+    static const char *ELEMENT_COLORING_NAME;
 
     mfem::Mesh                     *FetchMesh(const std::string &mesh_name,
-                                              int chunk);
+                                              int domain);
                                               
     vtkDataSet                      *GetRefinedMesh(const std::string &mesh_name,
-                                                    int chunk,
+                                                    int domain,
                                                     int lod);
+    vtkDataSet                      *GetRefinedMesh(const std::string &mesh_name,
+                                         int domain, int lod,
+                                         int (*get_num_elements)(mfem::Mesh *),
+                                         int (*get_element_base_geometry)(mfem::Mesh *, int),
+                                         mfem::ElementTransformation *(*get_element_transformation)(mfem::Mesh *, int)
+                                         );
+
+    vtkDataSet                      *GetRefinedBoundaryMesh(int domain, int lod);
                                                     
     vtkDataArray                    *GetRefinedVar(const std::string &mesh_name,
-                                                   int chunk,
+                                                   int domain,
                                                    int lod);
-                                                   
+
+    vtkDataSet                      *GetDOFMesh(int domain);
+    vtkDataArray                    *GetDOFVar(int domain);
+
     vtkDataArray                    *GetRefinedElementColoring(const std::string &mesh_name, 
                                                                 int domain, 
                                                                 int lod);
