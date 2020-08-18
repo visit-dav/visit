@@ -5,6 +5,7 @@
 #ifndef PY_TESSELLATEATTRIBUTES_H
 #define PY_TESSELLATEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <TessellateAttributes.h>
 
 //
