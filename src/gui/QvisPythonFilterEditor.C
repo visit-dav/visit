@@ -19,7 +19,7 @@
 #include <QvisPythonSyntaxHighlighter.h>
 #include <visit-config.h>
 #include <sstream>
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <InstallationFunctions.h>
 
 #include <iostream>

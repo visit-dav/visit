@@ -81,7 +81,7 @@
 #include <Xfer.h>
 #include <RPCExecutor.h>
 #include <visitstream.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 
 // Make the initial connection timeout be 2 minutes. If the mdserver cannnot
 // connect to the client in that time, exit.
@@ -1993,7 +1993,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
         int stage2 = visitTimer->StartTimer();
         if(extraSmartFileGrouping)
         {
-            const char *cvdbs = Environment::get("VISIT_CONSOLIDATE_VIRTUAL_DATABASES").c_str();
+            const char *cvdbs = VisItEnv::get("VISIT_CONSOLIDATE_VIRTUAL_DATABASES").c_str();
             bool allowConsolidate = (cvdbs != 0 && strcmp(cvdbs,"on") == 0);
             if(allowConsolidate)
                 ConsolidateVirtualDatabases(newVirtualFiles, files);

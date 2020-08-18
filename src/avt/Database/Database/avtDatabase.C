@@ -33,7 +33,7 @@
 #include <avtSIL.h>
 
 #include <DebugStream.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 #include <InvalidDimensionsException.h>
@@ -1287,7 +1287,7 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
     md->SetMustRepopulateOnStateChange(!MetaDataIsInvariant() ||
                                        !SILIsInvariant());
 
-    if (md->ShouldDisableSEG(Environment::exists(md->GetSEGEnvVarName())))
+    if (md->ShouldDisableSEG(VisItEnv::exists(md->GetSEGEnvVarName())))
     {
         md->IssueSEGWarningMessage();
     }

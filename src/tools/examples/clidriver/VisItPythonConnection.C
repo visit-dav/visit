@@ -15,7 +15,7 @@
 
 #include "VisItPythonConnection.h"
 
-#include <Environment.h>
+#include <VisItEnv.h>
 
 
 // ****************************************************************************
@@ -151,7 +151,7 @@ bool VisItPythonConnection::WaitForPrompt()
 //    Allow extra arguments, and thus switch from execlp to execvp.
 //
 //    Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
-//    Changed getenv to Environment::get.
+//    Changed getenv to VisItEnv::get.
 //
 // ****************************************************************************
 bool VisItPythonConnection::Open(vector<string> extraargs)

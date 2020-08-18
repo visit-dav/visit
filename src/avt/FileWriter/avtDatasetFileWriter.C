@@ -43,7 +43,7 @@
 #include <ImproperUseException.h>
 #include <NoCurveException.h>
 #include <NoInputException.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 
 #include <float.h>
 #include <math.h>
@@ -2439,15 +2439,15 @@ avtDatasetFileWriter::WritePOVRayDF3File(vtkRectilinearGrid *rgrid,
 // Modifications:
 //
 //   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
-//   Changed getenv to Environment::get.
+//   Changed getenv to VisItEnv::get.
 //
 // ****************************************************************************
 
 static vtkScalarsToColors * GetColorTableFromEnv()
 {
-    const char *ctName = Environment::get("VISIT_EXPORT_COLORTABLE").c_str();
-    const char *ctMin = Environment::get("VISIT_EXPORT_COLORTABLE_MIN").c_str();
-    const char *ctMax = Environment::get("VISIT_EXPORT_COLORTABLE_MAX").c_str();
+    const char *ctName = VisItEnv::get("VISIT_EXPORT_COLORTABLE").c_str();
+    const char *ctMin = VisItEnv::get("VISIT_EXPORT_COLORTABLE_MIN").c_str();
+    const char *ctMax = VisItEnv::get("VISIT_EXPORT_COLORTABLE_MAX").c_str();
     
     if (ctName == NULL || ctMin == NULL || ctMax == NULL)
         return NULL;

@@ -24,7 +24,7 @@
 #endif
 
 #include <DebugStream.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <FileFunctions.h>
 
 //
@@ -122,7 +122,7 @@ GetDefaultConfigFile(const char *filename, const char *home)
 
 #if defined(_WIN32)
     const char *homevar = (home == NULL) ? "VISITUSERHOME" : home;
-    std::string realhome = Environment::get(homevar);
+    std::string realhome = VisItEnv::get(homevar);
 
     if(!realhome.empty())
     {
@@ -139,8 +139,8 @@ GetDefaultConfigFile(const char *filename, const char *home)
     // directrory doesn't exist, in which case we will say it is
     // in the current directory.
     const char *homevar = (home == NULL) ? "HOME" : home;
-    std::string realhome = Environment::get(homevar);
-    if(Environment::exists(homevar))
+    std::string realhome = VisItEnv::get(homevar);
+    if(VisItEnv::exists(homevar))
     {
         retval = new char[realhome.length() + filenameLength + 2 + 7];
         sprintf(retval, "%s/.visit/%s", realhome.c_str(), configFileName);
@@ -180,7 +180,7 @@ GetDefaultConfigFile(const char *filename, const char *home)
 //   Moved from ConfigManager class.
 //
 //   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
-//   Changed getenv to Environment::get.
+//   Changed getenv to VisItEnv::get.
 //
 // ****************************************************************************
 
@@ -198,7 +198,7 @@ GetSystemConfigFile(const char *filename)
     {
 #if defined(_WIN32)
         // Try and get the system config filename from the environment settings.
-        sysConfigName = Environment::get("VISITSYSTEMCONFIG").c_str();
+        sysConfigName = VisItEnv::get("VISITSYSTEMCONFIG").c_str();
 #endif
 
         // If we still don't have the name of a system config file, use 
@@ -248,7 +248,7 @@ GetUserVisItDirectory()
 {
     std::string homedir;
 #if defined(_WIN32)
-    const std::string home = Environment::get("VISITUSERHOME");
+    const std::string home = VisItEnv::get("VISITUSERHOME");
     if (!home.empty())
     {
         homedir = home;
@@ -281,7 +281,7 @@ GetUserVisItDirectory()
         }
     }
 #else
-    const std::string home = Environment::get("HOME");
+    const std::string home = VisItEnv::get("HOME");
     if(!home.empty())
     {
         homedir = home + "/.visit";
@@ -721,7 +721,7 @@ GetVisItInstallationDirectory(const char *version)
     else
     {
         // try the environment
-        const std::string idir = Environment::get("VISITHOME");
+        const std::string idir = VisItEnv::get("VISITHOME");
         if (!idir.empty())
         {
             installDir = idir;
@@ -748,7 +748,7 @@ GetVisItInstallationDirectory(const char *version)
     // Get the installation dir for the version that's running. They all use
     // the same "visit" script so it's okay to do this.
     std::string installDir("/usr/local/visit");
-    const std::string idir = Environment::get("VISITHOME");
+    const std::string idir = VisItEnv::get("VISITHOME");
     if(!idir.empty())
     {
         if(isDevelopmentVersion)
@@ -829,7 +829,7 @@ GetVisItArchitectureDirectory(const char *version)
     // the same "visit" script so it's okay to do this.
     std::string archDir(std::string("/usr/local/visit/") +
                         std::string(VISIT_VERSION));
-    const std::string adir = Environment::get("VISITARCHHOME");
+    const std::string adir = VisItEnv::get("VISITARCHHOME");
     if(!adir.empty())
         archDir = adir;
     else
@@ -962,7 +962,7 @@ ReadInstallationInfo(std::string &distName, std::string &configName, std::string
     //
     // Try and determine the platform that should be downloaded.
     //
-    std::string archHome = Environment::get("VISITARCHHOME");
+    std::string archHome = VisItEnv::get("VISITARCHHOME");
     bool platformDetermined = false;
     if(!archHome.empty())
     {

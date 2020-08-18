@@ -42,7 +42,7 @@
 
 #include <DebugStream.h>
 #include <Utility.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 
 
 #ifdef HAVE_THREADS
@@ -497,7 +497,7 @@ RemoteProcess::GetSocketAndPort()
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = htonl(INADDR_ANY);
     listenPortNum = INITIAL_PORT_NUMBER;
-    const char *visitPort = Environment::get("VISIT_INITIAL_PORT").c_str();
+    const char *visitPort = VisItEnv::get("VISIT_INITIAL_PORT").c_str();
     if(visitPort != NULL)
     {
         listenPortNum = atoi(visitPort);
@@ -1740,14 +1740,14 @@ RemoteProcess::ExchangeTypeRepresentations()
 //   Don't return a value unless the environment variable is set.
 //
 //   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
-//   Changed getenv to Environment::get.
+//   Changed getenv to VisItEnv::get.
 //
 // ****************************************************************************
 
 const char *
 RemoteProcess::SecureShell() const
 {
-    return Environment::get("VISITSSH").c_str();
+    return VisItEnv::get("VISITSSH").c_str();
 }
 
 // ****************************************************************************
@@ -1765,14 +1765,14 @@ RemoteProcess::SecureShell() const
 // Modifications:
 //
 //   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
-//   Changed getenv to Environment::get.
+//   Changed getenv to VisItEnv::get.
 //   
 // ****************************************************************************
 
 const char *
 RemoteProcess::SecureShellArgs() const
 {
-    return Environment::get("VISITSSHARGS").c_str();
+    return VisItEnv::get("VISITSSHARGS").c_str();
 }
 
 // ****************************************************************************

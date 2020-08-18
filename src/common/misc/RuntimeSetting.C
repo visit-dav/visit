@@ -11,7 +11,7 @@
 
 #include <RuntimeSetting.h>
 #include <DebugStream.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <InstallationFunctions.h>
 #include <VisItException.h>
 
@@ -168,9 +168,9 @@ find_setting(const char *key, std::string &retval)
     /// @todo FIXME Here we *should* lookup the value in a configuration file.
 
     // Now lookup from the environment variable, if it exists.
-    if(Environment::exists(s::settings[i].envvar))
+    if(VisItEnv::exists(s::settings[i].envvar))
     {
-        retval = Environment::get(s::settings[i].envvar);
+        retval = VisItEnv::get(s::settings[i].envvar);
     }
 
     // Finally, check any overrides from cmd line options.

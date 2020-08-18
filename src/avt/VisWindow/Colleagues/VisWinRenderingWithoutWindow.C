@@ -8,7 +8,7 @@
 
 #include <VisWinRenderingWithoutWindow.h>
 
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <avtCallback.h>
 #include <visit-config.h>
 #include <DebugStream.h>
@@ -162,7 +162,7 @@ VisWinRenderingWithoutWindow::RenderRenderWindow(void)
     if(displayStatus == DS_NOT_CHECKED)
     {
         // On X11 systems not using mangled mesa, make sure that the DISPLAY is set.
-        if(Environment::get("DISPLAY").empty())
+        if(VisItEnv::get("DISPLAY").empty())
             displayStatus = DS_NOT_AVAILABLE;
         else
             displayStatus = DS_AVAILABLE;

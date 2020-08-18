@@ -78,7 +78,7 @@
 #include <vtkDataSetWriter.h>
 #include <avtDataObjectToDatasetFilter.h>
 #include <avtVariableCache.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <avtStructuredDomainBoundaries.h>
 #include <avtExecutionManager.h>
 
@@ -567,7 +567,7 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     // well behaved.
     // This environment variable tells Open MPI we have good children, so it
     // doesn't need to yell at us.
-    Environment::set("OMPI_MCA_mpi_warn_on_fork", "0");
+    VisItEnv::set("OMPI_MCA_mpi_warn_on_fork", "0");
 
     xfer = new MPIXfer;
     //
@@ -2270,11 +2270,11 @@ Engine::ProcessCommandLine(int argc, char **argv)
         } 
         else if (strcmp(argv[i], "-visithome") == 0 && (i+1) <argc )
         {
-            Environment::set("VISITHOME", argv[i+1]);
+            VisItEnv::set("VISITHOME", argv[i+1]);
         }
         else if (strcmp(argv[i], "-visitarchhome") == 0 && (i+1) <argc )
         {
-            Environment::set("VISITARCHHOME", argv[i+1]);
+            VisItEnv::set("VISITARCHHOME", argv[i+1]);
         }
         else if (strcmp(argv[i], "-icet") == 0)
         {

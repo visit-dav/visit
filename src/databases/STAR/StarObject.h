@@ -63,7 +63,7 @@
 #include <string>
 #include <vector>
 
-#include <Environment.h>
+#include <VisItEnv.h>
 
 /* ========================================================================= */
 /* ==                                MACROS                               == */
@@ -609,8 +609,8 @@ static FILE* openFile(const char* name, const char* path=NULL)
     static const char* HOME_DIR = NULL;
 
     if(firstTime) {
-        STARPATH = Environment::get("STARPATH").c_str();
-        HOME_DIR = Environment::get("HOME").c_str();
+        STARPATH = VisItEnv::get("STARPATH").c_str();
+        HOME_DIR = VisItEnv::get("HOME").c_str();
 
         firstTime = false;
     }

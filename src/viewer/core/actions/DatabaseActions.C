@@ -21,7 +21,7 @@
 #include <DatabaseCorrelationList.h>
 #include <DataNode.h>
 #include <DebugStream.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <avtDatabaseMetaData.h>
 #include <PlotPluginManager.h>
 
@@ -245,7 +245,7 @@ DatabaseActionBase::OpenDatabaseHelper(const std::string &entireDBName,
                                                                forcedFileType);
     if (mdptr != NULL)
     {
-        if (mdptr->ShouldDisableSEG(Environment::exists(mdptr->GetSEGEnvVarName())))
+        if (mdptr->ShouldDisableSEG(VisItEnv::exists(mdptr->GetSEGEnvVarName())))
         {
             GetViewerMessaging()->Warning(mdptr->GetSEGWarningString());
         }

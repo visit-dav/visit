@@ -46,6 +46,9 @@
 #   Kathleen Biagas, Thu Jun  4 16:07:40 PDT 2020
 #   Add LineGlyphAttributes and PointGlyphAttributes.
 #
+#   Alister Maguire, Tue Aug 18 11:13:27 PDT 2020
+#   Changed Environment.C to VisItEnv.C.
+#
 #****************************************************************************
 
 
@@ -254,7 +257,7 @@ expr/RecursiveExpressionException.C
 
 SET(MISC_SOURCES
 misc/DebugStreamFull.C
-misc/Environment.C
+misc/VisItEnv.C
 misc/FileFunctions.C
 misc/InstallationFunctions.C
 ${VISIT_BINARY_DIR}/common/misc/ConfigureInfo.C

@@ -7,7 +7,7 @@
 
 #include <MesaDisplay.h>
 
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <InitVTKRendering.h>
 
 // ****************************************************************************
@@ -121,7 +121,7 @@ MesaDisplay::Initialize(std::string display,
 bool
 MesaDisplay::Connect()
 {
-    Environment::unset("DISPLAY");
+    VisItEnv::unset("DISPLAY");
 
     return true;
 }

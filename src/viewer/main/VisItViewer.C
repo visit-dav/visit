@@ -32,7 +32,7 @@
 
 #include <FileFunctions.h>
 #include <StringHelpers.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 
 #include <visit-config.h>
 
@@ -72,7 +72,7 @@ static void LogGlxAndXdpyInfo();
 //   Add OSPRay support.
 //
 //   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
-//   Changed getenv to Environment::get.
+//   Changed getenv to VisItEnv::get.
 //
 // ****************************************************************************
 
@@ -103,7 +103,7 @@ VisItViewer::Initialize(int *argc, char ***argv)
 #ifdef HAVE_DDT
     // If VisIt has been launched by DDT, try to connect to DDT once the event
     // loop is started (socket communication needs the event loop to be active)
-    if (Environment::get("DDT_LAUNCHED_VISIT").c_str()!=NULL)
+    if (VisItEnv::get("DDT_LAUNCHED_VISIT").c_str()!=NULL)
         QMetaObject::invokeMethod(DDTManager::getInstance(),"makeConnection",
                 Qt::QueuedConnection);
 #endif
@@ -257,7 +257,7 @@ VisItViewer::SetVISITHOME(const std::string &path)
 //   Remove extra leading underscore from _WIN32.
 //
 //   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
-//   Changed getenv to Environment::get.
+//   Changed getenv to VisItEnv::get.
 //
 // ****************************************************************************
 
@@ -267,8 +267,8 @@ VisItViewer::GetVisItHome() const
     std::string home;
     if(visitHomeMethod == FromEnvironment)
     {
-        if(Environment::get("VISITHOME").c_str() != NULL)
-            home = Environment::get("VISITHOME").c_str();
+        if(VisItEnv::get("VISITHOME").c_str() != NULL)
+            home = VisItEnv::get("VISITHOME").c_str();
 #ifdef _WIN32
         else
             home = GetVisItInstallationDirectory();
@@ -464,7 +464,7 @@ VisItViewer::SetWindowCreationCallback(vtkQtRenderWindow* (*wcc)(void *),
 // Modifications:
 //
 //   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
-//   Changed getenv to Environment::get.
+//   Changed getenv to VisItEnv::get.
 //   
 // ****************************************************************************
 
@@ -473,7 +473,7 @@ VisItViewer::Setup()
 {
     // If the plugin dir has not been set then let's set it in the plugin
     // managers based on the current directory.
-    if(Environment::get("VISITPLUGINDIR").c_str() == NULL)
+    if(VisItEnv::get("VISITPLUGINDIR").c_str() == NULL)
     {
 
         std::string pluginDir(GetVisItHome());

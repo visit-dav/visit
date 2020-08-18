@@ -12,7 +12,7 @@
 #include <vtkTextActor.h>
 #include <vtkTextProperty.h>
 
-#include <Environment.h>
+#include <VisItEnv.h>
 
 #include <VisWinUserInfo.h>
 #include <VisWindow.h>
@@ -307,7 +307,7 @@ VisWinUserInfo::SetVisibility(bool val)
 //   the code doesn't crash.
 //
 //   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
-//   Changed getenv to Environment::get.
+//   Changed getenv to VisItEnv::get.
 //
 // ****************************************************************************
 
@@ -326,9 +326,9 @@ VisWinUserInfo::UpdateUserText()
         GetUserName((LPTSTR)username, (LPDWORD)&maxLen);
         user = username;
 #else
-        user = Environment::get("USER").c_str();
+        user = VisItEnv::get("USER").c_str();
         if (user == NULL)
-            user = Environment::get("LOGNAME").c_str();
+            user = VisItEnv::get("LOGNAME").c_str();
         if(user == NULL)
             user = "user";
 #endif

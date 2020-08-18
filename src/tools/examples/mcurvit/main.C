@@ -10,7 +10,7 @@
 #include <visitstream.h>
 #include <VisItViewer.h>
 #include <VisItException.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 
 #include <MultiCurveViewer.h>
 #include <MultiCurveProcessor.h>
@@ -97,7 +97,7 @@ MCVMain(int argc, char *argv[])
         // installation and use that, otherwise assume we are running in the
         // repo and set it accordingly.
         //
-        if (Environment::get("VISITHOME").c_str() == NULL)
+        if (VisItEnv::get("VISITHOME").c_str() == NULL)
         {
             QDir d("../../");
             std::string visithome(d.absolutePath().toStdString());
@@ -105,7 +105,7 @@ MCVMain(int argc, char *argv[])
         }
         else
         {
-            std::string visithome(Environment::get("VISITHOME").c_str());
+            std::string visithome(VisItEnv::get("VISITHOME").c_str());
             std::string visithomebase(visithome, 0, visithome.rfind("/"));
             viewer.SetVISITHOME(visithomebase);
         }

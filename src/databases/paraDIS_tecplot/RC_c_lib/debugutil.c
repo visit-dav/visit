@@ -44,7 +44,7 @@
 #include <sys/time.h>
 #endif
 
-#include <Environment.h>
+#include <VisItEnv.h>
 
 static  int    iVerbose = 0;
 static    int    iCheck = 0;
@@ -90,8 +90,8 @@ void dbprintf(int level, const char *fmt, ...){
 static int check_verbose(void)
 {
     if (!iCheck) {
-        if (Environment::get("DEBUG_VERBOSE").c_str()) {
-            iVerbose = atoi(Environment::get("DEBUG_VERBOSE").c_str());
+        if (VisItEnv::get("DEBUG_VERBOSE").c_str()) {
+            iVerbose = atoi(VisItEnv::get("DEBUG_VERBOSE").c_str());
         }
         iCheck = 1;
     }

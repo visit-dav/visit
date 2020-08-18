@@ -20,7 +20,7 @@
 
 #include <BJHash.h>
 #include <DebugStream.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <TimingsManager.h>
 
 #include <map>
@@ -832,7 +832,7 @@ VariableMenuPopulator::GetOperatorCreatedExpressions(ExpressionList &newExpressi
     if(oPM == NULL || md == NULL)
         return;
 
-    if (md->ShouldDisableSEG(Environment::exists(md->GetSEGEnvVarName())))
+    if (md->ShouldDisableSEG(VisItEnv::exists(md->GetSEGEnvVarName())))
     {
         md->IssueSEGWarningMessage();
         return;

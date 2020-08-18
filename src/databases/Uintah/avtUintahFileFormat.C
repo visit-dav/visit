@@ -29,7 +29,7 @@
 #include <avtMaterial.h>
 #include <avtCallback.h>
 
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <TimingsManager.h>
 #include <DebugStream.h>
 #include <DBOptionsAttributes.h>
@@ -499,13 +499,13 @@ avtUintahFileFormat::ActivateTimestep(int ts)
 //  Modifications:
 //
 //   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
-//   Changed getenv to Environment::get.
+//   Changed getenv to VisItEnv::get.
 //
 // ****************************************************************************
 void
 avtUintahFileFormat::AddExpressionsToMetadata(avtDatabaseMetaData *md)
 {
-  std::string home(Environment::get("HOME").c_str());
+  std::string home(VisItEnv::get("HOME").c_str());
   std::string fname = home +"/.visit/udaExpressions.txt";
 
   FILE *f = fopen(fname.c_str(), "r");

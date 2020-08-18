@@ -39,7 +39,7 @@
 
 #include <avtDatabaseMetaData.h>
 
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <Expression.h>
 
 #include <DebugStream.h>
@@ -70,8 +70,8 @@ static int InitLibStripack()
     static char const * const envar = "VISIT_FFP_STRIPACK_PATH";
 #ifdef WIN32
     HINSTANCE libh = NULL;
-    if (Environment::exists(envar))
-        libh = LoadLibrary(Environment::get(envar).c_str());
+    if (VisItEnv::exists(envar))
+        libh = LoadLibrary(VisItEnv::get(envar).c_str());
     if (!libh)
         libh = LoadLibrary("libstripack.dll");
     if (!libh)
@@ -98,8 +98,8 @@ static int InitLibStripack()
 #else
     int const dlmode = RTLD_LAZY|RTLD_LOCAL;
     void *libh = 0;
-    if (Environment::exists(envar))
-        libh = dlopen(Environment::get(envar).c_str(), dlmode);
+    if (VisItEnv::exists(envar))
+        libh = dlopen(VisItEnv::get(envar).c_str(), dlmode);
     if (!libh)
         libh = dlopen("libstripack.so", dlmode);
     if (!libh)

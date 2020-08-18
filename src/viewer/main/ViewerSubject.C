@@ -35,7 +35,7 @@
 #include <DBPluginInfoAttributes.h>
 #include <EngineKey.h>
 #include <EngineList.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <ExportDBAttributes.h>
 #include <FileOpenOptions.h>
 #include <FileFunctions.h>
@@ -3451,7 +3451,7 @@ ViewerSubject::SimConnect(EngineKey &ek)
 void
 ViewerSubject::UpdateExpressionCallback(const avtDatabaseMetaData *md, void *)
 {
-    if (md->ShouldDisableSEG(Environment::exists(md->GetSEGEnvVarName())))
+    if (md->ShouldDisableSEG(VisItEnv::exists(md->GetSEGEnvVarName())))
         return;
 
     ExpressionList dummyList;
