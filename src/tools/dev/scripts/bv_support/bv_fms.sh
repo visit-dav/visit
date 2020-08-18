@@ -29,10 +29,9 @@ function bv_fms_info
     export FMS_VERSION=${FMS_VERSION:-"100"}
     export FMS_FILE=${FMS_FILE:-"FMS-${FMS_VERSION}.tar.gz"}
     export FMS_BUILD_DIR=${FMS_BUILD_DIR:-"FMS-${FMS_VERSION}"}
-# For now... (need to put final FMS sources into VisIt's third-party repo and update checksums)
     export FMS_URL=${FMS_URL:-"http://visit.ilight.com/assets"}
-    export FMS_MD5_CHECKSUM="661ffd43a0588bdc38afad496b56675e"
-    export FMS_SHA256_CHECKSUM="7c75f0312a3133b505232ca3dc78f0548a1934b68c9066bd79959a02af58da00"
+    export FMS_MD5_CHECKSUM="67241ce13619639a49ae602400b02360"
+    export FMS_SHA256_CHECKSUM="621f413e219dc166160c15ad73727512ef716ef9aeb2fe3a5192ec4376c3a798"
 }
 
 function bv_fms_print
