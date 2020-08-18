@@ -33,8 +33,8 @@ class QvisAxisAlignedSlice4DWindow : public QvisOperatorWindow
   public:
     QvisAxisAlignedSlice4DWindow(const int type,
                          AxisAlignedSlice4DAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisAxisAlignedSlice4DWindow();
     virtual void CreateWindowContents();

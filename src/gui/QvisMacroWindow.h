@@ -32,8 +32,8 @@ class QvisMacroWindow : public QvisPostableWindow
 {
     Q_OBJECT
 public:
-    QvisMacroWindow(const QString &captionString = QString::null,
-                    const QString &shortName = QString::null,
+    QvisMacroWindow(const QString &captionString = QString(),
+                    const QString &shortName = QString(),
                     QvisNotepadArea *n = 0);
     virtual ~QvisMacroWindow();
     virtual void CreateWindowContents();

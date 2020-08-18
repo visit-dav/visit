@@ -35,8 +35,8 @@ class QvisZoneDumpWindow : public QvisOperatorWindow
   public:
     QvisZoneDumpWindow(const int type,
                          ZoneDumpAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisZoneDumpWindow();
     virtual void CreateWindowContents();

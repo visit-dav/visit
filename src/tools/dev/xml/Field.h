@@ -319,7 +319,7 @@ class Field
         }
     }
 
-    bool PrintInit(QTextStream &out, const QString &generatorName = QString::null) const
+    bool PrintInit(QTextStream &out, const QString &generatorName = QString()) const
     {
         // Look through the map for the init code that is for the generatorName
         // that was passed.
