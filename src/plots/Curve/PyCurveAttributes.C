@@ -5,6 +5,7 @@
 #include <PyCurveAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
@@ -39,7 +40,6 @@ struct CurveAttributesObject
 // Internal prototypes
 //
 static PyObject *NewCurveAttributes(int);
-
 std::string
 PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
 {
@@ -1291,14 +1291,7 @@ CurveAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-CurveAttributes_compare(PyObject *v, PyObject *w)
-{
-    CurveAttributes *a = ((CurveAttributesObject *)v)->data;
-    CurveAttributes *b = ((CurveAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *CurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyCurveAttributes_getattr(PyObject *self, char *name)
 {
@@ -1604,49 +1597,70 @@ static char *CurveAttributes_Purpose = "Attributes for the xy plot";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject CurveAttributesType =
+
+VISIT_PY_TYPE_OBJ(CurveAttributesType,         \
+                  "CurveAttributes",           \
+                  CurveAttributesObject,       \
+                  CurveAttributes_dealloc,     \
+                  CurveAttributes_print,       \
+                  PyCurveAttributes_getattr,   \
+                  PyCurveAttributes_setattr,   \
+                  CurveAttributes_str,         \
+                  CurveAttributes_Purpose,     \
+                  CurveAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+CurveAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "CurveAttributes",                    // tp_name
-    sizeof(CurveAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)CurveAttributes_dealloc,  // tp_dealloc
-    (printfunc)CurveAttributes_print,     // tp_print
-    (getattrfunc)PyCurveAttributes_getattr, // tp_getattr
-    (setattrfunc)PyCurveAttributes_setattr, // tp_setattr
-    (cmpfunc)CurveAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)CurveAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    CurveAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &CurveAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    CurveAttributes *a = ((CurveAttributesObject *)self)->data;
+    CurveAttributes *b = ((CurveAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

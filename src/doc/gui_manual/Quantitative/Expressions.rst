@@ -66,9 +66,12 @@ Creating a new expression
 Users can create a new expression by clicking on the **Expression Window's New**
 button. When the user clicks on the **New** button, VisIt_ adds a new expression
 and shows its new, empty definition in the **Definitions** area. The initial
-name for a new expression is *"unnamed"* followed by some integer suffix.
-As the user types a new name for the expression into the **Name** text field,
-the expression's name in the **Expression list** will update.
+name for a new expression is *"unnamed"* followed by some integer suffix. After
+the user types a new name for the expression into the **Name** text field,
+the expression's name in the **Expression list** will update. If the user types
+a name that already exists in the expression list, then Visit_ will
+automatically append a number to the end of the name to avoid duplicate
+expression names.
 
 Each expression also has a **Type** that specifies the type of variable
 the expression produces. The available types are:
@@ -877,7 +880,7 @@ Principal Tensor Function: ``principal_tensor()`` : ``principal_tensor(expr0)``
     Creates a new *vector* expression which is everywhere the 
     principal stress components of the input argument, which must a *symmetric*
     tensor. The principal stress components are the
-    `eigenvalues of the stress tensor. <https://uclageo.com/CEE220/Section2.3.php>`_
+    `eigenvalues of the stress tensor. <https://uclageo.com/SoilMechanicsNotes/Section2.3.php>`_
     So, the vector expression computed here is the same as 
     :ref:`eigenvalue() <Eigenvalue_Expression_Function>`.
 

@@ -5,6 +5,7 @@
 #include <PyLCSAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyLCSAttributes
@@ -34,7 +35,6 @@ struct LCSAttributesObject
 // Internal prototypes
 //
 static PyObject *NewLCSAttributes(int);
-
 std::string
 PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
 {
@@ -153,11 +153,11 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           break;
     }
 
-    const char *auxiliaryGrid_names = "None, TwoDim, ThreeDim";
+    const char *auxiliaryGrid_names = "NONE, TwoDim, ThreeDim";
     switch (atts->GetAuxiliaryGrid())
     {
       case LCSAttributes::None:
-          snprintf(tmpStr, 1000, "%sauxiliaryGrid = %sNone  # %s\n", prefix, prefix, auxiliaryGrid_names);
+          snprintf(tmpStr, 1000, "%sauxiliaryGrid = %sNONE  # %s\n", prefix, prefix, auxiliaryGrid_names);
           str += tmpStr;
           break;
       case LCSAttributes::TwoDim:
@@ -1440,12 +1440,12 @@ LCSAttributes_SetFieldType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the fieldType in the object.
-    if(ival >= 0 && ival < 7)
+    if(ival >= 0 && ival < 6)
         obj->data->SetFieldType(LCSAttributes::FieldType(ival));
     else
     {
         fprintf(stderr, "An invalid fieldType value was given. "
-                        "Valid values are in the range of [0,6]. "
+                        "Valid values are in the range of [0,5]. "
                         "You can also use the following names: "
                         "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
                         "NektarPPField.");
@@ -2227,14 +2227,7 @@ LCSAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-LCSAttributes_compare(PyObject *v, PyObject *w)
-{
-    LCSAttributes *a = ((LCSAttributesObject *)v)->data;
-    LCSAttributes *b = ((LCSAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *LCSAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyLCSAttributes_getattr(PyObject *self, char *name)
 {
@@ -2277,6 +2270,8 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "auxiliaryGrid") == 0)
         return LCSAttributes_GetAuxiliaryGrid(self, NULL);
     if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(LCSAttributes::None));
+    if(strcmp(name, "NONE") == 0)
         return PyInt_FromLong(long(LCSAttributes::None));
     if(strcmp(name, "TwoDim") == 0)
         return PyInt_FromLong(long(LCSAttributes::TwoDim));
@@ -2622,49 +2617,70 @@ static char *LCSAttributes_Purpose = "Attributes for LCS";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject LCSAttributesType =
+
+VISIT_PY_TYPE_OBJ(LCSAttributesType,         \
+                  "LCSAttributes",           \
+                  LCSAttributesObject,       \
+                  LCSAttributes_dealloc,     \
+                  LCSAttributes_print,       \
+                  PyLCSAttributes_getattr,   \
+                  PyLCSAttributes_setattr,   \
+                  LCSAttributes_str,         \
+                  LCSAttributes_Purpose,     \
+                  LCSAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+LCSAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "LCSAttributes",                    // tp_name
-    sizeof(LCSAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)LCSAttributes_dealloc,  // tp_dealloc
-    (printfunc)LCSAttributes_print,     // tp_print
-    (getattrfunc)PyLCSAttributes_getattr, // tp_getattr
-    (setattrfunc)PyLCSAttributes_setattr, // tp_setattr
-    (cmpfunc)LCSAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)LCSAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    LCSAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &LCSAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    LCSAttributes *a = ((LCSAttributesObject *)self)->data;
+    LCSAttributes *b = ((LCSAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

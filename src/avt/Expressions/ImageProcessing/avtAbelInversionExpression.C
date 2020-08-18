@@ -28,11 +28,17 @@
 //  Programmer: Hank Childs
 //  Creation:   October 6, 2006
 //
+//  Modifications:
+//
+//  Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//  Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtAbelInversionExpression::avtAbelInversionExpression()
 {
     haveIssuedWarning = false;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

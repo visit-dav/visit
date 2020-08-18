@@ -963,6 +963,44 @@ EOF
     return 0;
 }
 
+function apply_vtk_python3_python_args_patch
+{
+    # in python 3.7.5:
+    #  PyUnicode_AsUTF8 returns a const char *, which you cannot assign
+    #  to a char *. 
+    # Add cast to allow us to compile.
+    patch -p0 << \EOF
+    diff -c Wrapping/PythonCore/vtkPythonArgs.orig.cxx Wrapping/PythonCore/vtkPythonArgs.cxx
+    *** Wrapping/PythonCore/vtkPythonArgs.orig.cxx	2020-03-24 14:29:39.000000000 -0700
+    --- Wrapping/PythonCore/vtkPythonArgs.cxx	2020-03-24 14:29:52.000000000 -0700
+    ***************
+    *** 102,108 ****
+        else if (PyUnicode_Check(o))
+        {
+      #if PY_VERSION_HEX >= 0x03030000
+    !     a = PyUnicode_AsUTF8(o);
+          return true;
+      #else
+          PyObject *s = _PyUnicode_AsDefaultEncodedString(o, nullptr);
+    --- 102,108 ----
+        else if (PyUnicode_Check(o))
+        {
+      #if PY_VERSION_HEX >= 0x03030000
+    !     a = (char*)PyUnicode_AsUTF8(o);
+          return true;
+      #else
+          PyObject *s = _PyUnicode_AsDefaultEncodedString(o, nullptr);
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for python3 vtkPythonArgs const issue failed."
+      return 1
+    fi
+
+    return 0;
+}
+
+
 
 
 function apply_vtk_patch
@@ -1001,6 +1039,11 @@ function apply_vtk_patch
     fi
 
     apply_vtkospray_linking_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtk_python3_python_args_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi

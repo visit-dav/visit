@@ -44,6 +44,9 @@
 //    Eric Brugger, Tue Jul 22 12:19:04 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Alister Maguire, Mon Apr 27 11:41:06 PDT 2020
+//    Added UpdateDataObjectInfo and zonesHaveBeenSplit.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtVertexNormalsFilter : public avtDataTreeIterator
@@ -58,7 +61,10 @@ class AVTFILTERS_API avtVertexNormalsFilter : public avtDataTreeIterator
 
   protected:
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
-    virtual bool         FilterUnderstandsTransformedRectMesh();
+    virtual bool                   FilterUnderstandsTransformedRectMesh();
+    virtual void                   UpdateDataObjectInfo(void);
+
+    bool zonesHaveBeenSplit;
 };
 
 

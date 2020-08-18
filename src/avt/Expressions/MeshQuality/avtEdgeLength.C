@@ -25,11 +25,17 @@
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2005
 //
+//  Modifications:
+//
+//  Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//  Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtEdgeLength::avtEdgeLength()
 {
     takeMin = true;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

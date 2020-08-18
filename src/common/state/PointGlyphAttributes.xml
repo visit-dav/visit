@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+  <Attribute name="PointGlyphAttributes" purpose="Attributes for point glyphs" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="PointGlyphAttributes.code">
+      <Field name="pointSize" label="Point size" type="double">
+        0.050000
+      </Field>
+      <Field name="pointType" label="Point Type" type="glyphtype">
+        Point
+      </Field>
+      <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">
+        false
+      </Field>
+      <Field name="pointSizeVar" label="Point size variable" type="variablename" vartypes="01000000000">
+        default
+      </Field>
+      <Field name="pointSizePixels" label="Point size pixels" type="int">
+        2
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+</Attribute>
+ 

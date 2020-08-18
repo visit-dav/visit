@@ -5,6 +5,7 @@
 #include <PyRemapAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyRemapAttributes
@@ -34,7 +35,6 @@ struct RemapAttributesObject
 // Internal prototypes
 //
 static PyObject *NewRemapAttributes(int);
-
 std::string
 PyRemapAttributes_ToString(const RemapAttributes *atts, const char *prefix)
 {
@@ -438,14 +438,7 @@ RemapAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-RemapAttributes_compare(PyObject *v, PyObject *w)
-{
-    RemapAttributes *a = ((RemapAttributesObject *)v)->data;
-    RemapAttributes *b = ((RemapAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *RemapAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyRemapAttributes_getattr(PyObject *self, char *name)
 {
@@ -551,49 +544,70 @@ static char *RemapAttributes_Purpose = "Atts for Remap operator";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject RemapAttributesType =
+
+VISIT_PY_TYPE_OBJ(RemapAttributesType,         \
+                  "RemapAttributes",           \
+                  RemapAttributesObject,       \
+                  RemapAttributes_dealloc,     \
+                  RemapAttributes_print,       \
+                  PyRemapAttributes_getattr,   \
+                  PyRemapAttributes_setattr,   \
+                  RemapAttributes_str,         \
+                  RemapAttributes_Purpose,     \
+                  RemapAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+RemapAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "RemapAttributes",                    // tp_name
-    sizeof(RemapAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)RemapAttributes_dealloc,  // tp_dealloc
-    (printfunc)RemapAttributes_print,     // tp_print
-    (getattrfunc)PyRemapAttributes_getattr, // tp_getattr
-    (setattrfunc)PyRemapAttributes_setattr, // tp_setattr
-    (cmpfunc)RemapAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)RemapAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    RemapAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &RemapAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    RemapAttributes *a = ((RemapAttributesObject *)self)->data;
+    RemapAttributes *b = ((RemapAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

@@ -21,7 +21,7 @@ import sys
 # -- Project information -----------------------------------------------------
 
 project = u'VisIt User Manual'
-copyright = u'2008-2019, LLNL, UCRL-SM-220449'
+copyright = u'2008-2020, LLNL, UCRL-SM-220449'
 author = u'LLNL'
 
 # The full version, including alpha/beta/rc tags
@@ -182,3 +182,6 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# -- Options for linkcheck builder ---------------------------------------
+linkcheck_ignore = [r'https?://.*\.zip$',r'https?://.*\.tar\.gz$',r'https?://.*\.pdf\?#page=.*$']

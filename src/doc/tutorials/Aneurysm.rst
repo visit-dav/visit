@@ -12,9 +12,9 @@ This tutorial provides a short introduction to VisIt's features while exploring 
 Open the dataset
 ----------------
 
-This tutorial uses the `aneurysm <http://www.visitusers.org/index.php?title=Tutorial_Data>`_ dataset.
+This tutorial uses the `aneurysm <https://visit-dav.github.io/largedata/datarchives/aneurysm>`_ dataset.
 
-1. `Download <http://www.visitusers.org/index.php?title=Tutorial_Data>`_ the aneurysm dataset.
+1. Download `the aneurysm dataset <https://visit-dav.github.io/largedata/datarchives/aneurysm>`_.
 2. Click on the *Open* icon to bring up the File open window.
 3. Navigate your file system to the folder containing "aneurysm.visit".
 4. Highlight the file "aneurysm.visit" and then click *OK*.
@@ -414,7 +414,7 @@ Required setup
 ~~~~~~~~~~~~~~
 
 * `Sign-in <https://www.seedme.org/user>`_ or `Sign-up <https://www.seedme.org/user/register>`_ at SeedMe.org.
-* `Download <https://www.seedme.org/user>`_ your "API Key file", then move it to your `Home directory <https://en.wikipedia.org/wiki/Home_directory>`_.
+* Download `your "API Key file" <https://www.seedme.org/user>`_, then move it to your `Home directory <https://en.wikipedia.org/wiki/Home_directory>`_.
 
 Sharing automation script
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -522,8 +522,9 @@ A detailed example with a brief explanation in the comments can be seen
 
 4. Click *Execute*.
 
-To view your shared content `login <https://www.seedme.org/user>`_ to SeedMe.org
-then navigate to `My collections <https://www.seedme.org/collections>`_.
+To view your shared content `login <https://www.seedme.org/user/login>`_ to SeedMe.org
+then navigate to `My collections` which should be somewhat similar to the
+`public collections <https://www.seedme.org/collections/public>`_.
 
 ------------
 

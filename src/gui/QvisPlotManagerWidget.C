@@ -25,6 +25,7 @@
 #include <QToolButton>
 #include <QButtonGroup>
 #include <QRadioButton>
+#include <QScrollBar>
 
 #include <GetMetaDataException.h>
 
@@ -199,6 +200,10 @@ using std::vector;
 //   Brad Whitlock, Fri Sep 13 12:24:36 PDT 2013
 //   Hook up plot animation.
 //
+//   Kevin Griffin, Wed Aug 12 11:40:27 PDT 2020
+//   Updated the vertical scroll bar mode to ScrollPerPixel and to use a
+//   single step.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
@@ -280,6 +285,8 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     plotListBox = new QvisPlotListBox(this);
     plotListBox->setSelectionMode(QAbstractItemView::ExtendedSelection);
     plotListBox->setMinimumHeight(fontMetrics().boundingRect("X").height() * 6);
+    plotListBox->verticalScrollBar()->setSingleStep(1);
+    plotListBox->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     topLayout->addWidget(plotListBox,10);
 
     connect(plotListBox, SIGNAL(itemSelectionChanged()),

@@ -5,6 +5,7 @@
 #include <PyCartographicProjectionAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyCartographicProjectionAttributes
@@ -33,7 +34,6 @@ struct CartographicProjectionAttributesObject
 // Internal prototypes
 //
 static PyObject *NewCartographicProjectionAttributes(int);
-
 std::string
 PyCartographicProjectionAttributes_ToString(const CartographicProjectionAttributes *atts, const char *prefix)
 {
@@ -191,14 +191,7 @@ CartographicProjectionAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-CartographicProjectionAttributes_compare(PyObject *v, PyObject *w)
-{
-    CartographicProjectionAttributes *a = ((CartographicProjectionAttributesObject *)v)->data;
-    CartographicProjectionAttributes *b = ((CartographicProjectionAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *CartographicProjectionAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyCartographicProjectionAttributes_getattr(PyObject *self, char *name)
 {
@@ -282,49 +275,70 @@ static char *CartographicProjectionAttributes_Purpose = "";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject CartographicProjectionAttributesType =
+
+VISIT_PY_TYPE_OBJ(CartographicProjectionAttributesType,         \
+                  "CartographicProjectionAttributes",           \
+                  CartographicProjectionAttributesObject,       \
+                  CartographicProjectionAttributes_dealloc,     \
+                  CartographicProjectionAttributes_print,       \
+                  PyCartographicProjectionAttributes_getattr,   \
+                  PyCartographicProjectionAttributes_setattr,   \
+                  CartographicProjectionAttributes_str,         \
+                  CartographicProjectionAttributes_Purpose,     \
+                  CartographicProjectionAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+CartographicProjectionAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "CartographicProjectionAttributes",                    // tp_name
-    sizeof(CartographicProjectionAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)CartographicProjectionAttributes_dealloc,  // tp_dealloc
-    (printfunc)CartographicProjectionAttributes_print,     // tp_print
-    (getattrfunc)PyCartographicProjectionAttributes_getattr, // tp_getattr
-    (setattrfunc)PyCartographicProjectionAttributes_setattr, // tp_setattr
-    (cmpfunc)CartographicProjectionAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)CartographicProjectionAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    CartographicProjectionAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &CartographicProjectionAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    CartographicProjectionAttributes *a = ((CartographicProjectionAttributesObject *)self)->data;
+    CartographicProjectionAttributes *b = ((CartographicProjectionAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

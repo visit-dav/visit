@@ -2,15 +2,17 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                            avtMeshPlotMapper.h                            //
-// ************************************************************************* //
+// ****************************************************************************
+//  avtMeshPlotMapper.h
+// ****************************************************************************
 
 #ifndef AVT_MESHPLOTMAPPER_H
 #define AVT_MESHPLOTMAPPER_H
 
 #include <avtMapper.h>
+#include <GlyphTypes.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Class:  avtMeshPlotMapper
@@ -25,6 +27,10 @@
 //    Kathleen Biagas, Wed Apr  3 16:11:16 PDT 2019
 //    Added PointSize.
 //
+//    Kathleen Biagas, Wed Jun 10 13:09:57 PDT 2020
+//    Added other settings for points and point scaling.
+//    Added CreateActorMapperPairs, CustomizeMappersInternal.
+//
 // ****************************************************************************
 
 class avtMeshPlotMapper : public avtMapper
@@ -34,34 +40,52 @@ class avtMeshPlotMapper : public avtMapper
     virtual                   ~avtMeshPlotMapper();
 
     //virtual void               SetSurfaceRepresentation(int rep);
-    virtual bool               GetLighting(void) { return false; }
-    virtual bool               ActorIsShiftable(int);
+    bool        GetLighting(void) override  { return false; }
+    bool        ActorIsShiftable(int) override;
 
-    void                       SetMeshColor(double rgb[3]);
-    void                       SetSurfaceColor(double rgb[3]);
+    void        SetMeshColor(double rgb[3]);
+    void        SetSurfaceColor(double rgb[3]);
 
-    void                       SetOpacity(double val);
-    void                       SetLineWidth(int lw);
-    void                       SetSurfaceVisibility(bool);
-    void                       SetPointSize(int ps);
+    void        SetOpacity(double val);
+    void        SetLineWidth(int lw);
+    void        SetSurfaceVisibility(bool);
+    void        ScaleByVar(const std::string &);
+    void        DataScalingOn(const std::string &, int = 1);
+    void        DataScalingOff(void);
 
-    void                       InvalidateTransparencyCache(void);
+    void        SetScale(double);
+    void        SetGlyphType(GlyphType);
+    void        SetPointSize(double s);
+
+    bool        SetFullFrameScaling(bool, const double *) override;
+
+    void        InvalidateTransparencyCache(void);
 
   protected:
-    virtual void               CustomizeMappers(void);
-    virtual void               SetLabels(std::vector<std::string> &, bool);
+    // these are called from avtMapper
+    void        CreateActorMapperPairs(vtkDataSet **children) override;
+    void        CustomizeMappers(void) override;
+    void        SetLabels(std::vector<std::string> &, bool) override;
 
   private:
 
-    bool surfaceVis;
-    int lineWidth;
-    int pointSize;
-    double opacity;
-    double linesColor[3];
-    double polysColor[3];
+    bool        surfaceVis;
+    int         lineWidth;
+    int         spatialDim;
+    double      scale;
+    std::string scalingVarName;
+    GlyphType   glyphType;
+    double      pointSize;
+    bool        dataScaling;
+
+    double      opacity;
+    double      linesColor[3];
+    double      polysColor[3];
     std::vector<std::string>   labels;
 
-    void                       NotifyTransparencyActor(void);
+    void        CustomizeMappersInternal(bool invalidateTransparency=false);
+
+    void        NotifyTransparencyActor(void);
 
 };
 

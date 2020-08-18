@@ -44,11 +44,7 @@ using std::string;
 // ****************************************************************************
 
 avtLinesFileFormat::avtLinesFileFormat(const char *fname)
-    : avtSTMDFileFormat(&fname, 1)
-{
-    filename = fname;
-    readInFile = false;
-}
+: avtSTMDFileFormat(&fname, 1), filename(fname), readInFile(false) { }
 
 
 // ****************************************************************************
@@ -65,6 +61,32 @@ avtLinesFileFormat::~avtLinesFileFormat()
     {
         lines[i]->Delete();
     }
+}
+
+// ****************************************************************************
+//  Method: avtLinesFileFormat::FreeUpResources
+//
+//  Purpose:
+//      When VisIt is done focusing on a particular timestep, it asks that
+//      timestep to free up any resources (memory, file descriptors) that
+//      it has associated with it.  This method is the mechanism for doing
+//      that.
+//
+//  Programmer: Philip Blakely
+//  Creation:   Mon Jun 22 15:29:05 PDT 2020
+//
+// ****************************************************************************
+
+void
+avtLinesFileFormat::FreeUpResources(void)
+{
+    for (size_t i = 0 ; i < lines.size() ; i++)
+    {
+        lines[i]->Delete();
+    }
+
+    lines.clear();
+    readInFile = false;
 }
 
 

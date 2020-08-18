@@ -5,6 +5,7 @@
 #include <PyMeshAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <GlyphTypes.h>
@@ -37,7 +38,6 @@ struct MeshAttributesObject
 // Internal prototypes
 //
 static PyObject *NewMeshAttributes(int);
-
 std::string
 PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
 {
@@ -116,11 +116,11 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
     const unsigned char *opaqueColor = atts->GetOpaqueColor().GetColor();
     snprintf(tmpStr, 1000, "%sopaqueColor = (%d, %d, %d, %d)\n", prefix, int(opaqueColor[0]), int(opaqueColor[1]), int(opaqueColor[2]), int(opaqueColor[3]));
     str += tmpStr;
-    const char *smoothingLevel_names = "None, Fast, High";
+    const char *smoothingLevel_names = "NONE, Fast, High";
     switch (atts->GetSmoothingLevel())
     {
       case MeshAttributes::None:
-          snprintf(tmpStr, 1000, "%ssmoothingLevel = %sNone  # %s\n", prefix, prefix, smoothingLevel_names);
+          snprintf(tmpStr, 1000, "%ssmoothingLevel = %sNONE  # %s\n", prefix, prefix, smoothingLevel_names);
           str += tmpStr;
           break;
       case MeshAttributes::Fast:
@@ -767,14 +767,7 @@ MeshAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-MeshAttributes_compare(PyObject *v, PyObject *w)
-{
-    MeshAttributes *a = ((MeshAttributesObject *)v)->data;
-    MeshAttributes *b = ((MeshAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *MeshAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyMeshAttributes_getattr(PyObject *self, char *name)
 {
@@ -818,6 +811,8 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "smoothingLevel") == 0)
         return MeshAttributes_GetSmoothingLevel(self, NULL);
     if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(MeshAttributes::None));
+    if(strcmp(name, "NONE") == 0)
         return PyInt_FromLong(long(MeshAttributes::None));
     if(strcmp(name, "Fast") == 0)
         return PyInt_FromLong(long(MeshAttributes::Fast));
@@ -1017,49 +1012,70 @@ static char *MeshAttributes_Purpose = "Attributes for the mesh plot";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject MeshAttributesType =
+
+VISIT_PY_TYPE_OBJ(MeshAttributesType,         \
+                  "MeshAttributes",           \
+                  MeshAttributesObject,       \
+                  MeshAttributes_dealloc,     \
+                  MeshAttributes_print,       \
+                  PyMeshAttributes_getattr,   \
+                  PyMeshAttributes_setattr,   \
+                  MeshAttributes_str,         \
+                  MeshAttributes_Purpose,     \
+                  MeshAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+MeshAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "MeshAttributes",                    // tp_name
-    sizeof(MeshAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)MeshAttributes_dealloc,  // tp_dealloc
-    (printfunc)MeshAttributes_print,     // tp_print
-    (getattrfunc)PyMeshAttributes_getattr, // tp_getattr
-    (setattrfunc)PyMeshAttributes_setattr, // tp_setattr
-    (cmpfunc)MeshAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)MeshAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    MeshAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &MeshAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    MeshAttributes *a = ((MeshAttributesObject *)self)->data;
+    MeshAttributes *b = ((MeshAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

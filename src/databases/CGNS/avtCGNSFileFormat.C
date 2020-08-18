@@ -22,13 +22,16 @@
 //  Creation:   Fri Feb 28 13:48:04 PST 2020
 //
 //  Modifications:
+//    Eric Brugger, Thu Jul  2 10:56:36 PDT 2020
+//    Corrected a bug that caused a crash when doing a Subset plot of "zones"
+//    when reading data decomposed across multiple CGNS files.
 //
 // ****************************************************************************
 
 avtCGNS_MTMDFileFormat::avtCGNS_MTMDFileFormat(const char *filename) :
     avtMTMDFileFormat(filename)
 {
-    reader = new avtCGNSFileReader(filename);
+    reader = new avtCGNSFileReader(filename, true);
 }
 
 // ****************************************************************************
@@ -251,6 +254,9 @@ avtCGNS_MTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //  Creation:   Fri Feb 28 13:48:04 PST 2020
 //
 //  Modifications:
+//    Eric Brugger, Thu Jul  2 10:56:36 PDT 2020
+//    Corrected a bug that caused a crash when doing a Subset plot of "zones"
+//    when reading data decomposed across multiple CGNS files.
 //
 // ****************************************************************************
 
@@ -260,7 +266,7 @@ avtCGNS_MTSDFileFormat::avtCGNS_MTSDFileFormat(const char *filename) :
     cgnsFileName = new char[strlen(filename) + 1];
     strcpy(cgnsFileName, filename);
 
-    reader = new avtCGNSFileReader(filename);
+    reader = new avtCGNSFileReader(filename, false);
 }
 
 // ****************************************************************************

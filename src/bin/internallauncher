@@ -57,12 +57,12 @@ class JobSubmitter(object):
 
     def LauncherAndSubLauncher(self):
         sep = ""
-        if string.find(self.parallel.launch, ",") != -1:
+        if self.parallel.launch.find(",") != -1:
             sep = ","
-        if sep == "" and string.find(self.parallel.launch, "/") != -1:
+        if sep == "" and self.parallel.launch.find("/") != -1:
             sep = "/"
         if sep != "":
-            s = string.split(self.parallel.launch, sep)
+            s = self.parallel.launch.split(sep)
             lname = s[0]
             slname = s[1] 
         else:
@@ -494,14 +494,14 @@ class JobSubmitter_psub(JobSubmitter):
 
         sublaunchprecmd = ""
         if self.parallel.sublaunchprecmd != None:
-            sublaunchprecmd = string.join(list(self.parallel.sublaunchprecmd) + [";"], " ")
+            sublaunchprecmd = " ".join(list(self.parallel.sublaunchprecmd) + [";"])
         sublaunchpostcmd = ""
         if self.parallel.sublaunchpostcmd != None:
-            sublaunchpostcmd = string.join(list(self.parallel.sublaunchpostcmd) + [";"], " ")
+            sublaunchpostcmd = " ".join(list(self.parallel.sublaunchpostcmd) + [";"])
 
         launchcmd = sublaunchprecmd
         allargs = debugger.CreateCommand(sublaunchargs + self.VisItExecutable() + args)
-        launchcmd = launchcmd + string.join(allargs, " ") + " ; "
+        launchcmd = launchcmd + " ".join(allargs) + " ; "
         launchcmd = launchcmd + sublaunchpostcmd
 
         parcmd = parcmd + ["-i", setupcmd + launchcmd]
@@ -747,10 +747,10 @@ output streams.
             if self.parallel.hw_precmd != None:
                 tfile.write(self.parallel.hw_precmd + "\n")
             if self.parallel.sublaunchprecmd != None:
-                tfile.write(string.join(self.parallel.sublaunchprecmd, " ") + "\n")
-            tfile.write(string.join(mpicmd, " ") + "\n")
+                tfile.write(" ".join(self.parallel.sublaunchprecmd) + "\n")
+            tfile.write(" ".join(mpicmd) + "\n")
             if self.parallel.sublaunchpostcmd != None:
-                tfile.write(string.join(self.parallel.sublaunchpostcmd, " ") + "\n")
+                tfile.write(" ".join(self.parallel.sublaunchpostcmd) + "\n")
             if self.parallel.hw_postcmd != None:
                 tfile.write(self.parallel.hw_postcmd + "\n")
 
@@ -888,7 +888,7 @@ class JobSubmitter_qsub(JobSubmitter):
         return [plauncher]
 
     def CreateFilename(self, root):
-        tdate = string.replace(time.asctime(), " ", "-")
+        tdate = time.asctime().replace(" ", "-")
         tuser = self.launcher.username()
         return os.path.join("/tmp", "%s.%s.%s" % (root, tuser, tdate))
 
@@ -1100,10 +1100,10 @@ output streams.
             if self.parallel.hw_precmd != None:
                 tfile.write(self.parallel.hw_precmd + "\n")
             if self.parallel.sublaunchprecmd != None:
-                tfile.write(string.join(self.parallel.sublaunchprecmd, " ") + "\n")
-            tfile.write(string.join(mpicmd, " ") + "\n")
+                tfile.write(" ".join(self.parallel.sublaunchprecmd) + "\n")
+            tfile.write(" ".join(mpicmd) + "\n")
             if self.parallel.sublaunchpostcmd != None:
-                tfile.write(string.join(self.parallel.sublaunchpostcmd, " ") + "\n")
+                tfile.write(" ".join(self.parallel.sublaunchpostcmd) + "\n")
             if self.parallel.hw_postcmd != None:
                 tfile.write(self.parallel.hw_postcmd + "\n")
 
@@ -1230,7 +1230,7 @@ class GDBDebugger(Debugger):
                 f.write("directory %s\n" % d)
 
             # Write the command line arguments.
-            f.write("set args %s -dograb\n" % string.join(args[1:], " "))
+            f.write("set args %s -dograb\n" %  " ".join(args[1:]))
 
             # Write breakpoints
             f.write("set breakpoint pending on\n")
@@ -1907,7 +1907,7 @@ class GeneralArguments(object):
             remotehost_set = 0
             for k in ("SSH_CLIENT", "SSH2_CLIENT", "SSH_CONNECTION"):
                 try:
-                    remotehost = string.split(os.environ[k], " ")[0]
+                    remotehost = os.environ[k].split(" ")[0]
                     remotehost_set = 1
                     break
                 except KeyError:
@@ -1989,13 +1989,13 @@ class ParallelArguments(object):
         elif args[i] == "-pl":
             self.parlaunch = args[i+1]
         elif args[i] == "-la":
-            self.launchargs = string.split(args[i+1], " ")
+            self.launchargs = args[i+1].split(" ")
         elif args[i] == "-sla":
-            self.sublaunchargs = string.split(args[i+1], " ")
+            self.sublaunchargs = args[i+1].split(" ")
         elif args[i] == "-slpre":
-            self.sublaunchprecmd = string.split(args[i+1], " ")
+            self.sublaunchprecmd = args[i+1].split(" ")
         elif args[i] == "-slpost":
-            self.sublaunchpostcmd = string.split(args[i+1], " ")
+            self.sublaunchpostcmd = args[i+1].split(" ")
         elif args[i] == "-n":
             self.name = args[i+1]
         elif args[i] == "-p":
@@ -2042,7 +2042,7 @@ class ParallelArguments(object):
         if self.nn != None:
             args = args + ["-nn", self.nn]
         if self.launchargs != None:
-            args = args + ["-la", string.join(self.launchargs, " ")]
+            args = args + ["-la", " ".join(self.launchargs)]
         if self.name != None:
             args = args + ["-n", self.name]
         if self.partition != None:
@@ -2057,7 +2057,7 @@ class ParallelArguments(object):
         # Gather the arguments destined for the engine into an -engineargs argument.
         if gather:
             if len(args) > 0:
-                args = ["-engineargs", string.join(args, ";")]
+                args = ["-engineargs", ";".join(args)]
             else:
                 args = []
             if self.launchengine != None:
@@ -2184,26 +2184,30 @@ class MainLauncher(object):
         return socket.gethostname()
 
     def nodename(self):
-        return string.split(self.hostname(), ".")[0]
+        return self.hostname().split(".")[0]
 
     def sectorname(self):
         s = self.nodename()
         for d in "0123456789":
-            s = string.replace(s, d, "")
+            s = s.replace(d, "")
         return s
 
     def domainname(self):
         fullhost = socket.gethostbyname_ex(self.hostname())[0]
-        pos = string.find(fullhost, ".")
+        pos = fullhost.find(".")
         if pos == -1:
             return fullhost
         else:
             return fullhost[pos+1:]
 
     def uname(self, arg):
-        p = subprocess.Popen(["uname", arg], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        # note: universal_newlines=True invokes default unicode encoding
+        # which is necessary to compare with strings elsewhere
+        # Ex: without this the result is of type bytes and b'darwin' != 'darwin'
+        p = subprocess.Popen(["uname", arg], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                             universal_newlines=True)
         output = p.communicate()
-        return string.lower(output[0][:-1])
+        return output[0][:-1].lower()
 
     def joinpaths(self, paths):
         unique = []
@@ -2213,11 +2217,11 @@ class MainLauncher(object):
         if len(unique) == 1:
             ret = unique[0]
         else:
-            ret = string.join(unique, ":")
+            ret = ":".join(unique)
         return ret
 
     def splitpaths(self, paths):
-        s = string.split(paths, ":")
+        s = paths.split(":")
         unique = []
         for p in s:
             if p not in unique and p != "":
@@ -2225,7 +2229,7 @@ class MainLauncher(object):
         return unique
 
     def quoted(self, s):
-        if string.find(s, " ") != -1:
+        if s.find(" ") != -1:
             ret = '"' + s + '"'
         else:
             ret = s
@@ -2319,12 +2323,12 @@ class MainLauncher(object):
     def Logging(self, args):
         if self.logging and self.generalArgs.exe_name in self.loggedComponents:
             user_info = self.username()
-            host_info = string.split(self.hostname(), ".")[0]
+            host_info = self.hostname().split(".")[0]
             date_info = time.asctime()
             cs_info = ""
             if self.generalArgs.clientserver:
                 cs_info = "client/server"
-            info = string.join([user_info, host_info, date_info, cs_info], " ")+"\n"
+            info = " ".join([user_info, host_info, date_info, cs_info])+"\n"
 
             # Read in the existing data. (TODO: change to open for append)
             filename = os.path.join(self.visitdir, "usagelog")
@@ -2359,7 +2363,7 @@ class MainLauncher(object):
         def filecontents(filename):
             f = open(filename, "rt")
             lines = f.readlines()
-            return string.join(lines, "")
+            return "".join(lines)
 
         # setup the usage note about full help
         helpnote = "NOTE: For a more complete list of options, use '-fullhelp'.\n"
@@ -2431,7 +2435,6 @@ class MainLauncher(object):
         exe_name = self.generalArgs.exe_name
         compiler = self.generalArgs.compiler
         objectmode = self.generalArgs.objectmode
-
         supportedarches = []
         if self.os == "linux":
             mach = self.uname("-m")
@@ -2454,7 +2457,7 @@ class MainLauncher(object):
         elif self.os == "darwin":
             mach = self.uname("-m")
             release = self.uname("-r")
-            version = [int(x) for x in string.split(release, ".")]
+            version = [int(x) for x in release.split(".")]
             self.osver = version[0]
             if version[0] >= 11:
                 if mach == "x86_64":
@@ -2480,9 +2483,9 @@ class MainLauncher(object):
                 pargs = ["/usr/sbin/system_profiler", "-detailLevel", "-2"]
                 p = subprocess.Popen(pargs, stdout=subprocess.PIPE)
                 output = p.communicate()[0]
-                lines = string.split(output, "\n")
+                lines = output.split("\n")
                 for line in lines:
-                    procname = string.find(line, "Processor Name")
+                    procname = line.find("Processor Name")
                     if procname != -1:
                         if "Intel Core Solo" in line or "Intel Core Duo" in line:
                             supportedarches.append("darwin-i386")
@@ -2557,7 +2560,7 @@ class MainLauncher(object):
             if archdir == "":
                 msg = "Version %s of %s does not exist for " % (self.visitver, self.generalArgs.exe_name)
                 if len(supportedarches) > 1:
-                    msg = msg + "any of the valid architectures (%s).\n" % string.join(supportedarches, " ")
+                    msg = msg + "any of the valid architectures (%s).\n" % " ".join(supportedarches)
                 else:
                     msg = msg + "the architecture %s.\n" % supportedarches[0]
                 if self.generalArgs.exe_name == "engine_par":
@@ -2827,6 +2830,10 @@ class MainLauncher(object):
     #   Eric Brugger, Thu Jan  9 16:30:42 PST 2020
     #   Add lib/mesagl to the LD_LIBRARY_PATH for mcurvit.
     #
+    #   Eric Brugger, Tue Jul 14 12:51:01 PDT 2020
+    #   Add code to unsetenv LD_PRELOAD to protect against users setting
+    #   it for the GL library, which would break rendering.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -2903,6 +2910,9 @@ class MainLauncher(object):
 
         # Unset QT_PLUGIN_PATH
         UNSETENV("QT_PLUGIN_PATH")
+
+        # Unset LD_PRELOAD
+        UNSETENV("LD_PRELOAD")
 
         # Turn off trapping of floating point exceptions.
         SETENV("TRAP_FPE", "")
@@ -3133,7 +3143,7 @@ class MainLauncher(object):
                 if self.generalArgs.newconsole == 1 and \
                    GETENV("TERM_PROGRAM") == "Apple_Terminal":
                     cdcmd = "cd %s" % os.path.abspath(os.curdir)
-                    visitcmd = string.join(newcmd, " ")
+                    visitcmd = " ".join(newcmd)
 
                     osascript = subprocess.Popen(["osascript"], stdin=subprocess.PIPE)
                     osascript.stdin.write('tell application "Terminal"\n')
@@ -3150,7 +3160,7 @@ class MainLauncher(object):
                     self.warning("""
 VisIt does not recognize your terminal application so it will ignore the -newconsole argument.""")
             else:
-                args = self.xterm + ["-geometry", "120x40", "-title", title, "-e"] + [string.join(newcmd, " ")]
+                args = self.xterm + ["-geometry", "120x40", "-title", title, "-e"] + [" ".join(newcmd)]
         return args
 
     ############################################################################
@@ -3325,7 +3335,7 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                else:
                    a2 = a2 + [args[i]]
                i = i + 1
-        return string.join(a2, " ")
+        return " ".join(a2)
 
     ############################################################################
     # Method: NoRun
@@ -3373,7 +3383,7 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                 a2 = a2 + ['"' + a + '"']
             else:
                 a2 = a2 + [a]
-        return string.join(a2, " ")
+        return " ".join(a2)
 
     ############################################################################
     # Method: Launch
@@ -3392,8 +3402,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     def Launch(self):
         ret = 0
         if self.parallelArgs.parallel and \
-           (string.find(self.generalArgs.exe_name, "_par") != -1 or \
-            string.find(self.generalArgs.exe_name, "_ser") != -1):
+           (self.generalArgs.exe_name.find("_par") != -1 or \
+            self.generalArgs.exe_name.find("_ser") != -1):
             # Create the appropriate job submitter.
             submitter = self.JobSubmitterFactory(self.parallelArgs.launch)
             if submitter == None:
@@ -3604,7 +3614,7 @@ def internallauncher(launcher, visitdir, visitprogram, visitver, visitpluginver,
         exit("This hardware platform is not supported by VisIt.", 1)
     # Print the architectures and exit.
     if launcher.generalArgs.arch:
-        print(string.join(supportedarches, " "))
+        print(" ".join(supportedarches))
         return 0
 
     launcher.ConsistencyCheck()

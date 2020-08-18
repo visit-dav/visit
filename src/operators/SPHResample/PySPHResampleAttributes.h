@@ -5,6 +5,7 @@
 #ifndef PY_SPHRESAMPLEATTRIBUTES_H
 #define PY_SPHRESAMPLEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <SPHResampleAttributes.h>
 
 //

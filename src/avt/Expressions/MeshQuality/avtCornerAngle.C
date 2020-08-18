@@ -25,11 +25,17 @@
 //  Programmer: Hank Childs
 //  Creation:   May 19, 2008
 //
+//  Modifications:
+//
+//  Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//  Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtCornerAngle::avtCornerAngle()
 {
     takeMin = true;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

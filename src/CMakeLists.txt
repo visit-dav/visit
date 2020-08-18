@@ -445,8 +445,14 @@
 #      VISIT_BUILD_DIAGNOSTICS    => VISIT_ENABLE_DIAGNOSTICS
 #      VISIT_BUILD_AVTEXAMPLES    => VISIT_ENABLE_EXAMPLES
 #
+#    Kathleen Biagas, Thu Feb 20 14:45:33 MST 2020
+#    Having trouble with sphinx-build exe (Win10), so use script instead.
+#
 #    Brad Whitlock, Wed Jul 22 16:15:59 PDT 2020
 #    I added support for the FMS library.
+#
+#    Alister Maguire, Thu Aug 13 13:41:20 PDT 2020
+#    Updated the manuals target so that it builds in the binary directory.
 #
 #****************************************************************************
 
@@ -1158,6 +1164,12 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItBoost.cmake)
 
 IF( (VISIT_PYTHON_SCRIPTING OR VISIT_PYTHON_FILTERS) AND NOT VISIT_DBIO_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItPython.cmake)
+    IF(NOT PYTHON_FOUND)
+        MESSAGE(FATAL_ERROR "Python support requested, but could not find Python "
+                            "(PYTHON_FOUND=FALSE) "
+                            "(VISIT_PYTHON_SCRIPTING=${VISIT_PYTHON_SCRIPTING} "
+                            " VISIT_PYTHON_FILTERS=${VISIT_PYTHON_FILTERS})")
+    ENDIF()
 ENDIF((VISIT_PYTHON_SCRIPTING OR VISIT_PYTHON_FILTERS) AND NOT VISIT_DBIO_ONLY)
 
 IF(VISIT_JAVA)
@@ -2285,7 +2297,8 @@ if(VISIT_PYTHON3_DIR AND VISIT_ENABLE_MANUALS)
     # so location may need to be rethought, but other than building them
     # in exe/Release and in exe/Debug, thought this location was best.
     add_custom_target(manuals
-        COMMAND ${VISIT_PYTHON3_DIR}/Scripts/sphinx-build.exe 
+        COMMAND ${VISIT_PYTHON3_DIR}/python.exe
+                ${VISIT_PYTHON3_DIR}/Scripts/sphinx-build-script.py
         -b html ${VISIT_SOURCE_DIR}/doc 
         ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
     # Add command to ensure the manuals are installed to the correct location
@@ -2300,7 +2313,7 @@ if(VISIT_PYTHON3_DIR AND VISIT_ENABLE_MANUALS)
         CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
   else()
     add_custom_target(manuals
-                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build -b html ${VISIT_SOURCE_DIR}/doc ${VISIT_SOURCE_DIR}/resources/help/en_US/manual -a)
+                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build -b html ${VISIT_SOURCE_DIR}/doc ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
   endif()
 endif()
 

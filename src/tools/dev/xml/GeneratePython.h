@@ -143,6 +143,9 @@ inline char toupper(char c)
 //    Kathleen Biagas, Tue Dec 20 16:04:19 PST 2016
 //    Added GlyphType.
 //
+//    Cyrus Harrison, Wed Jun  3 09:51:31 PDT 2020
+//    Update code gen to support both Python 2 and 3.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1443,7 +1446,11 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         c << "        {" << Endl;
         c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
         c << "            if(PyString_Check(item))" << Endl;
-        c << "                vec[i] = std::string(PyString_AS_STRING(item));" << Endl;
+        c << "            {" << Endl;
+        c << "                char *item_cstr = PyString_AsString(item);" << Endl;
+        c << "                vec[i] = std::string(item_cstr);" << Endl;
+        c << "                PyString_AsString_Cleanup(item_cstr);" << Endl;
+        c << "            }" << Endl;
         c << "            else" << Endl;
         c << "                vec[i] = std::string(\"\");" << Endl;
         c << "        }" << Endl;
@@ -1451,7 +1458,9 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         c << "    else if(PyString_Check(tuple))" << Endl;
         c << "    {" << Endl;
         c << "        vec.resize(1);" << Endl;
-        c << "        vec[0] = std::string(PyString_AS_STRING(tuple));" << Endl;
+        c << "        char *tuple_cstr = PyString_AsString(tuple);" << Endl;
+        c << "        vec[0] = std::string(tuple_cstr);" << Endl;
+        c << "        PyString_AsString_Cleanup(tuple_cstr);" << Endl;
         c << "    }" << Endl;
         c << "    else" << Endl;
         c << "        return NULL;" << Endl;
@@ -2373,7 +2382,12 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
         c << "    const char *" << name << "_names = \"";
         for(size_t j = 0; j < enumType->values.size(); ++j)
         {
-            c << enumType->values[j];
+            QString val_string = enumType->values[j];
+            if(val_string == "None")
+            {
+                val_string = "NONE";
+            }
+            c << val_string;
             if(j < enumType->values.size() - 1)
                 c << ", ";
             if(j  > 0 && j%4==0 && j != enumType->values.size()-1)
@@ -2392,9 +2406,16 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
 
         for(size_t i = 0; i < enumType->values.size(); ++i)
         {
+            // None is a special case, we can't have atts.None in py3, its 
+            // a syntax error, instead show as NONE
+            QString val_string = enumType->values[i];
+            if(val_string == "None")
+            {
+                val_string = "NONE";
+            }
             c << "      case " << classname << "::" << enumType->values[i] << ":\n";
             c << "          snprintf(tmpStr, 1000, \"%s" << name << " = %s"
-              << enumType->values[i] << "  # %s\\n\", prefix, prefix, "
+              << val_string << "  # %s\\n\", prefix, prefix, "
               << name << "_names);" << Endl;
             c << "          str += tmpStr;" << Endl;
             c << "          break;" << Endl;
@@ -2424,6 +2445,21 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             c << "        return PyInt_FromLong(long(";
             c << classname << "::" << enumType->values[i];
             c << "));" << Endl;
+            // add extra case for NONE:
+            // None is a special case, we can't have atts.None in py3, its 
+            // a syntax error, instead show as NONE
+            QString val_string = enumType->values[i];
+            if(val_string == "None")
+            {
+                c << "    ";
+                c << "if";
+                c << "(strcmp(name, \"";
+                c << "NONE";
+                c << "\") == 0)" << Endl;
+                c << "        return PyInt_FromLong(long(";
+                c << classname << "::" << enumType->values[i];
+                c << "));" << Endl;
+            }
         }
         c << Endl;
     }
@@ -2964,6 +3000,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         h << "#ifndef PY_" << name.toUpper() << "_H" << Endl;
         h << "#define PY_" << name.toUpper() << "_H" << Endl;
         h << "#include <Python.h>" << Endl;
+        h << "#include <Py2and3Support.h>" << Endl;
         h << "#include <"<<name<<".h>" << Endl;
         if (custombase)
             h << "#include <Py"<<baseClass<<".h>" << Endl;
@@ -3062,7 +3099,6 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "// Internal prototypes" << Endl;
         c << "//" << Endl;
         c << "static PyObject *New"<<name<<"(int);" << Endl;
-        c << Endl;
     }
 
     void WritePyObjectMethods(QTextStream &c)
@@ -3356,7 +3392,6 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "}" << endl << Endl;
     }
 
-
     void WriteTypeFunctions(QTextStream &c)
     {
         c << "//" << Endl;
@@ -3375,14 +3410,10 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "}" << Endl;
         c << Endl;
 
-        c << "static int" << Endl;
-        c << name << "_compare(PyObject *v, PyObject *w)" << Endl;
-        c << "{" << Endl;
-        c << "    "<<name<<" *a = (("<<name<<"Object *)v)->data;" << Endl;
-        c << "    "<<name<<" *b = (("<<name<<"Object *)w)->data;" << Endl;
-        c << "    return (*a == *b) ? 0 : -1;" << Endl;
-        c << "}" << Endl;
-        c << Endl;
+        // chicken and egg
+        // rich compare uses the type object, so we forward declare
+        c << "static PyObject *" << name
+          << "_richcompare(PyObject *self, PyObject *other, int op);" << Endl;
 
         // Write the getattr function
         WriteGetAttrFunction(c);
@@ -3407,51 +3438,77 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "#endif" << Endl;
         c << Endl;
 
+        // add helpful comments about where VISIT_PY_TYPE_OBJ is defd and 
+        // how to use it
+        c << "//" << Endl
+          << "// Python Type Struct Def Macro from Py2and3Support.h" << Endl
+          << "//" << Endl
+          << "//         VISIT_PY_TYPE_OBJ( VPY_TYPE,"      << Endl
+          << "//                            VPY_NAME,"      << Endl
+          << "//                            VPY_OBJECT,"    << Endl
+          << "//                            VPY_DEALLOC,"   << Endl
+          << "//                            VPY_PRINT,"     << Endl
+          << "//                            VPY_GETATTR,"   << Endl
+          << "//                            VPY_SETATTR,"   << Endl
+          << "//                            VPY_STR,"       << Endl
+          << "//                            VPY_PURPOSE,"   << Endl
+          << "//                            VPY_RICHCOMP,"  << Endl
+          << "//                            VPY_AS_NUMBER)" << Endl
+          << Endl;
+
         c << "//" << Endl;
         c << "// The type description structure" << Endl;
-        c << "//" << Endl;
-        c << "static PyTypeObject "<<name<<"Type =" << Endl;
-        c << "{" << Endl;
-        c << "    //" << Endl;
-        c << "    // Type header" << Endl;
-        c << "    //" << Endl;
-        c << "    PyObject_HEAD_INIT(&PyType_Type)" << Endl;
-        c << "    0,                                   // ob_size" << Endl;
-        c << "    \""<<name<<"\",                    // tp_name" << Endl;
-        c << "    sizeof("<<name<<"Object),        // tp_basicsize" << Endl;
-        c << "    0,                                   // tp_itemsize" << Endl;
-        c << "    //" << Endl;
-        c << "    // Standard methods" << Endl;
-        c << "    //" << Endl;
-        c << "    (destructor)"<<name<<"_dealloc,  // tp_dealloc" << Endl;
-        c << "    (printfunc)"<<name<<"_print,     // tp_print" << Endl;
-        c << "    (getattrfunc)Py"<<name<<"_getattr, // tp_getattr" << Endl;
-        c << "    (setattrfunc)Py"<<name<<"_setattr, // tp_setattr" << Endl;
-        c << "    (cmpfunc)"<<name<<"_compare,     // tp_compare" << Endl;
-        c << "    (reprfunc)0,                         // tp_repr" << Endl;
-        c << "    //" << Endl;
-        c << "    // Type categories" << Endl;
-        c << "    //" << Endl;
-        c << "    0,                                   // tp_as_number" << Endl;
-        c << "    0,                                   // tp_as_sequence" << Endl;
-        c << "    0,                                   // tp_as_mapping" << Endl;
-        c << "    //" << Endl;
-        c << "    // More methods" << Endl;
-        c << "    //" << Endl;
-        c << "    0,                                   // tp_hash" << Endl;
-        c << "    0,                                   // tp_call" << Endl;
-        c << "    (reprfunc)" << name << "_str,        // tp_str" << Endl;
-        c << "    0,                                   // tp_getattro" << Endl;
-        c << "    0,                                   // tp_setattro" << Endl;
-        c << "    0,                                   // tp_as_buffer" << Endl;
-        c << "    Py_TPFLAGS_CHECKTYPES,               // tp_flags" << Endl;
-        c << "    "<<name<<"_Purpose,              // tp_doc" << Endl;
-        c << "    0,                                   // tp_traverse" << Endl;
-        c << "    0,                                   // tp_clear" << Endl;
-        c << "    0,                                   // tp_richcompare" << Endl;
-        c << "    0                                    // tp_weaklistoffset" << Endl;
-        c << "};" << Endl;
+        c << "//" << Endl << Endl;
+
+        c << "VISIT_PY_TYPE_OBJ("<<name<<"Type,         \\" << Endl;
+        c << "                  \""<<name<<"\",           \\" << Endl;
+        c << "                  "<<name<<"Object,       \\" << Endl;
+        c << "                  "<<name<<"_dealloc,     \\" << Endl;
+        c << "                  "<<name<<"_print,       \\" << Endl;
+        c << "                  Py"<<name<<"_getattr,   \\" << Endl;
+        c << "                  Py"<<name<<"_setattr,   \\" << Endl;
+        c << "                  "<<name<<"_str,         \\" << Endl;
+        c << "                  "<<name<<"_Purpose,     \\" << Endl;
+        c << "                  "<<name<<"_richcompare, \\" << Endl;
+        c << "                  0); /* as_number*/"         << Endl;
         c << Endl;
+
+        c << "//" << Endl;
+        c << "// Helper function for comparing." << Endl;
+        c << "//" << Endl;
+        c << "static PyObject *" << Endl;
+        c << name << "_richcompare(PyObject *self, PyObject *other, int op)" << Endl;
+        c << "{" << Endl;
+        c << "    // only compare against the same type " << Endl;
+        c << "    if ( Py_TYPE(self) == Py_TYPE(other) " << Endl;
+        c << "         && Py_TYPE(self) == &" <<name<< "Type)" << Endl;
+        c << "    {" << Endl;
+        c << "        Py_INCREF(Py_NotImplemented);" << Endl;
+        c << "        return Py_NotImplemented;" << Endl;
+        c << "    }" << Endl;
+        c << "" << Endl;
+        c << "    PyObject *res = NULL;" << Endl;
+        c << "    "<<name<<" *a = (("<<name<<"Object *)self)->data;" << Endl;
+        c << "    "<<name<<" *b = (("<<name<<"Object *)other)->data;" << Endl;
+        c << "" << Endl;
+        c << "    switch (op)" << Endl;
+        c << "    {"  << Endl;
+        c << "       case Py_EQ:" << Endl;
+        c << "           res = (*a == *b) ? Py_True : Py_False;" << Endl;
+        c << "           break;" << Endl;
+        c << "       case Py_NE:" << Endl;
+        c << "           res = (*a != *b) ? Py_True : Py_False;" << Endl;
+        c << "           break;" << Endl;
+        c << "       default:" << Endl;
+        c << "           res = Py_NotImplemented;" << Endl;
+        c << "           break;" << Endl;
+        c << "    }"  << Endl;
+        c << "" << Endl;
+        c << "    Py_INCREF(res);" << Endl;
+        c << "    return res;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
+
         c << "//" << Endl;
         c << "// Helper functions for object allocation." << Endl;
         c << "//" << Endl;
@@ -3736,6 +3793,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "#include <Py" << name << ".h>" << Endl;
         c << "#include <ObserverToCallback.h>" << Endl;
         c << "#include <stdio.h>" << Endl;
+        c << "#include <Py2and3Support.h>" << Endl;
         WriteIncludedHeaders(c);
         c << Endl;
         WriteHeaderComment(c);

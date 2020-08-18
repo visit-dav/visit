@@ -5,6 +5,7 @@
 #ifndef PY_LINEOUTATTRIBUTES_H
 #define PY_LINEOUTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <LineoutAttributes.h>
 
 //

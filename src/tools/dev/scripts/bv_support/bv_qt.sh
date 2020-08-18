@@ -226,7 +226,23 @@ function apply_qt_patch
             fi
         elif [[ -f /etc/lsb-release ]] ; then
             VER=`cat /etc/lsb-release | grep "DISTRIB_RELEASE" | cut -d'=' -f 2`
-            if [[ "${VER:0:3}" == "19." ]] ; then
+            if [[ "${VER:0:3}" == "19." || "${VER:0:3}" == "20." ]] ; then
+                apply_qt_5101_centos8_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        elif [[ -f /etc/os-release ]] ; then
+            VER=`cat /etc/os-release | grep "REDHAT_SUPPORT_PRODUCT_VERSION" | cut -d'=' -f 2`
+            if [[ "${VER:1:1}" == "8" ]] ; then
+                apply_qt_5101_centos8_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        elif [[ -f /etc/issue ]] ; then
+            VER=`cat /etc/issue | grep "Debian" | cut -d' ' -f 3`
+            if [[ "${VER:0:2}" == "10" ]] ; then
                 apply_qt_5101_centos8_patch
                 if [[ $? != 0 ]] ; then
                     return 1

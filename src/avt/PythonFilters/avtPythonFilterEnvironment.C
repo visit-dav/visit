@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "Python.h"
+#include <Py2and3Support.h>
 #include "avtPythonFilterEnvironment.h"
 #include "avtParallel.h"
 
@@ -338,8 +339,10 @@ avtPythonFilterEnvironment::Pickle(PyObject *py_obj)
         return std::string("");
     }
 
-    char *res_cstr = PyString_AS_STRING(res_obj);
+
+    char *res_cstr = PyString_AsString(res_obj);
     std::string res(res_cstr);
+    PyString_AsString_Cleanup(res_cstr);
     Py_DECREF(res_obj);
     return res;
 }

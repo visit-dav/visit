@@ -5,6 +5,8 @@
 #include <PyExportDBAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
+#include "PyDBOptionsAttributes_Helpers.h"
 #include <PyDBOptionsAttributes.h>
 
 // ****************************************************************************
@@ -36,6 +38,18 @@ struct ExportDBAttributesObject
 //
 static PyObject *NewExportDBAttributes(int);
 
+
+// ****************************************************************************
+// Module: PyExportDBAttributes_ToString
+//
+// Purpose: 
+//   Custom to string method. Custom b/c of handled for opts dict.
+//
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Mon May 11 14:14:38 PDT 2020
+//
+// ****************************************************************************
 std::string
 PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix)
 {
@@ -80,11 +94,17 @@ PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sgroupSize = %d\n", prefix, atts->GetGroupSize());
     str += tmpStr;
-    { // new scope
-        std::string objPrefix(prefix);
-        objPrefix += "opts.";
-        str += PyDBOptionsAttributes_ToString(&atts->GetOpts(), objPrefix.c_str());
+
+    std::string db_opts_dict_str = PyDBOptionsAttributes_CreateDictionaryStringFromDBOptions(atts->GetOpts(),
+                                                                                     false);
+    if((!db_opts_dict_str.empty()) && // make sure its not an empty string
+       (db_opts_dict_str.find("{}") != 0) ) // and not an empty dict
+    {
+        str += "DBExportOpts = ";
+        str += db_opts_dict_str;
+        str += "\n";
     }
+
     return str;
 }
 
@@ -258,7 +278,11 @@ ExportDBAttributes_SetVariables(PyObject *self, PyObject *args)
         {
             PyObject *item = PyTuple_GET_ITEM(tuple, i);
             if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
+            {
+                char *item_cstr = PyString_AsString(item);
+                vec[i] = std::string(item_cstr);
+                PyString_AsString_Cleanup(item_cstr);
+            }
             else
                 vec[i] = std::string("");
         }
@@ -266,7 +290,9 @@ ExportDBAttributes_SetVariables(PyObject *self, PyObject *args)
     else if(PyString_Check(tuple))
     {
         vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
+        char *tuple_cstr = PyString_AsString(tuple);
+        vec[0] = std::string(tuple_cstr);
+        PyString_AsString_Cleanup(tuple_cstr);
     }
     else
         return NULL;
@@ -415,14 +441,7 @@ ExportDBAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-ExportDBAttributes_compare(PyObject *v, PyObject *w)
-{
-    ExportDBAttributes *a = ((ExportDBAttributesObject *)v)->data;
-    ExportDBAttributes *b = ((ExportDBAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *ExportDBAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyExportDBAttributes_getattr(PyObject *self, char *name)
 {
@@ -515,49 +534,70 @@ static char *ExportDBAttributes_Purpose = "The attributes for export a database"
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject ExportDBAttributesType =
+
+VISIT_PY_TYPE_OBJ(ExportDBAttributesType,         \
+                  "ExportDBAttributes",           \
+                  ExportDBAttributesObject,       \
+                  ExportDBAttributes_dealloc,     \
+                  ExportDBAttributes_print,       \
+                  PyExportDBAttributes_getattr,   \
+                  PyExportDBAttributes_setattr,   \
+                  ExportDBAttributes_str,         \
+                  ExportDBAttributes_Purpose,     \
+                  ExportDBAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+ExportDBAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "ExportDBAttributes",                    // tp_name
-    sizeof(ExportDBAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)ExportDBAttributes_dealloc,  // tp_dealloc
-    (printfunc)ExportDBAttributes_print,     // tp_print
-    (getattrfunc)PyExportDBAttributes_getattr, // tp_getattr
-    (setattrfunc)PyExportDBAttributes_setattr, // tp_setattr
-    (cmpfunc)ExportDBAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)ExportDBAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    ExportDBAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &ExportDBAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    ExportDBAttributes *a = ((ExportDBAttributesObject *)self)->data;
+    ExportDBAttributes *b = ((ExportDBAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

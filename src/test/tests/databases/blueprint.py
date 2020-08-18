@@ -8,6 +8,12 @@
 #  Programmer: Cyrus Harrison
 #  Date:       Thu Jun 16 10:56:37 PDT 2016
 #
+#  Modifications:
+#
+#    Alister Maguire, Fri Jul 17 16:29:50 PDT 2020
+#    Added a test to ensure that variables containing parentheses
+#    are able to be visualized.
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
 
@@ -24,6 +30,8 @@ braid_3d_json_root = data_path(pjoin(bp_test_dir,"braid_3d_examples_json.root"))
 
 braid_2d_sidre_root = data_path(pjoin(bp_test_dir,"braid_2d_sidre_examples.root"))
 braid_3d_sidre_root = data_path(pjoin(bp_test_dir,"braid_3d_sidre_examples.root"))
+
+uniform_root = data_path(pjoin(bp_test_dir,"uniform.cycle_001038.root"))
 
 
 braid_2d_meshes = ["points", "uniform", "rect", "struct", "tris","quads"]
@@ -114,6 +122,21 @@ def test_mfem(tag_name, example_name, protocol):
 
     CloseDatabase(dbfile)
 
+def test_paren_vars():
+    TestSection("Variables With Parens")
+
+    #
+    # Testing bugfix for issue #4882.
+    #
+    OpenDatabase(uniform_root)
+    AddPlot("Pseudocolor", "mesh_topo/rho.Y_lp_CH2O_rp_")
+    DrawPlots()
+    Test("paren_vars_00")
+
+    DeleteAllPlots()
+    CloseDatabase(uniform_root)
+
+
 TestSection("2D Example JSON Mesh Files")
 OpenDatabase(braid_2d_json_root)
 for mesh_name in braid_2d_meshes:
@@ -154,5 +177,16 @@ TestSection("MFEM Blueprint Example Data Tests")
 for example_name in mfem_ex9_examples:
     for protocol in mfem_ex9_protocols:
         test_mfem("blueprint_mfem", example_name, protocol)
+
+TestSection("Blueprint Expressions")
+OpenDatabase(braid_2d_json_root)
+AddPlot("Pseudocolor", "uniform_mesh/scalar_expr")
+AddPlot("Vector", "uniform_mesh/vector_expr")
+DrawPlots()
+Test("blueprint_expressions")
+DeleteAllPlots()
+CloseDatabase(braid_2d_json_root)
+
+test_paren_vars()
 
 Exit()

@@ -121,6 +121,9 @@ Definition:
 //    Kathleen Biagas, Thu Apr 23 13:14:51 PDT 2015
 //    Removed never-used oulineOnly and errorTolerance atts.
 //
+//    Kathleen Biagas, Wed Jun  10 10:00:03 PDT 2020
+//    Added test for changing point type.
+//
 // ****************************************************************************
 
 bool
@@ -133,7 +136,14 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
                              (obj.pointSizeVar != "") &&
                              (obj.pointSizeVar != "\0")));
 
-    return ((needSecondaryVar) ||
+    // Certain point type changes require a recalculation.
+    bool currentPointTypeIsPoint =     pointType == Point;
+    bool newPointTypeIsPoint     = obj.pointType == Point;
+
+    bool changingPointType =  pointType != obj.pointType &&
+                              currentPointTypeIsPoint != newPointTypeIsPoint;
+
+    return ( needSecondaryVar || changingPointType ||
             (smoothingLevel != obj.smoothingLevel) ||
             (showInternal != obj.showInternal && spatDim == 3));
 }
@@ -187,3 +197,45 @@ MeshAttributes::ProcessOldVersions(DataNode *parentNode,
             searchNode->RemoveNode("lineStyle");
     }
 }
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+// ****************************************************************************
+// Method: MeshAttributes::CreateCompatible
+//
+// Purpose:
+//   CreateCompatible method for the MeshAttributes class.
+//   Can create PointGlyphAttributes.
+//
+// Programmer: Kathleen Biagas
+// Creation:   June 10, 2020
+//
+// Modifications:
+//
+// ****************************************************************************
+
+AttributeSubject *
+MeshAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new MeshAttributes(*this);
+    }
+    else if(tname == "PointGlyph")
+    {
+        PointGlyphAttributes *pga = new PointGlyphAttributes();
+        pga->SetPointSize(GetPointSize());
+        pga->SetPointType(GetPointType());
+        pga->SetPointSizeVarEnabled(GetPointSizeVarEnabled());
+        pga->SetPointSizeVar(GetPointSizeVar());
+        pga->SetPointSizePixels(GetPointSizePixels());
+        retval = pga;
+    }
+
+    return retval;
+}
+
+
