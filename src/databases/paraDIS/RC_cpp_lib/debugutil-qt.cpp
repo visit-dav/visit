@@ -98,8 +98,8 @@ void real_dbfprintf(FILE *stream, int level, QString filename, int lineno, QStri
 static int check_verbose(void)
 {
   if (!sCheck) {
-    if (VisItEnv::get("DEBUG_VERBOSE").c_str()) {
-      sVerbose = atoi(VisItEnv::get("DEBUG_VERBOSE").c_str());
+    if (VisItEnv::get("DEBUG_VERBOSE")) {
+      sVerbose = atoi(VisItEnv::get("DEBUG_VERBOSE"));
     }
     sCheck = 1;
   }

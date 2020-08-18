@@ -609,8 +609,8 @@ static FILE* openFile(const char* name, const char* path=NULL)
     static const char* HOME_DIR = NULL;
 
     if(firstTime) {
-        STARPATH = VisItEnv::get("STARPATH").c_str();
-        HOME_DIR = VisItEnv::get("HOME").c_str();
+        STARPATH = VisItEnv::get("STARPATH");
+        HOME_DIR = VisItEnv::get("HOME");
 
         firstTime = false;
     }

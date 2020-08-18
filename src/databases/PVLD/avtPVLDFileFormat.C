@@ -45,7 +45,7 @@ static PVLD_Reader *
 InstantiateReader()
 {
     PVLD_Reader *r = NULL;
-    if(VisItEnv::get("ELEMENT_PARTITION_VLD").c_str() == NULL)
+    if(VisItEnv::get("ELEMENT_PARTITION_VLD") == NULL)
         r = new PVLD_Part_Reader;
     else
         r = new PVLD_Reader;
@@ -75,11 +75,11 @@ avtPVLDFileFormat::avtPVLDFileFormat(const char *filename)
     debug5 << "creating reader( \"" << filename << "\")...\n";
 
     {
-        const char *spt = VisItEnv::get("ADD_MISSING_PARTS_VLD").c_str();
+        const char *spt = VisItEnv::get("ADD_MISSING_PARTS_VLD");
         add_missing_parts_ = spt!=NULL;
     }
 
-    enablePVLD = (VisItEnv::get("PVLDDISABLENEW").c_str() == NULL);
+    enablePVLD = (VisItEnv::get("PVLDDISABLENEW") == NULL);
     hasTOCread_ = false;
     preader_ = InstantiateReader();
     preader_->SetFileName( filename );

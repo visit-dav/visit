@@ -47,7 +47,7 @@ GetparaDISReadOptions(void)
 
     // Allow user to set values by environment variables or by GUI.
     int useMNType = 0; 
-    const char *cp = VisItEnv::get("PARADIS_USE_MN_MATERIALS").c_str();
+    const char *cp = VisItEnv::get("PARADIS_USE_MN_MATERIALS");
     if (cp) {
       useMNType = atoi(cp); 
       debug1 << "PARADIS_USE_MN_MATERIALS is " << cp << " and useMNType is " << useMNType << endl; 
@@ -66,22 +66,22 @@ GetparaDISReadOptions(void)
     rv->SetEnumStrings(PARADIS_MATERIAL_SET_CHOICE, msetchoices); 
 
     double threshold = -1.0; 
-    cp = VisItEnv::get("PARADIS_NN_ARM_THRESHOLD").c_str(); 
+    cp = VisItEnv::get("PARADIS_NN_ARM_THRESHOLD"); 
     if (cp) threshold = atof(cp); 
     rv->SetDouble(PARADIS_NN_ARM_THRESHOLD, threshold); 
 
     int debug=0;
-    cp = VisItEnv::get("PARADIS_VERBOSITY").c_str(); 
+    cp = VisItEnv::get("PARADIS_VERBOSITY"); 
     if (cp) debug=atoi(cp); 
     debug1 << "paradis debug set to " << debug << endl;
     rv->SetInt(PARADIS_VERBOSITY, debug);
     
-    cp = VisItEnv::get("PARADIS_DEBUG_FILE").c_str();
+    cp = VisItEnv::get("PARADIS_DEBUG_FILE");
     if (!cp) cp = (char*)"paradis_debug_output.log";
     rv->SetString(PARADIS_DEBUG_FILE, cp);
     
     debug = 0; 
-    cp = VisItEnv::get("PARADIS_ENABLE_DEBUG_OUTPUT").c_str(); 
+    cp = VisItEnv::get("PARADIS_ENABLE_DEBUG_OUTPUT"); 
     if (cp) debug=atoi(cp); 
     rv->SetBool(PARADIS_ENABLE_DEBUG_OUTPUT, debug); 
     

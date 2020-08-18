@@ -136,15 +136,15 @@ DDTManager::makeConnection()
             delete mSession;        // No longer connected to DDT. Delete mSession and try again
     }
 
-    QString filename = QFile::decodeName(VisItEnv::get("DDT_SOCKET").c_str());
+    QString filename = QFile::decodeName(VisItEnv::get("DDT_SOCKET"));
     if(filename.isEmpty())
     {
         const char *userName = NULL;
-        userName = VisItEnv::get("USER").c_str();          // Linux/Mac
+        userName = VisItEnv::get("USER");          // Linux/Mac
         if (userName == NULL)
-            userName = VisItEnv::get("LOGNAME").c_str();
+            userName = VisItEnv::get("LOGNAME");
         if (userName == NULL)
-            userName = VisItEnv::get("USERNAME").c_str();  // Windows
+            userName = VisItEnv::get("USERNAME");  // Windows
         if (userName == NULL)
             return NULL;                    // Unable to get username
         filename = QString("%0/allinea-%1/ddt.socket.tmp").arg(QDir::tempPath(),QString::fromLocal8Bit(userName));

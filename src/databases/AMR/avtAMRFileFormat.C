@@ -104,7 +104,7 @@ avtAMRFileFormat::avtAMRFileFormat(const char *filename)
     reader_ = NULL;
 
     // Enable the new features by default unless we're purposefully disabling it.
-    enableAMR = VisItEnv::get("AMRDISABLENEW").c_str()==NULL;
+    enableAMR = VisItEnv::get("AMRDISABLENEW")==NULL;
 
     // Check the file only if we're in strict mode. This will prevent many files
     // from being opened upfront.

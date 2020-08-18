@@ -1070,7 +1070,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
     {
         free(visitpath);
         visitpath = NULL;
-        if ((visitpath = VisItEnv::get("VISITHOME").c_str()) != NULL)
+        if ((visitpath = VisItEnv::get("VISITHOME")) != NULL)
         {
             haveVISITHOME = true;
             freeVisItPath = false;
@@ -1301,7 +1301,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
         bool haveSSH = false, haveSSHARGS = false, freeSSH = false, freeSSHARGS = false;
         string errmsg;
 
-        ssh = VisItEnv::get("VISITSSH").c_str();
+        ssh = VisItEnv::get("VISITSSH");
 
         if (ssh != NULL)
         {
@@ -1358,7 +1358,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
         /*
          * Set the SSH arguments.
          */
-        if((sshargs = VisItEnv::get("VISITSSHARGS").c_str()) == NULL)
+        if((sshargs = VisItEnv::get("VISITSSHARGS")) == NULL)
         {
             haveSSHARGS = ReadKey("SSHARGS", &sshargs);
             if(haveSSHARGS)
@@ -1438,7 +1438,7 @@ AddPath(char *tmp, const char *visitpath, const char *visitdev)
 
     path = tmp + strlen(tmp);
 
-    if((env = VisItEnv::get("PATH").c_str()) != NULL)
+    if((env = VisItEnv::get("PATH")) != NULL)
     {
        char *token, *env2;
 
@@ -1483,16 +1483,16 @@ PrintEnvironment()
 {
     char *tmp;
 
-    if((tmp = VisItEnv::get("VISITHOME").c_str()) != NULL)
+    if((tmp = VisItEnv::get("VISITHOME")) != NULL)
     {
         fprintf(stdout, "LIBPATH=%s\\lib\n", tmp);
         fprintf(stdout, "VISITHOME=%s\n", tmp);
     }
-    if((tmp = VisItEnv::get("VISITARCHHOME").c_str()) != NULL)
+    if((tmp = VisItEnv::get("VISITARCHHOME")) != NULL)
         fprintf(stdout, "VISITARCHHOME=%s\n", tmp);
-    if((tmp = VisItEnv::get("VISITULTRAHOME").c_str()) != NULL)
+    if((tmp = VisItEnv::get("VISITULTRAHOME")) != NULL)
         fprintf(stdout, "VISITULTRAHOME=%s\n", tmp);
-    if((tmp = VisItEnv::get("VISITPLUGINDIR").c_str()) != NULL)
+    if((tmp = VisItEnv::get("VISITPLUGINDIR")) != NULL)
         fprintf(stdout, "VISITPLUGINDIR=%s\n", tmp);
 
 }

@@ -30,7 +30,7 @@
 
 static bool CheckThreadedBlend_MetaData() {
     bool use = true;
-    const char* env_use = VisItEnv::get("OSPRAY_SERIAL_BLEND").c_str();
+    const char* env_use = VisItEnv::get("OSPRAY_SERIAL_BLEND");
     if (env_use) { use = atoi(env_use) <= 0; }
     return use;
 }

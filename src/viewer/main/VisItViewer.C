@@ -103,7 +103,7 @@ VisItViewer::Initialize(int *argc, char ***argv)
 #ifdef HAVE_DDT
     // If VisIt has been launched by DDT, try to connect to DDT once the event
     // loop is started (socket communication needs the event loop to be active)
-    if (VisItEnv::get("DDT_LAUNCHED_VISIT").c_str()!=NULL)
+    if (VisItEnv::get("DDT_LAUNCHED_VISIT")!=NULL)
         QMetaObject::invokeMethod(DDTManager::getInstance(),"makeConnection",
                 Qt::QueuedConnection);
 #endif
@@ -267,8 +267,8 @@ VisItViewer::GetVisItHome() const
     std::string home;
     if(visitHomeMethod == FromEnvironment)
     {
-        if(VisItEnv::get("VISITHOME").c_str() != NULL)
-            home = VisItEnv::get("VISITHOME").c_str();
+        if(VisItEnv::get("VISITHOME") != NULL)
+            home = VisItEnv::get("VISITHOME");
 #ifdef _WIN32
         else
             home = GetVisItInstallationDirectory();
@@ -473,7 +473,7 @@ VisItViewer::Setup()
 {
     // If the plugin dir has not been set then let's set it in the plugin
     // managers based on the current directory.
-    if(VisItEnv::get("VISITPLUGINDIR").c_str() == NULL)
+    if(VisItEnv::get("VISITPLUGINDIR") == NULL)
     {
 
         std::string pluginDir(GetVisItHome());

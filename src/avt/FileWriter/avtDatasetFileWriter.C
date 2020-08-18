@@ -2445,9 +2445,9 @@ avtDatasetFileWriter::WritePOVRayDF3File(vtkRectilinearGrid *rgrid,
 
 static vtkScalarsToColors * GetColorTableFromEnv()
 {
-    const char *ctName = VisItEnv::get("VISIT_EXPORT_COLORTABLE").c_str();
-    const char *ctMin = VisItEnv::get("VISIT_EXPORT_COLORTABLE_MIN").c_str();
-    const char *ctMax = VisItEnv::get("VISIT_EXPORT_COLORTABLE_MAX").c_str();
+    const char *ctName = VisItEnv::get("VISIT_EXPORT_COLORTABLE");
+    const char *ctMin = VisItEnv::get("VISIT_EXPORT_COLORTABLE_MIN");
+    const char *ctMax = VisItEnv::get("VISIT_EXPORT_COLORTABLE_MAX");
     
     if (ctName == NULL || ctMin == NULL || ctMax == NULL)
         return NULL;

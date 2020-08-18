@@ -326,9 +326,9 @@ VisWinUserInfo::UpdateUserText()
         GetUserName((LPTSTR)username, (LPDWORD)&maxLen);
         user = username;
 #else
-        user = VisItEnv::get("USER").c_str();
+        user = VisItEnv::get("USER");
         if (user == NULL)
-            user = VisItEnv::get("LOGNAME").c_str();
+            user = VisItEnv::get("LOGNAME");
         if(user == NULL)
             user = "user";
 #endif

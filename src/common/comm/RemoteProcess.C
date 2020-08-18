@@ -497,7 +497,7 @@ RemoteProcess::GetSocketAndPort()
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = htonl(INADDR_ANY);
     listenPortNum = INITIAL_PORT_NUMBER;
-    const char *visitPort = VisItEnv::get("VISIT_INITIAL_PORT").c_str();
+    const char *visitPort = VisItEnv::get("VISIT_INITIAL_PORT");
     if(visitPort != NULL)
     {
         listenPortNum = atoi(visitPort);
@@ -1747,7 +1747,7 @@ RemoteProcess::ExchangeTypeRepresentations()
 const char *
 RemoteProcess::SecureShell() const
 {
-    return VisItEnv::get("VISITSSH").c_str();
+    return VisItEnv::get("VISITSSH");
 }
 
 // ****************************************************************************
@@ -1772,7 +1772,7 @@ RemoteProcess::SecureShell() const
 const char *
 RemoteProcess::SecureShellArgs() const
 {
-    return VisItEnv::get("VISITSSHARGS").c_str();
+    return VisItEnv::get("VISITSSHARGS");
 }
 
 // ****************************************************************************

@@ -1940,7 +1940,7 @@ ReadInfo( hid_t file_id, const char* name,
         int npart;
         if( num!=0 )
         {
-            const char* spt = VisItEnv::get("PARALLEL_VELODYNE").c_str();
+            const char* spt = VisItEnv::get("PARALLEL_VELODYNE");
             if( spt==NULL )
             {
                 npart = default_number_of_partitions;

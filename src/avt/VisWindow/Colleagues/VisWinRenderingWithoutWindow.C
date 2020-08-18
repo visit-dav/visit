@@ -162,7 +162,7 @@ VisWinRenderingWithoutWindow::RenderRenderWindow(void)
     if(displayStatus == DS_NOT_CHECKED)
     {
         // On X11 systems not using mangled mesa, make sure that the DISPLAY is set.
-        if(VisItEnv::get("DISPLAY").empty())
+        if(VisItEnv::get("DISPLAY") == NULL)
             displayStatus = DS_NOT_AVAILABLE;
         else
             displayStatus = DS_AVAILABLE;

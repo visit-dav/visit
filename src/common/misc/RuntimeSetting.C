@@ -170,7 +170,7 @@ find_setting(const char *key, std::string &retval)
     // Now lookup from the environment variable, if it exists.
     if(VisItEnv::exists(s::settings[i].envvar))
     {
-        retval = VisItEnv::get(s::settings[i].envvar);
+        retval = std::string(VisItEnv::get(s::settings[i].envvar));
     }
 
     // Finally, check any overrides from cmd line options.

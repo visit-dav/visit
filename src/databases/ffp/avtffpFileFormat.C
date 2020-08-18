@@ -71,7 +71,7 @@ static int InitLibStripack()
 #ifdef WIN32
     HINSTANCE libh = NULL;
     if (VisItEnv::exists(envar))
-        libh = LoadLibrary(VisItEnv::get(envar).c_str());
+        libh = LoadLibrary(VisItEnv::get(envar));
     if (!libh)
         libh = LoadLibrary("libstripack.dll");
     if (!libh)
@@ -99,7 +99,7 @@ static int InitLibStripack()
     int const dlmode = RTLD_LAZY|RTLD_LOCAL;
     void *libh = 0;
     if (VisItEnv::exists(envar))
-        libh = dlopen(VisItEnv::get(envar).c_str(), dlmode);
+        libh = dlopen(VisItEnv::get(envar), dlmode);
     if (!libh)
         libh = dlopen("libstripack.so", dlmode);
     if (!libh)

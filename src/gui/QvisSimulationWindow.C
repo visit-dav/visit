@@ -1914,17 +1914,17 @@ QString
 QvisSimulationWindow::GetUIFileDirectory() const
 {
     // First look in user defined variable
-    QString dirName(VisItEnv::get("VISITSIMDIR").c_str());
+    QString dirName(VisItEnv::get("VISITSIMDIR"));
     // if still not defined then look in the users home directory
     if (dirName.isEmpty())
     {
-        dirName = VisItEnv::get("HOME").c_str();
+        dirName = VisItEnv::get("HOME");
         if (!dirName.isEmpty()) dirName += "/.visit/ui/";
     }
     // if not defined then look in global location
     if ( dirName.isEmpty())
     {
-        dirName = VisItEnv::get("VISITDIR").c_str();
+        dirName = VisItEnv::get("VISITDIR");
         if (!dirName.isEmpty()) dirName += "/ui/";
     }
 

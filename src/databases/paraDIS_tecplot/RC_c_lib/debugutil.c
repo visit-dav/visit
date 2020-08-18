@@ -90,8 +90,8 @@ void dbprintf(int level, const char *fmt, ...){
 static int check_verbose(void)
 {
     if (!iCheck) {
-        if (VisItEnv::get("DEBUG_VERBOSE").c_str()) {
-            iVerbose = atoi(VisItEnv::get("DEBUG_VERBOSE").c_str());
+        if (VisItEnv::get("DEBUG_VERBOSE")) {
+            iVerbose = atoi(VisItEnv::get("DEBUG_VERBOSE"));
         }
         iCheck = 1;
     }

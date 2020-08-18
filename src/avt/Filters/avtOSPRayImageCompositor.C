@@ -40,7 +40,7 @@ enum blendDirection {FRONT_TO_BACK = 0, BACK_TO_FRONT = 1};
 bool CheckThreadedBlend_Communicator()
 {
     bool use = true;
-    const char* env_use = VisItEnv::get("OSPRAY_SERIAL_BLEND").c_str();
+    const char* env_use = VisItEnv::get("OSPRAY_SERIAL_BLEND");
     if (env_use) { 
         use = atoi(env_use) <= 0; 
     }
@@ -102,7 +102,7 @@ const bool avtOSPRayIC_IceT::usage =
 bool avtOSPRayIC_IceT::CheckUsage()
 {
     bool use_icet = false;
-    const char* env_use_icet = VisItEnv::get("OSPRAY_USE_ICET").c_str();
+    const char* env_use_icet = VisItEnv::get("OSPRAY_USE_ICET");
     if (env_use_icet) { 
         use_icet = atoi(env_use_icet) > 0; 
     }
@@ -128,7 +128,7 @@ IceTEnum       avtOSPRayIC_IceT::CheckStrategy()
     if (avtOSPRayIC_IceT::Valid()) {
         IceTEnum ret;
         int strategy = 3;
-        const char* env_icet_strategy = VisItEnv::get("OSPRAY_ICET_STRATEGY").c_str();
+        const char* env_icet_strategy = VisItEnv::get("OSPRAY_ICET_STRATEGY");
         if (env_icet_strategy) { strategy = atoi(env_icet_strategy); }
         switch (strategy) {
         case 0:

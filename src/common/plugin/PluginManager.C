@@ -1372,7 +1372,7 @@ PluginManager::SetPluginDir(const char *PluginDir)
     if (PluginDir == 0)
     {
         // Get the plugin directory from the environment.
-        plugindir = VisItEnv::get("VISITPLUGINDIR").c_str();
+        plugindir = VisItEnv::get("VISITPLUGINDIR");
         if (!plugindir)
         {
             // No environment variable found.  If we have directories in the

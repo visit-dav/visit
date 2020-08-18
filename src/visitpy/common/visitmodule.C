@@ -16143,7 +16143,7 @@ visit_LoadUltra(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
 
-    std::string parserFile = VisItEnv::get("VISITULTRAHOME") +
+    std::string parserFile = std::string(VisItEnv::get("VISITULTRAHOME")) +
                         std::string("/ultraparse.py");
 
     PyObject *argTuple = PyTuple_New(1);
@@ -19051,9 +19051,9 @@ LaunchViewer(const char *visitProgram)
     //
     
     std::string visit_plugin_dir;
-    if(VisItEnv::get("VISITPLUGINDIR").c_str() != NULL)
+    if(VisItEnv::get("VISITPLUGINDIR") != NULL)
     {
-        visit_plugin_dir = VisItEnv::get("VISITPLUGINDIR");
+        visit_plugin_dir = std::string(VisItEnv::get("VISITPLUGINDIR"));
     }
     else
     {

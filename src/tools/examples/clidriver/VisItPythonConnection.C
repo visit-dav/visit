@@ -209,7 +209,7 @@ bool VisItPythonConnection::Open(vector<string> extraargs)
         close(to_sim);
 
         char visitpath[1024] = "visit";
-        const char *visithome = Environtment::get("VISITHOME").c_str();
+        const char *visithome = VisItEnv::get("VISITHOME");
         if (visithome)
         {
             sprintf(visitpath, "%s/bin/visit", visithome);

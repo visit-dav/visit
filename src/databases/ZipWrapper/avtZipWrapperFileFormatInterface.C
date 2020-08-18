@@ -300,9 +300,9 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     // Decide on root temporary directory
     if (tmpDir == "$TMPDIR" && procNum == 0)
     {
-        if (VisItEnv::get("TMPDIR").c_str())
+        if (VisItEnv::get("TMPDIR"))
         {
-            tmpDir = VisItEnv::get("TMPDIR").c_str();
+            tmpDir = VisItEnv::get("TMPDIR");
         }
         else
         {
@@ -325,20 +325,20 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
             }
             // Last resort, use HOME.
             if(!foundDir)
-                tmpDir = VisItEnv::get("HOME").c_str();
+                tmpDir = VisItEnv::get("HOME");
         }
     }
 
     // Decide on user name moniker
     if (userName == "$USER" && procNum == 0)
     {
-        if (VisItEnv::get("USER").c_str())
+        if (VisItEnv::get("USER"))
         {
-            userName = VisItEnv::get("USER").c_str();
+            userName = VisItEnv::get("USER");
         }
-        else if (VisItEnv::get("USERNAME").c_str())
+        else if (VisItEnv::get("USERNAME"))
         {
-            userName = VisItEnv::get("USERNAME").c_str();
+            userName = VisItEnv::get("USERNAME");
         }
         else
         {

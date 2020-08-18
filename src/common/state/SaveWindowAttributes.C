@@ -185,14 +185,14 @@ void SaveWindowAttributes::Init()
     outputToCurrentDirectory = true;
 #endif
 #if defined(_WIN32)
-    const char *visitHome = VisItEnv::get("VISITUSERHOME").c_str();
+    const char *visitHome = VisItEnv::get("VISITUSERHOME");
     if(visitHome != 0)
     {
         outputDirectory = std::string(visitHome) + "\\My images";
     }
     else
     {
-        visitHome = VisItEnv::get("VISITHOME").c_str();
+        visitHome = VisItEnv::get("VISITHOME");
         if(visitHome != 0)
         {
             outputDirectory = std::string(visitHome) + "\\My images";

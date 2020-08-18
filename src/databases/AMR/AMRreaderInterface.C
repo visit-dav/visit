@@ -53,7 +53,7 @@ AMRreaderInterface *
 InstantiateAMRreader()
 {
     int typ=0;
-    const char* amrlvl=VisItEnv::get("AMRLEVEL").c_str();
+    const char* amrlvl=VisItEnv::get("AMRLEVEL");
     if( amrlvl )
         typ = atoi(amrlvl);
 

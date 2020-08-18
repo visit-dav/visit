@@ -253,8 +253,8 @@ avtCarpetHDF5FileFormat::BuildDomainAuxiliaryInfo(int timeState)
     int num_dims = dim;   // defined in vtCarpetHDF5FileFormat.h as 'static const int dim = 3;'
     int num_levels = data_file->timesteps[timeState].max_cart_rl;
     int num_patches = data_file->timesteps[timeState].cart_comp[0].size();
-    int visit_2d_granularity_fudge = (VisItEnv::get("VISIT_2D_GRANULARITY_FUDGE").c_str() != NULL) &&
-                                     (strcmp(VisItEnv::get("VISIT_2D_GRANULARITY_FUDGE").c_str(), "yes") == 0);
+    int visit_2d_granularity_fudge = (VisItEnv::get("VISIT_2D_GRANULARITY_FUDGE") != NULL) &&
+                                     (strcmp(VisItEnv::get("VISIT_2D_GRANULARITY_FUDGE"), "yes") == 0);
 
     // first, look to see if we don't already have it cached
     void_ref_ptr vrTmp = cache->GetVoidRef("any_mesh",
@@ -804,11 +804,11 @@ void avtCarpetHDF5FileFormat::open_all_files(const char* fname)
 
 avtCarpetHDF5FileFormat::multi_file* avtCarpetHDF5FileFormat::open_cached_file(const string fname)
 {
-  if(VisItEnv::get("CARPETHDF5_CACHE_METADATA").c_str() && 
+  if(VisItEnv::get("CARPETHDF5_CACHE_METADATA") && 
 #ifdef _WIN32
-     stricmp(VisItEnv::get("CARPETHDF5_CACHE_METADATA").c_str(), "no") == 0)
+     stricmp(VisItEnv::get("CARPETHDF5_CACHE_METADATA"), "no") == 0)
 #else
-     strcasecmp(VisItEnv::get("CARPETHDF5_CACHE_METADATA").c_str(), "no") == 0)
+     strcasecmp(VisItEnv::get("CARPETHDF5_CACHE_METADATA"), "no") == 0)
 #endif
     return new multi_file(fname.c_str());
 

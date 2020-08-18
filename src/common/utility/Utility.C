@@ -663,7 +663,7 @@ GetSSHClient(std::string &sshClient)
 {
     bool retval = false;
     const char *s = NULL;
-    if((s = VisItEnv::get("SSH_CLIENT").c_str()) != NULL)
+    if((s = VisItEnv::get("SSH_CLIENT")) != NULL)
     {
         stringVector sv = SplitValues(s, ' ');
         if(sv.size() > 0)
@@ -672,7 +672,7 @@ GetSSHClient(std::string &sshClient)
             sshClient = sv[0];
         }
     }
-    else if((s = VisItEnv::get("SSH2_CLIENT").c_str()) != NULL)
+    else if((s = VisItEnv::get("SSH2_CLIENT")) != NULL)
     {
         stringVector sv = SplitValues(s, ' ');
         if(sv.size() > 0)
@@ -681,7 +681,7 @@ GetSSHClient(std::string &sshClient)
             sshClient = sv[0];
         }
     }
-    else if((s = VisItEnv::get("SSH_CONNECTION").c_str()) != NULL)
+    else if((s = VisItEnv::get("SSH_CONNECTION")) != NULL)
     {
         stringVector sv = SplitValues(s, ' ');
         if(sv.size() > 0)

@@ -505,7 +505,7 @@ avtUintahFileFormat::ActivateTimestep(int ts)
 void
 avtUintahFileFormat::AddExpressionsToMetadata(avtDatabaseMetaData *md)
 {
-  std::string home(VisItEnv::get("HOME").c_str());
+  std::string home(VisItEnv::get("HOME"));
   std::string fname = home +"/.visit/udaExpressions.txt";
 
   FILE *f = fopen(fname.c_str(), "r");
