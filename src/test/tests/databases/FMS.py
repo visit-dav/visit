@@ -4,7 +4,7 @@
 #  Test Case:  FMS.py
 #
 #  Tests:      mesh      - high order meshes
-#              plots     - Mesh, Pseudocolor, FilledBoundary
+#              plots     - Mesh, Pseudocolor
 #
 #  Programmer: Brad Whitlock
 #  Date:       Tue Aug  4 11:25:39 PDT 2020
@@ -324,6 +324,228 @@ def test9(datapath):
     DeleteAllPlots()
     CloseDatabase(db1)
 
+def plot_converted_data(prefix, db, var, v0, resolution, meshName, dodof):
+    OpenDatabase(db)
+
+    # Get the metadata
+    md = GetMetaData(db)
+    TestText(prefix+"_00", FilterMetaData(str(md)))
+
+    AddPlot("Pseudocolor", var)
+    pc = PseudocolorAttributes()
+    pc.colorTableName = "hot_desaturated"
+    SetPlotOptions(pc)
+    AddOperator("MultiresControl")
+    mra = MultiresControlAttributes()
+    mra.resolution = resolution
+    mra.maxResolution = 100
+    SetOperatorOptions(mra)
+    DrawPlots()
+
+    # Try setting the view.
+    try:
+        SetView3D(v0)
+    except:
+        try:
+            SetView2D(v0)
+        except:
+            ResetView()
+
+
+    Test(prefix + "_01")
+
+    # Add a mesh plot of the boundaries and refine them.
+    if meshName != "":
+        AddPlot("Mesh", meshName, 1, 1)
+        m = MeshAttributes(1)
+        m.lineWidth = 1
+        SetPlotOptions(m)
+        DrawPlots()
+        Test(prefix + "_02")
+
+    # Add a mesh plot of the dofs.
+    if dodof:
+        AddPlot("Mesh", "dofs", 0, 0)
+        m2 = MeshAttributes(1)
+        m2.meshColor = (255, 0, 0, 255)
+        m2.meshColorSource = m2.MeshCustom  # Foreground, MeshCustom, MeshRandom
+        m2.pointSize = 0.075
+        m2.opaqueColor = (255, 255, 255, 255)
+        m2.pointType = m2.SphereGeometry  # Box, Axis, Icosahedron, Octahedron, Tetrahedron, SphereGeometry, Point, Sphere
+        m2.pointSizePixels = 10
+        m2.opacity = 1
+        SetPlotOptions(m2)
+        DrawPlots()
+        Test(prefix + "_03")
+
+    DeleteAllPlots()
+    CloseDatabase(db)
+
+def escher_view():
+    v0 = GetView3D()
+    v0.viewNormal = (0.301943, 0.349059, 0.887124)
+    v0.focus = (0.015155, 0.00931501, 0.00220501)
+    v0.viewUp = (-0.108572, 0.937093, -0.331767)
+    v0.viewAngle = 30
+    v0.parallelScale = 2.69081
+    v0.nearPlane = -5.38163
+    v0.farPlane = 5.38163
+    v0.imagePan = (-0.011426, -0.0216873)
+    v0.imageZoom = 1.62652
+    v0.perspective = 1
+    v0.eyeAngle = 2
+    v0.centerOfRotationSet = 0
+    v0.centerOfRotation = (0.015155, 0.00931501, 0.00220501)
+    v0.axis3DScaleFlag = 0
+    v0.axis3DScales = (1, 1, 1)
+    v0.shear = (0, 0, 1)
+    v0.windowValid = 1
+    return v0
+
+def test10(datapath):
+    TestSection("Converted MFEM data: escher-p3-0ref")
+    db = pjoin(datapath,"converted-data/escher-p3-0ref/Example5_000000.fms")
+
+    v0 = escher_view()
+    plot_converted_data("FMS_10", db, "pressure", v0, 5, "boundary", True)
+
+def test11(datapath):
+    TestSection("Converted MFEM data: escher-p3")
+    db = pjoin(datapath,"converted-data/escher-p3/Example5_000000.fms")
+
+    v0 = escher_view()
+    plot_converted_data("FMS_11", db, "pressure", v0, 4, "boundary", False)
+
+def test12(datapath):
+    TestSection("Converted MFEM data: Example15")
+    db = pjoin(datapath,"converted-data/Example15/Example15_000000.fms")
+
+    v0 = GetView2D()
+    v0.windowCoords = (-1.74594, 1.76718, -1.7, 1.55366)
+    v0.viewportCoords = (0.01, 0.99, 0.01, 0.99)
+    v0.fullFrameActivationMode = v0.Auto  # On, Off, Auto
+    v0.fullFrameAutoThreshold = 100
+    v0.xScale = v0.LINEAR  # LINEAR, LOG
+    v0.yScale = v0.LINEAR  # LINEAR, LOG
+    v0.windowValid = 1
+
+    plot_converted_data("FMS_12", db, "solution", v0, 8, "boundary", True)
+
+def test13(datapath):
+    TestSection("Converted MFEM data: Example9")
+    db = pjoin(datapath,"converted-data/Example9/Example9_000000.fms")
+
+    v0 = GetView2D()
+    v0.windowCoords = (-1, 1, -0.966025, 0.866025)
+    v0.viewportCoords = (0.01, 0.99, 0.01, 0.99)
+    v0.fullFrameActivationMode = v0.Auto  # On, Off, Auto
+    v0.fullFrameAutoThreshold = 100
+    v0.xScale = v0.LINEAR  # LINEAR, LOG
+    v0.yScale = v0.LINEAR  # LINEAR, LOG
+    v0.windowValid = 1
+
+    plot_converted_data("FMS_13", db, "solution", v0, 8, "", False)
+
+def fichera_view():
+    v0 = GetView3D()
+    v0.viewNormal = (0.76587, 0.438546, -0.470235)
+    v0.focus = (0.00682861, 0.00298607, -0.00561833)
+    v0.viewUp = (-0.368491, 0.898664, 0.237945)
+    v0.viewAngle = 30
+    v0.parallelScale = 1.82615
+    v0.nearPlane = -3.6523
+    v0.farPlane = 3.6523
+    v0.imagePan = (0.00522255, 0.0292194)
+    v0.imageZoom = 1.09494
+    v0.perspective = 1
+    v0.eyeAngle = 2
+    v0.centerOfRotationSet = 0
+    v0.centerOfRotation = (0.00682861, 0.00298607, -0.00561833)
+    v0.axis3DScaleFlag = 0
+    v0.axis3DScales = (1, 1, 1)
+    v0.shear = (0, 0, 1)
+    v0.windowValid = 1
+    return v0
+
+def test14(datapath):
+    TestSection("Converted MFEM data: fichera-q2-0ref")
+    db = pjoin(datapath,"converted-data/fichera-q2-0ref/Example5_000000.fms")
+
+    v0 = fichera_view()
+    plot_converted_data("FMS_14", db, "pressure", v0, 8, "boundary", True)
+
+def test15(datapath):
+    TestSection("Converted MFEM data: fichera-q2")
+    db = pjoin(datapath,"converted-data/fichera-q2/Example5_000000.fms")
+
+    v0 = fichera_view()
+    plot_converted_data("FMS_15", db, "pressure", v0, 4, "boundary", False)
+
+def test16(datapath):
+    TestSection("Converted MFEM data: star-q3-0ref")
+    db = pjoin(datapath,"converted-data/star-q3-0ref/Example5_000000.fms")
+
+    v0 = GetView2D()
+    v0.windowCoords = (-1.8181, 1.8181, -1.7, 1.58418)
+    v0.viewportCoords = (0.01, 0.99, 0.01, 0.99)
+    v0.fullFrameActivationMode = v0.Auto  # On, Off, Auto
+    v0.fullFrameAutoThreshold = 100
+    v0.xScale = v0.LINEAR  # LINEAR, LOG
+    v0.yScale = v0.LINEAR  # LINEAR, LOG
+    v0.windowValid = 1
+
+    plot_converted_data("FMS_16", db, "pressure", v0, 8, "mesh", True)
+
+def test17(datapath):
+    TestSection("Converted MFEM data: star-q3")
+    db = pjoin(datapath,"converted-data/star-q3/Example5_000000.fms")
+
+    v0 = GetView2D()
+    v0.windowCoords = (-1.8181, 1.8181, -1.7, 1.58418)
+    v0.viewportCoords = (0.01, 0.99, 0.01, 0.99)
+    v0.fullFrameActivationMode = v0.Auto  # On, Off, Auto
+    v0.fullFrameAutoThreshold = 100
+    v0.xScale = v0.LINEAR  # LINEAR, LOG
+    v0.yScale = v0.LINEAR  # LINEAR, LOG
+    v0.windowValid = 1
+
+    plot_converted_data("FMS_17", db, "pressure", v0, 4, "boundary", False)
+
+def toroid_view():
+    v0 = GetView3D()
+    v0.viewNormal = (0, 0, 1)
+    v0.focus = (-0.0503261, 0, 0)
+    v0.viewUp = (0, 1, 0)
+    v0.viewAngle = 30
+    v0.parallelScale = 1.96586
+    v0.nearPlane = -3.93172
+    v0.farPlane = 3.93172
+    v0.imagePan = (0, 0)
+    v0.imageZoom = 1.29234
+    v0.perspective = 1
+    v0.eyeAngle = 2
+    v0.centerOfRotationSet = 0
+    v0.centerOfRotation = (-0.0503261, 0, 0)
+    v0.axis3DScaleFlag = 0
+    v0.axis3DScales = (1, 1, 1)
+    v0.shear = (0, 0, 1)
+    v0.windowValid = 1
+    return v0
+
+def test18(datapath):
+    TestSection("Converted MFEM data: toroid-hex-0ref")
+    db = pjoin(datapath,"converted-data/toroid-hex-0ref/Example5_000000.fms")
+
+    v0 = toroid_view()
+    plot_converted_data("FMS_18", db, "pressure", v0, 8, "mesh", True)
+
+def test19(datapath):
+    TestSection("Converted MFEM data: toroid-hex")
+    db = pjoin(datapath,"converted-data/toroid-hex/Example5_000000.fms")
+
+    v0 = toroid_view()
+    plot_converted_data("FMS_19", db, "pressure", v0, 4, "boundary", False)
+
 def main():
     RequiredDatabasePlugin("FMS")
 
@@ -345,6 +567,17 @@ def main():
     test8(datapath)
     # root
     test9(datapath)
+    # Datasets that were converted from MFEM to FMS
+    test10(datapath)
+    test11(datapath)
+    test12(datapath)
+    test13(datapath)
+    test14(datapath)
+    test15(datapath)
+    test16(datapath)
+    test17(datapath)
+    test18(datapath)
+    test19(datapath)
 
 main()
 Exit()
