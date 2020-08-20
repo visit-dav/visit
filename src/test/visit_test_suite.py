@@ -981,6 +981,8 @@ def rsync_post(src_dir,rsync_dest):
 #  Note: This code was refactored from main()
 #
 #  Modifications:
+#   Kathleen Biagas, Thu Aug 20 16:21:21 PDT 2020
+#   Fix if-test for relative-to-tests-dir (remove not).
 #
 # ----------------------------------------------------------------------------
 def resolve_test_paths(tests,tests_dir):
@@ -993,7 +995,7 @@ def resolve_test_paths(tests,tests_dir):
         # if not, assume it is relative to tests dir
         else:
             t_abs_path = abs_path(pjoin(tests_dir, "..",t))
-            if not os.path.isfile(t_abs_path):
+            if os.path.isfile(t_abs_path):
                 res.append(t_abs_path)
             else:
                 print("[WARNING: could not find test file: {}]".format(t_abs_path))
