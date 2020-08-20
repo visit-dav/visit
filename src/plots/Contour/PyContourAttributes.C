@@ -1361,8 +1361,8 @@ static PyObject *
 ContourAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &ContourAttributesType)
+    if ( Py_TYPE(self) != &ContourAttributesType
+         || Py_TYPE(other) != &ContourAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

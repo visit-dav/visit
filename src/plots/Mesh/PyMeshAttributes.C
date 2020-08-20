@@ -1049,8 +1049,8 @@ static PyObject *
 MeshAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &MeshAttributesType)
+    if ( Py_TYPE(self) != &MeshAttributesType
+         || Py_TYPE(other) != &MeshAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

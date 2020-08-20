@@ -721,8 +721,8 @@ static PyObject *
 ResampleAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &ResampleAttributesType)
+    if ( Py_TYPE(self) != &ResampleAttributesType
+         || Py_TYPE(other) != &ResampleAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

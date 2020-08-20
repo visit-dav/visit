@@ -596,8 +596,8 @@ static PyObject *
 ViewerClientAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &ViewerClientAttributesType)
+    if ( Py_TYPE(self) != &ViewerClientAttributesType
+         || Py_TYPE(other) != &ViewerClientAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

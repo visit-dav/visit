@@ -1202,8 +1202,8 @@ static PyObject *
 PDFAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &PDFAttributesType)
+    if ( Py_TYPE(self) != &PDFAttributesType
+         || Py_TYPE(other) != &PDFAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

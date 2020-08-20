@@ -470,8 +470,8 @@ static PyObject *
 QueryAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &QueryAttributesType)
+    if ( Py_TYPE(self) != &QueryAttributesType
+         || Py_TYPE(other) != &QueryAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

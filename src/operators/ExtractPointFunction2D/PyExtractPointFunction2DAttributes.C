@@ -334,8 +334,8 @@ static PyObject *
 ExtractPointFunction2DAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &ExtractPointFunction2DAttributesType)
+    if ( Py_TYPE(self) != &ExtractPointFunction2DAttributesType
+         || Py_TYPE(other) != &ExtractPointFunction2DAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

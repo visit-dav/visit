@@ -2437,8 +2437,8 @@ static PyObject *
 LineSamplerAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &LineSamplerAttributesType)
+    if ( Py_TYPE(self) != &LineSamplerAttributesType
+         || Py_TYPE(other) != &LineSamplerAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

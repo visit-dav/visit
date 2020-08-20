@@ -882,8 +882,8 @@ static PyObject *
 IndexSelectAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &IndexSelectAttributesType)
+    if ( Py_TYPE(self) != &IndexSelectAttributesType
+         || Py_TYPE(other) != &IndexSelectAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
