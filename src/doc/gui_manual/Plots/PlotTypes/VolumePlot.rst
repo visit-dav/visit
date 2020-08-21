@@ -32,20 +32,20 @@ different scalar values.
 Rendering Options
 """""""""""""""""
 
-The Volume plot uses hardware-accelerated graphics by default. While you will
+The Volume plot uses hardware-accelerated graphics by default. While users will
 want to operate in this mode most of the time, since it's faster, images drawn
 by software are more accurate. To get a more accurate image, select a
 **Ray casting** option from the **Rendering method** combo box. When the Volume plot
-is set to use ray casting as its rendering mode, VisIt recalculates what the
+is set to use ray casting as its rendering mode, VisIt_ recalculates what the
 image should look like in software mode. Note that this can be a time-consuming
 process if the database being used is large or if the visualization window is
 large. We recommend shrinking the size of the visualization window before
 changing the rendering method to ray casting to reduce the time and resources
-required to draw the plot. It is worth noting that if you have a large dataset
+required to draw the plot. It is worth noting that if the user has a large dataset
 with intricate details, the software volume rendering method is the best method
 to use because it scales well in parallel. Using a parallel compute engine can
 greatly speed up the rate at which software volume rendering operates as long
-as the dataset is domain-decomposed into equal-sized pieces.
+as the dataset is domain-decomposed into roughly equal-sized pieces.
 The third volume-rendering technique, called ray-casting, used by the Volume
 plot is not hardware accelerated. In ray-casting, a ray is followed in reverse
 from the computer screen into the dataset. As a ray progresses through the
@@ -89,7 +89,7 @@ memory use.
    
    Ray casting: SLIVR options
 
-**Rendering Method: Ray casting: OSPRay** (:numref:`Figure %s<raycasting_ospray_atts_window>`). OSPRay is an Open source, Scalable, and Portable Ray tracing engine for volume-rendering on Intel Architecure CPUs.
+**Rendering Method: Ray casting: OSPRay** (:numref:`Figure %s<raycasting_ospray_atts_window>`). `OSPRay <https://www.ospray.org>`_  is an Open source, Scalable, and Portable Ray tracing engine for volume-rendering on Intel Architecure CPUs.
 
 ``AO Samples``: determines the number of rays per sample to compute ambient occlusion. 
 
@@ -102,7 +102,7 @@ memory use.
    Ray casting: OSPRay options
 
 The Volume plot can use lighting to enhance the look of the plot. Lighting is
-enabled by default but you can disable it by unchecking the **Lighting** check
+enabled by default but the user can disable it by unchecking the **Lighting** check
 box near the bottom of the window.
 
 ``Ambient``: ambient light weight in [0-1]
@@ -135,10 +135,10 @@ smaller range of values, resulting in a plot with more color variety.
 
 To set the limits are set by first clicking the **Min** 
 or **Max** check box next to the **Min** or **Max** text field. Clicking a
-check box enables a text field into which you can type a new minimum or
+check box enables a text field into which the user can type a new minimum or
 maximum value.
 
-Like VisIt's other plots that map scalar values to colors, the Volume plot
+Like VisIt_'s other plots that map scalar values to colors, the Volume plot
 allows for the data values to be scaled using Linear, Log, and Skew functions.
 To select a scaling function other than linear where values in the data range
 are mapped 1:1 to values in the color range, click on the **Log** or **Skew**
@@ -147,7 +147,7 @@ radio buttons.
 Setting opacities
 """""""""""""""""
 
-The **Transfer function** tab provides several controls that allow you
+The **Transfer function** tab provides several controls that allow the user 
 to define the opacity portion of the volume transfer function. The opacity
 portion of the volume transfer function determines what can be seen in the
 volume-rendered image. Data values with a lower opacity allow more to be seen
@@ -187,7 +187,7 @@ value. Taller curves are more opaque while shorter curves are more transparent.
 
 To design an opacity map using the **Freeform** control, position the mouse over
 it and click the left mouse button while moving the mouse. The shape traced by
-the mouse is entered into the **Freeform** control so you can draw the desired
+the mouse is entered into the **Freeform** control so that the user can draw the desired
 opacity curve. Immediately under the **Freeform** control, there are four
 buttons, shown in (:numref:`Figure %s<volume_plot_freeform>`), which can be
 used to manipulate the curve. The first three buttons initialize a new curve.
@@ -209,8 +209,7 @@ to yield the desired opacity curve. You add new curves by clicking and dragging
 in the control. Right clicking with the mouse on an existing curve removes the
 curve. Each curve has five control points which can change the curve's position
 and shape. The control points are shown in along with the shapes that a curve
-can assume. A control point changes color when it becomes active so there you
-know which control point is used. Curves start as a smooth Gaussian shape but
+can assume. A control point changes color when it becomes active so that the user knows which control point is used. Curves start as a smooth Gaussian shape but
 they can change between the shapes shown in by moving the shape control point
 up and down or left and right. Opacity maps are typically created by adding
 several curves to the window and altering their shapes and sizes until the
@@ -225,7 +224,7 @@ Changing the opacity variable
 
 The variable used to determine opacity does not have to be the plotted
 variable. Having a different opacity variable than the plotted variable
-is useful for instances in which you want to determine the opacity using a
+is useful for instances in which the user wants to determine the opacity using a
 variable like density while coloring the plot by another variable such as
 pressure. To change the opacity variable, select a new variable from the
 **Opacity variable** variable menu. By default, the plotted variable is
@@ -246,13 +245,13 @@ points, enter a larger number into the **Number of samples** text field.
 When the Volume plot is drawn in ray casting mode, the number of samples along
 each ray that is cast through the data becomes important. Having too few sample
 points along a ray gives rise to sampling artifacts such as rings or voids.
-You should adjust this number until you are satisfied with the image. More
+The user should adjust this number until they are satisfied with the image. More
 samples generally produce a better image, though the image will take longer to
 produce. To change the number of samples per ray, enter a new number of samples
 per ray into the **Samples per ray** text field.
 
 When using lighting, the gradient calculation method that the Volume plot uses
-influences the quality of the images that are produced. By default, VisIt uses
+influences the quality of the images that are produced. By default, VisIt_ uses
 the Sobel operator, which uses more information from adjacent cells to
 calculate a gradient. When the Sobel operator is used to calculate the gradient,
 lighting usually looks better. The alternative gradient calculation method is
