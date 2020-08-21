@@ -86,10 +86,17 @@ QvisTessellateWindow::CreateWindowContents()
             this, SLOT(chordErrorProcessText()));
     mainLayout->addWidget(chordError, 0,1);
 
+    fieldCriterionLabel = new QLabel(tr("Field criterion"), central);
+    mainLayout->addWidget(fieldCriterionLabel,1,0);
+    fieldCriterion = new QLineEdit(central);
+    connect(fieldCriterion, SIGNAL(editingFinished()),
+            this, SLOT(fieldCriterionProcessText()));
+    mainLayout->addWidget(fieldCriterion, 1,1);
+
     mergePoints = new QCheckBox(tr("Merge points"), central);
     connect(mergePoints, SIGNAL(toggled(bool)),
             this, SLOT(mergePointsChanged(bool)));
-    mainLayout->addWidget(mergePoints, 1,0);
+    mainLayout->addWidget(mergePoints, 2,0);
 
 }
 
@@ -127,6 +134,9 @@ QvisTessellateWindow::UpdateWindow(bool doAll)
         {
           case TessellateAttributes::ID_chordError:
             chordError->setText(DoubleToQString(atts->GetChordError()));
+            break;
+          case TessellateAttributes::ID_fieldCriterion:
+            fieldCriterion->setText(DoubleToQString(atts->GetFieldCriterion()));
             break;
           case TessellateAttributes::ID_mergePoints:
             mergePoints->blockSignals(true);
@@ -172,6 +182,20 @@ QvisTessellateWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do fieldCriterion
+    if(which_widget == TessellateAttributes::ID_fieldCriterion || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(fieldCriterion, val))
+            atts->SetFieldCriterion(val);
+        else
+        {
+            ResettingError(tr("Field criterion"),
+                DoubleToQString(atts->GetFieldCriterion()));
+            atts->SetFieldCriterion(atts->GetFieldCriterion());
+        }
+    }
+
 }
 
 
@@ -184,6 +208,14 @@ void
 QvisTessellateWindow::chordErrorProcessText()
 {
     GetCurrentValues(TessellateAttributes::ID_chordError);
+    Apply();
+}
+
+
+void
+QvisTessellateWindow::fieldCriterionProcessText()
+{
+    GetCurrentValues(TessellateAttributes::ID_fieldCriterion);
     Apply();
 }
 

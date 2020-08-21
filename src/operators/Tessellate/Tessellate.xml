@@ -4,6 +4,9 @@
       <Field name="chordError" label="Chord error" type="double">
         0.035
       </Field>
+      <Field name="fieldCriterion" label="Field criterion" type="double">
+        0.035
+      </Field>
       <Field name="mergePoints" label="Merge points" type="bool">
         true
       </Field>

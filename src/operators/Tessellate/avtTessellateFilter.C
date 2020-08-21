@@ -8,6 +8,7 @@
 
 #include <avtTessellateFilter.h>
 
+#include <vtkPointData.h>
 #include <vtkTessellatorFilter.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -125,6 +126,8 @@ avtTessellateFilter::ExecuteData(avtDataRepresentation *in_dr)
 
     tessellator->SetInputData(in_ds);
     tessellator->SetChordError(atts.GetChordError());
+    for (int i = 0; i < in_ds->GetPointData()->GetNumberOfArrays(); i++)
+        tessellator->SetFieldCriterion(i, atts.GetFieldCriterion());
     tessellator->SetMergePoints(atts.GetMergePoints());
     tessellator->Update();
 
