@@ -50,7 +50,7 @@ stages:
     pool:
       vmImage: 'ubuntu-16.04'
     timeoutInMinutes: 0
-    container: $(container_tag)
+    container: ${{ variables.container_tag }}
     variables:
       TPLS_PATH: /home/ci/masonry/build-mb-develop-ci-smoke/thirdparty_shared/third_party/
       CMAKE_VERSION: 3.9.3
