@@ -575,8 +575,8 @@ static PyObject *
 Expression_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &ExpressionType)
+    if ( Py_TYPE(self) != &ExpressionType
+         || Py_TYPE(other) != &ExpressionType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

@@ -279,8 +279,8 @@ static PyObject *
 AxisLabels_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &AxisLabelsType)
+    if ( Py_TYPE(self) != &AxisLabelsType
+         || Py_TYPE(other) != &AxisLabelsType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

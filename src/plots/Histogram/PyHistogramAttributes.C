@@ -1062,8 +1062,8 @@ static PyObject *
 HistogramAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &HistogramAttributesType)
+    if ( Py_TYPE(self) != &HistogramAttributesType
+         || Py_TYPE(other) != &HistogramAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

@@ -272,8 +272,8 @@ static PyObject *
 SphereSliceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &SphereSliceAttributesType)
+    if ( Py_TYPE(self) != &SphereSliceAttributesType
+         || Py_TYPE(other) != &SphereSliceAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
