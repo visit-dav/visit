@@ -1,62 +1,35 @@
-#!/bin/bash
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
 
-# remove old source tarball if it exists
+#
+# Helper script that drives our docker build and tag for ci
+#
 
-###############################################################################
-# Copyright (c) 2015-2019, Lawrence Livermore National Security, LLC.
-#
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-716457
-#
-# All rights reserved.
-#
-# This file is part of Ascent.
-#
-# For details, see: http://ascent.readthedocs.io/.
-#
-# Please also read ascent/LICENSE
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the disclaimer below.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the disclaimer (as noted below) in the
-#   documentation and/or other materials provided with the distribution.
-#
-# * Neither the name of the LLNS/LLNL nor the names of its contributors may
-#   be used to endorse or promote products derived from this software without
-#   specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-# LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-# IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-#
-###############################################################################
 import os
 import sys
 import subprocess
 import shutil
+import datetime
 
 from os.path import join as pjoin
 
 def remove_if_exists(path):
+    """
+    Removes a file system path if it exists.
+    """
     if os.path.isfile(path):
         os.remove(path) 
     if os.path.isdir(path):
         shutil.rmtree(path)
+
+def timestamp(t=None,sep="-"):
+    """ Creates a timestamp that can easily be included in a filename. """
+    if t is None:
+        t = datetime.datetime.now()
+    sargs = (t.year,t.month,t.day)
+    sbase = "".join(["%04d",sep,"%02d",sep,"%02d"])
+    return  sbase % sargs
 
 def sexe(cmd,ret_output=False,echo = True):
     """ Helper for executing shell commands. """
@@ -73,25 +46,54 @@ def sexe(cmd,ret_output=False,echo = True):
     else:
         return subprocess.call(cmd,shell=True)
 
+def git_hash():
+    """
+    Returns the current git repo hash, or UNKNOWN
+    """
+    res = "UNKNOWN"
+    rcode,rout = sexe("git rev-parse HEAD",ret_output=True)
+    if rcode == 0:
+        res = rout
+    return res;
+
+def gen_docker_tag():
+    """
+    Creates a useful docker tag for the current build.
+    """
+    ghash = git_hash()
+    if ghash != "UNKNOWN":
+        ghash = ghash[:6]
+    return timestamp() + "-sha" + ghash
+
 def main():
     # clean up tarballs we push into the container
     remove_if_exists("visit.masonry.docker.src.tar")
     remove_if_exists("visit.build_visit.docker.src.tar")
+
+    # save current working dir so we can get back here
     orig_dir = os.path.abspath(os.getcwd())
+
+    # move to dir with masonry and build_viist
     os.chdir("../../../src/tools/dev")
+
     # get current copy of masonry
-    sexe('tar -czvf {0} --exclude "build-*" --exclude "*.pyc" masonry'.format(pjoin(orig_dir,
-                                                                              "visit.masonry.docker.src.tar")))
+    cmd ='tar -czvf {0} --exclude "build-*" --exclude "*.pyc" masonry'
+    sexe(cmd.format(pjoin(orig_dir, "visit.masonry.docker.src.tar")))
+
     # get current copy of build_visit from this branch
     os.chdir("scripts")
-    sexe('tar -czvf {0} --exclude "build-*" --exclude "*.pyc" build_visit bv_support'.format(pjoin(orig_dir,
-                                                                                             "visit.build_visit.docker.src.tar")))
+    cmd = 'tar -czvf {0} --exclude "build-*" --exclude "*.pyc" build_visit bv_support' 
+    sexe(cmd.format(pjoin(orig_dir, "visit.build_visit.docker.src.tar")))
+
+    # change back to orig working dir
     os.chdir(orig_dir)
+
     # exec docker build to create image
     # note: --squash requires docker runtime with experimental 
     # docker features enabled. It combines all the layers into
     # a more compact final image to save disk space.
-    sexe('docker build -t visit-ci-develop:current . --squash')
+    # tag with date + git hash
+    sexe('docker build -t visit-ci-develop:{0} . --squash'.format(gen_docker_tag()))
 
 if __name__ == "__main__":
     main()

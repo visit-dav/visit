@@ -1,3 +1,6 @@
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
 FROM ubuntu:xenial
 MAINTAINER Cyrus Harrison <cyrush@llnl.gov>
 
@@ -21,7 +24,7 @@ RUN apt-get update && apt-get install -y \
     libx11-xcb-dev \
     libxcb-dri2-0-dev \
     libxcb-xfixes0-dev \
-    libffi-dev \ 
+    libffi-dev \
     xutils-dev \
     xorg-dev \
     libfreetype6-dev \
@@ -46,10 +49,11 @@ RUN tar -xzf visit.masonry.docker.src.tar
 # untar the current build_visit source (created as part of build_docker_visit_ci.py)
 RUN mkdir -p /home/ci/masonry/build-mb-develop-ci-smoke/visit/src/tools/dev/scripts/
 COPY visit.build_visit.docker.src.tar /home/ci/masonry
+COPY masonry_docker_ci_cleanup.py /home/ci
 RUN cd /home/ci/masonry/build-mb-develop-ci-smoke/visit/src/tools/dev/scripts/ && tar -xzf /home/ci/masonry/visit.build_visit.docker.src.tar
 
 # call masonry to build tpls
-#RUN cd masonry && python bootstrap_visit.py opts/mb-develop-ci-smoke.json
+RUN cd masonry && python bootstrap_visit.py opts/mb-develop-ci-smoke.json
+
 # cleanup extract build dirs and obtain the config site file
-#COPY masonry_docker_ci_cleanup.py /home/ci
-#RUN python masonry_docker_ci_cleanup.py
+RUN python masonry_docker_ci_cleanup.py

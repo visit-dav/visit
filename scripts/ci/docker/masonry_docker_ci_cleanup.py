@@ -1,3 +1,7 @@
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
 #
 # Helper script to cleanup tpl build dirs to reduce
 # our docker image size
@@ -19,8 +23,6 @@ def check_to_keep(path):
     res = False
     if path.count("third_party") > 0:
         res = True
-    elif path.endswith(".cmake"):
-        res = True
     return res
     
 def cleanup_tpl_build_dirs():
@@ -40,8 +42,9 @@ def copy_config_site():
      shutil.copyfile(cfg_site,dest)
 
 def main():
-    cleanup_tpl_build_dirs()
     copy_config_site()
+    cleanup_tpl_build_dirs()
+
 
 if __name__ == "__main__":
     main()
