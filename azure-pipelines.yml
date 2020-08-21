@@ -41,7 +41,7 @@ stages:
           # NOTE FOR AZURE: 
           # only return code of the command is checked!
         displayName: 'Example Fast Check'
-3
+
 # main checks build using docker containers that
 # include tpls built with build_visit
 - stage: Main
