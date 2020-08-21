@@ -52,7 +52,7 @@ stages:
     timeoutInMinutes: 0
     container: ${{ variables.container_tag }}
     variables:
-      TPLS_PATH: /home/ci/masonry/build-mb-develop-ci-smoke/thirdparty_shared/third_party/
+      TPLS_PATH: /masonry/build-mb-develop-ci-smoke/thirdparty_shared/third_party/
       CMAKE_VERSION: 3.9.3
     steps:
       - checkout: self
@@ -66,10 +66,10 @@ stages:
            # setup path to cmake
            export PATH=$PATH:${TPLS_PATH}/cmake/${CMAKE_VERSION}/ci/bin/
            # make dir for build
-           mkdir /home/ci/build
-           cd /home/ci/build
+           mkdir build
+           cd build
            # configure with cmake
-           cmake -DVISIT_CONFIG_SITE:PATH="/home/ci/visit-ci-cfg.cmake" ../src
+           cmake -DVISIT_CONFIG_SITE:PATH="/visit-ci-cfg.cmake" ../src
         displayName: 'Configure with CMake'
 
       - script: |
@@ -77,7 +77,7 @@ stages:
            # build
            #################################
            # build
-           cd /home/ci/build
+           cd build
            make -j 4
         displayName: 'Build'
 
@@ -85,6 +85,6 @@ stages:
       #      #################################
       #      # install
       #      #################################
-      #      cd /home/ci/build
+      #      cd build
       #      make install
       #   displayName: 'Install'
