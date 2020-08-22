@@ -15,6 +15,7 @@ one or more plot axes. An example of the Reflect operator is shown in
 .. _reflect:
 
 .. figure:: images/reflect.png
+   :width: 100%
 
   Reflect operator example
 
@@ -32,8 +33,7 @@ back. To set the input mode, click either the **2D** or **3D** radio buttons.
 .. _reflectwindow:
 
 .. figure:: images/reflectwindow.png
-   :width: 70%
-   :align: center
+   :width: 100%
 
    Reflect attributes window
 

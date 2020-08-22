@@ -4,6 +4,7 @@ Not Found
 ---------
 
 .. image:: visit_404.png
+   :width: 100%
 
 We're sorry but the page you requested is not available.
 

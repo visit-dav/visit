@@ -12,6 +12,7 @@ can be used to create movies.
 .. _save_movie_wizard_1:
 
 .. figure:: images/savemoviewizard1.png 
+   :width: 100%
    
    Save movie wizard (screen 1)
 
@@ -39,6 +40,7 @@ Choosing movie formats
 .. _save_movie_wizard_2:
 
 .. figure:: images/savemoviewizard2.png 
+   :width: 100%
    
    Save movie wizard (screen 2)
 
@@ -106,6 +108,7 @@ Choosing movie length
 .. _save_movie_wizard_3:
 
 .. figure:: images/savemoviewizard3.png
+   :width: 100%
 
    Save movie wizard (screen 3)
 
@@ -119,6 +122,7 @@ Choosing the movie name
 .. _save_movie_wizard_4:
 
 .. figure:: images/savemoviewizard4.png 
+   :width: 100%
    
    Save movie wizard (screen 4)
 
@@ -144,6 +148,7 @@ Choosing e-mail notification
 .. _save_movie_wizard_5:
 
 .. figure:: images/savemoviewizard5.png 
+   :width: 100%
    
    Save movie wizard (screen 5)
 
@@ -157,6 +162,7 @@ Choosing movie generation method
 .. _save_movie_wizard_6:
 
 .. figure:: images/savemoviewizard6.png 
+   :width: 100%
    
    Save movie wizard (screen 6)
 
@@ -186,6 +192,7 @@ click the **Movie progress dialog's** **Cancel** button.
 .. _save_movie_progress:
 
 .. figure:: images/movieprogress.png 
+   :width: 100%
    
    Movie progress dialog
 

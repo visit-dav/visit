@@ -29,6 +29,7 @@ with the closest cycle number to the cycle that was specified.
 .. _TimeVaryingAnimationControls:
 
 .. figure:: images/TimeVaryingAnimationControls.png
+   :width: 100%
 
    Controls for setting the active time step
 

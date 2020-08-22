@@ -26,6 +26,7 @@ Compute Engines Window
 .. _remote_vis_compute_engine_window:
 
 .. figure:: images/enginewindow.png
+   :width: 100%
    
    Compute Engines Window
 
@@ -71,6 +72,7 @@ Closing a compute engine
 .. _remote_vis_close_compute_engine:
 
 .. figure:: images/reallyclose.png
+   :width: 100%
    
    Close compute engine confirmation dialog
 
@@ -95,6 +97,7 @@ Simulation Window
 .. _remote_vis_sim_window:
 
 .. figure:: images/simulationwindow.png
+   :width: 100%
    
    Simulation Window
 

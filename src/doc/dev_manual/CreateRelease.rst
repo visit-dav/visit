@@ -19,6 +19,7 @@ distribution is typically not. To bring up the splash screen go to
 *Help->About*.
 
 .. figure:: images/Release-SplashScreen.png
+   :width: 100%
 
    The splash screen with the short SHA.
 
@@ -34,6 +35,7 @@ created tag. Now you are ready to create the release. Click on
 *Draft a new release* to bring up the form to create a new release. 
 
 .. figure:: images/Release-GitHubStep1.png
+   :width: 100%
 
    Creating a new release.
 
@@ -44,12 +46,14 @@ to the release notes appropriately. At this point you can go to the bottom
 of the window and click on *Publish release*.
 
 .. figure:: images/Release-GitHubStep2.png
+   :width: 100%
 
    Entering information about the release.
 
 Your newly created release will now appear.
 
 .. figure:: images/Release-GitHubStep3.png
+   :width: 100%
 
    The newly created release.
 
@@ -67,11 +71,13 @@ a draft release because the tag no longer exists. Go ahead and click on
 the release to bring up the draft release.
 
 .. figure:: images/Release-GitHubDelete1.png
+   :width: 100%
 
    Selecting the draft release corresponding to the deleted tag.
 
 Click on *Delete* to delete the release.
 
 .. figure:: images/Release-GitHubDelete2.png
+   :width: 100%
 
    Deleting the draft release corresponding to the deleted tag.

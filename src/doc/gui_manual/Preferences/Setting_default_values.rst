@@ -6,6 +6,7 @@ Setting Default Values
 .. _Preferences-MakeDefault:
 
 .. figure:: images/MakeDefault.png
+   :width: 100%
   
    The make default button
 

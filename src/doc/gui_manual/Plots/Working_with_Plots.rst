@@ -25,6 +25,7 @@ contains the controls for managing plots.
 .. _Plots-PlotsArea:
 
 .. figure:: images/Plots-PlotsArea.png
+   :width: 100%
 
    The active plots area
 
@@ -57,6 +58,7 @@ the **Add** menu to create a plot.
 .. _Plots-AddMenu:
 
 .. figure:: images/Plots-AddMenu.png
+   :width: 100%
 
    The Add menu
 
@@ -119,6 +121,7 @@ in :numref:`Figure %s <Plots-PlotAttsMenu>`,
 .. _Plots-PlotAttsMenu:
 
 .. figure:: images/Plots-PlotAttsMenu.png
+   :width: 100%
 
    The PlotAtts menu
 
@@ -129,6 +132,7 @@ Changing plot variables
 .. _Plots-VariablesMenu:
 
 .. figure:: images/Plots-VariablesMenu.png
+   :width: 100%
 
    The Variables menu
 

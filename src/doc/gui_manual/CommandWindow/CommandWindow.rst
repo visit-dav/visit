@@ -6,6 +6,7 @@ VisIt's Python Command Line via the Command Window
 .. _command_window1:
 
 .. figure:: images/commandwindow.png   
+   :width: 100%
 
    Command Window
 

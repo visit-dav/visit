@@ -28,6 +28,7 @@ restart the Docker daemon, which will kill container builds or running
 containers.
 
 .. figure:: images/Docker-Settings1.png
+   :width: 100%
 
    Enabling experimental features.
 
@@ -38,6 +39,7 @@ the amount of disk space and press *Apply*. Note that this will restart the
 Docker daemon, which will kill container builds or running containers.
 
 .. figure:: images/Docker-Settings2.png
+   :width: 100%
 
    Increasing the disk space allocated to Docker.
 

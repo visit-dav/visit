@@ -21,5 +21,6 @@ collective on/off state for each subset is known as a SIL restriction.
 .. _subset1a:
 
 .. figure:: images/subset1.png
+   :width: 100%
 
    Whole mesh divided up into domains and materials

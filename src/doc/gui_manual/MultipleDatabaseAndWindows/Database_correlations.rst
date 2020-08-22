@@ -27,6 +27,7 @@ correlation as the active time slider.
 .. _correlationtimeslider:
 
 .. figure:: images/correlationtimeslider.png
+   :width: 100%
 
    Database correlation as the active time slider
 
@@ -129,6 +130,7 @@ in :numref:`Figure %s <paddedindex>`.
 .. _paddedindex:
 
 .. figure:: images/paddedindex.png
+   :width: 100%
 
    Padded index database correlation of A and B (every 5th time state)
 
@@ -162,6 +164,7 @@ different number of time states, remain roughly in sync.
 .. _stretchedindex:
 
 .. figure:: images/stretchedindex.png
+   :width: 100%
 
    Stretched index database correlation of A and B (every 5th time state)
 
@@ -201,6 +204,7 @@ A and B when using a time database correlation.
 .. _timecorrelation:
 
 .. figure:: images/timecorrelation.png
+   :width: 100%
 
    Time database correlation of A and B (every 5th time state)
 
@@ -215,6 +219,7 @@ the behavior of databases A and B when using a cycle database correlation.
 .. _cyclecorrelation:
 
 .. figure:: images/cyclecorrelation.png
+   :width: 100%
 
    Cycle database correlation of A and B (every 5th time state)
 
@@ -235,7 +240,7 @@ create database correlations.
 .. _correlationwindow:
 
 .. figure:: images/correlationwindow.png
-   :width: 60%
+   :width: 100%
 
    Database Correlation Window
 
@@ -256,7 +261,7 @@ properties for the database correlation.
 .. _createcorrelation1:
 
 .. figure:: images/createcorrelation1.png
-   :width: 60%
+   :width: 100%
 
    Database Correlation Properties Window
 
@@ -272,7 +277,7 @@ index, time, and cycle.
 .. _createcorrelation3:
 
 .. figure:: images/createcorrelation3.png
-   :width: 60%
+   :width: 100%
 
    Correlation methods
 
@@ -298,7 +303,7 @@ to create a new database correlation.
 .. _createcorrelation2:
 
 .. figure:: images/createcorrelation2.png
-   :width: 60%
+   :width: 1000%
 
    Sources list and Correlated sources list
 
@@ -323,7 +328,7 @@ Altering an existing database correlation
 .. _altercorrelation:
 
 .. figure:: images/altercorrelation.png
-   :width: 60%
+   :width: 100%
 
    Altering a database correlation
 
@@ -386,7 +391,7 @@ databases listed in the **Correlation question** dialog.
 .. _correlatedialog:
 
 .. figure:: images/correlatedialog.png
-   :width: 60%
+   :width: 100%
 
    Correlation question dialog
 

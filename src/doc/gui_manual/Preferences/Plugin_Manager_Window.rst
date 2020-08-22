@@ -14,6 +14,7 @@ selecting **Plugin Manager** from the **Main** window's **Options** menu.
 .. _Preferences-PluginManager:
 
 .. figure:: images/PluginManager.png
+   :width: 100%
 
    The plugin manager window
    

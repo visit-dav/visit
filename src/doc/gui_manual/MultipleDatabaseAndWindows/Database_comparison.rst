@@ -60,6 +60,7 @@ the database differencing operation.
 .. _a_minus_b:
 
 .. figure:: images/a_minus_b.png
+   :width: 100%
 
    Database B subtracted from database A
 
@@ -85,6 +86,7 @@ current time state to a fixed time state.
 .. _a_minus_a0:
 
 .. figure:: images/a_minus_a0.png
+   :width: 100%
 
    Time state 6 minus time state 0
 
@@ -118,5 +120,6 @@ plot of a time derivative.
 .. _a_minus_preva:
 
 .. figure:: images/a_minus_preva.png
+   :width: 100%
 
    Plot of a variable and its time derivative plot

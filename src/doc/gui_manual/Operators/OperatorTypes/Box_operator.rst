@@ -12,6 +12,7 @@ leaving jagged edges around the edges of the box where cells were removed.
 .. _box:
 
 .. figure:: images/box.png
+   :width: 100%
 
     Box operator example (original on left, with Box operator applied on right)
 
@@ -30,6 +31,7 @@ those cells bounded by the selected box.
 .. _box_attributes:
 
 .. figure:: images/boxwindow.png
+   :width: 100%
 
     Box attributes window
 

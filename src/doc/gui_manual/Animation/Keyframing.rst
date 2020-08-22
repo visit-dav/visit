@@ -26,6 +26,7 @@ Keyframing Window
 .. _keyframe_1:
 
 .. figure:: images/keyframe1.png 
+   :width: 100%
    
    Keyframing Window
 
@@ -76,6 +77,7 @@ Adding a keyframe
 .. _keyframe_area:
 
 .. figure:: images/keyframearea.png 
+   :width: 100%
    
    Keyframe area
 

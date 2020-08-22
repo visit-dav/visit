@@ -10,6 +10,7 @@ The Printer Window
 .. _printer_window:
 
 .. figure:: images/printwindowmac.png 
+   :width: 100%
    
    Printer window 
 

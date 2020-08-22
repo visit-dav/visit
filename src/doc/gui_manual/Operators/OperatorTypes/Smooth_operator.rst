@@ -8,6 +8,7 @@ The Smooth operator smooths a mesh to improve areas plagued by jagged edges or s
 .. _smooth:
 
 .. figure:: images/smooth.png
+   :width: 100%
 
    Smooth operator example
 
@@ -33,5 +34,6 @@ angles less than the feature angle are preserved while others are smoothed.
 .. _smoothwindow:
 
 .. figure:: images/smoothwindow.png
+   :width: 100%
 
    Smooth attributes

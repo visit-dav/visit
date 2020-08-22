@@ -16,8 +16,7 @@ development.
 .. _inverseghostzone:
 
 .. figure:: images/inverseghostzone.png
-   :width: 60%
-   :align: center
+   :width: 100%
 
    InversetGhostZone example
 
@@ -29,7 +28,6 @@ all options are turned on.
 .. _inverseghostzonewindow:
 
 .. figure:: images/inverseghostzonewindow.png
-   :width: 50%
-   :align: center
+   :width: 100%
 
    InversetGhostZone window

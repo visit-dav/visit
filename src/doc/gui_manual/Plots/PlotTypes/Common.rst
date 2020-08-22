@@ -11,6 +11,7 @@ are described here first using the **Pseudocolor plot** as an example.
 .. _pseudocolorwindow_1:
 
 .. figure:: ../images/pseudocolorwindow.png
+   :width: 100%
 
    Example of **Pseudocolor plot attribute window**
 
@@ -85,6 +86,7 @@ and you can set the point size in terms of pixels.
 .. _glyphtypes:
 
 .. figure:: ../images/glyph_types2.png
+   :width: 100%
 
    Point types: Box, Axis, Icosahedron, Octahedron, Tetrahedron, Sphere Geometry, Point, Sphere
 
@@ -92,6 +94,7 @@ and you can set the point size in terms of pixels.
 .. _pointtypecombo:
 
 .. figure:: ../images/point_type_dropdown.png
+   :width: 100%
 
    Point type menu, expanded
 

@@ -16,6 +16,7 @@ sphere or move the hot point away from the origin to enlarge the sphere.
 .. _spheretool:
 
 .. figure:: images/spheretool.png
+   :width: 100%
 
    Sphere tool
 

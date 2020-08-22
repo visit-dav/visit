@@ -56,6 +56,7 @@ Now you go over to GitHub and create your pull request. When creating your
 pull request, make sure that you are merging it into the release candidate.
 
 .. figure:: images/RCDevelop-GitHubStep1.png
+   :width: 100%
 
    Merging into the release candidate.
 
@@ -97,6 +98,7 @@ In the case where you need to use the SHA to create the patch, you can
 get it from the code tab at GitHub for the release candidate branch.
 
 .. figure:: images/RCDevelop-GitHubStep2.png
+   :width: 100%
 
    Getting the SHA for the merge into the release candidate.
 
@@ -147,6 +149,7 @@ Now you go over to GitHub and create your pull request. When creating your
 pull request, make sure that you are merging it into develop.
 
 .. figure:: images/RCDevelop-GitHubStep3.png
+   :width: 100%
 
    Merging into develop.
 
@@ -157,6 +160,7 @@ mention that, since the automatic closing of issues only happens when
 you merge into develop.
 
 .. figure:: images/RCDevelop-GitHubStep4.png
+   :width: 100%
 
    The pull request with the abbreviated description.
 

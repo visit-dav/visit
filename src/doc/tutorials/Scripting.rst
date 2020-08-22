@@ -131,6 +131,7 @@ Note that the script below may not work the first time you execute it. In
 that case delete all the plots and execute the script again.
 
 .. figure:: images/Scripting-StreamlineOutput.png
+   :width: 100%
 
    Streamlines
 
@@ -385,6 +386,7 @@ VisIt_'s Commands window provides a mechanism to translate *GUI* actions into th
 1) Open the Commands Window by selecting ''Controls Menu->Command''
 
 .. figure:: images/Scripting-Commands.png
+   :width: 100%
 
    The Commands window
 

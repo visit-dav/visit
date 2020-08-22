@@ -34,7 +34,7 @@ click on the **Materials** option in the **Main Window's Controls menu**.
 .. _miroptions:
 
 .. figure:: images/miroptions.png
-   :scale: 50%
+   :width: 100%
 
    Material Reconstruction Options Window
 
@@ -67,6 +67,7 @@ faster pipeline execution due to the smaller cell count.
 .. _mirtetzoo:
 
 .. figure:: images/mirtetzoo.png
+   :width: 100%
 
    Tetrahedral MIR vs. Zoo-based MIR
 
@@ -86,6 +87,7 @@ be omitted by other MIR algorithms.
 .. _mirgaps:
 
 .. figure:: images/mirgaps.png
+   :width: 100%
 
    Zoo-based MIR vs. Isovolume MIR
 
@@ -112,6 +114,7 @@ distributed into many heavily mixed cells.
 .. _lowfrac:
 
 .. figure:: images/lowfrac.png
+   :width: 100%
 
    Materials with low volume fractions can be found with the isosurface MIR algorithm
 
@@ -153,6 +156,7 @@ menu.
 .. _mir:
 
 .. figure:: images/mir.png
+   :width: 100%
 
    Effect of material interface smoothing
 
@@ -198,5 +202,6 @@ check box.
 .. _mixvar:
 
 .. figure:: images/mixvar.png
+   :width: 100%
 
    Mixed variables can improve a visualization

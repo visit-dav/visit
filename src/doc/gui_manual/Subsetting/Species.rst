@@ -34,7 +34,7 @@ plotted variable's value in turn drops.
 .. _speciesvar:
 
 .. figure:: images/speciesvar.png
-   :scale: 50%
+   :width: 100%
 
    Species variable
 
@@ -66,6 +66,7 @@ show zero for every place that had no oxygen.
 .. _speciesplot:
 
 .. figure:: images/speciesplot.png
+   :width: 100%
 
    Plots of materials and species
 
@@ -86,5 +87,6 @@ only the mass fractions for the species that are still turned on.
 .. _subsetwindow_species2:
 
 .. figure:: images/subsetwindow_species2.png
+   :width: 100%
 
    Turning off species in the Subset Window

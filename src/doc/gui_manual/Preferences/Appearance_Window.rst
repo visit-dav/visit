@@ -14,6 +14,7 @@ user must first uncheck the **Use default system appearance** check box.
 .. _Preferences-Appearance:
 
 .. figure:: images/Appearance.png
+   :width: 100%
 
    The appearance window
 

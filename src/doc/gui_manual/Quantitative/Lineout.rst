@@ -38,12 +38,14 @@ shown in :numref:`Figure %s <lineoutexample>`.
 .. _lineout_mode:
 
 .. figure:: images/lineoutmodeicon.png
+   :width: 100%
 
    Lineout mode toolbar icon
 
 .. _lineoutexample:
 
 .. figure:: images/lineout.png
+   :width: 100%
 
    Visualization windows with reference line and Curve plots
 
@@ -115,6 +117,7 @@ ranges between one and three.
 .. _lineoutexample2:
 
 .. figure:: images/rect2d_d_12_sampled.png
+   :width: 100%
 
    A zonal variable with relatively few sample points.
 
@@ -124,6 +127,7 @@ quite apparent.
 .. _lineoutexample3:
 
 .. figure:: images/rect2d_d_60_sampled.png
+   :width: 100%
 
    A zonal variable with a large number of sample points.
 
@@ -143,6 +147,7 @@ is completely lost and the line looks smoother than the sampled case.
 .. _lineoutexample4:
 
 .. figure:: images/rect2d_d_nonsampled.png
+   :width: 100%
 
    A zonal variable without sampling.
 
@@ -162,6 +167,7 @@ the data along the line since all the cells are sampled at least once.
 .. _lineoutexample5:
 
 .. figure:: images/rect2d_d2_12_sampled.png
+   :width: 100%
 
    A nodal variable with relatively few sample points.
 
@@ -171,6 +177,7 @@ shape of the curve.
 .. _lineoutexample6:
 
 .. figure:: images/rect2d_d2_60_sampled.png
+   :width: 100%
 
    A nodal variable with many sample points.
 
@@ -187,6 +194,7 @@ function.
 .. _lineoutexample7:
 
 .. figure:: images/rect2d_d2_nonsampled.png
+   :width: 100%
 
    A nodal variable without sampling.
 
@@ -358,6 +366,7 @@ set the value for the Z coordinate to zero.
 .. _lineoutwindow:
 
 .. figure:: images/lineoutattswindow.png
+   :width: 100%
 
    Lineout attributes window
 
@@ -410,6 +419,7 @@ The **Use Sampling** and **Sample Points** option is the same as before.
 .. _lineoutqueryparams:
 
 .. figure:: images/lineout_query_params.png
+   :width: 100%
 
    Lineout query's parameters window
 
@@ -426,7 +436,7 @@ shown in :numref:`Figure %s <lineout_from_curve>`.
 .. _lineout_from_curve:
 
 .. figure:: images/lineout_from_curveplot.png
-   :width: 60%
+   :width: 100%
 
    Choosing lineout from the Curve plot's variable menu
 
@@ -447,6 +457,7 @@ will only apply to future lineouts, not lineouts already created.
 .. _lineoutoptionswindow:
 
 .. figure:: images/lineoutoptionswindow.png
+   :width: 100%
 
    Lineout Options Window
 
@@ -501,6 +512,7 @@ variable menu, as this type of lineout does not have an originating plot.*
 .. _dynamiclineout:
 
 .. figure:: images/dynamiclineout.png
+   :width: 100%
 
    Dynamic lineout can be used to create curves for multiple time states
 

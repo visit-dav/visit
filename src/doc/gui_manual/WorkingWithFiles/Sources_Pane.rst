@@ -20,6 +20,7 @@ you to switch between the files.
 .. _ActiveSources:
 
 .. figure:: images/ActiveSources.png
+   :width: 100%
 
    Controls for setting the active source
 

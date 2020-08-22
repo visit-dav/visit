@@ -70,6 +70,7 @@ Follow these steps to update the version on the splashscreen.
 4. Open the file in GIMP.
 
 .. figure:: images/Release-GimpImage.png
+   :width: 100%
 
    The splashscreen in GIMP.
 
@@ -94,6 +95,7 @@ hide one additional layer until you have saved all four of the png images.
 9. Hide ``Background1``.
 
 .. figure:: images/Release-GimpLayers.png
+   :width: 100%
 
    Hiding the Background1 layer in GIMP.
 

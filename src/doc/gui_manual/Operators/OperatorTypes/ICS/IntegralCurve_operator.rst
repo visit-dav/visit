@@ -53,6 +53,7 @@ either lie along the edges of the planar region or within the bounded
 rectangle, as shown below.
 
 .. figure:: images/boundary_interior_sampling.png
+   :width: 100%
 
 Integration
 ^^^^^^^^^^^

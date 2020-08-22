@@ -31,6 +31,7 @@ Create a Mesh plot
 2. Click *Draw*.
 
 .. figure:: images/Aneurysm-MeshPlotAdd.png
+   :width: 100%
 
    Adding a mesh plot.
 
@@ -43,6 +44,7 @@ Modify the Mesh plot settings
 1. Double click on the Mesh plot to open the Mesh plot attributes window.
 
 .. figure:: images/Aneurysm-MeshAttributes.png
+   :width: 100%
 
    The mesh plot attributes window.
 
@@ -56,6 +58,7 @@ Modify the Mesh plot settings
 You will need to click *Apply* to commit the settings to your plot.
 
 .. figure:: images/Aneurysm-Mesh.png
+   :width: 100%
 
    The mesh plot of the aneurysm.
 
@@ -114,6 +117,7 @@ You will see the pressure field animate on the exterior of the mesh as the
 simulation evolves. 
 
 .. figure:: images/Aneurysm-PseudocolorPressure.png
+   :width: 100%
 
    The pseudocolor plot of the pressure.
 
@@ -141,6 +145,7 @@ variable for our query.
 3. Click *Apply* and *Dismiss*.
  
 .. figure:: images/Aneurysm-QueryOverTimeAttributes.png
+   :width: 100%
 
    The QueryOverTime attributes window.
 
@@ -157,6 +162,7 @@ This will process the simulation output files and create a new window with
 a curve that contains the maximum pressure value at each time. 
 
 .. figure:: images/Aneurysm-QueryOverTime.png
+   :width: 100%
 
    The query over time plot.
 
@@ -181,6 +187,7 @@ vector field.
 4. Click *Draw*.
 
 .. figure:: images/Aneurysm-PseudocolorVelocityMagnitude.png
+   :width: 100%
 
    The pseudocolor plot of the velocity magnitude.
 
@@ -198,6 +205,7 @@ Subset plot to create this view of the mesh boundary.
 1. Uncheck *Apply operators to all plots*.
 
 .. figure:: images/Aneurysm-ApplyOperatorsToAllPlots.png
+   :width: 100%
 
    The apply operators to all plots setting.
 
@@ -209,6 +217,7 @@ Subset plot to create this view of the mesh boundary.
 7. Click *Draw*.
 
 .. figure:: images/Aneurysm-Subset.png
+   :width: 100%
 
    The transparent subset plot.
 
@@ -229,6 +238,7 @@ You will see the contour surfaces extracted from the "velocity_magnitude"
 field animate as the simulation evolves. 
 
 .. figure:: images/Aneurysm-SubsetIsoSurface.png
+   :width: 100%
 
    The transparent subset plot with iso surfaces of velocity magnitude.
 
@@ -247,6 +257,7 @@ two scalar values using the Isovolume operator.
 7. Click *Draw* and press the *Play* button to animate the plot over time.
 
 .. figure:: images/Aneurysm-SubsetIsoVolume.png
+   :width: 100%
 
    The transparent subset plot with an iso volume of velocity magnitude.
 
@@ -279,6 +290,7 @@ simulated "velocity" vector field.
 13. Click *Play*.
 
 .. figure:: images/Aneurysm-Vector.png
+   :width: 100%
 
    The vector plot of velocity.
 
@@ -306,6 +318,7 @@ pseudocolor plot of the "velocity_magnitude".
 9. Click *Draw*.
 
 .. figure:: images/Aneurysm-PseudocolorSliceVelocityMagnitude.png
+   :width: 100%
 
    The velocity magnitude on a slice.
 
@@ -323,6 +336,7 @@ coordinates of the node associated with this value. We will use the x,y,z
 coordinates of this node to seed a set of streamlines.
 
 .. figure:: images/Aneurysm-QueryMaxVelocityMagnitude.png
+   :width: 100%
 
    The result of the velocity magnitude query.
 
@@ -332,6 +346,7 @@ Plotting streamlines of velocity
 1. Go to *Add->Pseudocolor->operators->IntegralCurve->velocity*.
 
 .. figure:: images/Aneurysm-CreateStreamlinePlot.png
+   :width: 100%
 
    Creating a streamline plot with the IntegralCurve operator.
 
@@ -350,6 +365,7 @@ Plotting streamlines of velocity
 14. Click *Apply* and *Dismiss*.
 
 .. figure:: images/Aneurysm-IntegralCurveAttributes.png
+   :width: 100%
 
    The IntegralCurve operator attributes.
 
@@ -358,6 +374,7 @@ Plotting streamlines of velocity
 17. In the *Color* section set the *Color table* to *Reds*.
 
 .. figure:: images/Aneurysm-PseudocolorDataAttributes.png
+   :width: 100%
 
    The Pseudocolor attributes for the streamline data.
 
@@ -368,6 +385,7 @@ Plotting streamlines of velocity
 22. Set the head and tail *Radius* to "0.03".
 
 .. figure:: images/Aneurysm-PseudocolorGeometryAttributes.png
+   :width: 100%
 
    The Pseudocolor attributes for the streamline geometry.
 
@@ -376,6 +394,7 @@ Plotting streamlines of velocity
 25. Use the time slider controls to view a few time steps.
 
 .. figure:: images/Aneurysm-Streamlines.png
+   :width: 100%
 
    The streamlines of velocity.
 
@@ -395,6 +414,7 @@ We will modify our previous IntergralCurve options to create pathlines.
 5. In the *Pathlines Options* section set *How to perform interpolation over time* to *Mesh is static over time*.
 
 .. figure:: images/Aneurysm-IntegralCurvePathlineAttributes.png
+   :width: 100%
 
    The IntegralCurve operator pathline attributes.
 
@@ -404,6 +424,7 @@ This will process all 200 files in the dataset and construct the pathlines
 that originate at our seed points.  
 
 .. figure:: images/Aneurysm-Pathlines.png
+   :width: 100%
 
    The pathlines of velocity.
 
@@ -552,6 +573,7 @@ through the 3D mesh.
 7. Set *Geometry Quality* to *High*.
 
 .. figure:: images/Aneurysm-VectorAttributes.png
+   :width: 100%
 
    The Vector plot attributes.
 
@@ -565,6 +587,7 @@ through the 3D mesh.
 15. Click *Draw*.
 
 .. figure:: images/Aneurysm-SliceAttributes.png
+   :width: 100%
 
    The Slice operator attributes.
 
@@ -586,6 +609,7 @@ a Mesh plot.
 27. Zoom in to explore the plot results.
 
 .. figure:: images/Aneurysm-VectorSlice.png
+   :width: 100%
 
    The velocity on the slice.
 
@@ -608,6 +632,7 @@ cell-by-cell basis.
 5. Go to *Insert variable->Mesh->Mesh* in the *Standard editor* tab.
 
 .. figure:: images/Aneurysm-Expressions.png
+   :width: 100%
 
    The Expressions window.
 
@@ -621,6 +646,7 @@ You will then get the error message saying: *The 'normals' expression failed bec
 10. Go to *Variables->Vector->normals*.
 
 .. figure:: images/Aneurysm-DeferExpression.png
+   :width: 100%
 
    The DeferExpression window.
 
@@ -628,6 +654,7 @@ You will then get the error message saying: *The 'normals' expression failed bec
 12. Click *Draw*.
 
 .. figure:: images/Aneurysm-VectorNormals.png
+   :width: 100%
 
    The Vector plot of the normals.
 
@@ -649,6 +676,7 @@ We are now ready for the final draw.
 9. Set the *Flow field* to "velocity".
 
 .. figure:: images/Aneurysm-FluxAttributes.png
+   :width: 100%
 
    The Flux operator attributes window.
 
@@ -656,6 +684,7 @@ We are now ready for the final draw.
 11. Click *Draw*.
 
 .. figure:: images/Aneurysm-VectorFlux.png
+   :width: 100%
 
    The Vector plot of the flux.
 
@@ -665,5 +694,6 @@ the Time slider
 12. Get the numerical value of the flux by query-ing for the *Weighted Variable Sum*.
 
 .. figure:: images/Aneurysm-QueryWeightedVariableSum.png
+   :width: 100%
 
    The result of the Weighted Variable Sum query.

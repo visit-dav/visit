@@ -15,12 +15,14 @@ from disparate data ranges fit in a unit cube.
 .. _scatterplot:
 
 .. figure:: ../images/scatterplot.png
+   :width: 100%
 
    Example of Scatter plot
 
 .. _scatterplotwindow:
 
 .. figure:: ../images/scatterplotwindow.png
+   :width: 100%
 
    Scatter plot attributes window
 
@@ -41,6 +43,7 @@ Scatter plot wizard
 .. _scatterwizard:
 
 .. figure:: ../images/scatterplotwizard.png
+   :width: 100%
 
    Example of the Scatter plot wizard
 
@@ -134,6 +137,7 @@ scaling, you can turn off the Scale to cube check box on the
 .. _scatterplot_appearance:
 
 .. figure:: ../images/scatterplot_appearance.png
+   :width: 100%
 
    Scatter plot attributes window's Appearance tab 
 

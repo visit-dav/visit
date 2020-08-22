@@ -39,12 +39,14 @@ example of node pick and zone pick markers is shown in
 .. _pickviswindow:
 
 .. figure:: images/pickviswindow.png
+   :width: 100%
 
    Visualization window with pick points
 
 .. _pickpoints:
 
 .. figure:: images/pickpoints.png
+   :width: 100%
 
    Zone pick marker **L** and node pick markers **M**, **N**, **O**, **P**
 
@@ -62,6 +64,7 @@ open the **Pick Window** by selecting the **Pick** option from the
 .. _pickwindow:
 
 .. figure:: images/pickwindow.png
+   :width: 100%
 
    Pick Window
 

@@ -17,6 +17,7 @@ this kind of data export via the **Export Database Window** , shown in
 .. _export_db_1:
 
 .. figure:: images/exportdatabase1.png 
+   :width: 100%
    
    Export Database Window
 
@@ -32,6 +33,7 @@ Exporting variables
 .. _export_db_2:
 
 .. figure:: images/exportdatabase2.png 
+   :width: 100%
    
    Variables menu
 
@@ -65,6 +67,7 @@ data files, make a selection from the **Export to** menu shown in
 .. _export_db_3:
 
 .. figure:: images/exportdatabase3.png 
+   :width: 100%
    
    Export file types
 
@@ -79,6 +82,7 @@ exporting to the Silo database.
 .. _export_options_example:
 
 .. figure:: images/export_options_example.png 
+   :width: 100%
    
    Export options example (for Silo)
 

@@ -4,8 +4,10 @@ Vector plot
 .. _vector_plot:
 
 .. figure:: ../images/vectorplot.png
+   :width: 100%
 
 .. figure:: ../images/vectorwindow.png
+   :width: 100%
    
    Vector Plot Attributes and Example Rendering
 

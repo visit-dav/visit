@@ -14,6 +14,7 @@ the new min or max.
 .. _axisrestrictool:
 
 .. figure:: images/axisrestricttool.png
+   :width: 100%
 
    Axis Restriction tool
 

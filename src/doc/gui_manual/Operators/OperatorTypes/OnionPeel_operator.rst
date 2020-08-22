@@ -19,6 +19,7 @@ example of the OnionPeel operator is shown in :numref:`Figure %s <onion>`.
 .. _onion:
 
 .. figure:: images/onion.png
+   :width: 100%
 
    Onion peel operator example
 
@@ -58,6 +59,7 @@ Growing layers
 .. _onionpeelwindow:
 
 .. figure:: images/onionpeelwindow.png
+   :width: 100%
 
    Onion peel attributes
 

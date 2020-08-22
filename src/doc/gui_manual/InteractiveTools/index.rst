@@ -14,6 +14,7 @@ contain plots of a certain dimension so some tools are not always available.
 .. _toolmenu2:
 
 .. figure:: images/toolmenu.png
+   :width: 100%
 
    Tools menu
 

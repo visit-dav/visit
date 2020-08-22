@@ -15,5 +15,6 @@ controls in the **File panel**.
 .. _fiw_image:
 
 .. figure:: images/fileinformationwindow.png
+   :width: 100%
 
    File Information Window

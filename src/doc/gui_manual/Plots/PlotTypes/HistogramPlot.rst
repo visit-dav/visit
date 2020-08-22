@@ -12,8 +12,7 @@ shown in :numref:`Figure %s <histogramplot>`.
 .. _histogramplot:
 
 .. figure:: ../images/histogramplot.png
-   :height: 400px
-   :width: 400px
+   :width: 100%
 
    Histogram plot
 
@@ -34,6 +33,7 @@ that it considers to the specified data range.
 .. _histogramwindow:
 
 .. figure:: ../images/histogramwindow.png
+   :width: 100%
 
    Histogram attributes
 

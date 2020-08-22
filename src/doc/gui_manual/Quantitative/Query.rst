@@ -17,6 +17,7 @@ be covered in more detail a little later.
 .. _querywindow:
 
 .. figure:: images/querywindow.png
+   :width: 100%
 
    Query window
 
@@ -57,6 +58,7 @@ queries, the controls in the **Query parameters** area may change.
 .. _queryparams_line:
 
 .. figure:: images/queryparams_line.png
+   :width: 100%
 
    Query parameters area
 
@@ -417,6 +419,7 @@ uses the query results versus time as the curve data.
 .. _queryovertimewindow:
 
 .. figure:: images/queryovertimewindow.png
+   :width: 100%
 
    Query Over Time Window
 

@@ -23,6 +23,7 @@ Experiment with queries
 2. This brings up the Query window.
 
 .. figure:: images/DataAnalysis-QueryMinMax.png
+   :width: 100%
 
    The MinMax query
 
@@ -131,6 +132,7 @@ Weighted Variable Sum
 2. This brings up the Query window.
 
 .. figure:: images/DataAnalysis-QueryWeightedVariableSum.png
+   :width: 100%
 
    The Weighted Variable Sum query
 
@@ -145,6 +147,7 @@ Weighted Variable Sum
   * The result will be displayed in a new Window. By default the x-axis will be cycle and the y-axis will be the weighted summation of the *pressure*.
 
 .. figure:: images/DataAnalysis-QueryWeightedVariableSumOutput.png
+   :width: 100%
 
    The output of the Weighted Variable Sum query over time
 
@@ -156,6 +159,7 @@ Pick
 3. Find and Highlight *Pick* in the Query window and click *Do Time Query* to enable time-curve options.
 
 .. figure:: images/DataAnalysis-QueryPick.png
+   :width: 100%
 
    The Pick query
 
@@ -173,6 +177,7 @@ Pick
   * The result will be a Multi-curve plot (multiple axes) in *Window 2*.
 
 .. figure:: images/DataAnalysis-QueryPickOutput.png
+   :width: 100%
 
    The Pick query output
 
@@ -185,6 +190,7 @@ Changing global options
 2. This brings up the QueryOverTime window.
 
 .. figure:: images/DataAnalysis-QueryOverTime.png
+   :width: 100%
 
    The QueryOverTime window
 
@@ -236,6 +242,7 @@ A simple algebraic expression, "2*radial"
 8. Now, you can either type the name "radial" or you can go to the *Insert Variable...* pulldown menu and find and select the *radial* variable there (see picture at right).
 
 .. figure:: images/DataAnalysis-ExpressionsRadial2.png
+   :width: 100%
 
    Using the Expressions window Insert variable
 
@@ -245,6 +252,7 @@ A simple algebraic expression, "2*radial"
   * Note that *radial2* now appears in the list of variables there.
 
 .. figure:: images/DataAnalysis-VariablesMenu.png
+   :width: 100%
 
    Expression variable appears in the plot menus
 
@@ -318,6 +326,7 @@ Pseudocolor plot of *shepardglobal*, but Isovolumed by our *Dist* expression
 in the range "[5...7]".
 
 .. figure:: images/DataAnalysis-ExpressionRadial2Output.png
+   :width: 100%
 
    Example of using the radial expression
 
@@ -375,6 +384,7 @@ together with the *shepardglobal* and *hardyglobal*.
 6. Add a Tensor plot of *tensor* variable.
 
 .. figure:: images/DataAnalysis-ExpressionVectorTensorOutput.png
+   :width: 100%
 
    Example of using vector and tensor expressions
 
@@ -522,6 +532,7 @@ Mapping *shepardglobal* onto *PointMesh*
 7. Now with "shepardglobal_mapped" defined, you can define the desired expression, "PointVar + shepardglobal_mapped" and this will achieve the desired result and is shown below.
 
 .. figure:: images/DataAnalysis-ExpressionCMFEOutput.png
+   :width: 100%
 
    The variable Shepardglobal mapped onto a point mesh
 
@@ -560,6 +571,7 @@ this example. Namely, we define the expression *density* as an alias for
 *shephardglobal* and *velocity* as an alias for *grad*.
 
 .. figure:: images/DataAnalysis-ExpressionsMass.png
+   :width: 100%
 
    Mass Expression Definition
 
@@ -588,6 +600,7 @@ Here are the steps involved...
 21. Click *Draw*.
 
 .. figure:: images/DataAnalysis-ExpressionMassOutput.png
+   :width: 100%
 
    Mass plot
 
@@ -595,6 +608,7 @@ Here are the steps involved...
 23. Open the Threshold operator attributes window.
 
 .. figure:: images/DataAnalysis-ThresholdAttributes.png
+   :width: 100%
 
    Threshold attributes
 
@@ -606,6 +620,7 @@ Here are the steps involved...
   * Now the displayed plot changes to show only those parts of the mesh that are moving with velocity greater than 5.
 
 .. figure:: images/DataAnalysis-ThresholdOutput.png
+   :width: 100%
 
    Mass plot after threshold
 
@@ -614,6 +629,7 @@ Here are the steps involved...
 30. Click the *Query* button. The computed result will be a sum of all the individual zones' masses in the mesh for those zones that are moving with velocity greater than 5.
 
 .. figure:: images/DataAnalysis-QueryVariableSumOutput.png
+   :width: 100%
 
    The variable sum query result
 

@@ -50,6 +50,7 @@ First, we create a new mesh using the Threshold operator.
    Add a new variable, select *pressure* and set the Lower bound to *3.9*. 
 
    .. figure:: images/ccl_thresh_atts.png
+   :width: 100%
 
       Setting the Isovolume attributes.
 
@@ -60,6 +61,7 @@ First, we create a new mesh using the Threshold operator.
 #. Click *Draw*. You will now see a visualization of the thresholded mesh.
 
    .. figure:: images/ccl_thresh_render.png
+   :width: 100%
 
       Visualizing our thresholded example of our dataset.
 
@@ -75,6 +77,7 @@ We created this in a new viewer window, so we can easily look at both results si
 #. Create a new viewer window
 
    .. figure:: images/ccl_new_window.png
+   :width: 100%
 
       Click to create a new viewer window.
 
@@ -89,6 +92,7 @@ We created this in a new viewer window, so we can easily look at both results si
 #. Once you've opened the Isovolume attributes, set Variable to *pressure* and set the Lower bound to *3.9*. 
 
    .. figure:: images/ccl_isov_atts.png
+   :width: 100%
 
       Setting the Isovolume attributes.
 
@@ -99,6 +103,7 @@ We created this in a new viewer window, so we can easily look at both results si
 #. Click *Draw*. You will now see a visualization of the cut mesh.
 
 .. figure:: images/ccl_isov_render.png
+   :width: 100%
 
    Visualizing an isovolume from our example of our dataset.
 
@@ -115,6 +120,7 @@ The thresholded mesh has a blocky structure and submeshes remain connected at th
 #. Create a new expression named *ccl* with the definition ``conn_components(Mesh)``.
 
    .. figure:: images/ccl_expr_def.png
+   :width: 100%
 
       Defining a  *conn_components* expression
 
@@ -128,6 +134,7 @@ Connected Components of Threshold Result
 #. Make Window 1 active (The window with the Threshold operator pipeline)
 
    .. figure:: images/ccl_win_1_active.png
+   :width: 100%
 
       Changing active window to 1
 
@@ -140,6 +147,7 @@ Connected Components of Threshold Result
 #. Once you've opened the DeferExpression attributes, add *ccl* to the list of deferred expressions.
 
    .. figure:: images/ccl_defer_expr.png
+   :width: 100%
 
       Setting the DeferExpression attributes. This operator instructs VisIt_ to 
       execute the *ccl* expression on the Threshold result, instead of the original mesh.
@@ -150,6 +158,7 @@ Connected Components of Threshold Result
 #. Use the Variables menu to change the active variable to *ccl*.
 
    .. figure:: images/ccl_sel_ccl_expr.png
+   :width: 100%
 
       Changing active plot variable to *ccl*.
 
@@ -158,6 +167,7 @@ Connected Components of Threshold Result
 #. Click *Draw*. You will now see the mesh rendered with Connected Component Labels.
 
    .. figure:: images/ccl_of_thresh.png
+   :width: 100%
 
       Connected Components of the Threshold Result
 
@@ -171,6 +181,7 @@ Connected Components of Isovolume Result
 #. Make Window 2 active (The window with the Isovolume operator pipeline )
 
    .. figure:: images/ccl_win_2_active.png
+   :width: 100%
 
       Changing active window to 2
 
@@ -179,6 +190,7 @@ Connected Components of Isovolume Result
 #. Use the Variables menu to change the active variable to *ccl*.
 
    .. figure:: images/ccl_sel_ccl_expr.png
+   :width: 100%
 
       Changing active plot variable to *ccl*.
 
@@ -187,6 +199,7 @@ Connected Components of Isovolume Result
 #. Click *Draw*. You will now see the mesh rendered with Connected Component Labels.
 
    .. figure:: images/ccl_of_isov.png
+   :width: 100%
 
       Connected Components of the Isovolume Result
 
@@ -234,6 +247,7 @@ Next, we use the Connected Components Summary via python on one of our plots to 
 #. Launch VisIt's Command Line Interface (CLI) (*Controls Menu->Launch CLI*)
 
    .. figure:: images/ccl_launch_cli.png
+   :width: 100%
 
       Launch the CLI
 

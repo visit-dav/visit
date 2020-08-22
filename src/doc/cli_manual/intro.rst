@@ -86,6 +86,7 @@ Python Interface is built-in. The CLI is provided to simplify the
 process of running VisIt Python scripts.
 
 .. figure:: images/architecture.png
+   :width: 100%
    :alt: VisIt’s architecture
 
    VisIt’s architecture

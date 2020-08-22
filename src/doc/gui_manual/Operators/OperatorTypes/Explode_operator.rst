@@ -6,8 +6,7 @@ Explode operator
 .. _explode_operator_example:
 
 .. figure:: images/explode_montage.png
-   :width: 60%
-   :align: center
+   :width: 100%
    
    Explode operator example: original plot; exploding cells of a material; exploding materials.
 
@@ -32,8 +31,7 @@ through the **Explode attributes window** shown below.
 .. _explode_window:
 
 .. figure:: images/explode_attributes.png
-   :width: 60%
-   :align: center
+   :width: 100%
    
    Explode attributes window
 

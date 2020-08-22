@@ -15,6 +15,7 @@ the window displays the content for the online help pages.
 .. _Help_window:
 
 .. figure:: images/helpwindow.png
+   :width: 100%
 
    Help window
 
@@ -79,6 +80,7 @@ recalled by clicking on a bookmark.
 .. _Help_tabs:
 
 .. figure:: images/bookmarktab.png
+   :width: 100%
 
    Help tabs
 

@@ -872,7 +872,7 @@ before and after results are shown in Figure
 
 .. figure:: images/annotation1.png
    :alt: Before and after image of adding a gradient background.
-   :width: 5in
+   :width: 100%
 
    Before and after image of adding a gradient background.
 
@@ -901,7 +901,7 @@ banner to a visualization, use the following bit of Python code:
 
 .. figure:: images/annotation2.png
    :alt: Adding a banner
-   :width: 3in
+   :width: 100%
 
    Adding a banner
 
@@ -930,7 +930,7 @@ annotation object is shown in Figure
 
 .. figure:: images/annotation3.png
    :alt: Time slider annotation in the lower left corner
-   :width: 3in
+   :width: 100%
 
    Time slider annotation in the lower left corner
 
@@ -960,6 +960,6 @@ any other form of image data into a visualization.
 
 .. figure:: images/annotation4.png
    :alt: Image annotation used to incorporate LLNL logo
-   :width: 3in
+   :width: 100%
 
    Image annotation used to incorporate LLNL logo

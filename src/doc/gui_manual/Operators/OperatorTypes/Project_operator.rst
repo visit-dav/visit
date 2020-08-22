@@ -11,6 +11,7 @@ example of the Project operator is shown in :numref:`Figure %s<project_operator_
 .. _project_operator_example:
 
 .. figure:: images/project_operator_example.png
+   :width: 100%
    
    Project Operator Example
 
@@ -28,8 +29,7 @@ operator, choose the appropriate option from the **Projection type** combo box.
 .. _project_projection_type:
 
 .. figure:: images/project_projectiontype.png
-   :width: 60%
-   :align: center
+   :width: 100%
    
    Project Attributes Window showing available projection types
 
@@ -47,7 +47,6 @@ appropriate option from the **Vector transform method** combo box.
 .. _project_vector_transform:
 
 .. figure:: images/project_vectortransform.png
-   :width: 60%
-   :align: center
+   :width: 100%
    
    Project Attributes Window showing available vector treatments

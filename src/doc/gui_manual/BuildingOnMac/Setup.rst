@@ -93,8 +93,7 @@ Configuration
 .. _masonry_config_file:
 
 .. figure:: images/config.png
-   :width: 50%
-   :align: center
+   :width: 100%
 
    Masonry's JSON config file
 
@@ -115,8 +114,7 @@ To `code sign <https://developer.apple.com/library/archive/technotes/tn2206/_ind
 .. _xcode_certs_image:
 
 .. figure:: images/certs.png
-   :width: 50%
-   :align: center
+   :width: 100%
 
    Xcode Manage Certificates Dialog
 

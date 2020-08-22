@@ -13,6 +13,7 @@ that are grouped by functionality. The groups are contained in the
 .. _Preferences-Preferences:
 
 .. figure:: images/Preferences.png
+   :width: 100%
 
    The preferences window
 

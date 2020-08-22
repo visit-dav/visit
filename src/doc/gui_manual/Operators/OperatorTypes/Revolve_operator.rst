@@ -11,6 +11,7 @@ the Revolve operator is shown in :numref:`Figure %s <revolve>`.
 .. _revolve:
 
 .. figure:: images/revolve.png
+   :width: 100%
 
   Revolve operator example
 
@@ -38,5 +39,6 @@ of revolution manually, uncheck the **Choose axis based on mesh type** checkbox.
 .. _revolvewindow:
 
 .. figure:: images/revolvewindow.png
+   :width: 100%
 
   Revolve attributes window

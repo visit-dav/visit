@@ -15,6 +15,7 @@ that have interactor properties. The **Interactors window** is shown in
 .. _interactors:
 
 .. figure:: images/interactors.png
+   :width: 100%
 
    Interactors window
 

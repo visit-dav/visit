@@ -10,6 +10,7 @@ cylindrical surface.
 .. _cylinder:
 
 .. figure:: images/cylinder.png
+   :width: 100%
 
    Cylinder operator example: original plot; plot clipped by cylinder
 
@@ -35,6 +36,7 @@ new radius into the **Radius** text field in the **Cylinder attributes window** 
 .. _cylinderwindow:
 
 .. figure:: images/cylinderwindow.png
+   :width: 100%
 
    Cylinder operator window.
 
@@ -48,7 +50,6 @@ cylindrical region and removes the region that was previously shown.
 .. _cylinder_inverse:
 
 .. figure:: images/cylinder_inverse.png
-   :width: 60%
-   :align: center
+   :width: 100%
 
    Cylinder with inverse applied

@@ -13,6 +13,7 @@ windows may be posted for quick and convenient access.
 .. _Intro-MainWindow:
 
 .. figure:: images/Intro-MainWindow.png
+   :width: 100%
 
    VisIt_'s Main window
 
@@ -29,6 +30,7 @@ can be used.
 .. _Intro-PostedWindow:
 
 .. figure:: images/Intro-PostedWindow.png
+   :width: 100%
 
     An unposted and posted window
 
@@ -68,6 +70,7 @@ in detail later in this manual.
 .. _Intro-MainMenus:
 
 .. figure:: images/Intro-MainMenus.png
+   :width: 100%
 
    VisIt_'s main menus
 
@@ -93,6 +96,7 @@ blue to red.
 .. _Intro-OutputIndicator:
 
 .. figure:: images/Intro-OutputIndicator.png
+   :width: 100%
 
    The output window and output indicator
 
@@ -118,5 +122,6 @@ click the **Apply** button to apply changes.
 .. _Intro-AutoApply:
 
 .. figure:: images/Intro-AutoApply.png
+   :width: 100%
 
    The Apply button and Auto apply check box

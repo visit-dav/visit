@@ -13,6 +13,7 @@ has been applied is shown in :numref:`Figure %s <slice>`.
 .. _slice:
 
 .. figure:: images/slice.png
+   :width: 100%
 
   Slice operator example
 
@@ -30,6 +31,7 @@ slice plane.
 .. _slicewindow:
 
 .. figure:: images/slicewindow.png
+   :width: 100%
 
   Slice attributes window
 
@@ -58,6 +60,7 @@ then type a new value into the **Intercept** text field.
 .. _slicewindow_origins:
 
 .. figure:: images/slicewindow_origins.png
+   :width: 100%
 
   Origin area appearance
 

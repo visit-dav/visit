@@ -15,6 +15,7 @@ that exist in the window.
 .. _line1:
 
 .. figure:: images/line1.png
+   :width: 100%
 
    Line tool with a 2D plot
 
@@ -43,6 +44,7 @@ example of the line tool in 3D is shown in :numref:`Figure %s <line2>`.
 .. _line2:
 
 .. figure:: images/line2.png
+   :width: 100%
 
    Line tool in 3D
 

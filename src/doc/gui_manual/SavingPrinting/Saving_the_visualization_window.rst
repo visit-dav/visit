@@ -44,7 +44,7 @@ allow you to set the options that govern how visualizations are saved.
 .. _save_window_fig:
 
 .. figure:: images/savewindow.png 
-   :width: 60%
+   :width: 100%
 
    Save Window
 
@@ -220,7 +220,7 @@ buffer (same format as the depth image).
 .. _transparent_fig:
 
 .. figure:: images/transparent.png 
-   :width: 60%
+   :width: 100%
 
    Partially transparent plot saved to PNG with alpha channel
 
@@ -230,12 +230,14 @@ Saving tiled images
 .. _save_tiled_fig:
 
 .. figure:: images/tiledbefore.png 
+   :width: 100%
 
    Saving tiled images example (before)
 
 .. _save_tiled_fig1:
 
 .. figure:: images/tiledafter.png 
+   :width: 100%
 
    Saving tiled images example (after)
 

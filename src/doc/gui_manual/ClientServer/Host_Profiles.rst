@@ -16,6 +16,7 @@ Host profiles window
 .. _host_profile_win:
 
 .. figure:: images/hostprofile.png
+   :width: 100%
 
    Host profiles window
 
@@ -106,6 +107,7 @@ profiles on the host.
 .. _host_settings_tab:
 
 .. figure:: images/machine_hostsettings.png
+   :width: 100%
 
    Host Settings tab
 
@@ -270,6 +272,7 @@ profile attributes.
 .. _launch_profile_tab:
 
 .. figure:: images/hostprofile_launchtab.png
+   :width: 100%
  
    Launch Profiles tab
 
@@ -345,6 +348,7 @@ Setting parallel options
 .. _host_profile_parallel:
 
 .. figure:: images/parallel.png
+   :width: 100%
 
    Parallel options
 
@@ -378,6 +382,7 @@ common parallel-launch options that VisIt_ currently supports.
 .. _parallel_launch_method:
 
 .. figure:: images/launch_method_options.png
+   :width: 100%
 
    Parallel launch method options 
 
@@ -468,6 +473,7 @@ combinations outside of the constraints.
 .. _parallel_constraints:
 
 .. figure:: images/parallel_launch_constraints.png
+   :width: 100%
 
    Parallel launch constraints 
 
@@ -477,6 +483,7 @@ Advanced host profile options
 .. _host_profile_advanced_options:
 
 .. figure:: images/advancedoptions.png
+   :width: 100%
 
    Advanced options tab
 
@@ -558,6 +565,7 @@ to click **Install** before dismissing the window.
 .. _install_remote_profiles_4:
 
 .. figure:: images/install_remote_profiles_4.png
+   :width: 100%
 
    The Host Profile Configuration Window
 
@@ -579,6 +587,7 @@ window. The top section of the tab allows you to choose the remote location
 .. _install_remote_profiles_1:
 
 .. figure:: images/install_remote_profiles_1.png
+   :width: 100%
 
    Remote Profiles tab 
 
@@ -589,6 +598,7 @@ the remote location will be displayed.
 .. _install_remote_profiles_2:
 
 .. figure:: images/install_remote_profiles_2.png
+   :width: 100%
 
    Remote Profiles tab with updated content
 
@@ -600,6 +610,7 @@ The selected host profile will now show up in the hosts list in the left pane.
 .. _install_remote_profiles_3:
 
 .. figure:: images/install_remote_profiles_3.png
+   :width: 100%
 
    Remote Profiles tab with host selected for import
 
@@ -631,6 +642,7 @@ Clicking the **Cancel** button prevents the compute engine from being launched.
 .. _host_profile_engine_options:
 
 .. figure:: images/optionwindow.png
+   :width: 100%
 
    Engine launch options window
 

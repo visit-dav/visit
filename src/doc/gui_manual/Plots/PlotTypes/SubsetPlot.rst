@@ -12,12 +12,14 @@ chapter.
 .. _subsetplot:
 
 .. figure:: ../images/subsetplot.png
+   :width: 100%
 
    Example of Subset plot of an AMR Mesh
 
 .. _subsetplotwindow:
 
 .. figure:: ../images/subsetplotwindow.png
+   :width: 100%
 
    Subset plot attributes window
 

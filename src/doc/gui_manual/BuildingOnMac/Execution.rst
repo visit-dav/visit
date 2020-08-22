@@ -22,8 +22,7 @@ Once masonry is running, it will produce log files in the ``_logs`` directory. T
 .. _masonry_log_file:
 
 .. figure:: images/log.png
-   :width: 50%
-   :align: center
+   :width: 100%
 
    Mansonry Logs in HTML format
 

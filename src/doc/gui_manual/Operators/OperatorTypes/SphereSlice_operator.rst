@@ -13,6 +13,7 @@ SphereSlice operator is shown in :numref:`Figure %s <sphere>`.
 .. _sphere:
 
 .. figure:: images/sphere.png
+   :width: 100%
 
    SphereSlice operator example
 
@@ -30,6 +31,7 @@ sphere, enter a new radius number into the **Radius** text field.
 .. _sphereslicewindow:
 
 .. figure:: images/sphereslicewindow.png
+   :width: 100%
 
   SphereSlice attributes window
 

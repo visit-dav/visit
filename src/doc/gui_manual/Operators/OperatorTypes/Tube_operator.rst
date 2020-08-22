@@ -9,6 +9,7 @@ the lines appear fatter and shaded.
 .. _tube:
 
 .. figure:: images/tube.png
+   :width: 100%
 
 Changing tube appearance
 """"""""""""""""""""""""
@@ -25,7 +26,7 @@ variable from the **Variable** menu.
 .. _tubewindow:
 
 .. figure:: images/tubewindow.png
-   :width: 40%
+   :width: 100%
 
    Tube attributes window
 
@@ -38,7 +39,7 @@ for result of capping.
 .. _tube2:
 
 .. figure:: images/tube2.png
-   :width: 60%
+   :width: 100%
 
    Uncapped and capped tubes
 

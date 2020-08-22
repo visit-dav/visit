@@ -14,6 +14,7 @@ belongs to.  :numref:`Figure %s <conn_comp_op>`,
 .. _conn_comp_op:
 
 .. figure:: images/conn_comp_op.png
+   :width: 100%
 
    Connected Components operator shown with Pseudocolor Plot.
 
@@ -23,6 +24,7 @@ The operator has one option which controls the use of Ghost Zone Neighbors for c
 .. _conncompwindow:
 
 .. figure:: images/conncompwindow.png
+   :width: 100%
 
    Connected Components operator window.
 

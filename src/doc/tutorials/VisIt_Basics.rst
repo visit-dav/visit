@@ -21,6 +21,7 @@ What you see
 ------------
 
 .. figure:: images/Basics-GUIOverview.png
+   :width: 100%
 
    The VisIt graphical user interface and visualization window
 
@@ -36,6 +37,7 @@ The first thing to do is to open files.
 2. This brings up the File open window.
 
 .. figure:: images/Basics-FileOpen.png
+   :width: 100%
 
    The File open window
 
@@ -70,6 +72,7 @@ Making a plot
   * This means VisIt_ will draw this plot after you click *Draw*.
 
 .. figure:: images/Basics-PlotList.png
+   :width: 100%
 
    The plot list with a Pseudocolor plot in it
 
@@ -80,6 +83,7 @@ Making a plot
 8. You should now see both a Pseudocolor and Mesh plot.
 
 .. figure:: images/Basics-PcMesh.png
+   :width: 100%
 
    A Pseudocolor and mesh plot displayed in a visualization window
 
@@ -104,6 +108,7 @@ Modifying the plot attributes
 2. This brings up the Pseudocolor plot attributes window.
 
 .. figure:: images/Basics-PseudocolorAttributes.png
+   :width: 100%
 
    The Pseudocolor plot attributes window
 
@@ -147,6 +152,7 @@ Applying an operator
 5. This brings up the Slice operator attributes window.
 
 .. figure:: images/Basics-SliceAttributes.png
+   :width: 100%
 
    The Slice operator attributes window
 
@@ -166,6 +172,7 @@ There are six basic interaction modes:
 6. Lineout
 
 .. figure:: images/Basics-InteractionModes.png
+   :width: 100%
 
    The visualization tool bar with the icons for setting the interaction mode
 
@@ -241,6 +248,7 @@ user to query a variable associated with a zone or node.
   * The Pick window contains information about the zone (i.e. cell or element) that you just picked in.
 
 .. figure:: images/Basics-PickOutput.png
+   :width: 100%
 
    The Pick output window
 
@@ -286,6 +294,7 @@ VisIt_ can be part of a larger tool chain.
 5. This brings up the Export Database window.
 
 .. figure:: images/Basics-ExportDatabase.png
+   :width: 100%
 
    The Export Database window
 
@@ -312,6 +321,7 @@ Subsetting
 5. This brings up the Subset window.
 
 .. figure:: images/Basics-Subset.png
+   :width: 100%
 
    The Subset window
 

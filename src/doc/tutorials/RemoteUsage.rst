@@ -85,6 +85,7 @@ will need to do the following.
 6. At this point you should exit all the windows associated with X-Win32 and re-establish you connections to the remote system.
 
 .. figure:: images/Remote-XForwarding1.png
+   :width: 100%
 
    The X-Win32 control panel
 
@@ -126,6 +127,7 @@ Installing RealVNC on an LLNL managed Windows system
 3. Click *Launch* to install the package.
 
 .. figure:: images/Remote-LANDeskPortal.png
+   :width: 100%
 
    The LLNL LANDesk Software Portal
 
@@ -137,6 +139,7 @@ Installing RealVNC on an LLNL managed Mac system
 3. Click the *Install* button in the right column to install the package.
 
 .. figure:: images/MacPatch.png
+   :width: 100%
 
    MacPatch: LLNL Managed Software
 
@@ -157,6 +160,7 @@ Windows, MacOS and Linux.
 Now we are ready to create the profiles for logging into the CZ and RZ.
 
 .. figure:: images/Remote-VNCViewer1.png
+   :width: 100%
 
    The VNC Viewer
 
@@ -167,6 +171,7 @@ Now we are ready to create the profiles for logging into the CZ and RZ.
 5. Click *Ok*.
 
 .. figure:: images/Remote-VNCViewer2.png
+   :width: 100%
 
    The VNC Viewer Properties window
 
@@ -179,6 +184,7 @@ Now we are ready to create the profiles for logging into the CZ and RZ.
 12. Your VNC Viewer window should now contain two connection profiles.
 
 .. figure:: images/Remote-VNCViewer3.png
+   :width: 100%
 
    The VNC Viewer with two profiles
 
@@ -220,6 +226,7 @@ properly with VNC.
 .. _VNCClientImage:
 
 .. figure:: images/Remote-VisItVNC.png
+   :width: 100%
 
    VisIt_ running on the VNC Viewer
 
@@ -239,12 +246,14 @@ To have the desktop scale automatically:
 1. Go to the slide-out menu at the top center and rest your mouse below the title bar.
 
 .. figure:: images/Remote-VNCViewer4.png
+   :width: 100%
 
    The slide-out menu
 
 2. Click the *Scale automatically* icon.
 
 .. figure:: images/Remote-VNCViewer5.png
+   :width: 100%
 
    Clicking on the Scale automatically icon
 
@@ -257,6 +266,7 @@ load. One solution is to reduce the picture quality.
 2. Click the *Properties* icon.
 
 .. figure:: images/Remote-VNCViewer6.png
+   :width: 100%
 
    Clicking on the Properties icon
 
@@ -265,6 +275,7 @@ load. One solution is to reduce the picture quality.
 5. Click *Ok*.
 
 .. figure:: images/Remote-VNCViewer7.png
+   :width: 100%
 
    Setting the Picture quality to Low
 
@@ -305,6 +316,7 @@ installed for the remote system. You can check this by bringing up the
 4. Select *Options->Host profiles and configuration setup...* to bring up the *Setup Host Profiles and Configuration* window.
 
 .. figure:: images/Remote-ClientServer1.png
+   :width: 100%
 
    The *Setup Host Profiles and Configuration*
 
@@ -316,6 +328,7 @@ installed for the remote system. You can check this by bringing up the
 10. Click the *Dismiss* button.
 
 .. figure:: images/Remote-ClientServer2.png
+   :width: 100%
 
    The *Host profiles* window with the host profiles for LLNL
 
@@ -329,12 +342,14 @@ You are now ready to connect to the remote system.
 3. This will bring up a window to enter your password.
 
 .. figure:: images/Remote-ClientServer3.png
+   :width: 100%
 
    The *File open* window
 
 4. If your username is different on the remote system from the one on your local system you will need to click on *Change username* and change your username.
 
 .. figure:: images/Remote-ClientServer4.png
+   :width: 100%
 
    The *Enter Password* window
 
@@ -399,5 +414,6 @@ When using an mxterm, you will need to use the mxterm profile when starting
 your compute engine.
 
 .. figure:: images/Remote-Mxterm1.png
+   :width: 100%
 
    Selecting the mxterm host profile

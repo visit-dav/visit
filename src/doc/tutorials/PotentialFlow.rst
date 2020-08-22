@@ -47,6 +47,7 @@ Modify the Mesh plot settings
   * *Opaque mode* 
 
 .. figure:: images/PotentialFlow-MeshPlot-Atts.png
+   :width: 100%
 
    Example mesh plot settings for the Potential Flow data.
 
@@ -55,6 +56,7 @@ Modify the Mesh plot settings
 You will need to click *Apply* to commit the settings to your plot.
 
 .. figure:: images/PotentialFlow-MeshPlot-Render.png
+   :width: 100%
 
    Example mesh plot result the Potential Flow data.
 
@@ -78,6 +80,7 @@ We will use Pseudocolor plots to examine the "pressure" and
 5. In the *Color* section,cChange the color table to *Spectral* and check the *Invert* button.
 
 .. figure:: images/PotentialFlow-Vmag-Atts.png
+   :width: 100%
 
    The pseudocolor plot attributes for the velocity magnitude example.
 
@@ -88,6 +91,7 @@ We will use Pseudocolor plots to examine the "pressure" and
 You will see the velocity magnitude solutions for the different angles of attack.
 
 .. figure:: images/PotentialFlow-VmagRender.png
+   :width: 100%
 
    The pseudocolor plot of the velocity magnitude.
 
@@ -106,6 +110,7 @@ Now we will add an additional plot to view velocity magnitude contours
 4. In the *Lines* section, set the *Line width* to *2*.
 
 .. figure:: images/PotentialFlow-PcAndContour-Atts.png
+   :width: 100%
 
    Example contour plot settings for Potential Flow velocity magnitude.
 
@@ -117,6 +122,7 @@ You will see the contours of the velocity magnitude solutions for the different 
 
 
 .. figure:: images/PotentialFlow-PcAndContour-Render.png
+   :width: 100%
 
    A contour plot of the velocity magnitude.
 
@@ -142,6 +148,7 @@ simulated "v" vector field.
 4. Set *Stride* to "17".
 
 .. figure:: images/PotentialFlow-Vectors-Atts-1.png
+   :width: 100%
 
    *Vectors* tab settings for example vector plot of velocity
 
@@ -151,6 +158,7 @@ simulated "v" vector field.
 7. In the *Color* section, change the *Magnitude* to *viridis*
 
 .. figure:: images/PotentialFlow-Vectors-Atts-2.png
+   :width: 100%
 
    *Data* tab settings for example vector plot of velocity
 
@@ -158,6 +166,7 @@ simulated "v" vector field.
 9. In the *Scale* section, uncheck *Scale by magnitude* and *Auto scale*.
 
 .. figure:: images/PotentialFlow-Vectors-Atts-3.png
+   :width: 100%
 
    *Glyphs* tab settings for example vector plot of velocity
 
@@ -167,6 +176,7 @@ simulated "v" vector field.
 13. Drag the *Time* animation controls above the plot list on the main *GUI* window.
 
 .. figure:: images/PotentialFlow-Vectors-Render.png
+   :width: 100%
 
    The vector plot of velocity.
 
@@ -193,6 +203,7 @@ Plotting streamlines of velocity
 1. Go to *Add->Pseudocolor->operators->IntergralCurve->v*.
 
 .. figure:: images/PotentialFlow-Streamline-Menu.png
+   :width: 100%
 
    Creating a streamline plot with the IntegralCurve operator.
 
@@ -207,6 +218,7 @@ Plotting streamlines of velocity
 10. In IntegralCurve operator attributes, click *Apply* again (for good measure) and then *Dismiss*.
 
 .. figure:: images/PotentialFlow-Streamline-Atts.png
+   :width: 100%
 
    The IntegralCurve operator attributes.
 
@@ -215,6 +227,7 @@ Plotting streamlines of velocity
 13. In the *Color* section set the *Color table* to *viridis*.
 
 .. figure:: images/PotentialFlow-Streamline-PC-Atts-Data.png
+   :width: 100%
 
    The Pseudocolor attributes for the streamline data.
 
@@ -224,6 +237,7 @@ Plotting streamlines of velocity
 17. Set the tail *Radius* to "0.025".
 
 .. figure:: images/PotentialFlow-Streamline-PC-Atts-Geom.png
+   :width: 100%
 
    The Pseudocolor attributes for the streamline geometry.
 
@@ -232,10 +246,12 @@ Plotting streamlines of velocity
 20. Use the time slider controls to view a few different angles of attack solutions.
 
 .. figure:: images/PotentialFlow-Streamline-Render-AOT-0.png
+   :width: 100%
 
    The streamlines of velocity at 0 degree angle of attack.
 
 .. figure:: images/PotentialFlow-Streamline-Render-AOT-20.png
+   :width: 100%
 
    The streamlines of velocity at 20.5 degree angle of attack.
 

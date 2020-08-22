@@ -11,7 +11,7 @@ where it is useful to plot 1D quantities that evolve over time.
 .. _curveplot:
 
 .. figure:: ../images/curveplot.png
-   :width: 60%
+   :width: 100%
 
    Curve plot
 
@@ -25,7 +25,7 @@ The Curve plot's color is set up to **Cycle** by default.  In other words, each 
 .. _curvewindow:
 
 .. figure:: ../images/curvewindow.png
-   :width: 50%
+   :width: 100%
 
    Curve plot attributes, data tab
 
@@ -46,7 +46,7 @@ one or two colors based upon the mode chosen.
 .. _curvefill:
 
 .. figure:: ../images/curve_filled_with_points.png
-   :width: 50%
+   :width: 100%
 
    Curve, space-filled with points
 
@@ -66,7 +66,7 @@ selection from the **Line Width** combo box.
 .. _curvewindow2:
 
 .. figure:: ../images/curvewindow2.png
-   :width: 50%
+   :width: 100%
 
    Curve plot attributes, geometry tab
 
@@ -106,7 +106,7 @@ different time cue settings.
 .. _curvewindow3:
 
 .. figure:: ../images/curvewindow3.png
-   :width: 50%
+   :width: 100%
 
    Curve plot attributes, extras tab
 
@@ -130,6 +130,6 @@ and choose **Radians** or **Degrees** for the **Units**.
 .. _curve_polar:
 
 .. figure:: ../images/curve_polar.png
-   :width: 60%
+   :width: 100%
 
    Curve plot before and after Polar coordinate transform (R-theta, radians)

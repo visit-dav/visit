@@ -26,6 +26,7 @@ in :numref:`Figure %s <dlc_1>`.
 .. _dlc_1:
 
 .. figure:: images/DataLevelComparisons0.png
+   :width: 100%
 
    Starting the Data-Level Comparisons Wizard
 
@@ -50,6 +51,7 @@ following the documentation on
 .. _dlc_2:
 
 .. figure:: images/DataLevelComparisons1.png
+   :width: 100%
 
    Selecting among varieties of CMFE expressions
 
@@ -67,6 +69,7 @@ target mesh and donor variables to be used in the expression.
 .. _dlc_3b:
 
 .. figure:: images/DataLevelComparisons3b.png
+   :width: 100%
 
    Setting up the target mesh and donor variables
 
@@ -82,6 +85,7 @@ browser and navigate to the desired database in the file system as shown in
 .. _dlc_3c:
 
 .. figure:: images/DataLevelComparisons3c.png
+   :width: 100%
 
    Setting up the target mesh and donor variables
 
@@ -96,6 +100,7 @@ list.
 .. _dlc_3d:
 
 .. figure:: images/DataLevelComparisons3d.png
+   :width: 100%
 
    Selecting a specific variable from a database
 
@@ -111,6 +116,7 @@ where the donor and target meshes do not wholly overlap.
 .. _dlc_4:
 
 .. figure:: images/DataLevelComparisons4.png
+   :width: 100%
 
    Selecting the mode of evaluation
 
@@ -136,6 +142,7 @@ we have given the result variable the name *hardyglobal_onto_mesh1_from_globe*.
 .. _dlc_5:
 
 .. figure:: images/DataLevelComparisons5.png
+   :width: 100%
 
    Selecting result variable name and comparison method
 
@@ -163,6 +170,7 @@ expression window, like any other expression as illustrated in
 .. _dlc_6:
 
 .. figure:: images/DataLevelComparisons7.png
+   :width: 100%
 
    New can be manipulated in the Expression window
 

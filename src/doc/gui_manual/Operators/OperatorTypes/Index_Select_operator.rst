@@ -19,6 +19,7 @@ are used. An example of the Index Select operator appears in :numref:`Figure %s 
 .. _indexselect:
 
 .. figure:: images/indexselect.png
+   :width: 100%
 
    Index Select operator example: original plot; index selected (stride=1); index selected (stride=2)
 
@@ -48,6 +49,7 @@ boxes in the **K** row.
 .. _indexselectwindow:
 
 .. figure:: images/indexselectwindow.png
+   :width: 100%
 
    Index Select attributes window 
 
@@ -76,4 +78,5 @@ selection for a multiple mesh database whose sub-meshes are called domains.
 .. _indexselect_categoryselection:
 
 .. figure:: images/indexselect_categoryselection.png
+   :width: 100%
 

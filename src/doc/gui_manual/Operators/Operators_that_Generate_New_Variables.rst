@@ -16,6 +16,7 @@ the **operators** submenu of a particular plot's **variable** menu. See
 .. _Operators-OperatorsInVariableMenu:
 
 .. figure:: images/Operators-OperatorsInVariableMenu.png
+   :width: 100%
 
    The menu for applying an operator that generates a new variable.
 

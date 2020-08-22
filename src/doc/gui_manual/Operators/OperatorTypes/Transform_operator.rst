@@ -19,6 +19,7 @@ in :numref:`Figure %s <transform>`.
 .. _transform:
 
 .. figure:: images/transform.png
+   :width: 100%
 
    Transform operator example
 
@@ -41,6 +42,7 @@ space-separated floating point numbers.
 .. _transformwindow:
 
 .. figure:: images/transformwindow.png
+   :width: 100%
 
    Transform attributes window
 
@@ -94,6 +96,7 @@ visualization window.
 .. _coordsystems:
 
 .. figure:: images/coordsystems.png
+   :width: 100%
   
     Cartesian, Cylindrical, Spherical coordinate systems 
 
@@ -107,6 +110,7 @@ plot as it is intended to look.
 .. _transform2:
 
 .. figure:: images/transform2.png
+   :width: 100%
 
     Coordinate system conversion using the Transform operator
 
@@ -125,6 +129,7 @@ any of those operations, add a second Transform operator to your plots.
 .. _transformwindow2:
 
 .. figure:: images/transformwindow2.png
+   :width: 100%
 
   Supported coordinate systems
 
@@ -140,12 +145,14 @@ transform can be applied by selecting **Invert linear transform**.
 .. _transformwindow3:
 
 .. figure:: images/transformwindow3.png
+   :width: 100%
 
     Linear transformation options
 
 .. _transform_linear:
 
 .. figure:: images/transform_linear.png
+   :width: 100%
 
     Linear transformation example
 

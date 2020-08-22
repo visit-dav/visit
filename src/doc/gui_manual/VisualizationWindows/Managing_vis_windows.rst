@@ -12,6 +12,7 @@ as well as in the vis window's **Toolbars** and **Popup menu**.
 .. _popupmenuwindowmenu:
 
 .. figure:: images/popupmenuwindowmenu.png
+   :width: 100%
 
    Window menu
 
@@ -60,6 +61,7 @@ X in it. An example of a **close window button** is shown in
 .. _closebutton:
 
 .. figure:: images/closebutton.png
+   :width: 100%
 
    Window decorations with close button
 
@@ -95,6 +97,7 @@ in the **Main Window's Windows** menu.
 .. _windowclearmenu:
 
 .. figure:: images/windowclearmenu.png
+   :width: 100%
 
    Clear menu
 
@@ -125,6 +128,7 @@ in the vis window's **Toolbar**.
 .. _activewindow:
 
 .. figure:: images/activewindow.png
+   :width: 100%
 
    Active window menu
 
@@ -150,6 +154,7 @@ submenu, all attributes and plots are copied into the active vis window.
 .. _windowcopymenu:
 
 .. figure:: images/windowcopymenu.png
+   :width: 100%
 
    Copy menu
 
@@ -169,6 +174,7 @@ off time locking at any time.
 .. _windowlockmenu:
 
 .. figure:: images/windowlockmenu.png
+   :width: 100%
 
    Lock menu
 

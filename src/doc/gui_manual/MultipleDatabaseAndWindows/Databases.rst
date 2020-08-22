@@ -31,6 +31,7 @@ various plot types.  To changing the active source, select a database from the
 .. _changeactivesource:
 
 .. figure:: images/changeactivesource.png
+   :width: 100%
 
    Changing the active source.
 
@@ -62,6 +63,7 @@ choose which logical time slider to affect when you change time using the
 .. _activetimeslider0:
 
 .. figure:: images/activetimeslider0.png
+   :width: 100%
 
    Time slider and related controls
 
@@ -87,6 +89,7 @@ are covered next.
 .. _activetimeslider3:
 
 .. figure:: images/activetimeslider4.png
+   :width: 100%
 
    Active time slider and time slider controls
 

@@ -15,12 +15,14 @@ See :numref:`Figure %s<fow_image>`.
 .. _sources_image:
 
 .. figure:: images/sources_mainguipanel.png
+   :width: 100%
 
    Main gui panel showing Sources section
 
 .. _fow_image:
 
 .. figure:: images/fileopenwindow.png
+   :width: 100%
 
    File Open Window
 
@@ -126,12 +128,14 @@ without a ``.visit`` file.  See :numref:`Figure %s <fgoff_image>`.
 .. _fgon_image:
 
 .. figure:: images/FileGroupingOn.png
+   :width: 100%
 
    File grouping turned on (Smart setting)
 
 .. _fgoff_image:
 
 .. figure:: images/FileGroupingOff.png
+   :width: 100%
 
    File grouping turned off
 
@@ -170,6 +174,7 @@ window is shown in :numref:`Figure %s<rrp_image>`.
 .. _rrp_image:
 
 .. figure:: images/RemRecentPaths.png
+   :width: 100%
 
    Remove recent paths window
 
@@ -210,5 +215,6 @@ simulation is the same as opening any other disk file.
 .. _fow_sim_image:
 
 .. figure:: images/OpenASimulation.png
+   :width: 100%
 
    Accessing a simulation using the File Open Window

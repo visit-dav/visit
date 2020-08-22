@@ -14,6 +14,7 @@ been applied is shown in :numref:`Figure %s <cone>`.
 .. _cone:
 
 .. figure:: images/cone.png
+   :width: 100%
 
    Cone operator example: original plot; sliced with cone; sliced with cone and projected to 2D
 
@@ -34,6 +35,7 @@ separated by spaces. Once the cone is positioned, you can set its direction
 .. _conewindow:
 
 .. figure:: images/conewindow.png
+   :width: 100%
 
    Cone operator window.
 

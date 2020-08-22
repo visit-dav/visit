@@ -30,14 +30,12 @@ higher values for **Target Reduction** value cause VisIt to simplify
 the mesh even more.
 
 .. image:: images/decimate1.png
-   :width: 60%
-   :align: center
+   :width: 100%
 
 .. _decimateimages:
 
 .. figure:: images/decimate2.png 
-   :width: 60%
-   :align: center
+   :width: 100%
 
    Decimate operator applied to reduce the number of cells in the mesh. 
    (Left-to-right, top-to-bottom):
@@ -47,6 +45,7 @@ the mesh even more.
 .. _decimatewindow:
 
 .. figure:: images/decimatewindow.png
+   :width: 100%
 
     Decimate attributes window
 

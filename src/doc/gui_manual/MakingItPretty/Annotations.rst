@@ -31,6 +31,7 @@ Annotation Window
 .. _fig-MakingItPretty-Annotation:
 
 .. figure:: images/MakingItPretty-Annotation.png
+   :width: 100%
 
    The Annotation window
 
@@ -47,6 +48,7 @@ General Annotations
 .. _fig-MakingItPretty-Annotation2DExample:
 
 .. figure:: images/MakingItPretty-Annotation2DExample.png
+   :width: 100%
 
    2D plot with annotations 
 
@@ -111,6 +113,7 @@ with various annotations.
 .. _fig-MakingItPretty-Annotation2DGeneral:
 
 .. figure:: images/MakingItPretty-Annotation2DGeneral.png
+   :width: 100%
 
    The general 2D properties
 
@@ -130,6 +133,7 @@ that the true range is actually 0 to 100x10^3 or 100,000.
 .. _fig-MakingItPretty-AutoscaleAxesLabelsExample:
 
 .. figure:: images/MakingItPretty-AutoscaleAxesLabelsExample.png
+   :width: 100%
 
    2D plot with axes labels being scaled by 10^3
 
@@ -156,6 +160,7 @@ axes. The tab for setting the X-Axis properties is shown in
 .. _fig-MakingItPretty-Annotation2DAxes:
 
 .. figure:: images/MakingItPretty-Annotation2DAxes.png
+   :width: 100%
 
    The 2D axes properties
 
@@ -211,12 +216,14 @@ example 3D plot with the 3D annotations.
 .. _fig-MakingItPretty-Annotation3DExample:
 
 .. figure:: images/MakingItPretty-Annotation3DExample.png
+   :width: 100%
 
    3D plot with annotations
 
 .. _fig-MakingItPretty-Annotation3DGeneral:
 
 .. figure:: images/MakingItPretty-Annotation3DGeneral.png
+   :width: 100%
 
    The general 3D properties
 
@@ -265,6 +272,7 @@ axes. The tab for setting the X-Axis properties is shown in
 .. _fig-MakingItPretty-Annotation3DAxes:
 
 .. figure:: images/MakingItPretty-Annotation3DAxes.png
+   :width: 100%
 
    The 3D axes properties
 
@@ -322,6 +330,7 @@ colors that bleed into each other.
 .. _fig-MakingItPretty-AnnotationColors:
 
 .. figure:: images/MakingItPretty-AnnotationColors.png
+   :width: 100%
 
    The annotation colors tab
 
@@ -338,6 +347,7 @@ background and foreground colors.
 .. _fig-MakingItPretty-ColorSelectDialog:
 
 .. figure:: images/MakingItPretty-ColorSelectDialog.png
+   :width: 100%
 
    The popup color menu and the color selection dialog
 
@@ -370,6 +380,7 @@ styles are shown in :numref:`Figure %s <fig-MakingItPretty-Gradients>`.
 .. _fig-MakingItPretty-Gradients:
 
 .. figure:: images/MakingItPretty-Gradients.png
+   :width: 100%
 
    The various gradient styles
 
@@ -395,6 +406,7 @@ to managing the list of annotation objects and setting their properties.
 .. _fig-MakingItPretty-AnnotationObjects:
 
 .. figure:: images/MakingItPretty-AnnotationObjects.png
+   :width: 100%
   
    The annotation objects tab
 
@@ -460,6 +472,7 @@ titles to a visualization.
 .. _fig-MakingItPretty-AnnotationObjectTextExample:
 
 .. figure:: images/MakingItPretty-AnnotationObjectTextExample.png
+   :width: 100%
   
    Examples of text annotations
 
@@ -470,6 +483,7 @@ to set the position, size, text, colors, and font properties.
 .. _fig-MakingItPretty-AnnotationObjectText:
 
 .. figure:: images/MakingItPretty-AnnotationObjectText.png
+   :width: 100%
   
    The text annotation interface
 
@@ -492,6 +506,7 @@ object's lower left corner.
 .. _fig-MakingItPretty-AnnotationObjectPosition:
 
 .. figure:: images/MakingItPretty-AnnotationObjectPosition.png
+   :width: 100%
   
    Screen positioning control
 
@@ -524,6 +539,7 @@ and zoomed.
 .. _fig-MakingItPretty-AnnotationObject3DTextExample:
 
 .. figure:: images/MakingItPretty-AnnotationObject3DTextExample.png
+   :width: 100%
   
    Examples of 3d text annotations
 
@@ -534,6 +550,7 @@ to set the text, position, size, orientation and color properties.
 .. _fig-MakingItPretty-AnnotationObject3DText:
 
 .. figure:: images/MakingItPretty-AnnotationObject3DText.png
+   :width: 100%
   
    The 3D text annotation interface
 
@@ -585,6 +602,7 @@ text, colors, and appearance properties.
 .. _fig-MakingItPretty-AnnotationObjectTimeSliderExample:
 
 .. figure:: images/MakingItPretty-AnnotationObjectTimeSliderExample.png
+   :width: 100%
   
    An example of a time slider annotation object
 
@@ -602,6 +620,7 @@ the visualization window.
 .. _fig-MakingItPretty-AnnotationObjectTimeSlider:
 
 .. figure:: images/MakingItPretty-AnnotationObjectTimeSlider.png
+   :width: 100%
   
    The time slider interface
 
@@ -665,6 +684,7 @@ arrow properties, and color.
 .. _fig-MakingItPretty-AnnotationObject2DLineExample:
 
 .. figure:: images/MakingItPretty-AnnotationObject2DLineExample.png
+   :width: 100%
   
    Examples of 2D line annotations
 
@@ -682,6 +702,7 @@ the screen positioning control.
 .. _fig-MakingItPretty-AnnotationObject2DLine:
 
 .. figure:: images/MakingItPretty-AnnotationObject2DLine.png
+   :width: 100%
   
    The 2D line object interface
 
@@ -724,6 +745,7 @@ to set the position, style and color properties.
 .. _fig-MakingItPretty-AnnotationObject3DLine:
 
 .. figure:: images/MakingItPretty-AnnotationObject3DLine.png
+   :width: 100%
   
    The 3D line object interface
 
@@ -769,6 +791,7 @@ their size, and optional transparency color.
 .. _fig-MakingItPretty-AnnotationObjectImageExample:
 
 .. figure:: images/MakingItPretty-AnnotationObjectImageExample.png
+   :width: 100%
   
    An Example of a visualization with two overlaid image annotations
 
@@ -787,6 +810,7 @@ computer that runs the viewer.
 .. _fig-MakingItPretty-AnnotationObjectImage:
 
 .. figure:: images/MakingItPretty-AnnotationObjectImage.png
+   :width: 100%
   
    The image object interface
 

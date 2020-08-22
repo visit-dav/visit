@@ -9,6 +9,7 @@ Boundary plot, shown in :numref:`Figure %s <boundarystuff>`, displays the surfac
 .. _boundarystuff:
 
 .. figure:: ../images/boundarystuff.png
+   :width: 100%
 
    Boundary plot and its plot attributes window
 
@@ -16,6 +17,7 @@ Boundary plot, shown in :numref:`Figure %s <boundarystuff>`, displays the surfac
 .. _filledboundarystuff:
 
 .. figure:: ../images/filledboundarystuff.png
+   :width: 100%
 
    FilledBoundary plot and its plot attributes window
 
@@ -27,6 +29,7 @@ resulting in the material boundaries used in the plots.
 .. _filledboundarysubsets:
 
 .. figure:: ../images/filledboundarysubsets.png
+   :width: 100%
 
    FilledBoundary plot combined with subsets
 
@@ -102,6 +105,7 @@ window.
 .. _filledboundarywireframe:
 
 .. figure:: ../images/filledboundarywireframe.png
+   :width: 100%
 
    Filled mode and wireframe mode
 
@@ -134,6 +138,7 @@ the popup color palette.
 .. _filledboundarymixedzones:
 
 .. figure:: ../images/filledboundarymixedzones.png
+   :width: 100%
 
    All zones and clean zones
 
@@ -171,5 +176,6 @@ or **Sphere**.
 .. _pointtypes:
 
 .. figure:: ../images/pointtypes.png
+   :width: 100%
 
    Point types (left-to-right): Box, Axis, Icosahedron, Point, Sphere

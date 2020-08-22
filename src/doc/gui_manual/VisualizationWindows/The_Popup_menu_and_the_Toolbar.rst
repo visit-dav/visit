@@ -35,6 +35,7 @@ that you enabled.
 .. _customizemenu:
 
 .. figure:: images/customizemenu.png
+   :width: 100%
 
    Customize menu
 
@@ -61,6 +62,7 @@ the **Mode toolbar** to change the vis window's window mode.
 .. _popupmode:
 
 .. figure:: images/popupmode.png
+   :width: 100%
 
    Mode toolbar and menu 
 
@@ -87,6 +89,7 @@ button in the **Toolbar**.
 .. _toolmenu:
 
 .. figure:: images/toolmenu.png
+   :width: 100%
 
    Tool toolbar and menu
 
@@ -104,6 +107,7 @@ views, or choose a new center of rotation.
 .. _viewmenu:
 
 .. figure:: images/viewmenu.png
+   :width: 100%
 
    View toolbar and menu
 
@@ -145,6 +149,7 @@ Changing view perspective
 .. _perspective:
 
 .. figure:: images/perspective.png
+   :width: 100%
 
    Perspective examples
 
@@ -241,6 +246,7 @@ step.
 .. _animationmenu:
 
 .. figure:: images/animationmenu.png
+   :width: 100%
 
     Animation toolbar and menu
 
@@ -258,6 +264,7 @@ options in the **Main Window's Windows** menu are also present in the
 .. _popupmenuwindowmenu2:
 
 .. figure:: images/popupmenuwindowmenu.png
+   :width: 100%
 
     Window toolbar and menu
 
@@ -306,6 +313,7 @@ appears in the **Main Window's Windows** menu.
 .. _clearmenu:
 
 .. figure:: images/clearmenu.png
+   :width: 100%
 
    Clear menu
 
@@ -354,6 +362,7 @@ shown in :numref:`Figure %s <plotmenu2>`.
 .. _plotmenu2:
 
 .. figure:: images/plotmenu.png
+   :width: 100%
 
    Plot toolbar and menu
 
@@ -408,6 +417,7 @@ and **Operator toolbar** are shown in :numref:`Figure %s <operatormenu>`.
 .. _operatormenu:
 
 .. figure:: images/operatormenu.png
+   :width: 100%
 
    Operator toolbar and menu
 
@@ -451,6 +461,7 @@ information on how to use the lock options.
 .. _lockmenu:
 
 .. figure:: images/lockmenu.png
+   :width: 100%
 
    Lock toolbar and menu
 

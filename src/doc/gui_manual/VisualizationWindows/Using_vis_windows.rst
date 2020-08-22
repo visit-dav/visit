@@ -34,6 +34,7 @@ For more information, look at the section on *Interactor settings*.
 .. _mousemotions:
 
 .. figure:: images/mousemotions.png
+   :width: 100%
 
    Mouse motions used to rotate plots in navigate mode
 

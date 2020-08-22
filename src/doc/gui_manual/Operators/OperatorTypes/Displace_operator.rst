@@ -17,8 +17,7 @@ shown in :numref:`Figure %s <displace>`.
 .. _displace:
 
 .. figure:: images/displace.png
-   :width: 60%
-   :align: center
+   :width: 100%
 
    Mesh and Vector plots and a Mesh plot that uses the Displace operator to deform the mesh using a vector field.
    
@@ -41,6 +40,7 @@ from the **Displacement variable** variable button.
 .. _displacewindow:
 
 .. figure:: images/displacewindow.png
+   :width: 100%
 
    Displace attributes window 
 

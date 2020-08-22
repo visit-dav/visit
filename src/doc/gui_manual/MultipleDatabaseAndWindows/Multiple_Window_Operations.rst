@@ -26,6 +26,7 @@ method has its merits.
 .. _sidebyside:
 
 .. figure:: images/sidebyside.png
+   :width: 100%
 
    Plots side by side using the Reflect or Transform operator
 
@@ -77,6 +78,7 @@ the **Lock** options from the **Main Window's Windows** menu as shown in
 .. _lockmechanisms:
 
 .. figure:: images/lockmechanisms.png
+   :width: 100%
 
    Mechanisms for locking windows
 
@@ -159,5 +161,6 @@ visualization windows, arranged in a 2x2 window layout are shown in
 .. _lockedtools:
 
 .. figure:: images/lockedtools.png
+   :width: 100%
 
    Multiple visualization windows with locked tools

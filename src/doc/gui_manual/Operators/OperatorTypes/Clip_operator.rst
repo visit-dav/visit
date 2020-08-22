@@ -17,6 +17,7 @@ operator.
 .. _clip:
 
 .. figure:: images/clip.png
+   :width: 100%
 
    Clip operator example: original plot; clipped with planes; clipped with sphere 
 
@@ -45,8 +46,7 @@ three floating point values separated by spaces.
 .. _clipwindow:
 
 .. figure:: images/clipwindow.png
-   :width: 90%
-   :align: center
+   :width: 100%
 
    Clip attributes window 
 
@@ -72,6 +72,7 @@ remove only one eighth of the plot.
 .. _clipcircle:
 
 .. figure:: images/clipcircle.png
+   :width: 100%
 
    Removing one quarter of a plot using two clip planes: Plane1 clipped region + Plane2 clipped region = One quarter removed
 

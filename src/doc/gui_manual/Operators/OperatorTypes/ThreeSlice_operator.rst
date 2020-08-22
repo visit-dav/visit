@@ -12,6 +12,7 @@ from the outside.
 .. _threeslice:
 
 .. figure:: images/threeslice.png
+   :width: 100%
 
   ThreeSlice operator example
 
@@ -35,5 +36,6 @@ chapter.
 .. _threeslicewindow:
 
 .. figure:: images/threeslicewindow.png
+   :width: 100%
 
   ThreeSlice attributes window

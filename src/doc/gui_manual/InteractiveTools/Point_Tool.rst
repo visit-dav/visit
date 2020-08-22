@@ -15,5 +15,6 @@ the point tool being used to set the origin for the :ref:`ThreeSlice operator`.
 .. _pointtool:
 
 .. figure:: images/pointtool.png
+   :width: 100%
 
    Point tool

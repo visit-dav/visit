@@ -22,6 +22,7 @@ single axis of rotation.
 .. _planetool:
 
 .. figure:: images/planetool.png
+   :width: 100%
 
    Plane tool with sliced plot
 

@@ -11,12 +11,14 @@ of the contours.
 .. _contourplot:
 
 .. figure:: ../images/contourplot.png
+   :width: 100%
 
    Example of Contour plot
 
 .. _contourwindow:
 
 .. figure:: ../images/contourwindow.png
+   :width: 100%
 
    **Contour plot attributes window**
 

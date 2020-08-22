@@ -14,6 +14,7 @@ variable.
 .. _pseudocolorplot2:
 
 .. figure:: ../images/pseudocolorplot.png
+   :width: 100%
 
    Pseudocolor plot
 
@@ -29,6 +30,7 @@ and control the plot Legend and lighting.
 .. _pseudocolorwindow2:
 
 .. figure:: ../images/pseudocolorwindow.png
+   :width: 100%
 
    Pseudocolor plot attributes window Data tab
 
@@ -107,6 +109,7 @@ Changing the color table
 .. _colortablebutton:
 
 .. figure:: ../images/colortablebutton.png
+   :width: 100%
 
    Color table button
 
@@ -168,6 +171,7 @@ modify the appearance of lines and points, and change rendering options
 .. _pseudocolorgeometrytab:
 
 .. figure:: ../images/pseudocolorwindow2.png
+   :width: 100%
 
    Pseudocolor plot attributes window, geometry tab
 

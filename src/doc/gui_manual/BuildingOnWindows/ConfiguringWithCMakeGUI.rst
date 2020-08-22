@@ -9,6 +9,7 @@ Run cmake-gui.exe, which will display this window.
 .. _cmake_gui_01_image:
 
 .. figure:: images/cmake_gui_01.png
+   :width: 100%
 
     CMake-gui
 
@@ -29,6 +30,7 @@ your checkout clean. :numref:`Figure %s<cmake_gui_02_image>`
 .. _cmake_gui_02_image:
 
 .. figure:: images/cmake_gui_02.png
+   :width: 100%
 
     Setting source and build directories
 
@@ -45,6 +47,7 @@ generation should locate this directory automatically.
 .. _visit_dirs_from_released_source_image:
 
 .. figure:: images/visit_dirs_from_released_source.png
+   :width: 100%
 
     Directory structure with source from a released version
 
@@ -56,6 +59,7 @@ peer to visit.
 .. _visit_dirs_from_github_repos_image:
 
 .. figure:: images/visit_dirs_from_github_repos.png
+   :width: 100%
 
     Expected directory structure with source from GitHub repo
 
@@ -66,6 +70,7 @@ If neither of the above is true for your situation, use the CMake gui to set
 .. _adding_windowsbuild_dir_image:
 
 .. figure:: images/adding_windowsbuild_dir.png
+   :width: 100%
 
     Setting VISIT_WINDOWS_DIR
 
@@ -84,6 +89,7 @@ plugins are built.
 .. _selected_databases_image:
 
 .. figure:: images/selected_databases.png
+   :width: 100%
 
    Selecting a limited number of database plugins
 
@@ -106,6 +112,7 @@ menu, choose *Warnings*.  Check the *Developer Warnings* and *Deprecated Warning
 .. _suppress_cmake_warnings_image:
 
 .. figure:: images/suppress_cmake_warnings.png
+   :width: 100%
 
     Suppress CMake warnings
 
@@ -125,6 +132,7 @@ and add *host=x64* to use the full 64-bit toolset.
 .. _choose_generator_popup_image:
 
 .. figure:: images/choose_generator_popup.png
+   :width: 100%
 
     Choosing the generator
 
@@ -144,6 +152,7 @@ individual entries (not groups) will generate a brief description.
 .. _after_first_configure_image:
 
 .. figure:: images/after_first_configure.png
+   :width: 100%
 
     After first configure
 

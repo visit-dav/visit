@@ -38,6 +38,7 @@ attributes of operators.
 .. _Operators-Plots:
 
 .. figure:: images/Operators-Plots.png
+   :width: 100%
 
    The plots area
 
@@ -57,6 +58,7 @@ operators are applied to all plots in the plot list.
 .. _Operators-OperatorsMenu:
 
 .. figure:: images/Operators-OperatorsMenu.png
+   :width: 100%
 
    The operators menu 
 
@@ -74,6 +76,7 @@ if the operator should be applied to the selected plots (see
 .. _Operators-ApplyOperatorDialog:
 
 .. figure:: images/Operators-ApplyOperatorDialog.png
+   :width: 100%
 
    The add operator dialog
 
@@ -99,6 +102,7 @@ operators.
 .. _Operators-PlotExpanded:
 
 .. figure:: images/Operators-PlotExpanded.png
+   :width: 100%
 
    A plot list entry before and after being expanded 
 
@@ -136,6 +140,7 @@ button.
 .. _Operators-OperatorsReordered:
 
 .. figure:: images/Operators-OperatorsReordered.png
+   :width: 100%
 
    The controls for changing operator order
 
@@ -165,6 +170,7 @@ list.
 .. _Operators-OperatorDeleted:
 
 .. figure:: images/Operators-OperatorDeleted.png
+   :width: 100%
 
    After removing an operator from the middle of the pipeline
 
@@ -179,6 +185,7 @@ the operator type from the **OpAtts** (Operator attributes) menu shown in
 .. _Operators-OpAttsMenu:
 
 .. figure:: images/Operators-OpAttsMenu.png
+   :width: 100%
 
    The operator attributes menu
 
@@ -199,6 +206,7 @@ entry's operator list.
 .. _Operators-ActiveOperator2:
 
 .. figure:: images/Operators-ActiveOperator2.png
+   :width: 100%
 
    Setting the active operator
 

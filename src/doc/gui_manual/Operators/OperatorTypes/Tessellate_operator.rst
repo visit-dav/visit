@@ -9,6 +9,7 @@ so that they appear curved.
 .. _tessellate:
 
 .. figure:: images/tessellate.png
+   :width: 100%
 
    Tessellate operator example
 
@@ -46,6 +47,7 @@ element gets tessellated into may easily get into the hundreds.
 .. _tessellatewindow:
 
 .. figure:: images/tessellatewindow.png
+   :width: 100%
 
    Tessellate attributes window
 

@@ -17,5 +17,6 @@ displays the **Splash screen** which can be hidden by clicking its
 .. _Splash_screen:
 
 .. figure:: images/splashscreen.png
+   :width: 100%
 
    Splash screen

@@ -33,6 +33,7 @@ to the left of the **Properties** panel.
 .. _fig-MakingItPretty-Lighting:
 
 .. figure:: images/MakingItPretty-Lighting.png
+   :width: 100%
 
    The lighting Window
 
@@ -54,6 +55,7 @@ Choosing the active light
 .. _fig-MakingItPretty-ActiveLightMenu:
 
 .. figure:: images/MakingItPretty-ActiveLightMenu.png
+   :width: 100%
 
    The active light menu
 
@@ -82,6 +84,7 @@ Light type
 .. _fig-MakingItPretty-LightTypes:
 
 .. figure:: images/MakingItPretty-LightTypes.png
+   :width: 100%
 
    The different kinds of lights 
 

@@ -12,7 +12,7 @@ move the box in 3D space or resize it in any or all dimensions.
 .. _boxtool1:
 
 .. figure:: images/boxtool1.png
-   :width: 60%
+   :width: 100%
 
    Box tool with a plot restricted to the box
 
@@ -41,5 +41,6 @@ same but the scale of the box changes.
 .. _boxtool2:
 
 .. figure:: images/boxtool2.png
+   :width: 100%
 
    Box tool while it is resized or moved

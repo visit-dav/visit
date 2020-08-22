@@ -72,6 +72,7 @@ frames into a single movie file.
 .. _windows_movie_context_menu:
 
 .. figure:: images/movieoptions.png 
+   :width: 100%
    
    Movie generation options for session files on Windows platform
 

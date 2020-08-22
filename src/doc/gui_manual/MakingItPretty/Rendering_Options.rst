@@ -18,6 +18,7 @@ covered in the **Preferences** chapter. To open the
 .. _fig-MakingItPretty-RenderingOptionsBasic:
 
 .. figure:: images/MakingItPretty-RenderingOptionsBasic.png
+   :width: 100%
 
    The basic rendering options
 
@@ -41,6 +42,7 @@ are blended with the background image so that they look smoother.
 .. _fig-MakingItPretty-AntialiasingExample:
 
 .. figure:: images/MakingItPretty-AntialiasingExample.png
+   :width: 100%
 
    An example of antialiasing
 
@@ -60,6 +62,7 @@ tab (see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsBasic>`).
 .. _fig-MakingItPretty-SpecularExample:
 
 .. figure:: images/MakingItPretty-SpecularExample.png
+   :width: 100%
 
    The effects of specular lighting on plots
 
@@ -79,6 +82,7 @@ specular highlights.
 .. _fig-MakingItPretty-RenderingOptionsAdvanced:
 
 .. figure:: images/MakingItPretty-RenderingOptionsAdvanced.png
+   :width: 100%
 
    The advanced rendering options
 
@@ -101,6 +105,7 @@ plot is shown with and without shadows in
 .. _fig-MakingItPretty-ShadowExample:
 
 .. figure:: images/MakingItPretty-ShadowExample.png
+   :width: 100%
 
    The effects of shadows on plots
 
@@ -128,5 +133,6 @@ The same plot is shown with and without depth cueing in
 .. _fig-MakingItPretty-DepthCueingExample:
 
 .. figure:: images/MakingItPretty-DepthCueingExample.png
+   :width: 100%
 
    The effects of depth cueing on plots

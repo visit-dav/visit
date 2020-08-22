@@ -37,6 +37,7 @@ definition.
 .. _expressionwindow:
 
 .. figure:: images/expressionwindow.png
+   :width: 100%
 
    Expression Window
 
@@ -102,6 +103,7 @@ menu.
 .. _expressionwindow-functionmenu:
 
 .. figure:: images/expressionwindow-functionmenu.png
+   :width: 100%
 
    Expression Window's Insert Function... menu
 
@@ -123,6 +125,7 @@ heading so they are easy to find.
 .. _expressionwindow-varmenu:
 
 .. figure:: images/expressionwindow-varmenu.png
+   :width: 100%
 
    Expression Window's Insert Variable... menu
 
@@ -996,7 +999,7 @@ Array Compose With Bins Function: ``array_compose_with_bins()`` : ``array_compos
 .. _Array_compose_with_bins:
 
 .. figure:: images/new_array_compose_with_bins.png
-   :scale: 50%
+   :width: 100%
 
    Bar graph created from picking an array variable created with array_compose_with_bins()
 

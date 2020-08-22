@@ -24,6 +24,7 @@ The **Antialiasing**, and **Specular lighting** options are covered in the
 .. _Preferences-RenderingOptionsBasic:
 
 .. figure:: images/RenderingOptionsBasic.png
+   :width: 100%
 
     The basic rendering options
 
@@ -47,6 +48,7 @@ label.
 .. _Preferences-SurfaceRepresentations:
 
 .. figure:: images/SurfaceRepresentations.png
+   :width: 100%
 
     The different surface representations
 
@@ -103,6 +105,7 @@ under the **Stereo** check box.
 .. _Preferences-Stereo:
 
 .. figure:: images/Stereo.png
+   :width: 100%
 
     Some various stereo image types
 
@@ -115,6 +118,7 @@ The **Shadows**, and **Depth Cueing** options are covered in the
 .. _Preferences-RenderingOptionsAdvanced:
 
 .. figure:: images/RenderingOptionsAdvanced.png
+   :width: 100%
 
     The advanced rendering options
 
@@ -166,6 +170,7 @@ Rendering Information
 .. _Preferences-RenderingOptionsInformation:
 
 .. figure:: images/RenderingOptionsInformation.png
+   :width: 100%
 
     The rendering information
 

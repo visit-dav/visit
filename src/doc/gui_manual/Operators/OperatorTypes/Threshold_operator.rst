@@ -20,6 +20,7 @@ operator is shown in :numref:`Figure %s <threshold>`.
 .. _threshold:
 
 .. figure:: images/threshold.png
+   :width: 100%
 
   Threshold operator example
 
@@ -39,6 +40,7 @@ or the special keyword: max into the **Upper bound** text field.
 .. _thresholdwindow:
 
 .. figure:: images/thresholdwindow.png
+   :width: 100%
 
   Threshold attributes window - Default
 
@@ -57,6 +59,7 @@ specifying a range list.
 .. _customthresholdwindow:
 
 .. figure:: images/threshold_custom.png
+   :width: 100%
 
   Threshold attributes window - Custom
 

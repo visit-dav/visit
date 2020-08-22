@@ -13,6 +13,7 @@ controls that allow users to turn subsets on and off.
 .. _subsetwindow:
 
 .. figure:: images/subsetwindow.png
+   :width: 100%
 
    Subset window
 
@@ -69,12 +70,14 @@ are turned off.
 .. _subset1:
 
 .. figure:: images/subset1.png
+   :width: 100%
 
    Removing one subset.
 
 .. _subsetwindow2:
 
 .. figure:: images/subsetwindow2.png
+   :width: 100%
 
    Subset window with one subset removed.
 
@@ -99,12 +102,14 @@ selection is shown in :numref:`Figure %s<subset2>` and the state of the
 .. _subset2:
 
 .. figure:: images/subset2.png
+   :width: 100%
 
    Example of a complex subset.
 
 .. _subsetwindow3:
 
 .. figure:: images/subsetwindow3.png
+   :width: 100%
 
    Subset window for complex subset example.
 

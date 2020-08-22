@@ -5,12 +5,12 @@ Truecolor plot
 .. _truecolor_plot:
 
 .. figure:: ../images/truecolor.png
-   :align: center
+   :width: 100%
 
    Truecolor Plot
 
 .. figure:: ../images/truecolorwindow.png
-   :align: center
+   :width: 100%
    
    Truecolor Plot Attributes
 

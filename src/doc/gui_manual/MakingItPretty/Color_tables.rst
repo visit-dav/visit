@@ -38,6 +38,7 @@ Color Table Window
 .. _fig-MakingItPretty-ColorTables:
 
 .. figure:: images/MakingItPretty-ColorTables.png
+   :width: 100%
 
    The color table window
 
@@ -109,6 +110,7 @@ Editing a continuous color table
 .. _fig-MakingItPretty-ColorTableEditContinuous:
 
 .. figure:: images/MakingItPretty-ColorTableEditContinuous.png
+   :width: 100%
 
    The continuous color table editor
 
@@ -154,6 +156,7 @@ Editing a discrete color table
 .. _fig-MakingItPretty-ColorTableEditDiscrete:
 
 .. figure:: images/MakingItPretty-ColorTableEditDiscrete.png
+   :width: 100%
 
    The discrete color table editor
 
@@ -320,6 +323,7 @@ For example, given the a smoothly varying variable, ``u``, in the range
 .. _fig-MakingItPretty-smooth-coloring:
 
 .. figure:: images/MakingItPretty-smooth-coloring.png
+   :width: 100%
 
    Smoothly colored variable using ``hot`` color table.
 
@@ -342,6 +346,7 @@ Using a 4-color **Discrete** color table alone, only the plot in
 .. _fig-MakingItPretty-uniform-banded-coloring:
 
 .. figure:: images/MakingItPretty-uniform-banded-coloring.png
+   :width: 100%
 
    A 4-color **Discrete** color table coloring alone
 
@@ -357,6 +362,7 @@ produced as shown in
 .. _fig-MakingItPretty-numerically-banded-coloring:
 
 .. figure:: images/MakingItPretty-numerically-banded-coloring.png
+   :width: 100%
 
    A 4-color **Discrete** color table coloring combined with a
    conditional expression

@@ -101,6 +101,7 @@ completely sufficient.
 .. _Intro-Architecture:
 
 .. figure:: images/Intro-Architecture.png
+   :width: 100%
 
    VisIt_'s architecture
 
@@ -128,6 +129,7 @@ rendered.
 .. _Intro-ScalableRendering:
 
 .. figure:: images/Intro-ScalableRendering.png
+   :width: 100%
 
    VisIt_'s scalable rendering
 
@@ -153,6 +155,7 @@ in :numref:`Figure %s <Intro-VisItGUI>`.
 .. _Intro-VisItGUI:
 
 .. figure:: images/Intro-VisItGUI.png
+   :width: 100%
 
    VisIt_'s graphical user interface
 

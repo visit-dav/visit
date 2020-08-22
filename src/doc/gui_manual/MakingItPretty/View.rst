@@ -57,6 +57,7 @@ Y values.
 .. _fig-MakingItPretty-ViewCurve:
 
 .. figure:: images/MakingItPretty-ViewCurve.png
+   :width: 100%
 
    The curve view options
 
@@ -97,6 +98,7 @@ fields on the **View Window's 2D view** tab
 .. _fig-MakingItPretty-View2D:
 
 .. figure:: images/MakingItPretty-View2D.png
+   :width: 100%
 
    The 2D view options
 
@@ -117,6 +119,7 @@ the dimensions are much larger than the extents of the other dimension.
 .. _fig-MakingItPretty-FullFrame:
 
 .. figure:: images/MakingItPretty-FullFrame.png
+   :width: 100%
 
    The effect of full frame mode on an extremely skinny plot
 
@@ -131,6 +134,7 @@ Setting the 3D view
 .. _fig-MakingItPretty-View3D:
 
 .. figure:: images/MakingItPretty-View3D.png
+   :width: 100%
 
    The 3D view options
 
@@ -147,6 +151,7 @@ of a 3D view.
 .. _fig-MakingItPretty-Perspective3D:
 
 .. figure:: images/MakingItPretty-Perspective3D.png
+   :width: 100%
 
    The 3D perspective view volume
 
@@ -202,6 +207,7 @@ and maximum Y values.
 .. _fig-MakingItPretty-ViewAxisArray:
 
 .. figure:: images/MakingItPretty-ViewAxisArray.png
+   :width: 100%
 
    The axis array view options
 
@@ -231,6 +237,7 @@ features that are not needed by all users.
 .. _fig-MakingItPretty-ViewAdvanced:
 
 .. figure:: images/MakingItPretty-ViewAdvanced.png
+   :width: 100%
 
    The advanced view options
 

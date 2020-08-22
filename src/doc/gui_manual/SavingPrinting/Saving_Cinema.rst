@@ -22,6 +22,7 @@ VisIt's GUI.
 .. _save_cinema_wizard_1:
 
 .. figure:: images/savecinemawizard1.png 
+   :width: 100%
    
    Save Cinema wizard (screen 1)
 
@@ -112,6 +113,7 @@ off at view time.
 .. _cinemaviewer:
 
 .. figure:: images/cinemaviewer.png 
+   :width: 100%
    
    Cinema viewer with composite layers
 
@@ -150,6 +152,7 @@ time states.
 .. _save_cinema_wizard_2:
 
 .. figure:: images/savecinemawizard2.png 
+   :width: 100%
    
    Save Cinema wizard (screen 2)
 

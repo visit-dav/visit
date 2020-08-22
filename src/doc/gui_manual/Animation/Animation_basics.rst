@@ -46,6 +46,7 @@ does not prevent useful file groupings.
 .. _file_open_fig:
 
 .. figure:: images/fileopen.png 
+   :width: 100%
 
    File open window 
 
@@ -55,7 +56,7 @@ Flipbook animation
 .. _animation_buttons:
 
 .. figure:: images/animationtoolbar.png 
-   :width: 60%
+   :width: 100%
 
    Animation controls
 
@@ -106,6 +107,7 @@ Animation Window
 .. _animation_window:
 
 .. figure:: images/animation.png 
+   :width: 100%
 
    Animation window
 

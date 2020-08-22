@@ -47,6 +47,7 @@ Display the tank
 3. Click *Draw*.
 
 .. figure:: images/MakingMovies-DisplayTank1.png
+   :width: 100%
 
    The default *Subset* plot of the boundaries.
 
@@ -55,18 +56,21 @@ Display the tank
 6. Bring up the *Subset* window by clicking on the Ven Diagram next to the Subset plot in the plot list.
 
 .. figure:: images/MakingMovies-DisplayTank2.png
+   :width: 100%
 
    Bringing up the *Subset* window from the plot list.
 
 7. Click on *domains* to expand the list of domains and deselect *domain5* and *domain6*.
 
 .. figure:: images/MakingMovies-DisplayTank3.png
+   :width: 100%
 
    Removing boundaries with the *Subset* window.
 
 8. Click *Apply*.
 
 .. figure:: images/MakingMovies-DisplayTank4.png
+   :width: 100%
 
    The *Subset* plot with the boundaries removed.
 
@@ -75,12 +79,14 @@ Display the tank
 11. Select *Single* and choose the light pastel green color.
 
 .. figure:: images/MakingMovies-DisplayTank5.png
+   :width: 100%
 
    Changing the colors of the *Subset* plot.
 
 12. Click *Apply* and *Dismiss*.
 
 .. figure:: images/MakingMovies-DisplayTank6.png
+   :width: 100%
 
    The *Subset* plot boundaries in a single color.
 
@@ -105,6 +111,7 @@ the volume fraction is between 0.5 and 1.0. Let's get started.
 7. Click *Apply* and *Dismiss*.
 
 .. figure:: images/MakingMovies-DisplayWater1.png
+   :width: 100%
 
    Setting the *Pseudocolor* attributes for the water.
 
@@ -117,12 +124,14 @@ the volume fraction is between 0.5 and 1.0. Let's get started.
 14. Click *Apply* and *Dismiss*.
 
 .. figure:: images/MakingMovies-DisplayWater2.png
+   :width: 100%
 
    Using the *Isovolume* operator to select the water.
 
 15. Click *Draw*.
 
 .. figure:: images/MakingMovies-DisplayWater3.png
+   :width: 100%
 
    The boundaries and the water.
 
@@ -138,6 +147,7 @@ the background color, the lighting and add a time slider.
 4. Click *Apply*.
 
 .. figure:: images/MakingMovies-Annotations1.png
+   :width: 100%
 
    Turning off all the annotations.
 
@@ -146,6 +156,7 @@ the background color, the lighting and add a time slider.
 7. Click *Apply*.
 
 .. figure:: images/MakingMovies-Annotations2.png
+   :width: 100%
 
    Adding the bounding box.
 
@@ -158,6 +169,7 @@ the background color, the lighting and add a time slider.
 14. Click *Apply*.
 
 .. figure:: images/MakingMovies-Annotations3.png
+   :width: 100%
 
    Setting the foreground and background colors.
 
@@ -173,6 +185,7 @@ the background color, the lighting and add a time slider.
 24. Click *Draw*.
 
 .. figure:: images/MakingMovies-Annotations4.png
+   :width: 100%
 
    Setting the time slider attributes.
 
@@ -181,12 +194,14 @@ the background color, the lighting and add a time slider.
 27. Click *Apply*.
 
 .. figure:: images/MakingMovies-Annotations5.png
+   :width: 100%
 
    Setting the light source position.
 
 28. Move the time slider in the main control window to a later time state where the water is splashing up.
 
 .. figure:: images/MakingMovies-Annotations6.png
+   :width: 100%
 
    The final result for an image in the movie.
 
@@ -197,6 +212,7 @@ Encoding the movie with the movie wizard
 2. Select *New simple movie* and click *Next*.
 
 .. figure:: images/MakingMovies-Encoding1.png
+   :width: 100%
 
    Using the movie wizard to create a simple movie.
 
@@ -207,6 +223,7 @@ Encoding the movie with the movie wizard
 7. Click *Next*.
 
 .. figure:: images/MakingMovies-Encoding2.png
+   :width: 100%
 
    Setting the movie format and resolution.
 
@@ -214,6 +231,7 @@ Encoding the movie with the movie wizard
 9. Click *Next*.
 
 .. figure:: images/MakingMovies-Encoding3.png
+   :width: 100%
 
    Setting the length of the movie.
 
@@ -221,6 +239,7 @@ Encoding the movie with the movie wizard
 11. Click *Next*.
 
 .. figure:: images/MakingMovies-Encoding4.png
+   :width: 100%
 
    Setting the name of the movie.
 
@@ -228,6 +247,7 @@ Encoding the movie with the movie wizard
 13. Click *Next*.
 
 .. figure:: images/MakingMovies-Encoding5.png
+   :width: 100%
 
    Setting the e-mail notification for when the movie is complete.
 
@@ -235,6 +255,7 @@ Encoding the movie with the movie wizard
 15. Click *Finish*.
 
 .. figure:: images/MakingMovies-Encoding6.png
+   :width: 100%
 
    Creating the movie with the existing processors.
 
@@ -290,6 +311,7 @@ all the time states and save the images. ::
 3. Click *Execute*.
 
 .. figure:: images/MakingMovies-Encoding7.png
+   :width: 100%
 
    Saving the movie images with a Python script.
 
@@ -325,6 +347,7 @@ have, for example, 60 frames, the movie will only play for about 2 seconds.
 2. Click *Execute*.
 
 .. figure:: images/MakingMovies-Encoding8.png
+   :width: 100%
 
    Encoding the movie images with a Python script.
 
@@ -407,6 +430,7 @@ their resolution. ::
 2. Click *Execute*.
 
 .. figure:: images/MakingMovies-Encoding9.png
+   :width: 100%
 
    Resizing the movie images with a Python script.
 

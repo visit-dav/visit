@@ -4,6 +4,7 @@ Volume plot
 .. _volume_plot_example:
 
 .. figure:: ../images/volumeplot.png
+   :width: 100%
    
    Volume Plot Example
 
@@ -51,8 +52,10 @@ memory use.
 .. _volume_plot_atts_window:
 
 .. figure:: ../images/volumewindow.png
+   :width: 100%
 
 .. figure:: ../images/volumewindow2.png
+   :width: 100%
    
    Volume Attributes Window
 
@@ -114,6 +117,7 @@ opacities are located at the button of the window in the **Opacity** area.
 .. _volume_plot_opacity:
 
 .. figure:: ../images/volume_opacity.png
+   :width: 100%
    
    Volume Plot Opacity Options
 
@@ -138,6 +142,7 @@ value. Taller curves are more opaque while shorter curves are more transparent.
 .. _volume_plot_freeform:
 
 .. figure:: ../images/volume_freeform_controls.png
+   :width: 100%
    
    Volume Plot Freeform Opacity Options
 
@@ -157,6 +162,7 @@ out small bumps in the opacity curve that occur when drawing the curve by hand.
 .. _volume_plot_gauss_controls:
 
 .. figure:: ../images/volume_gauss_controls.png
+   :width: 100%
    
    Volume Plot Gaussian Opacity Options
 

@@ -11,6 +11,7 @@ example, the image below shows integral curves through the magnetic field of a
 core-collapse supernova simulation from the GenASiS code.
 
 .. figure:: images/astro-streamlines.png
+   :width: 100%
 
 The generation of integral curves forms the basis of VisIt_'s Integral Curve
 System (ICS), made up of the :ref:`Integral Curve operator`, the :ref:`LCS

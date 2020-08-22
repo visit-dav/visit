@@ -13,8 +13,7 @@ meshes, or mapping multiple datasets into a common grid for comparison purposes.
 .. _resample:
 
 .. figure:: images/resample.png
-   :width: 80%
-   :align: center
+   :width: 100%
 
    Resample operator example
 
@@ -46,8 +45,7 @@ into the **Value for uncovered regions** text field.
 .. _resamplewindow:
 
 .. figure:: images/resamplewindow.png
-   :width: 50%
-   :align: center
+   :width: 100%
   
    Resample attributes window
 
@@ -70,6 +68,7 @@ disappear.
 .. _resamplecsg:
 
 .. figure:: images/resamplecsg.png
+   :width: 100%
 
   The Resample operator can be used to control the resolution of CSG meshes.
   Resolution is increased from left to right.
@@ -94,6 +93,7 @@ buttons and by selecting an appropriate variable using the
 .. _resampleties:
 
 .. figure:: images/resampleties.png
+   :width: 100%
 
   Using the Resample operator to create a 2D projection
 

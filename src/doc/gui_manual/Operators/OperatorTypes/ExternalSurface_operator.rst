@@ -13,8 +13,7 @@ surface normals.
 .. _externalsurface:
 
 .. figure:: images/externalsurface.png
-   :width: 60%
-   :align: center
+   :width: 100%
 
    ExternalSurface operator example
 

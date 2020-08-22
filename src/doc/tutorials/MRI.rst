@@ -30,12 +30,14 @@ Create a Pseudocolor plot
 1. Go to *Add->Pseudocolor->Variable*.
 
 .. figure:: images/MRI_Add_Var.png
+   :width: 100%
 
    Adding a Pseudocolor plot.
 
 2. Click *Draw*.
 
 .. figure:: images/MRI_Block.png
+   :width: 100%
 
    Visualizing our dataset.
 
@@ -52,24 +54,28 @@ Adding an Isolvolume operator will help us remove sections of the dataset that w
 1. Go to *Operators->Selection->Isovolume* to add the Isovolume operator.
 
 .. figure:: images/MRI_Add_Op.png
+   :width: 100%
 
    Adding a Isovolume operator.
 
 2. Click on the triangle to the left of your Pseudocolor plot, and double click Isovolume to open up the Isovolume attributes.
 
 .. figure:: images/MRI_Isov.png
+   :width: 100%
 
    Opening the Isovolume attributes.
 
 3. Once you've opened the Isovolume attributes, set the Lower bound to 30, and click *Apply*.
 
 .. figure:: images/MRI_Isov_Atts.png
+   :width: 100%
 
    Changing the Isovolume attributes.
 
 4. Click *Draw*. You will now see a visualization of a human brain.
 
 .. figure:: images/MRI_Blue_Brain.png
+   :width: 100%
 
    Visualizing the underlying data of our dataset.
 
@@ -84,12 +90,14 @@ The default color table doesn't add much to the visualization, so let's change t
 2. Once there, you can choose your color table.
 
 .. figure:: images/MRI_Color_Table.png
+   :width: 100%
 
    Changing the color table.
 
 3. Click *Apply* to finalize the change.
 
 .. figure:: images/MRI_Pink_Brain.png
+   :width: 100%
 
    Visualizing our updated color table.
 
@@ -109,6 +117,7 @@ First, we're going to slice out a single cross-section for closer examination.
 3. There are a lot of options to configure here. For now, we'll leave all of the default settings except for Project to 2D. Uncheck this box.
 
 .. figure:: images/MRI_Slice_Op.png
+   :width: 100%
 
    Changing the Slice attributes.
 
@@ -116,6 +125,7 @@ First, we're going to slice out a single cross-section for closer examination.
 5. Click *Draw*.
 
 .. figure:: images/MRI_Slice.png
+   :width: 100%
 
    Visualizing a Slice of our MRI dataset.
 
@@ -130,6 +140,7 @@ Another usefull operator that is similar to Slice is ThreeSlice. This operator c
 3. Double click on the ThreeSlice to bring up the ThreeSlice attributes window. You can move the location of each slice by changing the X, Y, and Z values.
 
 .. figure:: images/MRI_ThreeSlice_Op.png
+   :width: 100%
 
    The ThreeSlice attributes.
 
@@ -137,6 +148,7 @@ Another usefull operator that is similar to Slice is ThreeSlice. This operator c
 5. Click *Draw*.
 
 .. figure:: images/MRI_ThreeSlice.png
+   :width: 100%
 
    Visualizing a ThreeSlice of our MRI dataset.
 
@@ -147,12 +159,14 @@ Along with directly entering the X, Y, Z coordinates for your ThreeSlice in the 
 1. In the top left-hand corner of the visualization window, you'll find a button that activates the Point tool. *Click* this button.
 
 .. figure:: images/MRI_Point_Tool_Button.png
+   :width: 100%
 
    Activating the Point tool.
 
 2. Once activated, you will see a point surrounded by a red box within the visualization window.
 
 .. figure:: images/MRI_Point_Tool.png
+   :width: 100%
 
    The activated Point tool.
 
@@ -160,6 +174,7 @@ Along with directly entering the X, Y, Z coordinates for your ThreeSlice in the 
 4. *Click* and drag the red box to change the location of the point defining the X, Y, Z coordinates of the ThreeSlice. VisIt_ will automatically update the plot.
 
 .. figure:: images/MRI_Point_Tool_2.png
+   :width: 100%
 
    Performing a ThreeSlice with the Point tool.
 
@@ -179,6 +194,7 @@ Performing a Clip using a single plane
 3. Double click on the Clip to bring up the Clip attributes window. Again, there are many settings to configure here. The default settings use a single plane for performing the Clip.
 
 .. figure:: images/MRI_Clip_Op.png
+   :width: 100%
 
    The Clip attributes.
 
@@ -186,6 +202,7 @@ Performing a Clip using a single plane
 5. Click *Draw*.
 
 .. figure:: images/MRI_Clip.png
+   :width: 100%
 
    Visualizing a Clip of our MRI dataset.
 
@@ -195,12 +212,14 @@ Performing a Clip using two planes
 1. Return to the Clip attributes window, check the Plane 2 box, and change the normal of Plane 2 to "0 -1 0".
 
 .. figure:: images/MRI_Clip_2Plane_Op.png
+   :width: 100%
 
    Altering the Clip attributes.
 
 2. Click *Apply*.
 
 .. figure:: images/MRI_Clip_2Plane.png
+   :width: 100%
 
    Visualizing a 2 Plane Clip of our MRI dataset.
 
@@ -211,12 +230,14 @@ Performing a Clip using three planes
 1. Return to the Clip attributes window, and check the Plane 3 box. Next, change the origin of Plane 3 to "0 0 -50".
 
 .. figure:: images/MRI_Clip_3Plane_Op.png
+   :width: 100%
 
    Altering the Clip attributes.
 
 2. Click *Apply*.
 
 .. figure:: images/MRI_Clip_3Plane.png
+   :width: 100%
 
    Visualizing a 3 Plane Clip of our MRI dataset.
 
@@ -228,6 +249,7 @@ Let's update the settings of our Clip so that we remove a spherical section of t
 1. Double click on the Clip to bring up the Clip attributes window again. Change the Slice type to Sphere. The attribute options should change significantly. Set the Center to "0 100 0", and set the radius to 150.
 
 .. figure:: images/MRI_Sphere_Clip_Op.png
+   :width: 100%
 
    Changing the Clip attributes.
 
@@ -235,6 +257,7 @@ Let's update the settings of our Clip so that we remove a spherical section of t
 3. Click *Draw*.
 
 .. figure:: images/MRI_Sphere_Clip.png
+   :width: 100%
 
    Visualizing a spherical Clip of our MRI dataset.
 
@@ -247,12 +270,14 @@ VisIt_ also provides an interactive Plane tool that can be used to determine you
 2. In the top left-hand corner of the visualization window, you'll find a button that activates the Plane tool. *Click* this button.
 
 .. figure:: images/MRI_Plane_Tool_Button.png
+   :width: 100%
 
    Activating the Plane tool.
 
 3. Once activated, you will see a 3D axis defining a plane within the visualization window.
 
 .. figure:: images/MRI_3D_Axis.png
+   :width: 100%
 
    The activated Plane tool.
 
@@ -260,6 +285,7 @@ VisIt_ also provides an interactive Plane tool that can be used to determine you
 5. You will see several red boxes aligned with various points of the Plane tool. Click and drag these red boxes to re-orient the plane you are defining. VisIt_ will automatically perform a Clip at the newly oriented plane.
 
 .. figure:: images/MRI_Plane_Tool.png
+   :width: 100%
 
    Performing a Clip with the Plane tool.
 
@@ -272,6 +298,7 @@ Much like the Plane tool, VisIt_ also provides a Sphere tool, which allows us to
 2. *Click* the Sphere tool button, which is in the same row as the Plane tool.
 
 .. figure:: images/MRI_Sphere_Tool_Button.png
+   :width: 100%
 
    Activating the Sphere tool.
 
@@ -280,5 +307,6 @@ Much like the Plane tool, VisIt_ also provides a Sphere tool, which allows us to
 4. You can change the shape and location of the Sphere tool by clicking and dragging the red boxes associated with the Sphere.
 
 .. figure:: images/MRI_Sphere_Tool.png
+   :width: 100%
 
    Performing a Clip with the Sphere tool.

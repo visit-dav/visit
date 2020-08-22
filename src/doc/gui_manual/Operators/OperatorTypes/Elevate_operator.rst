@@ -16,6 +16,7 @@ variable B (see: :numref:`Figure %s <elevate>`).
 .. _elevate:
 
 .. figure:: images/elevate.png
+   :width: 100%
 
    Elevate operator example:  2D plot of rainfall; 2D plot of elevation; Plot of rainfall elevated by elevation
 
@@ -47,6 +48,7 @@ on scaling, see the Surface plot documentation.
 .. _elevatewindow:
 
 .. figure:: images/elevatewindow.png
+   :width: 100%
 
    Elevate window
 
@@ -75,8 +77,7 @@ variable contributes to make differences more obvious, you can click on the
 .. _elevatescale:
 
 .. figure:: images/elevatescale.png
-   :width: 60%
-   :align: center
+   :width: 100%
 
    Effect of scaling relative to XY limits
 
@@ -88,7 +89,6 @@ zero to all of the z coordinates when converting into 3D.
 .. _elevatezeroheight:
 
 .. figure:: images/elevate_zero.png
-   :width: 40%
-   :align: center
+   :width: 100%
 
    Effect of elevating with zero height

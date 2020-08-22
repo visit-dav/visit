@@ -15,12 +15,14 @@ along the minor.
 .. _tensorplot:
 
 .. figure:: ../images/tensorplot.png
+   :width: 100%
 
    Example of Tensor plot
 
 .. _tensorwindow:
 
 .. figure:: ../images/tensorwindow.png
+   :width: 100%
 
    Tensor plot attributes window
 

@@ -15,12 +15,14 @@ plotted dataset, the **Label** plot is almost always used with other plots.
 .. _labelplot:
 
 .. figure:: ../images/labelplot.png
+   :width: 100%
 
     Label plot of the mesh overlayed on Pseudocolor and Mesh plots
 
 .. _labelplotwindow:
 
 .. figure:: ../images/labelplotwindow.png
+   :width: 100%
 
    Label plot attributes window
 
@@ -112,6 +114,7 @@ issued and you can set the depth test mode to **Always**.
 .. _labelplotdepthtest:
 
 .. figure:: ../images/labelplotdepthtest.png
+   :width: 100%
 
    Removing extra labels (left) with depth test (right) 
 
@@ -143,10 +146,12 @@ for cells and nodes independently (see :numref:`Figure %s <labelplot2>`).
 .. _labelplot2:
 
 .. figure:: ../images/labelplot2.png
+   :width: 100%
 
 .. _labelplotwindow2:
 
 .. figure:: ../images/labelplotwindow2.png
+   :width: 100%
 
    Cell and node labels can be different colors when labeling mesh variables
    using additional controls in the Label plot attributes window
@@ -170,6 +175,7 @@ names is presented in :numref:`Figure %s <labelplotmats>`.
 .. _labelplotmats:
 
 .. figure:: ../images/labelplotmats.png
+   :width: 100%
 
    Label plot of materials 
 

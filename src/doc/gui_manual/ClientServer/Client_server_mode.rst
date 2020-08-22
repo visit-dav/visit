@@ -22,8 +22,7 @@ computer.
 .. _visit_architecture_image:
 
 .. figure:: images/Visit_connectivity_diagram.png
-   :width: 60%
-   :align: center
+   :width: 100%
    
    VisIt's Architecture
 
@@ -48,6 +47,7 @@ remote component from being launched.
 .. _remote_vis_password:
 
 .. figure:: images/password.png
+   :width: 100%
    
    Password Window
 
@@ -61,6 +61,7 @@ with entering the password in the **Password Window**.
 .. _change_remote_username:
 
 .. figure:: images/changeusername.png
+   :width: 100%
    
    Change Username Window
 
@@ -167,6 +168,7 @@ often see it if you launch compute engines using a batch system.
 .. _client_server_launch_progress:
 
 .. figure:: images/launchprogress.png
+   :width: 100%
    
    Launch Progress Window
 

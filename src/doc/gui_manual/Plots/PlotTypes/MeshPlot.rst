@@ -9,12 +9,14 @@ allow individual cells to be clearly seen.
 .. _meshplot:
 
 .. figure:: ../images/meshplot.png
+   :width: 100%
 
    Mesh plot
 
 .. _meshwindow:
 
 .. figure:: ../images/meshwindow.png
+   :width: 100%
 
    Mesh plot window
 
