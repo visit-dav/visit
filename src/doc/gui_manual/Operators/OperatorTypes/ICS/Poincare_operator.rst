@@ -8,7 +8,7 @@ basis of constructing a connected plot is to accurately determine the number of
 toroidal and poloidal windings (i.e. the winding pair). The image below is
 helpful for visually understanding what is meant by toroidal and poloidal:
 
-.. figure:: images/toroidal_poloidal.jpg
+.. figure:: images/toroidal_poloidal.png
 
 This process is
 iterative, starting with a minimum number of puncture points through a Poincaré
