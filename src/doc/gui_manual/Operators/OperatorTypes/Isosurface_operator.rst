@@ -20,7 +20,7 @@ another variable. An example of the Isosurface operator is shown in
 .. _isosurface:
 
 .. figure:: images/isosurface.png
-   :width: 60%
+   :width: 100%
    :align: center
 
    Isosurface operator example
@@ -36,7 +36,7 @@ levels you want to see or indicate the percentages for the levels.
 .. _isosurfacewindow:
 
 .. figure:: images/isosurfacewindow.png
-   :width: 60%
+   :width: 100%
    :align: center
 
    Isosurface attributes
