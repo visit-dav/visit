@@ -12,7 +12,7 @@
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:current
+  container_tag: visitdav/visit-ci-develop:2020-08-21-sha124a77
 
 # only build merge target pr to develop
 trigger: none
