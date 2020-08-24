@@ -1328,8 +1328,8 @@ static PyObject *
 FilledBoundaryAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &FilledBoundaryAttributesType)
+    if ( Py_TYPE(self) != &FilledBoundaryAttributesType
+         || Py_TYPE(other) != &FilledBoundaryAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

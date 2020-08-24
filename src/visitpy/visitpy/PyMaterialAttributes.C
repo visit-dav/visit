@@ -612,8 +612,8 @@ static PyObject *
 MaterialAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &MaterialAttributesType)
+    if ( Py_TYPE(self) != &MaterialAttributesType
+         || Py_TYPE(other) != &MaterialAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

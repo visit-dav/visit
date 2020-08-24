@@ -474,8 +474,8 @@ static PyObject *
 LagrangianAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &LagrangianAttributesType)
+    if ( Py_TYPE(self) != &LagrangianAttributesType
+         || Py_TYPE(other) != &LagrangianAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

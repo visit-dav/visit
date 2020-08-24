@@ -330,8 +330,8 @@ static PyObject *
 avtBaseVarMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &avtBaseVarMetaDataType)
+    if ( Py_TYPE(self) != &avtBaseVarMetaDataType
+         || Py_TYPE(other) != &avtBaseVarMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

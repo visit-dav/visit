@@ -908,8 +908,8 @@ static PyObject *
 TensorAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &TensorAttributesType)
+    if ( Py_TYPE(self) != &TensorAttributesType
+         || Py_TYPE(other) != &TensorAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
