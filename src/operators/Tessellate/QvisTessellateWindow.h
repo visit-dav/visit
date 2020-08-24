@@ -44,11 +44,14 @@ class QvisTessellateWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void chordErrorProcessText();
+    void fieldCriterionProcessText();
     void mergePointsChanged(bool val);
   private:
     QLineEdit *chordError;
+    QLineEdit *fieldCriterion;
     QCheckBox *mergePoints;
     QLabel *chordErrorLabel;
+    QLabel *fieldCriterionLabel;
 
     TessellateAttributes *atts;
 };
