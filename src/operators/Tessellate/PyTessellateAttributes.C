@@ -43,6 +43,8 @@ PyTessellateAttributes_ToString(const TessellateAttributes *atts, const char *pr
 
     snprintf(tmpStr, 1000, "%schordError = %g\n", prefix, atts->GetChordError());
     str += tmpStr;
+    snprintf(tmpStr, 1000, "%sfieldCriterion = %g\n", prefix, atts->GetFieldCriterion());
+    str += tmpStr;
     if(atts->GetMergePoints())
         snprintf(tmpStr, 1000, "%smergePoints = 1\n", prefix);
     else
@@ -85,6 +87,30 @@ TessellateAttributes_GetChordError(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+TessellateAttributes_SetFieldCriterion(PyObject *self, PyObject *args)
+{
+    TessellateAttributesObject *obj = (TessellateAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the fieldCriterion in the object.
+    obj->data->SetFieldCriterion(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TessellateAttributes_GetFieldCriterion(PyObject *self, PyObject *args)
+{
+    TessellateAttributesObject *obj = (TessellateAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetFieldCriterion());
+    return retval;
+}
+
+/*static*/ PyObject *
 TessellateAttributes_SetMergePoints(PyObject *self, PyObject *args)
 {
     TessellateAttributesObject *obj = (TessellateAttributesObject *)self;
@@ -114,6 +140,8 @@ PyMethodDef PyTessellateAttributes_methods[TESSELLATEATTRIBUTES_NMETH] = {
     {"Notify", TessellateAttributes_Notify, METH_VARARGS},
     {"SetChordError", TessellateAttributes_SetChordError, METH_VARARGS},
     {"GetChordError", TessellateAttributes_GetChordError, METH_VARARGS},
+    {"SetFieldCriterion", TessellateAttributes_SetFieldCriterion, METH_VARARGS},
+    {"GetFieldCriterion", TessellateAttributes_GetFieldCriterion, METH_VARARGS},
     {"SetMergePoints", TessellateAttributes_SetMergePoints, METH_VARARGS},
     {"GetMergePoints", TessellateAttributes_GetMergePoints, METH_VARARGS},
     {NULL, NULL}
@@ -139,6 +167,8 @@ PyTessellateAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "chordError") == 0)
         return TessellateAttributes_GetChordError(self, NULL);
+    if(strcmp(name, "fieldCriterion") == 0)
+        return TessellateAttributes_GetFieldCriterion(self, NULL);
     if(strcmp(name, "mergePoints") == 0)
         return TessellateAttributes_GetMergePoints(self, NULL);
 
@@ -157,6 +187,8 @@ PyTessellateAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "chordError") == 0)
         obj = TessellateAttributes_SetChordError(self, tuple);
+    else if(strcmp(name, "fieldCriterion") == 0)
+        obj = TessellateAttributes_SetFieldCriterion(self, tuple);
     else if(strcmp(name, "mergePoints") == 0)
         obj = TessellateAttributes_SetMergePoints(self, tuple);
 
