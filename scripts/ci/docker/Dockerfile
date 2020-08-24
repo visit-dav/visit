@@ -59,3 +59,6 @@ RUN cd masonry && python bootstrap_visit.py opts/mb-develop-ci-smoke.json
 
 # cleanup extract build dirs and obtain the config site file
 RUN python masonry_docker_ci_cleanup.py
+# change perms
+RUN chmod -R a+rX /masonry
+
