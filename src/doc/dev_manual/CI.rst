@@ -22,8 +22,14 @@ these containers are in ``scripts/ci/docker``. To update the containers
  * Run ``docker push <container-name>`` to push the container image
    to `VisIt's DockerHub Registry <https://hub.docker.com/orgs/visitdav>`_.
 
-  You will need to be logged into DockerHub to successfully push, the process
-  may ask for your DockerHub username and password. 
+  If you do not already have a DockerHub account, go
+  `here <https://hub.docker.com/signup >`_  and sign up for one. Then
+  contact another member of `visitdav <https://hub.docker.com/orgs/visitdav>`_
+  and ask to be added to the organization.
+
+  You will need to be logged into DockerHub to successfully push. If you
+  are not logged in the process will ask for your DockerHub username
+  and password on the command line.
   Example Push Command:
    ``docker push visitdav/visit-ci-develop:2020-08-24-shac49c21``
 
