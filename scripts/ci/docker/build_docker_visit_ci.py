@@ -93,7 +93,7 @@ def main():
     # docker features enabled. It combines all the layers into
     # a more compact final image to save disk space.
     # tag with date + git hash
-    sexe('docker build -t visit-ci-develop:{0} . --squash'.format(gen_docker_tag()))
+    sexe('docker build -t visitdav/visit-ci-develop:{0} . --squash'.format(gen_docker_tag()))
 
 if __name__ == "__main__":
     main()
