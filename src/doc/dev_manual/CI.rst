@@ -11,11 +11,11 @@ To speed up our CI testing we use Docker containers with pre-built third party l
  * Run ``python build_docker_visit_ci.py`` to build and tag new version of our TPL container.
 
   This tag will include today's day and a short substring of the current git hash.
-  Example Tag: ``visitdav/visit-ci-develop:2020-08-21-sha124a77``
+  Example Tag: ``visitdav/visit-ci-develop:2020-08-24-shac49c21``
 
  * Run ``docker push <container-name>`` to push the container image to `VisIt's DockerHub Registry <https://hub.docker.com/orgs/visitdav>`_.
 
-  You will need to be logged into DockerHub to successfully push, the process may ask for your DockerHub username and password. Example Push Command: ``docker push visitdav/visit-ci-develop:2020-08-21-sha124a77``
+  You will need to be logged into DockerHub to successfully push, the process may ask for your DockerHub username and password. Example Push Command: ``docker push visitdav/visit-ci-develop:2020-08-24-shac49c21``
 
  * To change which Docker Image is used by Azure, edit ``azure-pipelines.yml`` and change `container_tag` variable. ::
 
@@ -23,7 +23,7 @@ To speed up our CI testing we use Docker containers with pre-built third party l
     # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
     #####
     variables:
-      container_tag: visitdav/visit-ci-develop:2020-08-21-sha124a77
+      container_tag: visitdav/visit-ci-develop:2020-08-24-shac49c21
 
 When the PR is merged, the azure changes will be merged and PRs to develop will use now the new container.
 
