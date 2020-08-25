@@ -8,7 +8,7 @@ We use Azure Pipelines for CI testing Visit's Pull Requests.
 
 To speed up our CI testing we use Docker containers with pre-built third party libraries. These containers leverage our ``build_visit`` third party build  process. The Docker files and build scripts used to create these containers are in ``scripts/ci/docker``. To update the containers (assuming you have Docker installed):
 
- * Run ``python build_docker_visit_ci.py`` to build and tag new version of our TPL container.
+ * Run ``python build_docker_visit_ci.py`` to build and tag a new version of our TPL container.
 
   This tag will include today's day and a short substring of the current git hash.
   Example Tag: ``visitdav/visit-ci-develop:2020-08-24-shac49c21``
@@ -25,5 +25,5 @@ To speed up our CI testing we use Docker containers with pre-built third party l
     variables:
       container_tag: visitdav/visit-ci-develop:2020-08-24-shac49c21
 
-When the PR is merged, the azure changes will be merged and PRs to develop will use now the new container.
+When the PR is merged, the azure changes will be merged and PRs to develop will now use the new container.
 
