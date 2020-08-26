@@ -3072,15 +3072,16 @@ GetAnnotationObject
 
 ::
 
-  GetAnnotationObject(string) -> Annotation object
+  GetAnnotationObject(objectName) -> Annotation object
 
 
-string : string
+objectName : string
     The name of the annotation object as returned by GetAnnotationObjectNames.
 
 return type : Annotation object
     GetAnnotationObject returns a reference to an annotation object that was
-    created using the CreateAnnotationObject function.
+    created using the CreateAnnotationObject function, or a legend object
+    created when a plot is added.
 
 
 **Description:**
@@ -3091,9 +3092,13 @@ return type : Annotation object
     one of the names returned by GetAnnotationObjectNames. This function is not
     currently necessary unless the annotation object that you used to create an
     annotation has gone out of scope and you need to create another reference
-    to the object to set its properties. Also note that although this function
-    will apparently also accept an integer index, that mode of access is not
-    reliably and should be avoided.
+    to the object to set its properties.
+
+    GetAnnotationObject can also return a reference to a legend, which is
+    automatically created when a plot is added.  It is associated with the name
+    of the plot. While the plot's name can be seen in the list obtained from
+    GetAnnotationObjectNames, it is better to get the plot's name from the
+    PlotList, especially when multiple plots are present.
 
 
 **Example:**
@@ -3102,13 +3107,18 @@ return type : Annotation object
 
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/wave.visit")
+  AddPlot("Mesh", "quadmesh")
   AddPlot("Pseudocolor", "pressure")
   DrawPlots()
   a = CreateAnnotationObject("TimeSlider")
   GetAnnotationObjectNames()
-  ["plot0000", "TimeSlider1"]
+  ["Plot0000", "Plot0001", "TimeSlider1"]
   ref = GetAnnotationObject("TimeSlider1")
   print ref
+  # Get the name of the Pseudocolor plot for legend retrieval.
+  # It is the second plot in the plot list (which is 0-indexed)
+  plotName = GetPlotList().GetPlots(1).plotName
+  legend = GetAnnotationObject(plotName)
 
 
 GetAnnotationObjectNames
