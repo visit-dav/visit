@@ -3480,8 +3480,8 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << name << "_richcompare(PyObject *self, PyObject *other, int op)" << Endl;
         c << "{" << Endl;
         c << "    // only compare against the same type " << Endl;
-        c << "    if ( Py_TYPE(self) == Py_TYPE(other) " << Endl;
-        c << "         && Py_TYPE(self) == &" <<name<< "Type)" << Endl;
+        c << "    if ( Py_TYPE(self) != &" <<name<< "Type" << Endl;
+        c << "         || Py_TYPE(other) != &" <<name<< "Type)" << Endl;
         c << "    {" << Endl;
         c << "        Py_INCREF(Py_NotImplemented);" << Endl;
         c << "        return Py_NotImplemented;" << Endl;

@@ -23,6 +23,7 @@
 void TessellateAttributes::Init()
 {
     chordError = 0.035;
+    fieldCriterion = 0.035;
     mergePoints = true;
 
     TessellateAttributes::SelectAll();
@@ -46,6 +47,7 @@ void TessellateAttributes::Init()
 void TessellateAttributes::Copy(const TessellateAttributes &obj)
 {
     chordError = obj.chordError;
+    fieldCriterion = obj.fieldCriterion;
     mergePoints = obj.mergePoints;
 
     TessellateAttributes::SelectAll();
@@ -205,6 +207,7 @@ TessellateAttributes::operator == (const TessellateAttributes &obj) const
 {
     // Create the return value
     return ((chordError == obj.chordError) &&
+            (fieldCriterion == obj.fieldCriterion) &&
             (mergePoints == obj.mergePoints));
 }
 
@@ -349,8 +352,9 @@ TessellateAttributes::NewInstance(bool copy) const
 void
 TessellateAttributes::SelectAll()
 {
-    Select(ID_chordError,  (void *)&chordError);
-    Select(ID_mergePoints, (void *)&mergePoints);
+    Select(ID_chordError,     (void *)&chordError);
+    Select(ID_fieldCriterion, (void *)&fieldCriterion);
+    Select(ID_mergePoints,    (void *)&mergePoints);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -387,6 +391,12 @@ TessellateAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
     {
         addToParent = true;
         node->AddNode(new DataNode("chordError", chordError));
+    }
+
+    if(completeSave || !FieldsEqual(ID_fieldCriterion, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("fieldCriterion", fieldCriterion));
     }
 
     if(completeSave || !FieldsEqual(ID_mergePoints, &defaultObject))
@@ -433,6 +443,8 @@ TessellateAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("chordError")) != 0)
         SetChordError(node->AsDouble());
+    if((node = searchNode->GetNode("fieldCriterion")) != 0)
+        SetFieldCriterion(node->AsDouble());
     if((node = searchNode->GetNode("mergePoints")) != 0)
         SetMergePoints(node->AsBool());
 }
@@ -446,6 +458,13 @@ TessellateAttributes::SetChordError(double chordError_)
 {
     chordError = chordError_;
     Select(ID_chordError, (void *)&chordError);
+}
+
+void
+TessellateAttributes::SetFieldCriterion(double fieldCriterion_)
+{
+    fieldCriterion = fieldCriterion_;
+    Select(ID_fieldCriterion, (void *)&fieldCriterion);
 }
 
 void
@@ -463,6 +482,12 @@ double
 TessellateAttributes::GetChordError() const
 {
     return chordError;
+}
+
+double
+TessellateAttributes::GetFieldCriterion() const
+{
+    return fieldCriterion;
 }
 
 bool
@@ -495,8 +520,9 @@ TessellateAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_chordError:  return "chordError";
-    case ID_mergePoints: return "mergePoints";
+    case ID_chordError:     return "chordError";
+    case ID_fieldCriterion: return "fieldCriterion";
+    case ID_mergePoints:    return "mergePoints";
     default:  return "invalid index";
     }
 }
@@ -521,8 +547,9 @@ TessellateAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_chordError:  return FieldType_double;
-    case ID_mergePoints: return FieldType_bool;
+    case ID_chordError:     return FieldType_double;
+    case ID_fieldCriterion: return FieldType_double;
+    case ID_mergePoints:    return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -547,8 +574,9 @@ TessellateAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_chordError:  return "double";
-    case ID_mergePoints: return "bool";
+    case ID_chordError:     return "double";
+    case ID_fieldCriterion: return "double";
+    case ID_mergePoints:    return "bool";
     default:  return "invalid index";
     }
 }
@@ -578,6 +606,11 @@ TessellateAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_chordError:
         {  // new scope
         retval = (chordError == obj.chordError);
+        }
+        break;
+    case ID_fieldCriterion:
+        {  // new scope
+        retval = (fieldCriterion == obj.fieldCriterion);
         }
         break;
     case ID_mergePoints:

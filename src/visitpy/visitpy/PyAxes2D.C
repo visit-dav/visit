@@ -540,8 +540,8 @@ static PyObject *
 Axes2D_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &Axes2DType)
+    if ( Py_TYPE(self) != &Axes2DType
+         || Py_TYPE(other) != &Axes2DType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

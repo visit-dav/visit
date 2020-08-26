@@ -228,8 +228,8 @@ static PyObject *
 DisplaceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &DisplaceAttributesType)
+    if ( Py_TYPE(self) != &DisplaceAttributesType
+         || Py_TYPE(other) != &DisplaceAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

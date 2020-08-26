@@ -995,8 +995,8 @@ static PyObject *
 ParallelCoordinatesAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &ParallelCoordinatesAttributesType)
+    if ( Py_TYPE(self) != &ParallelCoordinatesAttributesType
+         || Py_TYPE(other) != &ParallelCoordinatesAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
