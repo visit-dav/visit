@@ -8,7 +8,7 @@ This manual contains documentation for over two hundred functions and
 several dozen extension object types. Learning to combine the right
 functions in order to accomplish a visualization task without guidance
 would involve hours of trial and error. To maximize productivity and
-start creating visualizations using Visit’s Python Interface as fast as
+start creating visualizations using Visit_'s Python Interface as fast as
 possible, this chapter provides some common patterns, or "quick recipes"
 that you can combine to quickly create complex scripts.
 
@@ -23,7 +23,7 @@ scripting or you can script every aspect of plot initialization.
 Using session files
 ~~~~~~~~~~~~~~~~~~~
 
-VisIt’s session files contain all of the information required to
+VisIt_'s session files contain all of the information required to
 recreate plots that have been set up in previous interactive VisIt
 sessions. Since session files contain all of the information about
 plots, etc., they are natural candidates to make scripting easier since
@@ -44,7 +44,7 @@ the RestoreSession function.
 Getting something on the screen
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you don’t want to use a session file to begin the setup for your
+If you don't want to use a session file to begin the setup for your
 visualization then you will have to dive into opening databases,
 creating plots, and animating through time. This is where all of
 hand-crafted scripts begin. The first step in creating a visualization
@@ -52,7 +52,7 @@ is opening a database. VisIt provides the OpenDatabase function to open
 a database. Once a database has been opened, you can create plots from
 its variables using the AddPlot function. The AddPlot function takes a
 plot plugin name and the name of a variable from the open database. Once
-you’ve added a plot, it is in the new state, which means that it has not
+you've added a plot, it is in the new state, which means that it has not
 yet been submitted to the compute engine for processing. To make sure
 that the plot gets drawn, call the DrawPlots function.
 
@@ -76,9 +76,9 @@ that the plot gets drawn, call the DrawPlots function.
 Saving images
 -------------
 
-Much of the time, the entire purpose of using VisIt’s Python Interface
+Much of the time, the entire purpose of using VisIt_'s Python Interface
 is to create a script that can save out images of a time-varying
-database for the purpose of making movies. Saving images using VisIt’s
+database for the purpose of making movies. Saving images using VisIt_'s
 Python Interface is a straight-forward process, involving just a few
 functions.
 
@@ -92,7 +92,7 @@ that VisIt uses to save files, you must create a SaveWindowAttributes
 object, change the necessary attributes, and call the
 SetSaveWindowAttributes function. Note that if you want to create images
 using a specific image resolution, the best way is to use the
-*-geometry* command line argument with VisIt’s Command Line Interface
+*-geometry* command line argument with VisIt_'s Command Line Interface
 and tell VisIt to use screen capture. If you instead require your script
 to be capable of saving several different image sizes then you can turn
 off screen capture and set the image resolution in the
@@ -164,7 +164,7 @@ reasons for opening a database at a later time state. The most common
 reason for doing so, as opposed to just changing time states later, is
 that VisIt uses the metadata from the first opened time state to
 describe the contents of the database for all timestates (except for
-certain file formats that don’t do this, i.e. SAMRAI). This means that
+certain file formats that don't do this, i.e. SAMRAI). This means that
 the list of variables found for the first time state that you open is
 used for all timestates. If your database contains a variable at a later
 timestate that does not exist at earlier time states, you must open the
@@ -202,7 +202,7 @@ Opening a remote database
 
 VisIt supports running the client on a local computer while also
 allowing you to process data in parallel on a remote computer. If you
-want to access databases on a remote computer using VisIt’s Python
+want to access databases on a remote computer using VisIt_'s Python
 Interface, the only difference to accessing a database on a local
 computer is that you must specify a host name as part of the database
 name.
@@ -243,7 +243,7 @@ displayed in a visualization window. VisIt provides several types of
 plots and each plot allows you to view data using different
 visualization techniques. For example, the Pseudocolor plot allows you
 to see the general shape of a simulated object while painting colors on
-it according to the values stored in a variable’s scalar field. The most
+it according to the values stored in a variable's scalar field. The most
 important functions for interacting with plots are covered in this
 section.
 
@@ -254,7 +254,7 @@ The function for adding a plot in VisIt is: AddPlot. The AddPlot
 function takes the name of a plot type and the name of a variable that
 is to be plotted and creates a new plot and adds it to the plot list.
 The name of the plot to be created corresponds to the name of one of
-VisIt’s plot plugins, which can be queried using the PlotPlugins
+VisIt_'s plot plugins, which can be queried using the PlotPlugins
 function. The variable that you pass to the AddPlot function must be a
 valid variable for the opened database. New plots are not realized,
 meaning that they have not been submitted to the compute engine for
@@ -299,9 +299,9 @@ the Pseudocolor plot would be: PseudocolorAttributes. To change the
 attributes for a plot, you create an attributes object using the
 appropriate function, set the properties in the returned object, and
 tell VisIt to use the new plot attributes by passing the object to the
-SetPlotOptions function. Note that you should set a plot’s attributes
+SetPlotOptions function. Note that you should set a plot's attributes
 before calling the DrawPlots method to realize the plot since setting a
-plot’s attributes can cause the compute engine to recalculate the plot.
+plot's attributes can cause the compute engine to recalculate the plot.
 
 ::
 
@@ -319,13 +319,13 @@ Working with multiple plots
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When you work with more than one plot, it is sometimes necessary to set
-the active plots because some of VisIt’s functions apply to all of the
+the active plots because some of VisIt_'s functions apply to all of the
 active plots. The active plot is usually the last plot that was created
-unless you’ve changed the list of active plots. Changing which plots are
+unless you've changed the list of active plots. Changing which plots are
 active is useful when you want to delete or hide certain plots or set
 their plot attributes independently. When you want to set which plots
 are active, use the SetActivePlots function. If you want to list the
-plots that you’ve created, call the ListPlots function.
+plots that you've created, call the ListPlots function.
 
 ::
 
@@ -361,7 +361,7 @@ plots that you’ve created, call the ListPlots function.
 Plots in the error state
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-When VisIt’s compute engine cannot process a plot, the plot is put into
+When VisIt's compute engine cannot process a plot, the plot is put into
 the error state. Once a plot is in the error state, it no longer is
 displayed in the visualization window. If you are generating a movie,
 plots entering the error state can be a serious problem because you most
@@ -419,13 +419,13 @@ Setting operator attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each plot gets its own instance of an operator which means that you can
-set each plot’s operator attributes independently. Like plots, operators
+set each plot's operator attributes independently. Like plots, operators
 use objects to set their attributes. These objects are returned by
 functions whose names are of the form: operatorname + "Attributes". Once
 you have created an operator attributes object, you can pass it to the
 SetOperatorOptions to set the options for an operator. Note that setting
 the attributes for an operator nearly always causes the compute engine
-to recalculate the operator. You can use the power of VisIt’s Python
+to recalculate the operator. You can use the power of VisIt's Python
 Interface to create complex operator behavior such as in the following
 code example, which moves slice planes through a Pseudocolor plot.
 
@@ -460,7 +460,7 @@ Defining expressions
 
 VisIt allows you to create derived variables using its powerful
 expressions language. You can plot or query variables created using
-expressions just as you would if they were read from a database. VisIt’s
+expressions just as you would if they were read from a database. VisIt_'s
 Python Interface allows you to create new scalar, vector, tensor
 variables using the DefineScalarExpression, DefineVectorExpression, and
 DefineTensorExpression functions.
@@ -592,7 +592,7 @@ to remove materials and domains from your visualization.
 Turning off domains
 ~~~~~~~~~~~~~~~~~~~
 
-VisIt’s Python Interface provides the TurnDomainsOn and TurnDomainsOff
+VisIt_'s Python Interface provides the TurnDomainsOn and TurnDomainsOff
 functions to make it easy to turn domains on and off.
 
 ::
@@ -612,7 +612,7 @@ functions to make it easy to turn domains on and off.
 Turning off materials
 ~~~~~~~~~~~~~~~~~~~~~
 
-VisIt’s Python Interface provides the TurnMaterialsOn and
+VisIt_'s Python Interface provides the TurnMaterialsOn and
 TurnMaterialsOff functions to make it easy to turn materials on and off.
 
 ::
@@ -662,7 +662,7 @@ Setting the 3D view
 
 The 3D view is much more complex than the 2D view. For information on
 the actual meaning of the fields in the View3DAttributes object, refer
-to page 214 or the VisIt User’s Manual. VisIt automatically computes a
+to page 214 or the VisIt User Manual. VisIt automatically computes a
 suitable view for 3D objects and it is best to initialize new
 View3DAttributes objects using the GetView3D function so most of the
 fields will already be initialized. The best way to get new views to use
@@ -699,7 +699,7 @@ parameterized space [0., 1.]. When the parameterized space is sampled
 with some number of samples, VisIt calculates the view for the specified
 parameter value and returns a smoothly interpolated view. One benefit
 over keyframing, in this case, is that you can use cubic interpolation
-whereas VisIt’s keyframing mode currently uses linear interpolation.
+whereas VisIt_'s keyframing mode currently uses linear interpolation.
 
 ::
 
@@ -798,15 +798,15 @@ provides some recipes for creating annotations using scripting.
 Using gradient background colors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-VisIt’s default white background is not necessarily the best looking
+VisIt_'s default white background is not necessarily the best looking
 background color for presentations. Adding a gradient background under
 your plots is an easy way to add a small professional touch to your
 visualizations. VisIt provides a few different styles of gradient
 background: radial, top to bottom, bottom to top, left to right, and
 right to left. The gradient style is set using the
 *gradientBackgroundStyle* member of the AnnotationAttributes object. The
-before and after results are shown in Figure
-`[fig:annotations1] <#fig:annotations1>`__.
+before and after results are shown in :numref:`Figure %s <annotations1>`.
+
 
 ::
 
@@ -818,9 +818,8 @@ before and after results are shown in Figure
     a.gradientColor2 = (0,0,0,255) # Black 
     SetAnnotationAttributes(a) 
 
-.. raw:: latex
 
-   \centering
+.. _annotations1:
 
 .. figure:: images/annotation1.png
    :alt: Before and after image of adding a gradient background.
@@ -832,13 +831,13 @@ Adding a banner
 ~~~~~~~~~~~~~~~
 
 Banners are useful for providing titles for a visualization or for
-marking its content (see Figure
-`[fig:annotations2] <#fig:annotations2>`__). To add an "Unclassified"
-banner to a visualization, use the following bit of Python code:
+marking its content (see :numref:`Figure %s <annotations2>`).
+To add an "Unclassified" banner to a visualization, use the following bit of 
+Python code:
 
 ::
 
-    # Create a text object that we’ll use to indicate that our 
+    # Create a text object that we'll use to indicate that our 
     # visualization is unclassified. 
     banner = CreateAnnotationObject("Text2D") 
     banner.text = "Unclassified" 
@@ -847,9 +846,7 @@ banner to a visualization, use the following bit of Python code:
     # print the attributes that you can set in the banner object. 
     print banner 
 
-.. raw:: latex
-
-   \centering
+.. _annotations2:
 
 .. figure:: images/annotation2.png
    :alt: Adding a banner
@@ -864,9 +861,8 @@ Time sliders are important annotations for movies since they convey how
 much progress an animation has made as well as how many more frames have
 yet to be seen. The time slider is also important for showing the
 simulation time as the animation progresses so users can get a sense of
-when in the simulation important events occur. VisIt’s time slider
-annotation object is shown in Figure
-`[fig:annotations3] <#fig:annotations3>`__.
+when in the simulation important events occur. VisIt_'s time slider
+annotation object is shown in :numref:`Figure %s <annotations3>`.
 
 ::
 
@@ -876,9 +872,7 @@ annotation object is shown in Figure
     # Print the options that are available in the time slider object 
     print slider 
 
-.. raw:: latex
-
-   \centering
+.. _annotations3:
 
 .. figure:: images/annotation3.png
    :alt: Time slider annotation in the lower left corner
@@ -892,10 +886,11 @@ Adding a logo
 Adding a logo to a visualization is an important part of project
 identification for movies and other visualizations created with VisIt.
 If you have a logo image file stored in TIFF, JPEG, BMP, or PPM format
-then you can use it with VisIt as an image annotation (see Figure
-`[fig:annotations4] <#fig:annotations4>`__). Note that this approach can
+then you can use it with VisIt as an image annotation (see 
+:numref:`Figure %s <annotations4>`). Note that this approach can
 also be used to insert images of graphs, plots, portraits, diagrams, or
 any other form of image data into a visualization.
+
 
 ::
 
@@ -906,12 +901,69 @@ any other form of image data into a visualization.
     # Print the other image annotation options 
     print image 
 
-.. raw:: latex
 
-   \centering
+.. _annotations4:
 
 .. figure:: images/annotation4.png
    :alt: Image annotation used to incorporate LLNL logo
    :width: 3in
 
    Image annotation used to incorporate LLNL logo
+
+Modifying a legend 
+~~~~~~~~~~~~~~~~~~
+
+VisIt_'s plot legends can be customized. To obtain the proper annotation 
+object, you must use the name of the plot, which is a unique name that 
+identifies the plot. Once you have the plot's name, you can obtain a 
+reference to its legend annotation object and start setting properties to 
+modify the legend. 
+
+::
+
+    # Open a file and make a plot
+    OpenDatabase("/usr/gapps/visit/data/noise.silo")
+    AddPlot("Mesh", "Mesh")
+    AddPlot("Pseudocolor", "hardyglobal")
+    DrawPlots()
+    # Get the legend annotation object for the Pseudocolor plot, the second
+    # plot in the list (0-indexed).
+    plotName = GetPlotList().GetPlots(1).plotName 
+    legend = GetAnnotationObject(plotName)
+    # See if we can scale the legend.
+    legend.xScale = 3.
+    legend.yScale = 3.
+    # the bounding box.
+    legend.drawBoundingBox = 1
+    legend.boundingBoxColor = (180,180,180,230)
+    # Make it horizontal
+    legend.orientation = legend.HorizontalBottom
+    # moving the legend
+    legend.managePosition = 0
+    legend.position = (0.7,0.15)
+    # text color
+    InvertBackgroundColor()
+    legend.useForegroundForTextColor = 0
+    legend.textColor = (255, 0, 0, 255)
+    # number format
+    legend.numberFormat = "%1.4e"
+    # the font.
+    legend.fontFamily = legend.Arial
+    legend.fontBold = 1
+    legend.fontItalic = 1
+    # turning off the labels.
+    legend.fontItalic = 0
+    legend.drawLabels = legends.None 
+    legend.drawMinMax = 0
+    # turning off the title.
+    legend.drawTitle = 0
+    # Use user-supplied labels, rather than numeric values.
+    legend.controlTicks=0
+    legend.drawLabels = legend.Labels
+    # suppliedLabels must be strings, only valid when controlTicks is 0
+    legend.suppliedLabels=("A", "B", "C", "D", "E")
+    # Print the legend object so you can see the other properties
+    # that you can set in order to modify the legend.
+    print(legend)
+
+
