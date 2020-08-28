@@ -23,7 +23,7 @@ these containers are in ``scripts/ci/docker``. To update the containers
    to `VisIt's DockerHub Registry <https://hub.docker.com/orgs/visitdav>`_.
 
   If you do not already have a DockerHub account, go
-  `here <https://hub.docker.com/signup >`_  and sign up for one. Then
+  `here <https://hub.docker.com/signup>`_  and sign up for one. Then
   contact another member of `visitdav <https://hub.docker.com/orgs/visitdav>`_
   and ask to be added to the organization.
 
@@ -31,7 +31,7 @@ these containers are in ``scripts/ci/docker``. To update the containers
   are not logged in the process will ask for your DockerHub username
   and password on the command line.
   Example Push Command:
-   ``docker push visitdav/visit-ci-develop:2020-08-24-shac49c21``
+  ``docker push visitdav/visit-ci-develop:2020-08-24-shac49c21``
 
  * To change which Docker Image is used by Azure, edit ``azure-pipelines.yml``
    and change `container_tag` variable. ::
