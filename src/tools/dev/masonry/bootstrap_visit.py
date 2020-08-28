@@ -315,11 +315,28 @@ def steps_visit(opts,ctx):
         steps_package(opts,build_type,ctx)
         steps_sanity_checks(opts,build_type,ctx)
 
+def digest_results(fire_res):
+    for v in fire_res["trigger"]["results"]:
+        a = v["action"]
+        rcode = -1
+        if "return_code" in a.keys():
+            rcode = a["return_code"]
+        if rcode != 0:
+            print("[ERROR!]")
+            print("Command Failed:\n {0}".format(a["cmd"]))
+            print("Return Code:\n {0}".format(rcode))
+            print("Output:\n {0}".format(a["output"]))
+            if "error" in a.keys():
+                print("Error:\n {0}".format(a["error"]))
+            return rcode
+    return 0
+
 def main(opts_json):
     opts = load_opts(opts_json)
     ctx = Context()
     steps_visit(opts,ctx)
-    return ctx.fire("build")
+    res = ctx.fire("build")
+    return digest_results(res)
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1]))

@@ -7,8 +7,8 @@
  "git": {"mode":"https",
          "depth":"1"},
  "build_visit":  { "cmake_ver": "3.9.3",
-                    "args":"--no-thirdparty --optional --no-hdf4",
-                    "comments": "setup for ci testing, builds basics + optional tpls",
+                    "args":"--no-thirdparty --no-hdf4",
+                    "comments": "setup for ci testing, builds basic tpls",
           "libs":["cmake",
                   "openssl",
                   "python",
@@ -21,5 +21,8 @@
                   "silo",
                   "szip",
                   "zlib",
+                  "conduit",
+                  "mfem",
+                  "netcdf",
                   "mpich"]}
 }}

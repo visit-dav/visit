@@ -292,9 +292,11 @@ class ShellAction(Action):
             res["action"]["return_code"]  = rcode
         except KeyboardInterrupt as e:
             res["action"]["error"] = "shell command interrupted by user (ctrl-c)"
+            res["action"]["return_code"]  = -1
         except Exception as e:
             print(e)
             res["action"]["error"] = str(e)
+            res["action"]["return_code"]  = -1
         t_end = timenow()
         res["action"]["finish_time"]  = timestamp(t_end)
         res["action"]["elapsed_time"] = timedelta(t_start,t_end) 
