@@ -30,7 +30,7 @@ Searching : ``Annot*``
     is case-sensitive and will return results include ``Annotations``,
     ``Annotation`` but not ``annotate``.
 
-Searching : ``annot* object``
+Searching : ``annot* +object``
     returns results containing various instances of ``Annotation``,
     ``Annotations``, ``Annotated`` AND ``object``.
 
@@ -54,4 +54,4 @@ Searching : ``foo bar -baz`` returns results containing ``foo`` or ``bar`` as we
     well beyond those containing just ``foo`` or ``bar``). This is probably not the intention.
     This is because the default operator (implied by spaces) is OR. To return documents
     that contain ``foo`` or ``bar`` and do not contain ``baz``, the search string would
-    be ``foo bar + -baz`` or ``(foo bar) + -baz``.
+    be ``foo bar +-baz`` or ``(foo bar) +-baz``.
