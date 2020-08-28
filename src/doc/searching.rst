@@ -11,7 +11,7 @@ the following operators:
 * ``*`` at the end of a term signifies a prefix query
 * ``(`` and ``)`` signify precedence
 * ``~N`` after a word signifies
-  [edit distance](https://en.wikipedia.org/wiki/Levenshtein_distance) (fuzziness)
+  `edit distance <https://en.wikipedia.org/wiki/Levenshtein_distance`_ (fuzziness)
 * ``~N`` after a phrase signifies slop amount
 * To use any of the above characters literally, escape it with a
   preceding backslash (``\``).
@@ -54,4 +54,4 @@ Searching : ``foo bar -baz`` returns results containing ``foo`` or ``bar`` as we
     well beyond those containing just ``foo`` or ``bar``). This is probably not the intention.
     This is because the default operator (implied by spaces) is OR. To return documents
     that contain ``foo`` or ``bar`` and do not contain ``baz``, the search string would
-    be ``foo bar + -baz``.
+    be ``foo bar + -baz`` or ``(foo bar) + -baz``.
