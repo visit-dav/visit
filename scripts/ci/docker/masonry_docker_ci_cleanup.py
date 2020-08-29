@@ -14,7 +14,11 @@ import shutil
 from os.path import join as pjoin
 
 def tpl_build_dir():
-    return "/masonry/build-mb-develop-ci-smoke/thirdparty_shared"
+    locs = glob.glob(pjoin("/masonry/build-mb-*"))
+    if len(locs) != 1:
+        print("Error: could not locate third party build dir: /masonry/build-mb-*")
+        sys.exit(-1)
+    return pjoin(locs[0],"thirdparty_shared")
 
 def check_to_keep(path):
     res = False
