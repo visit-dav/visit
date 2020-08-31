@@ -45,10 +45,10 @@ RUN cd /usr/include && ln -s freetype2 freetype
 COPY visit.masonry.docker.src.tar /
 RUN tar -xzf visit.masonry.docker.src.tar
 
-# these options change dir structure created and used
 # so add them as env entries to make things a little more tractable
 ENV OPTS_FILE mb-develop-ci-smoke-py3.json
-ENV BUILD_DIR build-mb-develop-ci-smoke-py3
+# use standard build dir (we expect this to be set in the json opts via build_dir)
+ENV BUILD_DIR build-mb-develop-ci-smoke
 
 # untar the current build_visit source (created as part of build_docker_visit_ci.py)
 # TODO THE DIR HAS UNIQUE NAME BASED ON opts/mb-develop-ci-smoke-py2.json
