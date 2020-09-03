@@ -1324,7 +1324,6 @@ build_ucd2d_lines(DBfile * dbfile, int size)
     double          dtime;
     int             tdim;
     float          *coords[2];
-    int             dims[1];
     float           x[13], y[13];
     float           d[13],u[13],v[13];
     float           p[16];
@@ -1472,8 +1471,6 @@ build_ucd2d_lines(DBfile * dbfile, int size)
 
     DBPutUcdmesh(dbfile, "ucd_linesmesh2d", 2, NULL, coords, nnodes, nzones,
                  "ucd2d_zonelist", NULL, DB_FLOAT, optlist);
-
-    dims[0] = nzones;
 
     DBPutUcdvar1(dbfile, "d", "ucd_linesmesh2d", d, nnodes, NULL, 0, DB_FLOAT,
                  DB_NODECENT, NULL);
@@ -2661,7 +2658,6 @@ build_ucd3d_lines(DBfile * dbfile, int size)
     double          dtime;
     int             tdim;
     float          *coords[3];
-    int             dims[1];
     float           x[13], y[13], z[13];
     float           d[13];
     float           p[16];
@@ -3478,7 +3474,6 @@ main(int argc, char *argv[])
 {
     int            i;
     int            size;
-    int            ntests = 0;
     int            driver = DB_PDB;
 
     //
@@ -3498,7 +3493,7 @@ main(int argc, char *argv[])
         else if (strcmp(argv[i], "DB_PDB") == 0)
             driver = DB_PDB;
         else
-           fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[i]);
+           fprintf(stderr,"WARNING: Unrecognized command line option %s.\n", argv[i]);
     }
 
     //
@@ -3507,10 +3502,6 @@ main(int argc, char *argv[])
     DBShowErrors(DB_ABORT, NULL);
 
     MakeFiles(size, driver);
-    ntests++;
-
-    if (!ntests)
-        printf("No tests performed.\n");
 
     return(0);
 }
