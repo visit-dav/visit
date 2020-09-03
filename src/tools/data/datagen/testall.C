@@ -301,7 +301,8 @@ build_rect2d(DBfile * dbfile, int size)
     char          *meshname = NULL, *var1name = NULL, *var2name = NULL;
     char          *var3name = NULL, *var4name = NULL, *matname = NULL;
 
-    float         *d=NULL, *p=NULL, *u=NULL, *v=NULL, *t=NULL, *ascii=NULL, *distarr=NULL;
+    float         *d=NULL, *p=NULL, *u=NULL, *v=NULL, *t=NULL, *dmix=NULL;
+    float         *ascii=NULL, *distarr=NULL;
 
     char          *asciiw=NULL;
 
@@ -311,7 +312,7 @@ build_rect2d(DBfile * dbfile, int size)
     int            dims2[3];
     int            mixlen;
     int           *mix_next = NULL, *mix_mat = NULL, *mix_zone = NULL;
-    float         *mix_vf = NULL;
+    float         *mix_vf = NULL, *mix_dmix = NULL;
 
     DBoptlist     *optlist = NULL, *varOptList = NULL;
 
@@ -343,6 +344,7 @@ build_rect2d(DBfile * dbfile, int size)
     u = ALLOC_N (float, (nx + 1) * (ny + 1));
     v = ALLOC_N (float, (nx + 1) * (ny + 1));
     t = ALLOC_N (float, (nx + 1) * (ny + 1));
+    dmix = ALLOC_N (float, nx * ny);
     distarr = ALLOC_N (float, nx * ny);
     ascii = ALLOC_N (float, nx * ny);
     asciiw = ALLOC_N (char, nx * ny * 9);
@@ -351,6 +353,7 @@ build_rect2d(DBfile * dbfile, int size)
     mix_mat  = ALLOC_N (int, 40 * ny);
     mix_zone = ALLOC_N (int, 40 * ny);
     mix_vf   = ALLOC_N (float, 40 * ny);
+    mix_dmix = ALLOC_N (float, 40 * ny);
 
     //
     // Create the mesh.
@@ -540,6 +543,25 @@ build_rect2d(DBfile * dbfile, int size)
     fill_rect2d_mat (x, y, matlist, nx, ny, mix_next, mix_mat, mix_zone,
                      mix_vf, &mixlen, 18, 0.1);
 
+    //
+    // Calculate dmix.
+    //
+    for (i = 0; i < nx * ny; i++)
+    {
+        if (matlist[i] > 0)
+        {
+            d[i] = matlist[i] * 0.2;
+        }
+        else
+        {
+            int m1 = - matlist[i] - 1;
+            int m2 = mix_next[m1] - 1;
+            mix_dmix[m1] = mix_mat[m1] * 0.2;
+            mix_dmix[m2] = mix_mat[m2] * 0.2;
+            d[i] = mix_dmix[m1] * mix_vf[m1] + mix_dmix[m2] * mix_vf[m2];
+        }
+    }
+
     if (mixlen > 40 * ny)
     {
         printf ("mixlen = %d\n", mixlen);
@@ -601,6 +623,11 @@ build_rect2d(DBfile * dbfile, int size)
                   DB_FLOAT, DB_NODECENT, varOptList);
     DBFreeOptlist(varOptList);
 
+    varOptList = rect2d_var_optlist("g/cm^2", &cycle, &time, &dtime);
+    DBPutQuadvar1(dbfile, "dmix", meshname, d, zdims, ndims, mix_dmix, mixlen,
+                  DB_FLOAT, DB_ZONECENT, varOptList);
+    DBFreeOptlist(varOptList);
+
     DBPutMaterial(dbfile, matname, meshname, nmats, matnos, matlist, dims2,
                   ndims, mix_next, mix_mat, mix_zone, mix_vf, mixlen,
                   DB_FLOAT, optlist);
@@ -652,6 +679,7 @@ build_rect2d(DBfile * dbfile, int size)
     FREE (u);
     FREE (v);
     FREE (t);
+    FREE (dmix);
     FREE (distarr);
     FREE (ascii);
     FREE (asciiw);
@@ -660,6 +688,7 @@ build_rect2d(DBfile * dbfile, int size)
     FREE (mix_mat);
     FREE (mix_zone);
     FREE (mix_vf);
+    FREE (mix_dmix);
 }
 
 static void
