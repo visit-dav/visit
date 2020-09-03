@@ -49,8 +49,8 @@ using     std::string;
 using     std::ostringstream;
 using     std::vector;
 
-// Controls whether to create original cell ids.
-#define CREATE_ORIGINAL_CELL_IDS
+// Controls whether to create original cell numbers.
+#define CREATE_ORIGINAL_CELL_NUMBERS
 
 using namespace mfem;
 
@@ -817,6 +817,8 @@ avtFMSFileFormat::ActivateTimestep(void)
 //
 //
 //  Modifications:
+//    Brad Whitlock, Wed Sep  2 17:49:59 PDT 2020
+//    Up the maximum LODs to better handle the spiral cell case.
 //
 // ****************************************************************************
 void
@@ -858,8 +860,8 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mmd->xLabel = "X";
     mmd->yLabel = "Y";
     mmd->zLabel = "Z";
-    mmd->LODs = 50; // The MultiresControl operator does not let us go above 1 without this.
-#ifdef CREATE_ORIGINAL_CELL_IDS
+    mmd->LODs = 100; // The MultiresControl operator does not let us go above 1 without this.
+#ifdef CREATE_ORIGINAL_CELL_NUMBERS
     mmd->containsOriginalCells = true;
 #endif
     md->Add(mmd);
@@ -884,7 +886,7 @@ avtFMSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         bmmd->yLabel = "Y";
         bmmd->zLabel = "Z";
         bmmd->LODs = 50; // The MultiresControl operator does not let us go above 1 without this.
-#ifdef CREATE_ORIGINAL_CELL_IDS
+#ifdef CREATE_ORIGINAL_CELL_NUMBERS
         bmmd->containsOriginalCells = bmmd->topologicalDimension > 1;
 #endif
         md->Add(bmmd);
@@ -1247,10 +1249,10 @@ avtFMSFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int l
     // create the cells for the refined topology   
     res_ds->Allocate(neles);
 
-#ifdef CREATE_ORIGINAL_CELL_IDS
+#ifdef CREATE_ORIGINAL_CELL_NUMBERS
     // Make some original cell ids so we can try to eliminate the mesh lines.
     std::vector<unsigned int> originalCells;
-    originalCells.reserve(neles);
+    originalCells.reserve(neles * 2);
     unsigned int udomain = static_cast<unsigned int>(domain);
     bool doOriginalCells = true;
 #endif
@@ -1287,26 +1289,26 @@ avtFMSFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int l
                                    ele_cell->GetPointIds());
             ele_cell->Delete();
 
-#ifdef CREATE_ORIGINAL_CELL_IDS
+#ifdef CREATE_ORIGINAL_CELL_NUMBERS
             originalCells.push_back(udomain);
             originalCells.push_back(static_cast<unsigned int>(i));
 #endif
         }
 
         pt_idx += refined_geo->RefPts.GetNPoints();
-   }
+    }
 
-#ifdef CREATE_ORIGINAL_CELL_IDS
+#ifdef CREATE_ORIGINAL_CELL_NUMBERS
     if(doOriginalCells)
     {
-        vtkUnsignedIntArray *origZones = vtkUnsignedIntArray::New();
-        origZones->SetName("avtOriginalCellNumbers");
-        origZones->SetNumberOfComponents(2);
-        origZones->SetNumberOfTuples(originalCells.size()/2);
-        memcpy(origZones->GetVoidPointer(0), &originalCells[0],
+        vtkUnsignedIntArray *ocn = vtkUnsignedIntArray::New();
+        ocn->SetName("avtOriginalCellNumbers");
+        ocn->SetNumberOfComponents(2);
+        ocn->SetNumberOfTuples(originalCells.size()/2);
+        memcpy(ocn->GetVoidPointer(0), &originalCells[0],
                sizeof(unsigned int) * originalCells.size());
-        res_ds->GetCellData()->AddArray(origZones);
-        origZones->Delete();
+        res_ds->GetCellData()->AddArray(ocn);
+        ocn->Delete();
     }
 #endif
 
