@@ -349,6 +349,12 @@ build_rect2d(DBfile * dbfile, int size)
     ascii = ALLOC_N (float, nx * ny);
     asciiw = ALLOC_N (char, nx * ny * 9);
     matlist = ALLOC_N (int, nx * ny);
+    //
+    // The 40 was choosen to hopefully over allocate the array. There
+    // is a check later on that checks if we exceeded the allocation
+    // and exits with an error message on the assumption that we will
+    // have clobbered memory and things may be in a bad state.
+    //
     mix_next = ALLOC_N (int, 40 * ny);
     mix_mat  = ALLOC_N (int, 40 * ny);
     mix_zone = ALLOC_N (int, 40 * ny);
@@ -544,6 +550,17 @@ build_rect2d(DBfile * dbfile, int size)
                      mix_vf, &mixlen, 18, 0.1);
 
     //
+    // Check if we have exceeded the allocation for the mixed variable
+    // arrays. If we have print an error message and exit.
+    //
+    if (mixlen > 40 * ny)
+    {
+        fprintf (stderr, "ERROR: Hard-coded mixlen exceeded at line %d.\n",
+                 __LINE__);
+        exit (1);
+    }
+
+    //
     // Calculate dmix.
     //
     for (i = 0; i < nx * ny; i++)
@@ -560,12 +577,6 @@ build_rect2d(DBfile * dbfile, int size)
             mix_dmix[m2] = mix_mat[m2] * 0.2;
             d[i] = mix_dmix[m1] * mix_vf[m1] + mix_dmix[m2] * mix_vf[m2];
         }
-    }
-
-    if (mixlen > 40 * ny)
-    {
-        printf ("mixlen = %d\n", mixlen);
-        exit (1);
     }
 
     //
