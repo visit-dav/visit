@@ -567,7 +567,7 @@ build_rect2d(DBfile * dbfile, int size)
     {
         if (matlist[i] > 0)
         {
-            d[i] = matlist[i] * 0.2;
+            dmix[i] = matlist[i] * 0.2;
         }
         else
         {
@@ -575,7 +575,7 @@ build_rect2d(DBfile * dbfile, int size)
             int m2 = mix_next[m1] - 1;
             mix_dmix[m1] = mix_mat[m1] * 0.2;
             mix_dmix[m2] = mix_mat[m2] * 0.2;
-            d[i] = mix_dmix[m1] * mix_vf[m1] + mix_dmix[m2] * mix_vf[m2];
+            dmix[i] = mix_dmix[m1] * mix_vf[m1] + mix_dmix[m2] * mix_vf[m2];
         }
     }
 
@@ -635,8 +635,8 @@ build_rect2d(DBfile * dbfile, int size)
     DBFreeOptlist(varOptList);
 
     varOptList = rect2d_var_optlist("g/cm^2", &cycle, &time, &dtime);
-    DBPutQuadvar1(dbfile, "dmix", meshname, d, zdims, ndims, mix_dmix, mixlen,
-                  DB_FLOAT, DB_ZONECENT, varOptList);
+    DBPutQuadvar1(dbfile, "dmix", meshname, dmix, zdims, ndims, mix_dmix,
+                  mixlen, DB_FLOAT, DB_ZONECENT, varOptList);
     DBFreeOptlist(varOptList);
 
     DBPutMaterial(dbfile, matname, meshname, nmats, matnos, matlist, dims2,
