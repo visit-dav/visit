@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     gfortran \
     zlib1g-dev \
     python \
+    p7zip-full \
     libsm-dev \
     libice-dev \
     libssl-dev \

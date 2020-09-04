@@ -81,10 +81,19 @@ stages:
            make -j 4
         displayName: 'Build'
 
-      # - script: |
-      #      #################################
-      #      # install
-      #      #################################
-      #      cd build
-      #      make install
-      #   displayName: 'Install'
+      - script: |
+           #################################
+           # test
+           #################################
+           # fetch subset of test data for smoke check
+           # must get silo data since test suite
+           # script first checks to make sure it exists
+           git lfs pull --include silo_hdf5_test_data.7z
+           git lfs pull --include vtk_test_data.7z
+           cd build/testdata
+           # unzip
+           p7zip -d ../../data/silo_hdf5_test_data.7z
+           p7zip -d ../../data/vtk_test_data.7z
+           cd ../test
+           ./run_visit_test_suite.sh  -v ../../src/test/tests/databases/vtk.py
+        displayName: 'Test'

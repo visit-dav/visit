@@ -19,6 +19,7 @@
                   "llvm",
                   "mesagl",
                   "hdf5",
+                  "p7zip",
                   "silo",
                   "szip",
                   "zlib",
