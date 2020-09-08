@@ -232,16 +232,11 @@ function apply_qt_patch
                 fi
             fi
         elif [[ -f /etc/os-release ]] ; then
-            VER=`cat /etc/os-release | grep "REDHAT_SUPPORT_PRODUCT_VERSION" | cut -d'=' -f 2`
-            if [[ "${VER:1:1}" == "8" ]] ; then
-                apply_qt_5101_centos8_patch
-                if [[ $? != 0 ]] ; then
-                    return 1
-                fi
-            fi
-        elif [[ -f /etc/issue ]] ; then
-            VER=`cat /etc/issue | grep "Debian" | cut -d' ' -f 3`
-            if [[ "${VER:0:2}" == "10" ]] ; then
+            REDHAT_VER=`cat /etc/os-release | grep "REDHAT_SUPPORT_PRODUCT_VERSION" | cut -d'=' -f 2`
+            DEBIAN_VER=`cat /etc/os-release | grep "PRETTY_NAME" | cut -d' ' -f 3`
+            if [[ "${REDHAT_VER:1:1}" == "8"  || \
+                  "${REDHAT_VER:0:2}" == "31" || \
+                  "${DEBIAN_VER:0:2}" == "10" ]] ; then
                 apply_qt_5101_centos8_patch
                 if [[ $? != 0 ]] ; then
                     return 1
