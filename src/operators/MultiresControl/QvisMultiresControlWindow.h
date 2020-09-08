@@ -44,10 +44,10 @@ class QvisMultiresControlWindow : public QvisOperatorWindow
   protected:
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
+    void UpdateLabelText(int value);
   private slots:
-    void resolutionLevelChanged(int val);
-    void resolutionProcessText();
-    void infoProcessText();
+    void updateResolutionLevelLabel(int val);
+    void resolutionLevelChanged();
   private:
     QSlider* resolution;
     QLabel *resolutionLevelLabel;
