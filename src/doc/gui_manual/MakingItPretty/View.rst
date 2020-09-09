@@ -173,7 +173,16 @@ Near clipping and Far clipping
     are so you will have to experiment.
 
 Parallel scale
-    Zoom factor: larger values zoom the camera towards the focus.
+    Acts like a zoom factor that zooms the camera towards the focus. For a
+    parallel projection, it is half
+    the height of an object in the window. For example, if you had a sphere of
+    radius 10, setting the parallel scale to 10, would result in the top and
+    bottom of the sphere touching the top and bottom of the image. Where the
+    sphere touches on the left and right edges depends on the aspect ratio of
+    the image. If it was 1:1, then the sphere would also touch the left and
+    right edges of the image. When doing a perspective projection, it attempts
+    to have the top and bottom of the sphere touch the top and bottom of the
+    image.
 
 Perspective
     Applies to 3D visualizations and it causes a more realistic view to be used
