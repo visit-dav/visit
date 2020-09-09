@@ -8,7 +8,7 @@
 
 #include <visit-config.h>
 #include <sstream>
-#include <Environment.h>
+#include <VisItEnv.h>
 
 using namespace std;
 

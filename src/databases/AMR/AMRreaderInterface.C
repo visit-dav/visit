@@ -45,6 +45,7 @@ AMRreaderInterface::~AMRreaderInterface()
 #include <AMRreaderBlkConso.h>
 #include <AMRreaderLowResBlkConso.h>
 
+#include <VisItEnv.h>
 #include <DebugStream.h>
 #include <cstdlib>
 
@@ -52,7 +53,7 @@ AMRreaderInterface *
 InstantiateAMRreader()
 {
     int typ=0;
-    char* amrlvl=getenv("AMRLEVEL");
+    const char* amrlvl=VisItEnv::get("AMRLEVEL");
     if( amrlvl )
         typ = atoi(amrlvl);
 

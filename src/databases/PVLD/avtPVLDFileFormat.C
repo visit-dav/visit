@@ -23,6 +23,7 @@
 #include <avtMaterial.h>
 #include <avtVariableCache.h>
 
+#include <VisItEnv.h>
 #include <Expression.h>
 
 #include <InvalidVariableException.h>
@@ -44,7 +45,7 @@ static PVLD_Reader *
 InstantiateReader()
 {
     PVLD_Reader *r = NULL;
-    if(getenv("ELEMENT_PARTITION_VLD") == NULL)
+    if(VisItEnv::get("ELEMENT_PARTITION_VLD") == NULL)
         r = new PVLD_Part_Reader;
     else
         r = new PVLD_Reader;
@@ -63,6 +64,9 @@ InstantiateReader()
 //   Brad Whitlock, Mon Jun  2 18:40:34 PDT 2014
 //   Use a helper function to instantiate the preader.
 //
+//   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
+//   Changed getenv to VisItEnv::get.
+//
 // ****************************************************************************
 
 avtPVLDFileFormat::avtPVLDFileFormat(const char *filename)
@@ -71,11 +75,11 @@ avtPVLDFileFormat::avtPVLDFileFormat(const char *filename)
     debug5 << "creating reader( \"" << filename << "\")...\n";
 
     {
-        const char *spt = getenv("ADD_MISSING_PARTS_VLD");
+        const char *spt = VisItEnv::get("ADD_MISSING_PARTS_VLD");
         add_missing_parts_ = spt!=NULL;
     }
 
-    enablePVLD = (getenv("PVLDDISABLENEW") == NULL);
+    enablePVLD = (VisItEnv::get("PVLDDISABLENEW") == NULL);
     hasTOCread_ = false;
     preader_ = InstantiateReader();
     preader_->SetFileName( filename );

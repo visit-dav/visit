@@ -11,7 +11,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtExpressionTypeConversions.h>
 #include <DebugStream.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <ExpressionList.h>
 #include <Expression.h>
 #include <OperatorPluginInfo.h>
@@ -343,7 +343,7 @@ ViewerVariableMethods::GetOperatorCreatedExpressions(ExpressionList &newList,
 
         if (!md) return;
 
-        if (md->ShouldDisableSEG(Environment::exists(md->GetSEGEnvVarName())))
+        if (md->ShouldDisableSEG(VisItEnv::exists(md->GetSEGEnvVarName())))
             return;
 
         // Start with the user's expressions and this database's expressions.

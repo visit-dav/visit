@@ -4,6 +4,7 @@
 
 #include <SaveWindowAttributes.h>
 #include <DataNode.h>
+#include <VisItEnv.h>
 
 //
 // Enum conversion methods for SaveWindowAttributes::FileFormat
@@ -184,14 +185,14 @@ void SaveWindowAttributes::Init()
     outputToCurrentDirectory = true;
 #endif
 #if defined(_WIN32)
-    const char *visitHome = getenv("VISITUSERHOME");
+    const char *visitHome = VisItEnv::get("VISITUSERHOME");
     if(visitHome != 0)
     {
         outputDirectory = std::string(visitHome) + "\\My images";
     }
     else
     {
-        visitHome = getenv("VISITHOME");
+        visitHome = VisItEnv::get("VISITHOME");
         if(visitHome != 0)
         {
             outputDirectory = std::string(visitHome) + "\\My images";

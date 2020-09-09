@@ -92,6 +92,7 @@
 #include <vtkVertex.h>
 #include <vtkWedge.h>
 #include "DebugStream.h"
+#include <VisItEnv.h>
 
 #if !(defined(_WIN32) && !defined(__CYGWIN__) || defined(__LIBCATAMOUNT__))
 // for getpwnam() / getpwuid()
@@ -1003,7 +1004,7 @@ public:
             }
           else
             {
-            const char *value = getenv(variable.c_str());
+            const char *value = VisItEnv::get(variable.c_str());
             if (value != NULL)
               {
               expandedPath += value;
@@ -1034,7 +1035,7 @@ public:
               }
             if (userName == "")
               {
-              const char *homePtr = getenv("HOME");
+              const char *homePtr = VisItEnv::get("HOME");
               if (homePtr == NULL)
                 {
 #if defined(_WIN32) && !defined(__CYGWIN__) || defined(__LIBCATAMOUNT__)
@@ -1056,14 +1057,14 @@ public:
             else
               {
 #if defined(_WIN32) && !defined(__CYGWIN__) || defined(__LIBCATAMOUNT__)
-              const char *homePtr = getenv("HOME");
+              const char *homePtr = VisItEnv::get("HOME");
               expandedPath
               = this->ExtractPath(homePtr ? homePtr : "") + userName;
 #else
               if (userName == "OpenFOAM")
                 {
                 // so far only "~/.OpenFOAM" expansion is supported
-                const char *homePtr = getenv("HOME");
+                const char *homePtr = VisItEnv::get("HOME");
                 if (homePtr == NULL)
                   {
                   expandedPath = "";

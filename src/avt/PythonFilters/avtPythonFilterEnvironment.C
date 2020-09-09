@@ -10,7 +10,7 @@
 #include <visit-config.h>
 #include <sstream>
 #include <DebugStream.h>
-#include <Environment.h>
+#include <VisItEnv.h>
 #include <StringHelpers.h>
 #include <InstallationFunctions.h>
 

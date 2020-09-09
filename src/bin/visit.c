@@ -2,6 +2,8 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
+#include <VisItEnv.h>
+
 #include <direct.h>
 #include <stdio.h>
 #include <string.h>
@@ -1040,6 +1042,9 @@ ReadKey(const char *key, char **keyval)
  *    Kathleen Biagas, Thu Aug 1 13:41:32 MST 2019
  *    Removed useShorFileName argument.
  *
+ *   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
+ *   Changed getenv to VisItEnv::get.
+ *
  *****************************************************************************/
 
 std::string 
@@ -1065,7 +1070,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
     {
         free(visitpath);
         visitpath = NULL;
-        if ((visitpath = getenv("VISITHOME")) != NULL)
+        if ((visitpath = VisItEnv::get("VISITHOME")) != NULL)
         {
             haveVISITHOME = true;
             freeVisItPath = false;
@@ -1296,7 +1301,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
         bool haveSSH = false, haveSSHARGS = false, freeSSH = false, freeSSHARGS = false;
         string errmsg;
 
-        ssh = getenv("VISITSSH");
+        ssh = VisItEnv::get("VISITSSH");
 
         if (ssh != NULL)
         {
@@ -1353,7 +1358,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
         /*
          * Set the SSH arguments.
          */
-        if((sshargs = getenv("VISITSSHARGS")) == NULL)
+        if((sshargs = VisItEnv::get("VISITSSHARGS")) == NULL)
         {
             haveSSHARGS = ReadKey("SSHARGS", &sshargs);
             if(haveSSHARGS)
@@ -1433,7 +1438,7 @@ AddPath(char *tmp, const char *visitpath, const char *visitdev)
 
     path = tmp + strlen(tmp);
 
-    if((env = getenv("PATH")) != NULL)
+    if((env = VisItEnv::get("PATH")) != NULL)
     {
        char *token, *env2;
 
@@ -1478,16 +1483,16 @@ PrintEnvironment()
 {
     char *tmp;
 
-    if((tmp = getenv("VISITHOME")) != NULL)
+    if((tmp = VisItEnv::get("VISITHOME")) != NULL)
     {
         fprintf(stdout, "LIBPATH=%s\\lib\n", tmp);
         fprintf(stdout, "VISITHOME=%s\n", tmp);
     }
-    if((tmp = getenv("VISITARCHHOME")) != NULL)
+    if((tmp = VisItEnv::get("VISITARCHHOME")) != NULL)
         fprintf(stdout, "VISITARCHHOME=%s\n", tmp);
-    if((tmp = getenv("VISITULTRAHOME")) != NULL)
+    if((tmp = VisItEnv::get("VISITULTRAHOME")) != NULL)
         fprintf(stdout, "VISITULTRAHOME=%s\n", tmp);
-    if((tmp = getenv("VISITPLUGINDIR")) != NULL)
+    if((tmp = VisItEnv::get("VISITPLUGINDIR")) != NULL)
         fprintf(stdout, "VISITPLUGINDIR=%s\n", tmp);
 
 }

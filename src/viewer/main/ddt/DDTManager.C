@@ -15,6 +15,7 @@
 
 #include <WindowInformation.h>
 #include <avtDatabaseMetaData.h>
+#include <VisItEnv.h>
 
 
 DDTManager* DDTManager::instance = NULL;
@@ -117,6 +118,10 @@ DDTManager::getSessionNC()
 // Modifications:
 //   Jonathan Byrd, Fri Feb 1, 2013
 //   Update default location of DDT's socket (for DDT >= 4.0)
+//
+//   Alister Maguire, Fri Aug 14 11:42:55 PDT 2020
+//   Changed getenv to VisItEnv::get.
+//
 // ****************************************************************************
 
 DDTSession*
@@ -131,15 +136,15 @@ DDTManager::makeConnection()
             delete mSession;        // No longer connected to DDT. Delete mSession and try again
     }
 
-    QString filename = QFile::decodeName(getenv("DDT_SOCKET"));
+    QString filename = QFile::decodeName(VisItEnv::get("DDT_SOCKET"));
     if(filename.isEmpty())
     {
         const char *userName = NULL;
-        userName = getenv("USER");          // Linux/Mac
+        userName = VisItEnv::get("USER");          // Linux/Mac
         if (userName == NULL)
-            userName = getenv("LOGNAME");
+            userName = VisItEnv::get("LOGNAME");
         if (userName == NULL)
-            userName = getenv("USERNAME");  // Windows
+            userName = VisItEnv::get("USERNAME");  // Windows
         if (userName == NULL)
             return NULL;                    // Unable to get username
         filename = QString("%0/allinea-%1/ddt.socket.tmp").arg(QDir::tempPath(),QString::fromLocal8Bit(userName));

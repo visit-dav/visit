@@ -63,6 +63,8 @@
 #include <string>
 #include <vector>
 
+#include <VisItEnv.h>
+
 /* ========================================================================= */
 /* ==                                MACROS                               == */
 /* ========================================================================= */
@@ -603,12 +605,12 @@ static FILE* openFile(const char* name, const char* path=NULL)
     static const char* DEFAULT_PATH= ".:..:../..:../metadata:../../metadata:"
                                "../../../metadata:./data:../data:../../data:"
                                "/local:/local/data:/data";
-    static char* STARPATH = NULL;
-    static char* HOME_DIR = NULL;
+    static const char* STARPATH = NULL;
+    static const char* HOME_DIR = NULL;
 
     if(firstTime) {
-        STARPATH = getenv("STARPATH");
-        HOME_DIR = getenv("HOME");
+        STARPATH = VisItEnv::get("STARPATH");
+        HOME_DIR = VisItEnv::get("HOME");
 
         firstTime = false;
     }

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                              Environment.h                                //
+//                              VisItEnv.h                                //
 // ************************************************************************* //
 #ifndef ENV_H
 #define ENV_H
@@ -11,20 +11,20 @@
 
 #include <string>
 
-namespace Environment
+namespace VisItEnv
 {
     // ***********************************************************************
-    //  Function: Environment::get
+    //  Function: VisItEnv::get
     //
     //  Purpose:  Obtains a value from the environment.
     //
     //  Programmer: Tom Fogal
     //
     // ***********************************************************************
-    std::string MISC_API get(const char *);
+    const char *MISC_API get(const char *);
 
     // ***********************************************************************
-    //  Function: Environment::get
+    //  Function: VisItEnv::get
     //
     //  Purpose: Predicate to determine whether a variable is defined.
     //
@@ -34,7 +34,7 @@ namespace Environment
     bool MISC_API exists(const char *);
 
     // ***********************************************************************
-    //  Function: Environment::set
+    //  Function: VisItEnv::set
     //
     //  Purpose: Sets a value in the enviroment.  Avoid using putenv, since it
     //           requires static memory.
@@ -45,7 +45,7 @@ namespace Environment
     void MISC_API set(const char *k, const char *v);
 
     // ***********************************************************************
-    //  Function: Environment::unset
+    //  Function: VisItEnv::unset
     //
     //  Purpose: Removes a variable definition from the environment.
     //

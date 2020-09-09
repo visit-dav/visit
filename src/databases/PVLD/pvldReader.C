@@ -4,6 +4,8 @@
 #endif
 #include <sys/types.h>
 
+#include <VisItEnv.h>
+
 #include <map>
 #include <utility>
 #include <cstdlib>
@@ -1938,7 +1940,7 @@ ReadInfo( hid_t file_id, const char* name,
         int npart;
         if( num!=0 )
         {
-            char* spt = getenv("PARALLEL_VELODYNE");
+            const char* spt = VisItEnv::get("PARALLEL_VELODYNE");
             if( spt==NULL )
             {
                 npart = default_number_of_partitions;

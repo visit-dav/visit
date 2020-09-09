@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                              Environment.C                                //
+//                              VisItEnv.C                                //
 // ************************************************************************* //
 #ifndef _POSIX_C_SOURCE
 #   define _POSIX_C_SOURCE 200112L
@@ -15,15 +15,15 @@
 # include <windows.h>
 #endif
 
-#include <Environment.h>
+#include <VisItEnv.h>
 
 #include <DebugStream.h>
 
 
-namespace Environment {
+namespace VisItEnv {
 
 // ****************************************************************************
-//  Function: Environment::get
+//  Function: VisItEnv::get
 //
 //  Purpose:  Obtains a value from the environment.
 //            `getenv' appears to be pretty standard; we don't do anything
@@ -31,21 +31,18 @@ namespace Environment {
 //
 //  Programmer: Tom Fogal
 //
+//    Alister Maguire, Tue Aug 18 14:10:07 PDT 2020
+//    Changed to return a const char *.
+//
 // ****************************************************************************
-std::string
+const char *
 get(const char *variable)
 {
-    const char *value = getenv(variable);
-    if (value == NULL)
-    {
-        std::string str;
-        return str;
-    }
-    return std::string(value);
+    return getenv(variable);
 }
 
 // ****************************************************************************
-//  Function: Environment::get
+//  Function: VisItEnv::get
 //
 //  Purpose: Predicate to determine whether a variable is defined.
 //
@@ -64,7 +61,7 @@ exists(const char *variable)
 }
 
 // ****************************************************************************
-//  Function: Environment::set
+//  Function: VisItEnv::set
 //
 //  Purpose: Sets a value in the enviroment.  Avoid using putenv, since it
 //           requires static memory.
@@ -96,7 +93,7 @@ set(const char *k, const char *v)
 }
 
 // ****************************************************************************
-//  Function: Environment::unset
+//  Function: VisItEnv::unset
 //
 //  Purpose: Removes a variable definition from the environment.
 //
@@ -125,4 +122,4 @@ unset(const char *variable)
 #endif
 }
 
-}  /* namespace Environment */
+}  /* namespace VisItEnv */
