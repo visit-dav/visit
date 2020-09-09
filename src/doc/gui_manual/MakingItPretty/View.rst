@@ -156,7 +156,7 @@ View normal
     Where you want to look from.
 
 Focus
-    What you want to look at
+    What you want to look at.
 
 Up axis
     Determines which way is up. A good default value for the up axis is 0 1 0.
