@@ -79,11 +79,6 @@
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
-          Ubuntu 19, 4.9.184-linuxkit #1 SMP, gcc 8.3</td>
-          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.3/visit3_1_3.linux-x86_64-ubuntu19.tar.gz">Download</a></td>
-        </tr>
-        <tr>
-          <td>Linux - x86_64 64 bit<br />
           Ubuntu 20, 4.19.76-linuxkit #1 SMP, gcc 9.3</td>
           <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.3/visit3_1_3.linux-x86_64-ubuntu20.tar.gz">Download</a></td>
         </tr>
@@ -103,17 +98,17 @@
           <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.3/visit3_1_3.linux-x86_64-centos8.tar.gz">Download</a></td>
         <tr>
           <td>Linux - x86_64 64 bit<br />
-          Fedora 27, 4.9.184-linuxkit #1 SMP, gcc 7.3.1</td>
+          Fedora 31, 4.9.184-linuxkit #1 SMP, gcc 7.3.1</td>
           <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.3/visit3_1_3.linux-x86_64-fedora27.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
-          Redhat Enterprise Linux 7.5, 4.18.9-1.el7.elrepo.x86_64 #1 SMP, gcc 4.8.5</td>
+          Redhat Enterprise Linux 7.5, 3.10.0-1127.19.1.el7.x86_64 #1 SMP, gcc 4.8.5</td>
           <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.3/visit3_1_3.linux-x86_64-rhel7.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
-          Redhat Enterprise Linux 7.5, 4.18.9-1.el7.elrepo.x86_64 #1 SMP, gcc 4.8.5<br />
+          Redhat Enterprise Linux 7.5, 3.10.0-1127.19.1.el7.x86_64 #1 SMP, gcc 4.8.5<br />
           <i>(Includes Mesa support for rendering without a display. Only use on servers without a display.)</i></td>
           <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.3/visit3_1_3.linux-x86_64-rhel7-wmesa.tar.gz">Download</a></td>
         </tr>
