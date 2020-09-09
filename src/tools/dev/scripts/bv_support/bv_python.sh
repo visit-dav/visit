@@ -225,7 +225,7 @@ function bv_python_info
     else
         export PYPARSING_URL=""
         export PYPARSING_FILE="pyparsing-2.4.6.tar.gz"
-        export PYPARSING_BUILD_DIR="pyparsing-2.4.6"}
+        export PYPARSING_BUILD_DIR="pyparsing-2.4.6"
         export PYPARSING_MD5_CHECKSUM="29733ea8cbee0291aad121c69c6e51a1"
         export PYPARSING_SHA256_CHECKSUM="4c830582a84fb022400b85429791bc551f1f4871c33f23e44f353119e92f969f"
     fi

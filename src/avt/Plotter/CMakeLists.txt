@@ -38,12 +38,12 @@
 #   vtkRendering.
 #
 #   Kathleen Biagas, Thu June 7, 2018
-#   No longer add 'VTK_DEFINITIONS' to target. Add 
+#   No longer add 'VTK_DEFINITIONS' to target. Add vtkRenderingVolumeOpenGL2
 #   to link line.  Needed because the module is now init'd from
 #   InitVTKRendering.
 #
 #   Kathleen Biagas, Fri Jun  8 12:17:45 PDT 2018
-#   Remove  from link line. Moved module init back
+#   Remove vtkRenderingVolumeOpenGL2 from link line. Moved module init back
 #   into volume plot.
 #
 #   Qi WU, Sat Jun 10 22:21:27 MST 2018
@@ -56,7 +56,7 @@
 #   Install InitVTKRenderingConfig.h when VISIT_INSTALL_THIRD_PARTY true.
 #
 #   Kathleen Biagas, Fri Jul 19 12:13:02 PDT 2019
-#   Added VTK::CommonExecutionModel, VTK::FiltersHybrid, VTK::RenderingCore in
+#   Added vtkCommonExecutionModel, vtkFiltersHybrid, vtkRenderingCore in
 #   support of building plugins vs install on Windows. They are direct
 #   depencencies for this library, and CMake automagically pulls them in when
 #   compiling VisIt even if not listed, but not when building the plugins.

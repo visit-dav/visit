@@ -263,8 +263,8 @@ static PyObject *
 FluxAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &FluxAttributesType)
+    if ( Py_TYPE(self) != &FluxAttributesType
+         || Py_TYPE(other) != &FluxAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

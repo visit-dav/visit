@@ -33,15 +33,19 @@ remove the element from the mesh.
 Changing the tessellation accuracy
 """"""""""""""""""""""""""""""""""
 
-The tessalation accuracy is controlled by the **Chord error**. It is the
-ratio of a chord to the distance from the curve and is independent of the
-scale of the object. The default **Chord error** is 0.035, which will
-typically do a good job. Reducing the **Chord error** will improve the
-discretization. The **Chord error** should only be decreased if necessary
-since reducing it will increase the number of elements a single high order
-element is tessellated into. This in turn increases the memory usage and
-the time to perform operations. The number of elements a single high order
-element gets tessellated into may easily get into the hundreds.
+The tessalation accuracy is controlled by the **Chord error** and 
+**Field criterion**. The **Chord error** is with respect to the curvature
+of the element and is ratio of a chord to the distance from the curve and
+is independent of the scale of the object. The default **Chord error** is
+0.035, which will typically do a good job. The **Field criterion** is with
+respect to the error in the field within the element. The default
+**Field criterion** is also 0.035, which will also typically do a good job.
+Reducing the **Chord error** and **Field criterion** will both improve the
+discretization. They should only be decreased if necessary, since reducing
+them will increase the number of elements a single high order element is
+tessellated into. This in turn increases the memory usage and the time to
+perform operations. The number of elements a single high order element
+gets tessellated into may easily get into the hundreds.
 
 .. _tessellatewindow:
 

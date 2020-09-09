@@ -1585,8 +1585,8 @@ static PyObject *
 LaunchProfile_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &LaunchProfileType)
+    if ( Py_TYPE(self) != &LaunchProfileType
+         || Py_TYPE(other) != &LaunchProfileType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

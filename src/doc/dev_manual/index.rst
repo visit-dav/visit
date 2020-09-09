@@ -18,6 +18,7 @@ VisIt_ Developer Manual
     Docker
     SiteReliabilityEngineering
     OpenGL
+    CI
 
 .. Indices and tables
 .. ==================

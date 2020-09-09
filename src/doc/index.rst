@@ -6,6 +6,7 @@ VisIt User Manuals
 .. toctree::
    :maxdepth: 1 
 
+   How to Search <searching>
    GUI Manual <gui_manual/index>
    CLI Manual <cli_manual/index>
    Tutorials <tutorials/index>

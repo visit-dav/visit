@@ -5,12 +5,13 @@
 #ifndef PY_TESSELLATEATTRIBUTES_H
 #define PY_TESSELLATEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <TessellateAttributes.h>
 
 //
 // Functions exposed to the VisIt module.
 //
-#define TESSELLATEATTRIBUTES_NMETH 6
+#define TESSELLATEATTRIBUTES_NMETH 8
 void           PyTessellateAttributes_StartUp(TessellateAttributes *subj, void *data);
 void           PyTessellateAttributes_CloseDown();
 PyMethodDef *  PyTessellateAttributes_GetMethodTable(int *nMethods);
