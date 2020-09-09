@@ -1190,8 +1190,8 @@ static PyObject *
 SubsetAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &SubsetAttributesType)
+    if ( Py_TYPE(self) != &SubsetAttributesType
+         || Py_TYPE(other) != &SubsetAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

@@ -298,8 +298,8 @@ static PyObject *
 TriangulateRegularPointsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &TriangulateRegularPointsAttributesType)
+    if ( Py_TYPE(self) != &TriangulateRegularPointsAttributesType
+         || Py_TYPE(other) != &TriangulateRegularPointsAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

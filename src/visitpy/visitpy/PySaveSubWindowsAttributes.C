@@ -933,8 +933,8 @@ static PyObject *
 SaveSubWindowsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &SaveSubWindowsAttributesType)
+    if ( Py_TYPE(self) != &SaveSubWindowsAttributesType
+         || Py_TYPE(other) != &SaveSubWindowsAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

@@ -965,8 +965,8 @@ static PyObject *
 PickVarInfo_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &PickVarInfoType)
+    if ( Py_TYPE(self) != &PickVarInfoType
+         || Py_TYPE(other) != &PickVarInfoType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

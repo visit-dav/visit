@@ -198,8 +198,8 @@ static PyObject *
 avtLabelMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &avtLabelMetaDataType)
+    if ( Py_TYPE(self) != &avtLabelMetaDataType
+         || Py_TYPE(other) != &avtLabelMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

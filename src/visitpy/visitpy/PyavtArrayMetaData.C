@@ -308,8 +308,8 @@ static PyObject *
 avtArrayMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &avtArrayMetaDataType)
+    if ( Py_TYPE(self) != &avtArrayMetaDataType
+         || Py_TYPE(other) != &avtArrayMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

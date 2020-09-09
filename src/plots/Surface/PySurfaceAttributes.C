@@ -942,8 +942,8 @@ static PyObject *
 SurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &SurfaceAttributesType)
+    if ( Py_TYPE(self) != &SurfaceAttributesType
+         || Py_TYPE(other) != &SurfaceAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

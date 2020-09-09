@@ -2946,8 +2946,8 @@ static PyObject *
 avtDatabaseMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &avtDatabaseMetaDataType)
+    if ( Py_TYPE(self) != &avtDatabaseMetaDataType
+         || Py_TYPE(other) != &avtDatabaseMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

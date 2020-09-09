@@ -704,8 +704,8 @@ static PyObject *
 ReplicateAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &ReplicateAttributesType)
+    if ( Py_TYPE(self) != &ReplicateAttributesType
+         || Py_TYPE(other) != &ReplicateAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

@@ -91,6 +91,30 @@ Test("biquadratic_quad_03")
 DeleteAllPlots()
 CloseDatabase(data_path("vtk_test_data/biquadratic_quad.vtk"))
 
+# Biquadratic_quad_field
+OpenDatabase(data_path("vtk_test_data/biquadratic_quad_field.vtk"))
+
+AddPlot("Pseudocolor", "d")
+AddPlot("Mesh", "mesh")
+DrawPlots()
+
+Test("biquadratic_quad_field_01")
+
+AddOperator("Tessellate", 1)
+DrawPlots()
+
+Test("biquadratic_quad_field_02")
+
+tess = TessellateAttributes()
+tess.chordError = 0.01
+tess.fieldCriterion = 0.01
+SetOperatorOptions(tess, 0, 1)
+
+Test("biquadratic_quad_field_03")
+
+CloseDatabase(data_path("vtk_test_data/biquadratic_quad_field.vtk"))
+DeleteAllPlots()
+
 # Quadratic_linear_quad
 OpenDatabase(data_path("vtk_test_data/quadratic_linear_quad.vtk"))
 

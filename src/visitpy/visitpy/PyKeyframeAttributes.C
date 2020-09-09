@@ -266,8 +266,8 @@ static PyObject *
 KeyframeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &KeyframeAttributesType)
+    if ( Py_TYPE(self) != &KeyframeAttributesType
+         || Py_TYPE(other) != &KeyframeAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
