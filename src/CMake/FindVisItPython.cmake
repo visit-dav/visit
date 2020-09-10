@@ -85,11 +85,15 @@ MESSAGE(STATUS "Looking for Python")
 ###
 # Find the interpreter first
 if(PYTHON_DIR AND NOT PYTHON_EXECUTABLE)
-    set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python)
-    # if this doesn't exist, we may be using python3, which
-    # in many variants only creates "python3" exe, not "python"
-    if(NOT EXISTS "${PYTHON_EXECUTABLE}")
-        set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python3)
+    if(UNIX)
+        set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python)
+        # if this doesn't exist, we may be using python3, which
+        # in many variants only creates "python3" exe, not "python"
+        if(NOT EXISTS "${PYTHON_EXECUTABLE}")
+            set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python3)
+        endif()
+    elseif(WIN32)
+        set(PYTHON_EXECUTABLE ${PYTHON_DIR}/python.exe)
     endif()
 endif()
 

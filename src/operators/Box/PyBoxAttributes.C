@@ -450,8 +450,8 @@ static PyObject *
 BoxAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &BoxAttributesType)
+    if ( Py_TYPE(self) != &BoxAttributesType
+         || Py_TYPE(other) != &BoxAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

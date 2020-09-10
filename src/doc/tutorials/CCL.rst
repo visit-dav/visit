@@ -256,15 +256,15 @@ Next, we use the Connected Components Summary via python on one of our plots to 
 
    *Output*
 
-   .. code-block:: json
+   .. code-block:: python
 
       "Found 19 connected components.\nComponent summary information saved to cc_summary.okc, which can be imported into VisIt"
 
-   .. code-block:: json
+   .. code-block:: python
 
       ['comp_bb_x_max', 'comp_bb_z_max', 'comp_sum', 'comp_y', 'comp_num_procs', 'comp_bb_x_min', 'comp_weighted_sum', 'comp_bb_y_min', 'comp_z', 'comp_volume', 'comp_x', 'comp_bb_z_min', 'comp_num_cells', 'connected_component_count', 'comp_bb_y_max']
 
-   .. code-block:: json
+   .. code-block:: python
 
        (37.97730226694259, 3.2019942591930146, 1.610134229606217, 33.371787344299676, 907.2334157190477, 4.499707094552377, 0.9447130410516479, 7.414511301985026, 15.064008190720848, 0.18155970817315392, 3.1918362871108457, 22.247388229041434, 2.625056508686029, 78.24442360391282, 2.4172440068352756, 23.494122927868506, 18.57216353121875, 6.944255799937935, 8.499496779401833)
 

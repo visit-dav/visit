@@ -385,8 +385,8 @@ static PyObject *
 avtMaterialMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &avtMaterialMetaDataType)
+    if ( Py_TYPE(self) != &avtMaterialMetaDataType
+         || Py_TYPE(other) != &avtMaterialMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

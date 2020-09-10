@@ -1284,8 +1284,8 @@ static PyObject *
 GlobalAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &GlobalAttributesType)
+    if ( Py_TYPE(self) != &GlobalAttributesType
+         || Py_TYPE(other) != &GlobalAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

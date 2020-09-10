@@ -406,8 +406,8 @@ static PyObject *
 ExtrudeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &ExtrudeAttributesType)
+    if ( Py_TYPE(self) != &ExtrudeAttributesType
+         || Py_TYPE(other) != &ExtrudeAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

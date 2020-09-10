@@ -556,8 +556,8 @@ static PyObject *
 ConeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &ConeAttributesType)
+    if ( Py_TYPE(self) != &ConeAttributesType
+         || Py_TYPE(other) != &ConeAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

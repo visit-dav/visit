@@ -30,12 +30,15 @@ function bv_conduit_depends_on
 
 function bv_conduit_info
 {
-    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.4.0"}
+    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.5.1"}
     export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}-src-with-blt.tar.gz"}
-    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.4.0"}
+    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.5.1"}
     export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
-    export CONDUIT_MD5_CHECKSUM="49c107c076ecd4e8ae6eb4ffe28198aa"
-    export CONDUIT_SHA256_CHECKSUM="c228e6f0ce5a9c0ffb98e0b3d886f2758ace1a4b40d00f3f118542c0747c1f52"
+    # For now since build_visit relies on a version tag in the third-party repo.
+    # The value for CONDUIT_URL can be removed after VisIt 3.2.0 comes out.
+    export CONDUIT_URL=${CONDUIT_URL:-"http://visit.ilight.com/assets"}
+    export CONDUIT_MD5_CHECKSUM="89dc8aabb43769fd686289eeabc6094b"
+    export CONDUIT_SHA256_CHECKSUM="40ada208a686f331f707bdf6f6e6ffa4dff4dc4dfdfafb0e052f514c932bfefa"
 }
 
 function bv_conduit_print
@@ -72,7 +75,7 @@ function bv_conduit_host_profile
 function bv_conduit_ensure
 {
     if [[ "$DO_CONDUIT" == "yes" ]] ; then
-        ensure_built_or_ready "conduit" $CONDUIT_VERSION $CONDUIT_BUILD_DIR $CONDUIT_FILE
+        ensure_built_or_ready "conduit" $CONDUIT_VERSION $CONDUIT_BUILD_DIR $CONDUIT_FILE $CONDUIT_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_CONDUIT="no"

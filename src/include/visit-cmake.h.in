@@ -381,5 +381,6 @@ logic here to cause compilation failure if this logic seems to be failing.
 /* define control to intentionally leak things or not. my profiling shows it
    saves on the order of 0.001 sec to undefine this. leaving it undefined
    for now in case there's some issue with it when using a remote server.
-#define DEBUG_MEMORY_LEAKS
 */
+#define DEBUG_MEMORY_LEAKS
+

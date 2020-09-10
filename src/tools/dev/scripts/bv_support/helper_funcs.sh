@@ -331,8 +331,6 @@ function verify_sha_checksum
         return 0
     fi
 
-    set -x
-
     if [[ $checksum_algo == 512 ]]; then
         tmp=`shasum -a $checksum_algo $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{128\}'`
     else

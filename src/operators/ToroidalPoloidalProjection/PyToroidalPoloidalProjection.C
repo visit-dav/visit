@@ -398,8 +398,8 @@ static PyObject *
 ToroidalPoloidalProjection_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &ToroidalPoloidalProjectionType)
+    if ( Py_TYPE(self) != &ToroidalPoloidalProjectionType
+         || Py_TYPE(other) != &ToroidalPoloidalProjectionType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
