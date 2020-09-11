@@ -984,31 +984,45 @@ def rsync_post(src_dir,rsync_dest):
 #   Kathleen Biagas, Thu Aug 20 16:21:21 PDT 2020
 #   Fix if-test for relative-to-tests-dir (remove not).
 #
+#   Kathleen Biagas, Fri Sep 11 10:10:44 PDT 2020
+#   Restructure logic to handle more use-cases of file globbing.
+#
 # ----------------------------------------------------------------------------
 def resolve_test_paths(tests,tests_dir):
     res = []
+
+    if len(tests) == 1:
+        # When run on linux command line, need to pass file globs in quotes
+        # or the system tries to resolve the globs before passing to python,
+        # which fails for relative paths (eg tests/plots/*.py).
+        # Specifying more than one set, eg: "tests/plots/*.py tests/hybrid/*.py"
+        # ends up as 1 item in the tests list, so split it up.
+        tests = tests[0].split()
+
     for t in tests:
-        # first check if we were passed the full path to a test script
         t_abs_path = abs_path(t)
+        # first check if we were passed the full path to a test script
         if os.path.isfile(t_abs_path):
             res.append(t_abs_path)
-        # if not, assume it is relative to tests dir
         else:
+            # if not, assume it is relative to tests dir
             t_abs_path = abs_path(pjoin(tests_dir, "..",t))
+
+            # is it a file
             if os.path.isfile(t_abs_path):
                 res.append(t_abs_path)
+            # or a glob
+            elif '*' in os.path.basename(t_abs_path):
+                matchcount=0
+                for match in glob.iglob(t_abs_path):
+                    if os.path.isfile(match):
+                        res.append(match)
+                        matchcount+=1
+                if matchcount == 0:
+                    print("[WARNING: could not find test files matching: {}]".format(t_abs_path))
             else:
                 print("[WARNING: could not find test file: {}]".format(t_abs_path))
-    # use glob to match any *.py
-    expandedtests = []
-    for t in res:
-       if not '*' in t:
-          expandedtests.append(t)
-       else:
-          for match in glob.iglob(t):
-             expandedtests.append(match)
-    if len(expandedtests) > 0:
-        res = expandedtests
+
     return res
 
 # ----------------------------------------------------------------------------
