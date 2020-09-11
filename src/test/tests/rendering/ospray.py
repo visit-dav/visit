@@ -13,8 +13,7 @@
 #  Modifications:
 #
 #    Alister Maguire, Fri Sep 11 16:16:49 PDT 2020
-#    Added a test for OSPRay domain boundaries. Note that I've commented
-#    it out until we can set a pixel diff tolerance.
+#    Added a test for OSPRay domain boundaries.
 #
 # ----------------------------------------------------------------------------
 
