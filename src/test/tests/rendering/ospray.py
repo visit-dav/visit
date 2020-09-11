@@ -48,8 +48,93 @@ def TestOsprayWindowSave():
     CloseDatabase(silo_data_path("noise.silo"))
 
 
+def TestOsprayVolumeDomainBoundaries():
+    OpenDatabase(data_path("vtk_test_data/poiseuille_rayleigh_benard_3D_00000600.visit"))
+
+    #
+    # Change the view so that we get a good look at the domain boundaries.
+    #
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (0.171986, 0.984799, 0.0243329)
+    View3DAtts.focus = (75, 40, 40)
+    View3DAtts.viewUp = (-0.187983, 0.0570564, -0.980514)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 93.9415
+    View3DAtts.nearPlane = -187.883
+    View3DAtts.farPlane = 187.883
+    View3DAtts.imagePan = (0, 0)
+    View3DAtts.imageZoom = 1
+    View3DAtts.perspective = 1
+    View3DAtts.eyeAngle = 2
+    View3DAtts.centerOfRotationSet = 0
+    View3DAtts.centerOfRotation = (75, 40, 40)
+    View3DAtts.axis3DScaleFlag = 0
+    View3DAtts.axis3DScales = (1, 1, 1)
+    View3DAtts.shear = (0, 0, 1)
+    View3DAtts.windowValid = 1
+    SetView3D(View3DAtts)
+
+    #
+    # Add our plot and set up the ospray renderer.
+    #
+    AddPlot("Volume", "Regular/temperature", 1, 1)
+    SetActivePlots(0)
+
+    VolumeAtts = VolumeAttributes()
+    VolumeAtts.osprayShadowsEnabledFlag = 0
+    VolumeAtts.osprayUseGridAcceleratorFlag = 0
+    VolumeAtts.osprayPreIntegrationFlag = 0
+    VolumeAtts.ospraySingleShadeFlag = 0
+    VolumeAtts.osprayOneSidedLightingFlag = 0
+    VolumeAtts.osprayAoTransparencyEnabledFlag = 0
+    VolumeAtts.ospraySpp = 1
+    VolumeAtts.osprayAoSamples = 0
+    VolumeAtts.osprayAoDistance = 100000
+    VolumeAtts.osprayMinContribution = 0.001
+    VolumeAtts.legendFlag = 1
+    VolumeAtts.lightingFlag = 0
+    VolumeAtts.opacityAttenuation = 1
+    VolumeAtts.opacityMode = VolumeAtts.FreeformMode
+    VolumeAtts.freeformOpacity = (255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                                  255, 255, 255, 255, 255, 255)
+    VolumeAtts.samplesPerRay = 100
+    VolumeAtts.rendererType = VolumeAtts.RayCastingOSPRay
+    SetPlotOptions(VolumeAtts)
+    DrawPlots()
+
+    Test("ospray_domain_boundaries_00")
+
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_test_data/poiseuille_rayleigh_benard_3D_00000600.visit"))
+
+
 def main():
     TestOsprayWindowSave()
+    TestOsprayVolumeDomainBoundaries()
     Exit()
 
 main()
