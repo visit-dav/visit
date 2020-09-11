@@ -30,7 +30,6 @@ def TestOsprayWindowSave():
     AddPlot("Pseudocolor", "hardyglobal", 1, 1)
     AddOperator("Isovolume", 1)
     SetActivePlots(0)
-    SetActivePlots(0)
     IsovolumeAtts = IsovolumeAttributes()
     IsovolumeAtts.lbound = 4.1
     IsovolumeAtts.ubound = 4.9
@@ -45,6 +44,12 @@ def TestOsprayWindowSave():
 
     Test("ospray_window_save")
     DeleteAllPlots()
+
+    RenderingAtts = RenderingAttributes()
+    RenderingAtts.osprayRendering = 0
+    RenderingAtts.osprayShadows = 0
+    SetRenderingAttributes(RenderingAtts)
+
     CloseDatabase(silo_data_path("noise.silo"))
 
 
@@ -54,6 +59,7 @@ def TestOsprayVolumeDomainBoundaries():
     #
     # Change the view so that we get a good look at the domain boundaries.
     #
+    ResetView()
     View3DAtts = View3DAttributes()
     View3DAtts.viewNormal = (0.171986, 0.984799, 0.0243329)
     View3DAtts.focus = (75, 40, 40)
