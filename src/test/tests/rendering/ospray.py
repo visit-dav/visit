@@ -145,10 +145,11 @@ def TestOsprayVolumeDomainBoundaries():
 def main():
     TestOsprayWindowSave()
 
-    #FIXME: this tests always has a slight pixel diff (~0.01%). We
+    #FIXME: this test always has a slight pixel diff (~0.01%). We
     # need to add the ability to set pixel diff tolerance for
     # individual tests before we can run this in our nightly.
-    #TestOsprayVolumeDomainBoundaries()
+    # Currently, it's in the skip list.
+    TestOsprayVolumeDomainBoundaries()
     Exit()
 
 main()
