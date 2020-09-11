@@ -239,6 +239,7 @@ def steps_package(opts,build_type,ctx):
     ctx.triggers["build"].append(a_make_pkg)
     if opts["platform"] == "osx":
         cmake_opts = " -DVISIT_CREATE_APPBUNDLE_PACKAGE:BOOL=ON"
+        cmake_opts += ' -DCPACK_BUNDLE_APPLE_CODESIGN_PARAMETER="--deep f --timestamp none"'
         if opts.has_key("cert"):
             cmake_opts += ' -DCPACK_BUNDLE_APPLE_CERT_APP="%s"' % opts["cert"]
         a_cmake_bundle = "cmake_cfg_bundle_" + build_type
