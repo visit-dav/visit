@@ -921,9 +921,9 @@ def Save_Validate_Perturb_Restore_Session(cur):
 #   Added Save_Validate_... to rigorously test sessionfiles
 #
 #   Mark C. Miller, Fri Sep 11 19:26:34 PDT 2020
-#   Added _dpix, _davg optional args
+#   Added pixdiff, avgdiff optional args
 # ----------------------------------------------------------------------------
-def Test(case_name, altSWA=0, alreadySaved=0, _dpix=None, _davg=None):
+def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
     CheckInteractive(case_name)
     # for read only globals, we don't need to use "global"
     # we may need to use global for these guys
@@ -973,10 +973,10 @@ def Test(case_name, altSWA=0, alreadySaved=0, _dpix=None, _davg=None):
     dpix      = 0.0
     davg      = 0.0
     thrErr    = -1.0
-    if not _dpix:
-        _dpix = TestEnv.params["pixdiff"]
-    if not _davg:
-        _davg = TestEnv.params["avgdiff"]
+    if not pixdiff:
+        pixdiff = TestEnv.params["pixdiff"]
+    if not avgdiff:
+        avgdiff = TestEnv.params["avgdiff"]
 
     if TestEnv.params["use_pil"]:
         if TestEnv.params["threshold_diff"]:
@@ -988,7 +988,7 @@ def Test(case_name, altSWA=0, alreadySaved=0, _dpix=None, _davg=None):
             # raw difference
             (tPixs, pPixs, dPixs, davg) \
                 = DiffUsingPIL(case_name, cur, diff, base, altbase)
-            diffState, dpix = CalcDiffState(pPixs, dPixs, davg, _dpix, _davg)
+            diffState, dpix = CalcDiffState(pPixs, dPixs, davg, pixdiff, avgdiff)
 
     if skip:
         diffState = 'Skipped'
@@ -1763,9 +1763,9 @@ def CheckInteractive(case_name):
 #   results so it can be more easily re-based later if needed.
 #
 #   Mark C. Miller, Fri Sep 11 19:54:23 PDT 2020
-#   Added optional _numdifftool arg
+#   Added optional numdifftool arg
 # ----------------------------------------------------------------------------
-def TestText(case_name, inText, _numdifftol=None):
+def TestText(case_name, inText, numdifftol=None):
     """
     Write out text to file, diff it with the baseline, and log the result.
     """
@@ -1782,11 +1782,11 @@ def TestText(case_name, inText, _numdifftol=None):
         baseText = "notext"
 
     # Check for user specified tolerance
-    if not _numdifftol:
-        _numdifftol = TestEnv.params["numdiff"]
+    if not numdifftol:
+        numdifftol = TestEnv.params["numdiff"]
 
     # Filter out unwanted text
-    inText = FilterTestText(inText, baseText, _numdifftol)
+    inText = FilterTestText(inText, baseText, numdifftol)
 
     # save the current text output
     fout = open(cur, 'w')
