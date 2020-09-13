@@ -973,9 +973,9 @@ def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
     dpix      = 0.0
     davg      = 0.0
     thrErr    = -1.0
-    if not pixdiff:
+    if pixdiff is None:
         pixdiff = TestEnv.params["pixdiff"]
-    if not avgdiff:
+    if avgdiff is None:
         avgdiff = TestEnv.params["avgdiff"]
 
     if TestEnv.params["use_pil"]:
@@ -1782,7 +1782,7 @@ def TestText(case_name, inText, numdifftol=None):
         baseText = "notext"
 
     # Check for user specified tolerance
-    if not numdifftol:
+    if numdifftol is None:
         numdifftol = TestEnv.params["numdiff"]
 
     # Filter out unwanted text
