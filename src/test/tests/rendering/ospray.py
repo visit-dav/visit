@@ -85,7 +85,10 @@ def TestOsprayVolumeDomainBoundaries():
     SetPlotOptions(VolumeAtts)
     DrawPlots()
 
-    Test("ospray_domain_boundaries_00")
+    #
+    # NOTE: This test always has a slight pixel diff (~0.01%).
+    #
+    Test("ospray_domain_boundaries_00", pixdiff=0.02)
 
     DeleteAllPlots()
     CloseDatabase(data_path("vtk_test_data/poiseuille_rayleigh_benard_3D_00000600.visit"))
@@ -93,12 +96,8 @@ def TestOsprayVolumeDomainBoundaries():
 
 def main():
     TestOsprayWindowSave()
-
-    #FIXME: this test always has a slight pixel diff (~0.01%). We
-    # need to add the ability to set pixel diff tolerance for
-    # individual tests before we can run this in our nightly.
-    # Currently, it's in the skip list.
     TestOsprayVolumeDomainBoundaries()
+
     Exit()
 
 main()
