@@ -172,7 +172,7 @@ backgrounds, the logic is more complicated) are included
 when computing the ``pixdiff`` precentage. The ``avgdiff`` option
 allows one to specify a second tolerance for the case when
 the ``pixdiff`` tolerance is exceeded. The ``avgdiff`` option specifies
-the a gray-scale intensity difference allowed averaged over all pixels that
+an allowed gray-scale intensity difference averaged over all pixels that
 are different. The command-line options
 ``--pixdiff=4.5 --avgdiff=1.5`` means that if an image has fewer than
 4.5% of *non-background* pixels that are different, it is considered a
