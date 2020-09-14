@@ -399,13 +399,13 @@ def GenFileNames(test_case, ext):
 #  Date:       Wed May 30 2012
 #
 #  Mark C. Miller, Fri Sep 11 18:58:34 PDT 2020
-#  Add _dpix, _davg args
+#  Add pixdiff and avgdiff args
 # ----------------------------------------------------------------------------
-def CalcDiffState(p_pixs, d_pixs, davg, _dpix, _davg):
+def CalcDiffState(p_pixs, d_pixs, davg, pixdiff, avgdiff):
     if p_pixs != 0:
         dpix = d_pixs * 100.0 / p_pixs
-        if dpix > _dpix:
-            if davg > _davg:
+        if dpix > pixdiff:
+            if davg > avgdiff:
                 diff_state = 'Unacceptable'
             else:
                 diff_state = 'Acceptable'
@@ -1605,10 +1605,10 @@ def ProcessDiffImage(case_name, baseimg, testimg, diffimg):
 #   Make sure to filter TestEnv.params["run_dir"] as well.
 #
 #   Mark C. Miller, Fri Sep 11 19:55:17 PDT 2020
-#   Added _numdifftol arg
+#   Added numdifftol arg
 # ----------------------------------------------------------------------------
 
-def FilterTestText(inText, baseText, _numdifftol):
+def FilterTestText(inText, baseText, numdifftol):
     """
     Filters words from the test text before it gets saved.
     """
@@ -1620,7 +1620,6 @@ def FilterTestText(inText, baseText, _numdifftol):
     inText = inText.replace(out_path(), "VISIT_TOP_DIR/test")
     inText = inText.replace(test_root_path(), "VISIT_TOP_DIR/test")
     inText = inText.replace(data_path(), "VISIT_TOP_DIR/data")
-    numdifftol = _numdifftol
     #
     # Only consider doing any string substitution if numerical diff threshold
     # is non-zero
