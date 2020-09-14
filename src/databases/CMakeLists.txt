@@ -185,6 +185,9 @@
 #    Brad Whitlock, Wed Jul 22 17:47:11 PDT 2020
 #    I added the FMS reader.
 #
+#    Kathleen Biagas, Mon Sep 14 2020
+#    Enable Rect as an optional plugin on Windows.
+#
 #****************************************************************************
 
 IF(NOT WIN32)
@@ -474,6 +477,10 @@ ELSE()
     ENDIF()
 ENDIF(TARGET vtkIOEnSight)
 
+SET(OPTIONAL_DATABASE_PLUGINS
+    Rect
+   )
+
 IF (NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS
         HDFS
@@ -482,15 +489,14 @@ IF (NOT WIN32)
         Vis5D
         ZipWrapper
     )
-    SET(OPTIONAL_DATABASE_PLUGINS
+    list(APPEND OPTIONAL_DATABASE_PLUGINS
         Hex
         MRTest
         PICS_Tester
-        Rect
         VLI
     )
 ELSE(NOT WIN32)
-    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;ZipWrapper;Hex;MRTest;PICS_Tester;Rect;VLI" "not currently buildable on Windows")
+    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;ZipWrapper;Hex;MRTest;PICS_Tester;VLI" "not currently buildable on Windows")
 ENDIF (NOT WIN32)
 
 
