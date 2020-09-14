@@ -1,4 +1,4 @@
-FROM fedora:27
+FROM fedora:31
 MAINTAINER Eric Brugger <brugger1@llnl.gov>
 
 # fetch build env
@@ -15,6 +15,7 @@ RUN dnf -y upgrade && dnf -y install \
     gcc \
     gcc-c++ \
     gcc-gfortran \
+    make \
     zlib-devel \
     python \
     libICE-devel \
@@ -50,10 +51,10 @@ WORKDIR /home/visit
 # Create the third-party directory
 RUN mkdir third-party
 # Copy build_visit and the script to run it
-COPY build_visit3_1_1 /home/visit
-COPY run_build_visit.sh /home/visit
+COPY build_visit3_1_3 /home/visit
+COPY run_build_visit_fedora31.sh /home/visit
 COPY build_visit_docker_cleanup.py /home/visit
 COPY build_test_visit.sh /home/visit
 COPY test_visit.py /home/visit
 # Build the third party libraries
-RUN /bin/bash run_build_visit.sh
+RUN /bin/bash run_build_visit_fedora31.sh

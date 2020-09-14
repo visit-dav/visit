@@ -185,9 +185,6 @@
           "name": "host_llnl_closed_agate.xml"
         }, 
         {
-          "name": "host_llnl_closed_cmax.xml"
-        }, 
-        {
           "name": "host_llnl_closed_jade.xml"
         }, 
         {
@@ -210,6 +207,9 @@
         }, 
         {
           "name": "host_llnl_closed_sierra.xml"
+        }, 
+        {
+          "name": "host_llnl_closed_tron.xml"
         }, 
         {
           "name": "host_llnl_closed_zin.xml"

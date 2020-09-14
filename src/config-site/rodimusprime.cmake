@@ -31,6 +31,8 @@ VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/bin/mpicxx TYPE FILEPATH)
 ##
 VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 
+VISIT_OPTION_DEFAULT(VISIT_ENABLE_DATA_MANUAL_EXAMPLES ON TYPE BOOL)
+
 ##############################################################
 ##
 ## Database reader plugin support libraries
