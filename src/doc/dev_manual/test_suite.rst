@@ -146,7 +146,8 @@ These two goals, running VisIt_ tests to confirm correct behavior in a wide vari
 
 It may make sense for developers to generate (though not ever commit) a complete and valid set of baselines on their target development platform and then use those (uncommitted) baselines to enable them to run tests and track code changes using an exact match methodology.
 
-Metrics:
+Metrics
+"""""""
 
 *  ``total pixels`` -  count of all pixels in the test image
 
@@ -158,16 +159,40 @@ Metrics:
 
 * ``dmed / dmedp`` - median value of raw numerical / human perceptual differences over all color channels and intensity
 
+Difference Tolerances
+"""""""""""""""""""""
 
 When running the test suite on platforms other than the currently adopted baseline platform or
 when running tests in modes other than the standard modes, a couple of options
-will be very useful; `-pixdiff` and `-avgdiff`. The pixdiff
-option allows one to specify a tolerance on the percentage of *non*background* pixels that are different. The avgdiff option
+will be very useful; ``--pixdiff`` and ``--avgdiff``. The ``pixdiff``
+option allows one to specify a tolerance on the *percentage* of
+*non-background* pixels that are different. Because plots rarely cover *all*
+pixels in an image, only pixels that are *non-background* color (non-constant-color
+backgrounds, the logic is more complicated) are included
+when computing the ``pixdiff`` precentage. The ``avgdiff`` option
 allows one to specify a second tolerance for the case when
-the pixdiff tolerance is exceeded. The avgdiff option specifies
-the maximum average (intensity) difference difference allowed
-averaged over all pixels that are different.
+the ``pixdiff`` tolerance is exceeded. The ``avgdiff`` option specifies
+an allowed gray-scale intensity difference averaged over all pixels that
+are different. The command-line options
+``--pixdiff=4.5 --avgdiff=1.5`` means that if an image has fewer than
+4.5% of *non-background* pixels that are different, it is considered a
+**Pass**. If an image has more than ``4.5%`` of *non-background* pixels that
+are different but their averaged gray-scale intensity difference is less
+than ``1.5``, then it is still considered a **Pass**. When using difference
+tolerances, a good place to start is ``--pixdiff=1.0 --avgdiff=1.0``.
 
+For numerical textual results, there is also a ``--numdiff`` command-line option
+that specifies a *relative* numerical difference tolerance in numerical textual
+results. The command-line option ``--numdiff=0.01`` means that if a numerical
+result is different but the magnitude of the difference divided by the magnitude of
+the expected value is less than ``0.01`` it is considered a **Pass**.
+
+When specified on the command-line to a test suite run, the above tolerances wind
+up being applied to *all* test results computed during a test suite run. It is
+also possible to specify these tolerances in specific tests by passing them as
+arguments, for example ``Test(pixdiff=4.5)`` and ``TestText(numdiff=0.01)``, in
+the methods used to check test outputs.
+ 
 Tips on writing regression tests 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
