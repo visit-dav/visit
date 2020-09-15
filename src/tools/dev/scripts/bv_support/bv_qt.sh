@@ -216,7 +216,6 @@ function apply_qt_patch
             fi
         fi
     fi
-
     return 0
 }
 

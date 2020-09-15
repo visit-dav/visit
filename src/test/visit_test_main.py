@@ -397,12 +397,15 @@ def GenFileNames(test_case, ext):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Mark C. Miller, Fri Sep 11 18:58:34 PDT 2020
+#  Add pixdiff and avgdiff args
 # ----------------------------------------------------------------------------
-def CalcDiffState(p_pixs, d_pixs, davg):
+def CalcDiffState(p_pixs, d_pixs, davg, pixdiff, avgdiff):
     if p_pixs != 0:
         dpix = d_pixs * 100.0 / p_pixs
-        if dpix > TestEnv.params["pixdiff"]:
-            if davg > TestEnv.params["avgdiff"]:
+        if dpix > pixdiff:
+            if davg > avgdiff:
                 diff_state = 'Unacceptable'
             else:
                 diff_state = 'Acceptable'
@@ -916,8 +919,11 @@ def Save_Validate_Perturb_Restore_Session(cur):
 #
 #   Mark C. Miller, Tue Sep  6 18:51:23 PDT 2016
 #   Added Save_Validate_... to rigorously test sessionfiles
+#
+#   Mark C. Miller, Fri Sep 11 19:26:34 PDT 2020
+#   Added pixdiff, avgdiff optional args
 # ----------------------------------------------------------------------------
-def Test(case_name, altSWA=0, alreadySaved=0):
+def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
     CheckInteractive(case_name)
     # for read only globals, we don't need to use "global"
     # we may need to use global for these guys
@@ -967,6 +973,10 @@ def Test(case_name, altSWA=0, alreadySaved=0):
     dpix      = 0.0
     davg      = 0.0
     thrErr    = -1.0
+    if pixdiff is None:
+        pixdiff = TestEnv.params["pixdiff"]
+    if avgdiff is None:
+        avgdiff = TestEnv.params["avgdiff"]
 
     if TestEnv.params["use_pil"]:
         if TestEnv.params["threshold_diff"]:
@@ -978,7 +988,7 @@ def Test(case_name, altSWA=0, alreadySaved=0):
             # raw difference
             (tPixs, pPixs, dPixs, davg) \
                 = DiffUsingPIL(case_name, cur, diff, base, altbase)
-            diffState, dpix = CalcDiffState(pPixs, dPixs, davg)
+            diffState, dpix = CalcDiffState(pPixs, dPixs, davg, pixdiff, avgdiff)
 
     if skip:
         diffState = 'Skipped'
@@ -1594,9 +1604,11 @@ def ProcessDiffImage(case_name, baseimg, testimg, diffimg):
 #   Cyrus Harrison, Tue Nov  6 13:08:56 PST 2012
 #   Make sure to filter TestEnv.params["run_dir"] as well.
 #
+#   Mark C. Miller, Fri Sep 11 19:55:17 PDT 2020
+#   Added numdifftol arg
 # ----------------------------------------------------------------------------
 
-def FilterTestText(inText, baseText):
+def FilterTestText(inText, baseText, numdifftol):
     """
     Filters words from the test text before it gets saved.
     """
@@ -1608,7 +1620,6 @@ def FilterTestText(inText, baseText):
     inText = inText.replace(out_path(), "VISIT_TOP_DIR/test")
     inText = inText.replace(test_root_path(), "VISIT_TOP_DIR/test")
     inText = inText.replace(data_path(), "VISIT_TOP_DIR/data")
-    numdifftol = TestEnv.params["numdiff"]
     #
     # Only consider doing any string substitution if numerical diff threshold
     # is non-zero
@@ -1749,8 +1760,11 @@ def CheckInteractive(case_name):
 #   Mark C. Miller, Thu Jun 28 18:37:31 PDT 2018
 #   Added logic to copy current file to "html" dir so it gets posted with
 #   results so it can be more easily re-based later if needed.
+#
+#   Mark C. Miller, Fri Sep 11 19:54:23 PDT 2020
+#   Added optional numdifftool arg
 # ----------------------------------------------------------------------------
-def TestText(case_name, inText):
+def TestText(case_name, inText, numdifftol=None):
     """
     Write out text to file, diff it with the baseline, and log the result.
     """
@@ -1766,8 +1780,12 @@ def TestText(case_name, inText):
         base = test_module_path("notext.txt")
         baseText = "notext"
 
+    # Check for user specified tolerance
+    if numdifftol is None:
+        numdifftol = TestEnv.params["numdiff"]
+
     # Filter out unwanted text
-    inText = FilterTestText(inText, baseText)
+    inText = FilterTestText(inText, baseText, numdifftol)
 
     # save the current text output
     fout = open(cur, 'w')
