@@ -75,8 +75,6 @@ class PIPELINE_API avtCompositeRF : public avtRayFunction
                                                { return weightVariableIndex; }
     virtual bool       CanContributeToPicture(int,
                                           const double (*)[AVT_VARIABLE_LIMIT]);
-    void               SetDistance(double dist)
-                                               { viewDistance = dist; }; 
 
     void               SetTrilinearSampling(bool r) { trilinearSampling = r; };
     void               SetMaterial(double mat[4]){for (int i=0; i<4; i++) matProperties[i]=mat[i];}
@@ -89,7 +87,6 @@ class PIPELINE_API avtCompositeRF : public avtRayFunction
     int                colorVariableIndex;
     int                opacityVariableIndex;
     int                weightVariableIndex;
-    double             viewDistance;
 
     avtRangeMaxTable   rangeMaxTable;
     bool               trilinearSampling;

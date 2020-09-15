@@ -69,8 +69,6 @@ avtCompositeRF::avtCompositeRF(avtLightingModel *l, avtOpacityMap *m,
     matProperties[1] = 0.75;    // diffuse
     matProperties[2] = 0.0;     // specular
     matProperties[3] = 15;      // shininess
-
-    viewDistance = 0.0;
 }
 
 
@@ -181,7 +179,20 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
     float opacity = 0.;
     float trgb[3] = {0.f, 0.f, 0.f};
     int z = 0;
-    double sampleDist = viewDistance/double(ray->numSamples);
+
+    //
+    // We need to calculate the sample distance so that we can apply
+    // opacity correction: 
+    // 1 - ((1 - alpha(x))**sampleDist)
+    //
+    // NOTE: This magic number "sampleDistReference" is completely
+    // made up. It acts as a "reference sample count" that results in
+    // an opacity correction that generally "looks good". Increasing this
+    // value will result in an increased opacity intensity, while decreasing
+    // this value will result in a decreased opacity intensity.
+    //
+    float sampleDistReference = 350.0;
+    double sampleDist = double(ray->numSamples) / sampleDistReference;
 
     if(trilinearSampling)
     {
@@ -386,5 +397,3 @@ avtCompositeRF::CanContributeToPicture(int nVerts,
 
     return (opacMax > 0. ? true : false);
 }
-
-

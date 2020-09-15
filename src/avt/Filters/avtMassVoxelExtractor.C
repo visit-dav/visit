@@ -840,8 +840,14 @@ avtMassVoxelExtractor::SampleVariable_Common(int first, int last, int w, int h)
     // opacity correction: 
     // 1 - ((1 - alpha(x))**sampleDist)
     //
-    float viewDist = float((view.farPlane - view.nearPlane));
-    float sampleDist = viewDist / float(ray->GetNumberOfSamples());
+    // NOTE: This magic number "sampleDistReference" is completely
+    // made up. It acts as a "reference sample count" that results in
+    // an opacity correction that generally "looks good". Increasing this
+    // value will result in an increased opacity intensity, while decreasing
+    // this value will result in a decreased opacity intensity.
+    //
+    float sampleDistReference = 350.0;
+    float sampleDist = float(ray->GetNumberOfSamples()) / sampleDistReference;
     float opacity = 0.f;
 #endif
 
