@@ -994,8 +994,8 @@ def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
         diffState = 'Skipped'
         TestEnv.results["numskip"]+= 1
 
-    LogImageTestResult(case_name,diffState, modeSpecific,
-                       dpix, tPixs, pPixs, dPixs, davg,
+    LogImageTestResult(case_name, diffState, modeSpecific,
+                       tPixs, pPixs, dPixs, dpix, davg,
                        cur, diff, base, thrErr)
 
     # update maxmimum diff state
@@ -1418,12 +1418,11 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
         diffimg = ImageChops.difference(oldimg, newimg)
     except:
         diffimg = oldimg
-    #dstatc = ImageStat.Stat(diffimg) # stats of color image
 
+    #dstatc = ImageStat.Stat(diffimg) # stats of color image
     mdiffimg, dmin, dmax, dmean, dmedian, drms, dstddev, \
     plotpixels, diffpixels, totpixels \
         = ProcessDiffImage(case_name, oldimg, newimg, diffimg)
-
     mdiffimg.save(diff)
 
     CreateImagesForWeb(case_name, bool(dmax!=0), oldimg, newimg, mdiffimg)
