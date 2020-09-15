@@ -1041,12 +1041,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     software->SetView(vi);
     if (atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
     {
-        integrateRF->SetDistance(view.GetFarPlane()-view.GetNearPlane());
         integrateRF->SetWindowSize(size[0], size[1]);
-    }
-    else
-    {
-        compositeRF->SetDistance(view.GetFarPlane()-view.GetNearPlane());
     }
 
     double view_dir[3];
