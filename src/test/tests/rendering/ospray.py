@@ -45,7 +45,7 @@ def TestOsprayWindowSave():
     RenderingAtts.osprayShadows = 1
     SetRenderingAttributes(RenderingAtts)
 
-    Test("ospray_window_save")
+    Test("ospray_window_save", pixdiff=0.2, avgdiff=0.01)
     DeleteAllPlots()
 
     RenderingAtts = RenderingAttributes()
@@ -88,7 +88,7 @@ def TestOsprayVolumeDomainBoundaries():
     #
     # NOTE: This test always has a slight pixel diff (~0.01%).
     #
-    Test("ospray_domain_boundaries_00", pixdiff=0.02)
+    Test("ospray_domain_boundaries_00", pixdiff=0.1, avgdiff=0.01)
 
     DeleteAllPlots()
     CloseDatabase(data_path("vtk_test_data/poiseuille_rayleigh_benard_3D_00000600.visit"))
