@@ -846,8 +846,9 @@ avtMassVoxelExtractor::SampleVariable_Common(int first, int last, int w, int h)
     // value will result in an increased opacity intensity, while decreasing
     // this value will result in a decreased opacity intensity.
     //
-    float sampleDistReference = 350.0;
-    float sampleDist = float(ray->GetNumberOfSamples()) / sampleDistReference;
+    float sampleDistReference = 1.0/10.0;
+    float currentSampleDist = 1.0/float(ray->GetNumberOfSamples());
+    float sampleDist = currentSampleDist / sampleDistReference;
     float opacity = 0.f;
 #endif
 
