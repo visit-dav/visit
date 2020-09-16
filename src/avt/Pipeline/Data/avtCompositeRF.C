@@ -191,8 +191,9 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
     // value will result in an increased opacity intensity, while decreasing
     // this value will result in a decreased opacity intensity.
     //
-    float sampleDistReference = 350.0;
-    double sampleDist = double(ray->numSamples) / sampleDistReference;
+    double sampleDistReference = 1.0/10.0;
+    double currentSampleDist = 1.0/float(ray->numSamples);
+    double sampleDist = currentSampleDist / sampleDistReference;
 
     if(trilinearSampling)
     {
