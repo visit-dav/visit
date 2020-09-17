@@ -5,8 +5,10 @@
 #  Date:       August 25, 2015
 #
 #  Modifications:
+#    Kathleen Biagas, Thur Sep 17, 2020
 #    Since this was split into 4 different tests, and each only tests one
-#    database, remove no-longer needed databases looping logic
+#    database, remove no-longer needed databases looping logic. Turn off
+#    all warnings.
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("PICS_Tester")
 
@@ -63,6 +65,12 @@ def LCS_operator( operator, database ):
   LCSAtts.parallelizationAlgorithmType = LCSAtts.ParallelStaticDomains
   LCSAtts.pathlines = 1
   LCSAtts.pathlinesCMFE = LCSAtts.CONN_CMFE
+  LCSAtts.issueAdvectionWarnings = 0
+  LCSAtts.issueBoundaryWarnings = 0
+  LCSAtts.issueTerminationWarnings = 0
+  LCSAtts.issueStepsizeWarnings = 0
+  LCSAtts.issueStiffnessWarnings = 0
+  LCSAtts.issueCriticalPointsWarnings = 0
   SetOperatorOptions(LCSAtts, 0)
   
   
@@ -76,6 +84,12 @@ def LCS_operator( operator, database ):
     IntegralCurveAtts.maxStepLength = 0.001
     IntegralCurveAtts.integrationType = IntegralCurveAtts.AdamsBashforth
     IntegralCurveAtts.parallelizationAlgorithmType = IntegralCurveAtts.ParallelStaticDomains
+    IntegralCurveAtts.issueAdvectionWarnings = 0
+    IntegralCurveAtts.issueBoundaryWarnings = 0
+    IntegralCurveAtts.issueTerminationWarnings = 0
+    IntegralCurveAtts.issueStepsizeWarnings = 0
+    IntegralCurveAtts.issueStiffnessWarnings = 0
+    IntegralCurveAtts.issueCriticalPointsWarnings = 0
     SetOperatorOptions(IntegralCurveAtts, 0)
   
   elif(operator == "LimitCycle"):
@@ -95,6 +109,12 @@ def LCS_operator( operator, database ):
     LimitCycleAtts.maxIterations = 10
     LimitCycleAtts.showPartialResults = 0
     LimitCycleAtts.showReturnDistances = 0
+    LimitCycleAtts.issueAdvectionWarnings = 0
+    LimitCycleAtts.issueBoundaryWarnings = 0
+    LimitCycleAtts.issueTerminationWarnings = 0
+    LimitCycleAtts.issueStepsizeWarnings = 0
+    LimitCycleAtts.issueStiffnessWarnings = 0
+    LimitCycleAtts.issueCriticalPointsWarnings = 0
     SetOperatorOptions(LimitCycleAtts, 0)
   
   

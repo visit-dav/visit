@@ -1151,7 +1151,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
     if( replicateData )
     {
       // std::cerr << "LCS: replicating data on all processors." << std::endl;
-      debug1 << "LCS: replicating data on all processors." << std::endl;
+      debug3 << "LCS: replicating data on all processors." << std::endl;
 
       // Setup for MPI communication
       int tags[4];
@@ -1347,7 +1347,7 @@ avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
 //   slice_ds->GetOrigin(x,y,z);
 //   slice_ds->GetSpacing(dx,dy,dz);
 
-  std::cerr << PAR_Rank() << " searching for seeds " << std::endl;
+  debug3 << PAR_Rank() << " searching for seeds " << std::endl;
 
   vtkDataSet *slice_ds = in_ds;
   
@@ -1406,7 +1406,7 @@ avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
   else //if( getMin )
     threshold = minFTLE + (maxFTLE-minFTLE) * thresholdLimit;
 
-  std::cerr  << PAR_Rank() << " min/max " << minFTLE << "  " << maxFTLE << "  "
+  debug3  << PAR_Rank() << " min/max " << minFTLE << "  " << maxFTLE << "  "
             << " threshold  " << threshold << std::endl;
 
   std::vector< std::pair< avtVector, double > > ptList;
@@ -1481,9 +1481,9 @@ avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
   }
   
   if( getMax )
-    std::cerr << PAR_Rank() << " Have " << ptList.size() << " max seed points "<< std::endl;
+    debug3 << PAR_Rank() << " Have " << ptList.size() << " max seed points "<< std::endl;
   else
-    std::cerr << PAR_Rank() << " Have " << ptList.size() << " min seed points "<< std::endl;
+    debug3 << PAR_Rank() << " Have " << ptList.size() << " min seed points "<< std::endl;
   
   if( ptList.size() > maxSeeds ) ptList.resize( maxSeeds );
 
@@ -1503,12 +1503,12 @@ avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
 
   for (int i = 0; i < ptList.size(); ++i)
   {
-    std::cerr << PAR_Rank() << "    "
-              << ptList[i].second << "     "
-              << ptList[i].first.x << "  "
-              << ptList[i].first.y << "  "
-              << ptList[i].first.z << "  "
-              << std::endl;
+    debug3 << PAR_Rank() << "    "
+           << ptList[i].second << "     "
+           << ptList[i].first.x << "  "
+           << ptList[i].first.y << "  "
+           << ptList[i].first.z << "  "
+           << std::endl;
     
     seedPts->SetTuple3(i,
                        ptList[i].first.x,
@@ -1565,7 +1565,7 @@ avtLCSFilter::MultiBlockDataTree( avtDataTree_p inDT )
 
         avtDataTree_p rv = new avtDataTree(rect_grid, dom, label);
 
-        std::cerr << rect_grid << "  " << dom << "  " << label << std::endl;
+        debug3 << rect_grid << "  " << dom << "  " << label << std::endl;
 
         return rv;
     }
