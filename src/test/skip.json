@@ -1,6 +1,5 @@
 { "skip_list":[
  {"mode":"serial","tests":[
-                    {"category":"databases","file":"chgcar.py","cases":["chgcar_01"]},
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
                     {"category":"databases","file":"silo.py","cases":["silo_05","silo_06"]},
@@ -54,7 +53,6 @@
                     {"platform":"win", "category":"unit","file":"utility.py"}
                   ]},
  {"mode":"parallel","tests":[
-                    {"category":"databases","file":"chgcar.py","cases":["chgcar_01"]},
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
                     {"category":"databases","file":"pixie.py","cases":["pixie_04"]},
