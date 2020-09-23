@@ -173,20 +173,29 @@ HideActivePlots()
 # gorfo files,they won't work out of the data dir
 # (and we shouldn't be modifying the data dir !)
 
+# KSB: Added copy of original file, and removed silo_data_path from
+# shutil copy so that this will work.
+# All the copies are made into the run_dir by default, which gets cleaned
+# up unless --no-cleanup is used.
+
 # remove any gorfos 
 for f in glob.glob("gorfo_*"):
     os.remove(f)
 
 i = 0
+
+
 for filename in glob.glob(silo_data_path("multipart_multi_ucd3d*.silo")):
+    # copy the original file because the silo files have relatives paths
+    shutil.copy(filename, os.path.basename(filename)) 
     if filename.endswith("multipart_multi_ucd3d.silo"):
-        shutil.copy(silo_data_path(filename),"gorfo_1000")
-        shutil.copy(silo_data_path(filename),"gorfo_2000")
-        shutil.copy(silo_data_path(filename),"gorfo_3000")
+        shutil.copy(filename,"gorfo_1000")
+        shutil.copy(filename,"gorfo_2000")
+        shutil.copy(filename,"gorfo_3000")
     else:
-        shutil.copy(silo_data_path(filename),"gorfo_1000.%d" %i)
-        shutil.copy(silo_data_path(filename),"gorfo_2000.%d" %i)
-        shutil.copy(silo_data_path(filename),"gorfo_2000.%d" %i)
+        shutil.copy(filename,"gorfo_1000.%d" %i)
+        shutil.copy(filename,"gorfo_2000.%d" %i)
+        shutil.copy(filename,"gorfo_3000.%d" %i)
     i = i + 1
 
 #
