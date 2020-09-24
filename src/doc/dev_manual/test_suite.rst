@@ -139,15 +139,15 @@ Filtering Image Differences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 There are many alternative ways for both compiling and even running VisIt_ to
 produce any given image or textual output. Nonetheless, we expect results to
-be roughly *equivalent*. For example, we expect VisIt_ running on two different
-implementations of the GL library to produce by and large the same images. We
-expect VisIt_ running in serial or parallel to produce the same images. We
-expect VisIt_ running on Ubuntu Linux to produce the same images as it would
-running on Mac OSX. We expect VisIt_ running in client-server mode to produce
-the same images as VisIt_ running entirely remotely.
+be nearly if not perfectly identical. For example, we expect VisIt_ running on
+two different implementations of the GL library to produce by and large the same
+images. We expect VisIt_ running in serial or parallel to produce the same
+images. We expect VisIt_ running on Ubuntu Linux to produce the same images as
+it would running on Mac OSX. We expect VisIt_ running in client-server mode to
+produce the same images as VisIt_ running entirely remotely.
 
 In many cases, we expect outputs produced by these alternative approaches to be
-nearly the same but rarely bit-for-bit identical. Minor variations such as
+nearly the same but not always bit-for-bit identical. Minor variations such as
 single pixel shifts in position or slight variations in color are inevitable
 and ultimately unremarkable.
 
@@ -160,47 +160,53 @@ track the impact of changes to source code but *fuzzy* matching for anything
 else. We maintain a set of several thousand version-controlled, baseline results
 computed for a specific, fixed *configuration and test mode* of VisIt_. Nightly
 testing of key branches of development reveals any results that are not
-bit-for-bit identical to their baseline. These *failures* are then corrected in
-one of two ways. Either the new result is wrong and additional source code
-changes are required to ensure VisIt_ continues to produce the original baseline.
-Or, the original baseline is wrong and plausible arguments can be made as to why
-the source code changes that caused it are expected and/or acceptable. In this
-case, the baseline is updated to the new result and along with a comment
-explaining the reason for the update.
+bit-for-bit identical to their baseline.
+
+These *failures* are then corrected in one of two ways. Either the new result
+is wrong and additional source code changes are required to ensure VisIt_
+continues to produce the original baseline. Or, the original baseline is wrong
+and it must be updated to the new result. In this latter situation, it is also
+prudent to justify the new result with a plausible explanation as to why it is
+expected, better or acceptable as well as to include such explanation in the
+commit comments.
 
 Mode specific baselines
 """""""""""""""""""""""
 VisIt_ testing can be run in a variety of modes; serial, parallel,
 scalable-parallel, scalable-parallel-icet, client-server, etc. For a fixed
-configuration, In most cases, baseline results computed in one mode agree
+configuration, in most cases baseline results computed in one mode agree
 bit-for-bit identically with the other modes. However, this is not always
 true. About 2% of results vary with the execution mode. To handle these cases,
 we also maintain *mode-specific* baseline results as the need arises.
 
 The need for a mode-specific baseline is discovered as new tests are added.
 When testing reveals that VisIt computes slightly different results in 
-different modes, a single mode-agnostic baseline will fail to match. At that
-time, mode-specific baselines are added.
+different modes, a single mode-agnostic baseline will fail to match in all
+test modes. At that time, mode-specific baselines are added.
 
 Changing Baseline Configuration
 """""""""""""""""""""""""""""""
-One weakness with this approach is revealed when it becomes necessary to
-change the configuration of VisIt_ used to compute the baselines. For example,
-moving VisIt_'s testing system to a different hardware platform or updating
-to a newer compiler or third-party library such as VTK, may result in a slew
-of minor variations in the results. Rigorously, under these circumstances, it
-becomes necessary to individually assess each and every one of the 4,500+
-*new* results to determine whether the new result is in fact *good* or whether
-some kind of issue or bug is revealed. In practice, we use fuzzy matching
-(see below) to filter out *minor* variations from *major* ones and then focus
-our efforts on fully understanding only the *major* cases. We summarily
-*accept* all minor variations as the *new* baselines.
+One weakness with this approach to testing is revealed when it becomes
+necessary to change the configuration used to compute the baselines. For example,
+moving VisIt_'s testing system to a different hardware platform or updating to a
+newer compiler or third-party library such as VTK, may result in a slew of minor
+variations in the results. Under these circumstances, we are confronted with
+having to individually assess possibly thousands of *minor* image differences
+to rigorously determine whether the new result is in fact *good* or whether some
+kind of issue or bug is being revealed.
+
+In practice, we use fuzzy matching (see below) to filter out *minor* variations
+from *major* ones and then focus our efforts only on fully understanding the
+*major* cases. We summarily *accept* all minor variations as the *new*
+baselines.
 
 Promise of Machine Learning
 """""""""""""""""""""""""""
 In theory, we should be able to develop a machine-learning approach to
 filtering VisIt_'s test results that enable us to more effectily attribute
-variations in results to various causes. 
+variations in results to various causes. A challenge here is in developing
+a sufficiently large and fully labeled set of example results to prime the
+machine learning. This would make for a great summer project.
 
 Fuzzy Matching Metrics
 """"""""""""""""""""""
@@ -243,6 +249,8 @@ Average Difference Threshold (``--avgdiff``) :
     Specifies the acceptable threshold for the ``avgdiff`` metric. Note that this threshold
     applies *only* if the ``--pixdiff`` threshold is non-zero. If a test is above the
     ``pixdiff`` threshold but below the ``avgdiff`` threshold, it is considered a **PASS**.
+    The ``avgdiff`` option allows one to specify a second tolerance for the case when
+    the ``pixdiff`` tolerance is exceeded.
 
 Numerical (textual) Difference Threshold (``--numdiff``) :
     Specifies the acceptable *relative* numerical difference threshold in computed,
@@ -252,27 +260,15 @@ Numerical (textual) Difference Threshold (``--numdiff``) :
 
 The command-line with ``--pixdiff=0.5 --avgdiff=0.1`` means that any result with *fewer*
 than 0.5% of pixels that are different is a **PASS** and anything with more than 0.5% of
-pixels different but where *every* pixel gray-scale difference is less than .1 is still a
-**PASS**.
-    
-When running the test suite on platforms other than the currently adopted baseline platform or
-when running tests in modes other than the standard modes, a couple of options
-will be very useful; ``--pixdiff`` and ``--avgdiff``. The ``pixdiff``
-option allows one to specify a tolerance on the *percentage* of
-*non-background* pixels that are different. Because plots rarely cover *all*
-pixels in an image, only pixels that are *non-background* color (non-constant-color
-backgrounds, the logic is more complicated) are included
-when computing the ``pixdiff`` precentage. The ``avgdiff`` option
-allows one to specify a second tolerance for the case when
-the ``pixdiff`` tolerance is exceeded. The ``avgdiff`` option specifies
-an allowed gray-scale intensity difference averaged over all pixels that
-are different. The command-line options
-``--pixdiff=4.5 --avgdiff=1.5`` means that if an image has fewer than
-4.5% of *non-background* pixels that are different, it is considered a
-**Pass**. If an image has more than ``4.5%`` of *non-background* pixels that
-are different but their averaged gray-scale intensity difference is less
-than ``1.5``, then it is still considered a **Pass**. When using difference
-tolerances, a good place to start is ``--pixdiff=1.0 --avgdiff=1.0``.
+pixels different but where the average pixel gray-scale difference is less than .1 is
+still a **PASS**.
+
+Testing on Non-Baseline Configurations
+""""""""""""""""""""""""""""""""""""""
+
+When running the test suite on platforms other than the currently adopted baseline
+platform or when running tests in modes other than the standard modes, the ``--pixdiff``
+and ``--avgdiff`` command-line options will be very useful.
 
 For numerical textual results, there is also a ``--numdiff`` command-line option
 that specifies a *relative* numerical difference tolerance in numerical textual
@@ -285,9 +281,14 @@ up being applied to *all* test results computed during a test suite run. It is
 also possible to specify these tolerances in specific tests by passing them as
 arguments, for example ``Test(pixdiff=4.5)`` and ``TestText(numdiff=0.01)``, in
 the methods used to check test outputs.
+
+Finally, it may make sense for developers to generate (though not ever commit) a
+complete and validated set of baselines on their target development platform and
+then use those (uncommitted) baselines to enable them to run tests and track code
+changes using an exact match methodology.
  
 Tips on writing regression tests 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Test images in which plots occupy a small portion of the total image are fraught with peril and should be avoided. Images with poor coverage are more likely to produce false positives (e.g. passes that should have failed) or to exhibit somewhat random differences as test scenario is varied.
 
