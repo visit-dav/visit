@@ -49,9 +49,6 @@ DrawPlots()
 Test("meshtype_emptydomains_04")
 
 # Test multi-species/species selection support
-DefineScalarExpression("spec11", "specmf(spec,1,1)")
-DefineScalarExpression("spec51", "specmf(spec,5,1)")
-DefineScalarExpression("spec52", "specmf(spec,5,2)")
 DeleteAllPlots()
 AddPlot("Pseudocolor","spec")
 silr=SILRestriction()
