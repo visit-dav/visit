@@ -478,6 +478,7 @@ ELSE()
 ENDIF(TARGET vtkIOEnSight)
 
 SET(OPTIONAL_DATABASE_PLUGINS
+    PICS_Tester
     Rect
    )
 
@@ -492,11 +493,10 @@ IF (NOT WIN32)
     list(APPEND OPTIONAL_DATABASE_PLUGINS
         Hex
         MRTest
-        PICS_Tester
         VLI
     )
 ELSE(NOT WIN32)
-    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;ZipWrapper;Hex;MRTest;PICS_Tester;VLI" "not currently buildable on Windows")
+    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;ZipWrapper;Hex;MRTest;VLI" "not currently buildable on Windows")
 ENDIF (NOT WIN32)
 
 
