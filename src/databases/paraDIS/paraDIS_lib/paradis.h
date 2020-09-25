@@ -1706,7 +1706,8 @@ namespace paraDIS {
   */ 
   class CompareSegPtrs {
   public:
-    bool operator() ( const ArmSegment *seg1, const ArmSegment *seg2) {
+    // KSB 9-25-2020 made const to fix compile error on Windows
+    bool operator() ( const ArmSegment *seg1, const ArmSegment *seg2) const {
       return *seg1 < *seg2; 
     }
   };
