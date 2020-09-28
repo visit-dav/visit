@@ -71,15 +71,23 @@ std::string INDENT(int i) {
   if (!i) return "";
   return str(boost::format(str(boost::format("%%1$%1%s")%(i*3)))%" "); 
 }
-#define STARTPROGRESS()                                       \
-  timer theTimer;  theTimer.start();            \
-  double theTime=theTimer.elapsed_time(), thePercent=0;   
+#ifdef WIN32
+  // KSB 9-25-2020 Quick fix to get things running on Windows
+  // Rethink if these progress messages become necessary
+  #define STARTPROGRESS()
+  #define UPDATEPROGRESS(count, total, description)
+  #define COMPLETEPROGRESS(total, description)
+#else
+  #define STARTPROGRESS()                                       \
+    timer theTimer;  theTimer.start();            \
+    double theTime=theTimer.elapsed_time(), thePercent=0;   
 
-#define UPDATEPROGRESS(count, total, description)                       \
-  if (dbg_isverbose()) {                                                \
-    Progress(theTimer, count, total, thePercent, 1, theTime, 1, description);  }
-#define COMPLETEPROGRESS(total, description) \
-  UPDATEPROGRESS(total,total,description); fprintf(stderr, "\n");    \
+  #define UPDATEPROGRESS(count, total, description)                       \
+    if (dbg_isverbose()) {                                                \
+      Progress(theTimer, count, total, thePercent, 1, theTime, 1, description);  }
+  #define COMPLETEPROGRESS(total, description) \
+    UPDATEPROGRESS(total,total,description); fprintf(stderr, "\n");
+#endif
 
 string BurgersTypeNames(int btype) {
   switch (btype) {
@@ -3408,8 +3416,10 @@ namespace paraDIS {
   void DataSet::CreateFullNodesAndArmSegments(void){
     dbprintf(2, "CreateFullNodesAndArmSegments started...\n"); 
     reverse(MinimalNode::mMinimalNodes.begin(), MinimalNode::mMinimalNodes.end());
+#ifndef WIN32
     timer theTimer; 
     theTimer.start(); 
+#endif
     dbprintf(2, "Size of a full node is %d bytes, so expect to use %d megabytes\n",  sizeof(FullNode), MinimalNode::mMinimalNodes.size()*sizeof(FullNode)/1000000);
     char linebuf[2048]="";
     uint32_t nodenum = 0;
@@ -4496,7 +4506,9 @@ namespace paraDIS {
 
     uint32_t numMetaArms = 0, numArms = 0, totalArms = Arm::mArms.size(); 
     STARTPROGRESS(); 
+#ifndef WIN32
     dbprintf(4, "FindMetaArms: %s\n", datestring()); 
+#endif
     for (vector<Arm*>::iterator currentArm = Arm::mArms.begin(); currentArm != Arm::mArms.end(); ++currentArm, ++numArms) {
       if ( ! (*currentArm)->mSeen  && 
            ! (*currentArm)->isTypeUnknown() && 
