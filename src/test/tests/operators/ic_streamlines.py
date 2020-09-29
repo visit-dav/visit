@@ -10,6 +10,9 @@
 #  Programmer: Allen Sanderson
 #  Date:       March 10, 2016
 #
+#  Modifications:
+#    Kathleen Biagas, Tue Sep 29 11:29:33 PDT 2020
+#    Turn off IC warnings.
 # ----------------------------------------------------------------------------
 
 OpenDatabase(silo_data_path("noise.silo"))
@@ -142,12 +145,12 @@ IntegralCurveAtts.fillInterior = 1
 IntegralCurveAtts.randomSamples = 0
 IntegralCurveAtts.randomSeed = 0
 IntegralCurveAtts.numberOfRandomSamples = 1
-IntegralCurveAtts.issueAdvectionWarnings = 1
-IntegralCurveAtts.issueBoundaryWarnings = 1
-IntegralCurveAtts.issueTerminationWarnings = 1
-IntegralCurveAtts.issueStepsizeWarnings = 1
-IntegralCurveAtts.issueStiffnessWarnings = 1
-IntegralCurveAtts.issueCriticalPointsWarnings = 1
+IntegralCurveAtts.issueAdvectionWarnings = 0
+IntegralCurveAtts.issueBoundaryWarnings = 0
+IntegralCurveAtts.issueTerminationWarnings = 0
+IntegralCurveAtts.issueStepsizeWarnings = 0
+IntegralCurveAtts.issueStiffnessWarnings = 0
+IntegralCurveAtts.issueCriticalPointsWarnings = 0
 IntegralCurveAtts.criticalPointThreshold = 0.001
 IntegralCurveAtts.correlationDistanceAngTol = 5
 IntegralCurveAtts.correlationDistanceMinDistAbsolute = 1
