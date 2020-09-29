@@ -1,8 +1,12 @@
 #ifndef RDC_PATHUTIL_H
 #define RDC_PATHUTIL_H
+#ifdef RC_CPP_VISIT_BUILD
+#include <FileFunctions.h>
+#else
 #include "stringutil.h"
 
 #include <limits.h>
+#endif
 #ifdef _WIN32
 #include <direct.h>
 #define getcwd _getcwd
@@ -31,7 +35,14 @@
   Dirname("/") == "/"
 
 */ 
-inline string Dirname(string filename) {
+inline string Dirname(string filename)
+{
+#ifdef RC_CPP_VISIT_BUILD
+  // KSB 9-25-2020
+  // Rather than rework the unix-specific code below, utilize VisIt's
+  // Dirname function which works on all our platforms.
+  return FileFunctions::Dirname(filename);
+#else
   string dirname = StripBack(filename, "/"); 
 
   if (!dirname.length()) return string("/");
@@ -53,13 +64,21 @@ inline string Dirname(string filename) {
     throw string("Error in Dirname(): Logic error: there are no '/' chars in supposedly absolute path: ") + dirname; 
   }
   return  StripBack(dirname.substr(0,loc),"/"); 
+#endif
 }
 
 //===============================================================
 /*!
   Returns the last link of the filename, ala the "basename" shell command.  
 */ 
-inline string Basename(string filename) {
+inline string Basename(string filename)
+{
+#ifdef RC_CPP_VISIT_BUILD
+  // KSB 9-25-2020
+  // Rather than rework the unix-specific code below, utilize VisIt's
+  // Basename function which works on all our platforms.
+  return FileFunctions::Basename(filename);
+#else
   filename = StripBack(filename, "/"); 
   string::size_type loc = filename.rfind("/");
   if (loc == string::npos) {
@@ -68,5 +87,6 @@ inline string Basename(string filename) {
   string filename2 = filename.substr(loc+1); 
   
   return filename2; 
+#endif
 }
 #endif
