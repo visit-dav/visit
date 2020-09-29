@@ -24,7 +24,6 @@
                     {"platform":"win", "category":"hybrid","file":"cinema-c.py"},
                     {"platform":"win", "category":"hybrid","file":"field_operators.py","cases":["field_op_04"]},
                     {"platform":"win", "category":"hybrid","file":"selection_pp.py"},
-                    {"platform":"win", "category":"operators" ,"file": "ic_streamlines.py"},
                     {"platform":"win", "category":"plugins"},
                     {"platform":"win", "category":"simulation","file":"batch.py"},
                     {"platform":"win", "category":"simulation","file":"csg.py"},
