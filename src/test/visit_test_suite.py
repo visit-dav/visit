@@ -250,6 +250,8 @@ def launch_visit_test(args):
     tparams["host_profile_dir"]   = opts["host_profile_dir"]
     tparams["sessionfiles"]   = opts["sessionfiles"]
     tparams["cmake_cmd"]      = opts["cmake_cmd"]
+    tparams["clargs"]         = json.dumps(sys.argv)
+    tparams["mode_keys"]      = json.dumps(['serial','parallel','scalable','dlb','pdb','hdf5','icet'])
 
     exe_dir, exe_file = os.path.split(tparams["visit_bin"])
     if sys.platform.startswith("win"):
