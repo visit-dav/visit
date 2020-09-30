@@ -1,8 +1,8 @@
 #/usr/gapps/visit/thirdparty_shared/3.1.1/opengl/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake
 ##
-## ./build_visit3_1_1 generated host.cmake
-## created: Mon Feb 10 12:45:12 PST 2020
-## system: Linux kickit 5.4.6-1.el7.elrepo.x86_64 #1 SMP Sat Dec 21 08:15:20 EST 2019 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_1_3 generated host.cmake
+## created: Thu Sep 24 08:54:33 PDT 2020
+## system: Linux kickit 3.10.0-1127.19.1.el7.x86_64 #1 SMP Tue Aug 11 19:12:04 EDT 2020 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger1
 
 ##
@@ -218,7 +218,7 @@ VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP ${VISIT_CONDUIT_LIBDEP} ${VISITHOME}/zlib
 ##
 ## Mili
 ##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/15.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/19.2/${VISITARCH})
 
 ##
 ## MOAB 
