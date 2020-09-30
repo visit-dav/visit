@@ -9,9 +9,10 @@ import json
 import sys
 
 #
-# Obtain mode info direct from command-line args instead of using
-# any of the logic in the test harness. This ensures we compare
-# actual mode requested in command-line to behavior
+# Obtain mode info directly from top-level command-line args passed to test
+# suite harness and stored to "clargs" member of TestEnv.params instead of
+# using any of the alternative logic in the test harness. This ensures we
+# compare with actual mode(s) requested on command-line.
 #
 def ModeKeys():
     for i in range(len(clArgs)):
@@ -22,7 +23,7 @@ def ModeKeys():
     return ('serial',)
 
 #
-# Confirm all mode strings
+# Ensure all mode keys are known
 #
 def AllModeKeysRecognized():
     for m in ModeKeys():
@@ -31,7 +32,7 @@ def AllModeKeysRecognized():
     return True
 
 #
-# Ensure no mutually exclusive modes
+# Ensure no mutually exclusive mode keys
 #
 def NoMutuallyExclusiveModes():
     if 'pdb' in ModeKeys() and 'hdf5' in ModeKeys():
@@ -81,17 +82,20 @@ def ScalableSettingMatchesMode():
     return False
 
 def IcetClargMatchesMode():
-    if 'icet' in ModeKeys():
-        if '-icet' in sys.argv:
-            return True
-    return False
+    if 'icet' in ModeKeys() and '-icet' not in sys.argv:
+        return False
+    return True
 
 def AllowdynamicClargMatchesMode():
-    if 'dlb' in ModeKeys():
-        if '-allowdynamic' in sys.argv:
-            return True
-    return False
+    if 'dlb' in ModeKeys() and '-allowdynamic' not in sys.argv:
+        return False
+    return True
 
+#
+# Capture clargs and known mode keys from raw data entries stored
+# to TestEnv.params. Do this once, now, instead of each time we
+# need to interrogate their contents in the above functions.
+#
 clArgs = json.loads(TestEnv.params["clargs"])
 knownModeKeys = json.loads(TestEnv.params["mode_keys"])
 
