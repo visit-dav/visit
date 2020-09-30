@@ -30,6 +30,9 @@ from visit_test_common import *
 from visit_test_reports import *
 from visit_test_ctest import *
 
+def known_mode_keys():
+    return ['serial','parallel','scalable','dlb','pdb','hdf5','icet']
+
 # ----------------------------------------------------------------------------
 #  Method: visit_root
 #
@@ -250,6 +253,8 @@ def launch_visit_test(args):
     tparams["host_profile_dir"]   = opts["host_profile_dir"]
     tparams["sessionfiles"]   = opts["sessionfiles"]
     tparams["cmake_cmd"]      = opts["cmake_cmd"]
+    tparams["clargs"]         = json.dumps(sys.argv)
+    tparams["mode_keys"]      = json.dumps(known_mode_keys())
 
     exe_dir, exe_file = os.path.split(tparams["visit_bin"])
     if sys.platform.startswith("win"):
@@ -599,10 +604,10 @@ def parse_args():
     parser.add_option("-m",
                       "--modes",
                       default=defs["modes"],
-                      help="specify mode in which to run tests"
-                           " [choose from 'parallel', 'serial', 'scalable', "
-                           " 'dlb', 'hdf5', 'pdb', 'icet', and combinations such as"
-                           " 'scalable,parallel']")
+                      help="specify mode in which to run tests "
+                           "choose from %s "
+                           "and comma-separated combinations such as "
+                           "scalable,parallel [default serial]"%known_mode_keys())
     parser.add_option("-c",
                       "--classes",
                       default=defs["classes"],
