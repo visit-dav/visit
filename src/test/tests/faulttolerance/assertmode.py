@@ -14,30 +14,31 @@ import sys
 # using any of the alternative logic in the test harness. This ensures we
 # compare with actual mode(s) requested on command-line.
 #
-def ModeKeys():
-    for i in range(len(clArgs)):
-        if clArgs[i] == '-m':
-            return clArgs[i+1].split(',')
-        elif clArgs[i][0:7] == '--mode=':
-            return clArgs[i][8:].split(',')
+def GetModeKeysFromClArgs():
+    clargs = json.loads(TestEnv.params["clargs"])
+    for i in range(len(clargs)):
+        if clargs[i] == '-m':
+            return clargs[i+1].split(',')
+        elif clargs[i][0:7] == '--mode=':
+            return clargs[i][8:].split(',')
     return ('serial',)
 
 #
 # Ensure all mode keys are known
 #
 def AllModeKeysRecognized():
-    for m in ModeKeys():
+    for m in activeModeKeys:
         if m not in knownModeKeys:
             return False
     return True
 
 #
-# Ensure no mutually exclusive mode keys
+# Ensure all mode keys are compatible
 #
-def NoMutuallyExclusiveModes():
-    if 'pdb' in ModeKeys() and 'hdf5' in ModeKeys():
+def AllModeKeysCompatible():
+    if 'pdb' in activeModeKeys and 'hdf5' in activeModeKeys:
         return False
-    if 'icet' in ModeKeys() and 'parallel' not in ModeKeys():
+    if 'icet' in activeModeKeys and 'parallel' not in activeModeKeys:
         return False
     return True
 
@@ -46,7 +47,7 @@ def NoMutuallyExclusiveModes():
 #
 def EngineMatchesMode():
     pa = GetProcessAttributes("engine")
-    if 'parallel' in ModeKeys():
+    if 'parallel' in activeModeKeys:
         if pa.isParallel:
             if len(pa.pids) > 1:
                 return True
@@ -60,7 +61,7 @@ def EngineMatchesMode():
 # Check that Silo data path matches its mode
 #
 def SiloDataPathMatchesMode():
-    if 'pdb' in ModeKeys():
+    if 'pdb' in activeModeKeys:
         if 'silo_pdb_test_data' in silo_data_path(''):
             return True
     else:
@@ -73,7 +74,7 @@ def SiloDataPathMatchesMode():
 #
 def ScalableSettingMatchesMode():
     ra = GetRenderingAttributes()
-    if 'scalable' in ModeKeys():
+    if 'scalable' in activeModeKeys:
         if ra.scalableActivationMode == ra.Always:
             return True
     else:
@@ -82,12 +83,16 @@ def ScalableSettingMatchesMode():
     return False
 
 def IcetClargMatchesMode():
-    if 'icet' in ModeKeys() and '-icet' not in sys.argv:
+    if 'icet' in activeModeKeys and '-icet' not in sys.argv:
+        return False
+    if '-icet' in sys.argv and 'icet' not in activeModeKeys:
         return False
     return True
 
 def AllowdynamicClargMatchesMode():
-    if 'dlb' in ModeKeys() and '-allowdynamic' not in sys.argv:
+    if 'dlb' in activeModeKeys and '-allowdynamic' not in sys.argv:
+        return False
+    if '-allowdynamic' in sys.argv and 'dlb' not in activeModeKeys:
         return False
     return True
 
@@ -96,11 +101,11 @@ def AllowdynamicClargMatchesMode():
 # to TestEnv.params. Do this once, now, instead of each time we
 # need to interrogate their contents in the above functions.
 #
-clArgs = json.loads(TestEnv.params["clargs"])
+activeModeKeys = GetModeKeysFromClArgs()
 knownModeKeys = json.loads(TestEnv.params["mode_keys"])
 
 AssertTrue("All mode strings recognized", AllModeKeysRecognized())
-AssertTrue("No mutually exclusive modes", NoMutuallyExclusiveModes())
+AssertTrue("All mode strings compatible", AllModeKeysCompatible())
 AssertTrue("Engine matches mode", EngineMatchesMode())
 AssertTrue("Silo data path matches mode", SiloDataPathMatchesMode())
 AssertTrue("Scalable setting matches mode", ScalableSettingMatchesMode())
