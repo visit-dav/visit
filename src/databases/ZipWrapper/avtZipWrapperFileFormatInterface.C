@@ -14,8 +14,19 @@
 #include <vector>
 
 #include <sys/stat.h>
+#ifdef WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#include <direct.h>
+#include <shellapi.h>
+#include <shlwapi.h>
+#include <process.h>
+#else
 #include <unistd.h>
 #include <sys/wait.h>  // for WIFEXITED and WEXITSTATUS
+#endif
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -302,6 +313,9 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
         }
         else
         {
+#ifdef WIN32
+            tmpDir = getenv("VISITUSERHOME");
+#else
             // Check a few places. /usr/tmp does not exist on Mac.
             FileFunctions::VisItStat_t s;
             static const char *possibleDirs[] = {"/usr/tmp", "/var/tmp"};
@@ -322,6 +336,7 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
             // Last resort, use HOME.
             if(!foundDir)
                 tmpDir = getenv("HOME");
+#endif
         }
     }
 
@@ -364,7 +379,7 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
 
     char procNumStr[32];
     snprintf(procNumStr, sizeof(procNumStr), "_%04d", procNum);
-    tmpDir = tmpDir + "/visitzw_" + userName + "_" +
+    tmpDir = tmpDir + VISIT_SLASH_STRING + "visitzw_" + userName + "_" +
              string(VisItInit::GetComponentName()) +
              (procCount > 1 ? string(procNumStr) : "");
     debug5 << "ZipWrapper is using \"" << tmpDir << "\" as the temporary directory" << endl;
@@ -372,7 +387,12 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     // Make the temporary directory
     // (will have different name on mdserver and engine)
     errno = 0;
+#ifdef WIN32
+    if(_mkdir(tmpDir.c_str()) != 0 && errno != EEXIST)
+#else
     if (mkdir(tmpDir.c_str(), 0777) != 0 && errno != EEXIST)
+#endif
+
     {
         static char errMsg[1024];
         snprintf(errMsg, sizeof(errMsg), "mkdir failed with errno=%d (\"%s\")",
@@ -399,7 +419,19 @@ void
 avtZipWrapperFileFormatInterface::Finalize()
 {
     errno = 0;
+#ifdef WIN32
+    // _rmdir on Windows won't remove the directory if its not empty.
+    // rd /q /s removes the entire tree quietly, but needs to be called
+    // from ShellExecute to prevent opening a console window.
+#if 1
+    char tmpcmd[1024];
+    snprintf(tmpcmd, sizeof(tmpcmd), "\"cmd.exe /C rd /q /s %s\"", tmpDir.c_str());
+    //if (int(ShellExecute(0, "open", "cmd.exe", tmpcmd, 0, SW_HIDE)) <= 32)
+#endif
+    if (_spawnl(_P_WAIT, "rmdir", "rmdir", "/q" , "/s", tmpDir.c_str(), NULL) == -1)
+#else
     if (rmdir(tmpDir.c_str()) != 0 && errno != ENOENT)
+#endif
     {
         debug5 << "Unable to remove temporary directory \"" << tmpDir << "\"" << endl;
         debug5 << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
@@ -687,6 +719,26 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     string dcmd = decompCmd;
     if (dcmd == "")
     {
+#ifdef WIN32
+        if(PathFileExists("C:\\Program Files\\7-zip\\7z.exe"))
+        {
+            dcmd = "\"C:\\Program Files\\7-zip\\7z.exe\" x -y";
+        }
+        else if(PathFileExists("C:\\Program Files (x86)\\7-zip\\7z.exe"))
+        {
+            dcmd = "\"C:\\Program Files (x86)\\7-zip\\7z.exe\" x -y";
+        }
+        else
+        {
+            // Perhaps can install 7-zip with VisIt on windows (eg installdir/7-zip).
+            // Then can perform a check here for its existence by calling
+            // GetVisItInstallationDirectory().
+
+            // For now, we want to fail out of here. 
+            EXCEPTION1(InvalidFilesException, "No Decompression command found.");
+        }
+        
+#else
         if (ext == ".gz")
             dcmd = "gunzip -f";
         else if (ext == ".bz")
@@ -695,6 +747,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
             dcmd = "bunzip2 -f";
         else if (ext == "zip")
             dcmd = "unzip -o";
+#endif
     }
 
     //
@@ -718,8 +771,12 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     while (ntries>0)
     {
         // Wait a bit.
+#ifdef WIN32
+        Sleep(1);
+#else
         struct timespec ts = {0, 1000000000/2}; // 1/2-second
         nanosleep(&ts, 0);
+#endif
 
         // Stat the target so we can monitor its size
         errno = 0;
@@ -748,6 +805,32 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         debug5 << "It looks like an existing decompression attempt has hung. But, proceeding anyway." << endl;
     }
 
+#ifdef WIN32
+    // no 'touch' command on Windows, so create the empty .lck file first
+    char tmpcmd[1024];
+    // Create full path 
+    snprintf(tmpcmd, sizeof(tmpcmd), "%s\\%s.lck",
+             tmpDir.c_str(), dcname.c_str());
+    ofstream tmpfile(tmpcmd);
+    tmpfile.close();
+
+    // don't want to call 'system' like on *nix, because it opens a window.
+    // Since there are multiple commands to be executed, create a temporary
+    // .bat file
+    snprintf(tmpcmd, sizeof(tmpcmd), "%s\\dodecompress.bat", tmpDir.c_str());
+    ofstream tp2(tmpcmd);
+    tp2 << "@echo off " << endl;
+    tp2 << "cd " << tmpDir << endl;
+    tp2 << "copy /Y " << compressedName << " . >nul 2>&1" << endl;
+    tp2 << dcmd << " " << bname << " >nul 2>&1" << endl;
+    tp2 << "del " << dcname << ".lck >nul 2>&1" << endl;
+    tp2.close();
+   
+    if (_spawnl(_P_WAIT, tmpcmd, tmpcmd, NULL) == -1)
+    {
+        EXCEPTION1(InvalidFilesException, "Decompression command exited abnormally");
+    }
+#else
     char tmpcmd[1024];
     snprintf(tmpcmd, sizeof(tmpcmd), "cd %s ; cp %s . ; touch %s.lck ; %s %s ; rm -f %s.lck",
         tmpDir.c_str(), compressedName.c_str(), dcname.c_str(), dcmd.c_str(), bname, dcname.c_str());
@@ -767,8 +850,9 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     {
         EXCEPTION1(InvalidFilesException, "Decompression command exited abnormally");
     }
+#endif
 
-    string newfname = tmpDir + "/" + dcname;
+    string newfname = tmpDir + VISIT_SLASH_STRING + dcname;
     const char *tmpstr = newfname.c_str();
 
     vector<string> dummyPlugins;
