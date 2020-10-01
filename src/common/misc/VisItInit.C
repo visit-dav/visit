@@ -13,6 +13,7 @@
 #if defined(_WIN32)
 #include <process.h>
 #include <winsock2.h>
+#include <winuser.h>
 #else
 #include <ctype.h>
 #include <unistd.h>
@@ -214,6 +215,9 @@ NewHandler(void)
 //    Eric Brugger, Tue Jan 29 09:09:44 PST 2019
 //    I modified the method to work with Git.
 //
+//    Kathleen Biagas, Thu Oct 1, 2020 
+//    Use MessageBox on Windows (when built as a winapp), for git revision.
+//
 // ****************************************************************************
 
 void
@@ -341,10 +345,16 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
         }
         else if (strcmp("-git_revision",  argv[i]) == 0)
         {
+            std::string msg;
             if(visitcommon::GITVersion() == "")
-                cerr << "GIT version is unknown!" << endl;
+                msg = "GIT version is unknown!";
             else
-                cerr << "Built from version " << visitcommon::GITVersion() << endl;
+                msg = "Built from version "  +  visitcommon::GITVersion();
+#if defined(WIN32) && defined(VISIT_WINDOWS_APPLICATION)
+            MessageBox(NULL, LPCSTR(msg.c_str()), LPCSTR(""), MB_ICONINFORMATION | MB_OK);
+#else
+            cerr << msg << endl;
+#endif
             exit(0); // HOOKS_IGNORE
         }
     }
