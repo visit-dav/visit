@@ -24,18 +24,11 @@ def GetModeKeysFromClArgs():
     return ('serial',)
 
 #
-# Ensure all mode keys are known
-#
-def AllModeKeysRecognized():
-    for m in activeModeKeys:
-        if m not in knownModeKeys:
-            return False
-    return True
-
-#
 # Ensure all mode keys are compatible
 #
 def AllModeKeysCompatible():
+    if 'serial' in activeModeKeys and 'parallel' in activeModeKeys:
+        return False
     if 'pdb' in activeModeKeys and 'hdf5' in activeModeKeys:
         return False
     if 'icet' in activeModeKeys and 'parallel' not in activeModeKeys:
@@ -102,9 +95,7 @@ def AllowdynamicClargMatchesMode():
 # need to interrogate their contents in the above functions.
 #
 activeModeKeys = GetModeKeysFromClArgs()
-knownModeKeys = json.loads(TestEnv.params["mode_keys"])
 
-AssertTrue("All mode strings recognized", AllModeKeysRecognized())
 AssertTrue("All mode strings compatible", AllModeKeysCompatible())
 AssertTrue("Engine matches mode", EngineMatchesMode())
 AssertTrue("Silo data path matches mode", SiloDataPathMatchesMode())

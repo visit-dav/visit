@@ -254,7 +254,6 @@ def launch_visit_test(args):
     tparams["sessionfiles"]   = opts["sessionfiles"]
     tparams["cmake_cmd"]      = opts["cmake_cmd"]
     tparams["clargs"]         = json.dumps(sys.argv)
-    tparams["mode_keys"]      = json.dumps(known_mode_keys())
 
     exe_dir, exe_file = os.path.split(tparams["visit_bin"])
     if sys.platform.startswith("win"):
@@ -604,10 +603,10 @@ def parse_args():
     parser.add_option("-m",
                       "--modes",
                       default=defs["modes"],
-                      help="specify mode in which to run tests "
-                           "choose from %s "
-                           "and comma-separated combinations such as "
-                           "scalable,parallel [default serial]"%known_mode_keys())
+                      help="specify mode keys used to run tests "
+                           "choose from %s and comma-separated combinations such as "
+                           "scalable,parallel. Any unrecognized mode keys are passed "
+                           "through uninterpreted. [default serial]"%known_mode_keys())
     parser.add_option("-c",
                       "--classes",
                       default=defs["classes"],
