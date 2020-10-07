@@ -763,7 +763,7 @@ sv_SampleCellOpacityVariable_ERT(
 //     Replaced oneSamplesContribution with a standard opacity correction. 
 //
 //     Alister Maguire, Wed Oct  7 16:30:23 PDT 2020
-//     Updated the opacity correction to use sample distance reference.
+//     Updated the opacity correction to use a sample distance reference.
 //
 // ****************************************************************************
 
