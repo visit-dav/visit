@@ -750,6 +750,9 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
 //    Alister Maguire, Mon Jun  3 15:40:31 PDT 2019
 //    Setting the view distance in the compositeRF for opacity correction. 
 //
+//    Alister Maguire, Wed Oct  7 16:30:23 PDT 2020
+//    Removed the calls to SetDistance as they are no longer needed.
+//
 // ****************************************************************************
 
 avtImage_p
