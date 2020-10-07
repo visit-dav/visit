@@ -1405,10 +1405,6 @@ QvisHelpWindow::displayHome()
 //   Kathleen Bonnell, Thu Apr  8 17:20:52 PST 2010
 //   Convert file to url so it will work on windows.
 //
-//   Alister Maguire, Thu Aug 13 16:50:36 PDT 2020
-//   Updated so that the VisIt manuals are rendered in the user's default
-//   web browser.
-//
 // ****************************************************************************
 
 bool
@@ -1421,24 +1417,7 @@ QvisHelpWindow::displayPage(const QString &page, bool reload)
         QString file(CompleteFileName(page));
         if(QFile(file).exists())
         {
-            //
-            // We open the VisIt manuals using the user's default browser. All
-            // other pages are rendered inside of the widget using Qt.
-            //
-            if (page == manualPath)
-            {
-                helpBrowser->clear();
-                if (!QDesktopServices::openUrl(QUrl::fromLocalFile(file)))
-                {
-                    Error(tr("The VisIt Manuals were unable to be "
-                        "opened."));
-                }
-            }
-            else
-            {
-                helpBrowser->setSource(QUrl::fromLocalFile(file));
-            }
-
+            helpBrowser->setSource(QUrl::fromLocalFile(file));
             helpFile = page;
             retval = true;
         }
