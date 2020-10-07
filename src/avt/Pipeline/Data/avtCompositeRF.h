@@ -51,6 +51,9 @@ struct    RGBA;
 //    Aliter Maguire, Mon Jun  3 15:40:31 PDT 2019
 //    Added viewDistance with setter. 
 //
+//    Alister Maguire, Wed Oct  7 16:30:23 PDT 2020
+//    Removed viewDistance.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCompositeRF : public avtRayFunction

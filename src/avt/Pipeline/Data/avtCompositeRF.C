@@ -144,6 +144,9 @@ avtCompositeRF::~avtCompositeRF()
 //    method. This was to resolve bug #3082. Also renamed local rgb 
 //    variables to sampleRGB to avoid confusion with the input rgb variable. 
 //
+//    Alister Maguire, Wed Oct  7 16:30:23 PDT 2020
+//    Updated the opacity correction method to use a sample distance reference.
+//
 // ****************************************************************************
 
 void
