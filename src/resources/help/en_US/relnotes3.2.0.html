@@ -55,6 +55,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>A reader was added to support AVS ucd file format.</li>
   <li>A reader was added to support the FMS file format.</li>
   <li>The MFEM reader was modified so it provides VisIt with original cell numbers that allow VisIt to successfully eliminate mesh lines that were not part of the original high order mesh.</li>
+  <li>The Rect reader was enabled as an optional plugin on Windows.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -104,6 +105,11 @@ The --debug flag was removed. The default build-mode is "Release". If "Debug" is
 <p><b><font size="4">Changes for VisIt developers in version 3.2</font></b></p>
 <ul>
   <li>Added support for link checking in Sphinx documentation.</li>
+  <li>Add ability to pass diff tolerances in Test()/TestText() testing methods.</li>
+  <li>Updated dev docs on fuzzy matching and thresholds for testing.</li>
+  <li>Support <code>pdb</code> as a mode string for testing.</li>
+  <li>Removed emptydomain cases from skip list.</li>
+  <li>Add new assertion tests to ensure tests are running in mode specified by -m/--mode= command-line argument.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

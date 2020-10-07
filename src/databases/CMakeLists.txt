@@ -185,6 +185,9 @@
 #    Brad Whitlock, Wed Jul 22 17:47:11 PDT 2020
 #    I added the FMS reader.
 #
+#    Kathleen Biagas, Mon Sep 14 2020
+#    Enable Rect as an optional plugin on Windows.
+#
 #****************************************************************************
 
 IF(NOT WIN32)
@@ -364,6 +367,11 @@ CHECK_THIRDPARTY_SATISFIED(MFEM    MFEM)
 
 CHECK_THIRDPARTY_SATISFIED(OpenEXR OPENEXR)
 
+if(VISIT_PARADIS)
+    CHECK_THIRDPARTY_SATISFIED(paraDIS BOOST)
+    CHECK_THIRDPARTY_SATISFIED(paraDIS_tecplot BOOST)
+endif()
+
 # special cases for windows
 IF(WIN32)
     CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
@@ -373,10 +381,6 @@ ELSE()
     ELSE()
         CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
     ENDIF()
-    if(VISIT_PARADIS)
-        CHECK_THIRDPARTY_SATISFIED(paraDIS BOOST)
-        CHECK_THIRDPARTY_SATISFIED(paraDIS_tecplot BOOST)
-    endif()
 ENDIF()
 
 # Save the list of all library dirs and libs so the engine can use it
@@ -474,6 +478,11 @@ ELSE()
     ENDIF()
 ENDIF(TARGET vtkIOEnSight)
 
+SET(OPTIONAL_DATABASE_PLUGINS
+    PICS_Tester
+    Rect
+   )
+
 IF (NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS
         HDFS
@@ -482,15 +491,13 @@ IF (NOT WIN32)
         Vis5D
         ZipWrapper
     )
-    SET(OPTIONAL_DATABASE_PLUGINS
+    list(APPEND OPTIONAL_DATABASE_PLUGINS
         Hex
         MRTest
-        PICS_Tester
-        Rect
         VLI
     )
 ELSE(NOT WIN32)
-    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;ZipWrapper;Hex;MRTest;PICS_Tester;Rect;VLI" "not currently buildable on Windows")
+    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;ZipWrapper;Hex;MRTest;VLI" "not currently buildable on Windows")
 ENDIF (NOT WIN32)
 
 

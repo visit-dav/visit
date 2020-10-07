@@ -8,6 +8,11 @@
 #  Programmer: Cyrus Harrison
 #  Date:       Fri May 19 10:04:46 PDT 2017
 #
+#  Modifications:
+#    Kathleen Biagas, Tue Sep 22 13:24:42 PDT 2020
+#    Use custom color for curves, as the color-cycling is non-deterministic
+#    across runs.
+#
 # ----------------------------------------------------------------------------
 
 from visit_utils import *
@@ -69,9 +74,17 @@ def run_queries(s, numSteps, qname = "3D Surface area"):
     query_sa_stepwise(s, numSteps, qname)
     query_sa_q_over_time(s, numSteps, qname)
     SetActiveWindow(2)
+    ca1 = CurveAttributes(1)
+    ca1.curveColorSource = ca1.Custom
+    ca1.curveColor=(255, 0, 0)
+    SetPlotOptions(ca1)
     OpenDatabase("_out_query_sa_stepwise.ult")
     AddPlot("Curve","sa vs cycle")
     DrawPlots()
+    ca2 = CurveAttributes(1)
+    ca2.curveColorSource = ca2.Custom
+    ca2.curveColor=(0, 255, 0)
+    SetPlotOptions(ca2)
     
     
 def open_db():
