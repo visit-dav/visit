@@ -26,6 +26,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Bugs fixed in version 3.1.4</font></b></p>
 <ul>
   <li>Fixed display of -help text on Windows.</li>
+  <li>Fixed a bug with the Hohlraum Flux query, where a ray would not be traced properly resulting in a compute engine crash. Those cases are now deteected and the ray is ignored. Since this happens in extremely rare situations, this does not have a significant effect on the result.</li>
 </ul>
 
 <a name="Enhancements"></a>
