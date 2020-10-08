@@ -12,7 +12,7 @@
 #
 #  Modifications:
 #    Kathleen Biagas, Tue Sep 29 11:01:37 PDT 2020
-#    Turn of IC warnings.
+#    Turn off IC warnings.
 # ----------------------------------------------------------------------------
 
 OpenDatabase(silo_data_path("noise.silo"))
