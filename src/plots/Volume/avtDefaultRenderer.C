@@ -13,13 +13,11 @@
 #include <vtkRenderer.h>
 #include <vtkVolumeProperty.h>
 #include <vtkImageData.h>
-#include <vtkSmartVolumeMapper.h>
 
 #include <VolumeAttributes.h>
 #include <avtCallback.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
-
 
 #ifndef NO_DATA_VALUE
 #define NO_DATA_VALUE -1e+37
@@ -368,6 +366,11 @@ avtDefaultRenderer::Render(
 
         resetColorMap = false;
         oldAtts       = props.atts;
+
+        //mapper->LockSampleDistanceToInputSpacingOn();//FIXME
+        mapper->SetInteractiveAdjustSampleDistances(false);//FIXME
+        mapper->SetAutoAdjustSampleDistances(false);//FIXME
+        mapper->SetSampleDistance(10.0);//FIXME
 
         curVolume->SetMapper(mapper);
         curVolume->SetProperty(volumeProp);
