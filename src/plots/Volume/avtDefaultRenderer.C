@@ -20,7 +20,6 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
-
 #ifndef NO_DATA_VALUE
 #define NO_DATA_VALUE -1e+37
 #endif
