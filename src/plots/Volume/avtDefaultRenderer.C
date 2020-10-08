@@ -13,7 +13,6 @@
 #include <vtkRenderer.h>
 #include <vtkVolumeProperty.h>
 #include <vtkImageData.h>
-#include <vtkSmartVolumeMapper.h>
 
 #include <VolumeAttributes.h>
 #include <avtCallback.h>
@@ -372,6 +371,11 @@ avtDefaultRenderer::Render(
 
         resetColorMap = false;
         oldAtts       = props.atts;
+
+        //mapper->LockSampleDistanceToInputSpacingOn();//FIXME
+        mapper->SetInteractiveAdjustSampleDistances(false);//FIXME
+        mapper->SetAutoAdjustSampleDistances(false);//FIXME
+        mapper->SetSampleDistance(10.0);//FIXME
 
         curVolume->SetMapper(mapper);
         curVolume->SetProperty(volumeProp);
