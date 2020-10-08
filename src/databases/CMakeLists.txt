@@ -367,6 +367,11 @@ CHECK_THIRDPARTY_SATISFIED(MFEM    MFEM)
 
 CHECK_THIRDPARTY_SATISFIED(OpenEXR OPENEXR)
 
+if(VISIT_PARADIS)
+    CHECK_THIRDPARTY_SATISFIED(paraDIS BOOST)
+    CHECK_THIRDPARTY_SATISFIED(paraDIS_tecplot BOOST)
+endif()
+
 # special cases for windows
 IF(WIN32)
     CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
@@ -376,10 +381,6 @@ ELSE()
     ELSE()
         CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
     ENDIF()
-    if(VISIT_PARADIS)
-        CHECK_THIRDPARTY_SATISFIED(paraDIS BOOST)
-        CHECK_THIRDPARTY_SATISFIED(paraDIS_tecplot BOOST)
-    endif()
 ENDIF()
 
 # Save the list of all library dirs and libs so the engine can use it
@@ -478,6 +479,7 @@ ELSE()
 ENDIF(TARGET vtkIOEnSight)
 
 SET(OPTIONAL_DATABASE_PLUGINS
+    PICS_Tester
     Rect
    )
 
@@ -492,11 +494,10 @@ IF (NOT WIN32)
     list(APPEND OPTIONAL_DATABASE_PLUGINS
         Hex
         MRTest
-        PICS_Tester
         VLI
     )
 ELSE(NOT WIN32)
-    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;ZipWrapper;Hex;MRTest;PICS_Tester;VLI" "not currently buildable on Windows")
+    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;ZipWrapper;Hex;MRTest;VLI" "not currently buildable on Windows")
 ENDIF (NOT WIN32)
 
 

@@ -1,8 +1,8 @@
 #/usr/workspace/visit/visit/thirdparty_shared/3.1.0/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake
 ##
-## ./build_visit3_1_0 generated host.cmake
-## created: Thu Jan  9 12:20:28 PST 2020
-## system: Linux sierra4368 4.14.0-115.10.1.1chaos.ch6a.ppc64le #1 SMP Thu Aug 8 15:51:58 PDT 2019 ppc64le ppc64le ppc64le GNU/Linux
+## ./build_visit3_1_3 generated host.cmake
+## created: Wed Sep 23 15:59:02 PDT 2020
+## system: Linux sierra4360 4.14.0-115.21.2.1chaos.ch6a.ppc64le #1 SMP Fri May 22 11:01:06 PDT 2020 ppc64le ppc64le ppc64le GNU/Linux
 ## by: brugger
 
 ##
@@ -184,7 +184,7 @@ VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP ${VISIT_CONDUIT_LIBDEP} ${VISITHOME}/zlib
 ##
 ## Mili
 ##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/15.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/19.2/${VISITARCH})
 
 ##
 ## MOAB 

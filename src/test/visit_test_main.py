@@ -2725,14 +2725,12 @@ def InitTestEnv():
     SetDefaultAnnotationAttributes(annot)
     SetAnnotationAttributes(annot)
     # set scalable rendering mode if desired
+    ra = GetRenderingAttributes()
     if TestEnv.params["scalable"]:
-        ra = GetRenderingAttributes()
         ra.scalableActivationMode = ra.Always
-        SetRenderingAttributes(ra)
     else:
-        ra = GetRenderingAttributes()
         ra.scalableActivationMode = ra.Never
-        SetRenderingAttributes(ra)
+    SetRenderingAttributes(ra)
 
     # If we passed a directory to use for reading host profiles then let's 
     # use the host profiles to launch the engine (since it has settings we
