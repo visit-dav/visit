@@ -175,6 +175,10 @@ avtOSPRayVoxelExtractor::Extract(vtkRectilinearGrid *rgrid,
 //
 //  Modifications:
 //
+//    Alister Maguire, Fri Sep 11 13:02:48 PDT 2020
+//    I've updated the ghost zone bounding box calculation so that it
+//    excludes the entirety of all ghost zones.
+//
 // ****************************************************************************
 
 void
@@ -480,15 +484,18 @@ avtOSPRayVoxelExtractor::ExtractWorldSpaceGridOSPRay(vtkRectilinearGrid *rgrid,
             }
             // compute boundingbox and clipping plane for ospray
             if (ncell_arrays > 0) {
-                volumeBBox[0] = ghost_bound[0]?(X[0]+X[1])/2.:volumePBox[0];
-                volumeBBox[1] = ghost_bound[1]?(Y[0]+Y[1])/2.:volumePBox[1];
-                volumeBBox[2] = ghost_bound[2]?(Z[0]+Z[1])/2.:volumePBox[2];
-                volumeBBox[3] = 
-                    ghost_bound[3] ? (X[nX]+X[nX-1])/2. : volumePBox[3];
-                volumeBBox[4] = 
-                    ghost_bound[4] ? (Y[nY]+Y[nY-1])/2. : volumePBox[4];
-                volumeBBox[5] = 
-                    ghost_bound[5] ? (Z[nZ]+Z[nZ-1])/2. : volumePBox[5];
+                //
+                // The idea here is to create a bounding box that excludes
+                // ghost zones. The bounding box will later be used by OSPRay
+                // to determine clipping bounds, and the portion of the volume
+                // that contains ghosts will be clipped away.
+                //
+                volumeBBox[0] = ghost_bound[0] ? (X[1]): volumePBox[0];
+                volumeBBox[1] = ghost_bound[1] ? (Y[1]) : volumePBox[1];
+                volumeBBox[2] = ghost_bound[2] ? (Z[1]) : volumePBox[2];
+                volumeBBox[3] = ghost_bound[3] ? (X[nX-1]): volumePBox[3];
+                volumeBBox[4] = ghost_bound[4] ? (Y[nY-1]): volumePBox[4];
+                volumeBBox[5] = ghost_bound[5] ? (Z[nZ-1]): volumePBox[5];
             }
             else {
                 volumeBBox[0] = ghost_bound[0] ? X[1] : volumePBox[0];
