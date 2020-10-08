@@ -20,7 +20,6 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
-
 #ifndef NO_DATA_VALUE
 #define NO_DATA_VALUE -1e+37
 #endif
@@ -300,6 +299,11 @@ avtDefaultRenderer::Render(
         {
             int rgbIdx  = 4 * i;
             float curOp = rgba[rgbIdx + 3] * atten; 
+            //float curOp = rgba[rgbIdx + 3] / 255.f;
+            ////curOp = 0.999999965;
+            ////curOp = 0.9999999900;
+            //curOp = 0.9999999700;
+            //cerr << "CUR OPAC: " << curOp << endl;//FIXME
             transFunc->AddRGBPoint(i, rgba[rgbIdx] / 255.f, 
                 rgba[rgbIdx + 1] / 255.f, 
                 rgba[rgbIdx + 2] / 255.f);
