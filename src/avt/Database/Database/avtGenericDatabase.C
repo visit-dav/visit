@@ -3370,6 +3370,10 @@ avtGenericDatabase::GetQOTDataset(int domain,
       case AVT_ARRAY_VAR:
         rv = GetQOTArrayVarDataset(varname, element, domain, spec);
         break;
+
+      //FIXME: let's handle the AVT_MESH case so that we can compute verdict
+      // (and other) metrics .
+
       //
       // Intentional fall-throughs. These cases are invalid for the query. 
       //
