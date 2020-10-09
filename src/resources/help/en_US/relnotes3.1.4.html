@@ -27,6 +27,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug that resulted in domain boundaries being visible when using the OSPRay volume renderer.</li>
   <li>Fixed display of -help text on Windows.</li>
   <li>Fixed a bug that caused incorrect opacity attenuation when ray casting datasets within very large or very small ranges.</li>
+  <li>Fixed a bug with the Hohlraum Flux query, where a ray would not be traced properly resulting in a compute engine crash. Those cases are now detected and the ray is ignored. Since this happens in extremely rare situations, this does not have a significant effect on the result.</li>
 </ul>
 
 <a name="Enhancements"></a>
