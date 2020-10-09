@@ -402,6 +402,8 @@ class JobSubmitter_prun(JobSubmitter):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Fri Oct  9 13:58:21 PDT 2020
+#   Add logic to pass the bank to srun.
 #
 ###############################################################################
 
@@ -424,6 +426,8 @@ class JobSubmitter_srun(JobSubmitter):
             parcmd = parcmd + ["-J", self.parallel.name]
         if self.parallel.partition != None:
             parcmd = parcmd + ["-p", self.parallel.partition]
+        if self.parallel.bank != None:
+            parcmd = parcmd + ["-A", self.parallel.bank]
         if self.parallel.time != None:
             parcmd = parcmd + ["-t", self.parallel.time]
         parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
