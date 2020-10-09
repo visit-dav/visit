@@ -85,7 +85,7 @@ avtVerdictExpression::avtVerdictExpression()
                                     "release of VisIt.");
     #endif
 
-    canApplyToDirectDatabaseQOT = false;
+    canApplyToDirectDatabaseQOT = true;
 }
 
 
