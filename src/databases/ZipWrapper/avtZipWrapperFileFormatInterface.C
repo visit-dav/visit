@@ -35,6 +35,7 @@
 #include <DatabasePluginManager.h>
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
+#include <Environment.h>
 #include <ImproperUseException.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
@@ -307,16 +308,16 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     if (tmpDir == "$TMPDIR" && procNum == 0)
     {
 #ifdef WIN32
-        if (getenv("TMP"))
-            tmpDir = getenv("TMP");
-        else if (getenv("TEMP"))
-            tmpDir = getenv("TEMP");
+        if (!Environment::get("TMP").empty())
+            tmpDir = Environment::get("TMP");
+        else if (!Environment::get("TEMP").empty())
+            tmpDir = Environment::get("TEMP");
         else
-            tmpDir = getenv("VISITUSERHOME");
+            tmpDir = Environment::get("VISITUSERHOME");
 #else
-        if (getenv("TMPDIR"))
+        if (!Environment::get("TMPDIR").empty())
         {
-            tmpDir = getenv("TMPDIR");
+            tmpDir = Environment::get("TMPDIR");
         }
         else
         {
@@ -339,7 +340,7 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
             }
             // Last resort, use HOME.
             if(!foundDir)
-                tmpDir = getenv("HOME");
+                tmpDir = Environment::get("HOME");
         }
 #endif
     }
@@ -347,13 +348,13 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     // Decide on user name moniker
     if (userName == "$USER" && procNum == 0)
     {
-        if (getenv("USER"))
+        if (!Environment::get("USER").empty())
         {
-            userName = getenv("USER");
+            userName = Environment::get("USER");
         }
-        else if (getenv("USERNAME"))
+        else if (!Environment::get("USERNAME").empty())
         {
-            userName = getenv("USERNAME");
+            userName = Environment::get("USERNAME");
         }
         else
         {
