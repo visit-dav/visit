@@ -618,7 +618,7 @@ avtHohlraumFluxQuery::IntegrateLine(int oneSide, int otherSide,
     }
     else
     {
-        debug5 << "Throwing away line." << endl;
+        debug5 << "avtHohlraumFluxQuery::IntegrateLine: Ignoring degenerate line." << endl;
     }
 }
 
