@@ -369,13 +369,15 @@ avtDefaultRenderer::Render(
             volumeProp->SetInterpolationTypeToNearest();
         }
 
+
         resetColorMap = false;
         oldAtts       = props.atts;
 
         //mapper->LockSampleDistanceToInputSpacingOn();//FIXME
         mapper->SetInteractiveAdjustSampleDistances(false);//FIXME
         mapper->SetAutoAdjustSampleDistances(false);//FIXME
-        mapper->SetSampleDistance(10.0);//FIXME
+        //mapper->SetSampleDistance(10.0);//FIXME
+        volumeProp->SetScalarOpacityUnitDistance(0.0001);//FIXME
 
         curVolume->SetMapper(mapper);
         curVolume->SetProperty(volumeProp);
