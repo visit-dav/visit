@@ -56,11 +56,15 @@
 //    Cyrus Harrison, Wed Aug  8 11:19:10 PDT 2007
 //    Add support for multiple gradient algorithms.
 //
+//    Alister Maguire, Fri Oct  9 11:46:22 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtGradientExpression::avtGradientExpression()
 {
      gradientAlgo = SAMPLE;
+     canApplyToDirectDatabaseQOT = false;
 }
 
 
