@@ -20,7 +20,6 @@
 #endif
 #include <windows.h>
 #include <direct.h>
-#include <shellapi.h>
 #include <shlwapi.h>
 #include <process.h>
 #else
