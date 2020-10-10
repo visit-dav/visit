@@ -112,6 +112,10 @@ class JobSubmitter(object):
 #   Call the new PPNArgument function to get the correct MPI argument for 
 #   the "process per node" flag.
 #
+#   Eric Brugger, Fri Oct  9 15:41:37 PDT 2020
+#   Modify the routine to use our mpirun if we are running an installed
+#   version and it exists.
+#
 ###############################################################################
 
 class JobSubmitter_mpirun(JobSubmitter):
@@ -119,6 +123,12 @@ class JobSubmitter_mpirun(JobSubmitter):
         super(JobSubmitter_mpirun,self).__init__(launcher)
 
     def Executable(self):
+        # Use our mpirun if we are running an installed version and it
+        # exists.
+        if self.launcher.generalArgs.dv == 0:
+            mpirun = os.path.join(GETENV("VISITARCHHOME"),"bin","mpirun")
+            if os.path.exists(mpirun):
+                return [mpirun]
         return ["mpirun"]
 
     def CreateCommand(self, args, debugger):
@@ -154,7 +164,7 @@ class JobSubmitter_mpirun(JobSubmitter):
 #   mpiexec from the VisIt architecture/bin directory, if it exists.
 #
 #   Cyrus Harrison, Fri Feb  1 17:02:02 PST 2013
-#   Use mpiexe on OSX 10.6 and beyond.
+#   Use mpiexec on OSX 10.6 and beyond.
 #
 #   David Camp, Tue Mar 11 10:17:48 PDT 2014
 #   Added the -ppn (process per node) option to the mpiexec.
@@ -172,6 +182,10 @@ class JobSubmitter_mpirun(JobSubmitter):
 #   Call the new PPNArgument function to get the correct MPI argument for 
 #   the "process per node" flag.
 #
+#   Eric Brugger, Fri Oct  9 15:41:37 PDT 2020
+#   Modify the routine to use our mpiexec if we are running an installed
+#   version and it exists.
+#
 ################################################################################
 
 class JobSubmitter_mpiexec(JobSubmitter):
@@ -179,11 +193,9 @@ class JobSubmitter_mpiexec(JobSubmitter):
         super(JobSubmitter_mpiexec,self).__init__(launcher)
 
     def Executable(self):
-        # If we're running on MacOS X 10.7 or later, use our own mpich
-        # that we bundle with VisIt when we're running an installed version
-        # of the code.
-        if self.launcher.os == "darwin" and self.launcher.osver >= 10 and \
-           self.launcher.generalArgs.dv == 0:
+        # Use our mpiexec if we are running an installed version and it
+        # exists.
+        if self.launcher.generalArgs.dv == 0:
             mpiexec = os.path.join(GETENV("VISITARCHHOME"),"bin","mpiexec")
             if os.path.exists(mpiexec):
                 return [mpiexec]
