@@ -49,7 +49,8 @@ avtDefaultRenderer::avtDefaultRenderer()
     imageToRender    = NULL;
 
     volumeProp       = vtkVolumeProperty::New();
-    mapper           = vtkSmartVolumeMapper::New();
+    //mapper           = vtkSmartVolumeMapper::New();
+    mapper           = vtkGPUVolumeRayCastMapper::New();
     curVolume        = vtkVolume::New();
     transFunc        = vtkColorTransferFunction::New();
     opacity          = vtkPiecewiseFunction::New();
@@ -373,11 +374,12 @@ avtDefaultRenderer::Render(
         resetColorMap = false;
         oldAtts       = props.atts;
 
-        //mapper->LockSampleDistanceToInputSpacingOn();//FIXME
-        mapper->SetInteractiveAdjustSampleDistances(false);//FIXME
+        mapper->LockSampleDistanceToInputSpacingOff();//FIXME
+        //mapper->SetInteractiveAdjustSampleDistances(false);//FIXME
         mapper->SetAutoAdjustSampleDistances(false);//FIXME
-        //mapper->SetSampleDistance(10.0);//FIXME
-        volumeProp->SetScalarOpacityUnitDistance(0.0001);//FIXME
+        //mapper->SetSampleDistance(0.2);//FIXME
+        mapper->SetImageSampleDistance(2.0);//FIXME
+        //volumeProp->SetScalarOpacityUnitDistance(1.0);//FIXME
 
         curVolume->SetMapper(mapper);
         curVolume->SetProperty(volumeProp);
