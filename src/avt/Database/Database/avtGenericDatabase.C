@@ -3364,15 +3364,26 @@ avtGenericDatabase::GetQOTDataset(int domain,
         rv = GetQOTArrayVarDataset(varname, element, domain, spec);
         break;
 
-      //FIXME: let's handle the AVT_MESH case so that we can compute verdict
-      // (and other) metrics .
+      //FIXME: test this
+      case AVT_MESH:
+      {
+        int tsRange[2];
+        int tsStride = 1;
+
+        tsRange[0] = startTime;
+        tsRange[1] = QOTAtts->GetEndTime();
+        tsStride   = QOTAtts->GetStride();
+
+        rv = Interface->GetQOTCoordMesh(QOTAtts, element, domain,
+            tsRange, tsStride, varname);
+        break;
+      }
 
       //
       // Intentional fall-throughs. These cases are invalid for the query. 
       //
       case AVT_LABEL_VAR:
       case AVT_MATERIAL:
-      case AVT_MESH:
       case AVT_CURVE:
       case AVT_MATSPECIES:
       default:
@@ -3561,7 +3572,7 @@ avtGenericDatabase::GetQOTScalarVarDataset(const char *varname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, 
+    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts, 
         domain, tsRange, tsStride);
 
     if (mesh == NULL)
@@ -3640,7 +3651,7 @@ avtGenericDatabase::GetQOTVectorVarDataset(const char *varname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, 
+    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts, 
         domain, tsRange, tsStride);
 
     if (mesh == NULL)
@@ -3727,7 +3738,7 @@ avtGenericDatabase::GetQOTArrayVarDataset(const char *varname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, 
+    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts, 
         domain, tsRange, tsStride);
 
     if (mesh == NULL)
@@ -3797,7 +3808,7 @@ avtGenericDatabase::GetQOTTensorVarDataset(const char *varname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, 
+    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts, 
         domain, tsRange, tsStride);
 
     if (mesh == NULL)
@@ -3868,7 +3879,7 @@ avtGenericDatabase::GetQOTSymmetricTensorVarDataset(const char *varname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, 
+    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts, 
         domain, tsRange, tsStride);
 
     if (mesh == NULL)
