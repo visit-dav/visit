@@ -103,7 +103,7 @@ def FilesPresent(files):
 
 
 #
-# Removes all files ending in .silo or .visit from the current directory
+# Removes all files ending in .silo or .visit from the run directory
 # to ensure that there are no such files left over from a failed test.
 #
 def RemoveAllSiloAndVisItFiles():
