@@ -466,6 +466,7 @@ lata
 volimage
 unv
 ${XDBPLUGIN}
+ZipWrapper
 )
 
 IF(TARGET vtkIOEnSight)
@@ -489,7 +490,6 @@ IF (NOT WIN32)
         STAR
         TCGA
         Vis5D
-        ZipWrapper
     )
     list(APPEND OPTIONAL_DATABASE_PLUGINS
         Hex
@@ -497,7 +497,7 @@ IF (NOT WIN32)
         VLI
     )
 ELSE(NOT WIN32)
-    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;ZipWrapper;Hex;MRTest;VLI" "not currently buildable on Windows")
+    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;Hex;MRTest;VLI" "not currently buildable on Windows")
 ENDIF (NOT WIN32)
 
 

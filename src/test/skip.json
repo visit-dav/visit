@@ -2,7 +2,6 @@
  {"mode":"serial","tests":[
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
-                    {"category":"databases","file":"zipwrapper.py"},
                     {"category":"hybrid","file":"cinema-c.py"},
                     {"category":"hybrid","file":"clonecopy.py"},
                     {"category":"hybrid","file":"ddf_vs_dbinning.py"},
