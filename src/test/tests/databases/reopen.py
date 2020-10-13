@@ -82,7 +82,7 @@ def TestLength(testname):
     TestText(testname, testString)
 
 #
-# Returns whether all files in the list are in the current directory.
+# Returns whether all files in the list are in the run directory.
 #
 def FilesPresent(files):
     currentFileList = os.listdir(TestEnv.params["run_dir"])
