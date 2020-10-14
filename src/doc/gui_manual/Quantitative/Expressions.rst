@@ -1834,7 +1834,7 @@ Enumerate Function: ``enumerate()`` : ``enumerate(<Int-Scalar>,<[Int-List]>)``
 
 .. _Map_Expression_Function:
 
-Map Function: ``map()`` : ``map(<Scalar>,<[Input-Value-List]>,<[Output-Value-List]>)``
+Map Function: ``map()`` : ``map(<Scalar>,<[Input-Value-List]>,<[Output-Value-List]>, fill_value)``
     A more general form of :ref:`enumerate() <Enumerate_Expression_Function>`
     which supports non-integer input *scalar* variables and input and output
     maps which are not required to include all values in the input *scalar*
@@ -1842,7 +1842,8 @@ Map Function: ``map()`` : ``map(<Scalar>,<[Input-Value-List]>,<[Output-Value-Lis
     the same number of entries. A value in the input *scalar* variable that
     matches the *ith* entry in the ``[Input-Value-List]`` is mapped to the new
     value at the *ith* entry in the ``[Output-Value-List]``. Values that do not
-    match any entry in the ``[Input-Value-List]`` are mapped to ``-1``.
+    match any entry in the ``[Input-Value-List]`` are mapped to ``fill_value``,
+    which is ``-1`` by default.
 
 .. _Resample_Expression_Function:
 
