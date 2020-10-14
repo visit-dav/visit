@@ -865,8 +865,6 @@ VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
 VISIT_3RDPARTY_VAR(CONDUIT_DIR   "Path containing the Conduit library's include and lib")
 VISIT_3RDPARTY_DEP(CONDUIT_LIBDEP "Conduit library dependencies")
 VISIT_3RDPARTY_VAR(DAMARIS_DIR   "Path containing the Damaris library's include and lib")
-VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the FastBit library's include and lib")
-VISIT_3RDPARTY_VAR(FASTQUERY_DIR   "Path containing the FastQuery library's include and lib")
 VISIT_3RDPARTY_VAR(FMS_DIR       "Path containing the FMS library's include and lib")
 VISIT_3RDPARTY_DEP(FMS_INCDEP    "FMS include dependencies")
 VISIT_3RDPARTY_DEP(FMS_LIBDEP    "FMS library dependencies")
@@ -1331,12 +1329,6 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure Conduit support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
-
-    # Configure FastBit support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastBit.cmake)
-
-    # Configure FastQuery support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastQuery.cmake)
 
     # Configure FMS support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFMS.cmake)

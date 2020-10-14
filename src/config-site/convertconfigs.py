@@ -132,8 +132,6 @@ def translate_section(f, section):
         f.write("SET(CGNS_DIR %s)\n" % translate_vars(section["DEFAULT_CGNS_LIB"]))
     elif "DEFAULT_EXODUS_LIBRARY" in keys:
         f.write("SET(EXODUSII_DIR %s)\n" % translate_vars(section["DEFAULT_EXODUS_LIBRARY"]))
-    elif "DEFAULT_FASTBIT_LIB" in keys:
-        f.write("SET(FASTBIT_DIR %s)\n" % translate_vars(section["DEFAULT_FASTBIT_LIB"]))
     elif "DEFAULT_GDAL_LIB" in keys:
         f.write("SET(GDAL_DIR %s)\n" % translate_vars(section["DEFAULT_GDAL_LIB"]))
     elif "DEFAULT_H5PART_LIB" in keys:
