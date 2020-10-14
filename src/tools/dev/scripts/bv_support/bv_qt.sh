@@ -259,7 +259,9 @@ function apply_qt_patch
         fi
 
         if [[ "$OPSYS" == "Darwin" ]]; then
-            if [[ `sw_vers -productVersion` == 10.14.[0-9]* ]]; then
+            productVersion=`sw_vers -productVersion`
+            if [[ $productVersion == 10.14.[0-9]* || \
+                  $productVersion == 10.15.[0-9]* ]] ; then
                 apply_qt_5101_macos_mojave_patch
                 if [[ $? != 0 ]] ; then
                     return 1
@@ -405,7 +407,7 @@ diff -c qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm.ori
   QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
 EOF
     if [[ $? != 0 ]] ; then
-        warn "qt 5.10.1 macOS 10.14 patch failed."
+        warn "qt 5.10.1 macOS patch failed."
         return 1
     fi
     
