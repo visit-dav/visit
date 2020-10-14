@@ -16,7 +16,6 @@
 #include <vtkSmartVolumeMapper.h>
 #include <vtkColorTransferFunction.h>
 #include <vtkPiecewiseFunction.h>
-#include <vtkGPUVolumeRayCastMapper.h>
 
 // ****************************************************************************
 //  Class: avtDefaultRenderer
@@ -52,8 +51,7 @@ class avtDefaultRenderer : public avtVolumeRendererImplementation
     vtkVolume                 *curVolume;
     vtkImageData              *imageToRender;
     vtkVolumeProperty         *volumeProp;
-    //vtkSmartVolumeMapper      *mapper;
-    vtkGPUVolumeRayCastMapper      *mapper;
+    vtkSmartVolumeMapper      *mapper;
 
     VolumeAttributes           oldAtts;
 
