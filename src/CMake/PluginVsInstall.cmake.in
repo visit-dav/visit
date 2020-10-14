@@ -85,6 +85,9 @@
 #   Kevin Griffin, Thu Aug 8 18:30:27 PDT 2019
 #   Added the correct paths for the QT_QT*_INCLUDE_DIR variables for OSX.
 #
+#   Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+#   Removed FastBit and FastQuery
+#
 #****************************************************************************/
 
 ##

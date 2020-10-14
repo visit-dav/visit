@@ -188,6 +188,9 @@
 #    Kathleen Biagas, Mon Sep 14 2020
 #    Enable Rect as an optional plugin on Windows.
 #
+#   Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+#   Removed FastBit and FastQuery
+#
 #****************************************************************************
 
 IF(NOT WIN32)

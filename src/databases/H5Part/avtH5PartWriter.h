@@ -43,6 +43,9 @@ struct H5PartFile;
 //    Brad Whitlock, Wed Sep  2 14:16:43 PDT 2009
 //    I added methods for writing rectilinear and polydata datasets.
 //
+//    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+//    Removed FastBit and FastQuery
+//
 // ****************************************************************************
 
 class avtH5PartWriter : public virtual avtDatabaseWriter

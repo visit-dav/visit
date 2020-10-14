@@ -63,6 +63,10 @@ double avtH5PartWriter::INVALID_TIME = -DBL_MAX;
 //  Programmer: Allen Sanderson
 //  Creation:   31 Jan 2017
 //
+//  Modifications:
+//    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+//    Removed FastBit and FastQuery
+//
 // ****************************************************************************
 
 avtH5PartWriter::avtH5PartWriter(const DBOptionsAttributes *writeOpts)
@@ -168,6 +172,10 @@ avtH5PartWriter::OpenFile(const std::string &stemname, int nb)
 //  Programmer: Allen Sanderson
 //  Creation:   31 Jan 2017
 //
+//  Modifications:
+//    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+//    Removed FastBit and FastQuery
+//
 // ****************************************************************************
 
 void
@@ -248,6 +256,10 @@ avtH5PartWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //
 //  Programmer: Allen Sanderson
 //  Creation:   31 Jan 2017
+//
+//  Modifications:
+//    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+//    Removed FastBit and FastQuery
 //
 // ****************************************************************************
 
@@ -602,6 +614,10 @@ avtH5PartWriter::WritePoints(vtkPoints *pts)
 //
 // Programmer: Allen Sanderson
 // Creation:   31 Jan 2017
+//
+//  Modifications:
+//    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+//    Removed FastBit and FastQuery
 //
 // ****************************************************************************
 
