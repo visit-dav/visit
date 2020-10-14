@@ -97,7 +97,6 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     typedef std::map<std::string, h5part_int64_t>
                            VarNameToInt64Map_t;
     VarNameToInt64Map_t    particleVarNameToTypeMap;
-    VarNameToInt64Map_t    particleVarNameToFastBitMap;
     VarNameToInt64Map_t    fieldScalarVarNameToTypeMap;
     VarNameToInt64Map_t    fieldVectorVarNameToTypeMap;
     VarNameToInt64Map_t    fieldVectorVarNameToFieldRankMap;
@@ -108,8 +107,6 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     std::string            idVariableName;
     // The name of the default variable which contains the particle id
     std::string            defaultIdVariableName;
-    // The name of the variable which contains the sorted particle id
-    std::string            defaultSortedVariableName;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     virtual void           GetCycles(std::vector<int> &c);
