@@ -18,7 +18,6 @@ ${COMMON_SOURCES}
 avtH5PartFileFormat.C
 avtH5PartOptions.C
 avtH5PartWriter.C
-HistogramCache.C
 )
 
 SET(LIBE_SOURCES
@@ -27,7 +26,6 @@ ${COMMON_SOURCES}
 avtH5PartFileFormat.C
 avtH5PartOptions.C
 avtH5PartWriter.C
-HistogramCache.C
 )
 
 INCLUDE_DIRECTORIES(
