@@ -49,8 +49,7 @@ avtDefaultRenderer::avtDefaultRenderer()
     imageToRender    = NULL;
 
     volumeProp       = vtkVolumeProperty::New();
-    //mapper           = vtkSmartVolumeMapper::New();
-    mapper           = vtkGPUVolumeRayCastMapper::New();
+    mapper           = vtkSmartVolumeMapper::New();
     curVolume        = vtkVolume::New();
     transFunc        = vtkColorTransferFunction::New();
     opacity          = vtkPiecewiseFunction::New();
@@ -365,16 +364,30 @@ avtDefaultRenderer::Render(
             volumeProp->SetInterpolationTypeToNearest();
         }
 
-
         resetColorMap = false;
         oldAtts       = props.atts;
 
-        mapper->LockSampleDistanceToInputSpacingOff();//FIXME
-        //mapper->SetInteractiveAdjustSampleDistances(false);//FIXME
-        mapper->SetAutoAdjustSampleDistances(false);//FIXME
-        //mapper->SetSampleDistance(0.2);//FIXME
-        mapper->SetImageSampleDistance(2.0);//FIXME
-        //volumeProp->SetScalarOpacityUnitDistance(1.0);//FIXME
+        //
+        // We need to calculate the sample distance so that we can apply
+        // opacity correction.
+        //
+        // NOTE 1: vtkSmartVolumeMapper->SetSampleDistance does not work, so we
+        // need to rely on vtkVolumeProperty->SetScalarOpacityUnitDistance.
+        //
+        // NOTE 2: This magic number "sampleDistReference" is completely
+        // made up. It acts as a "reference sample count" that results in
+        // an opacity correction that generally "looks good". Increasing this
+        // value will result in an increased opacity intensity, while decreasing
+        // this value will result in a decreased opacity intensity.
+        //
+        double spacing[3];
+        imageToRender->GetSpacing(spacing);
+
+        double sampleDistReference = 1.0/10.0;
+        double averageSpacing = (spacing[0] + spacing[1] + spacing[2]) / 3.0;
+        double sampleDist     = averageSpacing / sampleDistReference;
+
+        volumeProp->SetScalarOpacityUnitDistance(1, sampleDist);
 
         curVolume->SetMapper(mapper);
         curVolume->SetProperty(volumeProp);
