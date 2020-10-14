@@ -49,6 +49,9 @@ class DBOptionsAttributes;
 //    domain decomposition and rewrote major portions using original
 //    pieces. Merged with HDF_UC plugin.
 //
+//    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+//    Removed FastBit and FastQuery
+//
 // ****************************************************************************
 
 class avtH5PartFileFormat : public avtMTSDFileFormat

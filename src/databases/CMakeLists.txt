@@ -176,6 +176,9 @@
 #    Eric Brugger, Mon Jul 13 14:46:38 PDT 2020
 #    Add the SW4 plugin and remove the WPPImage plugin.
 #
+#    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+#    Removed FastBit and FastQuery
+#
 #****************************************************************************
 
 IF(NOT WIN32)

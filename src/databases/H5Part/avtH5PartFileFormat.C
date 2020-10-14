@@ -59,6 +59,9 @@
 //    Gunther H. Weber, Wed Aug 17 16:28:46 PDT 2011
 //    Write to debug log file if reader was compiled with FastBit support.
 //
+//    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+//    Removed FastBit and FastQuery
+//
 // ****************************************************************************
 
 avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
@@ -698,6 +701,9 @@ avtH5PartFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //
 //    Iuri Prilepov and Gunther H. Weber, Mon Aug 15 15:19:21 PDT 2011
 //    Fix parallel decomposition of selections bug.
+//
+//    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+//    Removed FastBit and FastQuery
 //
 // ****************************************************************************
 
@@ -1791,6 +1797,9 @@ avtH5PartFileFormat::GetVectorVar(int timestate, const char *varName)
 //
 //    Gunther H. Weber, Wed Aug 17 13:44:13 PDT 2011
 //    Do not open file with HDF5_FQ if useFastBitIndex is false.
+//
+//    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+//    Removed FastBit and FastQuery
 //
 // ****************************************************************************
 

@@ -454,6 +454,9 @@
 #    Kathleen Biagas, Thu Oct 1, 2020
 #    Add retrieval of git revision hash.
 #
+#    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+#    Removed FastBit and FastQuery
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
