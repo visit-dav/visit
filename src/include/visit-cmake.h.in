@@ -50,12 +50,6 @@
 /* Define if you have the Damaris library. */
 #cmakedefine HAVE_DAMARIS
 
-/* Define if you have the FastBit library. */
-#cmakedefine HAVE_LIBFASTBIT 
-
-/* Define if you have the FastQuery library. */
-#cmakedefine HAVE_LIBFASTQUERY
-
 /* Define to 1 if you have the `m' library (-lm). */
 #cmakedefine HAVE_LIBM 1
 
