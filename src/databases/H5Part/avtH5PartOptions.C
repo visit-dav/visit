@@ -39,11 +39,7 @@ GetH5PartReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
     rv->SetBool("Enable domain decomposition", true);
-    rv->SetString("Variable path prefix", "Step#");
-#ifdef HAVE_LIBFASTQUERY
-    rv->SetBool("Use FastBit index", true);
-    rv->SetString("FastBit index path prefix", "__H5PartIndex__");
-#endif    
+    rv->SetString("Variable path prefix", "Step#");  
     return rv;
 }
 
@@ -69,12 +65,6 @@ GetH5PartWriteOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
     rv->SetString("Variable path prefix", "Step#");
-#ifdef HAVE_LIBFASTQUERY
-    rv->SetBool("Add FastBit indexing", true);
-    rv->SetString("FastBit index path prefix", "__H5PartIndex__");
-    // rv->SetBool("Sort variable", "unsorted");
-    rv->SetBool("Create a parent file", false);
-#endif
     rv->SetString("Parent file name", "visit_ex_db_parent");
     return rv;
 }

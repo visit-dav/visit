@@ -86,14 +86,6 @@ private:
     std::string variablePathPrefix;
     std::string parentFilename;
     bool        createParentFile;
-
-#ifdef HAVE_LIBFASTQUERY
-    const std::string getFastBitIndexPathPrefix( int timestep );
-  
-    bool        addFastBitIndexing;
-    std::string fastBitIndexPathPrefix;
-    std::string sortedKey;
-#endif  
 };
 
 #endif
