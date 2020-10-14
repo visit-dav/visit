@@ -2850,6 +2850,11 @@ class MainLauncher(object):
     #   Add code to unsetenv LD_PRELOAD to protect against users setting
     #   it for the GL library, which would break rendering.
     #
+    #   Eric Brugger, Mon Oct 12 13:49:41 PDT 2020
+    #   Removed the code to unsetenv LD_PRELOAD in favor of doing it in the
+    #   custom launcher since doing it here interfered with other sites that
+    #   were setting LD_PRELOAD to get VisIt to work.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -2926,9 +2931,6 @@ class MainLauncher(object):
 
         # Unset QT_PLUGIN_PATH
         UNSETENV("QT_PLUGIN_PATH")
-
-        # Unset LD_PRELOAD
-        UNSETENV("LD_PRELOAD")
 
         # Turn off trapping of floating point exceptions.
         SETENV("TRAP_FPE", "")
