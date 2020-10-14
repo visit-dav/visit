@@ -24,6 +24,7 @@ Dumpfile.C
 paraDIS_lib/paradis.C
 paraDIS_lib/paradis_c_interface.C
 RC_cpp_lib/RC_c_lib/debugutil.c
+RC_cpp_lib/timer.C
 )
 
 SET(LIBE_SOURCES
