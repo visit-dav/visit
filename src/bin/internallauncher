@@ -113,6 +113,10 @@ class JobSubmitter(object):
 #   Call the new PPNArgument function to get the correct MPI argument for 
 #   the "process per node" flag.
 #
+#   Eric Brugger, Fri Oct  9 15:41:37 PDT 2020
+#   Modify the routine to use our mpirun if we are running an installed
+#   version and it exists.
+#
 ###############################################################################
 
 class JobSubmitter_mpirun(JobSubmitter):
@@ -120,6 +124,12 @@ class JobSubmitter_mpirun(JobSubmitter):
         super(JobSubmitter_mpirun,self).__init__(launcher)
 
     def Executable(self):
+        # Use our mpirun if we are running an installed version and it
+        # exists.
+        if self.launcher.generalArgs.dv == 0:
+            mpirun = os.path.join(GETENV("VISITARCHHOME"),"bin","mpirun")
+            if os.path.exists(mpirun):
+                return [mpirun]
         return ["mpirun"]
 
     def CreateCommand(self, args, debugger):
@@ -155,7 +165,7 @@ class JobSubmitter_mpirun(JobSubmitter):
 #   mpiexec from the VisIt architecture/bin directory, if it exists.
 #
 #   Cyrus Harrison, Fri Feb  1 17:02:02 PST 2013
-#   Use mpiexe on OSX 10.6 and beyond.
+#   Use mpiexec on OSX 10.6 and beyond.
 #
 #   David Camp, Tue Mar 11 10:17:48 PDT 2014
 #   Added the -ppn (process per node) option to the mpiexec.
@@ -173,6 +183,10 @@ class JobSubmitter_mpirun(JobSubmitter):
 #   Call the new PPNArgument function to get the correct MPI argument for 
 #   the "process per node" flag.
 #
+#   Eric Brugger, Fri Oct  9 15:41:37 PDT 2020
+#   Modify the routine to use our mpiexec if we are running an installed
+#   version and it exists.
+#
 ################################################################################
 
 class JobSubmitter_mpiexec(JobSubmitter):
@@ -180,11 +194,9 @@ class JobSubmitter_mpiexec(JobSubmitter):
         super(JobSubmitter_mpiexec,self).__init__(launcher)
 
     def Executable(self):
-        # If we're running on MacOS X 10.7 or later, use our own mpich
-        # that we bundle with VisIt when we're running an installed version
-        # of the code.
-        if self.launcher.os == "darwin" and self.launcher.osver >= 10 and \
-           self.launcher.generalArgs.dv == 0:
+        # Use our mpiexec if we are running an installed version and it
+        # exists.
+        if self.launcher.generalArgs.dv == 0:
             mpiexec = os.path.join(GETENV("VISITARCHHOME"),"bin","mpiexec")
             if os.path.exists(mpiexec):
                 return [mpiexec]
@@ -402,6 +414,8 @@ class JobSubmitter_prun(JobSubmitter):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Fri Oct  9 13:58:21 PDT 2020
+#   Add logic to pass the bank to srun.
 #
 ###############################################################################
 
@@ -424,6 +438,8 @@ class JobSubmitter_srun(JobSubmitter):
             parcmd = parcmd + ["-J", self.parallel.name]
         if self.parallel.partition != None:
             parcmd = parcmd + ["-p", self.parallel.partition]
+        if self.parallel.bank != None:
+            parcmd = parcmd + ["-A", self.parallel.bank]
         if self.parallel.time != None:
             parcmd = parcmd + ["-t", self.parallel.time]
         parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
@@ -2834,6 +2850,11 @@ class MainLauncher(object):
     #   Add code to unsetenv LD_PRELOAD to protect against users setting
     #   it for the GL library, which would break rendering.
     #
+    #   Eric Brugger, Mon Oct 12 13:49:41 PDT 2020
+    #   Removed the code to unsetenv LD_PRELOAD in favor of doing it in the
+    #   custom launcher since doing it here interfered with other sites that
+    #   were setting LD_PRELOAD to get VisIt to work.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -2910,9 +2931,6 @@ class MainLauncher(object):
 
         # Unset QT_PLUGIN_PATH
         UNSETENV("QT_PLUGIN_PATH")
-
-        # Unset LD_PRELOAD
-        UNSETENV("LD_PRELOAD")
 
         # Turn off trapping of floating point exceptions.
         SETENV("TRAP_FPE", "")
