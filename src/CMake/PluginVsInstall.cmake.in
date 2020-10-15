@@ -85,6 +85,9 @@
 #   Kevin Griffin, Thu Aug 8 18:30:27 PDT 2019
 #   Added the correct paths for the QT_QT*_INCLUDE_DIR variables for OSX.
 #
+#   Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+#   Removed FastBit and FastQuery
+#
 #****************************************************************************/
 
 ##
@@ -248,10 +251,6 @@ set(CGNS_LIB @CGNS_LIB@)
 set(EXODUSII_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/@exodusii_inlcude_relative_path@)
 set(EXODUSII_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(EXODUSII_LIB @EXODUSII_LIB@)
-
-set(FASTBIT_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/fastbit/include)
-set(FASTBIT_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
-set(FASTBIT_LIB @FASTBIT_LIB@)
 
 set(GDAL_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/gdal/include)
 set(GDAL_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
