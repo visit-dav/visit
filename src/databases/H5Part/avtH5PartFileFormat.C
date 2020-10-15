@@ -718,8 +718,6 @@ avtH5PartFileFormat::SelectParticlesToRead( const char *varName )
 #ifdef PARALLEL
     h5part_int64_t nRanks = PAR_Size();
     h5part_int64_t rank   = PAR_Rank();
-
-        debug5 << "SelectParticlesToRead(): Rank " << rank << std::endl;
         
         // Read the whole file.
         h5part_int64_t nParticles = H5PartGetNumParticles(file);
@@ -778,8 +776,6 @@ avtH5PartFileFormat::SelectParticlesToRead( const char *varName )
         }
 
 #else
-        debug5 << "SelectParticlesToRead(): Serial " << std::endl;
-
         // Read the whole file.
         H5PartSetView(file, -1, -1);
 
