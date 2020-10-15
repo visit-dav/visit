@@ -22,6 +22,7 @@ Dumpfile.C
 paraDIS_lib/paradis.C
 paraDIS_lib/paradis_c_interface.C
 RC_cpp_lib/RC_c_lib/debugutil.c
+RC_cpp_lib/timer.C
 )
 
 SET(LIBE_SOURCES
@@ -34,6 +35,7 @@ Dumpfile.C
 paraDIS_lib/paradis.C
 paraDIS_lib/paradis_c_interface.C
 RC_cpp_lib/RC_c_lib/debugutil.c
+RC_cpp_lib/timer.C
 )
 
 INCLUDE_DIRECTORIES(
@@ -62,6 +64,9 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
+${VTKh_INCLUDE_DIRS}
+${VTKM_DIR}/include/vtkm-1.2
+${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
 ${VTK_INCLUDE_DIRS}
 )
 
