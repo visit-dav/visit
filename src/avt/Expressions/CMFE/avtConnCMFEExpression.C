@@ -114,6 +114,10 @@ avtConnCMFEExpression::PerformCMFE(avtDataTree_p in1, avtDataTree_p in2,
 //    Added parens to resolve "warning: '&&' within '||'"
 //    [Wlogical-op-parentheses]
 //
+//    Eric Brugger, Wed Oct 14 08:31:02 PDT 2020
+//    I modified the logic that determines if a mesh is a point mesh to
+//    include poly data.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -168,14 +172,24 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
         vtkIdType nRealPoints2 = in_ds2->GetNumberOfPoints();
 
         //
+        // Unstructured meshes can be either unstructured grids or
+        // poly data.
+        //
+        bool in_ds1_unstructured =
+            in_ds1->GetDataObjectType() == VTK_UNSTRUCTURED_GRID ||
+            in_ds1->GetDataObjectType() == VTK_POLY_DATA;
+        bool in_ds2_unstructured =
+            in_ds2->GetDataObjectType() == VTK_UNSTRUCTURED_GRID ||
+            in_ds2->GetDataObjectType() == VTK_POLY_DATA;
+
+        //
         // Check for the case where we are mapping between a point mesh
         // and either a polyhedral or polygonal mesh and the number of
         // polyhedra or polygons is the same as the number of points.
         //
         bool handlePointPolyhedralMapping = false;
         if (nRealCells1 != nRealCells2 &&
-            in_ds1->GetDataObjectType() == VTK_UNSTRUCTURED_GRID &&
-            in_ds2->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+            in_ds1_unstructured && in_ds2_unstructured)
         {
             debug5 << "avtConnCMFEExpression::ExecuteTree: The cell counts"
                    << " don't match and both grids are unstructured." << endl;
@@ -233,8 +247,7 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
             }
         }
         else if (nRealCells1 == nRealCells2 && nRealPoints1 != nRealPoints2 &&
-            in_ds1->GetDataObjectType() == VTK_UNSTRUCTURED_GRID &&
-            in_ds2->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+            in_ds1_unstructured && in_ds2_unstructured)
         {
             debug5 << "avtConnCMFEExpression::ExecuteTree: The cell counts"
                    << " match, the point counts don't match and both grids"
