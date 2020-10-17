@@ -457,6 +457,10 @@
 #    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
 #    Removed FastBit and FastQuery
 #
+#    Kevin Griffin, Fri Oct 16 17:13:32 PDT 2020
+#    For Apple, copied manuals directory to the install directory so it can
+#    be found by the packaging target.
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -2289,9 +2293,26 @@ if(VISIT_PYTHON3_DIR)
                               GROUP_READ GROUP_WRITE GROUP_EXECUTE
                               WORLD_READ             WORLD_EXECUTE
         CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
+  elseif(APPLE)
+    add_custom_target(manuals
+                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build
+                  -b html ${VISIT_SOURCE_DIR}/doc
+                  ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
+    # Add command to ensure the manuals are installed to the correct location
+    install(DIRECTORY ${VISIT_BINARY_DIR}/resources/help/en_US/manual
+        DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}/help/en_US/
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                         GROUP_READ GROUP_WRITE
+                         WORLD_READ
+        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                              WORLD_READ             WORLD_EXECUTE
+        CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
   else()
     add_custom_target(manuals
-                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build -b html ${VISIT_SOURCE_DIR}/doc ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
+                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build
+                  -b html ${VISIT_SOURCE_DIR}/doc
+                  ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
   endif()
 endif()
 
