@@ -17,6 +17,9 @@
 #  Only add ViewerSubmitParallEngineToWindowsHPC if we actually have the
 #  HPC scheduler.
 #
+#  Kevin Griffin, Mon Oct 19 09:43:37 PDT 2020
+#  Updated the bundle name, icon file name, identifier and copyright
+#
 #****************************************************************************
 
 IF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
@@ -243,14 +246,14 @@ ELSE(NOT APPLE)
     ADD_EXECUTABLE(viewer_exe MACOSX_BUNDLE viewer.C ${VIEWER_STATIC_SOURCES} ${VISIT_SOURCE_DIR}/common/icons/${VIEWER_ICON_FILE})
     
     SET_TARGET_PROPERTIES( viewer_exe PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${VISIT_SOURCE_DIR}/include/ViewerInfo.plist.in)
-    SET(MACOSX_BUNDLE_BUNDLE_NAME          "VisIt ${VISIT_VERSION}")
+    SET(MACOSX_BUNDLE_BUNDLE_NAME          "VisIt Viewer ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_INFO_STRING          "Graphical viewer for VisIt")
-    SET(MACOSX_BUNDLE_ICON_FILE            ${GUI_ICON_FILE})
-    SET(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
+    SET(MACOSX_BUNDLE_ICON_FILE            ${VIEWER_ICON_FILE})
+    SET(MACOSX_BUNDLE_GUI_IDENTIFIER       "gov.llnl.visit.viewer")
     SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "VisIt version ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC")
+    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2020, Lawrence Livermore National Security, LLC")
     
     IF(VISIT_STATIC)
         MAC_NIB_INSTALL(viewer)
