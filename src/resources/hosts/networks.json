@@ -194,16 +194,7 @@
           "name": "host_llnl_closed_magma.xml"
         }, 
         {
-          "name": "host_llnl_closed_max.xml"
-        }, 
-        {
           "name": "host_llnl_closed_mica.xml"
-        }, 
-        {
-          "name": "host_llnl_closed_sequoia.xml"
-        }, 
-        {
-          "name": "host_llnl_closed_shark.xml"
         }, 
         {
           "name": "host_llnl_closed_sierra.xml"
