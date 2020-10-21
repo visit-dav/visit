@@ -318,7 +318,12 @@ Tips on writing regression tests
 
 Rebaselining Test Results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-A python script, `rebase.py`, at `src/tests` dir can be used to rebaseline large numbers of results. In particular, this script enables a developer to rebase test results without requiring access to the test platform where testing is performed. This is becase the PNG files uploaded (e.g. posted) to VisIt_'s test results dashboard are suitable for using as baseline results. To use this script, run `./rebase.py --help.` Once you've completed using rebase.py to update image baselines, don't forget to commit your changes back to the repository.
+A python script, `rebase.py`, in the `test/baseline` dir can be used to rebaseline large numbers of results.
+In particular, this script enables a developer to rebase test results without requiring access to the test
+platform where testing is performed. This is becase the PNG files uploaded (e.g. posted) to VisIt_'s test
+results dashboard are suitable for using as baseline results. To use this script, run `./rebase.py --help.`
+Once you've completed using `rebase.py` to update image baselines, don't forget to commit your changes back
+to the repository.
 
  
 Using VisIt_ Test Suite for Sim Code Testing
