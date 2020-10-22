@@ -355,6 +355,25 @@ def TestLargeValueLineoutWithLogScaling():
     SetPlotOptions(curveAtts)
     Test("largeValueLineout")
 
+    # save the curve as VTK so Mesh plot and 2D view can be tested.
+    swa = SaveWindowAttributes() 
+    swa.fileName="lineoutRes"
+    swa.family=0
+    swa.format=swa.VTK
+    SetSaveWindowAttributes(swa)
+    if TestEnv.params["scalable"] == 0:
+        SaveWindow()
+    else:
+        # Turn of SR mode for the saveWindow, then turn it back on
+        ra = GetRenderingAttributes()
+        srm = ra.scalableActivationMode
+        ra.scalableActivationMode = ra.Never
+        SetRenderingAttributes(ra)
+        SaveWindow()
+        ra = GetRenderingAttributes()
+        ra.scalableActivationMode = srm
+        SetRenderingAttributes(ra)
+
     v = GetViewCurve()
     v.rangeScale  = v.LOG 
     SetViewCurve(v)
@@ -363,14 +382,6 @@ def TestLargeValueLineoutWithLogScaling():
     v = GetViewCurve()
     v.rangeScale  = v.LINEAR 
     SetViewCurve(v)
-
-    # now save the curve as VTK so Mesh plot and 2D view can be tested.
-    swa = SaveWindowAttributes() 
-    swa.fileName="lineoutRes"
-    swa.family=0
-    swa.format=swa.VTK
-    SetSaveWindowAttributes(swa)
-    SaveWindow()
 
     DeleteAllPlots()
     OpenDatabase("lineoutRes.vtk")
