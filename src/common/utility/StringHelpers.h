@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include <maptypes.h>  // for CIStringSet, CIStringSetVector defs
 
 #if __GNUC__ >= 3
 #   define MUST_CHECK __attribute__ ((warn_unused_result))
@@ -49,6 +50,11 @@ namespace StringHelpers
                        const std::set<std::string> &stringList,
                        int numGroups,
                        std::vector<std::set<std::string> > &stringGroups);
+    // The following override has containers using CaseInsenstive comparator
+    void UTILITY_API GroupStringsFixedAlpha(
+                       const CIStringSet &stringList,
+                       int numGroups,
+                       CIStringSetVector &stringGroups);
 
     int UTILITY_API FindRE(const std::string &s, const std::string &re);
     int UTILITY_API FindRE(const char *stringToSearch, const char *re);
