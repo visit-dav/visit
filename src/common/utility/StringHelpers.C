@@ -387,7 +387,7 @@ StringHelpers::GroupStringsFixedAlpha(
         return;
 
     int i = 0;
-    stringGroups.reserve(stringList.size() / groupSize);
+    stringGroups.reserve(stringList.size() / groupSize + 1);
     for(std::set<std::string>::const_iterator it = stringList.begin();
         it != stringList.end(); ++it, ++i)
     {
@@ -429,7 +429,7 @@ StringHelpers::GroupStringsFixedAlpha(
         return;
 
     int i = 0;
-    stringGroups.reserve(stringList.size() / groupSize);
+    stringGroups.reserve(stringList.size() / groupSize + 1);
     for(CIStringSet::const_iterator it = stringList.begin();
         it != stringList.end(); ++it, ++i)
     {
