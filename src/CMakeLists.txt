@@ -461,6 +461,10 @@
 #    For Apple, copied manuals directory to the install directory so it can
 #    be found by the packaging target.
 #
+#    Kathleen Biagas, Wed Oct 21, 2020
+#    Removed VISIT_SPHINX, moved Python-3 doc generation logic into doc
+#    subdir's CMakeLists.txt
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -764,7 +768,6 @@ OPTION(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE "Create a separate executable that f
 OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
 OPTION(VISIT_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
-OPTION(VISIT_SPHINX "Enable ability to build sphinx documentation" OFF)
 
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
 OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
@@ -2165,9 +2168,7 @@ if(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT BUILD_CTES
       add_subdirectory(test)
 endif()
 
-IF(VISIT_SPHINX)
-    ADD_SUBDIRECTORY(doc)
-ENDIF()
+add_subdirectory(doc)
 
 #-----------------------------------------------------------------------------
 # CPack -- This leverages our install targets to provide a "make package" that
@@ -2269,52 +2270,6 @@ ELSE (NOT WIN32)
     ENDIF(VISIT_MAKE_NSIS_INSTALLER)
 ENDIF (NOT WIN32)
 
-if(VISIT_PYTHON3_DIR)
-  if(WIN32)
-    # Need a different path for windows because sphinx-build
-    # is in a different location.
-
-    # don't pollute the src repo, build the docs in the binary dir.
-    # This doesn't allow the manuals to be found if running a dev build,
-    # so location may need to be rethought, but other than building them
-    # in exe/Release and in exe/Debug, thought this location was best.
-    add_custom_target(manuals
-        COMMAND ${VISIT_PYTHON3_DIR}/python.exe
-                ${VISIT_PYTHON3_DIR}/Scripts/sphinx-build-script.py
-        -b html ${VISIT_SOURCE_DIR}/doc 
-        ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
-    # Add command to ensure the manuals are installed to the correct location
-    install(DIRECTORY ${VISIT_BINARY_DIR}/resources/help/en_US/manual
-        DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}/help/en_US/
-        FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                         GROUP_READ GROUP_WRITE
-                         WORLD_READ
-        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                              WORLD_READ             WORLD_EXECUTE
-        CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
-  elseif(APPLE)
-    add_custom_target(manuals
-                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build
-                  -b html ${VISIT_SOURCE_DIR}/doc
-                  ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
-    # Add command to ensure the manuals are installed to the correct location
-    install(DIRECTORY ${VISIT_BINARY_DIR}/resources/help/en_US/manual
-        DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}/help/en_US/
-        FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                         GROUP_READ GROUP_WRITE
-                         WORLD_READ
-        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                              WORLD_READ             WORLD_EXECUTE
-        CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
-  else()
-    add_custom_target(manuals
-                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build
-                  -b html ${VISIT_SOURCE_DIR}/doc
-                  ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
-  endif()
-endif()
 
 #CMake add subdirectory forces this action to go last
 #todo: find way for this function to execute as last

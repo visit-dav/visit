@@ -7,45 +7,56 @@
 #   Kathleen Biagas, Thu March 7, 2019
 #   Added sphinx_launcher (python executable) for Windows.
 #
+#   Kathleen Biagas, Wed Oct 21, 2020
+#   Replaced old logic with python-3 creation of manuals, which was moved
+#   from root CMakeLists.txt.
+#
 #****************************************************************************
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSphinx.cmake)
+if(VISIT_PYTHON3_DIR)
+  if(WIN32)
+    # Need a different path for windows because sphinx-build
+    # is in a different location.
 
-if(NOT DEFINED SPHINX_THEME)
-    set(SPHINX_THEME sphinx_rtd_theme)
-endif()
- 
-if(NOT DEFINED SPHINX_THEME_DIR)
-    set(SPHINX_THEME_DIR _themes)
-endif()
- 
-# configured documentation tools and intermediate build results
-#set(BINARY_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/_build")
- 
-# Sphinx cache with pickled ReST documents
-#set(SPHINX_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_doctrees")
- 
-# HTML output directory
-set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
-
-if(WIN32)
-    set(sphinx_launcher ${PYTHON_EXECUTABLE})
-endif()
-
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/conf.py"
-    "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
-    @ONLY)
- 
-add_custom_target(user_manuals ALL
-    ${sphinx_launcher}
-    ${SPHINX_EXECUTABLE}
-        -a -q -b html
-        "${CMAKE_CURRENT_SOURCE_DIR}"
-        "${SPHINX_HTML_DIR}"
-    COMMENT "Building Sphinx-HTML documentation for GUI and CLI")
-
-if(WIN32)
-    unset(sphinx_launcher)
+    # don't pollute the src repo, build the docs in the binary dir.
+    # This doesn't allow the manuals to be found if running a dev build,
+    # so location may need to be rethought, but other than building them
+    # in exe/Release and in exe/Debug, thought this location was best.
+    add_custom_target(manuals
+        COMMAND ${VISIT_PYTHON3_DIR}/python.exe
+                ${VISIT_PYTHON3_DIR}/Scripts/sphinx-build-script.py
+        -b html ${VISIT_SOURCE_DIR}/doc 
+        ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
+    # Add command to ensure the manuals are installed to the correct location
+    install(DIRECTORY ${VISIT_BINARY_DIR}/resources/help/en_US/manual
+        DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}/help/en_US/
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                         GROUP_READ GROUP_WRITE
+                         WORLD_READ
+        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                              WORLD_READ             WORLD_EXECUTE
+        CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
+  elseif(APPLE)
+    add_custom_target(manuals
+                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build
+                  -b html ${VISIT_SOURCE_DIR}/doc
+                  ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
+    # Add command to ensure the manuals are installed to the correct location
+    install(DIRECTORY ${VISIT_BINARY_DIR}/resources/help/en_US/manual
+        DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}/help/en_US/
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                         GROUP_READ GROUP_WRITE
+                         WORLD_READ
+        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                              WORLD_READ             WORLD_EXECUTE
+        CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
+  else()
+    add_custom_target(manuals
+                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build
+                  -b html ${VISIT_SOURCE_DIR}/doc
+                  ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
+  endif()
 endif()
 
