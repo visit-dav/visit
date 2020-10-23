@@ -5,6 +5,7 @@
 #ifndef PY_LINESAMPLERATTRIBUTES_H
 #define PY_LINESAMPLERATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <LineSamplerAttributes.h>
 
 //

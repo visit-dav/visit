@@ -5,6 +5,7 @@
 #ifndef PY_FILLEDBOUNDARYATTRIBUTES_H
 #define PY_FILLEDBOUNDARYATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <FilledBoundaryAttributes.h>
 
 //

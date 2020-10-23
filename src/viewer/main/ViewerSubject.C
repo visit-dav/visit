@@ -4721,6 +4721,11 @@ ViewerSubject::DiscoverClientInformation()
 //   Brad Whitlock, Tue Nov 29 20:34:06 PST 2011
 //   Adapt to newer ViewerConnectionProgressDialog.
 //
+//   Kevin Griffin. Wed Jun 17 15:08:15 PDT 2020
+//   Added a check to see if the client was successfully launched.
+//   Also added a check to see if the progress dialog is still running
+//   and if so, cancel it.
+//
 // ****************************************************************************
 
 void
@@ -4762,28 +4767,40 @@ ViewerSubject::OpenClient()
         stringVector args(clientArguments);
         for(size_t i = 0; i < programOptions.size(); ++i)
             args.push_back(programOptions[i]);
-        newClient->LaunchClient(program, args, 0, 0, LaunchProgressCB, cbData);
-        clients.push_back(newClient);
+        bool success = newClient->LaunchClient(program, args, 0, 0, LaunchProgressCB, cbData);
+        if(success) 
+	{
+            clients.push_back(newClient);
 
-        // Connect up the new client so we can handle its signals.
-        connect(newClient, SIGNAL(InputFromClient(ViewerClientConnection *, AttributeSubject *)),
-                this,      SLOT(AddInputToXfer(ViewerClientConnection *, AttributeSubject *)));
-        connect(newClient, SIGNAL(DisconnectClient(ViewerClientConnection *)),
-                this,      SLOT(DisconnectClient(ViewerClientConnection *)));
+            // Connect up the new client so we can handle its signals.
+            connect(newClient, SIGNAL(InputFromClient(ViewerClientConnection *, AttributeSubject *)),
+                    this,      SLOT(AddInputToXfer(ViewerClientConnection *, AttributeSubject *)));
+            connect(newClient, SIGNAL(DisconnectClient(ViewerClientConnection *)),
+                    this,      SLOT(DisconnectClient(ViewerClientConnection *)));
 
-        GetViewerMessaging()->Message(TR("Added a new client to the viewer."));
+            GetViewerMessaging()->Message(TR("Added a new client to the viewer."));
 
-        // Discover the client's information.
-        QTimer::singleShot(100, this, SLOT(DiscoverClientInformation()));
+            // Discover the client's information.
+            QTimer::singleShot(100, this, SLOT(DiscoverClientInformation()));
+        }
+ 	else
+	{
+	    throw VisItException("Failed to launch client");
+	}
     }
-    CATCH(VisItException)
-    {
+    CATCHALL
         delete newClient;
+    
+  	// Stop progress if still running
+    	if(!progress->GetCancelled())
+    	{  
+    	    EndLaunchProgress();
+    	    progress->Hide();
+    	}
 
         GetViewerMessaging()->Error(
            TR("VisIt could not connect to the new client %1.").
            arg(program));
-    }
     ENDTRY
 
     delete progress;

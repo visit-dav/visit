@@ -5,6 +5,7 @@
 #ifndef PY_LABELATTRIBUTES_H
 #define PY_LABELATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <LabelAttributes.h>
 
 //

@@ -29,9 +29,7 @@ PseudocolorViewerEnginePluginInfo.C
 PseudocolorViewerPluginInfo.C
 avtPseudocolorPlot.C
 avtPseudocolorFilter.C
-avtPseudocolorGeometryFilter.C
 avtPseudocolorMapper.C
-vtkExtractCellsByType.C
 ${COMMON_SOURCES}
 )
 
@@ -40,15 +38,13 @@ PseudocolorViewerEnginePluginInfo.C
 PseudocolorEnginePluginInfo.C
 avtPseudocolorPlot.C
 avtPseudocolorFilter.C
-avtPseudocolorGeometryFilter.C
 avtPseudocolorMapper.C
-vtkExtractCellsByType.C
 ${COMMON_SOURCES}
 )
 
 
 IF(VISIT_PYTHON_SCRIPTING)
-    SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} ${VISIT_INCLUDE_DIR}/visitpy/visitpy)
+    SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} ${VISIT_INCLUDE_DIR}/visitpy/common ${VISIT_INCLUDE_DIR}/visitpy/visitpy)
 ENDIF(VISIT_PYTHON_SCRIPTING)
 
 INCLUDE_DIRECTORIES(

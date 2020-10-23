@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+  <Plugin name="Tessellate" type="operator" label="Tessellate" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" category="Geometry">
+    <Attribute name="TessellateAttributes" purpose="Attributes for the Tessellate Operator" persistent="true" exportAPI="" exportInclude="">
+      <Field name="chordError" label="Chord error" type="double">
+        0.035
+      </Field>
+      <Field name="fieldCriterion" label="Field criterion" type="double">
+        0.035
+      </Field>
+      <Field name="mergePoints" label="Merge points" type="bool">
+        true
+      </Field>
+    </Attribute>
+  </Plugin>

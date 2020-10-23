@@ -5,6 +5,7 @@
 #ifndef PY_TRUECOLORATTRIBUTES_H
 #define PY_TRUECOLORATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <TruecolorAttributes.h>
 
 //

@@ -5,6 +5,7 @@
 #ifndef PY_REMAPATTRIBUTES_H
 #define PY_REMAPATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <RemapAttributes.h>
 
 //

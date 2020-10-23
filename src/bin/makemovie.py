@@ -7,7 +7,6 @@ import os
 import select
 import signal
 import socket
-import string
 import sys
 
 if (sys.version_info > (3, 0)):
@@ -16,7 +15,9 @@ else:
     import thread as _thread
 
 import distutils.spawn
-from xmllib import *
+
+import xml
+import xml.sax
 
 from visit_utils import encoding
 
@@ -331,7 +332,7 @@ def MovieClassSaveWindow():
     return classSaveWindowObj.SaveImage2()
 
 ###############################################################################
-# Class: EngineAttributesParser
+# Class: EngineAttributesParserHandler
 #
 # Purpose:    This class parses session files for MachineProfiles in the
 #             "RunningEngines" node so we can extract information about the
@@ -346,18 +347,21 @@ def MovieClassSaveWindow():
 #    I changed host profiles to be a machine profile + nested launch profile.
 #    During this change I noticed the endtag parsing was making use of the
 #    latest "open tag", which is incorrect since self.dataName wasn't a stack.
-#    I changed it to instead use the explocit booleans we set during starttag,
+#    I changed it to instead use the explicit booleans we set during starttag,
 #    though a viable alternative would be to make dataName a stack of strings.
 #
 #    Brad Whitlock, Thu Oct 28 11:49:48 PDT 2010
 #    I added code to eliminate leading/trailing quotes from string data to
 #    work around a problem introduced in version 2.1.
 #
+#    Cyrus Harrison, Tue Jul 14 13:03:06 PDT 2020
+#    Port EngineAttributesParser to xml.sax 
+#    (xmllib deprecated since Python 2.0 and not supported in Python 3)
+#
 ###############################################################################
 
-class EngineAttributesParser(XMLParser):
+class EngineAttributesParserHandler(xml.sax.ContentHandler):
     def __init__(self):
-        XMLParser.__init__(self)
         self.elements = {"Object" : ("<Object>", "</Object>"), "Field" : ("<Field>", "</Field>")}
         self.attributes = {"name" : "", "type" : None, "length" : 0}
 
@@ -371,7 +375,7 @@ class EngineAttributesParser(XMLParser):
         self.dataAtts = None
 
 
-    def handle_starttag(self, tag, method, attributes):
+    def startElement(self, tag, method, attributes):
         if tag == "Object":
             if "name" in list(attributes.keys()):
                 self.dataName = attributes["name"]
@@ -388,7 +392,7 @@ class EngineAttributesParser(XMLParser):
             self.dataAtts = attributes
 
 
-    def handle_endtag(self, tag, method):
+    def endElement(self, tag):
         if tag == "Object":
             if self.readingLaunchProfile == 1:
                 self.readingLaunchProfile = 0
@@ -404,7 +408,7 @@ class EngineAttributesParser(XMLParser):
             self.readingField = 0
 
 
-    def handle_data(self, data):
+    def characters(self, data):
         def not_all_spaces(s):
             space = ""
             for i in range(len(s)):
@@ -421,24 +425,24 @@ class EngineAttributesParser(XMLParser):
             return retval
         if (self.readingEngineProperties == 1 or self.readingMachineProfile)\
             and self.readingField == 1 and len(data) > 0:
-            name = self.dataAtts["name"]
-            type = self.dataAtts["type"]
+            name  = self.dataAtts["name"]
+            etype = self.dataAtts["type"]
             value = None
-            if type == "bool":
+            if etype == "bool":
                 if data == "true":
                     value = 1
                 else:
                     value = 0
-            elif type == "string":
+            elif etype == "string":
                 value = StripLeadingTrailingQuotes(data)
-            elif type == "stringVector":
-                fragments = string.split(data, "\"")
+            elif etype == "stringVector":
+                fragments = data.split("\"")
                 value = []
                 for s in fragments:
                    if len(s) > 0:
                        if not_all_spaces(s):
                            value = value + [s]
-            elif type == "int":
+            elif etype == "int":
                 value = int(data)
             else:
                 print("Unknown type: ", type)
@@ -446,7 +450,7 @@ class EngineAttributesParser(XMLParser):
             self.engineProperties[name] = value
 
 ###############################################################################
-# Class: WindowSizeParser
+# Class: WindowSizeParserHandler
 #
 # Purpose:    This class parses session files for the windowSize field in
 #             the ViewerWindow and builds a list of [width,height] values.
@@ -460,11 +464,14 @@ class EngineAttributesParser(XMLParser):
 #   OpenGL part of the window instead of the windowSize, which is the size of
 #   the whole window including the decorations and toolbar.
 #
+#   Cyrus Harrison, Tue Jul 14 13:03:06 PDT 2020
+#   Port WindowSizeParser to xml.sax
+#   (xmllib deprecated since Python 2.0 and not supported in Python 3)
+#
 ###############################################################################
 
-class WindowSizeParser(XMLParser):
+class WindowSizeParserHandler(xml.sax.ContentHandler):
     def __init__(self):
-        XMLParser.__init__(self)
         self.elements = {"Object" : ("<Object>", "</Object>"), "Field" : ("<Field>", "</Field>")}
         self.attributes = {"name" : "", "type" : None, "length" : 0}
 
@@ -475,7 +482,7 @@ class WindowSizeParser(XMLParser):
         self.objectNames = []
         self.dataAtts = None
 
-    def handle_starttag(self, tag, method, attributes):
+    def startElement(self, tag, method, attributes):
         if tag == "Object":
             if "name" in list(attributes.keys()):
                 name = attributes["name"]
@@ -486,7 +493,7 @@ class WindowSizeParser(XMLParser):
             self.readingField = 1
             self.dataAtts = attributes
 
-    def handle_endtag(self, tag, method):
+    def endElement(self, tag):
         if tag == "Object":
             name = self.objectNames[-1]
             if name == "ViewerWindowManager":
@@ -495,7 +502,7 @@ class WindowSizeParser(XMLParser):
         elif tag == "Field":
             self.readingField = 0
 
-    def handle_data(self, data):
+    def charaters(self, data):
         def not_all_spaces(s):
             space = ""
             for i in range(len(s)):
@@ -515,7 +522,7 @@ class WindowSizeParser(XMLParser):
             elif name == "windowImageSize" and type == "intArray":
                 length = self.dataAtts["length"]
                 if length == "2":
-                    fragments = string.split(data, " ")
+                    fragments = data.split(" ")
                     value = []
                     for s in fragments:
                        if len(s) > 0:
@@ -526,7 +533,6 @@ class WindowSizeParser(XMLParser):
                                except ValueError:
                                    continue
                     self.windowSizes = self.windowSizes + [value[:2]]
-
 
 ###############################################################################
 # Class: MakeMovie
@@ -1029,7 +1035,7 @@ class MakeMovie(object):
                 server = smtplib.SMTP('localhost')
 
                 domain = "llnl.gov"
-                d = string.split(os.uname()[1], ".")
+                d = os.uname()[1].split(".")
                 if len(d) > 2:
                     name = ""
                     for i in range(1, len(d)):
@@ -1079,7 +1085,7 @@ class MakeMovie(object):
         extensions = (".session", ".vses", ".VSES", ".VSE", ".py", ".PY", ".xml", ".XML")
         extensionLocated = 0
         for ext in extensions:
-            pos = string.rfind(fileName, ext)
+            pos = fileName.rfind(ext)
             if(pos != -1):
                 fileName = fileName[:pos]
                 extensionLocated = 1
@@ -1089,7 +1095,7 @@ class MakeMovie(object):
         # If we located an extension then try and look for a path separator.
         if(extensionLocated == 1):
             for separator in ("/", "\\"):
-                pos = string.rfind(fileName, separator)
+                pos = fileName.rfind(separator)
                 if(pos != -1):
                     self.outputDir = fileName[:pos]
                     self.movieBase = fileName[pos+1:]
@@ -1112,7 +1118,7 @@ class MakeMovie(object):
 
     def SplitString(self, s, delim):
         retval = []
-        tokens = string.split(s, delim)
+        tokens = s.split(delim)
         for t in tokens:
             if len(t) > 0:
                 retval = retval + [t]
@@ -1234,7 +1240,7 @@ class MakeMovie(object):
         for arg in sys.argv:
             if splitEngineArgs == 1:
                 splitEngineArgs = 0
-                eargs = string.split(arg, ";")
+                eargs = arg.split(";")
                 for earg in eargs:
                     if len(earg) > 0:
                         commandLine = commandLine + [earg]
@@ -1312,7 +1318,7 @@ class MakeMovie(object):
             elif(commandLine[i] == "-source"):
                 if((i+1) < len(commandLine)):
                     filename = commandLine[i+1]
-                    if string.find(filename, ":") == -1:
+                    if filename.find(":") == -1:
                         filename = "localhost:" + filename
                     self.sources = self.sources + [filename]
                     i = i + 1
@@ -1616,7 +1622,7 @@ class MakeMovie(object):
             if outputName[0] == '/':
                 # Absolute path
                 entirePath = outputName
-            elif string.find(outputName, self.slash) != -1:
+            elif outputName.find(self.slash) != -1:
                 # Relative path
                 entirePath = os.path.abspath(os.curdir) + self.slash + outputName
             else:
@@ -1624,7 +1630,7 @@ class MakeMovie(object):
                 entirePath = os.path.abspath(os.curdir) + self.slash + outputName
 
             # Separate into outputDir, movieBase.
-            pos = string.rfind(entirePath, self.slash)
+            pos = entirePath.rfind(self.slash)
             if pos != -1:
                 self.outputDir = entirePath[:pos]
                 self.movieBase = entirePath[pos+1:]
@@ -1901,7 +1907,7 @@ class MakeMovie(object):
         newname = "%s.mangled" % name
         f = open(newname, "w")
         for line in lines:
-            index = string.find(line, "SaveWindow()")
+            index = line.find("SaveWindow()")
             if index == -1:
                 f.write(line)
             else:
@@ -1938,6 +1944,9 @@ class MakeMovie(object):
     #   Something higher up in the session file was choking the parsing so
     #   let's just focus on the RunningEngines section if we can.
     #
+    #   Cyrus Harrison, Tue Jul 14 13:03:06 PDT 2020
+    #   Use xml.sax for Python 3
+    #
     ###########################################################################
 
     def ReadEngineProperties(self, sessionfile):   
@@ -1954,9 +1963,9 @@ class MakeMovie(object):
             reading = 0
             indent = 0
             for line in lines:
-                level = string.find(line, "<")
+                level = line.find("<")
                 if reading == 0:
-                    if string.find(line, "<Object name=\"RunningEngines\">") != -1:
+                    if line.find("<Object name=\"RunningEngines\">") != -1:
                         reading = 1
                         runningEngines = runningEngines + [line]
                         indent = level
@@ -1964,13 +1973,24 @@ class MakeMovie(object):
                     runningEngines = runningEngines + [line]
                     if level <= indent:
                         break
-
             # Parse the running engines section, if present.
-            p = EngineAttributesParser()
+            # p = EngineAttributesParser()
+            # try:
+            #     for line in runningEngines:
+            #         p.feed(line)
+            #     p.close()
+            # New:
+            #
+            # Parse the running engines section, if present.
+            parser = xml.sax.make_parser()
+            ## turn off namepsaces
+            ## parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+            # override the default ContextHandler
+            h = EngineAttributesParserHandler()
+            parser.setContentHandler( h )
             try:
                 for line in runningEngines:
-                    p.feed(line)
-                p.close()
+                  parser.parseString(line)
             except:
                 print()
                 print("ERROR: We could not parse the session file for engine ")
@@ -1981,16 +2001,16 @@ class MakeMovie(object):
             if len(list(p.allEngineProperties.keys())) == 0:
                 # There were no hosts in the engine attributes so add the command
                 # line options for localhost.
-                p.allEngineProperties["localhost"] = self.engineCommandLineProperties
+                h.allEngineProperties["localhost"] = self.engineCommandLineProperties
             else:
                 # Override the EngineAttributesParser's engine attributes
                 # with options that were provided on the command line.
                 for host in list(p.allEngineProperties.keys()):
-                    dest = p.allEngineProperties[host]
+                    dest = h.allEngineProperties[host]
                     for key in list(self.engineCommandLineProperties.keys()):
                         dest[key] = self.engineCommandLineProperties[key]
             
-            return p.allEngineProperties
+            return h.allEngineProperties
         except VisItInterrupt:
             raise
         except:
@@ -2005,20 +2025,34 @@ class MakeMovie(object):
     # Programmer: Brad Whitlock
     # Date:       Fri Jun 24 10:06:24 PDT 2005
     #
+    # Modifications:
+    #   Cyrus Harrison, Tue Jul 14 13:03:06 PDT 2020
+    #   Use xml.sax for Python 3
+    #
     ###########################################################################
 
     def ReadWindowSizes(self, sessionFile):
         try:
-            # Read the file.
-            f = open(sessionFile, "r")
-            lines = f.readlines()
-            f.close()
+            
+            # Parse the running engines section, if present.
+            parser = xml.sax.make_parser()
+            ## turn off namepsaces
+            ## parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+            # override the default ContextHandler
+            h = WindowSizeParserHandler()
+            parser.setContentHandler( h )
+            parser.parse(open(sessionFile, "r"))
 
-            # Parse the file
-            p = WindowSizeParser()
-            for line in lines:
-                p.feed(line)
-            p.close()
+            # # Read the file.
+            # f = open(sessionFile, "r")
+            # lines = f.readlines()
+            # f.close()
+            #
+            # # Parse the file
+            # p = WindowSizeParser()
+            # for line in lines:
+            #     p.feed(line)
+            # p.close()
             
             return (p.activeWindow, p.windowSizes)
         except VisItInterrupt:
@@ -2328,16 +2362,16 @@ class MakeMovie(object):
             if os.name == "nt":
                 prefix = sys.executable[:-7] + "resources" + self.slash
             else:
-                pos = string.find(sys.argv[0], "exe" + self.slash + "cli")
+                pos = sys.argv[0].find("exe" + self.slash + "cli")
                 if pos != -1:
                     # Development version
                     prefix = sys.argv[0][:pos+4]
                     exe_dir = self.slash + "exe" + self.slash
                     resources_dir = self.slash + "resources" + self.slash
-                    prefix = string.replace(prefix, exe_dir, resources_dir)
+                    prefix = prefix.replace(exe_dir, resources_dir)
                 else:
                     # Installed version
-                    pos = string.find(sys.exec_prefix, "lib" + self.slash + "python")
+                    pos = sys.exec_prefix.find("lib" + self.slash + "python")
                     prefix = sys.exec_prefix[:pos] + "resources" + self.slash
             templateBaseFile = prefix + "movietemplates" + self.slash + "visitmovietemplate.py"
             self.Debug(1, "GenerateFrames: sourcing template base class file %s" % templateBaseFile)
@@ -2370,8 +2404,8 @@ class MakeMovie(object):
                     print(tFile)
                     fileFound = 0
                     for name in (tFile, prefix + "movietemplates" + self.slash + tFile):
-                        if (sys.platform != "win32") and string.find(name, "~") != -1:
-                            name2 = string.replace(name, "~", os.getenv("HOME"))
+                        if (sys.platform != "win32") and name.find("~") != -1:
+                            name2 = name.replace("~", os.getenv("HOME"))
                         else:
                             name2 = name
                         tmpPY = os.path.abspath(name2)
@@ -2878,7 +2912,7 @@ class MakeMovie(object):
             if stereo == self.STEREO_LEFTRIGHT:
                 # All of the frames are named left*, right* so we need to temporarily
                 # rename them all to some common file base where left and right alternate.
-                lastSlash = string.find(imageFormatString, self.slash)
+                lastSlash = imageFormatString.find(self.slash)
                 if lastSlash != -1:
                     leftFmt = imageFormatString[:lastSlash+1] + "left_" + imageFormatString[lastSlash+1:] + ext
                     rightFmt = imageFormatString[:lastSlash+1] + "right_" + imageFormatString[lastSlash+1:] + ext

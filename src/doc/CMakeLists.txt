@@ -7,6 +7,8 @@
 #   Kathleen Biagas, Thu March 7, 2019
 #   Added sphinx_launcher (python executable) for Windows.
 #
+#   Mark C. Miller, Mon Jun  8 16:45:05 PDT 2020
+#   Added linkcheck builder
 #****************************************************************************
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSphinx.cmake)
@@ -28,6 +30,9 @@ endif()
 # HTML output directory
 set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
 
+# linkcheck output directory
+set(SPHINX_LINKCHECK_DIR "${CMAKE_CURRENT_BINARY_DIR}/_linkcheck")
+
 if(WIN32)
     set(sphinx_launcher ${PYTHON_EXECUTABLE})
 endif()
@@ -45,7 +50,19 @@ add_custom_target(user_manuals ALL
         "${SPHINX_HTML_DIR}"
     COMMENT "Building Sphinx-HTML documentation for GUI and CLI")
 
+add_custom_target(linkcheck ALL
+    ${sphinx_launcher}
+    ${SPHINX_EXECUTABLE}
+        -a -q -b linkcheck
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${SPHINX_LINKCHECK_DIR}"
+    COMMENT "Running linkcheck builder on Sphinx documentation")
+
+add_custom_command(TARGET linkcheck
+    COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_SOURCE_DIR}/check_links.cmake"
+    POST_BUILD
+    )
+
 if(WIN32)
     unset(sphinx_launcher)
 endif()
-

@@ -22,12 +22,18 @@
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//
+//    Alister Maguire, Fri Oct  9 11:04:05 PDT 2020
+//    Setting canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtConstantCreatorExpression::avtConstantCreatorExpression()
 {
     value = 0;
     isSingleton = true;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

@@ -31,8 +31,10 @@
 
 #include <StringHelpers.h>
 #include <visit_gzstream.h>
+#include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkLine.h>
 #include <vtkTriangle.h>
 #include <vtkHexahedron.h>
@@ -44,6 +46,9 @@
 #include <JSONRoot.h>
 
 #include <zlib.h>
+
+// Controls whether to create original cell numbers.
+#define CREATE_ORIGINAL_CELL_NUMBERS
 
 #ifdef _WIN32
 #define strncasecmp _strnicmp
@@ -278,6 +283,10 @@ avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &ob
 //
 //   Mark C. Miller, Tue Sep 20 18:12:29 PDT 2016
 //   Add expressions
+//
+//   Brad Whitlock, Wed Sep  2 17:30:22 PDT 2020
+//   Set the containsOriginalCells flag.
+//
 // ****************************************************************************
 void
 avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
@@ -314,7 +323,10 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                           spatial_dim, topo_dim);
 
         md->GetMeshes(i).LODs = atoi(dset.Mesh().Tag("max_lods").c_str());
-
+#ifdef CREATE_ORIGINAL_CELL_NUMBERS
+        // Indicate that we're providing original cells.
+        md->GetMeshes(i).containsOriginalCells = true;
+#endif
         // Add builtin mfem fields related to the mesh:
 
         AddScalarVarToMetaData(md,
@@ -719,7 +731,15 @@ avtMFEMFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int 
     res_pts->Delete();  
     // create the cells for the refined topology   
     res_ds->Allocate(neles);
-    
+
+#ifdef CREATE_ORIGINAL_CELL_NUMBERS
+    // Make some original cell ids so we can try to eliminate the mesh lines.
+    std::vector<unsigned int> originalCells;
+    originalCells.reserve(neles * 2);
+    unsigned int udomain = static_cast<unsigned int>(domain);
+    bool doOriginalCells = true;
+#endif
+
     pt_idx=0;
     for (int i = 0; i <  mesh->GetNE(); i++)
     {
@@ -735,7 +755,10 @@ avtMFEMFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int 
         {
             switch (geom)
             {
-                case Geometry::SEGMENT:      ele_cell = vtkLine::New();       break;
+                case Geometry::SEGMENT:
+                    ele_cell = vtkLine::New();
+                    doOriginalCells = false;
+                break;
                 case Geometry::TRIANGLE:     ele_cell = vtkTriangle::New();   break;
                 case Geometry::SQUARE:       ele_cell = vtkQuad::New();       break;
                 case Geometry::TETRAHEDRON:  ele_cell = vtkTetra::New();      break;
@@ -748,14 +771,30 @@ avtMFEMFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int 
             res_ds->InsertNextCell(ele_cell->GetCellType(),
                                    ele_cell->GetPointIds());
             ele_cell->Delete();
+
+#ifdef CREATE_ORIGINAL_CELL_NUMBERS
+            originalCells.push_back(udomain);
+            originalCells.push_back(static_cast<unsigned int>(i));
+#endif
         }
 
         pt_idx += refined_geo->RefPts.GetNPoints();
-   }
-   
-   delete mesh;
+    }
+
+#ifdef CREATE_ORIGINAL_CELL_NUMBERS
+    vtkUnsignedIntArray *ocn = vtkUnsignedIntArray::New();
+    ocn->SetName("avtOriginalCellNumbers");
+    ocn->SetNumberOfComponents(2);
+    ocn->SetNumberOfTuples(originalCells.size()/2);
+    memcpy(ocn->GetVoidPointer(0), &originalCells[0],
+           sizeof(unsigned int) * originalCells.size());
+    res_ds->GetCellData()->AddArray(ocn);
+    ocn->Delete();
+#endif
+
+    delete mesh;
        
-   return res_ds;
+    return res_ds;
 }
 
 // ****************************************************************************

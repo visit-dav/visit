@@ -12,9 +12,9 @@ This tutorial provides a short introduction to VisIt's features while exploring 
 Open the dataset
 ----------------
 
-This tutorial uses the `aneurysm <http://www.visitusers.org/index.php?title=Tutorial_Data>`_ dataset.
+This tutorial uses the `aneurysm <https://visit-dav.github.io/largedata/datarchives/aneurysm>`_ dataset.
 
-1. Download `the aneurysm dataset <http://www.visitusers.org/index.php?title=Tutorial_Data>`_.
+1. Download `the aneurysm dataset <https://visit-dav.github.io/largedata/datarchives/aneurysm>`_.
 2. Click on the *Open* icon to bring up the File open window.
 3. Navigate your file system to the folder containing "aneurysm.visit".
 4. Highlight the file "aneurysm.visit" and then click *OK*.

@@ -5,6 +5,7 @@
 #ifndef PY_PERSISTENTPARTICLESATTRIBUTES_H
 #define PY_PERSISTENTPARTICLESATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PersistentParticlesAttributes.h>
 
 //

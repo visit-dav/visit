@@ -5,6 +5,7 @@
 #ifndef PY_AXES2D_H
 #define PY_AXES2D_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <Axes2D.h>
 #include <visitpy_exports.h>
 

@@ -32,11 +32,17 @@ using std::sort;
 //  Programmer: Hank Childs
 //  Creation:   August 16, 2005
 //
+//  Modifications:
+//
+//  Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//  Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtConservativeSmoothingExpression::avtConservativeSmoothingExpression()
 {
     haveIssuedWarning = false;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

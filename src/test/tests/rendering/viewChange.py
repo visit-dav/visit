@@ -33,6 +33,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Wed Oct 21 11:19:52 PDT 2020
+#    Added TestLargeValueLineoutWithLogScaling
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotation():
@@ -338,6 +342,66 @@ def TestViewChangeLogScalingCurves():
     ResetView()
     DeleteAllPlots()
 
+def TestLargeValueLineoutWithLogScaling():
+    # github bug #5066
+    OpenDatabase(silo_data_path("rect2d.silo"))
+    DefineScalarExpression("tlarge", "t*1e19")
+    AddPlot("Pseudocolor", "tlarge")
+    DrawPlots()
+    Lineout((0.5, 1.5, 0), (0.5, 0, 0))
+    SetActiveWindow(2)
+    curveAtts = CurveAttributes()
+    curveAtts.lineWidth = 3
+    SetPlotOptions(curveAtts)
+    Test("largeValueLineout")
+
+    # save the curve as VTK so Mesh plot and 2D view can be tested.
+    swa = SaveWindowAttributes() 
+    swa.fileName="lineoutRes"
+    swa.family=0
+    swa.format=swa.VTK
+    SetSaveWindowAttributes(swa)
+    if TestEnv.params["scalable"] == 0:
+        SaveWindow()
+    else:
+        # Turn of SR mode for the saveWindow, then turn it back on
+        ra = GetRenderingAttributes()
+        srm = ra.scalableActivationMode
+        ra.scalableActivationMode = ra.Never
+        SetRenderingAttributes(ra)
+        SaveWindow()
+        ra = GetRenderingAttributes()
+        ra.scalableActivationMode = srm
+        SetRenderingAttributes(ra)
+
+    v = GetViewCurve()
+    v.rangeScale  = v.LOG 
+    SetViewCurve(v)
+    Test("largeValueLineout_logScaling")
+
+    v = GetViewCurve()
+    v.rangeScale  = v.LINEAR 
+    SetViewCurve(v)
+
+    DeleteAllPlots()
+    OpenDatabase("lineoutRes.vtk")
+    AddPlot("Mesh", "mesh")
+    meshAtts = MeshAttributes()
+    meshAtts.lineWidth=3
+    SetPlotOptions(meshAtts)
+    DrawPlots()
+    Test("largeValueMeshCurve")
+
+    v = GetView2D()
+    v.yScale = v.LOG 
+    SetView2D(v)
+    Test("largeValueMeshCurve_logScaling")
+    v.yScale = v.LINEAR 
+    SetView2D(v)
+    DeleteWindow()
+    DeleteAllPlots()
+ 
+
 def ViewChangeMain():
     InitAnnotation()
     TestViewChangeSliceFlip()
@@ -345,6 +409,7 @@ def ViewChangeMain():
     TestViewChangeFullFrameWithGlyphs()
     TestViewChangeLogScaling2D()
     TestViewChangeLogScalingCurves()
+    TestLargeValueLineoutWithLogScaling()
 
 # Call the main function
 ViewChangeMain()

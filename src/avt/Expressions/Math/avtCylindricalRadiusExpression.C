@@ -35,11 +35,16 @@
 //  Programmer: Cyrus Harrison
 //  Creation:   April 2, 2008
 //
+//  Modifications:
+//
+//    Alister Maguire, Fri Oct  9 11:46:22 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtCylindricalRadiusExpression::avtCylindricalRadiusExpression()
 {
-    ;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

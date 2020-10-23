@@ -4,16 +4,16 @@ Introduction to VisIt
 Overview
 --------
 
-VisIt is a distributed, parallel, visualization tool for visualizing
+VisIt_ is a distributed, parallel, visualization tool for visualizing
 data defined on two and three-dimensional structured and unstructured
-meshes. VisIt’s distributed architecture allows it to leverage both the
+meshes. VisIt_'s distributed architecture allows it to leverage both the
 compute power of a large parallel computer and the graphics acceleration
 hardware of a local workstation. Another benefit of the distributed
-architecture is that VisIt can visualize the data where it is generated,
-eliminating the need to move data. VisIt can be controlled by a
+architecture is that VisIt_ can visualize the data where it is generated,
+eliminating the need to move data. VisIt_ can be controlled by a
 Graphical User Interface (GUI) or through the Python scripting language.
-More information about VisIt’s Graphical User Interface can be found in
-the *VisIt User’s Manual*.
+More information about VisIt_'s Graphical User Interface can be found in
+the *VisIt User's Manual*.
 
 Manual chapters
 ---------------
@@ -39,7 +39,7 @@ This manual is broken down into the following chapters:
 +-----------------------+--------------------------------------------+
 | Attributes References | Describes attributes for setting common    |
 +-----------------------+--------------------------------------------+
-|                       | operations, as well as for VisIt’s plugins |
+|                       | operations, as well as for VisIt's plugins |
 +-----------------------+--------------------------------------------+
 | CLI Events            | Describes possible events for callbacks.   |
 +-----------------------+--------------------------------------------+
@@ -68,32 +68,34 @@ supports up to 16 visualization windows, also called vis windows. Each
 vis window is independent of the other vis windows and VisIt Python
 functions generally apply only to the currently active vis window. This
 manual explains how to use the VisIt Python Interface which is a Python
-extension module that controls VisIt’s viewer. In that way, the VisIt
-Python Interface fulfills the same role as VisIt’s GUI. The difference
+extension module that controls VisIt_'s viewer. In that way, the VisIt
+Python Interface fulfills the same role as VisIt_'s GUI. The difference
 is that the viewer is totally controlled through Python scripting, which
 makes it easy to write scripts to create visualizations and even movies.
-Since the VisIt module controls VisIt’s viewer, the Python interpreter
+Since the VisIt module controls VisIt_'s viewer, the Python interpreter
 currently has no direct mechanism for passing data to the compute engine
-(see Figure `[fig:architecture] <#fig:architecture>`__). If you want to
+(see :numref:`Figure %s <architecture>`). If you want to
 write a script that generates simulation data and have that script pass
 data to the compute engine, you must pass the data through a file on
 disk. The VisIt Python Interface comes packaged in two varieties: the
 extension module and the Command Line Interface (CLI). The extension
 module version of the VisIt Python Interface is imported into a standard
-Python interpreter using the import directive. VisIt’s command line
+Python interpreter using the import directive. VisIt_'s command line
 interface (CLI) is essentially a Python interpreter where the VisIt
 Python Interface is built-in. The CLI is provided to simplify the
 process of running VisIt Python scripts.
 
-.. figure:: images/architecture.png
-   :alt: VisIt’s architecture
+.. _architecuture:
 
-   VisIt’s architecture
+.. figure:: images/architecture.png
+   :alt: VisIt_'s architecture
+
+   VisIt_'s architecture
 
 Starting VisIt
 --------------
 
-You can invoke VisIt’s command line interface from the command line by
+You can invoke VisIt_'s command line interface from the command line by
 typing:
 
 ::
@@ -105,8 +107,8 @@ VisIt functions in an existing Python script. In that case, you must
 first import the VisIt module into Python and then call the Launch()
 function to make VisIt launch and dynamically load the rest of the VisIt
 functions into the Python namespace. VisIt adopts this somewhat unusual
-approach to module loading since the lightweight “visit" front-end
-module can be installed as one of your Python’s site packages yet still
+approach to module loading since the lightweight "visit" front-end
+module can be installed as one of your Python's site packages yet still
 dynamically load the real control functions from different versions of
 VisIt selected by the user.
 
@@ -127,7 +129,7 @@ Here is how to import all functions into the global Python namespace:
     from visit import *
     Launch()
 
-Here is how to import all functions into a “visit" module namespace:
+Here is how to import all functions into a "visit" module namespace:
 
 ::
 
@@ -160,8 +162,8 @@ contain the names of the currently loaded plot or operator plugins. Each
 plot and operator plugin provides a function for creating an attributes
 object to set the plot or operator attributes. The name of the function
 is the name of the plugin in the tuple returned by the OperatorPlugins
-or PlotPlugins functions plus the word “Attributes". For example, the
-“Pseudocolor" plot provides a function called PseudocolorAttributes. To
+or PlotPlugins functions plus the word "Attributes". For example, the
+"Pseudocolor" plot provides a function called PseudocolorAttributes. To
 set the plot attributes or the operator attributes, first use the
 attributes creation function to create an attributes object. Assign the
 newly created object to a variable name and set the fields in the
@@ -189,7 +191,7 @@ Example:
     SetOperatorOptions(a) 
     DrawPlots() 
 
-That’s all there is to creating a plot using VisIt’s Python Interface.
+That's all there is to creating a plot using VisIt_'s Python Interface.
 For more information on creating plots and performing specific actions
 in VisIt, refer to the documentation for each function later in this
 manual.

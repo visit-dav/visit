@@ -7,6 +7,9 @@
 #include <ColorAttribute.h>
 #include <AnnotationObject.h>
 
+// CUSTOM:
+#include <Py2and3Support.h>
+
 // Functions that we need in visitmodule.C
 extern void UpdateAnnotationHelper(AnnotationObject *);
 extern bool DeleteAnnotationObjectHelper(AnnotationObject *);
@@ -751,13 +754,13 @@ TimeSliderObject_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-TimeSliderObject_compare(PyObject *v, PyObject *w)
-{
-    AnnotationObject *a = ((TimeSliderObjectObject *)v)->data;
-    AnnotationObject *b = ((TimeSliderObjectObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
+// static int
+// TimeSliderObject_compare(PyObject *v, PyObject *w)
+// {
+//     AnnotationObject *a = ((TimeSliderObjectObject *)v)->data;
+//     AnnotationObject *b = ((TimeSliderObjectObject *)w)->data;
+//     return (*a == *b) ? 0 : -1;
+// }
 
 static PyObject *
 TimeSliderObject_getattr(PyObject *self, char *name)
@@ -931,50 +934,74 @@ static const char *TimeSliderObject_Purpose = "This class defines a general set 
 static char *TimeSliderObject_Purpose = "This class defines a general set of attributes that are used to set the attributes for all annotation objects.";
 #endif
 
+// CUSTOM
+static PyObject *TimeSliderObject_richcompare(PyObject *self, PyObject *other, int op);
+
+// CUSTOM
+
+//
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
 //
 // The type description structure
 //
-static PyTypeObject TimeSliderObjectType =
+VISIT_PY_TYPE_OBJ( TimeSliderObjectType,              \
+                   "TimeSliderObject",                \
+                   TimeSliderObjectObject,            \
+                   TimeSliderObject_dealloc,          \
+                   TimeSliderObject_print,            \
+                   TimeSliderObject_getattr,          \
+                   TimeSliderObject_setattr,          \
+                   0 /* timeslider doesn't provide*/, \
+                   TimeSliderObject_Purpose,          \
+                   TimeSliderObject_richcompare,      \
+                   0); /* as_number*/
+
+// CUSTOM
+static PyObject *
+TimeSliderObject_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "TimeSliderObject",                    // tp_name
-    sizeof(TimeSliderObjectObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)TimeSliderObject_dealloc,  // tp_dealloc
-    (printfunc)TimeSliderObject_print,     // tp_print
-    (getattrfunc)TimeSliderObject_getattr, // tp_getattr
-    (setattrfunc)TimeSliderObject_setattr, // tp_setattr
-    (cmpfunc)TimeSliderObject_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    0,                                   // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    TimeSliderObject_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &TimeSliderObjectType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    AnnotationObject *a = ((TimeSliderObjectObject *)self)->data;
+    AnnotationObject *b = ((TimeSliderObjectObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
+
 
 //
 // Helper functions for object allocation.

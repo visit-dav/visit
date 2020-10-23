@@ -232,9 +232,12 @@ function apply_qt_patch
                     return 1
                 fi
             fi
-        elif [[ -f /etc/issue ]] ; then
-            VER=`cat /etc/issue | grep "Debian" | cut -d' ' -f 3`
-            if [[ "${VER:0:2}" == "10" ]] ; then
+        elif [[ -f /etc/os-release ]] ; then
+            REDHAT_VER=`cat /etc/os-release | grep "REDHAT_SUPPORT_PRODUCT_VERSION" | cut -d'=' -f 2`
+            DEBIAN_VER=`cat /etc/os-release | grep "PRETTY_NAME" | cut -d' ' -f 3`
+            if [[ "${REDHAT_VER:1:1}" == "8"  || \
+                  "${REDHAT_VER:0:2}" == "31" || \
+                  "${DEBIAN_VER:0:2}" == "10" ]] ; then
                 apply_qt_5101_centos8_patch
                 if [[ $? != 0 ]] ; then
                     return 1
@@ -257,7 +260,9 @@ function apply_qt_patch
         fi
 
         if [[ "$OPSYS" == "Darwin" ]]; then
-            if [[ `sw_vers -productVersion` == 10.14.[0-9]* ]]; then
+            productVersion=`sw_vers -productVersion`
+            if [[ $productVersion == 10.14.[0-9]* || \
+                  $productVersion == 10.15.[0-9]* ]] ; then
                 apply_qt_5101_macos_mojave_patch
                 if [[ $? != 0 ]] ; then
                     return 1
@@ -403,7 +408,7 @@ diff -c qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm.ori
   QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
 EOF
     if [[ $? != 0 ]] ; then
-        warn "qt 5.10.1 macOS 10.14 patch failed."
+        warn "qt 5.10.1 macOS patch failed."
         return 1
     fi
     

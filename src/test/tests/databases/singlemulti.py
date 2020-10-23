@@ -19,10 +19,8 @@
 #  Modifications:
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
-#    Added ability to swtich between Silo's HDF5 and PDB data.
+#    Added ability to switch between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
-
-import string
 
 #
 # Look at the first few lines of the string representation of the
@@ -32,7 +30,7 @@ def TestWindowInformation(testname):
     # Get the window information and convert it to a string.
     s = str(GetWindowInformation())
     # Only use the first 5 or so lines from the string.
-    lines = string.split(s, "\n")
+    lines = s.split("\n")
     s = ""
     for i in range(5):
         if(i < len(lines)):
@@ -102,7 +100,8 @@ Test("singlemulti02")
 TestWindowInformation("singlemulti03")
 
 # Go to the middle time slider state.
-SetTimeSliderState(TimeSliderGetNStates() / 2)
+# Note: this div in python 2 returns int, but returns float in py3
+SetTimeSliderState(int(TimeSliderGetNStates() / 2))
 Test("singlemulti04")
 # Check the time states
 TestWindowInformation("singlemulti05")

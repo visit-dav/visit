@@ -5,6 +5,7 @@
 #ifndef PY_TENSORATTRIBUTES_H
 #define PY_TENSORATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <TensorAttributes.h>
 
 //

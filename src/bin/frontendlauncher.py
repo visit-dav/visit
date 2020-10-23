@@ -1,6 +1,5 @@
 from __future__ import print_function
 import os
-import string
 import sys
 import subprocess
 
@@ -54,6 +53,9 @@ import subprocess
 #   Eric Brugger, Thu Oct  1 12:14:26 PDT 2015
 #   I added add_visit_searchpath.
 #
+#   Cyrus, Wed Dec 18 09:05:28 PST 2019
+#   Python 2 to 3 tweaks
+#
 ###############################################################################
 
 # -----------------------------------------------------------------------------
@@ -85,7 +87,7 @@ def exit(msg, value):
 
 def ParseVersion(ver):
     version = [0,0,-1,-1]
-    b = string.find(ver, "b")
+    b = ver.find("b")
     if b != -1:
         ver_b = ver[b:]
         ver = ver[:b]
@@ -93,7 +95,7 @@ def ParseVersion(ver):
             version[3] = 0
         else:
             version[3] = int(ver_b[1:])
-    v = string.split(ver, ".")
+    v = ver.split(".")
     if len(v) > 3:
         raise "Invalid version string"
     for i in range(3):
@@ -106,18 +108,6 @@ def ParseVersion(ver):
 
 frontendlauncherpy = sys.argv[0]
 sys.argv = sys.argv[1:]
-
-# -----------------------------------------------------------------------------
-#                            Check the Python version
-# -----------------------------------------------------------------------------
-
-if sys.version_info[0] > 2:
-    msg = "\nError: VisIt's launch script is not compatible with Python " + \
-          str(sys.version_info[0]) + \
-          ". You will need to prepend the path to a Python 2 interpreter to your " + \
-          "path in order to start VisIt.\n"
-    print(msg) # python 3 code!
-    exit(None, -1)
 
 # -----------------------------------------------------------------------------
 #                            Figure out visitdir
@@ -248,7 +238,7 @@ if os.path.exists(visitdir + "exe"):
         visitpluginver = open(VERSIONFILE).readlines()[0][:-1]
     elif os.path.exists(VISIT_CONFIG_H):
         tok = "#define VISIT_VERSION"
-        vline = [x for x in open(VISIT_CONFIG_H).readlines() if string.find(x, tok) == 0]
+        vline = [x for x in open(VISIT_CONFIG_H).readlines() if x.find(tok) == 0]
         visitpluginver = vline[0][23:-2]
 
     # We want to make sure we know if we are trying to launch a public
@@ -320,8 +310,8 @@ else:
             except:
                 continue
         def by_patch_version(a,b):
-            v1 = string.split(a, ".")
-            v2 = string.split(b, ".")
+            v1 = a.split(".")
+            v2 = b.split(".")
             if len(v1) < 3: return -1
             if len(v2) < 3: return +1
             if v1[2] < v2[2]: return -1
@@ -360,10 +350,10 @@ if visitdir[-1] != os.path.sep:
 # -----------------------------------------------------------------------------
 #     Set the environment variables needed for the internal visit launcher
 # -----------------------------------------------------------------------------
-path = list(string.split(GETENV("PATH"), ":"))
+path = list(GETENV("PATH").split(":"))
 path = path + ["/bin","/usr/bin", "/usr/sbin", "/usr/local/bin", "/usr/bsd","/usr/ucb"]
 path = [progdir] + path
-SETENV("PATH",               string.join(path, ":"))
+SETENV("PATH",               ":".join(path))
 SETENV("VISITVERSION",       ver)
 SETENV("VISITPLUGINVERSION", visitpluginver)
 SETENV("VISITPROGRAM",       progname)
