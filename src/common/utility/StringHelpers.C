@@ -403,6 +403,49 @@ StringHelpers::GroupStringsFixedAlpha(
     }
 }
 
+
+// ****************************************************************************
+//  Function: GroupStringsFixedAlpha
+//
+//  Purpose: Groups a list of strings into a fixed number of groups
+//  by dividing the passed alphabetized list into pieces
+//
+//  Copied from version directly above, except it uses container that have
+//  a case-insensitive comparator.  See maptypes.h for definitions.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   October 23, 2020
+//
+// ****************************************************************************
+
+void
+StringHelpers::GroupStringsFixedAlpha(
+    const CIStringSet &stringList,
+    int groupSize, CIStringSetVector  &stringGroups)
+{
+    int nStrings = stringList.size();
+
+    if (nStrings == 0)
+        return;
+
+    int i = 0;
+    stringGroups.reserve(stringList.size() / groupSize);
+    for(CIStringSet::const_iterator it = stringList.begin();
+        it != stringList.end(); ++it, ++i)
+    {
+        int groupNum = i / groupSize;
+        int groupIdx = i % groupSize;
+
+        if (groupIdx == 0)
+        {
+            CIStringSet newGroup;
+            stringGroups.push_back(newGroup);
+        }
+        stringGroups[groupNum].insert(*it);
+    }
+}
+
+
 // ****************************************************************************
 //  Function: FindRE
 //
