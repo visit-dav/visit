@@ -29,11 +29,17 @@
 //  Programmer: Jeremy Meredith
 //  Creation:   March 10, 2014
 //
+//  Modifications:
+//
+//    Alister Maguire, Fri Oct  9 11:46:22 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtEdgeNormalExpression::avtEdgeNormalExpression()
 {
     isPoint = true;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

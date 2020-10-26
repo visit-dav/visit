@@ -77,9 +77,9 @@ std::string INDENT(int i) {
 
 #define UPDATEPROGRESS(count, total, description)                       \
   if (dbg_isverbose()) {                                                \
-    Progress(theTimer, count, total, thePercent, 1, theTime, 1, description);  }
+     Progress(theTimer, count, total, thePercent, 1, theTime, 1, description);  }
 #define COMPLETEPROGRESS(total, description) \
-  UPDATEPROGRESS(total,total,description); fprintf(stderr, "\n");    \
+  UPDATEPROGRESS(total,total,description); fprintf(stderr, "\n");
 
 string BurgersTypeNames(int btype) {
   switch (btype) {
@@ -4496,7 +4496,9 @@ namespace paraDIS {
 
     uint32_t numMetaArms = 0, numArms = 0, totalArms = Arm::mArms.size(); 
     STARTPROGRESS(); 
+#ifndef WIN32
     dbprintf(4, "FindMetaArms: %s\n", datestring()); 
+#endif
     for (vector<Arm*>::iterator currentArm = Arm::mArms.begin(); currentArm != Arm::mArms.end(); ++currentArm, ++numArms) {
       if ( ! (*currentArm)->mSeen  && 
            ! (*currentArm)->isTypeUnknown() && 

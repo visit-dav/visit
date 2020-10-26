@@ -11,6 +11,10 @@
 #  Programmer: Allen Sanderson
 #  Date:       March 10, 2016
 #
+#  Modifications:
+#    Kathleen Biagas, Tue Sep 29 09:17:57 PDT 2020
+#    Turned off IC warnings.
+#
 # ----------------------------------------------------------------------------
 
 OpenDatabase(silo_data_path("noise.silo"))
@@ -185,19 +189,19 @@ PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.Absolute
 SetPlotOptions(PseudocolorAtts)
 Test( "ic_geometry_06" )
 
-#PseudocolorAtts.lineType = PseudocolorAtts.Ribbon
-#SetPlotOptions(PseudocolorAtts)
-#Test( "ic_geometry_07" )
+PseudocolorAtts.lineType = PseudocolorAtts.Ribbon
+SetPlotOptions(PseudocolorAtts)
+Test( "ic_geometry_07" )
 
-#PseudocolorAtts.tubeRadiusBBox = 0.01
-#PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.FractionOfBBox
-#SetPlotOptions(PseudocolorAtts)
-#Test( "ic_geometry_08" )
+PseudocolorAtts.tubeRadiusBBox = 0.01
+PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.FractionOfBBox
+SetPlotOptions(PseudocolorAtts)
+Test( "ic_geometry_08" )
 
-#PseudocolorAtts.tubeRadiusAbsolute = 0.4
-#PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.Absolute
-#SetPlotOptions(PseudocolorAtts)
-#Test( "ic_geometry_09" )
+PseudocolorAtts.tubeRadiusAbsolute = 0.4
+PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.Absolute
+SetPlotOptions(PseudocolorAtts)
+Test( "ic_geometry_09" )
 
 PseudocolorAtts.lineType = PseudocolorAtts.Line
 PseudocolorAtts.headStyle = PseudocolorAtts.Spheres  # None, Spheres, Cones
@@ -340,12 +344,12 @@ IntegralCurveAtts.fillInterior = 1
 IntegralCurveAtts.randomSamples = 0
 IntegralCurveAtts.randomSeed = 0
 IntegralCurveAtts.numberOfRandomSamples = 1
-IntegralCurveAtts.issueAdvectionWarnings = 1
-IntegralCurveAtts.issueBoundaryWarnings = 1
-IntegralCurveAtts.issueTerminationWarnings = 1
-IntegralCurveAtts.issueStepsizeWarnings = 1
-IntegralCurveAtts.issueStiffnessWarnings = 1
-IntegralCurveAtts.issueCriticalPointsWarnings = 1
+IntegralCurveAtts.issueAdvectionWarnings = 0
+IntegralCurveAtts.issueBoundaryWarnings = 0
+IntegralCurveAtts.issueTerminationWarnings = 0
+IntegralCurveAtts.issueStepsizeWarnings = 0
+IntegralCurveAtts.issueStiffnessWarnings = 0
+IntegralCurveAtts.issueCriticalPointsWarnings = 0
 IntegralCurveAtts.criticalPointThreshold = 0.001
 IntegralCurveAtts.correlationDistanceAngTol = 5
 IntegralCurveAtts.correlationDistanceMinDistAbsolute = 1
