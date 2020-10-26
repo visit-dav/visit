@@ -464,6 +464,13 @@
 #    For Apple, copied manuals directory to the install directory so it can
 #    be found by the packaging target.
 #
+#    Kathleen Biagas, Wed Oct 21, 2020
+#    Removed VISIT_SPHINX, moved Python-3 doc generation logic into doc
+#    subdir's CMakeLists.txt
+#
+#    Kathleen Biagas, Mon Oct 26, 2020
+#    Add VISIT_ENABLE_UNIT_TESTS option (on by default).>> develop
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -766,7 +773,6 @@ OPTION(VISIT_NOLINK_MPI_WITH_LIBRARIES "Do not link MPI with VisIt's parallel sh
 OPTION(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE "Create a separate executable that forwards VisIt's socket connection between engine and component launcher" ON)
 OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
-OPTION(VISIT_SPHINX "Enable ability to build sphinx documentation" OFF)
 
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
 OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
@@ -800,6 +806,7 @@ OPTION(VISIT_ENABLE_EXAMPLES  "Enable building of examples" ON)
 OPTION(VISIT_ENABLE_LIBSIM "Enable building of libsim." ON)
 OPTION(VISIT_ENABLE_MANUALS  "Enable building of manuals (requires python3)" ON)
 OPTION(VISIT_ENABLE_SILO_TOOLS "Enable building of silo tools (mrgtree2dot, add_visit_searchpath)" ON)
+OPTION(VISIT_ENABLE_UNIT_TESTS "Enable building of unit tests (like MRUCache_test, StringHelpers_test)" ON)
 OPTION(VISIT_ENABLE_XDB "Enable Intelligent Light XDB database plugin." OFF) # OFF for now
 
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
@@ -2183,9 +2190,7 @@ if(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT BUILD_CTES
       add_subdirectory(test)
 endif()
 
-IF(VISIT_SPHINX)
-    ADD_SUBDIRECTORY(doc)
-ENDIF()
+add_subdirectory(doc)
 
 #-----------------------------------------------------------------------------
 # CPack -- This leverages our install targets to provide a "make package" that
