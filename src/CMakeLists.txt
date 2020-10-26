@@ -464,8 +464,12 @@
 #    For Apple, copied manuals directory to the install directory so it can
 #    be found by the packaging target.
 #
+#    Kathleen Biagas, Wed Oct 21, 2020
+#    Removed VISIT_SPHINX, moved Python-3 doc generation logic into doc
+#    subdir's CMakeLists.txt
+#
 #    Kathleen Biagas, Mon Oct 26, 2020
-#    Add VISIT_ENABLE_UNIT_TESTS option (on by default).
+#    Add VISIT_ENABLE_UNIT_TESTS option (on by default).>> develop
 #
 #****************************************************************************
 
@@ -769,7 +773,6 @@ OPTION(VISIT_NOLINK_MPI_WITH_LIBRARIES "Do not link MPI with VisIt's parallel sh
 OPTION(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE "Create a separate executable that forwards VisIt's socket connection between engine and component launcher" ON)
 OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
-OPTION(VISIT_SPHINX "Enable ability to build sphinx documentation" OFF)
 
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
 OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
@@ -2187,9 +2190,7 @@ if(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT BUILD_CTES
       add_subdirectory(test)
 endif()
 
-IF(VISIT_SPHINX)
-    ADD_SUBDIRECTORY(doc)
-ENDIF()
+add_subdirectory(doc)
 
 #-----------------------------------------------------------------------------
 # CPack -- This leverages our install targets to provide a "make package" that
