@@ -457,6 +457,13 @@
 #    Kathleen Biagas, Thu Oct 1, 2020
 #    Add retrieval of git revision hash.
 #
+#    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+#    Removed FastBit and FastQuery
+#
+#    Kevin Griffin, Fri Oct 16 17:13:32 PDT 2020
+#    For Apple, copied manuals directory to the install directory so it can
+#    be found by the packaging target.
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -865,8 +872,6 @@ VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
 VISIT_3RDPARTY_VAR(CONDUIT_DIR   "Path containing the Conduit library's include and lib")
 VISIT_3RDPARTY_DEP(CONDUIT_LIBDEP "Conduit library dependencies")
 VISIT_3RDPARTY_VAR(DAMARIS_DIR   "Path containing the Damaris library's include and lib")
-VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the FastBit library's include and lib")
-VISIT_3RDPARTY_VAR(FASTQUERY_DIR   "Path containing the FastQuery library's include and lib")
 VISIT_3RDPARTY_VAR(FMS_DIR       "Path containing the FMS library's include and lib")
 VISIT_3RDPARTY_DEP(FMS_INCDEP    "FMS include dependencies")
 VISIT_3RDPARTY_DEP(FMS_LIBDEP    "FMS library dependencies")
@@ -1331,12 +1336,6 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure Conduit support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
-
-    # Configure FastBit support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastBit.cmake)
-
-    # Configure FastQuery support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastQuery.cmake)
 
     # Configure FMS support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFMS.cmake)
@@ -2312,9 +2311,26 @@ if(VISIT_PYTHON3_DIR AND VISIT_ENABLE_MANUALS)
                               GROUP_READ GROUP_WRITE GROUP_EXECUTE
                               WORLD_READ             WORLD_EXECUTE
         CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
+  elseif(APPLE)
+    add_custom_target(manuals
+                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build
+                  -b html ${VISIT_SOURCE_DIR}/doc
+                  ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
+    # Add command to ensure the manuals are installed to the correct location
+    install(DIRECTORY ${VISIT_BINARY_DIR}/resources/help/en_US/manual
+        DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}/help/en_US/
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                         GROUP_READ GROUP_WRITE
+                         WORLD_READ
+        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                              WORLD_READ             WORLD_EXECUTE
+        CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
   else()
     add_custom_target(manuals
-                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build -b html ${VISIT_SOURCE_DIR}/doc ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
+                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build
+                  -b html ${VISIT_SOURCE_DIR}/doc
+                  ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
   endif()
 endif()
 

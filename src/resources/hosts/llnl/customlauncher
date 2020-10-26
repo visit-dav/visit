@@ -202,6 +202,10 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   I removed the logic for setting the visitarch to "linux-x86_64-toss3"
 #   on toss3 systems. I removed the logic for hoth.
 #
+#   Eric Brugger, Mon Oct 12 13:49:41 PDT 2020
+#   Add code to unsetenv LD_PRELOAD to protect against users setting
+#   it for the GL library, which would break rendering.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -261,6 +265,9 @@ class LLNLLauncher(MainLauncher):
         if self.visitarch == "linux-x86_64":
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.3/lib", "/usr/tce/packages/intel/intel-16.0.3/lib/intel64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
+
+        # Unset LD_PRELOAD
+        UNSETENV("LD_PRELOAD")
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can

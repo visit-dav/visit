@@ -243,6 +243,8 @@ def steps_package(opts,build_type,ctx):
  	    cmake_opts += ' -DCPACK_BUNDLE_APPLE_CODESIGN_PARAMETER="%s"' % opts["codesign_param"]
         if opts.has_key("cert"):
             cmake_opts += ' -DCPACK_BUNDLE_APPLE_CERT_APP="%s"' % opts["cert"]
+        if opts.has_key("entitlements"):
+            cmake_opts += ' -DCPACK_BUNDLE_APPLE_ENTITLEMENTS="%s"' % opts["entitlements"]
         a_cmake_bundle = "cmake_cfg_bundle_" + build_type
         a_make_bundle  = "package_osx_bundle." + build_type
         ctx.actions[a_cmake_bundle] = cmake(src_dir=pjoin(opts["build_dir"],"visit/src"),

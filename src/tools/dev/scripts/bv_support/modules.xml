@@ -23,8 +23,6 @@
             <lib name="conduit"/>
             <lib name="embree"/>
             <lib name="fms"/>
-            <lib name="fastbit"/>
-            <lib name="fastquery"/>
             <lib name="gdal"/>
             <lib name="glu"/>
             <lib name="h5part"/>
@@ -126,8 +124,6 @@
             <lib name="conduit"/>
             <lib name="mfem"/>
             <lib name="cgns"/>
-            <lib name="fastbit"/>
-            <lib name="fastquery"/>
             <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="h5part"/>
@@ -155,8 +151,6 @@
             <lib name="conduit"/>
             <lib name="mfem"/>
             <lib name="cgns"/>
-            <lib name="fastbit"/>
-            <lib name="fastquery"/>
             <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="h5part"/>

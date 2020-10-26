@@ -188,6 +188,9 @@
 #    Kathleen Biagas, Mon Sep 14 2020
 #    Enable Rect as an optional plugin on Windows.
 #
+#   Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+#   Removed FastBit and FastQuery
+#
 #****************************************************************************
 
 IF(NOT WIN32)
@@ -372,16 +375,7 @@ if(VISIT_PARADIS)
     CHECK_THIRDPARTY_SATISFIED(paraDIS_tecplot BOOST)
 endif()
 
-# special cases for windows
-IF(WIN32)
-    CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
-ELSE()
-    IF(FASTBIT AND FASTQUERY)
-        CHECK_THIRDPARTY_SATISFIED(H5Part H5PART FASTBIT FASTQUERY)
-    ELSE()
-        CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
-    ENDIF()
-ENDIF()
+CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
 
 # Save the list of all library dirs and libs so the engine can use it
 IF(VISIT_STATIC)
@@ -466,6 +460,7 @@ lata
 volimage
 unv
 ${XDBPLUGIN}
+ZipWrapper
 )
 
 IF(TARGET vtkIOEnSight)
@@ -489,7 +484,6 @@ IF (NOT WIN32)
         STAR
         TCGA
         Vis5D
-        ZipWrapper
     )
     list(APPEND OPTIONAL_DATABASE_PLUGINS
         Hex
@@ -497,7 +491,7 @@ IF (NOT WIN32)
         VLI
     )
 ELSE(NOT WIN32)
-    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;ZipWrapper;Hex;MRTest;VLI" "not currently buildable on Windows")
+    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;Hex;MRTest;VLI" "not currently buildable on Windows")
 ENDIF (NOT WIN32)
 
 
