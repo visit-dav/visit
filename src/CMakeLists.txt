@@ -468,6 +468,9 @@
 #    Removed VISIT_SPHINX, moved Python-3 doc generation logic into doc
 #    subdir's CMakeLists.txt
 #
+#    Kathleen Biagas, Mon Oct 26, 2020
+#    Add VISIT_ENABLE_UNIT_TESTS option (on by default).>> develop
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -803,6 +806,7 @@ OPTION(VISIT_ENABLE_EXAMPLES  "Enable building of examples" ON)
 OPTION(VISIT_ENABLE_LIBSIM "Enable building of libsim." ON)
 OPTION(VISIT_ENABLE_MANUALS  "Enable building of manuals (requires python3)" ON)
 OPTION(VISIT_ENABLE_SILO_TOOLS "Enable building of silo tools (mrgtree2dot, add_visit_searchpath)" ON)
+OPTION(VISIT_ENABLE_UNIT_TESTS "Enable building of unit tests (like MRUCache_test, StringHelpers_test)" ON)
 OPTION(VISIT_ENABLE_XDB "Enable Intelligent Light XDB database plugin." OFF) # OFF for now
 
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
