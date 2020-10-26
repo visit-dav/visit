@@ -216,51 +216,6 @@ function apply_qt_patch
             fi
         fi
     fi
-
-    # these haven't been updated for 5.14.2, and may not be needed.
-    if [[ ${QT_VERSION} == 5.10.1 ]] ; then
-        if [[ -f /etc/centos-release ]] ; then
-            VER=`cat /etc/centos-release | cut -d' ' -f 4`
-            if [[ "${VER:0:2}" == "8." ]] ; then
-                apply_qt_5101_centos8_patch
-                if [[ $? != 0 ]] ; then
-                    return 1
-                fi
-            fi
-        elif [[ -f /etc/lsb-release ]] ; then
-            VER=`cat /etc/lsb-release | grep "DISTRIB_RELEASE" | cut -d'=' -f 2`
-            if [[ "${VER:0:3}" == "19." || "${VER:0:3}" == "20." ]] ; then
-                apply_qt_5101_centos8_patch
-                if [[ $? != 0 ]] ; then
-                    return 1
-                fi
-            fi
-        elif [[ -f /etc/os-release ]] ; then
-            VER=`cat /etc/os-release | grep "REDHAT_SUPPORT_PRODUCT_VERSION" | cut -d'=' -f 2`
-            if [[ "${VER:1:1}" == "8" ]] ; then
-                apply_qt_5101_centos8_patch
-                if [[ $? != 0 ]] ; then
-                    return 1
-                fi
-            fi
-        elif [[ -f /etc/issue ]] ; then
-            VER=`cat /etc/issue | grep "Debian" | cut -d' ' -f 3`
-            if [[ "${VER:0:2}" == "10" ]] ; then
-                apply_qt_5101_centos8_patch
-                if [[ $? != 0 ]] ; then
-                    return 1
-                fi
-            fi
-        fi
-
-        if [[ "$OPSYS" == "Linux" ]]; then
-            apply_qt_5101_blueos_patch
-            if [[ $? != 0 ]] ; then
-                return 1
-            fi
-        fi
-    fi
-
     return 0
 }
 
@@ -347,60 +302,6 @@ EOF
         return 1
     fi
 
-    return 0;
-}
-
-function apply_qt_5101_centos8_patch
-{   #KSB 6-11-2020 Not sure if this patch needs to be redone for 5.14.2 
-    info "Patching qt 5.10.1 for Centos8"
-    patch -p0 <<EOF
-diff -c qtbase/src/corelib/io/qfilesystemengine_unix.cpp.orig qtbase/src/corelib/io/qfilesystemengine_unix.cpp
-*** qtbase/src/corelib/io/qfilesystemengine_unix.cpp.orig	Thu Oct 17 13:54:59 2019
---- qtbase/src/corelib/io/qfilesystemengine_unix.cpp	Thu Oct 17 13:57:20 2019
-***************
-*** 97,102 ****
---- 97,103 ----
-  #  define FICLONE       _IOW(0x94, 9, int)
-  #endif
-  
-+ #if 0
-  #  if !QT_CONFIG(renameat2) && defined(SYS_renameat2)
-  static int renameat2(int oldfd, const char *oldpath, int newfd, const char *newpath, unsigned flags)
-  { return syscall(SYS_renameat2, oldfd, oldpath, newfd, newpath, flags); }
-***************
-*** 108,117 ****
---- 109,121 ----
-  { return syscall(SYS_statx, dirfd, pathname, flag, mask, statxbuf); }
-  #  endif
-  #endif
-+ #endif
-  
-+ #if 0
-  #ifndef STATX_BASIC_STATS
-  struct statx { mode_t stx_mode; };
-  #endif
-+ #endif
-  
-  QT_BEGIN_NAMESPACE
-  
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "qt 5.10.1 centos8 patch failed."
-        return 1
-    fi
-    
-    return 0;
-}
-
-function apply_qt_5101_blueos_patch
-{   # KSB 6-11-20, I think this can be removed for qt 5.14.2 
-    info "Patching qt 5.10.1 for Blueos"
-    sed -i "s/PNG_ARM_NEON_OPT=0/PNG_ARM_NEON_OPT=0 PNG_POWERPC_VSX_OPT=0/" qtbase/src/3rdparty/libpng/libpng.pro
-    if [[ $? != 0 ]] ; then
-        warn "qt 5.10.1 blueos patch failed."
-        return 1
-    fi
-    
     return 0;
 }
 

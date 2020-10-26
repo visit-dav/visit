@@ -24,8 +24,8 @@ function bv_mili_info
     export MILI_VERSION=${MILI_VERSION:-"19.2"}
     export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"19.2"}
     export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
-    export MILI_MD5_CHECKSUM="f00c79ab720f5e4165e0c21122a08333"
-    export MILI_SHA256_CHECKSUM="bee77cec387bb3a721966f4ceaa0b478d2ab5b36a82f4bfac0d9ad2d0dfe8430"
+    export MILI_MD5_CHECKSUM="2d3c62f5261b009dfda2b73bb358749f"
+    export MILI_SHA256_CHECKSUM="dcf636d5f0d2ae9c273ab0e909e558d950471554dc5757734ca73737660f4d90"
 }
 
 function bv_mili_print
@@ -1028,8 +1028,15 @@ function build_mili
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
     fi
 
+    # The 19.2 configure script does not play well with our fortran mac patch.
+    # We can use an older configure script that includes this patch already.
+    config_script=configure
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        config_script=configure_15_1
+    fi
+
     info "Invoking command to configure Mili"
-    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+    ./${config_script} CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 ac_cv_prog_FOUND_GMAKE=make $extra_ac_flags \
                 --prefix="$VISITDIR/mili/$MILI_VERSION/$VISITARCH"

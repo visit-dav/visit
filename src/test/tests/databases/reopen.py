@@ -46,10 +46,12 @@
 #    Kathleen Biagas, Fri May 26 08:31:00 MST 2017
 #    Fixed reopen_04_01 for windows to use the same file as for non-windows.
 #
+#    Kathleen Biagas, Monday October 12, 2020 
+#    Use TestEnv.params["run_dir"] instead of "." in calls to os.listdir.
+#
 # ----------------------------------------------------------------------------
 from __future__ import print_function
 import os
-import string
 import sys
 import time
 import shutil
@@ -58,7 +60,7 @@ def GetTruncatedWindowInformationString():
     # Get the window information and convert it to a string.
     s = str(GetWindowInformation())
     # Only use the first 5 or so lines from the string.
-    lines = string.split(s, "\n")
+    lines = s.split("\n")
     s = ""
     for i in range(5):
         if(i < len(lines)):
@@ -80,10 +82,10 @@ def TestLength(testname):
     TestText(testname, testString)
 
 #
-# Returns whether all files in the list are in the current directory.
+# Returns whether all files in the list are in the run directory.
 #
 def FilesPresent(files):
-    currentFileList = os.listdir(".")
+    currentFileList = os.listdir(TestEnv.params["run_dir"])
     count = 0
     retval = 0
     if type(files) == type(()) or type(files) == type([]):
@@ -101,11 +103,11 @@ def FilesPresent(files):
 
 
 #
-# Removes all files ending in .silo or .visit from the current directory
+# Removes all files ending in .silo or .visit from the run directory
 # to ensure that there are no such files left over from a failed test.
 #
 def RemoveAllSiloAndVisItFiles():
-    currentFileList = os.listdir(".")
+    currentFileList = os.listdir(TestEnv.params["run_dir"])
     for file in currentFileList:
         if file[-5:] == ".silo" or file[-6:] == ".visit":
             try:

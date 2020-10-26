@@ -5,6 +5,7 @@
 #ifndef PY_MACHINEPROFILE_H
 #define PY_MACHINEPROFILE_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <MachineProfile.h>
 #include <visitpy_exports.h>
 

@@ -5,6 +5,7 @@
 #ifndef PY_NAMESCHEMEATTRIBUTES_H
 #define PY_NAMESCHEMEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <NameschemeAttributes.h>
 #include <visitpy_exports.h>
 

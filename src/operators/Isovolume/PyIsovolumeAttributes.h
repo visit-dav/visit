@@ -5,6 +5,7 @@
 #ifndef PY_ISOVOLUMEATTRIBUTES_H
 #define PY_ISOVOLUMEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <IsovolumeAttributes.h>
 
 //

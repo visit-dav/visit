@@ -129,9 +129,10 @@ def abs_path(*args):
             toks = arg.split("/")
             rargs.extend(toks)
     res = os.path.abspath(pjoin(*rargs))
-    # for now, avoid unicode b/c it
+    # for py 2 only avoid unicode b/c it
     # doesn't work w/ RestoreSession w/ diff sources
-    res = res.encode('ascii','ignore')
+    if (sys.version_info < (3, 0)):
+        res = res.encode('ascii','ignore')
     return res
 
 # ----------------------------------------------------------------------------
@@ -214,11 +215,15 @@ def sexe(cmd,
     if ret_output:
         popen_args["stdout"] = subprocess.PIPE
         popen_args["stderr"] = subprocess.STDOUT
+        # universal_newlines arg is needed for python 3 to avoid results
+        # being returned as bytes (instead of strings)
+        popen_args["universal_newlines"] = True
         #p = subprocess.Popen(scmd,
                              #shell=True,
                              #stdin=sexe_stdin,
                              #stdout=subprocess.PIPE,
                              #stderr=subprocess.STDOUT,
+                             #universal_newlines=True,
                              #preexec_fn=os.setsid)
     elif suppress_output:
         fh_dev_null = open(os.devnull,"w")

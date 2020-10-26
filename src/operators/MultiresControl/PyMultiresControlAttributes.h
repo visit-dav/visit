@@ -5,6 +5,7 @@
 #ifndef PY_MULTIRESCONTROLATTRIBUTES_H
 #define PY_MULTIRESCONTROLATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <MultiresControlAttributes.h>
 
 //

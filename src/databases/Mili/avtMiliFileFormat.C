@@ -875,6 +875,10 @@ avtMiliFileFormat::ExtractMeshIdFromPath(const string &varPath)
 //
 //  Modifications
 //
+//    Alister Maguire, Thu Aug 13 08:41:53 PDT 2020
+//    Fixed a bug preventing numClassesPerCellType to be adjusted
+//    correctly.
+//
 // ****************************************************************************
 
 void
@@ -943,6 +947,7 @@ avtMiliFileFormat::ReadMesh(int dom)
         stringVector classNames;
         for (int i = 0 ; i < numCellTypes ; i++)
         {
+            int adjustedNumClassesPerCellType = numClassesPerCellType[i];
             for (int j = 0 ; j < numClassesPerCellType[i]; j++)
             {
                 int nCells = 0;
@@ -959,7 +964,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                 //
                 if (rval != OK)
                 {
-                    numClassesPerCellType[i] = 0;
+                    --adjustedNumClassesPerCellType;
                     continue;
                 }
 
@@ -973,6 +978,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                     SetNumElements(dom, nCells);
                 offset += nCells;
             }
+            numClassesPerCellType[i] = adjustedNumClassesPerCellType;
         }
 
         miliMetaData[meshId]->SetNumCells(dom, nDomCells);
@@ -2706,6 +2712,10 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 //      We don't need to add the OriginalZone/NodeLabels for the
 //      sand mesh.
 //
+//      Alister Maguire, Tue Jul 21 10:52:18 PDT 2020
+//      No need to add the materials for each mesh. Only add to the
+//      non-sand mesh.
+//
 // ****************************************************************************
 
 void
@@ -2796,13 +2806,6 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             sandMesh->hasSpatialExtents    = false;
 
             md->Add(sandMesh);
-
-            AddMaterialToMetaData(md,
-                                  matName,
-                                  sandMeshName,
-                                  numMats,
-                                  matNames,
-                                  matColors);
         }
 
         //

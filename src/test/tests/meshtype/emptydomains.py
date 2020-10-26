@@ -14,11 +14,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Mark C. Miller, Wed Sep 23 16:28:27 PDT 2020
+#    Force to run on only PDB driver
 # ----------------------------------------------------------------------------
-
-
-OpenDatabase(silo_data_path("emptydomains.silo"))
-
+OpenDatabase(data_path("silo_pdb_test_data/emptydomains.silo"))
 
 # Test the multi-mesh support
 AddPlot("Mesh", "mesh")

@@ -15,8 +15,6 @@ PYTHON_ADD_DISTUTILS_SETUP(visitmodule_py_setup
                            py_src/__init__.py
                            py_src/frontend.py
                            py_src/pyside_support.py
-                           py_src/evalfuncs.py
-                           py_src/writescript.py
                            )
 
 
