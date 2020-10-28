@@ -29,6 +29,9 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
+
+#include <vtkCellData.h>
 
 #include "vtkPLOT3DReaderInternals.h"
 #include "PLOT3DFunctions.h"
@@ -796,16 +799,96 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
     return VTK_ERROR;
     }
 
-  // This is where we would read IBlanking information, but VisIt currently 
-  //  doesn't do anything with it
-  // 
-#if 0
-  if (this->Internal->IBlanking)
+    // START MY EDITS
+    if (this->Internal->IBlanking)
     {
+      vtkIntArray* iblank = vtkIntArray::New();
+      iblank->SetName("IBlank");
+      iblank->SetNumberOfTuples(this->NumberOfPoints); // npts : this->NumberOfPoints
+      // Looks like ReadIntScalar just does some check on the iblank array with the
+      // file. Not sure exactly what, but we'll figure that part out later.
+      // The ReadIntScalar is needed because it populates the iblank array with
+      // values from the file.
+      // STILL FIGURING THIS OUT BELOW
+      // if (this->ReadIntScalar(xyzFp, extent, wextent, iblank, offset, record) == 0)
+      // {
+      //   vtkErrorMacro("Encountered premature end-of-file while reading "
+      //                 "the xyz file (or the file is corrupt).");
+      //   this->SetErrorCode(vtkErrorCode::PrematureEndOfFileError);
+      //   this->CloseFile(xyzFp2);
+      //   this->ClearGeometryCache();
+      //   return 0;
+      // }
+
+      int* ib = iblank->GetPointer(0);
+      output->GetPointData()->AddArray(iblank);
+      iblank->Delete();
+      // Modify the offset somehow, not clear how yet...
+      // offset += record.GetLengthWithSeparators(offset, nTotalPts * sizeof(int));
+
+      vtkUnsignedCharArray* ghosts = vtkUnsignedCharArray::New();
+      ghosts->SetNumberOfValues(output->GetNumberOfCells());
+      ghosts->SetName(vtkDataSetAttributes::GhostArrayName());
+      vtkIdList* ids = vtkIdList::New();
+      ids->SetNumberOfIds(8);
+      vtkIdType numCells = output->GetNumberOfCells();
+
+      for (vtkIdType cellId = 0; cellId < numCells; cellId++)
+      // Loop over all cells in the output
+      {
+        output->GetCellPoints(cellId, ids);
+        vtkIdType numIds = ids->GetNumberOfIds();
+        unsigned char value = 0;
+        for (vtkIdType ptIdx = 0; ptIdx < numIds; ptIdx++)
+        // Loop over all the nodes in the cell
+        {
+          if (ib[ids->GetId(ptIdx)] == 0)
+          // If node is marked for iblanking, then hide the cell
+          {
+            value |= vtkDataSetAttributes::HIDDENCELL;
+            break;
+          }
+        }
+        ghosts->SetValue(cellId, value);
+      }
+      ids->Delete();
+      output->GetCellData()->AddArray(ghosts);
+      ghosts->Delete();
     }
-#endif
+    // END MY EDITS
   return VTK_OK;
 }
+
+// STILL MY EDITS
+// int vtkPLOT3DReader::ReadIntScalar(void* vfp, int extent[6], int wextent[6],
+//   vtkDataArray* scalar, vtkTypeUInt64 offset, const vtkMultiBlockPLOT3DReaderRecord& record)
+// {
+//   FILE* fp = reinterpret_cast<FILE*>(vfp);
+//   vtkIdType n = vtkStructuredData::GetNumberOfPoints(extent);
+
+//   if (this->Internal->Settings.BinaryFile)
+//   {
+//     // precond: we assume the offset has been updated properly to step over
+//     // sub-record markers, if any.
+//     if (vtk_fseek(fp, offset, SEEK_SET) != 0)
+//     {
+//       return 0;
+//     }
+
+//     vtkPLOT3DArrayReader<int> arrayReader;
+//     arrayReader.ByteOrder = this->Internal->Settings.ByteOrder;
+//     vtkIdType preskip, postskip;
+//     vtkMultiBlockPLOT3DReaderInternals::CalculateSkips(extent, wextent, preskip, postskip);
+//     vtkIntArray* intArray = static_cast<vtkIntArray*>(scalar);
+//     return arrayReader.ReadScalar(fp, preskip, n, postskip, intArray->GetPointer(0), record) == n;
+//   }
+//   else
+//   {
+//     vtkIntArray* intArray = static_cast<vtkIntArray*>(scalar);
+//     return this->ReadIntBlock(fp, n, intArray->GetPointer(0));
+//   }
+// }
+// END MY EDITS
 
 long
 vtkPLOT3DReader::ComputeGridOffset(FILE *xyzFp)
