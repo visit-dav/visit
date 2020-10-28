@@ -30,8 +30,9 @@
 #include <vtkPointData.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
-
 #include <vtkCellData.h>
+
+#include <avtGhostData.h>
 
 #include "vtkPLOT3DReaderInternals.h"
 #include "PLOT3DFunctions.h"
@@ -845,7 +846,7 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
           if (ib[ids->GetId(ptIdx)] == 0)
           // If node is marked for iblanking, then hide the cell
           {
-            value |= vtkDataSetAttributes::HIDDENCELL;
+            value |= avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM;
             break;
           }
         }
