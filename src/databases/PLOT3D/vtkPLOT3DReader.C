@@ -804,7 +804,7 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
     if (this->Internal->IBlanking)
     {
       vtkIntArray* iblank = vtkIntArray::New();
-      iblank->SetName("IBlank");
+      iblank->SetName("avtGhostNodes");
       iblank->SetNumberOfTuples(this->NumberOfPoints); // npts : this->NumberOfPoints
       // Looks like ReadIntScalar just does some check on the iblank array with the
       // file. Not sure exactly what, but we'll figure that part out later.
@@ -822,6 +822,13 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
       // }
 
       int* ib = iblank->GetPointer(0);
+      for (int i = 0; i < this->NumberOfPoints; ++i)
+      {
+        if (ib[i] == 0)
+        {
+          ib[i] = avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM;
+        }
+      }
       output->GetPointData()->AddArray(iblank);
       iblank->Delete();
       // Modify the offset somehow, not clear how yet...
@@ -829,7 +836,7 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
 
       vtkUnsignedCharArray* ghosts = vtkUnsignedCharArray::New();
       ghosts->SetNumberOfValues(output->GetNumberOfCells());
-      ghosts->SetName(vtkDataSetAttributes::GhostArrayName());
+      ghosts->SetName("avtGhostZones");
       vtkIdList* ids = vtkIdList::New();
       ids->SetNumberOfIds(8);
       vtkIdType numCells = output->GetNumberOfCells();
@@ -843,7 +850,7 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
         for (vtkIdType ptIdx = 0; ptIdx < numIds; ptIdx++)
         // Loop over all the nodes in the cell
         {
-          if (ib[ids->GetId(ptIdx)] == 0)
+          if (ib[ids->GetId(ptIdx)] == avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM)
           // If node is marked for iblanking, then hide the cell
           {
             value |= avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM;
