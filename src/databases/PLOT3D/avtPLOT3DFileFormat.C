@@ -210,9 +210,15 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
         {
             bool ib = readOpts->GetBool("IBlanking");
             if (ib)
+            {
+                std::cout << "Iblanking is on per reader options" << std::endl;
                 reader->IBlankingOn();
+            }
             else 
+            {
+                std::cout << "Iblanking is off per reader options" << std::endl;
                 reader->IBlankingOff();
+            }
         }
         if (readOpts->FindIndex("Solution (Q) File Name") >= 0)
         {
@@ -249,6 +255,7 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
     {
         // set up some assumed defaults that may or may not be specified in 
         // the Meta File 
+        std::cout << "Iblanking is off per metadata file" << std::endl;
         reader->MultiGridOff();
         reader->BinaryFileOn();
         reader->SetByteOrderToBigEndian();
@@ -890,10 +897,12 @@ avtPLOT3DFileFormat::ReadVisItMetaFile()
             }
             else if (MatchesSubstring(infoLine,"NO_IBLANKING"))
             {
+                std::cout << "Iblanking off re metafile" << std::endl;
                 reader->IBlankingOff();
             }
             else if (MatchesSubstring(infoLine,"IBLANKING"))
             {
+                std::cout << "Iblanking on re metafile" << std::endl;
                 reader->IBlankingOn();
             }
             else if (MatchesSubstring(infoLine,"3D"))
