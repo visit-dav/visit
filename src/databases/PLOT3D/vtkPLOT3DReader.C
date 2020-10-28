@@ -765,6 +765,7 @@ vtkPLOT3DReader::ReadGrid()
 int
 vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
 {
+  std::cout << "Reading the grid" << std::endl;
   if (0 <= this->GridNumber && this->GridNumber < this->NumberOfGrids)
     {
     this->NumberOfPoints = this->GridSizes[this->GridNumber];
@@ -794,76 +795,88 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
   this->SkipByteCount(xyzFp);
   int d = this->Internal->NumberOfDimensions;
   if (this->ReadVector(xyzFp, this->NumberOfPoints, d, pointArray) == 0)
-    {
+  {
     vtkErrorMacro("Encountered premature end-of-file while reading "
                   "the geometry file (or the file is corrupt).");
     return VTK_ERROR;
-    }
+  }
 
-    // START MY EDITS
-    if (this->Internal->IBlanking)
+  // START MY EDITS
+  this->Internal->IBlanking = true;
+  std::cout << "internal iblanking: " << this->Internal->IBlanking << std::endl;
+  if (this->Internal->IBlanking)
+  {
+    std::cout << "IBlanking acitvated" << std::endl;
+    vtkIntArray* iblank = vtkIntArray::New();
+    iblank->SetName("avtGhostNodes");
+    iblank->SetNumberOfTuples(this->NumberOfPoints); // npts : this->NumberOfPoints
+    // The ReadIntScalar is needed because it populates the iblank array with
+    // values from the file.
+    // STILL FIGURING THIS OUT BELOW
+    if (this->ReadIntBlock(xyzFp, this->NumberOfPoints, iblank->GetPointer(0)))
+    // if (this->ReadIntScalar(xyzFp, extent, wextent, iblank, offset, record) == 0)
     {
-      vtkIntArray* iblank = vtkIntArray::New();
-      iblank->SetName("avtGhostNodes");
-      iblank->SetNumberOfTuples(this->NumberOfPoints); // npts : this->NumberOfPoints
-      // Looks like ReadIntScalar just does some check on the iblank array with the
-      // file. Not sure exactly what, but we'll figure that part out later.
-      // The ReadIntScalar is needed because it populates the iblank array with
-      // values from the file.
-      // STILL FIGURING THIS OUT BELOW
-      // if (this->ReadIntScalar(xyzFp, extent, wextent, iblank, offset, record) == 0)
-      // {
-      //   vtkErrorMacro("Encountered premature end-of-file while reading "
-      //                 "the xyz file (or the file is corrupt).");
-      //   this->SetErrorCode(vtkErrorCode::PrematureEndOfFileError);
-      //   this->CloseFile(xyzFp2);
-      //   this->ClearGeometryCache();
-      //   return 0;
-      // }
-
-      int* ib = iblank->GetPointer(0);
-      for (int i = 0; i < this->NumberOfPoints; ++i)
-      {
-        if (ib[i] == 0)
-        {
-          ib[i] = avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM;
-        }
-      }
-      output->GetPointData()->AddArray(iblank);
-      iblank->Delete();
-      // Modify the offset somehow, not clear how yet...
-      // offset += record.GetLengthWithSeparators(offset, nTotalPts * sizeof(int));
-
-      vtkUnsignedCharArray* ghosts = vtkUnsignedCharArray::New();
-      ghosts->SetNumberOfValues(output->GetNumberOfCells());
-      ghosts->SetName("avtGhostZones");
-      vtkIdList* ids = vtkIdList::New();
-      ids->SetNumberOfIds(8);
-      vtkIdType numCells = output->GetNumberOfCells();
-
-      for (vtkIdType cellId = 0; cellId < numCells; cellId++)
-      // Loop over all cells in the output
-      {
-        output->GetCellPoints(cellId, ids);
-        vtkIdType numIds = ids->GetNumberOfIds();
-        unsigned char value = 0;
-        for (vtkIdType ptIdx = 0; ptIdx < numIds; ptIdx++)
-        // Loop over all the nodes in the cell
-        {
-          if (ib[ids->GetId(ptIdx)] == avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM)
-          // If node is marked for iblanking, then hide the cell
-          {
-            value |= avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM;
-            break;
-          }
-        }
-        ghosts->SetValue(cellId, value);
-      }
-      ids->Delete();
-      output->GetCellData()->AddArray(ghosts);
-      ghosts->Delete();
+      // vtkErrorMacro("Encountered premature end-of-file while reading "
+      //               "the xyz file (or the file is corrupt).");
+      std::cout << "Encountered premature end-of-file while reading "
+                    "the xyz file (or the file is corrupt)." << std::endl;
+      // this->SetErrorCode(vtkErrorCode::PrematureEndOfFileError);
+      // this->CloseFile(xyzFp2);
+      // this->ClearGeometryCache();
+      // return 0;
+      return VTK_ERROR;
     }
-    // END MY EDITS
+
+    std::cout << "number of points in mesh" << this->NumberOfPoints << std::endl;
+
+    int* ib = iblank->GetPointer(0);
+    for (int i = 0; i < this->NumberOfPoints; ++i)
+    {
+      if (ib[i] == 0)
+      {
+        // std::cout << "ib[i] is 0, so changing to not applicable" << std::endl;
+        ib[i] = avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM;
+      }
+    }
+    output->GetPointData()->AddArray(iblank);
+    iblank->Delete();
+    // Modify the offset somehow, not clear how yet...
+    // offset += record.GetLengthWithSeparators(offset, nTotalPts * sizeof(int));
+
+    vtkUnsignedCharArray* ghosts = vtkUnsignedCharArray::New();
+    ghosts->SetNumberOfValues(output->GetNumberOfCells());
+    ghosts->SetName("avtGhostZones");
+    vtkIdList* ids = vtkIdList::New();
+    ids->SetNumberOfIds(8);
+    vtkIdType numCells = output->GetNumberOfCells();
+
+    std::cout << "Number of cells" << numCells << std::endl;
+
+    for (vtkIdType cellId = 0; cellId < numCells; cellId++)
+    // Loop over all cells in the output
+    {
+      output->GetCellPoints(cellId, ids);
+      vtkIdType numIds = ids->GetNumberOfIds();
+      unsigned char value = 0;
+      for (vtkIdType ptIdx = 0; ptIdx < numIds; ptIdx++)
+      // Loop over all the nodes in the cell
+      {
+        if (ib[ids->GetId(ptIdx)] == avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM)
+        // If node is marked for iblanking, then hide the cell
+        {
+          // std::cout << "point is blanked, so zone is blanked too." << std::endl;
+          value = avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM;
+          break;
+        }
+      }
+      ghosts->SetValue(cellId, value);
+    }
+    ids->Delete();
+    output->GetCellData()->AddArray(ghosts);
+    ghosts->Delete();
+  }
+  // END MY EDITS
+
   return VTK_OK;
 }
 
