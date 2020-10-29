@@ -808,98 +808,85 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
                   "the geometry file (or the file is corrupt).");
     return VTK_ERROR;
   }
+  if (this->Internal->IBlanking)
+  {
+    std::cout << "Reading iblank data" << std::endl;
+    vtkIntArray* iblank = vtkIntArray::New();
+    iblank->SetName("avtGhostNodes");
+    iblank->SetNumberOfTuples(this->NumberOfPoints);
 
-  // START MY EDITS
-  // Increment the offset for next read. This points to the
-  // beginning of next block.
-  // offset += record.GetLengthWithSeparators(offset,
-  //   this->Internal->Settings.NumberOfDimensions * nTotalPts *
-  //     this->Internal->Settings.Precision);
+    // TODO: Only do this for binary mode. Should just update ReadScalar to handle
+    // the integer case as well....
+    vtkPLOT3DArrayReader<int> arrayReader;
+    arrayReader.ByteOrder = this->Internal->ByteOrder;
 
-  // this->Internal->IBlanking = true;
-  // std::cout << "internal iblanking: " << this->Internal->IBlanking << std::endl;
-  // // if (this->Internal->IBlanking)
-  // if (false)
-  // {
-  //   // rewind(xyzFp);
-  //   // offset = this->ComputeGridOffset(xyzFp);
-  //   // fseek(xyzFp, offset, SEEK_SET);
-  //   // this->SkipByteCount(xyzFp);
+    // if (this->ReadScalar(xyzFp, this->NumberOfPoints, iblank) == 0)
+    if (arrayReader.ReadScalar(xyzFp, this->NumberOfPoints, iblank->GetPointer(0)) == 0)
+    {
+      vtkErrorMacro("Encountered premature end-of-file while reading "
+                    "the iblanking data from the xyz file.");
+      std::cout << "Encountered premature end-of-file while reading "
+                    "the iblanking data from the xyz file." << std::endl;
+      return VTK_ERROR;
+    }    
 
-  //   std::cout << "IBlanking acitvated" << std::endl;
-  //   vtkIntArray* iblank = vtkIntArray::New();
-  //   iblank->SetName("avtGhostNodes");
-  //   iblank->SetNumberOfTuples(this->NumberOfPoints); // npts : this->NumberOfPoints
-  //   // The ReadIntScalar is needed because it populates the iblank array with
-  //   // values from the file.
-  //   vtkPLOT3DArrayReader<int> arrayReader;
-  //   arrayReader.ByteOrder = this->Internal->ByteOrder;
-  //   vtkIntArray* intArray = static_cast<vtkIntArray*>(iblank);
-  //   // if (arrayReader.ReadScalar(xyzFp, this->NumberOfPoints, intArray->GetPointer(0)))
-  //   if (ReadIntScalar(xyzFp, this->NumberOfPoints, iblank, offset))
-  //   // if (this->ReadIntBlock(xyzFp, this->NumberOfPoints, iblank->GetPointer(0)))
-  //   // if (this->ReadIntScalar(xyzFp, extent, wextent, iblank, offset, record) == 0)
-  //   {
-  //     // vtkErrorMacro("Encountered premature end-of-file while reading "
-  //     //               "the xyz file (or the file is corrupt).");
-  //     std::cout << "Encountered premature end-of-file while reading "
-  //                   "the xyz file (or the file is corrupt)." << std::endl;
-  //     // this->SetErrorCode(vtkErrorCode::PrematureEndOfFileError);
-  //     // this->CloseFile(xyzFp2);
-  //     // this->ClearGeometryCache();
-  //     // return 0;
-  //     return VTK_ERROR;
-  //   }
+    int* ib = iblank->GetPointer(0);
+    for (int i = 0; i < this->NumberOfPoints; ++i)
+    {
+      if (ib[i] == 0)
+      {
+        ib[i] = avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM;
+      }
+      else if (ib[i] == 1)
+      {
+        ib[i] = avtGhostNodeTypes::DUPLICATED_NODE;
+      }
+    }
 
-  //   std::cout << "number of points in mesh" << this->NumberOfPoints << std::endl;
+    // DEBUG
+    std::cout << "\n\nValues in iblank..." << std::endl;
+    for (int i = 0; i < this->NumberOfPoints; ++i)
+    {
+      std::cout << iblank->GetValue(i) << " ";
+    }
+    std::cout << std::endl;
 
-  //   int* ib = iblank->GetPointer(0);
-  //   for (int i = 0; i < this->NumberOfPoints; ++i)
-  //   {
-  //     if (ib[i] == 0)
-  //     {
-  //       // std::cout << "ib[i] is 0, so changing to not applicable" << std::endl;
-  //       ib[i] = avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM;
-  //     }
-  //   }
-  //   output->GetPointData()->AddArray(iblank);
-  //   iblank->Delete();
-  //   // Modify the offset somehow, not clear how yet...
-  //   // offset += record.GetLengthWithSeparators(offset, nTotalPts * sizeof(int));
+    output->GetPointData()->AddArray(iblank);
+    iblank->Delete();
 
-  //   vtkUnsignedCharArray* ghosts = vtkUnsignedCharArray::New();
-  //   ghosts->SetNumberOfValues(output->GetNumberOfCells());
-  //   ghosts->SetName("avtGhostZones");
-  //   vtkIdList* ids = vtkIdList::New();
-  //   ids->SetNumberOfIds(8);
-  //   vtkIdType numCells = output->GetNumberOfCells();
+    vtkUnsignedCharArray* ghosts = vtkUnsignedCharArray::New();
+    ghosts->SetNumberOfValues(output->GetNumberOfCells());
+    ghosts->SetName("avtGhostZones");
+    vtkIdList* ids = vtkIdList::New();
+    ids->SetNumberOfIds(8);
+    vtkIdType numCells = output->GetNumberOfCells();
 
-  //   std::cout << "Number of cells" << numCells << std::endl;
+    std::cout << "Number of cells" << numCells << std::endl;
 
-  //   for (vtkIdType cellId = 0; cellId < numCells; cellId++)
-  //   // Loop over all cells in the output
-  //   {
-  //     output->GetCellPoints(cellId, ids);
-  //     vtkIdType numIds = ids->GetNumberOfIds();
-  //     unsigned char value = 0;
-  //     for (vtkIdType ptIdx = 0; ptIdx < numIds; ptIdx++)
-  //     // Loop over all the nodes in the cell
-  //     {
-  //       if (ib[ids->GetId(ptIdx)] == avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM)
-  //       // If node is marked for iblanking, then hide the cell
-  //       {
-  //         // std::cout << "point is blanked, so zone is blanked too." << std::endl;
-  //         value = avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM;
-  //         break;
-  //       }
-  //     }
-  //     ghosts->SetValue(cellId, value);
-  //   }
-  //   ids->Delete();
-  //   output->GetCellData()->AddArray(ghosts);
-  //   ghosts->Delete();
-  // }
-  // // END MY EDITS
+    for (vtkIdType cellId = 0; cellId < numCells; cellId++)
+    // Loop over all cells in the output
+    {
+      output->GetCellPoints(cellId, ids);
+      vtkIdType numIds = ids->GetNumberOfIds();
+      unsigned char value = 0;
+      for (vtkIdType ptIdx = 0; ptIdx < numIds; ptIdx++)
+      // Loop over all the nodes in the cell
+      {
+        if (ib[ids->GetId(ptIdx)] == avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM)
+        // If node is marked for iblanking, then hide the cell
+        {
+          // std::cout << "point is blanked, so zone is blanked too." << std::endl;
+          value = avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM;
+          break;
+        }
+      }
+      ghosts->SetValue(cellId, value);
+    }
+    ids->Delete();
+    output->GetCellData()->AddArray(ghosts);
+    ghosts->Delete();
+  }
+  // END MY EDITS
   return VTK_OK;
 }
 
