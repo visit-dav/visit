@@ -316,7 +316,7 @@ int vtkPLOT3DReader::ReadIntBlock(FILE* fp, int n, int* block)
   std::cout << "ReadIntBlock" << std::endl;
   if (this->Internal->BinaryFile)
     {
-  std::cout << "Read As Binary" << std::endl;
+  // std::cout << "Read As Binary" << std::endl;
     int retVal=static_cast<int>(fread(block, sizeof(int), n, fp));
     if (this->Internal->ByteOrder == FILE_LITTLE_ENDIAN)
       {
@@ -330,7 +330,7 @@ int vtkPLOT3DReader::ReadIntBlock(FILE* fp, int n, int* block)
     }
   else
     {
-  std::cout << "Read As NOT Binary" << std::endl;
+  // std::cout << "Read As NOT Binary" << std::endl;
     int count = 0;
     for(int i=0; i<n; i++)
       {
@@ -541,6 +541,7 @@ int
 vtkPLOT3DReader::ReadGeometryHeader(FILE* xyzFp)
 {
   int numGrids = this->GetNumberOfBlocksInternal(xyzFp);
+  std::cout << "Geometry number of grids: " << numGrids << std::endl;
   vtkDebugMacro("Geometry number of grids: " << numGrids);
   if ( numGrids == 0 )
     {
@@ -575,6 +576,8 @@ vtkPLOT3DReader::ReadGeometryHeader(FILE* xyzFp)
       this->GridDimensions[0 + 3*i] = ni;
       this->GridDimensions[1 + 3*i] = nj;
       this->GridDimensions[2 + 3*i] = nk;
+      std::cout << "Geometry, block " << i << " dimensions: "
+                    << ni << " " << nj << " " << nk << std::endl;
       vtkDebugMacro("Geometry, block " << i << " dimensions: "
                     << ni << " " << nj << " " << nk);
       }
@@ -798,6 +801,7 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
   fseek(xyzFp, offset, SEEK_SET);
   this->SkipByteCount(xyzFp);
   int d = this->Internal->NumberOfDimensions;
+  std::cout << "d is " << d << std::endl;
   if (this->ReadVector(xyzFp, this->NumberOfPoints, d, pointArray) == 0)
   {
     vtkErrorMacro("Encountered premature end-of-file while reading "
@@ -806,121 +810,127 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
   }
 
   // START MY EDITS
-  // this->Internal->IBlanking = false;
-  std::cout << "internal iblanking: " << this->Internal->IBlanking << std::endl;
-  if (this->Internal->IBlanking)
-  {
-    // rewind(xyzFp);
-    // offset = this->ComputeGridOffset(xyzFp);
-    // fseek(xyzFp, offset, SEEK_SET);
-    // this->SkipByteCount(xyzFp);
+  // Increment the offset for next read. This points to the
+  // beginning of next block.
+  // offset += record.GetLengthWithSeparators(offset,
+  //   this->Internal->Settings.NumberOfDimensions * nTotalPts *
+  //     this->Internal->Settings.Precision);
 
-    std::cout << "IBlanking acitvated" << std::endl;
-    vtkIntArray* iblank = vtkIntArray::New();
-    iblank->SetName("avtGhostNodes");
-    iblank->SetNumberOfTuples(this->NumberOfPoints); // npts : this->NumberOfPoints
-    // The ReadIntScalar is needed because it populates the iblank array with
-    // values from the file.
-    // STILL FIGURING THIS OUT BELOW
-    vtkPLOT3DArrayReader<int> arrayReader;
-    arrayReader.ByteOrder = this->Internal->ByteOrder;
-    vtkIntArray* intArray = static_cast<vtkIntArray*>(iblank);
-    if (arrayReader.ReadScalar(xyzFp, this->NumberOfPoints, intArray->GetPointer(0)))
-    // if (this->ReadIntBlock(xyzFp, this->NumberOfPoints, iblank->GetPointer(0)))
-    // if (this->ReadIntScalar(xyzFp, extent, wextent, iblank, offset, record) == 0)
-    {
-      // vtkErrorMacro("Encountered premature end-of-file while reading "
-      //               "the xyz file (or the file is corrupt).");
-      std::cout << "Encountered premature end-of-file while reading "
-                    "the xyz file (or the file is corrupt)." << std::endl;
-      // this->SetErrorCode(vtkErrorCode::PrematureEndOfFileError);
-      // this->CloseFile(xyzFp2);
-      // this->ClearGeometryCache();
-      // return 0;
-      return VTK_ERROR;
-    }
+  // this->Internal->IBlanking = true;
+  // std::cout << "internal iblanking: " << this->Internal->IBlanking << std::endl;
+  // // if (this->Internal->IBlanking)
+  // if (false)
+  // {
+  //   // rewind(xyzFp);
+  //   // offset = this->ComputeGridOffset(xyzFp);
+  //   // fseek(xyzFp, offset, SEEK_SET);
+  //   // this->SkipByteCount(xyzFp);
 
-    std::cout << "number of points in mesh" << this->NumberOfPoints << std::endl;
+  //   std::cout << "IBlanking acitvated" << std::endl;
+  //   vtkIntArray* iblank = vtkIntArray::New();
+  //   iblank->SetName("avtGhostNodes");
+  //   iblank->SetNumberOfTuples(this->NumberOfPoints); // npts : this->NumberOfPoints
+  //   // The ReadIntScalar is needed because it populates the iblank array with
+  //   // values from the file.
+  //   vtkPLOT3DArrayReader<int> arrayReader;
+  //   arrayReader.ByteOrder = this->Internal->ByteOrder;
+  //   vtkIntArray* intArray = static_cast<vtkIntArray*>(iblank);
+  //   // if (arrayReader.ReadScalar(xyzFp, this->NumberOfPoints, intArray->GetPointer(0)))
+  //   if (ReadIntScalar(xyzFp, this->NumberOfPoints, iblank, offset))
+  //   // if (this->ReadIntBlock(xyzFp, this->NumberOfPoints, iblank->GetPointer(0)))
+  //   // if (this->ReadIntScalar(xyzFp, extent, wextent, iblank, offset, record) == 0)
+  //   {
+  //     // vtkErrorMacro("Encountered premature end-of-file while reading "
+  //     //               "the xyz file (or the file is corrupt).");
+  //     std::cout << "Encountered premature end-of-file while reading "
+  //                   "the xyz file (or the file is corrupt)." << std::endl;
+  //     // this->SetErrorCode(vtkErrorCode::PrematureEndOfFileError);
+  //     // this->CloseFile(xyzFp2);
+  //     // this->ClearGeometryCache();
+  //     // return 0;
+  //     return VTK_ERROR;
+  //   }
 
-    int* ib = iblank->GetPointer(0);
-    for (int i = 0; i < this->NumberOfPoints; ++i)
-    {
-      if (ib[i] == 0)
-      {
-        // std::cout << "ib[i] is 0, so changing to not applicable" << std::endl;
-        ib[i] = avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM;
-      }
-    }
-    output->GetPointData()->AddArray(iblank);
-    iblank->Delete();
-    // Modify the offset somehow, not clear how yet...
-    // offset += record.GetLengthWithSeparators(offset, nTotalPts * sizeof(int));
+  //   std::cout << "number of points in mesh" << this->NumberOfPoints << std::endl;
 
-    vtkUnsignedCharArray* ghosts = vtkUnsignedCharArray::New();
-    ghosts->SetNumberOfValues(output->GetNumberOfCells());
-    ghosts->SetName("avtGhostZones");
-    vtkIdList* ids = vtkIdList::New();
-    ids->SetNumberOfIds(8);
-    vtkIdType numCells = output->GetNumberOfCells();
+  //   int* ib = iblank->GetPointer(0);
+  //   for (int i = 0; i < this->NumberOfPoints; ++i)
+  //   {
+  //     if (ib[i] == 0)
+  //     {
+  //       // std::cout << "ib[i] is 0, so changing to not applicable" << std::endl;
+  //       ib[i] = avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM;
+  //     }
+  //   }
+  //   output->GetPointData()->AddArray(iblank);
+  //   iblank->Delete();
+  //   // Modify the offset somehow, not clear how yet...
+  //   // offset += record.GetLengthWithSeparators(offset, nTotalPts * sizeof(int));
 
-    std::cout << "Number of cells" << numCells << std::endl;
+  //   vtkUnsignedCharArray* ghosts = vtkUnsignedCharArray::New();
+  //   ghosts->SetNumberOfValues(output->GetNumberOfCells());
+  //   ghosts->SetName("avtGhostZones");
+  //   vtkIdList* ids = vtkIdList::New();
+  //   ids->SetNumberOfIds(8);
+  //   vtkIdType numCells = output->GetNumberOfCells();
 
-    for (vtkIdType cellId = 0; cellId < numCells; cellId++)
-    // Loop over all cells in the output
-    {
-      output->GetCellPoints(cellId, ids);
-      vtkIdType numIds = ids->GetNumberOfIds();
-      unsigned char value = 0;
-      for (vtkIdType ptIdx = 0; ptIdx < numIds; ptIdx++)
-      // Loop over all the nodes in the cell
-      {
-        if (ib[ids->GetId(ptIdx)] == avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM)
-        // If node is marked for iblanking, then hide the cell
-        {
-          // std::cout << "point is blanked, so zone is blanked too." << std::endl;
-          value = avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM;
-          break;
-        }
-      }
-      ghosts->SetValue(cellId, value);
-    }
-    ids->Delete();
-    output->GetCellData()->AddArray(ghosts);
-    ghosts->Delete();
-  }
-  // END MY EDITS
+  //   std::cout << "Number of cells" << numCells << std::endl;
+
+  //   for (vtkIdType cellId = 0; cellId < numCells; cellId++)
+  //   // Loop over all cells in the output
+  //   {
+  //     output->GetCellPoints(cellId, ids);
+  //     vtkIdType numIds = ids->GetNumberOfIds();
+  //     unsigned char value = 0;
+  //     for (vtkIdType ptIdx = 0; ptIdx < numIds; ptIdx++)
+  //     // Loop over all the nodes in the cell
+  //     {
+  //       if (ib[ids->GetId(ptIdx)] == avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM)
+  //       // If node is marked for iblanking, then hide the cell
+  //       {
+  //         // std::cout << "point is blanked, so zone is blanked too." << std::endl;
+  //         value = avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM;
+  //         break;
+  //       }
+  //     }
+  //     ghosts->SetValue(cellId, value);
+  //   }
+  //   ids->Delete();
+  //   output->GetCellData()->AddArray(ghosts);
+  //   ghosts->Delete();
+  // }
+  // // END MY EDITS
   return VTK_OK;
 }
 
 // STILL MY EDITS
-// int vtkPLOT3DReader::ReadIntScalar(void* vfp, int extent[6], int wextent[6],
-//   vtkDataArray* scalar, vtkTypeUInt64 offset, const vtkMultiBlockPLOT3DReaderRecord& record)
-// {
-//   FILE* fp = reinterpret_cast<FILE*>(vfp);
-//   vtkIdType n = vtkStructuredData::GetNumberOfPoints(extent);
+int vtkPLOT3DReader::ReadIntScalar(FILE* fp, int n, vtkDataArray* scalar, long offset)
+{
+  std::cout << "ReadIntScalar" << std::endl;
+  if (this->Internal->BinaryFile)
+  {
+    std::cout << "Internal BinaryFile" << std::endl;
+    // precond: we assume the offset has been updated properly to step over
+    // sub-record markers, if any.
+    if (fseek(fp, offset, SEEK_SET) != 0)
+    {
+      return 0;
+    }
 
-//   if (this->Internal->Settings.BinaryFile)
-//   {
-//     // precond: we assume the offset has been updated properly to step over
-//     // sub-record markers, if any.
-//     if (vtk_fseek(fp, offset, SEEK_SET) != 0)
-//     {
-//       return 0;
-//     }
-
-//     vtkPLOT3DArrayReader<int> arrayReader;
-//     arrayReader.ByteOrder = this->Internal->Settings.ByteOrder;
-//     vtkIdType preskip, postskip;
-//     vtkMultiBlockPLOT3DReaderInternals::CalculateSkips(extent, wextent, preskip, postskip);
-//     vtkIntArray* intArray = static_cast<vtkIntArray*>(scalar);
-//     return arrayReader.ReadScalar(fp, preskip, n, postskip, intArray->GetPointer(0), record) == n;
-//   }
-//   else
-//   {
-//     vtkIntArray* intArray = static_cast<vtkIntArray*>(scalar);
-//     return this->ReadIntBlock(fp, n, intArray->GetPointer(0));
-//   }
-// }
+    vtkPLOT3DArrayReader<int> arrayReader;
+    arrayReader.ByteOrder = this->Internal->ByteOrder;
+    // vtkIdType preskip, postskip;
+    // vtkMultiBlockPLOT3DReaderInternals::CalculateSkips(extent, wextent, preskip, postskip);
+    vtkIntArray* intArray = static_cast<vtkIntArray*>(scalar);
+    return arrayReader.ReadScalar(fp, n, intArray->GetPointer(0));
+    // return arrayReader.ReadScalar(fp, preskip, n, postskip, intArray->GetPointer(0), record) == n;
+  }
+  else
+  {
+    vtkIntArray* intArray = static_cast<vtkIntArray*>(scalar);
+    return this->ReadIntBlock(fp, n, intArray->GetPointer(0));
+  }
+}
 // END MY EDITS
 
 long

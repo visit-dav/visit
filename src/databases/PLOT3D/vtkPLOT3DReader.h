@@ -171,6 +171,7 @@ protected:
 
   int SkipByteCount (FILE* fp);
   int ReadIntBlock  (FILE* fp, int n, int*   block);
+  int ReadIntScalar(FILE* fp, int n, vtkDataArray* scalar, long offset);
 
   int ReadScalar(FILE* fp, int n, vtkDataArray* scalar);
   int ReadVector(FILE* fp, int n, int numDims, vtkDataArray* vector);
