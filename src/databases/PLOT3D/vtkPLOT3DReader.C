@@ -21,6 +21,7 @@
 
 #include <vtkByteSwap.h>
 #include <vtkDoubleArray.h>
+#include <vtkIntArray.h>
 #include <vtkIdList.h>
 #include <vtkErrorCode.h>
 #include <vtkFieldData.h>
@@ -312,8 +313,10 @@ int vtkPLOT3DReader::SkipByteCount(FILE* fp)
 // Read a block of ints (ascii or binary) and return number read.
 int vtkPLOT3DReader::ReadIntBlock(FILE* fp, int n, int* block)
 {
+  std::cout << "ReadIntBlock" << std::endl;
   if (this->Internal->BinaryFile)
     {
+  std::cout << "Read As Binary" << std::endl;
     int retVal=static_cast<int>(fread(block, sizeof(int), n, fp));
     if (this->Internal->ByteOrder == FILE_LITTLE_ENDIAN)
       {
@@ -327,6 +330,7 @@ int vtkPLOT3DReader::ReadIntBlock(FILE* fp, int n, int* block)
     }
   else
     {
+  std::cout << "Read As NOT Binary" << std::endl;
     int count = 0;
     for(int i=0; i<n; i++)
       {
@@ -802,10 +806,15 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
   }
 
   // START MY EDITS
-  this->Internal->IBlanking = true;
+  // this->Internal->IBlanking = false;
   std::cout << "internal iblanking: " << this->Internal->IBlanking << std::endl;
   if (this->Internal->IBlanking)
   {
+    // rewind(xyzFp);
+    // offset = this->ComputeGridOffset(xyzFp);
+    // fseek(xyzFp, offset, SEEK_SET);
+    // this->SkipByteCount(xyzFp);
+
     std::cout << "IBlanking acitvated" << std::endl;
     vtkIntArray* iblank = vtkIntArray::New();
     iblank->SetName("avtGhostNodes");
@@ -813,7 +822,11 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
     // The ReadIntScalar is needed because it populates the iblank array with
     // values from the file.
     // STILL FIGURING THIS OUT BELOW
-    if (this->ReadIntBlock(xyzFp, this->NumberOfPoints, iblank->GetPointer(0)))
+    vtkPLOT3DArrayReader<int> arrayReader;
+    arrayReader.ByteOrder = this->Internal->ByteOrder;
+    vtkIntArray* intArray = static_cast<vtkIntArray*>(iblank);
+    if (arrayReader.ReadScalar(xyzFp, this->NumberOfPoints, intArray->GetPointer(0)))
+    // if (this->ReadIntBlock(xyzFp, this->NumberOfPoints, iblank->GetPointer(0)))
     // if (this->ReadIntScalar(xyzFp, extent, wextent, iblank, offset, record) == 0)
     {
       // vtkErrorMacro("Encountered premature end-of-file while reading "
@@ -876,7 +889,6 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
     ghosts->Delete();
   }
   // END MY EDITS
-
   return VTK_OK;
 }
 
