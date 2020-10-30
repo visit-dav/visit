@@ -21,7 +21,6 @@
 
 #include <vtkByteSwap.h>
 #include <vtkDoubleArray.h>
-#include <vtkIntArray.h>
 #include <vtkIdList.h>
 #include <vtkErrorCode.h>
 #include <vtkFieldData.h>
@@ -424,6 +423,35 @@ int vtkPLOT3DReader::ReadScalar(FILE* fp, int n, vtkDataArray* scalar)
     }
 }
 
+int vtkPLOT3DReader::ReadIBlank(FILE* fp, int n, vtkIntArray* scalar)
+{
+  if (this->Internal->BinaryFile)
+  {
+    vtkPLOT3DArrayReader<int> arrayReader;
+    arrayReader.ByteOrder = this->Internal->ByteOrder;
+    return arrayReader.ReadScalar(fp, n, scalar->GetPointer(0));
+  }
+  else
+  {
+    int* values = scalar->GetPointer(0);
+
+    int count = 0;
+    for(int i = 0; i < n; i++)
+    {
+      int num = fscanf(fp, "%d", &(values[i]));
+      if ( num > 0 )
+      {
+        count++;
+      }
+      else
+      {
+        return 0;
+      }
+    }
+    return count;
+  }
+}
+
 int vtkPLOT3DReader::ReadVector(FILE* fp, int n, int numDims, vtkDataArray* vector)
 {
   if (this->Internal->BinaryFile)
@@ -808,28 +836,25 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
                   "the geometry file (or the file is corrupt).");
     return VTK_ERROR;
   }
+
+  // Read IBlanking data
   if (this->Internal->IBlanking)
   {
-    std::cout << "Reading iblank data" << std::endl;
     vtkIntArray* iblank = vtkIntArray::New();
     iblank->SetName("avtGhostNodes");
     iblank->SetNumberOfTuples(this->NumberOfPoints);
 
-    // TODO: Only do this for binary mode. Should just update ReadScalar to handle
-    // the integer case as well....
-    vtkPLOT3DArrayReader<int> arrayReader;
-    arrayReader.ByteOrder = this->Internal->ByteOrder;
-
-    // if (this->ReadScalar(xyzFp, this->NumberOfPoints, iblank) == 0)
-    if (arrayReader.ReadScalar(xyzFp, this->NumberOfPoints, iblank->GetPointer(0)) == 0)
+    if (this->ReadIBlank(xyzFp, this->NumberOfPoints, iblank) == 0)
     {
       vtkErrorMacro("Encountered premature end-of-file while reading "
                     "the iblanking data from the xyz file.");
-      std::cout << "Encountered premature end-of-file while reading "
-                    "the iblanking data from the xyz file." << std::endl;
       return VTK_ERROR;
     }    
 
+    // IBlank data is 0 if it should be blanked and 1 if it should not be
+    // blanked, which is a little backwards from how I think of it, but okay.
+    // So where ib is 0 we use NODE_NOT_APPLICABLE_TO_PROBLEM and where ib is
+    // 1 we use DUPLICATED_NODE.
     int* ib = iblank->GetPointer(0);
     for (int i = 0; i < this->NumberOfPoints; ++i)
     {
@@ -889,36 +914,6 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
   // END MY EDITS
   return VTK_OK;
 }
-
-// STILL MY EDITS
-int vtkPLOT3DReader::ReadIntScalar(FILE* fp, int n, vtkDataArray* scalar, long offset)
-{
-  std::cout << "ReadIntScalar" << std::endl;
-  if (this->Internal->BinaryFile)
-  {
-    std::cout << "Internal BinaryFile" << std::endl;
-    // precond: we assume the offset has been updated properly to step over
-    // sub-record markers, if any.
-    if (fseek(fp, offset, SEEK_SET) != 0)
-    {
-      return 0;
-    }
-
-    vtkPLOT3DArrayReader<int> arrayReader;
-    arrayReader.ByteOrder = this->Internal->ByteOrder;
-    // vtkIdType preskip, postskip;
-    // vtkMultiBlockPLOT3DReaderInternals::CalculateSkips(extent, wextent, preskip, postskip);
-    vtkIntArray* intArray = static_cast<vtkIntArray*>(scalar);
-    return arrayReader.ReadScalar(fp, n, intArray->GetPointer(0));
-    // return arrayReader.ReadScalar(fp, preskip, n, postskip, intArray->GetPointer(0), record) == n;
-  }
-  else
-  {
-    vtkIntArray* intArray = static_cast<vtkIntArray*>(scalar);
-    return this->ReadIntBlock(fp, n, intArray->GetPointer(0));
-  }
-}
-// END MY EDITS
 
 long
 vtkPLOT3DReader::ComputeGridOffset(FILE *xyzFp)
