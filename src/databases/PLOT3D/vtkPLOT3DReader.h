@@ -21,6 +21,7 @@
 #define vtkPLOT3DReader_h
 
 #include <vtkObject.h>
+#include <vtkIntArray.h>
 #include "PLOT3DFunctions.h"
 
 class vtkDataArray;
@@ -171,7 +172,7 @@ protected:
 
   int SkipByteCount (FILE* fp);
   int ReadIntBlock  (FILE* fp, int n, int*   block);
-  int ReadIntScalar(FILE* fp, int n, vtkDataArray* scalar, long offset);
+  int ReadIBlank(FILE* fp, int n, vtkIntArray* scalar);
 
   int ReadScalar(FILE* fp, int n, vtkDataArray* scalar);
   int ReadVector(FILE* fp, int n, int numDims, vtkDataArray* vector);
