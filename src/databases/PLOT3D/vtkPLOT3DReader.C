@@ -312,10 +312,8 @@ int vtkPLOT3DReader::SkipByteCount(FILE* fp)
 // Read a block of ints (ascii or binary) and return number read.
 int vtkPLOT3DReader::ReadIntBlock(FILE* fp, int n, int* block)
 {
-  std::cout << "ReadIntBlock" << std::endl;
   if (this->Internal->BinaryFile)
     {
-  // std::cout << "Read As Binary" << std::endl;
     int retVal=static_cast<int>(fread(block, sizeof(int), n, fp));
     if (this->Internal->ByteOrder == FILE_LITTLE_ENDIAN)
       {
@@ -329,7 +327,6 @@ int vtkPLOT3DReader::ReadIntBlock(FILE* fp, int n, int* block)
     }
   else
     {
-  // std::cout << "Read As NOT Binary" << std::endl;
     int count = 0;
     for(int i=0; i<n; i++)
       {
@@ -569,7 +566,6 @@ int
 vtkPLOT3DReader::ReadGeometryHeader(FILE* xyzFp)
 {
   int numGrids = this->GetNumberOfBlocksInternal(xyzFp);
-  std::cout << "Geometry number of grids: " << numGrids << std::endl;
   vtkDebugMacro("Geometry number of grids: " << numGrids);
   if ( numGrids == 0 )
     {
@@ -604,8 +600,6 @@ vtkPLOT3DReader::ReadGeometryHeader(FILE* xyzFp)
       this->GridDimensions[0 + 3*i] = ni;
       this->GridDimensions[1 + 3*i] = nj;
       this->GridDimensions[2 + 3*i] = nk;
-      std::cout << "Geometry, block " << i << " dimensions: "
-                    << ni << " " << nj << " " << nk << std::endl;
       vtkDebugMacro("Geometry, block " << i << " dimensions: "
                     << ni << " " << nj << " " << nk);
       }
@@ -800,7 +794,6 @@ vtkPLOT3DReader::ReadGrid()
 int
 vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
 {
-  std::cout << "Reading the grid" << std::endl;
   if (0 <= this->GridNumber && this->GridNumber < this->NumberOfGrids)
     {
     this->NumberOfPoints = this->GridSizes[this->GridNumber];
@@ -829,7 +822,6 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
   fseek(xyzFp, offset, SEEK_SET);
   this->SkipByteCount(xyzFp);
   int d = this->Internal->NumberOfDimensions;
-  std::cout << "d is " << d << std::endl;
   if (this->ReadVector(xyzFp, this->NumberOfPoints, d, pointArray) == 0)
   {
     vtkErrorMacro("Encountered premature end-of-file while reading "
@@ -868,17 +860,10 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
       }
     }
 
-    // DEBUG
-    std::cout << "\n\nValues in iblank..." << std::endl;
-    for (int i = 0; i < this->NumberOfPoints; ++i)
-    {
-      std::cout << iblank->GetValue(i) << " ";
-    }
-    std::cout << std::endl;
-
     output->GetPointData()->AddArray(iblank);
     iblank->Delete();
 
+    // Based on the iblanked nodes, determine which zones should be iblanked.
     vtkUnsignedCharArray* ghosts = vtkUnsignedCharArray::New();
     ghosts->SetNumberOfValues(output->GetNumberOfCells());
     ghosts->SetName("avtGhostZones");
@@ -886,21 +871,16 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
     ids->SetNumberOfIds(8);
     vtkIdType numCells = output->GetNumberOfCells();
 
-    std::cout << "Number of cells" << numCells << std::endl;
-
     for (vtkIdType cellId = 0; cellId < numCells; cellId++)
-    // Loop over all cells in the output
     {
       output->GetCellPoints(cellId, ids);
       vtkIdType numIds = ids->GetNumberOfIds();
       unsigned char value = 0;
       for (vtkIdType ptIdx = 0; ptIdx < numIds; ptIdx++)
-      // Loop over all the nodes in the cell
       {
         if (ib[ids->GetId(ptIdx)] == avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM)
-        // If node is marked for iblanking, then hide the cell
         {
-          // std::cout << "point is blanked, so zone is blanked too." << std::endl;
+          // The node is iblanked, so the entire zone should be iblanked too.
           value = avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM;
           break;
         }
@@ -911,7 +891,6 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
     output->GetCellData()->AddArray(ghosts);
     ghosts->Delete();
   }
-  // END MY EDITS
   return VTK_OK;
 }
 
