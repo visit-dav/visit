@@ -508,6 +508,53 @@ reverse_alphas(unsigned char *a, int na)
     }
 }
 
+// ****************************************************************************
+// Method: avtColorTables::ModifyColor
+//
+// Purpose: Lighten or darken a color by a multiplicative factor without
+//          changing the effective hue. To lighten a color pass a value for
+//          mult > 1 but not to much larger than 2. To darken a color pass a
+//          value for mult < 1 but not too close to 0.
+// 
+// Mark C. Miller, Fri Oct 30 20:03:37 PDT 2020
+// Based on code found here,
+// https://stackoverflow.com/questions/141855/programmatically-lighten-a-color#141865
+// ****************************************************************************
+void avtColorTables::ModifyColor(char unsigned const *inrgb, double mult,
+    char unsigned *outrgb)
+{
+    static double const threshold = 255;
+    double r = inrgb[0];
+    double g = inrgb[1];
+    double b = inrgb[2];
+
+    r *= mult;
+    g *= mult;
+    b *= mult;
+
+    double m = r>g ? (r>b ? r : b) : (g>b ? g : b);
+    if (m < threshold)
+    {
+        outrgb[0] = (unsigned char) r;
+        outrgb[1] = (unsigned char) g;
+        outrgb[2] = (unsigned char) b;
+        return;
+    }
+
+    double total = r + g + b;
+    if (total >= 3 * threshold)
+    {
+        outrgb[0] = outrgb[1] = outrgb[2] = threshold;
+        return;
+    }
+
+    double x = (3 * threshold - total) / (3 * m - total);
+    double gray = threshold - x * m;
+
+    outrgb[0] = gray + x * r;
+    outrgb[1] = gray + x * g;
+    outrgb[2] = gray + x * b;
+}
 
 // ****************************************************************************
 // Method: avtColorTables::avtColorTables
