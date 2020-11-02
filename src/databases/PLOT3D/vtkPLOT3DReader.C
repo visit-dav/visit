@@ -836,6 +836,9 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
     iblank->SetName("avtGhostNodes");
     iblank->SetNumberOfTuples(this->NumberOfPoints);
 
+    // Attempt to read the iblank data from the plot3d file. If the read failes,
+    // then the function will return 0 and we will error out. If the read passes,
+    // it will return the count that indicates how many numbers it read.
     if (this->ReadIBlank(xyzFp, this->NumberOfPoints, iblank) == 0)
     {
       vtkErrorMacro("Encountered premature end-of-file while reading "
