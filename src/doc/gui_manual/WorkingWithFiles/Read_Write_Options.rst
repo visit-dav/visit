@@ -142,7 +142,7 @@ need to tell VisIt it is a 'MultiGrid' file. VisIt will then correctly read
 Example vp3d file
 """""""""""""""""
 
-.. code-block::
+.. code-block::python
     # Files:
     #
     # Note: the Grid file and Solution file fields do not have to be specified.
@@ -239,7 +239,7 @@ Read Options via GUI
 Read Options via CLI
 """"""""""""""""""""
 
-.. code-block::
+.. code-block::python
     # MDServer must be started in order grab the default Open options for the reader
     OpenMDServer("localhost")
     # Grab the default options
@@ -253,14 +253,14 @@ Read Options via CLI
 
 Or, you can create your own subset of the options:
 
-.. code-block::
+.. code-block::python
     opts = {'Multi Grid':1, "Solution (Q) File Name":"wbtr.bin"}
     SetDefaultFileOpenOptions("PLOT3D", opts)
     OpenDatabase(data_path("./WingBodyTail/wbtg.bin"), 0, "PLOT3D_1.0")
 
 Here are the defaults:
 
-.. code-block::
+.. code-block::python
     >>> opt = GetDefaultFileOpenOptions("PLOT3D")
     >>> print opt
     {'File Format': 1, 'Double Precision': 0, 'Gamma (used for function calculation)': 1.4, 'IBlanking': 0, 
