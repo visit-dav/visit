@@ -142,95 +142,95 @@ need to tell VisIt it is a 'MultiGrid' file. VisIt will then correctly read
 Example vp3d file
 """""""""""""""""
 
-.. code-block:: python
+::
 
-    # Files:
-    #
-    # Note: the Grid file and Solution file fields do not have to be specified.
-    # If they do not appear, VisIt will assume that the .vp3d should be replaced
-    # with ".x" for the grid file and ".q" for the solution file.
-    #
-    # Support for time-series solution files added in VisIt 2.10.0.
-    # VisIt will look for '*' and '?' wildcards in the solution name
-    # 
-    GRID NHLP_2D.g
-    # SOLUTION NHLP_2D.q
-    # Time-series example, requesting all time steps
-    # SOLUTION NHLP_2D_*.q
-    # Time-series example requesting subset of time steps
-    # SOLUTION NHLP_2D_??3?.q
-
-    # Single/Multi Grid.  Single grid will be assumed if no value is specified.
-    #
-    # Options:
-    MULTI_GRID
-    # SINGLE_GRID
-
-    # Data encoding, ASCII or Binary  Binary will be assumed if no value is
-    # specified.
-    #
-    # Options:
-    #BINARY
-    ASCII
-
-    # Endianness.  This only applies to BINARY files.  Native endian will
-    # be assumed if no value is specified.
-    #
-    # Options:
-    #LITTLE_ENDIAN
-    #BIG_ENDIAN
-
-    # OBSOLETE, Structured assumed, due to lack of unstructured sample data
-    # Structured grid vs unstructured grids.  Structured grids will be assumed
-    # unless stated otherwise.
-    #
-    # Options:
-    # STRUCTURED
-    # UNSTRUCTURED
-
-    # Iblanking.  No iblanking is assumed unless stated otherwise
-    #
-    # Options:
-    # NO_IBLANKING
-    # IBLANKING
-
-    # 2D vs 3D.  3D will be assumed unless stated otherwise.
-    #
-    # Options:
-    2D
-    # 3D
-
-    # Precision.  Single precision is assumed unless stated otherwise
-    #
-    # Options:
-    SINGLE_PRECISION
-    # DOUBLE_PRECISION
-
-    # Compression.  This only applies to ASCII files.  Some codes compress
-    # repeated values as 4*1.5 as opposed to 1.5 1.5 1.5 1.5.  It is assumed
-    # the data is not compressed unless stated otherwise.
-    #
-    # Options:
-    # COMPRESSED_ASCII
-    # UNCOMPRESSED_ASCII
-
-    # C vs Fortran Binary. C-Binary is assumed.
-    # VisIt 2.10.0, added FORTRAN_BINARY_STREAM, to differentiate between
-    # record-based (FORTRAN_BINARY) and non record based (FORTRAN_BINARY_STREAM)
-    # Options:
-    # C_BINARY
-    # FORTRAN_BINARY
-    # FORTRAN_BINARY_STREAM
-
-    # Time. Tells VisIt whether or not the 'Time' field in the solution file is accurate.
-    # If set to '1', VisIt will use this as the 'time' value displayed in plots for time-series data. (Default)
-    # If set to '0', and this is time-series data, VisIt will attempt to parse the 'time' from the solution file name.
-    SOLUTION_TIME_ACCURATE 1
-
-    # R, Gamma values (used for computing functions like Temperature, Pressure, Enthalpy, Entropy)
-    # Defaults are shown.
-    # R 1.0
-    # GAMMA 1.4
+  # Files:
+  #
+  # Note: the Grid file and Solution file fields do not have to be specified.
+  # If they do not appear, VisIt will assume that the .vp3d should be replaced
+  # with ".x" for the grid file and ".q" for the solution file.
+  #
+  # Support for time-series solution files added in VisIt 2.10.0.
+  # VisIt will look for '*' and '?' wildcards in the solution name
+  # 
+  GRID NHLP_2D.g
+  # SOLUTION NHLP_2D.q
+  # Time-series example, requesting all time steps
+  # SOLUTION NHLP_2D_*.q
+  # Time-series example requesting subset of time steps
+  # SOLUTION NHLP_2D_??3?.q
+  
+  # Single/Multi Grid.  Single grid will be assumed if no value is specified.
+  #
+  # Options:
+  MULTI_GRID
+  # SINGLE_GRID
+  
+  # Data encoding, ASCII or Binary  Binary will be assumed if no value is
+  # specified.
+  #
+  # Options:
+  #BINARY
+  ASCII
+  
+  # Endianness.  This only applies to BINARY files.  Native endian will
+  # be assumed if no value is specified.
+  #
+  # Options:
+  #LITTLE_ENDIAN
+  #BIG_ENDIAN
+  
+  # OBSOLETE, Structured assumed, due to lack of unstructured sample data
+  # Structured grid vs unstructured grids.  Structured grids will be assumed
+  # unless stated otherwise.
+  #
+  # Options:
+  # STRUCTURED
+  # UNSTRUCTURED
+  
+  # Iblanking.  No iblanking is assumed unless stated otherwise
+  #
+  # Options:
+  # NO_IBLANKING
+  # IBLANKING
+  
+  # 2D vs 3D.  3D will be assumed unless stated otherwise.
+  #
+  # Options:
+  2D
+  # 3D
+  
+  # Precision.  Single precision is assumed unless stated otherwise
+  #
+  # Options:
+  SINGLE_PRECISION
+  # DOUBLE_PRECISION
+  
+  # Compression.  This only applies to ASCII files.  Some codes compress
+  # repeated values as 4*1.5 as opposed to 1.5 1.5 1.5 1.5.  It is assumed
+  # the data is not compressed unless stated otherwise.
+  #
+  # Options:
+  # COMPRESSED_ASCII
+  # UNCOMPRESSED_ASCII
+  
+  # C vs Fortran Binary. C-Binary is assumed.
+  # VisIt 2.10.0, added FORTRAN_BINARY_STREAM, to differentiate between
+  # record-based (FORTRAN_BINARY) and non record based (FORTRAN_BINARY_STREAM)
+  # Options:
+  # C_BINARY
+  # FORTRAN_BINARY
+  # FORTRAN_BINARY_STREAM
+  
+  # Time. Tells VisIt whether or not the 'Time' field in the solution file is accurate.
+  # If set to '1', VisIt will use this as the 'time' value displayed in plots for time-series data. (Default)
+  # If set to '0', and this is time-series data, VisIt will attempt to parse the 'time' from the solution file name.
+  SOLUTION_TIME_ACCURATE 1
+  
+  # R, Gamma values (used for computing functions like Temperature, Pressure, Enthalpy, Entropy)
+  # Defaults are shown.
+  # R 1.0
+  # GAMMA 1.4
 
 Read Options via GUI
 """"""""""""""""""""
@@ -240,38 +240,38 @@ Read Options via GUI
 Read Options via CLI
 """"""""""""""""""""
 
-.. code-block:: python
+::
 
-    # MDServer must be started in order grab the default Open options for the reader
-    OpenMDServer("localhost")
-    # Grab the default options
-    opts = GetDefaultFileOpenOptions("PLOT3D")
-    # and change a couple of things 
-    # specify sub-selection of time slices.
-    opts["Solution (Q) File Name"]  = r"Jespersen.1/???3?"
-    opts["Solution Time field accurate"] = 0
-    SetDefaultFileOpenOptions("PLOT3D", opts)
-    OpenDatabase(data_path("./TaperedCylinder/grid.p3d"), 0, "PLOT3D_1.0")
+  # MDServer must be started in order grab the default Open options for the reader
+  OpenMDServer("localhost")
+  # Grab the default options
+  opts = GetDefaultFileOpenOptions("PLOT3D")
+  # and change a couple of things 
+  # specify sub-selection of time slices.
+  opts["Solution (Q) File Name"]  = r"Jespersen.1/???3?"
+  opts["Solution Time field accurate"] = 0
+  SetDefaultFileOpenOptions("PLOT3D", opts)
+  OpenDatabase(data_path("./TaperedCylinder/grid.p3d"), 0, "PLOT3D_1.0")
 
 Or, you can create your own subset of the options:
 
-.. code-block:: python
+::
 
-    opts = {'Multi Grid':1, "Solution (Q) File Name":"wbtr.bin"}
-    SetDefaultFileOpenOptions("PLOT3D", opts)
-    OpenDatabase(data_path("./WingBodyTail/wbtg.bin"), 0, "PLOT3D_1.0")
+  opts = {'Multi Grid':1, "Solution (Q) File Name":"wbtr.bin"}
+  SetDefaultFileOpenOptions("PLOT3D", opts)
+  OpenDatabase(data_path("./WingBodyTail/wbtg.bin"), 0, "PLOT3D_1.0")
 
 Here are the defaults:
 
-.. code-block:: python
+::
 
-    >>> opt = GetDefaultFileOpenOptions("PLOT3D")
-    >>> print opt
-    {'File Format': 1, 'Double Precision': 0, 'Gamma (used for function calculation)': 1.4, 'IBlanking': 0, 
-    'R (used for function calculations)': 1.0, 'Solution () File Name': , 'Big Endian': 1, 
-    'Solution Time field accurate': 1, 'Multi Grid': 0, '3D': 1}
-
-    'File Format' options: 0 -> ASCII, 1 -> C Binary, 2 -> Fortran Binary, 3-> Fortran Binary stream
+  >>> opt = GetDefaultFileOpenOptions("PLOT3D")
+  >>> print opt
+  {'File Format': 1, 'Double Precision': 0, 'Gamma (used for function calculation)': 1.4, 'IBlanking': 0, 
+  'R (used for function calculations)': 1.0, 'Solution () File Name': , 'Big Endian': 1, 
+  'Solution Time field accurate': 1, 'Multi Grid': 0, '3D': 1}
+  
+  'File Format' options: 0 -> ASCII, 1 -> C Binary, 2 -> Fortran Binary, 3-> Fortran Binary stream
 
 Silo
 ~~~~
