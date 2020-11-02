@@ -85,20 +85,21 @@ def TestOpenOptions(gridFile, testname, options, testStart):
     CloseDatabase(data_path("PLOT3D_test_data/%s"%gridFile))
 
 # names: [dir,  vp3dname, gridname, testname, openOptions]
-names = [["BluntFin", "blunt.vp3d", "blunt.x", "bluntfin", {}],
-         ["DeltaWing", "delta-40.vp3d", "delta-40.x", "deltawing", {}],
-         ["LiquidOxygenPost", "post.vp3d", "post.x", "post", {}],
-         ["SpaceShuttleLaunchVehicle", "sslv.vp3d", "grid", "sslv", 
-           {"Multi Grid": 1, "IBlanking":1, "Solution (Q) File Name":"solution"}],
-         ["WingBodyTail", "wbt.vp3d", "wbtg.bin", "wbt", 
-           {"Solution (Q) File Name":"wbtr.bin",
-            "Multi Grid":1,
-            "IBlanking":1,
-            "File Format":1,
-            "Big Endian":1,
-            "Double Precision":0,
-            "3D":1}]]
-
+names = [
+    ["BluntFin", "blunt.vp3d", "blunt.x", "bluntfin", {}],
+    ["DeltaWing", "delta-40.vp3d", "delta-40.x", "deltawing", {}],
+    ["LiquidOxygenPost", "post.vp3d", "post.x", "post", {}],
+    ["SpaceShuttleLaunchVehicle", "sslv.vp3d", "grid", "sslv", 
+        {"Multi Grid": 1, "IBlanking":1, "Solution (Q) File Name":"solution"}],
+    ["WingBodyTail", "wbt.vp3d", "wbtg.bin", "wbt", 
+        {"Solution (Q) File Name":"wbtr.bin",
+        "Multi Grid":1,
+        "IBlanking":1,
+        "File Format":1,
+        "Big Endian":1,
+        "Double Precision":0,
+        "3D":1}],
+]
 
 def TestTimeSeries():
     TestSection("Time Series with meta file")
@@ -178,5 +179,55 @@ def BasicTests():
 
 BasicTests()
 TestTimeSeries()
-    
+
+# Custom tests with specific views:
+OpenDatabase(data_path("PLOT3D_test_data/WingNoBody/wnb.vp3d"))
+AddPlot("Mesh", "mesh")
+View3DAtts = View3DAttributes()
+View3DAtts.viewNormal = (0, 1, 0)
+View3DAtts.focus = (1.5, -3.00142, 0)
+View3DAtts.viewUp = (0, 0, -1)
+View3DAtts.viewAngle = 30
+View3DAtts.parallelScale = 11.0231
+View3DAtts.nearPlane = -22.0462
+View3DAtts.farPlane = 22.0462
+View3DAtts.imagePan = (0, 0)
+View3DAtts.imageZoom = 4
+View3DAtts.perspective = 1
+View3DAtts.eyeAngle = 2
+View3DAtts.centerOfRotationSet = 0
+View3DAtts.centerOfRotation = (1.5, -3.0, 0)
+View3DAtts.axis3DScaleFlag = 0
+View3DAtts.axis3DScales = (1, 1, 1)
+View3DAtts.shear = (0, 0, 1)
+View3DAtts.windowValid = 1
+SetView3D(View3DAtts)
+DrawPlots()
+Test("wnb01")
+
+View3DAtts = View3DAttributes()
+View3DAtts.viewNormal = (-0.40068, 0.898014, 0.181729)
+View3DAtts.focus = (1.5, -3.00142, 0)
+View3DAtts.viewUp = (0.117041, 0.24689, -0.96195)
+View3DAtts.viewAngle = 30
+View3DAtts.parallelScale = 11.0231
+View3DAtts.nearPlane = -22.0462
+View3DAtts.farPlane = 22.0462
+View3DAtts.imagePan = (-0.0176506, -0.0337418)
+View3DAtts.imageZoom = 47.6727
+View3DAtts.perspective = 1
+View3DAtts.eyeAngle = 2
+View3DAtts.centerOfRotationSet = 0
+View3DAtts.centerOfRotation = (1.5, -3, 0)
+View3DAtts.axis3DScaleFlag = 0
+View3DAtts.axis3DScales = (1, 1, 1)
+View3DAtts.shear = (0, 0, 1)
+View3DAtts.windowValid = 1
+SetView3D(View3DAtts)
+DrawPlots()
+Test("wnb02")
+
+DeleteAllPlots()
+CloseDatabase(data_path("PLOT3D_test_data/WingNoBody/wnb.vp3d"))
+
 Exit()
