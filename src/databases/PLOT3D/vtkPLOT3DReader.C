@@ -119,7 +119,7 @@ vtkPLOT3DReader::vtkPLOT3DReader()
   this->FileSize = 0;
   this->MultiGrid = false;
   this->ByteOrder = FILE_BIG_ENDIAN;
-  this->IBlanking = false;
+  this->IBlanking = 0;
   this->TwoDimensionalGeometry = false;
   this->DoublePrecision = false;
 
@@ -206,7 +206,7 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
     {
     if (!this->Internal->HasByteCount)
       {
-      success = this->Internal->CheckCFile(fp, this->FileSize);
+      success = this->Internal->CheckCFile(fp, this->FileSize, this->IBlanking==0);
       if (!success)
         vtkDebugMacro("Auto detection failed checking C File");
       }
@@ -223,7 +223,7 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
         }
       if (success)
         {
-        success = this->Internal->CheckBlankingAndPrecision(fp);
+        success = this->Internal->CheckBlankingAndPrecision(fp, this->IBlanking==0);
         if (!success)
           vtkDebugMacro("Auto detection failed blanking and precision");
         }
@@ -830,7 +830,8 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
   }
 
   // Read IBlanking data
-  if (this->Internal->IBlanking)
+  std::cout << "Iblanking: " << this->Internal->IBlanking << std::endl;
+  if (this->Internal->IBlanking == 1)
   {
     vtkIntArray* iblank = vtkIntArray::New();
     iblank->SetName("avtGhostNodes");
@@ -914,7 +915,7 @@ vtkPLOT3DReader::ComputeGridOffset(FILE *xyzFp)
       {
       if (this->Internal->BinaryFile)
         {
-        if (this->Internal->IBlanking)
+        if (this->Internal->IBlanking == 1)
           {
             this->GridOffsets[j] = (this->GridOffsets[j-1] +        // starting offset
                 nd*this->GridSizes[j-1]*this->Internal->Precision + // coordinate sizes
@@ -931,7 +932,7 @@ vtkPLOT3DReader::ComputeGridOffset(FILE *xyzFp)
       else
         {
         int numberOfElements;
-        if (this->Internal->IBlanking)
+        if (this->Internal->IBlanking == 1)
           {
           numberOfElements = (nd+1)*GridSizes[j-1];
           }

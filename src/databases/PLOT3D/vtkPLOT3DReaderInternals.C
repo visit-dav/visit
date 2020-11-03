@@ -171,79 +171,86 @@ int vtkPLOT3DReaderInternals::Check2DGeom(FILE* fp)
   return 0;
 }
 
-int vtkPLOT3DReaderInternals::CheckBlankingAndPrecision(FILE* fp)
+int vtkPLOT3DReaderInternals::CheckBlankingAndPrecision(FILE* fp, bool updateIBlanking)
 {
   int recMarkBeg, recMarkEnd, numGrids = 1, nMax, totPts;
   int* jmax;
 
   rewind(fp);
   if(this->MultiGrid)
-    {
+  {
     if (!this->ReadInts(fp, 1, &recMarkBeg) ||
         !this->ReadInts(fp, 1, &numGrids) ||
         !this->ReadInts(fp, 1, &recMarkEnd))
-      {
-      return 0;
-      }
-    }
-  if (!this->ReadInts(fp, 1, &recMarkBeg))
     {
-    return 0;
+      return 0;
     }
+  }
+  if (!this->ReadInts(fp, 1, &recMarkBeg))
+  {
+    return 0;
+  }
   nMax = this->NumberOfDimensions * numGrids;
   jmax = new int[numGrids*3]; // allocate memory for jmax
   if (!this->ReadInts(fp, nMax, jmax) ||
       !this->ReadInts(fp, 1, &recMarkEnd))
-    {
+  {
     delete[] jmax;
     return 0;
-    }
+  }
   totPts = 1;
   for (int i=0; i<this->NumberOfDimensions; i++)
-    {
+  {
     totPts *= jmax[i];
-    }
+  }
   this->ReadInts(fp, 1, &recMarkBeg);
+
+  bool goodRead = false;
+  bool iblanking = false;
   // single precision, with iblanking
   if(recMarkBeg == totPts*(this->NumberOfDimensions*4 + 4))
-    {
+  {
     this->Precision = 4;
-    this->IBlanking = 1;
+    iblanking = true;
     delete[] jmax;
-    return 1;
-    }
+    goodRead = true;
+  }
   // double precision, with iblanking
   else if(recMarkBeg == totPts*(this->NumberOfDimensions*8 + 4))
-    {
+  {
     this->Precision = 8;
-    this->IBlanking = 1;
+    iblanking = true;
     delete[] jmax;
-    return 1;
-    }
+    goodRead = true;
+  }
   // single precision, no iblanking
   else if(recMarkBeg == totPts*this->NumberOfDimensions*4)
-    {
+  {
     this->Precision = 4;
-    this->IBlanking = 0;
+    iblanking = false;
     delete[] jmax;
-    return 1;
-    }
+    goodRead = true;
+  }
   // double precision, no iblanking
   else if(recMarkBeg == totPts*this->NumberOfDimensions*8)
-    {
+  {
     this->Precision = 8;
-    this->IBlanking = 0;
+    iblanking = false;
     delete[] jmax;
-    return 1;
-    }
-  return 0;
+    goodRead = true;
+  }
+  if (updateIBlanking)
+  {
+    this->IBlanking = iblanking;
+  }
+  return goodRead;
 }
 
 // Unfortunately, a Plot3D file written in C is trickier
 // to check becaues it has no byte count markers. We need
 // to do a bit more brute force checks based on reading
 // data and estimating file size.
-int vtkPLOT3DReaderInternals::CheckCFile(FILE* fp, long fileSize)
+int vtkPLOT3DReaderInternals::CheckCFile(FILE* fp, long fileSize, bool updateIBlanking)
 {
   int precisions[2] = {4, 8};
   int blankings[2] = {0, 1};
@@ -278,7 +285,10 @@ int vtkPLOT3DReaderInternals::CheckCFile(FILE* fp, long fileSize)
           {
           this->MultiGrid = 0;
           this->Precision = precision;
-          this->IBlanking = blanking;
+          if (updateIBlanking)
+          {
+            this->IBlanking = blanking;
+          }
           this->NumberOfDimensions = dimension;
           return 1;
           }
@@ -321,7 +331,10 @@ int vtkPLOT3DReaderInternals::CheckCFile(FILE* fp, long fileSize)
           {
           this->MultiGrid = 1;
           this->Precision = precision;
-          this->IBlanking = blanking;
+          if (updateIBlanking)
+          {
+            this->IBlanking = blanking;
+          }
           this->NumberOfDimensions = dimension;
           delete[] gridDims2;
           return 1;

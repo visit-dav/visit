@@ -208,14 +208,15 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
         }
         if (readOpts->FindIndex("IBlanking") >= 0)
         {
-            bool ib = readOpts->GetBool("IBlanking");
-            if (ib)
+            // bool ib = readOpts->GetBool("IBlanking");
+            int ib = readOpts->GetInt("IBlanking");
+            if (ib == 1)
             {
-                reader->IBlankingOn();
+                reader->SetIBlanking(1);
             }
-            else 
+            else if (ib == 2)
             {
-                reader->IBlankingOff();
+                reader->SetIBlanking(2);
             }
         }
         if (readOpts->FindIndex("Solution (Q) File Name") >= 0)
@@ -256,7 +257,7 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
         reader->MultiGridOff();
         reader->BinaryFileOn();
         reader->SetByteOrderToBigEndian();
-        reader->IBlankingOff();
+        reader->SetIBlanking(0);
         reader->TwoDimensionalGeometryOff();
         reader->DoublePrecisionOff();
     }
@@ -894,11 +895,11 @@ avtPLOT3DFileFormat::ReadVisItMetaFile()
             }
             else if (MatchesSubstring(infoLine,"NO_IBLANKING"))
             {
-                reader->IBlankingOff();
+                reader->SetIBlanking(2);
             }
             else if (MatchesSubstring(infoLine,"IBLANKING"))
             {
-                reader->IBlankingOn();
+                reader->SetIBlanking(1);
             }
             else if (MatchesSubstring(infoLine,"3D"))
             {
