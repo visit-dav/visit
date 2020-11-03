@@ -876,9 +876,9 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
     iblank->Delete();
 
     // Based on the iblanked nodes, determine which zones should be iblanked.
-    vtkUnsignedCharArray* ghosts = vtkUnsignedCharArray::New();
-    ghosts->SetNumberOfValues(output->GetNumberOfCells());
-    ghosts->SetName("avtGhostZones");
+    vtkUnsignedCharArray* ghostZones = vtkUnsignedCharArray::New();
+    ghostZones->SetNumberOfValues(output->GetNumberOfCells());
+    ghostZones->SetName("avtGhostZones");
     vtkIdList* ids = vtkIdList::New();
     ids->SetNumberOfIds(8);
     vtkIdType numCells = output->GetNumberOfCells();
@@ -893,15 +893,15 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
         if (ib[ids->GetId(ptIdx)] == avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM)
         {
           // The node is iblanked, so the entire zone should be iblanked too.
-          value = avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM;
+          avtGhostData::AddGhostZoneType(value, avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM);
           break;
         }
       }
-      ghosts->SetValue(cellId, value);
+      ghostZones->SetValue(cellId, value);
     }
     ids->Delete();
-    output->GetCellData()->AddArray(ghosts);
-    ghosts->Delete();
+    output->GetCellData()->AddArray(ghostZones);
+    ghostZones->Delete();
   }
   return VTK_OK;
 }
