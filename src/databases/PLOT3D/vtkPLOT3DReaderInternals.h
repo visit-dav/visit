@@ -49,8 +49,8 @@ struct vtkPLOT3DReaderInternals
   int CheckByteCount(FILE* fp);
   int CheckMultiGrid(FILE* fp);
   int Check2DGeom(FILE* fp);
-  int CheckBlankingAndPrecision(FILE* fp);
-  int CheckCFile(FILE* fp, long fileSize);
+  int CheckBlankingAndPrecision(FILE* fp, bool);
+  int CheckCFile(FILE* fp, long fileSize, bool);
   long CalculateFileSize(int mgrid,
                          int precision, // in bytes
                          int blanking,

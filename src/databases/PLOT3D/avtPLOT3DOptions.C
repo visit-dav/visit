@@ -58,7 +58,8 @@ GetPLOT3DReadOptions(void)
     rv->SetBool("Multi Grid", false);
     rv->SetBool("Big Endian", true);
     rv->SetBool("Double Precision", false);
-    rv->SetBool("IBlanking", false);
+    // rv->SetBool("IBlanking", false);
+    rv->SetInt("IBlanking", 0);
 
     rv->SetDouble("Gas constant R", 1.0);
     rv->SetDouble("Gas constant Gamma", 1.4);
