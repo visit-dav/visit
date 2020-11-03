@@ -321,17 +321,6 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     {
         SetMeshColor(fgColor);
     }
-    else if (atts.GetMeshColorSource() == MeshAttributes::MeshRandom)
-    {
-        unsigned char rgb[3] = {0,0,0};
-        unsigned char bg[3] = {static_cast<unsigned char>(bgColor[0]*255),
-                               static_cast<unsigned char>(bgColor[1]*255),
-                               static_cast<unsigned char>(bgColor[2]*255)};
-        avtColorTables *ct = avtColorTables::Instance();
-        if (! ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(), this->instanceIndex, bg, rgb))
-            ct->GetJNDControlPointColor("distinct", this->instanceIndex, bg, rgb);
-        SetMeshColor(rgb);
-    }
     else // MeshAttributes::MeshCustom
     {
         SetMeshColor(atts.GetMeshColor().GetColor());
@@ -341,14 +330,6 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     if (atts.GetOpaqueColorSource() == MeshAttributes::Background)
     {
         SetOpaqueColor(bgColor);
-    }
-    else if (atts.GetOpaqueColorSource() == MeshAttributes::OpaqueRandom)
-    {
-        unsigned char rgb[3] = {0,0,0};
-        avtColorTables *ct = avtColorTables::Instance();
-        if (! ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), this->instanceIndex+1, rgb))
-            ct->GetControlPointColor("distinct", this->instanceIndex+1, rgb);
-        SetOpaqueColor(rgb);
     }
     else // MeshAttributes::OpaqueCustom
     {
