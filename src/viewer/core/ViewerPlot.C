@@ -1614,7 +1614,7 @@ ViewerPlot::GetPlotMetaData() const
     }
     return avtPlotMetaData(GetMetaData(), GetVariableName(),
                            GetVarType(), GetSILRestriction(),
-                           actualSpatial, originalSpatial);
+                           actualSpatial, originalSpatial, bgColor, fgColor);
 }
 
 // ****************************************************************************
