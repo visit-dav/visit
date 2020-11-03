@@ -17,13 +17,10 @@ avtPlotMetaData::avtPlotMetaData(const avtDatabaseMetaData  *_md,
     variableType(_variableType),
     silr(_silr),
     actualSpatialExtents(_actualSpatialExt),
-    originalSpatialExtents(_originalSpatialExt)
+    originalSpatialExtents(_originalSpatialExt),
+    bgColor{_bgColor[0],_bgColor[1],_bgColor[2],_bgColor[3]},
+    fgColor{_fgColor[0],_fgColor[1],_fgColor[2],_fgColor[3]}
 {
-    for (int i = 0; i < 4; i++)
-    {
-        bgColor[i] = _bgColor[i];
-        fgColor[i] = _fgColor[i];
-    }
 }
 
 avtPlotMetaData::avtPlotMetaData(const avtPlotMetaData &obj) :
@@ -32,13 +29,10 @@ avtPlotMetaData::avtPlotMetaData(const avtPlotMetaData &obj) :
     variableType(obj.variableType),
     silr(obj.silr),
     actualSpatialExtents(obj.actualSpatialExtents),
-    originalSpatialExtents(obj.originalSpatialExtents)
+    originalSpatialExtents(obj.originalSpatialExtents),
+    bgColor{obj.bgColor[0],obj.bgColor[1],obj.bgColor[2],obj.bgColor[3]},
+    fgColor{obj.fgColor[0],obj.fgColor[1],obj.fgColor[2],obj.fgColor[3]}
 {
-    for (int i = 0; i < 4; i++)
-    {
-        bgColor[i] = obj.bgColor[i];
-        fgColor[i] = obj.fgColor[i];
-    }
 }
 
 avtPlotMetaData::~avtPlotMetaData()
