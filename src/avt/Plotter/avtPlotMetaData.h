@@ -25,7 +25,8 @@
 // Creation:   Tue Sep 16 10:34:05 PDT 2014
 //
 // Modifications:
-//
+//    Mark C. Miller, Mon Nov  2 16:58:54 PST 2020
+//    Add background color member and method
 // ****************************************************************************
 
 class PLOTTER_API avtPlotMetaData
