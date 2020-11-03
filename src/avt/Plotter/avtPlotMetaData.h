@@ -36,7 +36,8 @@ public:
                     avtVarType                  _variableType,
                     avtSILRestriction_p         _silr,
                     const avtExtents           &_actualSpatial,
-                    const avtExtents           &_originalSpatial);
+                    const avtExtents           &_originalSpatial,
+                    const double                _bgColor[4]);
     avtPlotMetaData(const avtPlotMetaData &obj);
     ~avtPlotMetaData();
 
@@ -49,6 +50,7 @@ public:
     avtSILRestriction_p        GetSILRestriction() const;
     const avtExtents          &GetActualSpatialExtents() const;
     const avtExtents          &GetOriginalSpatialExtents() const;
+    const double              *GetBackgroundColor() const;
 
 private:
     const avtDatabaseMetaData *md;
@@ -57,6 +59,7 @@ private:
     avtSILRestriction_p        silr;
     avtExtents                 actualSpatialExtents;
     avtExtents                 originalSpatialExtents;
+    double                     bgColor[4];
 };
 
 #endif

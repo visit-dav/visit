@@ -9,7 +9,8 @@ avtPlotMetaData::avtPlotMetaData(const avtDatabaseMetaData  *_md,
     avtVarType                 _variableType,
     avtSILRestriction_p        _silr,
     const avtExtents           &_actualSpatialExt,
-    const avtExtents           &_originalSpatialExt) : 
+    const avtExtents           &_originalSpatialExt,
+    const double               _bgColor[4]) : 
     md(_md),
     variableName(_variableName),
     variableType(_variableType),
@@ -17,6 +18,8 @@ avtPlotMetaData::avtPlotMetaData(const avtDatabaseMetaData  *_md,
     actualSpatialExtents(_actualSpatialExt),
     originalSpatialExtents(_originalSpatialExt)
 {
+    for (int i = 0; i < 4; i++)
+        bgColor[i] = _bgColor[i];
 }
 
 avtPlotMetaData::avtPlotMetaData(const avtPlotMetaData &obj) :
@@ -84,4 +87,10 @@ const avtExtents &
 avtPlotMetaData::GetOriginalSpatialExtents() const
 {
     return originalSpatialExtents;
+}
+
+const double *
+avtPlotMetaData::GetBackgroundColor() const
+{
+    return bgColor;
 }
