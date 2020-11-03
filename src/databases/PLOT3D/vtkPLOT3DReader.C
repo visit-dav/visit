@@ -175,22 +175,18 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
   this->Internal->CheckBinaryFile(fp);
 
   if (!this->Internal->BinaryFile)
-    {
+  {
     vtkDebugMacro("Auto-detection only works with binary files.");
     if (this->BinaryFile)
-      {
+    {
       vtkWarningMacro("This appears to be an ASCII file. Please make sure "
                       "that all settings are correct to read it correctly.");
-      }
-    this->Internal->ByteOrder = this->ByteOrder;
-    this->Internal->HasByteCount = this->HasByteCount;
-    this->Internal->MultiGrid = this->MultiGrid;
-    this->Internal->NumberOfDimensions = this->TwoDimensionalGeometry ? 2 : 3;
-    this->Internal->Precision = this->DoublePrecision ? 8 : 4;
-    this->Internal->IBlanking = this->IBlanking;
-    return 1;
     }
+    return 1;
+  }
 
+  std::cout << "Before Auto-Detection, IBlanking is " << this->IBlanking << std::endl;
+  std::cout << "Before Auto-Detection, Internal IBlanking is " << this->Internal->IBlanking << std::endl;
   int success = this->Internal->CheckByteOrder(fp);
   if (!success)
     vtkDebugMacro("Auto detection failed at byte order");
@@ -241,6 +237,10 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
     this->Internal->Precision = this->DoublePrecision ? 8 : 4;
     this->Internal->IBlanking = this->IBlanking;
     }
+
+  std::cout << "After Auto-Detection, IBlanking is " << this->IBlanking << std::endl;
+  std::cout << "After Auto-Detection, Internal IBlanking is " << this->Internal->IBlanking << std::endl;
+
   return success;
 }
 
@@ -721,6 +721,14 @@ void vtkPLOT3DReader::SetXYZFileName( const char* name )
 int vtkPLOT3DReader::RequestInformation()
 {
   FILE* xyzFp;
+
+  // Copy settings from reader to internal reader
+  this->Internal->ByteOrder = this->ByteOrder;
+  this->Internal->HasByteCount = this->HasByteCount;
+  this->Internal->MultiGrid = this->MultiGrid;
+  this->Internal->NumberOfDimensions = this->TwoDimensionalGeometry ? 2 : 3;
+  this->Internal->Precision = this->DoublePrecision ? 8 : 4;
+  this->Internal->IBlanking = this->IBlanking;
 
   if ( this->CheckGeometryFile(xyzFp) != VTK_OK)
     {
