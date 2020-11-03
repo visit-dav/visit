@@ -343,7 +343,7 @@ CurveViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
         avtColorTables *ct = avtColorTables::Instance();
 
         if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, bg, rgb))
-            ct->GetJNDControlPointColor("distinct", colorIndex, bg, rgb))
+            ct->GetJNDControlPointColor("distinct", colorIndex, bg, rgb);
 
         ColorAttribute c(rgb[0], rgb[1], rgb[2]);
         curveAtts->SetCurveColor(c);
