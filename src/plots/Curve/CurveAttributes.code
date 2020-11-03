@@ -283,23 +283,24 @@ Definition:
 //    Added call to SetColor.
 //
 //    Mark C. Miller, Mon Nov  2 11:53:01 PST 2020
-//    Changed name of SetColor to SelectAutonomousColors
+//    Changed name of SetColor to SetAutonomousColors
 // ****************************************************************************
+#include <avtPlotMetaData.h>
 
 void
 CurveViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     const avtPlotMetaData &plot)
 {
     *(CurveAttributes*)atts = *defaultAtts;
-    SelectAutonomousColors(atts,
+    SetAutonomousColors(atts,
         plot.GetBackgroundColor(), plot.GetForegroundColor());
 }
 
-Function: CurveViewerEnginePluginInfo::SelectAutonomousColors
-Declaration: void SelectAutonomousColors(AttributeSubject *, double const *, double const *);
+Function: CurveViewerEnginePluginInfo::SetAutonomousColors
+Declaration: void SetAutonomousColors(AttributeSubject *, double const *, double const *);
 Definition:
 // ****************************************************************************
-//  Method: CurveViewerEnginePluginInfo::SelectAutonomousColors
+//  Method: CurveViewerEnginePluginInfo::SetAutonomousColors
 //
 //  Purpose:
 //    Sets the color if the CycleColors att is set to true. 
@@ -319,14 +320,14 @@ Definition:
 //    Set the fill color too.
 //
 //    Mark C. Miller, Mon Nov  2 17:54:17 PST 2020
-//    Changed name to SelectAutonomousColors where any modes for selecting
+//    Changed name to SetAutonomousColors where any modes for selecting
 //    color that do not involve the user specifying an explicit color are
 //    handled here.
 // ****************************************************************************
 #include <avtColorTables.h>
 
 void
-CurveViewerEnginePluginInfo::SelectAutonomousColors(AttributeSubject *atts,
+CurveViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
     double const *bgColor, double const *fgColor)
 {
     CurveAttributes *curveAtts = (CurveAttributes *)atts;
@@ -344,13 +345,13 @@ CurveViewerEnginePluginInfo::SelectAutonomousColors(AttributeSubject *atts,
         if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, bg, rgb))
             ct->GetJNDControlPointColor("distinct", colorIndex, bg, rgb))
 
-        ColorAttribute c(int(rgb[0]), int(rgb[1]), int(rgb[2]));
+        ColorAttribute c(rgb[0], rgb[1], rgb[2]);
         curveAtts->SetCurveColor(c);
         curveAtts->SetFillColor1(c);
 
         // Make a whiter version of the color for fill color 2.
         avtColorTables::ModifyColor(rgb, 1.5, wrgb);
-        ColorAttribute wc(int(wrgb[0]), int(wrgb[1]), int(wrgb[2]));
+        ColorAttribute wc(wrgb[0], wrgb[1], wrgb[2]);
         curveAtts->SetFillColor2(wc);
 
         // Increment the color index.
@@ -410,7 +411,6 @@ Definition:
 // Modifications:
 //
 // ****************************************************************************
-#include <avtPlotMetaData.h>
 
 bool
 CurveViewerEnginePluginInfo::AnimationReset(AttributeSubject *atts, const avtPlotMetaData &plot)
