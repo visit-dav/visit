@@ -357,6 +357,14 @@ XRay Image
         decay[i] = exp(-a[i] * seglength[i]) |br|
         intensity[i] = intensity[i-1] * decay[i] + (e[i] / a[i]) * (1. - decay[i])
 
+    When making a simulated radiograph the emissivity variable must contain
+    non zero values or you will need to specify a background intensity using
+    either *background_intensity* or *background_intensities*. If neither of
+    these is the case you will get a very boring all white image. A non zero
+    emissivity variable would correspond to an object emitting radiation
+    and a non zero background intensity would correspond to constant backlit
+    radiation, such as when x raying an object.
+
     The query takes the following arguments:
 
     +------+-------------------+----------------------------------------------+
