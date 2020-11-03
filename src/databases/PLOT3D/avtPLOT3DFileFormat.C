@@ -208,16 +208,7 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
         }
         if (readOpts->FindIndex("IBlanking") >= 0)
         {
-            // bool ib = readOpts->GetBool("IBlanking");
-            int ib = readOpts->GetInt("IBlanking");
-            if (ib == 1)
-            {
-                reader->SetIBlanking(1);
-            }
-            else if (ib == 2)
-            {
-                reader->SetIBlanking(2);
-            }
+            reader->SetIBlanking(readOpts->GetEnum("IBlanking"));
         }
         if (readOpts->FindIndex("Solution (Q) File Name") >= 0)
         {
