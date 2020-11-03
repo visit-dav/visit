@@ -842,7 +842,6 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
   if (this->Internal->IBlanking == 1)
   {
     vtkIntArray* iblank = vtkIntArray::New();
-    iblank->SetName("avtGhostNodes");
     iblank->SetNumberOfTuples(this->NumberOfPoints);
 
     // Attempt to read the iblank data from the plot3d file. If the read failes,
@@ -859,24 +858,29 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
     // blanked, which is a little backwards from how I think of it, but okay.
     // So where ib is 0 we use NODE_NOT_APPLICABLE_TO_PROBLEM and where ib is
     // 1 we use DUPLICATED_NODE.
-    int* ib = iblank->GetPointer(0);
+    vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
+    ghostNodes->SetName("avtGhostNodes");
+    ghostNodes->SetNumberOfTuples(this->NumberOfPoints);
+    int *ib = iblank->GetPointer(0);
+    unsigned char *gnp = ghostNodes->GetPointer(0);
     for (int i = 0; i < this->NumberOfPoints; ++i)
     {
       if (ib[i] == 0)
       {
-        ib[i] = avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM;
+        avtGhostData::AddGhostNodeType(gnp[i], avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM);
       }
       else if (ib[i] == 1)
       {
-        ib[i] = avtGhostNodeTypes::DUPLICATED_NODE;
+        gnp[i] = 0;
       }
     }
 
-    output->GetPointData()->AddArray(iblank);
+    output->GetPointData()->AddArray(ghostNodes);
     iblank->Delete();
+    ghostNodes->Delete();
 
     // Based on the iblanked nodes, determine which zones should be iblanked.
-    vtkUnsignedCharArray* ghostZones = vtkUnsignedCharArray::New();
+    vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
     ghostZones->SetNumberOfValues(output->GetNumberOfCells());
     ghostZones->SetName("avtGhostZones");
     vtkIdList* ids = vtkIdList::New();
@@ -890,7 +894,7 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
       unsigned char value = 0;
       for (vtkIdType ptIdx = 0; ptIdx < numIds; ptIdx++)
       {
-        if (ib[ids->GetId(ptIdx)] == avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM)
+        if (gnp[ids->GetId(ptIdx)] == (1 << avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM))
         {
           // The node is iblanked, so the entire zone should be iblanked too.
           avtGhostData::AddGhostZoneType(value, avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM);
