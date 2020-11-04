@@ -513,7 +513,7 @@ reverse_alphas(unsigned char *a, int na)
 //
 // Purpose: Lighten or darken a color by a multiplicative factor without
 //          changing the effective hue. To lighten a color pass a value for
-//          mult > 1 but not to much larger than 2. To darken a color pass a
+//          mult > 1 but not too much larger than 2. To darken a color pass a
 //          value for mult < 1 but not too close to 0.
 // 
 // Mark C. Miller, Fri Oct 30 20:03:37 PDT 2020
