@@ -134,6 +134,10 @@ avtDefaultRenderer::~avtDefaultRenderer()
 //    Alister Maguire, Tue Jun 18 11:36:44 PDT 2019
 //    If VTKRen is NULL, we can't render. 
 //
+//    Alister Maguire, Wed Nov  4 07:29:17 PST 2020
+//    Set the scalar opacity unit distance. This is basically setting
+//    the sample distance for ray casting.
+//
 // ****************************************************************************
 
 void
