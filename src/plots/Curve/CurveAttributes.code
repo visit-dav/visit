@@ -330,7 +330,7 @@ CurveViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
         ColorAttribute wc(wrgb[0], wrgb[1], wrgb[2]);
         curveAtts->SetFillColor2(wc);
 
-        // Inform the GUI
+        // Inform GUI of color selections made here
         SetClientAtts(atts);
 
         // Increment the color index.
