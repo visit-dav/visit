@@ -6859,6 +6859,11 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
 
     const int numDomains = (const int)domains.size();
 
+    //
+    // NOTE: when run in parallel, visit is smart about the
+    // contentes of "domains". Each processor only gets the
+    // domains it needs to process.
+    //
     for (int i = 0; i < numDomains; ++i)
     {
         int curDomain = domains[i]; 
