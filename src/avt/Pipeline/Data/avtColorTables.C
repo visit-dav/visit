@@ -1056,9 +1056,9 @@ avtColorTables::GetControlPointColor(const std::string &ctName, int i,
 // ****************************************************************************
 // Method: avtColorTables::GetJNDControlPointColor
 //
-// Purpose: Finds a color, starting from the i'th color control point for the
-// specified, that is above the just-noticeably-different (JND) color distance
-// from a given (avoidrgb) color
+// Purpose: Finds a color, using i as a starting index, in the named color
+// table that is above the just-noticeably-different (JND) color distance
+// threshold from a given (avoidrgb) color.
 //
 // Arguments:
 //   ctName   : The name of the discrete color table.
@@ -1067,12 +1067,15 @@ avtColorTables::GetControlPointColor(const std::string &ctName, int i,
 //              the specified color table.
 //   avoidrgb : The color we wish to avoid matching too closely.
 //
-// Returns:    A boolean value indicating whether or not a color was returned.
+// Returns:    The number of colors tried before finding an acceptable one
+//             or 0 indicating it couldn't find one. This means treating its
+//             return value as a boolean, like GetControlPointColor(), also
+//             works as expected.
 //
 // Mark C. Miller, Wed Jun 19 17:56:46 PDT 2019
 // ****************************************************************************
 
-bool
+int
 avtColorTables::GetJNDControlPointColor(const std::string &ctName, int i,
     unsigned char const *avoidrgb, unsigned char *jndrgb, bool invert) const
 {
@@ -1080,6 +1083,7 @@ avtColorTables::GetJNDControlPointColor(const std::string &ctName, int i,
     if (index < 0) return false;
     const ColorControlPointList &ct = ctAtts->operator[](index);
 
+    if (i < 0) i = 0;
     for (int n = 0; n < ct.GetNumControlPoints(); n++)
     {
         unsigned char rgb[3];
@@ -1089,11 +1093,11 @@ avtColorTables::GetJNDControlPointColor(const std::string &ctName, int i,
         if (PerceptualColorDistance(rgb, avoidrgb) > JNDColorDistance)
         {
             std::copy(rgb,rgb+3,jndrgb);
-            return true;
+            return n+1;
         }
     }
 
-    return false;
+    return 0;
 }
 
 // ****************************************************************************

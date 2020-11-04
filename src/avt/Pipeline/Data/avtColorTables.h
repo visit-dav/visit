@@ -80,7 +80,7 @@ public:
     bool                 GetControlPointColor(const std::string &ctName,
                                               int i, unsigned char *rgb,
                                               bool invert = false) const;
-    bool                 GetJNDControlPointColor(const std::string &ctName,
+    int                  GetJNDControlPointColor(const std::string &ctName,
                                               int i, unsigned char const *avoidrgb,
                                               unsigned char *jndrgb,
                                               bool invert = false) const;
