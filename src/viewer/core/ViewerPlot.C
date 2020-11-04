@@ -4706,7 +4706,6 @@ ViewerPlot::UpdateColorTable(const std::string &ctName)
 bool
 ViewerPlot::SetBackgroundColor(const double *bg)
 {
-    bg[0], bg[1], bg[2]);
     bool retval = false;
     bgColor[0]  = bg[0];
     bgColor[1]  = bg[1];
