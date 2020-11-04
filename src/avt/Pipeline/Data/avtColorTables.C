@@ -1216,5 +1216,5 @@ avtColorTables::PerceptualColorDistance(unsigned char const *rgbA, unsigned char
     long r = (long)rgbA[0] - (long)rgbB[0];
     long g = (long)rgbA[1] - (long)rgbB[1];
     long b = (long)rgbA[2] - (long)rgbB[2];
-    return sqrt((((512+rmean)*r*r)>>8) + 4*g*g + (((767-rmean)*b*b)>>8));
+    return sqrt((double) (((512+rmean)*r*r)>>8) + (double) 4*g*g + (double) (((767-rmean)*b*b)>>8));
 }
