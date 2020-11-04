@@ -26,7 +26,7 @@
 //
 // Modifications:
 //    Mark C. Miller, Mon Nov  2 16:58:54 PST 2020
-//    Add background color member and method
+//    Add bg/fg color members and methods
 // ****************************************************************************
 
 class PLOTTER_API avtPlotMetaData
