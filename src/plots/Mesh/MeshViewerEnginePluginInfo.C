@@ -190,43 +190,46 @@ MeshViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
     double const *bgColor, double const *fgColor)
 {
     MeshAttributes *meshAtts = (MeshAttributes *)atts;
+
     unsigned char bg[3] = {static_cast<unsigned char>(bgColor[0]*255),
                            static_cast<unsigned char>(bgColor[1]*255),
                            static_cast<unsigned char>(bgColor[2]*255)};
+    unsigned char fg[3] = {static_cast<unsigned char>(fgColor[0]*255),
+                           static_cast<unsigned char>(fgColor[1]*255),
+                           static_cast<unsigned char>(fgColor[2]*255)};
+
     int colorIndexSaved = colorIndex;
 
     if (meshAtts->GetMeshColorSource() == MeshAttributes::MeshRandom)
     {
-        unsigned char rgb[3] = {static_cast<unsigned char>(fgColor[0]*255),
-                                static_cast<unsigned char>(fgColor[1]*255),
-                                static_cast<unsigned char>(fgColor[2]*255)};
-        avtColorTables *ct = avtColorTables::Instance();
+        unsigned char rgb[3] = {fg[0], fg[1], fg[2]};
 
-        if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, bg, rgb))
-            ct->GetJNDControlPointColor("distinct", colorIndex, bg, rgb);
+        avtColorTables *ct = avtColorTables::Instance();
+        int n = ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
+                                            colorIndex, bg, rgb);
+        if (!n) n = ct->GetJNDControlPointColor("distinct", colorIndex, bg, rgb);
 
         ColorAttribute c(rgb[0], rgb[1], rgb[2]);
         meshAtts->SetMeshColor(c);
 
-        // Increment the color index.
-        colorIndex++;
+        // Increment the color index past any attempted in the table
+        colorIndex += n;
     }
 
     if (meshAtts->GetOpaqueColorSource() == MeshAttributes::OpaqueRandom)
     {
-        unsigned char rgb[3] = {static_cast<unsigned char>(fgColor[0]*255),
-                                static_cast<unsigned char>(fgColor[1]*255),
-                                static_cast<unsigned char>(fgColor[2]*255)};
-        avtColorTables *ct = avtColorTables::Instance();
+        unsigned char rgb[3] = {bg[0], bg[1], bg[2]};
 
-        if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, bg, rgb))
-            ct->GetJNDControlPointColor("distinct", colorIndex, bg, rgb);
+        avtColorTables *ct = avtColorTables::Instance();
+        int n = ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
+                                            colorIndex, fg, rgb);
+        if (!n) n = ct->GetJNDControlPointColor("distinct", colorIndex, fg, rgb);
 
         ColorAttribute c(rgb[0], rgb[1], rgb[2]);
         meshAtts->SetOpaqueColor(c);
 
-        // Increment the color index.
-        colorIndex++;
+        // Increment the color index past any attempted in the table
+        colorIndex += n;
     }
 
     // Ensure GUI reflects any color choices made here
