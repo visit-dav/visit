@@ -352,7 +352,7 @@ CurveViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
 
         // Make a whiter version of the color for fill color 2.
         unsigned char wrgb[3];
-        avtColorTables::ModifyColor(rgb, 1.5, wrgb);
+        avtColorTables::ModifyColor(rgb, 1.75, wrgb);
         ColorAttribute wc(wrgb[0], wrgb[1], wrgb[2]);
         curveAtts->SetFillColor2(wc);
 
