@@ -235,6 +235,7 @@ MeshViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
     unsigned char bg[3] = {static_cast<unsigned char>(bgColor[0]*255),
                            static_cast<unsigned char>(bgColor[1]*255),
                            static_cast<unsigned char>(bgColor[2]*255)};
+    int colorIndexSaved = colorIndex;
 
     if (meshAtts->GetMeshColorSource() == MeshAttributes::MeshRandom)
     {
@@ -269,5 +270,8 @@ MeshViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
         // Increment the color index.
         colorIndex++;
     }
-}
 
+    // Ensure GUI reflects any color choices made here
+    if (colorIndex != colorIndexSaved)
+        SetClientAtts(atts);
+}
