@@ -37,8 +37,8 @@
 //  Arguments:
 //    atts      The attributes the filter should use.
 //
-//  Programmer: Alister Maguire 
-//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 //  Modifications:
 //
@@ -54,7 +54,7 @@ avtDirectDatabaseQOTFilter::avtDirectDatabaseQOTFilter(const AttributeGroup *a)
     YLabel             = "";
 
     //
-    // Let's first try to retreive some information about the query. 
+    // Let's first try to retreive some information about the query.
     //
     TRY
     {
@@ -91,7 +91,7 @@ avtDirectDatabaseQOTFilter::avtDirectDatabaseQOTFilter(const AttributeGroup *a)
 //  Method: avtDirectDatabaseQOTFilter destructor
 //
 //  Programmer: Alister Maguire
-//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 // ****************************************************************************
 
@@ -110,7 +110,7 @@ avtDirectDatabaseQOTFilter::~avtDirectDatabaseQOTFilter()
 //    atts      The attributes the filter should use.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 // ****************************************************************************
 
@@ -125,14 +125,14 @@ avtDirectDatabaseQOTFilter::Create(const AttributeGroup *atts)
 //  Method:  avtDirectDatabaseQOTFilter::Execute
 //
 //  Purpose:
-//      Construct our time query data tree. 
+//      Construct our time query data tree.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 //  Modifications:
 //
-//  Alister Maguire, Wed Nov  4 15:11:10 PST 2020 
+//  Alister Maguire, Wed Nov  4 15:11:10 PST 2020
 //  Fixed a bug preventing curves from begin generated when the picked element
 //  was not on rank 0.
 //
@@ -142,7 +142,7 @@ void
 avtDirectDatabaseQOTFilter::Execute(void)
 {
     //
-    // Assume success until proven otherwise. 
+    // Assume success until proven otherwise.
     //
     success = true;
 
@@ -152,7 +152,7 @@ avtDirectDatabaseQOTFilter::Execute(void)
 
     //
     // when performing a DDQOT, only the processor that owns the
-    // query target (usually a mesh element) will have any data. 
+    // query target (usually a mesh element) will have any data.
     // So, this handles parallel cases by only processing ranks
     // that actually contain curves.
     //
@@ -185,8 +185,8 @@ avtDirectDatabaseQOTFilter::Execute(void)
             refined->Delete();
         }
 
-        delete [] leaves; 
-        
+        delete [] leaves;
+
     }
     else
     {
@@ -205,16 +205,16 @@ avtDirectDatabaseQOTFilter::Execute(void)
 //      Verify that all timesteps have been retrieved. If we are
 //      missing any, then let's reduce our dataset to only include
 //      the valid data, and let the user know which timesteps
-//      were skipped. 
+//      were skipped.
 //
 //      Note: timesteps that encountered errors will have added
-//            NaN values to the associated data positions. 
+//            NaN values to the associated data positions.
 //
 //  Arguments:
-//      polyData    The polydata containing the curves. 
+//      polyData    The polydata containing the curves.
 //
 //  Returns:
-//      A vtkPolyData object only containing valid curves. 
+//      A vtkPolyData object only containing valid curves.
 //
 //  Programmer: Alister Maguire
 //  Creation:   Mon Sep 30 14:17:20 MST 2019
@@ -244,7 +244,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
     int numCurves = inPtData->GetNumberOfArrays();
 
     if (numCurves == 0)
-    { 
+    {
         return outPolyData;
     }
 
@@ -257,7 +257,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
     // We need to check if any of the arrays have multiple
     // components. If so, these require special treatment.
     //
-    int maxComp = 0; 
+    int maxComp = 0;
     for (int c = 0; c < numCurves; ++c)
     {
         int ncTemp = inPtData->GetArray(c)->GetNumberOfComponents();
@@ -284,12 +284,12 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
     }
 
     //
-    // In cases with multiple variables, only time states that 
+    // In cases with multiple variables, only time states that
     // are valid across ALL variables will be kept.
     //
     for (int c = 0; c < numCurves; ++c)
     {
-        vtkFloatArray *inCurve = 
+        vtkFloatArray *inCurve =
             (vtkFloatArray *) inPtData->GetArray(c);
 
         int ts = startT;
@@ -298,12 +298,12 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
             inCurve->GetTuple(i, tupleTemp);
 
             //
-            // Invalid states will contain NaN values. 
+            // Invalid states will contain NaN values.
             //
             if (visitIsNan(tupleTemp[0]))
             {
                 missingData = true;
- 
+
                 if (isValid[i])
                 {
                     isValid[i]  = false;
@@ -327,14 +327,14 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
         if (missingData)
         {
             //
-            // Report the missing timesteps. 
+            // Report the missing timesteps.
             //
             std::ostringstream osm;
             osm << "\nQueryOverTime (" << atts.GetQueryAtts().GetName().c_str()
                 << ") experienced\n"
                 << "problems with the following timesteps and \n"
                 << "skipped them while generating the curve:\n   ";
-            
+
             for (int j = 0; j < numInvalid; j++)
             {
                 osm << invalidStateList[j] << " ";
@@ -346,7 +346,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
         if (numValid == 0)
         {
             //
-            // We have no valid output. Let's not do any work here. 
+            // We have no valid output. Let's not do any work here.
             //
             outPolyData->Delete();
             vtkPolyData *empty = vtkPolyData::New();
@@ -357,28 +357,28 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
 
         //
         // If we're missing data, this will be an over-estimate, but
-        // it should never be an under-estimate. 
+        // it should never be an under-estimate.
         //
         outPts->Allocate(numPts);
 
         //
         // Second pass: re-write the arrays so that they only contain
-        // valid time states. 
+        // valid time states.
         //
         vtkPointData *outPtData = outPolyData->GetPointData();
 
-        for (int c = 0; c < numCurves; ++c) 
+        for (int c = 0; c < numCurves; ++c)
         {
-            vtkFloatArray *inCurve = 
+            vtkFloatArray *inCurve =
                 (vtkFloatArray *) inPtData->GetArray(c);
 
             const char *name = inCurve->GetName();
-        
+
             vtkFloatArray *outCurve = vtkFloatArray::New();
             outCurve->SetNumberOfTuples(numValid);
             outCurve->SetNumberOfComponents(1);
             outCurve->SetName(name);
-        
+
             int vIdx = 0;
             for (int i = 0; i < numPts; ++i)
             {
@@ -411,10 +411,10 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
                     {
                         outCurve->SetTuple1(vIdx++, MajorEigenvalue(tupleTemp));
                     }
-                    
-                    if (c == 0) 
+
+                    if (c == 0)
                     {
-                        inPts->GetPoint(i, coord);        
+                        inPts->GetPoint(i, coord);
                         outPts->InsertNextPoint(coord[0], coord[1], coord[2]);
                     }
                 }
@@ -447,17 +447,17 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
 //  Method:  avtDirectDatabaseQOTFilter::ConstructCurveTree
 //
 //  Purpose:
-//      Construct a tree from the time query curves. 
+//      Construct a tree from the time query curves.
 //
 //  Arguments:
-//      polyData             The polydata containing the curves. 
-//      doMultiCurvePlot     Whether or not to do a multi curve plot. 
+//      polyData             The polydata containing the curves.
+//      doMultiCurvePlot     Whether or not to do a multi curve plot.
 //
 //  Returns:
-//      A data tree containing the curves. 
+//      A data tree containing the curves.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 //  Modifications:
 //
@@ -484,14 +484,14 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
     if (numPts == 0 || numCurves == 0)
     {
         success = false;
-        debug2 << "avtDirectDatabaseQOTFilter: missing curves and/or points" 
+        debug2 << "avtDirectDatabaseQOTFilter: missing curves and/or points"
             << endl;
         return new avtDataTree();
     }
 
     if (numCurves == 1)
     {
-        vtkFloatArray *curve = 
+        vtkFloatArray *curve =
             (vtkFloatArray *) inPtData->GetScalars();
 
         if (curve == NULL)
@@ -518,7 +518,7 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
 
         for (int i = 0; i < numPts; ++i)
         {
-            inPts->GetPoint(i, coord);        
+            inPts->GetPoint(i, coord);
             xCoords->SetTuple1(i, coord[0]);
         }
 
@@ -528,11 +528,11 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
         avtDataTree_p tree = new avtDataTree(rgrid, 0);
 
         if (rgrid != NULL)
-        { 
+        {
             rgrid->Delete();
         }
 
-        scalars->Delete(); 
+        scalars->Delete();
         return tree;
     }
     else if (doMultiCurvePlot)
@@ -553,20 +553,20 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
 
         for (int i = 0; i < numPts; ++i)
         {
-            inPts->GetPoint(i, coord);        
+            inPts->GetPoint(i, coord);
             xCoords->SetTuple1(i, coord[0]);
         }
 
         for (int i = 0; i < numCurves; i++)
         {
-            vtkDoubleArray *curve = 
+            vtkDoubleArray *curve =
                 (vtkDoubleArray *) inPtData->GetArray(i);
 
             if (curve == NULL)
             {
                 char msg[512];
                 snprintf(msg, 512, "VisIt was unable to retreive data for the "
-                    "following variable: %s\n", curve->GetName()); 
+                    "following variable: %s\n", curve->GetName());
                 continue;
             }
 
@@ -600,7 +600,7 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
 
         for (int i = 0; i< numCurves; ++i)
         {
-            vtkDoubleArray *curve = 
+            vtkDoubleArray *curve =
                 (vtkDoubleArray *) inPtData->GetArray(i);
 
             if (curve == NULL)
@@ -621,7 +621,7 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
             scalars->SetNumberOfComponents(1);
             scalars->SetNumberOfTuples(numPts);
             scalars->SetName(vars[i].c_str());
-          
+
             scalars->ShallowCopy(curve);
             grids[i]->GetPointData()->SetScalars(scalars);
 
@@ -629,7 +629,7 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
 
             for (int i = 0; i < numPts; ++i)
             {
-                inPts->GetPoint(i, coord);        
+                inPts->GetPoint(i, coord);
                 xCoords->SetTuple1(i, coord[0]);
             }
         }
@@ -655,10 +655,10 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
 //  Method:  avtDirectDatabaseQOTFilter::UpdateDataObjectInfo
 //
 //  Purpose:
-//      Update the attributes and validity. 
+//      Update the attributes and validity.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 //  Modifications:
 //
@@ -682,7 +682,7 @@ avtDirectDatabaseQOTFilter::UpdateDataObjectInfo(void)
         if (qotVars.size() > 0)
         {
             //
-            // The first requested variable becomes the active one. 
+            // The first requested variable becomes the active one.
             //
             outAtts.SetActiveVariable(qotVars[0].c_str());
         }
