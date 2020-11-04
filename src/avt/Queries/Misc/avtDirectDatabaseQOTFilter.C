@@ -132,6 +132,10 @@ avtDirectDatabaseQOTFilter::Create(const AttributeGroup *atts)
 //
 //  Modifications:
 //
+//  Alister Maguire, Wed Nov  4 15:11:10 PST 2020 
+//  Fixed a bug preventing curves from begin generated when the picked element
+//  was not on rank 0.
+//
 // ****************************************************************************
 
 void
@@ -142,9 +146,18 @@ avtDirectDatabaseQOTFilter::Execute(void)
     //
     success = true;
 
-    if (PAR_Rank() == 0)
+    int numLeaves          = 0;
+    avtDataTree_p dataTree = GetInputDataTree();
+    vtkDataSet **leaves    = dataTree->GetAllLeaves(numLeaves);
+
+    //
+    // when performing a DDQOT, only the processor that owns the
+    // query target (usually a mesh element) will have any data. 
+    // So, this handles parallel cases by only processing ranks
+    // that actually contain curves.
+    //
+    if (numLeaves > 0)
     {
-        avtDataTree_p dataTree = GetInputDataTree();
 
         bool multiCurve = false;
         if (atts.GetQueryAtts().GetQueryInputParams().
@@ -154,37 +167,26 @@ avtDirectDatabaseQOTFilter::Execute(void)
                 GetEntry("curve_plot_type")->ToInt() == 1);
         }
 
-        int numLeaves = 0;
-        vtkDataSet **leaves = dataTree->GetAllLeaves(numLeaves);
+        vtkPolyData *QOTData = (vtkPolyData *) leaves[0];
 
-        if (numLeaves > 0)
+        if (QOTData == NULL)
         {
-            vtkPolyData *QOTData = (vtkPolyData *) leaves[0];
-
-            if (QOTData == NULL)
-            {
-                debug1 << "Direct Database QOT leaf is NULL!" << endl;
-
-                SetOutputDataTree(new avtDataTree());
-            }
-
-            vtkPolyData *refined = VerifyAndRefineTimesteps(QOTData);
-            avtDataTree_p tree   = ConstructCurveTree(refined, multiCurve);
-            SetOutputDataTree(tree);
-
-            if (refined != NULL)
-            {
-                refined->Delete();
-            }
-
-            delete [] leaves; 
-        }
-        else
-        {
-            debug1 << "Direct Database QOT recieved no leaves!" << endl;
+            debug1 << "Direct Database QOT leaf is NULL!" << endl;
 
             SetOutputDataTree(new avtDataTree());
         }
+
+        vtkPolyData *refined = VerifyAndRefineTimesteps(QOTData);
+        avtDataTree_p tree   = ConstructCurveTree(refined, multiCurve);
+        SetOutputDataTree(tree);
+
+        if (refined != NULL)
+        {
+            refined->Delete();
+        }
+
+        delete [] leaves; 
+        
     }
     else
     {
