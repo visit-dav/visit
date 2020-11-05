@@ -39,6 +39,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with specifying -cli and -o "somefile* database",FORMAT from the command line.</li>
   <li>Fixed a bug that prevented the default volume renderer from correctly applying opacity attenuation to datasets that exist in extreme extent ranges.</li>
   <li>Fixed a bug that prevented Pick Through Time from working correctly when running VisIt in parallel.</li>
+  <li>Fixed a bug with the calculating of the data extents after calculating an expression that could result in the minimum being incorrectly set to zero when the minumum was greater than zero and the data was material selected.</li>
 </ul>
 
 <a name="Enhancements"></a>
