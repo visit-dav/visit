@@ -13,7 +13,6 @@
 #include <vtkRenderer.h>
 #include <vtkVolumeProperty.h>
 #include <vtkImageData.h>
-#include <vtkSmartVolumeMapper.h>
 
 #include <VolumeAttributes.h>
 #include <avtCallback.h>
@@ -134,6 +133,10 @@ avtDefaultRenderer::~avtDefaultRenderer()
 //
 //    Alister Maguire, Tue Jun 18 11:36:44 PDT 2019
 //    If VTKRen is NULL, we can't render. 
+//
+//    Alister Maguire, Wed Nov  4 07:29:17 PST 2020
+//    Set the scalar opacity unit distance. This is basically setting
+//    the sample distance for ray casting.
 //
 // ****************************************************************************
 
@@ -367,6 +370,28 @@ avtDefaultRenderer::Render(
 
         resetColorMap = false;
         oldAtts       = props.atts;
+
+        //
+        // We need to calculate the sample distance so that we can apply
+        // opacity correction.
+        //
+        // NOTE 1: vtkSmartVolumeMapper->SetSampleDistance does not work, so we
+        // need to rely on vtkVolumeProperty->SetScalarOpacityUnitDistance.
+        //
+        // NOTE 2: This magic number "sampleDistReference" is completely
+        // made up. It acts as a "reference sample count" that results in
+        // an opacity correction that generally "looks good". Increasing this
+        // value will result in an increased opacity intensity, while decreasing
+        // this value will result in a decreased opacity intensity.
+        //
+        double spacing[3];
+        imageToRender->GetSpacing(spacing);
+
+        double sampleDistReference = 1.0/10.0;
+        double averageSpacing = (spacing[0] + spacing[1] + spacing[2]) / 3.0;
+        double sampleDist     = averageSpacing / sampleDistReference;
+
+        volumeProp->SetScalarOpacityUnitDistance(1, sampleDist);
 
         curVolume->SetMapper(mapper);
         curVolume->SetProperty(volumeProp);

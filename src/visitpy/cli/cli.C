@@ -657,7 +657,7 @@ main(int argc, char *argv[])
             
             if(split.size() == 2)
             {
-                command << "OpenDatabase(\"" << split[0] << ", 0, \"" << split[1] << "\")";
+                command << "OpenDatabase(\"" << split[0] << "\", 0, \"" << split[1] << "\")";
             }  
             else
             {
