@@ -842,7 +842,7 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
 
   // Read IBlanking data
   std::cout << "Process Iblanking: " << this->Internal->processIBlanking << std::endl;
-  if (this->Internal->processIBlanking)
+  if (this->Internal->processIBlanking==1)
   // if (this->Internal->IBlanking == 1)
   {
     vtkIntArray* iblank = vtkIntArray::New();
