@@ -28,7 +28,6 @@ struct vtkPLOT3DReaderInternals
   int NumberOfDimensions;
   int Precision; // in bytes
   int IBlanking;
-  int processIBlanking;
 
   bool NeedToCheckXYZFile;
 
@@ -40,7 +39,6 @@ struct vtkPLOT3DReaderInternals
     NumberOfDimensions(3),
     Precision(4),
     IBlanking(0),
-    processIBlanking(0),
     NeedToCheckXYZFile(true)
     {
     }
@@ -51,8 +49,8 @@ struct vtkPLOT3DReaderInternals
   int CheckByteCount(FILE* fp);
   int CheckMultiGrid(FILE* fp);
   int Check2DGeom(FILE* fp);
-  int CheckBlankingAndPrecision(FILE* fp, bool);
-  int CheckCFile(FILE* fp, long fileSize, bool);
+  int CheckBlankingAndPrecision(FILE* fp);
+  int CheckCFile(FILE* fp, long fileSize);
   long CalculateFileSize(int mgrid,
                          int precision, // in bytes
                          int blanking,

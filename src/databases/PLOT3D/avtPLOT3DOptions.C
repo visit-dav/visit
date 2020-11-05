@@ -59,11 +59,10 @@ GetPLOT3DReadOptions(void)
     rv->SetBool("Big Endian", true);
     rv->SetBool("Double Precision", false);
 
-
-    // rv->SetBool("IBlanking", false);
-    rv->SetEnum("IBlanking", 0);
-    vector<string> iBlankingOptions = {"Auto-detect", "On", "Off"};
-    rv->SetEnumStrings("IBlanking", iBlankingOptions);
+    rv->SetEnum("IBlanking In File", 0); // TODO: Use enum/"Auto" ?
+    vector<string> iBlankingOptions = {"Auto", "Always", "Never"};
+    rv->SetEnumStrings("IBlanking In File", iBlankingOptions);
+    rv->SetBool("Use IBlanking If Present", true);
 
     rv->SetDouble("Gas constant R", 1.0);
     rv->SetDouble("Gas constant Gamma", 1.4);

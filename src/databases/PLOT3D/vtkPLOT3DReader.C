@@ -119,7 +119,8 @@ vtkPLOT3DReader::vtkPLOT3DReader()
   this->FileSize = 0;
   this->MultiGrid = false;
   this->ByteOrder = FILE_BIG_ENDIAN;
-  this->IBlanking = 0;
+  this->IBlankingInFile = 0; // TODO: use enum
+  this->UseIBlankingIfDetected = true;
   this->TwoDimensionalGeometry = false;
   this->DoublePrecision = false;
 
@@ -182,12 +183,19 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
       vtkWarningMacro("This appears to be an ASCII file. Please make sure "
                       "that all settings are correct to read it correctly.");
     }
+    // Copy settings from reader to internal reader
+    this->Internal->ByteOrder = this->ByteOrder;
+    this->Internal->HasByteCount = this->HasByteCount;
+    this->Internal->MultiGrid = this->MultiGrid;
+    this->Internal->NumberOfDimensions = this->TwoDimensionalGeometry ? 2 : 3;
+    this->Internal->Precision = this->DoublePrecision ? 8 : 4;
+    this->Internal->IBlanking = this->IBlankingInFile;
     return 1;
   }
 
-  std::cout << "Before Auto-Detection, IBlanking is " << this->IBlanking << std::endl;
+  std::cout << "Before Auto-Detection, IBlankingInFile is " << this->IBlankingInFile << std::endl;
   std::cout << "Before Auto-Detection, Internal IBlanking is " << this->Internal->IBlanking << std::endl;
-  std::cout << "Before Auto-Detection, processIBlanking is " << this->Internal->processIBlanking << std::endl;
+  std::cout << "Before Auto-Detection, UseIBlankingIfDetected is " << this->UseIBlankingIfDetected << std::endl;
   int success = this->Internal->CheckByteOrder(fp);
   if (!success)
     vtkDebugMacro("Auto detection failed at byte order");
@@ -203,7 +211,7 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
     {
     if (!this->Internal->HasByteCount)
       {
-      success = this->Internal->CheckCFile(fp, this->FileSize, this->IBlanking==0);
+      success = this->Internal->CheckCFile(fp, this->FileSize);
       if (!success)
         vtkDebugMacro("Auto detection failed checking C File");
       }
@@ -220,12 +228,34 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
         }
       if (success)
         {
-        success = this->Internal->CheckBlankingAndPrecision(fp, this->IBlanking==0);
+        success = this->Internal->CheckBlankingAndPrecision(fp);
         if (!success)
           vtkDebugMacro("Auto detection failed blanking and precision");
         }
       }
     }
+  
+  // Check that user settings match what VisIt has auto-detected.
+  if (this->IBlankingInFile == 0) // Auto detection, TODO: use enum
+  {
+    this->IBlankingInFile = this->Internal->IBlanking;
+  }
+  else
+  {
+    // Warn if mismatched
+    if (this->IBlankingInFile == 1 && this->Internal->IBlanking == 0)
+    {
+      vtkWarningMacro("User settings indicate that there is IBlanking in this "
+                      "file, but VisIt did not detect it. Reading with "
+                      "user settings.");
+    }
+    else if (this->IBlankingInFile == 2 && this->Internal->IBlanking == 1)
+    {
+      vtkWarningMacro("User settings indicate that there is not IBlanking in this "
+                      "file, but VisIt detected it. Reading with "
+                      "user settings.");
+    }
+  }
 
   if (!success)
     {
@@ -236,12 +266,12 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
     this->Internal->MultiGrid = this->MultiGrid;
     this->Internal->NumberOfDimensions = this->TwoDimensionalGeometry ? 2 : 3;
     this->Internal->Precision = this->DoublePrecision ? 8 : 4;
-    this->Internal->IBlanking = this->IBlanking;
+    this->Internal->IBlanking = this->IBlankingInFile;
     }
 
-  std::cout << "After Auto-Detection, IBlanking is " << this->IBlanking << std::endl;
+  std::cout << "After Auto-Detection, IBlankingInFile is " << this->IBlankingInFile << std::endl;
   std::cout << "After Auto-Detection, Internal IBlanking is " << this->Internal->IBlanking << std::endl;
-  std::cout << "After Auto-Detection, processIBlanking is " << this->Internal->processIBlanking << std::endl;
+  std::cout << "After Auto-Detection, UseIBlankingIfDetected is " << this->UseIBlankingIfDetected << std::endl;
 
   return success;
 }
@@ -724,15 +754,6 @@ int vtkPLOT3DReader::RequestInformation()
 {
   FILE* xyzFp;
 
-  // Copy settings from reader to internal reader
-  this->Internal->ByteOrder = this->ByteOrder;
-  this->Internal->HasByteCount = this->HasByteCount;
-  this->Internal->MultiGrid = this->MultiGrid;
-  this->Internal->NumberOfDimensions = this->TwoDimensionalGeometry ? 2 : 3;
-  this->Internal->Precision = this->DoublePrecision ? 8 : 4;
-  this->Internal->IBlanking = this->IBlanking;
-  this->Internal->processIBlanking = this->IBlanking;
-
   if ( this->CheckGeometryFile(xyzFp) != VTK_OK)
     {
     return 0;
@@ -841,8 +862,9 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
   }
 
   // Read IBlanking data
-  std::cout << "Process Iblanking: " << this->Internal->processIBlanking << std::endl;
-  if (this->Internal->processIBlanking==1)
+  std::cout << "IblankingInFile: " << this->IBlankingInFile << std::endl;
+  std::cout << "Use IBlanking If Detected: " << this->UseIBlankingIfDetected << std::endl;
+  if (this->IBlankingInFile == 1 && this->UseIBlankingIfDetected == 1)
   // if (this->Internal->IBlanking == 1)
   {
     vtkIntArray* iblank = vtkIntArray::New();
@@ -935,7 +957,7 @@ vtkPLOT3DReader::ComputeGridOffset(FILE *xyzFp)
       {
       if (this->Internal->BinaryFile)
         {
-        if (this->Internal->IBlanking == 1)
+        if (this->IBlankingInFile == 1)
           {
             this->GridOffsets[j] = (this->GridOffsets[j-1] +        // starting offset
                 nd*this->GridSizes[j-1]*this->Internal->Precision + // coordinate sizes
@@ -952,7 +974,7 @@ vtkPLOT3DReader::ComputeGridOffset(FILE *xyzFp)
       else
         {
         int numberOfElements;
-        if (this->Internal->IBlanking == 1)
+        if (this->IBlankingInFile == 1)
           {
           numberOfElements = (nd+1)*GridSizes[j-1];
           }
@@ -1164,7 +1186,8 @@ void vtkPLOT3DReader::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Gamma: " << this->Gamma << endl;
   os << indent << "R: " << this->R << endl;
   os << indent << "MultiGrid: " << this->MultiGrid << endl;
-  os << indent << "IBlanking: " << this->IBlanking << endl;
+  os << indent << "IBlankingInFile: " << this->IBlankingInFile << endl;
+  os << indent << "UseIBlankingIfDetected: " << this->UseIBlankingIfDetected << endl;
   os << indent << "ByteOrder: " << this->ByteOrder << endl;
   os << indent << "TwoDimensionalGeometry: " << (this->TwoDimensionalGeometry?"on":"off")
      << endl;

@@ -171,7 +171,7 @@ int vtkPLOT3DReaderInternals::Check2DGeom(FILE* fp)
   return 0;
 }
 
-int vtkPLOT3DReaderInternals::CheckBlankingAndPrecision(FILE* fp, bool updateIBlanking)
+int vtkPLOT3DReaderInternals::CheckBlankingAndPrecision(FILE* fp)
 {
   int recMarkBeg, recMarkEnd, numGrids = 1, nMax, totPts;
   int* jmax;
@@ -238,10 +238,6 @@ int vtkPLOT3DReaderInternals::CheckBlankingAndPrecision(FILE* fp, bool updateIBl
     delete[] jmax;
     goodRead = true;
   }
-  if (updateIBlanking)
-  {
-    this->processIBlanking = this->IBlanking;
-  }
   return goodRead;
 }
 
@@ -249,7 +245,7 @@ int vtkPLOT3DReaderInternals::CheckBlankingAndPrecision(FILE* fp, bool updateIBl
 // to check becaues it has no byte count markers. We need
 // to do a bit more brute force checks based on reading
 // data and estimating file size.
-int vtkPLOT3DReaderInternals::CheckCFile(FILE* fp, long fileSize, bool updateIBlanking)
+int vtkPLOT3DReaderInternals::CheckCFile(FILE* fp, long fileSize)
 {
   int precisions[2] = {4, 8};
   int blankings[2] = {0, 1};
@@ -285,10 +281,6 @@ int vtkPLOT3DReaderInternals::CheckCFile(FILE* fp, long fileSize, bool updateIBl
           this->MultiGrid = 0;
           this->Precision = precision;
           this->IBlanking = blanking;
-          if (updateIBlanking)
-          {
-            this->processIBlanking = blanking;
-          }
           this->NumberOfDimensions = dimension;
           return 1;
           }
@@ -332,10 +324,6 @@ int vtkPLOT3DReaderInternals::CheckCFile(FILE* fp, long fileSize, bool updateIBl
           this->MultiGrid = 1;
           this->Precision = precision;
           this->IBlanking = blanking;
-          if (updateIBlanking)
-          {
-            this->processIBlanking = blanking;
-          }
           this->NumberOfDimensions = dimension;
           delete[] gridDims2;
           return 1;
