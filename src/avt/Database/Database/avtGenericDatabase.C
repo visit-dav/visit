@@ -3364,7 +3364,6 @@ avtGenericDatabase::GetQOTDataset(int domain,
         rv = GetQOTArrayVarDataset(varname, element, domain, spec);
         break;
 
-      //FIXME: test this
       case AVT_MESH:
       {
         int tsRange[2];
