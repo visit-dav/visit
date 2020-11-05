@@ -54,6 +54,9 @@
 //    Hank Childs, Sun Mar 22 14:13:16 CDT 2009
 //    Initialized onDemandProcessing.
 //
+//    Alister Maguire, Fri Oct  9 11:04:05 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtCMFEExpression::avtCMFEExpression()
@@ -63,6 +66,7 @@ avtCMFEExpression::avtCMFEExpression()
     onDemandProcessing = false;
     calculateMeshExtents = false;
     initialSILHasData = false;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

@@ -18,33 +18,16 @@ SET(LIBM_SOURCES
 paraDIS_tecplotMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtparaDIS_tecplotFileFormat.C
-RC_c_lib/args.c
-RC_c_lib/debugutil.c
-RC_c_lib/signals.c
-RC_c_lib/fileutils.c
-RC_c_lib/inventor.c
-RC_cpp_lib/RangeList.C
-RC_cpp_lib/timer.C
-RC_cpp_lib/pathutil.C
 )
 
 SET(LIBE_SOURCES
 paraDIS_tecplotEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtparaDIS_tecplotFileFormat.C
-RC_c_lib/args.c
-RC_c_lib/debugutil.c
-RC_c_lib/signals.c
-RC_c_lib/fileutils.c
-RC_c_lib/inventor.c
-RC_cpp_lib/RangeList.C
-RC_cpp_lib/timer.C
-RC_cpp_lib/pathutil.C
 )
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-RC_c_lib
 RC_cpp_lib
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/MetaData

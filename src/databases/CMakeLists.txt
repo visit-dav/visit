@@ -185,6 +185,12 @@
 #    Brad Whitlock, Wed Jul 22 17:47:11 PDT 2020
 #    I added the FMS reader.
 #
+#    Kathleen Biagas, Mon Sep 14 2020
+#    Enable Rect as an optional plugin on Windows.
+#
+#   Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+#   Removed FastBit and FastQuery
+#
 #****************************************************************************
 
 IF(NOT WIN32)
@@ -364,20 +370,12 @@ CHECK_THIRDPARTY_SATISFIED(MFEM    MFEM)
 
 CHECK_THIRDPARTY_SATISFIED(OpenEXR OPENEXR)
 
-# special cases for windows
-IF(WIN32)
-    CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
-ELSE()
-    IF(FASTBIT AND FASTQUERY)
-        CHECK_THIRDPARTY_SATISFIED(H5Part H5PART FASTBIT FASTQUERY)
-    ELSE()
-        CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
-    ENDIF()
-    if(VISIT_PARADIS)
-        CHECK_THIRDPARTY_SATISFIED(paraDIS BOOST)
-        CHECK_THIRDPARTY_SATISFIED(paraDIS_tecplot BOOST)
-    endif()
-ENDIF()
+if(VISIT_PARADIS)
+    CHECK_THIRDPARTY_SATISFIED(paraDIS BOOST)
+    CHECK_THIRDPARTY_SATISFIED(paraDIS_tecplot BOOST)
+endif()
+
+CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
 
 # Save the list of all library dirs and libs so the engine can use it
 IF(VISIT_STATIC)
@@ -462,6 +460,7 @@ lata
 volimage
 unv
 ${XDBPLUGIN}
+ZipWrapper
 )
 
 IF(TARGET VTK::IOEnSight)
@@ -474,23 +473,25 @@ ELSE()
     ENDIF()
 ENDIF()
 
+SET(OPTIONAL_DATABASE_PLUGINS
+    PICS_Tester
+    Rect
+   )
+
 IF (NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS
         HDFS
         STAR
         TCGA
         Vis5D
-        ZipWrapper
     )
-    SET(OPTIONAL_DATABASE_PLUGINS
+    list(APPEND OPTIONAL_DATABASE_PLUGINS
         Hex
         MRTest
-        PICS_Tester
-        Rect
         VLI
     )
 ELSE(NOT WIN32)
-    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;ZipWrapper;Hex;MRTest;PICS_Tester;Rect;VLI" "not currently buildable on Windows")
+    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;Hex;MRTest;VLI" "not currently buildable on Windows")
 ENDIF (NOT WIN32)
 
 

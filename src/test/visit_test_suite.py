@@ -30,6 +30,9 @@ from visit_test_common import *
 from visit_test_reports import *
 from visit_test_ctest import *
 
+def known_mode_keys():
+    return ['serial','parallel','scalable','dlb','pdb','hdf5','icet']
+
 # ----------------------------------------------------------------------------
 #  Method: visit_root
 #
@@ -211,6 +214,11 @@ def launch_visit_test(args):
             if len(modes) > 0:
                 modes +=","
             modes +="icet"
+    if "pdb" in modes_list:
+        if modes == "":
+            modes = "pdb"
+        else:
+            modes += ",pdb"
     run_dir = pjoin(opts["result_dir"],"_run","_%s_%s" % (test_cat, test_base))
     # set opts vars
     tparams = {}
@@ -245,6 +253,7 @@ def launch_visit_test(args):
     tparams["host_profile_dir"]   = opts["host_profile_dir"]
     tparams["sessionfiles"]   = opts["sessionfiles"]
     tparams["cmake_cmd"]      = opts["cmake_cmd"]
+    tparams["clargs"]         = json.dumps(sys.argv)
 
     exe_dir, exe_file = os.path.split(tparams["visit_bin"])
     if sys.platform.startswith("win"):
@@ -594,10 +603,10 @@ def parse_args():
     parser.add_option("-m",
                       "--modes",
                       default=defs["modes"],
-                      help="specify mode in which to run tests"
-                           " [choose from 'parallel','serial','scalable', "
-                           " 'dlb','hdf5', 'icet', and combinations such as"
-                           " 'scalable,parallel']")
+                      help="specify mode keys used to run tests "
+                           "choose from %s and comma-separated combinations such as "
+                           "scalable,parallel. Any unrecognized mode keys are passed "
+                           "through uninterpreted. [default serial]"%known_mode_keys())
     parser.add_option("-c",
                       "--classes",
                       default=defs["classes"],
@@ -984,31 +993,45 @@ def rsync_post(src_dir,rsync_dest):
 #   Kathleen Biagas, Thu Aug 20 16:21:21 PDT 2020
 #   Fix if-test for relative-to-tests-dir (remove not).
 #
+#   Kathleen Biagas, Fri Sep 11 10:10:44 PDT 2020
+#   Restructure logic to handle more use-cases of file globbing.
+#
 # ----------------------------------------------------------------------------
 def resolve_test_paths(tests,tests_dir):
     res = []
+
+    if len(tests) == 1:
+        # When run on linux command line, need to pass file globs in quotes
+        # or the system tries to resolve the globs before passing to python,
+        # which fails for relative paths (eg tests/plots/*.py).
+        # Specifying more than one set, eg: "tests/plots/*.py tests/hybrid/*.py"
+        # ends up as 1 item in the tests list, so split it up.
+        tests = tests[0].split()
+
     for t in tests:
-        # first check if we were passed the full path to a test script
         t_abs_path = abs_path(t)
+        # first check if we were passed the full path to a test script
         if os.path.isfile(t_abs_path):
             res.append(t_abs_path)
-        # if not, assume it is relative to tests dir
         else:
+            # if not, assume it is relative to tests dir
             t_abs_path = abs_path(pjoin(tests_dir, "..",t))
+
+            # is it a file
             if os.path.isfile(t_abs_path):
                 res.append(t_abs_path)
+            # or a glob
+            elif '*' in os.path.basename(t_abs_path):
+                matchcount=0
+                for match in glob.iglob(t_abs_path):
+                    if os.path.isfile(match):
+                        res.append(match)
+                        matchcount+=1
+                if matchcount == 0:
+                    print("[WARNING: could not find test files matching: {}]".format(t_abs_path))
             else:
                 print("[WARNING: could not find test file: {}]".format(t_abs_path))
-    # use glob to match any *.py
-    expandedtests = []
-    for t in res:
-       if not '*' in t:
-          expandedtests.append(t)
-       else:
-          for match in glob.iglob(t):
-             expandedtests.append(match)
-    if len(expandedtests) > 0:
-        res = expandedtests
+
     return res
 
 # ----------------------------------------------------------------------------

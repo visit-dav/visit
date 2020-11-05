@@ -21,6 +21,7 @@
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkGeometryFilter.h>
 #include <vtkIntArray.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
@@ -449,8 +450,10 @@ CGetNumberOfOriginalZones(avtDataRepresentation &data, void *arg, bool &)
 //    being converted to polydata properly. Maybe this routine should use the
 //    facelist filter.
 //
+//    Kathleen Biagas, Fri Aug 28 07:46:40 PDT 2020
+//    Use vtkGeometryFilter, which handles higher-order elements.
+//
 // ****************************************************************************
-#include <vtkGeometryFilter.h>
 
 void
 CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey, bool &)
@@ -467,56 +470,10 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
         geoFilter->SetInputData(ds);
         geoFilter->Update();
         vtkPolyData *out_pd = geoFilter->GetOutput();
-#if 0
-        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) ds;
-        vtkPolyData *out_pd = vtkPolyData::New();
-        int avtTopoDim = 2;
-
-        if (dataAndKey)
-        {
-            int intVal;
-            if (sscanf((char*)dataAndKey, "avtTopoDim=%d", &intVal) == 1)
-                avtTopoDim = intVal;
-        }
-
-        out_pd->SetPoints(ugrid->GetPoints());
-        out_pd->GetPointData()->ShallowCopy(ugrid->GetPointData());
-        out_pd->GetCellData()->ShallowCopy(ugrid->GetCellData());
-        out_pd->GetFieldData()->ShallowCopy(ugrid->GetFieldData());
-        vtkIdType ncells = ugrid->GetNumberOfCells();
-        out_pd->Allocate(ncells);
-        for (vtkIdType i = 0 ; i < ncells ; i++)
-        {
-            int cellTopoDim = ugrid->GetCell(i)->GetCellDimension();
-            if (cellTopoDim > avtTopoDim)
-            {
-                vtkIdType *pts = NULL;
-                static bool issuedWarning = false;
-                if (!issuedWarning)
-                {
-                    avtCallback::IssueWarning("Encountered a cell of topological "
-                        "dimension greater than the underlying dataset in which "
-                        "it is embedded. This occurs most often when there is an "
-                        "error in the file format reader. This cell and any others "
-                        "like it are being discarded.  Please contact a VisIt "
-                        "developer to resolve this issue.  (This warning will be "
-                        "issued only once per session.)");
-                    issuedWarning = true;
-                }
-                out_pd->InsertNextCell(VTK_EMPTY_CELL, 0, pts);
-            }
-            else
-            {
-                const vtkIdType *pts;
-                vtkIdType npts;
-                ugrid->GetCellPoints(i, npts, pts);
-                out_pd->InsertNextCell(ugrid->GetCellType(i), npts, pts);
-            }
-        }
-#endif
+        out_pd->Register(NULL);
+        
         avtDataRepresentation new_data(out_pd, data.GetDomain(), data.GetLabel());
         data = new_data;
-        //out_pd->Delete();
     }
 }
 
