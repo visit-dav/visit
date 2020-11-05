@@ -74,11 +74,17 @@ public:
 
   // Description:
   // Is there iblanking (point visibility) information in the file.
-  // If there is iblanking arrays, these will be read and assigned
-  // to the PointVisibility array of the output.
-  vtkSetMacro(IBlanking, int);
-  vtkGetMacro(IBlanking, int);
-  // vtkBooleanMacro(IBlanking, bool);
+  // If there is iblanking arrays, we will accommodate for the offsets.
+  vtkSetMacro(IBlankingInFile, int);
+  vtkGetMacro(IBlankingInFile, int);
+  // TODO: int should be enum above
+
+  // Description:
+  // If there is iblanking in the file, then we will use that information to
+  // determine the visability of the nodes/zones
+  vtkSetMacro(UseIBlankingIfDetected, bool);
+  vtkGetMacro(UseIBlankingIfDetected, bool);
+  vtkBooleanMacro(UseIBlankingIfDetected, bool);
 
   // Description:
   // If only two-dimensional data was written to the file,
@@ -200,7 +206,8 @@ protected:
   bool MultiGrid;
   int ForceRead;
   int ByteOrder;
-  int IBlanking; // 0: auto-detect, 1: yes, 2: no
+  int IBlankingInFile; // TODO: should be an enum.
+  bool UseIBlankingIfDetected;
   bool DoublePrecision;
 
   long FileSize;
