@@ -6868,7 +6868,7 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
 
     //
     // NOTE: when run in parallel, visit is smart about the
-    // contentes of "domains". Each processor only gets the
+    // contents of "domains". Each processor only gets the
     // domains it needs to process.
     //
     for (int i = 0; i < numDomains; ++i)
