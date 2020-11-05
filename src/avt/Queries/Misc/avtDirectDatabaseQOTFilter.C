@@ -14,11 +14,12 @@
 
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
+#include <vtkCellData.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItUtility.h>
 #include <vtkFloatArray.h>
-#include <vtkPolyData.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <avtCallback.h>
 #include <avtDatasetExaminer.h>
@@ -159,7 +160,7 @@ avtDirectDatabaseQOTFilter::Execute(void)
 
         if (numLeaves > 0)
         {
-            vtkPolyData *QOTData = (vtkPolyData *) leaves[0];
+            vtkUnstructuredGrid *QOTData = (vtkUnstructuredGrid *) leaves[0];
 
             if (QOTData == NULL)
             {
@@ -168,8 +169,8 @@ avtDirectDatabaseQOTFilter::Execute(void)
                 SetOutputDataTree(new avtDataTree());
             }
 
-            vtkPolyData *refined = VerifyAndRefineTimesteps(QOTData);
-            avtDataTree_p tree   = ConstructCurveTree(refined, multiCurve);
+            vtkUnstructuredGrid *refined = VerifyAndRefineTimesteps(QOTData);
+            avtDataTree_p tree = ConstructCurveTree(refined, multiCurve);
             SetOutputDataTree(tree);
 
             if (refined != NULL)
@@ -209,10 +210,10 @@ avtDirectDatabaseQOTFilter::Execute(void)
 //            NaN values to the associated data positions. 
 //
 //  Arguments:
-//      polyData    The polydata containing the curves. 
+//      ugrid    The unstructured gird containing the curves. 
 //
 //  Returns:
-//      A vtkPolyData object only containing valid curves. 
+//      A vtkUnstructuredGrid object only containing valid curves.
 //
 //  Programmer: Alister Maguire
 //  Creation:   Mon Sep 30 14:17:20 MST 2019
@@ -225,31 +226,32 @@ avtDirectDatabaseQOTFilter::Execute(void)
 //
 // ****************************************************************************
 
-vtkPolyData *
-avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
+vtkUnstructuredGrid *
+avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(
+    vtkUnstructuredGrid *inUGrid)
 {
-    vtkPolyData *outPolyData = vtkPolyData::New();
-    outPolyData->ShallowCopy(inPolyData);
+    vtkUnstructuredGrid *outUGrid = vtkUnstructuredGrid::New();
+    outUGrid->ShallowCopy(inUGrid);
 
-    vtkPointData *inPtData = inPolyData->GetPointData();
-    vtkPoints *inPts       = inPolyData->GetPoints();
+    vtkPointData *inPtData = inUGrid->GetPointData();
+    vtkPoints *inPts       = inUGrid->GetPoints();
 
     if (inPtData ==  NULL || inPts == NULL)
     {
-        return outPolyData;
+        return outUGrid;
     }
 
     int numCurves = inPtData->GetNumberOfArrays();
 
     if (numCurves == 0)
     { 
-        return outPolyData;
+        return outUGrid;
     }
 
-    const int numPts  = inPtData->GetNumberOfTuples();
-    const int stride  = atts.GetStride();
-    const int startT  = atts.GetStartTime();
-    const int stopT   = atts.GetEndTime();
+    const int numPts = inPtData->GetNumberOfTuples();
+    const int stride = atts.GetStride();
+    const int startT = atts.GetStartTime();
+    const int stopT  = atts.GetEndTime();
 
     //
     // We need to check if any of the arrays have multiple
@@ -263,7 +265,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
     }
 
     //
-    // First pass: look for invalid data and mark their locations
+    // First pass: look for invalid data, mark their locations,
     // and record their time states.
     //
     bool missingData = false;
@@ -346,8 +348,8 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
             //
             // We have no valid output. Let's not do any work here. 
             //
-            outPolyData->Delete();
-            vtkPolyData *empty = vtkPolyData::New();
+            outUGrid->Delete();
+            vtkUnstructuredGrid *empty = vtkUnstructuredGrid::New();
             return empty;
         }
 
@@ -363,7 +365,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
         // Second pass: re-write the arrays so that they only contain
         // valid time states. 
         //
-        vtkPointData *outPtData = outPolyData->GetPointData();
+        vtkPointData *outPtData = outUGrid->GetPointData();
 
         for (int c = 0; c < numCurves; ++c) 
         {
@@ -431,13 +433,13 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
             outCurve->Delete();
         }
 
-        outPolyData->SetPoints(outPts);
+        outUGrid->SetPoints(outPts);
         outPts->Delete();
     }
 
     delete [] tupleTemp;
 
-    return outPolyData;
+    return outUGrid;
 }
 
 
@@ -448,7 +450,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
 //      Construct a tree from the time query curves. 
 //
 //  Arguments:
-//      polyData             The polydata containing the curves. 
+//      ugrid                The unstructured grid containing the curves. 
 //      doMultiCurvePlot     Whether or not to do a multi curve plot. 
 //
 //  Returns:
@@ -462,11 +464,11 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
 // ****************************************************************************
 
 avtDataTree_p
-avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
+avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkUnstructuredGrid *ugrid,
                                                const bool doMultiCurvePlot)
 {
-    vtkPointData *inPtData = polyData->GetPointData();
-    vtkPoints *inPts       = polyData->GetPoints();
+    vtkPointData *inPtData = ugrid->GetPointData();
+    vtkPoints *inPts       = ugrid->GetPoints();
 
     if (inPtData ==  NULL || inPts == NULL ||
         inPtData->GetScalars() == NULL)

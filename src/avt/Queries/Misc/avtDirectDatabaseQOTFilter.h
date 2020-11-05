@@ -18,7 +18,7 @@
 #include <string>
 
 class vtkRectilinearGrid;
-class vtkPolyData;
+class vtkUnstructuredGrid;
 
 // ****************************************************************************
 //  Class: avtDirectDatabaseQOTFilter
@@ -76,9 +76,9 @@ class QUERY_API avtDirectDatabaseQOTFilter : public avtQueryOverTimeFilter
     virtual bool             ExecutionSuccessful(void) 
                                { return success; };
 
-    vtkPolyData             *VerifyAndRefineTimesteps(vtkPolyData *);
+    vtkUnstructuredGrid     *VerifyAndRefineTimesteps(vtkUnstructuredGrid *);
 
-    avtDataTree_p            ConstructCurveTree(vtkPolyData *,
+    avtDataTree_p            ConstructCurveTree(vtkUnstructuredGrid *,
                                                 const bool);
 };
 
