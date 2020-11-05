@@ -32,6 +32,8 @@
 #include <FileFunctions.h>
 #include <TimingsManager.h>
 
+#include <vtkVisItUtility.h>
+
 using std::vector;
 using std::string;
 
@@ -407,6 +409,13 @@ avtPLOT3DFileFormat::GetMesh(int timestate, int domain, const char *name)
         debug3 << "avtPLOT3DFileFormat::GetMesh: Error retreiving Grid for"
                << " timestate " << timestate << " domain " << domain << endl;
     }
+
+    vtkVisItUtility::WriteDataSet(rv, "plot3d_Reader_output.out");
+    // vtkdatasetwriter output the rv
+    // Writes it to the home directory
+    // IF output is exactly the same, then there is something wrong upstream with
+    // how the ghost zone filters are handling the filtering.
+
     return rv;
 }
 
