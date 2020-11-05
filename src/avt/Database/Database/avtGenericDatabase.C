@@ -3297,6 +3297,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //
 //  Modifications:
 //
+//    Alister Maguire, Thu Nov  5 10:00:31 PST 2020
+//    Handle the AVT_MESH case.
+//
 // ****************************************************************************
 
 vtkDataSet *
