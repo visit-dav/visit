@@ -15,6 +15,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkCellArray.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItUtility.h>
@@ -24,7 +25,6 @@
 #include <avtCallback.h>
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
-#include <avtParallel.h>
 #include <avtCommonDataFunctions.h>
 
 #include <VisItException.h>
@@ -38,8 +38,8 @@
 //  Arguments:
 //    atts      The attributes the filter should use.
 //
-//  Programmer: Alister Maguire 
-//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 //  Modifications:
 //
@@ -55,7 +55,7 @@ avtDirectDatabaseQOTFilter::avtDirectDatabaseQOTFilter(const AttributeGroup *a)
     YLabel             = "";
 
     //
-    // Let's first try to retreive some information about the query. 
+    // Let's first try to retreive some information about the query.
     //
     TRY
     {
@@ -92,7 +92,7 @@ avtDirectDatabaseQOTFilter::avtDirectDatabaseQOTFilter(const AttributeGroup *a)
 //  Method: avtDirectDatabaseQOTFilter destructor
 //
 //  Programmer: Alister Maguire
-//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 // ****************************************************************************
 
@@ -111,7 +111,7 @@ avtDirectDatabaseQOTFilter::~avtDirectDatabaseQOTFilter()
 //    atts      The attributes the filter should use.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 // ****************************************************************************
 
@@ -126,12 +126,20 @@ avtDirectDatabaseQOTFilter::Create(const AttributeGroup *atts)
 //  Method:  avtDirectDatabaseQOTFilter::Execute
 //
 //  Purpose:
-//      Construct our time query data tree. 
+//      Construct our time query data tree.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 //  Modifications:
+//
+//    Alister Maguire, Wed Nov  4 15:11:10 PST 2020
+//    Fixed a bug preventing curves from begin generated when the picked element
+//    was not on rank 0.
+//
+//    Alister Maguire, Thu Nov  5 10:00:31 PST 2020
+//    Check if we're processing timesteps from an array or from point
+//    coordinates and handle each appropriately.
 //
 // ****************************************************************************
 
@@ -139,13 +147,22 @@ void
 avtDirectDatabaseQOTFilter::Execute(void)
 {
     //
-    // Assume success until proven otherwise. 
+    // Assume success until proven otherwise.
     //
     success = true;
 
-    if (PAR_Rank() == 0)
+    int numLeaves          = 0;
+    avtDataTree_p dataTree = GetInputDataTree();
+    vtkDataSet **leaves    = dataTree->GetAllLeaves(numLeaves);
+
+    //
+    // when performing a DDQOT, only the processor that owns the
+    // query target (usually a mesh element) will have any data.
+    // So, this handles parallel cases by only processing ranks
+    // that actually contain curves.
+    //
+    if (numLeaves > 0)
     {
-        avtDataTree_p dataTree = GetInputDataTree();
 
         bool multiCurve = false;
         if (atts.GetQueryAtts().GetQueryInputParams().
@@ -155,37 +172,35 @@ avtDirectDatabaseQOTFilter::Execute(void)
                 GetEntry("curve_plot_type")->ToInt() == 1);
         }
 
-        int numLeaves = 0;
-        vtkDataSet **leaves = dataTree->GetAllLeaves(numLeaves);
+        vtkUnstructuredGrid *QOTData = (vtkUnstructuredGrid *) leaves[0];
 
-        if (numLeaves > 0)
+        if (QOTData == NULL)
         {
-            vtkUnstructuredGrid *QOTData = (vtkUnstructuredGrid *) leaves[0];
+            debug1 << "Direct Database QOT leaf is NULL!" << endl;
+            SetOutputDataTree(new avtDataTree());
+        }
 
-            if (QOTData == NULL)
-            {
-                debug1 << "Direct Database QOT leaf is NULL!" << endl;
+        vtkUnstructuredGrid *refined = NULL;
 
-                SetOutputDataTree(new avtDataTree());
-            }
-
-            vtkUnstructuredGrid *refined = VerifyAndRefineTimesteps(QOTData);
-            avtDataTree_p tree = ConstructCurveTree(refined, multiCurve);
-            SetOutputDataTree(tree);
-
-            if (refined != NULL)
-            {
-                refined->Delete();
-            }
-
-            delete [] leaves; 
+        if (QOTData->GetFieldData()->HasArray("TimestepArray"))
+        {
+            refined = VerifyAndRefineArrayTimesteps(QOTData);
         }
         else
         {
-            debug1 << "Direct Database QOT recieved no leaves!" << endl;
-
-            SetOutputDataTree(new avtDataTree());
+            refined = VerifyAndRefinePointTimesteps(QOTData);
         }
+
+        avtDataTree_p tree = ConstructCurveTree(refined, multiCurve);
+        SetOutputDataTree(tree);
+
+        if (refined != NULL)
+        {
+            refined->Delete();
+        }
+
+        delete [] leaves;
+
     }
     else
     {
@@ -198,16 +213,20 @@ avtDirectDatabaseQOTFilter::Execute(void)
 
 
 // ****************************************************************************
-//  Method:  avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps
+//  Method:  avtDirectDatabaseQOTFilter::VerifyAndRefinePointTimesteps
 //
 //  Purpose:
 //      Verify that all timesteps have been retrieved. If we are
 //      missing any, then let's reduce our dataset to only include
 //      the valid data, and let the user know which timesteps
-//      were skipped. 
+//      were skipped.
 //
-//      Note: timesteps that encountered errors will have added
-//            NaN values to the associated data positions. 
+//      This method assumes that timesteps are stored as the x
+//      value in mesh point positions and that the curves are
+//      stored in point data arrays.
+//
+//      NOTE: timesteps that encountered errors will have added
+//      NaN values to the associated data positions.
 //
 //  Arguments:
 //      ugrid    The unstructured gird containing the curves. 
@@ -227,7 +246,7 @@ avtDirectDatabaseQOTFilter::Execute(void)
 // ****************************************************************************
 
 vtkUnstructuredGrid *
-avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(
+avtDirectDatabaseQOTFilter::VerifyAndRefinePointTimesteps(
     vtkUnstructuredGrid *inUGrid)
 {
     vtkUnstructuredGrid *outUGrid = vtkUnstructuredGrid::New();
@@ -257,7 +276,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(
     // We need to check if any of the arrays have multiple
     // components. If so, these require special treatment.
     //
-    int maxComp = 0; 
+    int maxComp = 0;
     for (int c = 0; c < numCurves; ++c)
     {
         int ncTemp = inPtData->GetArray(c)->GetNumberOfComponents();
@@ -284,12 +303,12 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(
     }
 
     //
-    // In cases with multiple variables, only time states that 
+    // In cases with multiple variables, only time states that
     // are valid across ALL variables will be kept.
     //
     for (int c = 0; c < numCurves; ++c)
     {
-        vtkFloatArray *inCurve = 
+        vtkFloatArray *inCurve =
             (vtkFloatArray *) inPtData->GetArray(c);
 
         int ts = startT;
@@ -298,12 +317,12 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(
             inCurve->GetTuple(i, tupleTemp);
 
             //
-            // Invalid states will contain NaN values. 
+            // Invalid states will contain NaN values.
             //
             if (visitIsNan(tupleTemp[0]))
             {
                 missingData = true;
- 
+
                 if (isValid[i])
                 {
                     isValid[i]  = false;
@@ -327,14 +346,14 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(
         if (missingData)
         {
             //
-            // Report the missing timesteps. 
+            // Report the missing timesteps.
             //
             std::ostringstream osm;
             osm << "\nQueryOverTime (" << atts.GetQueryAtts().GetName().c_str()
                 << ") experienced\n"
                 << "problems with the following timesteps and \n"
                 << "skipped them while generating the curve:\n   ";
-            
+
             for (int j = 0; j < numInvalid; j++)
             {
                 osm << invalidStateList[j] << " ";
@@ -346,7 +365,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(
         if (numValid == 0)
         {
             //
-            // We have no valid output. Let's not do any work here. 
+            // We have no valid output. Let's not do any work here.
             //
             outUGrid->Delete();
             vtkUnstructuredGrid *empty = vtkUnstructuredGrid::New();
@@ -357,28 +376,28 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(
 
         //
         // If we're missing data, this will be an over-estimate, but
-        // it should never be an under-estimate. 
+        // it should never be an under-estimate.
         //
         outPts->Allocate(numPts);
 
         //
         // Second pass: re-write the arrays so that they only contain
-        // valid time states. 
+        // valid time states.
         //
         vtkPointData *outPtData = outUGrid->GetPointData();
 
-        for (int c = 0; c < numCurves; ++c) 
+        for (int c = 0; c < numCurves; ++c)
         {
-            vtkFloatArray *inCurve = 
+            vtkFloatArray *inCurve =
                 (vtkFloatArray *) inPtData->GetArray(c);
 
             const char *name = inCurve->GetName();
-        
+
             vtkFloatArray *outCurve = vtkFloatArray::New();
             outCurve->SetNumberOfTuples(numValid);
             outCurve->SetNumberOfComponents(1);
             outCurve->SetName(name);
-        
+
             int vIdx = 0;
             for (int i = 0; i < numPts; ++i)
             {
@@ -411,10 +430,10 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(
                     {
                         outCurve->SetTuple1(vIdx++, MajorEigenvalue(tupleTemp));
                     }
-                    
-                    if (c == 0) 
+
+                    if (c == 0)
                     {
-                        inPts->GetPoint(i, coord);        
+                        inPts->GetPoint(i, coord);
                         outPts->InsertNextPoint(coord[0], coord[1], coord[2]);
                     }
                 }
@@ -433,6 +452,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(
             outCurve->Delete();
         }
 
+        outPts->Squeeze();
         outUGrid->SetPoints(outPts);
         outPts->Delete();
     }
@@ -444,20 +464,292 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(
 
 
 // ****************************************************************************
+//  Method:  avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps
+//
+//  Purpose:
+//      Verify that all timesteps have been retrieved. If we are
+//      missing any, then let's reduce our dataset to only include
+//      the valid data, and let the user know which timesteps
+//      were skipped.
+//
+//      This method assumes that timesteps are stored in a field
+//      array named "TimestepArray" and that the curves come from
+//      cell data arrays. These datasets typcially come from queries
+//      that require coordinate information to be passed through
+//      the expression system for generating the fields (like
+//      verdict metrics).
+//
+//      NOTE: timesteps that encountered errors will have added
+//      NaN values to the associated cell point positions.
+//
+//  Arguments:
+//      ugrid    The unstructured gird containing the curves. 
+//
+//  Returns:
+//      A vtkUnstructuredGrid object only containing valid curves.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Thu Nov  5 10:00:31 PST 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkUnstructuredGrid *
+avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps(
+    vtkUnstructuredGrid *inUGrid)
+{
+    //
+    // Instead of creating a "copy" of our input dataset, we're
+    // going to create our timestep point mesh where the point
+    // coordinates contain the timesteps, and the point fields
+    // contain the curves.
+    //
+    vtkUnstructuredGrid *outUGrid = vtkUnstructuredGrid::New();
+    vtkCellData *inCellData       = inUGrid->GetCellData();
+    vtkCellArray *inCells         = inUGrid->GetCells();
+
+    //
+    // Unlike with our timestep point mesh datasets, the points
+    // of these meshes contain actual coordinates, and the timesteps
+    // are located in a field array.
+    //
+    vtkFloatArray *timestepArray =
+        (vtkFloatArray *)inUGrid->GetFieldData()->GetArray("TimestepArray");
+
+    if (inCellData ==  NULL || inCells == NULL)
+    {
+        return outUGrid;
+    }
+    else if (timestepArray == NULL)
+    {
+        debug1 << "avtDirectDatabaseQOTFilter: unable to find the timestep "
+            << "array! This shouldn't happen..." << endl;
+        return outUGrid;
+    }
+
+    //
+    // Every cell array should be a curve.
+    //
+    int numCurves = inCellData->GetNumberOfArrays();
+
+    if (numCurves == 0)
+    { 
+        return outUGrid;
+    }
+
+    const int numCells = inCellData->GetNumberOfTuples();
+    const int stride   = atts.GetStride();
+    const int startT   = atts.GetStartTime();
+    const int stopT    = atts.GetEndTime();
+
+    //
+    // We need to check if any of the arrays have multiple
+    // components. If so, these require special treatment.
+    //
+    int maxComp = 0;
+    for (int c = 0; c < numCurves; ++c)
+    {
+        int ncTemp = inCellData->GetArray(c)->GetNumberOfComponents();
+        maxComp    = ncTemp > maxComp ? ncTemp : maxComp;
+    }
+
+    //
+    // First pass: look for invalid data, mark their locations,
+    // and record their time states.
+    //
+    bool missingData = false;
+    intVector invalidStateList;
+    invalidStateList.reserve(numCells);
+
+    boolVector isValid;
+    isValid.resize(numCells, true);
+
+    double coord[] = {0.0, 0.0, 0.0};
+    double *tupleTemp = new double[maxComp];
+
+    for (int i = 0; i < maxComp; ++i)
+    {
+        tupleTemp[i] = 0.0;
+    }
+
+    //
+    // Since all of these arrays should have been derived from coordinates,
+    // we only need to check the coordinates for errors.
+    //
+    for (int i, ts = 0; i < numCells; ++i, ts += stride)
+    {
+        vtkIdType numCellPts;
+        vtkIdType *cellPts = NULL; 
+        inCells->GetCell(i, numCellPts, cellPts);
+
+        //
+        // Invalid states are denoted by cells with NaN positions.
+        //
+        if (visitIsNan(cellPts[0]))
+        {
+            missingData = true;
+
+            if (isValid[i])
+            {
+                isValid[i]  = false;
+                invalidStateList.push_back(ts);
+            }
+        }
+    }
+
+    //
+    // There are three cases to consider here:
+    //     1. We have missing data that needs to be handled and reported.
+    //     2. We have vectors, tensors, or arrays that need to be reduced
+    //        to a single scalar.
+    //     3. We have scalar cell data that needs to be converted to point data.
+    //
+    // We also need to complete the conversion to our timestep point mesh
+    // type here by transferring the timesteps to the coordinate positions
+    // of our output mesh.
+    //
+    int numInvalid = invalidStateList.size();
+    int numValid   = numCells - numInvalid;
+
+    if (missingData)
+    {
+        //
+        // Report the missing timesteps.
+        //
+        std::ostringstream osm;
+        osm << "\nQueryOverTime (" << atts.GetQueryAtts().GetName().c_str()
+            << ") experienced\n"
+            << "problems with the following timesteps and \n"
+            << "skipped them while generating the curve:\n   ";
+
+        for (int j = 0; j < numInvalid; j++)
+        {
+            osm << invalidStateList[j] << " ";
+        }
+        debug4 << osm.str() << endl;
+        avtCallback::IssueWarning(osm.str().c_str());
+    }
+
+    if (numValid == 0)
+    {
+        //
+        // We have no valid output. Let's not do any work here.
+        //
+        outUGrid->Delete();
+        vtkUnstructuredGrid *empty = vtkUnstructuredGrid::New();
+        return empty;
+    }
+
+    vtkPoints *outPts = vtkPoints::New();
+
+    //
+    // If we're missing data, this will be an over-estimate, but
+    // it should never be an under-estimate.
+    //
+    outPts->Allocate(numCells);
+
+    //
+    // Second pass: re-write the arrays so that they only contain
+    // valid time states.
+    //
+    vtkPointData *outPtData = outUGrid->GetPointData();
+    outPtData->Allocate(numCells);
+
+    for (int c = 0; c < numCurves; ++c)
+    {
+        vtkFloatArray *inCurve =
+            (vtkFloatArray *) inCellData->GetArray(c);
+
+        const char *name = inCurve->GetName();
+
+        vtkFloatArray *outCurve = vtkFloatArray::New();
+        outCurve->SetNumberOfTuples(numValid);
+        outCurve->SetNumberOfComponents(1);
+        outCurve->SetName(name);
+
+        int vIdx = 0;
+        for (int i = 0; i < numCells; ++i)
+        {
+            if (isValid[i])
+            {
+                inCurve->GetTuple(i, tupleTemp);
+                int numComp = inCurve->GetNumberOfComponents();
+
+                //
+                // We handle scalars, vectors, arrays, and tensors
+                // differently.
+                //     Scalars: use the raw value.
+                //     Vectors: use the magnitude.
+                //     Tensors/Arrays: use the major eigenvalue.
+                //
+                if (numComp == 1)
+                {
+                    outCurve->SetTuple1(vIdx++, tupleTemp[0]);
+                }
+                else if (numComp < 9)
+                {
+                    float mag = 0.0;
+                    for (int ti = 0; ti < numComp; ++ti)
+                    {
+                        mag += tupleTemp[ti] * tupleTemp[ti];
+                    }
+                    outCurve->SetTuple1(vIdx++, sqrt(mag));
+                }
+                else if (numComp >= 9)
+                {
+                    outCurve->SetTuple1(vIdx++, MajorEigenvalue(tupleTemp));
+                }
+
+                //
+                // If this is our first pass, convert our timestep array to
+                // our point mesh. The x value represents the timestep.
+                //
+                if (c == 0)
+                {
+                    outPts->InsertNextPoint(timestepArray->GetTuple1(i),
+                        0.0, 0.0);
+                }
+            }
+        }
+
+        if (c == 0)
+        {
+            outPtData->SetScalars(outCurve);
+        }
+        else
+        {
+            outPtData->AddArray(outCurve);
+        }
+
+        outCurve->Delete();
+    }
+
+    outPts->Squeeze();
+    outUGrid->SetPoints(outPts);
+
+    outPts->Delete();
+    delete [] tupleTemp;
+
+    return outUGrid;
+}
+
+
+// ****************************************************************************
 //  Method:  avtDirectDatabaseQOTFilter::ConstructCurveTree
 //
 //  Purpose:
-//      Construct a tree from the time query curves. 
+//      Construct a tree from the time query curves.
 //
 //  Arguments:
 //      ugrid                The unstructured grid containing the curves. 
 //      doMultiCurvePlot     Whether or not to do a multi curve plot. 
 //
 //  Returns:
-//      A data tree containing the curves. 
+//      A data tree containing the curves.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 //  Modifications:
 //
@@ -484,14 +776,14 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkUnstructuredGrid *ugrid,
     if (numPts == 0 || numCurves == 0)
     {
         success = false;
-        debug2 << "avtDirectDatabaseQOTFilter: missing curves and/or points" 
+        debug2 << "avtDirectDatabaseQOTFilter: missing curves and/or points"
             << endl;
         return new avtDataTree();
     }
 
     if (numCurves == 1)
     {
-        vtkFloatArray *curve = 
+        vtkFloatArray *curve =
             (vtkFloatArray *) inPtData->GetScalars();
 
         if (curve == NULL)
@@ -518,7 +810,7 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkUnstructuredGrid *ugrid,
 
         for (int i = 0; i < numPts; ++i)
         {
-            inPts->GetPoint(i, coord);        
+            inPts->GetPoint(i, coord);
             xCoords->SetTuple1(i, coord[0]);
         }
 
@@ -528,11 +820,11 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkUnstructuredGrid *ugrid,
         avtDataTree_p tree = new avtDataTree(rgrid, 0);
 
         if (rgrid != NULL)
-        { 
+        {
             rgrid->Delete();
         }
 
-        scalars->Delete(); 
+        scalars->Delete();
         return tree;
     }
     else if (doMultiCurvePlot)
@@ -553,20 +845,20 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkUnstructuredGrid *ugrid,
 
         for (int i = 0; i < numPts; ++i)
         {
-            inPts->GetPoint(i, coord);        
+            inPts->GetPoint(i, coord);
             xCoords->SetTuple1(i, coord[0]);
         }
 
         for (int i = 0; i < numCurves; i++)
         {
-            vtkDoubleArray *curve = 
+            vtkDoubleArray *curve =
                 (vtkDoubleArray *) inPtData->GetArray(i);
 
             if (curve == NULL)
             {
                 char msg[512];
                 snprintf(msg, 512, "VisIt was unable to retreive data for the "
-                    "following variable: %s\n", curve->GetName()); 
+                    "following variable: %s\n", curve->GetName());
                 continue;
             }
 
@@ -600,7 +892,7 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkUnstructuredGrid *ugrid,
 
         for (int i = 0; i< numCurves; ++i)
         {
-            vtkDoubleArray *curve = 
+            vtkDoubleArray *curve =
                 (vtkDoubleArray *) inPtData->GetArray(i);
 
             if (curve == NULL)
@@ -621,7 +913,7 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkUnstructuredGrid *ugrid,
             scalars->SetNumberOfComponents(1);
             scalars->SetNumberOfTuples(numPts);
             scalars->SetName(vars[i].c_str());
-          
+
             scalars->ShallowCopy(curve);
             grids[i]->GetPointData()->SetScalars(scalars);
 
@@ -629,7 +921,7 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkUnstructuredGrid *ugrid,
 
             for (int i = 0; i < numPts; ++i)
             {
-                inPts->GetPoint(i, coord);        
+                inPts->GetPoint(i, coord);
                 xCoords->SetTuple1(i, coord[0]);
             }
         }
@@ -655,10 +947,10 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkUnstructuredGrid *ugrid,
 //  Method:  avtDirectDatabaseQOTFilter::UpdateDataObjectInfo
 //
 //  Purpose:
-//      Update the attributes and validity. 
+//      Update the attributes and validity.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 //  Modifications:
 //
@@ -682,7 +974,7 @@ avtDirectDatabaseQOTFilter::UpdateDataObjectInfo(void)
         if (qotVars.size() > 0)
         {
             //
-            // The first requested variable becomes the active one. 
+            // The first requested variable becomes the active one.
             //
             outAtts.SetActiveVariable(qotVars[0].c_str());
         }

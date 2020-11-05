@@ -3304,6 +3304,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //
 //  Modifications:
 //
+//    Alister Maguire, Thu Nov  5 10:00:31 PST 2020
+//    Handle the AVT_MESH case.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -6880,6 +6883,11 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
 
     const int numDomains = (const int)domains.size();
 
+    //
+    // NOTE: when run in parallel, visit is smart about the
+    // contents of "domains". Each processor only gets the
+    // domains it needs to process.
+    //
     for (int i = 0; i < numDomains; ++i)
     {
         int curDomain = domains[i]; 

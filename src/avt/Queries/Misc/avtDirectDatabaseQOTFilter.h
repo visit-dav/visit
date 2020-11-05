@@ -48,6 +48,10 @@ class vtkUnstructuredGrid;
 //
 //  Modifications:
 //
+//    Alister Maguire, Thu Nov  5 10:00:31 PST 2020
+//    Changed VerifyAndRefineTimesteps to VerifyAndRefinePointTimesteps
+//    and added VerifyAndRefineArrayTimesteps.
+//
 // ****************************************************************************
 
 class QUERY_API avtDirectDatabaseQOTFilter : public avtQueryOverTimeFilter
@@ -76,7 +80,11 @@ class QUERY_API avtDirectDatabaseQOTFilter : public avtQueryOverTimeFilter
     virtual bool             ExecutionSuccessful(void) 
                                { return success; };
 
-    vtkUnstructuredGrid     *VerifyAndRefineTimesteps(vtkUnstructuredGrid *);
+    vtkUnstructuredGrid     *VerifyAndRefinePointTimesteps(
+                                 vtkUnstructuredGrid *);
+
+    vtkUnstructuredGrid     *VerifyAndRefineArrayTimesteps(
+                                 vtkUnstructuredGrid *);
 
     avtDataTree_p            ConstructCurveTree(vtkUnstructuredGrid *,
                                                 const bool);

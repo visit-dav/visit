@@ -481,7 +481,7 @@ avtFileFormatInterface::GetTimes(int, doubleVector &)
 //      where x is the timestep, simulation time, or cycle (whichever was
 //      requested).
 //
-//      All of the mesh's future arrays should be the same size (number of
+//      All of the mesh's feature arrays should be the same size (number of
 //      requested timesteps), and each will be a variable/element pair
 //      through time. The value located at position 'i' of every array
 //      should correspond to the value of the array's variable/element 
@@ -598,8 +598,8 @@ avtFileFormatInterface::GetQOTPointMesh(const QueryOverTimeAttributes *QOTAtts,
         }
     }
 
-    vtkUnstructuredGrid *polyData = vtkUnstructuredGrid::New();
-    vtkPoints *points             = vtkPoints::New();
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    vtkPoints *points          = vtkPoints::New();
     points->Allocate(numPoints);
 
     for (int i = 0; i < numPoints; ++i)
@@ -607,10 +607,10 @@ avtFileFormatInterface::GetQOTPointMesh(const QueryOverTimeAttributes *QOTAtts,
         points->InsertNextPoint(xCoords[i], 0.0, 0.0);
     }
 
-    polyData->SetPoints(points);
+    ugrid->SetPoints(points);
     points->Delete();
 
-    return (vtkDataSet *) polyData;
+    return (vtkDataSet *) ugrid;
 }
 
 
@@ -618,7 +618,22 @@ avtFileFormatInterface::GetQOTPointMesh(const QueryOverTimeAttributes *QOTAtts,
 //  Method:  avtMiliFileFormat::GetQOTCoordMesh
 //
 //  Purpose:
-//  //TODO: finish
+//      Like with GetQOTPointMesh, we want to retrieve a timestep mesh, where
+//      each element represents a timestep. Unlike the GetQOTPointMesh, we
+//      need to attribute actual coordinates to this mesh. If our element is
+//      a cell, then we associate the true coordinates with this cell, and
+//      each cell in our mesh will represent the coordinates of this cell
+//      at the given timestep. These coordinate timestep meshes are primarily
+//      used when an expression needs cell coordinates to create its variable
+//      (like verdict metrics). Since the coordinates contain actual data, we
+//      need to store the timesteps in a field array.
+//
+//      All of the mesh's cell arrays should be the same size (number of
+//      requested timesteps), and each will be a variable/element pair
+//      through time. The value located at position 'i' of every array
+//      should correspond to the value of the array's variable/element 
+//      pair associated with the timestep/time/cycle from the x value
+//      of the 'ith' point. 
 //
 //  Arguments:
 //      QOTAtts    The query over time attributes. 
@@ -675,12 +690,7 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
     int spanSize = (int) ceil((float)(stopT - startT) / 
         (float) tsStride) + 1;
 
-    //FIXME: we need to check the incoming mesh. If it's a point mesh,
-    // it won't have any zones... do we return nothing in that case?
-    // I guess we can just return an empty mesh in that case, but it
-    // might be nice to return a point coordinate mesh instead.
-
-    vtkUnstructuredGrid *coordMesh = vtkUnstructuredGrid::New(); 
+    vtkUnstructuredGrid *coordMesh = vtkUnstructuredGrid::New();
     vtkPoints *coordPoints         = vtkPoints::New(); 
 
     avtCentering centering;
@@ -693,8 +703,11 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
         {
             centering = AVT_ZONECENT;
             coordMesh->Allocate(spanSize);
-            //FIXME: do we want to make an overestimated guess on number of points here?
-            // Make sure to squeeze later.
+            //
+            // We'll over estimate space needs here. What we really need
+            // is (spanSize * (number of nodes associated with this zone)),
+            // but that's an unknown at this point. We can squeeze later.
+            //
             coordPoints->Allocate(spanSize * 100);
             break;
         }
@@ -726,7 +739,7 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
     for (int ts = startT; ts <= stopT; ts += tsStride)
     {
         //
-        // Activate the current timestep and retrieve our variable. 
+        // Activate the current timestep and retrieve our coordinates.
         //
         TRY
         {
@@ -761,7 +774,8 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
                 }
                 default:
                 {
-                    //TODO: error?
+                    debug1 << "avtFileFormatInterface: unknown centering "
+                        << "found, " << centering << endl;
                 }
             }
 
@@ -769,6 +783,12 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
         }
         CATCH2(VisItException, e)
         {
+            //
+            // If we can't get the coordinates for this timestep, we need
+            // to somehow pass that information along. Let's add a vertex,
+            // and give it a NaN coordinate. We can check for this down the
+            // pipeline.
+            //
             float errorPoints[3]; 
             for (int i = 0; i < 3; ++i)
             {
@@ -801,13 +821,17 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
                 }
                 default:
                 {
-                    //TODO: error?
+                    debug1 << "avtFileFormatInterface: unknown centering "
+                        << "found, " << centering << endl;
                 }
             }
         }
         ENDTRY
     }
 
+    //
+    // Depending on our step size, we may need one last entry.
+    //
     if (addLastStep)
     {
         TRY
@@ -842,7 +866,8 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
                 }
                 default:
                 {
-                    //TODO: error?
+                    debug1 << "avtFileFormatInterface: unknown centering "
+                        << "found, " << centering << endl;
                 }
             }
 
@@ -882,14 +907,19 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
                 }
                 default:
                 {
-                    //TODO: error?
+                    debug1 << "avtFileFormatInterface: unknown centering "
+                        << "found, " << centering << endl;
                 }
             }
         }
         ENDTRY
     }
 
-    //TODO: we could put these directly into the vtk array.
+    //
+    // Now, create the timestep array. Unlike with the QOTPointMesh,
+    // can't keep the timesteps in our coordinates. We'll add them
+    // as a field array instead.
+    //
     doubleVector timeSteps;
     timeSteps.reserve(spanSize);
 
@@ -948,25 +978,26 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
         }
     }
 
-    vtkFloatArray *timeStepArr = vtkFloatArray::New();
-    timeStepArr->Allocate(spanSize);
-    timeStepArr->SetNumberOfTuples(spanSize);
+    vtkFloatArray *timestepArray = vtkFloatArray::New();
+    timestepArray->Allocate(spanSize);
+    timestepArray->SetNumberOfTuples(spanSize);
+    timestepArray->SetName("TimestepArray");
 
     for (int i = 0; i < spanSize; ++i)
     {
-        timeStepArr->SetTuple1(i, timeSteps[i]);
+        timestepArray->SetTuple1(i, timeSteps[i]);
     }
 
     vtkFieldData *fieldData = vtkFieldData::New();
     fieldData->SetNumberOfTuples(spanSize);
-    fieldData->AddArray(timeStepArr);
+    fieldData->AddArray(timestepArray);
 
     coordPoints->Squeeze();
     coordMesh->SetPoints(coordPoints);
     coordMesh->SetFieldData(fieldData);
 
     coordPoints->Delete();
-    timeStepArr->Delete();
+    timestepArray->Delete();
     fieldData->Delete();
 
     return (vtkDataSet *) coordMesh;
