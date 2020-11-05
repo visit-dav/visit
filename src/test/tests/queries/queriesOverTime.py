@@ -88,6 +88,10 @@
 #    I've removed the use_actual_data flag for Pick queries as this
 #    is now handled internally.
 #
+#    Alister Maguire, Thu Nov  5 08:22:15 PST 2020
+#    Updated the multi-domain DDQOT test to ensure that the selected
+#    element is not on processor 0 when run in parallel.
+#
 # ----------------------------------------------------------------------------
 
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
@@ -866,8 +870,8 @@ def TestDirectDatabaseRoute():
     OpenDatabase(data_path("mili_test_data/multi_proc/d3samp6.plt.mili"))
     AddPlot("Pseudocolor", "Primal/Shared/edrate")
     DrawPlots()
-    domain = 1
-    element = 11
+    domain = 5
+    element = 14
     vars = ("default")
     PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
         preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
