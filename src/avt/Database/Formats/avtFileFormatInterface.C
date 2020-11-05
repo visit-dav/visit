@@ -13,10 +13,11 @@
 #include <ImproperUseException.h>
 
 #include <vtkFloatArray.h>
-#include <vtkPolyData.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkPoints.h>
 #include <vtkFieldData.h>
 #include <vtkCell.h>
+#include <vtkVertex.h>
 #include <vtkDataArray.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -597,8 +598,8 @@ avtFileFormatInterface::GetQOTPointMesh(const QueryOverTimeAttributes *QOTAtts,
         }
     }
 
-    vtkPolyData *polyData = vtkPolyData::New();
-    vtkPoints *points     = vtkPoints::New();
+    vtkUnstructuredGrid *polyData = vtkUnstructuredGrid::New();
+    vtkPoints *points             = vtkPoints::New();
     points->Allocate(numPoints);
 
     for (int i = 0; i < numPoints; ++i)
@@ -748,8 +749,6 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
                         pointId += 1;
                     }
 
-                    //FIXME: compiler might not like getting cell type from vtkCell.
-                    // If not, let's try GetCell()->GetCellType().
                     coordMesh->InsertNextCell(cell->GetCellType(),
                         numCellPoints, pointIds);
 
@@ -770,9 +769,41 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
         }
         CATCH2(VisItException, e)
         {
-            //TODO: how should we handle this?
-            //spanArray->SetTuple1(tupIdx, 
-            //    std::numeric_limits<float>::quiet_NaN());
+            float errorPoints[3]; 
+            for (int i = 0; i < 3; ++i)
+            {
+                errorPoints[i] = std::numeric_limits<float>::quiet_NaN();
+            }
+
+            switch (centering)
+            {
+                case AVT_ZONECENT:
+                {
+
+                    vtkVertex *errorCell = vtkVertex::New();
+                    vtkPoints *cellPts   = errorCell->GetPoints();
+                    vtkIdType pointIds[1];
+
+                    errorCell->GetPoints()->InsertNextPoint(errorPoints);
+                    coordPoints->InsertNextPoint(cellPts->GetPoint(0));
+                    pointIds[0] = pointId;
+                    pointId    += 1;
+
+                    coordMesh->InsertNextCell(errorCell->GetCellType(),
+                        1, pointIds);
+
+                    break;
+                }
+                case AVT_NODECENT:
+                {
+                    coordPoints->InsertNextPoint(errorPoints);
+                    break;
+                }
+                default:
+                {
+                    //TODO: error?
+                }
+            }
         }
         ENDTRY
     }
@@ -799,8 +830,6 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
                         pointId += 1;
                     }
 
-                    //FIXME: compiler might not like getting cell type from vtkCell.
-                    // If not, let's try GetCell()->GetCellType().
                     coordMesh->InsertNextCell(cell->GetCellType(),
                         numCellPoints, pointIds);
 
@@ -821,9 +850,41 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
         }
         CATCH2(VisItException, e)
         {
-            //TODO: how should we handle this?
-            //spanArray->SetTuple1(tupIdx, 
-            //    std::numeric_limits<float>::quiet_NaN());
+            float errorPoints[3]; 
+            for (int i = 0; i < 3; ++i)
+            {
+                errorPoints[i] = std::numeric_limits<float>::quiet_NaN();
+            }
+
+            switch (centering)
+            {
+                case AVT_ZONECENT:
+                {
+
+                    vtkVertex *errorCell = vtkVertex::New();
+                    vtkPoints *cellPts   = errorCell->GetPoints();
+                    vtkIdType pointIds[1];
+
+                    errorCell->GetPoints()->InsertNextPoint(errorPoints);
+                    coordPoints->InsertNextPoint(cellPts->GetPoint(0));
+                    pointIds[0] = pointId;
+                    pointId    += 1;
+
+                    coordMesh->InsertNextCell(errorCell->GetCellType(),
+                        1, pointIds);
+
+                    break;
+                }
+                case AVT_NODECENT:
+                {
+                    coordPoints->InsertNextPoint(errorPoints);
+                    break;
+                }
+                default:
+                {
+                    //TODO: error?
+                }
+            }
         }
         ENDTRY
     }
