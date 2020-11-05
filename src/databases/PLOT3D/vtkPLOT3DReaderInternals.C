@@ -206,12 +206,11 @@ int vtkPLOT3DReaderInternals::CheckBlankingAndPrecision(FILE* fp, bool updateIBl
   this->ReadInts(fp, 1, &recMarkBeg);
 
   bool goodRead = false;
-  bool iblanking = false;
   // single precision, with iblanking
   if(recMarkBeg == totPts*(this->NumberOfDimensions*4 + 4))
   {
     this->Precision = 4;
-    iblanking = true;
+    this->IBlanking = true;
     delete[] jmax;
     goodRead = true;
   }
@@ -219,7 +218,7 @@ int vtkPLOT3DReaderInternals::CheckBlankingAndPrecision(FILE* fp, bool updateIBl
   else if(recMarkBeg == totPts*(this->NumberOfDimensions*8 + 4))
   {
     this->Precision = 8;
-    iblanking = true;
+    this->IBlanking = true;
     delete[] jmax;
     goodRead = true;
   }
@@ -227,7 +226,7 @@ int vtkPLOT3DReaderInternals::CheckBlankingAndPrecision(FILE* fp, bool updateIBl
   else if(recMarkBeg == totPts*this->NumberOfDimensions*4)
   {
     this->Precision = 4;
-    iblanking = false;
+    this->IBlanking = false;
     delete[] jmax;
     goodRead = true;
   }
@@ -235,13 +234,13 @@ int vtkPLOT3DReaderInternals::CheckBlankingAndPrecision(FILE* fp, bool updateIBl
   else if(recMarkBeg == totPts*this->NumberOfDimensions*8)
   {
     this->Precision = 8;
-    iblanking = false;
+    this->IBlanking = false;
     delete[] jmax;
     goodRead = true;
   }
   if (updateIBlanking)
   {
-    this->IBlanking = iblanking;
+    this->processIBlanking = this->IBlanking;
   }
   return goodRead;
 }
@@ -285,9 +284,10 @@ int vtkPLOT3DReaderInternals::CheckCFile(FILE* fp, long fileSize, bool updateIBl
           {
           this->MultiGrid = 0;
           this->Precision = precision;
+          this->IBlanking = blanking;
           if (updateIBlanking)
           {
-            this->IBlanking = blanking;
+            this->processIBlanking = blanking;
           }
           this->NumberOfDimensions = dimension;
           return 1;
@@ -331,9 +331,10 @@ int vtkPLOT3DReaderInternals::CheckCFile(FILE* fp, long fileSize, bool updateIBl
           {
           this->MultiGrid = 1;
           this->Precision = precision;
+          this->IBlanking = blanking;
           if (updateIBlanking)
           {
-            this->IBlanking = blanking;
+            this->processIBlanking = blanking;
           }
           this->NumberOfDimensions = dimension;
           delete[] gridDims2;

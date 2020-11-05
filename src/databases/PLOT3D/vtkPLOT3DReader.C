@@ -187,6 +187,7 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
 
   std::cout << "Before Auto-Detection, IBlanking is " << this->IBlanking << std::endl;
   std::cout << "Before Auto-Detection, Internal IBlanking is " << this->Internal->IBlanking << std::endl;
+  std::cout << "Before Auto-Detection, processIBlanking is " << this->Internal->processIBlanking << std::endl;
   int success = this->Internal->CheckByteOrder(fp);
   if (!success)
     vtkDebugMacro("Auto detection failed at byte order");
@@ -240,6 +241,7 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
 
   std::cout << "After Auto-Detection, IBlanking is " << this->IBlanking << std::endl;
   std::cout << "After Auto-Detection, Internal IBlanking is " << this->Internal->IBlanking << std::endl;
+  std::cout << "After Auto-Detection, processIBlanking is " << this->Internal->processIBlanking << std::endl;
 
   return success;
 }
@@ -729,6 +731,7 @@ int vtkPLOT3DReader::RequestInformation()
   this->Internal->NumberOfDimensions = this->TwoDimensionalGeometry ? 2 : 3;
   this->Internal->Precision = this->DoublePrecision ? 8 : 4;
   this->Internal->IBlanking = this->IBlanking;
+  this->Internal->processIBlanking = this->IBlanking;
 
   if ( this->CheckGeometryFile(xyzFp) != VTK_OK)
     {
@@ -838,8 +841,9 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
   }
 
   // Read IBlanking data
-  std::cout << "Iblanking: " << this->Internal->IBlanking << std::endl;
-  if (this->Internal->IBlanking == 1)
+  std::cout << "Process Iblanking: " << this->Internal->processIBlanking << std::endl;
+  if (this->Internal->processIBlanking)
+  // if (this->Internal->IBlanking == 1)
   {
     vtkIntArray* iblank = vtkIntArray::New();
     iblank->SetNumberOfTuples(this->NumberOfPoints);

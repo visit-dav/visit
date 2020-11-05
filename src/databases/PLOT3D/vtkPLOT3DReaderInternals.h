@@ -28,6 +28,7 @@ struct vtkPLOT3DReaderInternals
   int NumberOfDimensions;
   int Precision; // in bytes
   int IBlanking;
+  bool processIBlanking;
 
   bool NeedToCheckXYZFile;
 
@@ -39,6 +40,7 @@ struct vtkPLOT3DReaderInternals
     NumberOfDimensions(3),
     Precision(4),
     IBlanking(0),
+    processIBlanking(false),
     NeedToCheckXYZFile(true)
     {
     }
