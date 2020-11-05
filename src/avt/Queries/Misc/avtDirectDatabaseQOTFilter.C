@@ -23,7 +23,6 @@
 #include <avtCallback.h>
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
-#include <avtParallel.h>
 #include <avtCommonDataFunctions.h>
 
 #include <VisItException.h>
