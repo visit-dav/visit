@@ -865,6 +865,7 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
     vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
     ghostNodes->SetName("avtGhostNodes");
     ghostNodes->SetNumberOfTuples(this->NumberOfPoints);
+    ghostNodes->FillComponent(0, 0);
     int *ib = iblank->GetPointer(0);
     unsigned char *gnp = ghostNodes->GetPointer(0);
     for (int i = 0; i < this->NumberOfPoints; ++i)
