@@ -746,6 +746,11 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
             ActivateTimestep(ts);
             vtkDataSet *fullMesh = GetMesh(ts, domain, meshName);
 
+            //
+            // TODO: in the future, we may want to grab all adjacent elements
+            // as well. This would allow for at least a couple more expressions
+            // to handle the DirectDatabaseQOT.
+            //
             switch (centering)
             {
                 case AVT_ZONECENT:
