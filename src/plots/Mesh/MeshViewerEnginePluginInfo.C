@@ -198,24 +198,11 @@ MeshViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
                            static_cast<unsigned char>(fgColor[1]*255),
                            static_cast<unsigned char>(fgColor[2]*255)};
 
-    if (meshAtts->GetMeshColorSource() == MeshAttributes::MeshRandom)
-    {
-        unsigned char rgb[3] = {fg[0], fg[1], fg[2]};
-
-        avtColorTables *ct = avtColorTables::Instance();
-        if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
-                                            "MeshColor", bg, rgb))
-            ct->GetJNDControlPointColor("distinct", "MeshColor", bg, rgb);
-
-        ColorAttribute c(rgb[0], rgb[1], rgb[2]);
-        meshAtts->SetMeshColor(c);
-        attsChanged = true;
-    }
-
     if (meshAtts->GetOpaqueColorSource() == MeshAttributes::OpaqueRandom)
     {
         unsigned char rgb[3] = {bg[0], bg[1], bg[2]};
 
+        // deconflict opaque color with foreground
         avtColorTables *ct = avtColorTables::Instance();
         if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
                                             "MeshColor", fg, rgb))
@@ -223,6 +210,22 @@ MeshViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
 
         ColorAttribute c(rgb[0], rgb[1], rgb[2]);
         meshAtts->SetOpaqueColor(c);
+        attsChanged = true;
+    }
+
+    if (meshAtts->GetMeshColorSource() == MeshAttributes::MeshRandom)
+    {
+        unsigned char rgb[3] = {fg[0], fg[1], fg[2]};
+        ColorAttribute opqc = meshAtts->GetOpaqueColor();
+
+        // deconflict mesh (lines) color with opaque color
+        avtColorTables *ct = avtColorTables::Instance();
+        if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
+                                            "MeshColor", opqc.GetColor(), rgb))
+            ct->GetJNDControlPointColor("distinct", "MeshColor", opqc.GetColor(), rgb);
+
+        ColorAttribute c(rgb[0], rgb[1], rgb[2]);
+        meshAtts->SetMeshColor(c);
         attsChanged = true;
     }
 
