@@ -13,7 +13,6 @@
 #include <ImproperUseException.h>
 
 #include <vtkFloatArray.h>
-#include <vtkUnstructuredGrid.h>
 #include <vtkPoints.h>
 #include <vtkFieldData.h>
 #include <vtkCell.h>
@@ -501,6 +500,10 @@ avtFileFormatInterface::GetTimes(int, doubleVector &)
 //  Creation:    Tue Sep 24 11:15:10 MST 2019 
 //
 //  Modifications
+//
+//    Alister Maguire, Fri Nov  6 13:49:05 PST 2020
+//    Changed dataset type to vtkUnstructuredGrid for compatibility with
+//    GetQOTCoordMesh.
 //
 // ****************************************************************************
 
