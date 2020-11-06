@@ -472,7 +472,7 @@ avtFileFormatInterface::GetTimes(int, doubleVector &)
 
 
 // ****************************************************************************
-//  Method:  avtMiliFileFormat::GetQOTPointMesh
+//  Method:  avtFileFormatInterface::GetQOTPointMesh
 //
 //  Purpose:
 //      Retrieve a query over time mesh. Currently, this is a reduced 
@@ -618,7 +618,7 @@ avtFileFormatInterface::GetQOTPointMesh(const QueryOverTimeAttributes *QOTAtts,
 
 
 // ****************************************************************************
-//  Method:  avtMiliFileFormat::GetQOTCoordMesh
+//  Method:  avtFileFormatInterface::GetQOTCoordMesh
 //
 //  Purpose:
 //      Like with GetQOTPointMesh, we want to retrieve a timestep mesh, where
@@ -1013,7 +1013,7 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
 
 
 // ****************************************************************************
-//  Method:  avtMiliFileFormat::GetQOTVar
+//  Method:  avtFileFormatInterface::GetQOTVar
 //
 //  Purpose:
 //      Retrieve a query over time variable. 
@@ -1115,7 +1115,7 @@ avtFileFormatInterface::GetQOTVar(int domain,
 
 
 // ****************************************************************************
-//  Method:  avtMiliFileFormat::GetQOTVectorVar
+//  Method:  avtFileFormatInterface::GetQOTVectorVar
 //
 //  Purpose:
 //      Retrieve a query over time vector variable. 
