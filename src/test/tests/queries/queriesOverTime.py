@@ -92,6 +92,10 @@
 #    Updated the multi-domain DDQOT test to ensure that the selected
 #    element is not on processor 0 when run in parallel.
 #
+#    Alister Maguire, Fri Nov  6 10:06:22 PST 2020
+#    Added more DirectDatabaseQOT tests that ensure verdict metrics
+#    are able to be queried using this route.
+#
 # ----------------------------------------------------------------------------
 
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
@@ -929,6 +933,60 @@ def TestDirectDatabaseRoute():
     DeleteAllPlots()
     SetActiveWindow(1)
     DeleteAllPlots()
+
+    #
+    # Next, let's test using the direct database route on verdict metrics.
+    #
+    OpenDatabase(data_path("mili_test_data/single_proc/d3samp6.plt.mili"))
+    AddPlot("Pseudocolor", "mesh_quality/mesh1/skew")
+    DrawPlots()
+
+    domain     = 0
+    element    = 116
+    preserve   = 0
+    start      = 0
+    stride     = 1
+    stop       = 10000
+
+    vars=("default")
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_09")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
+    #
+    # This is a continuation of testing verdicts, but this is an edge case that should
+    # be handled when plotting multiple variables. The case occurs when our active
+    # variable does not depend on mesh coodinates, but we also request a variable that
+    # requires mesh coordinates (like verdict). There is a re-ordering that needs to
+    # take place during the request retrieval process.
+    #
+    AddPlot("Pseudocolor", "Primal/Shared/strain/ezx")
+    DrawPlots()
+
+    vars=("default", "mesh_quality/mesh1/face_planarity")
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_10")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    vars=("default", "mesh_quality/mesh1/face_planarity")
+    PickByZone(curve_plot_type=1, vars=vars, do_time=1, domain=domain, element=element, 
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_11")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
 
 def TestOperatorCreatedVar():
     OpenDatabase(silo_data_path("wave.visit"))
