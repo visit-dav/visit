@@ -325,7 +325,6 @@ CurveViewerEnginePluginInfo::GetMenuName() const
 //    handled here.
 // ****************************************************************************
 #include <avtColorTables.h>
-static int colorIndex = 0;
 
 void
 CurveViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
@@ -343,10 +342,9 @@ CurveViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
                                 static_cast<unsigned char>(fgColor[2]*255)};
         avtColorTables *ct = avtColorTables::Instance();
 
-        int n = ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
-                                            colorIndex, bg, rgb);
-        if (!n)
-            n = ct->GetJNDControlPointColor("distinct", colorIndex, bg, rgb);
+        if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
+                                            "CurveColor", bg, rgb))
+            ct->GetJNDControlPointColor("distinct", "CurveColor" , bg, rgb);
 
         ColorAttribute c(rgb[0], rgb[1], rgb[2]);
         curveAtts->SetCurveColor(c);
@@ -360,9 +358,6 @@ CurveViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
 
         // Inform GUI of color selections made here
         SetClientAtts(atts);
-
-        // Increment the color index past any colors attempted
-        colorIndex += n;
     }
 }
 
