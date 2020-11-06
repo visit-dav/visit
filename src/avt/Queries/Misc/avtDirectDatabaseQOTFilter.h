@@ -27,8 +27,8 @@ class vtkUnstructuredGrid;
 //      Perform a query over time by communciating directly with the database
 //      readers.
 //
-//      Using this filter requires that the avtDataRequest be updated to 
-//      request a query over time dataset (QOTDataset), which can be 
+//      Using this filter requires that the avtDataRequest be updated to
+//      request a query over time dataset (QOTDataset), which can be
 //      accomplished by setting the retrieveQOTDataset within avtDataRequest.
 //
 //      Using this filter is much faster than using the TimeLoopQOTFilter,
@@ -36,15 +36,15 @@ class vtkUnstructuredGrid;
 //
 //          1. This filter can only retrieve "original" data, meaning that
 //             the query will be performed before any other plots and filters
-//             are applied (excluding the expression filter). 
+//             are applied (excluding the expression filter).
 //          2. The QOTDataset is limited in its ability to process expressions.
-//          3. This filter cannot preserve coordinates during a QOT pick. 
+//          3. This filter cannot preserve coordinates during a QOT pick.
 //
 //      When using "actual" data or complex expressions, the TimeLoopQOTFilter
-//      should be relied on. 
+//      should be relied on.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Tue Sep 24 13:46:56 MST 2019  
+//  Creation:   Tue Sep 24 13:46:56 MST 2019
 //
 //  Modifications:
 //
@@ -62,14 +62,14 @@ class QUERY_API avtDirectDatabaseQOTFilter : public avtQueryOverTimeFilter
 
     static avtFilter        *Create(const AttributeGroup*);
 
-    virtual const char      *GetType(void)  
+    virtual const char      *GetType(void)
                                { return "avtDirectDatabaseQOTFilter"; };
-    virtual const char      *GetDescription(void) 
+    virtual const char      *GetDescription(void)
                                { return "Querying over Time"; };
 
   protected:
     bool                     success;
-    bool                     finalOutputCreated; 
+    bool                     finalOutputCreated;
     bool                     useTimeForXAxis;
     bool                     useVarForYAxis;
     std::string              YLabel;
@@ -77,7 +77,7 @@ class QUERY_API avtDirectDatabaseQOTFilter : public avtQueryOverTimeFilter
     virtual void             Execute(void);
     virtual void             UpdateDataObjectInfo(void);
 
-    virtual bool             ExecutionSuccessful(void) 
+    virtual bool             ExecutionSuccessful(void)
                                { return success; };
 
     vtkUnstructuredGrid     *VerifyAndRefinePointTimesteps(

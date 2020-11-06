@@ -229,7 +229,7 @@ avtDirectDatabaseQOTFilter::Execute(void)
 //      NaN values to the associated data positions.
 //
 //  Arguments:
-//      ugrid    The unstructured gird containing the curves. 
+//      ugrid    The unstructured gird containing the curves.
 //
 //  Returns:
 //      A vtkUnstructuredGrid object only containing valid curves.
@@ -263,7 +263,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefinePointTimesteps(
     int numCurves = inPtData->GetNumberOfArrays();
 
     if (numCurves == 0)
-    { 
+    {
         return outUGrid;
     }
 
@@ -483,7 +483,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefinePointTimesteps(
 //      NaN values to the associated cell point positions.
 //
 //  Arguments:
-//      ugrid    The unstructured gird containing the curves. 
+//      ugrid    The unstructured gird containing the curves.
 //
 //  Returns:
 //      A vtkUnstructuredGrid object only containing valid curves.
@@ -534,7 +534,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps(
     int numCurves = inCellData->GetNumberOfArrays();
 
     if (numCurves == 0)
-    { 
+    {
         return outUGrid;
     }
 
@@ -580,7 +580,7 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps(
     for (int i, ts = 0; i < numCells; ++i, ts += stride)
     {
         vtkIdType numCellPts;
-        vtkIdType *cellPts = NULL; 
+        vtkIdType *cellPts = NULL;
         inCells->GetCell(i, numCellPts, cellPts);
 
         //
@@ -742,8 +742,8 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps(
 //      Construct a tree from the time query curves.
 //
 //  Arguments:
-//      ugrid                The unstructured grid containing the curves. 
-//      doMultiCurvePlot     Whether or not to do a multi curve plot. 
+//      ugrid                The unstructured grid containing the curves.
+//      doMultiCurvePlot     Whether or not to do a multi curve plot.
 //
 //  Returns:
 //      A data tree containing the curves.
