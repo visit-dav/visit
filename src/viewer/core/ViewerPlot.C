@@ -1630,7 +1630,7 @@ ViewerPlot::GetPlotMetaData() const
     bgca.GetRgba(bgc);
     ColorAttribute const &fgca = annotAtts.GetForegroundColor();
     fgca.GetRgba(fgc);
-    
+
     return avtPlotMetaData(GetMetaData(), GetVariableName(),
                            GetVarType(), GetSILRestriction(),
                            actualSpatial, originalSpatial, bgc, fgc);
