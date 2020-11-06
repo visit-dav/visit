@@ -3425,6 +3425,10 @@ avtGenericDatabase::GetQOTDataset(int domain,
 
       case AVT_MESH:
       {
+        //
+        // The request requires mesh coordinates, likely for an Expression
+        // filter.
+        //
         int tsRange[2];
         int tsStride = 1;
 
