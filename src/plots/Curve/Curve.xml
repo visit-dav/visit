@@ -147,6 +147,10 @@
       </Function>
       <Function name="ProcessOldVersions" user="true" member="true" access="private">
       </Function>
+      <Function name="CurveViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="CurveViewerEnginePluginInfo::SetAutonomousColors" user="true" member="true" access="private">
+      </Function>
       <Function name="CurveViewerEnginePluginInfo::PermitsCurveViewScaling" user="false" member="true">
       </Function>
       <Function name="CurveViewerEnginePluginInfo::SupportsAnimation" user="false" member="true">
