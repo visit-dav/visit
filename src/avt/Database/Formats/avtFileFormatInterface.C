@@ -925,7 +925,7 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
 
     //
     // Now, create the timestep array. Unlike with the QOTPointMesh,
-    // can't keep the timesteps in our coordinates. We'll add them
+    // we can't keep the timesteps in our coordinates. We'll add them
     // as a field array instead.
     //
     doubleVector timeSteps;
