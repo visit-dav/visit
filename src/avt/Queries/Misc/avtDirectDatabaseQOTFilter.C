@@ -754,6 +754,10 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps(
 //
 //  Modifications:
 //
+//    Alister Maguire, Fri Nov  6 08:39:59 PST 2020
+//    When creating a multi-curve dataset, make sure that we are
+//    adding the variables in the order requested by the query.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -850,10 +854,17 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkUnstructuredGrid *ugrid,
             xCoords->SetTuple1(i, coord[0]);
         }
 
+        //
+        // There are times when our variables are added in an order that
+        // doesn't quite match what we're looking for. Soo, we need to
+        // process the arrays in the order they appear in the query.
+        //
+        const stringVector vars = atts.GetQueryAtts().GetVariables();
+
         for (int i = 0; i < numCurves; i++)
         {
             vtkDoubleArray *curve =
-                (vtkDoubleArray *) inPtData->GetArray(i);
+                (vtkDoubleArray *) inPtData->GetArray(vars[i].c_str());
 
             if (curve == NULL)
             {
