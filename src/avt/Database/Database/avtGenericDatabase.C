@@ -492,7 +492,7 @@ DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
 //    Add judicious calls to DebugDumpDatasetCollection
 //
 //    Alister Maguire, Tue Sep 24 10:04:42 MST 2019
-//    Added a call to GetQOTOutput when prompted. 
+//    Added a call to GetQOTOutput when prompted.
 //
 // ****************************************************************************
 
@@ -502,7 +502,7 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
 {
     //
     // If the request is for a QOT dataset, we can bypass a lot
-    // of the work. 
+    // of the work.
     //
     if (spec->RetrieveQOTDataset())
     {
@@ -881,17 +881,17 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
 //
 //  Purpose:
 //      Retrieve a QOT dataset. Currently, this is a reduced point mesh
-//      that contains scalars of variable/element pairs through time. 
+//      that contains scalars of variable/element pairs through time.
 //
 //      All of the dataset's arrays should be the same size (number of
 //      requested timesteps), and each will be a variable/element pair
-//      through time. The dataset also contains the same number of 
-//      points, each of which is associated with the dataset arrays in 
+//      through time. The dataset also contains the same number of
+//      points, each of which is associated with the dataset arrays in
 //      the following manner:
 //      The point located at index 'i' will be defined as having position
 //      (x, 0, 0), where x is the timestep, simulation time, or cycle
 //      (whichever was requested) associated with the element located
-//      at index 'i' of each of the dataset's arrays. 
+//      at index 'i' of each of the dataset's arrays.
 //
 //  Arguments:
 //      spec    A database specification.
@@ -901,14 +901,14 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
 //
 //  Note: much of this was taken from GetOutput.
 //
-//  Programmer: Alister Maguire 
-//  Creation:   Tue Sep 24 10:04:42 MST 2019 
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep 24 10:04:42 MST 2019
 //
 //  Modifications:
 //
 //      Alister Maguire, Wed Oct 23 11:18:37 PDT 2019
 //      Create a proper data tree so that we can handle multi-processor
-//      queries. 
+//      queries.
 //
 // ****************************************************************************
 
@@ -928,8 +928,8 @@ avtGenericDatabase::GetQOTOutput(avtDataRequest_p spec,
     }
 
     //
-    // We only query a single domain, but we need to create proper 
-    // a proper data tree. Let's grab the domain list here.  
+    // We only query a single domain, but we need to create proper
+    // a proper data tree. Let's grab the domain list here.
     //
     int startTime = QOTAtts->GetStartTime();
     avtDatabaseMetaData *md = GetMetaData(startTime);
@@ -989,7 +989,7 @@ avtGenericDatabase::GetQOTOutput(avtDataRequest_p spec,
 
     avtDataObject_p dob = src->GetOutput();
     boolVector emptySelections;
-    PopulateDataObjectInformation(dob, spec->GetVariable(), 
+    PopulateDataObjectInformation(dob, spec->GetVariable(),
         startTime, emptySelections, spec);
 
     ManageMemoryForNonCachableVar(NULL);
@@ -997,7 +997,7 @@ avtGenericDatabase::GetQOTOutput(avtDataRequest_p spec,
 
     return rv;
 }
-    
+
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::UpdateInternalState
@@ -3279,21 +3279,21 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //  Method: avtGenericDatabase::GetQOTDataset
 //
 //  Purpose:
-//      Determines what QOT dataset type is requested and calls 
+//      Determines what QOT dataset type is requested and calls
 //      the appropriate routine.
 //
 //  Arguments:
 //      domain       The domain of the dataset to retrieve.
-//      varname      The name of the variable to retreive. 
+//      varname      The name of the variable to retreive.
 //      vars2nd      The list of secondary variables.
-//      spec         The data request. 
+//      spec         The data request.
 //      src          The source from a database.
 //
-//  Returns:         
-//      The requested QOT dataset. 
+//  Returns:
+//      The requested QOT dataset.
 //
-//  Programmer: Alister Maguire 
-//  Creation:   Mon Sep 23 15:11:40 MST 2019 
+//  Programmer: Alister Maguire
+//  Creation:   Mon Sep 23 15:11:40 MST 2019
 //
 //  Modifications:
 //
@@ -3344,7 +3344,7 @@ avtGenericDatabase::GetQOTDataset(int domain,
     // are, we need to
     //
     //    a. Reduce the mesh requests down to one (no need to get the
-    //       same mesh multiple times). 
+    //       same mesh multiple times).
     //    b. Temporarily promote the mesh variable to our primary variable
     //       (if it isn't already there).
     //    c. Temporarily demote our primary variable if it is NOT a mesh
@@ -3366,7 +3366,7 @@ avtGenericDatabase::GetQOTDataset(int domain,
         if (GetMetaData(startTime)->DetermineVarType(**it) == AVT_MESH)
         {
             tmpVars2nd.push_back(tmpVarname);
-            tmpVarname = string(**it); 
+            tmpVarname = string(**it);
             continue;
         }
         tmpVars2nd.push_back(string(**it));
@@ -3415,7 +3415,7 @@ avtGenericDatabase::GetQOTDataset(int domain,
       }
 
       //
-      // Intentional fall-throughs. These cases are invalid for the query. 
+      // Intentional fall-throughs. These cases are invalid for the query.
       //
       case AVT_LABEL_VAR:
       case AVT_MATERIAL:
@@ -3438,16 +3438,16 @@ avtGenericDatabase::GetQOTDataset(int domain,
 //  Method: avtGenericDatabase::AddSecondaryQOTVariables
 //
 //  Purpose:
-//      Add secondary variables to a QOT dataset. 
+//      Add secondary variables to a QOT dataset.
 //
 //  Arguments:
-//      ds       The QOT dataset. 
-//      domain   The domain of interest. 
-//      vars2nd  The secondary variables. 
-//      spec     The data request. 
+//      ds       The QOT dataset.
+//      domain   The domain of interest.
+//      vars2nd  The secondary variables.
+//      spec     The data request.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Mon Sep 23 15:11:40 MST 2019 
+//  Creation:   Mon Sep 23 15:11:40 MST 2019
 //
 //  Modifications:
 //
@@ -3458,7 +3458,7 @@ avtGenericDatabase::GetQOTDataset(int domain,
 // ****************************************************************************
 
 void
-avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds, 
+avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds,
                                              int domain,
                                              const vector<string> &vars2nd,
                                              const avtDataRequest_p spec)
@@ -3505,7 +3505,7 @@ avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds,
         avtVarType vt = md->DetermineVarType(varName, false);
 
         //
-        // The QOT dataset has a limited number of types that it handles. 
+        // The QOT dataset has a limited number of types that it handles.
         //
         if (vt == AVT_MESH || vt == AVT_MATERIAL || vt == AVT_LABEL_VAR ||
             vt == AVT_MATSPECIES || vt == AVT_CURVE)
@@ -3516,30 +3516,30 @@ avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds,
         switch (vt)
         {
           case AVT_SCALAR_VAR:
-            secVar = GetQOTScalarVariable(varName, domain, element, 
+            secVar = GetQOTScalarVariable(varName, domain, element,
                 tsRange, tsStride, spec);
             break;
           case AVT_VECTOR_VAR:
-            secVar = GetQOTVectorVariable(varName, domain, element, 
+            secVar = GetQOTVectorVariable(varName, domain, element,
                 tsRange, tsStride, spec);
             break;
           case AVT_TENSOR_VAR:
-            secVar = GetQOTTensorVariable(varName, domain, element, 
+            secVar = GetQOTTensorVariable(varName, domain, element,
                 tsRange, tsStride, spec);
             break;
           case AVT_SYMMETRIC_TENSOR_VAR:
-            secVar = GetQOTSymmetricTensorVariable(varName, domain, element, 
+            secVar = GetQOTSymmetricTensorVariable(varName, domain, element,
                 tsRange, tsStride, spec);
             break;
           case AVT_ARRAY_VAR:
-            secVar = GetQOTArrayVariable(varName, domain, element, 
+            secVar = GetQOTArrayVariable(varName, domain, element,
                 tsRange, tsStride, spec);
             break;
           default:
             EXCEPTION1(InvalidVariableException, varName);
         }
 
-        if (secVar == NULL) 
+        if (secVar == NULL)
         {
             continue;
         }
@@ -3571,16 +3571,16 @@ avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds,
 //      Constructs a query over time dataset for a scalar variable.
 //
 //  Arguments:
-//      varname      The variable of interest. 
-//      element      The element of interest. 
-//      domain       The domain of interest. 
-//      spec         The data request. 
+//      varname      The variable of interest.
+//      element      The element of interest.
+//      domain       The domain of interest.
+//      spec         The data request.
 //
-//  Returns:         
-//      A QOT dataset containing the requested variable. 
+//  Returns:
+//      A QOT dataset containing the requested variable.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Mon Sep 23 15:11:40 MST 2019 
+//  Creation:   Mon Sep 23 15:11:40 MST 2019
 //
 //  Modifications:
 //
@@ -3588,8 +3588,8 @@ avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds,
 
 vtkDataSet *
 avtGenericDatabase::GetQOTScalarVarDataset(const char *varname,
-                                           int element, 
-                                           int domain, 
+                                           int element,
+                                           int domain,
                                            const avtDataRequest_p spec)
 {
     const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
@@ -3613,7 +3613,7 @@ avtGenericDatabase::GetQOTScalarVarDataset(const char *varname,
     //
     // We seem to be okay retrieving md from the first time step, even if
     // the variable isn't defined on that timestep. We should keep and eye
-    // on this for edge cases, though. 
+    // on this for edge cases, though.
     //
     const avtScalarMetaData *smd = GetMetaData(tsRange[0])->GetScalar(varname);
     if (smd == NULL)
@@ -3621,7 +3621,7 @@ avtGenericDatabase::GetQOTScalarVarDataset(const char *varname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts, 
+    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts,
         domain, tsRange, tsStride);
 
     if (mesh == NULL)
@@ -3630,7 +3630,7 @@ avtGenericDatabase::GetQOTScalarVarDataset(const char *varname,
         return NULL;
     }
 
-    vtkDataArray *var = GetQOTScalarVariable(varname, domain, element, 
+    vtkDataArray *var = GetQOTScalarVariable(varname, domain, element,
         tsRange, tsStride, spec);
 
     if (var == NULL)
@@ -3655,16 +3655,16 @@ avtGenericDatabase::GetQOTScalarVarDataset(const char *varname,
 //      Constructs a query over time dataset for a vector variable.
 //
 //  Arguments:
-//      varname      The variable of interest. 
-//      element      The element of interest. 
-//      domain       The domain of interest. 
-//      spec         The data request. 
+//      varname      The variable of interest.
+//      element      The element of interest.
+//      domain       The domain of interest.
+//      spec         The data request.
 //
-//  Returns:         
-//      A QOT dataset containing the requested variable. 
+//  Returns:
+//      A QOT dataset containing the requested variable.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Mon Sep 23 15:11:40 MST 2019 
+//  Creation:   Mon Sep 23 15:11:40 MST 2019
 //
 //  Modifications:
 //
@@ -3672,8 +3672,8 @@ avtGenericDatabase::GetQOTScalarVarDataset(const char *varname,
 
 vtkDataSet *
 avtGenericDatabase::GetQOTVectorVarDataset(const char *varname,
-                                           int element, 
-                                           int domain, 
+                                           int element,
+                                           int domain,
                                            const avtDataRequest_p spec)
 {
     const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
@@ -3700,7 +3700,7 @@ avtGenericDatabase::GetQOTVectorVarDataset(const char *varname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts, 
+    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts,
         domain, tsRange, tsStride);
 
     if (mesh == NULL)
@@ -3739,19 +3739,19 @@ avtGenericDatabase::GetQOTVectorVarDataset(const char *varname,
 //  Method: avtGenericDatabase::GetQOTArrayVarDataset
 //
 //  Purpose:
-//      Construct a QOT dataset containing an array variable. 
+//      Construct a QOT dataset containing an array variable.
 //
 //  Arguments:
-//      varname      The variable of interest. 
-//      element      The element of interest. 
-//      domain       The domain of interest. 
-//      spec         The data request. 
+//      varname      The variable of interest.
+//      element      The element of interest.
+//      domain       The domain of interest.
+//      spec         The data request.
 //
-//  Returns:         
-//      A QOT dataset containing the requested variable. 
+//  Returns:
+//      A QOT dataset containing the requested variable.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Mon Sep 23 15:11:40 MST 2019 
+//  Creation:   Mon Sep 23 15:11:40 MST 2019
 //
 //  Modifications:
 //
@@ -3759,8 +3759,8 @@ avtGenericDatabase::GetQOTVectorVarDataset(const char *varname,
 
 vtkDataSet *
 avtGenericDatabase::GetQOTArrayVarDataset(const char *varname,
-                                          int element, 
-                                          int domain, 
+                                          int element,
+                                          int domain,
                                           const avtDataRequest_p spec)
 {
     const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
@@ -3787,7 +3787,7 @@ avtGenericDatabase::GetQOTArrayVarDataset(const char *varname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts, 
+    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts,
         domain, tsRange, tsStride);
 
     if (mesh == NULL)
@@ -3796,7 +3796,7 @@ avtGenericDatabase::GetQOTArrayVarDataset(const char *varname,
         return NULL;
     }
 
-    vtkDataArray *var = GetQOTArrayVariable(varname, domain, element, 
+    vtkDataArray *var = GetQOTArrayVariable(varname, domain, element,
         tsRange, tsStride, spec);
 
     if (var == NULL)
@@ -3818,19 +3818,19 @@ avtGenericDatabase::GetQOTArrayVarDataset(const char *varname,
 //  Method: avtGenericDatabase::GetQOTTensorVarDataset
 //
 //  Purpose:
-//      Construct a QOT dataset containing an tensor variable. 
+//      Construct a QOT dataset containing an tensor variable.
 //
 //  Arguments:
-//      varname      The variable of interest. 
-//      element      The element of interest. 
-//      domain       The domain of interest. 
-//      spec         The data request. 
+//      varname      The variable of interest.
+//      element      The element of interest.
+//      domain       The domain of interest.
+//      spec         The data request.
 //
-//  Returns:         
-//      A QOT dataset containing the requested variable. 
+//  Returns:
+//      A QOT dataset containing the requested variable.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Mon Sep 23 15:11:40 MST 2019 
+//  Creation:   Mon Sep 23 15:11:40 MST 2019
 //
 //  Modifications:
 //
@@ -3838,8 +3838,8 @@ avtGenericDatabase::GetQOTArrayVarDataset(const char *varname,
 
 vtkDataSet *
 avtGenericDatabase::GetQOTTensorVarDataset(const char *varname,
-                                           int element, 
-                                           int domain, 
+                                           int element,
+                                           int domain,
                                            const avtDataRequest_p spec)
 {
     const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
@@ -3857,7 +3857,7 @@ avtGenericDatabase::GetQOTTensorVarDataset(const char *varname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts, 
+    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts,
         domain, tsRange, tsStride);
 
     if (mesh == NULL)
@@ -3866,7 +3866,7 @@ avtGenericDatabase::GetQOTTensorVarDataset(const char *varname,
         return NULL;
     }
 
-    vtkDataArray *var = GetQOTTensorVariable(varname, domain, element, 
+    vtkDataArray *var = GetQOTTensorVariable(varname, domain, element,
         tsRange, tsStride, spec);
 
     if (var == NULL)
@@ -3891,16 +3891,16 @@ avtGenericDatabase::GetQOTTensorVarDataset(const char *varname,
 //      Construct a QOT dataset containing an symmetric tensor variable.
 //
 //  Arguments:
-//      varname      The variable of interest. 
-//      element      The element of interest. 
-//      domain       The domain of interest. 
-//      spec         The data request. 
+//      varname      The variable of interest.
+//      element      The element of interest.
+//      domain       The domain of interest.
+//      spec         The data request.
 //
-//  Returns:         
-//      A QOT dataset containing the requested variable. 
+//  Returns:
+//      A QOT dataset containing the requested variable.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Mon Sep 23 15:11:40 MST 2019 
+//  Creation:   Mon Sep 23 15:11:40 MST 2019
 //
 //  Modifications:
 //
@@ -3908,8 +3908,8 @@ avtGenericDatabase::GetQOTTensorVarDataset(const char *varname,
 
 vtkDataSet *
 avtGenericDatabase::GetQOTSymmetricTensorVarDataset(const char *varname,
-                                                    int element, 
-                                                    int domain, 
+                                                    int element,
+                                                    int domain,
                                                     const avtDataRequest_p spec)
 {
     const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
@@ -3921,14 +3921,14 @@ avtGenericDatabase::GetQOTSymmetricTensorVarDataset(const char *varname,
     tsRange[1] = QOTAtts->GetEndTime();
     tsStride   = QOTAtts->GetStride();
 
-    const avtSymmetricTensorMetaData *stmd = 
+    const avtSymmetricTensorMetaData *stmd =
         GetMetaData(tsRange[0])->GetSymmTensor(varname);
     if (stmd == NULL)
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts, 
+    vtkDataSet *mesh = Interface->GetQOTPointMesh(QOTAtts,
         domain, tsRange, tsStride);
 
     if (mesh == NULL)
@@ -3959,29 +3959,29 @@ avtGenericDatabase::GetQOTSymmetricTensorVarDataset(const char *varname,
 //  Method: avtGenericDatabase::GetQOTScalarVariable
 //
 //  Purpose:
-//      Retrieve a QOT scalar variable. 
+//      Retrieve a QOT scalar variable.
 //
 //  Arguments:
-//      varname      The variable of interest. 
-//      domain       The domain of interest. 
-//      element      The element of interest. 
-//      tsRange      The timestep range. 
-//      tsStride     The timestep stride. 
+//      varname      The variable of interest.
+//      domain       The domain of interest.
+//      element      The element of interest.
+//      tsRange      The timestep range.
+//      tsStride     The timestep stride.
 //      dataRequest  The data request.
 //
-//  Returns:         
-//      The requested variable. 
+//  Returns:
+//      The requested variable.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Mon Sep 23 15:11:40 MST 2019 
+//  Creation:   Mon Sep 23 15:11:40 MST 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 vtkDataArray *
-avtGenericDatabase::GetQOTScalarVariable(const char *varname, 
-                                         int domain, 
+avtGenericDatabase::GetQOTScalarVariable(const char *varname,
+                                         int domain,
                                          int element,
                                          int *tsRange,
                                          int tsStride,
@@ -4007,7 +4007,7 @@ avtGenericDatabase::GetQOTScalarVariable(const char *varname,
         real_varname = smd->originalName.c_str();
     }
 
-    var = Interface->GetQOTVar(domain, real_varname, 
+    var = Interface->GetQOTVar(domain, real_varname,
         element, tsRange, tsStride);
 
     if (var != NULL)
@@ -4031,29 +4031,29 @@ avtGenericDatabase::GetQOTScalarVariable(const char *varname,
 //  Method: avtGenericDatabase::GetQOTVectorVariable
 //
 //  Purpose:
-//      Retrieve a QOT vector variable. 
+//      Retrieve a QOT vector variable.
 //
 //  Arguments:
-//      varname      The variable of interest. 
-//      domain       The domain of interest. 
-//      element      The element of interest. 
-//      tsRange      The timestep range. 
-//      tsStride     The timestep stride. 
+//      varname      The variable of interest.
+//      domain       The domain of interest.
+//      element      The element of interest.
+//      tsRange      The timestep range.
+//      tsStride     The timestep stride.
 //      dataRequest  The data request.
 //
-//  Returns:         
-//      The requested variable. 
+//  Returns:
+//      The requested variable.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Mon Sep 23 15:11:40 MST 2019 
+//  Creation:   Mon Sep 23 15:11:40 MST 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 vtkDataArray *
-avtGenericDatabase::GetQOTVectorVariable(const char *varname, 
-                                         int domain, 
+avtGenericDatabase::GetQOTVectorVariable(const char *varname,
+                                         int domain,
                                          int element,
                                          int *tsRange,
                                          int tsStride,
@@ -4105,29 +4105,29 @@ avtGenericDatabase::GetQOTVectorVariable(const char *varname,
 //  Method: avtGenericDatabase::GetQOTArrayVariable
 //
 //  Purpose:
-//      Retrieve a QOT array variable. 
+//      Retrieve a QOT array variable.
 //
 //  Arguments:
-//      varname      The variable of interest. 
-//      domain       The domain of interest. 
-//      element      The element of interest. 
-//      tsRange      The timestep range. 
-//      tsStride     The timestep stride. 
+//      varname      The variable of interest.
+//      domain       The domain of interest.
+//      element      The element of interest.
+//      tsRange      The timestep range.
+//      tsStride     The timestep stride.
 //      dataRequest  The data request.
 //
-//  Returns:         
-//      The requested variable. 
+//  Returns:
+//      The requested variable.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Mon Sep 23 15:11:40 MST 2019 
+//  Creation:   Mon Sep 23 15:11:40 MST 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 vtkDataArray *
-avtGenericDatabase::GetQOTArrayVariable(const char *varname, 
-                                        int domain, 
+avtGenericDatabase::GetQOTArrayVariable(const char *varname,
+                                        int domain,
                                         int element,
                                         int *tsRange,
                                         int tsStride,
@@ -4179,29 +4179,29 @@ avtGenericDatabase::GetQOTArrayVariable(const char *varname,
 //  Method: avtGenericDatabase::GetQOTTensorVariable
 //
 //  Purpose:
-//      Retrieve a QOT tensor variable. 
+//      Retrieve a QOT tensor variable.
 //
 //  Arguments:
-//      varname      The variable of interest. 
-//      domain       The domain of interest. 
-//      element      The element of interest. 
-//      tsRange      The timestep range. 
-//      tsStride     The timestep stride. 
+//      varname      The variable of interest.
+//      domain       The domain of interest.
+//      element      The element of interest.
+//      tsRange      The timestep range.
+//      tsStride     The timestep stride.
 //      dataRequest  The data request.
 //
-//  Returns:         
-//      The requested variable. 
+//  Returns:
+//      The requested variable.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Mon Sep 23 15:11:40 MST 2019 
+//  Creation:   Mon Sep 23 15:11:40 MST 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 vtkDataArray *
-avtGenericDatabase::GetQOTTensorVariable(const char *varname, 
-                                         int domain, 
+avtGenericDatabase::GetQOTTensorVariable(const char *varname,
+                                         int domain,
                                          int element,
                                          int *tsRange,
                                          int tsStride,
@@ -4253,29 +4253,29 @@ avtGenericDatabase::GetQOTTensorVariable(const char *varname,
 //  Method: avtGenericDatabase::GetQOTSymmetricTensorVariable
 //
 //  Purpose:
-//      Retrieve a QOT symmetric tensor variable. 
+//      Retrieve a QOT symmetric tensor variable.
 //
 //  Arguments:
-//      varname      The variable of interest. 
-//      domain       The domain of interest. 
-//      element      The element of interest. 
-//      tsRange      The timestep range. 
-//      tsStride     The timestep stride. 
-//      dataRequest  The data request. 
+//      varname      The variable of interest.
+//      domain       The domain of interest.
+//      element      The element of interest.
+//      tsRange      The timestep range.
+//      tsStride     The timestep stride.
+//      dataRequest  The data request.
 //
-//  Returns:         
-//      The requested variable. 
+//  Returns:
+//      The requested variable.
 //
 //  Programmer: Alister Maguire
-//  Creation:   Mon Sep 23 15:11:40 MST 2019 
+//  Creation:   Mon Sep 23 15:11:40 MST 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 vtkDataArray *
-avtGenericDatabase::GetQOTSymmetricTensorVariable(const char *varname, 
-                                                  int domain, 
+avtGenericDatabase::GetQOTSymmetricTensorVariable(const char *varname,
+                                                  int domain,
                                                   int element,
                                                   int *tsRange,
                                                   int tsStride,
@@ -4289,7 +4289,7 @@ avtGenericDatabase::GetQOTSymmetricTensorVariable(const char *varname,
     // Note: use the "real_varname" when talking to the Interface, but use
     // the standard "varname" for caching and all other places.
     //
-    const avtSymmetricTensorMetaData *stmd = 
+    const avtSymmetricTensorMetaData *stmd =
         GetMetaData(tsRange[0])->GetSymmTensor(varname);
     if (stmd == NULL)
     {
@@ -4612,11 +4612,11 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
 //  Method: avtGenericDatabase::GetCycles
 //
 //  Purpose:
-//      Retrieve the available cycles from a database.  
+//      Retrieve the available cycles from a database.
 //
 //  Arguments:
-//      dom       The domain of interest.  
-//      cycles    A vector to store the retrieved cycles in. 
+//      dom       The domain of interest.
+//      cycles    A vector to store the retrieved cycles in.
 //
 //  Programmer: Alister Maguire
 //  Creation:   Tue Sep 24 09:58:14 MST 2019
@@ -4634,11 +4634,11 @@ avtGenericDatabase::GetCycles(int dom, intVector &cycles)
 //  Method: avtGenericDatabase::GetTimes
 //
 //  Purpose:
-//      Retrieve the available times from a database.  
+//      Retrieve the available times from a database.
 //
 //  Arguments:
-//      dom       The domain of interest.  
-//      times     A vector to store the retrieved times in. 
+//      dom       The domain of interest.
+//      times     A vector to store the retrieved times in.
 //
 //  Programmer: Alister Maguire
 //  Creation:   Tue Sep 24 09:58:14 MST 2019
@@ -5036,7 +5036,7 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    being passed back correctly).
 //
 //    Alister Maguire, Mon Nov 27 15:31:54 PST 2017
-//    If materialLabelsForced is true, then create material labels. 
+//    If materialLabelsForced is true, then create material labels.
 //
 // ****************************************************************************
 
@@ -5269,7 +5269,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     //
     stringVector labelStrings;
 
-    if (type == AVT_MATERIAL || materialLabelsForced) 
+    if (type == AVT_MATERIAL || materialLabelsForced)
     {
         if (needInternalSurfaces)
         {
@@ -6433,9 +6433,9 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    enum scalars. Thanks Jeremy!
 //
 //    Alister Maguire, Mon Nov 27 15:31:54 PST 2017
-//    When preparing labels, check to see if we're forcing material 
-//    labels to be created. Also, if the dataset doesn't contain 
-//    any materials, don't try and look for them.  
+//    When preparing labels, check to see if we're forcing material
+//    labels to be created. Also, if the dataset doesn't contain
+//    any materials, don't try and look for them.
 //
 // ****************************************************************************
 
@@ -6585,7 +6585,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
             doSelect = false;
         }
 
-        if (!doSelect || !Interface->PerformsMaterialSelection()) 
+        if (!doSelect || !Interface->PerformsMaterialSelection())
         {
             // We know we want the dataset as a whole
             if (md->GetFormatCanDoDomainDecomposition())
@@ -6628,7 +6628,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         //
         //  Prepare labels; we need nmats labels.
         //
-        if (spec->ForceConstructMaterialLabels() && nmats > 0) 
+        if (spec->ForceConstructMaterialLabels() && nmats > 0)
         {
             labels = matnames;
         }
@@ -6827,20 +6827,20 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //
 //  Arguments:
 //      ds        The dataset collection.
-//      domains   A list of current domains. 
+//      domains   A list of current domains.
 //      spec      A data request.
 //      src       The source object.
 //
 //  Notes: Sections of this method were copied from ReadDataset.
 //
 //  Programmer: Alister Maguire
-//  Creation: Tue Sep 24 09:58:14 MST 2019 
+//  Creation: Tue Sep 24 09:58:14 MST 2019
 //
 //  Modifications:
 //
 //      Alister Maguire, Wed Oct 23 11:18:37 PDT 2019
 //      Create a proper data tree so that we can handle multi-processor
-//      queries. 
+//      queries.
 //
 //      Alister Maguire, Tue Oct 29 10:32:56 PDT 2019
 //      Make sure that each processor calls ActivateTimestep on all
@@ -6849,9 +6849,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 // ****************************************************************************
 
 void
-avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds, 
+avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
                                    intVector &domains,
-                                   avtDataRequest_p &spec, 
+                                   avtDataRequest_p &spec,
                                    avtSourceFromDatabase *src)
 {
     int timerHandle = visitTimer->StartTimer();
@@ -6860,7 +6860,7 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
 
     //
     // If the pick atts contains a domain >= 0, then this is our
-    // target. Otherwise, 0 is the only domain available. 
+    // target. Otherwise, 0 is the only domain available.
     //
     int qDomain = QOTAtts->GetPickAtts().GetDomain();
     if (qDomain < 0)
@@ -6881,7 +6881,7 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
     int startTime = spec->GetQOTAtts()->GetStartTime();
     int stopTime = spec->GetQOTAtts()->GetEndTime();
     int stride   = spec->GetQOTAtts()->GetStride();
-    bool addLastStep = ((stopTime - startTime) % 
+    bool addLastStep = ((stopTime - startTime) %
         stride == 0.0) ? false : true;
 
     //
@@ -6918,7 +6918,7 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
     ds.SetVars2nd(vars2nd);
 
     char  progressString[1024];
-    sprintf(progressString, "Reading QOT dataset from %s", 
+    sprintf(progressString, "Reading QOT dataset from %s",
         Interface->GetType());
 
     const int numDomains = (const int)domains.size();
@@ -6930,7 +6930,7 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
     //
     for (int i = 0; i < numDomains; ++i)
     {
-        int curDomain = domains[i]; 
+        int curDomain = domains[i];
 
         if (md->GetFormatCanDoDomainDecomposition())
         {
@@ -6969,7 +6969,7 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
 
         ds.SetNumMaterials(i, 1);
 
-        char label[256]; 
+        char label[256];
         snprintf(label, 256, "%d", curDomain);
         stringVector labels;
         labels.push_back(label);
@@ -7295,7 +7295,7 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     {
         if (ghostType == GHOST_NODE_DATA)
             ghostType = GHOST_ZONE_DATA;
-        else 
+        else
             ghostType = GHOST_NODE_DATA;
     }
 
@@ -7457,7 +7457,7 @@ avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
 
     need_db = need_db_global;
 #endif
-    
+
     if (need_db)
     {
         debug1  << "avtGenericDatabase::GetDomainBoundaryInformation Cached "
@@ -7474,7 +7474,7 @@ avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
         {
             debug1 << "avtGenericDatabase::GetDomainBoundaryInformation: Global for local success" <<endl;
             // do not cache b/c we don't have a good way of invalidating
-            // the dbis if the set of domains involved changes. 
+            // the dbis if the set of domains involved changes.
         }else
         {
             debug1 << "avtGenericDatabase::GetDomainBoundaryInformation: No local info." <<endl;
@@ -7559,10 +7559,10 @@ avtGenericDatabase::GetLocalDomainBoundaryInformation(avtDatasetCollection &ds,
                                                       avtDataRequest_p spec,
                                                       bool confirmInputMeshHasRightSize)
 {
-    
-    
+
+
     int t_fetch_loc_dbi = visitTimer->StartTimer();
-    
+
     VoidRefList local_dbis;
     GetAuxiliaryData(spec,
                      local_dbis,
@@ -7582,16 +7582,16 @@ avtGenericDatabase::GetLocalDomainBoundaryInformation(avtDatasetCollection &ds,
             local_lsts.push_back(lst);
         }
     }
-    
+
     visitTimer->StopTimer(t_fetch_loc_dbi,
                           "avtGenericDatabase: Fetch local domain boundary info");
-    
+
     int t_gen_global = visitTimer->StartTimer();
     // this will return null if there are no local lists.
     avtDomainBoundaries *res  = avtLocalStructuredDomainBoundaryList::GlobalGenerate(local_lsts);
     visitTimer->StopTimer(t_gen_global,
                          "avtGenericDatabase: Generate global domain boundaries from local info");
-    
+
     return res;
 }
 
@@ -9531,8 +9531,8 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 //    Added MIR iteration capability.
 //
 //    Alister Maguire, Mon Nov 27 15:31:54 PST 2017
-//    Added ForceConstructMaterialLabels argument to 
-//    MaterialSelect. 
+//    Added ForceConstructMaterialLabels argument to
+//    MaterialSelect.
 //
 //    Mark C. Miller, Wed Dec 12 04:59:12 PST 2018
 //    Add a call to DebugDumpDatasetCollection
