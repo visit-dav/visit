@@ -1062,28 +1062,35 @@ avtColorTables::GetControlPointColor(const std::string &ctName, int i,
 //
 // Arguments:
 //   ctName   : The name of the discrete color table.
-//   i        : The index at which to start the search. The value is mod'ed so
-//              that it always falls within the number of control points for
-//              the specified color table.
+//   idxName  : The name of index at which to start the search. This method
+//              maintains a private, static map of named integer color
+//              indices as a sort of "memory" of the last color index used.
 //   avoidrgb : The color we wish to avoid matching too closely.
 //
-// Returns:    The number of colors tried before finding an acceptable one
-//             or 0 indicating it couldn't find one. This means treating its
-//             return value as a boolean, like GetControlPointColor(), also
-//             works as expected.
+// Returns:    True if it found a color. False otherwise.
 //
 // Mark C. Miller, Wed Jun 19 17:56:46 PDT 2019
 // ****************************************************************************
 
-int
-avtColorTables::GetJNDControlPointColor(const std::string &ctName, int i,
+bool
+avtColorTables::GetJNDControlPointColor(const std::string &ctName,
+    std::string const& idxName,
     unsigned char const *avoidrgb, unsigned char *jndrgb, bool invert) const
 {
+    static std::map<std::string, int> namedIndices;
+
+    // handle resetting color index
+    if (ctName == "" && jndrgb == 0)
+    {
+        namedIndices.erase(idxName);
+        return false;
+    }
+
     int index = ctAtts->GetColorTableIndex(ctName);
     if (index < 0) return false;
     const ColorControlPointList &ct = ctAtts->operator[](index);
 
-    if (i < 0) i = 0;
+    int i = namedIndices[idxName]; // initializes to zero on first ref.
     for (int n = 0; n < ct.GetNumControlPoints(); n++)
     {
         unsigned char rgb[3];
@@ -1093,11 +1100,16 @@ avtColorTables::GetJNDControlPointColor(const std::string &ctName, int i,
         if (PerceptualColorDistance(rgb, avoidrgb) > JNDColorDistance)
         {
             std::copy(rgb,rgb+3,jndrgb);
-            return n+1;
+            namedIndices[idxName] += (n+1);
+            return true;
         }
     }
 
-    return 0;
+    return false;
+}
+void avtColorTables::ResetJNDIndex(std::string const &idxName)
+{
+    GetJNDControlPointColor("", idxName, 0, 0, false);
 }
 
 // ****************************************************************************

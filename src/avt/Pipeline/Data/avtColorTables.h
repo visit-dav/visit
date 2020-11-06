@@ -62,7 +62,6 @@ public:
     static int const       JNDColorDistance = 150;
     static void            ModifyColor(unsigned char const *inrgb, double mult,
                                        unsigned char *outrgb);
-
     const std::string   &GetDefaultContinuousColorTable() const;
     void                 SetDefaultContinuousColorTable(const std::string &);
     const std::string   &GetDefaultDiscreteColorTable() const;
@@ -80,10 +79,12 @@ public:
     bool                 GetControlPointColor(const std::string &ctName,
                                               int i, unsigned char *rgb,
                                               bool invert = false) const;
-    int                  GetJNDControlPointColor(const std::string &ctName,
-                                              int i, unsigned char const *avoidrgb,
+    bool                 GetJNDControlPointColor(const std::string &ctName,
+                                              const std::string &idxName,
+                                              unsigned char const *avoidrgb,
                                               unsigned char *jndrgb,
                                               bool invert = false) const;
+    void                 ResetJNDIndex(const std::string &idxName);
     int                  GetNumColors() const { return 256; };
     bool                 IsDiscrete(const std::string &ctName) const;
     bool                 ColorTableExists(const std::string &ctName) const;
