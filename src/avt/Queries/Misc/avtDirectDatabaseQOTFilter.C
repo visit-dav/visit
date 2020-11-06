@@ -574,8 +574,8 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps(
     }
 
     //
-    // Since all of these arrays should have been derived from coordinates,
-    // we only need to check the coordinates for errors.
+    // We first need to check the mesh coordinates for errors
+    // that may have occured during coordinate retrieval.
     //
     for (int i, ts = 0; i < numCells; ++i, ts += stride)
     {
@@ -594,6 +594,36 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps(
             {
                 isValid[i]  = false;
                 invalidStateList.push_back(ts);
+            }
+        }
+    }
+
+    //
+    // In cases with multiple variables, only time states that
+    // are valid across ALL variables will be kept.
+    //
+    for (int c = 0; c < numCurves; ++c)
+    {
+        vtkFloatArray *inCurve =
+            (vtkFloatArray *) inCellData->GetArray(c);
+
+        int ts = startT;
+        for (int i = 0; i < numCells; ++i, ts += stride)
+        {
+            inCurve->GetTuple(i, tupleTemp);
+
+            //
+            // Invalid states will contain NaN values.
+            //
+            if (visitIsNan(tupleTemp[0]))
+            {
+                missingData = true;
+
+                if (isValid[i])
+                {
+                    isValid[i]  = false;
+                    invalidStateList.push_back(ts);
+                }
             }
         }
     }
