@@ -3363,12 +3363,28 @@ avtGenericDatabase::GetQOTDataset(int domain,
     for (std::vector<CharStrRef>::const_iterator it = vars2nd.begin();
          it != vars2nd.end(); ++it)
     {
-        if (GetMetaData(startTime)->DetermineVarType(**it) == AVT_MESH)
+        bool primaryIsMesh = (GetMetaData(startTime)->
+            DetermineVarType(tmpVarname.c_str()) == AVT_MESH);
+        bool secondaryIsMesh = (GetMetaData(startTime)->
+            DetermineVarType(**it) == AVT_MESH);
+
+        if (secondaryIsMesh && !primaryIsMesh)
         {
+            //
+            // Swap primary and secondary.
+            //
             tmpVars2nd.push_back(tmpVarname);
             tmpVarname = string(**it);
             continue;
         }
+        else if (secondaryIsMesh)
+        {
+            //
+            // Skip secondary mesh since we'll grab it as a primary.
+            //
+            continue;
+        }
+
         tmpVars2nd.push_back(string(**it));
     }
 
