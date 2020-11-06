@@ -3304,7 +3304,7 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //
 //  Modifications:
 //
-//    Alister Maguire, Thu Nov  5 10:00:31 PST 2020
+//    Alister Maguire, Fri Nov  6 08:39:59 PST 2020
 //    Handle the AVT_MESH case.
 //
 // ****************************************************************************
@@ -3345,8 +3345,41 @@ avtGenericDatabase::GetQOTDataset(int domain,
         }
     }
 
-    int startTime   = QOTAtts->GetStartTime();
-    avtVarType type = GetMetaData(startTime)->DetermineVarType(varname);
+    //
+    // Tricky business here: if we're querying more than one variable,
+    // we need to check if ANY of our variables are a mesh type. If any
+    // are, we need to
+    //
+    //    a. Reduce the mesh requests down to one (no need to get the
+    //       same mesh multiple times). 
+    //    b. Temporarily promote the mesh variable to our primary variable
+    //       (if it isn't already there).
+    //    c. Temporarily demote our primary variable if it is NOT a mesh
+    //       variable and we do have one.
+    //
+    // The reason for all of this is that, when a QOT mesh variable is
+    // requested, the structure of the mesh changes dramatically from
+    // when we grab standard QOT variables. We need to make sure that
+    // we're grabbing the correct mesh structure before we starting adding
+    // variables to it.
+    //
+    int startTime     = QOTAtts->GetStartTime();
+    string tmpVarname = string(varname);
+    std::vector<string> tmpVars2nd;
+
+    for (std::vector<CharStrRef>::const_iterator it = vars2nd.begin();
+         it != vars2nd.end(); ++it)
+    {
+        if (GetMetaData(startTime)->DetermineVarType(**it) == AVT_MESH)
+        {
+            tmpVars2nd.push_back(tmpVarname);
+            tmpVarname = string(**it); 
+            continue;
+        }
+        tmpVars2nd.push_back(string(**it));
+    }
+
+    avtVarType type = GetMetaData(startTime)->DetermineVarType(tmpVarname);
 
     Interface->TurnMaterialSelectionOff();
 
@@ -3355,23 +3388,23 @@ avtGenericDatabase::GetQOTDataset(int domain,
     switch (type)
     {
       case AVT_SCALAR_VAR:
-        rv = GetQOTScalarVarDataset(varname, element, domain, spec);
+        rv = GetQOTScalarVarDataset(tmpVarname.c_str(), element, domain, spec);
         break;
 
       case AVT_VECTOR_VAR:
-        rv = GetQOTVectorVarDataset(varname, element, domain, spec);
+        rv = GetQOTVectorVarDataset(tmpVarname.c_str(), element, domain, spec);
         break;
 
       case AVT_TENSOR_VAR:
-        rv = GetQOTTensorVarDataset(varname, element, domain, spec);
+        rv = GetQOTTensorVarDataset(tmpVarname.c_str(), element, domain, spec);
         break;
 
       case AVT_SYMMETRIC_TENSOR_VAR:
-        rv = GetQOTSymmetricTensorVarDataset(varname, element, domain, spec);
+        rv = GetQOTSymmetricTensorVarDataset(tmpVarname.c_str(), element, domain, spec);
         break;
 
       case AVT_ARRAY_VAR:
-        rv = GetQOTArrayVarDataset(varname, element, domain, spec);
+        rv = GetQOTArrayVarDataset(tmpVarname.c_str(), element, domain, spec);
         break;
 
       case AVT_MESH:
@@ -3384,7 +3417,7 @@ avtGenericDatabase::GetQOTDataset(int domain,
         tsStride   = QOTAtts->GetStride();
 
         rv = Interface->GetQOTCoordMesh(QOTAtts, element, domain,
-            tsRange, tsStride, varname);
+            tsRange, tsStride, tmpVarname.c_str());
         break;
       }
 
@@ -3396,12 +3429,12 @@ avtGenericDatabase::GetQOTDataset(int domain,
       case AVT_CURVE:
       case AVT_MATSPECIES:
       default:
-        EXCEPTION1(InvalidVariableException, varname);
+        EXCEPTION1(InvalidVariableException, tmpVarname.c_str());
     }
 
-    if (rv != NULL && vars2nd.size() > 0)
+    if (rv != NULL && tmpVars2nd.size() > 0)
     {
-        AddSecondaryQOTVariables(rv, domain, vars2nd, spec);
+        AddSecondaryQOTVariables(rv, domain, tmpVars2nd, spec);
     }
 
     return rv;
@@ -3424,13 +3457,17 @@ avtGenericDatabase::GetQOTDataset(int domain,
 //  Creation:   Mon Sep 23 15:11:40 MST 2019 
 //
 //  Modifications:
-
+//
+//    Alister Maguire, Fri Nov  6 08:39:59 PST 2020
+//    Updated vars2nd to be a vector of strings. Check if the dataset
+//    contains cells, and add the variabe array based on that result.
+//
 // ****************************************************************************
 
 void
 avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds, 
                                              int domain,
-                                             const vector<CharStrRef> &vars2nd,
+                                             const vector<string> &vars2nd,
                                              const avtDataRequest_p spec)
 {
     const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
@@ -3469,7 +3506,7 @@ avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds,
 
     for (size_t i = 0 ; i < num2ndVars ; i++)
     {
-        const char *varName = *(vars2nd[i]);
+        const char *varName = vars2nd[i].c_str();
         avtDatabaseMetaData *md = GetMetaData(tsRange[0]);
 
         avtVarType vt = md->DetermineVarType(varName, false);
@@ -3481,11 +3518,7 @@ avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds,
             vt == AVT_MATSPECIES || vt == AVT_CURVE)
             continue;
 
-        //
-        // The QOT dataset is always a point mesh. 
-        //
-        vtkPointData *pointData = ds->GetPointData();
-        vtkDataArray *secVar    = NULL;
+        vtkDataArray *secVar = NULL;
 
         switch (vt)
         {
@@ -3519,7 +3552,21 @@ avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds,
         }
 
         secVar->SetName(varName);
-        pointData->AddArray(secVar);
+
+        //
+        // If our ds contains cells, this means that we have a QOT
+        // coordinate mesh, and the pipeline expects zonal variables.
+        // Otherwise, we have a QOT point mesh, and all variables
+        // should be added to the points.
+        //
+        if (ds->GetNumberOfCells() > 0)
+        {
+            ds->GetCellData()->AddArray(secVar);
+        }
+        else
+        {
+            ds->GetPointData()->AddArray(secVar);
+        }
     }
 }
 

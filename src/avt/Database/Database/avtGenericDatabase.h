@@ -328,6 +328,9 @@ class     vtkUnstructuredGrid;
 //    Alister Maguire, Tue Sep 24 10:04:42 MST 2019
 //    Added a number of QOT specific methods. 
 //
+//    Alister Maguire, Fri Nov  6 08:39:59 PST 2020
+//    Updated AddSecondaryQOTVariables to accept a vector of strings.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -508,7 +511,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                    int,
                                                    const avtDataRequest_p);
     void                       AddSecondaryQOTVariables(vtkDataSet *, int,
-                                                const std::vector<CharStrRef> &,
+                                                const std::vector<std::string> &,
                                                 const avtDataRequest_p);
 
     void                       AddOriginalCellsArray(vtkDataSet *, const int);
