@@ -911,7 +911,7 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
       unsigned char value = 0;
       for (vtkIdType ptIdx = 0; ptIdx < numIds; ptIdx++)
       {
-        if (gnp[ids->GetId(ptIdx)] == (1 << avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM))
+        if (avtGhostData::IsGhostNodeType(ids->GetId(ptIdx), NODE_NOT_APPLICABLE_TO_PROBLEM))
         {
           // The node is iblanked, so the entire zone should be iblanked too.
           avtGhostData::AddGhostZoneType(value, avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM);
