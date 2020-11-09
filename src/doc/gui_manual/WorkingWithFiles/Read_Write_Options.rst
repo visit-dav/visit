@@ -286,7 +286,7 @@ Here are the defaults:
     'IBlanking': 'Auto # Options are: Auto, Always, Never',
     'Use IBlanking If Present': 1,
     'Gas constant R': 1.0,
-    Gas constant Gamma': 1.4
+    'Gas constant Gamma': 1.4
   }
 
 Silo
