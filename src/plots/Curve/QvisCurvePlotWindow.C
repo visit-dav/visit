@@ -754,15 +754,12 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             break;
           case CurveAttributes::ID_curveColor:
             { // new scope
-              if (curveColor->isEnabled())
-              {
                 QColor temp(atts->GetCurveColor().Red(),
                             atts->GetCurveColor().Green(),
                             atts->GetCurveColor().Blue());
                 curveColor->blockSignals(true);
                 curveColor->setButtonColor(temp);
                 curveColor->blockSignals(false);
-              }
             }
             break;
           case CurveAttributes::ID_showLegend:

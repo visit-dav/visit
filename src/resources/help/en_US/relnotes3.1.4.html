@@ -36,6 +36,11 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where applying Log scaling to the view of a Curve plot (or lineout curve) yielded wrong results.</li>
   <li>Fixed a bug with the variable menu not being sorted properly when the variable list had mixed-case names and variable grouping was used.</li>
   <li>Fixed a bug with the conn_cmfe expression where mapping a variable from a polyhedral mesh to a point mesh failed when the mesh was material selected.</li>
+  <li>Fixed a bug with specifying -cli and -o "somefile* database",FORMAT from the command line.</li>
+  <li>Fixed bug (<a href="https://github.com/visit-dav/visit/issues/5067">5067</a>) causing Curve plots with the "Curve color" set to "Cycle" to change their color as the timestep is advanced and a similar issue with the Mesh plot when the "Mesh color" or "Opaque color" is set to "Random".</li>
+  <li>Fixed a bug that prevented the default volume renderer from correctly applying opacity attenuation to datasets that exist in extreme extent ranges.</li>
+  <li>Fixed a bug that prevented Pick Through Time from working correctly when running VisIt in parallel.</li>
+  <li>Fixed a bug with the calculating of the data extents after calculating an expression that could result in the minimum being incorrectly set to zero when the minumum was greater than zero and the data was material selected.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -45,6 +50,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>It is now possible to easily run VisIt in parallel with all the Linux distributions. To run in parallel, simply pass the number of processors to use with the "-np" command line option. For example, "visit -np 4" to run on 4 processors.</li>
   <li>Removed the host profiles for the Lawrence Livermore National Laboratory's Max, Sequoia and Shark systems.</li>
   <li>VisIt PLOT3D reader can now process IBlanked data. Users can specify if there is iblanking data in the file and whether or not to process it.</li>
+  <li>Added documentation for the "XRay Image" query to the Query section of the Quantitative Analysis chapter in the GUI Manual.</li>
 </ul>
 
 <a name="Dev_changes"></a>
@@ -52,6 +58,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Updated build_visit scripts for macOS 10.15</li>
   <li>Removed FastBit and FastQuery from VisIt.</li>
+  <li>Added notarization capability to the masonry macOS build scripts.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

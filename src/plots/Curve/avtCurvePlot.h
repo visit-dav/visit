@@ -71,7 +71,6 @@ class avtCurvePlot : public avtLineDataPlot
 
     virtual void                SetAtts(const AttributeGroup*);
     void                        SetLineWidth(int);
-    virtual bool                SetBackgroundColor(const double *);
 
   protected:
     CurveAttributes                atts;
@@ -86,8 +85,6 @@ class avtCurvePlot : public avtLineDataPlot
     avtWarpFilter                 *WarpFilter;
     avtPolarToCartesianFilter     *PolarFilter;
 
-    double                         bgColor[3];
-
     virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
@@ -98,5 +95,3 @@ class avtCurvePlot : public avtLineDataPlot
 };
 
 #endif
-
-
