@@ -61,7 +61,7 @@ GetPLOT3DReadOptions(void)
 
     rv->SetEnum("IBlanking In File", 0); // TODO: Use enum/"Auto" ?
     vector<string> iBlankingOptions = {"Auto", "Always", "Never"};
-    rv->SetEnumStrings("IBlanking In File", iBlankingOptions);
+    rv->SetEnumStrings("IBlanking", iBlankingOptions);
     rv->SetBool("Use IBlanking If Present", true);
 
     rv->SetDouble("Gas constant R", 1.0);

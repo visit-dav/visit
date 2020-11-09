@@ -208,9 +208,9 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
             else 
                 reader->TwoDimensionalGeometryOn();
         }
-        if (readOpts->FindIndex("IBlanking In File") >= 0)
+        if (readOpts->FindIndex("IBlanking") >= 0)
         {
-            reader->SetIBlankingInFile(readOpts->GetEnum("IBlanking In File"));
+            reader->SetIBlankingInFile(readOpts->GetEnum("IBlanking"));
         }
         if (readOpts->FindIndex("Use IBlanking If Present") >= 0)
         {
