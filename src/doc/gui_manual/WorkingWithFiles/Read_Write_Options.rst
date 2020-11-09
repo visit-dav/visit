@@ -116,7 +116,10 @@ PLOT3D
 Overview
 """"""""
 
-PLOT3D is not a self describing format. Therefore VisIt does not know if the
+PLOT3D is a computer graphics program designed to visualize the grid and
+solutions of structured computational fluid dynamics (CFD) datasets. It is
+developed and maintained by `NASA <https://software.nasa.gov/software/ARC-14400-1>`_.
+PLOT3D is not a self describing format. Therefore VisIt_ does not know if the
 file it should read is:
 
 - 2D or 3D
@@ -125,18 +128,18 @@ file it should read is:
 - Has Iblanking or not
 - Single block or multiblock
 
-To get VisIt to read your file, you need to give it hints. You do this with a
-text file with extension .vp3d, which describes the variant of Plot3D being
+To get VisIt_ to read your file, you need to give it hints. You do this with a
+text file with extension `.vp3d`, which describes the variant of Plot3D being
 used, or through the Read options that can be set when opening the file.
 
-VisIt will perform some amount of auto-detection for binary files. If
-auto-detection fails, then VisIt will fall back to settings from '.vp3d' if
-used, or Read options otherwise. If VisIt doesn't display your data as expected,
+VisIt_ will perform some amount of auto-detection for binary files. If
+auto-detection fails, then VisIt_ will fall back to settings from '.vp3d' if
+used, or Read options otherwise. If VisIt_ doesn't display your data as expected,
 some of these options may need to be tweaked. Auto-detection will most likely
 fail for non-record based Fortran binary files.
 
 Please Note: If your single-grid data file has the 'nblocks' field, you will
-need to tell VisIt it is a 'MultiGrid' file. VisIt will then correctly read
+need to tell VisIt_ it is a 'MultiGrid' file. VisIt_ will then correctly read
 'nblocks' and create single-grid output.
 
 Example vp3d file
@@ -188,11 +191,16 @@ Example vp3d file
   # STRUCTURED
   # UNSTRUCTURED
   
-  # Iblanking.  No iblanking is assumed unless stated otherwise
+  # Iblanking in the file.  No iblanking is assumed unless stated otherwise
   #
   # Options:
   # NO_IBLANKING
   # IBLANKING
+  
+  # Ignore iblanking. If there is iblanking in the file, you can opt to ignore it.
+  #
+  # Options:
+  # IGNORE_IBLANKING
   
   # 2D vs 3D.  3D will be assumed unless stated otherwise.
   #
