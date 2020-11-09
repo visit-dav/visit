@@ -860,7 +860,7 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
     vtkIntArray* iblank = vtkIntArray::New();
     iblank->SetNumberOfTuples(this->NumberOfPoints);
 
-    // Attempt to read the iblank data from the plot3d file. If the read failes,
+    // Attempt to read the iblank data from the plot3d file. If the read fails,
     // then the function will return 0 and we will error out. If the read passes,
     // it will return the count that indicates how many numbers it read.
     if (this->ReadIBlank(xyzFp, this->NumberOfPoints, iblank) == 0)

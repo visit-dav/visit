@@ -178,57 +178,59 @@ def BasicTests():
     # reset to true defaults
     SetDefaultFileOpenOptions("PLOT3D", opts)
 
-# BasicTests()
-# TestTimeSeries()
+def TestIBlanking():
+    # Custom tests with specific views:
+    OpenDatabase(data_path("PLOT3D_test_data/WingNoBody/wnb.vp3d"))
+    AddPlot("Mesh", "mesh")
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (-0.489596, 0.871773, 0.0175216)
+    View3DAtts.focus = (1.5, -3.00142, 0)
+    View3DAtts.viewUp = (-0.0396695, -0.00219579, -0.99921)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 11.0231
+    View3DAtts.nearPlane = -22.0462
+    View3DAtts.farPlane = 22.0462
+    View3DAtts.imagePan = (-0.07, -0.0135803)
+    View3DAtts.imageZoom = 5.55992
+    View3DAtts.perspective = 1
+    View3DAtts.eyeAngle = 2
+    View3DAtts.centerOfRotationSet = 0
+    View3DAtts.centerOfRotation = (1.5, -3.00142, 0)
+    View3DAtts.axis3DScaleFlag = 0
+    View3DAtts.axis3DScales = (1, 1, 1)
+    View3DAtts.shear = (0, 0, 1)
+    View3DAtts.windowValid = 1
+    SetView3D(View3DAtts)
+    DrawPlots()
+    Test("wnb01")
 
-# Custom tests with specific views:
-OpenDatabase(data_path("PLOT3D_test_data/WingNoBody/wnb.vp3d"))
-AddPlot("Mesh", "mesh")
-View3DAtts = View3DAttributes()
-View3DAtts.viewNormal = (-0.489596, 0.871773, 0.0175216)
-View3DAtts.focus = (1.5, -3.00142, 0)
-View3DAtts.viewUp = (-0.0396695, -0.00219579, -0.99921)
-View3DAtts.viewAngle = 30
-View3DAtts.parallelScale = 11.0231
-View3DAtts.nearPlane = -22.0462
-View3DAtts.farPlane = 22.0462
-View3DAtts.imagePan = (-0.07, -0.0135803)
-View3DAtts.imageZoom = 5.55992
-View3DAtts.perspective = 1
-View3DAtts.eyeAngle = 2
-View3DAtts.centerOfRotationSet = 0
-View3DAtts.centerOfRotation = (1.5, -3.00142, 0)
-View3DAtts.axis3DScaleFlag = 0
-View3DAtts.axis3DScales = (1, 1, 1)
-View3DAtts.shear = (0, 0, 1)
-View3DAtts.windowValid = 1
-SetView3D(View3DAtts)
-DrawPlots()
-Test("wnb01")
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (-0.489596, 0.871773, 0.0175216)
+    View3DAtts.focus = (1.5, -3.00142, 0)
+    View3DAtts.viewUp = (-0.0396695, -0.00219579, -0.99921)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 11.0231
+    View3DAtts.nearPlane = -22.0462
+    View3DAtts.farPlane = 22.0462
+    View3DAtts.imagePan = (-0.0355573, -0.00323714)
+    View3DAtts.imageZoom = 66.2641
+    View3DAtts.perspective = 1
+    View3DAtts.eyeAngle = 2
+    View3DAtts.centerOfRotationSet = 0
+    View3DAtts.centerOfRotation = (1.5, -3.00142, 0)
+    View3DAtts.axis3DScaleFlag = 0
+    View3DAtts.axis3DScales = (1, 1, 1)
+    View3DAtts.shear = (0, 0, 1)
+    View3DAtts.windowValid = 1
+    SetView3D(View3DAtts)
+    DrawPlots()
+    Test("wnb02")
 
-View3DAtts = View3DAttributes()
-View3DAtts.viewNormal = (-0.489596, 0.871773, 0.0175216)
-View3DAtts.focus = (1.5, -3.00142, 0)
-View3DAtts.viewUp = (-0.0396695, -0.00219579, -0.99921)
-View3DAtts.viewAngle = 30
-View3DAtts.parallelScale = 11.0231
-View3DAtts.nearPlane = -22.0462
-View3DAtts.farPlane = 22.0462
-View3DAtts.imagePan = (-0.0355573, -0.00323714)
-View3DAtts.imageZoom = 66.2641
-View3DAtts.perspective = 1
-View3DAtts.eyeAngle = 2
-View3DAtts.centerOfRotationSet = 0
-View3DAtts.centerOfRotation = (1.5, -3.00142, 0)
-View3DAtts.axis3DScaleFlag = 0
-View3DAtts.axis3DScales = (1, 1, 1)
-View3DAtts.shear = (0, 0, 1)
-View3DAtts.windowValid = 1
-SetView3D(View3DAtts)
-DrawPlots()
-Test("wnb02")
+    DeleteAllPlots()
+    CloseDatabase(data_path("PLOT3D_test_data/WingNoBody/wnb.vp3d"))
 
-DeleteAllPlots()
-CloseDatabase(data_path("PLOT3D_test_data/WingNoBody/wnb.vp3d"))
+BasicTests()
+TestTimeSeries()
+TestIBlanking()
 
 Exit()
