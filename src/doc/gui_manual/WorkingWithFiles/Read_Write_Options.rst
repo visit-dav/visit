@@ -163,20 +163,20 @@ Example vp3d file
   # Time-series example requesting subset of time steps
   # SOLUTION NHLP_2D_??3?.q
   
-  # Single/Multi Grid.  Single grid will be assumed if no value is specified.
+  # Single/Multi Grid. Single grid will be assumed if no value is specified.
   #
   # Options:
   MULTI_GRID
   # SINGLE_GRID
   
-  # Data encoding, ASCII or Binary  Binary will be assumed if no value is
+  # Data encoding, ASCII or Binary. Binary will be assumed if no value is
   # specified.
   #
   # Options:
   #BINARY
   ASCII
   
-  # Endianness.  This only applies to BINARY files.  Native endian will
+  # Endianness. This only applies to BINARY files. Native endian will
   # be assumed if no value is specified.
   #
   # Options:
@@ -184,14 +184,14 @@ Example vp3d file
   #BIG_ENDIAN
   
   # OBSOLETE, Structured assumed, due to lack of unstructured sample data
-  # Structured grid vs unstructured grids.  Structured grids will be assumed
+  # Structured grid vs unstructured grids. Structured grids will be assumed
   # unless stated otherwise.
   #
   # Options:
   # STRUCTURED
   # UNSTRUCTURED
   
-  # Iblanking in the file.  No iblanking is assumed unless stated otherwise
+  # Iblanking in the file. No iblanking is assumed unless stated otherwise.
   #
   # Options:
   # NO_IBLANKING
@@ -202,20 +202,20 @@ Example vp3d file
   # Options:
   # IGNORE_IBLANKING
   
-  # 2D vs 3D.  3D will be assumed unless stated otherwise.
+  # 2D vs 3D. 3D will be assumed unless stated otherwise.
   #
   # Options:
   2D
   # 3D
   
-  # Precision.  Single precision is assumed unless stated otherwise
+  # Precision. Single precision is assumed unless stated otherwise.
   #
   # Options:
   SINGLE_PRECISION
   # DOUBLE_PRECISION
   
-  # Compression.  This only applies to ASCII files.  Some codes compress
-  # repeated values as 4*1.5 as opposed to 1.5 1.5 1.5 1.5.  It is assumed
+  # Compression. This only applies to ASCII files. Some codes compress
+  # repeated values as 4*1.5 as opposed to 1.5 1.5 1.5 1.5. It is assumed
   # the data is not compressed unless stated otherwise.
   #
   # Options:
@@ -256,7 +256,7 @@ Read Options via CLI
   opts = GetDefaultFileOpenOptions("PLOT3D")
   # and change a couple of things 
   # specify sub-selection of time slices.
-  opts["Solution (Q) File Name"]  = r"Jespersen.1/???3?"
+  opts["Solution (Q) File Name"] = r"Jespersen.1/???3?"
   opts["Solution Time field accurate"] = 0
   SetDefaultFileOpenOptions("PLOT3D", opts)
   OpenDatabase(data_path("./TaperedCylinder/grid.p3d"), 0, "PLOT3D_1.0")
