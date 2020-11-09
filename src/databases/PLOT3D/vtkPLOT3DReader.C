@@ -119,7 +119,7 @@ vtkPLOT3DReader::vtkPLOT3DReader()
   this->FileSize = 0;
   this->MultiGrid = false;
   this->ByteOrder = FILE_BIG_ENDIAN;
-  this->IBlankingInFile = 0; // TODO: use enum
+  this->IBlankingInFile = 0;
   this->UseIBlankingIfDetected = true;
   this->TwoDimensionalGeometry = false;
   this->DoublePrecision = false;
@@ -236,7 +236,7 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
     }
   
   // Check that user settings match what VisIt has auto-detected.
-  if (this->IBlankingInFile == 0) // Auto detection, TODO: use enum
+  if (this->IBlankingInFile == 0)
   {
     this->IBlankingInFile = this->Internal->IBlanking;
   }

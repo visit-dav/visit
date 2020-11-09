@@ -77,7 +77,6 @@ public:
   // If there is iblanking arrays, we will accommodate for the offsets.
   vtkSetMacro(IBlankingInFile, int);
   vtkGetMacro(IBlankingInFile, int);
-  // TODO: int should be enum above
 
   // Description:
   // If there is iblanking in the file, then we will use that information to
@@ -206,7 +205,7 @@ protected:
   bool MultiGrid;
   int ForceRead;
   int ByteOrder;
-  int IBlankingInFile; // TODO: should be an enum.
+  int IBlankingInFile;
   bool UseIBlankingIfDetected;
   bool DoublePrecision;
 
