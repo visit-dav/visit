@@ -262,7 +262,7 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
         reader->MultiGridOff();
         reader->BinaryFileOn();
         reader->SetByteOrderToBigEndian();
-        reader->SetIBlankingInFile(0); // Auto setting, TODO: Use enum
+        reader->SetIBlankingInFile(0);
         reader->UseIBlankingIfDetectedOn();
         reader->TwoDimensionalGeometryOff();
         reader->DoublePrecisionOff();
