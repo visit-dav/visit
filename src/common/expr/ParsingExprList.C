@@ -297,14 +297,8 @@ GetRealVariableHelper(const string &var, set<string> expandedVars)
     }
 
     // For each leaf, look for a real variable
-#if defined(_MSC_VER) && (_MSC_VER <= 1200)
-    // Don't use const iterator on win32 MSVC 6.
-    for (std::vector<std::string>::iterator it = varLeaves.begin();
-         it != varLeaves.end(); ++it)
-#else
     for (std::vector<std::string>::const_iterator it = varLeaves.begin();
          it != varLeaves.end(); ++it)
-#endif
     {
         string realvar = GetRealVariableHelper(*it, expandedVars);
 
