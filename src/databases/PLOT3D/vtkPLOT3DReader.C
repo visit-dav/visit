@@ -901,7 +901,6 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
     ghostZones->SetNumberOfValues(output->GetNumberOfCells());
     ghostZones->SetName("avtGhostZones");
     vtkIdList* ids = vtkIdList::New();
-    ids->SetNumberOfIds(8);
     vtkIdType numCells = output->GetNumberOfCells();
 
     for (vtkIdType cellId = 0; cellId < numCells; cellId++)
