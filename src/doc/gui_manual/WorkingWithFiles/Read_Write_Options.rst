@@ -275,11 +275,19 @@ Here are the defaults:
 
   >>> opt = GetDefaultFileOpenOptions("PLOT3D")
   >>> print opt
-  {'File Format': 1, 'Double Precision': 0, 'Gamma (used for function calculation)': 1.4, 'IBlanking': 0, 
-  'R (used for function calculations)': 1.0, 'Solution () File Name': , 'Big Endian': 1, 
-  'Solution Time field accurate': 1, 'Multi Grid': 0, '3D': 1}
-  
-  'File Format' options: 0 -> ASCII, 1 -> C Binary, 2 -> Fortran Binary, 3-> Fortran Binary stream
+  {
+    'File Format': 'C Binary # Options are: ASCII, C Binary, Fortran binary, Fortran binary stream',
+    'Solution (Q) File Name': '',
+    'Solution Time field accurate': 1,
+    '3D': 1,
+    'Multi Grid': 0,
+    'Big Endian': 1,
+    'Double Precision': 0,
+    'IBlanking': 'Auto # Options are: Auto, Always, Never',
+    'Use IBlanking If Present': 1,
+    'Gas constant R': 1.0,
+    Gas constant Gamma': 1.4
+  }
 
 Silo
 ~~~~
