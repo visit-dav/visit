@@ -873,7 +873,7 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
     // IBlank data is 0 if it should be blanked and 1 if it should not be
     // blanked, which is a little backwards from how I think of it, but okay.
     // So where ib is 0 we use NODE_NOT_APPLICABLE_TO_PROBLEM and where ib is
-    // 1 we use DUPLICATED_NODE.
+    // 1 we just set to zero, which does not apply any ghosting.
     vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
     ghostNodes->SetName("avtGhostNodes");
     ghostNodes->SetNumberOfTuples(this->NumberOfPoints);
