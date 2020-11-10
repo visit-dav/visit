@@ -291,7 +291,7 @@ def TestRandomColor():
     TestSection("Testing random color mode")
     OpenDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
 
-    # Randomizion of mesh colors is possible only at plot *creation* time.
+    # Randomization of mesh colors is possible only at plot *creation* time.
     # Therefore, we need to adjust Mesh plot default attributes to set
     # the behavior *before* the plot is even created.
     m = MeshAttributes()
