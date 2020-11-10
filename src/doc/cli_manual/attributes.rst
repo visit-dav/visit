@@ -17,7 +17,8 @@ Many of the **Plot** and **Operator** attribute methods accept an optional
 *current* attributes. For example, ``CurveAttributes()`` returns the default
 attributes for a **Curve** plot where as ``CurveAttributes(1)`` returns the
 attributes of either the currently active **Curve** plot or the *first*
-**Curve** plot in the plot list.
+**Curve** plot in the plot list regardless of whether it is selected or
+hidden.
 
 Many functions return an integer where 1 means success and 0 means failure.
 This behavior is represented by the type CLI_return_t in an attempt to
