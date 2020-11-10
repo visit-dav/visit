@@ -1,5 +1,3 @@
-
-
 Attribute Reference
 ===================
 
@@ -14,17 +12,19 @@ The listing is ordered in alphabetical ordering of the name of the
 attribute set. For each set the function that will provide you with
 these attributes is printed in italic.
 
+Many of the **Plot** and **Operator** attribute methods accept an optional
+``1`` argument to indicate whether or not to return the *default* or
+*current* attributes. For example, ``CurveAttributes()`` returns the default
+attributes for a **Curve** plot where as ``CurveAttributes(1)`` returns the
+attributes of either the currently active **Curve** plot or the *first*
+**Curve** plot in the plot list.
+
 Many functions return an integer where 1 means success and 0 means failure.
 This behavior is represented by the type CLI_return_t in an attempt to
 distinguish it from functions that may utilize the full range of integers.
-|
-|
-
-|
 
 **AMRStitchCell**: *AMRStitchCellAttributes()*
 ----------------------------------------------
-|
 
     +-----------------------+------------------------------+
     | **Attribute**         | **Default**/Allowed Values   |
@@ -33,13 +33,8 @@ distinguish it from functions that may utilize the full range of integers.
     |                       |  DualGrid, StitchCells       |
     +-----------------------+------------------------------+
 
-|
-
-|
-
 **Animation**: *AnimationAttributes()*
 --------------------------------------
-|
 
     +-------------------------+----------------------------+
     | **Attribute**           | **Default**/Allowed Values |
@@ -58,13 +53,8 @@ distinguish it from functions that may utilize the full range of integers.
     |                         |  Looping, Swing            |
     +-------------------------+----------------------------+
 
-|
-
-|
-
 **Annotation**: *AnnotationAttributes()*
 ----------------------------------------
-|
 
     +--------------------------------------------------+----------------------------+
     | **Attribute**                                    | **Default**/Allowed Values |
@@ -508,13 +498,8 @@ distinguish it from functions that may utilize the full range of integers.
     | axesArray.axes.grid                              | 0                          |
     +--------------------------------------------------+----------------------------+
 
-|
-
-|
-
 **Axis**: *AxisAttributes()*
 ----------------------------
-|
 
     +-----------------------------------+----------------------------+
     | **Attribute**                     | **Default**/Allowed Values |
@@ -572,13 +557,8 @@ distinguish it from functions that may utilize the full range of integers.
     | grid                              | 0                          |
     +-----------------------------------+----------------------------+
 
-|
-
-|
-
 **AxisAlignedSlice4D**: *AxisAlignedSlice4DAttributes()*
 --------------------------------------------------------
-|
 
     +---------------+----------------------------+
     | **Attribute** | **Default**/Allowed Values |
@@ -592,13 +572,8 @@ distinguish it from functions that may utilize the full range of integers.
     | L             | ()                         |
     +---------------+----------------------------+
 
-|
-
-|
-
 **Boundary**: *BoundaryAttributes()*
 ------------------------------------
-|
 
     +----------------------+-----------------------------+
     | **Attribute**        | **Default**/Allowed Values  |
@@ -626,13 +601,8 @@ distinguish it from functions that may utilize the full range of integers.
     | smoothingLevel       | 0                           |
     +----------------------+-----------------------------+
 
-|
-
-|
-
 **BoundaryOp**: *BoundaryOpAttributes()*
 ----------------------------------------
-|
 
     +--------------------+----------------------------+
     | **Attribute**      | **Default**/Allowed Values |
@@ -640,13 +610,8 @@ distinguish it from functions that may utilize the full range of integers.
     | smoothingLevel     | 0                          |
     +--------------------+----------------------------+
 
-|
-
-|
-
 **Box**: *BoxAttributes()*
 --------------------------
-|
 
     +---------------+----------------------------+
     | **Attribute** | **Default**/Allowed Values |
@@ -668,13 +633,8 @@ distinguish it from functions that may utilize the full range of integers.
     | inverse       | 0                          |
     +---------------+----------------------------+
 
-|
-
-|
-
 **CartographicProjection**: *CartographicProjectionAttributes()*
 ----------------------------------------------------------------
-|
 
     +---------------------+----------------------------+
     | **Attribute**       | **Default**/Allowed Values |
@@ -687,13 +647,8 @@ distinguish it from functions that may utilize the full range of integers.
     | centralMeridian     | 0                          |
     +---------------------+----------------------------+
 
-|
-
-|
-
 **Clip**: *ClipAttributes()*
 ----------------------------
-|
 
     +----------------------------------+----------------------------+
     | **Attribute**                    | **Default**/Allowed Values |
@@ -732,13 +687,8 @@ distinguish it from functions that may utilize the full range of integers.
     | sphereInverse                    | 0                          |
     +----------------------------------+----------------------------+
 
-|
-
-|
-
 **Cone**: *ConeAttributes()*
 ----------------------------
-|
 
     +--------------------+----------------------------+
     | **Attribute**      | **Default**/Allowed Values |
@@ -759,13 +709,8 @@ distinguish it from functions that may utilize the full range of integers.
     | length             | 1                          |
     +--------------------+----------------------------+
 
-|
-
-|
-
 **ConnectedComponents**: *ConnectedComponentsAttributes()*
 ----------------------------------------------------------
-|
 
     +--------------------------------------+----------------------------+
     | **Attribute**                        | **Default**/Allowed Values |
@@ -773,13 +718,8 @@ distinguish it from functions that may utilize the full range of integers.
     | EnableGhostNeighborsOptimization     | 1                          |
     +--------------------------------------+----------------------------+
 
-|
-
-|
-
 **ConstructDataBinning**: *ConstructDataBinningAttributes()*
 ------------------------------------------------------------
-|
 
     +-----------------------------+----------------------------+
     | **Attribute**               | **Default**/Allowed Values |
@@ -817,13 +757,8 @@ distinguish it from functions that may utilize the full range of integers.
     | outOfBoundsBehavior         | **Clamp**, Discard         |
     +-----------------------------+----------------------------+
 
-|
-
-|
-
 **Contour**: *ContourAttributes()*
 ----------------------------------
-|
 
     +--------------------------------------------------+-----------------------------+
     | **Attribute**                                    | **Default**/Allowed Values  |
@@ -1025,13 +960,8 @@ distinguish it from functions that may utilize the full range of integers.
     | wireframe                                        | 0                           |
     +--------------------------------------------------+-----------------------------+
 
-|
-
-|
-
 **CoordSwap**: *CoordSwapAttributes()*
 --------------------------------------
-|
 
     +---------------+----------------------------+
     | **Attribute** | **Default**/Allowed Values |
@@ -1046,13 +976,8 @@ distinguish it from functions that may utilize the full range of integers.
     |               |  Coord2                    |
     +---------------+----------------------------+
 
-|
-
-|
-
 **CreateBonds**: *CreateBondsAttributes()*
 ------------------------------------------
-|
 
     +------------------------+----------------------------+
     | **Attribute**          | **Default**/Allowed Values |
@@ -1086,13 +1011,8 @@ distinguish it from functions that may utilize the full range of integers.
     | zVector                | (0, 0, 1)                  |
     +------------------------+----------------------------+
 
-|
-
-|
-
 **Curve**: *CurveAttributes()*
 ------------------------------
-|
 
     +--------------------------+----------------------------+
     | **Attribute**            | **Default**/Allowed Values |
@@ -1157,13 +1077,8 @@ distinguish it from functions that may utilize the full range of integers.
     | angleUnits               | **Radians**, Degrees       |
     +--------------------------+----------------------------+
 
-|
-
-|
-
 **Cylinder**: *CylinderAttributes()*
 ------------------------------------
-|
 
     +---------------+----------------------------+
     | **Attribute** | **Default**/Allowed Values |
@@ -1177,13 +1092,8 @@ distinguish it from functions that may utilize the full range of integers.
     | inverse       | 0                          |
     +---------------+----------------------------+
 
-|
-
-|
-
 **DataBinning**: *DataBinningAttributes()*
 ------------------------------------------
-|
 
     +-----------------------------+----------------------------+
     | **Attribute**               | **Default**/Allowed Values |
@@ -1244,13 +1154,8 @@ distinguish it from functions that may utilize the full range of integers.
     | removeEmptyValFromCurve     | 1                          |
     +-----------------------------+----------------------------+
 
-|
-
-|
-
 **DeferExpression**: *DeferExpressionAttributes()*
 --------------------------------------------------
-|
 
     +---------------+----------------------------+
     | **Attribute** | **Default**/Allowed Values |
@@ -1258,13 +1163,8 @@ distinguish it from functions that may utilize the full range of integers.
     | exprs         | ()                         |
     +---------------+----------------------------+
 
-|
-
-|
-
 **Displace**: *DisplaceAttributes()*
 ------------------------------------
-|
 
     +---------------+----------------------------+
     | **Attribute** | **Default**/Allowed Values |
@@ -1274,13 +1174,8 @@ distinguish it from functions that may utilize the full range of integers.
     | variable      | "default"                  |
     +---------------+----------------------------+
 
-|
-
-|
-
 **DualMesh**: *DualMeshAttributes()*
 ------------------------------------
-|
 
     +---------------+----------------------------+
     | **Attribute** | **Default**/Allowed Values |
@@ -1290,13 +1185,8 @@ distinguish it from functions that may utilize the full range of integers.
     |               |  ZonesToNodes              |
     +---------------+----------------------------+
 
-|
-
-|
-
 **Edge**: *EdgeAttributes()*
 ----------------------------
-|
 
     +---------------+----------------------------+
     | **Attribute** | **Default**/Allowed Values |
@@ -1304,13 +1194,8 @@ distinguish it from functions that may utilize the full range of integers.
     | dummy         | 1                          |
     +---------------+----------------------------+
 
-|
-
-|
-
 **Elevate**: *ElevateAttributes()*
 ----------------------------------
-|
 
     +-----------------+----------------------------+
     | **Attribute**   | **Default**/Allowed Values |
@@ -1338,13 +1223,8 @@ distinguish it from functions that may utilize the full range of integers.
     | variable        | "default"                  |
     +-----------------+----------------------------+
 
-|
-
-|
-
 **EllipsoidSlice**: *EllipsoidSliceAttributes()*
 ------------------------------------------------
-|
 
     +-------------------+----------------------------+
     | **Attribute**     | **Default**/Allowed Values |
@@ -1356,13 +1236,8 @@ distinguish it from functions that may utilize the full range of integers.
     | rotationAngle     | (0, 0, 0)                  |
     +-------------------+----------------------------+
 
-|
-
-|
-
 **Explode**: *ExplodeAttributes()*
 ----------------------------------
-|
 
     +-----------------------------+----------------------------+
     | **Attribute**               | **Default**/Allowed Values |
@@ -1402,13 +1277,8 @@ distinguish it from functions that may utilize the full range of integers.
     |                             |  *objects.*                |
     +-----------------------------+----------------------------+
 
-|
-
-|
-
 **ExportDB**: *ExportDBAttributes()*
 ------------------------------------
-|
 
     +----------------------+----------------------------+
     | **Attribute**        | **Default**/Allowed Values |
@@ -1436,13 +1306,8 @@ distinguish it from functions that may utilize the full range of integers.
     | opts.help            | ""                         |
     +----------------------+----------------------------+
 
-|
-
-|
-
 **ExternalSurface**: *ExternalSurfaceAttributes()*
 --------------------------------------------------
-|
 
     +------------------+----------------------------+
     | **Attribute**    | **Default**/Allowed Values |
@@ -1452,13 +1317,8 @@ distinguish it from functions that may utilize the full range of integers.
     | edgesIn2D        | 1                          |
     +------------------+----------------------------+
 
-|
-
-|
-
 **Extrude**: *ExtrudeAttributes()*
 ----------------------------------
-|
 
     +---------------------------------+----------------------------+
     | **Attribute**                   | **Default**/Allowed Values |
@@ -1476,13 +1336,8 @@ distinguish it from functions that may utilize the full range of integers.
     | preserveOriginalCellNumbers     | 1                          |
     +---------------------------------+----------------------------+
 
-|
-
-|
-
 **FFT**: *FFTAttributes()*
 --------------------------
-|
 
     +---------------+----------------------------+
     | **Attribute** | **Default**/Allowed Values |
@@ -1490,13 +1345,8 @@ distinguish it from functions that may utilize the full range of integers.
     | dummy         | 0                          |
     +---------------+----------------------------+
 
-|
-
-|
-
 **FilledBoundary**: *FilledBoundaryAttributes()*
 ------------------------------------------------
-|
 
     +-------------------------+-----------------------------+
     | **Attribute**           | **Default**/Allowed Values  |
@@ -1545,13 +1395,8 @@ distinguish it from functions that may utilize the full range of integers.
     | pointSizePixels         | 2                           |
     +-------------------------+-----------------------------+
 
-|
-
-|
-
 **Flux**: *FluxAttributes()*
 ----------------------------
-|
 
     +-----------------+----------------------------+
     | **Attribute**   | **Default**/Allowed Values |
@@ -1563,13 +1408,8 @@ distinguish it from functions that may utilize the full range of integers.
     | weightField     | "default"                  |
     +-----------------+----------------------------+
 
-|
-
-|
-
 **Font**: *FontAttributes()*
 ----------------------------
-|
 
     +------------------------+----------------------------+
     | **Attribute**          | **Default**/Allowed Values |
@@ -1588,13 +1428,8 @@ distinguish it from functions that may utilize the full range of integers.
     | italic                 | 0                          |
     +------------------------+----------------------------+
 
-|
-
-|
-
 **Global**: *GlobalAttributes()*
 --------------------------------
-|
 
     +--------------------------------------+----------------------------+
     | **Attribute**                        | **Default**/Allowed Values |
@@ -1657,13 +1492,8 @@ distinguish it from functions that may utilize the full range of integers.
     | removeDuplicateNodes                 | 0                          |
     +--------------------------------------+----------------------------+
 
-|
-
-|
-
 **Histogram**: *HistogramAttributes()*
 --------------------------------------
-|
 
     +------------------------+-----------------------------+
     | **Attribute**          | **Default**/Allowed Values  |
@@ -1712,13 +1542,8 @@ distinguish it from functions that may utilize the full range of integers.
     | computeAsCDF           | 0                           |
     +------------------------+-----------------------------+
 
-|
-
-|
-
 **IndexSelect**: *IndexSelectAttributes()*
 ------------------------------------------
-|
 
     +------------------------+----------------------------+
     | **Attribute**          | **Default**/Allowed Values |
@@ -1764,13 +1589,8 @@ distinguish it from functions that may utilize the full range of integers.
     | subsetName             | "Whole"                    |
     +------------------------+----------------------------+
 
-|
-
-|
-
 **IntegralCurve**: *IntegralCurveAttributes()*
 ----------------------------------------------
-|
 
     +----------------------------------------+-----------------------------+
     | **Attribute**                          | **Default**/Allowed Values  |
@@ -1953,13 +1773,8 @@ distinguish it from functions that may utilize the full range of integers.
     | selection                              | ""                          |
     +----------------------------------------+-----------------------------+
 
-|
-
-|
-
 **InverseGhostZone**: *InverseGhostZoneAttributes()*
 ----------------------------------------------------
-|
 
     +------------------------------+----------------------------+
     | **Attribute**                | **Default**/Allowed Values |
@@ -1979,13 +1794,8 @@ distinguish it from functions that may utilize the full range of integers.
     | showNotApplicable            | 1                          |
     +------------------------------+----------------------------+
 
-|
-
-|
-
 **Isosurface**: *IsosurfaceAttributes()*
 ----------------------------------------
-|
 
     +--------------------+----------------------------+
     | **Attribute**      | **Default**/Allowed Values |
@@ -2012,13 +1822,8 @@ distinguish it from functions that may utilize the full range of integers.
     | variable           | "default"                  |
     +--------------------+----------------------------+
 
-|
-
-|
-
 **Isovolume**: *IsovolumeAttributes()*
 --------------------------------------
-|
 
     +---------------+----------------------------+
     | **Attribute** | **Default**/Allowed Values |
@@ -2030,13 +1835,8 @@ distinguish it from functions that may utilize the full range of integers.
     | variable      | "default"                  |
     +---------------+----------------------------+
 
-|
-
-|
-
 **Keyframe**: *KeyframeAttributes()*
 ------------------------------------
-|
 
     +-----------------------+----------------------------+
     | **Attribute**         | **Default**/Allowed Values |
@@ -2048,13 +1848,8 @@ distinguish it from functions that may utilize the full range of integers.
     | nFramesWasUserSet     | 0                          |
     +-----------------------+----------------------------+
 
-|
-
-|
-
 **LCS**: *LCSAttributes()*
 --------------------------
-|
 
     +---------------------------------------+----------------------------+
     | **Attribute**                         | **Default**/Allowed Values |
@@ -2197,13 +1992,8 @@ distinguish it from functions that may utilize the full range of integers.
     | criticalPointThreshold                | 0.001                      |
     +---------------------------------------+----------------------------+
 
-|
-
-|
-
 **Label**: *LabelAttributes()*
 ------------------------------
-|
 
     +----------------------------------+----------------------------+
     | **Attribute**                    | **Default**/Allowed Values |
@@ -2263,13 +2053,8 @@ distinguish it from functions that may utilize the full range of integers.
     | formatTemplate                   | "%g"                       |
     +----------------------------------+----------------------------+
 
-|
-
-|
-
 **Lagrangian**: *LagrangianAttributes()*
 ----------------------------------------
-|
 
     +-----------------+----------------------------+
     | **Attribute**   | **Default**/Allowed Values |
@@ -2289,13 +2074,8 @@ distinguish it from functions that may utilize the full range of integers.
     | variable        | "default"                  |
     +-----------------+----------------------------+
 
-|
-
-|
-
 **Light**: *LightAttributes()*
 ------------------------------
-|
 
     +-----------------+----------------------------+
     | **Attribute**   | **Default**/Allowed Values |
@@ -2312,13 +2092,8 @@ distinguish it from functions that may utilize the full range of integers.
     | brightness      | 1                          |
     +-----------------+----------------------------+
 
-|
-
-|
-
 **LimitCycle**: *LimitCycleAttributes()*
 ----------------------------------------
-|
 
     +----------------------------------------+----------------------------+
     | **Attribute**                          | **Default**/Allowed Values |
@@ -2468,13 +2243,8 @@ distinguish it from functions that may utilize the full range of integers.
     |                                        |  Absolute                  |
     +----------------------------------------+----------------------------+
 
-|
-
-|
-
 **Lineout**: *LineoutAttributes()*
 ----------------------------------
-|
 
     +--------------------------+----------------------------+
     | **Attribute**            | **Default**/Allowed Values |
@@ -2494,13 +2264,8 @@ distinguish it from functions that may utilize the full range of integers.
     | reflineLabels            | 0                          |
     +--------------------------+----------------------------+
 
-|
-
-|
-
 **Material**: *MaterialAttributes()*
 ------------------------------------
-|
 
     +-------------------------------+----------------------------+
     | **Attribute**                 | **Default**/Allowed Values |
@@ -2532,13 +2297,8 @@ distinguish it from functions that may utilize the full range of integers.
     | annealingTime                 | 10                         |
     +-------------------------------+----------------------------+
 
-|
-
-|
-
 **Mesh**: *MeshAttributes()*
 ----------------------------
-|
 
     +-------------------------+----------------------------+
     | **Attribute**           | **Default**/Allowed Values |
@@ -2581,13 +2341,8 @@ distinguish it from functions that may utilize the full range of integers.
     | opacity                 | 1                          |
     +-------------------------+----------------------------+
 
-|
-
-|
-
 **MeshManagement**: *MeshManagementAttributes()*
 ------------------------------------------------
-|
 
     +------------------------------+----------------------------+
     | **Attribute**                | **Default**/Allowed Values |
@@ -2608,13 +2363,8 @@ distinguish it from functions that may utilize the full range of integers.
     | passNativeCSG                | 0                          |
     +------------------------------+----------------------------+
 
-|
-
-|
-
 **Molecule**: *MoleculeAttributes()*
 ------------------------------------
-|
 
     +-------------------------------+----------------------------+
     | **Attribute**                 | **Default**/Allowed Values |
@@ -2669,13 +2419,8 @@ distinguish it from functions that may utilize the full range of integers.
     | scalarMax                     | 1                          |
     +-------------------------------+----------------------------+
 
-|
-
-|
-
 **MultiCurve**: *MultiCurveAttributes()*
 ----------------------------------------
-|
 
     +--------------------------------------------------+-----------------------------+
     | **Attribute**                                    | **Default**/Allowed Values  |
@@ -2887,13 +2632,8 @@ distinguish it from functions that may utilize the full range of integers.
     | legendFlag                                       | 1                           |
     +--------------------------------------------------+-----------------------------+
 
-|
-
-|
-
 **MultiresControl**: *MultiresControlAttributes()*
 --------------------------------------------------
-|
 
     +-------------------+----------------------------+
     | **Attribute**     | **Default**/Allowed Values |
@@ -2905,13 +2645,8 @@ distinguish it from functions that may utilize the full range of integers.
     | info              | ""                         |
     +-------------------+----------------------------+
 
-|
-
-|
-
 **OnionPeel**: *OnionPeelAttributes()*
 --------------------------------------
-|
 
     +-----------------------+----------------------------+
     | **Attribute**         | **Default**/Allowed Values |
@@ -2936,13 +2671,8 @@ distinguish it from functions that may utilize the full range of integers.
     | honorOriginalMesh     | 1                          |
     +-----------------------+----------------------------+
 
-|
-
-|
-
 **ParallelCoordinates**: *ParallelCoordinatesAttributes()*
 ----------------------------------------------------------
-|
 
     +------------------------------+----------------------------+
     | **Attribute**                | **Default**/Allowed Values |
@@ -2980,13 +2710,8 @@ distinguish it from functions that may utilize the full range of integers.
     |                              |  BinsColoredByPopulation   |
     +------------------------------+----------------------------+
 
-|
-
-|
-
 **PersistentParticles**: *PersistentParticlesAttributes()*
 ----------------------------------------------------------
-|
 
     +----------------------+----------------------------+
     | **Attribute**        | **Default**/Allowed Values |
@@ -3016,13 +2741,8 @@ distinguish it from functions that may utilize the full range of integers.
     | indexVariable        | "default"                  |
     +----------------------+----------------------------+
 
-|
-
-|
-
 **Poincare**: *PoincareAttributes()*
 ------------------------------------
-|
 
     +---------------------------------------+-----------------------------+
     | **Attribute**                         | **Default**/Allowed Values  |
@@ -3214,13 +2934,8 @@ distinguish it from functions that may utilize the full range of integers.
     | criticalPointThreshold                | 0.001                       |
     +---------------------------------------+-----------------------------+
 
-|
-
-|
-
 **Printer**: *PrinterAttributes()*
 ----------------------------------
-|
 
     +----------------------+----------------------------+
     | **Attribute**        | **Default**/Allowed Values |
@@ -3246,13 +2961,8 @@ distinguish it from functions that may utilize the full range of integers.
     | pageSize             | 2                          |
     +----------------------+----------------------------+
 
-|
-
-|
-
 **Process**: *ProcessAttributes()*
 ----------------------------------
-|
 
     +----------------+----------------------------+
     | **Attribute**  | **Default**/Allowed Values |
@@ -3270,13 +2980,8 @@ distinguish it from functions that may utilize the full range of integers.
     | times          | ()                         |
     +----------------+----------------------------+
 
-|
-
-|
-
 **Project**: *ProjectAttributes()*
 ----------------------------------
-|
 
     +---------------------------+----------------------------+
     | **Attribute**             | **Default**/Allowed Values |
@@ -3293,13 +2998,8 @@ distinguish it from functions that may utilize the full range of integers.
     |                           |  AsDisplacement            |
     +---------------------------+----------------------------+
 
-|
-
-|
-
 **Pseudocolor**: *PseudocolorAttributes()*
 ------------------------------------------
-|
 
     +------------------------------+----------------------------+
     | **Attribute**                | **Default**/Allowed Values |
@@ -3424,13 +3124,8 @@ distinguish it from functions that may utilize the full range of integers.
     | pointColor                   | (0, 0, 0, 0)               |
     +------------------------------+----------------------------+
 
-|
-
-|
-
 **RadialResample**: *RadialResampleAttributes()*
 ------------------------------------------------
-|
 
     +------------------+----------------------------+
     | **Attribute**    | **Default**/Allowed Values |
@@ -3458,13 +3153,8 @@ distinguish it from functions that may utilize the full range of integers.
     | deltaAzimuth     | 5                          |
     +------------------+----------------------------+
 
-|
-
-|
-
 **Reflect**: *ReflectAttributes()*
 ----------------------------------
-|
 
     +------------------+----------------------------+
     | **Attribute**    | **Default**/Allowed Values |
@@ -3495,13 +3185,8 @@ distinguish it from functions that may utilize the full range of integers.
     | reflectType      | **Axis**, Plane            |
     +------------------+----------------------------+
 
-|
-
-|
-
 **Remap**: *RemapAttributes()*
 ------------------------------
-|
 
     +------------------+----------------------------+
     | **Attribute**    | **Default**/Allowed Values |
@@ -3532,13 +3217,8 @@ distinguish it from functions that may utilize the full range of integers.
     |                  |  extrinsic                 |
     +------------------+----------------------------+
 
-|
-
-|
-
 **Rendering**: *RenderingAttributes()*
 --------------------------------------
-|
 
     +----------------------------------+----------------------------+
     | **Attribute**                    | **Default**/Allowed Values |
@@ -3620,13 +3300,8 @@ distinguish it from functions that may utilize the full range of integers.
     | osprayShadows                    | 0                          |
     +----------------------------------+----------------------------+
 
-|
-
-|
-
 **Replicate**: *ReplicateAttributes()*
 --------------------------------------
-|
 
     +-----------------------------+----------------------------+
     | **Attribute**               | **Default**/Allowed Values |
@@ -3654,13 +3329,8 @@ distinguish it from functions that may utilize the full range of integers.
     | newPeriodicOrigin           | (0, 0, 0)                  |
     +-----------------------------+----------------------------+
 
-|
-
-|
-
 **Resample**: *ResampleAttributes()*
 ------------------------------------
-|
 
     +-------------------------+----------------------------+
     | **Attribute**           | **Default**/Allowed Values |
@@ -3699,13 +3369,8 @@ distinguish it from functions that may utilize the full range of integers.
     | cellCenteredOutput      | 0                          |
     +-------------------------+----------------------------+
 
-|
-
-|
-
 **Revolve**: *RevolveAttributes()*
 ----------------------------------
-|
 
     +----------------+----------------------------+
     | **Attribute**  | **Default**/Allowed Values |
@@ -3723,13 +3388,8 @@ distinguish it from functions that may utilize the full range of integers.
     | steps          | 30                         |
     +----------------+----------------------------+
 
-|
-
-|
-
 **SPHResample**: *SPHResampleAttributes()*
 ------------------------------------------
-|
 
     +---------------------------+----------------------------+
     | **Attribute**             | **Default**/Allowed Values |
@@ -3759,13 +3419,8 @@ distinguish it from functions that may utilize the full range of integers.
     | RK                        | 1                          |
     +---------------------------+----------------------------+
 
-|
-
-|
-
 **SaveWindow**: *SaveWindowAttributes()*
 ----------------------------------------
-|
 
     +--------------------------------------+----------------------------+
     | **Attribute**                        | **Default**/Allowed Values |
@@ -3978,13 +3633,8 @@ distinguish it from functions that may utilize the full range of integers.
     | opts.help                            | ""                         |
     +--------------------------------------+----------------------------+
 
-|
-
-|
-
 **Scatter**: *ScatterAttributes()*
 ----------------------------------
-|
 
     +----------------------+------------------------------+
     | **Attribute**        | **Default**/Allowed Values   |
@@ -4091,13 +3741,8 @@ distinguish it from functions that may utilize the full range of integers.
     | legendFlag           | 1                            |
     +----------------------+------------------------------+
 
-|
-
-|
-
 **Slice**: *SliceAttributes()*
 ------------------------------
-|
 
     +----------------------+----------------------------+
     | **Attribute**        | **Default**/Allowed Values |
@@ -4140,13 +3785,8 @@ distinguish it from functions that may utilize the full range of integers.
     | phi                  | 0                          |
     +----------------------+----------------------------+
 
-|
-
-|
-
 **SmoothOperator**: *SmoothOperatorAttributes()*
 ------------------------------------------------
-|
 
     +----------------------+----------------------------+
     | **Attribute**        | **Default**/Allowed Values |
@@ -4166,13 +3806,8 @@ distinguish it from functions that may utilize the full range of integers.
     | smoothBoundaries     | 0                          |
     +----------------------+----------------------------+
 
-|
-
-|
-
 **SphereSlice**: *SphereSliceAttributes()*
 ------------------------------------------
-|
 
     +---------------+----------------------------+
     | **Attribute** | **Default**/Allowed Values |
@@ -4182,13 +3817,8 @@ distinguish it from functions that may utilize the full range of integers.
     | radius        | 1                          |
     +---------------+----------------------------+
 
-|
-
-|
-
 **Spreadsheet**: *SpreadsheetAttributes()*
 ------------------------------------------
-|
 
     +----------------------------+--------------------------------+
     | **Attribute**              | **Default**/Allowed Values     |
@@ -4222,13 +3852,8 @@ distinguish it from functions that may utilize the full range of integers.
     | pastPickLetters            | ()                             |
     +----------------------------+--------------------------------+
 
-|
-
-|
-
 **Stagger**: *StaggerAttributes()*
 ----------------------------------
-|
 
     +---------------+----------------------------+
     | **Attribute** | **Default**/Allowed Values |
@@ -4240,13 +3865,8 @@ distinguish it from functions that may utilize the full range of integers.
     | offsetZ       | 0                          |
     +---------------+----------------------------+
 
-|
-
-|
-
 **StatisticalTrends**: *StatisticalTrendsAttributes()*
 ------------------------------------------------------
-|
 
     +--------------------+----------------------------+
     | **Attribute**      | **Default**/Allowed Values |
@@ -4274,13 +3894,8 @@ distinguish it from functions that may utilize the full range of integers.
     |                    |  OperatorExpression        |
     +--------------------+----------------------------+
 
-|
-
-|
-
 **SubdivideQuads**: *SubdivideQuadsAttributes()*
 ------------------------------------------------
-|
 
     +------------------+----------------------------+
     | **Attribute**    | **Default**/Allowed Values |
@@ -4296,13 +3911,8 @@ distinguish it from functions that may utilize the full range of integers.
     | variable         | "default"                  |
     +------------------+----------------------------+
 
-|
-
-|
-
 **Subset**: *SubsetAttributes()*
 --------------------------------
-|
 
     +-------------------------+-----------------------------+
     | **Attribute**           | **Default**/Allowed Values  |
@@ -4347,13 +3957,8 @@ distinguish it from functions that may utilize the full range of integers.
     | pointSizePixels         | 2                           |
     +-------------------------+-----------------------------+
 
-|
-
-|
-
 **SurfaceNormal**: *SurfaceNormalAttributes()*
 ----------------------------------------------
-|
 
     +---------------+----------------------------+
     | **Attribute** | **Default**/Allowed Values |
@@ -4361,13 +3966,8 @@ distinguish it from functions that may utilize the full range of integers.
     | centering     | **Point**, Cell            |
     +---------------+----------------------------+
 
-|
-
-|
-
 **Tensor**: *TensorAttributes()*
 --------------------------------
-|
 
     +------------------------+----------------------------+
     | **Attribute**          | **Default**/Allowed Values |
@@ -4395,13 +3995,8 @@ distinguish it from functions that may utilize the full range of integers.
     | invertColorTable       | 0                          |
     +------------------------+----------------------------+
 
-|
-
-|
-
 **ThreeSlice**: *ThreeSliceAttributes()*
 ----------------------------------------
-|
 
     +-----------------+----------------------------+
     | **Attribute**   | **Default**/Allowed Values |
@@ -4415,13 +4010,8 @@ distinguish it from functions that may utilize the full range of integers.
     | interactive     | 1                          |
     +-----------------+----------------------------+
 
-|
-
-|
-
 **Threshold**: *ThresholdAttributes()*
 --------------------------------------
-|
 
     +------------------------+----------------------------+
     | **Attribute**          | **Default**/Allowed Values |
@@ -4445,13 +4035,8 @@ distinguish it from functions that may utilize the full range of integers.
     | boundsRange            | ()                         |
     +------------------------+----------------------------+
 
-|
-
-|
-
 **Transform**: *TransformAttributes()*
 --------------------------------------
-|
 
     +---------------------------+----------------------------+
     | **Attribute**             | **Default**/Allowed Values |
@@ -4538,13 +4123,8 @@ distinguish it from functions that may utilize the full range of integers.
     | transformVectors          | 1                          |
     +---------------------------+----------------------------+
 
-|
-
-|
-
 **TriangulateRegularPoints**: *TriangulateRegularPointsAttributes()*
 --------------------------------------------------------------------
-|
 
     +---------------------+----------------------------+
     | **Attribute**       | **Default**/Allowed Values |
@@ -4558,13 +4138,8 @@ distinguish it from functions that may utilize the full range of integers.
     | yGridSpacing        | 1                          |
     +---------------------+----------------------------+
 
-|
-
-|
-
 **Truecolor**: *TruecolorAttributes()*
 --------------------------------------
-|
 
     +------------------+----------------------------+
     | **Attribute**    | **Default**/Allowed Values |
@@ -4574,13 +4149,8 @@ distinguish it from functions that may utilize the full range of integers.
     | lightingFlag     | 1                          |
     +------------------+----------------------------+
 
-|
-
-|
-
 **Tube**: *TubeAttributes()*
 ----------------------------
-|
 
     +------------------------+----------------------------+
     | **Attribute**          | **Default**/Allowed Values |
@@ -4601,13 +4171,8 @@ distinguish it from functions that may utilize the full range of integers.
     | capping                | 0                          |
     +------------------------+----------------------------+
 
-|
-
-|
-
 **Vector**: *VectorAttributes()*
 --------------------------------
-|
 
     +----------------------+------------------------------+
     | **Attribute**        | **Default**/Allowed Values   |
@@ -4669,13 +4234,8 @@ distinguish it from functions that may utilize the full range of integers.
     | animationStep        | 0                            |
     +----------------------+------------------------------+
 
-|
-
-|
-
 **View**: *ViewAttributes()*
 ----------------------------
-|
 
     +--------------------+----------------------------+
     | **Attribute**      | **Default**/Allowed Values |
@@ -4709,13 +4269,8 @@ distinguish it from functions that may utilize the full range of integers.
     | eyeAngle           | 2                          |
     +--------------------+----------------------------+
 
-|
-
-|
-
 **View2D**: *View2DAttributes()*
 --------------------------------
-|
 
     +-----------------------------+----------------------------+
     | **Attribute**               | **Default**/Allowed Values |
@@ -4735,13 +4290,8 @@ distinguish it from functions that may utilize the full range of integers.
     | windowValid                 | 0                          |
     +-----------------------------+----------------------------+
 
-|
-
-|
-
 **View3D**: *View3DAttributes()*
 --------------------------------
-|
 
     +-------------------------+----------------------------+
     | **Attribute**           | **Default**/Allowed Values |
@@ -4781,13 +4331,8 @@ distinguish it from functions that may utilize the full range of integers.
     | windowValid             | 0                          |
     +-------------------------+----------------------------+
 
-|
-
-|
-
 **ViewAxisArray**: *ViewAxisArrayAttributes()*
 ----------------------------------------------
-|
 
     +--------------------+----------------------------+
     | **Attribute**      | **Default**/Allowed Values |
@@ -4799,13 +4344,8 @@ distinguish it from functions that may utilize the full range of integers.
     | viewportCoords     | (0.15, 0.9, 0.1, 0.85)     |
     +--------------------+----------------------------+
 
-|
-
-|
-
 **ViewCurve**: *ViewCurveAttributes()*
 --------------------------------------
-|
 
     +--------------------+----------------------------+
     | **Attribute**      | **Default**/Allowed Values |
@@ -4821,13 +4361,8 @@ distinguish it from functions that may utilize the full range of integers.
     | rangeScale         | **LINEAR**, LOG            |
     +--------------------+----------------------------+
 
-|
-
-|
-
 **Volume**: *VolumeAttributes()*
 --------------------------------
-|
 
     +-----------------------------------------------------+------------------------------+
     | **Attribute**                                       | **Default**/Allowed Values   |
@@ -5005,5 +4540,3 @@ distinguish it from functions that may utilize the full range of integers.
     +-----------------------------------------------------+------------------------------+
     | materialProperties                                  | (0.4, 0.75, 0, 15)           |
     +-----------------------------------------------------+------------------------------+
-
-|
