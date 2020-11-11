@@ -350,7 +350,10 @@ def TestLargeValueLineoutWithLogScaling():
     DrawPlots()
     Lineout((0.5, 1.5, 0), (0.5, 0, 0))
     SetActiveWindow(2)
-    curveAtts = CurveAttributes()
+    # Instead of getting *default* curve plot atts,
+    # get *current* plot's atts using `1` arg. This
+    # is to change *only* the attrs we want to change.
+    curveAtts = CurveAttributes(1)
     curveAtts.lineWidth = 3
     SetPlotOptions(curveAtts)
     Test("largeValueLineout")

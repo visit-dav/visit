@@ -21,6 +21,7 @@
 #define vtkPLOT3DReader_h
 
 #include <vtkObject.h>
+#include <vtkIntArray.h>
 #include "PLOT3DFunctions.h"
 
 class vtkDataArray;
@@ -73,11 +74,16 @@ public:
 
   // Description:
   // Is there iblanking (point visibility) information in the file.
-  // If there is iblanking arrays, these will be read and assigned
-  // to the PointVisibility array of the output.
-  vtkSetMacro(IBlanking, bool);
-  vtkGetMacro(IBlanking, bool);
-  vtkBooleanMacro(IBlanking, bool);
+  // If there is iblanking arrays, we will accommodate for the offsets.
+  vtkSetMacro(IBlankingInFile, int);
+  vtkGetMacro(IBlankingInFile, int);
+
+  // Description:
+  // If there is iblanking in the file, then we will use that information to
+  // determine the visability of the nodes/zones
+  vtkSetMacro(UseIBlankingIfDetected, bool);
+  vtkGetMacro(UseIBlankingIfDetected, bool);
+  vtkBooleanMacro(UseIBlankingIfDetected, bool);
 
   // Description:
   // If only two-dimensional data was written to the file,
@@ -171,6 +177,7 @@ protected:
 
   int SkipByteCount (FILE* fp);
   int ReadIntBlock  (FILE* fp, int n, int*   block);
+  int ReadIBlank(FILE* fp, int n, vtkIntArray* scalar);
 
   int ReadScalar(FILE* fp, int n, vtkDataArray* scalar);
   int ReadVector(FILE* fp, int n, int numDims, vtkDataArray* vector);
@@ -198,7 +205,8 @@ protected:
   bool MultiGrid;
   int ForceRead;
   int ByteOrder;
-  bool IBlanking;
+  int IBlankingInFile;
+  bool UseIBlankingIfDetected;
   bool DoublePrecision;
 
   long FileSize;

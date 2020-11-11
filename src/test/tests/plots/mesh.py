@@ -354,38 +354,44 @@ def TestRandomColor():
     TestSection("Testing random color mode")
     OpenDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
 
-    AddPlot("Mesh", "2D/mesh1_phzl")
+    # Randomization of mesh colors is possible only at plot *creation* time.
+    # Therefore, we need to adjust Mesh plot default attributes to set
+    # the behavior *before* the plot is even created.
     m = MeshAttributes()
+    savedMeshAttrs = m
     m.meshColorSource = m.MeshRandom
-    SetPlotOptions(m)
+    SetDefaultPlotOptions(m)
+    AddPlot("Mesh", "2D/mesh1_phzl")
     ResetView()
     DrawPlots()
     Test("mesh_random_color_01")
+    DeleteActivePlots()
 
     m.meshColorSource = m.Foreground
-    SetPlotOptions(m)
-    m.meshColorSource = m.MeshRandom
-    SetPlotOptions(m)
+    SetDefaultPlotOptions(m)
+    AddPlot("Mesh", "2D/mesh1_phzl")
+    DrawPlots()
     Test("mesh_random_color_02")
     DeleteAllPlots()
 
     # Add a series of mesh plots with random opaque color
+    m = MeshAttributes()
+    m.opaqueColorSource = m.OpaqueRandom
+    SetDefaultPlotOptions(m)
     meshnames = ["2D/mesh1_phzl", "2D/mesh1_phzl2", "2D/mesh1_zl1", "2D/mesh1_zl2"]
     for i in range(len(meshnames)):
         mname = meshnames[i]
         AddPlot("Mesh", mname)
-        m = MeshAttributes()
-        m.opaqueColorSource = m.OpaqueRandom
-        SetPlotOptions(m)
         AddOperator("Transform")
         ta = TransformAttributes()
         ta.doTranslate = 1
         ta.translateY = 3*i
         SetOperatorOptions(ta)
-        DrawPlots()
+    DrawPlots()
     Test("mesh_random_color_03")
     DeleteAllPlots()
     CloseDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
+    SetDefaultPlotOptions(savedMeshAttrs)
     
 def TestCustomColor():
     TestSection("Testing custom color mode")
