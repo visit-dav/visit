@@ -113,6 +113,9 @@ QvisEngineWindow::~QvisEngineWindow()
 //    Brad Whitlock, Mon Oct 10 12:55:52 PDT 2011
 //    I added some information.
 //
+//    Alister Maguire, Thu Nov 12 09:58:35 PST 2020
+//    Removed the interrupt engine logic as it is no longer used.
+//
 // ****************************************************************************
 
 void
@@ -194,11 +197,6 @@ QvisEngineWindow::CreateWindowContents()
     QHBoxLayout *buttonLayout1 = new QHBoxLayout();
     topLayout->addLayout(buttonLayout1);
     
-    interruptEngineButton = new QPushButton(tr("Interrupt"), central);
-    connect(interruptEngineButton, SIGNAL(clicked()), this, SLOT(interruptEngine()));
-    interruptEngineButton->setEnabled(false);
-    buttonLayout1->addWidget(interruptEngineButton);
-
     clearCacheButton = new QPushButton(tr("Clear cache"), central);
     connect(clearCacheButton, SIGNAL(clicked()), this, SLOT(clearCache()));
     clearCacheButton->setEnabled(false);
@@ -298,6 +296,9 @@ QvisEngineWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//   Alister Maguire, Thu Nov 12 09:58:35 PST 2020
+//   Remove interrupt engine logic.
+//
 // ****************************************************************************
 
 void
@@ -366,9 +367,6 @@ QvisEngineWindow::UpdateWindow(bool doAll)
         // Update the engine information.
         UpdateInformation(current);
 
-        // Set the enabled state of the various widgets.
-        // KSB: When INTERRUPT ENGINE has been fixed, uncomment the next line.
-        //interruptEngineButton->setEnabled(host.size() > 0);
         closeEngineButton->setEnabled(host.size() > 0);
         clearCacheButton->setEnabled(host.size() > 0);
         engineCombo->setEnabled(host.size() > 0);
@@ -725,37 +723,6 @@ QvisEngineWindow::closeEngine()
         // The user actually chose to close the engine.
         GetViewerMethods()->CloseComputeEngine(host, sim);
     }
-}
-
-// ****************************************************************************
-// Method: QvisEngineWindow::interruptEngine
-//
-// Purpose: 
-//   This is a Qt slot function that is called to interrupt the engine that's
-//   displayed in the window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed May 2 16:38:41 PST 2001
-//
-// Modifications:
-//    Jeremy Meredith, Tue Mar 30 09:34:33 PST 2004
-//    I added support for simulations.
-//   
-//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
-//    Initial Qt4 Port.
-//
-// ****************************************************************************
-
-void
-QvisEngineWindow::interruptEngine()
-{
-    int index = engineCombo->currentIndex();
-    if (index < 0)
-        return;
-    string host = engines->GetEngineName()[index];
-    string sim  = engines->GetSimulationName()[index];
-
-    GetViewerProxy()->InterruptComputeEngine(host, sim);
 }
 
 // ****************************************************************************

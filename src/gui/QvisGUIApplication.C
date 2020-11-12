@@ -2580,6 +2580,10 @@ QvisGUIApplication::ExtractSystemDefaultAppearance()
 //    Brad Whitlock, Wed Nov 26 11:17:56 PDT 2008
 //    I moved the bulk of the code into winutil's SetAppearance function.
 //
+//    Alister Maguire, Thu Nov 12 13:19:56 PST 2020
+//    Updated the orientation set so that it handles moving in and
+//    out of default settings.
+//
 // ****************************************************************************
 
 void
@@ -2595,12 +2599,18 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
     if(notify)
     {
         //
-        // Set the window orientation if is was selected and the main window
-        // has been created.
+        // Set the window orientation. We can't rely on whether or not
+        // orientation has been actively changed, because we might be
+        // transitioning from default to custom or vice versa.
         //
-        bool orientationSelected = aa->IsSelected(AppearanceAttributes::ID_orientation);
-        if(orientationSelected)
+        if (aa->GetUseSystemDefault())
+        {
+            SetOrientation(aa->GetDefaultOrientation());
+        }
+        else
+        {
             SetOrientation(aa->GetOrientation());
+        }
 
         // Tell the viewer about the new appearance.
         aa->Notify();
