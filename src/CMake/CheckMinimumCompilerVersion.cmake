@@ -31,10 +31,10 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND
 endif ()
 
 #-----------------------------------------------------------------------------
-# Minimum compiler version check: Microsoft C/C++ >= 18.0 (aka VS 2013 aka VS 12.0)
+# Minimum compiler version check: Microsoft C/C++ >= 19.10 (aka VS 2017)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND
-    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0)
-  message(FATAL_ERROR "Microsoft Visual Studio 2013 or later is required.")
+    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.10)
+  message(FATAL_ERROR "Microsoft Visual Studio 2017 or later is required.")
 endif ()
 
 #-----------------------------------------------------------------------------

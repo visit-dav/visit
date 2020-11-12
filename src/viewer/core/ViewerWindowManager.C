@@ -1696,10 +1696,10 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             else
             {
                 // need to check if our filename contains a path:
-                std::string f_base = std::string(FileFunctions::Basename(f.c_str()));
+                std::string f_base = FileFunctions::Basename(f);
                 if (f_base != f)
                 {
-                    fileBase = std::string(FileFunctions::Dirname(f.c_str()));
+                    fileBase = FileFunctions::Dirname(f);
                     f = f_base;
                 }
             }

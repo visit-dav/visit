@@ -50,6 +50,9 @@
 #   Wrap unit tests in if-test for VISIT_ENABLE_UNIT_TESTS.
 #   Add folder for unit tests.
 #
+#   Kathleen Biagas, Thu Nov 12, 2020
+#   Enable StringHelpers_test on Windows.
+#
 #****************************************************************************
 
 
@@ -466,6 +469,8 @@ ADD_LIBRARY(visitcommon
 # Specify the libraries to link against on Windows
 if(WIN32)
     target_link_libraries(visitcommon ws2_32 shlwapi userenv ${ZLIB_LIBRARY})
+    # for std::filesystem::path used in FileFunctions
+    target_compile_features(visitcommon PRIVATE cxx_std_17)
 else()
     target_link_libraries(visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
 endif()
@@ -484,11 +489,12 @@ if(VISIT_ENABLE_UNIT_TESTS)
         ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
     set_target_properties(Utility_test PROPERTIES FOLDER unit_tests)
 
-    if(NOT WIN32)
-        add_executable(StringHelpers_test utility/StringHelpers_test.C)
-        target_link_libraries(StringHelpers_test ${VISIT_EXE_LINKER_FLAGS}
+    add_executable(StringHelpers_test utility/StringHelpers_test.C)
+    target_link_libraries(StringHelpers_test ${VISIT_EXE_LINKER_FLAGS}
             visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    set_target_properties(StringHelpers_test PROPERTIES FOLDER unit_tests)
 
+    if(NOT WIN32)
         add_executable(exprconfig expr/ExprConfig.C)
         target_link_libraries(exprconfig ${VISIT_EXE_LINKER_FLAGS} 
             visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
