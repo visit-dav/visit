@@ -23,7 +23,7 @@ Create the container using ``build_docker_visit_ci.py``. ::
 This creates the container with a tag that will include today's date
 and a short substring of the current git hash. 
 
-Example Tag: ``visitdav/visit-ci-develop:2020-11-10-shaf00924``
+Example Tag: ``visitdav/visit-ci-develop:2020-11-11-sha433ef0``
 
 This will typically take several hours to complete.
 
@@ -44,7 +44,7 @@ This will create the files ::
 The command will also fail with output similar to this ::
 
     [exe: git rev-parse HEAD]
-    [exe: docker build -t visitdav/visit-ci-develop:2020-11-10-shaf00924 . --squash]
+    [exe: docker build -t visitdav/visit-ci-develop:2020-11-11-sha433ef0 . --squash]
     Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
 
 You will use the ``docker build ...`` command to build the container on
@@ -61,7 +61,7 @@ Now copy all the files in ``scripts/ci/docker`` to your new folder. Now
 you can run the ``docker build ...`` command to create the container. For
 example: ::
 
-    docker build -t visitdav/visit-ci-develop:2020-11-10-shaf00924 . --squash
+    docker build -t visitdav/visit-ci-develop:2020-11-11-sha433ef0 . --squash
 
 This will typically take several hours to complete.
 
@@ -81,7 +81,7 @@ You will need to be logged into DockerHub to successfully push. Here is
 an example push command: ::
 
     docker login docker.io
-    docker push visitdav/visit-ci-develop:2020-11-10-shaf00924
+    docker push visitdav/visit-ci-develop:2020-11-11-sha433ef0
 
 Update VisIt_ to use the new Docker image
 -----------------------------------------
@@ -93,7 +93,7 @@ and change the `container_tag` variable. ::
     # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
     #####
     variables:
-      container_tag: visitdav/visit-ci-develop:2020-11-10-shaf00924
+      container_tag: visitdav/visit-ci-develop:2020-11-11-sha433ef0
 
 When the PR is merged, the azure changes will be merged and PRs to develop 
 will now use the new container.
