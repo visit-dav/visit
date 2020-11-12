@@ -5,6 +5,7 @@
 #ifndef PY_SUBDIVIDEQUADSATTRIBUTES_H
 #define PY_SUBDIVIDEQUADSATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <SubdivideQuadsAttributes.h>
 
 //

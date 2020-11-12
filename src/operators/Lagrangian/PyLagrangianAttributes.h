@@ -5,6 +5,7 @@
 #ifndef PY_LAGRANGIANATTRIBUTES_H
 #define PY_LAGRANGIANATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <LagrangianAttributes.h>
 
 //

@@ -403,7 +403,9 @@ class CMakeGeneratorPlugin : public Plugin
 
         out << endl
             << "IF(VISIT_PYTHON_SCRIPTING)" << endl;
-        out << "    SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} " << VisItIncludeDir() << "/visitpy/visitpy)" << endl;
+        out << "    SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} "
+                << VisItIncludeDir() << "/visitpy/common "
+                << VisItIncludeDir() << "/visitpy/visitpy)" << endl;
         out << "ENDIF(VISIT_PYTHON_SCRIPTING)" << endl << endl;
 
         // Includes

@@ -5,6 +5,7 @@
 #include <PyPoincareAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -35,7 +36,6 @@ struct PoincareAttributesObject
 // Internal prototypes
 //
 static PyObject *NewPoincareAttributes(int);
-
 std::string
 PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix)
 {
@@ -325,11 +325,11 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
     str += tmpStr;
-    const char *analysis_names = "None, Normal";
+    const char *analysis_names = "NONE, Normal";
     switch (atts->GetAnalysis())
     {
       case PoincareAttributes::None:
-          snprintf(tmpStr, 1000, "%sanalysis = %sNone  # %s\n", prefix, prefix, analysis_names);
+          snprintf(tmpStr, 1000, "%sanalysis = %sNONE  # %s\n", prefix, prefix, analysis_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Normal:
@@ -3024,14 +3024,7 @@ PoincareAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-PoincareAttributes_compare(PyObject *v, PyObject *w)
-{
-    PoincareAttributes *a = ((PoincareAttributesObject *)v)->data;
-    PoincareAttributes *b = ((PoincareAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *PoincareAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyPoincareAttributes_getattr(PyObject *self, char *name)
 {
@@ -3156,6 +3149,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "analysis") == 0)
         return PoincareAttributes_GetAnalysis(self, NULL);
     if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::None));
+    if(strcmp(name, "NONE") == 0)
         return PyInt_FromLong(long(PoincareAttributes::None));
     if(strcmp(name, "Normal") == 0)
         return PyInt_FromLong(long(PoincareAttributes::Normal));
@@ -3519,49 +3514,70 @@ static char *PoincareAttributes_Purpose = "Attributes for the Poincare";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject PoincareAttributesType =
+
+VISIT_PY_TYPE_OBJ(PoincareAttributesType,         \
+                  "PoincareAttributes",           \
+                  PoincareAttributesObject,       \
+                  PoincareAttributes_dealloc,     \
+                  PoincareAttributes_print,       \
+                  PyPoincareAttributes_getattr,   \
+                  PyPoincareAttributes_setattr,   \
+                  PoincareAttributes_str,         \
+                  PoincareAttributes_Purpose,     \
+                  PoincareAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+PoincareAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "PoincareAttributes",                    // tp_name
-    sizeof(PoincareAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)PoincareAttributes_dealloc,  // tp_dealloc
-    (printfunc)PoincareAttributes_print,     // tp_print
-    (getattrfunc)PyPoincareAttributes_getattr, // tp_getattr
-    (setattrfunc)PyPoincareAttributes_setattr, // tp_setattr
-    (cmpfunc)PoincareAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)PoincareAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    PoincareAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &PoincareAttributesType
+         || Py_TYPE(other) != &PoincareAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    PoincareAttributes *a = ((PoincareAttributesObject *)self)->data;
+    PoincareAttributes *b = ((PoincareAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

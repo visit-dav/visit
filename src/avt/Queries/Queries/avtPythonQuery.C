@@ -7,6 +7,7 @@
 // ************************************************************************* //
 
 #include <Python.h> // this must be the first include
+#include <Py2and3Support.h> 
 #include <avtPythonQuery.h>
 
 #include <string>

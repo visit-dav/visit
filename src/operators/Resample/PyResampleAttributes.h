@@ -5,6 +5,7 @@
 #ifndef PY_RESAMPLEATTRIBUTES_H
 #define PY_RESAMPLEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ResampleAttributes.h>
 
 //

@@ -30,6 +30,9 @@
 //    Eric Brugger, Wed Jan  9 14:56:34 PST 2013
 //    Modified to inherit from vtkDataSetAlgorithm.
 //
+//    Kevin Griffin, Thu Jul 30 08:32:43 PDT 2020
+//    Add ForceConfirmRegion
+//
 // ****************************************************************************
 class VISIT_VTK_API vtkDataSetRemoveGhostCells : public vtkDataSetAlgorithm
 {
@@ -43,6 +46,9 @@ public:
 
   vtkSetMacro(GhostZoneTypesToRemove,unsigned char);
   vtkGetMacro(GhostZoneTypesToRemove,unsigned char);
+    
+  vtkSetMacro(ForceConfirmRegion,bool);
+  vtkGetMacro(ForceConfirmRegion,bool);
 
 protected:
   vtkDataSetRemoveGhostCells();
@@ -64,6 +70,8 @@ protected:
 
   unsigned char GhostNodeTypesToRemove;
   unsigned char GhostZoneTypesToRemove;
+    
+  bool ForceConfirmRegion;
 
 private:
   vtkDataSetRemoveGhostCells(const vtkDataSetRemoveGhostCells&);

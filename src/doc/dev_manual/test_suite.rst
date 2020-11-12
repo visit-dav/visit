@@ -137,41 +137,169 @@ The default skip list file is `src/test/skip.json`.
 
 Filtering Image Differences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+There are many alternative ways for both compiling and even running VisIt_ to
+produce any given image or textual output. Nonetheless, we expect results to
+be nearly if not perfectly identical. For example, we expect VisIt_ running on
+two different implementations of the GL library to produce by and large the same
+images. We expect VisIt_ running in serial or parallel to produce the same
+images. We expect VisIt_ running on Ubuntu Linux to produce the same images as
+it would running on Mac OSX. We expect VisIt_ running in client-server mode to
+produce the same images as VisIt_ running entirely remotely.
 
-There are many ways of both compiling and running VisIt_ to produce image and textual outputs. In many cases, we expect the image or textual outputs to be about the same (though not always bit-wise exact matches) even if the manner in which they are generated varies dramatically. For example, we expect VisIt_ running on two different implementations of the GL library to produce by and large the same images. Or, we expect VisIt_ running in serial or parallel to produce the same images. Or we expect VisIt_ running on Ubuntu Linux to produce the same images as it would running on Mac OSX. We expect and therefore wish to ignore ''minor variations''. But, we want to be alerted to ''major variations''. So when any developer runs a test, we require some means of filtering out image differences we expect from those we are not expecting.
+In many cases, we expect outputs produced by these alternative approaches to be
+nearly the same but not always bit-for-bit identical. Minor variations such as
+single pixel shifts in position or slight variations in color are inevitable
+and ultimately unremarkable.
 
-On the other hand, as we make changes to VisIt_ source code, we may either expect or not expect image outputs for specific testing scenarios to change in either minor or dramatic ways. For example, if we fix a bug leading to a serious image artifact that just happened to be overlooked when the original baseline image was committed, we could improve the image dramatically implying a large image difference and still expect such a difference. For example, maybe the Mesh plot had a bug where it doesn't obey the Mesh line color setting. If we fix that bug, the mesh line color will likely change dramatically. But, the resultant image is expected to change too. Therefore, have a set of baselines from which we compute exact differences is also important in tracking impact of code changes on VisIt_ behavior.
+When testing, it would be nice to be able to ignore variations in results
+attributable to these causes. On the other hand, we would like to be alerted
+to variations in results attributable to changes made to the source code.
 
-These two goals, running VisIt_ tests to confirm correct behavior in a wide variety of conditions where we expect minor but not major variations in outputs and running VisIt_ tests to confirm behavior as code is changed where we may or may not expect minor or major variations are somewhat complimentary.
+To satisfy both of these goals, we use bit-for-bit identical matching to
+track the impact of changes to source code but *fuzzy* matching for anything
+else. We maintain a set of several thousand version-controlled, baseline results
+computed for a specific, fixed *configuration and test mode* of VisIt_. Nightly
+testing of key branches of development reveals any results that are not
+bit-for-bit identical to their baseline.
 
-It may make sense for developers to generate (though not ever commit) a complete and valid set of baselines on their target development platform and then use those (uncommitted) baselines to enable them to run tests and track code changes using an exact match methodology.
+These *failures* are then corrected in one of two ways. Either the new result
+is wrong and additional source code changes are required to ensure VisIt_
+continues to produce the original baseline. Or, the original baseline is wrong
+and it must be updated to the new result. In this latter situation, it is also
+prudent to justify the new result with a plausible explanation as to why it is
+expected, better or acceptable as well as to include such explanation in the
+commit comments.
 
-Metrics:
+Mode specific baselines
+"""""""""""""""""""""""
+VisIt_ testing can be run in a variety of modes; serial, parallel,
+scalable-parallel, scalable-parallel-icet, client-server, etc. For a fixed
+configuration, in most cases baseline results computed in one mode agree
+bit-for-bit identically with the other modes. However, this is not always
+true. About 2% of results vary with the execution mode. To handle these cases,
+we also maintain *mode-specific* baseline results as the need arises.
 
-*  ``total pixels`` -  count of all pixels in the test image
+The need for a mode-specific baseline is discovered as new tests are added.
+When testing reveals that VisIt computes slightly different results in 
+different modes, a single mode-agnostic baseline will fail to match in all
+test modes. At that time, mode-specific baselines are added.
 
-* ``plot pixels`` - count of all pixels touched by plot(s) in the test image
+Changing Baseline Configuration
+"""""""""""""""""""""""""""""""
+One weakness with this approach to testing is revealed when it becomes
+necessary to change the configuration used to compute the baselines. For example,
+moving VisIt_'s testing system to a different hardware platform or updating to a
+newer compiler or third-party library such as VTK, may result in a slew of minor
+variations in the results. Under these circumstances, we are confronted with
+having to individually assess possibly thousands of *minor* image differences
+to rigorously determine whether the new result is in fact *good* or whether some
+kind of issue or bug is being revealed.
 
-* ``coverage`` -  percent of all pixels that are plot pixels (plot pixels / total pixels). Test images in which plots occupy a small portion of the total image are fraught with peril and should be avoided to begin with. Images with poor coverage are more likely to produce false positives (e.g. passes that should have failed) or to exhibit somewhat random differences as test scenario is varied.
+In practice, we use fuzzy matching (see below) to filter out *minor* variations
+from *major* ones and then focus our efforts only on fully understanding the
+*major* cases. We summarily *accept* all minor variations as the *new*
+baselines.
 
-* ``dmax / dmaxp`` - maximum raw numerical / human perceptual difference in any color (R,G or B) channel or intensity (average of R, G, B colors). A good first try in filtering image differences is a dmax setting of 1. That will admit variations of 1 in any R, G or B channel or in intensity. However, for line-based plots like the mesh plot, due to differences in the way lines of the plot get scanned into pixels, this metric can fail miserably.
+Promise of Machine Learning
+"""""""""""""""""""""""""""
+In theory, we should be able to develop a machine-learning approach to
+filtering VisIt_'s test results that enable us to more effectily attribute
+variations in results to various causes. A challenge here is in developing
+a sufficiently large and fully labeled set of example results to prime the
+machine learning. This would make for a great summer project.
 
-* ``dmed / dmedp`` - median value of raw numerical / human perceptual differences over all color channels and intensity
+Fuzzy Matching Metrics
+""""""""""""""""""""""
+Image difference metrics are reported on terminal output and in HTML reports.
 
+Total Pixels (``#pix``) :
+    Count of all pixels in the test image
 
-When running the test suite on platforms other than the currently adopted baseline platform or
-when running tests in modes other than the standard modes, a couple of options
-will be very useful; `-pixdiff` and `-avgdiff`. The pixdiff
-option allows one to specify a tolerance on the percentage of *non*background* pixels that are different. The avgdiff option
-allows one to specify a second tolerance for the case when
-the pixdiff tolerance is exceeded. The avgdiff option specifies
-the maximum average (intensity) difference difference allowed
-averaged over all pixels that are different.
+Non-Background (``#nonbg``) :
+    Count of all pixels which are not background either by comparison to constant
+    background color or if a non-constant color background is used to same pixel in background
+    image produced by drawing with all plots hidden. Note that if a plot produces a pixel which
+    coincidentally winds up being the same color as the background, our accounting logic would
+    count it as *background*. We think this situation is rare enough as to not cause serious issues.
 
+Different (``#diff``) :
+    Count of all pixels that are different from the current baseline image.
+
+% Diff. Pixels (``~%diff``) :
+    The *precentage* of different pixels computed as ``100.0*#diff/#nonbg``
+
+Avg. Diff (``avgdiff``) :
+    The average *luminance* (gray-scale, obtained by weighting RGB channels by 1/3rd
+    and summing) difference. This is the sum of all pixel luminance differences
+    divided by ``#diff``.
+
+Fuzzy Matching Thresholds
+"""""""""""""""""""""""""
+There are some command-line arguments to run tests that control *fuzzy* matching.
+When computed results match bit-for-bit with the baseline, a **PASS** is reported
+and it is colored green in the HTML reports. When a computed result fails the
+bit-for-bit match but passes the fuzzy match, a **PASS** is reported on the terminal
+and it is colored yellow in the HTML reports.
+
+Pixel Difference Threshold (``--pixdiff``) :
+    Specifies the acceptable threshold for the ``#diff`` metric as a *percent*. Default
+    is zero which implies bit-for-bit identical results.
+
+Average Difference Threshold (``--avgdiff``) :
+    Specifies the acceptable threshold for the ``avgdiff`` metric. Note that this threshold
+    applies *only* if the ``--pixdiff`` threshold is non-zero. If a test is above the
+    ``pixdiff`` threshold but below the ``avgdiff`` threshold, it is considered a **PASS**.
+    The ``avgdiff`` option allows one to specify a second tolerance for the case when
+    the ``pixdiff`` tolerance is exceeded.
+
+Numerical (textual) Difference Threshold (``--numdiff``) :
+    Specifies the acceptable *relative* numerical difference threshold in computed,
+    non-zero numerical results. The relative difference is computed as the ratio of the
+    magnitude of the difference between the current and baseline results and the minimum
+    magnitude value of the two results.
+
+The command-line with ``--pixdiff=0.5 --avgdiff=0.1`` means that any result with *fewer*
+than 0.5% of pixels that are different is a **PASS** and anything with more than 0.5% of
+pixels different but where the average pixel gray-scale difference is less than .1 is
+still a **PASS**.
+
+Testing on Non-Baseline Configurations
+""""""""""""""""""""""""""""""""""""""
+
+When running the test suite on platforms other than the currently adopted baseline
+platform or when running tests in modes other than the standard modes, the ``--pixdiff``
+and ``--avgdiff`` command-line options will be very useful.
+
+For numerical textual results, there is also a ``--numdiff`` command-line option
+that specifies a *relative* numerical difference tolerance in numerical textual
+results. The command-line option ``--numdiff=0.01`` means that if a numerical
+result is different but the magnitude of the difference divided by the magnitude of
+the expected value is less than ``0.01`` it is considered a **Pass**.
+
+When specified on the command-line to a test suite run, the above tolerances wind
+up being applied to *all* test results computed during a test suite run. It is
+also possible to specify these tolerances in specific tests by passing them as
+arguments, for example ``Test(pixdiff=4.5)`` and ``TestText(numdiff=0.01)``, in
+the methods used to check test outputs.
+
+Finally, it may make sense for developers to generate (though not ever commit) a
+complete and validated set of baselines on their target development platform and
+then use those (uncommitted) baselines to enable them to run tests and track code
+changes using an exact match methodology.
+ 
 Tips on writing regression tests 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Test images in which plots occupy a small portion of the total image are fraught with peril and should be avoided. Images with poor coverage are more likely to produce false positives (e.g. passes that should have failed) or to exhibit somewhat random differences as test scenario is varied.
 
 * Except in cases where annotations are being specifically tested, remember to call TurnOffAllAnnotations() as one of the first actions in your test script. Otherwise, you can wind up producing images containing machine-specific annotations which will produce differences on other platforms.
+
+* When setting plot and operator options, take care to decide whether you need to work from *default* or *current* attributes.
+  Methods to obtain plot and operator attributes optionally take an additional ``1`` argument to indicate that *current*,
+  rather that *default* attributes are desired. For example ``CurveAttributes()`` returns *default* **Curve** plot
+  attributes wherease ``CurveAttributes(1)`` returns *current* **Curve** plot attributes which will be the currently
+  active plot, if it is a **Curve** plot or the first **Curve** plot in the plot list of the currently active window
+  whether it is active or hidden. If there is no **Curve** plot available, it will return the *default* attributes.
 
 * When writing tests involving text differences and file pathnames, be sure that all pathnames in the text strings passed to `TestText()` are absolute. Internally, VisIt_ testing system will filter these out and replace the machine-specific part of the path with `VISIT_TOP_DIR` to facilitate comparison with baseline text. In fact, the .txt files that get generated in the `current` dir will have been filtered and all pathnames modified to have `VISIT_TOP_DIR` in them.
 
@@ -197,7 +325,12 @@ Tips on writing regression tests
 
 Rebaselining Test Results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-A python script, `rebase.py`, at `src/tests` dir can be used to rebaseline large numbers of results. In particular, this script enables a developer to rebase test results without requiring access to the test platform where testing is performed. This is becase the PNG files uploaded (e.g. posted) to VisIt_'s test results dashboard are suitable for using as baseline results. To use this script, run `./rebase.py --help.` Once you've completed using rebase.py to update image baselines, don't forget to commit your changes back to the repository.
+A python script, `rebase.py`, in the `test/baseline` dir can be used to rebaseline large numbers of results.
+In particular, this script enables a developer to rebase test results without requiring access to the test
+platform where testing is performed. This is becase the PNG files uploaded (e.g. posted) to VisIt_'s test
+results dashboard are suitable for using as baseline results. To use this script, run `./rebase.py --help.`
+Once you've completed using `rebase.py` to update image baselines, don't forget to commit your changes back
+to the repository.
 
  
 Using VisIt_ Test Suite for Sim Code Testing

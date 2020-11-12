@@ -5,6 +5,7 @@
 #ifndef PY_COLORATTRIBUTE_H
 #define PY_COLORATTRIBUTE_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ColorAttribute.h>
 #include <visitpy_exports.h>
 

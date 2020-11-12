@@ -5,6 +5,7 @@
 #ifndef PY_HISTOGRAMATTRIBUTES_H
 #define PY_HISTOGRAMATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <HistogramAttributes.h>
 
 //

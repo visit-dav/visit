@@ -20,6 +20,8 @@ py_visit_writer.c
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${PYTHON_INCLUDE_PATH}
+# for python 2 + 3 helper header
+${VISIT_INCLUDE_DIR}/visitpy/common
 )
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})

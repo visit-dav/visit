@@ -5,6 +5,7 @@
 #ifndef PY_AVTMATERIALMETADATA_H
 #define PY_AVTMATERIALMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtMaterialMetaData.h>
 #include <PyavtBaseVarMetaData.h>
 #include <visitpy_exports.h>

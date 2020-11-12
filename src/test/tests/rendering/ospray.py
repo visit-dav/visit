@@ -12,6 +12,9 @@
 #
 #  Modifications:
 #
+#    Alister Maguire, Fri Sep 11 16:16:49 PDT 2020
+#    Added a test for OSPRay domain boundaries.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -30,7 +33,6 @@ def TestOsprayWindowSave():
     AddPlot("Pseudocolor", "hardyglobal", 1, 1)
     AddOperator("Isovolume", 1)
     SetActivePlots(0)
-    SetActivePlots(0)
     IsovolumeAtts = IsovolumeAttributes()
     IsovolumeAtts.lbound = 4.1
     IsovolumeAtts.ubound = 4.9
@@ -43,13 +45,59 @@ def TestOsprayWindowSave():
     RenderingAtts.osprayShadows = 1
     SetRenderingAttributes(RenderingAtts)
 
-    Test("ospray_window_save")
+    Test("ospray_window_save", pixdiff=0.2, avgdiff=0.01)
     DeleteAllPlots()
+
+    RenderingAtts = RenderingAttributes()
+    RenderingAtts.osprayRendering = 0
+    RenderingAtts.osprayShadows = 0
+    SetRenderingAttributes(RenderingAtts)
+
     CloseDatabase(silo_data_path("noise.silo"))
+
+
+def TestOsprayVolumeDomainBoundaries():
+    OpenDatabase(data_path("vtk_test_data/poiseuille_rayleigh_benard_3D_00000600.visit"))
+
+    #
+    # Change the view so that we get a good look at the domain boundaries.
+    # We need to first reset, otherwise the previous test ends up affecting
+    # the view here.
+    #
+    ResetView()
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (0.171986, 0.984799, 0.0243329)
+    View3DAtts.viewUp = (-0.187983, 0.0570564, -0.980514)
+    SetView3D(View3DAtts)
+
+    #
+    # Add our plot and set up the ospray renderer.
+    #
+    AddPlot("Volume", "Regular/temperature", 1, 1)
+    SetActivePlots(0)
+
+    VolumeAtts = VolumeAttributes()
+    VolumeAtts.lightingFlag = 0
+    VolumeAtts.opacityMode = VolumeAtts.FreeformMode
+    VolumeAtts.freeformOpacity = (255,) * 256
+    VolumeAtts.samplesPerRay = 100
+    VolumeAtts.rendererType = VolumeAtts.RayCastingOSPRay
+    SetPlotOptions(VolumeAtts)
+    DrawPlots()
+
+    #
+    # NOTE: This test always has a slight pixel diff (~0.01%).
+    #
+    Test("ospray_domain_boundaries_00", pixdiff=0.1, avgdiff=0.01)
+
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_test_data/poiseuille_rayleigh_benard_3D_00000600.visit"))
 
 
 def main():
     TestOsprayWindowSave()
+    TestOsprayVolumeDomainBoundaries()
+
     Exit()
 
 main()

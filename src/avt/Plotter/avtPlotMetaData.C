@@ -9,13 +9,17 @@ avtPlotMetaData::avtPlotMetaData(const avtDatabaseMetaData  *_md,
     avtVarType                 _variableType,
     avtSILRestriction_p        _silr,
     const avtExtents           &_actualSpatialExt,
-    const avtExtents           &_originalSpatialExt) : 
+    const avtExtents           &_originalSpatialExt,
+    const double               _bgColor[4],
+    const double               _fgColor[4]) : 
     md(_md),
     variableName(_variableName),
     variableType(_variableType),
     silr(_silr),
     actualSpatialExtents(_actualSpatialExt),
-    originalSpatialExtents(_originalSpatialExt)
+    originalSpatialExtents(_originalSpatialExt),
+    bgColor{_bgColor[0],_bgColor[1],_bgColor[2],_bgColor[3]},
+    fgColor{_fgColor[0],_fgColor[1],_fgColor[2],_fgColor[3]}
 {
 }
 
@@ -25,7 +29,9 @@ avtPlotMetaData::avtPlotMetaData(const avtPlotMetaData &obj) :
     variableType(obj.variableType),
     silr(obj.silr),
     actualSpatialExtents(obj.actualSpatialExtents),
-    originalSpatialExtents(obj.originalSpatialExtents)
+    originalSpatialExtents(obj.originalSpatialExtents),
+    bgColor{obj.bgColor[0],obj.bgColor[1],obj.bgColor[2],obj.bgColor[3]},
+    fgColor{obj.fgColor[0],obj.fgColor[1],obj.fgColor[2],obj.fgColor[3]}
 {
 }
 
@@ -42,6 +48,11 @@ avtPlotMetaData::operator = (const avtPlotMetaData &obj)
     silr = obj.silr;
     actualSpatialExtents = obj.actualSpatialExtents;
     originalSpatialExtents = obj.originalSpatialExtents;
+    for (int i = 0; i < 4; i++)
+    {
+        bgColor[i] = obj.bgColor[i];
+        fgColor[i] = obj.fgColor[i];
+    }
 }
 
 const avtDatabaseMetaData *
@@ -84,4 +95,16 @@ const avtExtents &
 avtPlotMetaData::GetOriginalSpatialExtents() const
 {
     return originalSpatialExtents;
+}
+
+const double *
+avtPlotMetaData::GetBackgroundColor() const
+{
+    return bgColor;
+}
+
+const double *
+avtPlotMetaData::GetForegroundColor() const
+{
+    return fgColor;
 }

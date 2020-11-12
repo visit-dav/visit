@@ -21,7 +21,6 @@
                  "ccmio",
                  "cfitsio",
                  "cgns",
-                 "fastbit",
                  "gdal",
                  "hdf4",
                  "h5part",
