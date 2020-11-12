@@ -762,7 +762,6 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps(
     delete [] tupleTemp;
 
     return outUGrid;
->>>>>>> 93b78f3b13... merge from master and solidifying ddqot for mesh coordinates
 }
 
 
