@@ -305,7 +305,6 @@ QvisClipWindow::CreateWindowContents()
 
     // Crinkle clip
     QWidget *crinkleWidget = new QWidget(central);
-    crinkleGroup = new QGroupBox(crinkleWidget);
     
     QHBoxLayout *crinkleLayout = new QHBoxLayout(crinkleWidget);
     crinkleLayout->setMargin(0);

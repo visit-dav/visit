@@ -122,7 +122,6 @@ private slots:
 private:
     QButtonGroup *qualityGroup;
     QButtonGroup *typeGroup;
-    QGroupBox    *crinkleGroup;
     
     QPlaneGroup  *plane1Group;
     QPlaneGroup  *plane2Group;
