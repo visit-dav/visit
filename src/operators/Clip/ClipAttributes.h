@@ -95,6 +95,7 @@ public:
     void SetCenter(const double *center_);
     void SetRadius(double radius_);
     void SetSphereInverse(bool sphereInverse_);
+    void SetCrinkleClip(bool crinkleClip_);
 
     // Property getting methods
     Quality      GetQuality() const;
@@ -120,6 +121,7 @@ public:
           double *GetCenter();
     double       GetRadius() const;
     bool         GetSphereInverse() const;
+    bool         GetCrinkleClip() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -169,6 +171,7 @@ public:
         ID_center,
         ID_radius,
         ID_sphereInverse,
+        ID_crinkleClip,
         ID__LAST
     };
 
@@ -189,11 +192,12 @@ private:
     double center[3];
     double radius;
     bool   sphereInverse;
+    bool   crinkleClip;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define CLIPATTRIBUTES_TMFS "iibbbDDDDDDbiDdb"
+#define CLIPATTRIBUTES_TMFS "iibbbDDDDDDbiDdbb"
 
 #endif
