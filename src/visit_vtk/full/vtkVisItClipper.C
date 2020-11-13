@@ -404,18 +404,18 @@ vtkVisItClipper::SetInsideOut(bool io)
 //  Method:  vtkVisItClipper::SetCellClipStrategy
 //
 //  Purpose:
-//    Set the cell removal strategy. Options are
+//    Set the cell clip strategy. This is the strategy used when the clip
+//    boundary intersects with the cell.
 //
 //      1. REMOVE_PARTIAL_CELL
-//         When a clip boundary intersects a cell, remove the section of
-//         the cell that exists outside of the clip boundary, and keep
-//         the rest intact.
+//         Remove the section of the cell that exists outside of the clip
+//         boundary, and keep the rest intact.
 //
 //      2. REMOVE_WHOLE_CELL
-//         When a clip boundary intersects a cell, remove the entire cell.
+//         Remove the entire cell.
 //
 //      3. KEEP_WHOLE_CELL
-//         When a clip boundary intersects a cell, keep the entire cell.
+//         Keep the entire cell.
 //
 //  Arguments:
 //    strategy        The cell removal strategy.
