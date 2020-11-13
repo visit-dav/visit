@@ -418,7 +418,7 @@ vtkVisItClipper::SetInsideOut(bool io)
 //         Keep the entire cell.
 //
 //  Arguments:
-//    strategy        The cell removal strategy.
+//    strategy        The cell clip strategy.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    November 13, 2020
