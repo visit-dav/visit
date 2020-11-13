@@ -83,7 +83,7 @@ class VISIT_VTK_API vtkVisItClipper : public vtkUnstructuredGridAlgorithm
     virtual void SetCellClipStrategyToRemoveWhole();
     virtual void SetCellClipStrategyToKeepWhole();
     virtual int  GetCellClipStrategy()
-        { return state.cellClipStrategy; }
+        { return state.cellStrategy; }
 
     virtual void SetClipFunction(vtkImplicitFunction*);
     virtual void SetClipScalars(vtkDataArray *, float);
@@ -114,7 +114,7 @@ class VISIT_VTK_API vtkVisItClipper : public vtkUnstructuredGridAlgorithm
 
         vtkUnstructuredGrid *otherOutput;
 
-        cellClipStrategy     cellClipStrategy;
+        cellClipStrategy     cellStrategy;
         bool                 insideOut;
         bool                 useZeroCrossings;
         bool                 computeInsideAndOut;
