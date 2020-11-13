@@ -169,7 +169,7 @@ vtkVisItClipper::FilterState::FilterState()
 
     this->otherOutput = NULL;
 
-    this->cellClipStrategy = REMOVE_PARTIAL_CELL;
+    this->cellStrategy = REMOVE_PARTIAL_CELL;
     this->insideOut = false;
     this->useZeroCrossings = false;
     this->computeInsideAndOut = false;
@@ -427,7 +427,7 @@ vtkVisItClipper::SetInsideOut(bool io)
 void
 vtkVisItClipper::SetCellClipStrategy(cellClipStrategy strategy)
 {
-    state.cellClipStrategy = strategy;
+    state.cellStrategy = strategy;
 }
 
 // ****************************************************************************
@@ -446,7 +446,7 @@ vtkVisItClipper::SetCellClipStrategy(cellClipStrategy strategy)
 void
 vtkVisItClipper::SetCellClipStrategyToRemovePartial()
 {
-    state.cellClipStrategy = REMOVE_PARTIAL_CELL;
+    state.cellStrategy = REMOVE_PARTIAL_CELL;
 }
 
 // ****************************************************************************
@@ -463,7 +463,7 @@ vtkVisItClipper::SetCellClipStrategyToRemovePartial()
 void
 vtkVisItClipper::SetCellClipStrategyToRemoveWhole()
 {
-    state.cellClipStrategy = REMOVE_WHOLE_CELL;
+    state.cellStrategy = REMOVE_WHOLE_CELL;
 }
 
 // ****************************************************************************
@@ -480,7 +480,7 @@ vtkVisItClipper::SetCellClipStrategyToRemoveWhole()
 void
 vtkVisItClipper::SetCellClipStrategyToKeepWhole()
 {
-    state.cellClipStrategy = KEEP_WHOLE_CELL;
+    state.cellStrategy = KEEP_WHOLE_CELL;
 }
 
 vtkUnstructuredGrid*
@@ -896,7 +896,7 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
         // really only relevant when the clip boundary intersects
         // the cell.
         //
-        switch(state.cellClipStrategy)
+        switch(state.cellStrategy)
         {
             case (vtkVisItClipper::REMOVE_PARTIAL_CELL):
             {
