@@ -11,7 +11,6 @@ class QCheckBox;
 class QButtonGroup;
 class QLineEdit;
 class ClipAttributes;
-class QGroupBox;
 
 
 // ****************************************************************************
