@@ -434,7 +434,7 @@ vtkVisItClipper::SetCellClipStrategy(cellClipStrategy strategy)
 //  Method:  vtkVisItClipper::SetCellClipStrategyToRemovePartial
 //
 //  Purpose:
-//    Set the cell removal strategy to REMOVE_PARTIAL_CELL.
+//    Set the cell clip strategy to REMOVE_PARTIAL_CELL.
 //    When a clip boundary intersects a cell, remove the section of
 //    the cell that exists outside of the clip boundary, and keep
 //    the rest intact.
@@ -453,7 +453,7 @@ vtkVisItClipper::SetCellClipStrategyToRemovePartial()
 //  Method:  vtkVisItClipper::SetCellClipStrategyToRemoveWhole
 //
 //  Purpose:
-//    Set the cell removal strategy to REMOVE_WHOLE_CELL.
+//    Set the cell clip strategy to REMOVE_WHOLE_CELL.
 //    When a clip boundary intersects a cell, remove the entire cell.
 //
 //  Programmer:  Alister Maguire
@@ -470,7 +470,7 @@ vtkVisItClipper::SetCellClipStrategyToRemoveWhole()
 //  Method:  vtkVisItClipper::SetCellClipStrategyToKeepWhole
 //
 //  Purpose:
-//    Set the cell removal strategy to KEEP_WHOLE_CELL.
+//    Set the cell clip strategy to KEEP_WHOLE_CELL.
 //    When a clip boundary intersects a cell, keep the entire cell.
 //
 //  Programmer:  Alister Maguire
@@ -901,14 +901,14 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
             case (vtkVisItClipper::REMOVE_PARTIAL_CELL):
             {
                 //
-                // No work needed for this case.
+                // No extra work needed for this case.
                 //
                 break;
             }
             case (vtkVisItClipper::REMOVE_WHOLE_CELL):
             {
                 //
-                // Chose the last case, which removes the entire cell.
+                // Choose the last case, which removes the entire cell.
                 //
                 if (lookup_case != 0)
                 {
@@ -922,9 +922,8 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
                 // A lookup_case of 0 means that we're inside the "keep"
                 // portion of the clip boundary, and a lookup_case of
                 // ((1 << nCellPts)-1) means that we're inside the "remove"
-                // section. Anything inbetween is a cell that's instersected
-                // by the clip boundary. We're keeping these intact for this
-                // case.
+                // section. Anything in between is a cell that's instersected
+                // by the clip boundary. We're keeping these intact here.
                 //
                 if (lookup_case > 0 && lookup_case < ((1 << nCellPts) - 1))
                 {
