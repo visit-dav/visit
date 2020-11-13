@@ -11,6 +11,7 @@ class QCheckBox;
 class QButtonGroup;
 class QLineEdit;
 class ClipAttributes;
+class QGroupBox;
 
 
 // ****************************************************************************
@@ -80,6 +81,9 @@ private:
 //   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
 //   Qt4 Port.
 //
+//   Alister Maguire, Fri Nov 13 14:07:54 PST 2020
+//   Added support for the crinkle clip.
+//
 // ****************************************************************************
 
 class QvisClipWindow : public QvisOperatorWindow
@@ -113,10 +117,12 @@ private slots:
     void plane1StatusToggled(bool);
     void plane2StatusToggled(bool);
     void plane3StatusToggled(bool);
+    void crinkleClipToggled(bool);
 
 private:
     QButtonGroup *qualityGroup;
     QButtonGroup *typeGroup;
+    QGroupBox    *crinkleGroup;
     
     QPlaneGroup  *plane1Group;
     QPlaneGroup  *plane2Group;
