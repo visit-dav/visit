@@ -1,7 +1,7 @@
 # Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 MAINTAINER Cyrus Harrison <cyrush@llnl.gov>
 
 # fetch build env
@@ -33,9 +33,17 @@ RUN apt-get update && apt-get install -y \
     m4 \
     automake \
     libxml2 \
+    libxml2-dev \
     vim \
     emacs \
+    bison \
+    flex \
+    cpio \
+    locales \
  && rm -rf /var/lib/apt/lists/*
+
+RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+ENV LANG en_US.utf8
 
 RUN cd /usr/include && ln -s freetype2 freetype
 
