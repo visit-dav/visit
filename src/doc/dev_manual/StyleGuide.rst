@@ -639,3 +639,22 @@ Example: ::
        return;
     }
     myvector[val] =  ... // SEGV!
+
+Allocate dynamic arrays on the heap, not the stack
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the size of an array cannot be determined at compile-time, then it cannot be allocated on the stack, but must be allocated on the heap.
+
+Example: ::
+
+    const int nPoints = dataset->GetNumberOfPoints();
+
+    // Since value of nPoints can only be determined at run-time,
+
+    // this will not compile with Visual Studio
+    int myarray[nPoints];
+
+    // this will compile
+    int *myarray2 = new int[nPoints];
+
+
