@@ -440,13 +440,10 @@ in addition to ``--required --optional`` could be used. Also, the system
 OpenGL implementation was outdated and ``--mesagl`` had to be included to
 provide an OpenGL implementation suitable for VisIt_.
 
-.. danger::
-   PAR_COMPILER, PAR_COMPILER_CXX are incorrect below.
-
 .. code:: bash
 
-   env PAR_COMPILER=/opt/cray/pe/craype/2.5.16/bin/cc \
-       PAR_COMPILER_CXX=/opt/cray/pe/craype/2.5.16/bin/CC \
+   env PAR_COMPILER=/opt/cray/pe/craype/2.7.0/bin/cc \
+       PAR_COMPILER_CXX=/opt/cray/pe/craype/2.7.0/bin/CC \
        PAR_INCLUDE=-I/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/include \
        PAR_LIBS="-L/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/lib -lmpich" \
     ./build_visit3_1_3 --required --optional --no-sphinx --no-mili \
