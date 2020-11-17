@@ -40,8 +40,8 @@ class QvisLCSWindow : public QvisOperatorWindow
   public:
     QvisLCSWindow(const int type,
                          LCSAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisLCSWindow();
     virtual void CreateWindowContents();

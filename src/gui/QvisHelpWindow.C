@@ -565,7 +565,7 @@ void
 QvisHelpWindow::AddToIndex(const QString &topic, const QString &doc)
 {
     // filter out the items we don't want in the index.
-    if(topic == "Overview" || doc == QString::null)
+    if(topic == "Overview" || doc.isEmpty())
         return;
 
     const char *filters[] = {"Setting the ", "Setting ", "Changing the ",
@@ -679,7 +679,7 @@ QvisHelpWindow::CreateNode(DataNode *parentNode)
         {
             // Create a node for the bookmark.
             QString bmName;
-            bmName.sprintf("Bookmark%d", i);
+            bmName.asprintf("Bookmark%d", i);
             DataNode *bmNode = new DataNode(bmName.toStdString());
 
             // Add the topic and the doc to the bookmark node.
@@ -732,7 +732,7 @@ QvisHelpWindow::SetFromNode(DataNode *parentNode, const int *borders)
     do
     {
         QString bmName;
-        bmName.sprintf("Bookmark%d", i);
+        bmName.asprintf("Bookmark%d", i);
         DataNode *bmNode = winNode->GetNode(bmName.toStdString());
         bmFound = (bmNode != 0);
         if(bmFound)
@@ -1597,7 +1597,7 @@ QvisHelpWindow::displayIndexTopic()
 void
 QvisHelpWindow::lookForIndexTopic(const QString &topic)
 {
-    if(topic == QString::null || topic == "")
+    if(topic.isEmpty())
         return;
 
     // Search through the helpIndex widget for a suitable match to the
@@ -1687,12 +1687,12 @@ QvisHelpWindow::displayBookmarkTopic()
 void
 QvisHelpWindow::addBookmark()
 {
-    if(helpFile != "none" && helpFile != QString::null && helpFile != "")
+    if(!helpFile.isEmpty() && helpFile != "none")
     {
         // Search through the help contents for the topic that matches the 
         // active page.
         QString helpTopic = TopicFromDoc(helpFile);
-        if(helpTopic != QString::null && helpTopic != "")
+        if(!helpTopic.isEmpty())
         {
             IndexMap::ConstIterator it = bookmarks.find(helpTopic);
             if(it == bookmarks.end())

@@ -578,7 +578,7 @@ QvisOpacitySlider::drawTicks( QPainter *p, const QPalette& g, int dist,
 int
 QvisOpacitySlider::textPadding() const
 {
-    return fontMetrics().width("0") / 2;
+    return fontMetrics().horizontalAdvance("0") / 2;
 }
 
 // ****************************************************************************
@@ -600,7 +600,7 @@ QvisOpacitySlider::textPadding() const
 int
 QvisOpacitySlider::imageWidth() const
 {
-    return width() - fontMetrics().width("100%") - textPadding();
+    return width() - fontMetrics().horizontalAdvance("100%") - textPadding();
 }
 
 // ****************************************************************************
@@ -630,7 +630,7 @@ QvisOpacitySlider::paintValueText(QPainter *p, const QPalette &cg, int x,
     // Create the text that we have to display.
     int v = (state == Dragging) ? (valueFromPosition(sliderPos)) : value();
     float t = float(v - minimum()) / float(maximum() - minimum());
-    QString txt; txt.sprintf("%d%%", int(t * 100.f));
+    QString txt; txt.asprintf("%d%%", int(t * 100.f));
 
     // Figure out the y offset.
     int dy = h - fontMetrics().height();

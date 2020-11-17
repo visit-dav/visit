@@ -54,8 +54,8 @@ public:
     static const int AllExtraButtons;
     static const int AllExtraButtonsAndLoadSave;
 
-    QvisPostableWindowSimpleObserver(const QString &caption = QString::null,
-                                     const QString &shortName = QString::null,
+    QvisPostableWindowSimpleObserver(const QString &caption = QString(),
+                                     const QString &shortName = QString(),
                                      QvisNotepadArea *n = 0,
                                      int buttonCombo = AllExtraButtons,
                                      bool stretch = true);

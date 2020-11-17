@@ -1281,9 +1281,9 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
 
                 QString done(tr("done"));
                 QString ofStage(tr("of stage"));
-                QString totalPct; totalPct.sprintf("%d%% ", total);
-                QString progress; progress.sprintf(" (%d%% ", statusAtts->GetPercent());
-                QString progress2; progress2.sprintf(" %d/%d)", statusAtts->GetCurrentStage(),
+                QString totalPct; totalPct.asprintf("%d%% ", total);
+                QString progress; progress.asprintf(" (%d%% ", statusAtts->GetPercent());
+                QString progress2; progress2.asprintf(" %d/%d)", statusAtts->GetCurrentStage(),
                     statusAtts->GetMaxStage());
                 statusMsg = totalPct + done + ": " +
                             StatusAttributes_GetStatusMessage(*statusAtts) +
@@ -1585,7 +1585,7 @@ QvisMainWindow::UpdateWindowList(bool doList)
             activeWindowComboBox->clear();
             for(size_t i = 0; i < indices.size(); ++i)
             {
-                QString temp; temp.sprintf("%d", indices[i]);
+                QString temp; temp.asprintf("%d", indices[i]);
                 activeWindowComboBox->addItem(temp);
             }
 
@@ -1593,7 +1593,7 @@ QvisMainWindow::UpdateWindowList(bool doList)
             activeWindowPopup->clear();
             for(size_t i = 0; i < indices.size(); ++i)
             {
-                QString str; str.sprintf("%d", indices[i]);
+                QString str; str.asprintf("%d", indices[i]);
                 QAction *act = activeWindowPopup->addAction(tr("Window ") + str);
                 act->setChecked(indices[i] == index);
             }
@@ -1679,7 +1679,7 @@ QvisMainWindow::UpdateWindowMenu(bool updateNumbers)
                     continue;
 
                 QString str;
-                str.sprintf("%d", indices[j]);
+                str.asprintf("%d", indices[j]);
                 copyPopup[i]->addAction(tr("Window ") + str);
                 n++;
             }

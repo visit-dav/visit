@@ -342,9 +342,9 @@ QvisEngineWindow::UpdateWindow(bool doAll)
                 current = 0;
                 engineCombo->setCurrentIndex(0);
                 if (sim[0]=="")
-                    activeEngine = QString().sprintf("%s",host[0].c_str());
+                    activeEngine = QString().asprintf("%s",host[0].c_str());
                 else
-                    activeEngine = QString().sprintf("%s:%s",host[0].c_str(),
+                    activeEngine = QString().asprintf("%s:%s",host[0].c_str(),
                                                      sim[0].c_str());
 
                 // Add an entry if needed.
@@ -528,7 +528,7 @@ QvisEngineWindow::UpdateStatusArea()
         else if (s->GetMessageType() == 2)
         {
             QString msg;
-            msg.sprintf("%d/%d", s->GetCurrentStage(), s->GetMaxStage());
+            msg.asprintf("%d/%d", s->GetCurrentStage(), s->GetMaxStage());
             msg = tr("Total Status: Stage ") + msg;
             totalStatusLabel->setText(msg);
             msg = tr("Stage Status: ") + QString(s->GetCurrentStageName().c_str());
@@ -785,10 +785,10 @@ void
 QvisEngineWindow::selectEngine(int index)
 {
     if (engines->GetSimulationName()[index]=="")
-        activeEngine = QString().sprintf("%s",
+        activeEngine = QString().asprintf("%s",
                                          engines->GetEngineName()[index].c_str());
     else
-        activeEngine = QString().sprintf("%s:%s",
+        activeEngine = QString().asprintf("%s:%s",
                                   engines->GetEngineName()[index].c_str(),
                                   engines->GetSimulationName()[index].c_str());
 

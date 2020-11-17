@@ -283,7 +283,7 @@ class Field
         }
     }
 
-    bool HasCode(const QString &cName, int part, const QString &generatorName = QString::null)
+    bool HasCode(const QString &cName, int part, const QString &generatorName = QString())
     {
         bool retval = false;
         QStringList targets, prefix, postfix;
@@ -302,7 +302,7 @@ class Field
         return retval;
     }
 
-    void PrintCode(QTextStream &out, const QString &cName, int part, const QString &generatorName = QString::null)
+    void PrintCode(QTextStream &out, const QString &cName, int part, const QString &generatorName = QString())
     {
         QStringList targets, prefix, postfix;
         if(codeFile!=NULL && codeFile->GetCode(cName, targets, prefix, postfix))
@@ -319,7 +319,7 @@ class Field
         }
     }
 
-    bool PrintInit(QTextStream &out, const QString &generatorName = QString::null) const
+    bool PrintInit(QTextStream &out, const QString &generatorName = QString()) const
     {
         // Look through the map for the init code that is for the generatorName
         // that was passed.
@@ -414,7 +414,7 @@ class Int : public virtual Field
     {
         std::vector<QString> retval;
         if (valueSet)
-            retval.push_back(QString().sprintf("%d", val));
+            retval.push_back(QString().asprintf("%d", val));
         return retval;
     }
 };
@@ -462,7 +462,7 @@ class IntArray : public virtual Field
         std::vector<QString> retval;
         if (valueSet)
             for (int i=0; i<length; i++)
-                retval.push_back(QString().sprintf("%d", val[i]));
+                retval.push_back(QString().asprintf("%d", val[i]));
         return retval;
     }
 };
@@ -506,7 +506,7 @@ class IntVector : public virtual Field
         std::vector<QString> retval;
         if (valueSet)
             for (size_t i=0; i<val.size(); i++)
-                retval.push_back(QString().sprintf("%d", val[i]));
+                retval.push_back(QString().asprintf("%d", val[i]));
         return retval;
     }
 };
@@ -578,7 +578,7 @@ class Float : public virtual Field
     {
         std::vector<QString> retval;
         if (valueSet)
-            retval.push_back(QString().sprintf("%f", val));
+            retval.push_back(QString().asprintf("%f", val));
         return retval;
     }
 };
@@ -626,7 +626,7 @@ class FloatArray : public virtual Field
         std::vector<QString> retval;
         if (valueSet)
             for (int i=0; i<length; i++)
-                retval.push_back(QString().sprintf("%f", val[i]));
+                retval.push_back(QString().asprintf("%f", val[i]));
         return retval;
     }
 };
@@ -673,7 +673,7 @@ class FloatVector : public virtual Field
         std::vector<QString> retval;
         if (valueSet)
             for (size_t i=0; i<val.size(); i++)
-                retval.push_back(QString().sprintf("%f", val[i]));
+                retval.push_back(QString().asprintf("%f", val[i]));
         return retval;
     }
 };
@@ -709,7 +709,7 @@ class Double : public virtual Field
     {
         std::vector<QString> retval;
         if (valueSet)
-            retval.push_back(QString().sprintf("%f", val));
+            retval.push_back(QString().asprintf("%f", val));
         return retval;
     }
 };
@@ -757,7 +757,7 @@ class DoubleArray : public virtual Field
         std::vector<QString> retval;
         if (valueSet)
             for (int i=0; i<length; i++)
-                retval.push_back(QString().sprintf("%f", val[i]));
+                retval.push_back(QString().asprintf("%f", val[i]));
         return retval;
     }
 };
@@ -804,7 +804,7 @@ class DoubleVector : public virtual Field
         std::vector<QString> retval;
         if (valueSet)
             for (size_t i=0; i<val.size(); i++)
-                retval.push_back(QString().sprintf("%f", val[i]));
+                retval.push_back(QString().asprintf("%f", val[i]));
         return retval;
     }
 };
@@ -840,7 +840,7 @@ class UChar : public virtual Field
     {
         std::vector<QString> retval;
         if (valueSet)
-            retval.push_back(QString().sprintf("%d", val));
+            retval.push_back(QString().asprintf("%d", val));
         return retval;
     }
 };
@@ -888,7 +888,7 @@ class UCharArray : public virtual Field
         std::vector<QString> retval;
         if (valueSet)
             for (int i=0; i<length; i++)
-                retval.push_back(QString().sprintf("%d", val[i]));
+                retval.push_back(QString().asprintf("%d", val[i]));
         return retval;
     }
 };
@@ -935,7 +935,7 @@ class UCharVector : public virtual Field
         std::vector<QString> retval;
         if (valueSet)
             for (size_t i=0; i<val.size(); i++)
-                retval.push_back(QString().sprintf("%d", int(val[i])));
+                retval.push_back(QString().asprintf("%d", int(val[i])));
         return retval;
     }
 };
@@ -1089,7 +1089,7 @@ class Color : public virtual Field
         std::vector<QString> retval;
         if (valueSet)
             for (int i=0; i<4; i++)
-                retval.push_back(QString().sprintf("%d", val[i]));
+                retval.push_back(QString().asprintf("%d", val[i]));
         return retval;
     }
 };
@@ -1125,7 +1125,7 @@ class Opacity : public virtual Field
     {
         std::vector<QString> retval;
         if (valueSet)
-            retval.push_back(QString().sprintf("%f", val));
+            retval.push_back(QString().asprintf("%f", val));
         return retval;
     }
 };
@@ -1161,7 +1161,7 @@ class LineWidth : public virtual Field
     {
         std::vector<QString> retval;
         if (valueSet)
-            retval.push_back(QString().sprintf("%d", val));
+            retval.push_back(QString().asprintf("%d", val));
         return retval;
     }
 };
@@ -1445,7 +1445,7 @@ class Enum : public virtual Field
             if(val >= 0 && val < n)\
                 retval.push_back(sym[val]);\
             else\
-                retval.push_back(QString().sprintf("%d", val));\
+                retval.push_back(QString().asprintf("%d", val));\
         }\
         return retval;\
     }\
@@ -1740,7 +1740,7 @@ class ScaleMode : public virtual Field
     {
         std::vector<QString> retval;
         if (valueSet)
-            retval.push_back(QString().sprintf("%d", val));
+            retval.push_back(QString().asprintf("%d", val));
         return retval;
     }
 };
@@ -1806,7 +1806,7 @@ class GlyphType : public virtual Field
             if(val >= 0 && val < n)
                 retval.push_back(sym[val]);
             else
-                retval.push_back(QString().sprintf("%d", val));
+                retval.push_back(QString().asprintf("%d", val));
         }
         return retval;
     }
