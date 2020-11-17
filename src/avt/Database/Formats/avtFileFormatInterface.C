@@ -760,18 +760,18 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
                 {
                     vtkCell *cell      = fullMesh->GetCell(element);
                     vtkPoints *cellPts = cell->GetPoints();
-                    int numCellPoints  = cell->GetNumberOfPoints();
-                    vtkIdType pointIds[numCellPoints];
+                    vtkIdType numCellPoints  = cell->GetNumberOfPoints();
+                    vtkNew<vtkIdList> pointIds;
+                    pointIds->SetNumberOfIds(numCellPoints);
 
-                    for (int p = 0; p < numCellPoints; ++p)
+                    for (vtkIdType p = 0; p < numCellPoints; ++p)
                     {
                         coordPoints->InsertNextPoint(cellPts->GetPoint(p));
-                        pointIds[p] = pointId;
+                        pointIds->SetId(p, pointId);
                         pointId += 1;
                     }
 
-                    coordMesh->InsertNextCell(cell->GetCellType(),
-                        numCellPoints, pointIds);
+                    coordMesh->InsertNextCell(cell->GetCellType(), pointIds);
 
                     break;
                 }
@@ -852,18 +852,18 @@ avtFileFormatInterface::GetQOTCoordMesh(const QueryOverTimeAttributes *QOTAtts,
                 {
                     vtkCell *cell      = fullMesh->GetCell(element);
                     vtkPoints *cellPts = cell->GetPoints();
-                    int numCellPoints  = cell->GetNumberOfPoints();
-                    vtkIdType pointIds[numCellPoints];
+                    vtkIdType numCellPoints  = cell->GetNumberOfPoints();
+                    vtkNew<vtkIdList> pointIds;
+                    pointIds->SetNumberOfIds(numCellPoints);
 
-                    for (int p = 0; p < numCellPoints; ++p)
+                    for (vtkIdType p = 0; p < numCellPoints; ++p)
                     {
                         coordPoints->InsertNextPoint(cellPts->GetPoint(p));
-                        pointIds[p] = pointId;
+                        pointIds->SetId(p, pointId);
                         pointId += 1;
                     }
 
-                    coordMesh->InsertNextCell(cell->GetCellType(),
-                        numCellPoints, pointIds);
+                    coordMesh->InsertNextCell(cell->GetCellType(), pointIds);
 
                     break;
                 }
