@@ -509,7 +509,7 @@ QvisLegendAttributesInterface::UpdateControls()
         suppliedLabels->horizontalHeaderItem(0)->setText(tr("Values"));
         for (int i = 0; i < size; ++i)
         {
-            temp.sprintf(fmt.toStdString().c_str(), sv[i]);
+            temp.asprintf(fmt.toStdString().c_str(), sv[i]);
             suppliedLabels->item(i, 0)->setText(temp.simplified());
             suppliedLabels->item(i, 0)->setFlags(
                      Qt::ItemIsSelectable|Qt::ItemIsEditable|Qt::ItemIsEnabled);
@@ -605,7 +605,7 @@ QvisLegendAttributesInterface::UpdateControls()
     drawMinmaxCheckBox->blockSignals(false);
 
     // Set the font height
-    fontHeight->setText(QString().sprintf("%g", annot->GetOptions().GetEntry("fontHeight")->AsDouble()));
+    fontHeight->setText(QString().asprintf("%g", annot->GetOptions().GetEntry("fontHeight")->AsDouble()));
 
     // Set the use foreground color check box.
     useForegroundColorCheckBox->blockSignals(true);

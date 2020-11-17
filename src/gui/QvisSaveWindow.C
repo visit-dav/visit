@@ -821,11 +821,11 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             break;
         }
         case SaveWindowAttributes::ID_width:
-            temp.sprintf("%d", saveWindowAtts->GetWidth());
+            temp.asprintf("%d", saveWindowAtts->GetWidth());
             widthLineEdit->setText(temp);
             break;
         case SaveWindowAttributes::ID_height:
-            temp.sprintf("%d", saveWindowAtts->GetHeight());
+            temp.asprintf("%d", saveWindowAtts->GetHeight());
             heightLineEdit->setText(temp);
             break;
         case SaveWindowAttributes::ID_screenCapture:
@@ -907,19 +907,19 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             mwsWindowComboBox->setCurrentIndex(currentWindow);
             mwsWindowComboBox->blockSignals(false);
             mwsIndWidthLineEdit->blockSignals(true);
-            temp.sprintf("%d", atts.GetSize()[0]);
+            temp.asprintf("%d", atts.GetSize()[0]);
             mwsIndWidthLineEdit->setText(temp);
             mwsIndWidthLineEdit->blockSignals(false);
             mwsIndHeightLineEdit->blockSignals(true);
-            temp.sprintf("%d", atts.GetSize()[1]);
+            temp.asprintf("%d", atts.GetSize()[1]);
             mwsIndHeightLineEdit->setText(temp);
             mwsIndHeightLineEdit->blockSignals(false);
             mwsPosXLineEdit->blockSignals(true);
-            temp.sprintf("%d", atts.GetPosition()[0]);
+            temp.asprintf("%d", atts.GetPosition()[0]);
             mwsPosXLineEdit->setText(temp);
             mwsPosXLineEdit->blockSignals(false);
             mwsPosYLineEdit->blockSignals(true);
-            temp.sprintf("%d", atts.GetPosition()[1]);
+            temp.asprintf("%d", atts.GetPosition()[1]);
             mwsPosYLineEdit->setText(temp);
             mwsPosYLineEdit->blockSignals(false);
             mwsLayerComboBox->blockSignals(true);

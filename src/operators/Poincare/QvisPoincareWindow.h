@@ -53,8 +53,8 @@ class QvisPoincareWindow : public QvisOperatorWindow
   public:
     QvisPoincareWindow(const int type,
                          PoincareAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisPoincareWindow();
     virtual void CreateWindowContents();

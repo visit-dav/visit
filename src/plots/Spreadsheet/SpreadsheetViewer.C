@@ -1292,12 +1292,12 @@ SpreadsheetViewer::displayUnstructuredGrid()
 #define END_MINMAX \
         QString fmt, tmp;\
         fmt = tr("Min = ") + QString(plotAtts->GetFormatString().c_str());\
-        tmp.sprintf(fmt.toStdString().c_str(), minValue);\
+        tmp.asprintf(fmt.toStdString().c_str(), minValue);\
         minButton->setText(tmp);\
         minButton->setEnabled(true);\
         debug5 << mName << "min=" << minValue << ", minCell=[" << minCell[0] << "," << minCell[1] << "," << minCell[2] << "]" << endl;\
         fmt = tr("Max = ") + QString(plotAtts->GetFormatString().c_str());\
-        tmp.sprintf(fmt.toStdString().c_str(), maxValue);\
+        tmp.asprintf(fmt.toStdString().c_str(), maxValue);\
         maxButton->setText(tmp);\
         maxButton->setEnabled(true);\
         debug5 << mName << "max=" << maxValue << ", maxCell=[" << maxCell[0] << "," << maxCell[1] << "," << maxCell[2] << "]" << endl;
@@ -1611,11 +1611,11 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
         if(!structured)
             name = tr("Unstructured");
         else if(plotAtts->GetNormal() == SpreadsheetAttributes::X)
-            name.sprintf("i=%d", i+base+offset);
+            name.asprintf("i=%d", i+base+offset);
         else if(plotAtts->GetNormal() == SpreadsheetAttributes::Y)
-            name.sprintf("j=%d", i+base+offset);
+            name.asprintf("j=%d", i+base+offset);
         else
-            name.sprintf("k=%d", i+base+offset);
+            name.asprintf("k=%d", i+base+offset);
         zTabs->setTabText(i, name);
     }
     zTabs->blockSignals(false);
@@ -1684,17 +1684,17 @@ SpreadsheetViewer::updateSliderLabel()
     QString kl;
     if(plotAtts->GetNormal() == SpreadsheetAttributes::X)
     {
-        kl.sprintf("i=%d [%d,%d]", base_index[0] + plotAtts->GetSliceIndex(), 
+        kl.asprintf("i=%d [%d,%d]", base_index[0] + plotAtts->GetSliceIndex(), 
             base_index[0], base_index[0] + nTablesForSlider - 1);
     }
     else if(plotAtts->GetNormal() == SpreadsheetAttributes::Y)
     {
-        kl.sprintf("j=%d [%d,%d]", base_index[1] + plotAtts->GetSliceIndex(), 
+        kl.asprintf("j=%d [%d,%d]", base_index[1] + plotAtts->GetSliceIndex(), 
             base_index[1], base_index[1] + nTablesForSlider - 1);
     }
     else
     {
-        kl.sprintf("k=%d [%d,%d]", base_index[2] + plotAtts->GetSliceIndex(), 
+        kl.asprintf("k=%d [%d,%d]", base_index[2] + plotAtts->GetSliceIndex(), 
             base_index[2], base_index[2] + nTablesForSlider - 1);
     } 
     kLabel->setText(kl);
@@ -2780,7 +2780,7 @@ SpreadsheetViewer::operationSum()
         SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentWidget();
         double sum = t->selectedCellsSum();
         QString sumStr;
-        sumStr.sprintf(plotAtts->GetFormatString().c_str(), sum);
+        sumStr.asprintf(plotAtts->GetFormatString().c_str(), sum);
         QString msg(tr("The sum of the selected cells is: %1.").arg(sumStr));
         QMessageBox::information(this, tr("Sum results"), msg, QMessageBox::Ok);
     }
@@ -2810,7 +2810,7 @@ SpreadsheetViewer::operationAverage()
         SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentWidget();
         double avg = t->selectedCellsAverage();
         QString avgStr;
-        avgStr.sprintf(plotAtts->GetFormatString().c_str(), avg);
+        avgStr.asprintf(plotAtts->GetFormatString().c_str(), avg);
         QString msg(tr("The average value of the selected cells is: %1.").arg(avgStr));
         QMessageBox::information(this, "Average results", msg, QMessageBox::Ok);
     }

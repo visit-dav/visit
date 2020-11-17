@@ -491,59 +491,6 @@ another library that you change the class so it uses the appropriate
 API macro for the new host library. This goes especially for VTK
 classes that have become part of one of VisIt_'s libraries.
 
-Include visitstream.h instead of iostream.h
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-VisIt_ relies on many stream classes and older versions of MSVC provide
-two different stream class hierarchies. One stream class hierarchy is
-compatible with STL, the other one is not. Furthermore, MSVC6 has issues
-with strings and both versions of the stream class hierarchy. To avoid
-these problems on Windows and on other platforms, VisIt_ coding style
-prohibits the inclusion of any of the stream header files. When you
-need to use streams, include <visitstream.h>. The <visitstream.h> header
-file includes the stream header files that are compatible with the
-VisIt_ source code and the MSVC compiler.
-
-You still need std:: for iterators
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-It is fair practice to use the using statement within a .C file so that
-namespace qualification is not required. For example, if you wanted to
-use the std::map class but did not want to call it std::map everywhere,
-you could add: using std::map to your source code and then use the map
-class. ::
-
-    #include <map>
-    using std::map;
-    map<int, int> M;
-
-It is typical to instantiate a variable of an STL container class such
-as std::map and then iterate through it using iterators. Normally, you
-would just declare an iterator without the std:: if you've used the using
-statement for the class over which you want to iterate. Old versions of
-MSVC prevent this due to an apparent flaw in its namespace resolution. ::
-
-    #include <map>
-    using std::map;
-    map<int, int> M;
-
-    // This does not work using MSVC6
-    for(map<int,int>::const_iterator it = M.begin(); it != M.end(); ++it)
-    { /*code*/ }
-
-    // But this does work
-    for(std::map<int,int>::const_iterator it = M.begin(); it != M.end(); ++it)
-    { /* code */ }
-
-Note that you can avoid this bug in MSVC6 if you use typedefs. ::
-
-    #include <map>
-    using std::map;
-    // Define a type based on map.
-    typedef map<int,int> IntIntMap;
-    IntIntMap M;
-    for(IntIntMap::const_iterator it = M.begin(); it != M.end(); ++it)
-    { /* code */}
 
 No constructor or destructor definitions in header file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -614,23 +561,6 @@ compiler being used. ::
     #include <snprintf.h>
     SNPRINTF(buf, 20, "Message: %s", s);
 
-Do not use long long type
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Some code in VisIt_ needs to use very large integers that exceed the
-precision of 32 bits. In these cases, the logical thing to do is use the
-long long type if you are on a 32 bit computer. Unfortunately, the
-long long type is not supported by MSVC 6. Instead of long long, you can
-use VISIT_LONG_LONG so that you have access to a 64 bit integer type.
-The VISIT_LONG_LONG macro actually evaluates to __int64 on Windows so
-you retain the ability to use 64 bits of integer precision without the
-use of long long. ::
-
-    // Don't do this
-    long long nZones = 100000000000000;
-
-    // Do this instead
-    VISIT_LONG_LONG nZones = 100000000000000;
 
 Do not use variables called near or far
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -709,3 +639,21 @@ Example: ::
        return;
     }
     myvector[val] =  ... // SEGV!
+
+Allocate dynamic arrays on the heap, not the stack
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the size of an array cannot be determined at compile-time, then it cannot be allocated on the stack, but must be allocated on the heap.
+
+Example: ::
+
+    const int nPoints = dataset->GetNumberOfPoints();
+
+    // Since value of nPoints can only be determined at run-time,
+
+    // this will not compile with Visual Studio
+    int myarray[nPoints];
+
+    // this will compile
+    int *myarray2 = new int[nPoints];
+

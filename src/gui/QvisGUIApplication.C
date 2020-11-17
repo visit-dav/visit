@@ -2580,6 +2580,10 @@ QvisGUIApplication::ExtractSystemDefaultAppearance()
 //    Brad Whitlock, Wed Nov 26 11:17:56 PDT 2008
 //    I moved the bulk of the code into winutil's SetAppearance function.
 //
+//    Alister Maguire, Thu Nov 12 13:19:56 PST 2020
+//    Updated the orientation set so that it handles moving in and
+//    out of default settings.
+//
 // ****************************************************************************
 
 void
@@ -2595,12 +2599,18 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
     if(notify)
     {
         //
-        // Set the window orientation if is was selected and the main window
-        // has been created.
+        // Set the window orientation. We can't rely on whether or not
+        // orientation has been actively changed, because we might be
+        // transitioning from default to custom or vice versa.
         //
-        bool orientationSelected = aa->IsSelected(AppearanceAttributes::ID_orientation);
-        if(orientationSelected)
+        if (aa->GetUseSystemDefault())
+        {
+            SetOrientation(aa->GetDefaultOrientation());
+        }
+        else
+        {
             SetOrientation(aa->GetOrientation());
+        }
 
         // Tell the viewer about the new appearance.
         aa->Notify();
@@ -4584,16 +4594,16 @@ QvisGUIApplication::SaveSessionAs()
     QString defaultFile;
     if(sessionHost.empty())
     {
-        defaultFile.sprintf("%svisit%04d.session", sessionDir.c_str(), sessionCount);
+        defaultFile.asprintf("%svisit%04d.session", sessionDir.c_str(), sessionCount);
     }
     else
     {
 #ifdef WIN32
         if (sessionDir.substr(0,2) == "\\\\")
-            defaultFile.sprintf("%svisit%04d.session", sessionDir.c_str(), sessionCount);
+            defaultFile.asprintf("%svisit%04d.session", sessionDir.c_str(), sessionCount);
         else
 #endif
-        defaultFile.sprintf("%s:%svisit%04d.session", sessionHost.c_str(), sessionDir.c_str(), sessionCount);
+        defaultFile.asprintf("%s:%svisit%04d.session", sessionHost.c_str(), sessionDir.c_str(), sessionCount);
     }
 
     // Get the name of the file that the user saved.
@@ -7368,7 +7378,7 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
     const avtDatabaseMetaData *md =
         fileServer->GetMetaData(qf, GetStateForSource(qf),
         !FileServerList::ANY_STATE, !FileServerList::GET_NEW_MD);
-    QString wName; wName.sprintf("plot_wizard_%d", plotType);
+    QString wName; wName.asprintf("plot_wizard_%d", plotType);
     QvisWizard *wiz = GUIInfo->CreatePluginWizard(
         GetViewerState()->GetPlotAttributes(plotType), mainWin, varName.toStdString(),
         md, GetViewerState()->GetExpressionList());
@@ -7453,7 +7463,7 @@ QvisGUIApplication::AddOperator(int operatorType)
         operatorPluginManager->GetEnabledID(operatorType));
 
     // Try and create a wizard for the desired operator type.
-    QString wName; wName.sprintf("operator_wizard_%d", operatorType);
+    QString wName; wName.asprintf("operator_wizard_%d", operatorType);
     QvisWizard *wiz = GUIInfo->CreatePluginWizard(
         GetViewerState()->GetOperatorAttributes(operatorType), mainWin);
 
@@ -8408,7 +8418,7 @@ QvisGUIApplication::SaveMovieMain()
                     "redblue", "redgreen"};
                 int si = (stereos[i] < 0 || stereos[i] > 3) ? 0 : stereos[i];
                 QString order;
-                order.sprintf("    movie.RequestFormat(\"%s\", %d, %d, \"%s\")\n",
+                order.asprintf("    movie.RequestFormat(\"%s\", %d, %d, \"%s\")\n",
                     formats[i].c_str(), widths[i], heights[i],
                     stereoNames[si]);
                 code += order;
@@ -8446,22 +8456,22 @@ QvisGUIApplication::SaveMovieMain()
 
             // Add fps and start/end index
             QString tmp;
-            tmp.sprintf("%d", movieAtts->GetFps());
+            tmp.asprintf("%d", movieAtts->GetFps());
             code += "    movie.fps = " + tmp + "\n";
 
-            tmp.sprintf("%d", movieAtts->GetStartIndex());
+            tmp.asprintf("%d", movieAtts->GetStartIndex());
             code += "    movie.frameStart = " + tmp + "\n";
 
             if (movieAtts->GetEndIndex() != 1000000000)
             {
-                tmp.sprintf("%d", movieAtts->GetEndIndex());
+                tmp.asprintf("%d", movieAtts->GetEndIndex());
                 code += "    movie.frameEnd = " + tmp + "\n";
             }
 
-            tmp.sprintf("%d", movieAtts->GetStride());
+            tmp.asprintf("%d", movieAtts->GetStride());
             code += "    movie.frameStep = " + tmp + "\n";
 
-            tmp.sprintf("%d", movieAtts->GetInitialFrameValue());
+            tmp.asprintf("%d", movieAtts->GetInitialFrameValue());
             code += "    movie.initialFrameValue = " + tmp + "\n";
 
             // If we want e-mail notification, add that info here.

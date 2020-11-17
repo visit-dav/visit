@@ -25,8 +25,8 @@
 class QvisPostableMainWindow : public QvisPostableWindow
 {
 public:
-    QvisPostableMainWindow(const QString &captionString = QString::null,
-                           const QString &shortName = QString::null,
+    QvisPostableMainWindow(const QString &captionString = QString(),
+                           const QString &shortName = QString(),
                            QvisNotepadArea *n = 0);
     virtual ~QvisPostableMainWindow();
 

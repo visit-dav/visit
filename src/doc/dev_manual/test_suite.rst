@@ -294,6 +294,13 @@ Tips on writing regression tests
 
 * Except in cases where annotations are being specifically tested, remember to call TurnOffAllAnnotations() as one of the first actions in your test script. Otherwise, you can wind up producing images containing machine-specific annotations which will produce differences on other platforms.
 
+* When setting plot and operator options, take care to decide whether you need to work from *default* or *current* attributes.
+  Methods to obtain plot and operator attributes optionally take an additional ``1`` argument to indicate that *current*,
+  rather that *default* attributes are desired. For example ``CurveAttributes()`` returns *default* **Curve** plot
+  attributes wherease ``CurveAttributes(1)`` returns *current* **Curve** plot attributes which will be the currently
+  active plot, if it is a **Curve** plot or the first **Curve** plot in the plot list of the currently active window
+  whether it is active or hidden. If there is no **Curve** plot available, it will return the *default* attributes.
+
 * When writing tests involving text differences and file pathnames, be sure that all pathnames in the text strings passed to `TestText()` are absolute. Internally, VisIt_ testing system will filter these out and replace the machine-specific part of the path with `VISIT_TOP_DIR` to facilitate comparison with baseline text. In fact, the .txt files that get generated in the `current` dir will have been filtered and all pathnames modified to have `VISIT_TOP_DIR` in them.
 
 * Here is a table of python tests scripts which serve as examples of some interesting and lesser known VisIt_/Python scripting practices:

@@ -280,7 +280,7 @@ QvisText3DInterface::UpdateControls()
 
     // Set the position.
     QString pos;
-    pos.sprintf("%lg %lg %lg", 
+    pos.asprintf("%lg %lg %lg", 
         annot->GetPosition()[0],
         annot->GetPosition()[1],
         annot->GetPosition()[2]);
@@ -300,7 +300,7 @@ QvisText3DInterface::UpdateControls()
 
     // Set the value for the fixed height.
     QString tmp;
-    tmp.sprintf("%lg", annot->GetFixedHeight());
+    tmp.asprintf("%lg", annot->GetFixedHeight());
     fixedHeightEdit->setText(tmp);
 
     // Set the faces camera check box.

@@ -325,7 +325,7 @@ QvisSliceWindow::CreateWindowContents()
     originNodeLayout->addWidget(originNodeDomainLineEdit);
 
     originLayout->addLayout(originNodeLayout, 6,0);
-
+	
     // mesh name
     QHBoxLayout *meshLayout = new QHBoxLayout();
     meshLayout->setMargin(5);
@@ -893,7 +893,7 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
         {
             double theta = sliceAtts->GetTheta();
             double phi = sliceAtts->GetPhi();
-            QString angles; angles.sprintf("<%g %g>", theta, phi);
+            QString angles; angles.asprintf("<%g %g>", theta, phi);
             ResettingError(tr("theta-phi angles"), angles);
             sliceAtts->SetTheta(theta);
             sliceAtts->SetPhi(phi);

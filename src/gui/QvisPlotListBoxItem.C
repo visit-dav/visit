@@ -229,7 +229,7 @@ QvisPlotListBoxItem::height(const QListWidget *lb) const
 int
 QvisPlotListBoxItem::width(const QListWidget *lb) const
 {
-    return lb ? lb->fontMetrics().width(text()) + 6 : 0;
+    return lb ? lb->fontMetrics().horizontalAdvance(text()) + 6 : 0;
 }
 
 // ****************************************************************************
@@ -437,7 +437,7 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
             // The prefix is a database name.
             dbName = prefix;
         }
-        int expandX = x + fm.width("9") / 2;
+        int expandX = x + fm.horizontalAdvance("9") / 2;
         int expandY = y2 + 2;
 
         // Draw the database name and the variable.
@@ -1070,7 +1070,7 @@ QvisPlotListBoxItem::GetOperatorPixmap(int operatorType, QPixmap &pm)
     GUIOperatorPluginInfo *info = oMgr->GetGUIPluginInfo(
         oMgr->GetEnabledID(operatorType));
 
-    QString key; key.sprintf("operator_icon_%s", info->GetName());
+    QString key; key.asprintf("operator_icon_%s", info->GetName());
     if(!QPixmapCache::find(key, pm))
     {
         if(info->XPMIconData())
@@ -1111,7 +1111,7 @@ QvisPlotListBoxItem::GetPlotPixmap(int plotType, QPixmap &pm)
     GUIPlotPluginInfo *info = pMgr->GetGUIPluginInfo(
         pMgr->GetEnabledID(plotType));
 
-    QString key; key.sprintf("plot_icon_%s", info->GetName());
+    QString key; key.asprintf("plot_icon_%s", info->GetName());
     if(!QPixmapCache::find(key, pm))
     {
         if(info->XPMIconData())
