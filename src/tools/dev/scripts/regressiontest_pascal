@@ -301,6 +301,12 @@ export PATH=/usr/tce/packages/cuda/cuda-8.0/bin:\$PATH
 export CUDA_HOME=/usr/tce/packages/cuda/cuda-8.0
 export LD_LIBRARY_PATH=/usr/tce/packages/cuda/cuda-8.0/lib64:\$LD_LIBRARY_PATH
 
+# since gcc-6 isn't the default, make sure to set CC and CXX, otherwise
+# pluginVsInstall tests won't use the right compiler
+
+export CC=/usr/tce/packages/gcc/gcc-6.1.0/bin/gcc
+export CXX=/usr/tce/packages/gcc/gcc-6.1.0/bin/g++
+
 if test "$serial" = "true" ; then
     sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/pascal83.cmake
 fi
