@@ -56,6 +56,11 @@ function bv_fms_host_profile
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_FMS_DIR \${VISITHOME}/fms/$FMS_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
+        if [[ "$DO_CONDUIT" == "yes" ]] ; then
+            echo \
+                "VISIT_OPTION_DEFAULT(VISIT_FMS_LIBDEP CONDUIT_LIBRARY_DIR conduit CONDUIT_LIBRARY_DIR conduit_blueprint CONDUIT_LIBRARY_DIR conduit_relay \${VISIT_CONDUIT_LIBDEP} TYPE STRING)" \
+                >> $HOSTCONF
+        fi
     fi
 }
 
