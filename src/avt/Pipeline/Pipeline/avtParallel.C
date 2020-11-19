@@ -586,11 +586,14 @@ SumIntArrayAcrossAllProcessors(int *inArray, int *outArray, int nArray)
 //    Brad Whitlock, Mon Apr 20 12:06:25 PDT 2009
 //    Check MPI_VERSION and MPI_SUBVERSION before using MPI_Type_get_extent.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
-SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray,
-                                    VISIT_LONG_LONG *outArray, int nArray)
+SumLongLongArrayAcrossAllProcessors(long long *inArray,
+                                    long long *outArray, int nArray)
 {
     globalContext.SumLongLongArrayAcrossAllProcessors(inArray, outArray, nArray);
 }
@@ -1022,8 +1025,12 @@ void BroadcastInt(int &value)
 //  Programmer:  Hank Childs
 //  Creation:    December 10, 2012
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
-void BroadcastLongLong(VISIT_LONG_LONG &value)
+void BroadcastLongLong(long long &value)
 {
     globalContext.BroadcastLongLong(value);
 }
