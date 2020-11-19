@@ -8,7 +8,7 @@
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.2.0/toss3)
+SET(VISITHOME /usr/WS1/visit/visit/thirdparty_shared/3.2.0/toss3)
 SET(VISITARCH linux-x86_64_gcc-6.1)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
