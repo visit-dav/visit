@@ -33,8 +33,7 @@
                     {"platform":"win", "category":"simulation","file":"updateplots.py"},
                     {"platform":"win", "category":"simulation","file":"updateplots_session.py"},
                     {"platform":"win", "category":"simulation","file":"zerocopy.py"},
-                    {"platform":"win", "category":"unit","file":"launcher.py"},
-                    {"platform":"win", "category":"unit","file":"stringhelpers.py"}
+                    {"platform":"win", "category":"unit","file":"launcher.py"}
                   ]},
  {"mode":"parallel","tests":[
                     {"category":"databases","file":"diff.py"},
@@ -59,6 +58,7 @@
                     {"category":"simulation","file":"var.py"},
                     {"category":"simulation","file":"scalar.py"},
                     {"category":"simulation","file":"unstructured.py"},
+                    {"platform":"win", "category":"databases","file":"ffp.py","cases":["ffp_03"]},
                     {"platform":"win","category":"databases","file":"moab.py"},
                     {"platform":"win","category":"databases","file":"silo.py","cases":["silo_26","silo_36","silo_37","silo_38","silo_39"]},
                     {"platform":"win","category":"hybrid","file":"cinema-a.py"},
@@ -78,8 +78,7 @@
                     {"platform":"win","category":"simulation","file":"updateplots.py"},
                     {"platform":"win","category":"simulation","file":"updateplots_session.py"},
                     {"platform":"win","category":"simulation","file":"zerocopy.py"},
-                    {"platform":"win","category":"unit","file":"launcher.py"},
-                    {"platform":"win","category":"unit","file":"stringhelpers.py"}
+                    {"platform":"win","category":"unit","file":"launcher.py"}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"databases","file":"diff.py"},
@@ -126,7 +125,6 @@
                     {"platform":"win","category":"simulation","file":"mandelbrot.py"},
                     {"platform":"win","category":"simulation","file":"ucdcurve.py"},
                     {"platform":"win","category":"simulation","file":"updateplots.py"},
-                    {"platform":"win","category":"unit","file":"launcher.py"},
-                    {"platform":"win","category":"unit","file":"stringhelpers.py"}
+                    {"platform":"win","category":"unit","file":"launcher.py"}
                     ]}
 ]}
