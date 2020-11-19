@@ -77,6 +77,10 @@ class vtkPolyData;
 //    Mark C. Miller, Tue Jun 14 10:38:17 PDT 2016
 //    Added logic to keep track of whether the writeContext wound up with
 //    some processors with no data.
+//
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
@@ -123,7 +127,7 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
                              { shouldNeverDoExpressions = s; };
 
     bool               SetTargetChunks(int nChunks);
-    bool               SetTargetZones(VISIT_LONG_LONG nTotalZones);
+    bool               SetTargetZones(long long nTotalZones);
     bool               SetOutputZonal(bool);
     void               SetVariableList(std::vector<std::string> &);
     void               SetContractToUse(avtContract_p ps);
@@ -143,7 +147,7 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
     bool               shouldChangeTotalZones;
     bool               shouldOutputZonal;
     int                nTargetChunks;
-    VISIT_LONG_LONG    targetTotalZones;
+    long long          targetTotalZones;
 
     avtContract_p      savedContract;
     avtParallelContext writeContext;

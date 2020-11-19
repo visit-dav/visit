@@ -981,11 +981,14 @@ avtParallelContext::SumIntArrayAcrossAllProcessors(int *inArray, int *outArray, 
 //    Brad Whitlock, Mon Apr 20 12:06:25 PDT 2009
 //    Check MPI_VERSION and MPI_SUBVERSION before using MPI_Type_get_extent.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
-avtParallelContext::SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray,
-                                    VISIT_LONG_LONG *outArray, int nArray)
+avtParallelContext::SumLongLongArrayAcrossAllProcessors(long long *inArray,
+                                    long long *outArray, int nArray)
 {
 #ifdef PARALLEL
     MPI_Datatype datatype = MPI_LONG_LONG;
@@ -998,14 +1001,14 @@ avtParallelContext::SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray
     MPI_Aint lb,e;
     MPI_Type_get_extent(datatype, &lb, &e);
 #if defined(MPI_UNSIGNED_LONG_LONG)
-    if (e != sizeof(VISIT_LONG_LONG))
+    if (e != sizeof(long long))
     {
         datatype = MPI_UNSIGNED_LONG_LONG;
         MPI_Type_get_extent(datatype, &lb, &e);
     }
 #endif
 #if defined(MPI_INTEGER8)  // ... may only be MPI-2.
-    if (e != sizeof(VISIT_LONG_LONG))
+    if (e != sizeof(long long))
     {
         datatype = MPI_INTEGER8;
         MPI_Type_get_extent(datatype, &lb, &e);
@@ -1015,7 +1018,7 @@ avtParallelContext::SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray
     MPI_Aint e;
     MPI_Type_extent(datatype, &e);
 #if defined(MPI_UNSIGNED_LONG_LONG)
-    if (e != sizeof(VISIT_LONG_LONG))
+    if (e != sizeof(long long))
     {
         datatype = MPI_UNSIGNED_LONG_LONG;
         MPI_Type_extent(datatype, &e);
@@ -1023,7 +1026,7 @@ avtParallelContext::SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray
 #endif
 #endif
 
-    if (e == sizeof(VISIT_LONG_LONG))
+    if (e == sizeof(long long))
     {
         MPI_Allreduce(inArray, outArray, nArray, datatype, MPI_SUM,
                       this->GetCommunicator());
@@ -1594,8 +1597,12 @@ void avtParallelContext::BroadcastInt(int &i)
 //  Programmer:  Hank Childs
 //  Creation:    December 10, 2012
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
-void avtParallelContext::BroadcastLongLong(VISIT_LONG_LONG &l)
+void avtParallelContext::BroadcastLongLong(long long &l)
 {
 #ifndef PARALLEL
     (void)l;
