@@ -29,6 +29,8 @@ class AttributeGroup;
 // Creation:   Tue Aug  4 15:43:45 PDT 2015
 //
 // Modifications:
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
 //
 // ****************************************************************************
 
@@ -113,7 +115,7 @@ public:
     void    SumDoubleArray(double *, double *,int);
     void    SumDoubleArrayInPlace(double *, int);
     void    SumIntArrayAcrossAllProcessors(int *, int *, int);
-    void    SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG*, VISIT_LONG_LONG*, int);
+    void    SumLongLongArrayAcrossAllProcessors(long long*, long long*, int);
     bool    ThisProcessorHasMinimumValue(double);
     bool    ThisProcessorHasMaximumValue(double);
     void    UnifyMinMax(double *, int, int=0);
@@ -130,7 +132,7 @@ public:
     void    UnifyMaximumDoubleArrayAcrossAllProcessors(double *, double *, int);
 
     void    BroadcastInt(int &i);
-    void    BroadcastLongLong(VISIT_LONG_LONG &i);
+    void    BroadcastLongLong(long long &i);
     void    BroadcastIntArray(int *array, int nArray);
     void    BroadcastIntVector(std::vector<int>&, int myrank);
     void    BroadcastIntVectorFromAny(std::vector<int> &, int, int);

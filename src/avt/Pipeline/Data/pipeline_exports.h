@@ -35,8 +35,4 @@
 # endif
 #endif
 
-#ifndef VISIT_LONG_LONG
-# define VISIT_LONG_LONG long long
-#endif
-
 #endif
