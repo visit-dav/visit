@@ -155,6 +155,9 @@ avtRayTracerBase::GetNumberOfStages(int screenX, int screenY, int screenZ)
 //    If we have more than 32 procs, then we have enough memory and don't need 
 //    to tile.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 int
@@ -163,7 +166,7 @@ avtRayTracerBase::GetNumberOfDivisions(int screenX, int screenY, int screenZ)
     if (PAR_Size() >= 32)
         return 1;
 
-    VISIT_LONG_LONG numSamps = screenX*screenY*screenZ;
+    long long numSamps = screenX*screenY*screenZ;
     int sampLimitPerProc = 25000000; // 25M
     numSamps /= PAR_Size();
     int numTiles = numSamps/sampLimitPerProc;

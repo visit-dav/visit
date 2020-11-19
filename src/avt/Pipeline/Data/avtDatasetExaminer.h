@@ -60,17 +60,20 @@ class     vtkDataArray;
 //    Kathleen Biagas, Thu Sep 11 09:17:10 PDT 2014
 //    Added bool flag to GetNumberOfNodes/Zones for counting original only.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetExaminer
 {
   public:
-    static VISIT_LONG_LONG    GetNumberOfNodes(avtDataset_p &, bool=false);
-    static VISIT_LONG_LONG    GetNumberOfZones(avtDataset_p &, bool = false);
-    static void               GetNumberOfZones(avtDataset_p&, VISIT_LONG_LONG&,
-                                               VISIT_LONG_LONG&, bool=false);
-    static void               GetNumberOfNodes(avtDataset_p&, VISIT_LONG_LONG&,
-                                               VISIT_LONG_LONG&, bool=false);
+    static long long    GetNumberOfNodes(avtDataset_p &, bool=false);
+    static long long    GetNumberOfZones(avtDataset_p &, bool = false);
+    static void               GetNumberOfZones(avtDataset_p&, long long&,
+                                               long long&, bool=false);
+    static void               GetNumberOfNodes(avtDataset_p&, long long&,
+                                               long long&, bool=false);
     static void               GetVariableList(avtDataset_p &, VarList &);
     static bool               GetSpatialExtents(avtDataset_p &, double *);
     static bool               GetSpatialExtents(std::vector<avtDataTree_p> &, 
@@ -88,7 +91,7 @@ class PIPELINE_API avtDatasetExaminer
     static bool               CalculateHistogram(avtDataset_p&, 
                                                  const std::string &var,
                                                  double min, double max,
-                                                 std::vector<VISIT_LONG_LONG> &);
+                                                 std::vector<long long> &);
 };
 
 
