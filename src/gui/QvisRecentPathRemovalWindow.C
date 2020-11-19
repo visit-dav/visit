@@ -180,7 +180,7 @@ QvisRecentPathRemovalWindow::UpdateWidgets()
     for(size_t i = 0; i < paths.size(); ++i)
     {
         QString f;
-        f.sprintf("%s:%s", paths[i].host.c_str(), paths[i].path.c_str());
+        f.asprintf("%s:%s", paths[i].host.c_str(), paths[i].path.c_str());
         removalListBox->addItem(f);
     }
 

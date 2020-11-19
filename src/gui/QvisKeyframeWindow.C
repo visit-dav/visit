@@ -345,7 +345,7 @@ QvisKeyframeWindow::UpdateWindowInformation()
     {
         numFrames = 1;
     }
-    temp.sprintf("%d", numFrames);
+    temp.asprintf("%d", numFrames);
     nFrames->blockSignals(true);
     nFrames->setText(temp);
     nFrames->blockSignals(false);

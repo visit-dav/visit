@@ -213,7 +213,7 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
             createWindow->setChecked(atts->GetCreateWindow());
             break;
           case QueryOverTimeAttributes::ID_windowId:
-            temp.sprintf("%d", atts->GetWindowId());
+            temp.asprintf("%d", atts->GetWindowId());
             windowId->setText(temp);
             break;
           default:

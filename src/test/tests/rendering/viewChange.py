@@ -350,16 +350,22 @@ def TestLargeValueLineoutWithLogScaling():
     DrawPlots()
     Lineout((0.5, 1.5, 0), (0.5, 0, 0))
     SetActiveWindow(2)
-    curveAtts = CurveAttributes()
+    # Instead of getting *default* curve plot atts,
+    # get *current* plot's atts using `1` arg. This
+    # is to change *only* the attrs we want to change.
+    curveAtts = CurveAttributes(1)
     curveAtts.lineWidth = 3
     SetPlotOptions(curveAtts)
     Test("largeValueLineout")
 
     # save the curve as VTK so Mesh plot and 2D view can be tested.
+    oldSwa = SaveWindowAttributes() 
     swa = SaveWindowAttributes() 
     swa.fileName="lineoutRes"
     swa.family=0
     swa.format=swa.VTK
+    # need to ensure this is set (not the default on Windows)
+    swa.outputToCurrentDirectory=1
     SetSaveWindowAttributes(swa)
     if TestEnv.params["scalable"] == 0:
         SaveWindow()
@@ -373,6 +379,8 @@ def TestLargeValueLineoutWithLogScaling():
         ra = GetRenderingAttributes()
         ra.scalableActivationMode = srm
         SetRenderingAttributes(ra)
+    # restore previous settings
+    SetSaveWindowAttributes(oldSwa)
 
     v = GetViewCurve()
     v.rangeScale  = v.LOG 

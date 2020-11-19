@@ -192,7 +192,7 @@ DataNodeToQString(const DataNode *node)
             const Type *ptr = node->Method();\
             for(i = 0; i < node->GetLength(); ++i)\
             {\
-                tmp.sprintf(Fmt, ptr[i] suffix);\
+                tmp.asprintf(Fmt, ptr[i] suffix);\
                 if(i > 0)\
                     s += " ";\
                 s += tmp;\
@@ -204,7 +204,7 @@ DataNodeToQString(const DataNode *node)
             const Type &vec = node->Method();\
             for(size_t i = 0; i < vec.size(); ++i)\
             {\
-                tmp.sprintf(Fmt, vec[i] suffix);\
+                tmp.asprintf(Fmt, vec[i] suffix);\
                 if(i > 0)\
                     s += " ";\
                 s += tmp;\
@@ -215,25 +215,25 @@ DataNodeToQString(const DataNode *node)
     case INTERNAL_NODE:
         break;
     case CHAR_NODE:
-        s.sprintf("%d", (int)node->AsChar());
+        s.asprintf("%d", (int)node->AsChar());
         break;
     case UNSIGNED_CHAR_NODE:
-        s.sprintf("%d", (int)node->AsUnsignedChar());
+        s.asprintf("%d", (int)node->AsUnsignedChar());
         break;
     case INT_NODE:
-        s.sprintf("%d", node->AsInt());
+        s.asprintf("%d", node->AsInt());
         break;
     case LONG_NODE:
-        s.sprintf("%ld", node->AsLong());
+        s.asprintf("%ld", node->AsLong());
         break;
     case FLOAT_NODE:
-        s.sprintf("%f", node->AsFloat());
+        s.asprintf("%f", node->AsFloat());
         break;
     case DOUBLE_NODE:
-        s.sprintf("%lg", node->AsDouble());
+        s.asprintf("%lg", node->AsDouble());
         break;
     case STRING_NODE:
-        s.sprintf("%s", node->AsString().c_str());
+        s.asprintf("%s", node->AsString().c_str());
         break;
     case BOOL_NODE:
         if(node->AsBool()) s = "true"; else s = "false";
@@ -243,7 +243,7 @@ DataNodeToQString(const DataNode *node)
             const char *cptr = node->AsCharArray();
             for(i = 0; i < node->GetLength(); ++i)
             {
-                tmp.sprintf("%d", (int)cptr[i]);
+                tmp.asprintf("%d", (int)cptr[i]);
                 if(i > 0)
                     s += " ";
                 s += tmp;
@@ -255,7 +255,7 @@ DataNodeToQString(const DataNode *node)
             const unsigned char *cptr = node->AsUnsignedCharArray();
             for(i = 0; i < node->GetLength(); ++i)
             {
-                tmp.sprintf("%d", (int)cptr[i]);
+                tmp.asprintf("%d", (int)cptr[i]);
                 if(i > 0)
                     s += " ";
                 s += tmp;
@@ -297,7 +297,7 @@ DataNodeToQString(const DataNode *node)
             const charVector &vec = node->AsCharVector();
             for(size_t i = 0; i < vec.size(); ++i)
             {
-                tmp.sprintf("%d", (int)vec[i]);
+                tmp.asprintf("%d", (int)vec[i]);
                 if(i > 0)
                     s += " ";
                 s += tmp;
@@ -309,7 +309,7 @@ DataNodeToQString(const DataNode *node)
             const unsignedCharVector &vec = node->AsUnsignedCharVector();
             for(size_t i = 0; i < vec.size(); ++i)
             {
-                tmp.sprintf("%d", (int)vec[i]);
+                tmp.asprintf("%d", (int)vec[i]);
                 if(i > 0)
                     s += " ";
                 s += tmp;

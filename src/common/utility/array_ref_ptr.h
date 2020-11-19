@@ -182,12 +182,8 @@ array_ref_ptr<T>::RemoveReference(void)
     }
 }
 
-#if defined(_MSC_VER) && (_MSC_VER <= 1200) // MSVC 6
-template <class T, class S>
-#else
 template <class T>
 template <class S>
-#endif
 void
 array_ref_ptr<T>::CopyTo(array_ref_ptr<S> &rhs)
 {

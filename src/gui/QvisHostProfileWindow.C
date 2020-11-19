@@ -4704,7 +4704,7 @@ QvisHostProfileWindow::addLaunchProfile()
 
     LaunchProfile lp;
     QString name(tr("New profile"));
-    QString num; num.sprintf(" #%d", profileCounter++);
+    QString num; num.asprintf(" #%d", profileCounter++);
     name += num;
     lp.SetProfileName(name.toStdString());
 

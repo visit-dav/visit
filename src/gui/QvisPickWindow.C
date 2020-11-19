@@ -1053,7 +1053,7 @@ QvisPickWindow::UpdatePage()
 
         // Change the tab heading.
         lastLetter = pickLetter;
-        temp.sprintf(" %s ", pickAtts->GetPickLetter().c_str());
+        temp.asprintf(" %s ", pickAtts->GetPickLetter().c_str());
         resultsTabWidget->setTabText(nextPage, temp);
 
         //
@@ -2114,7 +2114,7 @@ QvisPickWindow::savePickText()
 
     // Create the name of a VisIt save file to use.
     QString defaultFile;
-    defaultFile.sprintf("visit%04d", saveCount);
+    defaultFile.asprintf("visit%04d", saveCount);
     defaultFile += saveExtension;
 
     QString useDir;
