@@ -75,7 +75,7 @@ QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
     messageText = new QTextEdit(central);
     messageText->setWordWrapMode(QTextOption::WordWrap);
     messageText->setReadOnly(true);
-    messageText->setMinimumWidth(3 * fontMetrics().width("Closed the compute "
+    messageText->setMinimumWidth(3 * fontMetrics().horizontalAdvance("Closed the compute "
         "engine on host sunburn.llnl.gov.  ") / 2);
     messageText->setMinimumHeight(8 * fontMetrics().lineSpacing());
     severityLabel = new QLabel(tr("Message"), central);

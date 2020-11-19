@@ -324,8 +324,8 @@ QvisQueryWindow::CreateStandardQueryWidget()
     for(int i = 0; i < 6; ++i)
     {
         QString name1, name2;
-        name1.sprintf("queryArgLabel%02d", i);
-        name2.sprintf("queryArgText%02d", i);
+        name1.asprintf("queryArgLabel%02d", i);
+        name2.asprintf("queryArgText%02d", i);
         textFields[i] = new QLineEdit(name2,argPanel);
         connect(textFields[i], SIGNAL(returnPressed()),
                 this, SLOT(handleText()));
@@ -2071,7 +2071,7 @@ QvisQueryWindow::saveResultText()
 
     // Create the name of a VisIt save file to use.
     QString defaultFile;
-    defaultFile.sprintf("visit%04d", saveCount);
+    defaultFile.asprintf("visit%04d", saveCount);
     defaultFile += saveExtension;
     
     QString useDir = QDir::current().path();

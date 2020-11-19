@@ -485,7 +485,7 @@ DataArrayModel::data(const QModelIndex &index, int role) const
             double value = 0.;
             if(id < dataArray->GetNumberOfTuples())
                 value = dataArray->GetTuple1(id);
-            QString s; s.sprintf(formatString.toStdString().c_str(), value);
+            QString s; s.asprintf(formatString.toStdString().c_str(), value);
 
             // See if we need to prepend a pick letter.
             QSize key(index.row(), index.column());
@@ -507,7 +507,7 @@ DataArrayModel::data(const QModelIndex &index, int role) const
             else
                 value = arr->GetTuple1(id);
 
-            QString s; s.sprintf(formatString.toStdString().c_str(), value);
+            QString s; s.asprintf(formatString.toStdString().c_str(), value);
             return QVariant(s);
         }
     }
@@ -601,37 +601,37 @@ DataArrayModel::headerData(int section, Qt::Orientation orientation, int role) c
         if(displayMode == SpreadsheetTable::SliceX)
         {
             if(orientation == Qt::Horizontal)
-                label.sprintf("k=%d", section + base_index[2]);
+                label.asprintf("k=%d", section + base_index[2]);
             else
-                label.sprintf("j=%d", dims[1]-1-section + base_index[1]);
+                label.asprintf("j=%d", dims[1]-1-section + base_index[1]);
         }
         else if(displayMode == SpreadsheetTable::SliceY)
         {
             if(orientation == Qt::Horizontal)
-                label.sprintf("k=%d", section + base_index[2]);
+                label.asprintf("k=%d", section + base_index[2]);
             else
-                label.sprintf("i=%d", dims[0]-1-section + base_index[0]);
+                label.asprintf("i=%d", dims[0]-1-section + base_index[0]);
         }
         else if(displayMode == SpreadsheetTable::SliceZ)
         {
             if(orientation == Qt::Horizontal)
-                label.sprintf("i=%d", section + base_index[0]);
+                label.asprintf("i=%d", section + base_index[0]);
             else
-                label.sprintf("j=%d", dims[1]-1-section + base_index[1]);
+                label.asprintf("j=%d", dims[1]-1-section + base_index[1]);
         }
         else if(displayMode == SpreadsheetTable::UCDCell)
         {
             if(orientation == Qt::Horizontal)
                 label = tr("cell value");
             else
-                label.sprintf("%d", section + base_index[0]);
+                label.asprintf("%d", section + base_index[0]);
         }
         else if(displayMode == SpreadsheetTable::UCDNode)
         {
             if(orientation == Qt::Horizontal)
                 label = tr("node value");
             else
-                label.sprintf("%d", section + base_index[0]);
+                label.asprintf("%d", section + base_index[0]);
         }
         else if(displayMode == SpreadsheetTable::CurveData)
         {
@@ -643,7 +643,7 @@ DataArrayModel::headerData(int section, Qt::Orientation orientation, int role) c
                     label = tr("Y");
             }
             else
-                label.sprintf("%d", section);
+                label.asprintf("%d", section);
         }
 
         return QVariant(label);
@@ -1390,13 +1390,13 @@ SpreadsheetTable::updateColumnWidths()
 {
     QFontMetrics fm(font());
     QString lengthProbeString;
-    lengthProbeString.sprintf(MODEL->getFormatString().toStdString().c_str(),
+    lengthProbeString.asprintf(MODEL->getFormatString().toStdString().c_str(),
         -3.33333333333333333333);
-    int columnWidth = fm.width(lengthProbeString);
+    int columnWidth = fm.horizontalAdvance(lengthProbeString);
     if(MODEL->numSelectedCellLabels() > 0)
-        columnWidth += fm.width(" AA=");
+        columnWidth += fm.horizontalAdvance(" AA=");
     else
-        columnWidth += fm.width(" ");
+        columnWidth += fm.horizontalAdvance(" ");
     for (int i=0; i < model()->columnCount(); ++i)
         setColumnWidth(i, columnWidth);
 }

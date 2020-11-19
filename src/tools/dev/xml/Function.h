@@ -54,7 +54,7 @@ class Function
     {
         usedThisFunction = false;
     }
-    void Print(QTextStream &out, const QString &generatorName = QString::null)
+    void Print(QTextStream &out, const QString &generatorName = QString())
     {
         if(generatorName.isEmpty() || generatorName == target)
         {

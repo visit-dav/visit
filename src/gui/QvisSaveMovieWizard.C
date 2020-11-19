@@ -2673,7 +2673,7 @@ QvisSaveMovieWizard::page5_Update(int flags)
                     {
                         QString pre(name.substr(0, name.size()-digits.size()).c_str());
                         QString idx;
-                        idx.sprintf("%05d", number);
+                        idx.asprintf("%05d", number);
                         itemKey = pre + idx;
                     }
                 }
@@ -2930,14 +2930,14 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
         QString tmp;
         if(useCurrent[i] > 0)
         {
-            QString scale; scale.sprintf("%dx",  int(scales[i]));
+            QString scale; scale.asprintf("%dx",  int(scales[i]));
             tmp = QString(FormatToMenuName(formats[i].c_str())) +
                   QString(" ") + tr("Current") + QString(" ") +
                   scale;
         }
         else
         {
-            tmp.sprintf("%s %dx%d",
+            tmp.asprintf("%s %dx%d",
                 FormatToMenuName(formats[i].c_str()), w[i], h[i]);
         }
         s += tmp;
@@ -3015,11 +3015,11 @@ QvisSaveMovieWizard::page9_UpdateOutputs()
             QString res;
             if(useCurrent[i] > 0)
             {
-                res.sprintf(" %dx", int(scales[i]));
+                res.asprintf(" %dx", int(scales[i]));
                 res = tr("Current") + res;
             }
             else
-                res.sprintf("%dx%d", w[i], h[i]);
+                res.asprintf("%dx%d", w[i], h[i]);
             QTreeWidgetItem *item = new QTreeWidgetItem(page9_outputFormats);
             item->setText(0, FormatToMenuName(formats[i].c_str()));
             item->setText(1, res);
@@ -4492,9 +4492,9 @@ QvisSaveMovieWizard::page9_removeOutput()
         for(size_t i = 0; i < formats.size(); ++i)
         {
             QString fmt(FormatToMenuName(formats[i].c_str()));
-            QString res;  res.sprintf("%dx%d", widths[i], heights[i]);
+            QString res;  res.asprintf("%dx%d", widths[i], heights[i]);
             QString res2;
-            res2.sprintf(" %dx", int(scales[i]));
+            res2.asprintf(" %dx", int(scales[i]));
             res2 = tr("Current") + res2;
             QString stereo(tr("off"));
             if(stereoFlags[i] == 1)

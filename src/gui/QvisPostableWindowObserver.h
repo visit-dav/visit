@@ -51,8 +51,8 @@ class GUI_API QvisPostableWindowObserver : public QvisPostableWindowSimpleObserv
     Q_OBJECT
 public:
     QvisPostableWindowObserver(Subject *subj,
-                               const QString &caption = QString::null,
-                               const QString &shortName = QString::null,
+                               const QString &caption = QString(),
+                               const QString &shortName = QString(),
                                QvisNotepadArea *notepad = 0,
                                int buttonCombo = AllExtraButtonsAndLoadSave,
                                bool stretch = true);
