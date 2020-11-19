@@ -112,6 +112,9 @@ class     vtkDataArray;
 //    Kathleen Biagas, Thu Sep 11 09:29:57 PDT 2014
 //    Added 'Original' options for GetNumberOfZones/Nodes.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 //
@@ -231,7 +234,7 @@ typedef struct
     double                         min;
     double                         max;
     std::string                    variable;
-    std::vector<VISIT_LONG_LONG>   numVals;
+    std::vector<long long>   numVals;
 } CalculateHistogramArgs;
 
 typedef struct
