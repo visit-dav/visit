@@ -113,6 +113,9 @@ QvisEngineWindow::~QvisEngineWindow()
 //    Brad Whitlock, Mon Oct 10 12:55:52 PDT 2011
 //    I added some information.
 //
+//    Alister Maguire, Thu Nov 12 09:58:35 PST 2020
+//    Removed the interrupt engine logic as it is no longer used.
+//
 // ****************************************************************************
 
 void
@@ -194,11 +197,6 @@ QvisEngineWindow::CreateWindowContents()
     QHBoxLayout *buttonLayout1 = new QHBoxLayout();
     topLayout->addLayout(buttonLayout1);
     
-    interruptEngineButton = new QPushButton(tr("Interrupt"), central);
-    connect(interruptEngineButton, SIGNAL(clicked()), this, SLOT(interruptEngine()));
-    interruptEngineButton->setEnabled(false);
-    buttonLayout1->addWidget(interruptEngineButton);
-
     clearCacheButton = new QPushButton(tr("Clear cache"), central);
     connect(clearCacheButton, SIGNAL(clicked()), this, SLOT(clearCache()));
     clearCacheButton->setEnabled(false);
@@ -298,6 +296,9 @@ QvisEngineWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//   Alister Maguire, Thu Nov 12 09:58:35 PST 2020
+//   Remove interrupt engine logic.
+//
 // ****************************************************************************
 
 void
@@ -341,9 +342,9 @@ QvisEngineWindow::UpdateWindow(bool doAll)
                 current = 0;
                 engineCombo->setCurrentIndex(0);
                 if (sim[0]=="")
-                    activeEngine = QString().sprintf("%s",host[0].c_str());
+                    activeEngine = QString().asprintf("%s",host[0].c_str());
                 else
-                    activeEngine = QString().sprintf("%s:%s",host[0].c_str(),
+                    activeEngine = QString().asprintf("%s:%s",host[0].c_str(),
                                                      sim[0].c_str());
 
                 // Add an entry if needed.
@@ -366,9 +367,6 @@ QvisEngineWindow::UpdateWindow(bool doAll)
         // Update the engine information.
         UpdateInformation(current);
 
-        // Set the enabled state of the various widgets.
-        // KSB: When INTERRUPT ENGINE has been fixed, uncomment the next line.
-        //interruptEngineButton->setEnabled(host.size() > 0);
         closeEngineButton->setEnabled(host.size() > 0);
         clearCacheButton->setEnabled(host.size() > 0);
         engineCombo->setEnabled(host.size() > 0);
@@ -530,7 +528,7 @@ QvisEngineWindow::UpdateStatusArea()
         else if (s->GetMessageType() == 2)
         {
             QString msg;
-            msg.sprintf("%d/%d", s->GetCurrentStage(), s->GetMaxStage());
+            msg.asprintf("%d/%d", s->GetCurrentStage(), s->GetMaxStage());
             msg = tr("Total Status: Stage ") + msg;
             totalStatusLabel->setText(msg);
             msg = tr("Stage Status: ") + QString(s->GetCurrentStageName().c_str());
@@ -728,37 +726,6 @@ QvisEngineWindow::closeEngine()
 }
 
 // ****************************************************************************
-// Method: QvisEngineWindow::interruptEngine
-//
-// Purpose: 
-//   This is a Qt slot function that is called to interrupt the engine that's
-//   displayed in the window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed May 2 16:38:41 PST 2001
-//
-// Modifications:
-//    Jeremy Meredith, Tue Mar 30 09:34:33 PST 2004
-//    I added support for simulations.
-//   
-//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
-//    Initial Qt4 Port.
-//
-// ****************************************************************************
-
-void
-QvisEngineWindow::interruptEngine()
-{
-    int index = engineCombo->currentIndex();
-    if (index < 0)
-        return;
-    string host = engines->GetEngineName()[index];
-    string sim  = engines->GetSimulationName()[index];
-
-    GetViewerProxy()->InterruptComputeEngine(host, sim);
-}
-
-// ****************************************************************************
 // Method: QvisEngineWindow::clearCache
 //
 // Purpose: 
@@ -818,10 +785,10 @@ void
 QvisEngineWindow::selectEngine(int index)
 {
     if (engines->GetSimulationName()[index]=="")
-        activeEngine = QString().sprintf("%s",
+        activeEngine = QString().asprintf("%s",
                                          engines->GetEngineName()[index].c_str());
     else
-        activeEngine = QString().sprintf("%s:%s",
+        activeEngine = QString().asprintf("%s:%s",
                                   engines->GetEngineName()[index].c_str(),
                                   engines->GetSimulationName()[index].c_str());
 

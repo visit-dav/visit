@@ -380,6 +380,9 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
 //    Added an option for compressing the output files with
 //    gzip.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
@@ -480,7 +483,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         // can then split that number into chunks.
         if (!shouldChangeTotalZones)
             targetTotalZones = dims[0]*dims[1]*dims[2];
-        VISIT_LONG_LONG zonesPerBricklet = targetTotalZones / (VISIT_LONG_LONG) nBricklets;
+        long long zonesPerBricklet = targetTotalZones / (long long) nBricklets;
         zonesPerBricklet += 1;
         double cubeRoot = pow( (double) zonesPerBricklet, 0.3333);
         int approxCubeRoot = ((int) cubeRoot) + 1;

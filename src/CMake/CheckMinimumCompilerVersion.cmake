@@ -10,10 +10,10 @@
 
 
 #-----------------------------------------------------------------------------
-# Minimum compiler version check: GCC >= 4.8
+# Minimum compiler version check: GCC >= 6.0
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
-    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
-  message(FATAL_ERROR "GCC 4.8 or later is required.")
+    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
+  message(FATAL_ERROR "GCC 6.0 or later is required.")
 endif ()
 
 #-----------------------------------------------------------------------------
@@ -31,10 +31,11 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND
 endif ()
 
 #-----------------------------------------------------------------------------
-# Minimum compiler version check: Microsoft C/C++ >= 18.0 (aka VS 2013 aka VS 12.0)
+
+# Minimum compiler version check: Microsoft C/C++ >= 19.1 (aka VS 2017)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND
-    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0)
-  message(FATAL_ERROR "Microsoft Visual Studio 2013 or later is required.")
+    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.1)
+  message(FATAL_ERROR "Microsoft Visual Studio 2017 or later is required.")
 endif ()
 
 #-----------------------------------------------------------------------------

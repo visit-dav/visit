@@ -850,7 +850,7 @@ QvisViewportWidget::getNextId() const
 
     do
     {
-        id.sprintf(" %d", index);
+        id.asprintf(" %d", index);
         id = tr("Viewport") + id;
 
         found = false;

@@ -47,7 +47,7 @@ class GUI_API QvisFileWindowBase : public QvisDelayedWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisFileWindowBase(const QString &winCaption = QString::null);
+    QvisFileWindowBase(const QString &winCaption = QString());
     virtual ~QvisFileWindowBase();
     virtual void SubjectRemoved(Subject *TheRemovedSubject);
     void ConnectSubjects(HostProfileList *hpl);

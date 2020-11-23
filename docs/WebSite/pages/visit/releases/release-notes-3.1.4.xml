@@ -1,29 +1,32 @@
-<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
-<html>
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-  <meta http-equiv="Content-Language" content="en-us">
-  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-  <meta name="ProgId" content="FrontPage.Editor.Document">
-  <title>VisIt 3.1.4 Release Notes</title>
-</head>
-<body>
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[Release Notes for VisIt 3.1.4]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <IM>LLNL-WEB-816793</IM>
+  <lastchanged><![CDATA[November 18, 2020]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
 
+<div class="row">	
+<div class="span9">
 
-<center><b><font size="6">VisIt 3.1.4 Release Notes</font></b></center>
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
 
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
 
-<p><b>Sections</b></p>
-<ul>
-  <li><a href="#Bugs_fixed">Bug Fixes</a></li>
-  <li><a href="#Enhancements">Enhancements</a></li>
-  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
-</ul>
-
-<a name="Bugs_fixed"></a>
-<p><b><font size="4">Bugs fixed in version 3.1.4</font></b></p>
+<h2>Bugs fixed in version 3.1.4</h2>
 <ul>
   <li>Fixed a bug that resulted in domain boundaries being visible when using the OSPRay volume renderer.</li>
   <li>Fixed the display of -help text on Windows.</li>
@@ -45,8 +48,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug that prevented the GUI orientation from resetting back to vertical when changing from a custom appearance to the default appearance.</li>
 </ul>
 
-<a name="Enhancements"></a>
-<p><b><font size="4">Enhancements in version 3.1.4</font></b></p>
+<h2>Enhancements in version 3.1.4</h2>
 <ul>
   <li>Enabled the paraDIS and paraDIS_tecplot readers on Windows.</li>
   <li>It is now possible to easily run VisIt in parallel with all the Linux distributions. To run in parallel, simply pass the number of processors to use with the "-np" command line option. For example, "visit -np 4" to run on 4 processors.</li>
@@ -57,8 +59,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Enhanced the Pick over time so that it uses a much faster route when picking verdict metric variables.</li>
 </ul>
 
-<a name="Dev_changes"></a>
-<p><b><font size="4">Changes for VisIt developers in version 3.1.4</font></b></p>
+<h2>Changes for VisIt developers in version 3.1.4</h2>
 <ul>
   <li>Updated build_visit for macOS 10.15.</li>
   <li>Removed FastBit and FastQuery from VisIt.</li>
@@ -66,7 +67,11 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Updated a version comparison function in build_visit so that it worked on Manjaro Linux, an Arch Linux derivative.</li>
 </ul>
 
-<p>Click the following link to view the release notes for the previous version
-of VisIt: <a href=relnotes3.1.3.html>3.1.3</a>.</p>
-</body>
-</html>
+<p>For any additional questions, send e-mail to <a href="mailto:visit-users@ornl.gov">VisIt Users</a>.</p>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>
