@@ -28,6 +28,7 @@
 #    Added Non-Colinear Quad mesh
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("TyphonIO")
 
 TurnOffAllAnnotations()
 
