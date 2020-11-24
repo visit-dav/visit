@@ -3,7 +3,7 @@
   <title><![CDATA[VisIt Executables]]></title>
   <IM>LLNL-WEB-816793</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[November 18, 2020]]></lastchanged>
+  <lastchanged><![CDATA[November 23, 2020]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -59,6 +59,13 @@
           <td>Windows (10 / 8 / 7) 64 bit<br />
           Visual Studio 2017</td>
           <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.4/visit3.1.4_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>macOS Catalina 10.15.6 - Intel 64 bit<br />
+          Darwin 10.15, Darwin Kernel Version 19.6.0, clang-1100.0.33.16, MPICH<br />
+          <i>(Works on Mac OS X 10.15 and later.)</i><br />
+          <i>(Dark mode has beeen disabled while we work on a fix.)</i></td>
+          <td><a href="https://github.com/visit-dav/visit/releases/download/v3.1.4/visit3.1.4.darwin-x86_64-10_15.dmg">Download</a></td>
         </tr>
         <tr>
           <td>macOS Mojave 10.14.6 - Intel 64 bit<br />
