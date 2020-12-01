@@ -998,7 +998,7 @@ int avtunvFileFormat::getfastNbfaextv ()
             nnodes[i] = 0;
         for (itrg = meshUnvNodes.begin(); itrg != meshUnvNodes.end(); itrg++)
         {
-            fprintf(stdout,"getNbfaextvNode %d has #elts=%ld :",itrg->label,itrg->nod2elts.size());
+            fprintf(stdout,"getNbfaextvNode %d has #elts=%zu :",itrg->label,itrg->nod2elts.size());
             for (int i=0; i < itrg->nod2elts.size(); i++)
                 fprintf(stdout," %d",itrg->nod2elts[i]);
             fprintf(stdout,"\n");
@@ -1159,7 +1159,7 @@ int avtunvFileFormat::getNbfaextv ()
                 nnodes[i] = 0;
             for (itrg = meshUnvNodes.begin(); itrg != meshUnvNodes.end(); itrg++)
             {
-                fprintf(stdout,"getNbfaextvNode %d has #elts=%ld :",itrg->label,itrg->nod2elts.size());
+                fprintf(stdout,"getNbfaextvNode %d has #elts=%zu :",itrg->label,itrg->nod2elts.size());
                 for (int i=0; i < itrg->nod2elts.size(); i++)
                     fprintf(stdout," %d",itrg->nod2elts[i]);
                 fprintf(stdout,"\n");
@@ -1335,7 +1335,7 @@ int avtunvFileFormat::getNbfaextv ()
                         // Debugging:
                         if (debuglevel >= 5)
                         {
-                            fprintf(stdout,"Element %d, face %d has %ld neighbours :",itre->label,facloc+1,maliste[cdim-1].size());
+                            fprintf(stdout,"Element %d, face %d has %zu neighbours :",itre->label,facloc+1,maliste[cdim-1].size());
                             for (itre2 = maliste[cdim-1].begin(); itre2 != maliste[cdim-1].end(); itre2++)
                                 fprintf(stdout," %d",itre2->label);
                             fprintf(stdout,"\n");
@@ -1432,7 +1432,7 @@ int avtunvFileFormat::getNbfreeSets ()
         set<UnvNode, UnvNode::compare_UnvNode>::iterator itrg; // Global node iterator
         set<UnvElement, UnvElement::compare_UnvElement>::iterator itre; // Primary elements iterator
 #if INTERACTIVEREAD
-        if (debuglevel >= 3) fprintf(stdout,"Building elements from free faces %ld\n",freeUnvFaces.size());
+        if (debuglevel >= 3) fprintf(stdout,"Building elements from free faces %zu\n",freeUnvFaces.size());
 #else
         debug3 << "Building elements from free faces" << freeUnvFaces.size() << endl;
 #endif
@@ -1538,7 +1538,7 @@ int avtunvFileFormat::getNbfreeSets ()
                 nnodes[i] = 0;
             for (itrl = freenoeuds.begin(); itrl != freenoeuds.end(); itrl++)
             {
-                fprintf(stdout,"Node=(n=%d,l=%d pos=(%lf,%lf,%lf)) has #elts=%ld : ",
+                fprintf(stdout,"Node=(n=%d,l=%d pos=(%lf,%lf,%lf)) has #elts=%zu : ",
                         itrl->number,itrl->label,itrl->x,itrl->y,itrl->z,itrl->nod2elts.size());
                 for (int i=0; i < itrl->nod2elts.size(); i++)
                     fprintf(stdout," %d",itrl->nod2elts[i]);
@@ -1557,7 +1557,7 @@ int avtunvFileFormat::getNbfreeSets ()
                 {
                     anUnvNode.label = itre->nodes[i]; // Gets a global node label, suitable for free array as well
                     itrl = freenoeuds.find(anUnvNode);
-                    fprintf(stdout," %d(%ld)",itre->nodes[i],itrl->nod2elts.size());
+                    fprintf(stdout," %d(%zu)",itre->nodes[i],itrl->nod2elts.size());
                 }
                 fprintf(stdout,"\n");
             }
@@ -1584,7 +1584,7 @@ int avtunvFileFormat::getNbfreeSets ()
         while(oldelts.size() > 0)
         {
 #if INTERACTIVEREAD
-            if (debuglevel >= 4) fprintf(stdout,"\tColorizing %ld elements to color %d\n",oldelts.size(), nbfreesets);
+            if (debuglevel >= 4) fprintf(stdout,"\tColorizing %zu elements to color %d\n",oldelts.size(), nbfreesets);
 #else
             debug4 << "\tColorizing " << oldelts.size() << " elements to color " << nbfreesets << endl;
 #endif
@@ -1614,7 +1614,7 @@ int avtunvFileFormat::getNbfreeSets ()
                     anUnvNode.label = itre2->nodes[in]; // Gets a global node label, suitable for free array as well
                     itrl = freenoeuds.find(anUnvNode);
 #if INTERACTIVEREAD
-                    if (debuglevel >= 5) fprintf(stdout,"\t\t Elt %d has node (n=%d,l=%d, pos=(%lf,%lf,%lf)) belonging to %ld elts",
+                    if (debuglevel >= 5) fprintf(stdout,"\t\t Elt %d has node (n=%d,l=%d, pos=(%lf,%lf,%lf)) belonging to %zu elts",
                                                      itre2->label,itrl->number,itrl->label,itrl->x,itrl->y,itrl->z,itrl->nod2elts.size());
 #endif
                     myrange[0] = min(myrange[0],itrl->x);
@@ -1644,7 +1644,7 @@ int avtunvFileFormat::getNbfreeSets ()
                         }
                     }
 #if INTERACTIVEREAD
-                    if (debuglevel >= 5) fprintf(stdout,"\n\t\t\tincrease newelt size=%ld\n",newelts.size());
+                    if (debuglevel >= 5) fprintf(stdout,"\n\t\t\tincrease newelt size=%zu\n",newelts.size());
 #endif
                 }
             }
@@ -1728,7 +1728,7 @@ int avtunvFileFormat::getNbfreeSets ()
 
         // Paints the matid array:
 #if INTERACTIVEREAD
-        if (debuglevel >= 3) fprintf(stdout,"Painting the %ld free faces using %d colors\n",freeUnvFaces.size(),nbfreesets);
+        if (debuglevel >= 3) fprintf(stdout,"Painting the %zu free faces using %d colors\n",freeUnvFaces.size(),nbfreesets);
 #else
         debug3 << "Painting the " << freeUnvFaces.size() << " free faces using " << nbfreesets << " colors" << endl;
 #endif
@@ -3911,7 +3911,7 @@ avtunvFileFormat::ReadFile()
 #if INTERACTIVEREAD
                         if (debuglevel >= 2) fprintf(stdout,"GMSH Version %f\n",version) ;
 #else
-                        debug2 << "Version " << version << endl;
+                        debug2 << "GMSH Version " << version << endl;
 #endif
                         if (version >= 4)
                         {
@@ -4140,6 +4140,8 @@ avtunvFileFormat::ReadFile()
                                             number+=lbelts ;
 #if INTERACTIVEREAD
                                             if (debuglevel >= 4) fprintf(stdout, "Elements Counter=%d / %d\n",number, nbelts) ;
+#else
+                                            debug4 << "Elements Counter=" << number << " / " << nbelts << endl;
 #endif
                                         }
                                     }
@@ -4793,6 +4795,8 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
                 meshname = "volmesh";
 #if INTERACTIVEPLOT
                 if (debuglevel >= 3) fprintf(stdout,"3D Material #cells=%d\n",dims[0]);
+#else
+                debug3 << "3D Material #cells=" << dims[0] << endl;
 #endif
                 for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
                     if (avtunvFileFormat::is3DKnownElt(itre->typelt) >= 0) 
@@ -4806,6 +4810,8 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
                 meshname = "surfmesh";
 #if INTERACTIVEPLOT
                 if (debuglevel >= 3) fprintf(stdout,"2D Material #cells=%d\n",dims[0]);
+#else
+                debug3 << "2D Material #cells=" << dims[0] << endl;
 #endif
                 for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
                     if (avtunvFileFormat::is2DKnownElt(itre->typelt) >= 0)
@@ -4819,6 +4825,8 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
                 meshname = "wiremesh";
 #if INTERACTIVEPLOT
                 if (debuglevel >= 3) fprintf(stdout,"1D Material #cells=%d\n",dims[0]);
+#else
+                debug3 << "1D Material #cells=" << dims[0] << endl;
 #endif
                 for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
                     if (avtunvFileFormat::is1DKnownElt(itre->typelt) >= 0)
