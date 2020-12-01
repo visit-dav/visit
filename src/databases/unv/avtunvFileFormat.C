@@ -3899,7 +3899,7 @@ avtunvFileFormat::ReadFile()
 #endif
             const int len = 2048; // Longest line length
             char buf[len]; // A line length
-	    if (fgets(buf, len, handle) != NULL)
+            if (fgets(buf, len, handle) != NULL)
             {
                 if (strstr((const char *)buf, "$MeshFormat") != NULL)
                 {
