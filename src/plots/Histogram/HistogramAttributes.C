@@ -1459,7 +1459,7 @@ HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj)
 {
     if (minFlag && (min != obj.GetMin()))
         return true;
-    if (minFlag && (max != obj.GetMax()))
+    if (maxFlag && (max != obj.GetMax()))
         return true;
     if (useBinWidths != obj.GetUseBinWidths())
         return true;
