@@ -330,7 +330,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     connect(minToggle, SIGNAL(toggled(bool)),
             this, SLOT(minToggled(bool)));
     minLineEdit = new QLineEdit(central);
-    connect(minLineEdit, SIGNAL(returnPressed()),
+    connect(minLineEdit, SIGNAL(editingFinished()),
             this, SLOT(minProcessText())); 
     limitsLayout->addWidget(minLineEdit, 1, 1);
 
@@ -340,7 +340,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
     maxLineEdit = new QLineEdit(central);
-    connect(maxLineEdit, SIGNAL(returnPressed()),
+    connect(maxLineEdit, SIGNAL(editingFinished()),
             this, SLOT(maxProcessText())); 
     limitsLayout->addWidget(maxLineEdit, 1, 3);
 
@@ -738,9 +738,13 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
     // Do min
     if(which_widget == HistogramAttributes::ID_min || doAll)
     {
+        std::cout << "GetCurrentValues for minimum" << std::endl;
         double val;
         if(LineEditGetDouble(minLineEdit, val))
+        {
+            std::cout << "Value updated successfully. It is: " << val << std::endl;
             atts->SetMin(val);
+        }
         else
         {
             ResettingError(tr("minimum"),
@@ -752,9 +756,13 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
     // Do max
     if(which_widget == HistogramAttributes::ID_max || doAll)
     {
+        std::cout << "GetCurrentValues for maximum" << std::endl;
         double val;
         if(LineEditGetDouble(maxLineEdit, val))
+        {
+            std::cout << "Value updated successfully. It is: " << val << std::endl;
             atts->SetMax(val);
+        }
         else
         {
             ResettingError(tr("maximum"),
@@ -849,6 +857,7 @@ QvisHistogramPlotWindow::Apply(bool ignore)
 void
 QvisHistogramPlotWindow::apply()
 {
+    std::cout << "Apply was clicked." << std::endl;
     Apply(true);
 }
 
