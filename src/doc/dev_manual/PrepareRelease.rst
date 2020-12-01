@@ -155,6 +155,7 @@ is only available on the Mac. ::
 
 Creating a new release notes file
 """""""""""""""""""""""""""""""""
+
 A final step in making a release is to create the release notes file for the *next*
 release. To do this, you must be reasonably certain what the next release's version
 number will be. Typically, we do 3-4 patch releases for each minor release. So,
@@ -168,6 +169,13 @@ either the *minor* release notes template, ``relnotes_minor_templ.html``, or the
 release notes template, ``relnotes_major_templ.html`` to a file name of the form
 ``relnotesA.B.C.html`` where ``A.B.C`` is the version number for the *next* release.
 The ``.C`` part of the file name is missing for *minor* releases.
+
+Patch release notes should go on the RC branch (e.g. ``3.1RC``) and minor release notes
+should go on ``develop``. *Always* assume there will be another patch release
+and just create the next patch release file. If there isn't another patch release, the
+notes from the patch release can be incorporated into the minor release notes file.
+When finishing a minor release, create the files for the next minor release *and* the
+next patch release.
 
 Preparing for a Major Release
 -----------------------------
