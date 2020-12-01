@@ -128,36 +128,28 @@ IF(VISIT_PYTHON_FILTERS)
     ENDIF (NOT WIN32)
 ENDIF(VISIT_PYTHON_FILTERS)
 
-IF(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE AND NOT PYSIDE_IN_PYTHON)
-    MESSAGE(STATUS "Adding PySide to lib/site-packages/")
-    IF (NOT WIN32)
-        FILE(GLOB PYSIDE_MODULE_ITEMS "${PYSIDE_PYTHONPATH}/*")
-        FOREACH(ITM ${PYSIDE_MODULE_ITEMS})
-            GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
-            GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
-            MESSAGE(STATUS "Symlinking ${ITM_ABS} to ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}")
-            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
-                          ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
-                          RESULT_VARIABLE PYSIDE_MODULE_SYM_RM)
-            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
-                          ${ITM_ABS}
-                          ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
-                          RESULT_VARIABLE PYSIDE_MODULE_SYM_CREATE)
-            IF(NOT "${PYSIDE_MODULE_SYM_CREATE}" STREQUAL "0")
-                MESSAGE(WARNING "Failed to create PySide module symlink in lib/site-packages/ for ${ITM_ABS}")
-            ENDIF(NOT "${PYSIDE_MODULE_SYM_CREATE}" STREQUAL "0")
-        ENDFOREACH(ITM ${PYSIDE_MODULE_ITEMS})
-    ELSE (NOT WIN32)
-      set(pysidename "PySide2")
-      ADD_CUSTOM_TARGET(pyside_modules ALL
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    ${PYSIDE_PYTHONPATH}/${pysidename}
-                    ${VISIT_LIBRARY_DIR}/site-packages/${pysidename}
-            COMMENT "Copying ${PYSIDE_PYTHONPATH}/${pysidename} to ${VISIT_LIBRARY_DIR}/site-packages/${pysidename}"
-        )
-        if(VISIT_NO_ALLBUILD)
-            add_dependencies(visit_special_builds pyside_modules)
+if(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE AND NOT PYSIDE_IN_PYTHON)
+    function(SYMLINK_PYSIDE pkg)
+        get_filename_component(ITM_BASE ${${pkg}} NAME)
+        set(sym_cmd "create_symlink")
+        if(WIN32)
+            set(sym_cmd "copy_directory")
         endif()
-    ENDIF (NOT WIN32)
-ENDIF()
+        # KSB to do, check if this works on Windows
+        message(STATUS "${sym_cmd} ${${pkg}} to ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}")
+        execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
+            RESULT_VARIABLE PYSIDE_MODULE_SYM_RM)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E ${sym_cmd}
+            ${${pkg}} ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
+            RESULT_VARIABLE PYSIDE_MODULE_SYM_CREATE)
+        if(NOT "${PYSIDE_MODULE_SYM_CREATE}" STREQUAL "0")
+            message(WARNING "Failed to create PySide module in lib/site-packages/ for ${${pkg}}")
+        endif()
+        unset(sym_cmd)
+    endfunction()
+
+    message(STATUS "Adding PySide to lib/site-packages/")
+    SYMLINK_PYSIDE(PYSIDE_PYTHONPATH)
+    SYMLINK_PYSIDE(SHIBOKEN_PYTHON_MODULE_DIR)
+endif()
 

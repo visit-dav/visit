@@ -35,9 +35,7 @@
 #
 #****************************************************************************/
 
-#include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-message("PySide_FOUND ? ${PySide_FOUND}")
 if(NOT PySide_FOUND)
 
     if(NOT PYTHON_EXECUTABLE OR NOT PYTHON_LIBRARY)
@@ -50,10 +48,10 @@ if(NOT PySide_FOUND)
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" "import PySide2"
                     OUTPUT_QUIET
                     ERROR_QUIET
-                    RESULT_VARIABLE PYSIDE_IN_PYTHON)
+                    RESULT_VARIABLE HAVE_PYSIDE_IN_PYTHON)
 
-    if(PYSIDE_IN_PYTHON EQUAL 0)
-        set(PYSIDE_IN_PYTHON true CACHE INTERNAL BOOL "Pyside was installed in python") 
+    if(HAVE_PYSIDE_IN_PYTHON EQUAL 0)
+        set(PYSIDE_IN_PYTHON true) 
         # use a macro taken from an example within PySide2 
         # The config script is located in  python's lib/site-packages/PySide2/examples/utils dir
         # perhaps we want to do this a different way?
@@ -158,7 +156,7 @@ if(NOT PySide_FOUND)
         message(STATUS "    pyside library:     ${PYSIDE_LIBRARY}")
         message(STATUS "    pyside typesystems: ${PYSIDE_TYPESYSTEMS}")
     else()
-        set(PYSIDE_IN_PYTHON false CACHE INTERNAL BOOL "Pyside was installed in python") 
+        set(PYSIDE_IN_PYTHON false) 
         # PySide not installed in python, use the old way
        
         include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
@@ -238,20 +236,26 @@ if(NOT PySide_FOUND)
                         shiboken2-python${PYTHON_VERSION_V}.${PYSIDE_SHORT_VERSION})
                 SET_UP_THIRD_PARTY(PYSIDE lib include ${PySide2_LIBRARIES} ${Shiboken2_LIBRARIES})
             endif(NOT APPLE)
-            # The PySide module is symlinked into the python install VisIt uses for 
-            # dev builds.  For 'make install' and 'make package' we need to actually 
-            # install the PySide SOs.
-            set(PYSIDE_MODULE_SRC  ${PYSIDE_PYTHONPATH}/PySide2)
-            set(PYSIDE_MODULE_INSTALLED_DIR ${VISIT_INSTALLED_VERSION_LIB}/site-packages/PySide2)
 
-            file(GLOB pysidelibs ${PYSIDE_MODULE_SRC}/*)
-            install(FILES ${pysidelibs}
-                    DESTINATION ${PYSIDE_MODULE_INSTALLED_DIR}
-                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                        GROUP_READ GROUP_WRITE GROUP_EXECUTE 
-                        WORLD_READ WORLD_EXECUTE
+            # Install the pyside and shiboken python site-packages
+            install(DIRECTORY ${PYSIDE_PYTHONPATH}
+                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages
                     CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                     PATTERN ".svn" EXCLUDE
+                    PATTERN ".git" EXCLUDE
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                                WORLD_READ             WORLD_EXECUTE
+                    )
+
+            install(DIRECTORY ${SHIBOKEN_PYTHON_MODULE_DIR}
+                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages
+                    CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
+                    PATTERN ".svn" EXCLUDE
+                    PATTERN ".git" EXCLUDE
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                                WORLD_READ             WORLD_EXECUTE
                     )
         endif(PySide_FOUND)
     endif() 
