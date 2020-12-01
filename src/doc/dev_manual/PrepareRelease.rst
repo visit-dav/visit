@@ -167,6 +167,7 @@ an new, empty release notes file by going to ``src/resources/help/en_US`` and co
 either the *minor* release notes template, ``relnotes_minor_templ.html``, or the *major*
 release notes template, ``relnotes_major_templ.html`` to a file name of the form
 ``relnotesA.B.C.html`` where ``A.B.C`` is the version number for the *next* release.
+The ``.C`` part of the file name is missing for *minor* releases.
 
 Preparing for a Major Release
 -----------------------------
