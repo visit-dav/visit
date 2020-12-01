@@ -153,8 +153,8 @@ is only available on the Mac. ::
     cd ..
     iconutil --convert icns VisItIcon.iconset
 
-Creating an new release notes file
-""""""""""""""""""""""""""""""""""
+Creating a new release notes file
+"""""""""""""""""""""""""""""""""
 A final step in making a release is to create the release notes file for the *next*
 release. To do this, you must be reasonably certain what the next release's version
 number will be. Typically, we do 3-4 patch releases for each minor release. So,
