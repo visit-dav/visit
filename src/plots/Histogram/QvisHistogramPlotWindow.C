@@ -738,11 +738,9 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
     // Do min
     if(which_widget == HistogramAttributes::ID_min || doAll)
     {
-        std::cout << "GetCurrentValues for minimum" << std::endl;
         double val;
         if(LineEditGetDouble(minLineEdit, val))
         {
-            std::cout << "Value updated successfully. It is: " << val << std::endl;
             atts->SetMin(val);
         }
         else
@@ -756,11 +754,9 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
     // Do max
     if(which_widget == HistogramAttributes::ID_max || doAll)
     {
-        std::cout << "GetCurrentValues for maximum" << std::endl;
         double val;
         if(LineEditGetDouble(maxLineEdit, val))
         {
-            std::cout << "Value updated successfully. It is: " << val << std::endl;
             atts->SetMax(val);
         }
         else
@@ -857,7 +853,6 @@ QvisHistogramPlotWindow::Apply(bool ignore)
 void
 QvisHistogramPlotWindow::apply()
 {
-    std::cout << "Apply was clicked." << std::endl;
     Apply(true);
 }
 
