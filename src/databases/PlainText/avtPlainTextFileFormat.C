@@ -289,7 +289,7 @@ avtPlainTextFileFormat::GetMesh(const char *meshname)
             vals->SetName(meshname);
 
             vtkRectilinearGrid *rg =
-                vtkVisItUtility::Create1DRGrid(nrows,VTK_FLOAT);
+                vtkVisItUtility::Create1DRGrid(nrows,VTK_DOUBLE);
             rg->GetPointData()->SetScalars(vals);
 
             vtkDataArray *xc = rg->GetXCoordinates();
