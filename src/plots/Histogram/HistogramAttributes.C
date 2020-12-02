@@ -1457,6 +1457,10 @@ HistogramAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 bool
 HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj) const
 {
+    if (minFlag != obj.GetMinFlag())
+        return true;
+    if (maxFlag != obj.GetMaxFlag())
+        return true;
     if (minFlag && (min != obj.GetMin()))
         return true;
     if (maxFlag && (max != obj.GetMax()))
@@ -1478,6 +1482,10 @@ HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj)
     if ( dataScale != obj.GetDataScale() )
         return true;
     if ( binScale != obj.GetBinScale() )
+        return true;
+    if (normalizeHistogram != obj.GetNormalizeHistogram())
+        return true;
+    if (computeAsCDF != obj.GetComputeAsCDF())
         return true;
     return false;
 }
