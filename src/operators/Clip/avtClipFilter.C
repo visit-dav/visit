@@ -248,11 +248,11 @@ avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool keepCellsWhole,
 
         if (keepCellsWhole)
         {
-            clipper1->SetCellClipStrategyToKeepWhole();
+            clipper2->SetCellClipStrategyToKeepWhole();
         }
         else
         {
-            clipper1->SetCellClipStrategyToRemovePartial();
+            clipper2->SetCellClipStrategyToRemovePartial();
         }
 
         last = clipper2;
@@ -266,11 +266,11 @@ avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool keepCellsWhole,
 
         if (keepCellsWhole)
         {
-            clipper1->SetCellClipStrategyToKeepWhole();
+            clipper3->SetCellClipStrategyToKeepWhole();
         }
         else
         {
-            clipper1->SetCellClipStrategyToRemovePartial();
+            clipper3->SetCellClipStrategyToRemovePartial();
         }
 
         last = clipper3;
