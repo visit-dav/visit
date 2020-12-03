@@ -3829,6 +3829,15 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
             {
                 for (j = 0 ; j < minfo_nmats ; j++)
                 {
+                    //FIXME: test
+                    if (minfo_matnos[j] < 0)
+                    {
+                        char msg[256];
+                        snprintf(msg, sizeof(msg), "Material numbers must "
+                            "be >= 0, but found %i.", minfo_matnos[j]);
+                        EXCEPTION1(ImproperUseException, msg);
+                    }
+
                     char *num = NULL;
                     int dlen = int(log10(float(minfo_matnos[j]+1))) + 1;
                     if (minfo_matnames == NULL || minfo_matnames[j] == NULL)
