@@ -195,7 +195,7 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //
 //    Alister Maguire, Fri Nov 13 14:07:54 PST 2020
 //    Changed nodesCritical to keepCellsWhole, and updated setting the
-//    the clipper based on this variable.
+//    clipper based on this variable.
 //
 // ****************************************************************************
 
