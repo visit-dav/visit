@@ -433,7 +433,7 @@ ClipAttributes::operator == (const ClipAttributes &obj) const
             (planeToolControlledClipPlane == obj.planeToolControlledClipPlane) &&
             center_equal &&
             (radius == obj.radius) &&
-            true /* can ignore sphereInverse */ &&
+            (sphereInverse == obj.sphereInverse) &&
             (crinkleClip == obj.crinkleClip));
 }
 
