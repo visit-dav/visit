@@ -2134,7 +2134,7 @@ QvisViewWindow::ParseViewCommands(const char *str)
         {
             QString msg;
 
-            msg.sprintf("Bad command >> %s <<", command);
+            msg.asprintf("Bad command >> %s <<", command);
             Error(msg);
         }
 

@@ -96,6 +96,9 @@ avtNumZonesQuery::GetDefaultInputParams(MapNode &params)
 //    Added flag to count original zones only (may be needed for arbpoly
 //    data that was split by the DB reader.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
@@ -117,7 +120,7 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
              GetInput()->GetInfo().GetAttributes().GetContainsOriginalCells();
 
     avtGhostType gt = GetInput()->GetInfo().GetAttributes().GetContainsGhostZones();
-    VISIT_LONG_LONG totalZones [2] = {0, 0};
+    long long totalZones [2] = {0, 0};
     char msg[200];
     if (usedDomains)
     {
@@ -134,7 +137,7 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
         }
     }
 
-    VISIT_LONG_LONG tz[2] = {0, 0};
+    long long tz[2] = {0, 0};
     SumLongLongArrayAcrossAllProcessors(totalZones, tz, 2);
 
     MapNode result_node;

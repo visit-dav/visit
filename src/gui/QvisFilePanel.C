@@ -1271,7 +1271,7 @@ QString
 QvisFilePanel::FormattedCycleString(const int cycle) const
 {
     QString retval;
-    retval.sprintf("%04d", cycle);
+    retval.asprintf("%04d", cycle);
     return retval;
 }
 
@@ -1302,8 +1302,8 @@ QvisFilePanel::FormattedTimeString(const double t, bool accurate) const
     if(accurate)
     {
         QString formatString;
-        formatString.sprintf("%%.%dg", timeStateFormat.GetPrecision());
-        retval.sprintf(formatString.toStdString().c_str(), t);
+        formatString.asprintf("%%.%dg", timeStateFormat.GetPrecision());
+        retval.asprintf(formatString.toStdString().c_str(), t);
     }
     return retval;
 }
@@ -3659,7 +3659,7 @@ FileTree::FileTreeNode::AddElementsToTreeItem(QTreeWidgetItem *item,
             // Add a directory node.
             QString temp;
             if(nodeName == fileName.path && nodeName[0] != separator)
-                temp.sprintf("%c%s", separator, nodeName.c_str());
+                temp.asprintf("%c%s", separator, nodeName.c_str());
             else
                 temp = QString(nodeName.c_str());
             root = new QvisFilePanelItem(item, temp, fileName,
@@ -3775,11 +3775,11 @@ FileTree::FileTreeNode::NumberedFilename(int fileIndex) const
 {
     QString label;
     if(fileIndex < 10)
-        label.sprintf("  %d: %s", fileIndex, nodeName.c_str());
+        label.asprintf("  %d: %s", fileIndex, nodeName.c_str());
     else if(fileIndex < 100)
-        label.sprintf(" %d: %s", fileIndex, nodeName.c_str());
+        label.asprintf(" %d: %s", fileIndex, nodeName.c_str());
     else
-        label.sprintf("%d: %s", fileIndex, nodeName.c_str());
+        label.asprintf("%d: %s", fileIndex, nodeName.c_str());
 
     return label;
 }

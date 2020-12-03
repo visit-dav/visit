@@ -283,7 +283,7 @@ QvisLightingWindow::UpdateWindow(bool)
     {
         bool enabled = lights->GetLight(i).GetEnabledFlag();
         QString num;
-        num.sprintf("%d", i + 1);
+        num.asprintf("%d", i + 1);
         if(enabled)
         {
             activeLightComboBox->setItemText(i,num);
@@ -311,7 +311,7 @@ QvisLightingWindow::UpdateWindow(bool)
 
     // Update the light direction line edit.
     QString tmp;
-    tmp.sprintf("%1.3g %1.3g %1.3g", light.GetDirection()[0],
+    tmp.asprintf("%1.3g %1.3g %1.3g", light.GetDirection()[0],
                                      light.GetDirection()[1],
                                      light.GetDirection()[2]);
     lightDirectionLineEdit->setText(tmp);
@@ -452,7 +452,7 @@ QvisLightingWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *d = light.GetDirection();
-            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
+            QString num; num.asprintf("<%g %g %g>.", d[0], d[1], d[2]);
             msg = tr("The direction vector was invalid. "
                      "Resetting to the last good value %1.").arg(num);
             Message(msg);
@@ -729,7 +729,7 @@ QvisLightingWindow::lightMoved(double x, double y, double z)
             // Set the light direction into the direction line edit so
             // it works when autoupdate is on.
             QString direction;
-            direction.sprintf("%1.3g %1.3g %1.3g", x, y, z);
+            direction.asprintf("%1.3g %1.3g %1.3g", x, y, z);
             lightDirectionLineEdit->setText(direction);
             SetUpdate(false);
             Apply();

@@ -351,7 +351,7 @@ QvisColorTableWindow::CreateWindowContents()
     for(int j = 0; j < 4; ++j)
     {
         QString n;
-        n.sprintf("componentSliders[%d]", j);
+        n.asprintf("componentSliders[%d]", j);
         componentSliders[j] = new QSlider(Qt::Horizontal,colorWidgetGroup);
         componentSliders[j]->setRange(0, 255);
         componentSliders[j]->setPageStep(10);
@@ -359,11 +359,11 @@ QvisColorTableWindow::CreateWindowContents()
         
         discreteLayout->addWidget(componentSliders[j], j, 1);
 
-        n.sprintf("componentLabels[%d]", j);
+        n.asprintf("componentLabels[%d]", j);
         componentLabels[j] = new QLabel(cnames[j], colorWidgetGroup);
         discreteLayout->addWidget(componentLabels[j], j, 0);
 
-        n.sprintf("discreteLineEdits[%d]", j);
+        n.asprintf("discreteLineEdits[%d]", j);
         componentSpinBoxes[j] = new QSpinBox(colorWidgetGroup);
         componentSpinBoxes[j]->setKeyboardTracking(false);
         componentSpinBoxes[j]->setRange(0,255);

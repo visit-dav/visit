@@ -341,7 +341,7 @@ QvisCreateBondsWindow::UpdateWindow(bool doAll)
             update_bonds_list = true;
             break;
           case CreateBondsAttributes::ID_maxBondsClamp:
-            maxBonds->setText(QString().sprintf("%d",atts->GetMaxBondsClamp()));
+            maxBonds->setText(QString().asprintf("%d",atts->GetMaxBondsClamp()));
             break;
           case CreateBondsAttributes::ID_addPeriodicBonds:
             addPeriodicBonds->blockSignals(true);
@@ -418,8 +418,8 @@ QvisCreateBondsWindow::UpdateWindow(bool doAll)
             QTreeWidgetItem *item = new QTreeWidgetItem(bondsTree);
             item->setText(0,el1);
             item->setText(1,el2);
-            item->setText(2,QString().sprintf("%.4f",atts->GetMinDist()[i]));
-            item->setText(3,QString().sprintf("%.4f",atts->GetMaxDist()[i]));
+            item->setText(2,QString().asprintf("%.4f",atts->GetMinDist()[i]));
+            item->setText(3,QString().asprintf("%.4f",atts->GetMaxDist()[i]));
             if (old_index == i)
                 new_item = item;
         }
@@ -589,8 +589,8 @@ void QvisCreateBondsWindow::UpdateWindowSingleItem()
 
     firstElement->setElementNumber(atts->GetAtomicNumber1()[index]);
     secondElement->setElementNumber(atts->GetAtomicNumber2()[index]);
-    minDist->setText(QString().sprintf("%.4f",atts->GetMinDist()[index]));
-    maxDist->setText(QString().sprintf("%.4f",atts->GetMaxDist()[index]));
+    minDist->setText(QString().asprintf("%.4f",atts->GetMinDist()[index]));
+    maxDist->setText(QString().asprintf("%.4f",atts->GetMaxDist()[index]));
 
     delButton->setEnabled(index>=0 && index<=n-1);
     upButton->setEnabled(index>0 && index<=n-1);
@@ -657,7 +657,7 @@ void QvisCreateBondsWindow::minDistTextChanged(const QString &txt)
         return;
 
     atts->GetMinDist()[index] = minDist->displayText().toFloat();
-    item->setText(2, QString().sprintf("%.4f",atts->GetMinDist()[index]));
+    item->setText(2, QString().asprintf("%.4f",atts->GetMinDist()[index]));
     atts->SelectMinDist();
 }
 
@@ -670,7 +670,7 @@ void QvisCreateBondsWindow::maxDistTextChanged(const QString &txt)
         return;
     
     atts->GetMaxDist()[index] = maxDist->displayText().toFloat();
-    item->setText(3, QString().sprintf("%.4f",atts->GetMaxDist()[index]));
+    item->setText(3, QString().asprintf("%.4f",atts->GetMaxDist()[index]));
     atts->SelectMaxDist();
 }
 

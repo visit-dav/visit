@@ -48,7 +48,7 @@ class GUI_API QvisFileOpenWindow : public QvisFileWindowBase
 {
     Q_OBJECT
 public:
-    QvisFileOpenWindow(const QString &winCaption = QString::null);
+    QvisFileOpenWindow(const QString &winCaption = QString());
     virtual ~QvisFileOpenWindow();
     virtual void CreateWindowContents();
     virtual void SubjectRemoved(Subject *TheRemovedSubject);

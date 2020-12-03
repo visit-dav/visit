@@ -56,8 +56,8 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
   public:
     QvisMultiCurvePlotWindow(const int type,
                          MultiCurveAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisMultiCurvePlotWindow();
     virtual void CreateWindowContents();

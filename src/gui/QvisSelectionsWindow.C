@@ -1499,7 +1499,7 @@ QvisSelectionsWindow::addSelection()
     QString newName;
     while (!okay)
     {
-        newName.sprintf("selection%d", selectionCounter);
+        newName.asprintf("selection%d", selectionCounter);
         if(selectionList->GetSelection(newName.toStdString()) >= 0)
             selectionCounter++;
         else

@@ -72,8 +72,8 @@ class GUI_API QvisSubsetWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisSubsetWindow(const QString &caption = QString::null,
-                     const QString &shortName = QString::null,
+    QvisSubsetWindow(const QString &caption = QString(),
+                     const QString &shortName = QString(),
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisSubsetWindow();
     virtual void CreateWindowContents();

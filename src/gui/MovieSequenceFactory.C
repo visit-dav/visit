@@ -379,11 +379,11 @@ MovieSequenceFactory::SequencePixmap(int id, QPixmap &pix) const
     {
         // Look in the cache for it and return
         QString key;
-        key.sprintf("%s_%d", 
+        key.asprintf("%s_%d", 
             it->second->SequenceName().c_str(),
             it->second->SequenceId());
-        QPixmap *p = QPixmapCache::find(key);
-        if(p != 0)
+        QPixmap *p = NULL;
+        if(QPixmapCache::find(key, p))
         {
             pix = *p;
             return true;
