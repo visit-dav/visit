@@ -106,7 +106,14 @@ Using the crinkle clip
 Generally, when using the Clip operator, the clipped surface will be smooth,
 but this often isn't representative of the natural surfaces of the cells along
 the clipped boundary. The often jagged edges of those cells are cut away and replaced
-with new faces to create this smooth behavior. There are times, though, when
+with new faces to create this smooth result. There are times, though, when
 it may be desirable to retain the original cell faces that lay along this
-boundary. This can be accomplished by enabling the "Crinkle clip" option. 
+boundary. This can be accomplished by enabling the **Crinkle clip** option, shown
+in :numref:`Figure %s <crinkle_clip>`.
+
+.. _crinkle_clip:
+
+.. figure:: images/crinkle_clip.png
+
+   Enabling the Crinkle clip option; Crinkle clip example
 
