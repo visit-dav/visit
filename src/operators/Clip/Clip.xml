@@ -74,7 +74,7 @@
       <Field name="radius" label="Radius" type="double" enabler="funcType:Sphere">
         1.000000
       </Field>
-      <Field name="sphereInverse" label="Inverse" type="bool" ignoreeq="true" enabler="funcType:Sphere">
+      <Field name="sphereInverse" label="Inverse" type="bool" enabler="funcType:Sphere">
         false
       </Field>
       <Field name="crinkleClip" label="Crinkle clip" type="bool" enabler="funcType:Crinkle">

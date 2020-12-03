@@ -248,7 +248,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
                 (planeToolControlledClipPlane == obj.planeToolControlledClipPlane) &&
                 center_equal &&
                 (radius == obj.radius) &&
-                true /* can ignore sphereInverse */ &&
+                (sphereInverse == obj.sphereInverse) &&
                 (crinkleClip == obj.crinkleClip));
     }
 
