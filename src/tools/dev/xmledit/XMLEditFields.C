@@ -46,7 +46,7 @@ class QNarrowLineEdit : public QLineEdit
     {
         QSize size = QLineEdit::sizeHint();
         QFontMetrics fm(font());
-        int w = fm.width('x') * 4; // 4 characters
+        int w = fm.horizontalAdvance('x') * 4; // 4 characters
         size.setWidth(w);
         return size;
     }
@@ -462,7 +462,7 @@ XMLEditFields::UpdateWindowSingleItem()
         if (f->type.right(5) == "Array")
         {
             QString str;
-            str.sprintf("%d",f->length);
+            str.asprintf("%d",f->length);
             length->setText(str);
         }
         else
@@ -1146,7 +1146,7 @@ XMLEditFields::fieldlistNew()
     while (!okay)
     {
         okay = true;
-        newname.sprintf("unnamed%d", newid);
+        newname.asprintf("unnamed%d", newid);
         for (int i=0; i<fieldlist->count() && okay; i++)
         {
             if (fieldlist->item(i)->text() == newname)

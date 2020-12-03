@@ -103,9 +103,9 @@ AddOperatorActionUI::AddOperatorActionUI(ViewerActionLogic *L) :
                     // Create a pixmap for the operator or get its pixmap from
                     // the pixmap cache.
                     QString key;
-                    key.sprintf("operator_icon_%s", info->GetName());
+                    key.asprintf("operator_icon_%s", info->GetName());
                     QPixmap pix;
-                    if(!QPixmapCache::find(key, pix))
+                    if(!QPixmapCache::find(key, &pix))
                     {
                         pix = QPixmap(info->XPMIconData());
                         QPixmapCache::insert(key, pix);
@@ -385,9 +385,9 @@ AddPlotActionUI::AddPlotActionUI(ViewerActionLogic *L) : ViewerActionUIMultiple(
                 if(!GetViewerProperties()->GetNowin())
                 {
                     QString key;
-                    key.sprintf("plot_icon_%s", info->GetName());
+                    key.asprintf("plot_icon_%s", info->GetName());
                     QPixmap pix;
-                    if(!QPixmapCache::find(key, pix))
+                    if(!QPixmapCache::find(key, &pix))
                     {
                         pix = QPixmap(info->XPMIconData());
                         QPixmapCache::insert(key, pix);

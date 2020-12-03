@@ -420,7 +420,7 @@ to swap out the Intel environment for the GNU environment.
 
 .. code:: bash
 
-   module swap PrgEnv-intel/6.0.4 PrgEnv-gnu/6.0.4
+   module swap PrgEnv-intel/6.0.8 PrgEnv-gnu/6.0.8
 
 The Cray compiler wrappers are set up to do static linking, which causes
 a problem with building parallel hdf5. The linking can be changed to
@@ -431,53 +431,24 @@ link dynamically by setting a couple of environment variables.
    export XTPE_LINK_TYPE=dynamic
    export CRAYPE_LINK_TYPE=dynamic
 
-The linker has a bug that prevents VTK from building, which is fixed with
-the linker in binutils 2.32. Binutils was then manually built with the
-following steps.
-
-.. code:: bash
-
-   wget https://mirrors.ocf.berkeley.edu/gnu/binutils/binutils-2.32.tar.gz
-   mkdir /usr/projects/views/visit/thirdparty_shared/3.0.1/binutils
-   tar zxf binutils-2.32.tar.gz
-   cd binutils-2.32
-   ./configure --prefix=/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils
-   make
-   make install
-
-The following lines in ``build_visit``
-
-.. code:: bash
-
-   vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
-   vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
-
-were changed to
-
-.. code:: bash
-
-   vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} -B/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils/bin\""
-   vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} -B/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils/bin\""
-
-to build VTK with the linker from binutils 2.32.
-
 ``build_visit`` was run to generate the third party libraries. In this
 case the system MPI was used, so information about the system MPI had to
 be provided with environment variables and the ``--parallel`` flag had
 to be specified. In this case, all the required and optional third party
-libraries built without problem, so ``--required --optional`` could be
-used. Also, the system OpenGL implementation was outdated and ``--mesagl``
-had to be included to provide an OpenGL implementation suitable for
-VisIt_.
+libraries built except for Sphinx and Mili, so ``--no-sphinx --no-mili``
+in addition to ``--required --optional`` could be used. Also, the system
+OpenGL implementation was outdated and ``--mesagl`` had to be included to
+provide an OpenGL implementation suitable for VisIt_.
 
 .. code:: bash
 
-   env PAR_COMPILER=/opt/cray/pe/craype/2.5.16/bin/cc \
-       PAR_COMPILER_CXX=/opt/cray/pe/craype/2.5.16/bin/CC \
-       PAR_INCLUDE=-I/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/include \
-       PAR_LIBS="-L/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib -lmpich" \
-    ./build_visit3_0_1 --required --optional --mesagl --parallel \
-    --no-visit --thirdparty-path /usr/projects/views/visit/thirdparty_shared/3.0.1 \
+   env PAR_COMPILER=/opt/cray/pe/craype/2.7.0/bin/cc \
+       PAR_COMPILER_CXX=/opt/cray/pe/craype/2.7.0/bin/CC \
+       PAR_INCLUDE=-I/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/include \
+       PAR_LIBS="-L/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/lib -lmpich" \
+    ./build_visit3_1_3 --required --optional --no-sphinx --no-mili \
+    --mesagl --parallel --no-visit \
+    --thirdparty-path /usr/projects/views/visit/thirdparty_shared/3.1.3 \
     --makeflags -j6
 
 This built the third party libraries and generated a ``tr-fe2.cmake``
@@ -489,16 +460,9 @@ was changed to
    ##
    ## Setup VISITHOME & VISITARCH variables.
    ##
-   SET(VISITHOME /usr/projects/views/visit/thirdparty_shared/3.0.1)
-   SET(VISITARCH linux-x86_64_gcc-8.2)
+   SET(VISITHOME /usr/projects/views/visit/thirdparty_shared/3.1.3)
+   SET(VISITARCH linux-x86_64_gcc-9.3)
    VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
-
-The ``VISIT_C_FLAGS`` and ``VISIT_CXX_FLAGS`` were changed to
-
-.. code:: bash
-
-   VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden -B/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils/bin" TYPE STRING)
-   VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden -B/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils/bin" TYPE STRING)
 
 The ``Parallel build Setup.`` section was changed to
 
@@ -508,22 +472,22 @@ The ``Parallel build Setup.`` section was changed to
    ## Parallel Build Setup.
    ##
    VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-   VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/include TYPE STRING)
-   VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/include TYPE STRING)
-   VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib" TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/include TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/include TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/lib" TYPE STRING)
    VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich)
-   VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib")
+   VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/lib")
 
 VisIt_ was then manually built with the following steps.
 
 .. code:: bash
 
-   tar zxf visit3.0.1.tar.gz
-   cp tr-fe2.cmake visit3.0.1/src/config-site
-   cd visit3.0.1
+   tar zxf visit3.1.3.tar.gz
+   cp tr-fe2.cmake visit3.1.3/src/config-site
+   cd visit3.1.3
    mkdir build
    cd build
-   /usr/projects/views/visit/thirdparty_shared/3.0.1/cmake/3.9.3/linux-x86_64_gcc-8.2/bin/cmake \
+   /usr/projects/views/visit/thirdparty_shared/3.1.3/cmake/3.9.3/linux-x86_64_gcc-9.3/bin/cmake \
    ../src -DCMAKE_BUILD_TYPE:STRING=Release \
    -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON
    make -j 8 package

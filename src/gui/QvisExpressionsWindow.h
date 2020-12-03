@@ -66,8 +66,8 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
   public:
 
     QvisExpressionsWindow(ExpressionList * exprAtts_,
-                          const QString &caption = QString::null,
-                          const QString &shortName = QString::null,
+                          const QString &caption = QString(),
+                          const QString &shortName = QString(),
                           QvisNotepadArea * notepad = 0);
     virtual ~ QvisExpressionsWindow();
     virtual void CreateWindowContents();

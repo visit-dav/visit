@@ -204,7 +204,7 @@ done
 
 if test "$branch" = "trunk" ; then
     workingDir="test_trunk"
-    cmakeCmd="/usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake"
+    cmakeCmd="/usr/workspace/wsa/visit/visit/thirdparty_shared/3.2.0/toss3/cmake/3.9.3/linux-x86_64_gcc-6.1/bin/cmake"
 else
     workingDir="test_branch"
     cmakeCmd="/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake"
@@ -300,6 +300,12 @@ export PATH=\$PATH:/usr/bin/X11
 export PATH=/usr/tce/packages/cuda/cuda-8.0/bin:\$PATH
 export CUDA_HOME=/usr/tce/packages/cuda/cuda-8.0
 export LD_LIBRARY_PATH=/usr/tce/packages/cuda/cuda-8.0/lib64:\$LD_LIBRARY_PATH
+
+# since gcc-6 isn't the default, make sure to set CC and CXX, otherwise
+# pluginVsInstall tests won't use the right compiler
+
+export CC=/usr/tce/packages/gcc/gcc-6.1.0/bin/gcc
+export CXX=/usr/tce/packages/gcc/gcc-6.1.0/bin/g++
 
 if test "$serial" = "true" ; then
     sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/pascal83.cmake

@@ -55,7 +55,7 @@ class GUI_API QvisWindowBase : public QMainWindow, public GUIBase
 {
     Q_OBJECT
 public:
-    QvisWindowBase(const QString &captionString = QString::null,
+    QvisWindowBase(const QString &captionString = QString(),
                    Qt::WindowFlags f = Qt::Window);
     virtual ~QvisWindowBase();
 

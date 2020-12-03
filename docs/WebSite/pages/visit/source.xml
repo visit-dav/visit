@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt Source Code ]]></title>
-  <IM>LLNL-WEB-813730</IM>
+  <IM>LLNL-WEB-816793</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[September 18, 2020]]></lastchanged>
+  <lastchanged><![CDATA[November 23, 2020]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -24,7 +24,7 @@
 
 <h2>Automatically Build VisIt with the build_visit Script</h2>
 
-<p>VisIt can be built automatically using the <a href="https://github.com/visit-dav/visit/releases/download/v3.1.3/build_visit3_1_3">build_visit</a> script on MacOS X and many Linux platforms. The <a href="https://github.com/visit-dav/visit/releases/download/v3.1.3/build_visit3_1_3">build_visit</a> script takes care of downloading relevant VisIt and 3rd party source code, configuring, and building it all using your C++ compiler. We encourage users to build VisIt using the build_visit script when our binary distributions have trouble running on some systems. We also recommend using the <a href="https://github.com/visit-dav/visit/releases/download/v3.1.3/build_visit3_1_3">build_visit</a> script on your system if you plan to:</p>
+<p>VisIt can be built automatically using the <a href="https://github.com/visit-dav/visit/releases/download/v3.1.4/build_visit3_1_4">build_visit</a> script on MacOS X and many Linux platforms. The <a href="https://github.com/visit-dav/visit/releases/download/v3.1.4/build_visit3_1_4">build_visit</a> script takes care of downloading relevant VisIt and 3rd party source code, configuring, and building it all using your C++ compiler. We encourage users to build VisIt using the build_visit script when our binary distributions have trouble running on some systems. We also recommend using the <a href="https://github.com/visit-dav/visit/releases/download/v3.1.4/build_visit3_1_4">build_visit</a> script on your system if you plan to:</p>
 
 <ul>
   <li>Modify the VisIt source code. </li>
@@ -40,6 +40,22 @@ Please use the following acknowledgement and send us references to any publicati
 <p>VisIt is supported by the Department of Energy with funding from the Advanced Simulation and Computing Program and the Scientific Discovery through Advanced Computing Program.</p>
 <hr/>
 <div class="row">
+
+<div class="span3">
+
+<h2>VisIt 3.1.4</h2>
+
+<ul>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.1.4/visit3.1.4.tar.gz">VisIt sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.1.4/visitdev3.1.4.exe">VisIt Windows sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.1.4/build_visit3_1_4">VisIt build_visit script</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.1.4/visit_md5_checksums.txt">VisIt md5 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.1.4/visit_sha1_checksums.txt">VisIt sha1 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.1.4/visit_sha256_checksums.txt">VisIt sha256 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.1.4/visit_filesizes.txt">VisIt file sizes</a></li>
+</ul>
+
+</div>
 
 <div class="span3">
 

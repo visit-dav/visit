@@ -1476,7 +1476,7 @@ QvisSimulationWindow::UpdateInformation()
             QStringList(timestr.left(timestr.length()-1)));
 
         // Num processors
-        tmp1.sprintf("%d", np);
+        tmp1.asprintf("%d", np);
         item = new QTreeWidgetItem(simInfo,
                                    QStringList(tr("Num Processors")) +
                                    QStringList(tmp1));
@@ -1855,7 +1855,7 @@ QvisSimulationWindow::MakeKey(const std::string &host,
     if(sim.empty())
         return QString(host.c_str());
     else
-        return QString().sprintf("%s:%s", host.c_str(), sim.c_str());
+        return QString().asprintf("%s:%s", host.c_str(), sim.c_str());
 }
 
 // ****************************************************************************

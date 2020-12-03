@@ -35,8 +35,8 @@ class QvisLagrangianWindow : public QvisOperatorWindow
   public:
     QvisLagrangianWindow(const int type,
                          LagrangianAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisLagrangianWindow();
     virtual void CreateWindowContents();

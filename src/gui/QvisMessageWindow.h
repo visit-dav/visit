@@ -45,7 +45,7 @@ class GUI_API QvisMessageWindow : public QvisWindowBase, public Observer
     Q_OBJECT
 public:
     QvisMessageWindow(MessageAttributes *msgAttr,
-                      const QString &captionString = QString::null);
+                      const QString &captionString = QString());
     virtual ~QvisMessageWindow();
     virtual void Update(Subject *);
 
