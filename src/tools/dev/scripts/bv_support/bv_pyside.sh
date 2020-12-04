@@ -35,11 +35,16 @@ function bv_pyside_pyside_stand_alone
 
 function bv_pyside_depends_on
 {
-    if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then
-        echo ""
-    else
-        echo "cmake python qt"
+    pdepends=""
+    if [[ "$USE_SYSTEM_PYSIDE" == "no" ]]; then
+        pdepends="cmake python qt"
+        # if CLANG_INSTALL_DIR not set in env, then build it
+        if test -n $CLANG_INSTALL_DIR ; then
+            pdepends="${pdepends} clang" 
+        fi
     fi
+    #info "pyside depends on ${pdepends}"
+    echo ${pdepends}
 }
 
 function bv_pyside_initialize_vars
@@ -84,7 +89,7 @@ function bv_pyside_host_profile
         if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then
             echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR $PYSIDE_INSTALL_DIR)" >> $HOSTCONF
         else
-            echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR \${VISITHOME}/pyside/$PYSIDE_VERSION/\${VISITARCH}/)" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR \${VISITHOME}/pyside/$PYSIDE_VERSION/\${VISITARCH})" >> $HOSTCONF
         fi
     fi
 }
@@ -139,7 +144,42 @@ diff -c sources/pyside2/PySide2/QtQml/CMakeLists.txt.orig sources/pyside2/PySide
 
 EOF
     if [[ $? != 0 ]] ; then
-        warn "Pyside2 patch failed."
+        warn "Pyside2 patch1 failed."
+        return 1
+    fi
+
+# wrap find_package(Pythonxxx) calls in if (NOT PYTHON_FOUND)
+# to prevent a cmake error during VisIt's FindPySide call to find_package(Shiboken2)
+
+    patch -p0 << \EOF
+diff -c sources/shiboken2/data/shiboken_helpers.cmake.orig sources/shiboken2/data/shiboken_helpers.cmake
+*** sources/shiboken2/data/shiboken_helpers.cmake.orig  Fri Dec  4 13:46:36 2020
+--- sources/shiboken2/data/shiboken_helpers.cmake       Fri Dec  4 13:48:03 2020
+***************
+*** 314,319 ****
+--- 314,322 ----
+
+
+  macro(shiboken_find_required_python)
++   # Calling find_package for PythonInterp fails here after having already been called by
++   # VisIt in its own FindPython module, so don't call it unless needed.
++   if (NOT PYTHON_FOUND)
+      if(${ARGC} GREATER 0)
+          find_package(PythonInterp ${ARGV0} REQUIRED)
+          find_package(PythonLibs ${ARGV0} REQUIRED)
+***************
+*** 324,329 ****
+--- 327,333 ----
+          find_package(PythonInterp REQUIRED)
+          find_package(PythonLibs REQUIRED)
+      endif()
++   endif()
+      shiboken_validate_python_version()
+
+      set(SHIBOKEN_PYTHON_INTERPRETER "${PYTHON_EXECUTABLE}")
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Pyside2 patch2 failed."
         return 1
     fi
 
@@ -206,8 +246,8 @@ function build_pyside
         # general cmake opotions
         pyside_opts="${pyside_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
         pyside_opts="${pyside_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-        pyside_opts="${pyside_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
-        pyside_opts="${pyside_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
+        pyside_opts="${pyside_opts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+        pyside_opts="${pyside_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
         pyside_opts="${pyside_opts} -DCMAKE_SKIP_BUILD_RPATH:BOOL=false"
         pyside_opts="${pyside_opts} -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=false"
         pyside_opts="${pyside_opts} -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=true"
@@ -242,12 +282,16 @@ function build_pyside
 
         info "Configuring pyside . . ."
 
-        echo "env LD_LIBRARY_PATH=${LLVM_LIB_DIR}:$LD_LIBRARY_PATH" "\"${CMAKE_BIN}\"" ${pyside_opts} ../${PYSIDE_SRC_DIR} > bv_run_cmake.sh
+        pysideenv=""
+        if [[ "$DO_LLVM" == "yes" ]] ; then
+            pysideenv="env CLANG_INSTALL_DIR=${VISIT_CLANG_DIR} LD_LIBRARY_PATH=${VISIT_CLANG_DIR}:${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
+        fi
+        echo ${pysideenv} "\"${CMAKE_BIN}\"" ${pyside_opts} ../${PYSIDE_SRC_DIR} > bv_run_cmake.sh
         cat bv_run_cmake.sh
         issue_command bash bv_run_cmake.sh || error "pyside configuration failed."
 
         info "Building pyside . . ."
-        $MAKE $MAKE_OPT_FLAGS ||  error "PySide did not build correctly. Giving up."
+        ${pysideenv} $MAKE $MAKE_OPT_FLAGS ||  error "PySide did not build correctly. Giving up."
 
         info "Installing pyside . . ."
         $MAKE install || error "PySide did not install correctly."
@@ -266,10 +310,12 @@ function build_pyside
         # do a python build/install
         info "Installing pyside (~ 20 min) ..."
         # need to set CLANG_INSTALL_DIR in the environment
-        # KSB Fix this, it will only work on some lc systems
-        env CLANG_INSTALL_DIR="/usr/tce/packages/clang/clang-6.0.0/release" \
-        LD_LIBRARY_PATH=${LLVM_LIB_DIR}:$LD_LIBRARY_PATH \
-        ${PYTHON_COMMAND} ./setup.py install  --ignore-git --parallel=8 \
+
+        pysideenv=""
+        if [[ "$DO_LLVM" == "yes" ]] ; then
+            pysideenv="env CLANG_INSTALL_DIR=${VISIT_CLANG_DIR} LD_LIBRARY_PATH=${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
+        fi
+        ${pysideenv} ${PYTHON_COMMAND} ./setup.py install  --ignore-git --parallel=8 \
             --qmake=${QT_BIN_DIR}/qmake \
             --cmake=${CMAKE_INSTALL}/cmake \
             --openssl=$VISIT_DIR/openssl/$OPENSSL_VERSION/$VISITARCH/bin

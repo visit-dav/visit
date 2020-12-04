@@ -49,7 +49,6 @@ if(NOT PySide_FOUND)
                     OUTPUT_QUIET
                     ERROR_QUIET
                     RESULT_VARIABLE HAVE_PYSIDE_IN_PYTHON)
-
     if(HAVE_PYSIDE_IN_PYTHON EQUAL 0)
         set(PYSIDE_IN_PYTHON true) 
         # use a macro taken from an example within PySide2 
@@ -165,9 +164,8 @@ if(NOT PySide_FOUND)
         if(VISIT_PYSIDE_DIR)
             option(PYSIDE_LIBNAMES_AFFIX_V "Whether PySide and Shiboken base names end with v" ON)
 
-            #  Find PySide 
+            #  Find Shiboken 
             set(CMAKE_PREFIX_PATH ${VISIT_PYSIDE_DIR}/lib/cmake/Shiboken2-${PYSIDE_VERSION}.2)
-            #set(CMAKE_LIBRARY_PATH ${VISIT_PYSIDE_DIR}/lib ${CMAKE_LIBRARY_PATH})
 
 
             if(NOT Shiboken2}_FOUND)
@@ -188,6 +186,7 @@ if(NOT PySide_FOUND)
                 endif()
             endif()
 
+            #  Find PySide 
             set(CMAKE_PREFIX_PATH ${VISIT_PYSIDE_DIR}/lib/cmake/PySide2-${PYSIDE_VERSION}.2)
             if (NOT PySide2_FOUND)
                 find_package(PySide2 ${PYSIDE_VERSION})
