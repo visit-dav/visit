@@ -2,9 +2,7 @@ function bv_pyside_initialize
 {
     export DO_PYSIDE="no"
     export USE_SYSTEM_PYSIDE="no"
-    export PYSIDE_STANDALONE="no"
     add_extra_commandline_args "pyside" "alt-pyside-dir" 1 "Use alternative directory for pyside"
-    add_extra_commandline_args "pyside" "pyside-stand-alone" 0 "Build a stand-alone version of pyside"
 }
 
 function bv_pyside_enable
@@ -23,14 +21,6 @@ function bv_pyside_alt_pyside_dir
     USE_SYSTEM_PYSIDE="yes"
     PYSIDE_INSTALL_DIR="$1"
     info "using alternative pyside directory: $PYSIDE_INSTALL_DIR" 
-}
-
-function bv_pyside_pyside_stand_alone
-{
-    bv_pyside_enable 
-    USE_SYSTEM_PYSIDE="no"
-    PYSIDE_STANDALONE="yes"
-    info "Building a stand-alone version of pyside." 
 }
 
 function bv_pyside_depends_on
@@ -80,13 +70,12 @@ function bv_pyside_print_usage
 
 function bv_pyside_host_profile
 {
-    if [[ "$DO_PYSIDE" == "yes" && ( "$USE_SYSTEM_PYSIDE" == "yes" || "$PYSIDE_STANDALONE" == "yes" ) ]] ; then
+    if [[ "$DO_PYSIDE" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## PySide" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "SETUP_APP_VERSION(PYSIDE $PYSIDE_VERSION)" >> $HOSTCONF
-        if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then
+        if [[ "$USE_SYSTEM_PYSIDE" == "yes"  ]] ; then
             echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR $PYSIDE_INSTALL_DIR)" >> $HOSTCONF
         else
             echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR \${VISITHOME}/pyside/$PYSIDE_VERSION/\${VISITARCH})" >> $HOSTCONF
@@ -233,105 +222,77 @@ function build_pyside
     fi
 
     cd "$START_DIR"
-    if [[ "$PYSIDE_STANDALONE" == "yes" ]] ; then
-        VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
+    VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
 
-        pyside_opts=""
-        # for finding qt
-        pyside_opts="${pyside_opts} -DCMAKE_PREFIX_PATH:PATH=${QT_INSTALL_DIR}/lib/cmake/"
+    pyside_opts=""
+    # for finding qt
+    pyside_opts="${pyside_opts} -DCMAKE_PREFIX_PATH:PATH=${QT_INSTALL_DIR}/lib/cmake/"
 
-        # for finding python
-        pyside_opts="${pyside_opts} -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_COMMAND}"
+    # for finding python
+    pyside_opts="${pyside_opts} -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_COMMAND}"
 
-        # general cmake opotions
-        pyside_opts="${pyside_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
-        pyside_opts="${pyside_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-        pyside_opts="${pyside_opts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
-        pyside_opts="${pyside_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
-        pyside_opts="${pyside_opts} -DCMAKE_SKIP_BUILD_RPATH:BOOL=false"
-        pyside_opts="${pyside_opts} -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=false"
-        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=true"
-        pyside_opts="${pyside_opts} -DCMAKE_BUILD_TYPE:STRING=\"${VISIT_BUILD_MODE}\""
+    # general cmake opotions
+    pyside_opts="${pyside_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    pyside_opts="${pyside_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+    pyside_opts="${pyside_opts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+    pyside_opts="${pyside_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+    pyside_opts="${pyside_opts} -DCMAKE_SKIP_BUILD_RPATH:BOOL=false"
+    pyside_opts="${pyside_opts} -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=false"
+    pyside_opts="${pyside_opts} -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=true"
+    pyside_opts="${pyside_opts} -DCMAKE_BUILD_TYPE:STRING=\"${VISIT_BUILD_MODE}\""
 
-        # pyside opotions
-        pyside_opts="${pyside_opts} -DBUILD_TESTS:BOOL=FALSE"
-        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_PREFIX:PATH=\"$VISIT_PYSIDE_DIR\""
-        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_RPATH:FILEPATH=\"$VISIT_PYSIDE_DIR/lib\""
-        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_NAME_DIR:FILEPATH=\"$VISIT_PYSIDE_DIR/lib\""
+    # pyside opotions
+    pyside_opts="${pyside_opts} -DBUILD_TESTS:BOOL=FALSE"
+    pyside_opts="${pyside_opts} -DCMAKE_INSTALL_PREFIX:PATH=\"$VISIT_PYSIDE_DIR\""
+    pyside_opts="${pyside_opts} -DCMAKE_INSTALL_RPATH:FILEPATH=\"$VISIT_PYSIDE_DIR/lib\""
+    pyside_opts="${pyside_opts} -DCMAKE_INSTALL_NAME_DIR:FILEPATH=\"$VISIT_PYSIDE_DIR/lib\""
 
-        if [[ "$DO_MESAGL" == "yes" ]] ; then
-            pyside_opts="${pyside_opts} -DGL_H=${MESAGL_INCLUDE_DIR}/GL/gl.h"
-        fi
-
-        CMAKE_BIN="${CMAKE_INSTALL}/cmake"
-
-        PYSIDE_SRC_DIR=$PYSIDE_BUILD_DIR
-        PYSIDE_BUILD_DIR="${PYSIDE_SRC_DIR}-build"
-        if [[ ! -d $PYSIDE_BUILD_DIR ]] ; then
-            echo "Making build directory $PYSIDE_BUILD_DIR"
-            mkdir $PYSIDE_BUILD_DIR
-        fi
-
-        info "pyside build dir ${PYSIDE_BUILD_DIR}"
-
-        cd "${PYSIDE_BUILD_DIR}"
-
-        if test -e bv_run_cmake.sh ; then
-            rm -f bv_run_cmake.sh
-        fi
-
-        info "Configuring pyside . . ."
-
-        pysideenv=""
-        if [[ "$DO_LLVM" == "yes" ]] ; then
-            pysideenv="env CLANG_INSTALL_DIR=${VISIT_CLANG_DIR} LD_LIBRARY_PATH=${VISIT_CLANG_DIR}:${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
-        fi
-        echo ${pysideenv} "\"${CMAKE_BIN}\"" ${pyside_opts} ../${PYSIDE_SRC_DIR} > bv_run_cmake.sh
-        cat bv_run_cmake.sh
-        issue_command bash bv_run_cmake.sh || error "pyside configuration failed."
-
-        info "Building pyside . . ."
-        ${pysideenv} $MAKE $MAKE_OPT_FLAGS ||  error "PySide did not build correctly. Giving up."
-
-        info "Installing pyside . . ."
-        $MAKE install || error "PySide did not install correctly."
-
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-
-        if [[ "$DO_GROUP" == "yes" ]] ; then
-            chmod -R ug+w,a+rX "$VISITDIR/pyside"
-            chgrp -R ${GROUP} "$VISITDIR/pyside"
-        fi
-
-    else
-        cd "$PYSIDE_BUILD_DIR"
-        # do a python build/install
-        info "Installing pyside (~ 20 min) ..."
-        # need to set CLANG_INSTALL_DIR in the environment
-
-        pysideenv=""
-        if [[ "$DO_LLVM" == "yes" ]] ; then
-            pysideenv="env CLANG_INSTALL_DIR=${VISIT_CLANG_DIR} LD_LIBRARY_PATH=${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
-        fi
-        ${pysideenv} ${PYTHON_COMMAND} ./setup.py install  --ignore-git --parallel=8 \
-            --qmake=${QT_BIN_DIR}/qmake \
-            --cmake=${CMAKE_INSTALL}/cmake \
-            --openssl=$VISIT_DIR/openssl/$OPENSSL_VERSION/$VISITARCH/bin
-
-        if test $? -ne 0 ; then
-            warn "Could not install pyside"
-            return 1
-        fi
-
-        # fix the perms
-        if [[ "$DO_GROUP" == "yes" ]] ; then
-            chmod -R ug+w,a+rX "$VISITDIR/python"
-            chgrp -R ${GROUP} "$VISITDIR/python"
-        fi
-    
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        pyside_opts="${pyside_opts} -DGL_H=${MESAGL_INCLUDE_DIR}/GL/gl.h"
     fi
+
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+
+    PYSIDE_SRC_DIR=$PYSIDE_BUILD_DIR
+    PYSIDE_BUILD_DIR="${PYSIDE_SRC_DIR}-build"
+    if [[ ! -d $PYSIDE_BUILD_DIR ]] ; then
+        echo "Making build directory $PYSIDE_BUILD_DIR"
+        mkdir $PYSIDE_BUILD_DIR
+    fi
+
+    info "pyside build dir ${PYSIDE_BUILD_DIR}"
+
+    cd "${PYSIDE_BUILD_DIR}"
+
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
+    fi
+
+    info "Configuring pyside . . ."
+
+    pysideenv=""
+    if [[ "$DO_LLVM" == "yes" ]] ; then
+        pysideenv="env CLANG_INSTALL_DIR=${VISIT_CLANG_DIR} LD_LIBRARY_PATH=${VISIT_CLANG_DIR}:${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
+    fi
+    echo ${pysideenv} "\"${CMAKE_BIN}\"" ${pyside_opts} ../${PYSIDE_SRC_DIR} > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "pyside configuration failed."
+
+    info "Building pyside . . ."
+    ${pysideenv} $MAKE $MAKE_OPT_FLAGS ||  error "PySide did not build correctly. Giving up."
+
+    info "Installing pyside . . ."
+    $MAKE install || error "PySide did not install correctly."
+
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/pyside"
+        chgrp -R ${GROUP} "$VISITDIR/pyside"
+    fi
+
 
     cd "$START_DIR"
     info "Done with PySide"
@@ -356,20 +317,10 @@ function bv_pyside_is_installed
         return 1
     fi
 
-
-    if [[ "$PYSIDE_STANDALONE" == "yes" ]]; then
-        VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
-        check_if_installed "pyside" $PYSIDE_VERSION
-        if [[ $? != 0 ]] ; then
-            return 0
-        fi
-    else
-        # check in python
-        if [[ ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide2" ||
-              ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/shiboken2"  ]]; then
-            info "pyside not installed"
-            return 0
-        fi
+    VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
+    check_if_installed "pyside" $PYSIDE_VERSION
+    if [[ $? != 0 ]] ; then
+        return 0
     fi
     return 1
 }
