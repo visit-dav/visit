@@ -22,9 +22,9 @@ function bv_osmesa_depends_on
 
 function bv_osmesa_info
 {
-    export OSMESA_VERSION=${OSMESA_VERSION:-"17.2.8"}
+    export OSMESA_VERSION=${OSMESA_VERSION:-"17.3.9"}
     export OSMESA_FILE=${OSMESA_FILE:-"mesa-$OSMESA_VERSION.tar.gz"}
-    export OSMESA_URL=${OSMESA_URL:-"ftp://ftp.freedesktop.org/pub/mesa"}
+    export OSMESA_URL=${OSMESA_URL:-"https://archive.mesa3d.org/older-versions/17.x/"}
     export OSMESA_BUILD_DIR=${OSMESA_BUILD_DIR:-"mesa-$OSMESA_VERSION"}
     export OSMESA_MD5_CHECKSUM="19832be1bc5784fc7bbad4d138537619"
     export OSMESA_SHA256_CHECKSUM="c715c3a3d6fe26a69c096f573ec416e038a548f0405e3befedd5136517527a84"
