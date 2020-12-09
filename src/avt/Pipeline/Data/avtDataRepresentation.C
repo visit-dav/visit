@@ -98,24 +98,38 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
         int dims[3];
         rgrid->GetDimensions(dims);
-        int nDims = (dims[2] == 1 ? 2 : 3);
+        if (dims[0] < 1 || dims[1] < 1 || dims[2] < 1)
+            return NULL;
+        int nDims = 3;
+        if (dims[0] == 1) nDims--;
+        if (dims[1] == 1) nDims--;
+        if (dims[2] == 1) nDims--;
 
         // Add the structured cell set.
         if (nDims == 2)
         {
             const vtkm::Id2 topo_origin(0, 0);
             vtkm::cont::CellSetStructured<2> cs;
-            cs.SetPointDimensions(vtkm::make_Vec(dims[0], dims[1]));
+            if (dims[0] == 1)
+                cs.SetPointDimensions(vtkm::make_Vec(dims[1], dims[2]));
+            else if (dims[1] == 1)
+                cs.SetPointDimensions(vtkm::make_Vec(dims[0], dims[2]));
+            else
+                cs.SetPointDimensions(vtkm::make_Vec(dims[0], dims[1]));
             cs.SetGlobalPointIndexStart(topo_origin);
             ds.SetCellSet(cs);
         }
-        else
+        else if (nDims == 3)
         {
             const vtkm::Id3 topo_origin(0, 0, 0);
             vtkm::cont::CellSetStructured<3> cs;
             cs.SetPointDimensions(vtkm::make_Vec(dims[0], dims[1], dims[2]));
             cs.SetGlobalPointIndexStart(topo_origin);
             ds.SetCellSet(cs);
+        }
+        else
+        {
+            return NULL;
         }
 
         // Add the coordinate system.

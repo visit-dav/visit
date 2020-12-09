@@ -534,7 +534,7 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
         }
 
         //
-        // If we have a 2d rectilinear grid, don't use VTKm.
+        // If we have a rectilinear grid that isn't 3d, don't use VTKm.
         //
         if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
@@ -542,15 +542,19 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 
             int dims[3];
             rgrid->GetDimensions(dims);
+            int nDims = 3;
+            if (dims[0] == 1) nDims--;
+            if (dims[1] == 1) nDims--;
+            if (dims[2] == 1) nDims--;
 
-            if (dims[2] == 1)
+            if (nDims < 3)
             {
                 useVTKm = false;
             }
         }
 
         //
-        // If we have a 2d structured grid, don't use VTKm.
+        // If we have a structured grid that isn't 3d, don't use VTKm.
         //
         else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
         {
@@ -558,8 +562,12 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 
             int dims[3];
             sgrid->GetDimensions(dims);
+            int nDims = 3;
+            if (dims[0] == 1) nDims--;
+            if (dims[1] == 1) nDims--;
+            if (dims[2] == 1) nDims--;
 
-            if (dims[2] == 1)
+            if (nDims < 3)
             {
                 useVTKm = false;
             }
