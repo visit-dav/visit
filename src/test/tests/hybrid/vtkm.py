@@ -127,7 +127,7 @@ Test("vtkm_rect3d_05")
 #
 DeleteAllPlots()
 
-OpenDatabase(silo_data_path("curv3d.silo"))
+OpenDatabase(silo_data_path("curv2d.silo"))
 
 AddPlot("Contour", "u")
 DrawPlots()

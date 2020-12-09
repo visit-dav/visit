@@ -39,11 +39,11 @@ function bv_vtkm_initialize_vars
 
 function bv_vtkm_info
 {
-    export VTKM_VERSION=${VTKM_VERSION:-"0d141c"}
+    export VTKM_VERSION=${VTKM_VERSION:-"a3b852"}
     export VTKM_FILE=${VTKM_FILE:-"vtkm-${VTKM_VERSION}.tar.gz"}
     export VTKM_BUILD_DIR=${VTKM_BUILD_DIR:-"vtkm-${VTKM_VERSION}"}
-    export VTKM_MD5_CHECKSUM="72f862af47da3578370734f3ba0a4c59"
-    export VTKM_SHA256_CHECKSUM="965b6bb7a1a579b8494523b993f060b6bc461a5dc0296b8ad6033ff10916628f"
+    export VTKM_MD5_CHECKSUM="ce173342dd433223879415af5a2713f1"
+    export VTKM_SHA256_CHECKSUM="358c0ab5f18e674ca147de51a08480009643b88b87b2b203fed721a746ef227f"
 }
 
 function bv_vtkm_print
@@ -100,45 +100,12 @@ function bv_vtkm_dry_run
 function apply_patch_1
 {
    patch -p0 << \EOF
-diff -c ./vtkm/TypeListTag.h.orig ./vtkm/TypeListTag.h
-*** ./vtkm/TypeListTag.h.orig	Tue Nov  6 16:17:57 2018
---- ./vtkm/TypeListTag.h	Tue Nov  6 16:15:29 2018
-***************
-*** 204,210 ****
-  /// A list of the most commonly used types across multiple domains. Includes
-  /// integers, floating points, and 3 dimensional vectors of floating points.
-  ///
-! struct TypeListTagCommon : vtkm::ListTagBase<vtkm::Int32,
-                                               vtkm::Int64,
-                                               vtkm::Float32,
-                                               vtkm::Float64,
---- 204,211 ----
-  /// A list of the most commonly used types across multiple domains. Includes
-  /// integers, floating points, and 3 dimensional vectors of floating points.
-  ///
-! struct TypeListTagCommon : vtkm::ListTagBase<vtkm::UInt8,
-!                                              vtkm::Int32,
-                                               vtkm::Int64,
-                                               vtkm::Float32,
-                                               vtkm::Float64,
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtkm patch 1 failed."
-      return 1
-    fi
-    return 0;
-}
-
-function apply_patch_2
-{
-   patch -p0 << \EOF
 diff -c ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig ./vtkm/cont/arg/TransportTagTopologyFieldIn.h
-*** ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig	Tue Nov  6 16:18:09 2018
---- ./vtkm/cont/arg/TransportTagTopologyFieldIn.h	Tue Nov  6 16:16:18 2018
+*** ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig	Tue Dec  8 12:55:32 2020
+--- ./vtkm/cont/arg/TransportTagTopologyFieldIn.h	Tue Dec  8 12:55:49 2020
 ***************
-*** 98,104 ****
---- 98,106 ----
+*** 90,96 ****
+--- 90,98 ----
     {
       if (object.GetNumberOfValues() != detail::TopologyDomainSize(inputDomain, TopologyElementTag()))
       {
@@ -147,11 +114,11 @@ diff -c ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig ./vtkm/cont/arg/Trans
 + #endif
       }
   
-      return object.PrepareForInput(Device());
+      return object.PrepareForInput(Device(), token);
 EOF
 
     if [[ $? != 0 ]] ; then
-      warn "vtkm patch 2 failed."
+      warn "vtkm patch 1 failed."
       return 1
     fi
     return 0;
@@ -162,11 +129,6 @@ function apply_vtkm_patch
     info "Patching VTKm . . ."
 
     apply_patch_1
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
-
-    apply_patch_2
     if [[ $? != 0 ]] ; then
        return 1
     fi
