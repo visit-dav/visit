@@ -31,6 +31,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND
 endif ()
 
 #-----------------------------------------------------------------------------
+
 # Minimum compiler version check: Microsoft C/C++ >= 19.1 (aka VS 2017)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND
     CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.1)

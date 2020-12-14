@@ -287,6 +287,9 @@ avtRemapFilter::Execute(void)
 //      Eddie Rusu, Tue Jul 14 10:04:57 PDT 2020
 //      Clip domain receives the vtkDataSet directly instead of the leaf.
 //
+//      Alister Maguire, Fri Nov 13 14:07:54 PST 2020
+//      Updated the clipper to set the correct cell clip strategy.
+//
 // ****************************************************************************
 
 void
@@ -363,14 +366,14 @@ avtRemapFilter::ClipDomain(vtkDataSet *in_ds_tmp)
                 clipperLeft->SetInputData(in_ds);
                 clipperLeft->SetClipFunction(funcsArrayX[i]);
                 clipperLeft->SetInsideOut(false);
-                clipperLeft->SetRemoveWholeCells(false);
+                clipperLeft->SetCellClipStrategyToRemovePartial();
                 last = clipperLeft;
 
                 // Right plane
                 clipperRight->SetInputData(in_ds);
                 clipperRight->SetClipFunction(funcsArrayX[i+1]);
                 clipperRight->SetInsideOut(true);
-                clipperRight->SetRemoveWholeCells(false);
+                clipperRight->SetCellClipStrategyToRemovePartial();
                 clipperRight->SetInputConnection(last->GetOutputPort());
                 last = clipperRight;
 
@@ -378,7 +381,7 @@ avtRemapFilter::ClipDomain(vtkDataSet *in_ds_tmp)
                 clipperTop->SetInputData(in_ds);
                 clipperTop->SetClipFunction(funcsArrayY[j]);
                 clipperTop->SetInsideOut(false);
-                clipperTop->SetRemoveWholeCells(false);
+                clipperTop->SetCellClipStrategyToRemovePartial();
                 clipperTop->SetInputConnection(last->GetOutputPort());
                 last = clipperTop;
 
@@ -386,7 +389,7 @@ avtRemapFilter::ClipDomain(vtkDataSet *in_ds_tmp)
                 clipperBottom->SetInputData(in_ds);
                 clipperBottom->SetClipFunction(funcsArrayY[j+1]);
                 clipperBottom->SetInsideOut(true);
-                clipperBottom->SetRemoveWholeCells(false);
+                clipperBottom->SetCellClipStrategyToRemovePartial();
                 clipperBottom->SetInputConnection(last->GetOutputPort());
                 last = clipperBottom;
 
@@ -396,7 +399,7 @@ avtRemapFilter::ClipDomain(vtkDataSet *in_ds_tmp)
                     clipperFront->SetInputData(in_ds);
                     clipperFront->SetClipFunction(funcsArrayZ[k]);
                     clipperFront->SetInsideOut(false);
-                    clipperFront->SetRemoveWholeCells(false);
+                    clipperFront->SetCellClipStrategyToRemovePartial();
                     clipperFront->SetInputConnection(last->GetOutputPort());
                     last = clipperFront;
 
@@ -404,7 +407,7 @@ avtRemapFilter::ClipDomain(vtkDataSet *in_ds_tmp)
                     clipperBack->SetInputData(in_ds);
                     clipperBack->SetClipFunction(funcsArrayZ[k+1]);
                     clipperBack->SetInsideOut(true);
-                    clipperBack->SetRemoveWholeCells(false);
+                    clipperBack->SetCellClipStrategyToRemovePartial();
                     clipperBack->SetInputConnection(last->GetOutputPort());
                     last = clipperBack;
                 }
