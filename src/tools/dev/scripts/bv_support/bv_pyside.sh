@@ -272,7 +272,7 @@ function build_pyside
 
     pysideenv=""
     if [[ "$DO_LLVM" == "yes" ]] ; then
-        pysideenv="env CLANG_INSTALL_DIR=${VISIT_CLANG_DIR} LD_LIBRARY_PATH=${VISIT_CLANG_DIR}:${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
+        pysideenv="env CLANG_INSTALL_DIR=${VISIT_LLVM_DIR} LD_LIBRARY_PATH=${VISIT_LLVM_DIR}:${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
     fi
     echo ${pysideenv} "\"${CMAKE_BIN}\"" ${pyside_opts} ../${PYSIDE_SRC_DIR} > bv_run_cmake.sh
     cat bv_run_cmake.sh

@@ -19,7 +19,6 @@
             <lib name="boost"/>
             <lib name="boxlib"/>
             <lib name="cfitsio"/>
-            <lib name="clang"/>
             <lib name="cgns"/>
             <lib name="conduit"/>
             <lib name="embree"/>

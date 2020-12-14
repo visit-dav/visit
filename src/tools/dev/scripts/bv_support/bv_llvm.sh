@@ -1,6 +1,8 @@
 function bv_llvm_initialize
 {
     export DO_LLVM="no"
+    export BUILD_CLANG="no"
+    add_extra_commandline_args "llvm" "libclang" 0 "Build libclang"
 }
 
 function bv_llvm_enable
@@ -23,6 +25,13 @@ function bv_llvm_depends_on
     echo ${depends_on}
 }
 
+function bv_llvm_clang
+{
+    echo "configuring for building libclang"
+    export BUILD_CLANG="yes"
+    bv_llvm_enable
+}
+
 function bv_llvm_info
 {
     export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"6.0.1"}
@@ -31,6 +40,13 @@ function bv_llvm_info
     export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
     export LLVM_MD5_CHECKSUM="5ce9c5ad55243347ea0fdb4c16754be0"
     export LLVM_SHA256_CHECKSUM="e35dcbae6084adcf4abb32514127c5eabd7d63b733852ccdb31e06f1373136da"
+
+
+    export BV_CLANG_URL=${BV_LLVM_URL}
+    export BV_CLANG_FILE="cfe-${BV_LLVM_VERSION}.src.tar.xz"
+    export BV_CLANG_BUILD_DIR="cfe-${BV_LLVM_VERSION}.src"
+    #export CLANG_MD5_CHECKSUM="5ce9c5ad55243347ea0fdb4c16754be0"
+    #export CLANG_SHA256_CHECKSUM="e35dcbae6084adcf4abb32514127c5eabd7d63b733852ccdb31e06f1373136d
 }
 
 function bv_llvm_print
@@ -41,9 +57,12 @@ function bv_llvm_print
     printf "%s%s\n" "BV_LLVM_BUILD_DIR=" "${BV_LLVM_BUILD_DIR}"
 }
 
+
+
 function bv_llvm_print_usage
 {
     printf "%-20s %s [%s]\n" "--llvm" "Build LLVM" "$DO_LLVM"
+    printf "%-20s %s [%s]\n" "--libclang" "Build libclang with LLVM" "$BUILD_CLANG"
 }
 
 function bv_llvm_host_profile
@@ -116,6 +135,29 @@ function build_llvm
         return 1
     fi
 
+    if [[ $BUILD_CLANG == "yes" ]] ; then
+        # download
+        if ! test -f ${BV_CLANG_FILE} ; then
+            download_file ${BV_CLANG_FILE} ${BV_CLANG_URL}
+            if [[ $? != 0 ]] ; then
+                warn "Could not download ${BV_CLANG_FILE}"
+                return 1
+            fi
+        fi
+
+        # extract
+        if ! test -d clang ; then
+            info "Extracting clang ..."
+            uncompress_untar ${BV_CLANG_FILE}
+            if test $? -ne 0 ; then
+                warn "Could not extract ${BV_CLANG_FILE}"
+                return 1
+            fi
+            # llvm build system expects the directory to be named clang
+            mv ${BV_CLANG_BUILD_DIR} clang
+        fi
+    fi
+
     #
     # Build LLVM.
     #
@@ -157,40 +199,82 @@ function build_llvm
     rm -f CMakeCache.txt */CMakeCache.txt
 
     info "Configuring LLVM . . ."
+
+    llvm_opts=""
+    # standard cmake options
+    llvm_opts="${llvm_opts} -DCMAKE_INSTALL_PREFIX:PATH=${VISIT_LLVM_DIR}"
+    llvm_opts="${llvm_opts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+    llvm_opts="${llvm_opts} -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON"
+    llvm_opts="${llvm_opts} -DBUILD_SHARED_LIBS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+    llvm_opts="${llvm_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+    llvm_opts="${llvm_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    llvm_opts="${llvm_opts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+
+    # python?
     if [[ $DO_PYTHON == "yes" ]] ; then
-        LLVM_CMAKE_PYTHON="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_COMMAND"
+        llvm_opts="${llvm_opts} -DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_COMMAND"
     fi
 
     #
     # Determine the LLVM_TARGET_TO_BUILD.
     #
     if [[ "$(uname -m)" == "ppc64" || "$(uname -m)" == "ppc64le" ]]; then
-        LLVM_TARGET="PowerPC"
+        llvm_opts="${llvm_opts} -DLLVM_TARGETS_TO_BUILD:STRING=PowerPC"
     else
-        LLVM_TARGET="X86"
+        llvm_opts="${llvm_opts} -DLLVM_TARGETS_TO_BUILD:STRING=X86"
     fi
 
-    # LLVM documentation states thet BUILD_SHARED_LIBS is not to be used
-    # in conjuction with LLVM_BUILD_LLVM_DYLIB, and should only be used
-    # by LLVM developers.
-    ${CMAKE_COMMAND} \
-        -DCMAKE_INSTALL_PREFIX:PATH="${VISIT_LLVM_DIR}" \
-        -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
-        -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
-        -DBUILD_SHARED_LIBS:BOOL=OFF \
-        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
-        -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
-        -DLLVM_TARGETS_TO_BUILD=${LLVM_TARGET} \
-        -DLLVM_ENABLE_RTTI:BOOL=ON \
-        -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON \
-        $LLVM_CMAKE_PYTHON \
-        ../${BV_LLVM_SRC_DIR}
-    if [[ $? != 0 ]] ; then
-        warn "LLVM cmake failed.  Giving up"
-        return 1
+    llvm_opts="${llvm_opts} -DLLVM_ENABLE_RTTI:BOOL=ON"
+    llvm_opts="${llvm_opts} -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON"
+
+    # turn off things we don't need?
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_DOCS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_EXAMPLES:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_GO_TESTS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_TESTS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_UTILS:BOOL=OFF"
+
+
+    # libclang?
+    if [[ $BUILD_CLANG == "yes" ]] ; then
+        # options for building libclang
+        llvm_opts="${llvm_opts} -DLLVM_ENABLE_PROJECTS:STRING=clang"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_LIBCLANG_BUILD:BOOL=ON"
+        # turning off unnecessary tools
+        llvm_opts="${llvm_opts} -DCLANG_BUILD_TOOLS:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_ENABLE_ARCMT:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_ENABLE_STATIC_ANALYZER:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_INSTALL_SCANBUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_INSTALL_SCANVIEW:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_PLUGIN_SUPPORT:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_ARCMT_TEST_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_CHECK_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_DIFF_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FORMAT_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FORMAT_VS_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FUNC_MAPPING_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FUZZER_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_IMPORT_TEST_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_OFFLOAD_BUNDLER_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_REFACTOR_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_RENAME_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_C_ARCMT_TEST_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_C_INDEX_TEST_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_DIAGTOOL_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_DRIVER_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_HANDLE_CXX_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_SCAN_BUILD_BUILD:BOOL=OFF"
+        llvm_opts="${llvm_opts} -DCLANG_TOOL_SCAN_VIEW_BUILD:BOOL=OFF"
     fi
+
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
+    fi
+    echo "\"${CMAKE_COMMAND}\"" ${llvm_opts} ../${BV_LLVM_SRC_DIR} > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "LLVM configuration failed"
+
 
     info "Building LLVM . . ."
     ${MAKE} ${MAKE_OPT_FLAGS}
