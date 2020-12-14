@@ -261,14 +261,14 @@ static int InitializeViewerProxy(ViewerProxy* viewerproxy = NULL);
 //
 // This vector is used to hold structs that are handed to python 
 // as pointers. These structs can't be realloced, or else Python
-// will dance around in memory when trying call our module
+// will dance around in memory when trying to call our module
 // methods!
 //
 // As of 2020-12-14, the current number of methods is ~350.
 // 500 is used as a conservative estimate of future growth.
 //
 // When this number is too small, we show a runtime error
-// with at cli startup .
+// at cli startup.
 //
 int VISIT_METHODS_MAX_SIZE = 512;
 
