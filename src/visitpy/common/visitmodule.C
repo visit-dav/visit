@@ -265,12 +265,12 @@ static int InitializeViewerProxy(ViewerProxy* viewerproxy = NULL);
 // methods!
 //
 // As of 2020-12-14, the current number of methods is ~350.
-// 500 is used as a conservative estimate of future growth.
+// 1024 is used as a conservative estimate of future growth.
 //
 // When this number is too small, we show a runtime error
 // at cli startup.
 //
-int VISIT_METHODS_MAX_SIZE = 512;
+int VISIT_METHODS_MAX_SIZE = 1024;
 
 //
 // Type definitions
