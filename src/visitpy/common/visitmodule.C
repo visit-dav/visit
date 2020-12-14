@@ -254,6 +254,24 @@ static void OperatorPluginAddInterface();
 static void InitializeExtensions();
 static void ExecuteClientMethod(ClientMethod *method, bool onNewThread);
 static int InitializeViewerProxy(ViewerProxy* viewerproxy = NULL);
+
+//
+// VISIT_METHODS_MAX_SIZE Controls the pre-allocated size of 
+// the VisItMethods std::vector.
+//
+// This vector is used to hold structs that are handed to python 
+// as pointers. These structs can't be realloced, or else Python
+// will dance around in memory when trying call our module
+// methods!
+//
+// As of 2020-12-14, the current number of methods is ~350.
+// 500 is used as a conservative estimate of future growth.
+//
+// When this number is too small, we show a runtime error
+// with at cli startup .
+//
+int VISIT_METHODS_MAX_SIZE = 512;
+
 //
 // Type definitions
 //
@@ -17264,6 +17282,14 @@ std::vector<PyMethodDef> VisItMethods;
 //   Cyrus Harrison, Wed Mar 17 11:16:58 PDT 2010
 //   Use PyCFunction typedef.
 //
+//   Cyrus Harrison, Mon Dec 14 11:28:57 PST 2020
+//   Pre-allocate the std::vector on first call to add.
+//   Since we hand pointers of these structs to python, we need
+//   to make sure the memory backing them isn't re/deallocated as we call
+//   push_back. This was not an issue with python 2 b/c how the module
+//   was inited, but realloc did cause problems with python 3 due 
+//   to required multi-step init.
+//
 // ****************************************************************************
 
 static void
@@ -17271,12 +17297,35 @@ AddMethod(const char *methodName,
           PyCFunction methodImp,
           const char *doc = NULL)
 {
-    PyMethodDef newMethod;
-    newMethod.ml_name  = (char *)methodName;
-    newMethod.ml_meth  = methodImp;
-    newMethod.ml_flags = METH_VARARGS;
-    newMethod.ml_doc   = (char *)doc;
-    VisItMethods.push_back(newMethod);
+    // these structs are passed to python, which uses the pointers
+    // they provide.
+    // the memory backing them can't change!
+
+    if(VisItMethods.size() == 0)
+    {
+        VisItMethods.reserve(VISIT_METHODS_MAX_SIZE);
+    }
+
+    // make sure we don't realloc, error if we hit max
+    if(VisItMethods.size() < VISIT_METHODS_MAX_SIZE)
+    {
+        PyMethodDef newMethod;
+        newMethod.ml_name  = (char *)methodName;
+        newMethod.ml_meth  = methodImp;
+        newMethod.ml_flags = METH_VARARGS;
+        newMethod.ml_doc   = (char *)doc;
+        VisItMethods.push_back(newMethod);
+    }
+    else
+    {
+        // ERROR!
+        std::ostringstream emsg;
+        emsg << "Internal Error: Attempt to add method beyond pre-allocated "
+             << "max VisItMethods.size() = " << VISIT_METHODS_MAX_SIZE 
+             <<  ". A VisIt developer must adjust compiled "
+             << "VISIT_METHODS_MAX_SIZE (in visitmodule.C) .";
+        EXCEPTION1(VisItException,emsg.str());
+    }
 }
 
 // ****************************************************************************
@@ -17295,6 +17344,13 @@ AddMethod(const char *methodName,
 // Creation:   Wed Mar 17 11:04:30 PDT 2010
 //
 // Modifications:
+//   Cyrus Harrison, Mon Dec 14 11:28:57 PST 2020
+//   Pre-allocate the std::vector on first call to add.
+//   Since we hand pointers of these structs to python, we need
+//   to make sure the memory backing them isn't re/deallocated as we call
+//   push_back. This was not an issue with python 2 b/c how the module
+//   was inited, but realloc did cause problems with python 3 due 
+//   to required multi-step init.
 //
 // ****************************************************************************
 
@@ -17303,12 +17359,32 @@ AddMethod(const char *methodName,
           PyCFunctionWithKeywords methodImp,
           const char *doc = NULL)
 {
-    PyMethodDef newMethod;
-    newMethod.ml_name  = (char *)methodName;
-    newMethod.ml_meth  = (PyCFunction)methodImp;
-    newMethod.ml_flags = METH_VARARGS | METH_KEYWORDS;
-    newMethod.ml_doc   = (char *)doc;
-    VisItMethods.push_back(newMethod);
+
+    if(VisItMethods.size() == 0)
+    {
+        VisItMethods.reserve(VISIT_METHODS_MAX_SIZE);
+    }
+
+    // make sure we don't realloc, error if we hit max
+    if(VisItMethods.size() < VISIT_METHODS_MAX_SIZE)
+    {
+        PyMethodDef newMethod;
+        newMethod.ml_name  = (char *)methodName;
+        newMethod.ml_meth  = (PyCFunction)methodImp;
+        newMethod.ml_flags = METH_VARARGS | METH_KEYWORDS;
+        newMethod.ml_doc   = (char *)doc;
+        VisItMethods.push_back(newMethod);
+    }
+    else
+    {
+        // ERROR!
+        std::ostringstream emsg;
+        emsg << "Internal Error: Attempt to add method beyond pre-allocated "
+             << "max VisItMethods.size() = " << VISIT_METHODS_MAX_SIZE 
+             <<  ". A VisIt developer must adjust compiled "
+             << "VISIT_METHODS_MAX_SIZE (in visitmodule.C) .";
+        EXCEPTION1(VisItException,emsg.str());
+    }
 }
 
 
@@ -19628,20 +19704,24 @@ UpdateModuleMethods(PyObject *module,std::vector<PyMethodDef> &methods)
 {
     PyObject *mod_dict = PyModule_GetDict(module);
 
-    // last entry is always NULL to signal the end of valid methods
-    for(int i=0; i < methods.size() -1;i++)
+    for(int i=0; i < methods.size(); i++)
     {
         // check if method exists by doing a dict lookup
         const char *method_name = methods[i].ml_name;
-        PyObject *method_exists = PyDict_GetItemString(mod_dict,
-                                                       method_name);
 
-        // if == NULL, this method is new and we need to add it
-        if(method_exists == NULL)
+        // note: last entry is always NULL to signal the end of valid methods
+        // if name is null, skip lookup
+        if(method_name != NULL)
         {
-            PyObject *method = PyCFunction_New(&methods[i], Py_None);
-            PyDict_SetItemString(mod_dict,methods[i].ml_name, method);
-            Py_DECREF(method);
+            PyObject *method_exists = PyDict_GetItemString(mod_dict,
+                                                           method_name);
+            // if == NULL, this method is new and we need to add it
+            if(method_exists == NULL)
+            {
+                PyObject *method = PyCFunction_New(&methods[i], Py_None);
+                PyDict_SetItemString(mod_dict,methods[i].ml_name, method);
+                Py_DECREF(method);
+            }
         }
     }
 }
