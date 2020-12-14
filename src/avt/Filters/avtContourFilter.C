@@ -526,14 +526,6 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
         vtkDataArray *pointData = in_ds->GetPointData()->GetArray(var);
 
         //
-        // If we have zonal data, don't use VTKm.
-        //
-        if (pointData == NULL)
-        {
-            useVTKm = false;
-        }
-
-        //
         // If we have a rectilinear grid that isn't 3d, don't use VTKm.
         //
         if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
@@ -574,7 +566,7 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
         }
 
         //
-        // If we have an unstructured grid with non hex elements, don't
+        // If we have an unstructured grid with non 3d zoo elements, don't
         // use VTKm.
         //
         else if (in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
@@ -586,8 +578,12 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
             vtkIdType iCell = 0;
             for (; iCell < nCells; ++iCell)
             {
-                if (*ct++ != VTK_HEXAHEDRON)
+                if (*ct != VTK_TETRA &&
+                    *ct != VTK_PYRAMID &&
+                    *ct != VTK_WEDGE &&
+                    *ct != VTK_HEXAHEDRON)
                     break;
+                ct++;
             }
             if (iCell != nCells)
             {

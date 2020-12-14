@@ -100,13 +100,20 @@ ConvertVTKToVTKm(vtkDataSet *data)
         rgrid->GetDimensions(dims);
         if (dims[0] < 1 || dims[1] < 1 || dims[2] < 1)
             return NULL;
-        int nDims = 3;
-        if (dims[0] == 1) nDims--;
-        if (dims[1] == 1) nDims--;
-        if (dims[2] == 1) nDims--;
 
-        // Add the structured cell set.
-        if (nDims == 2)
+        //
+        // Add the structured cell set. VTK doesn't have the concept of
+        // 2D meshes, so the best we can do is look for the third dimension
+        // as 1. If the first or second dimension are 1, I'm not sure if
+        // VTKm could handle it, since the coordinates would still need to
+        // be 3D and then the 2D topology dimensions wouldn't match the
+        // first 2 dimensions of the coordinates, which seems bad. I can't
+        // actually test it since the only functionality where it would
+        // currently matter is with contouring and that doesn't handle 2D
+        // topology. I don't know if VTKm does anything special with a 2D
+        // topology but the data model has the concept, so we're setting it.
+        //
+        if (dims[2] == 1)
         {
             const vtkm::Id2 topo_origin(0, 0);
             vtkm::cont::CellSetStructured<2> cs;
@@ -119,17 +126,13 @@ ConvertVTKToVTKm(vtkDataSet *data)
             cs.SetGlobalPointIndexStart(topo_origin);
             ds.SetCellSet(cs);
         }
-        else if (nDims == 3)
+        else
         {
             const vtkm::Id3 topo_origin(0, 0, 0);
             vtkm::cont::CellSetStructured<3> cs;
             cs.SetPointDimensions(vtkm::make_Vec(dims[0], dims[1], dims[2]));
             cs.SetGlobalPointIndexStart(topo_origin);
             ds.SetCellSet(cs);
-        }
-        else
-        {
-            return NULL;
         }
 
         // Add the coordinate system.
@@ -173,13 +176,41 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
         int dims[3];
         sgrid->GetDimensions(dims);
+        if (dims[0] < 1 || dims[1] < 1 || dims[2] < 1)
+            return NULL;
+        int nDims = 3;
+        if (dims[0] == 1) nDims--;
+        if (dims[1] == 1) nDims--;
+        if (dims[2] == 1) nDims--;
 
-        // Add the structured cell set.
-        const vtkm::Id3 vdims(dims[0], dims[1], dims[2]);
-
-        vtkm::cont::CellSetStructured<3> cs;
-        cs.SetPointDimensions(vdims);
-        ds.SetCellSet(cs);
+        //
+        // Add the structured cell set. VTK doesn't have the concept of
+        // 2D meshes, so the best we can do is look for one of the dimensions
+        // to be 1. I don't know if VTKm does anything special with a 2D
+        // topology but the data model has the concept, so we're setting it.
+        //
+        if (nDims == 2)
+        {
+            const vtkm::Id2 topo_origin(0, 0);
+            vtkm::cont::CellSetStructured<2> cs;
+            if (dims[0] == 1)
+                cs.SetPointDimensions(vtkm::make_Vec(dims[1], dims[2]));
+            else if (dims[1] == 1)
+                cs.SetPointDimensions(vtkm::make_Vec(dims[0], dims[2]));
+            else
+                cs.SetPointDimensions(vtkm::make_Vec(dims[0], dims[1]));
+            cs.SetGlobalPointIndexStart(topo_origin);
+            ds.SetCellSet(cs);
+        }
+        else
+        {
+            const vtkm::Id3 topo_origin(0, 0, 0);
+            vtkm::cont::CellSetStructured<3> cs;
+            const vtkm::Id3 vdims(dims[0], dims[1], dims[2]);
+            cs.SetPointDimensions(vdims);
+            cs.SetGlobalPointIndexStart(topo_origin);
+            ds.SetCellSet(cs);
+        }
 
         // Add the coordinate system.
         vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > coordinates;
@@ -237,18 +268,14 @@ ConvertVTKToVTKm(vtkDataSet *data)
             vtkm::IdComponent nInds = static_cast<vtkm::IdComponent>(*nl++);
             switch (*ct)
             {
-#if 0
               case vtkm::CELL_SHAPE_VERTEX:
               case vtkm::CELL_SHAPE_LINE:
               case vtkm::CELL_SHAPE_TRIANGLE:
               case vtkm::CELL_SHAPE_QUAD:
               case vtkm::CELL_SHAPE_TETRA:
-#endif
-              case vtkm::CELL_SHAPE_HEXAHEDRON:
-#if 0
-              case vtkm::CELL_SHAPE_WEDGE:
               case vtkm::CELL_SHAPE_PYRAMID:
-#endif
+              case vtkm::CELL_SHAPE_WEDGE:
+              case vtkm::CELL_SHAPE_HEXAHEDRON:
                 nIndicesPortal.Set(nCellsActual, nInds);
                 offsetsPortal.Set(nCellsActual, connInd);
                 for (vtkm::IdComponent j = 0; j < nInds; ++j, ++connInd)
