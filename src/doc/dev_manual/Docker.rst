@@ -172,7 +172,7 @@ From that experience you can create your Dockerfile.
 Useful Docker Commands
 ----------------------
 
-Here are some useful Docker commands. ::
+Here are some useful Docker commands to manage images and containers. ::
 
     docker image ls
     docker container ls --all
@@ -184,3 +184,10 @@ you partially create an image or execute a container it is saving those
 checkpoints. This can quickly start to consume a lot of disk space, so you
 should frequently list your images and containers and remove those that you
 no longer need.
+
+If building an image fails and you want to take a look at what happened, you
+can convert the container into an image and then launch a bash shell in the
+image. ::
+
+    docker commit <container id> <image name>
+    docker run  -t -i <image name> /bin/bash
