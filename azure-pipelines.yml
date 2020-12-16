@@ -12,7 +12,7 @@
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2020-11-11-sha433ef0
+  container_tag: visitdav/visit-ci-develop:2020-12-09-shaf6ef22
 
 # only build merge target pr to develop
 trigger: none
@@ -27,7 +27,7 @@ stages:
   jobs:
   - job: Fast_Check
     pool:
-      vmImage: 'ubuntu-16.04'
+      vmImage: 'ubuntu-18.04'
     steps:
       - checkout: self
         clean: boolean
@@ -48,12 +48,12 @@ stages:
   jobs:
   - job: Main_Build
     pool:
-      vmImage: 'ubuntu-16.04'
+      vmImage: 'ubuntu-18.04'
     timeoutInMinutes: 0
     container: ${{ variables.container_tag }}
     variables:
       TPLS_PATH: /masonry/build-mb-develop-ci-smoke/thirdparty_shared/third_party/
-      CMAKE_VERSION: 3.9.3
+      CMAKE_VERSION: 3.14.7
     steps:
       - checkout: self
         clean: boolean

@@ -1,8 +1,8 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.1.0/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.2.0/toss3/cmake/3.14.7/linux-x86_64_gcc-6.1/bin/cmake
 ##
-## ./build_visit3_1_0 generated host.cmake
-## created: Mon Dec  9 11:52:39 PST 2019
-## system: Linux quartz1148 3.10.0-1062.1.1.1chaos.ch6.x86_64 #1 SMP Wed Sep 4 16:09:20 PDT 2019 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_2_0 generated host.cmake
+## created: Fri Dec  4 13:09:08 PST 2020
+## system: Linux quartz2498 3.10.0-1160.4.1.1chaos.ch6.x86_64 #1 SMP Fri Oct 9 17:56:20 PDT 2020 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
@@ -278,12 +278,12 @@ VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VI
 ##
 ## VTKM
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VISITHOME}/vtkm/0d141c/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VISITHOME}/vtkm/a3b852/${VISITARCH})
 
 ##
 ## VTKH
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTKH_DIR ${VISITHOME}/vtkh/2ce3fa/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTKH_DIR ${VISITHOME}/vtkh/v0.6.6/${VISITARCH})
 
 ##
 ## Xdmf
