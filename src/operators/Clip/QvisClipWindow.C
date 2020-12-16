@@ -253,12 +253,16 @@ QvisClipWindow::~QvisClipWindow()
 //   Jeremy Meredith, Fri Apr  3 10:19:16 EDT 2009
 //   Added missing connections for plane toggles.
 //
+//   Alister Maguire, Fri Nov 13 14:07:54 PST 2020
+//   Added support for the crinkle clip.
+//
 // ****************************************************************************
 
 void
 QvisClipWindow::CreateWindowContents()
 {
     
+    // Clip quality
     QWidget *qualityWidget= new QWidget(central);
     qualityGroup = new QButtonGroup(qualityWidget);
     
@@ -279,7 +283,7 @@ QvisClipWindow::CreateWindowContents()
     connect(qualityGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(qualityChanged(int)));
 
-    
+    // Clip type
     QWidget *typeWidget = new QWidget(central);
     typeGroup = new QButtonGroup(typeWidget);
     
@@ -299,6 +303,21 @@ QvisClipWindow::CreateWindowContents()
     connect(typeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(sliceTypeChanged(int)));
 
+    // Crinkle clip
+    QWidget *crinkleWidget = new QWidget(central);
+    
+    QHBoxLayout *crinkleLayout = new QHBoxLayout(crinkleWidget);
+    crinkleLayout->setMargin(0);
+    QCheckBox *crinkleClip = new QCheckBox(tr("Crinkle clip"), crinkleWidget);
+    crinkleClip->setChecked(false);
+    
+    crinkleLayout->addWidget(crinkleClip);
+    topLayout->addWidget(crinkleWidget);
+    
+    connect(crinkleClip, SIGNAL(toggled(bool)),
+            this, SLOT(crinkleClipToggled(bool)));
+
+    // Clip parameters
     QGroupBox *frame = new QGroupBox(tr("Clip parameters"),central);
     QVBoxLayout *frameLayout = new QVBoxLayout(frame);
     topLayout->addWidget(frame);
@@ -1177,5 +1196,30 @@ void
 QvisClipWindow::sphereInverseToggled(bool val)
 {
     atts->SetSphereInverse(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisClipWindow::crinkleClipToggled
+//
+// Purpose:
+//   This is a Qt slot function that is called when the crinkle clip
+//   checkbox is toggled.
+//
+// Arguments:
+//   val  :  On/off.
+//
+// Programmer: Alister Maguire
+// Creation:   November 13, 2020
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisClipWindow::crinkleClipToggled(bool val)
+{
+    atts->SetCrinkleClip(val);
     Apply();
 }
