@@ -103,7 +103,7 @@ class AVTFILTERS_API avtThresholdFilter : public avtPluginStructuredChunkDataTre
   private:
     bool VTKmAble(avtDataRepresentation *in) const;
     vtkDataSet           *ThresholdOnRanges(vtkDataSet *, vtkThreshold *, const char *, const std::string, const int);
-    virtual avtDataRepresentation *ProcessOneChunk_VTK(avtDataRepresentation *);
+    virtual avtDataRepresentation *ProcessOneChunk_VTK(avtDataRepresentation *,bool);
     virtual avtDataRepresentation *ProcessOneChunk_VTKM(avtDataRepresentation *);
     bool                  IsSimpleRange(const std::string);
     stringVector          GetRangeList(const std::string);

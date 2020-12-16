@@ -272,6 +272,87 @@ avtThresholdFilter::Equivalent(const AttributeGroup *a)
 avtDataRepresentation *
 avtThresholdFilter::ProcessOneChunk(avtDataRepresentation *in_dr, bool fromChunker)
 {
+    bool doVTKM = VTKmAble(in_dr);
+    avtDataRepresentation *out_dr = NULL;
+    if (doVTKM)
+        out_dr = ProcessOneChunk_VTKM(in_dr);
+    else
+        out_dr = ProcessOneChunk_VTK(in_dr, fromChunker);
+
+    return out_dr;
+}
+
+// **********************************************************************
+//  Method: avtThresholdFilter::VTKmAble
+//
+//  Purpose:
+//      Determine if VTKm can be used.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   November 18, 2020
+//
+//  Modifications:
+//
+// **********************************************************************
+bool
+avtThresholdFilter::VTKmAble(avtDataRepresentation *in_dr) const
+{
+    bool useVTKm = false;
+
+    const intVector    curZonePortions = atts.GetZonePortions();
+    if(std::count(curZonePortions.begin(), curZonePortions.end(), (int)ThresholdOpAttributes::PartOfZone))
+    {
+        // VTKm currently only supports allInRange for thresholds
+        useVTKm = false;
+    }
+    else if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
+        avtCallback::GetBackendType() == GlobalAttributes::VTKM)
+    {
+        useVTKm = true;
+        vtkDataSet *in_ds = in_dr->GetDataVTK();
+        if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+            vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
+            int dims[3];
+            rgrid->GetDimensions(dims);
+            if (dims[2] == 1)
+                useVTKm = false;
+        }
+        else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+        {
+            vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
+            int dims[3];
+            sgrid->GetDimensions(dims);
+            if (dims[2] == 1)
+                useVTKm = false;
+        }
+        else if (in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+        {
+            useVTKm = false;
+        }
+    }
+
+    return useVTKm;
+}
+
+
+// ****************************************************************************
+//  Method: avtThresholdFilter::ProcessOneChunk_VTK
+//
+//  Purpose:
+//      Perform threshold using VTK
+//
+//  Programmer: James Kress
+//  Creation:   March 25, 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataRepresentation *
+avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromChunker)
+{
+    int timerHandle = visitTimer->StartTimer();
     //
     // Get the VTK data set.
     //
@@ -296,88 +377,6 @@ avtThresholdFilter::ProcessOneChunk(avtDataRepresentation *in_dr, bool fromChunk
         in_ds->Register(NULL);
         return in_dr;
     }
-    
-    bool doVTKM = VTKmAble(in_dr);
-    avtDataRepresentation *out_dr = NULL;
-    if (doVTKM)
-        out_dr = ProcessOneChunk_VTKM(in_dr);
-    else
-        out_dr = ProcessOneChunk_VTK(in_dr);
-
-    return out_dr;
-}
-
-// **********************************************************************
-//  Method: avtIsovolumeFilter::VTKmAble
-//
-//  Purpose:
-//      Determine if VTKm can be used.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   November 18, 2020
-//
-//  Modifications:
-//
-// **********************************************************************
-bool
-avtThresholdFilter::VTKmAble(avtDataRepresentation *in_dr) const
-{
-   bool useVTKm = false;
-   if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
-       avtCallback::GetBackendType() == GlobalAttributes::VTKM)
-   {
-       useVTKm = true;
-       vtkDataSet *in_ds = in_dr->GetDataVTK();
-       char *var = (activeVariable != NULL ? activeVariable
-                                           : pipelineVariable);
-       vtkDataArray *pointData = in_ds->GetPointData()->GetArray(var);
-       if (pointData == NULL)
-           useVTKm = false;
-       else if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
-       {
-           vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
-           int dims[3];
-           rgrid->GetDimensions(dims);
-           if (dims[2] == 1)
-               useVTKm = false;
-       }
-       else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
-       {
-           vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
-           int dims[3];
-           sgrid->GetDimensions(dims);
-           if (dims[2] == 1)
-               useVTKm = false;
-       }
-       else if (in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
-       {
-            useVTKm = false;
-       }
-   }
-   return useVTKm;
-}
-
-
-// ****************************************************************************
-//  Method: avtThresholdFilter::ProcessOneChunk_VTK
-//
-//  Purpose:
-//      Perform threshold using VTK
-//
-//  Programmer: James Kress
-//  Creation:   March 25, 2020
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-avtDataRepresentation *
-avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr)
-{
-    debug1 << "Process one chunk vtk\n";
-
-    int timerHandle = visitTimer->StartTimer();
-    vtkDataSet *in_ds = in_dr->GetDataVTK();
 
     avtMeshType inputMeshType = GetInput()->GetInfo().GetAttributes().GetMeshType();
 
@@ -562,7 +561,7 @@ avtThresholdFilter::ProcessOneChunk_VTKM(avtDataRepresentation *in_dr)
     const intVector    curZonePortions = atts.GetZonePortions();
     const doubleVector curLowerBounds  = atts.GetLowerBounds();
     const doubleVector curUpperBounds  = atts.GetUpperBounds();
-    const stringVector curBoundsRange = atts.GetBoundsRange();
+    const stringVector curBoundsRange  = atts.GetBoundsRange();
     
     const char *curVarName;
     char errMsg[1024];
@@ -590,7 +589,7 @@ avtThresholdFilter::ProcessOneChunk_VTKM(avtDataRepresentation *in_dr)
         if (bypassThreshold == false)
         {
             curVarName = curVariables[curVarNum].c_str();
-            thresher.SetInput(in_ds);
+            thresher.SetInput(out_ds);
             thresher.SetField(curVariables[curVarNum]);
             thresher.SetUpperThreshold(curUpperBounds[curVarNum]);
             thresher.SetLowerThreshold(curLowerBounds[curVarNum]);
