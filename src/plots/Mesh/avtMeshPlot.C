@@ -253,22 +253,42 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
         }
 
         int sdim = dob->GetInfo().GetAttributes().GetSpatialDimension();
-        if (sdim < 3)
+        if (sdim < 2)
         {
             cellCountMultiplierForSRThreshold = 1.0;
             return;
         }
 
-        switch (atts.GetPointType())
+        // 2D glyphs are polydata often comprised of multiple tris or quads
+        // but can include lines and points.
+        if (sdim == 2)
         {
-            case Box:            cellCountMultiplierForSRThreshold = 6.0; break;
-            case Axis:           cellCountMultiplierForSRThreshold = 1.0; break;
-            case Icosahedron:    cellCountMultiplierForSRThreshold = 20.0; break;
-            case Octahedron:     cellCountMultiplierForSRThreshold = 8.0; break;
-            case Tetrahedron:    cellCountMultiplierForSRThreshold = 4.0; break;
-            case SphereGeometry: cellCountMultiplierForSRThreshold = 1.0; break;
-            case Point:          cellCountMultiplierForSRThreshold = 1.0; break;
-            case Sphere:         cellCountMultiplierForSRThreshold = 1.0; break;
+            switch (atts.GetPointType())
+            {
+                case Box:            cellCountMultiplierForSRThreshold = 1.0; break;
+                case Axis:           cellCountMultiplierForSRThreshold = 1.5; break;
+                case Icosahedron:    cellCountMultiplierForSRThreshold = 10.0; break;
+                case Octahedron:     cellCountMultiplierForSRThreshold = 5.0; break;
+                case Tetrahedron:    cellCountMultiplierForSRThreshold = 1.0; break;
+                case SphereGeometry: cellCountMultiplierForSRThreshold = 1.0; break;
+                case Point:          cellCountMultiplierForSRThreshold = 1.0; break;
+                case Sphere:         cellCountMultiplierForSRThreshold = 1.0; break;
+            }
+        }
+
+        if (sdim == 3)
+        {
+            switch (atts.GetPointType())
+            {
+                case Box:            cellCountMultiplierForSRThreshold = 6.0; break;
+                case Axis:           cellCountMultiplierForSRThreshold = 3.0; break;
+                case Icosahedron:    cellCountMultiplierForSRThreshold = 20.0; break;
+                case Octahedron:     cellCountMultiplierForSRThreshold = 8.0; break;
+                case Tetrahedron:    cellCountMultiplierForSRThreshold = 4.0; break;
+                case SphereGeometry: cellCountMultiplierForSRThreshold = 1.0; break;
+                case Point:          cellCountMultiplierForSRThreshold = 1.0; break;
+                case Sphere:         cellCountMultiplierForSRThreshold = 1.0; break;
+            }
         }
     }
 }
