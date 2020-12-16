@@ -232,6 +232,11 @@ avtMeshPlot::Create()
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Changed to the Set... method (Get is now done in avtPlot.C)
 //
+//    Mark C. Miller, Tue Dec 15 19:50:23 PST 2020
+//    Fix logic to set non-zero multipler only when...
+//       a) topo dim is zero...meaning its a point mesh and a glyphed plot
+//       b) spatial dim is 3...meaning glyphs set of 3D faces
+//    Also, set multipler to count of faces of each 3D glyph type.
 // ****************************************************************************
 
 void
@@ -239,11 +244,32 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 {
     if (*dob)
     {
-        int dim = dob->GetInfo().GetAttributes().GetSpatialDimension();
-        if (dim == 0)
-            cellCountMultiplierForSRThreshold = 6.0;
-        else
+        int tdim = dob->GetInfo().GetAttributes().GetTopologicalDimension();
+
+        if (tdim > 0)
+        {
             cellCountMultiplierForSRThreshold = 1.0;
+            return;
+        }
+
+        int sdim = dob->GetInfo().GetAttributes().GetSpatialDimension();
+        if (sdim < 3)
+        {
+            cellCountMultiplierForSRThreshold = 1.0;
+            return;
+        }
+
+        switch (atts.GetPointType())
+        {
+            case Box:            cellCountMultiplierForSRThreshold = 6.0; break;
+            case Axis:           cellCountMultiplierForSRThreshold = 1.0; break;
+            case Icosahedron:    cellCountMultiplierForSRThreshold = 20.0; break;
+            case Octahedron:     cellCountMultiplierForSRThreshold = 8.0; break;
+            case Tetrahedron:    cellCountMultiplierForSRThreshold = 4.0; break;
+            case SphereGeometry: cellCountMultiplierForSRThreshold = 1.0; break;
+            case Point:          cellCountMultiplierForSRThreshold = 1.0; break;
+            case Sphere:         cellCountMultiplierForSRThreshold = 1.0; break;
+        }
     }
 }
 
