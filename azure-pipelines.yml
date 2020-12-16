@@ -81,6 +81,40 @@ stages:
            make -j 4
         displayName: 'Build'
 
+      - script: |
+           #################################
+           # fetch subset of test data (silo)
+           #################################
+           apt-get update
+           apt-get install git-lfs
+           cd data
+           git lfs pull --include silo_ghost_test_data.7z
+           git lfs pull --include silo_hdf5_test_data.7z
+           git lfs pull --include silo_pdb_test_data.7z
+           git lfs pull --include silo_sph_test_data.7z
+           cd ../build/testdata/
+           7za x -y ../../data/silo_ghost_test_data.7z
+           7za x -y ../../data/silo_hdf5_test_data.7z
+           7za x -y ../../data/silo_pdb_test_data.7z
+           7za x -y ../../data/silo_sph_test_data.7z
+        displayName: 'Prep Test Data'
+
+      - script: |
+           #################################
+           # run silo tests
+           #################################
+           # run test suite
+           cd build/test
+           # find vtk, ospray and tbb
+           export VTK_LIB_DIR=`ls -d ${TPLS_PATH}/vtk/*/ci/lib/`
+           export OSPRAY_LIB_DIR=`ls -d ${TPLS_PATH}/ospray/*/ci/lib/`
+           export TBB_LIB_DIR=`ls -d ${TPLS_PATH}/tbb/*/ci/lib/intel64/gcc4.7/`
+           # add to ld_lib path (rpaths are missing?)
+           export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}${TBB_LIB_DIR}
+           # run test suite
+           ./run_visit_test_suite.sh  -v ../../src/test/tests/databases/silo.py
+        displayName: 'Run Tests'
+
       # - script: |
       #      #################################
       #      # install
