@@ -1,8 +1,6 @@
 function bv_llvm_initialize
 {
     export DO_LLVM="no"
-    export BUILD_CLANG="no"
-    add_extra_commandline_args "llvm" "libclang" 0 "Build libclang"
 }
 
 function bv_llvm_enable
@@ -25,28 +23,21 @@ function bv_llvm_depends_on
     echo ${depends_on}
 }
 
-function bv_llvm_clang
-{
-    echo "configuring for building libclang"
-    export BUILD_CLANG="yes"
-    bv_llvm_enable
-}
-
 function bv_llvm_info
 {
     export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"6.0.1"}
     export BV_LLVM_FILE=${BV_LLVM_FILE:-"llvm-${BV_LLVM_VERSION}.src.tar.xz"}
     export BV_LLVM_URL=${BV_LLVM_URL:-"http://releases.llvm.org/${BV_LLVM_VERSION}/"}
     export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
-    export LLVM_MD5_CHECKSUM="5ce9c5ad55243347ea0fdb4c16754be0"
-    export LLVM_SHA256_CHECKSUM="e35dcbae6084adcf4abb32514127c5eabd7d63b733852ccdb31e06f1373136da"
+    export LLVM_MD5_CHECKSUM="c88c98709300ce2c285391f387fecce0"
+    export LLVM_SHA256_CHECKSUM="b6d6c324f9c71494c0ccaf3dac1f16236d970002b42bb24a6c9e1634f7d0f4e2"
 
 
     export BV_CLANG_URL=${BV_LLVM_URL}
     export BV_CLANG_FILE="cfe-${BV_LLVM_VERSION}.src.tar.xz"
     export BV_CLANG_BUILD_DIR="cfe-${BV_LLVM_VERSION}.src"
-    #export CLANG_MD5_CHECKSUM="5ce9c5ad55243347ea0fdb4c16754be0"
-    #export CLANG_SHA256_CHECKSUM="e35dcbae6084adcf4abb32514127c5eabd7d63b733852ccdb31e06f1373136d
+    export CLANG_MD5_CHECKSUM="4e419bd4e3b55aa06d872320f754bd85"
+    export CLANG_SHA256_CHECKSUM="7c243f1485bddfdfedada3cd402ff4792ea82362ff91fbdac2dae67c6026b667"
 }
 
 function bv_llvm_print
@@ -62,7 +53,6 @@ function bv_llvm_print
 function bv_llvm_print_usage
 {
     printf "%-20s %s [%s]\n" "--llvm" "Build LLVM" "$DO_LLVM"
-    printf "%-20s %s [%s]\n" "--libclang" "Build libclang with LLVM" "$BUILD_CLANG"
 }
 
 function bv_llvm_host_profile
@@ -86,6 +76,7 @@ function bv_llvm_initialize_vars
     else
         LLVM_LIB="${LLVM_LIB_DIR}/libLLVM.${SO_EXT}"
     fi
+    export LLVM_INSTALL_DIR="${VISIT_LLVM_DIR}"
 }
 
 function bv_llvm_selected
@@ -135,27 +126,25 @@ function build_llvm
         return 1
     fi
 
-    if [[ $BUILD_CLANG == "yes" ]] ; then
-        # download
-        if ! test -f ${BV_CLANG_FILE} ; then
-            download_file ${BV_CLANG_FILE} ${BV_CLANG_URL}
-            if [[ $? != 0 ]] ; then
-                warn "Could not download ${BV_CLANG_FILE}"
-                return 1
-            fi
+    # download clang
+    if ! test -f ${BV_CLANG_FILE} ; then
+        download_file ${BV_CLANG_FILE} ${BV_CLANG_URL}
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${BV_CLANG_FILE}"
+            return 1
         fi
+    fi
 
-        # extract
-        if ! test -d clang ; then
-            info "Extracting clang ..."
-            uncompress_untar ${BV_CLANG_FILE}
-            if test $? -ne 0 ; then
-                warn "Could not extract ${BV_CLANG_FILE}"
-                return 1
-            fi
-            # llvm build system expects the directory to be named clang
-            mv ${BV_CLANG_BUILD_DIR} clang
+    # extract clang
+    if ! test -d clang ; then
+        info "Extracting clang ..."
+        uncompress_untar ${BV_CLANG_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${BV_CLANG_FILE}"
+            return 1
         fi
+        # llvm build system expects the directory to be named clang
+        mv ${BV_CLANG_BUILD_DIR} clang
     fi
 
     #
@@ -236,37 +225,34 @@ function build_llvm
     llvm_opts="${llvm_opts} -DLLVM_INCLUDE_UTILS:BOOL=OFF"
 
 
-    # libclang?
-    if [[ $BUILD_CLANG == "yes" ]] ; then
-        # options for building libclang
-        llvm_opts="${llvm_opts} -DLLVM_ENABLE_PROJECTS:STRING=clang"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_LIBCLANG_BUILD:BOOL=ON"
-        # turning off unnecessary tools
-        llvm_opts="${llvm_opts} -DCLANG_BUILD_TOOLS:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_ENABLE_ARCMT:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_ENABLE_STATIC_ANALYZER:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_INSTALL_SCANBUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_INSTALL_SCANVIEW:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_PLUGIN_SUPPORT:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_ARCMT_TEST_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_CHECK_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_DIFF_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FORMAT_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FORMAT_VS_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FUNC_MAPPING_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FUZZER_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_IMPORT_TEST_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_OFFLOAD_BUNDLER_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_REFACTOR_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_RENAME_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_C_ARCMT_TEST_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_C_INDEX_TEST_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_DIAGTOOL_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_DRIVER_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_HANDLE_CXX_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_SCAN_BUILD_BUILD:BOOL=OFF"
-        llvm_opts="${llvm_opts} -DCLANG_TOOL_SCAN_VIEW_BUILD:BOOL=OFF"
-    fi
+    # options for building libclang
+    llvm_opts="${llvm_opts} -DLLVM_ENABLE_PROJECTS:STRING=clang"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_LIBCLANG_BUILD:BOOL=ON"
+    # turning off unnecessary tools
+    llvm_opts="${llvm_opts} -DCLANG_BUILD_TOOLS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_ENABLE_ARCMT:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_ENABLE_STATIC_ANALYZER:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_INSTALL_SCANBUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_INSTALL_SCANVIEW:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_PLUGIN_SUPPORT:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_ARCMT_TEST_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_CHECK_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_DIFF_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FORMAT_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FORMAT_VS_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FUNC_MAPPING_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FUZZER_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_IMPORT_TEST_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_OFFLOAD_BUNDLER_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_REFACTOR_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_RENAME_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_C_ARCMT_TEST_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_C_INDEX_TEST_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_DIAGTOOL_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_DRIVER_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_HANDLE_CXX_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_SCAN_BUILD_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_SCAN_VIEW_BUILD:BOOL=OFF"
 
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh

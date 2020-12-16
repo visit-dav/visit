@@ -26,8 +26,8 @@ function bv_osmesa_info
     export OSMESA_FILE=${OSMESA_FILE:-"mesa-$OSMESA_VERSION.tar.gz"}
     export OSMESA_URL=${OSMESA_URL:-"https://archive.mesa3d.org/older-versions/17.x/"}
     export OSMESA_BUILD_DIR=${OSMESA_BUILD_DIR:-"mesa-$OSMESA_VERSION"}
-    export OSMESA_MD5_CHECKSUM="19832be1bc5784fc7bbad4d138537619"
-    export OSMESA_SHA256_CHECKSUM="c715c3a3d6fe26a69c096f573ec416e038a548f0405e3befedd5136517527a84"
+    export OSMESA_MD5_CHECKSUM="b8042f9970ea70a36da1ee1fae27c448"
+    export OSMESA_SHA256_CHECKSUM="c5beb5fc05f0e0c294fefe1a393ee118cb67e27a4dca417d77c297f7d4b6e479"
 }
 
 function bv_osmesa_print
