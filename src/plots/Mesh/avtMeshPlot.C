@@ -228,10 +228,10 @@ avtMeshPlot::Create()
 //    Changed to the Set... method (Get is now done in avtPlot.C)
 //
 //    Mark C. Miller, Tue Dec 15 19:50:23 PST 2020
-//    Fix logic to set non-zero multipler only when...
+//    Fix logic to set non-unit multipler only when...
 //       a) topo dim is zero...meaning its a point mesh and a glyphed plot
-//       b) spatial dim is 3...meaning glyphs set of 3D faces
-//    Also, set multipler to count of faces of each 3D glyph type.
+//       b) spatial dim is 2 or 3...meaning glyphs are sets of 3D faces
+//    Set multipler to count of faces of each 2 or 3D glyph type.
 // ****************************************************************************
 
 void
@@ -269,6 +269,7 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
                 case Point:          cellCountMultiplierForSRThreshold = 1.0; break;
                 case Sphere:         cellCountMultiplierForSRThreshold = 1.0; break;
             }
+            return;
         }
 
         if (sdim == 3)
