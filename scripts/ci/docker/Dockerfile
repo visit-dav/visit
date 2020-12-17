@@ -63,6 +63,9 @@ COPY visit.build_visit.docker.src.tar /masonry
 COPY masonry_docker_ci_cleanup.py /
 RUN cd /masonry/build-mb-develop-ci-smoke/visit/src/tools/dev/scripts/ && tar -xzf /masonry/visit.build_visit.docker.src.tar
 
+# ensure build_visit script is executable
+RUN cd /masonry/build-mb-develop-ci-smoke/visit/src/tools/dev/scripts/ && chmod u+x build_visit
+
 # call masonry to build tpls
 RUN cd masonry && python bootstrap_visit.py opts/mb-develop-ci-smoke.json
 
