@@ -1448,8 +1448,12 @@ avtMFIXCDFFileFormat::GetVectorVar(int domain, const char *varname)
         nzvals= (widths[2]+3);
     }
 
-    vector<float> xvec(totZones), yvec(totZones), zvec(totZones);
-    float *xdata = &xvec[0], *ydata = &yvec[0], *zdata = &zvec[0];
+    vector<float> xvec(totZones);
+    vector<float> yvec(totZones);
+    vector<float> zvec(totZones);
+    float *xdata = &xvec[0];
+    float *ydata = &yvec[0];
+    float *zdata = &zvec[0];
 
     if (!strncmp(varname,"Vel_",4))
     {
