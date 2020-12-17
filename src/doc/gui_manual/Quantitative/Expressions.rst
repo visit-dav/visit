@@ -3,16 +3,11 @@
 Expressions
 -----------
 
-.. danger::
-   Confirm the text here adequately characterizes that an expression has
-   value everywhere over the whole mesh it is defined on. Its a field.
-
-
 Scientific simulations often keep track of several dozen variables as they
 run. However, only a small subset of those variables are usually written
 to a simulation database to save disk space. Sometimes variables can be
-derived from other variables using a variable expression. VisIt_ provides
-variable expressions to allow scientists to create derived variables using
+derived from other variables using an *expression*. VisIt_ provides
+expressions to allow scientists to create derived variables using
 variables that are stored in the database. Expressions are extremely powerful
 because they allow users to analyze new data without necessarily having to
 rerun a simulation. Variables created using expressions behave just like
@@ -261,9 +256,6 @@ as a delimiter.
 Built-in expressions
 ~~~~~~~~~~~~~~~~~~~~
 
-.. danger::
-   Add examples for some of the more complicated cases.
-
 The following table lists built-in expressions that can be used to create
 more advanced expressions. Unless otherwise noted in the description, each
 expression takes scalar variables as its arguments.
@@ -424,13 +416,15 @@ Relational, Conditional and Logical Expressions
 """""""""""""""""""""""""""""""""""""""""""""""
 
 The ``if()`` conditional expression is designed to be used in concert with
-relation and logical expressions. Together, these expressions can be used to
-build up more complex expressions in which very different evaluations are
-performed depending on the outcome of other evaluations. For example, the
-``if()`` conditional expression can be used together with one or more
-relational expressions to create a new expression which evaluates to a
-dot-product on part of a mesh and to the magnitude of a divergence operator
-on another part of a mesh.
+the **Relational** and **Logical** expressions. Together, these expressions
+can be used to build up more complex expressions in which very different
+evaluations are performed depending on the outcome of other evaluations.
+For example, the ``if()`` conditional expression can be used together with
+one or more relational expressions to create a new expression which evaluates
+to a dot-product on part of a mesh and to the magnitude of a divergence operator
+on another part of a mesh. However, the **Relational** and **Logical** expressions
+alone (e.g. when not used *within* an ``if()`` expression) do not produce a
+useful result.
 
 .. _If_Expression_Function:
 
@@ -444,12 +438,6 @@ If Function (``if()``) : ``if(exprCondition, exprTrue, exprFalse)``
     combines the ``if`` expression with the ``gt`` and ``lt`` expressions
     to create a new expression that is equal to ``pressure`` wherever it is
     between 2.0 and 4.0 and 0 otherwise.
-
-.. danger::
-   Confirm relational and logical expressions produce new, boolean valued
-   expression variables which are themselves plottable in VisIt_. Their
-   original intent may have been only to be used as args in the IF expression
-   and not so much be plottable outputs in their own right.
 
 .. _Equal_Expression_Function:
 
@@ -1721,6 +1709,11 @@ Evaluate Transform Function: ``eval_transform()`` : ``eval_transform(expr0,<Fill
 Image Processing Expressions
 """"""""""""""""""""""""""""
 
+The image processing expressions defined here are not suitable for multi-block
+data. They do not handle domain boundaries properly even if the input database
+properly defines suitable layers of *ghost* zones. They do, however, operate
+on 2 and 3D data.
+
 .. _Conservative_Smoothing_Expression_Function:
 
 conservative smoothing Function: ``conservative_smoothing()`` : ``conservative_smoothing(expr0)``
@@ -1733,10 +1726,6 @@ Mean Filter Function: ``mean_filter()`` : ``mean_filter(<Scalar>,<Int>)``
     mean filter of width specified by ``<Int>`` argument. By default, the
     filter width is 3 (3x3). The input scalar must be defined on a structured
     mesh.
-
-.. danger::
-    It is not clear how filtering is handled across different domain
-    boundaries.
 
 .. _Median_Filter_Expression_Function:
 
@@ -1834,7 +1823,7 @@ Enumerate Function: ``enumerate()`` : ``enumerate(<Int-Scalar>,<[Int-List]>)``
 
 .. _Map_Expression_Function:
 
-Map Function: ``map()`` : ``map(<Scalar>,<[Input-Value-List]>,<[Output-Value-List]>)``
+Map Function: ``map()`` : ``map(<Scalar>,<[Input-Value-List]>,<[Output-Value-List]>, fill_value)``
     A more general form of :ref:`enumerate() <Enumerate_Expression_Function>`
     which supports non-integer input *scalar* variables and input and output
     maps which are not required to include all values in the input *scalar*
@@ -1842,7 +1831,8 @@ Map Function: ``map()`` : ``map(<Scalar>,<[Input-Value-List]>,<[Output-Value-Lis
     the same number of entries. A value in the input *scalar* variable that
     matches the *ith* entry in the ``[Input-Value-List]`` is mapped to the new
     value at the *ith* entry in the ``[Output-Value-List]``. Values that do not
-    match any entry in the ``[Input-Value-List]`` are mapped to ``-1``.
+    match any entry in the ``[Input-Value-List]`` are mapped to ``fill_value``,
+    which is ``-1`` by default.
 
 .. _Resample_Expression_Function:
 
@@ -1957,11 +1947,6 @@ Time Iteration Expressions
 Average Over Time Function: ``average_over_time()`` : ``average_over_time(<Scalar>,<Start>,<Stop>,<Stride>)``
     Return a new *scalar* variable in which each zonal or nodal value is the
     average over the times indicated by ``Start``, ``Stop`` and ``Stride``.
-
-.. danger::
-    How does this work with changing topology?
-    Also, what is the actual math of the average? Is it an update algorithm or a sum and then
-    division by number of iterations?
 
 .. _Min_Over_Time_Expression_Function:
 

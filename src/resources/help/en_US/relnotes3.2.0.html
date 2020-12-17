@@ -31,7 +31,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_features"></a>
 <p><b><font size="4">General features added in version 3.2</font></b></p>
 <ul>
-  <li>General Feature 1</li>
+  <li>Upgraded VTKm to a recent version. Support was added for zone centered variables and 3D unstructured meshes with tetrahedra, pyramid and prism cells, in addition to the existing support for hexahedra.</li>
   <li>General Feature 2</li>
 </ul>
 
@@ -53,7 +53,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">File format reader changes in version 3.2</font></b></p>
 <ul>
   <li>A reader was added to support AVS ucd file format.</li>
-  <li>File Format 2</li>
+  <li>A reader was added to support the FMS file format.</li>
+  <li>The MFEM reader was modified so it provides VisIt with original cell numbers that allow VisIt to successfully eliminate mesh lines that were not part of the original high order mesh.</li>
+  <li>The Rect reader was enabled as an optional plugin on Windows.</li>
+  <li>The ZipWrapper reader was enabled on Windows.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -66,8 +69,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 3.2</font></b></p>
 <ul>
+  <li>The Stagger operator is no longer enabled by default.</li>
+  <li>The Clip operator now has the ability to "Crinkle" clip, which retains whole cells that intersect with the clip boundary.</li>
   <li>Threshold operations can now use the VTKm backend for structured meshes.</li>
-  <li>Operator Change 2</li>
 </ul>
 
 <a name="Expression_changes"></a>
@@ -87,22 +91,27 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 3.2</font></b></p>
 <ul>
-  <li>Bug Fix 1</li>
+  <li>The checkbox in the Expression window that turns on the display of expressions from the database now indicates that it displays expressions from the database and auto generated ones.</li>
   <li>Bug Fix 2</li>
 </ul>
 
 <a name="Build_features"></a>
 <p><b><font size="4">Build features added in version 3.2</font></b></p>
 <ul>
-  <li>For build_visit, there is now only one way to specify a debug build: --build-mode "Debug".
-The --debug flag was removed. The default build-mode is "Release". If "Debug" is specified, all third-party libraries are built in debug mode. If the intention is only to build VisIt in debug mode, it should be compiled separately after all the third-party libraries are compiled, passing -DCMAKE_BUILD_TYPE:STRING=Debug to cmake when configuring VisIt.</li>
-  <li>Build Feature 2</li>
+  <li>For build_visit, there is now only one way to specify a debug build: --build-mode "Debug". The --debug flag was removed. The default build-mode is "Release". If "Debug" is specified, all third-party libraries are built in debug mode. If the intention is only to build VisIt in debug mode, it should be compiled separately after all the third-party libraries are compiled, passing -DCMAKE_BUILD_TYPE:STRING=Debug to cmake when configuring VisIt.</li> 
+  <li>Removed FastBit and FastQuery from VisIt.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.2</font></b></p>
 <ul>
   <li>Added support for link checking in Sphinx documentation.</li>
+  <li>Add ability to pass diff tolerances in Test()/TestText() testing methods.</li>
+  <li>Updated dev docs on fuzzy matching and thresholds for testing.</li>
+  <li>Support <code>pdb</code> as a mode string for testing.</li>
+  <li>Removed emptydomain cases from skip list.</li>
+  <li>Add new assertion tests to ensure tests are running in mode specified by -m/--mode= command-line argument.</li>
+  <li>QT version updated to 5.14.2.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

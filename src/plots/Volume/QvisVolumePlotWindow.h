@@ -128,8 +128,8 @@ class QvisVolumePlotWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisVolumePlotWindow(const int type, VolumeAttributes *volumeAtts_,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisVolumePlotWindow();
     virtual void CreateWindowContents();

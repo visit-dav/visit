@@ -7,6 +7,7 @@ VisIt_ Developer Manual
     :maxdepth: 1
     :numbered: 
 
+    StyleGuide
     pr_create
     pr_review
     RCDevelopment
@@ -18,6 +19,7 @@ VisIt_ Developer Manual
     Docker
     SiteReliabilityEngineering
     OpenGL
+    CI
 
 .. Indices and tables
 .. ==================

@@ -444,9 +444,32 @@
 #      VISIT_DATA_MANUAL_EXAMPLES => VISIT_ENABLE_DATA_MANUAL_EXAMPLES
 #      VISIT_BUILD_DIAGNOSTICS    => VISIT_ENABLE_DIAGNOSTICS
 #      VISIT_BUILD_AVTEXAMPLES    => VISIT_ENABLE_EXAMPLES
-
+#
 #    Kathleen Biagas, Thu Feb 20 14:45:33 MST 2020
 #    Having trouble with sphinx-build exe (Win10), so use script instead.
+#
+#    Brad Whitlock, Wed Jul 22 16:15:59 PDT 2020
+#    I added support for the FMS library.
+#
+#    Alister Maguire, Thu Aug 13 13:41:20 PDT 2020
+#    Updated the manuals target so that it builds in the binary directory.
+#
+#    Kathleen Biagas, Thu Oct 1, 2020
+#    Add retrieval of git revision hash.
+#
+#    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+#    Removed FastBit and FastQuery
+#
+#    Kevin Griffin, Fri Oct 16 17:13:32 PDT 2020
+#    For Apple, copied manuals directory to the install directory so it can
+#    be found by the packaging target.
+#
+#    Kathleen Biagas, Wed Oct 21, 2020
+#    Removed VISIT_SPHINX, moved Python-3 doc generation logic into doc
+#    subdir's CMakeLists.txt
+#
+#    Kathleen Biagas, Mon Oct 26, 2020
+#    Add VISIT_ENABLE_UNIT_TESTS option (on by default).>> develop
 #
 #****************************************************************************
 
@@ -750,7 +773,6 @@ OPTION(VISIT_NOLINK_MPI_WITH_LIBRARIES "Do not link MPI with VisIt's parallel sh
 OPTION(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE "Create a separate executable that forwards VisIt's socket connection between engine and component launcher" ON)
 OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
-OPTION(VISIT_SPHINX "Enable ability to build sphinx documentation" OFF)
 
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
 OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
@@ -784,6 +806,7 @@ OPTION(VISIT_ENABLE_EXAMPLES  "Enable building of examples" ON)
 OPTION(VISIT_ENABLE_LIBSIM "Enable building of libsim." ON)
 OPTION(VISIT_ENABLE_MANUALS  "Enable building of manuals (requires python3)" ON)
 OPTION(VISIT_ENABLE_SILO_TOOLS "Enable building of silo tools (mrgtree2dot, add_visit_searchpath)" ON)
+OPTION(VISIT_ENABLE_UNIT_TESTS "Enable building of unit tests (like MRUCache_test, StringHelpers_test)" ON)
 OPTION(VISIT_ENABLE_XDB "Enable Intelligent Light XDB database plugin." OFF) # OFF for now
 
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
@@ -856,8 +879,8 @@ VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
 VISIT_3RDPARTY_VAR(CONDUIT_DIR   "Path containing the Conduit library's include and lib")
 VISIT_3RDPARTY_DEP(CONDUIT_LIBDEP "Conduit library dependencies")
 VISIT_3RDPARTY_VAR(DAMARIS_DIR   "Path containing the Damaris library's include and lib")
-VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the FastBit library's include and lib")
-VISIT_3RDPARTY_VAR(FASTQUERY_DIR   "Path containing the FastQuery library's include and lib")
+VISIT_3RDPARTY_VAR(FMS_DIR       "Path containing the FMS library's include and lib")
+VISIT_3RDPARTY_DEP(FMS_LIBDEP    "FMS library dependencies")
 VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
 VISIT_3RDPARTY_VAR(GFORTRAN_DIR  "Path containing the GFortran library's include and lib")
 VISIT_3RDPARTY_VAR(HDF4_DIR      "Path containing the HDF4 library's include and lib")
@@ -871,6 +894,7 @@ VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
 VISIT_3RDPARTY_VAR(LLVM_DIR      "Path containing the LLVM library's include and lib")
 VISIT_3RDPARTY_VAR(MFEM_DIR      "Path containing the mfem library's include and lib")
 VISIT_3RDPARTY_DEP(MFEM_INCDEP   "MFEM include dependencies")
+VISIT_3RDPARTY_DEP(MFEM_LIBDEP   "MFEM library dependencies")
 VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
 VISIT_3RDPARTY_VAR(NEKTAR++_DIR  "Path containing the Nektar++ library's include and lib")
 VISIT_3RDPARTY_DEP(NEKTAR++_LIBDEP "Nektar++ library dependencies")
@@ -1320,11 +1344,8 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     # Configure Conduit support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
 
-    # Configure FastBit support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastBit.cmake)
-
-    # Configure FastQuery support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastQuery.cmake)
+    # Configure FMS support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFMS.cmake)
 
     # Configure gdal support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGDAL.cmake)
@@ -1721,28 +1742,26 @@ ENDFUNCTION(MAC_NIB_INSTALL)
 #-----------------------------------------------------------------------------
 #dummy revision, in case commands fail
 SET(VISIT_GIT_VERSION "Unknown")
-# Get the subversion revision number
-IF(EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
-    FILE(STRINGS ${VISIT_SOURCE_DIR}/GIT_VERSION VISIT_GIT_VERSION)
-ELSE(EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
     IF (EXISTS ${VISIT_SOURCE_DIR}/../.git)
         # Only try and determine the version number if it looks like
         # we're in a working copy (a .git directory should be present)
-#        FIND_PACKAGE(Subversion)
-#        IF(Subversion_FOUND)
-#            Subversion_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
-#            SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
-#        ELSE(Subversion_FOUND)
-#            IF(WIN32)
-#                INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTortoiseSVN.cmake)
-#                IF(TortoiseSVN_FOUND)
-#                    TortoiseSVN_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
-#                    SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
-#                ENDIF(TortoiseSVN_FOUND)
-#            ENDIF(WIN32)
-#        ENDIF(Subversion_FOUND)
-    ENDIF (EXISTS ${VISIT_SOURCE_DIR}/../.git)
-ENDIF(EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
+    find_package(Git QUIET)
+    if(Git_FOUND)
+        # if we would prefer the full hash, remove --short in the command
+        execute_process(
+            COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD
+            WORKING_DIRECTORY "${VISIT_SOURCE_DIR}"
+            RESULT_VARIABLE found_it
+            OUTPUT_VARIABLE git_rev
+            ERROR_QUIET
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        if(${found_it} EQUAL 0)
+            SET(VISIT_GIT_VERSION ${git_rev})
+        endif()
+        unset(found_it)
+        unset(git_rev)
+    endif()
+endif()
 
 #-----------------------------------------------------------------------------
 # Set up resource files for Windows applications.
@@ -2171,9 +2190,7 @@ if(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT BUILD_CTES
       add_subdirectory(test)
 endif()
 
-IF(VISIT_SPHINX)
-    ADD_SUBDIRECTORY(doc)
-ENDIF()
+add_subdirectory(doc)
 
 #-----------------------------------------------------------------------------
 # CPack -- This leverages our install targets to provide a "make package" that
@@ -2274,36 +2291,6 @@ ELSE (NOT WIN32)
       ENDIF(${MAKENSIS_FOUND})
     ENDIF(VISIT_MAKE_NSIS_INSTALLER)
 ENDIF (NOT WIN32)
-
-if(VISIT_PYTHON3_DIR AND VISIT_ENABLE_MANUALS)
-  if(WIN32)
-    # Need a different path for windows because sphinx-build
-    # is in a different location.
-
-    # don't pollute the src repo, build the docs in the binary dir.
-    # This doesn't allow the manuals to be found if running a dev build,
-    # so location may need to be rethought, but other than building them
-    # in exe/Release and in exe/Debug, thought this location was best.
-    add_custom_target(manuals
-        COMMAND ${VISIT_PYTHON3_DIR}/python.exe
-                ${VISIT_PYTHON3_DIR}/Scripts/sphinx-build-script.py
-        -b html ${VISIT_SOURCE_DIR}/doc 
-        ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
-    # Add command to ensure the manuals are installed to the correct location
-    install(DIRECTORY ${VISIT_BINARY_DIR}/resources/help/en_US/manual
-        DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}/help/en_US/
-        FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                         GROUP_READ GROUP_WRITE
-                         WORLD_READ
-        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                              WORLD_READ             WORLD_EXECUTE
-        CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
-  else()
-    add_custom_target(manuals
-                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build -b html ${VISIT_SOURCE_DIR}/doc ${VISIT_SOURCE_DIR}/resources/help/en_US/manual -a)
-  endif()
-endif()
 
 #CMake add subdirectory forces this action to go last
 #todo: find way for this function to execute as last

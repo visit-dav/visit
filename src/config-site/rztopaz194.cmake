@@ -1,35 +1,35 @@
 #/usr/workspace/visit/visit/thirdparty_shared/3.1.0/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake
 ##
-## ./build_visit3_1_0 generated host.cmake
-## created: Wed Dec 18 12:43:35 PST 2019
-## system: Linux rztopaz188 3.10.0-1062.1.1.1chaos.ch6.x86_64 #1 SMP Wed Sep 4 16:09:20 PDT 2019 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_1_3 generated host.cmake
+## created: Sun Sep 13 12:20:16 PDT 2020
+## system: Linux rztopaz188 3.10.0-1127.18.2.1chaos.ch6.x86_64 #1 SMP Thu Jul 30 12:53:28 PDT 2020 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.1.0/toss3)
-SET(VISITARCH linux-x86_64_gcc-4.9)
+SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.2.0/toss3)
+SET(VISITARCH linux-x86_64_gcc-6.1)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 ## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER /usr/tce/packages/gcc/gcc-6.1.0/bin/gcc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER /usr/tce/packages/gcc/gcc-6.1.0/bin/g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
-SET(CMAKE_INSTALL_RPATH "/usr/tce/packages/gcc/gcc-4.9.3/lib64")
+SET(CMAKE_INSTALL_RPATH "/usr/tce/packages/gcc/gcc-6.1.0/lib64")
 
 ##
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/lib" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/lib")
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/lib")
 
 ##
 ## VisIt Thread Option
@@ -69,7 +69,7 @@ VISIT_OPTION_DEFAULT(VISIT_OPENSSL_DIR ${VISITHOME}/openssl/1.0.2j/${VISITARCH})
 ## Python
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.14/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_PYTHON3_DIR ${VISITHOME}/python/3.7.5/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_PYTHON3_DIR ${VISITHOME}/python/3.7.7/${VISITARCH})
 
 ##
 ## LLVM
@@ -84,7 +84,7 @@ VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.2.8/${VISITARCH})
 ##
 ## Qt
 ##
-SETUP_APP_VERSION(QT 5.10.1)
+SETUP_APP_VERSION(QT 5.14.2)
 VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${VISITHOME}/qt/${QT_VERSION}/${VISITARCH})
 
 ##
@@ -221,7 +221,7 @@ VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP ${VISIT_CONDUIT_LIBDEP} ${VISITHOME}/zlib
 ##
 ## Mili
 ##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/15.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/19.2/${VISITARCH})
 
 ##
 ## MOAB 
@@ -251,8 +251,8 @@ VISIT_OPTION_DEFAULT(VISIT_SEVEN_ZIP_DIR ${VISITHOME}/p7zip/16.02/${VISITARCH})
 ##
 ## PIDX
 ##
-SETUP_APP_VERSION(PIDX 0.9.3)
-VISIT_OPTION_DEFAULT(VISIT_PIDX_DIR ${VISITHOME}/pidx/${PIDX_VERSION}/${VISITARCH})
+#SETUP_APP_VERSION(PIDX 0.9.3)
+#VISIT_OPTION_DEFAULT(VISIT_PIDX_DIR ${VISITHOME}/pidx/${PIDX_VERSION}/${VISITARCH})
 
 ##
 ## Silo

@@ -45,14 +45,17 @@
 //    Add 'originalOnly' arg, to call a method that only counts original
 //    zones (utilizes avtOriginalCellNumbers).
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
-VISIT_LONG_LONG
+long long
 avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, bool originalOnly)
 {
     avtDataTree_p dataTree = ds->dataTree;
 
-    VISIT_LONG_LONG numZones = 0;
+    long long numZones = 0;
     if (*dataTree != NULL)
     {
         bool dummy;
@@ -609,14 +612,17 @@ avtDatasetExaminer::GetVariableCentering(avtDataset_p &ds, const char *varname)
 //    Add 'originalOnly' arg, to call a method that only counts original
 //    nodes (utilizes avtOriginalNodeNumbers).
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
-VISIT_LONG_LONG
+long long
 avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, bool originalOnly)
 {
     avtDataTree_p dataTree = ds->dataTree;
 
-    VISIT_LONG_LONG numNodes = 0;
+    long long numNodes = 0;
     if (*dataTree != NULL)
     {
         bool dummy;
@@ -661,15 +667,18 @@ avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, bool originalOnly)
 //    Add 'originalOnly' arg, to call a method that only counts original
 //    zones (utilizes avtOriginalCellNumbers).
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
-avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, VISIT_LONG_LONG &nReal,
-                                     VISIT_LONG_LONG &nGhost, bool originalOnly)
+avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, long long &nReal,
+                                     long long &nGhost, bool originalOnly)
 {
     avtDataTree_p dataTree = ds->dataTree;
 
-    VISIT_LONG_LONG numZones[2] = {0, 0};
+    long long numZones[2] = {0, 0};
     if (*dataTree != NULL)
     {
         bool dummy;
@@ -720,15 +729,18 @@ avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, VISIT_LONG_LONG &nReal,
 //    Add 'originalOnly' arg, to call a method that only counts original
 //    nodes (utilizes avtOriginalNodeNumbers).
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
-avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, VISIT_LONG_LONG &nReal,
-                                     VISIT_LONG_LONG &nGhost, bool originalOnly)
+avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, long long &nReal,
+                                     long long &nGhost, bool originalOnly)
 {
     avtDataTree_p dataTree = ds->dataTree;
 
-    VISIT_LONG_LONG numNodes[2] = {0, 0};
+    long long numNodes[2] = {0, 0};
     if (*dataTree != NULL)
     {
         bool dummy;
@@ -778,13 +790,17 @@ avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, VISIT_LONG_LONG &nReal,
 //  Programmer: Hank Childs
 //  Creation:   May 21, 2010
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 bool
 avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds, 
                                        const std::string &var,
                                        double min, double max,
-                                       std::vector<VISIT_LONG_LONG> &numvals)
+                                       std::vector<long long> &numvals)
 {
     avtDataTree_p dataTree = ds->dataTree;
 

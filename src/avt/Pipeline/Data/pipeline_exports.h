@@ -26,16 +26,6 @@
 #pragma warning(disable:4786)
 // Turn off warning about forcing value to bool 'true' or 'false'
 #pragma warning(disable:4800)
-
-// Define VISIT_LONG_LONG so the Windows compiler can handle it.
-#ifndef VISIT_LONG_LONG
-#if defined(_MSC_VER) && (_MSC_VER <= 1200)
-#define VISIT_LONG_LONG __int64
-#else
-#define VISIT_LONG_LONG long long
-#endif
-#endif
-
 #endif
 #else
 # if __GNUC__ >= 4 && (defined(AVTPIPELINE_EXPORTS) || defined(avtpipeline_ser_EXPORTS) || defined(avtpipeline_par_EXPORTS))
@@ -43,9 +33,6 @@
 # else
 #   define PIPELINE_API /* hidden by default */
 # endif
-#ifndef VISIT_LONG_LONG
-#define VISIT_LONG_LONG long long
-#endif
 #endif
 
 #endif

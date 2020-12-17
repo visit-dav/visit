@@ -34,8 +34,8 @@ class QvisTessellateWindow : public QvisOperatorWindow
   public:
     QvisTessellateWindow(const int type,
                          TessellateAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisTessellateWindow();
     virtual void CreateWindowContents();
@@ -44,11 +44,14 @@ class QvisTessellateWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void chordErrorProcessText();
+    void fieldCriterionProcessText();
     void mergePointsChanged(bool val);
   private:
     QLineEdit *chordError;
+    QLineEdit *fieldCriterion;
     QCheckBox *mergePoints;
     QLabel *chordErrorLabel;
+    QLabel *fieldCriterionLabel;
 
     TessellateAttributes *atts;
 };

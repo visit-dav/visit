@@ -53,10 +53,12 @@ public:
 
     // Property setting methods
     void SetChordError(double chordError_);
+    void SetFieldCriterion(double fieldCriterion_);
     void SetMergePoints(bool mergePoints_);
 
     // Property getting methods
     double GetChordError() const;
+    double GetFieldCriterion() const;
     bool   GetMergePoints() const;
 
     // Persistence methods
@@ -74,18 +76,20 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_chordError = 0,
+        ID_fieldCriterion,
         ID_mergePoints,
         ID__LAST
     };
 
 private:
     double chordError;
+    double fieldCriterion;
     bool   mergePoints;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define TESSELLATEATTRIBUTES_TMFS "db"
+#define TESSELLATEATTRIBUTES_TMFS "ddb"
 
 #endif

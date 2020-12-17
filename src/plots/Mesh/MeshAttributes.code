@@ -238,4 +238,90 @@ MeshAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
+Target: xml2info
+Function: MeshViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+Definition:
+// ****************************************************************************
+//  Method: MeshViewerEnginePluginInfo::InitializePlotAtts
+//
+//  Purpose:
+//    Initialize the plot attributes to the default attributes.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 3, 2020
+// ****************************************************************************
+#include <avtPlotMetaData.h>
 
+void
+MeshViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
+{
+    *(MeshAttributes*)atts = *defaultAtts;
+    SetAutonomousColors(atts,
+        plot.GetBackgroundColor(), plot.GetForegroundColor());
+}
+
+Function: MeshViewerEnginePluginInfo::SetAutonomousColors
+Declaration: void SetAutonomousColors(AttributeSubject *, double const *, double const *);
+Definition:
+// ****************************************************************************
+//  Method: MeshViewerEnginePluginInfo::SetAutonomousColors
+//
+//  Purpose:
+//    Sets the color for any autonomous color selection modes 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 3, 2020
+// ****************************************************************************
+#include <avtColorTables.h>
+
+void
+MeshViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
+    double const *bgColor, double const *fgColor)
+{
+    MeshAttributes *meshAtts = (MeshAttributes *)atts;
+    bool attsChanged = false;
+
+    unsigned char bg[3] = {static_cast<unsigned char>(bgColor[0]*255),
+                           static_cast<unsigned char>(bgColor[1]*255),
+                           static_cast<unsigned char>(bgColor[2]*255)};
+    unsigned char fg[3] = {static_cast<unsigned char>(fgColor[0]*255),
+                           static_cast<unsigned char>(fgColor[1]*255),
+                           static_cast<unsigned char>(fgColor[2]*255)};
+
+    if (meshAtts->GetOpaqueColorSource() == MeshAttributes::OpaqueRandom)
+    {
+        unsigned char rgb[3] = {bg[0], bg[1], bg[2]};
+
+        // deconflict opaque color with foreground
+        avtColorTables *ct = avtColorTables::Instance();
+        if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
+                                            "MeshColor", fg, rgb))
+            ct->GetJNDControlPointColor("distinct", "MeshColor", fg, rgb);
+
+        ColorAttribute c(rgb[0], rgb[1], rgb[2]);
+        meshAtts->SetOpaqueColor(c);
+        attsChanged = true;
+    }
+
+    if (meshAtts->GetMeshColorSource() == MeshAttributes::MeshRandom)
+    {
+        unsigned char rgb[3] = {fg[0], fg[1], fg[2]};
+        ColorAttribute opqc = meshAtts->GetOpaqueColor();
+
+        // deconflict mesh (lines) color with opaque color
+        avtColorTables *ct = avtColorTables::Instance();
+        if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
+                                            "MeshColor", opqc.GetColor(), rgb))
+            ct->GetJNDControlPointColor("distinct", "MeshColor", opqc.GetColor(), rgb);
+
+        ColorAttribute c(rgb[0], rgb[1], rgb[2]);
+        meshAtts->SetMeshColor(c);
+        attsChanged = true;
+    }
+
+    // Ensure GUI reflects any color choices made here
+    if (attsChanged)
+        SetClientAtts(atts);
+}

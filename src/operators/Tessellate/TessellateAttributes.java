@@ -25,13 +25,14 @@ import llnl.visit.Plugin;
 
 public class TessellateAttributes extends AttributeSubject implements Plugin
 {
-    private static int TessellateAttributes_numAdditionalAtts = 2;
+    private static int TessellateAttributes_numAdditionalAtts = 3;
 
     public TessellateAttributes()
     {
         super(TessellateAttributes_numAdditionalAtts);
 
         chordError = 0.035;
+        fieldCriterion = 0.035;
         mergePoints = true;
     }
 
@@ -40,6 +41,7 @@ public class TessellateAttributes extends AttributeSubject implements Plugin
         super(TessellateAttributes_numAdditionalAtts + nMoreFields);
 
         chordError = 0.035;
+        fieldCriterion = 0.035;
         mergePoints = true;
     }
 
@@ -48,6 +50,7 @@ public class TessellateAttributes extends AttributeSubject implements Plugin
         super(obj);
 
         chordError = obj.chordError;
+        fieldCriterion = obj.fieldCriterion;
         mergePoints = obj.mergePoints;
 
         SelectAll();
@@ -67,6 +70,7 @@ public class TessellateAttributes extends AttributeSubject implements Plugin
     {
         // Create the return value
         return ((chordError == obj.chordError) &&
+                (fieldCriterion == obj.fieldCriterion) &&
                 (mergePoints == obj.mergePoints));
     }
 
@@ -80,14 +84,21 @@ public class TessellateAttributes extends AttributeSubject implements Plugin
         Select(0);
     }
 
+    public void SetFieldCriterion(double fieldCriterion_)
+    {
+        fieldCriterion = fieldCriterion_;
+        Select(1);
+    }
+
     public void SetMergePoints(boolean mergePoints_)
     {
         mergePoints = mergePoints_;
-        Select(1);
+        Select(2);
     }
 
     // Property getting methods
     public double  GetChordError() { return chordError; }
+    public double  GetFieldCriterion() { return fieldCriterion; }
     public boolean GetMergePoints() { return mergePoints; }
 
     // Write and read methods.
@@ -96,6 +107,8 @@ public class TessellateAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(0, buf))
             buf.WriteDouble(chordError);
         if(WriteSelect(1, buf))
+            buf.WriteDouble(fieldCriterion);
+        if(WriteSelect(2, buf))
             buf.WriteBool(mergePoints);
     }
 
@@ -107,6 +120,9 @@ public class TessellateAttributes extends AttributeSubject implements Plugin
             SetChordError(buf.ReadDouble());
             break;
         case 1:
+            SetFieldCriterion(buf.ReadDouble());
+            break;
+        case 2:
             SetMergePoints(buf.ReadBool());
             break;
         }
@@ -116,6 +132,7 @@ public class TessellateAttributes extends AttributeSubject implements Plugin
     {
         String str = new String();
         str = str + doubleToString("chordError", chordError, indent) + "\n";
+        str = str + doubleToString("fieldCriterion", fieldCriterion, indent) + "\n";
         str = str + boolToString("mergePoints", mergePoints, indent) + "\n";
         return str;
     }
@@ -123,6 +140,7 @@ public class TessellateAttributes extends AttributeSubject implements Plugin
 
     // Attributes
     private double  chordError;
+    private double  fieldCriterion;
     private boolean mergePoints;
 }
 

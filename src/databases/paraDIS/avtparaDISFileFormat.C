@@ -10,9 +10,6 @@
 #include <avtparaDISOptions.h>
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
-#include "stringutil.h"
-#include "debugutil.h"
-#include "pathutil.h"
 #include "version.h"
 #include "paradis.h"
 #include <string>

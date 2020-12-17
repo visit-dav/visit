@@ -20,7 +20,6 @@
 #   I added ThresholdOpAttributes, the bulk of the ThresholdAttributes. I also
 #   added SelectionSummary and SelectionVariableSummary.
 #
-#
 #   Mark C. Miller, Tue Feb  8 16:28:32 PST 2011
 #   Added custom 'init' target for pareser re-gen. It was lost in transition
 #   from autoconf to CMake.
@@ -45,6 +44,14 @@
 #
 #   Kathleen Biagas, Thu Jun  4 16:07:40 PDT 2020
 #   Add LineGlyphAttributes and PointGlyphAttributes.
+#
+#   Kathleen Biagas, Thu Jun  4 16:07:40 PDT 2020
+#   Enable mrucache, namescheme, utility unit tests on Windows.
+#   Wrap unit tests in if-test for VISIT_ENABLE_UNIT_TESTS.
+#   Add folder for unit tests.
+#
+#   Kathleen Biagas, Thu Nov 12, 2020
+#   Enable StringHelpers_test on Windows.
 #
 #****************************************************************************
 
@@ -460,25 +467,47 @@ ADD_LIBRARY(visitcommon
     ${UTILITY_SOURCES} ${UTILITY_WIN32_SOURCES})
 
 # Specify the libraries to link against on Windows
-IF(WIN32)
-    TARGET_LINK_LIBRARIES(visitcommon ws2_32 shlwapi userenv ${ZLIB_LIBRARY})
-ELSE(WIN32)
-    TARGET_LINK_LIBRARIES(visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
-    ADD_EXECUTABLE(StringHelpers_test utility/StringHelpers_test.C)
-    TARGET_LINK_LIBRARIES(StringHelpers_test ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
-    ADD_EXECUTABLE(Utility_test utility/Utility_test.C)
-    TARGET_LINK_LIBRARIES(Utility_test ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
-    ADD_EXECUTABLE(Namescheme_test utility/Namescheme_test.C)
-    TARGET_LINK_LIBRARIES(Namescheme_test ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
-    ADD_EXECUTABLE(MRUCache_test utility/MRUCache_test.C)
-    ADD_EXECUTABLE(exprconfig expr/ExprConfig.C)
-    TARGET_LINK_LIBRARIES(exprconfig ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
-    ADD_EXECUTABLE(exprtest expr/test.C)
-    TARGET_LINK_LIBRARIES(exprtest ${VISIT_EXE_LINKER_FLAGS} visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
-    ADD_CUSTOM_TARGET(init)
-    ADD_DEPENDENCIES(init exprconfig)
-    ADD_CUSTOM_COMMAND(TARGET init POST_BUILD COMMAND exprconfig ExprInit.C
-        WORKING_DIRECTORY ${VISIT_SOURCE_DIR}/common/expr)
-ENDIF(WIN32)
+if(WIN32)
+    target_link_libraries(visitcommon ws2_32 shlwapi userenv ${ZLIB_LIBRARY})
+    # for std::filesystem::path used in FileFunctions
+    target_compile_features(visitcommon PRIVATE cxx_std_17)
+else()
+    target_link_libraries(visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+endif()
+
+if(VISIT_ENABLE_UNIT_TESTS)
+    add_executable(MRUCache_test utility/MRUCache_test.C)
+    set_target_properties(MRUCache_test PROPERTIES FOLDER unit_tests)
+
+    add_executable(Namescheme_test utility/Namescheme_test.C)
+    target_link_libraries(Namescheme_test ${VISIT_EXE_LINKER_FLAGS} 
+         visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    set_target_properties(Namescheme_test PROPERTIES FOLDER unit_tests)
+
+    add_executable(Utility_test utility/Utility_test.C)
+    target_link_libraries(Utility_test ${VISIT_EXE_LINKER_FLAGS} visitcommon 
+        ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    set_target_properties(Utility_test PROPERTIES FOLDER unit_tests)
+
+    add_executable(StringHelpers_test utility/StringHelpers_test.C)
+    target_link_libraries(StringHelpers_test ${VISIT_EXE_LINKER_FLAGS}
+            visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    set_target_properties(StringHelpers_test PROPERTIES FOLDER unit_tests)
+
+    if(NOT WIN32)
+        add_executable(exprconfig expr/ExprConfig.C)
+        target_link_libraries(exprconfig ${VISIT_EXE_LINKER_FLAGS} 
+            visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+
+        add_executable(exprtest expr/test.C)
+        target_link_libraries(exprtest ${VISIT_EXE_LINKER_FLAGS} 
+            visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+
+        add_custom_target(init)
+        add_dependencies(init exprconfig)
+        add_custom_command(TARGET init POST_BUILD COMMAND exprconfig ExprInit.C
+            WORKING_DIRECTORY ${VISIT_SOURCE_DIR}/common/expr)
+    endif()
+endif()
 
 VISIT_INSTALL_TARGETS(visitcommon)

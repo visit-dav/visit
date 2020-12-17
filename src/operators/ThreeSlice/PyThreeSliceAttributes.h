@@ -5,6 +5,7 @@
 #ifndef PY_THREESLICEATTRIBUTES_H
 #define PY_THREESLICEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ThreeSliceAttributes.h>
 
 //

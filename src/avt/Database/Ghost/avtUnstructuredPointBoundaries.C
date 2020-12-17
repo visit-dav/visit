@@ -220,18 +220,8 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
             }
 
             vector<int> givenCells, givenPoints;
-#if defined(_MSC_VER) && (_MSC_VER <= 1200) // MSVC 6
-            for(std::set<vtkIdType>::const_iterator cell_it = cells.begin();
-                cell_it != cells.end(); ++cell_it)
-                givenCells.push_back(*cell_it);
-
-            for(std::set<vtkIdType>::const_iterator point_it = points.begin();
-                point_it != points.end(); ++point_it)
-                givenPoints.push_back(*point_it);
-#else
             givenCells.assign(cells.begin(), cells.end());
             givenPoints.assign(points.begin(), points.end());
-#endif
             // sendDom gives to recvDom with point filter on.
             SetGivenCellsAndPoints(sendDom, recvDom, givenCells, 
                                                      givenPoints, true);

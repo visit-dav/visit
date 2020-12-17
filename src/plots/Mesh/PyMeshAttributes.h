@@ -5,6 +5,7 @@
 #ifndef PY_MESHATTRIBUTES_H
 #define PY_MESHATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <MeshAttributes.h>
 
 //

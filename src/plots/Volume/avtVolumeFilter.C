@@ -148,6 +148,9 @@ avtVolumeFilter::SetAttributes(const VolumeAttributes &a)
 //    Hank Childs, Wed Feb  2 17:51:34 CST 2011
 //    Add timings statement for histogram calculation.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
@@ -209,7 +212,7 @@ avtVolumeFilter::Execute(void)
     //  (atts.GetScaling() == VolumeAttributes::Linear) ?
     //  primaryVariable : "_expr_" + std::string(primaryVariable);
     // std::cout << "primaryVariable = " << primaryVariable << std::endl;
-    std::vector<VISIT_LONG_LONG> numvals_in(numValsInHist, 0);
+    std::vector<long long> numvals_in(numValsInHist, 0);
     if(avtDatasetExaminer::CalculateHistogram(ds, primaryVariable,
                                               minmax[0], minmax[1],
                                               numvals_in))
@@ -220,11 +223,11 @@ avtVolumeFilter::Execute(void)
     }
 
     // Get the global histograms acrosss all ranks.
-    std::vector<VISIT_LONG_LONG> numvals_out(numValsInHist, 0);
+    std::vector<long long> numvals_out(numValsInHist, 0);
     SumLongLongArrayAcrossAllProcessors(&(numvals_in[0]),
                                         &(numvals_out[0]), numValsInHist);
     
-    VISIT_LONG_LONG maxVal = 0;
+    long long maxVal = 0;
     for (i = 0 ; i < numValsInHist ; i++)
         if (numvals_out[i] > maxVal)
             maxVal = numvals_out[i];
@@ -750,6 +753,9 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
 //    Alister Maguire, Mon Jun  3 15:40:31 PDT 2019
 //    Setting the view distance in the compositeRF for opacity correction. 
 //
+//    Alister Maguire, Wed Oct  7 16:30:23 PDT 2020
+//    Removed the calls to SetDistance as they are no longer needed.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1041,12 +1047,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     software->SetView(vi);
     if (atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
     {
-        integrateRF->SetDistance(view.GetFarPlane()-view.GetNearPlane());
         integrateRF->SetWindowSize(size[0], size[1]);
-    }
-    else
-    {
-        compositeRF->SetDistance(view.GetFarPlane()-view.GetNearPlane());
     }
 
     double view_dir[3];

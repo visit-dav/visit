@@ -509,7 +509,7 @@ QvisAppearanceWindow::backgroundChanged(const QColor &bg)
     if(ColorsNotTooClose(bg, atts->GetForeground().c_str()))
     {
         QString tmp;
-        tmp.sprintf("#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
+        tmp.asprintf("#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
         atts->SetBackground(tmp.toStdString());
         SetUpdate(false);
         Apply();
@@ -543,7 +543,7 @@ QvisAppearanceWindow::foregroundChanged(const QColor &fg)
     if(ColorsNotTooClose(fg, atts->GetBackground().c_str()))
     {
         QString tmp;
-        tmp.sprintf("#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
+        tmp.asprintf("#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
         atts->SetForeground(tmp.toStdString());
         SetUpdate(false);
         Apply();

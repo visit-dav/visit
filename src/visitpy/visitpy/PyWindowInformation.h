@@ -5,6 +5,7 @@
 #ifndef PY_WINDOWINFORMATION_H
 #define PY_WINDOWINFORMATION_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <WindowInformation.h>
 #include <visitpy_exports.h>
 

@@ -269,7 +269,7 @@ SaveViewActionUI::Update()
                 QPixmap icon(blankcamera_xpm);
                 QPainter paint(&icon);
                 QString str;
-                str.sprintf("%d", nGUIViews + i + 1);
+                str.asprintf("%d", nGUIViews + i + 1);
                 paint.setPen(QColor(0,255,0));
                 QFont f(QApplication::font());
                 f.setBold(true);

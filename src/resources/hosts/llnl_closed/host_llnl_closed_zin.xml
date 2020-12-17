@@ -5,6 +5,7 @@
     <Field name="hostNickname" type="string">LLNL Closed Zin</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">serial</Field>
         <Field name="timeout" type="int">480</Field>
@@ -34,8 +35,8 @@
         <Field name="partition" type="string">pdebug</Field>
         <Field name="bankSet" type="bool">false</Field>
         <Field name="bank" type="string"></Field>
-        <Field name="timeLimitSet" type="bool">false</Field>
-        <Field name="timeLimit" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">1:00:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
         <Field name="launchMethod" type="string">srun</Field>
         <Field name="forceStatic" type="bool">true</Field>

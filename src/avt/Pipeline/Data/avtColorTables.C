@@ -508,6 +508,53 @@ reverse_alphas(unsigned char *a, int na)
     }
 }
 
+// ****************************************************************************
+// Method: avtColorTables::ModifyColor
+//
+// Purpose: Lighten or darken a color by a multiplicative factor without
+//          changing the effective hue. To lighten a color pass a value for
+//          mult > 1 but not too much larger than 2. To darken a color pass a
+//          value for mult < 1 but not too close to 0.
+// 
+// Mark C. Miller, Fri Oct 30 20:03:37 PDT 2020
+// Based on code found here,
+// https://stackoverflow.com/questions/141855/programmatically-lighten-a-color#141865
+// ****************************************************************************
+void avtColorTables::ModifyColor(char unsigned const *inrgb, double mult,
+    char unsigned *outrgb)
+{
+    static double const threshold = 255;
+    double r = inrgb[0];
+    double g = inrgb[1];
+    double b = inrgb[2];
+
+    r *= mult;
+    g *= mult;
+    b *= mult;
+
+    double m = r>g ? (r>b ? r : b) : (g>b ? g : b);
+    if (m < threshold)
+    {
+        outrgb[0] = (unsigned char) r;
+        outrgb[1] = (unsigned char) g;
+        outrgb[2] = (unsigned char) b;
+        return;
+    }
+
+    double total = r + g + b;
+    if (total >= 3 * threshold)
+    {
+        outrgb[0] = outrgb[1] = outrgb[2] = threshold;
+        return;
+    }
+
+    double x = (3 * threshold - total) / (3 * m - total);
+    double gray = threshold - x * m;
+
+    outrgb[0] = gray + x * r;
+    outrgb[1] = gray + x * g;
+    outrgb[2] = gray + x * b;
+}
 
 // ****************************************************************************
 // Method: avtColorTables::avtColorTables
@@ -1009,30 +1056,41 @@ avtColorTables::GetControlPointColor(const std::string &ctName, int i,
 // ****************************************************************************
 // Method: avtColorTables::GetJNDControlPointColor
 //
-// Purpose: Finds a color, starting from the i'th color control point for the
-// specified, that is above the just-noticeably-different (JND) color distance
-// from a given (avoidrgb) color
+// Purpose: Finds a color, using i as a starting index, in the named color
+// table that is above the just-noticeably-different (JND) color distance
+// threshold from a given (avoidrgb) color.
 //
 // Arguments:
 //   ctName   : The name of the discrete color table.
-//   i        : The index at which to start the search. The value is mod'ed so
-//              that it always falls within the number of control points for
-//              the specified color table.
+//   idxName  : The name of index at which to start the search. This method
+//              maintains a private, static map of named integer color
+//              indices as a sort of "memory" of the last color index used.
 //   avoidrgb : The color we wish to avoid matching too closely.
 //
-// Returns:    A boolean value indicating whether or not a color was returned.
+// Returns:    True if it found a color. False otherwise.
 //
 // Mark C. Miller, Wed Jun 19 17:56:46 PDT 2019
 // ****************************************************************************
 
 bool
-avtColorTables::GetJNDControlPointColor(const std::string &ctName, int i,
+avtColorTables::GetJNDControlPointColor(const std::string &ctName,
+    std::string const& idxName,
     unsigned char const *avoidrgb, unsigned char *jndrgb, bool invert) const
 {
+    static std::map<std::string, int> namedIndices;
+
+    // handle resetting color index
+    if (ctName == "" && jndrgb == 0)
+    {
+        namedIndices.erase(idxName);
+        return false;
+    }
+
     int index = ctAtts->GetColorTableIndex(ctName);
     if (index < 0) return false;
     const ColorControlPointList &ct = ctAtts->operator[](index);
 
+    int i = namedIndices[idxName]; // initializes to zero on first ref.
     for (int n = 0; n < ct.GetNumControlPoints(); n++)
     {
         unsigned char rgb[3];
@@ -1042,11 +1100,16 @@ avtColorTables::GetJNDControlPointColor(const std::string &ctName, int i,
         if (PerceptualColorDistance(rgb, avoidrgb) > JNDColorDistance)
         {
             std::copy(rgb,rgb+3,jndrgb);
+            namedIndices[idxName] += (n+1);
             return true;
         }
     }
 
     return false;
+}
+void avtColorTables::ResetJNDIndex(std::string const &idxName)
+{
+    GetJNDControlPointColor("", idxName, 0, 0, false);
 }
 
 // ****************************************************************************
@@ -1169,5 +1232,5 @@ avtColorTables::PerceptualColorDistance(unsigned char const *rgbA, unsigned char
     long r = (long)rgbA[0] - (long)rgbB[0];
     long g = (long)rgbA[1] - (long)rgbB[1];
     long b = (long)rgbA[2] - (long)rgbB[2];
-    return sqrt((((512+rmean)*r*r)>>8) + 4*g*g + (((767-rmean)*b*b)>>8));
+    return sqrt((double) (((512+rmean)*r*r)>>8) + (double) 4*g*g + (double) (((767-rmean)*b*b)>>8));
 }

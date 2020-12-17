@@ -27,12 +27,18 @@
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2005
 //
+//  Modifications:
+//
+//    Alister Maguire, Fri Oct  9 11:46:22 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtSurfaceNormalExpression::avtSurfaceNormalExpression()
 {
     isPoint            = true;
     zonesHaveBeenSplit = false;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

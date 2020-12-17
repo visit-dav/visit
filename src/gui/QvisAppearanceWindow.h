@@ -54,8 +54,8 @@ class GUI_API QvisAppearanceWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisAppearanceWindow(AppearanceAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisAppearanceWindow();
     virtual void CreateWindowContents();

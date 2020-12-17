@@ -1,0 +1,90 @@
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
+###############################################################################
+# VisIt Azure CI Checks
+###############################################################################
+# Azure Commands Ref:
+# https://aka.ms/yaml
+
+#####
+# TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
+#####
+variables:
+  container_tag: visitdav/visit-ci-develop:2020-12-09-shaf6ef22
+
+# only build merge target pr to develop
+trigger: none
+pr:
+  branches:
+    include:
+    - develop
+
+# add fast fail checks here
+stages:
+- stage: Quick
+  jobs:
+  - job: Fast_Check
+    pool:
+      vmImage: 'ubuntu-18.04'
+    steps:
+      - checkout: self
+        clean: boolean
+        submodules: recursive
+
+      - script: |
+          #######################################
+          # run our quick check
+          #######################################
+          echo "OK"
+          # NOTE FOR AZURE: 
+          # only return code of the command is checked!
+        displayName: 'Example Fast Check'
+
+# main checks build using docker containers that
+# include tpls built with build_visit
+- stage: Main
+  jobs:
+  - job: Main_Build
+    pool:
+      vmImage: 'ubuntu-18.04'
+    timeoutInMinutes: 0
+    container: ${{ variables.container_tag }}
+    variables:
+      TPLS_PATH: /masonry/build-mb-develop-ci-smoke/thirdparty_shared/third_party/
+      CMAKE_VERSION: 3.14.7
+    steps:
+      - checkout: self
+        clean: boolean
+        submodules: recursive
+
+      - script: |
+           #################################
+           # configure
+           #################################
+           # setup path to cmake
+           export PATH=$PATH:${TPLS_PATH}/cmake/${CMAKE_VERSION}/ci/bin/
+           # make dir for build
+           mkdir build
+           cd build
+           # configure with cmake
+           cmake -DVISIT_CONFIG_SITE:PATH="/visit-ci-cfg.cmake" ../src
+        displayName: 'Configure with CMake'
+
+      - script: |
+           #################################
+           # build
+           #################################
+           # build
+           cd build
+           make -j 4
+        displayName: 'Build'
+
+      # - script: |
+      #      #################################
+      #      # install
+      #      #################################
+      #      cd build
+      #      make install
+      #   displayName: 'Install'

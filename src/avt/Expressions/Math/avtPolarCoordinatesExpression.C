@@ -24,11 +24,16 @@
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//
+//    Alister Maguire, Fri Oct  9 11:46:22 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtPolarCoordinatesExpression::avtPolarCoordinatesExpression()
 {
-    ;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

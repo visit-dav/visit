@@ -232,6 +232,12 @@
 //    Eric Brugger, Tue Feb 11 13:27:19 PST 2020
 //    Changed the date on the splash screen to April 2020.
 //
+//    Eric Brugger, Mon Aug  3 06:49:50 PDT 2020
+//    Changed the date on the splash screen to August 2020.
+//
+//    Eric Brugger, Mon Nov  9 13:08:19 PST 2020
+//    Changed the date on the splash screen to November 2020.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -334,7 +340,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
     lLayout->addWidget(new QLabel(C, this));
 
     QString versionText;
-    versionText.sprintf("VisIt %s, ", visitcommon::Version().c_str());
+    versionText.asprintf("VisIt %s, ", visitcommon::Version().c_str());
     versionText += QString(visitcommon::VersionControlVersionString().c_str());
 
     // Create a lookup of month names so the internationalization
@@ -352,7 +358,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 4;
+    int currentMonth = 11;
     lLayout->addWidget(new QLabel(versionText, this));
     lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2020", this));
 

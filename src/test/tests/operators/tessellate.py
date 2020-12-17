@@ -52,8 +52,8 @@ SetOperatorOptions(tess, 0, 1)
 
 Test("quadratic_triangle_03")
 
-CloseDatabase(data_path("vtk_test_data/quadratic_triangle.vtk"))
 DeleteAllPlots()
+CloseDatabase(data_path("vtk_test_data/quadratic_triangle.vtk"))
 
 # Biquadratic_quad
 OpenDatabase(data_path("vtk_test_data/biquadratic_quad.vtk"))
@@ -88,7 +88,31 @@ SetOperatorOptions(tess, 0, 1)
 
 Test("biquadratic_quad_03")
 
+DeleteAllPlots()
 CloseDatabase(data_path("vtk_test_data/biquadratic_quad.vtk"))
+
+# Biquadratic_quad_field
+OpenDatabase(data_path("vtk_test_data/biquadratic_quad_field.vtk"))
+
+AddPlot("Pseudocolor", "d")
+AddPlot("Mesh", "mesh")
+DrawPlots()
+
+Test("biquadratic_quad_field_01")
+
+AddOperator("Tessellate", 1)
+DrawPlots()
+
+Test("biquadratic_quad_field_02")
+
+tess = TessellateAttributes()
+tess.chordError = 0.01
+tess.fieldCriterion = 0.01
+SetOperatorOptions(tess, 0, 1)
+
+Test("biquadratic_quad_field_03")
+
+CloseDatabase(data_path("vtk_test_data/biquadratic_quad_field.vtk"))
 DeleteAllPlots()
 
 # Quadratic_linear_quad
@@ -113,8 +137,8 @@ SetView3D(v)
 
 Test("quadratic_linear_quad_01")
 
-CloseDatabase(data_path("vtk_test_data/quadratic_linear_quad.vtk"))
 DeleteAllPlots()
+CloseDatabase(data_path("vtk_test_data/quadratic_linear_quad.vtk"))
 
 # Quadratic_quad
 OpenDatabase(data_path("vtk_test_data/quadratic_quad.vtk"))
@@ -149,8 +173,8 @@ SetOperatorOptions(tess, 0, 1)
 
 Test("quadratic_quad_03")
 
-CloseDatabase(data_path("vtk_test_data/quadratic_quad.vtk"))
 DeleteAllPlots()
+CloseDatabase(data_path("vtk_test_data/quadratic_quad.vtk"))
 
 # Mixed biquadratic_quad and quadratic_triangle
 OpenDatabase(data_path("vtk_test_data/quadratic_mixed.vtk"))
@@ -185,8 +209,8 @@ SetOperatorOptions(tess, 0, 1)
 
 Test("quadratic_mixed_03")
 
-CloseDatabase(data_path("vtk_test_data/quadratic_mixed.vtk"))
 DeleteAllPlots()
+CloseDatabase(data_path("vtk_test_data/quadratic_mixed.vtk"))
 
 # Quadratic_hex
 OpenDatabase(data_path("vtk_test_data/quadratic_hex.vtk"))
@@ -230,8 +254,8 @@ DrawPlots()
 
 Test("quadratic_hex_04")
 
-CloseDatabase(data_path("vtk_test_data/quadratic_hex.vtk"))
 DeleteAllPlots()
+CloseDatabase(data_path("vtk_test_data/quadratic_hex.vtk"))
 
 # Triquadratic_hex
 OpenDatabase(data_path("vtk_test_data/triquadratic_hex.vtk"))
@@ -255,7 +279,7 @@ SetView3D(v)
 
 Test("triquadratic_hex_01")
 
-CloseDatabase(data_path("vtk_test_data/triquadratic_hex.vtk"))
 DeleteAllPlots()
+CloseDatabase(data_path("vtk_test_data/triquadratic_hex.vtk"))
 
 Exit()

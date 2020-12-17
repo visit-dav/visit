@@ -5,6 +5,7 @@
 #ifndef PY_AVTLABELMETADATA_H
 #define PY_AVTLABELMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtLabelMetaData.h>
 #include <PyavtVarMetaData.h>
 #include <visitpy_exports.h>

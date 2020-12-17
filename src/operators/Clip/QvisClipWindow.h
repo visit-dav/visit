@@ -80,6 +80,9 @@ private:
 //   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
 //   Qt4 Port.
 //
+//   Alister Maguire, Fri Nov 13 14:07:54 PST 2020
+//   Added support for the crinkle clip.
+//
 // ****************************************************************************
 
 class QvisClipWindow : public QvisOperatorWindow
@@ -88,8 +91,8 @@ class QvisClipWindow : public QvisOperatorWindow
 public:
     QvisClipWindow(const int type,
                     ClipAttributes *subj,
-                    const QString &caption = QString::null,
-                    const QString &shortName = QString::null,
+                    const QString &caption = QString(),
+                    const QString &shortName = QString(),
                     QvisNotepadArea *notepad = 0);
     virtual ~QvisClipWindow();
 protected:
@@ -113,6 +116,7 @@ private slots:
     void plane1StatusToggled(bool);
     void plane2StatusToggled(bool);
     void plane3StatusToggled(bool);
+    void crinkleClipToggled(bool);
 
 private:
     QButtonGroup *qualityGroup;

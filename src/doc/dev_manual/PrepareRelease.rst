@@ -153,6 +153,30 @@ is only available on the Mac. ::
     cd ..
     iconutil --convert icns VisItIcon.iconset
 
+Creating a new release notes file
+"""""""""""""""""""""""""""""""""
+
+A final step in making a release is to create the release notes file for the *next*
+release. To do this, you must be reasonably certain what the next release's version
+number will be. Typically, we do 3-4 patch releases for each minor release. So,
+if the release you are *just now* making is version ``3.1.2``, then the *next* release
+is likely to be ``3.1.3``. However, if the current release is ``3.1.3``, the next
+release might be ``3.1.4`` or it might be ``3.2``.
+
+In any event, to make the release notes file for the *next* release, you need to create
+an new, empty release notes file by going to ``src/resources/help/en_US`` and copying
+either the *minor* release notes template, ``relnotes_minor_templ.html``, or the *major*
+release notes template, ``relnotes_major_templ.html`` to a file name of the form
+``relnotesA.B.C.html`` where ``A.B.C`` is the version number for the *next* release.
+The ``.C`` part of the file name is missing for *minor* releases.
+
+Patch release notes should go on the RC branch (e.g. ``3.1RC``) and minor release notes
+should go on ``develop``. *Always* assume there will be another patch release
+and just create the next patch release file. If there isn't another patch release, the
+notes from the patch release can be incorporated into the minor release notes file.
+When finishing a minor release, create the files for the next minor release *and* the
+next patch release.
+
 Preparing for a Major Release
 -----------------------------
 

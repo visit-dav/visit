@@ -32,6 +32,9 @@
 #   previous way gets executed for non-Windows -- so it works again on 
 #   non-Windows.
 #
+#   Cyrus Harrison, Thu Apr  9 09:19:24 PDT 2020
+#   Update Popen call for Python 3.
+#
 ###############################################################################
 
 import sys
@@ -219,10 +222,14 @@ class VisItModuleState(object):
             pcmd.append("-env")
         else:
             pcmd = vcmd + " -env"
+        # universal_newlines needed to make sure
+        # result is encoded as a useable string when
+        # returned Python 3
         p = subprocess.Popen(pcmd,
                              shell=True,
                              stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
+                             stderr=subprocess.STDOUT,
+                             universal_newlines=True)
         pout =p.communicate()[0]
         if p.returncode != 0:
             msg  = "Could not execute VisIt to determine proper env settings!\n"

@@ -37,18 +37,22 @@ from xml.etree.ElementTree import ParseError
 
 # check for pil
 pil_available = True
+pil_import_error = None
 try:
     from PIL import Image, ImageChops, ImageStat
 except ImportError as pilImpErr:
+    pil_import_error = pilImpErr
     pil_available=False
 
 # check for VTK
 VTK_available = True
+VTK_import_error = None
 try:
     from vtk import vtkPNGReader, vtkPNMReader, vtkJPEGReader, vtkTIFFReader, \
                     vtkImageResize, vtkImageDifference
     import array
 except ImportError as vtkImpErr:
+    VTK_import_error = vtkImpErr
     VTK_available=False
 
 # used to acccess visit_test_common
@@ -393,12 +397,15 @@ def GenFileNames(test_case, ext):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Mark C. Miller, Fri Sep 11 18:58:34 PDT 2020
+#  Add pixdiff and avgdiff args
 # ----------------------------------------------------------------------------
-def CalcDiffState(p_pixs, d_pixs, davg):
+def CalcDiffState(p_pixs, d_pixs, davg, pixdiff, avgdiff):
     if p_pixs != 0:
         dpix = d_pixs * 100.0 / p_pixs
-        if dpix > TestEnv.params["pixdiff"]:
-            if davg > TestEnv.params["avgdiff"]:
+        if dpix > pixdiff:
+            if davg > avgdiff:
                 diff_state = 'Unacceptable'
             else:
                 diff_state = 'Acceptable'
@@ -912,8 +919,11 @@ def Save_Validate_Perturb_Restore_Session(cur):
 #
 #   Mark C. Miller, Tue Sep  6 18:51:23 PDT 2016
 #   Added Save_Validate_... to rigorously test sessionfiles
+#
+#   Mark C. Miller, Fri Sep 11 19:26:34 PDT 2020
+#   Added pixdiff, avgdiff optional args
 # ----------------------------------------------------------------------------
-def Test(case_name, altSWA=0, alreadySaved=0):
+def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
     CheckInteractive(case_name)
     # for read only globals, we don't need to use "global"
     # we may need to use global for these guys
@@ -941,6 +951,14 @@ def Test(case_name, altSWA=0, alreadySaved=0):
             g = GetGlobalAttributes()
             win = g.windows[g.activeWindow]
             ResizeWindow(win, width, height)
+            ## the following can be used to save a JSON file and compare
+            ## the desired vs reported window size
+            # winfo = GetWindowInformation()
+            # wsize_info  = {}
+            # wsize_info["width"] = width;
+            # wsize_info["height"] = height;
+            # wsize_info["winfo_windowSize"] = winfo.windowSize
+            # json.dump(wsize_info,open("_wsize_info" + case_name + ".json","w" ))
         sa.family   = 0
         sa.fileName = cur
         sa.format   = sa.PNG
@@ -955,6 +973,10 @@ def Test(case_name, altSWA=0, alreadySaved=0):
     dpix      = 0.0
     davg      = 0.0
     thrErr    = -1.0
+    if pixdiff is None:
+        pixdiff = TestEnv.params["pixdiff"]
+    if avgdiff is None:
+        avgdiff = TestEnv.params["avgdiff"]
 
     if TestEnv.params["use_pil"]:
         if TestEnv.params["threshold_diff"]:
@@ -966,14 +988,14 @@ def Test(case_name, altSWA=0, alreadySaved=0):
             # raw difference
             (tPixs, pPixs, dPixs, davg) \
                 = DiffUsingPIL(case_name, cur, diff, base, altbase)
-            diffState, dpix = CalcDiffState(pPixs, dPixs, davg)
+            diffState, dpix = CalcDiffState(pPixs, dPixs, davg, pixdiff, avgdiff)
 
     if skip:
         diffState = 'Skipped'
         TestEnv.results["numskip"]+= 1
 
-    LogImageTestResult(case_name,diffState, modeSpecific,
-                       dpix, tPixs, pPixs, dPixs, davg,
+    LogImageTestResult(case_name, diffState, modeSpecific,
+                       tPixs, pPixs, dPixs, dpix, davg,
                        cur, diff, base, thrErr)
 
     # update maxmimum diff state
@@ -1119,24 +1141,24 @@ def GetBackgroundImage(file):
     activeList = []
 
     plots = ListPlots(1)
-    plotInfos = string.split(plots,"#")
+    plotInfos = plots.split("#")
     for entry in plotInfos:
 
         if entry == "":
             continue;
 
-        plotParts = string.split(entry,"|")
+        plotParts = entry.split("|")
         plotHeader = plotParts[0]
         plotInfo = plotParts[1]
 
         # get CLI's plot id for this plot
-        plotId = string.split(plotHeader,"[")
+        plotId = plotHeader.split("[")
         plotId = plotId[1]
-        plotId = string.split(plotId,"]")
+        plotId = plotId.split("]")
         plotId = int(plotId[0])
 
         # get this plot's active & hidden status
-        words = string.split(plotInfo,";")
+        words = plotInfo.split(";")
         hidden = -1
         active = -1
         for word in words:
@@ -1365,7 +1387,6 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
     # open it using PIL Image
     newimg = Image.open(cur)
     size = newimg.size;
-
     # open the baseline image
     try:
         if (os.path.isfile(altbase)):
@@ -1397,12 +1418,11 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
         diffimg = ImageChops.difference(oldimg, newimg)
     except:
         diffimg = oldimg
-    #dstatc = ImageStat.Stat(diffimg) # stats of color image
 
+    #dstatc = ImageStat.Stat(diffimg) # stats of color image
     mdiffimg, dmin, dmax, dmean, dmedian, drms, dstddev, \
     plotpixels, diffpixels, totpixels \
         = ProcessDiffImage(case_name, oldimg, newimg, diffimg)
-
     mdiffimg.save(diff)
 
     CreateImagesForWeb(case_name, bool(dmax!=0), oldimg, newimg, mdiffimg)
@@ -1422,7 +1442,7 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
 
 def CreateImagesForWeb(case_name, testFailed, baseimg, testimg, diffimg):
     """
-    Given test image set create coresponding thumbnails for web
+    Given test image set create corresponding thumbnails for web
     consumption
     """
     thumbsize = (100,100)
@@ -1583,9 +1603,11 @@ def ProcessDiffImage(case_name, baseimg, testimg, diffimg):
 #   Cyrus Harrison, Tue Nov  6 13:08:56 PST 2012
 #   Make sure to filter TestEnv.params["run_dir"] as well.
 #
+#   Mark C. Miller, Fri Sep 11 19:55:17 PDT 2020
+#   Added numdifftol arg
 # ----------------------------------------------------------------------------
 
-def FilterTestText(inText, baseText):
+def FilterTestText(inText, baseText, numdifftol):
     """
     Filters words from the test text before it gets saved.
     """
@@ -1597,7 +1619,6 @@ def FilterTestText(inText, baseText):
     inText = inText.replace(out_path(), "VISIT_TOP_DIR/test")
     inText = inText.replace(test_root_path(), "VISIT_TOP_DIR/test")
     inText = inText.replace(data_path(), "VISIT_TOP_DIR/data")
-    numdifftol = TestEnv.params["numdiff"]
     #
     # Only consider doing any string substitution if numerical diff threshold
     # is non-zero
@@ -1614,8 +1635,8 @@ def FilterTestText(inText, baseText):
         # threshold, eliminate the word from effecting text difference by
         # setting it identical to corresponding baseline word.
         #
-        baseWords = string.split(baseText)
-        inWords = string.split(tmpText)
+        baseWords = baseText.split()
+        inWords = tmpText.split()
         outText=""
         transTab = string.maketrans(string.digits, string.digits)
         inStart = 0
@@ -1738,8 +1759,11 @@ def CheckInteractive(case_name):
 #   Mark C. Miller, Thu Jun 28 18:37:31 PDT 2018
 #   Added logic to copy current file to "html" dir so it gets posted with
 #   results so it can be more easily re-based later if needed.
+#
+#   Mark C. Miller, Fri Sep 11 19:54:23 PDT 2020
+#   Added optional numdifftool arg
 # ----------------------------------------------------------------------------
-def TestText(case_name, inText):
+def TestText(case_name, inText, numdifftol=None):
     """
     Write out text to file, diff it with the baseline, and log the result.
     """
@@ -1755,8 +1779,12 @@ def TestText(case_name, inText):
         base = test_module_path("notext.txt")
         baseText = "notext"
 
+    # Check for user specified tolerance
+    if numdifftol is None:
+        numdifftol = TestEnv.params["numdiff"]
+
     # Filter out unwanted text
-    inText = FilterTestText(inText, baseText)
+    inText = FilterTestText(inText, baseText, numdifftol)
 
     # save the current text output
     fout = open(cur, 'w')
@@ -2458,7 +2486,7 @@ def TestSimStartAndConnect(testname, sim):
 # ----------------------------------------------------------------------------
 
 def TestSimMetaData(testname, md):
-    lines = string.split(str(md), "\n")
+    lines = str(md).split("\n")
     txt = ""
     for line in lines:
         if "exprList" in line:
@@ -2579,7 +2607,7 @@ class TestEnv(object):
         else:
             cls.skiplist = None
         # parse modes for various possible modes
-        for mode in string.split(cls.params["modes"],","):
+        for mode in cls.params["modes"].split(","):
             if mode == "scalable":
                 cls.params["scalable"] = True
             if mode == "parallel":
@@ -2588,11 +2616,11 @@ class TestEnv(object):
             if mode == "pdb":
                 cls.params["silo_mode"] = "pdb"
             if (cls.params["use_pil"] or cls.params["threshold_diff"]) and not pil_available:
-                Log("WARNING: unable to import modules from PIL: %s" % str(pilImpErr))
+                Log("WARNING: unable to import modules from PIL: %s" % str(pil_import_error))
                 cls.params["use_pil"] = False
                 cls.params["threshold_diff"] = False
             if (cls.params["threshold_diff"]) and not VTK_available:
-                Log("WARNING: unable to import modules from VTK: %s" % str(vtkImpErr))
+                Log("WARNING: unable to import modules from VTK: %s" % str(VT_import_error))
                 cls.params["threshold_diff"] = False
         if cls.params["fuzzy_match"]:
             # default tols for scalable mode
@@ -2686,7 +2714,7 @@ def InitTestEnv():
     # default file
     params_file="params.json"
     for arg in sys.argv:
-        subargs = string.split(arg,"=")
+        subargs = arg.split("=")
         if (subargs[0] == "--params"):
             params_file = subargs[1]
     # main setup
@@ -2697,14 +2725,12 @@ def InitTestEnv():
     SetDefaultAnnotationAttributes(annot)
     SetAnnotationAttributes(annot)
     # set scalable rendering mode if desired
+    ra = GetRenderingAttributes()
     if TestEnv.params["scalable"]:
-        ra = GetRenderingAttributes()
         ra.scalableActivationMode = ra.Always
-        SetRenderingAttributes(ra)
     else:
-        ra = GetRenderingAttributes()
         ra.scalableActivationMode = ra.Never
-        SetRenderingAttributes(ra)
+    SetRenderingAttributes(ra)
 
     # If we passed a directory to use for reading host profiles then let's 
     # use the host profiles to launch the engine (since it has settings we
@@ -2715,7 +2741,7 @@ def InitTestEnv():
             mp = GetMachineProfile(TestEnv.params["data_host"])
             # Make some modifications to the machine profile.
             if TestEnv.params["parallel_launch"] not in ("mpirun", "srun"):
-                plaunch = string.split(TestEnv.params["parallel_launch"], " ")
+                plaunch = TestEnv.params["parallel_launch"].split(" ")
                 idx = 0
                 try:
                     while idx < len(plaunch):
@@ -2784,6 +2810,7 @@ SILO_MODE = TestEnv.SILO_MODE
 #
 # Run our test script using "Source"
 #
+import visit
 visit.Source(TestEnv.params["script"])
 
 

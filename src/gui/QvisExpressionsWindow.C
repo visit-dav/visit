@@ -581,7 +581,7 @@ QvisExpressionsWindow::CreateWindowContents()
     delButton = new QPushButton(tr("Delete"), f1);
     listLayout->addWidget(delButton, 2,1);
 
-    displayAllVars = new QCheckBox(tr("Display expressions from database"), f1);
+    displayAllVars = new QCheckBox(tr("Display expressions from database\nand auto-generated expressions"), f1);
     listLayout->addWidget(displayAllVars, 3,0, 1,2);
 
     mainSplitter->addWidget(f1);

@@ -5,6 +5,7 @@
 #ifndef PY_PROJECTATTRIBUTES_H
 #define PY_PROJECTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ProjectAttributes.h>
 
 //

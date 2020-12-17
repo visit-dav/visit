@@ -60,7 +60,7 @@ QvisRotationTransition::QvisRotationTransition(const QPixmap &pix,
     startAngle->setMinimum(-360 * 100);
     startAngle->setMaximum(360 * 100);
     startAngle->setValue(0);
-    QString deg; deg.sprintf("%c", 176);
+    QString deg; deg.asprintf("%c", 176);
     QString startLabel(tr("Start angle") + deg);
     gLayout->addWidget(
         new QLabel(startLabel, this), 0, 0);
