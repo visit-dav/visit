@@ -66,7 +66,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 3.2</font></b></p>
 <ul>
-  <li>Operator Change 1</li>
+  <li>Threshold operations can now use the VTKm backend for structured meshes.</li>
   <li>Operator Change 2</li>
 </ul>
 
@@ -95,7 +95,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Build features added in version 3.2</font></b></p>
 <ul>
   <li>For build_visit, there is now only one way to specify a debug build: --build-mode "Debug".
-The --debug flag was removed. The default build-mode is "Release". If "Debug" is specified, all third-party libraries are built in debug mode. If the intention is only to build VisIt in debug mode, it should be compiled separately after all the third-party libraries are compiled, passing -DCMAKE_BUILD_TYPE:STRING=Debug to cmake when configuring VisIt.</li> 
+The --debug flag was removed. The default build-mode is "Release". If "Debug" is specified, all third-party libraries are built in debug mode. If the intention is only to build VisIt in debug mode, it should be compiled separately after all the third-party libraries are compiled, passing -DCMAKE_BUILD_TYPE:STRING=Debug to cmake when configuring VisIt.</li>
   <li>Build Feature 2</li>
 </ul>
 

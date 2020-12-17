@@ -300,9 +300,14 @@ avtThresholdFilter::VTKmAble(avtDataRepresentation *in_dr) const
     bool useVTKm = false;
 
     const intVector    curZonePortions = atts.GetZonePortions();
-    if(std::count(curZonePortions.begin(), curZonePortions.end(), (int)ThresholdOpAttributes::PartOfZone))
+    if (std::count(curZonePortions.begin(), curZonePortions.end(), (int)ThresholdOpAttributes::PartOfZone))
     {
         // VTKm currently only supports allInRange for thresholds
+        useVTKm = false;
+    }
+    else if (atts.GetOutputMeshType() == ThresholdOpAttributes::PointMesh)
+    {
+        // VTKm currently does not support outputing a point mesh
         useVTKm = false;
     }
     else if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
@@ -343,7 +348,7 @@ avtThresholdFilter::VTKmAble(avtDataRepresentation *in_dr) const
 //      Perform threshold using VTK
 //
 //  Programmer: James Kress
-//  Creation:   March 25, 2020
+//  Creation:   November 18, 2020
 //
 //  Modifications:
 //
@@ -365,16 +370,7 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
     if (atts.GetListedVarNames().size() == 0)
     {
         in_ds->Register(NULL);
-        return in_dr;
-    }
-
-    if (fromChunker)
-    {
-        //
-        // If in_ds is from the chunker, then the zones in in_ds are all
-        // ones we identified that we wanted.  So just return them.
-        //
-        in_ds->Register(NULL);
+        visitTimer->StopTimer(timerHandle, "avtThresholdFilter::ProcessOneChunk_VTK");
         return in_dr;
     }
 
@@ -390,6 +386,17 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
         out_ds->Delete();
         visitTimer->StopTimer(timerHandle, "avtThresholdFilter::ProcessOneChunk_VTK");
         return out_dr;
+    }
+
+    if (fromChunker)
+    {
+        //
+        // If in_ds is from the chunker, then the zones in in_ds are all
+        // ones we identified that we wanted.  So just return them.
+        //
+        in_ds->Register(NULL);
+        visitTimer->StopTimer(timerHandle, "avtThresholdFilter::ProcessOneChunk_VTK");
+        return in_dr;
     }
 
     vtkDataSet *curOutDataSet = in_ds;
