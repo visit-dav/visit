@@ -12,7 +12,7 @@
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2020-12-09-shaf6ef22
+  container_tag: visitdav/visit-ci-develop:2020-12-17-sha49ed7a
 
 # only build merge target pr to develop
 trigger: none
@@ -53,6 +53,8 @@ stages:
     container: ${{ variables.container_tag }}
     variables:
       TPLS_PATH: /masonry/build-mb-develop-ci-smoke/thirdparty_shared/third_party/
+      # TODO: WITH LOGIC BELOW WE NO LONGER NEED CMAKE_VERSION
+      # ALSO UPDATE DOCS
       CMAKE_VERSION: 3.14.7
     steps:
       - checkout: self
@@ -64,7 +66,8 @@ stages:
            # configure
            #################################
            # setup path to cmake
-           export PATH=$PATH:${TPLS_PATH}/cmake/${CMAKE_VERSION}/ci/bin/
+           export CMAKE_BIN_DIR=`ls -d ${TPLS_PATH}/cmake/*/ci/bin/`
+           export PATH=$PATH:$CMAKE_BIN_DIR
            # make dir for build
            mkdir build
            cd build
@@ -86,11 +89,15 @@ stages:
            # fetch subset of test data (silo)
            #################################
            cd data
+           git lfs pull --include silo_amr_test_data.7z
            git lfs pull --include silo_ghost_test_data.7z
            git lfs pull --include silo_hdf5_test_data.7z
            git lfs pull --include silo_pdb_test_data.7z
            git lfs pull --include silo_sph_test_data.7z
            cd ../build/testdata/
+           export P7ZIP_BIN_DIR=`ls -d ${TPLS_PATH}/p7zip/*/ci/bin/`
+           export PATH=$PATH:$P7ZIP_BIN_DIR
+           7za x -y ../../data/silo_amr_test_data.7z
            7za x -y ../../data/silo_ghost_test_data.7z
            7za x -y ../../data/silo_hdf5_test_data.7z
            7za x -y ../../data/silo_pdb_test_data.7z
@@ -111,7 +118,7 @@ stages:
            # add to ld_lib path (rpaths are missing?)
            export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${TBB_LIB_DIR}
            # run test suite on silo tests
-           ./run_visit_test_suite.sh  -v ../../src/test/tests/databases/silo.py
+           ./run_visit_test_suite.sh  -v ../../src/test/tests/databases/silo.py 
         displayName: 'Run Tests'
       
       - task: CopyFiles@2
