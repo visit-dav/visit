@@ -94,7 +94,9 @@ stages:
            git lfs pull --include silo_hdf5_test_data.7z
            git lfs pull --include silo_pdb_test_data.7z
            git lfs pull --include silo_sph_test_data.7z
-           cd ../build/testdata/
+           cd ../
+           git lfs pull  --include test/baseline/databases/silo
+           cd build/testdata/
            export P7ZIP_BIN_DIR=`ls -d ${TPLS_PATH}/p7zip/*/ci/bin/`
            export PATH=$PATH:$P7ZIP_BIN_DIR
            7za x -y ../../data/silo_amr_test_data.7z
