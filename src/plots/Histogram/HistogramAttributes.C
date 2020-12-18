@@ -1457,6 +1457,8 @@ HistogramAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 bool
 HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj) const
 {
+    if (limitsMode != obj.GetLimitsMode())
+        return true;
     if (minFlag != obj.GetMinFlag())
         return true;
     if (maxFlag != obj.GetMaxFlag())
