@@ -121,6 +121,10 @@ avtHistogramFilter::PreExecute(void)
     {
         if ( !atts.GetMinFlag() || !atts.GetMaxFlag() )
         {
+            // Original data extents can be accessed directly via GetDataExtents.
+            // ActualDataExtents may not be set by some operators, so we use the
+            // DataExaminer to get the actual extents when the user selects
+            // "Current Plot".
             if (atts.GetLimitsMode() == HistogramAttributes::LimitsMode::OriginalData)
             {
                 GetDataExtents(dataValueRange, pipelineVariable);
