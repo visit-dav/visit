@@ -217,12 +217,7 @@ void PMDFile::ScanFileAttributes()
             // Read attribute
             H5Aread (attrId, atype, buffer);  // not NULL-terminated
             buffer[size] = '\0';
-
-<<<<<<< HEAD
-            this->meshesPath = buffer;
-=======
             strncpy(this->meshesPath,buffer,size+1);
->>>>>>> 631e73cd3a... Fix various compiler warnings on macOS (#5313)
             delete [] buffer;
 
         }
@@ -233,13 +228,7 @@ void PMDFile::ScanFileAttributes()
             // Read attribute
             H5Aread (attrId, atype, buffer);  // not NULL-terminated
             buffer[size] = '\0';
-
-<<<<<<< HEAD
-            this->particlesPath = buffer;
-=======
             strncpy(this->particlesPath,buffer,size+1);
->>>>>>> 631e73cd3a... Fix various compiler warnings on macOS (#5313)
-
             delete [] buffer;
         }
     }
