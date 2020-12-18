@@ -53,9 +53,6 @@ stages:
     container: ${{ variables.container_tag }}
     variables:
       TPLS_PATH: /masonry/build-mb-develop-ci-smoke/thirdparty_shared/third_party/
-      # TODO: WITH LOGIC BELOW WE NO LONGER NEED CMAKE_VERSION
-      # ALSO UPDATE DOCS
-      CMAKE_VERSION: 3.14.7
     steps:
       - checkout: self
         clean: boolean
