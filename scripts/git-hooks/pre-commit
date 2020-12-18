@@ -10,7 +10,7 @@ fi
 #
 # Check if this is a Release Candidate branch
 #
-if [ -n "$(echo $BRANCH | grep "^[0-9]\?[0-9]\.[0-9]RC"'$')" ]; then
+if [ -n "$(echo $BRANCH | grep "^[0-9]\?[0-9]\.[0-9]\?[0-9]RC"'$')" ]; then
   echo "ERROR: Commits directly to a Release Candidate branch are not allowed."
   exit 1
 fi
