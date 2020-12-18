@@ -1096,7 +1096,7 @@ PMDParticle::SetUnitDimension(char * name,
             }
         }
 
-        delete powers;
+        delete [] powers;
     }
     //cerr << unitLabel << endl;
     return unitLabel;
