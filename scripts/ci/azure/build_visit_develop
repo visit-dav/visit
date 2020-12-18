@@ -1,15 +1,16 @@
 #!/bin/bash
-export VISIT_VERSION=${VISIT_VERSION:-"3.1.0"}
-export TRUNK_BUILD="no"
+export VISIT_VERSION=${VISIT_VERSION:-"3.1.4"}
+export TRUNK_BUILD="yes"
 export RC_BUILD="no"
-export TAGGED_BUILD="yes"
+export TAGGED_BUILD="no"
 export INITIAL_PWD=$PWD
-export bv_PATH=.
+export bv_PATH=src/tools/dev/scripts
 export bv_PREFIX=$bv_PATH/bv_support/
 export build_version=""
 export webroot="http://visit.ilight.com/svn/visit/"
 export webaddr="${webroot}/trunk/src/tools/dev/scripts/bv_support/"
-export nerscroot="http://portal.nersc.gov/project/visit/releases"
+export visitroot="https://github.com/visit-dav/visit/releases/download/"
+export thirdpartyroot="https://github.com/visit-dav/third-party/releases/download/"
 declare -a reqlibs
 declare -a optlibs
 declare -a grouplibs_name
@@ -171,11 +172,11 @@ function vercomp ()
             # fill empty fields in ver2 with zeros
             ver2[i]=0
         fi
-        if [[ 10#${ver1[i]} > 10#${ver2[i]} ]]
+        if [[ 10#${ver1[i]} -gt 10#${ver2[i]} ]]
         then
             return 1
         fi
-        if [[ 10#${ver1[i]} < 10#${ver2[i]} ]]
+        if [[ 10#${ver1[i]} -lt 10#${ver2[i]} ]]
         then
             return 2
         fi
@@ -204,9 +205,9 @@ function check_minimum_compiler_version()
    if [[ "$CXX_COMPILER" == "g++" ]] ; then
         VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 )
         echo "g++ version $VERSION"
-        testvercomp $VERSION 4.8 '<'
+        testvercomp $VERSION 6.0 '<'
         if [[ $? == 0 ]] ; then
-            echo "Need g++ version >= 4.8"
+            echo "Need g++ version >= 6.0"
             exit 1
         fi
     elif [[ "$OPSYS" == "Darwin"  &&  "$CXX_COMPILER" == "clang++" ]] ; then 
@@ -1331,11 +1332,9 @@ function run_build_visit()
             --create-rpm) CREATE_RPM="yes";;
             --log-file) next_arg="log-file";;
             --database-plugins) next_arg="database-plugins";;
-            --debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"; CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g"; VISIT_BUILD_MODE="Debug";;
             --bv-debug) set -vx;;
             --download-only) DOWNLOAD_ONLY="yes";;
             --engine-only) DO_ENGINE_ONLY="yes";;
-            --flags-debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"; CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g"; VISIT_BUILD_MODE="Debug";;
             --gdal) DO_GDAL="yes";;
             --fc) next_arg="fc";;
             --fortran) DO_FORTRAN="yes";;
@@ -1426,6 +1425,15 @@ function run_build_visit()
             DO_GIT_ANON="yes"
             export GIT_ROOT_PATH=$GIT_ANON_ROOT_PATH
         fi
+    fi
+
+    #
+    # Add -g if we are doing a debug build
+    #
+    info "[build_visit build mode ] $VISIT_BUILD_MODE"
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        C_OPT_FLAGS="${C_OPT_FLAGS} -g"
+        CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g"
     fi
 
     check_minimum_compiler_version
@@ -1525,7 +1533,7 @@ function run_build_visit()
                           "Bailing out."
                 fi
             else
-                info "The third party library location does not exist. Create it?"
+                info "The third party library location does not exist. Create it? [yes/no]"
                 read RESPONSE
                 if [[ "$RESPONSE" != "yes" ]] ; then
                     error "The third party library location does not exist." \
@@ -1747,6 +1755,7 @@ function error
              "message to the visit-users@ornl.gov list.  You will probably "\
              "need to compress the ${LOG_FILE} using a program like gzip "\
              "so it will fit within the size limits for email attachments."
+        info "Log file full path: " `pwd`/${LOG_FILE}
     fi
     exit 1
 }
@@ -2000,8 +2009,6 @@ function verify_sha_checksum
         return 0
     fi
 
-    set -x
-
     if [[ $checksum_algo == 512 ]]; then
         tmp=`shasum -a $checksum_algo $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{128\}'`
     else
@@ -2124,9 +2131,16 @@ function verify_checksum_by_lookup
 #   I made it use the anonymous svn site as the fallback download site        #
 #   instead of llnl's web site.                                               #
 #                                                                             #
-#   Eric Brugger, Fri Feb  1 14:56:58 PST 2019
-#   I modified it to work post git transition.
-#
+#   Eric Brugger, Fri Feb  1 14:56:58 PST 2019                                #
+#   I modified it to work post git transition.                                #
+#                                                                             #
+#   Alister Maguire, Thu Jan  2 11:45:44 MST 2020                             #
+#   Added download attempt for links that exclude the file name.              #
+#                                                                             #
+#   Eric Brugger, Wed Jan 29 09:52:20 PST 2020                                #
+#   I modified the routine to download the visit tar file and third party     #
+#   libraries from github.                                                    #
+#                                                                             #
 # *************************************************************************** #
 
 function download_file
@@ -2139,7 +2153,7 @@ function download_file
     shift
 
     # If the visit source code is requested, handle that now.
-    site="${nerscroot}/${VISIT_VERSION}"
+    site="${visitroot}v${VISIT_VERSION}"
     if [[ "$dfile" == "$VISIT_FILE" ]] ; then
         try_download_file $site/$dfile $dfile
         if [[ $? == 0 ]] ; then
@@ -2149,8 +2163,13 @@ function download_file
 
     # It must be a third party library, handle that now.
     #
-    # First try NERSC.
-    site="${nerscroot}/${VISIT_VERSION}/third_party"
+    # First try GitHub. We only update the third party libraries when
+    # doing a major release, so the patch is always 0. The fancy
+    # parsing below grabs the major and minor version numbers.
+    IFS="." read -r -a vers <<< "$VISIT_VERSION"
+    major=${vers[0]}
+    minor=${vers[1]}
+    site="${thirdpartyroot}v${major}.${minor}.0"
     try_download_file $site/$dfile $dfile
     if [[ $? == 0 ]] ; then
         return 0
@@ -2170,6 +2189,12 @@ function download_file
                 try_download_file $site/$dfile $dfile
                 if [[ $? == 0 ]] ; then
                     return 0
+                else
+                    # Some download links exclude the file name.
+                    try_download_file_from_shortened_url $site $dfile
+                    if [[ $? == 0 ]] ; then
+                        return 0
+                    fi
                 fi
             fi
         done
@@ -3120,7 +3145,6 @@ function usage
     printf "%-20s %s [%s]\n" "--cxxflags" "Explicitly set CXXFLAGS" "$CXXFLAGS"
     printf "%-20s %s [%s]\n" "--cc"  "Explicitly set C_COMPILER" "$C_COMPILER"
     printf "%-20s %s [%s]\n" "--cxx" "Explicitly set CXX_COMPILER" "$CXX_COMPILER"
-    printf "%-20s %s [%s]\n" "--debug" "Add '-g' to C[XX]FLAGS" "no"
     printf "%s <%s>  %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
     printf "%-20s %s [%s]\n" "--fortran" "Enable compilation of Fortran sources" "no"
     printf "%-20s %s\n"      "--fc" "Explicitly set FC_COMPILER"
@@ -3668,13 +3692,8 @@ function bv_visit_depends_on
 
 function bv_visit_info
 {
-    if [[ "$USE_VISIT_FILE" == "yes" ]] ; then
-        export VISIT_MD5_CHECKSUM=""
-        export VISIT_SHA256_CHECKSUM=""
-    else
-        export VISIT_MD5_CHECKSUM="edccd6d6c289356ac1462b1606b10ef9"
-        export VISIT_SHA256_CHECKSUM="40c33f08de7a048fb436b8a72156b9e5303434e8e52d5d8590c7dc3ce8ac607d"
-    fi
+    export VISIT_MD5_CHECKSUM=""
+    export VISIT_SHA256_CHECKSUM=""
 }
 
 function bv_visit_print
@@ -3945,7 +3964,7 @@ function build_visit
 
     # No real need to do this as it is defined on the cmake line BUT
     # Users may rebuild visit with updated git
-    cp ${START_DIR}/${HOSTCONF} config-site
+    cp ${START_DIR}/${HOSTCONF} ../src/config-site
 
     #
     # Call cmake
@@ -4021,12 +4040,31 @@ function build_visit
     # Build VisIt
     #
     info "Building VisIt . . . (~50 minutes)"
+    if [[ "${BUILD_SPHINX}" == "yes" ]] ; then
+        $MAKE $MAKE_OPT_FLAGS manuals
+        if [[ $? != 0 ]] ; then
+            warn "Building the VisIt manuals failed.  Continuing"
+        fi
+    fi
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "VisIt build failed.  Giving up"
         return 1
     fi
-    warn "All indications are that VisIt successfully built."
+    warn "All indications are that VisIt was successfully built."
+
+    #
+    # Package VisIt
+    #
+    info "Packaging VisIt ... (~10 minutes)"
+    $MAKE $MAKE_OPT_FLAGS package
+    if [[ $? != 0 ]] ; then
+        warn "VisIt package failed.  Giving up"
+        return 1
+    fi
+    mv visit*.*.tar.gz ../..
+    cp ../src/tools/dev/scripts/visit-install ../..
+    warn "All indications are that VisIt was successfully packaged."
 
     #
     # Install VisIt
@@ -4037,7 +4075,7 @@ function build_visit
             warn "VisIt installation failed.  Giving up"
             return 1
         fi
-        warn "All indications are that VisIt successfully installed."
+        warn "All indications are that VisIt was successfully installed."
     fi
 
     #
@@ -4084,20 +4122,14 @@ function bv_visit_build
         #
         # Output the message indicating that we are finished.
         #
-        info "Finished building VisIt."
+        info "Finished creating a VisIt distribution."
         info
-        info "You many now try to run VisIt by cd'ing into the"
-        info "$VISIT_BUILD_DIR/bin directory and invoking \"visit\""
+        info "This created a tar file called visitVERSION.ARCH.tar.gz,"
+        info "where VERSION is the version number, and ARCH is the"
+        info "operating system and architecure."
         info
-        info "To create a binary distribution tarball from this build, cd to"
-        info "${START_DIR}/${VISIT_BUILD_DIR}"
-        info "then enter: \"make package\""
-        info
-        info "This will produce a tarball called visitVERSION.ARCH.tar.gz, where"
-        info "VERSION is the version number, and ARCH is the OS architecure."
-        info
-        info "To install the above tarball in a directory called \"INSTALL_DIR_PATH\""
-        info "enter: tools/dev/scripts/visit-install VERSION ARCH INSTALL_DIR_PATH"
+        info "To install the above tar file in a directory called \"INSTALL_DIR_PATH\""
+        info "enter: ./visit-install VERSION ARCH INSTALL_DIR_PATH"
         info
         info "If you run into problems, contact visit-users@ornl.gov."
     else
@@ -4106,6 +4138,11 @@ function bv_visit_build
         else
             info "Finished with Errors"
         fi
+    fi
+
+    if [[ $VISIT_BUILD_MODE == "Debug" ]]; then
+        info "Debug build mode was specified. The default build mode for VisIt is Release."
+        info "To build VisIt in Debug mode, pass -DCMAKE_BUILD_TYPE:STRING=Debug to VisIt's cmake configure command."
     fi
 }
 function bv_adios_initialize
@@ -4710,7 +4747,7 @@ function build_adios2
             fi
 
             # Change all references from adios2 to adios2_mpi.
-            find . -name "CMakeLists.txt" -exec sed -i "s/adios2/adios2_mpi/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2/adios2_mpi/g" {} \;
             # This changes too many things, now we need to change specific things back.
 
             ${SED_CMD} "s/adios2_mpi/adios2/g" source/CMakeLists.txt
@@ -4771,6 +4808,12 @@ function build_adios2
             cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:BOOL=ON"
             cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${PAR_COMPILER}"
             cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
+        fi
+
+        # Use HDF5?
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            hdf5_install_path="${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}"
+            cfg_opts="${cfg_opts} -DCMAKE_PREFIX_PATH:PATH=${hdf5_install_path}"
         fi
 
         # call configure.
@@ -5066,9 +5109,13 @@ function build_advio
     if [[ "$OPSYS" == "Darwin" ]]; then
         ADVIO_DARWIN="--host=darwin"
     fi
+    ADVIO_DEBUG=""
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        ADVIO_DEBUG="--enable-debug"
+    fi
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        ./configure --prefix="$VISITDIR/AdvIO/$ADVIO_VERSION/$VISITARCH" --disable-gtktest $ADVIO_DARWIN
+        ./configure --prefix="$VISITDIR/AdvIO/$ADVIO_VERSION/$VISITARCH" --disable-gtktest $ADVIO_DARWIN $ADVIO_DEBUG
     if [[ $? != 0 ]] ; then
         warn "AdvIO configure failed.  Giving up"
         return 1
@@ -5242,9 +5289,52 @@ function bv_boost_dry_run
     fi
 }
 
+function apply_boost_ppc_rounding_control_patch
+{
+   # resolves a C++11 narrowing error
+
+   patch -p0 << \EOF
+*** boost/numeric/interval/detail/ppc_rounding_control.hpp.orig       Mon Aug 17 15:26:50 2020
+--- boost/numeric/interval/detail/ppc_rounding_control.hpp    Mon Aug 17 15:27:12 2020
+***************
+*** 28,37 ****
+    double dmode;
+  } rounding_mode_struct;
+  
+! static const rounding_mode_struct mode_upward      = { 0xFFF8000000000002LL };
+! static const rounding_mode_struct mode_downward    = { 0xFFF8000000000003LL };
+! static const rounding_mode_struct mode_to_nearest  = { 0xFFF8000000000000LL };
+! static const rounding_mode_struct mode_toward_zero = { 0xFFF8000000000001LL };
+  
+  struct ppc_rounding_control
+  {
+--- 28,37 ----
+    double dmode;
+  } rounding_mode_struct;
+  
+! static const rounding_mode_struct mode_upward      = { (long long int)0xFFF8000000000002LL };
+! static const rounding_mode_struct mode_downward    = { (long long int)0xFFF8000000000003LL };
+! static const rounding_mode_struct mode_to_nearest  = { (long long int)0xFFF8000000000000LL };
+! static const rounding_mode_struct mode_toward_zero = { (long long int)0xFFF8000000000001LL };
+  
+  struct ppc_rounding_control
+  {
+EOF
+
+   if [[ $? != 0 ]] ; then
+      warn "boost patch for ppc_rounding_control failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_boost_patch
 {
-    return 0
+    apply_boost_ppc_rounding_control_patch
+    if [[ $? != 0 ]] ; then
+       return 1
+    fi
+    return 0;
 }
 
 # *************************************************************************** #
@@ -6249,6 +6339,11 @@ function build_cgns
             LIBEXT="so"
         fi
     fi
+
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        cf_build_type="$cf_build_type --enable-debug"
+    fi
+
     # optionally add HDF5 and szip to the configure.
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
@@ -6470,12 +6565,12 @@ function bv_cmake_bin_cmake_dir
 
 function bv_cmake_info
 {
-    export CMAKE_URL=${CMAKE_URL:-"https://cmake.org/files/v3.9/"}
-    export CMAKE_VERSION=${CMAKE_VERSION:-"3.9.3"}
+    export CMAKE_URL=${CMAKE_URL:-"https://cmake.org/files/v3.14/"}
+    export CMAKE_VERSION=${CMAKE_VERSION:-"3.14.7"}
     export CMAKE_FILE=${CMAKE_FILE:-"cmake-${CMAKE_VERSION}.tar.gz"}
     export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-${CMAKE_VERSION}"}
-    export CMAKE_MD5_CHECKSUM="cb0f19828461904c72ed6a1e55459d03"
-    export CMAKE_SHA256_CHECKSUM="8eaf75e1e932159aae98ab5e7491499545554be62a08cbcbc7c75c84b999f28a"
+    export CMAKE_MD5_CHECKSUM="1b2d7d9215b51acceef20ed2895e8495"
+    export CMAKE_SHA256_CHECKSUM="9221993e0af3e6d10124d840ff24f5b2f3b884416fca04d3312cb0388dec1385"
 }
 
 function bv_cmake_print
@@ -6910,12 +7005,15 @@ function bv_conduit_depends_on
 
 function bv_conduit_info
 {
-    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.4.0"}
+    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.5.1"}
     export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}-src-with-blt.tar.gz"}
-    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.4.0"}
+    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.5.1"}
     export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
-    export CONDUIT_MD5_CHECKSUM="49c107c076ecd4e8ae6eb4ffe28198aa"
-    export CONDUIT_SHA256_CHECKSUM="c228e6f0ce5a9c0ffb98e0b3d886f2758ace1a4b40d00f3f118542c0747c1f52"
+    # For now since build_visit relies on a version tag in the third-party repo.
+    # The value for CONDUIT_URL can be removed after VisIt 3.2.0 comes out.
+    export CONDUIT_URL=${CONDUIT_URL:-"http://visit.ilight.com/assets"}
+    export CONDUIT_MD5_CHECKSUM="89dc8aabb43769fd686289eeabc6094b"
+    export CONDUIT_SHA256_CHECKSUM="40ada208a686f331f707bdf6f6e6ffa4dff4dc4dfdfafb0e052f514c932bfefa"
 }
 
 function bv_conduit_print
@@ -6952,7 +7050,7 @@ function bv_conduit_host_profile
 function bv_conduit_ensure
 {
     if [[ "$DO_CONDUIT" == "yes" ]] ; then
-        ensure_built_or_ready "conduit" $CONDUIT_VERSION $CONDUIT_BUILD_DIR $CONDUIT_FILE
+        ensure_built_or_ready "conduit" $CONDUIT_VERSION $CONDUIT_BUILD_DIR $CONDUIT_FILE $CONDUIT_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_CONDUIT="no"
@@ -7053,17 +7151,20 @@ function build_conduit
             fi
         fi
     fi
-    
-    
+
     if [[ "$DO_HDF5" == "yes" ]] ; then
         cfg_opts="${cfg_opts} -DHDF5_DIR:STRING=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/"
     fi
 
-    if [[ "$FC_COMPILER" == "yes" ]] ; then
+    if [[ "$DO_PYTHON" == "yes" ]] ; then
+        cfg_opts="${cfg_opts} -DPYTHON_EXECUTABLE:STRING=$PYTHON_COMMAND"
+    fi
+
+    if [[ "$FC_COMPILER" != "no" ]] ; then
         cfg_opts="${cfg_opts} -DENABLE_FORTRAN:BOOL=ON"
         cfg_opts="${cfg_opts} -DCMAKE_Fortran_COMPILER:STRING=${FC_COMPILER}"
     fi
-    
+
     #
     # Conduit Relay MPI Support
     #
@@ -7329,6 +7430,7 @@ function build_damaris
     sh -c "$CMAKE_COMMAND -G \"Unix Makefiles\" \
     -DPAR_CXX_COMPILER:PATH=$PAR_CXX_COMPILER \
     -DCMAKE_INSTALL_PREFIX:PATH=$VISITDIR/damaris/$DAMARIS_VERSION/$VISITARCH \
+    -DCMAKE_BUILD_TYPE:STRING=$VISIT_BUILD_MODE \
     -DVISIT_INCLUDE:PATH=$LIBSIMV2_INCLUDE \
     -DXERCESC_ROOT:PATH=$VISITDIR/xerces-c/$XERCESC_VERSION/$VISITARCH \
     -DXSD_ROOT:PATH=$VISITDIR/xsd/$XSD_VERSION/$VISITARCH \
@@ -7577,541 +7679,191 @@ function bv_embree_build
     fi
 }
 
-function bv_fastbit_initialize
+function bv_fms_initialize
 {
-    export DO_FASTBIT="no"
+    export DO_FMS="no"
 }
 
-function bv_fastbit_enable
+function bv_fms_enable
 {
-    DO_FASTBIT="yes"
+    DO_FMS="yes"
 }
 
-function bv_fastbit_disable
+function bv_fms_disable
 {
-    DO_FASTBIT="no"
+    DO_FMS="no"
 }
 
-function bv_fastbit_depends_on
+function bv_fms_depends_on
 {
-    echo ""
+    local depends_on=""
+
+    if [[ "$DO_CONDUIT" == "yes" ]] ; then
+        depends_on="$depends_on conduit"
+    fi
+
+    echo $depends_on
 }
 
-function bv_fastbit_info
+function bv_fms_info
 {
-    export FASTBIT_VERSION=${FASTBIT_VERSION:-"2.0.3"}
-    export FASTBIT_FILE=${FASTBIT_FILE:-"fastbit-${FASTBIT_VERSION}.tar.gz"}
-    # Note: last 3-digit field in URL changes with version.
-    export FASTBIT_URL=${FASTBIT_URL:-"https://code.lbl.gov/frs/download.php/file/426"}
-    export FASTBIT_BUILD_DIR=${FASTBIT_BUILD_DIR:-"fastbit-${FASTBIT_VERSION}"}
-    export FASTBIT_MD5_CHECKSUM="54825b1d19f6c6a3844b368facc26a9e"
-    export FASTBIT_SHA256_CHECKSUM="1ddb16d33d869894f8d8cd745cd3198974aabebca68fa2b83eb44d22339466ec"
+    export FMS_VERSION=${FMS_VERSION:-"100"}
+    export FMS_FILE=${FMS_FILE:-"FMS-${FMS_VERSION}.tar.gz"}
+    export FMS_BUILD_DIR=${FMS_BUILD_DIR:-"FMS-${FMS_VERSION}"}
+    export FMS_URL=${FMS_URL:-"http://visit.ilight.com/assets"}
+    export FMS_MD5_CHECKSUM="67241ce13619639a49ae602400b02360"
+    export FMS_SHA256_CHECKSUM="621f413e219dc166160c15ad73727512ef716ef9aeb2fe3a5192ec4376c3a798"
 }
 
-function bv_fastbit_print
+function bv_fms_print
 {
-    printf "%s%s\n" "FASTBIT_FILE=" "${FASTBIT_FILE}"
-    printf "%s%s\n" "FASTBIT_VERSION=" "${FASTBIT_VERSION}"
-    printf "%s%s\n" "FASTBIT_BUILD_DIR=" "${FASTBIT_BUILD_DIR}"
+    printf "%s%s\n" "FMS_FILE=" "${FMS_FILE}"
+    printf "%s%s\n" "FMS_VERSION=" "${FMS_VERSION}"
+    printf "%s%s\n" "FMS_BUILD_DIR=" "${FMS_BUILD_DIR}"
 }
 
-function bv_fastbit_print_usage
+function bv_fms_print_usage
 {
-    printf "%-20s %s [%s]\n" "--fastbit" "Build FastBit" "$DO_FASTBIT"
-    printf "%-20s %s\n" "" "NOTE: FastBit not available for download from web" 
+    printf "%-20s %s [%s]\n" "--fms" "Build FMS support" "$DO_FMS"
 }
 
-function bv_fastbit_host_profile
+function bv_fms_host_profile
 {
-    if [[ "$DO_FASTBIT" == "yes" ]] ; then
+    if [[ "$DO_FMS" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## FastBit" >> $HOSTCONF
+        echo "## FMS " >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "SETUP_APP_VERSION(FASTBIT $FASTBIT_VERSION)" >> $HOSTCONF
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_FASTBIT_DIR \${VISITHOME}/fastbit/\${FASTBIT_VERSION}/\${VISITARCH})" \
+            "VISIT_OPTION_DEFAULT(VISIT_FMS_DIR \${VISITHOME}/fms/$FMS_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
+        if [[ "$DO_CONDUIT" == "yes" ]] ; then
+            echo \
+                "VISIT_OPTION_DEFAULT(VISIT_FMS_LIBDEP CONDUIT_LIBRARY_DIR conduit CONDUIT_LIBRARY_DIR conduit_blueprint CONDUIT_LIBRARY_DIR conduit_relay \${VISIT_CONDUIT_LIBDEP} TYPE STRING)" \
+                >> $HOSTCONF
+        fi
     fi
-
 }
 
-function bv_fastbit_ensure
+function bv_fms_ensure
 {
-    if [[ "$DO_FASTBIT" == "yes" ]] ; then
-        ensure_built_or_ready "fastbit" $FASTBIT_VERSION $FASTBIT_BUILD_DIR $FASTBIT_FILE $FASTBIT_URL
+    if [[ "$DO_FMS" == "yes" ]] ; then
+        ensure_built_or_ready "fms" $FMS_VERSION $FMS_BUILD_DIR $FMS_FILE $FMS_URL
         if [[ $? != 0 ]] ; then
-            warn "Unable to build FastBit.  ${FASTBIT_FILE} not found."
-            warn "FastBit is not available for download from the VisIt build site"
             ANY_ERRORS="yes"
-            DO_FASTBIT="no"
-            error "Try going to https://codeforge.lbl.gov/frs/?group_id=44"
+            DO_FMS="no"
+            error "Unable to build FMS.  ${FMS_FILE} not found."
         fi
     fi
 }
 
-function bv_fastbit_dry_run
+function bv_fms_dry_run
 {
-    if [[ "$DO_FASTBIT" == "yes" ]] ; then
-        echo "Dry run option not set for fastbit."
+    if [[ "$DO_FMS" == "yes" ]] ; then
+        echo "Dry run option not set for FMS."
     fi
 }
 
-function apply_fastbit_2_0_3_patch
-{
-    info "Patching FastBit"
-    patch -p0 << \EOF
-diff -rcN fastbit-2.0.3/configure-orig.ac fastbit-2.0.3/configure.ac
-*** fastbit-2.0.3/configure-orig.ac	2016-12-14 08:57:26.000000000 -0700
---- fastbit-2.0.3/configure.ac	2016-12-14 08:58:42.000000000 -0700
-***************
-*** 916,922 ****
-  AC_SUBST(BUILD_CONTRIB)
-  
-  AC_DEFINE_UNQUOTED(FASTBIT_IBIS_INT_VERSION,
-!  `echo $PACKAGE_VERSION | awk 'BEGIN { FS="." } { printf("0x%d%.2d%.2d%.2d\n", substr($1, 5), $2, $3, $4); }'`,
-  [Define an integer version of FastBit IBIS version number])
-  OBJDIR=$objdir
-  AC_SUBST(BUILD_JAVA_INTERFACE)
---- 916,922 ----
-  AC_SUBST(BUILD_CONTRIB)
-  
-  AC_DEFINE_UNQUOTED(FASTBIT_IBIS_INT_VERSION,
-!  `echo $PACKAGE_VERSION | awk 'BEGIN { FS="." } { printf("0x%d%.2d%.2d%.2d\n", $1, $2, $3, $4); }'`,
-  [Define an integer version of FastBit IBIS version number])
-  OBJDIR=$objdir
-  AC_SUBST(BUILD_JAVA_INTERFACE)
-
-diff -rcN fastbit-2.0.3/configure-orig fastbit-2.0.3/configure
-*** fastbit-2.0.3/configure-orig	2016-12-14 09:00:26.000000000 -0700
---- fastbit-2.0.3/configure	2016-12-14 08:54:49.000000000 -0700
-***************
-*** 17350,17356 ****
-  
-  
-  cat >>confdefs.h <<_ACEOF
-! #define FASTBIT_IBIS_INT_VERSION `echo $PACKAGE_VERSION | awk 'BEGIN { FS="." } { printf("0x%d%.2d%.2d%.2d\n", substr($1, 5), $2, $3, $4); }'`
-  _ACEOF
-  
-  OBJDIR=$objdir
---- 17350,17356 ----
-  
-  
-  cat >>confdefs.h <<_ACEOF
-! #define FASTBIT_IBIS_INT_VERSION `echo $PACKAGE_VERSION | awk 'BEGIN { FS="." } { printf("0x%d%.2d%.2d%.2d\n", $1, $2, $3, $4); }'`
-  _ACEOF
-  
-  OBJDIR=$objdir
-
-EOF
-}
-
-function apply_fastbit_patch
-{
-    if [[ ${FASTBIT_VERSION} == 2.0.3 ]] ; then
-        apply_fastbit_2_0_3_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-
-    return 0
-}
-
 # *************************************************************************** #
-#                         Function 8.14, build_fastbit                        #
+#                            Function 8, build_fms
 # *************************************************************************** #
-
-function build_fastbit
+function build_fms
 {
     #
     # Prepare build dir
     #
-    prepare_build_dir $FASTBIT_BUILD_DIR $FASTBIT_FILE
-    untarred_fastbit=$?
-    # 0, already exists, 1 untarred src, 2 error
-
-    if [[ $untarred_fastbit == -1 ]] ; then
-        warn "Unable to prepare FastBit Build Directory. Giving Up"
+    prepare_build_dir $FMS_BUILD_DIR $FMS_FILE
+    untarred_fms=$?
+    if [[ $untarred_fms == -1 ]] ; then
+        warn "Unable to prepare FMS build directory. Giving Up!"
         return 1
     fi
 
-    #
-    # Apply patches
-    #
-    apply_fastbit_patch
-    if [[ $? != 0 ]] ; then
-        if [[ $untarred_fastbit == 1 ]] ; then
-            warn "Giving up on FastBit build because the patch failed."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
-        fi
+    cd $FMS_BUILD_DIR || error "Can't cd to FMS source dir."
+    mkdir build
+    cd build || error "Can't cd to FMS build dir."
+
+    vopts="-DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
+    vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/fms/${FMS_VERSION}/${VISITARCH}"
+    if test "x${DO_STATIC_BUILD}" = "xyes" ; then
+        vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
+    else
+        vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
+    fi
+    if [[ "$DO_CONDUIT" == "yes" ]] ; then
+        vopts="${vopts} -DCONDUIT_DIR=${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}"
     fi
 
     #
-    # Apply configure
+    # Call configure
     #
-    info "Configuring FastBit . . ."
-    cd $FASTBIT_BUILD_DIR || error "Can't cd to FastBit build dir."
-    
-    info "Invoking command to configure FastBit"
-
-    ./configure \
-        CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        --prefix="$VISITDIR/fastbit/$FASTBIT_VERSION/$VISITARCH" \
-        --disable-shared --with-java=no
-    if [[ $? != 0 ]] ; then
-        echo "FastBit configure failed.  Giving up"
-        return 1
+    info "Configuring FMS . . ."
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
     fi
+    echo "\"${CMAKE_BIN}\" ${vopts} .." > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "FMS configuration failed."
 
     #
-    # Build FastBit
+    # Build FMS
     #
-    info "Building FastBit . . . (~7 minutes)"
+    info "Building FMS . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "FastBit build failed.  Giving up"
+        warn "FMS build failed.  Giving up"
         return 1
     fi
-    
-    info "Installing FastBit . . ."
+
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing FMS"
     $MAKE install
-    if [[ $? != 0 ]] ; then
-        warn "FastBit build (make install) failed.  Giving up"
-        return 1
-    fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/fastbit"
-        chgrp -R ${GROUP} "$VISITDIR/fastbit"
+        chmod -R ug+w,a+rX "$VISITDIR/fms"
+        chgrp -R ${GROUP} "$VISITDIR/fms"
     fi
-
-    cd "$START_DIR"
-    info "Done with FastBit"
+    cd "$START_DIR"    
+    info "Done with FMS"
     return 0
 }
 
-function bv_fastbit_is_enabled
+
+function bv_fms_is_enabled
 {
-    if [[ $DO_FASTBIT == "yes" ]]; then
+    if [[ $DO_FMS == "yes" ]]; then
         return 1    
     fi
     return 0
 }
 
-function bv_fastbit_is_installed
+function bv_fms_is_installed
 {
-    check_if_installed "fastbit" $FASTBIT_VERSION
+    check_if_installed "fms" $FMS_VERSION
     if [[ $? == 0 ]] ; then
         return 1
     fi
     return 0
 }
 
-function bv_fastbit_build
+function bv_fms_build
 {
     cd "$START_DIR"
-    if [[ "$DO_FASTBIT" == "yes" ]] ; then
-        check_if_installed "fastbit" $FASTBIT_VERSION
+    if [[ "$DO_FMS" == "yes" ]] ; then
+        check_if_installed "fms" $FMS_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping FastBit build.  FastBit is already installed."
+            info "Skipping FMS build.  FMS is already installed."
         else
-            info "Building FastBit (~7 minutes)"
-            build_fastbit
+            info "Building FMS (~2 minutes)"
+            build_fms
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install FastBit.  Bailing out."
+                error "Unable to build or install FMS.  Bailing out."
             fi
-            info "Done building FastBit"
-        fi
-    fi
-}
-function bv_fastquery_initialize
-{
-    export DO_FASTQUERY="no"
-}
-
-function bv_fastquery_enable
-{
-    DO_FASTQUERY="yes"
-}
-
-function bv_fastquery_disable
-{
-    DO_FASTQUERY="no"
-}
-
-function bv_fastquery_depends_on
-{
-    depends_on="fastbit"
-
-    if [[ "$DO_ADIOS" == "yes" ]] ; then
-        depends_on="$depends_on adios"
-    fi
-
-    if [[ "$DO_HDF5" == "yes" ]] ; then
-        depends_on="$depends_on hdf5"
-    fi
-
-    if [[ "$DO_NETCDF" == "yes" ]] ; then
-        depends_on="$depends_on netcdf"
-    fi
-
-    if [[ "$depends_on" == "fastquery" ]] ; then
-        error "FastQuery must be built with either ADIOS, HDF5, or NetCDF."
-    fi
-}
-
-function bv_fastquery_info
-{
-    export FASTQUERY_VERSION=${FASTQUERY_VERSION:-"0.8.4.3"}
-    export FASTQUERY_FILE=${FASTQUERY_FILE:-"fastquery-${FASTQUERY_VERSION}.tar.gz"}
-    # Note: last 3-digit field in URL changes with version.
-    export FASTQUERY_URL=${FASTQUERY_URL:-"https://code.lbl.gov/frs/download.php/file/428"}
-    export FASTQUERY_BUILD_DIR=${FASTQUERY_BUILD_DIR:-"fastquery-${FASTQUERY_VERSION}"}
-    export FASTQUERY_MD5_CHECKSUM="de6b6ed6a17e861e23b0349254a13ea9"
-    export FASTQUERY_SHA256_CHECKSUM="452c778eedd9956410393acbc44aae49505b48b821cc575b168bd05501578f16"
-}
-
-function bv_fastquery_print
-{
-    printf "%s%s\n" "FASTQUERY_FILE=" "${FASTQUERY_FILE}"
-    printf "%s%s\n" "FASTQUERY_VERSION=" "${FASTQUERY_VERSION}"
-    printf "%s%s\n" "FASTQUERY_BUILD_DIR=" "${FASTQUERY_BUILD_DIR}"
-}
-
-function bv_fastquery_print_usage
-{
-    printf "%-20s %s [%s]\n" "--fastquery" "Build FastQuery" "$DO_FASTQUERY"
-    printf "%-20s %s\n" "" "NOTE: FastQuery not available for download from web" 
-}
-
-function bv_fastquery_host_profile
-{
-    if [[ "$DO_FASTQUERY" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## FastQuery" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "SETUP_APP_VERSION(FASTQUERY $FASTQUERY_VERSION)" >> $HOSTCONF
-        echo \
-            "VISIT_OPTION_DEFAULT(VISIT_FASTQUERY_DIR \${VISITHOME}/fastquery/\${FASTQUERY_VERSION}/\${VISITARCH})" \
-            >> $HOSTCONF
-    fi
-
-}
-
-function bv_fastquery_ensure
-{
-    if [[ "$DO_FASTQUERY" == "yes" ]] ; then
-        ensure_built_or_ready "fastquery" $FASTQUERY_VERSION $FASTQUERY_BUILD_DIR $FASTQUERY_FILE $FASTQUERY_URL
-        if [[ $? != 0 ]] ; then
-            warn "Unable to build FastQuery.  ${FASTQUERY_FILE} not found."
-            warn "FastQuery is not available for download from the VisIt build site"
-            ANY_ERRORS="yes"
-            DO_FASTQUERY="no"
-            error "Try going to https://codeforge.lbl.gov/frs/?group_id=44"
-        fi
-    fi
-}
-
-function bv_fastquery_dry_run
-{
-    if [[ "$DO_FASTQUERY" == "yes" ]] ; then
-        echo "Dry run option not set for fastquery."
-    fi
-}
-
-function apply_fastquery_patch
-{
-#    if [[ ${FASTQUERY_VERSION} == 2.0.3 ]] ; then
-#        apply_fastquery_2_0_3_patch
-#        if [[ $? != 0 ]] ; then
-#            return 1
-#        fi
-#    fi
-
-    return 0
-}
-
-# *************************************************************************** #
-#                         Function 8.14, build_fastquery                        #
-# *************************************************************************** #
-
-function build_fastquery
-{
-    #
-    # Prepare build dir
-    #
-    prepare_build_dir $FASTQUERY_BUILD_DIR $FASTQUERY_FILE
-    untarred_fastquery=$?
-    # 0, already exists, 1 untarred src, 2 error
-
-    if [[ $untarred_fastquery == -1 ]] ; then
-        warn "Unable to prepare FastQuery Build Directory. Giving Up"
-        return 1
-    fi
-
-    #
-    # Apply patches
-    #
-    apply_fastquery_patch
-    if [[ $? != 0 ]] ; then
-        if [[ $untarred_fastquery == 1 ]] ; then
-            warn "Giving up on FastQuery build because the patch failed."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
-        fi
-    fi
-
-    # MPI support
-    if [[ "$VISIT_MPI_COMPILER" != "" ]] ; then
-        FASTQUERY_MPI_OPTS="MPICC=\"$VISIT_MPI_COMPILER\" MPICXX=\"$VISIT_MPI_COMPILER_CXX\" LDFLAGS=\"$PAR_LINKER_FLAGS\""
-        FASTQUERY_MPI_INC="$PAR_INCLUDE"
-    else
-        FASTQUERY_MPI_OPTS="--disable-parallel"
-        FASTQUERY_MPI_INC=""
-    fi
-
-    FASTQUERY_MPI_OPTS="--disable-parallel"
-    FASTQUERY_MPI_INC=""
-    
-    # FastBit support
-    if [[ "$DO_FASTBIT" == "yes" ]] ; then
-        info "FastBit requested.  Configuring FastQuery with FastBit support."
-        export FASTBITROOT="$VISITDIR/fastbit/$FASTBIT_VERSION/$VISITARCH"
-        WITH_FASTBIT_ARG="--with-fastbit=$FASTBITROOT"
-    else
-        WITH_FASTBIT_ARG=""
-    fi
-
-    # ADIOS support
-    if [[ "$DO_ADIOS" == "yes" ]] ; then
-        info "ADIOS requested.  Configuring FastQuery with ADIOS support."
-        export ADIOSROOT="$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH"
-        WITH_ADIOS_ARG="--with-adios=$ADIOSROOT"
-    else
-        WITH_ADIOS_ARG="--without-adios"
-    fi
-
-    # HDF5 support
-    if [[ "$DO_HDF5" == "yes" ]] ; then
-        info "HDF5 requested.  Configuring FastQuery with HDF5 support."
-        export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
-        export SZIPROOT="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
-        WITH_HDF5_ARG="--with-hdf5=$HDF5ROOT"
-        #HDF5_DYLIB="-L$HDF5ROOT/lib -L$SZIPROOT/lib -lhdf5 -lsz -lz"
-    else
-        WITH_HDF5_ARG="--without-hdf5"
-        #HDF5_DYLIB=""
-    fi
-
-    # NETCDF support
-    if [[ "$DO_NETCDF" == "yes" ]] ; then
-        info "NetCDF requested.  Configuring FastQuery with NetCDF support."
-        export NETCDFROOT="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
-        WITH_NETCDF_ARG="--with-netcdf=$NETCDFROOT"
-    else
-        WITH_NETCDF_ARG="--without-netcdf"
-    fi
-
-    #
-    # Apply configure
-    #
-    info "Configuring FastQuery . . ."
-    cd $FASTQUERY_BUILD_DIR || error "Can't cd to FastQuery build dir."
-    
-    info "Invoking command to configure FastQuery"
-
-    info ./configure \
-	CC="$C_COMPILER" CXX="$CXX_COMPILER" \
-	CFLAGS=\"$CFLAGS $C_OPT_FLAGS $FASTQUERY_MPI_INC\" \
-        CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $FASTQUERY_MPI_INC\" \
-	$FASTQUERY_MPI_OPTS $WITH_FASTBIT_ARG \
-	$WITH_ADIOS_ARG $WITH_HDF5_ARG $WITH_NETCDF_ARG \
-        --prefix="$VISITDIR/fastquery/$FASTQUERY_VERSION/$VISITARCH"
-
-    ./configure \
-	CC="$C_COMPILER" CXX="$CXX_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS $FASTQUERY_MPI_INC" \
-        CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $FASTQUERY_MPI_INC" \
-        CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $FASTQUERY_MPI_INC" \
-	$FASTQUERY_MPI_OPTS $WITH_FASTBIT_ARG \
-	$WITH_ADIOS_ARG $WITH_HDF5_ARG $WITH_NETCDF_ARG \
-        --prefix="$VISITDIR/fastquery/$FASTQUERY_VERSION/$VISITARCH"
-
-    if [[ $? != 0 ]] ; then
-        echo "FastQuery configure failed.  Giving up"
-        return 1
-    fi
-
-    #
-    # Build FastQuery
-    #
-    info "Building FastQuery . . . (~7 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
-    if [[ $? != 0 ]] ; then
-        warn "FastQuery build failed.  Giving up"
-        return 1
-    fi
-    
-    info "Installing FastQuery . . ."
-    $MAKE install
-    if [[ $? != 0 ]] ; then
-        warn "FastQuery build (make install) failed.  Giving up"
-        return 1
-    fi
-
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/fastquery"
-        chgrp -R ${GROUP} "$VISITDIR/fastquery"
-    fi
-
-    cd "$START_DIR"
-    info "Done with FastQuery"
-    return 0
-}
-
-function bv_fastquery_is_enabled
-{
-    if [[ $DO_FASTQUERY == "yes" ]]; then
-        return 1    
-    fi
-    return 0
-}
-
-function bv_fastquery_is_installed
-{
-    check_if_installed "fastquery" $FASTQUERY_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_fastquery_build
-{
-    cd "$START_DIR"
-    if [[ "$DO_FASTQUERY" == "yes" ]] ; then
-        check_if_installed "fastquery" $FASTQUERY_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping FastQuery build.  FastQuery is already installed."
-        else
-            info "Building FastQuery (~7 minutes)"
-            build_fastquery
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install FastQuery.  Bailing out."
-            fi
-            info "Done building FastQuery"
+            info "Done building FMS"
         fi
     fi
 }
@@ -10641,6 +10393,11 @@ function build_hdf4
         FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
     fi
 
+    hdf4_build_mode=""
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        hdf4_build_mode="--disable-production"
+    fi
+
     #
     # Configure HDF4
     #
@@ -10656,7 +10413,7 @@ function build_hdf4
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
         CPPFLAGS=\"-I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION} \
         -I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\" \
-        $FORTRANARGS \
+        $FORTRANARGS $hdf4_build_mode \
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\",\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib\" \
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
@@ -10676,7 +10433,7 @@ function build_hdf4
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" LIBS=\"-lm\" \
         CPPFLAGS=\"-I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION} \
         -I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\" \
-        $FORTRANARGS \
+        $FORTRANARGS $hdf4_build_mode \
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\",\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib\" \
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
@@ -11436,6 +11193,11 @@ function build_hdf5
         cf_build_thread="--enable-threadsafe --with-pthread"
     fi
 
+    build_mode=""
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        build_mode="--disable-production"
+    fi
+
     par_build_types="serial"
     if [[ -n "$PAR_COMPILER" && "$DO_MOAB" == "yes" ]]; then
         par_build_types="$par_build_types parallel"
@@ -11476,12 +11238,12 @@ function build_hdf5
             CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
             ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
-            ${cf_build_parallel} ${extra_ac_flags}"
+            ${cf_build_parallel} ${extra_ac_flags} $build_mode"
         sh -c "../configure CC=\"$cf_c_compiler\" \
             CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
             ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
-            ${cf_build_parallel} ${extra_ac_flags}"
+            ${cf_build_parallel} ${extra_ac_flags} $build_mode"
         if [[ $? != 0 ]] ; then
             warn "$bt HDF5 configure failed.  Giving up"
             return 1
@@ -12189,6 +11951,31 @@ EOF
         warn "llvm patch for include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h failed"
         return 1
     fi
+
+    # fixes a bug in LLVM 5.0.0
+    # where a static_assert fails with icc 19.0.4.227. This patch removes
+    # the static_assert since it isn't critical for it to run.
+
+    patch -p0 << \EOF
+diff -c lib/IR/Attributes.cpp.orig lib/IR/Attributes.cpp
+*** lib/IR/Attributes.cpp.orig	Fri Nov 22 12:13:23 2019
+--- lib/IR/Attributes.cpp	Fri Nov 22 12:13:45 2019
+***************
+*** 810,817 ****
+    static_assert(Attribute::EndAttrKinds <=
+                      sizeof(AvailableFunctionAttrs) * CHAR_BIT,
+                  "Too many attributes");
+-   static_assert(attrIdxToArrayIdx(AttributeList::FunctionIndex) == 0U,
+-                 "function should be stored in slot 0");
+    for (Attribute I : Sets[0]) {
+      if (!I.isStringAttribute())
+        AvailableFunctionAttrs |= 1ULL << I.getKindAsEnum();
+--- 810,815 ----
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "llvm patch for lib/IR/Attributes.cpp failed"
+        return 1
+    fi
 }
 
 function build_llvm
@@ -12648,7 +12435,45 @@ diff -c configure.ac.orig configure.ac
           if test "x$llvm_have_one_so" = xyes; then
 EOF
     if [[ $? != 0 ]] ; then
-        warn "MesaGL patch failed."
+        warn "MesaGL patch 1 failed."
+        return 1
+    fi
+
+    patch -p0 << \EOF
+diff -c src/gallium/winsys/sw/xlib/xlib_sw_winsys.c.orig src/gallium/winsys/sw/xlib/xlib_sw_winsys.c
+*** src/gallium/winsys/sw/xlib/xlib_sw_winsys.c.orig	Fri Jan 31 12:07:54 2020
+--- src/gallium/winsys/sw/xlib/xlib_sw_winsys.c	Fri Jan 31 12:09:24 2020
+***************
+*** 396,401 ****
+--- 396,402 ----
+  {
+     struct xlib_displaytarget *xlib_dt;
+     unsigned nblocksy, size;
++    int ignore;
+  
+     xlib_dt = CALLOC_STRUCT(xlib_displaytarget);
+     if (!xlib_dt)
+***************
+*** 410,416 ****
+     xlib_dt->stride = align(util_format_get_stride(format, width), alignment);
+     size = xlib_dt->stride * nblocksy;
+  
+!    if (!debug_get_option_xlib_no_shm()) {
+        xlib_dt->data = alloc_shm(xlib_dt, size);
+        if (xlib_dt->data) {
+           xlib_dt->shm = True;
+--- 411,418 ----
+     xlib_dt->stride = align(util_format_get_stride(format, width), alignment);
+     size = xlib_dt->stride * nblocksy;
+  
+!    if (!debug_get_option_xlib_no_shm() &&
+!        XQueryExtension(xlib_dt->display, "MIT-SHM", &ignore, &ignore, &ignore)) {
+        xlib_dt->data = alloc_shm(xlib_dt, size);
+        if (xlib_dt->data) {
+           xlib_dt->shm = True;
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch 2 failed."
         return 1
     fi
 
@@ -12832,18 +12657,24 @@ function bv_mfem_depends_on
     if [[ "$DO_CONDUIT" == "yes" ]] ; then
         depends_on="$depends_on conduit"
     fi
+    if [[ "$DO_FMS" == "yes" ]] ; then
+        depends_on="$depends_on fms"
+    fi
 
     echo $depends_on
 }
 
 function bv_mfem_info
 {
-    export MFEM_VERSION=${MFEM_VERSION:-"3.4"}
+    # NOTE: we are using a special version of MFEM that has not yet been in an MFEM release.
+    export MFEM_VERSION=${MFEM_VERSION:-"Add_FMS_support"}
     export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
     export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
-    export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-3-4"}
-    export MFEM_MD5_CHECKSUM="59aff55ba3d7d7816cb3efbf84af7724"
-    export MFEM_SHA256_CHECKSUM="4e73e4fe0482636de3c5dc983cd395839a83cb16f6f509bd88b053e8b3858e05"
+    # For the time being, get MFEM tarball from IL website if it cannot be downloaded from third-party
+    export MFEM_URL=${MFEM_URL:-"http://visit.ilight.com/assets"}
+    #export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-0"}
+    export MFEM_MD5_CHECKSUM="a8124f5a43bef277aeb659a492c05600"
+    export MFEM_SHA256_CHECKSUM="0dec3ebd2163bb2f104bdb6f4009da09a05ac27108b0d2f820c7f67cfda6921a"
 }
 
 function bv_mfem_print
@@ -12872,14 +12703,20 @@ function bv_mfem_host_profile
         ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
 
         CONDUIT_LIBDEP=""
+        INCDEP=""
         if [[ "$DO_CONDUIT" == "yes" ]] ; then
             CONDUIT_LIBDEP="\${VISIT_CONDUIT_LIBDEP}"
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_MFEM_INCDEP CONDUIT_INCLUDE_DIR TYPE STRING)" \
-                    >> $HOSTCONF
+            INCDEP="CONDUIT_INCLUDE_DIR"
+        fi
+        if [[ "$DO_FMS" == "yes" ]] ; then
+            INCDEP="$INCDEP FMS_INCLUDE_DIR"
         fi
 
-
+        if [[ "$INCDEP" != "" ]] ; then
+             echo \
+                "VISIT_OPTION_DEFAULT(VISIT_MFEM_INCDEP $INCDEP TYPE STRING)" \
+                    >> $HOSTCONF
+        fi
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP $CONDUIT_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
                 >> $HOSTCONF
@@ -12921,36 +12758,54 @@ function build_mfem
     fi
 
     cd $MFEM_BUILD_DIR || error "Can't cd to mfem build dir."
+    mkdir build
+    cd build || error "Can't cd to MFEM build dir."
 
-    ZLIBARG=-L${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib
+    # Version 4.0 now requires c++11
+    CXXFLAGS="-std=c++11 ${CXXFLAGS}"
 
-    MFEM_USE_CONDUIT=NO
-
-    if [[ "$DO_CONDUIT" == "yes" ]] ; then
-        MFEM_USE_CONDUIT=YES
-        CONDUIT_OPT_VALS="-I${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}/include/conduit"
-        CONDUIT_LIB_VALS="-L${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}/lib/ -lconduit_relay -lconduit_blueprint -lconduit"
-        # we may also need HDF5, conduit's config.mk includes this info, but mfem isn't using it yet
-        if [[ "$DO_HDF5" == "yes" ]] ; then
-            CONDUIT_OPT_VALS="${CONDUIT_OPT_VALS} -I${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}/include/"
-            CONDUIT_LIB_VALS="${CONDUIT_OPT_VALS} -L${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}/ -lhdf5"
-        fi
+    vopts="-DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} $CFLAGS\""
+    vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS\""
+    vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/mfem/${MFEM_VERSION}/${VISITARCH}"
+    if test "x${DO_STATIC_BUILD}" = "xyes" ; then
+        vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
+    else
+        vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
+    vopts="${vopts} -DMFEM_USE_EXCEPTIONS:BOOL=ON"
+    if [[ "$DO_CONDUIT" == "yes" ]] ; then
+        vopts="${vopts} -DMFEM_USE_CONDUIT=ON -DCONDUIT_DIR=${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}"
+    fi
+    if [[ "$DO_FMS" == "yes" ]] ; then
+        vopts="${vopts} -DMFEM_USE_FMS=ON -DFMS_DIR=${VISITDIR}/fms/${FMS_VERSION}/${VISITARCH}"
+    fi
+    vopts="${vopts} -DMFEM_USE_ZLIB=ON"
 
     #
     # Call configure
     #
     info "Configuring mfem . . ."
-    info $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" MFEM_USE_GZSTREAM=YES LDFLAGS="$ZLIBARG -lz" \
-              MFEM_USE_CONDUIT=${MFEM_USE_CONDUIT} CONDUIT_OPT="${CONDUIT_OPT_VALS}" CONDUIT_LIB="${CONDUIT_LIB_VALS}"
-
-    $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" MFEM_USE_GZSTREAM=YES LDFLAGS="$ZLIBARG -lz" \
-              MFEM_USE_CONDUIT=${MFEM_USE_CONDUIT} CONDUIT_OPT="${CONDUIT_OPT_VALS}" CONDUIT_LIB="${CONDUIT_LIB_VALS}"
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
+    fi
+    CMS=bv_run_cmake.sh
+    echo "#!/bin/bash" > $CMS
+    echo "# Find the right ZLIB" >> $CMS
+    echo "export CMAKE_PREFIX_PATH=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}" >> $CMS
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        echo "# Find the right HDF5" >> $CMS
+        echo "export HDF5_ROOT=${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}" >> $CMS
+    fi
+    echo "\"${CMAKE_BIN}\" ${vopts} .." >> $CMS
+    cat $CMS
+    issue_command bash $CMS || error "FMS configuration failed."
 
     #
     # Build mfem
     #
-
     info "Building mfem . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
@@ -12962,7 +12817,7 @@ function build_mfem
     # Install into the VisIt third party location.
     #
     info "Installing mfem"
-    $MAKE install PREFIX="$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/"
+    $MAKE install
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/mfem"
@@ -13030,12 +12885,12 @@ function bv_mili_depends_on
 
 function bv_mili_info
 {
-    export MILI_FILE=${MILI_FILE:-"mili-LGPL-15.1.tar.gz"}
-    export MILI_VERSION=${MILI_VERSION:-"15.1"}
-    export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"15.1"}
+    export MILI_FILE=${MILI_FILE:-"mili-LGPL-19.2.tar.gz"}
+    export MILI_VERSION=${MILI_VERSION:-"19.2"}
+    export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"19.2"}
     export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
-    export MILI_MD5_CHECKSUM="8a1a42133c05d541a85c38cd8e9b51de"
-    export MILI_SHA256_CHECKSUM="2a83a507965df6f92169bcb3e68467e8a514c641ad56d7046a4561212c562a66"
+    export MILI_MD5_CHECKSUM="2d3c62f5261b009dfda2b73bb358749f"
+    export MILI_SHA256_CHECKSUM="dcf636d5f0d2ae9c273ab0e909e558d950471554dc5757734ca73737660f4d90"
 }
 
 function bv_mili_print
@@ -13072,12 +12927,6 @@ function bv_mili_ensure
             warn "Unable to build Mili.  ${MILI_FILE} not found."
             ANY_ERRORS="yes"
             DO_MILI="no"
-            if [[ "$DO_SVN" != "yes" ]] ; then
-                warn "Note: You have requested to build the Mili library." 
-                warn "Mili is not available for public download and" 
-                warn "is only available through Subversion access." 
-            fi
-            error
         fi
     fi
 }
@@ -13977,7 +13826,7 @@ function apply_mili_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
-    elif [[ ${MILI_VERSION} == 15.1 && "$OPSYS" == "Darwin" ]]; then
+    elif [[ (${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2) && "$OPSYS" == "Darwin" ]]; then
         apply_mili_151_darwin_patch1
         if [[ $? != 0 ]] ; then
             return 1
@@ -14044,8 +13893,15 @@ function build_mili
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
     fi
 
+    # The 19.2 configure script does not play well with our fortran mac patch.
+    # We can use an older configure script that includes this patch already.
+    config_script=configure
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        config_script=configure_15_1
+    fi
+
     info "Invoking command to configure Mili"
-    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+    ./${config_script} CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 ac_cv_prog_FOUND_GMAKE=make $extra_ac_flags \
                 --prefix="$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
@@ -14083,7 +13939,7 @@ function build_mili
             warn "Mili build failed.  Giving up"
             return 1
         fi
-    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 ]] ; then
+    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2 ]] ; then
         cd MILI-*-*
         make opt fortran=false
     fi
@@ -14102,13 +13958,13 @@ function build_mili
         cp mili.h mili_enum.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
     elif [[ ${MILI_VERSION} == 1.11.1 ]] ; then
         cp mili.h mili_enum.h misc.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
-    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 ]] ; then
+    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2 ]] ; then
         cp src/{mili.h,mili_enum.h,misc.h}  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
     fi
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         INSTALLNAMEPATH="$VISITDIR/mili/${MILI_VERSION}/$VISITARCH/lib"
 
-        if [[ ${MILI_VERSION} != 15.1 ]] ; then
+        if [[ ${MILI_VERSION} != 15.1 && ${MILI_VERSION} != 19.2 ]] ; then
             $C_COMPILER -dynamiclib -o libmili.$SO_EXT *.o \
                         -Wl,-headerpad_max_install_names \
                         -Wl,-install_name,$INSTALLNAMEPATH/libmili.${SO_EXT} \
@@ -14127,7 +13983,7 @@ function build_mili
         fi
         cp libmili.$SO_EXT "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     else
-        if [[ ${MILI_VERSION} != 13.1.1-patch && ${MILI_VERSION} != 15.1 ]] ; then
+        if [[ ${MILI_VERSION} != 13.1.1-patch && ${MILI_VERSION} != 15.1 && ${MILI_VERSION} != 19.2 ]] ; then
             ar -rc libmili.a *.o 
             if [[ $? != 0 ]] ; then
                 warn "Mili install failed.  Giving up"
@@ -14925,13 +14781,13 @@ function bv_nektarpp_initialize_vars
 
 function bv_nektarpp_info
 {
-    export NEKTAR_PLUS_PLUS_VERSION=${NEKTAR_PLUS_PLUS_VERSION:-"4.4.1"}
+    export NEKTAR_PLUS_PLUS_VERSION=${NEKTAR_PLUS_PLUS_VERSION:-"5.0.0"}
     export NEKTAR_PLUS_PLUS_FILE=${NEKTAR_PLUS_PLUS_FILE:-"nektar-${NEKTAR_PLUS_PLUS_VERSION}.tar.gz"}
-    export NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION=${NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION:-"4.4"}
-    export NEKTAR_PLUS_PLUS_URL=${NEKTAR_PLUS_PLUS_URL:-"https://www.nektar.info/wp-content/uploads/2017/03/"}
+    export NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION=${NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION:-"5.0"}
+    export NEKTAR_PLUS_PLUS_URL=${NEKTAR_PLUS_PLUS_URL:-"https://www.nektar.info/wp-content/uploads/2019/12/"}
     export NEKTAR_PLUS_PLUS_BUILD_DIR=${NEKTAR_PLUS_PLUS_BUILD_DIR:-"nektar++-${NEKTAR_PLUS_PLUS_VERSION}"}
-    export NEKTAR_PLUS_PLUS_MD5_CHECKSUM="9ebf2d418052c697851bc17746d4a153"
-    export NEKTAR_PLUS_PLUS_SHA256_CHECKSUM="47a42ef738313f01c342114df5c9e75cf04001a59034d604e6b834342601207d"
+    export NEKTAR_PLUS_PLUS_MD5_CHECKSUM="59d2c84368269016081bb19c640fb98e"
+    export NEKTAR_PLUS_PLUS_SHA256_CHECKSUM="6e759541ecba1e814856b89ae1e788c2d266f757f5149b13d7dd1d71ed1215b2"
 }
 
 function bv_nektarpp_print
@@ -14956,16 +14812,16 @@ function bv_nektarpp_host_profile
         echo "## Nektar++" >> $HOSTCONF
         echo "##" >> $HOSTCONF
 
-        echo "SETUP_APP_VERSION(NEKTAR++ $NEKTAR_PLUS_PLUS_VERSION)" >> $HOSTCONF 
+        echo "SETUP_APP_VERSION(NEKTAR++ $NEKTAR_PLUS_PLUS_VERSION)" >> $HOSTCONF
 
         if [[ "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "yes" ]]; then
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR $NEKTAR_PLUS_PLUS_INSTALL_DIR)" \
-                >> $HOSTCONF 
+                >> $HOSTCONF
         else
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR \${VISITHOME}/nektar++/\${NEKTAR++_VERSION}/\${VISITARCH})" \
-                >> $HOSTCONF 
+                >> $HOSTCONF
 
             ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
 
@@ -14979,7 +14835,7 @@ function bv_nektarpp_host_profile
 function bv_nektarpp_ensure
 {
     if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" && "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "no" ]] ; then
-        ensure_built_or_ready "nektar++" $NEKTAR_PLUS_PLUS_VERSION $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_FILE $NEKTAR_PLUS_PLUS_URL 
+        ensure_built_or_ready "nektar++" $NEKTAR_PLUS_PLUS_VERSION $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_FILE $NEKTAR_PLUS_PLUS_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_NEKTAR_PLUS_PLUS="no"
@@ -15027,43 +14883,43 @@ diff -rcN nektar++-4.4.0/library/LibUtilities/Communication/CommDataType_orig.h 
   namespace LibUtilities
   {
 ! typedef int CommDataType;
-! 
+!
 ! #ifndef MPI_INT
 !     #define MPI_INT            ((CommDataType)0x4c000405)
 ! #endif
-! 
+!
 ! #ifndef MPI_UNSIGNED
 !     #define MPI_UNSIGNED       ((CommDataType)0x4c000406)
 ! #endif
-! 
+!
 ! #ifndef MPI_LONG
 !     #define MPI_LONG           ((CommDataType)0x4c000807)
 ! #endif
-! 
+!
 ! #ifndef MPI_UNSIGNED_LONG
 !     #define MPI_UNSIGNED_LONG  ((CommDataType)0x4c000808)
 ! #endif
-! 
+!
 ! #ifndef MPI_LONG_LONG
 !     #define MPI_LONG_LONG      ((CommDataType)0x4c000809)
 ! #endif
-! 
+!
 ! #ifndef MPI_UNSIGNED_LONG_LONG
 !     #define MPI_UNSIGNED_LONG_LONG ((CommDataType)0x4c000819)
 ! #endif
-! 
+!
 ! #ifndef MPI_FLOAT
 !     #define MPI_FLOAT          ((CommDataType)0x4c00040a)
 ! #endif
-! 
+!
 ! #ifndef MPI_DOUBLE
 !     #define MPI_DOUBLE         ((CommDataType)0x4c00080b)
 ! #endif
-! 
+!
 ! #ifndef MPI_LONG_DOUBLE
 !     #define MPI_LONG_DOUBLE    ((CommDataType)0x4c00100c)
 ! #endif
-! 
+!
   }
   }
   #endif
@@ -15102,43 +14958,122 @@ diff -rcN nektar++-4.4.1/library/LibUtilities/Communication/CommDataType_orig.h 
   namespace LibUtilities
   {
 ! typedef int CommDataType;
-! 
+!
 ! #ifndef MPI_INT
 !     #define MPI_INT            ((CommDataType)0x4c000405)
 ! #endif
-! 
+!
 ! #ifndef MPI_UNSIGNED
 !     #define MPI_UNSIGNED       ((CommDataType)0x4c000406)
 ! #endif
-! 
+!
 ! #ifndef MPI_LONG
 !     #define MPI_LONG           ((CommDataType)0x4c000807)
 ! #endif
-! 
+!
 ! #ifndef MPI_UNSIGNED_LONG
 !     #define MPI_UNSIGNED_LONG  ((CommDataType)0x4c000808)
 ! #endif
-! 
+!
 ! #ifndef MPI_LONG_LONG
 !     #define MPI_LONG_LONG      ((CommDataType)0x4c000809)
 ! #endif
-! 
+!
 ! #ifndef MPI_UNSIGNED_LONG_LONG
 !     #define MPI_UNSIGNED_LONG_LONG ((CommDataType)0x4c000819)
 ! #endif
-! 
+!
 ! #ifndef MPI_FLOAT
 !     #define MPI_FLOAT          ((CommDataType)0x4c00040a)
 ! #endif
-! 
+!
 ! #ifndef MPI_DOUBLE
 !     #define MPI_DOUBLE         ((CommDataType)0x4c00080b)
 ! #endif
-! 
+!
 ! #ifndef MPI_LONG_DOUBLE
 !     #define MPI_LONG_DOUBLE    ((CommDataType)0x4c00100c)
 ! #endif
-! 
+!
+  }
+  }
+  #endif
+EOF
+}
+
+function apply_nektarpp_5_0_0_patch
+{
+    info "Patching Nektar++ 5.0.0"
+    patch -p0 << \EOF
+diff -rcN nektar++-5.0.0/library/LibUtilities/Communication/CommDataType_orig.h nektar++-5.0.0/library/LibUtilities/Communication/CommDataType.h
+*** nektar++-5.0.0/library/LibUtilities/Communication/CommDataType_orig.h	2020-02-10 17:12:37.037503006 -0700
+--- nektar++-5.0.0/library/LibUtilities/Communication/CommDataType.h	2020-02-10 17:14:00.179539468 -0700
+***************
+*** 67,85 ****
+  {
+  namespace LibUtilities
+  {
+! enum CommDataType
+! {
+!     MPI_CHAR,
+!     MPI_INT,
+!     MPI_UNSIGNED,
+!     MPI_LONG,
+!     MPI_UNSIGNED_LONG,
+!     MPI_LONG_LONG,
+!     MPI_UNSIGNED_LONG_LONG,
+!     MPI_FLOAT,
+!     MPI_DOUBLE,
+!     MPI_LONG_DOUBLE
+! };
+  }
+  }
+  #endif
+--- 67,113 ----
+  {
+  namespace LibUtilities
+  {
+! typedef int CommDataType;
+!
+! #ifndef MPI_CHAR
+!     #define MPI_CHAR            ((CommDataType)0x4c000101)
+! #endif
+!
+! #ifndef MPI_INT
+!     #define MPI_INT            ((CommDataType)0x4c000405)
+! #endif
+!
+! #ifndef MPI_UNSIGNED
+!     #define MPI_UNSIGNED       ((CommDataType)0x4c000406)
+! #endif
+!
+! #ifndef MPI_LONG
+!     #define MPI_LONG           ((CommDataType)0x4c000807)
+! #endif
+!
+! #ifndef MPI_UNSIGNED_LONG
+!     #define MPI_UNSIGNED_LONG  ((CommDataType)0x4c000808)
+! #endif
+!
+! #ifndef MPI_LONG_LONG
+!     #define MPI_LONG_LONG      ((CommDataType)0x4c000809)
+! #endif
+!
+! #ifndef MPI_UNSIGNED_LONG_LONG
+!     #define MPI_UNSIGNED_LONG_LONG ((CommDataType)0x4c000819)
+! #endif
+!
+! #ifndef MPI_FLOAT
+!     #define MPI_FLOAT          ((CommDataType)0x4c00040a)
+! #endif
+!
+! #ifndef MPI_DOUBLE
+!     #define MPI_DOUBLE         ((CommDataType)0x4c00080b)
+! #endif
+!
+! #ifndef MPI_LONG_DOUBLE
+!     #define MPI_LONG_DOUBLE    ((CommDataType)0x4c00100c)
+! #endif
   }
   }
   #endif
@@ -15149,12 +15084,12 @@ function apply_nektarpp_4_4_0_OSX_patch
 {
     info "Patching Nektar++ 4.4.0 for OS X"
     patch -p0 << \EOF
-diff -rcN nektar++-4.4.0/CMakeLists_orig.txt  nektar++-4.4.0/CMakeLists.txt 
+diff -rcN nektar++-4.4.0/CMakeLists_orig.txt  nektar++-4.4.0/CMakeLists.txt
 *** nektar++-4.4.0/CMakeLists_orig.txt	2017-03-06 11:04:22.000000000 -0700
 --- nektar++-4.4.0/CMakeLists.txt	2017-09-05 14:47:37.000000000 -0600
 ***************
 *** 326,333 ****
-  
+
   # Build active components
   IF (NEKTAR_BUILD_LIBRARY)
 !     SET(NEKTAR++_LIBRARIES SolverUtils LibUtilities StdRegions SpatialDomains LocalRegions
@@ -15163,7 +15098,7 @@ diff -rcN nektar++-4.4.0/CMakeLists_orig.txt  nektar++-4.4.0/CMakeLists.txt
       ADD_SUBDIRECTORY(library)
       INSTALL(EXPORT Nektar++Libraries DESTINATION ${LIB_DIR}/cmake COMPONENT dev)
 --- 326,333 ----
-  
+
   # Build active components
   IF (NEKTAR_BUILD_LIBRARY)
 !     SET(NEKTAR++_LIBRARIES LibUtilities StdRegions SpatialDomains LocalRegions
@@ -15178,12 +15113,12 @@ function apply_nektarpp_4_4_1_OSX_patch
 {
     info "Patching Nektar++ 4.4.1 for OS X"
     patch -p0 << \EOF
-diff -rcN nektar++-4.4.1/CMakeLists.orig.txt  nektar++-4.4.1/CMakeLists.txt 
+diff -rcN nektar++-4.4.1/CMakeLists.orig.txt  nektar++-4.4.1/CMakeLists.txt
 *** nektar++-4.4.1/CMakeLists.orig.txt	2018-11-06 08:03:29.000000000 -0700
 --- nektar++-4.4.1/CMakeLists.txt	2018-11-06 08:04:33.000000000 -0700
 ***************
 *** 326,333 ****
-  
+
   # Build active components
   IF (NEKTAR_BUILD_LIBRARY)
 !     SET(NEKTAR++_LIBRARIES SolverUtils LibUtilities StdRegions SpatialDomains LocalRegions
@@ -15192,7 +15127,7 @@ diff -rcN nektar++-4.4.1/CMakeLists.orig.txt  nektar++-4.4.1/CMakeLists.txt
       ADD_SUBDIRECTORY(library)
       INSTALL(EXPORT Nektar++Libraries DESTINATION ${LIB_DIR}/cmake COMPONENT dev)
 --- 326,333 ----
-  
+
   # Build active components
   IF (NEKTAR_BUILD_LIBRARY)
 !     SET(NEKTAR++_LIBRARIES LibUtilities StdRegions SpatialDomains LocalRegions
@@ -15216,7 +15151,7 @@ function apply_nektarpp_patch
             if [[ $? != 0 ]]; then
 		return 1
             fi
-#	fi	
+#	fi
 
     elif [[ "${NEKTAR_PLUS_PLUS_VERSION}" == 4.4.1 ]] ; then
         apply_nektarpp_4_4_1_patch
@@ -15229,7 +15164,12 @@ function apply_nektarpp_patch
             if [[ $? != 0 ]]; then
 		return 1
             fi
-#	fi	
+#	fi
+    elif [[ "${NEKTAR_PLUS_PLUS_VERSION}" == 5.0.0 ]] ; then
+        apply_nektarpp_5_0_0_patch
+        if [[ $? != 0 ]]; then
+           return 1
+        fi
     fi
 
     return 0
@@ -15283,9 +15223,9 @@ function build_nektarpp
                  "failing harmlessly on a second application."
         fi
     fi
- 
+
     #
-    cd $NEKTAR_PLUS_PLUS_BUILD_DIR || error "Can't cd to Nektar++ build dir." $NEKTAR_PLUS_PLUS_BUILD_DIR 
+    cd $NEKTAR_PLUS_PLUS_BUILD_DIR || error "Can't cd to Nektar++ build dir." $NEKTAR_PLUS_PLUS_BUILD_DIR
 
     #
     # Configure Nektar++
@@ -15424,7 +15364,7 @@ function build_nektarpp
 function bv_nektarpp_is_enabled
 {
     if [[ $DO_NEKTAR_PLUS_PLUS == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
@@ -15578,7 +15518,7 @@ function bv_netcdf_dry_run
     fi
 }
 
-function apply_netcdf_411_OSX10_13_patch
+function apply_netcdf_411_macOS_patch
 {
     patch -p0 << \EOF
 diff -c netcdf-4.1.1/ncgen3/orig/genlib.h netcdf-4.1.1/ncgen3/genlib.h 
@@ -15743,17 +15683,20 @@ function apply_netcdf_patch
 
     if [[ ${NETCDF_VERSION} == 4.1.1 ]] ; then
         if [[ "$OPSYS" == "Darwin" ]] ; then
-            if [[ `sw_vers -productVersion` == 10.9.[0-9]* ||
-                  `sw_vers -productVersion` == 10.10.[0-9]* ||
-                  `sw_vers -productVersion` == 10.11.[0-9]* ||
-                  `sw_vers -productVersion` == 10.12.[0-9]* ]] ; then
+            productVersion=`sw_vers -productVersion`
+            if [[ $productVersion == 10.9.[0-9]* ||
+                  $productVersion == 10.10.[0-9]* ||
+                  $productVersion == 10.11.[0-9]* ||
+                  $productVersion == 10.12.[0-9]* ]] ; then
                 info "Applying OS X 10.9 and up patch . . ."
                 apply_netcdf_411_darwin_patch
             fi
             
-            if [[ `sw_vers -productVersion` == 10.13.[0-9]* ]] ; then
-                info "Applying OS X 10.13 patch . . ."
-                apply_netcdf_411_OSX10_13_patch
+            if [[ $productVersion == 10.13.[0-9]* ||
+                  $productVersion == 10.14.[0-9]* || 
+                  $productVersion == 10.15.[0-9]* ]] ; then
+                info "Applying macOS 10.13 and up patch . . ."
+                apply_netcdf_411_macOS_patch
             fi
         fi
     fi
@@ -17037,14 +16980,18 @@ function build_p7zip
         warn "Unable to prepare P7ZIP build directory. Giving Up!"
         return 1
     fi
-    
+
     cd $P7ZIP_BUILD_DIR || error "Can't cd to P7ZIP build dir."
     if [[ "$OPSYS" == "Darwin" ]] ; then
-        DTDIGITS=$(echo ${MACOSX_DEPLOYMENT_TARGET} | tr -d'.')
-        if [[ $DTDIGITS -le 109 ]]; then #
-            cp makefile.macosx_gcc_32bits makefile.machine
-        else
+        if [[ -z "${MACOSX_DEPLOYMENT_TARGET}" ]]; then
             cp makefile.macosx_llvm_64bits makefile.machine
+        else
+            DTDIGITS=$(echo ${MACOSX_DEPLOYMENT_TARGET} | tr -d '.')
+            if [[ $DTDIGITS -le 109 ]]; then #
+                cp makefile.macosx_gcc_32bits makefile.machine
+            else
+                cp makefile.macosx_llvm_64bits makefile.machine
+            fi
         fi
     fi
 
@@ -17081,7 +17028,7 @@ function build_p7zip
 function bv_p7zip_is_enabled
 {
     if [[ $DO_P7ZIP == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
@@ -17592,16 +17539,52 @@ function bv_pyqt_build
         fi
     fi
 }
+# *************************************************************************** #
+# Function: check_if_py_module_installed                                      #
+#                                                                             #
+# Purpose: Checks if givne .                       #
+#                                                                             #
+# Programmer: Cyrus Harrison                                                  #
+# Date: Wed Apr 29 15:29:04 PDT 2020                                          #
+#                                                                             #
+# *************************************************************************** #
+function check_if_py_module_installed
+{
+    MOD_NAME=$1
+
+    PYHOME=${VISIT_PYTHON_DIR}
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        PYTHON_COMMAND="${VISIT_PYTHON_DIR}/bin/python"
+    else
+        PYTHON_COMMAND="${VISIT_PYTHON_DIR}/bin/python3"
+    fi
+
+    echo "import ${MOD_NAME}; print(${MOD_NAME})" | ${PYTHON_COMMAND}
+
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    return 0
+}
+
+
+
+
 function bv_python_initialize
 {
     export DO_PYTHON="yes"
+    export DO_PYTHON2="no"
     export FORCE_PYTHON="no"
     export USE_SYSTEM_PYTHON="no"
     export BUILD_MPI4PY="no"
+    export BUILD_SPHINX="yes"
     export VISIT_PYTHON_DIR=${VISIT_PYTHON_DIR:-""}
     add_extra_commandline_args "python" "system-python" 0 "Using system python"
     add_extra_commandline_args "python" "alt-python-dir" 1 "Using alternate python directory"
     add_extra_commandline_args "python" "mpi4py" 0 "Build mpi4py"
+    add_extra_commandline_args "python" "no-sphinx" 0 "Disable building sphinx"
+    add_extra_commandline_args "python" "use-python2" 0 "Use Python 2 instead of Python 3"
 }
 
 function bv_python_enable
@@ -17694,6 +17677,20 @@ function bv_python_mpi4py
     export BUILD_MPI4PY="yes"
 }
 
+function bv_python_use_python2
+{
+    info "configuring to build python 2 (NOT python 3)"
+    export DO_PYTHON2="yes"
+    # call bv_python_info to update all vars
+    bv_python_info
+}
+
+function bv_python_no_sphinx
+{
+    echo "Disabling building sphinx"
+    export BUILD_SPHINX="no"
+}
+
 function bv_python_alt_python_dir
 {
     echo "Using alternate python directory"
@@ -17718,59 +17715,267 @@ function bv_python_depends_on
 
 function bv_python_info
 {
-    export PYTHON_FILE_SUFFIX="tgz"
-    export PYTHON_VERSION=${PYTHON_VERSION:-"2.7.14"}
-    export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION:-"2.7"}
-    export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
-    export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
-    export PYTHON_MD5_CHECKSUM="cee2e4b33ad3750da77b2e85f2f8b724"
-    export PYTHON_SHA256_CHECKSUM="304c9b202ea6fbd0a4a8e0ad3733715fbd4749f2204a9173a58ec53c32ea73e8"
 
-    export PIL_URL=${PIL_URL:-"http://effbot.org/media/downloads"}
-    export PIL_FILE=${PIL_FILE:-"Imaging-1.1.7.tar.gz"}
-    export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.7"}
-    export PIL_MD5_CHECKSUM="fc14a54e1ce02a0225be8854bfba478e"
-    export PIL_SHA256_CHECKSUM="895bc7c2498c8e1f9b99938f1a40dc86b3f149741f105cf7c7bd2e0725405211"
+    # IMPORANT NOTE: 
+    # We don't use export VAR={VAR:-"value"} style of init here b/c
+    # it undermines us choosing between python 2 and python 3
+    
+    # if python 2
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export PYTHON_URL="https://www.python.org/ftp/python/2.7.14"
+        export PYTHON_FILE_SUFFIX="tgz"
+        export PYTHON_VERSION="2.7.14"
+        export PYTHON_COMPATIBILITY_VERSION="2.7"
+        export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
+        export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
+        export PYTHON_MD5_CHECKSUM="cee2e4b33ad3750da77b2e85f2f8b724"
+        export PYTHON_SHA256_CHECKSUM="304c9b202ea6fbd0a4a8e0ad3733715fbd4749f2204a9173a58ec53c32ea73e8"
+    else
+        export PYTHON_URL="https://www.python.org/ftp/python/3.7.7"
+        export PYTHON_FILE_SUFFIX="tgz"
+        export PYTHON_VERSION="3.7.7"
+        # TODO: May need logic for "m" suffix
+        export PYTHON_COMPATIBILITY_VERSION="3.7m"
+        export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
+        export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
+        export PYTHON_MD5_CHECKSUM="d348d978a5387512fbc7d7d52dd3a5ef"
+        export PYTHON_SHA256_CHECKSUM="8c8be91cd2648a1a0c251f04ea0bb4c2a5570feb9c45eaaa2241c785585b475a"
+    fi
 
-    export PYPARSING_FILE=${PYPARSING_FILE:-"pyparsing-1.5.2.tar.gz"}
-    export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
-    export PYPARSING_MD5_CHECKSUM="13aed3cb21a427f8aeb0fe7ca472ba42"
-    export PYPARSING_SHA256_CHECKSUM="1021fd2cfdf9c3b6ac0191b018c15d591501b77d977baded59d8ef76d375f21c"
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export PILLOW_URL="https://files.pythonhosted.org/packages/b3/d0/a20d8440b71adfbf133452d4f6e0fe80de2df7c2578c9b498fb812083383/"
+        export PILLOW_FILE="Pillow-6.2.2.tar.gz"
+        export PILLOW_BUILD_DIR="Pillow-6.2.2"
+        export PILLOW_MD5_CHECKSUM="46cad14f0044a5ac4b2d801271528893"
+        export PILLOW_SHA256_CHECKSUM="db9ff0c251ed066d367f53b64827cc9e18ccea001b986d08c265e53625dab950"
+    else
+        # python 3 Pillow, not PIL -- we need Pillow for Python 3 Support
+        export PILLOW_URL=${PIL_URL:-"https://files.pythonhosted.org/packages/ce/ef/e793f6ffe245c960c42492d0bb50f8d14e2ba223f1922a5c3c81569cec44/"}
+        export PILLOW_FILE="Pillow-7.1.2.tar.gz"
+        export PILLOW_BUILD_DIR="Pillow-7.1.2"
+        export PILLOW_MD5_CHECKSUM="f1f7592c51260e5080d3cd71781ea675"
+        export PILLOW_SHA256_CHECKSUM="a0b49960110bc6ff5fead46013bcb8825d101026d466f3a4de3476defe0fb0dd"
+    fi
 
-    export PYREQUESTS_FILE=${PYREQUESTS_FILE:-"requests-2.5.1.tar.gz"}
-    export PYREQUESTS_BUILD_DIR=${PYREQUESTS_BUILD_DIR:-"requests-2.5.1"}
-    export PYREQUESTS_MD5_CHECKSUM="a89558d5dd35a5cb667e9a6e5d4f06f1"
-    export PYREQUESTS_SHA256_CHECKSUM="1e5ea203d49273be90dcae2b98120481b2ecfc9f2ae512ce545baab96f57b58c"
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export PYPARSING_URL=""
+        export PYPARSING_FILE="pyparsing-1.5.2.tar.gz"
+        export PYPARSING_BUILD_DIR="pyparsing-1.5.2"
+        export PYPARSING_MD5_CHECKSUM="13aed3cb21a427f8aeb0fe7ca472ba42"
+        export PYPARSING_SHA256_CHECKSUM="1021fd2cfdf9c3b6ac0191b018c15d591501b77d977baded59d8ef76d375f21c"
+    else
+        export PYPARSING_URL=""
+        export PYPARSING_FILE="pyparsing-2.4.6.tar.gz"
+        export PYPARSING_BUILD_DIR="pyparsing-2.4.6"
+        export PYPARSING_MD5_CHECKSUM="29733ea8cbee0291aad121c69c6e51a1"
+        export PYPARSING_SHA256_CHECKSUM="4c830582a84fb022400b85429791bc551f1f4871c33f23e44f353119e92f969f"
+    fi
 
-    export SEEDME_URL=${SEEDME_URL:-"https://seedme.org/sites/seedme.org/files/downloads/clients/"}
-    export SEEDME_FILE=${SEEDME_FILE:-"seedme-python-client-v1.2.4.zip"}
-    export SEEDME_BUILD_DIR=${SEEDME_BUILD_DIR:-"seedme-python-client-v1.2.4"}
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export PYREQUESTS_URL=""
+        export PYREQUESTS_FILE="requests-2.5.1.tar.gz"
+        export PYREQUESTS_BUILD_DIR="requests-2.5.1"
+        export PYREQUESTS_MD5_CHECKSUM="a89558d5dd35a5cb667e9a6e5d4f06f1"
+        export PYREQUESTS_SHA256_CHECKSUM="1e5ea203d49273be90dcae2b98120481b2ecfc9f2ae512ce545baab96f57b58c"
+    else
+        export PYREQUESTS_URL=""
+        export PYREQUESTS_FILE="requests-2.22.0.tar.gz"
+        export PYREQUESTS_BUILD_DIR="requests-2.22.0"
+        export PYREQUESTS_MD5_CHECKSUM="ee28bee2de76e9198fc41e48f3a7dd47"
+        export PYREQUESTS_SHA256_CHECKSUM="11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4"
+    fi
+
+    export SEEDME_URL="https://seedme.org/sites/seedme.org/files/downloads/clients/"
+    export SEEDME_FILE="seedme-python-client-v1.2.4.zip"
+    export SEEDME_BUILD_DIR="seedme-python-client-v1.2.4"
     export SEEDME_MD5_CHECKSUM="84960d455073fd2f51c31b7fcbc64d58"
     export SEEDME_SHA256_CHECKSUM="71fb233d3b20e95ecd14db1d9cb5deefe775c6ac8bb0ab7604240df7f0e5c5f3"
 
-    export SETUPTOOLS_URL=${SETUPTOOLS_URL:-"https://pypi.python.org/packages/f7/94/eee867605a99ac113c4108534ad7c292ed48bf1d06dfe7b63daa51e49987/"}
-    export SETUPTOOLS_FILE=${SETUPTOOLS_FILE:-"setuptools-28.0.0.tar.gz"}
-    export SETUPTOOLS_BUILD_DIR=${SETUPTOOLS_BUILD_DIR:-"setuptools-28.0.0"}
-    export SETUPTOOLS_MD5_CHECKSUM="9b23df90e1510c7353a5cf07873dcd22"
-    export SETUPTOOLS_SHA256_CHECKSUM="e1a2850bb7ad820e4dd3643a6c597bea97a35de2909e9bf0afa3f337836b5ea3"
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export SETUPTOOLS_URL="https://pypi.python.org/packages/f7/94/eee867605a99ac113c4108534ad7c292ed48bf1d06dfe7b63daa51e49987/"
+        export SETUPTOOLS_FILE="setuptools-28.0.0.tar.gz"
+        export SETUPTOOLS_BUILD_DIR="setuptools-28.0.0"
+        export SETUPTOOLS_MD5_CHECKSUM="9b23df90e1510c7353a5cf07873dcd22"
+        export SETUPTOOLS_SHA256_CHECKSUM="e1a2850bb7ad820e4dd3643a6c597bea97a35de2909e9bf0afa3f337836b5ea3"
+    else
+        export SETUPTOOLS_URL=""
+        export SETUPTOOLS_FILE="setuptools-44.0.0.zip"
+        export SETUPTOOLS_BUILD_DIR="setuptools-44.0.0"
+        export SETUPTOOLS_MD5_CHECKSUM="32b6cdce670ce462086d246bea181e9d"
+        export SETUPTOOLS_SHA256_CHECKSUM="e5baf7723e5bb8382fc146e33032b241efc63314211a3a120aaa55d62d2bb008"
+    fi
 
-    export CYTHON_URL=${CYTHON_URL:-"https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/"}
-    export CYTHON_FILE=${CYTHON_FILE:-"Cython-0.25.2.tar.gz"}
-    export CYTHON_BUILD_DIR=${CYTHON_BUILD_DIR:-"Cython-0.25.2"}
-    export CYTHON_MD5_CHECKSUM="642c81285e1bb833b14ab3f439964086"
-    export CYTHON_SHA256_CHECKSUM="f141d1f9c27a07b5a93f7dc5339472067e2d7140d1c5a9e20112a5665ca60306"
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export CYTHON_URL="https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/"
+        export CYTHON_FILE="Cython-0.25.2.tar.gz"
+        export CYTHON_BUILD_DIR="Cython-0.25.2"
+        export CYTHON_MD5_CHECKSUM="642c81285e1bb833b14ab3f439964086"
+        export CYTHON_SHA256_CHECKSUM="f141d1f9c27a07b5a93f7dc5339472067e2d7140d1c5a9e20112a5665ca60306"
+    else
+        export CYTHON_URL="https://files.pythonhosted.org/packages/99/36/a3dc962cc6d08749aa4b9d85af08b6e354d09c5468a3e0edc610f44c856b/"
+        export CYTHON_FILE="Cython-0.29.17.tar.gz"
+        export CYTHON_BUILD_DIR="Cython-0.29.17"
+        export CYTHON_MD5_CHECKSUM="0936311ccd09f1164ab2f46ca5cd8c3b"
+        export CYTHON_SHA256_CHECKSUM="6361588cb1d82875bcfbad83d7dd66c442099759f895cf547995f00601f9caf2"
+    fi
 
-    export NUMPY_URL=${NUMPY_URL:-"https://pypi.python.org/packages/a3/99/74aa456fc740a7e8f733af4e8302d8e61e123367ec660cd89c53a3cd4d70/"}
-    export NUMPY_FILE=${NUMPY_FILE:-"numpy-1.14.1.zip"}
-    export NUMPY_BUILD_DIR=${NUMPY_BUILD_DIR:-"numpy-1.14.1"}
-    export NUMPY_MD5_CHECKSUM="b8324ef90ac9064cd0eac46b8b388674"
-    export NUMPY_SHA256_CHECKSUM="fa0944650d5d3fb95869eaacd8eedbd2d83610c85e271bd9d3495ffa9bc4dc9c"
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        export NUMPY_URL="https://pypi.python.org/packages/a3/99/74aa456fc740a7e8f733af4e8302d8e61e123367ec660cd89c53a3cd4d70/"
+        export NUMPY_FILE="numpy-1.14.1.zip"
+        export NUMPY_BUILD_DIR="numpy-1.14.1"
+        export NUMPY_MD5_CHECKSUM="b8324ef90ac9064cd0eac46b8b388674"
+        export NUMPY_SHA256_CHECKSUM="fa0944650d5d3fb95869eaacd8eedbd2d83610c85e271bd9d3495ffa9bc4dc9c"
+    else
+        export NUMPY_URL="https://github.com/numpy/numpy/releases/download/v1.16.6/"
+        export NUMPY_FILE="numpy-1.16.6.zip"
+        export NUMPY_BUILD_DIR="numpy-1.16.6"
+        export NUMPY_MD5_CHECKSUM="3dc21c84a295fe77eadf8f872685a7de"
+        export NUMPY_SHA256_CHECKSUM="e5cf3fdf13401885e8eea8170624ec96225e2174eb0c611c6f26dd33b489e3ff"
+    fi
 
-    export MPI4PY_URL=${MPI4PY_URL:-"https://pypi.python.org/pypi/mpi4py"}
-    export MPI4PY_FILE=${MPI4PY_FILE:-"mpi4py-2.0.0.tar.gz"}
-    export MPI4PY_BUILD_DIR=${MPI4PY_BUILD_DIR:-"mpi4py-2.0.0"}
+    export MPI4PY_URL="https://pypi.python.org/pypi/mpi4py"
+    export MPI4PY_FILE="mpi4py-2.0.0.tar.gz"
+    export MPI4PY_BUILD_DIR="mpi4py-2.0.0"
     export MPI4PY_MD5_CHECKSUM="4f7d8126d7367c239fd67615680990e3"
     export MPI4PY_SHA256_CHECKSUM="6543a05851a7aa1e6d165e673d422ba24e45c41e4221f0993fe1e5924a00cb81"
+
+    export PACKAGING_URL=""
+    export PACKAGING_FILE="packaging-19.2.tar.gz"
+    export PACKAGING_BUILD_DIR="packaging-19.2"
+    export PACKAGING_MD5_CHECKSUM="867ce70984dc7b89bbbc3cac2a72b171"
+    export PACKAGING_SHA256_CHECKSUM="28b924174df7a2fa32c1953825ff29c61e2f5e082343165438812f00d3a7fc47"
+
+    export IMAGESIZE_URL=""
+    export IMAGESIZE_FILE="imagesize-1.1.0.tar.gz"
+    export IMAGESIZE_BUILD_DIR="imagesize-1.1.0"
+    export IMAGESIZE_MD5_CHECKSUM="2f89749b05e07c79c46330dbc62f1e02"
+    export IMAGESIZE_SHA256_CHECKSUM="f3832918bc3c66617f92e35f5d70729187676313caa60c187eb0f28b8fe5e3b5"
+
+    export ALABASTER_URL=""
+    export ALABASTER_FILE="alabaster-0.7.12.tar.gz"
+    export ALABASTER_BUILD_DIR="alabaster-0.7.12"
+    export ALABASTER_MD5_CHECKSUM="3591827fde96d1dd23970fb05410ed04"
+    export ALABASTER_SHA256_CHECKSUM="a661d72d58e6ea8a57f7a86e37d86716863ee5e92788398526d58b26a4e4dc02"
+
+    export BABEL_URL=""
+    export BABEL_FILE="Babel-2.7.0.tar.gz"
+    export BABEL_BUILD_DIR="Babel-2.7.0"
+    export BABEL_MD5_CHECKSUM="83c158b7dae9135750a7cf204e6e2eea"
+    export BABEL_SHA256_CHECKSUM="e86135ae101e31e2c8ec20a4e0c5220f4eed12487d5cf3f78be7e98d3a57fc28"
+
+    export SNOWBALLSTEMMER_URL=""
+    export SNOWBALLSTEMMER_FILE="snowballstemmer-2.0.0.tar.gz"
+    export SNOWBALLSTEMMER_BUILD_DIR="snowballstemmer-2.0.0"
+    export SNOWBALLSTEMMER_MD5_CHECKSUM="c05ec4a897be3c953c8b8b844c4241d4"
+    export SNOWBALLSTEMMER_SHA256_CHECKSUM="df3bac3df4c2c01363f3dd2cfa78cce2840a79b9f1c2d2de9ce8d31683992f52"
+
+    export DOCUTILS_URL=""
+    export DOCUTILS_FILE="docutils-0.15.2.tar.gz"
+    export DOCUTILS_BUILD_DIR="docutils-0.15.2"
+    export DOCUTILS_MD5_CHECKSUM="e26a308d8000b0bed7416a633217c676"
+    export DOCUTILS_SHA256_CHECKSUM="a2aeea129088da402665e92e0b25b04b073c04b2dce4ab65caaa38b7ce2e1a99"
+
+    export PYGMENTS_URL=""
+    export PYGMENTS_FILE="Pygments-2.5.2.tar.gz"
+    export PYGMENTS_BUILD_DIR="Pygments-2.5.2"
+    export PYGMENTS_MD5_CHECKSUM="465a35559863089d959d783a69f79b9f"
+    export PYGMENTS_SHA256_CHECKSUM="98c8aa5a9f778fcd1026a17361ddaf7330d1b7c62ae97c3bb0ae73e0b9b6b0fe"
+
+    export JINJA2_URL=""
+    export JINJA2_FILE="Jinja2-2.10.3.tar.gz"
+    export JINJA2_BUILD_DIR="Jinja2-2.10.3"
+    export JINJA2_MD5_CHECKSUM="7883559bc5cc3e2781d94b4be61cfdcd"
+    export JINJA2_SHA256_CHECKSUM="9fe95f19286cfefaa917656583d020be14e7859c6b0252588391e47db34527de"
+
+    export SPHINXCONTRIB_QTHELP_URL=""
+    export SPHINXCONTRIB_QTHELP_FILE="sphinxcontrib-qthelp-1.0.2.tar.gz"
+    export SPHINXCONTRIB_QTHELP_BUILD_DIR="sphinxcontrib-qthelp-1.0.2"
+    export SPHINXCONTRIB_QTHELP_MD5_CHECKSUM="3532d4643d0b1cc3806e43f59495c030"
+    export SPHINXCONTRIB_QTHELP_SHA256_CHECKSUM="79465ce11ae5694ff165becda529a600c754f4bc459778778c7017374d4d406f"
+
+    export SPHINXCONTRIB_SERIALIZINGHTML_URL=""
+    export SPHINXCONTRIB_SERIALIZINGHTML_FILE="sphinxcontrib-serializinghtml-1.1.3.tar.gz"
+    export SPHINXCONTRIB_SERIALIZINGHTML_BUILD_DIR="sphinxcontrib-serializinghtml-1.1.3"
+    export SPHINXCONTRIB_SERIALIZINGHTML_MD5_CHECKSUM="6a4318d6d11c345fbc669e6a86f32766"
+    export SPHINXCONTRIB_SERIALIZINGHTML_SHA256_CHECKSUM="c0efb33f8052c04fd7a26c0a07f1678e8512e0faec19f4aa8f2473a8b81d5227"
+
+    export SPHINXCONTRIB_HTMLHELP_URL=""
+    export SPHINXCONTRIB_HTMLHELP_FILE="sphinxcontrib-htmlhelp-1.0.2.tar.gz"
+    export SPHINXCONTRIB_HTMLHELP_BUILD_DIR="sphinxcontrib-htmlhelp-1.0.2"
+    export SPHINXCONTRIB_HTMLHELP_MD5_CHECKSUM="f72e4b26ec0f6387d855c74819500b66"
+    export SPHINXCONTRIB_HTMLHELP_SHA256_CHECKSUM="4670f99f8951bd78cd4ad2ab962f798f5618b17675c35c5ac3b2132a14ea8422"
+
+    export SPHINXCONTRIB_JSMATH_URL=""
+    export SPHINXCONTRIB_JSMATH_FILE="sphinxcontrib-jsmath-1.0.1.tar.gz"
+    export SPHINXCONTRIB_JSMATH_BUILD_DIR="sphinxcontrib-jsmath-1.0.1"
+    export SPHINXCONTRIB_JSMATH_MD5_CHECKSUM="e45179f0a3608b6766862e0f34c23b62"
+    export SPHINXCONTRIB_JSMATH_SHA256_CHECKSUM="a9925e4a4587247ed2191a22df5f6970656cb8ca2bd6284309578f2153e0c4b8"
+
+    export SPHINXCONTRIB_DEVHELP_URL=""
+    export SPHINXCONTRIB_DEVHELP_FILE="sphinxcontrib-devhelp-1.0.1.tar.gz"
+    export SPHINXCONTRIB_DEVHELP_BUILD_DIR="sphinxcontrib-devhelp-1.0.1"
+    export SPHINXCONTRIB_DEVHELP_MD5_CHECKSUM="ecb33259e2e8300493d210140af7d957"
+    export SPHINXCONTRIB_DEVHELP_SHA256_CHECKSUM="6c64b077937330a9128a4da74586e8c2130262f014689b4b89e2d08ee7294a34"
+
+    export SPHINXCONTRIB_APPLEHELP_URL=""
+    export SPHINXCONTRIB_APPLEHELP_FILE="sphinxcontrib-applehelp-1.0.1.tar.gz"
+    export SPHINXCONTRIB_APPLEHELP_BUILD_DIR="sphinxcontrib-applehelp-1.0.1"
+    export SPHINXCONTRIB_APPLEHELP_MD5_CHECKSUM="c3424507cc28291f8005081b6a96afb1"
+    export SPHINXCONTRIB_APPLEHELP_SHA256_CHECKSUM="edaa0ab2b2bc74403149cb0209d6775c96de797dfd5b5e2a71981309efab3897"
+
+    export SIX_URL=""
+    export SIX_FILE="six-1.13.0.tar.gz"
+    export SIX_BUILD_DIR="six-1.13.0"
+    export SIX_MD5_CHECKSUM="e92c23c882c7d5564ce5773fe31b2771"
+    export SIX_SHA256_CHECKSUM="30f610279e8b2578cab6db20741130331735c781b56053c59c4076da27f06b66"
+
+    export URLLIB3_URL=""
+    export URLLIB3_FILE="urllib3-1.25.7.tar.gz"
+    export URLLIB3_BUILD_DIR="urllib3-1.25.7"
+    export URLLIB3_MD5_CHECKSUM="85e1e3925f8c1095172bff343f3312ed"
+    export URLLIB3_SHA256_CHECKSUM="f3c5fd51747d450d4dcf6f923c81f78f811aab8205fda64b0aba34a4e48b0745"
+
+    export IDNA_URL=""
+    export IDNA_FILE="idna-2.8.tar.gz"
+    export IDNA_BUILD_DIR="idna-2.8"
+    export IDNA_MD5_CHECKSUM="2e9ae0b4a0b26d1747c6127cdb060bc1"
+    export IDNA_SHA256_CHECKSUM="c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407"
+
+    export CHARDET_URL=""
+    export CHARDET_FILE="chardet-3.0.4.tar.gz"
+    export CHARDET_BUILD_DIR="chardet-3.0.4"
+    export CHARDET_MD5_CHECKSUM="7dd1ba7f9c77e32351b0a0cfacf4055c"
+    export CHARDET_SHA256_CHECKSUM="84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae"
+
+    export CERTIFI_URL=""
+    export CERTIFI_FILE="certifi-2019.11.28.tar.gz"
+    export CERTIFI_BUILD_DIR="certifi-2019.11.28"
+    export CERTIFI_MD5_CHECKSUM="4d5229c4d9f0a4a79106f9e2c2cfd381"
+    export CERTIFI_SHA256_CHECKSUM="25b64c7da4cd7479594d035c08c2d809eb4aab3a26e5a990ea98cc450c320f1f"
+
+    export PYTZ_URL=""
+    export PYTZ_FILE="pytz-2019.3.tar.gz"
+    export PYTZ_BUILD_DIR="pytz-2019.3"
+    export PYTZ_MD5_CHECKSUM="c3d84a465fc56a4edd52cca8873ac0df"
+    export PYTZ_SHA256_CHECKSUM="b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be"
+
+    export MARKUPSAFE_URL=""
+    export MARKUPSAFE_FILE="MarkupSafe-1.1.1.tar.gz"
+    export MARKUPSAFE_BUILD_DIR="MarkupSafe-1.1.1"
+    export MARKUPSAFE_MD5_CHECKSUM="43fd756864fe42063068e092e220c57b"
+    export MARKUPSAFE_SHA256_CHECKSUM="29872e92839765e546828bb7754a68c418d927cd064fd4708fab9fe9c8bb116b"
+
+    export SPHINX_URL="https://files.pythonhosted.org/packages/f6/3a/c51fc285c0c5c30bcd9426bf096187840683d9383df716a6b6a4ca0a8bde"
+    export SPHINX_FILE="Sphinx-2.2.1.tar.gz"
+    export SPHINX_BUILD_DIR="Sphinx-2.2.1"
+    export SPHINX_MD5_CHECKSUM="60ea892a09b463e5ecb6ea26d2470f36"
+    export SPHINX_SHA256_CHECKSUM="31088dfb95359384b1005619827eaee3056243798c62724fd3fa4b84ee4d71bd"
+
+    export SPHINX_RTD_URL="https://files.pythonhosted.org/packages/ed/73/7e550d6e4cf9f78a0e0b60b9d93dba295389c3d271c034bf2ea3463a79f9"
+    export SPHINX_RTD_FILE="sphinx_rtd_theme-0.4.3.tar.gz"
+    export SPHINX_RTD_BUILD_DIR="sphinx_rtd_theme-0.4.3"
+    export SPHINX_RTD_MD5_CHECKSUM="6c50f30bc39046f497d336039a0c13fa"
+    export SPHINX_RTD_SHA256_CHECKSUM="728607e34d60456d736cc7991fd236afb828b21b82f956c5ea75f94c8414040a"
 }
 
 function bv_python_print
@@ -17783,10 +17988,12 @@ function bv_python_print
 
 function bv_python_print_usage
 {
-    printf "%-20s %s\n" "--python" "Build Python" 
+    printf "%-20s %s\n" "--python" "Build Python"
     printf "%-20s %s [%s]\n" "--system-python" "Use the system installed Python"
     printf "%-20s %s [%s]\n" "--alt-python-dir" "Use Python from an alternative directory"
     printf "%-20s %s [%s]\n" "--mpi4py" "Build mpi4py with Python"
+    printf "%-20s %s [%s]\n" "--no-sphinx" "Disable building sphinx"
+    printf "%-20s %s [%s]\n" "--use-python2" "Build Python 2 instead of Python 3"
 }
 
 function bv_python_host_profile
@@ -17808,7 +18015,6 @@ function bv_python_host_profile
         else
             echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR \${VISITHOME}/python/$PYTHON_VERSION/\${VISITARCH})" \
                  >> $HOSTCONF
-            #           echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
         fi
     fi
 }
@@ -17816,13 +18022,19 @@ function bv_python_host_profile
 function bv_python_initialize_vars
 {
     if [[ "$USE_SYSTEM_PYTHON" == "no" ]]; then
-        
         #assign any default values that other libraries should be aware of
         #when they build..
         #this is for when python is being built and system python was not selected..
         export VISIT_PYTHON_DIR=${VISIT_PYTHON_DIR:-"$VISITDIR/python/${PYTHON_VERSION}/${VISITARCH}"}
-        export PYTHON_COMMAND="${VISIT_PYTHON_DIR}/bin/python"
-        export PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/bin/python"
+
+        export PYHOME=${VISIT_PYTHON_DIR}
+        if [[ "$DO_PYTHON2" == "yes" ]] ; then
+            export PYTHON_COMMAND="${VISIT_PYTHON_DIR}/bin/python"
+        else
+            export PYTHON_COMMAND="${VISIT_PYTHON_DIR}/bin/python3"
+        fi
+        # CYRUS NOTE: PYTHON_LIBRARY_DIR looks wrong?
+        # export PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/bin/python"
         export PYTHON_INCLUDE_DIR="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}"
         export PYTHON_LIBRARY="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"
     fi
@@ -17861,11 +18073,11 @@ diff -c Modules.orig/posixmodule.c Modules/posixmodule.c
 --- 360,369 ----
   #endif
   #endif
-  
-+ /* On OS X 10.4, we need to use a function to get access to environ; 
+
++ /* On OS X 10.4, we need to use a function to get access to environ;
 +  * otherwise we get an unresolved "_environ" when linking shared libs */
 + #define WITH_NEXT_FRAMEWORK
-+ 
++
   /* Return a dictionary corresponding to the POSIX environment table */
   #ifdef WITH_NEXT_FRAMEWORK
   /* On Darwin/MacOSX a shared library or framework has no access to
@@ -17947,7 +18159,7 @@ function build_python
         PYTHON_SHARED="--enable-shared"
         #
         # python's --enable-shared configure flag doesn't link
-        # the exes it builds correclty when installed to a non standard
+        # the exes it builds correctly when installed to a non standard
         # prefix. To resolve this we need to add a rpath linker flags.
         #
         mkdir -p ${PYTHON_PREFIX_DIR}/lib/
@@ -17965,7 +18177,7 @@ function build_python
         OPENSSL_INCLUDE="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/include"
         OPENSSL_LIB="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/lib"
         PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${OPENSSL_LIB}"
-        PYTHON_CPPFLAGS="${PTYHON_CPPFLAGS} -I${OPENSSL_INCLUDE}"
+        PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${OPENSSL_INCLUDE}"
     fi
 
     PY_ZLIB_INCLUDE="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/include"
@@ -17973,21 +18185,14 @@ function build_python
     PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${PY_ZLIB_LIB}"
     PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
 
-    if [[ "$OPSYS" == "AIX" ]]; then
-        info "Configuring Python (AIX): ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
-             "--prefix=\"$PYTHON_PREFIX_DIR\" --disable-ipv6"
-        ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
-                    --prefix="$PYTHON_PREFIX_DIR" --disable-ipv6
-    else
-        info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
-             "LDFLAGS=\"$PYTHON_LDFLAGS\" CPPFLAGS=\"$PYTHON_CPPFLAGS\""\
-             "${PYTHON_SHARED} --prefix=\"$PYTHON_PREFIX_DIR\" --disable-ipv6"
-        ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
-                    LDFLAGS="$PYTHON_LDFLAGS" \
-                    CPPFLAGS="$PYTHON_CPPFLAGS" \
-                    ${PYTHON_SHARED} \
-                    --prefix="$PYTHON_PREFIX_DIR" --disable-ipv6
-    fi
+    info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
+         "LDFLAGS=\"$PYTHON_LDFLAGS\" CPPFLAGS=\"$PYTHON_CPPFLAGS\""\
+         "${PYTHON_SHARED} --prefix=\"$PYTHON_PREFIX_DIR\" --disable-ipv6"
+    ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
+                LDFLAGS="$PYTHON_LDFLAGS" \
+                CPPFLAGS="$PYTHON_CPPFLAGS" \
+                ${PYTHON_SHARED} \
+                --prefix="$PYTHON_PREFIX_DIR" --disable-ipv6
 
     if [[ $? != 0 ]] ; then
         warn "Python configure failed.  Giving up"
@@ -18010,28 +18215,6 @@ function build_python
         return 1
     fi
 
-
-    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "AIX" ]]; then
-        # configure flag --enable-shared doesn't work on llnl aix5 systems
-        # we need to create the shared lib manually and place it in the
-        # proper loc
-        mv $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.$SO_EXT \
-           $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.static.a
-
-        $C_COMPILER -qmkshrobj -lm \
-                    $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.static.a \
-                    -o $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.$SO_EXT
-
-        if [[ $? != 0 ]] ; then
-            warn "Python dynamic library build failed.  Giving up"
-            return 1
-        fi
-
-        # we can safely remove this version of the static lib b/c it also exists under python2.6/config/
-        rm -f $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.static.a
-    fi
-
-
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/python"
         chgrp -R ${GROUP} "$VISITDIR/python"
@@ -18042,114 +18225,68 @@ function build_python
     return 0
 }
 
-
 # *************************************************************************** #
-# The PIL module's detection logic doesn't include /usr/lib64/                #
-# On some systems zlib & libjpeg only exist in /usr/lib64, so we patch the    #
-# module build script to add /usr/lib64.
+#                            Function 7.1, build_pillow                       #
 # *************************************************************************** #
-function apply_python_pil_patch
+function build_pillow
 {
-    info "Patching PIL: Add /usr/lib64/ to lib search path."
-    patch -f -p0 << \EOF
-diff -c Imaging-1.1.7.orig/setup.py  Imaging-1.1.7/setup.py
-*** Imaging-1.1.7.orig/setup.py Wed Jan  6 11:39:52 2016
---- Imaging-1.1.7/setup.py      Wed Jan  6 11:41:13 2016
-***************
-*** 211,216 ****
---- 211,220 ----
-          add_directory(library_dirs, "/usr/local/lib")
-          add_directory(include_dirs, "/usr/local/include")
-
-+         add_directory(library_dirs, "/usr/lib/x86_64-linux-gnu")
-+         add_directory(library_dirs, "/usr/lib64")
-+         add_directory(include_dirs, "/usr/include")
-+
-          add_directory(library_dirs, "/usr/lib")
-          add_directory(include_dirs, "/usr/include")
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Python PIL patch adding /usr/lib64/ to lib search path failed."
-        return 1
-    fi
-
-    return 0
-}
-
-# *************************************************************************** #
-#                            Function 7.1, build_pil                          #
-# *************************************************************************** #
-function build_pil
-{
-    if ! test -f ${PIL_FILE} ; then
-        download_file ${PIL_FILE} \
-                      "${PIL_URL}"
+    if ! test -f ${PILLOW_FILE} ; then
+        download_file ${PILLOW_FILE} "${PILLOW_URL}"
         if [[ $? != 0 ]] ; then
-            warn "Could not download ${PIL_FILE}"
+            warn "Could not download ${PILLOW_FILE}"
             return 1
         fi
     fi
-    if ! test -d ${PIL_BUILD_DIR} ; then
-        info "Extracting PIL ..."
-        uncompress_untar ${PIL_FILE}
+    if ! test -d ${PILLOW_BUILD_DIR} ; then
+        info "Extracting Pillow ..."
+        uncompress_untar ${PILLOW_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${PIL_FILE}"
+            warn "Could not extract ${PILLOW_FILE}"
             return 1
         fi
     fi
 
-    # apply PIL patches
-    apply_python_pil_patch
-    if [[ $? != 0 ]] ; then
-        if [[ $untarred_python == 1 ]] ; then
-            warn "Giving up on Pyhton Pil build because the patch failed."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
-        fi
-    fi
-
-    # NOTE:
-    # we need to compose both XFLAGS and X_OPT_FLAGS to get the correct
-    # settings from build_visit command line opts
-    # see:https://visitbugs.ornl.gov/issues/1443
-    #
+    # Pillow depends on Zlib
+    PY_ZLIB_INCLUDE="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/include"
+    PY_ZLIB_LIB="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
 
     PYEXT_CFLAGS="${CFLAGS} ${C_OPT_FLAGS}"
-    PYEXT_CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}"
+    PYEXT_CFLAGS="${CFLAGS} ${C_OPT_FLAGS} -I${PY_ZLIB_INCLUDE}"
+    PYEXT_CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS} -I${PY_ZLIB_INCLUDE}"
+    PYEXT_LDFLAGS="-L${PY_ZLIB_LIB}"
 
-    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
-    pushd $PIL_BUILD_DIR > /dev/null
-    info "Building PIL ...\n" \
-         "CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS}" \
-         "  ${PYHOME}/bin/python ./setup.py build "
-    CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} \
-      ${PYHOME}/bin/python ./setup.py build 
-    if test $? -ne 0 ; then
-        popd > /dev/null
-        warn "Could not build PIL"
-        return 1
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        PYEXT_CFLAGS="${PYEXT_CFLAGS} -I/opt/X11/include"
+        PYEXT_CXXFLAGS="${PYEXT_CXXFLAGS} -I/opt/X11/include"
     fi
-    info "Installing PIL ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+
+    pushd $PILLOW_BUILD_DIR > /dev/null
+
+    info "Building Pillow ...\n" \
+     "CC=${C_COMPILER} CXX=${CXX_COMPILER} " \
+     "  CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} LDFLAGS=${PYEXT_LDFLAGS} " \
+     "  ${PYTHON_COMMAND} ./setup.py build_ext --disable-jpeg install --prefix=${PYHOME}"
+
+    CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS="${PYEXT_CFLAGS}" \
+     CXXFLAGS="${PYEXT_CXXFLAGS}" \
+     LDFLAGS="${PYEXT_LDFLAGS}" \
+     ${PYTHON_COMMAND} ./setup.py build_ext --disable-jpeg install --prefix="${PYHOME}"
+
     if test $? -ne 0 ; then
         popd > /dev/null
-        warn "Could not install PIL"
+        warn "Could not build and install Pillow"
         return 1
     fi
     popd > /dev/null
 
-    # PIL installs into site-packages dir of Visit's Python.
+    # Pillow installs into site-packages dir of Visit's Python.
     # Simply re-execute the python perms command.
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/python"
         chgrp -R ${GROUP} "$VISITDIR/python"
     fi
 
-    info "Done with PIL."
+    info "Done with Pillow."
     return 0
 }
 
@@ -18174,10 +18311,9 @@ function build_pyparsing
         fi
     fi
 
-    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $PYPARSING_BUILD_DIR > /dev/null
     info "Installing pyparsing ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install pyparsing"
@@ -18201,6 +18337,118 @@ function build_pyparsing
 # *************************************************************************** #
 function build_requests
 {
+
+    if [[ "$DO_PYTHON2" == "no" ]] ; then
+        # python 3: Requests depends on certifi, urllib3, idna, chardet
+        if ! test -f ${CERTIFI_FILE} ; then
+            download_file ${CERTIFI_FILE} "${CERTIFI_URL}"
+            if [[ $? != 0 ]] ; then
+                warn "Could not download ${CERTIFI_FILE}"
+                return 1
+            fi
+        fi
+
+        if ! test -f ${URLLIB3_FILE} ; then
+            download_file ${URLLIB3_FILE} "${URLLIB3_URL}"
+            if [[ $? != 0 ]] ; then
+                warn "Could not download ${URLLIB3_FILE}"
+                return 1
+            fi
+        fi
+        
+        if ! test -f ${IDNA_FILE} ; then
+            download_file ${IDNA_FILE} "${IDNA_URL}"
+            if [[ $? != 0 ]] ; then
+                warn "Could not download ${IDNA_FILE}"
+                return 1
+            fi
+        fi
+
+        if ! test -f ${CHARDET_FILE} ; then
+            download_file ${CHARDET_FILE} "${CHARDET_URL}"
+            if [[ $? != 0 ]] ; then
+                warn "Could not download ${CHARDET_FILE}"
+                return 1
+            fi
+        fi
+
+        if ! test -d ${CERTIFI_BUILD_DIR} ; then
+            info "Extracting certifi ..."
+            uncompress_untar ${CERTIFI_FILE}
+            if test $? -ne 0 ; then
+                warn "Could not extract ${CERTIFI_FILE}"
+                return 1
+            fi
+        fi
+
+        if ! test -d ${URLLIB3_BUILD_DIR} ; then
+            info "Extracting urllib3 ..."
+            uncompress_untar ${URLLIB3_FILE}
+            if test $? -ne 0 ; then
+                warn "Could not extract ${URLLIB3_FILE}"
+                return 1
+            fi
+        fi
+
+        if ! test -d ${IDNA_BUILD_DIR} ; then
+            info "Extracting idna ..."
+            uncompress_untar ${IDNA_FILE}
+            if test $? -ne 0 ; then
+                warn "Could not extract ${IDNA_FILE}"
+                return 1
+            fi
+        fi
+
+        if ! test -d ${CHARDET_BUILD_DIR} ; then
+            info "Extracting chardet ..."
+            uncompress_untar ${CHARDET_FILE}
+            if test $? -ne 0 ; then
+                warn "Could not extract ${CHARDET_FILE}"
+                return 1
+            fi
+        fi
+        
+        pushd $CERTIFI_BUILD_DIR > /dev/null
+        info "Installing certifi ..."
+        ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+        if test $? -ne 0 ; then
+            popd > /dev/null
+            warn "Could not install certifi"
+            return 1
+        fi
+        popd > /dev/null
+
+        pushd $URLLIB3_BUILD_DIR > /dev/null
+        info "Installing urllib3 ..."
+        ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+        if test $? -ne 0 ; then
+            popd > /dev/null
+            warn "Could not install urllib3"
+            return 1
+        fi
+        popd > /dev/null
+
+        pushd $IDNA_BUILD_DIR > /dev/null
+        info "Installing idna ..."
+        ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+        if test $? -ne 0 ; then
+            popd > /dev/null
+            warn "Could not install idna"
+            return 1
+        fi
+        popd > /dev/null
+
+        pushd $CHARDET_BUILD_DIR > /dev/null
+        info "Installing chardet ..."
+        ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+        if test $? -ne 0 ; then
+            popd > /dev/null
+            warn "Could not install chardet"
+            return 1
+        fi
+        popd > /dev/null
+    fi
+
     if ! test -f ${PYREQUESTS_FILE} ; then
         download_file ${PYREQUESTS_FILE}
         if [[ $? != 0 ]] ; then
@@ -18208,6 +18456,7 @@ function build_requests
             return 1
         fi
     fi
+
     if ! test -d ${PYREQUESTS_BUILD_DIR} ; then
         info "Extracting python requests module ..."
         uncompress_untar ${PYREQUESTS_FILE}
@@ -18217,10 +18466,9 @@ function build_requests
         fi
     fi
 
-    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $PYREQUESTS_BUILD_DIR > /dev/null
     info "Installing python requests module ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install requests module"
@@ -18260,10 +18508,9 @@ function build_seedme
         fi
     fi
 
-    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $SEEDME_BUILD_DIR > /dev/null
     info "Installing seedme python module ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install seedme module"
@@ -18309,7 +18556,7 @@ function build_mpi4py
     # install
     pushd $MPI4PY_BUILD_DIR > /dev/null
     info "Installing mpi4py (~ 2 min) ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install mpi4py"
@@ -18385,10 +18632,9 @@ function build_numpy
     fi
 
     # install
-    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $SETUPTOOLS_BUILD_DIR > /dev/null
     info "Installing setuptools (~1 min) ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install setuptools"
@@ -18398,7 +18644,7 @@ function build_numpy
 
     pushd $CYTHON_BUILD_DIR > /dev/null
     info "Installing cython (~ 2 min) ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install cython"
@@ -18409,7 +18655,7 @@ function build_numpy
     pushd $NUMPY_BUILD_DIR > /dev/null
     info "Installing numpy (~ 2 min) ..."
     sed -i 's#\\\\\"%s\\\\\"#%s#' numpy/distutils/system_info.py
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install numpy"
@@ -18426,24 +18672,745 @@ function build_numpy
     return 0
 }
 
+# *************************************************************************** #
+#                                  build_sphinx                               #
+# *************************************************************************** #
+function build_sphinx
+{
+    # download
+    if ! test -f ${PACKAGING_FILE} ; then
+        download_file ${PACKAGING_FILE} "${PACKAGING_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${PACKAGING_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SETUPTOOLS_FILE} ; then
+        download_file ${SETUPTOOLS_FILE} "${SETUPTOOLS_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SETUPTOOLS_URL}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${REQUESTS_FILE} ; then
+        download_file ${REQUESTS_FILE} "${REQUESTS_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${REQUESTS_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${IMAGESIZE_FILE} ; then
+        download_file ${IMAGESIZE_FILE} "${IMAGESIZE_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${IMAGESIZE_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${ALABASTER_FILE} ; then
+        download_file ${ALABASTER_FILE} "${ALABASTER_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${ALABASTER_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${BABEL_FILE} ; then
+        download_file ${BABEL_FILE} "${BABEL_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${BABEL_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SNOWBALLSTEMMER_FILE} ; then
+        download_file ${SNOWBALLSTEMMER_FILE} "${SNOWBALLSTEMMER_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SNOWBALLSTEMMER_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${DOCUTILS_FILE} ; then
+        download_file ${DOCUTILS_FILE} "${DOCUTILS_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${DOCUTILS_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${PYGMENTS_FILE} ; then
+        download_file ${PYGMENTS_FILE} "${PYGMENTS_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${PYGMENTS_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${JINJA2_FILE} ; then
+        download_file ${JINJA2_FILE} "${JINJA2_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${JINJA2_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SPHINXCONTRIB_QTHELP_FILE} ; then
+        download_file ${SPHINXCONTRIB_QTHELP_FILE} "${SPHINXCONTRIB_QTHELP_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPHINXCONTRIB_QTHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SPHINXCONTRIB_SERIALIZINGHTML_FILE} ; then
+        download_file ${SPHINXCONTRIB_SERIALIZINGHTML_FILE} "${SPHINXCONTRIB_SERIALIZINGHTML_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPHINXCONTRIB_SERIALIZINGHTML_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SPHINXCONTRIB_HTMLHELP_FILE} ; then
+        download_file ${SPHINXCONTRIB_HTMLHELP_FILE} "${SPHINXCONTRIB_HTMLHELP_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPHINXCONTRIB_HTMLHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SPHINXCONTRIB_JSMATH_FILE} ; then
+        download_file ${SPHINXCONTRIB_JSMATH_FILE} "${SPHINXCONTRIB_JSMATH_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPHINXCONTRIB_JSMATH_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SPHINXCONTRIB_DEVHELP_FILE} ; then
+        download_file ${SPHINXCONTRIB_DEVHELP_FILE} "${SPHINXCONTRIB_DEVHELP_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPHINXCONTRIB_DEVHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SPHINXCONTRIB_APPLEHELP_FILE} ; then
+        download_file ${SPHINXCONTRIB_APPLEHELP_FILE} "${SPHINXCONTRIB_APPLEHELP_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPHINXCONTRIB_APPLEHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SIX_FILE} ; then
+        download_file ${SIX_FILE} "${SIX_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SIX_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${PYPARSING_FILE} ; then
+        download_file ${PYPARSING_FILE} "${PYPARSING_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${PYPARSING_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${PYTZ_FILE} ; then
+        download_file ${PYTZ_FILE} "${PYTZ_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${PYTZ_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${MARKUPSAFE_FILE} ; then
+        download_file ${MARKUPSAFE_FILE} "${MARKUPSAFE_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${MARKUPSAFE_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -f ${SPHINX_FILE} ; then
+        download_file ${SPHINX_FILE} "${SPHINX_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPHINX_FILE}"
+            return 1
+        fi
+    fi
+
+    # extract
+    if ! test -d ${PACKAGING_BUILD_DIR} ; then
+        info "Extracting packaging ..."
+        uncompress_untar ${PACKAGING_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${PACKAGING_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SETUPTOOLS_BUILD_DIR} ; then
+        info "Extracting setuptools ..."
+        uncompress_untar ${SETUPTOOLS_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SETUPTOOLS_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${PYREQUESTS_BUILD_DIR} ; then
+        info "Extracting requests ..."
+        uncompress_untar ${PYREQUESTS_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${PYREQUESTS_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${IMAGESIZE_BUILD_DIR} ; then
+        info "Extracting imagesize ..."
+        uncompress_untar ${IMAGESIZE_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${IMAGESIZE_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${ALABASTER_BUILD_DIR} ; then
+        info "Extracting alabastor ..."
+        uncompress_untar ${ALABASTER_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${ALABASTER_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${BABEL_BUILD_DIR} ; then
+        info "Extracting babel ..."
+        uncompress_untar ${BABEL_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${BABEL_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SNOWBALLSTEMMER_BUILD_DIR} ; then
+        info "Extracting snowballstemmer ..."
+        uncompress_untar ${SNOWBALLSTEMMER_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SNOWBALLSTEMMER_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${DOCUTILS_BUILD_DIR} ; then
+        info "Extracting docutils ..."
+        uncompress_untar ${DOCUTILS_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${DOCUTILS_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${PYGMENTS_BUILD_DIR} ; then
+        info "Extracting pygments ..."
+        uncompress_untar ${PYGMENTS_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${PYGMENTS_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${JINJA2_BUILD_DIR} ; then
+        info "Extracting jinja2 ..."
+        uncompress_untar ${JINJA2_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${JINJA2_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SPHINXCONTRIB_QTHELP_BUILD_DIR} ; then
+        info "Extracting sphinxcontrib-qthelp ..."
+        uncompress_untar ${SPHINXCONTRIB_QTHELP_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPHINXCONTRIB_QTHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SPHINXCONTRIB_SERIALIZINGHTML_BUILD_DIR} ; then
+        info "Extracting sphinxcontrib-serializinghtml ..."
+        uncompress_untar ${SPHINXCONTRIB_SERIALIZINGHTML_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPHINXCONTRIB_SERIALIZINGHTML_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SPHINXCONTRIB_HTMLHELP_BUILD_DIR} ; then
+        info "Extracting sphinxcontrib-htmlhelp ..."
+        uncompress_untar ${SPHINXCONTRIB_HTMLHELP_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPHINXCONTRIB_HTMLHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SPHINXCONTRIB_JSMATH_BUILD_DIR} ; then
+        info "Extracting sphinxcontrib-jsmath ..."
+        uncompress_untar ${SPHINXCONTRIB_JSMATH_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPHINXCONTRIB_JSMATH_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SPHINXCONTRIB_DEVHELP_BUILD_DIR} ; then
+        info "Extracting sphinxcontrib-devhelp ..."
+        uncompress_untar ${SPHINXCONTRIB_DEVHELP_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPHINXCONTRIB_DEVHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SPHINXCONTRIB_APPLEHELP_BUILD_DIR} ; then
+        info "Extracting sphinxcontrib-applehelp ..."
+        uncompress_untar ${SPHINXCONTRIB_APPLEHELP_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPHINXCONTRIB_APPLEHELP_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SIX_BUILD_DIR} ; then
+        info "Extracting six ..."
+        uncompress_untar ${SIX_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SIX_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${PYPARSING_BUILD_DIR} ; then
+        info "Extracting pyparsing ..."
+        uncompress_untar ${PYPARSING_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${PYPARSING_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${PYTZ_BUILD_DIR} ; then
+        info "Extracting pytz ..."
+        uncompress_untar ${PYTZ_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${PYTZ_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${MARKUPSAFE_BUILD_DIR} ; then
+        info "Extracting markupsafe ..."
+        uncompress_untar ${MARKUPSAFE_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${MARKUPSAFE_FILE}"
+            return 1
+        fi
+    fi
+
+    if ! test -d ${SPHINX_BUILD_DIR} ; then
+        info "Extracting sphinx ..."
+        uncompress_untar ${SPHINX_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPHINX_FILE}"
+            return 1
+        fi
+    fi
+
+    # patch
+    SED_CMD="sed -i "
+    if [[ "$OPSYS" == "Darwin" ]]; then
+                SED_CMD="sed -i \"\" "
+    fi
+    pushd $SPHINX_BUILD_DIR > /dev/null
+    ${SED_CMD} "s/docutils>=0.12/docutils<0.16,>=0.12/" ./Sphinx.egg-info/requires.txt
+    ${SED_CMD} "s/docutils>=0.12/docutils<0.16,>=0.12/" ./setup.py
+    popd > /dev/null
+
+    # install
+    pushd $SIX_BUILD_DIR > /dev/null
+    info "Installing six ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install six"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $PYPARSING_BUILD_DIR > /dev/null
+    info "Installing pyparsing ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install pyparsing"
+        return 1
+    fi
+    popd > /dev/null
+
+    # Packaging depends on six, pyparsing.
+    pushd $PACKAGING_BUILD_DIR > /dev/null
+    info "Installing packaging ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install packaging"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SETUPTOOLS_BUILD_DIR > /dev/null
+    info "Installing setuptools ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install setuptools"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $IMAGESIZE_BUILD_DIR > /dev/null
+    info "Installing imagesize ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install imagesize"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $ALABASTER_BUILD_DIR > /dev/null
+    info "Installing alabaster..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install alabaster"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $PYTZ_BUILD_DIR > /dev/null
+    info "Installing pytz ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install pytz"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $BABEL_BUILD_DIR > /dev/null
+    info "Installing babel ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install babel"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SNOWBALLSTEMMER_BUILD_DIR > /dev/null
+    info "Installing snowballstemmer ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install snowballstemmer"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $DOCUTILS_BUILD_DIR > /dev/null
+    info "Installing docutils ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install docutils"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $PYGMENTS_BUILD_DIR > /dev/null
+    info "Installing pygments ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install pygments"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $MARKUPSAFE_BUILD_DIR > /dev/null
+    info "Installing markupsafe ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install markupsafe"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $JINJA2_BUILD_DIR > /dev/null
+    info "Installing jinja2 ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install jinja2"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SPHINXCONTRIB_QTHELP_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-qthelp ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinxcontrib-qthelp"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SPHINXCONTRIB_SERIALIZINGHTML_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-serializinghtml ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinxcontrib-serializinghtml"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SPHINXCONTRIB_HTMLHELP_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-htmlhelp ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinxcontrib-htmlhelp"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SPHINXCONTRIB_JSMATH_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-jsmath ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinxcontrib-jsmath"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SPHINXCONTRIB_DEVHELP_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-devhelp ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinxcontrib-devhelp"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SPHINXCONTRIB_APPLEHELP_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-applehelp ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinxcontrib-applehelp"
+        return 1
+    fi
+    popd > /dev/null
+
+    pushd $SPHINX_BUILD_DIR > /dev/null
+    info "Installing sphinx ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinx"
+        return 1
+    fi
+    popd > /dev/null
+
+    # fix the perms
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/python"
+        chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    return 0
+}
+
+# *************************************************************************** #
+#                              build_sphinx_rtd                               #
+# *************************************************************************** #
+function build_sphinx_rtd
+{
+    # download
+    if ! test -f ${SPHINX_RTD_FILE} ; then
+        download_file ${SPHINX_RTD_FILE} "${SPHINX_RTD_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPHINX_RTD_FILE}"
+            return 1
+        fi
+    fi
+
+    # extract
+    if ! test -d ${SPHINX_RTD_BUILD_DIR} ; then
+        info "Extracting sphinx_rtd ..."
+        uncompress_untar ${SPHINX_RTD_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPHINX_RTD_FILE}"
+            return 1
+        fi
+    fi
+
+    # install
+    pushd $SPHINX_RTD_BUILD_DIR > /dev/null
+    info "Installing sphinx_rtd ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinx_rtd"
+        return 1
+    fi
+    popd > /dev/null
+
+    # fix the perms
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/python"
+        chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    return 0
+}
+
 function bv_python_is_enabled
 {
     if [[ $DO_PYTHON == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
 
 function bv_python_is_installed
 {
+    PY_CHECK_ECHO=0
+    if [[ $# == 1 ]]; then
+        PY_CHECK_ECHO=$1
+    fi
+    
+    info "checking if python is installed"
+    # byo python, assume mods are there
     if [[ $USE_SYSTEM_PYTHON == "yes" ]]; then
         return 1
     fi
+    
     check_if_installed "python" $PYTHON_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
+    if [[ $? != 0 ]] ; then
+        if [[ $PY_CHECK_ECHO != 0 ]] ; then
+            info "python is not installed"
+        fi
+        return 0
     fi
-    return 0
+
+    PY_OK=1
+
+    # we also need to check all the python modules ...
+    check_if_py_module_installed "PIL"
+    if [[ $? != 0 ]] ; then
+        if [[ $PY_CHECK_ECHO != 0 ]] ; then
+            info "python module Pillow is not installed"
+        fi
+        PY_OK=0
+    fi
+
+    check_if_py_module_installed "numpy"
+    if [[ $? != 0 ]] ; then
+        if [[ $PY_CHECK_ECHO != 0 ]] ; then
+            info "python module numpy is not installed"
+        fi
+        PY_OK=0
+    fi
+
+    check_if_py_module_installed "requests"
+    if [[ $? != 0 ]] ; then
+        if [[ $PY_CHECK_ECHO != 0 ]] ; then
+            info "python module requests is not installed"
+        fi
+        PY_OK=0
+    fi
+
+    check_if_py_module_installed "pyparsing"
+    if [[ $? != 0 ]] ; then
+        if [[ $PY_CHECK_ECHO != 0 ]] ; then
+            info "python module pyparsing is not installed"
+        fi
+        PY_OK=0
+    fi
+
+    if [[ "$DO_PYTHON2" == "yes" ]]; then
+        # seedme doesn't seem to work with python 3
+        # Error during install:
+        # AttributeError: 'tuple' object has no attribute 'split'
+        # Could be ported, we could ping seedme folks.
+        check_if_py_module_installed "seedme"
+        if [[ $? != 0 ]] ; then
+            if [[ $PY_CHECK_ECHO != 0 ]] ; then
+                info "python module seedme is not installed"
+            fi
+            PY_OK=0
+        fi
+    fi
+    
+    if [[ "$BUILD_SPHINX" == "yes" ]]; then
+
+        check_if_py_module_installed "sphinx"
+        if [[ $? != 0 ]] ; then
+            if [[ $PY_CHECK_ECHO != 0 ]] ; then
+                info "python module sphinx is not installed"
+            fi
+            PY_OK=0
+        fi
+
+        check_if_py_module_installed "sphinx_rtd_theme"
+        if [[ $? != 0 ]] ; then
+            if [[ $PY_CHECK_ECHO != 0 ]] ; then
+                info "python module sphinx_rtd_theme is not installed"
+            fi
+            PY_OK=0
+        fi
+
+    fi
+    
+    if [[ "$BUILD_MPI4PY" == "yes" ]]; then
+
+        check_if_py_module_installed "mpi4py"
+        if [[ $? != 0 ]] ; then
+            if [[ $PY_CHECK_ECHO != 0 ]] ; then
+                info "python module mpi4py is not installed"
+            fi
+            PY_OK=0
+        fi
+    fi
+
+    return $PY_OK
 }
 
 function bv_python_build
@@ -18453,64 +19420,127 @@ function bv_python_build
     #
     cd "$START_DIR"
     if [[ "$DO_PYTHON" == "yes" && "$USE_SYSTEM_PYTHON" == "no" ]] ; then
-        check_if_installed "python" $PYTHON_VERSION
-        if [[ $? == 0 ]] ; then
+
+        bv_python_is_installed 1
+        
+        if [[ $? == 1 ]] ; then
             info "Skipping Python build.  Python is already installed."
         else
-            info "Building Python (~3 minutes)"
-            build_python
+
+            # check python proper, then mods
+            check_if_installed "python" $PYTHON_VERSION
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install Python.  Bailing out."
+                info "Building Python (~3 minutes)"
+                build_python
+                if [[ $? != 0 ]] ; then
+                    error "Unable to build or install Python.  Bailing out."
+                fi
+                info "Done building Python"
             fi
-            info "Done building Python"
 
             # Do not build those packages for a static build!
             if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
                 return 0
             fi
 
-            info "Building the Python Imaging Library"
-            build_pil
-            if [[ $? != 0 ]] ; then
-                error "PIL build failed. Bailing out."
-            fi
-            info "Done building the Python Imaging Library"
+            # setup PYHOME and PYTHON_COMMAND which is used in our build
+            # of these python modules
+            export PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
 
-            info "Building the numpy module"
-            build_numpy
-            if [[ $? != 0 ]] ; then
-                error "numpy build failed. Bailing out."
+            if [[ "$DO_PYTHON2" == "yes" ]]; then
+                export PYTHON_COMMAND="${PYHOME}/bin/python"
+            else
+                export PYTHON_COMMAND="${PYHOME}/bin/python3"
             fi
-            info "Done building the numpy module."
+
+            check_if_py_module_installed "PIL"
+            # use Pillow for when python 3
+            info "Building the Python Pillow Imaging Library"
+            build_pillow
+            if [[ $? != 0 ]] ; then
+                error "Pillow build failed. Bailing out."
+            fi
+            info "Done building the Python Pillow Imaging Library"
+
+            check_if_py_module_installed "numpy"
+            if [[ $? != 0 ]] ; then
+                info "Building the numpy module"
+                build_numpy
+                if [[ $? != 0 ]] ; then
+                    error "numpy build failed. Bailing out."
+                fi
+                info "Done building the numpy module."
+            fi
 
             if [[ "$BUILD_MPI4PY" == "yes" ]]; then
-                info "Building the mpi4py module"
-                build_mpi4py
+
+                check_if_py_module_installed "mpi4py"
                 if [[ $? != 0 ]] ; then
-                    error "mpi4py build failed. Bailing out."
+                    info "Building the mpi4py module"
+                    build_mpi4py
+                    if [[ $? != 0 ]] ; then
+                        error "mpi4py build failed. Bailing out."
+                    fi
+                    info "Done building the mpi4py module"
                 fi
-                info "Done building the mpi4py module"
             fi
 
-            info "Building the pyparsing module"
-            build_pyparsing
+            check_if_py_module_installed "pyparsing"
             if [[ $? != 0 ]] ; then
-                error "pyparsing build failed. Bailing out."
-            fi
-            info "Done building the pyparsing module."
+                info "Building the pyparsing module"
 
-            build_requests
+                build_pyparsing
+                if [[ $? != 0 ]] ; then
+                    error "pyparsing build failed. Bailing out."
+                fi
+                info "Done building the pyparsing module."
+            fi
+
+            check_if_py_module_installed "requests"
             if [[ $? != 0 ]] ; then
-                error "requests python module build failed. Bailing out."
+                build_requests
+                if [[ $? != 0 ]] ; then
+                    error "requests python module build failed. Bailing out."
+                fi
+                info "Done building the requests python module."
             fi
-            info "Done building the requests python module."
 
-            build_seedme
-            if [[ $? != 0 ]] ; then
-                error "seedme python module build failed. Bailing out."
+            if [[ "$DO_PYTHON2" == "yes" ]]; then
+
+                check_if_py_module_installed "seedme"
+                if [[ $? != 0 ]] ; then
+                    build_seedme
+                    if [[ $? != 0 ]] ; then
+                        error "seedme python module build failed. Bailing out."
+                    fi
+                    info "Done building the seedme python module."
+                fi
             fi
-            info "Done building the seedme python module."
 
+            if [[ "$BUILD_SPHINX" == "yes" ]]; then
+
+                if [[ "$DO_PYTHON2" == "yes" ]]; then
+                    error "sphinx requires python 3 (but DO_PYTHON2=yes). Bailing out."
+                fi
+
+                check_if_py_module_installed "sphinx"
+                if [[ $? != 0 ]] ; then
+                    build_sphinx
+                    if [[ $? != 0 ]] ; then
+                        error "sphinx python module build failed. Bailing out."
+                    fi
+                    info "Done building the sphinx python module."
+                fi
+
+                check_if_py_module_installed "sphinx_rtd_theme"
+                if [[ $? != 0 ]] ; then
+                    build_sphinx_rtd
+                    if [[ $? != 0 ]] ; then
+                        error "sphinx rtd python theme build failed. Bailing out."
+                    fi
+                    info "Done building the sphinx rtd python theme."
+                fi
+            fi
         fi
     fi
 }
@@ -18622,12 +19652,14 @@ function bv_qt_info
 {
     bv_qt_enable
 
-    export QT_VERSION=${QT_VERSION:-"5.10.1"}
+    export QT_VERSION=${QT_VERSION:-"5.14.2"}
+    export QT_SHORT_VERSION=${QT_SHORT_VERSION:-"5.14"}
     export QT_FILE=${QT_FILE:-"qt-everywhere-src-${QT_VERSION}.tar.xz"}
     export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
     export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_BUILD_DIR}/bin"}
-    export QT_MD5_CHECKSUM="7e167b9617e7bd64012daaacb85477af"
-    export QT_SHA256_CHECKSUM="05ffba7b811b854ed558abf2be2ddbd3bb6ddd0b60ea4b5da75d277ac15e740a"
+    export QT_URL=${QT_URL:-"http://download.qt.io/archive/qt/${QT_SHORT_VERSION}/${QT_VERSION}/single/"}
+    #export QT_MD5_CHECKSUM="7e167b9617e7bd64012daaacb85477af"
+    #export QT_SHA256_CHECKSUM="05ffba7b811b854ed558abf2be2ddbd3bb6ddd0b60ea4b5da75d277ac15e740a"
 }
 
 function bv_qt_print
@@ -18672,7 +19704,7 @@ function bv_qt_host_profile
 function bv_qt_ensure
 {
     if [[ "$DO_QT" == "yes"  && "$USE_SYSTEM_QT" == "no" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
-        ensure_built_or_ready "qt"     $QT_VERSION    $QT_BUILD_DIR    $QT_FILE
+        ensure_built_or_ready "qt"     $QT_VERSION    $QT_BUILD_DIR    $QT_FILE    $QT_URL
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -18699,11 +19731,12 @@ function qt_license_prompt
             the GNU General Public License (GPL) version 3. Visit \
             http://www.qt.io/qt-licensing-terms to view these licenses."
 
-    QT_CONFIRM_MSG="VisIt requires Qt: Please respond with \"yes\" to accept\
+    QT_CONFIRM_MSG="VisIt requires Qt: Do you accept\
                 Qt licensing under the terms of the Lesser GNU General \
                 Public License (LGPL) version 2.1 or \
-                the GNU General Public License (GPL) version 3"
+                the GNU General Public License (GPL) version 3? [yes/no]"
     info $QT_LIC_MSG
+    info $QT_CONFIRM_MSG
     read RESPONSE
     if [[ "$RESPONSE" != "yes" ]] ; then
         info $QT_CONFIRM_MSG
@@ -18720,127 +19753,101 @@ function qt_license_prompt
 function apply_qt_patch
 {
     if [[ "$DO_MESAGL" == "yes" ]] ; then
-        if [[ ${QT_VERSION} == 5.10.1 ]] ; then
+        if [[ ${QT_VERSION} == 5.14.2 ]] ; then
             if [[ "$OPSYS" == "Linux" ]]; then
-                apply_qt_5101_linux_mesagl_patch
+                apply_qt_5142_linux_mesagl_patch
                 if [[ $? != 0 ]] ; then
                     return 1
                 fi
             fi
         fi
     fi
-
-    if [[ ${QT_VERSION} == 5.10.1 ]] ; then
-        if [[ -f /etc/centos-release ]] ; then
-            VER=`cat /etc/centos-release | cut -d' ' -f 4`
-            if [[ "${VER:0:3}" == "8.0" ]] ; then
-                apply_qt_5101_centos8_patch
-                if [[ $? != 0 ]] ; then
-                    return 1
-                fi
-            fi
-        elif [[ -f /etc/lsb-release ]] ; then
-            VER=`cat /etc/lsb-release | grep "DISTRIB_RELEASE" | cut -d'=' -f 2`
-            if [[ "${VER:0:3}" == "19." ]] ; then
-                apply_qt_5101_centos8_patch
-                if [[ $? != 0 ]] ; then
-                    return 1
-                fi
-            fi
-        fi
-
-        apply_qt_5101_blueos_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-
     return 0
 }
 
-function apply_qt_5101_linux_mesagl_patch
+function apply_qt_5142_linux_mesagl_patch
 {   
-    info "Patching qt 5.10.1 for Linux and Mesa-as-GL"
+    info "Patching qt 5.14.2 for Linux and Mesa-as-GL"
     patch -p0 <<EOF
-    diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf
-    *** qtbase/mkspecs/linux-g++-64/qmake.conf.orig     Thu Feb  8 18:24:48 2018
-    --- qtbase/mkspecs/linux-g++-64/qmake.conf  Fri Feb 22 22:04:50 2019
-    ***************
-    *** 19,24 ****
+diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf
+*** qtbase/mkspecs/linux-g++-64/qmake.conf.orig
+--- qtbase/mkspecs/linux-g++-64/qmake.conf
+***************
+*** 18,24 ****
+  include(../common/g++-unix.conf)
   
   
-      QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
-    ! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
+! QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
   
-      load(qt_config)
-    --- 19,25 ----
+  load(qt_config)
+--- 18,25 ----
+  include(../common/g++-unix.conf)
   
   
-      QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
-    ! QMAKE_LIBDIR_OPENGL=$MESAGL_LIB_DIR $LLVM_LIB_DIR
-    ! QMAKE_INCDIR_OPENGL=$MESAGL_INCLUDE_DIR
+! QMAKE_LIBDIR_X11        = /usr/lib64
+! QMAKE_LIBDIR_OPENGL     = $MESAGL_LIB_DIR $LLVM_LIB_DIR 
+! QMAKE_INCDIR_OPENGL     = $MESAGL_INCLUDE_DIR
   
-      load(qt_config)
+  load(qt_config)
+
 EOF
     if [[ $? != 0 ]] ; then
-        warn "qt 5.10.1 linux mesagl patch failed."
+        warn "qt 5.14.2 linux mesagl patch 1 failed."
         return 1
     fi
     
-    return 0;
-}
-
-function apply_qt_5101_centos8_patch
-{   
-    info "Patching qt 5.10.1 for Centos8"
     patch -p0 <<EOF
-diff -c qtbase/src/corelib/io/qfilesystemengine_unix.cpp.orig qtbase/src/corelib/io/qfilesystemengine_unix.cpp
-*** qtbase/src/corelib/io/qfilesystemengine_unix.cpp.orig	Thu Oct 17 13:54:59 2019
---- qtbase/src/corelib/io/qfilesystemengine_unix.cpp	Thu Oct 17 13:57:20 2019
+diff -c qtbase/mkspecs/linux-icc-64/qmake.conf.orig qtbase/mkspecs/linux-icc-64/qmake.conf
+*** qtbase/mkspecs/linux-icc-64/qmake.conf.orig
+--- qtbase/mkspecs/linux-icc-64/qmake.conf
 ***************
-*** 97,102 ****
---- 97,103 ----
-  #  define FICLONE       _IOW(0x94, 9, int)
-  #endif
+*** 12,16 ****
   
-+ #if 0
-  #  if !QT_CONFIG(renameat2) && defined(SYS_renameat2)
-  static int renameat2(int oldfd, const char *oldpath, int newfd, const char *newpath, unsigned flags)
-  { return syscall(SYS_renameat2, oldfd, oldpath, newfd, newpath, flags); }
-***************
-*** 108,117 ****
---- 109,121 ----
-  { return syscall(SYS_statx, dirfd, pathname, flag, mask, statxbuf); }
-  #  endif
-  #endif
-+ #endif
+  # Change the all LIBDIR variables to use lib64 instead of lib
   
-+ #if 0
-  #ifndef STATX_BASIC_STATS
-  struct statx { mode_t stx_mode; };
-  #endif
-+ #endif
+! QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
+--- 12,18 ----
   
-  QT_BEGIN_NAMESPACE
+  # Change the all LIBDIR variables to use lib64 instead of lib
   
+! QMAKE_LIBDIR_X11        = /usr/lib64
+! QMAKE_LIBDIR_OPENGL     = $MESAGL_LIB_DIR $LLVM_LIB_DIR
+! QMAKE_INCDIR_OPENGL     = $MESAGL_INCLUDE_DIR
+! 
 EOF
     if [[ $? != 0 ]] ; then
-        warn "qt 5.10.1 centos8 patch failed."
+        warn "qt 5.14.2 linux mesagl patch 2failed."
         return 1
     fi
-    
-    return 0;
-}
-
-function apply_qt_5101_blueos_patch
-{   
-    info "Patching qt 5.10.1 for Blueos"
-    sed -i "s/PNG_ARM_NEON_OPT=0/PNG_ARM_NEON_OPT=0 PNG_POWERPC_VSX_OPT=0/" qtbase/src/3rdparty/libpng/libpng.pro
+    patch -p0 <<EOF
+diff -c qtbase/mkspecs/common/linux.conf.orig qtbase/mkspecs/common/linux.conf
+*** qtbase/mkspecs/common/linux.conf.orig
+--- qtbase/mkspecs/common/linux.conf
+***************
+*** 30,36 ****
+  QMAKE_LIBS_DYNLOAD      = -ldl
+  QMAKE_LIBS_X11          = -lXext -lX11 -lm
+  QMAKE_LIBS_EGL          = -lEGL
+! QMAKE_LIBS_OPENGL       = -lGL
+  QMAKE_LIBS_OPENGL_ES2   = -lGLESv2
+  QMAKE_LIBS_OPENVG       = -lOpenVG
+  QMAKE_LIBS_THREAD       = -lpthread
+--- 30,36 ----
+  QMAKE_LIBS_DYNLOAD      = -ldl
+  QMAKE_LIBS_X11          = -lXext -lX11 -lm
+  QMAKE_LIBS_EGL          = -lEGL
+! QMAKE_LIBS_OPENGL       = -lGL -lLLVM
+  QMAKE_LIBS_OPENGL_ES2   = -lGLESv2
+  QMAKE_LIBS_OPENVG       = -lOpenVG
+  QMAKE_LIBS_THREAD       = -lpthread
+EOF
     if [[ $? != 0 ]] ; then
-        warn "qt 5.10.1 blueos patch failed."
+        warn "qt 5.14.2 linux mesagl patch 3 failed."
         return 1
     fi
-    
+
     return 0;
 }
 
@@ -18963,7 +19970,8 @@ function build_qt
 
     QT_VER_MSG="Qt5"
     qt_flags="${qt_flags} -skip 3d"
-    qt_flags="${qt_flags} -skip canvas3d"
+    qt_flags="${qt_flags} -skip activeqt"
+    qt_flags="${qt_flags} -skip androidextras"
     qt_flags="${qt_flags} -skip charts"
     qt_flags="${qt_flags} -skip connectivity"
     qt_flags="${qt_flags} -skip datavis3d"
@@ -18971,11 +19979,14 @@ function build_qt
     qt_flags="${qt_flags} -skip gamepad"
     qt_flags="${qt_flags} -skip graphicaleffects"
     qt_flags="${qt_flags} -skip location"
+    qt_flags="${qt_flags} -skip lottie"
     qt_flags="${qt_flags} -skip multimedia"
     qt_flags="${qt_flags} -skip networkauth"
     qt_flags="${qt_flags} -skip purchasing"
+    qt_flags="${qt_flags} -skip quick3d"
     qt_flags="${qt_flags} -skip quickcontrols"
     qt_flags="${qt_flags} -skip quickcontrols2"
+    qt_flags="${qt_flags} -skip quicktimeline"
     qt_flags="${qt_flags} -skip remoteobjects"
     qt_flags="${qt_flags} -skip scxml"
     qt_flags="${qt_flags} -skip sensors"
@@ -18989,7 +20000,13 @@ function build_qt
     qt_flags="${qt_flags} -qt-libpng"
 
     if [[ "$OPSYS" == "Linux" ]] ; then
-        qt_flags="${qt_flags} -qt-xcb -qt-xkbcommon"
+        qt_flags="${qt_flags} -qt-xcb --xkbcommon=yes"
+    fi
+
+    if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
+        qt_flags="${qt_flags} -release"
+    else
+        qt_flags="${qt_flags} -debug"
     fi
 
     info "Configuring ${QT_VER_MSG}: " \
@@ -19778,6 +20795,177 @@ function bv_silo_build
         fi
     fi
 }
+#
+# Example build_visit command line to build stripack
+# env FCFLAGS="-fdefault-real-8 -fdefault-double-8 -shared -fPIC" STRIPACK_INSTALL_DIR=<visit-install-home-dir>/lib ../build_visit --fortran --no-visit --no-thirdparty --thirdparty-path /dev/null --no-zlib --stripack
+#
+function bv_stripack_initialize
+{
+    export DO_STRIPACK="no"
+}
+
+function bv_stripack_enable
+{
+    DO_STRIPACK="yes"
+}
+
+function bv_stripack_disable
+{
+    DO_STRIPACK="no"
+}
+
+function bv_stripack_depends_on
+{
+    echo ""
+}
+
+function bv_stripack_info
+{
+    export STRIPACK_FILE=${STRIPACK_FILE:-"stripack-ACM.RJRenka.Sep97.tar.gz"}
+    export STRIPACK_VERSION=${STRIPACK_VERSION:-"ACM.RJRenka.Sep97"}
+    export STRIPACK_COMPATIBILITY_VERSION=${STRIPACK_COMPATIBILITY_VERSION:-"ACM.RJRenka.Sep97"}
+    export STRIPACK_BUILD_DIR=${STRIPACK_BUILD_DIR:-"stripack-ACM.RJRenka.Sep97"}
+    export STRIPACK_MD5_CHECKSUM="364761b3c42d65b274f703b4be576d20"
+    export STRIPACK_SHA256_CHECKSUM="4ba03dab1592850339327f8ba50b1dfecac4abd09f7757f50a022914d1353d73"
+}
+
+function bv_stripack_print
+{
+    printf "%s%s\n" "STRIPACK_FILE=" "${STRIPACK_FILE}"
+    printf "%s%s\n" "STRIPACK_VERSION=" "${STRIPACK_VERSION}"
+    printf "%s%s\n" "STRIPACK_COMPATIBILITY_VERSION=" "${STRIPACK_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "STRIPACK_BUILD_DIR=" "${STRIPACK_BUILD_DIR}"
+}
+
+function bv_stripack_print_usage
+{
+    printf "%-20s %s [%s]\n" "--stripack" "Build ACM-Licensed stripack library for ffp plugin" "$DO_STRIPACK"  
+}
+
+function bv_stripack_host_profile
+{
+    echo ""
+}
+
+function bv_stripack_ensure
+{
+    if [[ "$DO_STRIPACK" == "yes" ]] ; then
+        ensure_built_or_ready "stripack" $STRIPACK_VERSION $STRIPACK_BUILD_DIR $STRIPACK_FILE
+        if [[ $? != 0 ]] ; then
+            warn "Unable to build stripack.  ${STRIPACK_FILE} not found."
+            ANY_ERRORS="yes"
+            DO_STRIPACK="no"
+        fi
+    fi
+}
+
+function bv_stripack_dry_run
+{
+    if [[ "$DO_STRIPACK" == "yes" ]] ; then
+        echo "Dry run option not set for stripack."
+    fi
+}
+
+function stripack_license_prompt
+{
+    STRIPACK_LIC_MSG="This script will build the stripack library. stripack is ACM\
+            Licensed software. Please read the terms of the ACM License,\
+            https://www.acm.org/publications/policies/software-copyright-notice\
+            and respond either \"yes\" to accept the terms or \"no\" to decline\
+            the terms."
+    info $STRIPACK_LIC_MSG
+    read RESPONSE
+    if [[ "$RESPONSE" != "yes" ]] ; then
+        error "Stripack requires compliance with ACM License terms."
+    fi
+
+    return 0
+}
+
+# *************************************************************************** #
+#                         Function 8.12, build_stripack                       #
+# *************************************************************************** #
+
+function build_stripack
+{
+    stripack_license_prompt
+
+    if [[ "$FC_COMPILER" = "no" ]] ; then
+        error "FC_COMPILER env. variable must be set to a fortran compiler for stripack."
+    fi
+    if [[ "$DO_STATIC_BUILD" != "no" ]]; then 
+        error "stripack works only in non-static builds."
+    fi
+    if [[ "$STRIPACK_INSTALL_DIR" = "" ]] ; then
+        error "STRIPACK_INSTALL_DIR env. variable must be set"
+    fi
+    if [ ! -d $STRIPACK_INSTALL_DIR -o ! -w $STRIPACK_INSTALL_DIR -o ! -x $STRIPACK_INSTALL_DIR ]; then
+        error "$STRIPACK_INSTALL_DIR either does not exist, is not writeable or is not executable."
+    fi 
+
+    #
+    # Prepare build dir
+    #
+    prepare_build_dir $STRIPACK_BUILD_DIR $STRIPACK_FILE
+    untarred_stripack=$?
+    if [[ $untarred_stripack == -1 ]] ; then
+        warn "Unable to prepare stripack Build Directory. Giving Up"
+        return 1
+    fi
+
+    info "Building stripack. . ."
+    cd $STRIPACK_BUILD_DIR || error "Can't cd to stripack build dir."
+    $FC_COMPILER $FCFLAGS -o libstripack.so stripack.f
+    if [[ $? != 0 ]] ; then
+        error "Unable to compile stripack"
+    fi
+   
+    info "Installing stripack. . ."
+    cp libstripack.so $STRIPACK_INSTALL_DIR
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$STRIPACK_INSTALL_DIR/libstripack.so"
+        chgrp -R ${GROUP} "$STRIPACK_INSTALL_DIR/libstripack.so"
+    fi
+
+    cd "$START_DIR"
+    echo "Done with stripack"
+    return 0
+}
+
+function bv_stripack_is_enabled
+{
+    if [[ $DO_STRIPACK == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_stripack_is_installed
+{
+    check_if_installed "stripack"
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_stripack_build
+{
+    cd "$START_DIR"
+    if [[ "$DO_STRIPACK" == "yes" ]] ; then
+        check_if_installed "stripack"
+        if [[ $? == 0 ]] ; then
+            info "Skipping stripack build.  stripack is already installed."
+        else
+            info "Building stripack (~1 minutes)"
+            build_stripack
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install stripack.  Bailing out."
+            fi
+            info "Done building stripack"
+        fi
+    fi
+}
 function bv_szip_initialize
 {
     export DO_SZIP="no"
@@ -19876,6 +21064,9 @@ function build_szip
     cf_szip=""
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         cf_szip="--disable-shared --enable-static"
+    fi
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        cf_szip="$cf_szip --disable-production"
     fi
 
     extra_ac_flags=""
@@ -20230,15 +21421,9 @@ function bv_tcmalloc_ensure
     if [[ "$DO_TCMALLOC" == "yes" ]] ; then
         ensure_built_or_ready "google-perftools" $TCMALLOC_VERSION $TCMALLOC_BUILD_DIR $TCMALLOC_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build google perftools.  ${TCMALLOC_FILE} not found."
             ANY_ERRORS="yes"
             DO_TCMALLOC="no"
-            if [[ "$DO_SVN" != "yes" ]] ; then
-                warn "You have requested to build the google perftools library."
-                warn "This is not currently available for download from the VisIt website and" 
-                warn "is only available through Subversion access."
-            fi
-            error
+            error "Unable to build google perftools."
         fi
     fi
 }
@@ -20585,6 +21770,7 @@ function build_uintah
     fi
 
     if [[ "$OPSYS" == "Darwin" ]]; then
+        sdk_root=`xcrun --show-sdk-path`
 
         info "Invoking command to configure UINTAH"
         info "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
@@ -20598,7 +21784,7 @@ function build_uintah
 	--with-fortran=no --with-petsc=no --with-hypre=no \
 	--with-lapack=no --with-blas=no \
         --with-mpi=\"$PAR_INCLUDE_DIR/..\" \ 
-        --with-libxml2=\"/usr\" "
+        --with-libxml2=\"$sdk_root/usr\" "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
         #        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "
@@ -20614,7 +21800,7 @@ function build_uintah
 	--with-fortran=no --with-petsc=no --with-hypre=no \
 	--with-lapack=no --with-blas=no \
         --with-mpi=\"$PAR_INCLUDE_DIR/..\" \
-        --with-libxml2=\"/usr\" "
+        --with-libxml2=\"$sdk_root/usr\" "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
         #        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "
@@ -21740,6 +22926,44 @@ EOF
     return 0;
 }
 
+function apply_vtk_python3_python_args_patch
+{
+    # in python 3.7.5:
+    #  PyUnicode_AsUTF8 returns a const char *, which you cannot assign
+    #  to a char *. 
+    # Add cast to allow us to compile.
+    patch -p0 << \EOF
+    diff -c Wrapping/PythonCore/vtkPythonArgs.orig.cxx Wrapping/PythonCore/vtkPythonArgs.cxx
+    *** Wrapping/PythonCore/vtkPythonArgs.orig.cxx	2020-03-24 14:29:39.000000000 -0700
+    --- Wrapping/PythonCore/vtkPythonArgs.cxx	2020-03-24 14:29:52.000000000 -0700
+    ***************
+    *** 102,108 ****
+        else if (PyUnicode_Check(o))
+        {
+      #if PY_VERSION_HEX >= 0x03030000
+    !     a = PyUnicode_AsUTF8(o);
+          return true;
+      #else
+          PyObject *s = _PyUnicode_AsDefaultEncodedString(o, nullptr);
+    --- 102,108 ----
+        else if (PyUnicode_Check(o))
+        {
+      #if PY_VERSION_HEX >= 0x03030000
+    !     a = (char*)PyUnicode_AsUTF8(o);
+          return true;
+      #else
+          PyObject *s = _PyUnicode_AsDefaultEncodedString(o, nullptr);
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for python3 vtkPythonArgs const issue failed."
+      return 1
+    fi
+
+    return 0;
+}
+
+
 
 
 function apply_vtk_patch
@@ -21778,6 +23002,11 @@ function apply_vtk_patch
     fi
 
     apply_vtkospray_linking_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtk_python3_python_args_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
@@ -22136,11 +23365,11 @@ function bv_vtkh_initialize_vars
 
 function bv_vtkh_info
 {
-    export VTKH_VERSION=${VTKH_VERSION:-"2ce3fa"}
+    export VTKH_VERSION=${VTKH_VERSION:-"v0.6.6"}
     export VTKH_FILE=${VTKH_FILE:-"vtkh-${VTKH_VERSION}.tar.gz"}
     export VTKH_BUILD_DIR=${VTKH_BUILD_DIR:-"vtkh-${VTKH_VERSION}"}
-    export VTKH_MD5_CHECKSUM="993cbd4b7a1bc5d5c0e9ff900ec2eacc"
-    export VTKH_SHA256_CHECKSUM="ad3ed46ba9f435d367572bc3015ce0c546800b5cdf470dd494f1584142f48dbc"
+    export VTKH_MD5_CHECKSUM="ec9bead5d3bcc317149fb273f7c5a4af"
+    export VTKH_SHA256_CHECKSUM="5fe8bae5f55dbeb3047a37499cc41f3b548e4d86f0058993069f1df57f7915a1"
 }
 
 function bv_vtkh_print
@@ -22268,7 +23497,7 @@ function build_vtkh
     vopts="${vopts} -DBUILD_SHARED_LIBS=ON"
     vopts="${vopts} -DENABLE_MPI=OFF"
     vopts="${vopts} -DENABLE_OPENMP=OFF"
-    vopts="${vopts} -DCMAKE_BUILD_TYPE=Release"
+    vopts="${vopts} -DCMAKE_BUILD_TYPE=${VISIT_BUILD_MODE}"
     if [[ -d $CUDA_HOME ]]; then
         echo "Building with CUDA support."
         vopts="${vopts} -DENABLE_CUDA=ON"
@@ -22383,11 +23612,11 @@ function bv_vtkm_initialize_vars
 
 function bv_vtkm_info
 {
-    export VTKM_VERSION=${VTKM_VERSION:-"0d141c"}
+    export VTKM_VERSION=${VTKM_VERSION:-"a3b852"}
     export VTKM_FILE=${VTKM_FILE:-"vtkm-${VTKM_VERSION}.tar.gz"}
     export VTKM_BUILD_DIR=${VTKM_BUILD_DIR:-"vtkm-${VTKM_VERSION}"}
-    export VTKM_MD5_CHECKSUM="72f862af47da3578370734f3ba0a4c59"
-    export VTKM_SHA256_CHECKSUM="965b6bb7a1a579b8494523b993f060b6bc461a5dc0296b8ad6033ff10916628f"
+    export VTKM_MD5_CHECKSUM="ce173342dd433223879415af5a2713f1"
+    export VTKM_SHA256_CHECKSUM="358c0ab5f18e674ca147de51a08480009643b88b87b2b203fed721a746ef227f"
 }
 
 function bv_vtkm_print
@@ -22444,45 +23673,12 @@ function bv_vtkm_dry_run
 function apply_patch_1
 {
    patch -p0 << \EOF
-diff -c ./vtkm/TypeListTag.h.orig ./vtkm/TypeListTag.h
-*** ./vtkm/TypeListTag.h.orig	Tue Nov  6 16:17:57 2018
---- ./vtkm/TypeListTag.h	Tue Nov  6 16:15:29 2018
-***************
-*** 204,210 ****
-  /// A list of the most commonly used types across multiple domains. Includes
-  /// integers, floating points, and 3 dimensional vectors of floating points.
-  ///
-! struct TypeListTagCommon : vtkm::ListTagBase<vtkm::Int32,
-                                               vtkm::Int64,
-                                               vtkm::Float32,
-                                               vtkm::Float64,
---- 204,211 ----
-  /// A list of the most commonly used types across multiple domains. Includes
-  /// integers, floating points, and 3 dimensional vectors of floating points.
-  ///
-! struct TypeListTagCommon : vtkm::ListTagBase<vtkm::UInt8,
-!                                              vtkm::Int32,
-                                               vtkm::Int64,
-                                               vtkm::Float32,
-                                               vtkm::Float64,
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtkm patch 1 failed."
-      return 1
-    fi
-    return 0;
-}
-
-function apply_patch_2
-{
-   patch -p0 << \EOF
 diff -c ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig ./vtkm/cont/arg/TransportTagTopologyFieldIn.h
-*** ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig	Tue Nov  6 16:18:09 2018
---- ./vtkm/cont/arg/TransportTagTopologyFieldIn.h	Tue Nov  6 16:16:18 2018
+*** ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig	Tue Dec  8 12:55:32 2020
+--- ./vtkm/cont/arg/TransportTagTopologyFieldIn.h	Tue Dec  8 12:55:49 2020
 ***************
-*** 98,104 ****
---- 98,106 ----
+*** 90,96 ****
+--- 90,98 ----
     {
       if (object.GetNumberOfValues() != detail::TopologyDomainSize(inputDomain, TopologyElementTag()))
       {
@@ -22491,11 +23687,11 @@ diff -c ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig ./vtkm/cont/arg/Trans
 + #endif
       }
   
-      return object.PrepareForInput(Device());
+      return object.PrepareForInput(Device(), token);
 EOF
 
     if [[ $? != 0 ]] ; then
-      warn "vtkm patch 2 failed."
+      warn "vtkm patch 1 failed."
       return 1
     fi
     return 0;
@@ -22506,11 +23702,6 @@ function apply_vtkm_patch
     info "Patching VTKm . . ."
 
     apply_patch_1
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
-
-    apply_patch_2
     if [[ $? != 0 ]] ; then
        return 1
     fi
@@ -22586,7 +23777,7 @@ function build_vtkm
     vopts="${vopts} -DVTKm_ENABLE_RENDERING:BOOL=ON"
     vopts="${vopts} -DVTKm_USE_64BIT_IDS:BOOL=OFF"
     vopts="${vopts} -DVTKm_USE_DOUBLE_PRECISION:BOOL=ON"
-    vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=Release"
+    vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
     if [[ -d $CUDA_HOME ]]; then
         echo "Building with CUDA support."
         vopts="${vopts} -DVTKm_ENABLE_CUDA:BOOL=ON"
@@ -22763,16 +23954,16 @@ diff -c a/libsrc/FXdmfValuesBinary.cxx Xdmf/libsrc/XdmfValuesBinary.cxx
       FullFileName << DataSetName << ends;
       char * path = FullFileName.rdbuf()->str();
 !     XdmfDebug("Opening Binary Data for Reading : " << FullFileName);
-  
-  
+
+
       //char * path = new char [ strlen(this->DOM->GetWorkingDirectory())+strlen(DataSetName) + 1 ];
 --- 282,288 ----
       }
       FullFileName << DataSetName << ends;
       char * path = FullFileName.rdbuf()->str();
 !     XdmfDebug("Opening Binary Data for Reading : " << path);
-  
-  
+
+
       //char * path = new char [ strlen(this->DOM->GetWorkingDirectory())+strlen(DataSetName) + 1 ];
 EOF
     if [[ $? != 0 ]] ; then
@@ -22786,9 +23977,9 @@ EOF
 
 function apply_xdmf_osx_patch
 {
-    info "Patching Xdmf 2.1.1 for Xcode 9 . . ."
+    info "Patching Xdmf 2.1.1 for Xcode 9 and up . . ."
     patch -p0 << \EOF
-diff -c Xdmf/libsrc/orig/XdmfDsmComm.cxx Xdmf/libsrc/XdmfDsmComm.cxx 
+diff -c Xdmf/libsrc/orig/XdmfDsmComm.cxx Xdmf/libsrc/XdmfDsmComm.cxx
 *** Xdmf/libsrc/orig/XdmfDsmComm.cxx	Thu Aug 23 22:05:42 2018
 --- Xdmf/libsrc/XdmfDsmComm.cxx	Thu Aug 23 21:27:43 2018
 ***************
@@ -22839,7 +24030,11 @@ function apply_xdmf1_patch
     if [[ ${XDMF_VERSION} == 2.1.1 ]] ; then
         if [[ "$OPSYS" == "Darwin" ]] ; then
                 XCODE_VERSION="$(/usr/bin/xcodebuild -version)"
-                if [[ "$XCODE_VERSION" == "Xcode 9"* ]] ; then
+                # this will catch Xcode 10 +, we don't have to worry about
+                # XCode 1, it shouldn't be in the wild and even if it was
+                # zero hope that current bv stack will build using
+                if [[ "$XCODE_VERSION" == "Xcode 9"* ||
+                      "$XCODE_VERSION" == "Xcode 1"* ]] ; then
                     apply_xdmf_osx_patch
                 fi
         fi
@@ -22879,7 +24074,7 @@ function build_xdmf
     fi
 
     cd $XDMF_BUILD_DIR || error "Can't cd to Xdmf build dir."
-    rm -f CMakeCache.txt #remove any CMakeCache that may have existed 
+    rm -f CMakeCache.txt #remove any CMakeCache that may have existed
 
     #
     # Configure Xdmf
@@ -22959,7 +24154,7 @@ function build_xdmf
 function bv_xdmf_is_enabled
 {
     if [[ $DO_XDMF == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
@@ -23414,12 +24609,18 @@ function build_zlib
         STATICARGS=""
     fi
 
-    info "env CXX=$CXX_COMPILER CC=$C_COMPILER ./configure \
-        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATICARGS"
+    info "env CXX=$CXX_COMPILER CC=$C_COMPILER \
+         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
+         CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+         ./configure \
+        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATIC_ARGS"
 
     # Call configure
-    env CXX=$CXX_COMPILER CC=$C_COMPILER ./configure \
-        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATICARGS
+    env CXX=$CXX_COMPILER CC=$C_COMPILER \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" \
+        CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+        ./configure \
+        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATIC_ARGS
 
     if [[ $? != 0 ]] ; then
         warn "ZLIB configure failed.  Giving up"
@@ -23507,31 +24708,31 @@ xmlp_filecontents[17]="<lib name=\"cfitsio\"/>"
 xmlp_filecontents[18]="<lib name=\"cgns\"/>"
 xmlp_filecontents[19]="<lib name=\"conduit\"/>"
 xmlp_filecontents[20]="<lib name=\"embree\"/>"
-xmlp_filecontents[21]="<lib name=\"fastbit\"/>"
-xmlp_filecontents[22]="<lib name=\"fastquery\"/>"
-xmlp_filecontents[23]="<lib name=\"gdal\"/>"
-xmlp_filecontents[24]="<lib name=\"glu\"/>"
-xmlp_filecontents[25]="<lib name=\"h5part\"/>"
-xmlp_filecontents[26]="<lib name=\"hdf4\"/>"
-xmlp_filecontents[27]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[28]="<lib name=\"icet\"/>"
-xmlp_filecontents[29]="<lib name=\"ispc\"/>"
-xmlp_filecontents[30]="<lib name=\"llvm\"/>"
-xmlp_filecontents[31]="<lib name=\"mdsplus\"/>"
-xmlp_filecontents[32]="<lib name=\"mesagl\"/>"
-xmlp_filecontents[33]="<lib name=\"mfem\"/>"
-xmlp_filecontents[34]="<lib name=\"mili\"/>"
-xmlp_filecontents[35]="<lib name=\"moab\"/>"
-xmlp_filecontents[36]="<lib name=\"mpich\"/>"
-xmlp_filecontents[37]="<lib name=\"mxml\"/>"
-xmlp_filecontents[38]="<lib name=\"nektarpp\"/>"
-xmlp_filecontents[39]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[40]="<lib name=\"openexr\"/>"
-xmlp_filecontents[41]="<lib name=\"osmesa\"/>"
-xmlp_filecontents[42]="<lib name=\"ospray\"/>"
-xmlp_filecontents[43]="<lib name=\"p7zip\"/>"
-xmlp_filecontents[44]="<lib name=\"pidx\"/>"
-xmlp_filecontents[45]="<lib name=\"silo\"/>"
+xmlp_filecontents[21]="<lib name=\"fms\"/>"
+xmlp_filecontents[22]="<lib name=\"gdal\"/>"
+xmlp_filecontents[23]="<lib name=\"glu\"/>"
+xmlp_filecontents[24]="<lib name=\"h5part\"/>"
+xmlp_filecontents[25]="<lib name=\"hdf4\"/>"
+xmlp_filecontents[26]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[27]="<lib name=\"icet\"/>"
+xmlp_filecontents[28]="<lib name=\"ispc\"/>"
+xmlp_filecontents[29]="<lib name=\"llvm\"/>"
+xmlp_filecontents[30]="<lib name=\"mdsplus\"/>"
+xmlp_filecontents[31]="<lib name=\"mesagl\"/>"
+xmlp_filecontents[32]="<lib name=\"mfem\"/>"
+xmlp_filecontents[33]="<lib name=\"mili\"/>"
+xmlp_filecontents[34]="<lib name=\"moab\"/>"
+xmlp_filecontents[35]="<lib name=\"mpich\"/>"
+xmlp_filecontents[36]="<lib name=\"mxml\"/>"
+xmlp_filecontents[37]="<lib name=\"nektarpp\"/>"
+xmlp_filecontents[38]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[39]="<lib name=\"openexr\"/>"
+xmlp_filecontents[40]="<lib name=\"osmesa\"/>"
+xmlp_filecontents[41]="<lib name=\"ospray\"/>"
+xmlp_filecontents[42]="<lib name=\"p7zip\"/>"
+xmlp_filecontents[43]="<lib name=\"pidx\"/>"
+xmlp_filecontents[44]="<lib name=\"silo\"/>"
+xmlp_filecontents[45]="<lib name=\"stripack\"/>"
 xmlp_filecontents[46]="<lib name=\"szip\"/>"
 xmlp_filecontents[47]="<lib name=\"tbb\"/>"
 xmlp_filecontents[48]="<lib name=\"tcmalloc\"/>"
@@ -23559,50 +24760,50 @@ xmlp_filecontents[69]="<lib name=\"cfitsio\"/>"
 xmlp_filecontents[70]="<lib name=\"cgns\"/>"
 xmlp_filecontents[71]="<lib name=\"conduit\"/>"
 xmlp_filecontents[72]="<lib name=\"embree\"/>"
-xmlp_filecontents[73]="<lib name=\"gdal\"/>"
-xmlp_filecontents[74]="<lib name=\"glu\"/>"
-xmlp_filecontents[75]="<lib name=\"h5part\"/>"
-xmlp_filecontents[76]="<lib name=\"hdf4\"/>"
-xmlp_filecontents[77]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[78]="<lib name=\"icet\"/>"
-xmlp_filecontents[79]="<lib name=\"ispc\"/>"
-xmlp_filecontents[80]="<lib name=\"llvm\"/>"
-xmlp_filecontents[81]="<lib name=\"mfem\"/>"
-xmlp_filecontents[82]="<lib name=\"mili\"/>"
-xmlp_filecontents[83]="<lib name=\"moab\"/>"
-xmlp_filecontents[84]="<lib name=\"mxml\"/>"
-xmlp_filecontents[85]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[86]="<lib name=\"openexr\"/>"
-xmlp_filecontents[87]="<lib name=\"ospray\"/>"
-xmlp_filecontents[88]="<lib name=\"p7zip\"/>"
-xmlp_filecontents[89]="<lib name=\"pidx\"/>"
-xmlp_filecontents[90]="<lib name=\"silo\"/>"
-xmlp_filecontents[91]="<lib name=\"szip\"/>"
-xmlp_filecontents[92]="<lib name=\"tbb\"/>"
-xmlp_filecontents[93]="<lib name=\"vtkm\"/>"
-xmlp_filecontents[94]="<lib name=\"vtkh\"/>"
-xmlp_filecontents[95]="<lib name=\"xdmf\"/>"
-xmlp_filecontents[96]="</group>"
-xmlp_filecontents[97]="<group name=\"no-thirdparty\" comment=\"Do not build required 3rd party libraries\" enabled=\"no\">"
-xmlp_filecontents[98]="<lib name=\"no-cmake\"/>"
-xmlp_filecontents[99]="<lib name=\"no-openssl\"/>"
-xmlp_filecontents[100]="<lib name=\"no-python\"/>"
-xmlp_filecontents[101]="<lib name=\"no-qt\" />"
-xmlp_filecontents[102]="<lib name=\"no-qwt\" />"
-xmlp_filecontents[103]="<lib name=\"no-vtk\"/>"
-xmlp_filecontents[104]="<lib name=\"no-zlib\"/>"
-xmlp_filecontents[105]="</group>"
-xmlp_filecontents[106]="<group name=\"all-io\" comment=\"Build all available I/O libraries\" enabled=\"no\">"
-xmlp_filecontents[107]="<lib name=\"adios\"/>"
-xmlp_filecontents[108]="<lib name=\"adios2\"/>"
-xmlp_filecontents[109]="<lib name=\"boost\"/>"
-xmlp_filecontents[110]="<lib name=\"boxlib\"/>"
-xmlp_filecontents[111]="<lib name=\"cfitsio\"/>"
-xmlp_filecontents[112]="<lib name=\"conduit\"/>"
-xmlp_filecontents[113]="<lib name=\"mfem\"/>"
-xmlp_filecontents[114]="<lib name=\"cgns\"/>"
-xmlp_filecontents[115]="<lib name=\"fastbit\"/>"
-xmlp_filecontents[116]="<lib name=\"fastquery\"/>"
+xmlp_filecontents[73]="<lib name=\"fms\"/>"
+xmlp_filecontents[74]="<lib name=\"gdal\"/>"
+xmlp_filecontents[75]="<lib name=\"glu\"/>"
+xmlp_filecontents[76]="<lib name=\"h5part\"/>"
+xmlp_filecontents[77]="<lib name=\"hdf4\"/>"
+xmlp_filecontents[78]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[79]="<lib name=\"icet\"/>"
+xmlp_filecontents[80]="<lib name=\"ispc\"/>"
+xmlp_filecontents[81]="<lib name=\"llvm\"/>"
+xmlp_filecontents[82]="<lib name=\"mfem\"/>"
+xmlp_filecontents[83]="<lib name=\"mili\"/>"
+xmlp_filecontents[84]="<lib name=\"moab\"/>"
+xmlp_filecontents[85]="<lib name=\"mxml\"/>"
+xmlp_filecontents[86]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[87]="<lib name=\"openexr\"/>"
+xmlp_filecontents[88]="<lib name=\"ospray\"/>"
+xmlp_filecontents[89]="<lib name=\"p7zip\"/>"
+xmlp_filecontents[90]="<lib name=\"pidx\"/>"
+xmlp_filecontents[91]="<lib name=\"silo\"/>"
+xmlp_filecontents[92]="<lib name=\"szip\"/>"
+xmlp_filecontents[93]="<lib name=\"tbb\"/>"
+xmlp_filecontents[94]="<lib name=\"vtkm\"/>"
+xmlp_filecontents[95]="<lib name=\"vtkh\"/>"
+xmlp_filecontents[96]="<lib name=\"xdmf\"/>"
+xmlp_filecontents[97]="</group>"
+xmlp_filecontents[98]="<group name=\"no-thirdparty\" comment=\"Do not build required 3rd party libraries\" enabled=\"no\">"
+xmlp_filecontents[99]="<lib name=\"no-cmake\"/>"
+xmlp_filecontents[100]="<lib name=\"no-openssl\"/>"
+xmlp_filecontents[101]="<lib name=\"no-python\"/>"
+xmlp_filecontents[102]="<lib name=\"no-qt\" />"
+xmlp_filecontents[103]="<lib name=\"no-qwt\" />"
+xmlp_filecontents[104]="<lib name=\"no-vtk\"/>"
+xmlp_filecontents[105]="<lib name=\"no-zlib\"/>"
+xmlp_filecontents[106]="</group>"
+xmlp_filecontents[107]="<group name=\"all-io\" comment=\"Build all available I/O libraries\" enabled=\"no\">"
+xmlp_filecontents[108]="<lib name=\"adios\"/>"
+xmlp_filecontents[109]="<lib name=\"adios2\"/>"
+xmlp_filecontents[110]="<lib name=\"boost\"/>"
+xmlp_filecontents[111]="<lib name=\"boxlib\"/>"
+xmlp_filecontents[112]="<lib name=\"cfitsio\"/>"
+xmlp_filecontents[113]="<lib name=\"conduit\"/>"
+xmlp_filecontents[114]="<lib name=\"mfem\"/>"
+xmlp_filecontents[115]="<lib name=\"cgns\"/>"
+xmlp_filecontents[116]="<lib name=\"fms\"/>"
 xmlp_filecontents[117]="<lib name=\"gdal\"/>"
 xmlp_filecontents[118]="<lib name=\"h5part\"/>"
 xmlp_filecontents[119]="<lib name=\"hdf5\"/>"
@@ -23627,117 +24828,116 @@ xmlp_filecontents[137]="<lib name=\"cfitsio\"/>"
 xmlp_filecontents[138]="<lib name=\"conduit\"/>"
 xmlp_filecontents[139]="<lib name=\"mfem\"/>"
 xmlp_filecontents[140]="<lib name=\"cgns\"/>"
-xmlp_filecontents[141]="<lib name=\"fastbit\"/>"
-xmlp_filecontents[142]="<lib name=\"fastquery\"/>"
-xmlp_filecontents[143]="<lib name=\"gdal\"/>"
-xmlp_filecontents[144]="<lib name=\"h5part\"/>"
-xmlp_filecontents[145]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[146]="<lib name=\"mxml\"/>"
-xmlp_filecontents[147]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[148]="<lib name=\"nektarpp\"/>"
-xmlp_filecontents[149]="<lib name=\"pidx\"/>"
-xmlp_filecontents[150]="<lib name=\"silo\"/>"
-xmlp_filecontents[151]="<lib name=\"szip\"/>"
-xmlp_filecontents[152]="<lib name=\"uintah\"/>"
-xmlp_filecontents[153]="<lib name=\"xdmf\"/>"
-xmlp_filecontents[154]="<lib name=\"zlib\"/>"
-xmlp_filecontents[155]="<lib name=\"no-qt\"/>"
-xmlp_filecontents[156]="<lib name=\"no-qwt\"/>"
-xmlp_filecontents[157]="<lib name=\"no-python\"/>"
-xmlp_filecontents[158]="</group>"
-xmlp_filecontents[159]="<group name=\"nonio\" comment=\"Build non I/O libraries\" enabled=\"no\">"
-xmlp_filecontents[160]="<lib name=\"icet\"/>"
-xmlp_filecontents[161]="<lib name=\"embree\"/>"
-xmlp_filecontents[162]="<lib name=\"ispc\"/>"
-xmlp_filecontents[163]="<lib name=\"tbb\"/>"
-xmlp_filecontents[164]="<lib name=\"ospray\"/>"
-xmlp_filecontents[165]="</group>"
-xmlp_filecontents[166]="<group name=\"advanced\" comment=\"Must be manually downloaded\" enabled=\"no\">"
-xmlp_filecontents[167]="<lib name=\"hdf4\"/>"
-xmlp_filecontents[168]="<lib name=\"mili\"/>"
-xmlp_filecontents[169]="<lib name=\"tcmalloc\"/>"
-xmlp_filecontents[170]="</group>"
-xmlp_filecontents[171]="</license>"
-xmlp_filecontents[172]="<license name=\"gpl\">"
-xmlp_filecontents[173]="<required>"
-xmlp_filecontents[174]="<lib name=\"cmake\"/>"
-xmlp_filecontents[175]="<lib name=\"python\"/>"
-xmlp_filecontents[176]="<lib name=\"vtk\"/>"
-xmlp_filecontents[177]="<lib name=\"qt\"/>"
-xmlp_filecontents[178]="<lib name=\"qwt\"/>"
-xmlp_filecontents[179]="<lib name=\"zlib\"/>"
-xmlp_filecontents[180]="</required>"
-xmlp_filecontents[181]="<optional>"
-xmlp_filecontents[182]="<lib name=\"boost\"/>"
-xmlp_filecontents[183]="<lib name=\"szip\"/>"
-xmlp_filecontents[184]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[185]="<lib name=\"glu\"/>"
-xmlp_filecontents[186]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[187]="<lib name=\"icet\"/>"
-xmlp_filecontents[188]="<lib name=\"llvm\"/>"
-xmlp_filecontents[189]="<lib name=\"mesagl\"/>"
-xmlp_filecontents[190]="<lib name=\"mpich\"/>"
-xmlp_filecontents[191]="<lib name=\"osmesa\"/>"
-xmlp_filecontents[192]="<lib name=\"pyqt\"/>"
-xmlp_filecontents[193]="<lib name=\"uintah\"/>"
-xmlp_filecontents[194]="<lib name=\"damaris\"/>"
-xmlp_filecontents[195]="<lib name=\"xercesc\"/>"
-xmlp_filecontents[196]="<lib name=\"xsd\"/>"
-xmlp_filecontents[197]="</optional>"
-xmlp_filecontents[198]="<group name=\"required\" comment=\"All required libraries\" enabled=\"yes\">"
-xmlp_filecontents[199]="<lib name=\"cmake\"/>"
-xmlp_filecontents[200]="<lib name=\"python\"/>"
-xmlp_filecontents[201]="<lib name=\"vtk\"/>"
-xmlp_filecontents[202]="<lib name=\"qt\"/>"
-xmlp_filecontents[203]="<lib name=\"qwt\"/>"
-xmlp_filecontents[204]="<lib name=\"zlib\"/>"
-xmlp_filecontents[205]="</group>"
-xmlp_filecontents[206]="<group name=\"optional\" comment=\"All optional libraries\" enabled=\"no\">"
-xmlp_filecontents[207]="<lib name=\"boost\"/>"
-xmlp_filecontents[208]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[209]="<lib name=\"openssl\"/>"
-xmlp_filecontents[210]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[211]="<lib name=\"mpich\"/>"
-xmlp_filecontents[212]="<lib name=\"szip\"/>"
-xmlp_filecontents[213]="<lib name=\"uintah\"/>"
-xmlp_filecontents[214]="<lib name=\"damaris\"/>"
-xmlp_filecontents[215]="<lib name=\"xercesc\"/>"
-xmlp_filecontents[216]="<lib name=\"xsd\"/>"
-xmlp_filecontents[217]="</group>"
-xmlp_filecontents[218]="<group name=\"no-thirdparty\" comment=\"Do not build required 3rd party libraries\" enabled=\"no\">"
-xmlp_filecontents[219]="<lib name=\"no-cmake\"/>"
-xmlp_filecontents[220]="<lib name=\"no-python\"/>"
-xmlp_filecontents[221]="<lib name=\"no-qt\" />"
-xmlp_filecontents[222]="<lib name=\"no-qwt\" />"
-xmlp_filecontents[223]="<lib name=\"no-vtk\"/>"
-xmlp_filecontents[224]="<lib name=\"no-zlib\"/>"
-xmlp_filecontents[225]="</group>"
-xmlp_filecontents[226]="<group name=\"dbio-only\" comment=\"Disables EVERYTHING but I/O.\" enabled=\"no\">"
-xmlp_filecontents[227]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[228]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[229]="<lib name=\"szip\"/>"
-xmlp_filecontents[230]="<lib name=\"zlib\"/>"
-xmlp_filecontents[231]="<lib name=\"uintah\"/>"
-xmlp_filecontents[232]="<lib name=\"no-python\"/>"
-xmlp_filecontents[233]="<lib name=\"no-qt\"/>"
-xmlp_filecontents[234]="<lib name=\"no-qwt\"/>"
-xmlp_filecontents[235]="</group>"
-xmlp_filecontents[236]="<group name=\"all-io\" comment=\"Build all available I/O libraries\" enabled=\"no\">"
-xmlp_filecontents[237]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[238]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[239]="<lib name=\"szip\"/>"
-xmlp_filecontents[240]="<lib name=\"zlib\"/>"
-xmlp_filecontents[241]="<lib name=\"uintah\"/>"
-xmlp_filecontents[242]="</group>"
-xmlp_filecontents[243]="<group name=\"nonio\" comment=\"Build non I/O libraries\" enabled=\"no\">"
-xmlp_filecontents[244]="<lib name=\"icet\"/>"
-xmlp_filecontents[245]="</group>"
-xmlp_filecontents[246]="</license>"
-xmlp_filecontents[247]="</modules>"
+xmlp_filecontents[141]="<lib name=\"fms\"/>"
+xmlp_filecontents[142]="<lib name=\"gdal\"/>"
+xmlp_filecontents[143]="<lib name=\"h5part\"/>"
+xmlp_filecontents[144]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[145]="<lib name=\"mxml\"/>"
+xmlp_filecontents[146]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[147]="<lib name=\"nektarpp\"/>"
+xmlp_filecontents[148]="<lib name=\"pidx\"/>"
+xmlp_filecontents[149]="<lib name=\"silo\"/>"
+xmlp_filecontents[150]="<lib name=\"szip\"/>"
+xmlp_filecontents[151]="<lib name=\"uintah\"/>"
+xmlp_filecontents[152]="<lib name=\"xdmf\"/>"
+xmlp_filecontents[153]="<lib name=\"zlib\"/>"
+xmlp_filecontents[154]="<lib name=\"no-qt\"/>"
+xmlp_filecontents[155]="<lib name=\"no-qwt\"/>"
+xmlp_filecontents[156]="<lib name=\"no-python\"/>"
+xmlp_filecontents[157]="</group>"
+xmlp_filecontents[158]="<group name=\"nonio\" comment=\"Build non I/O libraries\" enabled=\"no\">"
+xmlp_filecontents[159]="<lib name=\"icet\"/>"
+xmlp_filecontents[160]="<lib name=\"embree\"/>"
+xmlp_filecontents[161]="<lib name=\"ispc\"/>"
+xmlp_filecontents[162]="<lib name=\"tbb\"/>"
+xmlp_filecontents[163]="<lib name=\"ospray\"/>"
+xmlp_filecontents[164]="</group>"
+xmlp_filecontents[165]="<group name=\"advanced\" comment=\"Must be manually downloaded\" enabled=\"no\">"
+xmlp_filecontents[166]="<lib name=\"hdf4\"/>"
+xmlp_filecontents[167]="<lib name=\"mili\"/>"
+xmlp_filecontents[168]="<lib name=\"tcmalloc\"/>"
+xmlp_filecontents[169]="</group>"
+xmlp_filecontents[170]="</license>"
+xmlp_filecontents[171]="<license name=\"gpl\">"
+xmlp_filecontents[172]="<required>"
+xmlp_filecontents[173]="<lib name=\"cmake\"/>"
+xmlp_filecontents[174]="<lib name=\"python\"/>"
+xmlp_filecontents[175]="<lib name=\"vtk\"/>"
+xmlp_filecontents[176]="<lib name=\"qt\"/>"
+xmlp_filecontents[177]="<lib name=\"qwt\"/>"
+xmlp_filecontents[178]="<lib name=\"zlib\"/>"
+xmlp_filecontents[179]="</required>"
+xmlp_filecontents[180]="<optional>"
+xmlp_filecontents[181]="<lib name=\"boost\"/>"
+xmlp_filecontents[182]="<lib name=\"szip\"/>"
+xmlp_filecontents[183]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[184]="<lib name=\"glu\"/>"
+xmlp_filecontents[185]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[186]="<lib name=\"icet\"/>"
+xmlp_filecontents[187]="<lib name=\"llvm\"/>"
+xmlp_filecontents[188]="<lib name=\"mesagl\"/>"
+xmlp_filecontents[189]="<lib name=\"mpich\"/>"
+xmlp_filecontents[190]="<lib name=\"osmesa\"/>"
+xmlp_filecontents[191]="<lib name=\"pyqt\"/>"
+xmlp_filecontents[192]="<lib name=\"uintah\"/>"
+xmlp_filecontents[193]="<lib name=\"damaris\"/>"
+xmlp_filecontents[194]="<lib name=\"xercesc\"/>"
+xmlp_filecontents[195]="<lib name=\"xsd\"/>"
+xmlp_filecontents[196]="</optional>"
+xmlp_filecontents[197]="<group name=\"required\" comment=\"All required libraries\" enabled=\"yes\">"
+xmlp_filecontents[198]="<lib name=\"cmake\"/>"
+xmlp_filecontents[199]="<lib name=\"python\"/>"
+xmlp_filecontents[200]="<lib name=\"vtk\"/>"
+xmlp_filecontents[201]="<lib name=\"qt\"/>"
+xmlp_filecontents[202]="<lib name=\"qwt\"/>"
+xmlp_filecontents[203]="<lib name=\"zlib\"/>"
+xmlp_filecontents[204]="</group>"
+xmlp_filecontents[205]="<group name=\"optional\" comment=\"All optional libraries\" enabled=\"no\">"
+xmlp_filecontents[206]="<lib name=\"boost\"/>"
+xmlp_filecontents[207]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[208]="<lib name=\"openssl\"/>"
+xmlp_filecontents[209]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[210]="<lib name=\"mpich\"/>"
+xmlp_filecontents[211]="<lib name=\"szip\"/>"
+xmlp_filecontents[212]="<lib name=\"uintah\"/>"
+xmlp_filecontents[213]="<lib name=\"damaris\"/>"
+xmlp_filecontents[214]="<lib name=\"xercesc\"/>"
+xmlp_filecontents[215]="<lib name=\"xsd\"/>"
+xmlp_filecontents[216]="</group>"
+xmlp_filecontents[217]="<group name=\"no-thirdparty\" comment=\"Do not build required 3rd party libraries\" enabled=\"no\">"
+xmlp_filecontents[218]="<lib name=\"no-cmake\"/>"
+xmlp_filecontents[219]="<lib name=\"no-python\"/>"
+xmlp_filecontents[220]="<lib name=\"no-qt\" />"
+xmlp_filecontents[221]="<lib name=\"no-qwt\" />"
+xmlp_filecontents[222]="<lib name=\"no-vtk\"/>"
+xmlp_filecontents[223]="<lib name=\"no-zlib\"/>"
+xmlp_filecontents[224]="</group>"
+xmlp_filecontents[225]="<group name=\"dbio-only\" comment=\"Disables EVERYTHING but I/O.\" enabled=\"no\">"
+xmlp_filecontents[226]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[227]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[228]="<lib name=\"szip\"/>"
+xmlp_filecontents[229]="<lib name=\"zlib\"/>"
+xmlp_filecontents[230]="<lib name=\"uintah\"/>"
+xmlp_filecontents[231]="<lib name=\"no-python\"/>"
+xmlp_filecontents[232]="<lib name=\"no-qt\"/>"
+xmlp_filecontents[233]="<lib name=\"no-qwt\"/>"
+xmlp_filecontents[234]="</group>"
+xmlp_filecontents[235]="<group name=\"all-io\" comment=\"Build all available I/O libraries\" enabled=\"no\">"
+xmlp_filecontents[236]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[237]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[238]="<lib name=\"szip\"/>"
+xmlp_filecontents[239]="<lib name=\"zlib\"/>"
+xmlp_filecontents[240]="<lib name=\"uintah\"/>"
+xmlp_filecontents[241]="</group>"
+xmlp_filecontents[242]="<group name=\"nonio\" comment=\"Build non I/O libraries\" enabled=\"no\">"
+xmlp_filecontents[243]="<lib name=\"icet\"/>"
+xmlp_filecontents[244]="</group>"
+xmlp_filecontents[245]="</license>"
+xmlp_filecontents[246]="</modules>"
 xmlp_licenses[0]="bsd|mit|lgpl"
-xmlp_licenses_range[0]="1 171"
+xmlp_licenses_range[0]="1 170"
 xmlp_licenses[1]="gpl"
-xmlp_licenses_range[1]="172 246"
+xmlp_licenses_range[1]="171 245"
 defaultLicenses=$(xmlp_get_license "$@")
 for license in `echo $defaultLicenses`
 do
