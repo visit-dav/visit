@@ -321,7 +321,7 @@ PMDField::SetGridSpacing(char * name,
             this->gridSpacing[2] = 0;
         }
         
-        delete[] tmpArray;
+        delete [] tmpArray;
     }
 }
 
@@ -374,7 +374,7 @@ PMDField::SetGridGlobalOffset(char * name,
             this->gridGlobalOffset[2] = 0;
         }
 
-        delete[] tmpArray;
+        delete [] tmpArray;
     }
 }
 
@@ -425,7 +425,7 @@ PMDField::SetGridPosition(char * name,
             gridPosition[2] = 0;
         }
 
-        delete[] tmpArray;
+        delete [] tmpArray;
     }
 }
 
@@ -546,7 +546,7 @@ PMDField::SetGeometry(char * name,
             debug5 << " tmpchar is not a valid geometry" << endl;
         }
 
-        delete[] buffer;
+        delete [] buffer;
     }
 }
 
@@ -610,7 +610,7 @@ PMDField::SetAxisLabels(char * name,
             }
         }
 
-        delete[] buffer;
+        delete [] buffer;
     }
 }
 
@@ -720,7 +720,7 @@ void PMDField::SetUnitDimension(char * name,
         }
         //cerr << this->unitsLabel << endl;
 
-        delete[] powers;
+        delete [] powers;
     }
 }
 
@@ -783,7 +783,7 @@ PMDField::SetFieldBoundary(char * name,
             //cerr << this->fieldBoundary[iLabel] << endl;
         }
 
-        delete[] buffer;
+        delete [] buffer;
     }
 }
 
@@ -844,7 +844,7 @@ PMDField::SetFieldBoundaryParameters(char * name,
             }
         }
 
-        delete[] buffer;
+        delete [] buffer;
     }
 }
 
@@ -888,7 +888,7 @@ PMDField::SetDataOrder(char * name,
 
         this->dataOrder = buffer;
 
-        delete[] buffer;
+        delete [] buffer;
     }
 }
 
@@ -947,7 +947,7 @@ PMDField::SetGeometryParameters(char * name,
         return -1;
       }
 
-      delete[] buffer;
+      delete [] buffer;
   }
   else
   {

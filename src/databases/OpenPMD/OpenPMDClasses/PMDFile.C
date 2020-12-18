@@ -49,17 +49,16 @@
 
 #include "PMDFile.h"
 
-#include <cassert>
 #include <stdio.h>
 
 #include <DebugStream.h>
-#include <InstallationFunctions.h>
 
-#include <InvalidDBTypeException.h>
 #ifndef TEST
-#   include <InvalidVariableException.h>
-#   include <InvalidFilesException.h>
-#   include <InvalidTimeStepException.h>
+#include <InvalidVariableException.h>
+#include <InvalidDBTypeException.h>
+#include <InvalidFilesException.h>
+#include <InvalidTimeStepException.h>
+#include <InvalidDBTypeException.h>
 #endif
 
 // ***************************************************************************
@@ -79,6 +78,8 @@
 PMDFile::PMDFile()
 {
     fileId=-1;
+    this->version = "";
+    strcpy(this->meshesPath,"");
 }
 
 // ***************************************************************************
@@ -104,7 +105,7 @@ PMDFile::~PMDFile()
 // Method: PMDFile::OpenFile
 //
 // Purpose:
-//      Open the openPMD file
+//      Open the OpenPMD file
 //
 // Programmer: Mathieu Lobet
 // Creation: Fri Oct 14 2016
@@ -150,8 +151,7 @@ void PMDFile::OpenFile(char * PMDFilePath)
 //
 // Modifications:
 // Nov. 9 2017 - M. Lobet - add buffer + `\0` for a correct reading
-// May  6 2020 - A. Huebl - now really fix the above bug :-)
-//                          add version verification for read files
+// May 12 2020 - E. Brugger - add check for existence of attribute openPMD
 //
 // ***************************************************************************
 void PMDFile::ScanFileAttributes()
@@ -171,11 +171,16 @@ void PMDFile::ScanFileAttributes()
     size_t   size;
     int      nPoints;
 
-    // is this a valid openPMD file with an "openPMD" attribute in / ?
-    bool     isValid = false;
+    // OpenPMD files always contain a data group at the root
+    groupId = H5Gopen(fileId, "/",H5P_DEFAULT);
 
-    // openPMD files always contain a data group at the root
-    groupId = H5Gopen(fileId, "/", H5P_DEFAULT);
+    // Check for openPMD attr in the root group
+    if (H5Aexists(groupId, "openPMD") <= 0)
+    {
+        CloseFile();
+        EXCEPTION1(InvalidDBTypeException,
+            "Not an openPMD file: Missing \"openPMD\" attribute in root group");
+    }
 
     // Number of attributes
     nbAttr = H5Aget_num_attrs(groupId);
@@ -197,7 +202,7 @@ void PMDFile::ScanFileAttributes()
         // Size of an element (number of char for instance)
         size = H5Tget_size (atype);
 
-        if (strcmp(attrName, "openPMD")==0)
+        if (strcmp(attrName,"openPMD")==0)
         {
             char *buffer = new char[size + 1];
 
@@ -208,17 +213,16 @@ void PMDFile::ScanFileAttributes()
             this->version = buffer;
 
             delete [] buffer;
-            isValid = true;
         }
         else if (strcmp(attrName,"meshesPath")==0)
         {
             char *buffer = new char[size + 1];
 
             // Read attribute
-            H5Aread (attrId, atype, buffer);  // not NULL-terminated
+            H5Aread (attrId, atype, buffer);
             buffer[size] = '\0';
 
-            this->meshesPath = buffer;
+            strncpy(this->meshesPath,buffer,size+1);
             delete [] buffer;
 
         }
@@ -227,58 +231,14 @@ void PMDFile::ScanFileAttributes()
             char *buffer = new char[size + 1];
 
             // Read attribute
-            H5Aread (attrId, atype, buffer);  // not NULL-terminated
+            H5Aread (attrId, atype, buffer);
             buffer[size] = '\0';
 
-            this->particlesPath = buffer;
+            strncpy(this->particlesPath,buffer,size+1);
 
             delete [] buffer;
         }
     }
-
-    // missing self-identification as openPMD file
-    if (!isValid)
-    {
-        char format_error[1024];
-        snprintf(format_error, 1024,
-                 "Not an openPMD file: Missing 'openPMD' identifier in /");
-        debug5 << "The current file ID '" << fileId
-               << "' is not an openPMD file" << endl;
-        CloseFile();
-        EXCEPTION1(InvalidDBTypeException, format_error);
-    }
-
-    // validate openPMD standard version range
-    if (VersionGreaterThan("1.0.0", this->version)) // 1.0.0>file
-    {
-        // file format too old: < 1.0.0
-        char version_error[1024];
-        snprintf(version_error, 1024,
-                 "Standard '%s' in openPMD file is too old! "
-                 "Supported version range: >=1.0.0,<2.0.0 ",
-                 this->version.c_str());
-        debug5 << "The current file ID '" << fileId
-               << "' provides an unsupported openPMD standard: "
-               << this->version << endl;
-        CloseFile();
-        EXCEPTION1(InvalidDBTypeException, version_error);
-    }
-    if (!VersionGreaterThan("2.0.0", this->version)) // !2.0.0>file aka file>=2.0.0
-    {
-        // file format too new: >= 2.0.0
-        char version_error[1024];
-        snprintf(version_error, 1024,
-                 "Standard '%s' in openPMD file is too new! "
-                 "Maybe try a newer version of VisIt? "
-                 "Supported version range: >=1.0.0,<2.0.0 ",
-                 this->version.c_str());
-        debug5 << "The current file ID '" << fileId
-               << "' provides an unsupported openPMD standard: "
-               << this->version << endl;
-        CloseFile();
-        EXCEPTION1(InvalidDBTypeException, version_error);
-    }
-
 }
 
 // ***************************************************************************
@@ -319,7 +279,7 @@ void PMDFile::ScanIterations()
     hid_t        aspace;
     H5O_info_t   objectInfo;
 
-    // openPMD files always contain a data group at the root
+    // OpenPMD files always contain a data group at the root
     groupId = H5Gopen(fileId, "/data",H5P_DEFAULT);
 
     //H5Gget_num_objs(group_iterations->getId(), &nobj);
@@ -348,13 +308,13 @@ void PMDFile::ScanIterations()
             iterationId = H5Gopen2(groupId, iterationName, H5P_DEFAULT);
 
             // Save the iteration name
-            iteration.name = iterationName;
+            strcpy(iteration.name,iterationName);
 
             // Save mesh path
-            iteration.meshesPath = this->meshesPath;
+            strcpy(iteration.meshesPath,this->meshesPath);
 
             // Save particles path
-            iteration.particlesPath = this->particlesPath;
+            strcpy(iteration.particlesPath,this->particlesPath);
 
             // Number of attributes
             nbAttr = H5Aget_num_attrs(iterationId);
@@ -464,7 +424,7 @@ void PMDFile::Print()
 {
 
     cout << " File: " << this->filePath << endl;
-    cout << " openPMD standard: " << this->version << endl;
+    cout << " OpenPMD Version: " << this->version << endl;
 
     cout << endl;
     cout << " Number of iteration: " << this->GetNumberIterations()
@@ -497,7 +457,7 @@ int PMDFile::GetNumberIterations() const
 // Method: PMDFile::CloseFile
 //
 // Purpose:
-//      This method closes the opened openPMD file.
+//      This method closes the opened OpenPMD file.
 //
 // Programmer: Mathieu Lobet
 // Creation:   Fri Oct 14 2016
@@ -526,7 +486,7 @@ void PMDFile::CloseFile()
 //      numValues : number of element to read
 //      factor : multiplication factor applied to all elements of array
 //      fieldDataClass : Dataset type (H5T_FLOAT...)
-//      path : path to the data set in the openPMD file
+//      path : path to the data set in the OpenPMD file
 //
 // Returns:  <0 on failure, 0 on success.
 //
