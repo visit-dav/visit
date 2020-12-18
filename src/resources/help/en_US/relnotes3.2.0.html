@@ -31,7 +31,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_features"></a>
 <p><b><font size="4">General features added in version 3.2</font></b></p>
 <ul>
-  <li>General Feature 1</li>
+  <li>Upgraded VTKm to a recent version. Support was added for zone centered variables and 3D unstructured meshes with tetrahedra, pyramid and prism cells, in addition to the existing support for hexahedra.</li>
   <li>General Feature 2</li>
 </ul>
 
@@ -70,6 +70,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to VisIt's operators in version 3.2</font></b></p>
 <ul>
   <li>The Stagger operator is no longer enabled by default.</li>
+  <li>The Clip operator now has the ability to "Crinkle" clip, which retains whole cells that intersect with the clip boundary.</li>
+  <li>Threshold operations can now use the VTKm backend for structured meshes.</li>
 </ul>
 
 <a name="Expression_changes"></a>
@@ -96,8 +98,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Build_features"></a>
 <p><b><font size="4">Build features added in version 3.2</font></b></p>
 <ul>
-  <li>For build_visit, there is now only one way to specify a debug build: --build-mode "Debug".
-The --debug flag was removed. The default build-mode is "Release". If "Debug" is specified, all third-party libraries are built in debug mode. If the intention is only to build VisIt in debug mode, it should be compiled separately after all the third-party libraries are compiled, passing -DCMAKE_BUILD_TYPE:STRING=Debug to cmake when configuring VisIt.</li> 
+  <li>For build_visit, there is now only one way to specify a debug build: --build-mode "Debug". The --debug flag was removed. The default build-mode is "Release". If "Debug" is specified, all third-party libraries are built in debug mode. If the intention is only to build VisIt in debug mode, it should be compiled separately after all the third-party libraries are compiled, passing -DCMAKE_BUILD_TYPE:STRING=Debug to cmake when configuring VisIt.</li> 
   <li>Removed FastBit and FastQuery from VisIt.</li>
 </ul>
 

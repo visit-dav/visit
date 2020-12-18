@@ -8,7 +8,7 @@
 #                          3D unstructured, single domain
 #                          3D unstructured, multi domain
 #              plots     - Contour, Pseudocolor
-#              operators - Isosurface, Slice
+#              operators - Isosurface, Slice, Threshold
 #
 #  Programmer: Eric Brugger
 #  Date:       Wed Sep 19 12:18:14 PDT 2018
@@ -122,12 +122,38 @@ DrawPlots()
 
 Test("vtkm_rect3d_05")
 
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "d")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (0.2)
+ThresholdAtts.upperBounds = (0.59)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_rect3d_06")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (-0.2)
+ThresholdAtts.upperBounds = (0.39)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_rect3d_07")
+
 #
 # Test a 2d curvilinear mesh.
 #
 DeleteAllPlots()
 
-OpenDatabase(silo_data_path("curv3d.silo"))
+OpenDatabase(silo_data_path("curv2d.silo"))
 
 AddPlot("Contour", "u")
 DrawPlots()
@@ -226,6 +252,32 @@ SetOperatorOptions(atts)
 DrawPlots()
 
 Test("vtkm_curv3d_05")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "d")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (1)
+ThresholdAtts.upperBounds = (3)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_curv3d_06")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (-0.5)
+ThresholdAtts.upperBounds = (0.5)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_curv3d_07")
 
 #
 # Test a 2d unstructured mesh.
@@ -331,6 +383,92 @@ SetOperatorOptions(atts)
 DrawPlots()
 
 Test("vtkm_ucd3d_05")
+
+#
+# Test 3d unstructured with zoo elements.
+#
+DeleteAllPlots()
+
+OpenDatabase(silo_data_path("globe.silo"))
+
+AddPlot("Contour", "u")
+DrawPlots()
+
+v = View3DAttributes()
+v.viewNormal = (-0.3057, 0.7186, 0.6247)
+v.focus = (0., 0., 0.)
+v.viewUp = (0.5003, 0.6794, -0.5367)
+v.parallelScale = 17.3205
+v.nearPlane = -34.641
+v.farPlane = 34.641
+SetView3D(v)
+
+Test("vtkm_globe_01")
+
+DeleteAllPlots()
+
+AddPlot("Contour", "dx")
+DrawPlots()
+
+Test("vtkm_globe_02")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "v")
+AddOperator("Slice")
+atts = SliceAttributes()
+atts.project2d = 0
+atts.normal = (0., 1., 0.)
+atts.originType = atts.Point
+atts.originPoint = (0., 0., 0.)
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_globe_03")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "dx")
+AddOperator("Slice")
+atts = SliceAttributes()
+atts.project2d = 0
+atts.normal = (0., 1., 0.)
+atts.originType = atts.Point
+atts.originPoint = (0., 0., 0.)
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_globe_04")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Isosurface")
+atts = IsosurfaceAttributes()
+atts.contourNLevels = 10
+atts.contourMethod = atts.Level
+atts.minFlag = 0
+atts.maxFlag = 0
+atts.variable = "u"
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_globe_05")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "dx")
+AddOperator("Isosurface")
+atts = IsosurfaceAttributes()
+atts.contourNLevels = 10
+atts.contourMethod = atts.Level
+atts.minFlag = 0
+atts.maxFlag = 0
+atts.variable = "u"
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_globe_06")
 
 #
 # Test a multi-domain unstructured mesh.

@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CLIPATTRIBUTES_NMETH 34
+#define CLIPATTRIBUTES_NMETH 36
 void           PyClipAttributes_StartUp(ClipAttributes *subj, void *data);
 void           PyClipAttributes_CloseDown();
 PyMethodDef *  PyClipAttributes_GetMethodTable(int *nMethods);

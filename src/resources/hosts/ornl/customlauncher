@@ -304,9 +304,9 @@ class ORNLLauncher(MainLauncher):
             # Replace the hostname to which the engine will connect back.
             self.generalArgs.host = self.hostname()
             if "jaguarpf" in self.generalArgs.host:
-                self.generalArgs.host = string.replace(self.generalArgs.host, "jaguarpf-", "")
+                self.generalArgs.host = self.generalArgs.host.replace("jaguarpf-", "")
             else:
-                self.generalArgs.host = string.replace(self.generalArgs.host, "jaguar", "login")
+                self.generalArgs.host = self.generalArgs.host.replace("jaguar", "login")
 
             addedpaths = ["/opt/torque/default/bin", "/usr/bin"]
             if GETENV("PATH") == "":
