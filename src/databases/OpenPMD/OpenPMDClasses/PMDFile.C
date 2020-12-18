@@ -222,7 +222,7 @@ void PMDFile::ScanFileAttributes()
             H5Aread (attrId, atype, buffer);
             buffer[size] = '\0';
 
-            strncpy(this->meshesPath,buffer,sizeof(buffer));
+            strncpy(this->meshesPath,buffer,size+1);
             delete [] buffer;
 
         }
@@ -234,7 +234,7 @@ void PMDFile::ScanFileAttributes()
             H5Aread (attrId, atype, buffer);
             buffer[size] = '\0';
 
-            strncpy(this->particlesPath,buffer,sizeof(buffer));
+            strncpy(this->particlesPath,buffer,size+1);
 
             delete [] buffer;
         }
