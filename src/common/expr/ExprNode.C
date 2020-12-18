@@ -323,7 +323,7 @@ ListExpr::PrintNode(ostream &o)
     for (size_t i=0; i<elems->size(); i++)
     {
         char tmp[256];
-        snprintf(tmp, 256, "Element % 2zu: ", i);
+        snprintf(tmp, sizeof(tmp), "Element %2zu: ", i);
         (*elems)[i]->Print(o,tmp);
     }
 }
@@ -397,7 +397,7 @@ ArgsExpr::PrintNode(ostream &o)
     for (size_t i=0; i<args->size(); i++)
     {
         char tmp[256];
-        snprintf(tmp, 256, "Arg % 2zu: ", i);
+        snprintf(tmp, sizeof(tmp), "Arg %2zu: ", i);
         (*args)[i]->Print(o, tmp);
     }
 }
