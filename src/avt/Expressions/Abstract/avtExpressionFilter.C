@@ -365,7 +365,7 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
         // not referenced by the zone list.
         //
         unsigned char *referenced = NULL;
-        if (isPoint & ds->GetNumberOfCells() > 0)
+        if (isPoint && ds->GetNumberOfCells() > 0)
         {
             referenced = new unsigned char[data->GetNumberOfTuples()];
             memset(referenced, 0, data->GetNumberOfTuples());
