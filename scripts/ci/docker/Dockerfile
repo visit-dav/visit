@@ -7,6 +7,7 @@ MAINTAINER Cyrus Harrison <cyrush@llnl.gov>
 # fetch build env
 RUN apt-get update && apt-get install -y \
     git \
+    git-lfs \
     wget \
     curl \
     p7zip \
@@ -61,6 +62,9 @@ RUN mkdir -p /masonry/build-mb-develop-ci-smoke/visit/src/tools/dev/scripts/
 COPY visit.build_visit.docker.src.tar /masonry
 COPY masonry_docker_ci_cleanup.py /
 RUN cd /masonry/build-mb-develop-ci-smoke/visit/src/tools/dev/scripts/ && tar -xzf /masonry/visit.build_visit.docker.src.tar
+
+# ensure build_visit script is executable
+RUN cd /masonry/build-mb-develop-ci-smoke/visit/src/tools/dev/scripts/ && chmod u+x build_visit
 
 # call masonry to build tpls
 RUN cd masonry && python bootstrap_visit.py opts/mb-develop-ci-smoke.json
