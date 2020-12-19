@@ -7,6 +7,7 @@ MAINTAINER Cyrus Harrison <cyrush@llnl.gov>
 # fetch build env
 RUN apt-get update && apt-get install -y \
     git \
+    git-lfs \
     wget \
     curl \
     p7zip \
