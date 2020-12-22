@@ -3,15 +3,11 @@ import json
 import subprocess
 import time
 import glob
-import re
-import plistlib # Generate and parse macOS .plist files
 
 import os
 from os.path import join as pjoin
 
 from masonry import *
-
-
 
 def load_opts(opts_json):
     opts_data = open(opts_json).read()
@@ -258,176 +254,21 @@ def steps_package(opts,build_type,ctx):
         ctx.triggers["build"].extend([a_cmake_bundle,
                                       a_make_bundle])
 
-def __filter_files(sub_dir,opts):
-    filtered_files = []
-    app_bundles = []
-    app_frameworks = []
-
-    files = glob.glob(pjoin(sub_dir, "*"))
-
-    # RE Patterns
-    headers_pattern = re.compile(r'/Headers/')
-    framework_pattern = re.compile(r'\.framework', flags=re.IGNORECASE)
-    bundle_pattern = re.compile(r'\.app', flags=re.IGNORECASE)
-    binary_pattern = re.compile(r'\.dylib|\.so|\.a', flags=re.IGNORECASE)
-
-    # Search for binaries
-    for f in files:
-        if headers_pattern.search(f) is not None:
-            continue
-
-        basename = os.path.basename(f)
-        endpos = len(basename)
-        pos = endpos - len(".app")
-
-        # Add app bundles last to ensure proper inside/out signing
-        if pos > 0 and bundle_pattern.search(basename, pos, endpos) is not None:
-            app_bundles.append(f)
-        else:
-            pos = endpos - len(".framework")
-            if pos > 0 and framework_pattern.search(basename, pos, endpos) is not None:
-                app_frameworks.append(f)
-
-        if os.path.isdir(f):
-            filtered_files += __filter_files(f,opts)
-        else:
-            if basename.find('.') == -1:
-                filtered_files.append(f)
-            else:
-                pos = endpos - len(".dylib") # length of the longest binary extension
-                if pos < 0:
-                    pos = 0
-
-                if binary_pattern.search(basename, pos, endpos) is not None:
-                    filtered_files.append(f)
-
-    filtered_files += app_frameworks
-    filtered_files += app_bundles
-    return filtered_files
-
-def __codesign(binary,opts):
-    kwargs = {"shell":True}
-    kwargs["stdout"] = subprocess.PIPE
-    kwargs["stderr"] = subprocess.STDOUT
-
-    cmd = 'codesign --force --options runtime --timestamp'
-    cmd += ' --entitlements %s' % opts["entitlements"]
-    cmd += ' -s "%s" %s' % (opts["cert"], binary)
-
-    print "[exe: %s]" % cmd
-    
-    p = subprocess.Popen(cmd, **kwargs)
-    res = p.communicate()[0]
-    return res
-
 def steps_notarize(opts,build_type,ctx):
-    build_dir  = pjoin(opts["build_dir"],"build.%s" % build_type.lower())
-    bundle_dir = pjoin(build_dir, "_CPack_Packages/Darwin/Bundle")
-    notarize_dir = pjoin(opts["build_dir"],"notarize.%s" % build_type.lower())
-    if not os.path.isdir(notarize_dir):
-        os.makedirs(notarize_dir)
-   
-    ###################################
-    # Inside/Out Code Signing 
-    ###################################
-
-    sub_dirs_base = pjoin(bundle_dir, "VisIt-%s/VisIt.app/Contents/Resources/%s/%s" % (opts["version"], opts["version"], opts["arch"]))
-    sub_dirs = [pjoin(sub_dirs_base, "bin")]
-    sub_dirs.append(pjoin(sub_dirs_base, "lib"))
-    sub_dirs.append(pjoin(sub_dirs_base, "plugins"))
-    sub_dirs.append(pjoin(sub_dirs_base, "libsim"))
-     
-    # Get the list of binaries in each directory and sign them 
-    for sub_dir in sub_dirs:
-        binaries = __filter_files(sub_dir,opts)
-        for binary in binaries:
-            res = __codesign(binary,opts)
-            print "[res: %s]" % res
-
-    # codesign VisIt.app
-    visit_app = pjoin(bundle_dir, "VisIt-%s/VisIt.app" % opts["version"])
-    res = __codesign(visit_app,opts)
-     
-    print "[chdir to: %s]" % notarize_dir
-    os.chdir(notarize_dir)
-   
-    # Create DMG to upload to Apple 
-    src_folder = pjoin(bundle_dir, "VisIt-%s" % opts["version"])
-    temp_dmg = pjoin(notarize_dir, "VisIt.dmg")
-    
-    kwargs = {"shell":True}
-    kwargs["stdout"] = subprocess.PIPE
-    kwargs["stderr"] = subprocess.STDOUT
-     
-    cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, temp_dmg)
-    print "[exe: %s]" % cmd
-    p = subprocess.Popen(cmd, **kwargs)
-    res = p.communicate()[0]
-    print "[hdiutil: %s]" % res
-     
-    ###################################
-    # Upload to Apple Notary service
-    ###################################
-    cmd = "xcrun altool --notarize-app"
-    cmd += " --primary-bundle-id %s" % opts["notarize"]["bundle_id"]
-    cmd += " --username %s" % opts["notarize"]["username"]
-    cmd += " --password %s" % opts["notarize"]["password"]
-    cmd += " --asc-provider %s" % opts["notarize"]["asc_provider"]
-    cmd += " --file %s" % temp_dmg 
-    cmd += " --output-format xml"
-    print "[exe: %s]" % cmd
-
-    p = subprocess.Popen(cmd, **kwargs)
-    res = p.communicate()[0]
-    pl = plistlib.readPlistFromString(res)
-    uuid = pl["notarization-upload"]["RequestUUID"]
-
-    print "[uuid: %s]" % uuid
-
-    # Check status of notarization request
-    cmd = "xcrun altool --notarization-info %s" % uuid
-    cmd += " --username %s" % opts["notarize"]["username"]
-    cmd += " --password %s" % opts["notarize"]["password"]
-    cmd += " --output-format xml"
-    print "[exe: %s]" % cmd
-
-    status = "in progress"
-    while status == "in progress":
-        time.sleep(30)
-        p = subprocess.Popen(cmd, **kwargs)
-        res = p.communicate()[0]
-        pl = plistlib.readPlistFromString(res)
-        status = pl["notarization-info"]["Status"]
-        status = status.strip()
-        print "[status: %s]" % status
-
-    ###################################
-    # Staple notarization ticket to app bundle
-    ###################################
-
-    if status == "success":
-        cmd = "xcrun stapler staple %s" % visit_app
-        print "[exe: %s]" % cmd
-        p = subprocess.Popen(cmd, **kwargs)
-        res = p.communicate()[0]
-        print "[stapler: %s]" % res
-
-        # Create new DMG with stapled containing notarized app
-        dmg_stapled = pjoin(notarize_dir, "VisIt.stpl.dmg")
-        cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, dmg_stapled)
-        print "[exe: %s]" % cmd
-        p = subprocess.Popen(cmd, **kwargs)
-        res = p.communicate()[0]
-        print "[hdiutil: %s]" % res
-
-        dmg_release = pjoin(notarize_dir, "VisIt-%s.dmg" % opts["version"])
-        cmd = "hdiutil convert %s -format UDZO -o %s" % (dmg_stapled, dmg_release)
-        print "[exe: %s]" % cmd
-        p = subprocess.Popen(cmd, **kwargs)
-        res = p.communicate()[0]
-        print "[hdiutil:convert: %s]" % res
-    else:
-        raise RuntimeError("Notarization Failed: %s" % res)
+    if opts["platform"] == "osx":
+        a_notarize_visit  = "notarize_visit." + build_type
+        ctx.actions[a_notarize_visit] = notarize(build_dir=opts["build_dir"],
+                                                 build_type=build_type.lower(),
+                                                 build_version=opts["version"],
+                                                 build_arch=opts["arch"],
+                                                 entitlements=opts["entitlements"],
+                                                 cert=opts["cert"],
+                                                 bundle_id=opts["notarize"]["bundle_id"],
+                                                 username=opts["notarize"]["username"],
+                                                 password=opts["notarize"]["password"],
+                                                 asc_provider=opts["notarize"]["asc_provider"],
+                                                 description="notarizing visit")
+        ctx.triggers["build"].append(a_notarize_visit)
 
 def steps_sanity_checks(opts,build_type,ctx):
     if opts["platform"] == "osx":
