@@ -8,7 +8,7 @@
 #                          3D unstructured, single domain
 #                          3D unstructured, multi domain
 #              plots     - Contour, Pseudocolor
-#              operators - Isosurface, Slice
+#              operators - Isosurface, Slice, Threshold
 #
 #  Programmer: Eric Brugger
 #  Date:       Wed Sep 19 12:18:14 PDT 2018
@@ -122,6 +122,32 @@ DrawPlots()
 
 Test("vtkm_rect3d_05")
 
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "d")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (0.2)
+ThresholdAtts.upperBounds = (0.59)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_rect3d_06")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (-0.2)
+ThresholdAtts.upperBounds = (0.39)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_rect3d_07")
+
 #
 # Test a 2d curvilinear mesh.
 #
@@ -226,6 +252,32 @@ SetOperatorOptions(atts)
 DrawPlots()
 
 Test("vtkm_curv3d_05")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "d")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (1)
+ThresholdAtts.upperBounds = (3)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_curv3d_06")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (-0.5)
+ThresholdAtts.upperBounds = (0.5)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_curv3d_07")
 
 #
 # Test a 2d unstructured mesh.

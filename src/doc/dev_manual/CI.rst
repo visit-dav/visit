@@ -95,10 +95,6 @@ and change the `container_tag` variable. ::
     variables:
       container_tag: visitdav/visit-ci-develop:2020-12-09-shaf6ef22
 
-If you change the version of CMake, you will need to update the `CMAKE_VERSION`
-variable. ::
-
-          CMAKE_VERSION: 3.14.7
 
 If you change the operating system, you will need to update the `vmImage`
 variable. It is specified in two locations. ::

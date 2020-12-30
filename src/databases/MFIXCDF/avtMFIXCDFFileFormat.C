@@ -51,7 +51,6 @@
 #define cbrt(x) (pow(x, 1.0/3.0))
 #endif
 
-using std::auto_ptr;
 using std::vector;
 using std::ostringstream;
 
@@ -1584,14 +1583,12 @@ avtMFIXCDFFileFormat::GetVectorVar(int domain, const char *varname)
         nzvals= (widths[2]+3);
     }
 
-    // This trick with auto_ptr makes xvec, yvec and zvec get deleted
-    // when they go out of scope.
-    auto_ptr< vector<float> > xvec(new vector<float>(totZones));
-    float* xdata= &(*xvec)[0];
-    auto_ptr< vector<float> > yvec(new vector<float>(totZones));
-    float* ydata= &(*yvec)[0];
-    auto_ptr< vector<float> > zvec(new vector<float>(totZones));
-    float* zdata= &(*zvec)[0];
+    vector<float> xvec(totZones);
+    vector<float> yvec(totZones);
+    vector<float> zvec(totZones);
+    float *xdata = &xvec[0];
+    float *ydata = &yvec[0];
+    float *zdata = &zvec[0];
 
     if (!strncmp(varname,"Vel_",4))
     {
