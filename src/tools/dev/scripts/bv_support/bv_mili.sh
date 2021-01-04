@@ -951,17 +951,7 @@ EOF
 
 function apply_mili_patch
 {
-    if [[ ${MILI_VERSION} == 1.10.0 ]] ; then
-        apply_mili_100_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    elif [[ ${MILI_VERSION} == 1.11.1 ]] ; then
-        apply_mili_111_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    elif [[ (${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2) && "$OPSYS" == "Darwin" ]]; then
+    if [[ "$OPSYS" == "Darwin" ]]; then
         apply_mili_151_darwin_patch1
         if [[ $? != 0 ]] ; then
             return 1
@@ -973,12 +963,6 @@ function apply_mili_patch
         apply_mili_151_darwin_patch3
         if [[ $? != 0 ]] ; then
             return 1
-        fi
-        if [[ "${MILI_FILE}" == "mili_15_1.tar.gz" ]]; then
-            apply_mili_151_darwin_patch4
-            if [[ $? != 0 ]] ; then
-                return 1
-            fi
         fi
     fi
 
