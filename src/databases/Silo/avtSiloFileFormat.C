@@ -3727,6 +3727,7 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
         DBmultimat *mm = 0;
         DBmaterial *mat = 0;
         avtSiloMultiMatCacheEntry *mm_ent = NULL;
+        bool foundNegativeMats = false;
         TRY
         {
             name_w_dir = GenerateName(dirname, multimat_names[i], topDir.c_str());
@@ -3829,13 +3830,16 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
             {
                 for (j = 0 ; j < minfo_nmats ; j++)
                 {
-                    //FIXME: test
+                    //
+                    // We don't allow negative material numbers. If we've
+                    // encountered them, we need to bail. This exception
+                    // will be caught below, so we need to truly bail and
+                    // send a proper message later on.
+                    //
                     if (minfo_matnos[j] < 0)
                     {
-                        char msg[256];
-                        snprintf(msg, sizeof(msg), "Material numbers must "
-                            "be >= 0, but found %i.", minfo_matnos[j]);
-                        EXCEPTION1(ImproperUseException, msg);
+                        foundNegativeMats = true;
+                        EXCEPTION0(ImproperUseException);
                     }
 
                     char *num = NULL;
@@ -3940,6 +3944,7 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
             }
 
             debug1 << "Giving up on multi-mat \"" << multimat_names[i] << "\"" << endl;
+
             vector<string> no_matnames;
             avtMaterialMetaData *mmd = new avtMaterialMetaData(name_w_dir, "unknown",
                                           0, no_matnames);
@@ -3950,6 +3955,18 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
 
         if (mat) DBFreeMaterial(mat);
         if (name_w_dir) delete [] name_w_dir;
+
+        //
+        // If we've encountered negative material numbers, now is the time
+        // to truly bail and let the user know that this is not allowed.
+        //
+        if (foundNegativeMats)
+        {
+            char msg[256];
+            snprintf(msg, sizeof(msg), "Material numbers must "
+                "be >= 0, but values < 0 have been encountered.");
+            EXCEPTION1(ImproperUseException, msg);
+        }
     }
 }
 
