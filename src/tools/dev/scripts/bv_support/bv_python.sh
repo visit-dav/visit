@@ -1912,15 +1912,6 @@ function bv_python_build
                 export PYTHON_COMMAND="${PYHOME}/bin/python3"
             fi
 
-            check_if_py_module_installed "PIL"
-            # use Pillow for when python 3
-            info "Building the Python Pillow Imaging Library"
-            build_pillow
-            if [[ $? != 0 ]] ; then
-                error "Pillow build failed. Bailing out."
-            fi
-            info "Done building the Python Pillow Imaging Library"
-
             check_if_py_module_installed "numpy"
             if [[ $? != 0 ]] ; then
                 info "Building the numpy module"
@@ -1930,6 +1921,15 @@ function bv_python_build
                 fi
                 info "Done building the numpy module."
             fi
+
+            check_if_py_module_installed "PIL"
+            # use Pillow for when python 3
+            info "Building the Python Pillow Imaging Library"
+            build_pillow
+            if [[ $? != 0 ]] ; then
+                error "Pillow build failed. Bailing out."
+            fi
+            info "Done building the Python Pillow Imaging Library"
 
             if [[ "$BUILD_MPI4PY" == "yes" ]]; then
 

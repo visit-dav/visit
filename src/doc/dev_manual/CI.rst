@@ -93,8 +93,14 @@ and change the `container_tag` variable. ::
     # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
     #####
     variables:
-      container_tag: visitdav/visit-ci-develop:2020-11-11-sha433ef0
+      container_tag: visitdav/visit-ci-develop:2020-12-09-shaf6ef22
 
-When the PR is merged, the azure changes will be merged and PRs to develop 
+
+If you change the operating system, you will need to update the `vmImage`
+variable. It is specified in two locations. ::
+
+        pool:
+          vmImage: 'ubuntu-18.04'
+
+When the PR is merged, the Azure changes will be merged and PRs to develop 
 will now use the new container.
-

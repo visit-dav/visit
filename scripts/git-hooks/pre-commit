@@ -3,12 +3,18 @@
 branch="$(git rev-parse --abbrev-ref HEAD)"
 
 if [ "$branch" == "develop" ]; then
-  echo "ERROR: You can't commit directly to the develop branch. Please do work on a feature branch."
+  echo "ERROR: Commits directly to the Develop branch are not allowed."
   exit 1
 fi
 
-if [[ $branch == *RC ]]; then
-  echo "ERROR: You can't commit directly to a RC branch. Please do work on a feature branch."
+#
+# Check if this is a Release Candidate branch
+# Match anything of the form 3.2RC, 11.2RC, 2.12RC, 11.12RC and no other chars
+# before or after. The '$' catenated to the end of the "" string is necessary
+# to avoid shell interpretation of $
+#
+if [ -n "$(echo $BRANCH | grep "^[0-9]\?[0-9]\.[0-9]\?[0-9]RC"'$')" ]; then
+  echo "ERROR: Commits directly to a Release Candidate branch are not allowed."
   exit 1
 fi
 
