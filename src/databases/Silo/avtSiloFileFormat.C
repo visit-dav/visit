@@ -3714,6 +3714,11 @@ avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
 //    Mark C. Miller, Thu Feb 25 12:40:17 PST 2016
 //    Add logic to check mesh identified by mmesh_name member and then fall
 //    back to fuzzy match if it doesn't exist.
+//
+//    Alister Maguire, Mon Jan  4 09:06:58 PST 2021
+//    If we encounter a negative material number, bail and let the user
+//    know that this isn't allowed.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
