@@ -2027,6 +2027,12 @@ Engine::ProcessInput()
 //    "-disable-ghosts-for-t-intersections" since new ghost generation
 //    method is now default.
 //
+//    Alister Maguire, Tue Jan  5 08:05:06 PST 2021
+//    Changed option from "-disable-ghosts-for-t-intersections" back to
+//    "-enable-ghosts-for-t-intersections". It turns out that this is a
+//    significant bottleneck. More info leading to this decision can
+//    be found here: https://github.com/visit-dav/visit/issues/5074
+//
 // ****************************************************************************
 
 void
@@ -2259,9 +2265,9 @@ Engine::ProcessCommandLine(int argc, char **argv)
         {
             LoadBalancer::SetScheme(LOAD_BALANCE_ABSOLUTE);
         }
-        else if (strcmp(argv[i], "-disable-ghosts-for-t-intersections") == 0)
+        else if (strcmp(argv[i], "-enable-ghosts-for-t-intersections") == 0)
         {
-            avtStructuredDomainBoundaries::SetCreateGhostsForTIntersections(false);
+            avtStructuredDomainBoundaries::SetCreateGhostsForTIntersections(true);
         }
         else if (strcmp(argv[i], "-plugindir") == 0  && (i+1) < argc )
         {
