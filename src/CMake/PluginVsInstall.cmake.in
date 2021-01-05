@@ -88,6 +88,10 @@
 #   Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
 #   Removed FastBit and FastQuery
 #
+#   Kathleen Biagas, Mon Jan  4 18:14:23 PST 2021
+#   Use @filtered_VTKm_INCLUDE_DIRS@  for setting VTKm_INCLUDE_DIRS
+#   instead of setting manually.
+#
 #****************************************************************************/
 
 ##
@@ -328,8 +332,7 @@ set(OPENEXR_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(OPENEXR_LIB @OPENEXR_LIB@)
 
 set(VTKh_INCLUDE_DIRS  ${VISIT_INCLUDE_DIR}/vtkh/include)
-set(VTKm_INCLUDE_DIRS  ${VISIT_INCLUDE_DIR}/vtkm/include/vtkm-@VTKm_VERSION_MAJOR@.@VTKm_VERSION_MINOR@
-                       ${VISIT_INCLUDE_DIR}/vtkm/include/vtkm-@VTKm_VERSION_MAJOR@.@VTKm_VERSION_MINOR@/vtkm/thirdparty/taotuple)
+set(VTKm_INCLUDE_DIRS  @filtered_VTKm_INCLUDE_DIRS@)
 
 include(${VISIT_INCLUDE_DIR}/VisItMacros.cmake)
 
