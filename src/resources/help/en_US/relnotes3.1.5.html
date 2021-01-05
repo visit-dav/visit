@@ -39,6 +39,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Switched PlainText plugin from using single precision to double precision.</li>
   <li>UNV plugin was updated to read gmsh legacy files (thanks Olivier Cessenat).</li>
   <li>Updated the documentation for the Smooth Operator.</li>
+  <li>The -disable-ghost-zone-t-intersections flag has been reverted back to -enable-ghost-zone-t-intersections, and the creation of ghost zones for t-intersections will now be off by default. This will improve performance for the default situation where ghost zone t-intersections are not needed or desired.</li>
 </ul>
 
 <a name="Dev_changes"></a>
