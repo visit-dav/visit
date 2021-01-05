@@ -10,6 +10,10 @@
 #   Kathleen Biagas, Fri Jul 19 12:12:16 PDT 2019
 #   Filter out path from OSPRAY libraries.
 #
+#   Kathleen Biagas, Mon Jan  4 18:15:45 PST 2021
+#   Added logic for retrieving and filtering VTKm includes that come from
+#   interface libraries.
+#
 #******************************************************************************
 
 
@@ -88,6 +92,87 @@ if(VISIT_MESAGL_DIR)
                    "\${VISIT_LIBRARY_DIR}/mesagl"
                    TESSELLATION_LIBRARY
                    "${TESSELLATION_LIBRARY}")
+endif()
+
+if(VTKH_FOUND)
+    # VTKm_INCLUDE_DIRS isn't enough for use with our PluginVsInstall stucture,
+    # because there are some includes related to vtkm interface libraries
+    # that get automagically added by CMake when the vtkh library is used as a
+    # link target during VisIt's build.
+    # The following macros first determine the list of link dependencies for
+    # vtkh, then finds includes for the vtkm interaface libraries.
+
+    # create a list of link dependencies for target
+    # this is a recursive macro
+    # target is the input target
+    # deplist is the output list
+    macro(get_lib_dep target deplist)
+        get_target_property(INT_LL ${target} INTERFACE_LINK_LIBRARIES)
+        if(INT_LL)
+            foreach(ll_dep ${INT_LL})
+                # only look at targets
+                if(TARGET ${ll_dep})
+                    string(SUBSTRING "${ll_dep}" 0 4 ll_dep_prefix)
+                    # only process libraries that start with vtkh or vtkm
+                    if ("${ll_dep_prefix}" STREQUAL "vtkh" OR
+                        "${ll_dep_prefix}" STREQUAL "vtkm")
+                        list(FIND ${deplist} ${ll_dep} havetarg)
+                        if(${havetarg} EQUAL -1)
+                            list(APPEND ${deplist} ${ll_dep})
+                            get_lib_dep(${ll_dep} ${deplist})
+                        endif()
+                    endif()
+                endif()
+            endforeach()
+        endif()
+    endmacro()
+
+    # looks for interface include directories on INTERFACE targets
+    # target is the input target
+    # deplist is the output list
+    macro(get_inc_dep target deplist)
+        get_target_property(ttype ${target} TYPE)
+        if (ttype STREQUAL "INTERFACE_LIBRARY")
+            # look at the includes that may be needed.
+            get_target_property(iid ${target} INTERFACE_INCLUDE_DIRECTORIES)
+            if (iid)
+                foreach(ii ${iid})
+                    list(APPEND ${deplist} ${ii})
+                endforeach()
+            endif()
+            get_target_property(isid ${target} INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
+            if(isid)
+                foreach(isi ${isid})
+                    # system includes are relative paths, so be sure to prepend the correct dir
+                    list(APPEND ${deplist} ${VTKM_DIR}/${isi})
+                endforeach()
+            endif()
+        endif()
+    endmacro()
+
+    # find the link dependencies for vtkh
+    list(APPEND vtkh_deps vtkh)
+    get_lib_dep(vtkh vtkh_deps)
+
+    # find the interface includes for all vtkh link dependencies
+    set(ii_inc_dep "")
+    foreach(vtkhll ${vtkh_deps})
+        string(SUBSTRING "${vtkhll}" 0 4 ll_dep_prefix)
+        # only process libraries that start with vtkm
+        if("${ll_dep_prefix}" STREQUAL "vtkm")
+           get_inc_dep(${vtkhll} ii_inc_dep)
+        endif()
+    endforeach()
+
+    # create filtered_VTKm_INCLUDE_DIRS, starting with VTKm_INCLUDE_DIRS
+    # and appending the interface list.  Then replace VTKM_DIR with
+    # the install include location for vtkm
+    set(temp_VTKm_INCLUDE_DIRS ${VTKm_INCLUDE_DIRS})
+    list(APPEND temp_VTKm_INCLUDE_DIRS ${ii_inc_dep})
+    string(REPLACE "${VTKM_DIR}/include" "\${VISIT_INCLUDE_DIR}/vtkm/include"
+                    filtered_VTKm_INCLUDE_DIRS 
+                    "${temp_VTKm_INCLUDE_DIRS}")
+    unset(temp_VTKm_INCLUDE_DIRS)
 endif()
 
 #-----------------------------------------------------------------------------
