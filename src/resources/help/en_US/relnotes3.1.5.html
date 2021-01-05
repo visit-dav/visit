@@ -28,6 +28,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug in the Stimulate Image reader (file extensions spr, sdt), where a negative pixel delta in the metadata resulted in incorrect pick results, incorrect sampled lineouts and potentially other erroneous behavior.</li>
   <li>Fixed a bug in the Histogram Options GUI where the plot was not updating with changes when the Apply button was clicked.</li>
   <li>Fixed a bug in the Histogram Plot where <i>Use Current Plot</i> will now use the actual data extents.</li>
+  <li>Fixed a problem reading double precision data from boxlib files.</li>
   <li>Fixed a bug in the Silo database plugin that resulted in VisIt crashing whenever negative material numbers were encountered. VisIt will now display an error message noting that negative material numbers are not supported.</li>
 </ul>
 
@@ -39,6 +40,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Switched PlainText plugin from using single precision to double precision.</li>
   <li>UNV plugin was updated to read gmsh legacy files (thanks Olivier Cessenat).</li>
   <li>Updated the documentation for the Smooth Operator.</li>
+  <li>Enhanced boxlib readers to always serve up to VisIt double precision data.</li>
 </ul>
 
 <a name="Dev_changes"></a>
