@@ -89,7 +89,8 @@
 #   Removed FastBit and FastQuery
 #
 #   Kathleen Biagas, Mon Jan  4 18:14:23 PST 2021
-#   Use filtered_VTKm_INCLUD_DIRS instead of setting manually.
+#   Use @filtered_VTKm_INCLUDE_DIRS@  for setting VTKm_INCLUDE_DIRS
+#   instead of setting manually.
 #
 #****************************************************************************/
 

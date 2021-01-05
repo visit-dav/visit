@@ -102,11 +102,15 @@ if(VTKH_FOUND)
     # The following macros first determine the list of link dependencies for
     # vtkh, then finds includes for the vtkm interaface libraries.
 
-    # create a list of vtkh link dependencies
+    # create a list of link dependencies for target
+    # this is a recursive macro
+    # target is the input target
+    # deplist is the output list
     macro(get_lib_dep target deplist)
         get_target_property(INT_LL ${target} INTERFACE_LINK_LIBRARIES)
         if(INT_LL)
             foreach(ll_dep ${INT_LL})
+                # only look at targets
                 if(TARGET ${ll_dep})
                     string(SUBSTRING "${ll_dep}" 0 4 ll_dep_prefix)
                     # only process libraries that start with vtkh or vtkm
@@ -124,6 +128,8 @@ if(VTKH_FOUND)
     endmacro()
 
     # looks for interface include directories on INTERFACE targets
+    # target is the input target
+    # deplist is the output list
     macro(get_inc_dep target deplist)
         get_target_property(ttype ${target} TYPE)
         if (ttype STREQUAL "INTERFACE_LIBRARY")
@@ -144,9 +150,11 @@ if(VTKH_FOUND)
         endif()
     endmacro()
 
+    # find the link dependencies for vtkh
     list(APPEND vtkh_deps vtkh)
     get_lib_dep(vtkh vtkh_deps)
 
+    # find the interface includes for all vtkh link dependencies
     set(ii_inc_dep "")
     foreach(vtkhll ${vtkh_deps})
         string(SUBSTRING "${vtkhll}" 0 4 ll_dep_prefix)
@@ -156,7 +164,9 @@ if(VTKH_FOUND)
         endif()
     endforeach()
 
-    # create filtered_VTKm_INCLUDE_DIRS 
+    # create filtered_VTKm_INCLUDE_DIRS, starting with VTKm_INCLUDE_DIRS
+    # and appending the interface list.  Then replace VTKM_DIR with
+    # the install include location for vtkm
     set(temp_VTKm_INCLUDE_DIRS ${VTKm_INCLUDE_DIRS})
     list(APPEND temp_VTKm_INCLUDE_DIRS ${ii_inc_dep})
     string(REPLACE "${VTKM_DIR}/include" "\${VISIT_INCLUDE_DIR}/vtkm/include"
