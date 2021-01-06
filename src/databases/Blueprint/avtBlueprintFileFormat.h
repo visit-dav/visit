@@ -13,6 +13,8 @@
 
 #include "conduit.hpp"
 
+class     avtMaterial;
+
 // ****************************************************************************
 //  Class: avtBlueprintFileFormat
 //
@@ -39,6 +41,13 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
+
+    // Other types of Mesh Data (Materials, etc)
+    virtual void          *GetAuxiliaryData(const char *var,
+                                            int domain,
+                                            const char *type,
+                                            void *args,
+                                            DestructorFunction &);
 
     // VisIt can't cache for us b/c we need to implement LOD support. 
     virtual bool           CanCacheVariable(const char *var)
@@ -85,9 +94,15 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
                                               const std::string &abs_varname,
                                               conduit::Node &out);
 
+    void                   ReadBlueprintMatset(int domain,
+                                               const std::string &abs_matsetname,
+                                               conduit::Node &out);
+
     void                   FetchMeshAndTopoNames(const std::string &name_name_full,
                                                  std::string &mesh_name,
                                                  std::string &topo_name);
+
+    avtMaterial           *GetMaterial(int domain, const char *mat_name);
 
 
     conduit::Node          m_root_node;

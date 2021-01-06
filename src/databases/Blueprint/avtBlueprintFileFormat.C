@@ -14,6 +14,9 @@
 #include "avtDatabaseMetaData.h"
 #include "avtResolutionSelection.h"
 
+#include "avtMaterial.h"
+#include "avtMixedVariable.h"
+
 #include "DebugStream.h"
 #include "StringHelpers.h"
 #include "TimingsManager.h"
@@ -540,6 +543,94 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
 
 
 // ****************************************************************************
+//  Method: avtBlueprintFileFormat::ReadBlueprintMatset
+//
+//  Purpose:
+//      Reads matset info for the given domain into the `out` conduit Node.
+//
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Wed Dec  9 13:02:46 PST 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
+                                            const string &abs_matsetname,
+                                            Node &out)
+{
+    BP_PLUGIN_INFO("ReadBlueprintMatsetVolFracs: " << abs_matsetname
+                   << " [domain " << domain << "]");
+
+    string abs_matsetname_str(abs_matsetname);
+    // replace colons, etc
+    abs_matsetname_str = sanitize_var_name(abs_matsetname_str);
+    // TODO: MESH FOR MATERIAL?
+    string abs_meshname = metadata->MaterialOnMesh(abs_matsetname_str);
+
+    BP_PLUGIN_INFO("matset " << abs_matsetname << " is defined on mesh " << abs_meshname);
+
+    string mesh_name;
+    string topo_name;
+    FetchMeshAndTopoNames(std::string(abs_matsetname),
+                          mesh_name,
+                          topo_name);
+
+    BP_PLUGIN_INFO("mesh name: " << mesh_name);
+    BP_PLUGIN_INFO("topo name: " << topo_name);
+
+    string matsetname  = FileFunctions::Basename(abs_matsetname);
+
+    if (!m_root_node["blueprint_index"].has_child(mesh_name))
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "mesh " << mesh_name << " not found in blueprint index");
+    }
+
+    if (!m_root_node["blueprint_index"][mesh_name]["matsets"].has_child(matsetname))
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "matset " << matsetname << " not found in blueprint index");
+    }
+
+    Node &bp_index_matset = m_root_node["blueprint_index"][mesh_name]["fields"][matsetname];
+    BP_PLUGIN_INFO(bp_index_matset.to_json());
+
+    string topo_tag  = bp_index_matset["topology"].as_string();
+
+    string file_pattern = FileFunctions::Dirname(GetFilename()) +
+                          string("/") +
+                          m_root_node["file_pattern"].as_string();
+
+    string tree_pattern = m_root_node["tree_pattern"].as_string();
+    string data_path    = bp_index_matset["path"].as_string();
+
+
+    try
+    {
+        m_tree_cache->FetchBlueprintTree(domain,
+                                         data_path,
+                                         out);
+
+        BP_PLUGIN_INFO("done loading conduit data for " 
+                        << abs_matsetname << " [domain "<< domain << "]" );
+    }
+    catch(InvalidVariableException)
+    {
+        BP_PLUGIN_WARNING("failed to load conduit data for "
+                           << abs_matsetname << " [domain "<< domain << "]"
+                           << " -- skipping field for this domain");
+        // if something went wrong, reset the output node to
+        // signal the read failed, and return.
+        out.reset();
+    }
+}
+
+
+
+// ****************************************************************************
 // helper method used to add the meta data for a blueprint mesh.
 // ****************************************************************************
 //  Modifications:
@@ -745,6 +836,72 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         }
     }
 }
+
+
+// ****************************************************************************
+// helper method used to add materials meta data for a blueprint mesh.
+//
+// Cyrus Harrison, Tue Dec  8 10:29:21 PST 2020
+// ****************************************************************************
+static void
+AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
+                              string const &mesh_name,
+                              const Node &n_mesh_info)
+{
+    if (!n_mesh_info.has_child("matsets"))
+        return;
+
+    BP_PLUGIN_INFO("adding materials for " <<  mesh_name);
+
+    NodeConstIterator msets_itr = n_mesh_info["matsets"].children();
+
+    while (msets_itr.has_next())
+    {
+        const Node &n_mset = msets_itr.next();
+        string mset_name = msets_itr.name();
+
+
+        // the material names are in the "materials"
+        if (!n_mset.has_child("materials"))
+        {
+             // TODO ERROR!
+        }
+
+        // we also need the associated topo
+        if (!n_mset.has_child("topology"))
+        {
+             // TODO ERROR!
+        }
+
+        std::string topo_name = n_mset["topology"].as_string();
+        string mesh_topo_name = mesh_name + "_" + topo_name;
+
+        BP_PLUGIN_INFO("adding material set "
+                        <<  mesh_topo_name << " " << mset_name);
+
+        std::vector<string>  matnames;
+
+        n_mset["materials"].print();
+
+        NodeConstIterator mnames_itr = n_mset["materials"].children();
+        
+        while (mnames_itr.has_next())
+        {
+            mnames_itr.next();
+            matnames.push_back(mnames_itr.name());
+        }
+
+        avtMaterialMetaData *mmd = new avtMaterialMetaData(mset_name,
+                                                           mesh_topo_name,
+                                                           matnames.size(),
+                                                           matnames);
+
+        mmd->validVariable = true;
+        mmd->hideFromGUI = false;
+        md->Add(mmd);
+    }
+}
+
 
 // ****************************************************************************
 // helper method used to add expression meta data for a blueprint mesh.
@@ -1220,6 +1377,7 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             const Node &n = itr.next();
             AddBlueprintMeshAndFieldMetadata(metadata, itr.name(), n);
+            AddBlueprintMaterialsMetadata(metadata, itr.name(), n);
         }
 
         // Process all expressions *after* all fields. This
@@ -1562,6 +1720,8 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         delete gf;
         delete mesh;
     }
+    
+    // TODO Support mixed vars, cache as them a side effect like Silo?
 
     return res;
 }
@@ -1592,6 +1752,141 @@ avtBlueprintFileFormat::GetVectorVar(int domain, const char *varname)
     // vector vars can simply use the normal GetVar logic
     return GetVar(domain,varname);
 }
+
+// ****************************************************************************
+//  Method: avtBlueprintFileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//      Gets the auxiliary data from a Blueprint Database.
+//
+//  Arguments:
+//      var        The variable of interest.
+//      domain     The domain of interest.
+//      type       The type of auxiliary data.
+//      <unnamed>  The arguments for that -- not used
+//
+//  Returns:    The auxiliary data.  Throws an exception if this is not a
+//              supported data type.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   December 8, 2020
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+void *
+avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
+                                         int domain,
+                                         const char *type,
+                                         void * /* args (unused) */,
+                                         DestructorFunction &df)
+{
+    void *rv = NULL;
+
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+    {
+        rv = (void *) GetMaterial(domain, var);
+        df = avtMaterial::Destruct;
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtBlueprintFileFormat::GetMaterial
+//
+//  Purpose:
+//      Gets the auxiliary data from a Blueprint Database.
+//
+//  Arguments:
+//      domain     The domain of interest.
+//      mat_name   The material of interest.
+//
+//  Returns:    The auxiliary data.  Throws an exception if this is not a
+//              supported data type.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   December 8, 2020
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+avtMaterial *
+avtBlueprintFileFormat::GetMaterial(int domain,
+                                    const char *mat_name)
+{
+    avtMaterial *res = NULL;
+
+    // int dims[3] = {1,1,1}, ndims = 1;
+    // // Structured mesh case
+    // ndims = MESH DIMENSION, 2 OR 3;
+    // dims[0] = NUMBER OF ZONES IN X DIMENSION;
+    // dims[1] = NUMBER OF ZONES IN Y DIMENSION;
+    // dims[2] = NUMBER OF ZONES IN Z DIMENSION, OR 1 IF 2D;
+    //
+    // // Unstructured mesh case
+    // dims[0] = NUMBER OF ZONES IN THE MESH
+    // ndims = 1;
+    // // Read the number of materials from the file. This
+    // // must have already been read from the file when
+    // // PopulateDatabaseMetaData was called.
+    // int nmats = NUMBER OF MATERIALS;
+    // // The matnos array contains the list of numbers that
+    // // are associated with particular materials. For example,
+    // // matnos[0] is the number that will be associated with
+    // // the first material and any time it is seen in the
+    // // matlist array, that number should be taken to mean
+    // // material 1. The numbers in the matnos array must
+    // // all be greater than or equal to 1.
+    // int *matnos = new int[nmats];
+    // READ nmats INTEGER VALUES INTO THE matnos ARRAY.
+    // // Read the material names from your file format or
+    // Listing 4-39: matclean.C: C++ Language example for returning material data.
+    // Creating a database reader plugin
+    // Advanced topics 139
+    // // make up names for the materials. Use the same
+    // // approach as when you created material names in
+    // // the PopulateDatabaseMetaData method.
+    // char **names = new char *[nmats];
+    // READ MATERIAL NAMES FROM YOUR FILE FORMAT UNTIL EACH
+    // ELEMENT OF THE names ARRAY POINTS TO ITS OWN STRING.
+    // // Read the matlist array, which tells what the material
+    // // is for each zone in the mesh.
+    // int nzones = dims[0] * dims[1] * dims[2];
+    // int *matlist = new int[nzones];
+    // READ nzones INTEGERS INTO THE matlist array.
+    // // Optionally create mix_mat, mix_next, mix_zone, mix_vf
+    // // arrays and read their contents from the file format.
+    // // Use the information to create an avtMaterial object.
+    // avtMaterial *mat = new avtMaterial(
+    // nmats,
+    // matnos,
+    // names,
+    // ndims,
+    // dims,
+    // 0,
+    // matlist,
+    // 0, // length of mix arrays
+    // 0, // mix_mat array
+    // 0, // mix_next array
+    // 0, // mix_zone array
+    // 0 // mix_vf array
+    // );
+    // // Clean up.
+    // delete [] matlist;
+    // delete [] matnos;
+    // for(int i = 0; i < nmats; ++i)
+    // delete [] names[i];
+    // delete [] names;
+
+    return res;
+}
+
 
 
 // ****************************************************************************

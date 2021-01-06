@@ -50,6 +50,10 @@
 #include "ExpressionList.h"
 #include "UnexpectedValueException.h"
 
+#include "avtMaterial.h"
+#include "avtMixedVariable.h"
+
+
 //-----------------------------------------------------------------------------
 // std lib includes
 //-----------------------------------------------------------------------------
