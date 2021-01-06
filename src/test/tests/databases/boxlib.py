@@ -94,6 +94,20 @@ silr.TurnOffSet(silr.SetsInCategory('materials')[1])
 SetPlotSILRestriction(silr)
 Test("boxlib_06")
 
+#
+# Test double precision is working by reading a known double precision
+# database and ensuring we get expected min/max values within 15 digits
+# of accuracy.
+#
+DeleteAllPlots()
+CloseDatabase(data_path("boxlib_test_data/3D/plt00000.cartgrid.body.small/Header"))
+OpenDatabase(data_path("boxlib_test_data/2D/plt0000000/Header"))
+AddPlot("Pseudocolor", "temperature1")
+DrawPlots()
+SetQueryOutputToValue()
+AssertTrue("temperature1 min", round(Query("Min"),15)==295.409999999999968)
+AssertTrue("temperature1 max", round(Query("Max"),15)==295.410000000000082)
+DeleteAllPlots()
+CloseDatabase(data_path("boxlib_test_data/2D/plt0000000/Header"))
+
 Exit()
-
-
