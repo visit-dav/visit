@@ -20,6 +20,7 @@
 #include <PickVarInfo.h>
 
 #include <avtDataAttributes.h>
+#include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 #include <avtParallel.h>
 #include <avtOriginatingSource.h>
@@ -119,7 +120,21 @@ avtHistogramFilter::PreExecute(void)
     if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
     {
         if ( !atts.GetMinFlag() || !atts.GetMaxFlag() )
-            GetDataExtents(dataValueRange, pipelineVariable);
+        {
+            // Original data extents can be accessed directly via GetDataExtents.
+            // ActualDataExtents may not be set by some operators, so we use the
+            // DataExaminer to get the actual extents when the user selects
+            // "Current Plot".
+            if (atts.GetLimitsMode() == HistogramAttributes::LimitsMode::OriginalData)
+            {
+                GetDataExtents(dataValueRange, pipelineVariable);
+            }
+            else if (atts.GetLimitsMode() == HistogramAttributes::LimitsMode::CurrentPlot)
+            {
+                avtDataset_p ds = GetTypedInput();
+                avtDatasetExaminer::GetDataExtents(ds, dataValueRange);
+            }
+        }
 
         SetWorkingMin( (atts.GetMinFlag() ? atts.GetMin() : dataValueRange[0]) );
         SetWorkingMax( (atts.GetMaxFlag() ? atts.GetMax() : dataValueRange[1]) );

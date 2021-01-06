@@ -92,6 +92,9 @@
 #
 #   Kathleen Biagas, Mon Feb 24 2020
 #   VISIT_BUILD_AVTEXAMPLES renamed to VISIT_ENABLE_AVTEXAMPLES
+#
+#   Eric Brugger, Mon Dec 21 09:11:31 PST 2020
+#   Update cmakeCmd to use CMake 3.14.7, required by new VTKm.
 
 #
 # Determine the users name and e-mail address.
@@ -204,7 +207,7 @@ done
 
 if test "$branch" = "trunk" ; then
     workingDir="test_trunk"
-    cmakeCmd="/usr/workspace/wsa/visit/visit/thirdparty_shared/3.2.0/toss3/cmake/3.9.3/linux-x86_64_gcc-6.1/bin/cmake"
+    cmakeCmd="/usr/workspace/wsa/visit/visit/thirdparty_shared/3.2.0/toss3/cmake/3.14.7/linux-x86_64_gcc-6.1/bin/cmake"
 else
     workingDir="test_branch"
     cmakeCmd="/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake"

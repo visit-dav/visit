@@ -32,8 +32,19 @@
 #include <avtDataRangeSelection.h>
 
 #include <DebugStream.h>
+#include <TimingsManager.h>
 #include <ImproperUseException.h>
 #include <NoDefaultVariableException.h>
+
+#ifdef HAVE_LIBVTKH
+#include <vtkm/filter/Threshold.h>
+#include <vtkh/vtkh.hpp>
+#include <vtkh/DataSet.hpp>
+#include <vtkh/filters/Threshold.hpp>
+#include <vtkm/filter/CleanGrid.h>
+
+#include <vtkm/io/writer/VTKDataSetWriter.h>
+#endif
 
 
 // ****************************************************************************
@@ -253,11 +264,100 @@ avtThresholdFilter::Equivalent(const AttributeGroup *a)
 //    Added check for incoming datasets with unknown mesh types
 //    so they can be processed as point meshes. Fixes Bug #2505.
 //
+//    James Kress, November 18 08:15:25 PDT 2020
+//    Added ability to threshold in VTKm if the incoming data meets
+//    applicability criteria.
 // ****************************************************************************
 
 avtDataRepresentation *
 avtThresholdFilter::ProcessOneChunk(avtDataRepresentation *in_dr, bool fromChunker)
 {
+    bool doVTKM = VTKmAble(in_dr);
+    avtDataRepresentation *out_dr = NULL;
+    if (doVTKM)
+        out_dr = ProcessOneChunk_VTKM(in_dr);
+    else
+        out_dr = ProcessOneChunk_VTK(in_dr, fromChunker);
+
+    return out_dr;
+}
+
+// **********************************************************************
+//  Method: avtThresholdFilter::VTKmAble
+//
+//  Purpose:
+//      Determine if VTKm can be used.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   November 18, 2020
+//
+//  Modifications:
+//
+// **********************************************************************
+bool
+avtThresholdFilter::VTKmAble(avtDataRepresentation *in_dr) const
+{
+    bool useVTKm = false;
+
+    const intVector    curZonePortions = atts.GetZonePortions();
+    if (std::count(curZonePortions.begin(), curZonePortions.end(), (int)ThresholdOpAttributes::PartOfZone))
+    {
+        // VTKm currently only supports allInRange for thresholds
+        useVTKm = false;
+    }
+    else if (atts.GetOutputMeshType() == ThresholdOpAttributes::PointMesh)
+    {
+        // VTKm currently does not support outputing a point mesh
+        useVTKm = false;
+    }
+    else if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
+        avtCallback::GetBackendType() == GlobalAttributes::VTKM)
+    {
+        useVTKm = true;
+        vtkDataSet *in_ds = in_dr->GetDataVTK();
+        if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+            vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
+            int dims[3];
+            rgrid->GetDimensions(dims);
+            if (dims[2] == 1)
+                useVTKm = false;
+        }
+        else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+        {
+            vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
+            int dims[3];
+            sgrid->GetDimensions(dims);
+            if (dims[2] == 1)
+                useVTKm = false;
+        }
+        else if (in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+        {
+            useVTKm = false;
+        }
+    }
+
+    return useVTKm;
+}
+
+
+// ****************************************************************************
+//  Method: avtThresholdFilter::ProcessOneChunk_VTK
+//
+//  Purpose:
+//      Perform threshold using VTK
+//
+//  Programmer: James Kress
+//  Creation:   November 18, 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataRepresentation *
+avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromChunker)
+{
+    int timerHandle = visitTimer->StartTimer();
     //
     // Get the VTK data set.
     //
@@ -270,9 +370,10 @@ avtThresholdFilter::ProcessOneChunk(avtDataRepresentation *in_dr, bool fromChunk
     if (atts.GetListedVarNames().size() == 0)
     {
         in_ds->Register(NULL);
+        visitTimer->StopTimer(timerHandle, "avtThresholdFilter::ProcessOneChunk_VTK");
         return in_dr;
     }
-    
+
     avtMeshType inputMeshType = GetInput()->GetInfo().GetAttributes().GetMeshType();
 
     if (atts.GetOutputMeshType() == ThresholdOpAttributes::PointMesh || inputMeshType == AVT_UNKNOWN_MESH)
@@ -283,6 +384,7 @@ avtThresholdFilter::ProcessOneChunk(avtDataRepresentation *in_dr, bool fromChunk
                                                                   in_dr->GetDomain(),
                                                                   in_dr->GetLabel());
         out_ds->Delete();
+        visitTimer->StopTimer(timerHandle, "avtThresholdFilter::ProcessOneChunk_VTK");
         return out_dr;
     }
 
@@ -293,9 +395,10 @@ avtThresholdFilter::ProcessOneChunk(avtDataRepresentation *in_dr, bool fromChunk
         // ones we identified that we wanted.  So just return them.
         //
         in_ds->Register(NULL);
+        visitTimer->StopTimer(timerHandle, "avtThresholdFilter::ProcessOneChunk_VTK");
         return in_dr;
     }
-    
+
     vtkDataSet *curOutDataSet = in_ds;
 
     const stringVector curVariables    = atts.GetListedVarNames();
@@ -410,6 +513,7 @@ avtThresholdFilter::ProcessOneChunk(avtDataRepresentation *in_dr, bool fromChunk
         threshold->Delete();
     }
 
+
     if (curOutDataSet == in_ds)
     {
         // The curOutDataSet equals the in_ds, meaning
@@ -429,8 +533,86 @@ avtThresholdFilter::ProcessOneChunk(avtDataRepresentation *in_dr, bool fromChunk
     if (curOutDataSet != NULL)
         curOutDataSet->Delete();
 
+    visitTimer->StopTimer(timerHandle, "avtThresholdFilter::ProcessOneChunk_VTK");
+    
     return out_dr;
 }
+
+
+// ****************************************************************************
+//  Method: avtThresholdFilter::ProcessOneChunk_VTKM
+//
+//  Purpose:
+//      Perform threshold using VTKm
+//
+//  Programmer: James Kress
+//  Creation:   November 18, 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataRepresentation *
+avtThresholdFilter::ProcessOneChunk_VTKM(avtDataRepresentation *in_dr)
+{
+#ifndef HAVE_LIBVTKH
+    return NULL;
+#else
+    int timerHandle = visitTimer->StartTimer();
+    
+    vtkh::DataSet *in_ds = in_dr->GetDataVTKm();
+    if (!in_ds || in_ds->GetNumberOfDomains() != 1)
+        return NULL;
+
+    const stringVector curVariables    = atts.GetListedVarNames();
+    const intVector    curZonePortions = atts.GetZonePortions();
+    const doubleVector curLowerBounds  = atts.GetLowerBounds();
+    const doubleVector curUpperBounds  = atts.GetUpperBounds();
+    const stringVector curBoundsRange  = atts.GetBoundsRange();
+    
+    const char *curVarName;
+    char errMsg[1024];
+    
+    vtkh::DataSet *out_ds = in_ds;
+    for (size_t curVarNum = 0; curVarNum < curVariables.size(); curVarNum++)
+    {
+        vtkh::Threshold thresher;
+    
+        std::map<std::string,int>::iterator iterFind;
+        bool bypassThreshold = false;
+        iterFind = selIDs.find(curVariables[curVarNum]);
+        if (iterFind != selIDs.end())
+        {
+            int selID = iterFind->second;
+            if (GetInput()->GetInfo().GetAttributes().GetSelectionApplied(selID))
+            {
+                debug1 << "Bypassing Threshold operator because the database "
+                       << "plugin claims to have applied selection on "
+                       << curVariables[curVarNum] << endl;
+                bypassThreshold = true;
+            }
+        }
+
+        if (bypassThreshold == false)
+        {
+            curVarName = curVariables[curVarNum].c_str();
+            thresher.SetInput(out_ds);
+            thresher.SetField(curVariables[curVarNum]);
+            thresher.SetUpperThreshold(curUpperBounds[curVarNum]);
+            thresher.SetLowerThreshold(curLowerBounds[curVarNum]);
+            thresher.Update();
+            out_ds = thresher.GetOutput();
+        }
+    }
+
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
+    visitTimer->StopTimer(timerHandle, "avtThresholdFilter::ProcessOneChunk_VTKM");
+    return out_dr;
+#endif
+}
+
 
 // ****************************************************************************
 //  Method: avtThresholdFilter::IsSimpleRange
