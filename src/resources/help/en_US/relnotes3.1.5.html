@@ -41,6 +41,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>UNV plugin was updated to read gmsh legacy files (thanks Olivier Cessenat).</li>
   <li>Updated the documentation for the Smooth Operator.</li>
   <li>Enhanced boxlib readers to always serve up to VisIt double precision data.</li>
+  <li>The -disable-ghosts-for-t-intersections flag has been reverted back to -enable-ghosts-for-t-intersections, and the creation of ghosts for t-intersections will now be off by default. This will improve performance for the default situation where ghost t-intersections are not needed or desired.</li>
 </ul>
 
 <a name="Dev_changes"></a>
