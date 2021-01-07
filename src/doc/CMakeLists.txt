@@ -7,12 +7,12 @@
 #   Kathleen Biagas, Thu March 7, 2019
 #   Added sphinx_launcher (python executable) for Windows.
 #
+#   Mark C. Miller, Mon Jun  8 16:45:05 PDT 2020
+#   Added linkcheck builder
+#
 #   Kathleen Biagas, Wed Oct 21, 2020
 #   Replaced old logic with python-3 creation of manuals, which was moved
 #   from root CMakeLists.txt.
-#
-#   Mark C. Miller, Mon Jun  8 16:45:05 PDT 2020
-#   Added linkcheck builder
 #
 #   Kathleen Biagas, Thu Jan 7, 2021
 #   Merge logic for creating the build and install commands, they are the
