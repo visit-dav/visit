@@ -154,13 +154,21 @@ function bv_python_alt_python_dir
 {
     echo "Using alternate python directory"
 
-    [ ! -e "$1/bin/python-config" ] && error "Python not found in $1"
+    if [ -e "$1/bin/python-config" ]
+    then
+        PYTHON_COMMAND="$PYTHON_ALT_DIR/bin/python"
+        PYTHON_CONFIG_COMMAND="$PYTHON_ALT_DIR/bin/python-config"
+    elif [ -e "$1/bin/python3-config" ]
+    then
+        PYTHON_COMMAND="$PYTHON_ALT_DIR/bin/python3"
+        PYTHON_CONFIG_COMMAND="$PYTHON_ALT_DIR/bin/python3-config"
+    else
+        error "Python not found in $1"
+    fi
 
     bv_python_enable
     USE_SYSTEM_PYTHON="yes"
     PYTHON_ALT_DIR="$1"
-    PYTHON_COMMAND="$PYTHON_ALT_DIR/bin/python"
-    PYTHON_CONFIG_COMMAND="$PYTHON_ALT_DIR/bin/python-config"
     PYTHON_FILE=""
     python_set_vars_helper #set vars..
 }
