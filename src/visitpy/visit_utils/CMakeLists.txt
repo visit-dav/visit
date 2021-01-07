@@ -53,3 +53,4 @@ configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/run_python_tests.sh.in"
 
 configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/run_visit_tests.sh.in"
                 "${CMAKE_CURRENT_BINARY_DIR}/run_visit_tests.sh" @ONLY)
+
