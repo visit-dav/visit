@@ -7,6 +7,9 @@
 #   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
 #   Removed logic handling windows differently than other platforms.
 #
+#   Kathleen Biagas, Thu Jan 7, 2021
+#   Only process if VISIT_ICET_DIR is set.
+#
 #****************************************************************************/
 
 # Ice-T provides an ICETConfig.cmake file that we could include but it appears 
@@ -19,7 +22,8 @@
 # Use the ICET_DIR hint from the config-site .cmake file 
 # Except on windows, where it is part of the repo.
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-
-SET_UP_THIRD_PARTY(ICET lib include IceTCore IceTGL IceTMPI)
+if(VISIT_ICET_DIR)
+    include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+    SET_UP_THIRD_PARTY(ICET lib include IceTCore IceTGL IceTMPI)
+endif()
 
