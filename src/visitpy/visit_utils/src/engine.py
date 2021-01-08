@@ -41,7 +41,7 @@ def open(**kwargs):
 
       engine.open(nprocs=36)
 
-    Launch engine with 36 MPI tasks using on a specific partition:
+    Launch engine with 36 MPI tasks using a specific partition:
 
       engine.open(nprocs=36, part="pbatch")
 
