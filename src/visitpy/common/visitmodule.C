@@ -622,6 +622,67 @@ VisItUnlockPythonInterpreter(PyThreadState *myThreadState)
 }
 
 // ****************************************************************************
+// Function: cli_PyRun_SimpleFile
+//
+// Purpose:
+//   Helper to run a script from a file, handling auto 2to3 mode.
+//   Serves as a Drop in replacement for PyRun_SimpleFile.
+//
+// Notes:
+//
+// Programmer: Cyrus Harrison
+// Creation:   Fri Jan  8 09:18:16 PST 2021
+//
+// Modifications:
+//
+// ****************************************************************************
+void 
+cli_PyRun_SimpleFile(FILE *fp, const char *fileName)
+{
+    // check if we are in auto 2to3 mode, which is indicated by:
+    //  visit_utils.builtin.GetAutoPy2to3()
+    
+    // users can change this at any time, so we need to check its current
+    // value
+
+    bool use_py2to3 = false;
+    // read value into temp var
+    std::string pycmd = "__tmp_auto_py2to3 = visit_utils.builtin.GetAutoPy2to3()\n";
+    PyRun_SimpleString(pycmd.c_str());
+    // read result
+    // all refs are borrowed
+    PyObject *main_module = PyImport_AddModule("__main__");
+    PyObject *main_dict   = PyModule_GetDict(main_module);
+    PyObject *res_obj = PyDict_GetItemString(main_dict,"__tmp_auto_py2to3");
+
+    if(res_obj != NULL)
+    {
+        if(PyObject_IsTrue(res_obj))
+        {
+            use_py2to3 = true;
+        }
+
+        // remove temp
+        PyDict_DelItemString(main_dict,"__tmp_auto_py2to3");
+    }
+
+    if(use_py2to3)
+    {
+        // read the script contents, convert and run using exec
+        pycmd = "exec(";
+        pycmd += " visit_utils.ConvertPy2to3(";
+        pycmd += " open(\"" + std::string(fileName) + "\").read()";
+        pycmd += ")";
+        pycmd += ")\n";
+        PyRun_SimpleString(pycmd.c_str());
+    }
+    else // no auto magic, use standard path
+    {
+        PyRun_SimpleFile(fp,(char*)fileName);
+    }
+}
+
+// ****************************************************************************
 // Function: IntReturnValue
 //
 // Purpose:
@@ -11071,7 +11132,7 @@ visit_GetLight(PyObject *self, PyObject *args)
 //   Added book keeping to track execution stack of source files.
 //
 //   Cyrus Harrison, Wed Sep 30 07:53:17 PDT 2009
-//   Added spoofing of __name__ for Source() executiuon so we can use
+//   Added spoofing of __name__ for Source() execution so we can use
 //   standard python check:
 //     if __name__ == "__main__"
 //   To delineate between '-s' and sourced scripts.
@@ -11125,7 +11186,8 @@ visit_Source(PyObject *self, PyObject *args)
     //
     // Execute the commands in the file.
     //
-    PyRun_SimpleFile(fp, (char *)fileName);
+    cli_PyRun_SimpleFile(fp,fileName);
+
     fclose(fp);
 
     // book keeping for source file stack
@@ -19436,6 +19498,7 @@ cli_initvisit(int debugLevel, bool verbose,
 
 }
 
+
 // ****************************************************************************
 // Function: cli_runscript
 //
@@ -19472,7 +19535,7 @@ cli_runscript(const char *fileName)
             //
             // Execute the commands in the file.
             //
-            PyRun_SimpleFile(fp, (char *)fileName);
+            cli_PyRun_SimpleFile(fp, (char *)fileName);
             fclose(fp);
 
             // book keeping for source stack
