@@ -296,4 +296,19 @@ DrawPlots()
 Test("tecplot_25")
 DeleteAllPlots()
 
+# binary file containing both node and cell data in block format
+OpenDatabase(data_path("tecplot_test_data/binary/two_triangles_node_and_cell.plt"))
+
+AddPlot("Pseudocolor","node_field")
+ResetView()
+DrawPlots()
+Test("tecplot_26")
+DeleteAllPlots()
+
+AddPlot("Pseudocolor","cell_field")
+ResetView()
+DrawPlots()
+Test("tecplot_27")
+DeleteAllPlots()
+
 Exit()
