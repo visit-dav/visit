@@ -2211,6 +2211,7 @@ TecplotDataRecord::CalculateOffsets(const TecplotZone &zone)
     else
     {
         int numNodes = zone.GetNumNodes();
+        int numElements = zone.GetNumElements();
         int centering, numItems;
         long long offset = 0;
         for(size_t i = 0; i < variables.size(); ++i)
@@ -2226,7 +2227,10 @@ TecplotDataRecord::CalculateOffsets(const TecplotZone &zone)
                 continue;
             }
             centering = zone.centering[i];
-            numItems = numNodes;
+            if(centering == 0)
+                numItems = numNodes;
+            else
+                numItems = numElements;
             if(zone.zoneType == ORDERED)
             {
             TecplotOrderedZone *z = (TecplotOrderedZone *)zone.zoneData;
