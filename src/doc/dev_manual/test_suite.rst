@@ -1,5 +1,5 @@
 Regression Testing
-============================
+==================
 
 Overview
 --------
@@ -12,16 +12,16 @@ mdserver, engine and cli but not the GUI.
 
 
 Running regression tests
---------------------------------
+------------------------
 
 Where nightly regression tests are run
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The regression suite is run on `LLNL's Pascal Cluster <https://hpc.llnl.gov/hardware/platforms/pascal>`_. Pascal runs the TOSS3 operating system, which is a flavor of Linux. If you are going to run the regression suite yourself you should run on a similar system or there will be differences due to numeric precision issues.
 
 The regression suite is run on Pascal using a cron job that checks out VisIt_ source code, builds it, and then runs the tests.
 
 How to run the regression tests manually
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The regression suite relies on having a working VisIt_ build and test data available on your local computer.
 Our test data and baselines are stored using git lfs, so you need to setup git lfs and pull to have all the necessary files. 
@@ -47,23 +47,18 @@ Here is an example of the contents of the generated `run_visit_test_suite.sh` sc
 Once the test suite has run, the results can be found in the `output/html` directory. Open `output/html/index.html` in a web browser to view the test suite results.
 
 Accessing regression test results
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The nightly test suite results are posted to: http://portal.nersc.gov/project/visit/.
 
 In the event of failure on the nightly run
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If any tests
 fail, ''all'' developers who updated the code from the last time all
 tests successfully passed will receive an email indicating what failed.
 In addition, failed results should be available on the web.  
 
-If the results fail to post, the visit group on NERSC's systems may be over quota.
-If you have a NERSC account you can check usage by sshing to NERSC and running the following command::
-
-    prjquota visit
-
 How regression testing works
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------
 
 The workhorse script that manages the testing is `visit_test_suite.py` in 
 `src/test`. Tests can be run in a variety of ways called *modes*.
@@ -136,7 +131,7 @@ tests we currently skip and update it as necessary.
 The default skip list file is `src/test/skip.json`.
 
 Filtering Image Differences
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 There are many alternative ways for both compiling and even running VisIt_ to
 produce any given image or textual output. Nonetheless, we expect results to
 be nearly if not perfectly identical. For example, we expect VisIt_ running on
@@ -324,7 +319,7 @@ Tips on writing regression tests
 
 
 Rebaselining Test Results
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 A python script, `rebase.py`, in the `test/baseline` dir can be used to rebaseline large numbers of results.
 In particular, this script enables a developer to rebase test results without requiring access to the test
 platform where testing is performed. This is becase the PNG files uploaded (e.g. posted) to VisIt_'s test
@@ -334,10 +329,10 @@ to the repository.
 
  
 Using VisIt_ Test Suite for Sim Code Testing
-----------------------------------------------
+--------------------------------------------
 VisIt_'s testing infrastructure can also be used from a VisIt_ install by simulation codes 
 how want to write their own Visit-based tests.
-For more details about this, see:  `Leveraging VisIt_ in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_ 
+For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_ 
 
 
 .. CYRUS NOTE: This info seems to old to be relevant, but keeping here commented out just in case. 
@@ -441,4 +436,3 @@ For more details about this, see:  `Leveraging VisIt_ in Sim Code RegressionTest
 .. To re-basline the warning count for a given source file, simply edit the <tt>compiler_warnings_by_file.txt</tt> file as appropriate. Its structure is designed for easy editing with any text editor.
 ..
 .. To ''fix'' a new warning, there are several options. The first is to adjust the code that generated the warning. Its probably something minor and probably should be fixed. However, if the warning is itself unhelpful and fixing it will not improve the code, you can add the warning to a skip list. There is a file, <tt>compiler_warning_skips.json</tt> which contains skips for specific source files and skips for all (e.g. global) source files. This json file is read in as a python dictionary. You can simply cut the text for the warning that gets posted in the html to this file. Finally, as a last resort, you can also elect to bump up the warning count for the given source file. But, these later actions should be taken with care and perhaps vetted with other developers first.
-
