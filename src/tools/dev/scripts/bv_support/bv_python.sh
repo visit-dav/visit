@@ -156,12 +156,12 @@ function bv_python_alt_python_dir
 
     if [ -e "$1/bin/python-config" ]
     then
-        PYTHON_COMMAND="$PYTHON_ALT_DIR/bin/python"
-        PYTHON_CONFIG_COMMAND="$PYTHON_ALT_DIR/bin/python-config"
+        PYTHON_COMMAND="$1/bin/python"
+        PYTHON_CONFIG_COMMAND="$1/bin/python-config"
     elif [ -e "$1/bin/python3-config" ]
     then
-        PYTHON_COMMAND="$PYTHON_ALT_DIR/bin/python3"
-        PYTHON_CONFIG_COMMAND="$PYTHON_ALT_DIR/bin/python3-config"
+        PYTHON_COMMAND="$1/bin/python3"
+        PYTHON_CONFIG_COMMAND="$1/bin/python3-config"
     else
         error "Python not found in $1"
     fi
