@@ -38,14 +38,14 @@ except:
 #
 # Some functions wrap calls to the visit module, however not all require
 # it to exist.  Use @require_visit decorator to provide a friendly
-# exception if the visit module needed by not avalaible.
+# exception if the visit module needed but not available.
 #
 
 def require_visit(fn):
     """ Decorator for functions that require the visit module. """
     def run_fn(*args,**kwargs):
         # note: this check happens in the 'common' module but that should
-        # be sufficent - if we can't load it here we wont be able to in other
+        # be sufficient - if we can't load it here we wont be able to in other
         # namespaces.
         if not __visit_imported:
             raise VisItException("Could not import visit module")
@@ -56,7 +56,7 @@ def require_visit(fn):
 #
 # Some functions use PySide modules, however not all require
 # it to exist.  Use @require_pyside decorator to provide a friendly
-# exception if the PySide modules are not avalaible.
+# exception if the PySide modules are not available.
 #
 def require_pyside(fn):
     """ Decorator for functions that require PySide. """
@@ -116,6 +116,7 @@ def sexe(cmd,ret_output=False,echo = False):
     if ret_output:
         p = subprocess.Popen(cmd,
                              shell=True,
+                             universal_newlines=True,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
         res =p.communicate()[0]

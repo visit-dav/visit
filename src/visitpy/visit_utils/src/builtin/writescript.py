@@ -19,7 +19,11 @@
 ###############################################################################
 
 import string, sys
-visit = sys.modules['visit']
+
+try:
+    import visit
+except:
+    pass
 
 def WriteScript(f):
     """Write Python code to replicate the current VisIt state to the specified file object.

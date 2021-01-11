@@ -16,7 +16,7 @@ class PythonMinQuery(SimplePythonQuery):
         ncells = ds_in.GetNumberOfCells()
         if ncells > 0:
             varr = ds_in.GetCellData().GetArray(self.input_var_names[0])
-            vals = [varr.GetTuple1(i) for i in xrange(ncells)]
+            vals = [varr.GetTuple1(i) for i in range(ncells)]
             cmin = min(vals)
             self.vmin = min(self.vmin,cmin)
     def post_execute(self):
