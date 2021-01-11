@@ -19498,7 +19498,6 @@ cli_initvisit(int debugLevel, bool verbose,
 
 }
 
-
 // ****************************************************************************
 // Function: cli_runscript
 //
