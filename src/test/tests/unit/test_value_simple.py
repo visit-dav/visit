@@ -11,8 +11,8 @@
 #
 # ----------------------------------------------------------------------------
 
-def MyEQ(a,b):
-    return a%b==0
+def EqMod5(a,b):
+    return a%5 == b%5
 
 # Basic cases
 TestSection("Basic")
@@ -39,7 +39,7 @@ TestValueNE("test_value_prec_004",200.0001,200,9)
 TestSection("In Operator")
 TestValueIN("test_value_in_001",(100,200,300),200)
 TestValueIN("test_value_in_001",[(0,0), (1,0), (1,-1), (0,1)],(1,-1))
-TestValueIN("test_value_in_002",(17,18,19,20,21),5,2,MyEQ)
+TestValueIN("test_value_in_002",(17,18,19,20,21),35,2,EqMod5)
 
 # Python objects
 TestSection("Objects")
