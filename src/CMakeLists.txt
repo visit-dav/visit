@@ -689,6 +689,9 @@ IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
     SET(VISIT_OUT_OF_SOURCE_BUILD 0)
 ELSE("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
     SET(VISIT_OUT_OF_SOURCE_BUILD 1)
+    # Have to make this or an executable is made of this name.
+    # Suspect makemili_driver
+    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/exe")
 ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
 
 #-----------------------------------------------------------------------------
