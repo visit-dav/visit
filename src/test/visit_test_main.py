@@ -1922,9 +1922,10 @@ def TestText(case_name, inText, baseText=None, numdifftol=None):
 # passed as args both for the current (actual) and the baseline (expected). The
 # baseline values are stored directly in the calling .py file as args in the
 # call to this method. The values can be any Python object. When they are floats
-# or ints or lists/tuples of floats or ints, it will round them to the desired
-# precision and do the # comparison numerically. Otherwise it will compare them
-# as strings. Returns whether or not the test resulted in True or False.
+# or ints or strings of floats or ints or lists/tuples of floats or ints or
+# strings of floats or ints, it will round them to the desired precision and do
+# the comparison numerically. Otherwise it will compare them as strings.
+# Returns whether or not the test resulted in True or False.
 # ----------------------------------------------------------------------------
 def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=True):
     CheckInteractive(case_name)
