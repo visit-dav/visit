@@ -191,8 +191,8 @@ You can check the current value using:
 
     visit_utils.builtin.GetAutoPy2to3()
 
-We want emphasize `limited` automatic support. The best long term path is
-to port your Python 2 style scripts to Python 3.
+We want to emphasize the limited aspect of the automatic support.
+The best long term path is to port your Python 2 style scripts to Python 3.
 
 Python 3 installs provide a utility called ``2to3`` that you can use to
 help automate porting, see https://docs.python.org/3/library/2to3.htm
