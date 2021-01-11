@@ -733,10 +733,12 @@ def HTMLValueTestResult(case_name,status,value_op,result,details,skip):
             color = "#ff0000"
     details = details.replace(' .in. ',' .in. <br>');
     details = details.replace('], ','],<br>&nbsp;&nbsp;')
-    details = details.replace('] (prec=',']<br>(prec=')
+    details = details.replace('), ','),<br>&nbsp;&nbsp;')
+    details = details.replace('] (prec=',']<br>&nbsp;(prec=')
+    details = details.replace(') (prec=',')<br>&nbsp;(prec=')
     html.write(" <tr>\n")
     html.write("  <td bgcolor=\"%s\">%s</td>\n" % (color, case_name))
-    html.write("  <td colspan=5 align=left> %s : %s (%s)</td>\n" % (details,str(result),value_op))
+    html.write("  <td colspan=5 align=left><pre> %s : %s (%s)</pre></td>\n" % (details,str(result),value_op))
     html.write(" </tr>\n")
 
 # ----------------------------------------------------------------------------
@@ -1930,13 +1932,13 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
         iterator = iter(expected) # excepts if not iterable
     except TypeError: # not iterable
         try:
-            result = oper(round(actual, rndprec),round(expected, rndprec))
+            result = oper(round(float(actual), rndprec),round(float(expected), rndprec))
         except:
             result = oper(str(actual), str(expected))
     else: # iterable
         try:
-            rndexp = [round(x,rndprec) for x in expected]
-            rndact = [round(x,rndprec) for x in actual]
+            rndexp = [round(float(x),rndprec) for x in expected]
+            rndact = [round(float(x),rndprec) for x in actual]
             result = oper(rndact,rndexp)
         except:
             result = oper(str(actual),str(expected))
@@ -1977,26 +1979,25 @@ def TestValueGE(case_name, actual, expected, rndprec=5):
 # bucket contains expected (some item of bucket matches expected via eqoper) 
 def TestValueIN(case_name, bucket, expected, rndprec=5, eqoper=operator.eq):
     CheckInteractive(case_name)
-    result = False
-    doLog = False
+    doLog = True
+    dontLog = False
     at = 0
     try:
         for x in bucket:
-            if TestValueOp(case_name, x, expected, rndprec, eqoper, doLog):
-                result = True
-                break
+            if TestValueOp(case_name, x, expected, rndprec, eqoper, dontLog):
+                return TestValueOp(case_name, x, expected, rndprec, eqoper, doLog), at
             at = at + 1
     except:
-        if TestValueOp(case_name, bucket, expected, rndprec, eqoper, doLog):
-            result = True
+        if TestValueOp(case_name, bucket, expected, rndprec, eqoper, dontLog):
+            return TestValueOp(case_name, bucket, expected, rndprec, eqoper, doLog), 0
     skip = TestEnv.check_skip(case_name)
     if skip:
         TestEnv.results["numskip"] += 1
-    if result == False and not skip:
+    else:
         TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogValueTestResult(case_name,eqoper.__name__,result,
-        "%s .in. %s (prec=%d,at=%d)" % (str(expected),str(bucket),rndprec,at),skip)
-    return result, at
+    LogValueTestResult(case_name,eqoper.__name__,False,
+        "%s .in. %s (prec=%d)" % (str(expected),str(bucket),rndprec),skip)
+    return False
 
 # ----------------------------------------------------------------------------
 # Function: AssertTrue
