@@ -21,7 +21,7 @@ __ofile = None
 
 def __center(sval,ident):
     """ Helper for centering a string. """
-    pad = (80 - len(ident) - len(sval))/2 - 1
+    pad = int((80 - len(ident) - len(sval))/2 - 1)
     res = "".join(" " for i in range(pad))
     return res + sval
 

@@ -18,7 +18,7 @@ class PythonSqExpression(SimplePythonExpression):
         res = vtk.vtkFloatArray()
         res.SetNumberOfComponents(1)
         res.SetNumberOfTuples(ncells)
-        for i in xrange(ncells):
+        for i in range(ncells):
             rval = varr.GetTuple1(i)
             rval *= rval
             res.SetTuple1(i,rval)
