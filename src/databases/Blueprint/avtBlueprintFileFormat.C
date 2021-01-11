@@ -39,6 +39,9 @@
 #include "conduit_relay.hpp"
 #include "conduit_relay_io_hdf5.hpp"
 #include "conduit_blueprint.hpp"
+#include "conduit_blueprint_util_mesh.hpp"
+
+
 
 //-----------------------------------------------------------------------------
 // mfem includes
@@ -509,7 +512,7 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
         }
     }
 
-    Node &bp_index_field = m_root_node["blueprint_index"][mesh_name]["fields"][varname];
+    const Node &bp_index_field = m_root_node["blueprint_index"][mesh_name]["fields"][varname];
     BP_PLUGIN_INFO(bp_index_field.to_json());
 
     string topo_tag  = bp_index_field["topology"].as_string();
@@ -567,21 +570,24 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
     string abs_matsetname_str(abs_matsetname);
     // replace colons, etc
     abs_matsetname_str = sanitize_var_name(abs_matsetname_str);
-    // TODO: MESH FOR MATERIAL?
-    string abs_meshname = metadata->MaterialOnMesh(abs_matsetname_str);
+
+    // we need to know what mesh name this matset is associated with
+    const Node &mset_info = m_matset_info[abs_matsetname_str];
+    
+    string abs_meshname = mset_info["full_mesh_name"].as_string();
 
     BP_PLUGIN_INFO("matset " << abs_matsetname << " is defined on mesh " << abs_meshname);
 
-    string mesh_name;
-    string topo_name;
-    FetchMeshAndTopoNames(std::string(abs_matsetname),
-                          mesh_name,
-                          topo_name);
+
+    string mesh_name = mset_info["mesh_name"].as_string();
+    string topo_name = mset_info["topo_name"].as_string();
+    string matset_name = mset_info["matset_name"].as_string();
+    const Node &n_mat_names = mset_info["matnames"];
 
     BP_PLUGIN_INFO("mesh name: " << mesh_name);
     BP_PLUGIN_INFO("topo name: " << topo_name);
-
-    string matsetname  = FileFunctions::Basename(abs_matsetname);
+    BP_PLUGIN_INFO("matset name: " << matset_name);
+    BP_PLUGIN_INFO("matnames: " << n_mat_names.to_yaml());
 
     if (!m_root_node["blueprint_index"].has_child(mesh_name))
     {
@@ -589,13 +595,13 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
                              "mesh " << mesh_name << " not found in blueprint index");
     }
 
-    if (!m_root_node["blueprint_index"][mesh_name]["matsets"].has_child(matsetname))
+    if (!m_root_node["blueprint_index"][mesh_name]["matsets"].has_child(matset_name))
     {
         BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                             "matset " << matsetname << " not found in blueprint index");
+                             "matset " << matset_name << " not found in blueprint index");
     }
 
-    Node &bp_index_matset = m_root_node["blueprint_index"][mesh_name]["fields"][matsetname];
+    const Node &bp_index_matset = m_root_node["blueprint_index"][mesh_name]["matsets"][matset_name];
     BP_PLUGIN_INFO(bp_index_matset.to_json());
 
     string topo_tag  = bp_index_matset["topology"].as_string();
@@ -626,6 +632,8 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
         // signal the read failed, and return.
         out.reset();
     }
+
+    out["matnames"] = n_mat_names;
 }
 
 
@@ -843,10 +851,10 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 //
 // Cyrus Harrison, Tue Dec  8 10:29:21 PST 2020
 // ****************************************************************************
-static void
-AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
-                              string const &mesh_name,
-                              const Node &n_mesh_info)
+void
+avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
+                                                      string const &mesh_name,
+                                                      const Node &n_mesh_info)
 {
     if (!n_mesh_info.has_child("matsets"))
         return;
@@ -876,12 +884,14 @@ AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
         std::string topo_name = n_mset["topology"].as_string();
         string mesh_topo_name = mesh_name + "_" + topo_name;
 
+        string mesh_matset_name = mesh_topo_name + "_" + mset_name;
+
         BP_PLUGIN_INFO("adding material set "
-                        <<  mesh_topo_name << " " << mset_name);
+                        <<  mesh_topo_name << " " <<  mesh_matset_name);
 
         std::vector<string>  matnames;
 
-        n_mset["materials"].print();
+        BP_PLUGIN_INFO("material names " <<   n_mset["materials"].to_yaml());
 
         NodeConstIterator mnames_itr = n_mset["materials"].children();
         
@@ -889,9 +899,16 @@ AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
         {
             mnames_itr.next();
             matnames.push_back(mnames_itr.name());
+            // cache mat names as list of strings
+            m_matset_info[mesh_matset_name]["matnames"].append() = mnames_itr.name();
         }
 
-        avtMaterialMetaData *mmd = new avtMaterialMetaData(mset_name,
+        m_matset_info[mesh_matset_name]["full_mesh_name"] = mesh_topo_name;
+        m_matset_info[mesh_matset_name]["mesh_name"] = mesh_name;
+        m_matset_info[mesh_matset_name]["topo_name"] = topo_name;
+        m_matset_info[mesh_matset_name]["matset_name"] = mset_name;
+
+        avtMaterialMetaData *mmd = new avtMaterialMetaData(mesh_matset_name,
                                                            mesh_topo_name,
                                                            matnames.size(),
                                                            matnames);
@@ -1331,6 +1348,8 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     m_mfem_mesh_map.clear();
     // clear full mesh to bp mesh and topo name map
     m_mesh_and_topo_info.reset();
+    // clear full matset to info map
+    m_matset_info.reset();
 
     try
     {
@@ -1820,7 +1839,78 @@ avtMaterial *
 avtBlueprintFileFormat::GetMaterial(int domain,
                                     const char *mat_name)
 {
-    avtMaterial *res = NULL;
+    BP_PLUGIN_INFO("avtBlueprintFileFormat::GetMaterial " 
+                    << domain << " "
+                    << mat_name);
+
+    Node n_matset;
+    ReadBlueprintMatset(domain,
+                        mat_name,
+                        n_matset);
+    std::vector<std::string> matnames;
+
+    std::cout << "BP MATSET" << std::endl;
+    n_matset.print();
+
+    NodeConstIterator itr = n_matset["matnames"].children();
+    // ids are 1-based, we need to add a dummy entry
+    // to keep avtMaterial healthy. 
+    matnames.push_back("EMPTY");
+    while(itr.has_next())
+    {
+        matnames.push_back(itr.next().as_string());
+    }
+
+    // use to_silo util to convert from bp to the mixslot rep
+    // that silo and visit use
+
+    Node n_silo_matset;
+    conduit::blueprint::util::mesh::matset::to_silo(n_matset,
+                                                    n_silo_matset);
+
+    std::cout << "SILO MATSET" << std::endl;
+    n_silo_matset.print();;
+
+    int nmats = (int) matnames.size();
+
+    int nzones = (int) n_silo_matset["matlist"].dtype().number_of_elements();
+    int *matlist = n_silo_matset["matlist"].as_int_ptr();
+    int mix_len  = (int) n_silo_matset["mix_mat"].dtype().number_of_elements();
+    int *mix_mat  = n_silo_matset["mix_mat"].as_int_ptr();
+    int *mix_next = n_silo_matset["mix_next"].as_int_ptr();
+
+    float *mix_vf = NULL;
+    if(n_silo_matset["mix_vf"].dtype().is_float())
+    {
+        mix_vf = n_silo_matset["mix_vf"].as_float_ptr();
+    }
+    else
+    {
+        n_silo_matset["mix_vf"].to_float_array(n_silo_matset["mix_vf_float"]);
+        mix_vf = n_silo_matset["mix_vf_float"].as_float_ptr();
+    }
+
+    // we are using the following avtMaterial constructor:
+    // avtMaterial(int nmats,
+    //             const std::vector<std::string> &matnames,
+    //             int nzones,
+    //             const int *mat_list,
+    //             int mix_len,
+    //             const int *mix_mat,
+    //             const int *mix_next,
+    //             const int *mix_zone,
+    //             const float *mix_vf);
+
+    avtMaterial *mat = new avtMaterial(nmats,    // The number of materials in mats.
+                                       matnames, // material names
+                                       nzones,   // number of zones (len of matlist)
+                                       matlist,  // matlist
+                                       mix_len,  // length of mix arrays
+                                       mix_mat,  // mix_mat array
+                                       mix_next, // mix_next array
+                                       NULL,     // mix_zone array (OPTIONAL)
+                                       mix_vf    // mix_vf array
+                                       );
 
     // int dims[3] = {1,1,1}, ndims = 1;
     // // Structured mesh case
@@ -1863,28 +1953,8 @@ avtBlueprintFileFormat::GetMaterial(int domain,
     // // Optionally create mix_mat, mix_next, mix_zone, mix_vf
     // // arrays and read their contents from the file format.
     // // Use the information to create an avtMaterial object.
-    // avtMaterial *mat = new avtMaterial(
-    // nmats,
-    // matnos,
-    // names,
-    // ndims,
-    // dims,
-    // 0,
-    // matlist,
-    // 0, // length of mix arrays
-    // 0, // mix_mat array
-    // 0, // mix_next array
-    // 0, // mix_zone array
-    // 0 // mix_vf array
-    // );
-    // // Clean up.
-    // delete [] matlist;
-    // delete [] matnos;
-    // for(int i = 0; i < nmats; ++i)
-    // delete [] names[i];
-    // delete [] names;
-
-    return res;
+    
+    return mat;
 }
 
 

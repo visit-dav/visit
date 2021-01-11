@@ -16,7 +16,7 @@
 #
 #****************************************************************************
 
-if(VISIT_PYTHON3_DIR AND VISIT_ENABLE_MANUALS)
+if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS)
   if(WIN32)
     # Need a different path for windows because sphinx-build
     # is in a different location.
@@ -42,7 +42,7 @@ if(VISIT_PYTHON3_DIR AND VISIT_ENABLE_MANUALS)
         CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
   elseif(APPLE)
     add_custom_target(manuals
-                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build
+                  COMMAND ${VISIT_PYTHON_DIR}/bin/sphinx-build
                   -b html ${VISIT_SOURCE_DIR}/doc
                   ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
     # Add command to ensure the manuals are installed to the correct location
@@ -57,7 +57,7 @@ if(VISIT_PYTHON3_DIR AND VISIT_ENABLE_MANUALS)
         CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
   else()
     add_custom_target(manuals
-                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build
+                  COMMAND ${VISIT_PYTHON_DIR}/bin/sphinx-build
                   -b html ${VISIT_SOURCE_DIR}/doc
                   ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
   endif()

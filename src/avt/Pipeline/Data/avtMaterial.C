@@ -418,9 +418,14 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
 //
 // ****************************************************************************
 
-avtMaterial::avtMaterial(int nMats, const vector<string> &mats, int nzon,
-                         const int *ml, int mixl, const int *mixm,
-                         const int *mixn, const int *mixz,
+avtMaterial::avtMaterial(int nMats,
+                         const vector<string> &mats,
+                         int nzon,
+                         const int *ml,
+                         int mixl,
+                         const int *mixm,
+                         const int *mixn,
+                         const int *mixz,
                          const float *mixv)
 {
     int i;
@@ -437,6 +442,13 @@ avtMaterial::avtMaterial(int nMats, const vector<string> &mats, int nzon,
     }
 
     int nActualMats = (matUsed[nMats] ? nMats+1 : nMats);
+    
+    std::cout << " nActualMats " << nActualMats << std::endl;
+    
+    for (i = 0 ; i < matUsed.size() ; i++)
+    {
+        std::cout << "matUsed[" << i << "] = " << matUsed[i] << std::endl;
+    }
 
     Initialize(nActualMats, mats, mats, matUsed, nzon, 1, &nzon, 0, ml, mixl,
                mixm, mixn, mixz, mixv);
