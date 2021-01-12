@@ -85,7 +85,7 @@ interface (CLI) is essentially a Python interpreter where the VisIt
 Python Interface is built-in. The CLI is provided to simplify the
 process of running VisIt Python scripts.
 
-.. _architecuture:
+.. _architecture:
 
 .. figure:: images/architecture.png
    :alt: VisIt_'s architecture
