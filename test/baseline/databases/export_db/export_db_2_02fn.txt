@@ -1,2 +1,0 @@
-wg_RAW.1.raw
-wg_RAW.2.raw
