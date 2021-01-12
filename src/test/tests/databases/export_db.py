@@ -232,7 +232,7 @@ def test1():
             for fn in files:
                 if formats[f][0] in fn:
                     s = fn + "\n"
-            TestText("files", s)
+            TestText("files", s) # MCM (12Jan21)...noticed this never executes in testing
         t = CreateAnnotationObject("Text2D")
         t.text = f
         t.position = (0.01, 0.91)
@@ -325,15 +325,15 @@ def test2(writeGroupSize):
                     OpenDatabase(datafile)
                     AddPlot(formats[f][3], formats[f][4])
                     opendbs = opendbs + [datafile]
-                    filelist = filelist + datafile + "\n"
+                    filelist = filelist + datafile + ", "
         else:
             if OpenDatabase(formats[f][1]):
                 md = GetMetaData(formats[f][1])
                 AddPlot(formats[f][3], formats[f][4])
                 opendbs = opendbs + [formats[f][1]]
-                filelist = filelist + formats[f][1] + "\n"
+                filelist = filelist + formats[f][1] + ", "
             else:
-                filelist = "ERROR: " + "\n".join(os.listdir("."))
+                filelist = "ERROR: " + ", ".join(os.listdir("."))
         DrawPlots()
         t = CreateAnnotationObject("Text2D")
         t.text = f
@@ -342,7 +342,7 @@ def test2(writeGroupSize):
         SetView3D(v)
         SetAnnotationAttributes(a)
         Test(formats[f][2])
-        TestText(formats[f][2] + "fn", filelist)
+        TestText(formats[f][2] + "fn", filelist, baseText=baseVals[formats[f][2] + "fn"])
 
         # Clean up window 2
         DeleteAllPlots()
@@ -536,8 +536,23 @@ def test_vtk_tetrahedralize():
         DrawPlots()
         Query("NumZones")
         nzNew = int(GetQueryOutputValue())
-        TestText("export_db_vtk_tets_%s"%db_noext, "Ratio of exported zone count to original is %d"%(nzNew/nzOrig))
+        TestValueEQ("export_db_vtk_tets_zone_count_ratio_%s"%db_noext, nzNew/nzOrig,
+            baseVals["export_db_vtk_tets_zone_count_ratio_%s"%db_noext])
         DeleteAllPlots()
+
+baseVals = {
+    "export_db_2_01fn": "wg_PLY.1.ply, wg_PLY.2.ply",
+    "export_db_2_02fn": "wg_RAW.1.raw, wg_RAW.2.raw",
+    "export_db_2_03fn": "wg_STL.1.stl, wg_STL.2.stl",
+    "export_db_2_04fn": "wg_Silo.silo",
+    "export_db_2_05fn": "wg_Tecplot.1.tec, wg_Tecplot.2.tec",
+    "export_db_2_06fn": "wg_VTK.visit",
+    "export_db_2_07fn": "wg_OBJ.1.obj, wg_OBJ.2.obj",
+    "export_db_2_08fn": "wg_XYZ.1.xyz, wg_XYZ.2.xyz",
+    "export_db_2_09fn": "wg_Xmdv.visit",
+    "export_db_vtk_tets_zone_count_ratio_specmix_ucd": 2,
+    "export_db_vtk_tets_zone_count_ratio_ucd3d": 6
+}
 
 def main():
     test0()

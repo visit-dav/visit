@@ -676,7 +676,7 @@ def TestPickRangeTimeQuery():
     s = str(output_dict)
 
     Test("TimePickRange_00")
-    TestText("TimePickRangeDict_00",s)
+    TestText("TimePickRangeDict_00",s,baseText="None")
     ClearPickPoints()
 
     #
