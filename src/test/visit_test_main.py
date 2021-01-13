@@ -1873,7 +1873,7 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
             rndexp = [round(float(x),rndprec) for x in expected]
             result = oper(rndact,rndexp)
             actual_str = ["%.*f"%(rndprec,round(float(x),rndprec)) for x in actual]
-            expected_str = ["%.*f"%(rndprec,round(float(x),rndprec)) for x in exepected]
+            expected_str = ["%.*f"%(rndprec,round(float(x),rndprec)) for x in expected]
         except:
             result = oper(str(actual),str(expected))
             actual_str = str(actual)
@@ -1915,25 +1915,26 @@ def TestValueGE(case_name, actual, expected, rndprec=5):
 # bucket contains expected (some item of bucket matches expected via eqoper) 
 def TestValueIN(case_name, bucket, expected, rndprec=5, eqoper=operator.eq):
     CheckInteractive(case_name)
-    doLog = True
+    result = False
     dontLog = False
     at = 0
     try:
         for x in bucket:
             if TestValueOp(case_name, x, expected, rndprec, eqoper, dontLog):
-                return TestValueOp(case_name, x, expected, rndprec, eqoper, doLog), at
+                result = True
+                break
             at = at + 1
     except:
         if TestValueOp(case_name, bucket, expected, rndprec, eqoper, dontLog):
-            return TestValueOp(case_name, bucket, expected, rndprec, eqoper, doLog), 0
+            result = True
     skip = TestEnv.check_skip(case_name)
     if skip:
         TestEnv.results["numskip"] += 1
-    else:
+    if result == False and not skip:
         TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogValueTestResult(case_name,eqoper.__name__,False,
-        "%s .in. %s (prec=%d)" % (str(expected),str(bucket),rndprec),skip)
-    return False
+    LogValueTestResult(case_name,eqoper.__name__,result,
+        "%s .in. %s (prec=%d, at=%d)" % (str(expected),str(bucket),rndprec,at),skip)
+    return result
 
 #
 # Useful for cases where majority of logic for determining a passed or failed test
