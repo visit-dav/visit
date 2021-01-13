@@ -27,7 +27,6 @@
 
 import os
 
-
 ca=CurveAttributes()
 ca.cycleColors = 0
 SetDefaultPlotOptions(ca)
@@ -85,13 +84,11 @@ def TestOne(index, filename, varname, meshname, limit):
     test1 = "ls_%d_%d" %(index,1)
     Test(test1)
     Query("Integrate")
-    text = GetQueryOutputString()
     test2 = "ls_%d_%d" %(index,2)
-    TestText(test2, text)
+    TestValueEQ(test2, GetQueryOutputValue(), baseVals[test2])
     Query("Expected Value")
-    text = GetQueryOutputString()
     test3 = "ls_%d_%d" %(index,3)
-    TestText(test3, text)
+    TestValueEQ(test3, GetQueryOutputValue(), baseVals[test3])
     DeleteAllPlots()
     OpenDatabase("md0.ult")
     ReOpenDatabase("md0.ult")  # Flush out cached version
@@ -101,13 +98,11 @@ def TestOne(index, filename, varname, meshname, limit):
     test4 = "ls_%d_%d" %(index,4)
     Test(test4)
     Query("Integrate")
-    text = GetQueryOutputString()
     test5 = "ls_%d_%d" %(index,5)
-    TestText(test5, text)
+    TestValueEQ(test5, GetQueryOutputValue(), baseVals[test5])
     Query("Expected Value")
-    text = GetQueryOutputString()
     test6 = "ls_%d_%d" %(index,6)
-    TestText(test6, text)
+    TestValueEQ(test6, GetQueryOutputValue(), baseVals[test6])
     DeleteAllPlots()
     OpenDatabase("dfb0.ult")
     ReOpenDatabase("dfb0.ult")  # Flush out cached version
@@ -117,13 +112,11 @@ def TestOne(index, filename, varname, meshname, limit):
     test7 = "ls_%d_%d" %(index,7)
     Test(test7)
     Query("Integrate")
-    text = GetQueryOutputString()
     test8 = "ls_%d_%d" %(index,8)
-    TestText(test8, text)
+    TestValueEQ(test8, GetQueryOutputValue(), baseVals[test8])
     Query("Expected Value")
-    text = GetQueryOutputString()
     test9 = "ls_%d_%d" %(index,9)
-    TestText(test9, text)
+    TestValueEQ(test9, GetQueryOutputValue(), baseVals[test9])
     DeleteAllPlots()
     OpenDatabase("cld_a0.ult")
     ReOpenDatabase("cld_a0.ult")  # Flush out cached version
@@ -133,13 +126,11 @@ def TestOne(index, filename, varname, meshname, limit):
     test1 = "ls_%d_%d" %(index,10)
     Test(test1)
     Query("Integrate")
-    text = GetQueryOutputString()
     test2 = "ls_%d_%d" %(index,11)
-    TestText(test2, text)
+    TestValueEQ(test2, GetQueryOutputValue(), baseVals[test2])
     Query("Expected Value")
-    text = GetQueryOutputString()
     test3 = "ls_%d_%d" %(index,12)
-    TestText(test3, text)
+    TestValueEQ(test3, GetQueryOutputValue(), baseVals[test3])
     DeleteAllPlots()
     OpenDatabase("rld_i0.ult")
     ReOpenDatabase("rld_i0.ult")  # Flush out cached version
@@ -149,13 +140,11 @@ def TestOne(index, filename, varname, meshname, limit):
     test1 = "ls_%d_%d" %(index,13)
     Test(test1)
     Query("Integrate")
-    text = GetQueryOutputString()
     test2 = "ls_%d_%d" %(index,14)
-    TestText(test2, text)
+    TestValueEQ(test2, GetQueryOutputValue(), baseVals[test2])
     Query("Expected Value")
-    text = GetQueryOutputString()
     test3 = "ls_%d_%d" %(index,15)
-    TestText(test3, text)
+    TestValueEQ(test3, GetQueryOutputValue(), baseVals[test3])
     DeleteAllPlots()
     OpenDatabase("rld_a0.ult")
     ReOpenDatabase("rld_a0.ult")  # Flush out cached version
@@ -165,13 +154,11 @@ def TestOne(index, filename, varname, meshname, limit):
     test1 = "ls_%d_%d" %(index,16)
     Test(test1)
     Query("Integrate")
-    text = GetQueryOutputString()
     test2 = "ls_%d_%d" %(index,17)
-    TestText(test2, text)
+    TestValueEQ(test2, GetQueryOutputValue(), baseVals[test2])
     Query("Expected Value")
-    text = GetQueryOutputString()
     test3 = "ls_%d_%d" %(index,18)
-    TestText(test3, text)
+    TestValueEQ(test3, GetQueryOutputValue(), baseVals[test3])
     DeleteAllPlots()
     OpenDatabase("lst0.ult")
     ReOpenDatabase("lst0.ult")  # Flush out cached version
@@ -181,15 +168,73 @@ def TestOne(index, filename, varname, meshname, limit):
     test1 = "ls_%d_%d" %(index,19)
     Test(test1)
     Query("Integrate")
-    text = GetQueryOutputString()
     test2 = "ls_%d_%d" %(index,20)
-    TestText(test2, text)
+    TestValueEQ(test2, GetQueryOutputValue(), baseVals[test2])
     Query("Expected Value")
-    text = GetQueryOutputString()
     test3 = "ls_%d_%d" %(index,21)
-    TestText(test3, text)
+    TestValueEQ(test3, GetQueryOutputValue(), baseVals[test3])
     DeleteAllPlots()
 
+#
+# Expected results for each test
+#
+baseVals = {
+    "ls_0_2":1,
+    "ls_0_3":0.0312789,
+    "ls_0_5":0.125232,
+    "ls_0_6":0.00631335,
+    "ls_0_8":0.125232,
+    "ls_0_9":0.00316435,
+    "ls_1_11":1,
+    "ls_0_11":1,
+    "ls_0_12":0.182223,
+    "ls_0_14":1,
+    "ls_0_15":0.0141507,
+    "ls_0_17":1,
+    "ls_0_18":0.0572263,
+    "ls_0_20":0.164641,
+    "ls_0_21":0.00609974,
+    "ls_1_2":1,
+    "ls_1_3":0.0322331,
+    "ls_1_5":0.142894,
+    "ls_1_6":0.00773154,
+    "ls_1_8":0.142894,
+    "ls_1_9":0.00387523,
+    "ls_2_11":1,
+    "ls_1_12":0.20811,
+    "ls_1_14":0.999999,
+    "ls_1_15":0.0145833,
+    "ls_1_17":1,
+    "ls_1_18":0.0642869,
+    "ls_1_20":0.185295,
+    "ls_1_21":0.00830585,
+    "ls_2_2":1,
+    "ls_2_3":0.0266496,
+    "ls_2_5":3.38562e-06,
+    "ls_2_6":1.87224e-07,
+    "ls_2_8":3.38562e-06,
+    "ls_2_9":9.37578e-08,
+    "ls_3_11":1,
+    "ls_2_12":0.0860585,
+    "ls_2_14":1,
+    "ls_2_15":0.001,
+    "ls_2_17":1,
+    "ls_2_18":0.001,
+    "ls_2_20":0.0798091,
+    "ls_2_21":0.00218212,
+    "ls_3_2":1,
+    "ls_3_3":1.08223,
+    "ls_3_5":1.11039,
+    "ls_3_6":1.53097,
+    "ls_3_8":1.11039,
+    "ls_3_9":0.765742,
+    "ls_3_12":1.25808,
+    "ls_3_14":0.999999,
+    "ls_3_15":0.160933,
+    "ls_3_17":0.999999,
+    "ls_3_18":0.178107,
+    "ls_3_20":1.25822,
+    "ls_3_21":0.9419}
 
 TestOne(0, silo_data_path("rect2d.silo") , "d", "quadmesh2d", 0.5)
 TestOne(1, silo_data_path("multi_rect2d.silo") , "d", "mesh1", 0.5)
