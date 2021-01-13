@@ -641,31 +641,6 @@ def LogValueTestResult(case_name,value_op,result,details,skip):
     HTMLValueTestResult(case_name,status,value_op,result,details,skip)
 
 # ----------------------------------------------------------------------------
-#  Method: LogAssertTestResult
-#
-#  Programmer: Cyrus Harrison
-#  Date:       Fri Nov 22 2013
-# ----------------------------------------------------------------------------
-def LogAssertTestResult(case_name,assert_check,result,details,skip):
-    """
-    Log the result of an assert based test.
-    """
-    details = str(details)
-    if not result:
-        if skip:
-            status = "skipped"
-        else:
-            status = "failed"
-    else:
-        status = "passed"
-    # write result
-    Log("    Test case '%s' (Assert: %s) %s" % (case_name,
-                                                assert_check,
-                                                status.upper()))
-    JSONAssertTestResult(case_name,status,assert_check,result,details,skip)
-    HTMLAssertTestResult(case_name,status,assert_check,result,details,skip)
-
-# ----------------------------------------------------------------------------
 #  Method: JSONValueTestResult
 #
 #  Programmer: Mark C. Miller, Sat Jan  9 20:19:12 PST 2021
@@ -687,31 +662,6 @@ def JSONValueTestResult(case_name,status,value_op,result,details,skip):
              'details':      details}
     res["sections"][-1]["cases"].append(t_res)
     json_results_save(res)
-
-# ----------------------------------------------------------------------------
-#  Method: JSONAssertTestResult
-#
-#  Programmer: Cyrus Harrison
-#  Date:       Fri Nov 22 2013
-# ----------------------------------------------------------------------------
-def JSONAssertTestResult(case_name,status,assert_check,result,details,skip):
-    res = json_results_load()
-    
-    if not result:
-        if skip:
-            status = "skipped"
-        else:
-            status = "failed"
-    else:
-        status = "passed"
-    
-    t_res = {'name':         case_name,
-             'status':       status,
-             'assert_check': assert_check,
-             'details':      details}
-    res["sections"][-1]["cases"].append(t_res)
-    json_results_save(res)
-
 
 # ----------------------------------------------------------------------------
 #  Method: HTMLValueTestResult
@@ -738,31 +688,7 @@ def HTMLValueTestResult(case_name,status,value_op,result,details,skip):
     details = details.replace(') (prec=',')<br>&nbsp;(prec=')
     html.write(" <tr>\n")
     html.write("  <td bgcolor=\"%s\">%s</td>\n" % (color, case_name))
-    html.write("  <td colspan=5 align=left><pre> %s : %s (%s)</pre></td>\n" % (details,str(result),value_op))
-    html.write(" </tr>\n")
-
-# ----------------------------------------------------------------------------
-#  Method: HTMLTextTestResult
-#
-#  Programmer: Cyrus Harrison
-#  Date:       Fri Nov 22 2013
-# ----------------------------------------------------------------------------
-def HTMLAssertTestResult(case_name,status,assert_check,result,details,skip):
-    """
-    Creates html entry for the result of an assert based test.
-    """
-    # TODO use template file
-    html = html_output_file_handle()
-    # write to the html file
-    color = "#00ff00"
-    if not result:
-        if skip:
-            color = "#0000ff"
-        else:
-            color = "#ff0000"
-    html.write(" <tr>\n")
-    html.write("  <td bgcolor=\"%s\">%s</td>\n" % (color, case_name))
-    html.write("  <td colspan=5 align=center> %s : %s (Assert_%s)</td>\n" % (details,str(result),assert_check))
+    html.write("  <td colspan=5 align=left><pre> %s : %s</pre></td>\n" % (details,str(result)))
     html.write(" </tr>\n")
 
 # ----------------------------------------------------------------------------
@@ -1929,20 +1855,29 @@ def TestText(case_name, inText, baseText=None, numdifftol=None):
 # ----------------------------------------------------------------------------
 def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=True):
     CheckInteractive(case_name)
+    result = False
     try:
         iterator = iter(expected) # excepts if not iterable
     except TypeError: # not iterable
         try:
             result = oper(round(float(actual), rndprec),round(float(expected), rndprec))
+            actual_str = "%.*f"%(rndprec,round(float(actual),rndprec))
+            expected_str = "%.*f"%(rndprec,round(float(expected),rndprec))
         except:
             result = oper(str(actual), str(expected))
+            actual_str = str(actual)
+            expected_str = str(expected)
     else: # iterable
         try:
-            rndexp = [round(float(x),rndprec) for x in expected]
             rndact = [round(float(x),rndprec) for x in actual]
+            rndexp = [round(float(x),rndprec) for x in expected]
             result = oper(rndact,rndexp)
+            actual_str = ["%.*f"%(rndprec,round(float(x),rndprec)) for x in actual]
+            expected_str = ["%.*f"%(rndprec,round(float(x),rndprec)) for x in exepected]
         except:
             result = oper(str(actual),str(expected))
+            actual_str = str(actual)
+            expected_str = str(expected)
     if dolog:
         skip = TestEnv.check_skip(case_name)
         if skip:
@@ -1950,7 +1885,7 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
         if result == False and not skip:
             TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
         LogValueTestResult(case_name,oper.__name__,result,
-            "%s .%s. %s (prec=%d)" % (str(actual),oper.__name__,str(expected),rndprec),skip)
+            "%s .%s. %s (prec=%d)" % (actual_str,oper.__name__,expected_str,rndprec),skip)
     return result
 
 # actual == expected
@@ -2010,130 +1945,6 @@ def Failed(case_name):
 
 def Passed(case_name):
     TestValueOp(case_name, True, True)
-
-# ----------------------------------------------------------------------------
-# Function: AssertTrue
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertTrue(case_name,val):
-    CheckInteractive(case_name)
-    result = val == True
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"True",result,val,skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertTrue
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertFalse(case_name,val):
-    CheckInteractive(case_name)
-    result = val == False
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"False",result,val,skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertEqual
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertEqual(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a == val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Equal",result,
-                        "%s == %s" % (str(val_a),str(val_b)),skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertGT
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertGT(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a > val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Greater than",
-                        result,"%s > %s" % (str(val_a),str(val_b)),skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertGTE
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertGTE(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a >= val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Greater than or Equal",
-                        result,"%s >= %s" % (str(val_a),str(val_b)),skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertLT
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertLT(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a < val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Less than",
-                        result,"%s < %s" % (str(val_a),str(val_b)),skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertLTE
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertLTE(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a <= val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Less than or Equal",
-                        result,"%s <= %s" % (str(val_a),str(val_b)),skip)
 
 # ----------------------------------------------------------------------------
 # Function: TestSection
