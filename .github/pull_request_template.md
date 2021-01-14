@@ -15,7 +15,7 @@ Please describe the tests you've added or any tests that already cover this chan
 
 ### Checklist:
 
-- [ ] My code follows the [style guidelines][1] of this project.~~
+- [ ] I have followed the [style guidelines][1] of this project.~~
 - [ ] I have performed a self-review of my own code.~~
 - [ ] I have commented my code where applicable.~~
 - [ ] I have updated the release notes.~~
