@@ -24,8 +24,9 @@ Please describe the tests you've added or any tests that already cover this chan
 - [ ] I have added tests that prove my fix is effective or that my feature works.~~
 - [ ] I have confirmed new and existing unit tests pass locally with my changes.~~
 - [ ] I have added any new baselines to the repo.~~
-- [ ] I have NOT made any changes to *protocol* or *public interfaces* in an RC branch.~~
+- [ ] I have NOT made any changes to [*protocol* or *public interfaces*][3] in an RC branch.~~
 - [ ] I have assigned reviewers (see [VisIt's PR procedures][2] for more information).~~
 
 [1]: https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/StyleGuide.html
 [2]: https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/pr_create.html#reviewers
+[3]: https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/RCDevelopment.html#communication-protocols-and-public-apis
