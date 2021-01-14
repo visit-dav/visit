@@ -77,7 +77,8 @@ function bv_pyside_host_profile
         echo "##" >> $HOSTCONF
         echo "## PySide" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "SETUP_APP_VERSION(PYSIDE $PYSIDE_VERSION)" >> $HOSTCONF
+        # version is needed by VisIt's Find module.
+        echo "set(PYSIDE_VERSION $PYSIDE_VERSION)" >> $HOSTCONF
         if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then
             echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR $PYSIDE_INSTALL_DIR)" >> $HOSTCONF
         else
@@ -235,7 +236,7 @@ function build_pyside
         # for finding python
         pyside_opts="${pyside_opts} -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_COMMAND}"
 
-        # general cmake opotions
+        # general cmake options
         pyside_opts="${pyside_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
         pyside_opts="${pyside_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
         pyside_opts="${pyside_opts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
@@ -245,11 +246,12 @@ function build_pyside
         pyside_opts="${pyside_opts} -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=true"
         pyside_opts="${pyside_opts} -DCMAKE_BUILD_TYPE:STRING=\"${VISIT_BUILD_MODE}\""
 
-        # pyside opotions
+        # pyside options
         pyside_opts="${pyside_opts} -DBUILD_TESTS:BOOL=FALSE"
         pyside_opts="${pyside_opts} -DCMAKE_INSTALL_PREFIX:PATH=\"$VISIT_PYSIDE_DIR\""
         pyside_opts="${pyside_opts} -DCMAKE_INSTALL_RPATH:FILEPATH=\"$VISIT_PYSIDE_DIR/lib\""
         pyside_opts="${pyside_opts} -DCMAKE_INSTALL_NAME_DIR:FILEPATH=\"$VISIT_PYSIDE_DIR/lib\""
+     
 
         if [[ "$DO_MESAGL" == "yes" ]] ; then
             pyside_opts="${pyside_opts} -DGL_H=${MESAGL_INCLUDE_DIR}/GL/gl.h"

@@ -159,7 +159,6 @@ if(NOT PySide_FOUND)
             return()
         endif()
 
-        #set(HAVE_LIBPYSIDE FALSE CACHE BOOL "Have PySide2" FORCE)
         set(HAVE_LIBPYSIDE TRUE CACHE BOOL "Have PySide2" FORCE)
         set(PySide_FOUND 1)
         message(STATUS "Pyside2 Found")
@@ -171,17 +170,14 @@ if(NOT PySide_FOUND)
         message(STATUS "    pyside typesystems: ${PYSIDE_TYPESYSTEMS}")
     else()
         set(PYSIDE_IN_PYTHON false) 
-        # PySide not installed in python, use the old way
+        # PySide not installed in python, it's a stand-alone, handle in usual manner
        
         include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
         # pyside's cmake find logic unsets PYTHON_FOUND, so save it now for restoration after
         set(vpy_found ${PYTHON_FOUND}) 
         if(VISIT_PYSIDE_DIR)
-            option(PYSIDE_LIBNAMES_AFFIX_V "Whether PySide and Shiboken base names end with v" ON)
-
             #  Find Shiboken 
             set(CMAKE_PREFIX_PATH ${VISIT_PYSIDE_DIR}/lib/cmake/Shiboken2-${PYSIDE_VERSION}.2)
-
 
             if(NOT Shiboken2}_FOUND)
                 find_package(Shiboken2 ${PYSIDE_VERSION})
@@ -225,32 +221,18 @@ if(NOT PySide_FOUND)
         else()
             set(PySide_FOUND 1)
             set(HAVE_LIBPYSIDE true CACHE BOOL "Have PySide2" FORCE) 
-            #set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE) 
         endif()
 
         if(PySide_FOUND)
-            if(NOT APPLE)
+            # for pyside with python3, libnames are very verbose, so lets
+            # retrieve them from XXX_LIBRARY vars set above by the find
 
-                SET_UP_THIRD_PARTY(PYSIDE lib include 
-                        pyside2-python${PYTHON_VERSION} shiboken2-python${PYTHON_VERSION})
-            else(NOT APPLE)
-                if(PYSIDE_LIBNAMES_AFFIX_V)
-                    set(PYTHON_VERSION_V ${PYTHON_VERSION}v)
-                else()
-                    set(PYTHON_VERSION_V ${PYTHON_VERSION})
-                endif()
+            # SET_UP_THIRD_PARTY needs the library name without extension
+            get_filename_component(pyside_lib_name ${PYSIDE_LIBRARY} NAME)
+            get_filename_component(shiboken_lib_name ${SHIBOKEN_LIBRARY} NAME)
 
-                set(PySide2_LIBRARIES
-                        pyside2-python${PYTHON_VERSION_V}
-                        pyside2-python${PYTHON_VERSION_V}.${PYSIDE_VERSION}
-                        pyside2-python${PYTHON_VERSION_V}.${PYSIDE_SHORT_VERSION})
-
-                set(Shiboken2_LIBRARIES
-                        shiboken2-python${PYTHON_VERSION_V}
-                        shiboken2-python${PYTHON_VERSION_V}.${PYSIDE_VERSION}
-                        shiboken2-python${PYTHON_VERSION_V}.${PYSIDE_SHORT_VERSION})
-                SET_UP_THIRD_PARTY(PYSIDE lib include ${PySide2_LIBRARIES} ${Shiboken2_LIBRARIES})
-            endif(NOT APPLE)
+            # Is this call to SET_UP_THIRD_PARTY still needed?
+            SET_UP_THIRD_PARTY(PYSIDE lib include ${pyside_lib_name} ${shiboken_lib_name})
 
             # Install the pyside and shiboken python site-packages
             install(DIRECTORY ${PYSIDE_PYTHONPATH}
@@ -273,9 +255,9 @@ if(NOT PySide_FOUND)
                                 WORLD_READ             WORLD_EXECUTE
                     )
         endif(PySide_FOUND)
+        set(PYTHON_FOUND ${vpy_found}) 
+        unset(vpy_found)
     endif() 
-    set(PYTHON_FOUND ${vpy_found}) 
-    unset(vpy_found)
 endif()
 
 #****************************************************************************
