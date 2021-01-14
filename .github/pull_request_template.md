@@ -22,6 +22,7 @@ Please describe the tests you've added or any tests that already cover this chan
 - [ ] I have made corresponding changes to the documentation
 - [ ] I have added debugging support to my changes
 - [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
+- [ ] I have confirmed new and existing unit tests pass locally with my changes
 - [ ] I have added any new baselines to the repo
+- [ ] I have NOT made any changes to *protocol* or *public interfaces* in an RC branch.
 - [ ] I have assigned reviewers (see [VisIt's PR procedures](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/pr_create.html#reviewers) for more information).
