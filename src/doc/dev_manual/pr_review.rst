@@ -30,6 +30,16 @@ rightfully so.
 * The developer has NOT changed any *protocol* or public *interfaces* on an RC branch
 * If necessary, the developer added any new baselines to the repository
 
+These reminders will appear as checklist items in the :abbr:`PR (Pull Request)` template.
+However, not all items *apply* in all PRs. For the items that do apply be sure to ensure
+you have done the associated work and then ensure the item is checked. For items that do
+not apply, be sure change these lines to strikeout style by adding ``~~`` just before the
+check box ``[ ]`` (but after the bullet) and at the end of the line like so::
+
+    - [ ] This item is unchecked.
+    - [x] This item is checked.
+    - ~~[ ] This item has been striken out.~~
+
 
 Comments and Tasks
 ------------------
