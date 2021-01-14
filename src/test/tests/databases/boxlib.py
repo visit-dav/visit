@@ -15,6 +15,9 @@
 #  
 #    Mark C. Miller, Mon Sep 15 12:05:44 PDT 2008
 #    Added 3D test
+#
+#    Mark C. Miller, Mon Jan 11 10:40:34 PST 2021
+#    Replace Assert-style with TestValue-style tests.
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("Boxlib2D", "Boxlib3D"))
 
@@ -105,8 +108,8 @@ OpenDatabase(data_path("boxlib_test_data/2D/plt0000000/Header"))
 AddPlot("Pseudocolor", "temperature1")
 DrawPlots()
 SetQueryOutputToValue()
-AssertTrue("temperature1 min", round(Query("Min"),15)==295.409999999999968)
-AssertTrue("temperature1 max", round(Query("Max"),15)==295.410000000000082)
+TestValueEQ("temperature1 min", Query("Min"), 295.409999999999968, 15)
+TestValueEQ("temperature1 max", Query("Max"), 295.410000000000082, 15)
 DeleteAllPlots()
 CloseDatabase(data_path("boxlib_test_data/2D/plt0000000/Header"))
 

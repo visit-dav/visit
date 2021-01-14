@@ -178,6 +178,17 @@ use of Sphinx as we move forward. These are discussed at the
     Link to a downloadable file *within* this documentation like
     :download:`this one <../Quantitative/VerdictManual-revA.pdf>`
 
+* Link to different URLs with same *link text* in same ``.rst`` file.
+  Sometimes you might wind up using the same phrase in a ``.rst`` file
+  that is linked to different URLs. When you do, you will get a warning
+  such as ``WARNING: Duplicate explicit target name...``. For example if
+  you have one `example <http://www.llnl.gov>`__ and another
+  `example <http://www.llnl.gov>`__. To correct this, you need to add an
+  extra underscore to the end of the link as in::
+
+    For example, if you have one `example <http://www.llnl.gov>`__ and
+    another `example <http://www.llnl.gov>`__.
+
 * If you are having trouble getting the formatting for a section worked
   out and the time involved to re-gen the documentation is too much, you
   could try an

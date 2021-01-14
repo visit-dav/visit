@@ -96,6 +96,8 @@
 #    Added more DirectDatabaseQOT tests that ensure verdict metrics
 #    are able to be queried using this route.
 #
+#    Mark C. Miller, Mon Jan 11 10:37:07 PST 2021
+#    Replace Assert-style with TestValue-style tests
 # ----------------------------------------------------------------------------
 
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
@@ -748,7 +750,7 @@ def TestReturnValue():
     no_time = NodePick(coord=(2, .2, 2), do_time=0)
     time2   = NodePick(coord=(3, .5, 3), do_time=1, start_time=0, end_time=70)
 
-    AssertEqual("Pick Updated", type(time1), type(time2))
+    TestValueEQ("Pick Updated", type(time1), type(time2))
 
     ClearPickPoints()
     DeleteAllPlots()
@@ -793,7 +795,7 @@ def TestDirectDatabaseRoute():
     timer_stop = time.time()
     res = timer_stop - timer_start
 
-    AssertLTE("Timing Direct Database Query", res, thresh)
+    TestValueLE("Timing Direct Database Query", res, thresh)
     SetActiveWindow(2)
     Test("Direct_Database_Route_00")
     DeleteAllPlots()
