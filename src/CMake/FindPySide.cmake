@@ -49,17 +49,31 @@ if(NOT PySide_FOUND)
                     OUTPUT_QUIET
                     ERROR_QUIET
                     RESULT_VARIABLE HAVE_PYSIDE_IN_PYTHON)
+
+    if(NOT HAVE_PYSIDE_IN_PYTHON EQUAL 0)
+        # the above execute_process command *should* work.
+        # When the compiler used to build TP libs and VisIt is NOT the default
+        # compiler on the system, it will possibly fail due to a mismatch between libstdc++
+        # used for compiling pyside2 and the system libstdc++
+        # So, we perform an extra check if needed.
+        if(EXISTS ${PYTHON_DIR}/bin/shiboken2 AND
+           EXISTS ${PYTHON_SITE_PACKAGES_DIR}/PySide2 AND
+           EXISTS ${PYTHON_SITE_PACKAGES_DIR}/shiboken2) 
+           # doesn't really make sense to set this to 0, other than it matches
+           # with the result value if the above execute_process succeeds.
+           set(HAVE_PYSIDE_IN_PYTHON 0)
+        endif()
+    endif()
     if(HAVE_PYSIDE_IN_PYTHON EQUAL 0)
         set(PYSIDE_IN_PYTHON true) 
         # use a macro taken from an example within PySide2 
         # The config script is located in  python's lib/site-packages/PySide2/examples/utils dir
         # perhaps we want to do this a different way?
-        get_filename_component(PYLIB_DIR ${PYTHON_LIBRARY} DIRECTORY)
 
-        set(pyside_config_script ${PYLIB_DIR}/python${PYTHON_VERSION}/site-packages/PySide2/examples/utils/pyside2_config.py)
+        set(pyside_config_script ${PYTHON_SITE_PACKAGES_DIR}/PySide2/examples/utils/pyside2_config.py)
 
         if (NOT EXISTS ${pyside_config_script})
-            message(WARNING "Cannot find PySide2 config script in Python's site-pacakges, disabling PySide")
+            message(WARNING "Cannot find PySide2 config script in ${pyside_config_script}, disabling PySide")
             set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE) 
 
             # should probably have a different find mechanism here perhaps along the lines of searching
@@ -145,10 +159,11 @@ if(NOT PySide_FOUND)
             return()
         endif()
 
+        #set(HAVE_LIBPYSIDE FALSE CACHE BOOL "Have PySide2" FORCE)
         set(HAVE_LIBPYSIDE TRUE CACHE BOOL "Have PySide2" FORCE)
         set(PySide_FOUND 1)
         message(STATUS "Pyside2 Found")
-        message(STATUS "    shiboken generator: ${SHIBOKEN_GENERATOR}")
+        message(STATUS "    shiboken generator: ${SHIBOKEN_BINARY}")
         message(STATUS "    shiboken include:   ${SHIBOKEN_INCLUDE_DIR}")
         message(STATUS "    shiboken libary:    ${SHIBOKEN_LIBRARY}")
         message(STATUS "    pyside include:     ${PYSIDE_INCLUDE_DIR}")
@@ -210,6 +225,7 @@ if(NOT PySide_FOUND)
         else()
             set(PySide_FOUND 1)
             set(HAVE_LIBPYSIDE true CACHE BOOL "Have PySide2" FORCE) 
+            #set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE) 
         endif()
 
         if(PySide_FOUND)
@@ -286,8 +302,20 @@ function(PYSIDE_ADD_GENERATOR_TARGET
         list(APPEND gen_include_paths_arg "-I${itm}")
     endforeach()
 
+    if(VISIT_LLVM_DIR)
+        # the generator needs to know where to find libclang, so ensure its
+        # location is set in the LD_LIBRARY_PATH used by the process
+        set(use_ld ${VISIT_LLVM_DIR}/lib:$ENV{LD_LIBRARY_PATH}) 
+        # also need LLVM_INSTALL_DIR set
+        set(setenv_cmd ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${use_ld}" "LLVM_INSTALL_DIR=${VISIT_LLVM_DIR}")
+    else()
+        # if we arent using a visit-compiled llvm, assume env is already set up.
+        # not sure if this works!
+        set(setenv_cmd "")
+    endif()
     add_custom_command(OUTPUT ${${gen_sources}}
-                   COMMAND ${SHIBOKEN_BINARY} ${PYSIDE_GENERATOR_EXTRA_FLAGS}
+                   COMMAND ${setenv_cmd}
+                   ${SHIBOKEN_BINARY} ${PYSIDE_GENERATOR_EXTRA_FLAGS}
                    ${gen_include_paths_arg}
                    -T${PYSIDE_TYPESYSTEMS}
                    -T${CMAKE_CURRENT_SOURCE_DIR}

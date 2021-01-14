@@ -504,6 +504,8 @@ function bv_python_initialize_vars
         # export PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/bin/python"
         export PYTHON_INCLUDE_DIR="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}"
         export PYTHON_LIBRARY="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"
+    else
+        export PYTHON_COMMAND="${PYTHON_COMMAND}"
     fi
 }
 
