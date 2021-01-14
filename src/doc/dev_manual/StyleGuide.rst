@@ -74,7 +74,7 @@ Each of the .h files will have the following format:
   * If other header files are included before this files inclusion, it may be making use of their definitions.
 
 * All variables declared here should be externed. Class-scoped static variables should not be defined here.
-* Avoid using directives in header files. They will effect not only the current header file but any files in which the header file is included, directly or indirectly.
+* Avoid ``using::`` directives in header files. They will effect not only the current header file but any files in which the header file is included, directly or indirectly.
 
 .C File Content
 ~~~~~~~~~~~~~~~
