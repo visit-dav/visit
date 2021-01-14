@@ -25,6 +25,8 @@ to develop, in many instances the exact same changes can be applied to both
 the release candidate and develop, and in some instannces the changes
 applied to the two branches are slightly or significantly different.
 
+.. _communication_protocols_and_public_apis:
+
 Changes to files impacting communication protocols or public APIs are not permitted
 on a release candidate (RC) branch unless explicitly agreed to by the team. Communication
 protocol files are any XML files and their associated auto-generated header files for
