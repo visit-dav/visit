@@ -25,6 +25,11 @@ to develop, in many instances the exact same changes can be applied to both
 the release candidate and develop, and in some instannces the changes
 applied to the two branches are slightly or significantly different.
 
+Changes to communication protocols (header files for state objects passed around
+between different VisIt components like ``viewer`` and ``engine_par``) or public
+APIs (header files for database, plot or operator plugins) are not permitted
+on a release candidate branch unless explicitly agreed to by the team.
+
 The rest of the section will go through the steps of the most common case
 of making the exact same changes to both branches using an example of
 updating the 3.0.2 release notes on the 3.0RC and develop.
