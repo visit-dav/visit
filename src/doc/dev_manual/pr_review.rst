@@ -26,7 +26,8 @@ rightfully so.
 * The developer made corresponding changes to the documentation
 * The developer added debugging support
 * The developer added tests that prove the fix is effective or that the feature works
-* New and existing unit tests pass
+* The developer has confirmed and existing unit tests pass
+* The developer has NOT changed any *protocol* or public *interfaces* on an RC branch
 * If necessary, the developer added any new baselines to the repository
 
 
