@@ -72,7 +72,11 @@ function bv_pyside_host_profile
 {
     # $USE_SYSTEM_PYTHON == no implies we will install pyside within python's site-packages, so
     # a host-profile entry won't be necessary.
-    if [[ "$DO_PYSIDE" == "yes" && ("$USE_SYSTEM_PYSIDE" == "yes" || "$USE_SYSTEM_PYTHON" == "yes" ) ]] ; then
+
+    # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH issue can be resolved
+    # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH issue can be resolved
+    #if [[ "$DO_PYSIDE" == "yes" && ("$USE_SYSTEM_PYSIDE" == "yes" || "$USE_SYSTEM_PYTHON" == "yes" ) ]] ; then
+    if [[ "$DO_PYSIDE" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## PySide" >> $HOSTCONF
@@ -82,7 +86,7 @@ function bv_pyside_host_profile
         if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then
             echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR $PYSIDE_INSTALL_DIR)" >> $HOSTCONF
         else
-            echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR \${VISITHOME}/pyside/$PYSIDE_VERSION/\${VISITARCH})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR \${VISITHOME}/pyside/\${PYSIDE_VERSION}/\${VISITARCH})" >> $HOSTCONF
         fi
     fi
 }
@@ -224,7 +228,8 @@ function build_pyside
     fi
 
     cd "$START_DIR"
-    if [[ "$USE_SYSTEM_PYTHON" == "yes" ]] ; then
+    # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH issue can be resolved
+    #if [[ "$USE_SYSTEM_PYTHON" == "yes" ]] ; then
         # we are using system python, do the build that installs pyside as a stand-alone package
         info "Pyside being built as stand-alone"
         VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
@@ -276,16 +281,12 @@ function build_pyside
 
         info "Configuring pyside . . ."
 
-        pysideenv=""
-        #if [[ "$DO_LLVM" == "yes" ]] ; then
-        #    pysideenv="env CLANG_INSTALL_DIR=${VISIT_CLANG_DIR} LD_LIBRARY_PATH=${VISIT_CLANG_DIR}:${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
-        #fi
-        echo ${pysideenv} "\"${CMAKE_BIN}\"" ${pyside_opts} ../${PYSIDE_SRC_DIR} > bv_run_cmake.sh
+        echo "\"${CMAKE_BIN}\"" ${pyside_opts} ../${PYSIDE_SRC_DIR} > bv_run_cmake.sh
         cat bv_run_cmake.sh
         issue_command bash bv_run_cmake.sh || error "pyside configuration failed."
 
         info "Building pyside . . ."
-        ${pysideenv} $MAKE $MAKE_OPT_FLAGS ||  error "PySide did not build correctly. Giving up."
+        $MAKE $MAKE_OPT_FLAGS ||  error "PySide did not build correctly. Giving up."
 
         info "Installing pyside . . ."
         $MAKE install || error "PySide did not install correctly."
@@ -294,39 +295,38 @@ function build_pyside
             return 1
         fi
 
+        chmod -R ug+w,a+rX "$VISITDIR/pyside"
         if [[ "$DO_GROUP" == "yes" ]] ; then
-            chmod -R ug+w,a+rX "$VISITDIR/pyside"
             chgrp -R ${GROUP} "$VISITDIR/pyside"
         fi
-
-    else
-        # we aren't using system python, do the build that installs pyside in python's site-packages
-        info "Pyside being built as python module"
-        cd "$PYSIDE_BUILD_DIR"
-        # do a python build/install
-        info "Installing pyside ..."
-
-        pysideenv=""
-        #if [[ "$DO_LLVM" == "yes" ]] ; then
-        #    pysideenv="env CLANG_INSTALL_DIR=${VISIT_CLANG_DIR} LD_LIBRARY_PATH=${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
-        #fi
-        ${pysideenv} ${PYTHON_COMMAND} ./setup.py install  --ignore-git --parallel=8 \
-            --qmake=${QT_BIN_DIR}/qmake \
-            --cmake=${CMAKE_INSTALL}/cmake \
-            --openssl=$VISIT_DIR/openssl/$OPENSSL_VERSION/$VISITARCH/bin
-
-        if test $? -ne 0 ; then
-            warn "Could not install pyside"
-            return 1
-        fi
-
-        # fix the perms
-        if [[ "$DO_GROUP" == "yes" ]] ; then
-            chmod -R ug+w,a+rX "$VISITDIR/python"
-            chgrp -R ${GROUP} "$VISITDIR/python"
-        fi
+    #else
+    #    # we aren't using system python, do the build that installs pyside in python's site-packages
+    #    info "Pyside being built as python module"
+    #    cd "$PYSIDE_BUILD_DIR"
+    #    # do a python build/install
+    #    info "Installing pyside ..."
+    #
+    #    pysideenv=""
+    #    #if [[ "$DO_LLVM" == "yes" ]] ; then
+    #    #    pysideenv="env CLANG_INSTALL_DIR=${VISIT_CLANG_DIR} LD_LIBRARY_PATH=${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
+    #    #fi
+    #    ${pysideenv} ${PYTHON_COMMAND} ./setup.py install  --ignore-git --parallel=8 \
+    #        --qmake=${QT_BIN_DIR}/qmake \
+    #        --cmake=${CMAKE_INSTALL}/cmake \
+    #        --openssl=$VISIT_DIR/openssl/$OPENSSL_VERSION/$VISITARCH/bin
+    #
+    #    if test $? -ne 0 ; then
+    #        warn "Could not install pyside"
+    #        return 1
+    #    fi
+    #
+    #    # fix the perms
+    #    if [[ "$DO_GROUP" == "yes" ]] ; then
+    #        chmod -R ug+w,a+rX "$VISITDIR/python"
+    #        chgrp -R ${GROUP} "$VISITDIR/python"
+    #    fi
     
-    fi
+    #fi
 
     cd "$START_DIR"
     info "Done with PySide"
@@ -352,20 +352,21 @@ function bv_pyside_is_installed
     fi
 
 
-    if [[ "$PYSIDE_STANDALONE" == "yes" ]]; then
+    # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH issue can be resolved
+    #if [[ "$USE_SYSTEM_PYTHON" == "yes" ]] ; then
         VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
         check_if_installed "pyside" $PYSIDE_VERSION
         if [[ $? != 0 ]] ; then
             return 0
         fi
-    else
-        # check in python
-        if [[ ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide2" ||
-              ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/shiboken2"  ]]; then
-            info "pyside not installed"
-            return 0
-        fi
-    fi
+    #else
+    #    # check in python
+    #    if [[ ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide2" ||
+    #          ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/shiboken2"  ]]; then
+    #        info "pyside not installed"
+    #        return 0
+    #    fi
+    #fi
     return 1
 }
 
