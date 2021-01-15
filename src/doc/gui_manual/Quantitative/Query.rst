@@ -122,7 +122,7 @@ Centroid
     contribution for each cell. If the plot's variable is indeed a true
     density variable, then the result will be the center-of-mass. If the
     plot's variable is not a true density variable (e.g. temperature), the
-    results may be nonsensical. If the plot's variable is constant over the
+    result may be nonsensical. If the plot's variable is constant over the
     whole object, the result will be a centroid (geometric center). If the
     query is performed on a Mesh or FilledBoundary plot, constant density will
     be assumed and the result will be a centroid. The results are printed to
