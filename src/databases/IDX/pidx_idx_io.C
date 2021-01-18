@@ -87,6 +87,7 @@ VisitIDXIO::DTypes convertType(PIDX_data_type intype)
         return VisitIDXIO::IDX_FLOAT64;
 
     fprintf(stderr, "Type not found for PIDX\n");
+    return VisitIDXIO::UNKNOWN;
 }
 
 

@@ -154,13 +154,21 @@ function bv_python_alt_python_dir
 {
     echo "Using alternate python directory"
 
-    [ ! -e "$1/bin/python-config" ] && error "Python not found in $1"
+    if [ -e "$1/bin/python-config" ]
+    then
+        PYTHON_COMMAND="$1/bin/python"
+        PYTHON_CONFIG_COMMAND="$1/bin/python-config"
+    elif [ -e "$1/bin/python3-config" ]
+    then
+        PYTHON_COMMAND="$1/bin/python3"
+        PYTHON_CONFIG_COMMAND="$1/bin/python3-config"
+    else
+        error "Python not found in $1"
+    fi
 
     bv_python_enable
     USE_SYSTEM_PYTHON="yes"
     PYTHON_ALT_DIR="$1"
-    PYTHON_COMMAND="$PYTHON_ALT_DIR/bin/python"
-    PYTHON_CONFIG_COMMAND="$PYTHON_ALT_DIR/bin/python-config"
     PYTHON_FILE=""
     python_set_vars_helper #set vars..
 }
@@ -1912,15 +1920,6 @@ function bv_python_build
                 export PYTHON_COMMAND="${PYHOME}/bin/python3"
             fi
 
-            check_if_py_module_installed "PIL"
-            # use Pillow for when python 3
-            info "Building the Python Pillow Imaging Library"
-            build_pillow
-            if [[ $? != 0 ]] ; then
-                error "Pillow build failed. Bailing out."
-            fi
-            info "Done building the Python Pillow Imaging Library"
-
             check_if_py_module_installed "numpy"
             if [[ $? != 0 ]] ; then
                 info "Building the numpy module"
@@ -1930,6 +1929,15 @@ function bv_python_build
                 fi
                 info "Done building the numpy module."
             fi
+
+            check_if_py_module_installed "PIL"
+            # use Pillow for when python 3
+            info "Building the Python Pillow Imaging Library"
+            build_pillow
+            if [[ $? != 0 ]] ; then
+                error "Pillow build failed. Bailing out."
+            fi
+            info "Done building the Python Pillow Imaging Library"
 
             if [[ "$BUILD_MPI4PY" == "yes" ]]; then
 

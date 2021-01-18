@@ -40,3 +40,17 @@ PYTHON_ADD_DISTUTILS_SETUP(visit_utils_py_setup
                            src/qplot/scene.py
                        )
 
+# gen scripts that help us test the visit_utils module
+set(_VISIT_UTILS_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
+set(_VISIT_UTILS_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR} )
+
+set(_VISIT_EXECUTABLE ${PROJECT_BINARY_DIR}/bin/visit)
+
+# NOTE: These still run in source  ... 
+
+configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/run_python_tests.sh.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/run_python_tests.sh" @ONLY)
+
+configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/run_visit_tests.sh.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/run_visit_tests.sh" @ONLY)
+

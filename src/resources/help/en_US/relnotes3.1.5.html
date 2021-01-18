@@ -27,6 +27,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Fixed a bug in the Stimulate Image reader (file extensions spr, sdt), where a negative pixel delta in the metadata resulted in incorrect pick results, incorrect sampled lineouts and potentially other erroneous behavior.</li>
   <li>Fixed a bug in the Histogram Options GUI where the plot was not updating with changes when the Apply button was clicked.</li>
+  <li>Fixed a bug in the Histogram Plot where <i>Use Current Plot</i> will now use the actual data extents.</li>
+  <li>Fixed a problem reading double precision data from boxlib files.</li>
+  <li>Fixed a bug in the Silo database plugin that resulted in VisIt crashing whenever negative material numbers were encountered. VisIt will now display an error message noting that negative material numbers are not supported.</li>
+  <li>Tecplot reader was fixed for handling cell-centered data (Thank you <a href="https://github.com/whophil">Phil Chiu!</a>).</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -36,12 +40,15 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added a 60 minute time limit to the host profile for the pdebug queue for the Lawrence Livermore Laboratory's Zin system.</li>
   <li>Switched PlainText plugin from using single precision to double precision.</li>
   <li>UNV plugin was updated to read gmsh legacy files (thanks Olivier Cessenat).</li>
+  <li>Updated the documentation for the Smooth Operator.</li>
+  <li>Enhanced boxlib readers to always serve up to VisIt double precision data.</li>
+  <li>The -disable-ghosts-for-t-intersections flag has been reverted back to -enable-ghosts-for-t-intersections, and the creation of ghosts for t-intersections will now be off by default. This will improve performance for the default situation where ghost t-intersections are not needed or desired.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.1.5</font></b></p>
 <ul>
-  <li></li>
+  <li>Created a NotarizeAction in the masonry scripts so that notarization can be executed in the correct order with the rest of the actions.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
