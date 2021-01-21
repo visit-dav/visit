@@ -1319,7 +1319,7 @@ class VisItCinema(object):
             f.write('  "name_pattern":"phi_{phi}/theta_{theta}/time_{time}.%s",\n' % self.format)
             f.write('  "arguments":{\n')
             f.write('    "theta": {\n')
-            f.write('       "default":%d,\n' % ideg(theta[self.theta/2]))
+            f.write('       "default":%d,\n' % ideg(theta[self.theta//2]))
             f.write('       "label":"Theta",\n')
             f.write('       "type":"range",\n')
             f.write('       "values":[')
