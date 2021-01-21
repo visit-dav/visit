@@ -18,31 +18,23 @@ AddPlot("Curve", "Laplace Distribution")
 DrawPlots()
 
 Query("Kurtosis")
-text = GetQueryOutputString()
-TestText("kurtosis_01", text)
+TestValueEQ("kurtosis_01", GetQueryOutputValue(), 5.9999)
 
 Query("Skewness")
-text = GetQueryOutputString()
-TestText("kurtosis_02", text)
+TestValueEQ("kurtosis_02", GetQueryOutputValue(), -2.29557e-09)
 
 ChangeActivePlotsVar("Log Normal Distribution")
 Query("Kurtosis")
-text = GetQueryOutputString()
-TestText("kurtosis_03", text)
+TestValueEQ("kurtosis_03", GetQueryOutputValue(), 19.73632)
 
 Query("Skewness")
-text = GetQueryOutputString()
-TestText("kurtosis_04", text)
+TestValueEQ("kurtosis_04", GetQueryOutputValue(), 3.38354)
 
 ChangeActivePlotsVar("Exponential Distribution")
 Query("Kurtosis")
-text = GetQueryOutputString()
-TestText("kurtosis_05", text)
+TestValueEQ("kurtosis_05", GetQueryOutputValue(), 8.99968)
 
 Query("Skewness")
-text = GetQueryOutputString()
-TestText("kurtosis_06", text)
-
-
+TestValueEQ("kurtosis_06", GetQueryOutputValue(), 1.99999)
 
 Exit()

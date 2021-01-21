@@ -1,1 +1,0 @@
-The kurtosis of the distribution is 5.9999.
