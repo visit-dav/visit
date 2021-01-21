@@ -263,6 +263,7 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
     if(buttonCombination & ApplyButton)
     {
         QPushButton *applyButton = new QPushButton(tr("Apply"), topCentral);
+        applyButton->setFocusPolicy(Qt::StrongFocus);
         connect(applyButton, SIGNAL(clicked()), this, SLOT(apply()));
         buttonLayout->addWidget(applyButton, 1, 0);
     }
