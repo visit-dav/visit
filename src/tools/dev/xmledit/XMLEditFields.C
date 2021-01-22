@@ -462,7 +462,7 @@ XMLEditFields::UpdateWindowSingleItem()
         if (f->type.right(5) == "Array")
         {
             QString str;
-            str.asprintf("%d",f->length);
+            str.setNum(f->length);
             length->setText(str);
         }
         else
@@ -1146,7 +1146,7 @@ XMLEditFields::fieldlistNew()
     while (!okay)
     {
         okay = true;
-        newname.asprintf("unnamed%d", newid);
+        newname = QString("unnamed%1").arg(newid);
         for (int i=0; i<fieldlist->count() && okay; i++)
         {
             if (fieldlist->item(i)->text() == newname)

@@ -428,7 +428,7 @@ XMLEditIncludes::includelistNew()
     while (!okay)
     {
         okay = true;
-        newname.asprintf("unnamed%d", newid);
+        newname = QString("unnamed%1").arg(newid);
         for (int i=0; i<includelist->count() && okay; i++)
         {
             if (includelist->item(i)->text() == newname)
