@@ -1,1 +1,0 @@
-The total mesh_quality/ucdmesh3d/volume is 480.567

@@ -1936,6 +1936,17 @@ def TestValueIN(case_name, bucket, expected, rndprec=5, eqoper=operator.eq):
         "%s .in. %s (prec=%d, at=%d)" % (str(expected),str(bucket),rndprec,at),skip)
     return result
 
+#
+# Useful for cases where majority of logic for determining a passed or failed test
+# exists primarily as the python code itself being executed. A good example is the
+# saveformats.py test.
+#
+def Failed(case_name):
+    TestValueOp(case_name, False, True)
+
+def Passed(case_name):
+    TestValueOp(case_name, True, True)
+
 # ----------------------------------------------------------------------------
 # Function: TestSection
 #

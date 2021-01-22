@@ -145,14 +145,10 @@ def TestSaveFormat(fmt):
         SaveWindow()
     except:
         if TestEnv.params["scalable"]:
-            if GetLastError() == "You cannot save non-image formats (e.g. ultra, curve, stl, etc.)" \
-                                 " from a window that is currently in scalable rendering mode. You" \
-                                 " may force scalable rendering to Never but if the resulting data" \
-                                 " is too big for the viewer to handle, it will likely crash" \
-                                 " VisIt. For 3D formats, try an export database operation instead." :
-                TestText("saveformat_%s%s"%(mode,ext), "Passed\n")
+            if GetLastError().startswith("You cannot save non-image formats"):
+                Failed("saveformat_%s%s"%(mode,ext))
                 return
-        TestText("saveformat_%s%s"%(mode,ext), result)
+        TestText("saveformat_%s%s"%(mode,ext), result, baseText="Passed")
         return
 
     # depending on the type of format this is, try to
@@ -162,13 +158,13 @@ def TestSaveFormat(fmt):
     if isC:
         if FileExists(swatmp.fileName+"."+ext, 1, 0):
             if ext == "ps":
-                result = "Passed\n" # can only test existence for ps
+                result = "Passed" # can only test existence for ps
             else:
                 SetActiveWindow(2)
                 if OpenDatabase(swatmp.fileName+"."+ext):
                     AddPlot("Curve","curve")
                     if DrawPlots():
-                        result = "Passed\n"
+                        result = "Passed"
                     DeleteAllPlots()
                     CloseDatabase(swatmp.fileName+"."+ext)
     elif isI:
@@ -186,7 +182,7 @@ def TestSaveFormat(fmt):
             if OpenDatabase(tiffFileName):
                 AddPlot("Pseudocolor","red")
                 if DrawPlots():
-                    result = "Passed\n"
+                    result = "Passed"
                 DeleteAllPlots()
                 CloseDatabase(tiffFileName)
     elif isG:
@@ -201,12 +197,11 @@ def TestSaveFormat(fmt):
             if OpenDatabase(swatmp.fileName+"."+ext):
                 AddPlot("Mesh",meshName)
                 if DrawPlots():
-                    result = "Passed\n"
+                    result = "Passed"
                 DeleteAllPlots()
                 CloseDatabase(swatmp.fileName+"."+ext)
-    TestText("saveformat_%s%s"%(mode,ext), result)
+    TestText("saveformat_%s%s"%(mode,ext), result, baseText="Passed")
     SetActiveWindow(1)
-
 
 TestSection("Curve Formats")
 OpenDatabase(data_path("curve_test_data","c062.curve"))
