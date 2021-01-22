@@ -446,7 +446,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
                     name = (atts->GetVisualAxisNames()[ax]).c_str();
                 else
                 {
-                    name = QString(" %1").arg(ax,2,10,QLatin1Char('0');
+                    name = QString(" %1").arg(ax,2,10,QLatin1Char('0'));
                     name = tr("Axis") + name;
                 }
                 QTreeWidgetItem *item =
