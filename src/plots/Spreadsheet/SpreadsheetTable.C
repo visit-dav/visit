@@ -589,6 +589,9 @@ DataArrayModel::data(const QModelIndex &index, int role) const
 //   Brad Whitlock, Wed Dec  1 16:44:43 PST 2010
 //   I added a CurveData display mode.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace use of QString.asprintf with QString.setNum.
+//
 // ****************************************************************************
 
 QVariant

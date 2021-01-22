@@ -280,7 +280,6 @@ DataNodeToQString(const DataNode *node)
         ARRAY_TO_STRING(double, AsDoubleArray);
         break;
     case STRING_ARRAY_NODE:
-// rework this
         {
             const std::string *ptr = node->AsStringArray();
             for(i = 0; i < node->GetLength(); ++i)

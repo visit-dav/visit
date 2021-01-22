@@ -406,6 +406,9 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Jeremy Meredith, Tue Oct 27 11:18:23 EDT 2009
 //    Added ability to manually set axis extents to specific values.
 //
+//    Kathleen Biagas, Thu Jan 21, 2021
+//    Replace use of QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void

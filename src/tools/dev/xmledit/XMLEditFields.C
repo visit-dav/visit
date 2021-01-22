@@ -1135,6 +1135,9 @@ XMLEditFields::valuesChanged()
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Thu Jan 21, 2021
+//    Replace use of QString.asprint with QString.arg.
+//
 // ****************************************************************************
 void
 XMLEditFields::fieldlistNew()

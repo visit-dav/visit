@@ -71,6 +71,9 @@
 //   Brad Whitlock, Fri Sep 12 12:20:02 PDT 2014
 //   Do the menu name translation here instead of in the plugin.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 AddOperatorActionUI::AddOperatorActionUI(ViewerActionLogic *L) :

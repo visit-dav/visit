@@ -32,6 +32,9 @@
 //   Brad Whitlock, Tue Oct  7 09:37:43 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Fixed use of QString.asprintf to correct form.
+//
 // ****************************************************************************
 
 QvisRotationTransition::QvisRotationTransition(const QPixmap &pix,

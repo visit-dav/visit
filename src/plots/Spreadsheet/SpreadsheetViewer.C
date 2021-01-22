@@ -2806,6 +2806,9 @@ SpreadsheetViewer::operationSum()
 //   Brad Whitlock, Wed Apr 23 11:35:09 PDT 2008
 //   Support for internationalization.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Correct use of QString::asprintf to proper form.
+//
 // ****************************************************************************
 
 void

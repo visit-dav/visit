@@ -686,6 +686,9 @@ QvisSliceWindow::UpdateOriginArea()
 //   Brad Whitlock, Wed Jul  9 13:56:57 PDT 2008
 //   Made it use ids and used helper methods.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
