@@ -21,7 +21,7 @@
 // ****************************************************************************
 // Method: QvisSliceWindow::QvisSliceWindow
 //
-// Purpose: 
+// Purpose:
 //   Cconstructor for the QvisSliceWindow class.
 //
 // Arguments:
@@ -56,13 +56,13 @@ QvisSliceWindow::QvisSliceWindow(const int type,
     originTypeGroup = 0;
     normalTypeGroup = 0;
     defaultItem = "default";
-    fileServer->Attach(this);   
+    fileServer->Attach(this);
 }
 
 // ****************************************************************************
 // Method: QvisSliceWindow::~QvisSliceWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the QvisSliceWindow class.
 //
 // Programmer: Brad Whitlock
@@ -71,7 +71,7 @@ QvisSliceWindow::QvisSliceWindow(const int type,
 // Modifications:
 //   Kathleen Bonnell, Tue Jan 25 08:15:23 PST 2005
 //   Detach fileServer.
-//   
+//
 // ****************************************************************************
 
 QvisSliceWindow::~QvisSliceWindow()
@@ -83,7 +83,7 @@ QvisSliceWindow::~QvisSliceWindow()
 // ****************************************************************************
 // Method: QvisSliceWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   This method creates the widgets for the Slice operator window.
 //
 // Programmer: Brad Whitlock
@@ -146,11 +146,11 @@ QvisSliceWindow::CreateWindowContents()
     QRadioButton *xAxis = new QRadioButton(tr("X Axis"), normalBox);
     QRadioButton *yAxis = new QRadioButton(tr("Y Axis"), normalBox);
     QRadioButton *zAxis = new QRadioButton(tr("Z Axis"), normalBox);
-    
+
     normalTypeGroup->addButton(xAxis,0);
     normalTypeGroup->addButton(yAxis,1);
     normalTypeGroup->addButton(zAxis,2);
-    
+
     orthogonalLayout->addWidget(xAxis);
     orthogonalLayout->addWidget(yAxis);
     orthogonalLayout->addWidget(zAxis);
@@ -196,16 +196,16 @@ QvisSliceWindow::CreateWindowContents()
     normalLayout->addLayout( thetaPhiLayout, 3, 1 );
 
     // Origin
-    
+
     QGroupBox *originBox = new QGroupBox(central);
     originBox->setTitle(tr("Origin"));
     topLayout->addWidget(originBox);
-    
+
     originTypeGroup = new QButtonGroup(originBox);
     connect(originTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(originTypeChanged(int)));
 
-    
+
     QGridLayout *originLayout = new QGridLayout(originBox);
 
     QHBoxLayout *originTypeLayout = new QHBoxLayout();
@@ -325,7 +325,7 @@ QvisSliceWindow::CreateWindowContents()
     originNodeLayout->addWidget(originNodeDomainLineEdit);
 
     originLayout->addLayout(originNodeLayout, 6,0);
-	
+
     // mesh name
     QHBoxLayout *meshLayout = new QHBoxLayout();
     meshLayout->setMargin(5);
@@ -337,7 +337,7 @@ QvisSliceWindow::CreateWindowContents()
     meshName->addItem(defaultItem);
     meshName->setCurrentIndex(0);
     meshName->setEditText(defaultItem);
-    connect(meshName, SIGNAL(activated(int)),   
+    connect(meshName, SIGNAL(activated(int)),
             this, SLOT(meshNameChanged()));
     meshLayout->addWidget(meshLabel);
     meshLayout->addWidget(meshName);
@@ -372,7 +372,7 @@ QvisSliceWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisSliceWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method updates the window's widgets to reflect changes made
 //   in the SliceAttributes object that the window watches.
 //
@@ -563,7 +563,7 @@ QvisSliceWindow::UpdateWindow(bool doAll)
 //    Added a domain number for slice-by-zone and -by-node.
 //
 //    Kathleen Bonnell, Tue Jan 25 08:15:23 PST 2005
-//    Added meshName and meshLabel. 
+//    Added meshName and meshLabel.
 //
 // ****************************************************************************
 void
@@ -639,7 +639,7 @@ QvisSliceWindow::UpdateOriginArea()
 // ****************************************************************************
 // Method: QvisSliceWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values for one or all of the lineEdit widgets.
 //
 // Arguments:
@@ -666,7 +666,7 @@ QvisSliceWindow::UpdateOriginArea()
 //   Completely changed the way "origin" works.
 //
 //   Kathleen Bonnell, Tue May 20 16:02:52 PDT 2003
-//   Disallow (0, 0, 0) for Normal and UpAxis. 
+//   Disallow (0, 0, 0) for Normal and UpAxis.
 //
 //   Jeremy Meredith, Fri Jun 13 12:09:30 PDT 2003
 //   Added a domain number for slice-by-zone and -by-node.
@@ -685,6 +685,9 @@ QvisSliceWindow::UpdateOriginArea()
 //
 //   Brad Whitlock, Wed Jul  9 13:56:57 PDT 2008
 //   Made it use ids and used helper methods.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
 //
 // ****************************************************************************
 
@@ -777,7 +780,7 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    
+
     // Do the origin (percent)
     if(which_widget == SliceAttributes::ID_originPercent || doAll)
     {
@@ -848,7 +851,7 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
     }
 
 
-    // Do the meshName 
+    // Do the meshName
     if(which_widget == SliceAttributes::ID_meshName || doAll)
     {
         temp = meshName->currentText();
@@ -893,7 +896,7 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
         {
             double theta = sliceAtts->GetTheta();
             double phi = sliceAtts->GetPhi();
-            QString angles; angles.asprintf("<%g %g>", theta, phi);
+            QString angles = QString("<%1 %1>").arg(theta).arg(phi);
             ResettingError(tr("theta-phi angles"), angles);
             sliceAtts->SetTheta(theta);
             sliceAtts->SetPhi(phi);
@@ -908,7 +911,7 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisSliceWindow::originTypeChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the type of origin being used.
 //
 // Arguments:
@@ -918,7 +921,7 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
 // Creation:   April 28, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -931,14 +934,14 @@ QvisSliceWindow::originTypeChanged(int index)
 // ****************************************************************************
 // Method: QvisSliceWindow::processOriginText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the origin vector.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 15 11:41:28 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -951,14 +954,14 @@ QvisSliceWindow::processOriginPointText()
 // ****************************************************************************
 // Method: QvisSliceWindow::processOriginInterceptText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the origin vector.
 //
 // Programmer: Jeremy Meredith
 // Creation:   April 28, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -971,14 +974,14 @@ QvisSliceWindow::processOriginInterceptText()
 // ****************************************************************************
 // Method: QvisSliceWindow::processOriginPercentText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the origin vector.
 //
 // Programmer: Jeremy Meredith
 // Creation:   April 28, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -991,7 +994,7 @@ QvisSliceWindow::processOriginPercentText()
 // ****************************************************************************
 // Method: QvisSliceWindow::originPercentSliderChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the origin vector using a slider.
 //
 // Programmer: Jeremy Meredith
@@ -1057,14 +1060,14 @@ QvisSliceWindow::originPercentSliderReleased()
 // ****************************************************************************
 // Method: QvisSliceWindow::processOriginZoneDomainText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets node/zone domain number.
 //
 // Programmer: Jeremy Meredith
 // Creation:   June 13, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1077,14 +1080,14 @@ QvisSliceWindow::processOriginZoneDomainText()
 // ****************************************************************************
 // Method: QvisSliceWindow::processOriginNodeDomainText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets node/zone domain number.
 //
 // Programmer: Jeremy Meredith
 // Creation:   June 13, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1097,14 +1100,14 @@ QvisSliceWindow::processOriginNodeDomainText()
 // ****************************************************************************
 // Method: QvisSliceWindow::processOriginZoneText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the origin vector.
 //
 // Programmer: Jeremy Meredith
 // Creation:   April 28, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1117,14 +1120,14 @@ QvisSliceWindow::processOriginZoneText()
 // ****************************************************************************
 // Method: QvisSliceWindow::processOriginNodeText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the origin vector.
 //
 // Programmer: Jeremy Meredith
 // Creation:   April 28, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1137,14 +1140,14 @@ QvisSliceWindow::processOriginNodeText()
 // ****************************************************************************
 // Method: QvisSliceWindow::processNormalText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the normal vector.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 15 11:41:28 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1157,14 +1160,14 @@ QvisSliceWindow::processNormalText()
 // ****************************************************************************
 // Method: QvisSliceWindow::processThetaPhiText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the normal vector.
 //
 // Programmer: Dave Pugmire
 // Creation:   Thu Oct 18 08:25:42 EDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1177,14 +1180,14 @@ QvisSliceWindow::processThetaPhiText()
 // ****************************************************************************
 // Method: QvisSliceWindow::processUpAxisText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the upAxis vector.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 15 11:41:28 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1197,7 +1200,7 @@ QvisSliceWindow::processUpAxisText()
 // ****************************************************************************
 // Method: QvisSliceWindow::flipNormalToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
 //   or not the normal/upaxis should be set to flip the projected axes.
 //
@@ -1208,7 +1211,7 @@ QvisSliceWindow::processUpAxisText()
 // Creation:   November 17, 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1221,7 +1224,7 @@ QvisSliceWindow::flipNormalToggled(bool val)
 // ****************************************************************************
 // Method: QvisSliceWindow::projectToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
 //   or not the slice should be projected to 2d.
 //
@@ -1232,7 +1235,7 @@ QvisSliceWindow::flipNormalToggled(bool val)
 // Creation:   Fri Sep 15 11:43:06 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1245,7 +1248,7 @@ QvisSliceWindow::projectToggled(bool val)
 // ****************************************************************************
 // Method: QvisSliceWindow::interactiveToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the flag indicating whether
 //   or not the slice should be set from the interactive tool.
 //
@@ -1256,7 +1259,7 @@ QvisSliceWindow::projectToggled(bool val)
 // Creation:   Tue Oct 9 17:41:53 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1269,7 +1272,7 @@ QvisSliceWindow::interactiveToggled(bool val)
 // ****************************************************************************
 // Method: QvisSliceWindow::normalTypeChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the orthogonal normal type.
 //
 // Arguments:
@@ -1307,7 +1310,7 @@ QvisSliceWindow::interactiveToggled(bool val)
 void
 QvisSliceWindow::normalTypeChanged(int index)
 {
-    // If we're switching from arbitrary to orthogonal 
+    // If we're switching from arbitrary to orthogonal
     if (sliceAtts->GetAxisType() == SliceAttributes::Arbitrary &&
         sliceAtts->GetOriginType() == SliceAttributes::Point   &&
         (index==0 || index==1 || index==2))
@@ -1343,12 +1346,12 @@ QvisSliceWindow::normalTypeChanged(int index)
 // ****************************************************************************
 //  Method: QvisSliceWindow::UpdateMeshNames
 //
-//  Purpose: 
+//  Purpose:
 //    This method retrieves the mesh names from the fileServer and stores
 //    them in the meshName combo box.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   January 25, 2005 
+//  Programmer: Kathleen Bonnell
+//  Creation:   January 25, 2005
 //
 //  Modifications:
 //
@@ -1365,9 +1368,9 @@ QvisSliceWindow::UpdateMeshNames()
 {
     meshName->blockSignals(true);
     meshName->clear();
-    if (fileServer) 
+    if (fileServer)
     {
-        const avtDatabaseMetaData *md = 
+        const avtDatabaseMetaData *md =
             fileServer->GetMetaData(fileServer->GetOpenFile(),
                                     GetStateForSource(fileServer->GetOpenFile()),
                                     !FileServerList::ANY_STATE,
@@ -1407,7 +1410,7 @@ QvisSliceWindow::UpdateMeshNames()
         meshName->setEnabled(false);
         meshLabel->setEnabled(false);
     }
-    else 
+    else
     {
         meshName->setEnabled(true);
         meshLabel->setEnabled(true);
@@ -1418,11 +1421,11 @@ QvisSliceWindow::UpdateMeshNames()
 // ****************************************************************************
 //  Method: QvisSliceWindow::meshNameChanged
 //
-//  Purpose: 
-//   This is a Qt slot function that sets the meshName. 
+//  Purpose:
+//   This is a Qt slot function that sets the meshName.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   January 25, 2005 
+//  Programmer: Kathleen Bonnell
+//  Creation:   January 25, 2005
 //
 //  Modifications:
 //

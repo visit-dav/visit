@@ -144,7 +144,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     hgLayout->addWidget(numBinsLabel, 0, 0);
 
     numBins = new QSpinBox(central);
-    numBins->setKeyboardTracking(true);
+    numBins->setKeyboardTracking(false);
     numBins->setMinimum(2);
     numBins->setMaximum(1000);
     numBins->setSingleStep(1);
