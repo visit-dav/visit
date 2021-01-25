@@ -23,7 +23,7 @@ using std::string;
 // ****************************************************************************
 // Method: QvisQueryOverTimeWindow::QvisQueryOverTimeWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Programmer: xml2window
@@ -55,14 +55,14 @@ QvisQueryOverTimeWindow::QvisQueryOverTimeWindow(
 // ****************************************************************************
 // Method: QvisQueryOverTimeWindow::~QvisQueryOverTimeWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: xml2window
 // Creation:   Wed Mar 31 08:46:20 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisQueryOverTimeWindow::~QvisQueryOverTimeWindow()
@@ -73,7 +73,7 @@ QvisQueryOverTimeWindow::~QvisQueryOverTimeWindow()
 // ****************************************************************************
 // Method: QvisQueryOverTimeWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
@@ -81,17 +81,17 @@ QvisQueryOverTimeWindow::~QvisQueryOverTimeWindow()
 //
 // Modifications:
 //   Kathleen Bonnell, Mon Feb 27 12:36:41 PST 2006
-//   Added more text to createWindow label, to clarify intent. 
+//   Added more text to createWindow label, to clarify intent.
 //
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
-//   
+//
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
 //   Kathleen Bonnell, Mon Feb  7 13:07:25 PST 2011
 //   Added comments that explicitly state start/end times are TimeStates.
-//   And that the 'Cycles' 'Times' and 'Timestate' options only apply to 
+//   And that the 'Cycles' 'Times' and 'Timestate' options only apply to
 //   values displayed for x-axis.
 //
 //   Kathleen Biagas, Fri Aug 26 17:12:13 PDT 2011
@@ -108,8 +108,8 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     QGroupBox *timeTypeBox = new QGroupBox(central);
     timeTypeBox->setTitle(tr("X-axis"));
     topLayout->addWidget(timeTypeBox);
-   
-    QGridLayout *timeTypeBoxLayout = new QGridLayout(timeTypeBox);    
+
+    QGridLayout *timeTypeBoxLayout = new QGridLayout(timeTypeBox);
 
     QLabel *mLabel = new QLabel(tr("Choices entered here only apply to values displayed in the x-axis of the time curve."), central);
     mLabel->setWordWrap(true);
@@ -132,12 +132,12 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     timeTypeLayout->addWidget(timestep);
 
     timeTypeBoxLayout->addLayout(timeTypeLayout, 1, 0);
-    
+
     QGridLayout *mainLayout = new QGridLayout();
     topLayout->addLayout(mainLayout);
 
     //
-    // CreateWindow 
+    // CreateWindow
     //
     createWindow = new QCheckBox(tr("Use 1st unused window or create new\none. All subsequent queries will use this\nsame window."),
                                   central);
@@ -146,7 +146,7 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     mainLayout->addWidget(createWindow, 0,0,3,2);
 
     //
-    // WindowId 
+    // WindowId
     //
     windowIdLabel = new QLabel(tr("Window #"), central);
     mainLayout->addWidget(windowIdLabel,3,0);
@@ -161,7 +161,7 @@ QvisQueryOverTimeWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisQueryOverTimeWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
@@ -176,6 +176,9 @@ QvisQueryOverTimeWindow::CreateWindowContents()
 //
 //   Kathleen Biagas, Fri Aug 26 17:12:13 PDT 2011
 //   Removed start/end times and stride.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.setNum.
 //
 // ****************************************************************************
 
@@ -213,7 +216,7 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
             createWindow->setChecked(atts->GetCreateWindow());
             break;
           case QueryOverTimeAttributes::ID_windowId:
-            temp.asprintf("%d", atts->GetWindowId());
+            temp.setNum(atts->GetWindowId());
             windowId->setText(temp);
             break;
           default:
@@ -226,7 +229,7 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisQueryOverTimeWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
@@ -235,7 +238,7 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
-//   
+//
 //   Kathleen Biagas, Fri Aug 26 17:12:13 PDT 2011
 //   Removed start/end times and stride.
 //
@@ -286,14 +289,14 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisQueryOverTimeWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   Called to apply changes in the subject.
 //
 // Programmer: xml2window
 // Creation:   Wed Mar 31 08:46:20 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -319,14 +322,14 @@ QvisQueryOverTimeWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisQueryOverTimeWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function called when apply button is clicked.
 //
 // Programmer: xml2window
 // Creation:   Wed Mar 31 08:46:20 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -339,14 +342,14 @@ QvisQueryOverTimeWindow::apply()
 // ****************************************************************************
 // Method: QvisQueryOverTimeWindow::makeDefault
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function called when "Make default" button is clicked.
 //
 // Programmer: xml2window
 // Creation:   Wed Mar 31 08:46:20 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -361,14 +364,14 @@ QvisQueryOverTimeWindow::makeDefault()
 // ****************************************************************************
 // Method: QvisQueryOverTimeWindow::reset
 //
-// Purpose: 
+// Purpose:
 //   Qt slot function called when reset button is clicked.
 //
 // Programmer: xml2window
 // Creation:   Wed Mar 31 08:46:20 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
