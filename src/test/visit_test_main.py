@@ -2302,7 +2302,8 @@ class Simulation(object):
             # For now...
             import socket
             if "pascal" in socket.gethostname() or \
-               "cab" in socket.gethostname() or \
+               "quartz" in socket.gethostname() or \
+               "ruby" in socket.gethostname() or \
                "syrah" in socket.gethostname():
                 do_submit = 0
                 if do_submit:
