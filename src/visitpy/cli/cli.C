@@ -169,6 +169,11 @@ extern "C" void cli_runscript(const char *);
 //     1) Switch to using args after "-s" as sys.argv
 //     2) add "-ni"  + "-non-interactive" command line switches.
 //
+//    Cyrus Harrison, Wed Jan  6 11:39:57 PST 2021
+//    Added py2to3 option. When enabled, auto converts any python
+//    source run with "Source" to use the Python 2 to 3 translator
+//    before execution.
+//
 // ****************************************************************************
 
 int
@@ -179,6 +184,7 @@ main(int argc, char *argv[])
     bool bufferDebug = false;
     bool verbose = false;
     bool s_found = false;
+    bool py2to3 = false;
     bool pyside = false;
     bool pyside_gui = false;
     bool pyside_viewer = false;
@@ -359,6 +365,10 @@ main(int argc, char *argv[])
         //     // Skip the rate that comes along with -fps.
         //     ++i;
         // }
+        else if(strcmp(argv[i], "-py2to3") == 0)
+        {
+            py2to3 = true;
+        }
         else if(strcmp(argv[i], "-pyside") == 0)
         {
             pyside = true;
@@ -536,8 +546,16 @@ main(int argc, char *argv[])
         PyRun_SimpleString((char*)"import visit_utils");
         PyRun_SimpleString((char*)"from visit_utils.builtin import *");
 
+        // enable auto 2to3 support for passed scripts
+        if(py2to3)
+        {
+            // let folks know this is on:
+            std::cout << "VisIt CLI: Automatic Python 2to3 Conversion Enabled"
+                      << std::endl;
+            PyRun_SimpleString("visit_utils.builtin.SetAutoPy2to3(True)");
+        }
 
-        // add original args to visit.argv_full, just in case 
+        // add original args to visit.argv_full, just in case
         // some one needs to access them.
         
         PyObject *visit_module = PyImport_AddModule("visit"); //borrowed

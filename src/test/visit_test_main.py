@@ -18,6 +18,7 @@ import atexit
 import glob
 import gzip
 import json
+import operator
 import os
 import platform
 import shutil
@@ -618,14 +619,13 @@ def HTMLTextTestResult(case_name,status,nchanges,nlines,failed,skip):
     html.write(" </tr>\n")
 
 # ----------------------------------------------------------------------------
-#  Method: LogAssertTestResult
+#  Method: LogValueTestResult
 #
-#  Programmer: Cyrus Harrison
-#  Date:       Fri Nov 22 2013
+#  Programmer: Mark C. Miller, Sat Jan  9 20:17:22 PST 2021
 # ----------------------------------------------------------------------------
-def LogAssertTestResult(case_name,assert_check,result,details,skip):
+def LogValueTestResult(case_name,value_op,result,details,skip):
     """
-    Log the result of an assert based test.
+    Log the result of a value based test.
     """
     details = str(details)
     if not result:
@@ -636,19 +636,16 @@ def LogAssertTestResult(case_name,assert_check,result,details,skip):
     else:
         status = "passed"
     # write result
-    Log("    Test case '%s' (Assert: %s) %s" % (case_name,
-                                                assert_check,
-                                                status.upper()))
-    JSONAssertTestResult(case_name,status,assert_check,result,details,skip)
-    HTMLAssertTestResult(case_name,status,assert_check,result,details,skip)
+    Log("    Test case '%s' (%s) %s" % (case_name, value_op, status.upper()))
+    JSONValueTestResult(case_name,status,value_op,result,details,skip)
+    HTMLValueTestResult(case_name,status,value_op,result,details,skip)
 
 # ----------------------------------------------------------------------------
-#  Method: JSONAssertTestResult
+#  Method: JSONValueTestResult
 #
-#  Programmer: Cyrus Harrison
-#  Date:       Fri Nov 22 2013
+#  Programmer: Mark C. Miller, Sat Jan  9 20:19:12 PST 2021
 # ----------------------------------------------------------------------------
-def JSONAssertTestResult(case_name,status,assert_check,result,details,skip):
+def JSONValueTestResult(case_name,status,value_op,result,details,skip):
     res = json_results_load()
     
     if not result:
@@ -661,21 +658,19 @@ def JSONAssertTestResult(case_name,status,assert_check,result,details,skip):
     
     t_res = {'name':         case_name,
              'status':       status,
-             'assert_check': assert_check,
+             'value_op':     value_op,
              'details':      details}
     res["sections"][-1]["cases"].append(t_res)
     json_results_save(res)
 
-
 # ----------------------------------------------------------------------------
-#  Method: HTMLTextTestResult
+#  Method: HTMLValueTestResult
 #
-#  Programmer: Cyrus Harrison
-#  Date:       Fri Nov 22 2013
+#  Programmer: Mark C. Miller, Sat Jan  9 20:22:17 PST 2021
 # ----------------------------------------------------------------------------
-def HTMLAssertTestResult(case_name,status,assert_check,result,details,skip):
+def HTMLValueTestResult(case_name,status,value_op,result,details,skip):
     """
-    Creates html entry for the result of an assert based test.
+    Creates html entry for the result of a value based test.
     """
     # TODO use template file
     html = html_output_file_handle()
@@ -686,9 +681,14 @@ def HTMLAssertTestResult(case_name,status,assert_check,result,details,skip):
             color = "#0000ff"
         else:
             color = "#ff0000"
+    details = details.replace(' .in. ',' .in. <br>');
+    details = details.replace('], ','],<br>&nbsp;&nbsp;')
+    details = details.replace('), ','),<br>&nbsp;&nbsp;')
+    details = details.replace('] (prec=',']<br>&nbsp;(prec=')
+    details = details.replace(') (prec=',')<br>&nbsp;(prec=')
     html.write(" <tr>\n")
     html.write("  <td bgcolor=\"%s\">%s</td>\n" % (color, case_name))
-    html.write("  <td colspan=5 align=center> %s : %s (Assert_%s)</td>\n" % (details,str(result),assert_check))
+    html.write("  <td colspan=5 align=left><pre> %s : %s</pre></td>\n" % (details,str(result)))
     html.write(" </tr>\n")
 
 # ----------------------------------------------------------------------------
@@ -1762,12 +1762,22 @@ def CheckInteractive(case_name):
 #
 #   Mark C. Miller, Fri Sep 11 19:54:23 PDT 2020
 #   Added optional numdifftool arg
+#
+#   Mark C. Miller, Sat Jan  9 19:26:27 PST 2021
+#   Added optional baseText argument to enable baseline result to be codifed
+#   as an arg to the call itself rather than in a separate baseline txt file.
 # ----------------------------------------------------------------------------
-def TestText(case_name, inText, numdifftol=None):
+def TestText(case_name, inText, baseText=None, numdifftol=None):
     """
     Write out text to file, diff it with the baseline, and log the result.
     """
     CheckInteractive(case_name)
+
+    # If base text is supplied as arg, no need for baseline files
+    if baseText:
+        inText = FilterTestText(inText, baseText, numdifftol)
+        TestValueEQ(case_name, baseText, inText)
+        return
 
     # create file names
     (cur, diff, base, altbase, modeSpecific) = GenFileNames(case_name, ".txt")
@@ -1827,130 +1837,104 @@ def TestText(case_name, inText, numdifftol=None):
     if failed and not skip:
         TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
 
+# ----------------------------------------------------------------------------
+# Function: TestValueOp
 
+# Programmer: Mark C. Miller, Sat Jan  9 20:17:22 PST 2021
+#
+# Base method for TestValueXX methods
+#
+# Similar in spirit to Test() or TestText() except operates on Python *values*
+# passed as args both for the current (actual) and the baseline (expected). The
+# baseline values are stored directly in the calling .py file as args in the
+# call to this method. The values can be any Python object. When they are floats
+# or ints or strings of floats or ints or lists/tuples of floats or ints or
+# strings of floats or ints, it will round them to the desired precision and do
+# the comparison numerically. Otherwise it will compare them as strings.
+# Returns whether or not the test resulted in True or False.
 # ----------------------------------------------------------------------------
-# Function: AssertTrue
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertTrue(case_name,val):
+def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=True):
     CheckInteractive(case_name)
-    result = val == True
+    result = False
+    try:
+        iterator = iter(expected) # excepts if not iterable
+    except TypeError: # not iterable
+        try:
+            result = oper(round(float(actual), rndprec),round(float(expected), rndprec))
+            actual_str = "%.*f"%(rndprec,round(float(actual),rndprec))
+            expected_str = "%.*f"%(rndprec,round(float(expected),rndprec))
+        except:
+            result = oper(str(actual), str(expected))
+            actual_str = str(actual)
+            expected_str = str(expected)
+    else: # iterable
+        try:
+            rndact = [round(float(x),rndprec) for x in actual]
+            rndexp = [round(float(x),rndprec) for x in expected]
+            result = oper(rndact,rndexp)
+            actual_str = ["%.*f"%(rndprec,round(float(x),rndprec)) for x in actual]
+            expected_str = ["%.*f"%(rndprec,round(float(x),rndprec)) for x in expected]
+        except:
+            result = oper(str(actual),str(expected))
+            actual_str = str(actual)
+            expected_str = str(expected)
+    if dolog:
+        skip = TestEnv.check_skip(case_name)
+        if skip:
+            TestEnv.results["numskip"] += 1
+        if result == False and not skip:
+            TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
+        LogValueTestResult(case_name,oper.__name__,result,
+            "%s .%s. %s (prec=%d)" % (actual_str,oper.__name__,expected_str,rndprec),skip)
+    return result
+
+# actual == expected
+def TestValueEQ(case_name, actual, expected, rndprec=5):
+    return TestValueOp(case_name, actual, expected, rndprec, operator.eq)
+
+# actual != expected
+def TestValueNE(case_name, actual, expected, rndprec=5):
+    return TestValueOp(case_name, actual, expected, rndprec, operator.ne)
+
+# actual < expected
+def TestValueLT(case_name, actual, expected, rndprec=5):
+    return TestValueOp(case_name, actual, expected, rndprec, operator.lt)
+
+# actual <= expected
+def TestValueLE(case_name, actual, expected, rndprec=5):
+    return TestValueOp(case_name, actual, expected, rndprec, operator.le)
+
+# actual > expected
+def TestValueGT(case_name, actual, expected, rndprec=5):
+    return TestValueOp(case_name, actual, expected, rndprec, operator.gt)
+
+# actual >= expected
+def TestValueGE(case_name, actual, expected, rndprec=5):
+    return TestValueOp(case_name, actual, expected, rndprec, operator.ge)
+
+# bucket contains expected (some item of bucket matches expected via eqoper) 
+def TestValueIN(case_name, bucket, expected, rndprec=5, eqoper=operator.eq):
+    CheckInteractive(case_name)
+    result = False
+    dontLog = False
+    at = 0
+    try:
+        for x in bucket:
+            if TestValueOp(case_name, x, expected, rndprec, eqoper, dontLog):
+                result = True
+                break
+            at = at + 1
+    except:
+        if TestValueOp(case_name, bucket, expected, rndprec, eqoper, dontLog):
+            result = True
     skip = TestEnv.check_skip(case_name)
     if skip:
         TestEnv.results["numskip"] += 1
     if result == False and not skip:
         TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"True",result,val,skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertTrue
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertFalse(case_name,val):
-    CheckInteractive(case_name)
-    result = val == False
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"False",result,val,skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertEqual
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertEqual(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a == val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Equal",result,
-                        "%s == %s" % (str(val_a),str(val_b)),skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertGT
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertGT(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a > val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Greater than",
-                        result,"%s > %s" % (str(val_a),str(val_b)),skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertGTE
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertGTE(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a >= val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Greater than or Equal",
-                        result,"%s >= %s" % (str(val_a),str(val_b)),skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertLT
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertLT(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a < val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Less than",
-                        result,"%s < %s" % (str(val_a),str(val_b)),skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertLTE
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertLTE(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a <= val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Less than or Equal",
-                        result,"%s <= %s" % (str(val_a),str(val_b)),skip)
+    LogValueTestResult(case_name,eqoper.__name__,result,
+        "%s .in. %s (prec=%d, at=%d)" % (str(expected),str(bucket),rndprec,at),skip)
+    return result
 
 # ----------------------------------------------------------------------------
 # Function: TestSection

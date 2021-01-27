@@ -117,7 +117,12 @@ stages:
            # add to ld_lib path (rpaths are missing?)
            export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${TBB_LIB_DIR}
            # run test suite on silo tests
-           ./run_visit_test_suite.sh  -v ../../src/test/tests/databases/silo.py 
+           export TESTS=../../src/test/tests/databases/silo.py 
+           # also run a few of our unit tests
+           export TESTS="${TESTS} ../../src/test/tests/unit/assert_simple.py"
+           export TESTS="${TESTS} ../../src/test/tests/unit/default_methods.py"
+           export TESTS="${TESTS} ../../src/test/tests/unit/convert2to3.py"
+           ./run_visit_test_suite.sh  -v ${TESTS}
         displayName: 'Run Tests'
       
       - task: CopyFiles@2

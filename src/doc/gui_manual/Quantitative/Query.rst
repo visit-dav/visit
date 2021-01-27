@@ -114,12 +114,19 @@ Area Between Curves
     has been calculated, the result is printed to the **Query results**.
 
 Centroid
-    This query will calculate the centroid of a dataset. The contribution of
-    each cell is calculated assuming its mass all lies at the center of the
-    cell. If the query is performed on a Pseudocolor plot, the plot's variable
-    will be assumed to be density. If the query is performed on a plot such as
-    a Mesh plot or FilledBoundary plot, uniform density will be used. The
-    results are print to the **Query results**. 
+    This query can calculate a centroid (geometric center) or center-of-mass
+    of a dataset depending on the plot (and variable) upon which the query is
+    performed. On a Pseudocolor plot, the plot's variable will be treated as
+    a *density* field. The value of this field at the *center* of each cell
+    will be multiplied by the cell's volume to compute a cell-centered mass
+    contribution for each cell. If the plot's variable is indeed a true
+    density variable, then the result will be the center-of-mass. If the
+    plot's variable is not a true density variable (e.g. temperature), the
+    result may be nonsensical. If the plot's variable is constant over the
+    whole object, the result will be a centroid (geometric center). If the
+    query is performed on a Mesh or FilledBoundary plot, constant density will
+    be assumed and the result will be a centroid. The results are printed to
+    the **Query results**. 
 
 Connected Component Centroid
     Performs the same operation as either *Centroid* query except individually
