@@ -186,7 +186,6 @@ function build_icet
     else
         LIBEXT="a"
     fi
-    touch fakempi.${LIBEXT}
     rm -f CMakeCache.txt
 
     if [[ "$OPSYS" == "Darwin" ]] ; then
@@ -218,8 +217,6 @@ function build_icet
         -DBUILD_TESTING:BOOL=OFF\
         .
     fi
-
-    rm fakempi.${LIBEXT}
 
     if [[ $? != 0 ]] ; then
         warn "Cannot get CMAKE to create the makefiles.  Giving up."
