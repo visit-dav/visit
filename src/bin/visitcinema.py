@@ -1246,6 +1246,11 @@ class VisItCinema(object):
     # Programmer: Brad Whitlock
     # Date:       Mon Sep 11 17:33:38 PDT 2017
     #
+    # Modifications:
+    #   Kathleen Biagas, Thu Jan 28 11:35:47 PST 2021
+    #   Converted the / (division) operator to // (floor division) in a
+    #   calculation.
+    #
     ###########################################################################
 
     def CreatePhiThetaDatabase(self):
