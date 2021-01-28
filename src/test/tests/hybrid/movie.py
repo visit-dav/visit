@@ -58,7 +58,6 @@ def TestMovieFrames(testFormatString, startindex, framefiles, percents=[], label
             files = files + [framefiles[idx][0]]
     else:
         files = [x[0] for x in framefiles]
-    annot = None
     if len(label) > 0:
         annot = CreateAnnotationObject("Text2D")
         annot.position = (0.02,0.92)
@@ -78,8 +77,12 @@ def TestMovieFrames(testFormatString, startindex, framefiles, percents=[], label
         Test(testname)
         DeleteAllPlots()
         CloseDatabase(f)
-    if annot != None:
-        annot.Delete()
+    if len(label) > 0:
+        annotations = GetAnnotationObjectNames()
+        for a in annotations:
+            if a.startswith("Text2D"):
+                annot.Delete()
+                break
     return testid
 
 def FileSubstitution(infile, outfile, replacements):

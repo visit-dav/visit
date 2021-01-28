@@ -7,6 +7,7 @@ import os
 import select
 import signal
 import socket
+import subprocess
 import sys
 
 if (sys.version_info > (3, 0)):
@@ -2762,14 +2763,30 @@ class MakeMovie(object):
                 command = "mpeg2encode.exe "  + '"' + paramFile + '" "' + absMovieName + '"'
             self.Debug(1, command)
             # Function to print the mpeg2encode output
-            def print_mpeg_line_cb(line, this):
+            #def print_mpeg_line_cb(line, this):
+            #    if line[:8] == "Encoding":
+            #        print(line)
+            #        this.Debug(1, line)
+            #    else:
+            #        this.Debug(5, line)
+            #r = visit_pipe(command, print_mpeg_line_cb, self)
+            proc = subprocess.Popen(command,
+                                    shell=True,
+                                    universal_newlines=True,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT)
+            while True:
+                line = proc.stdout.readline()
+                if not line:
+                    break
                 if line[:8] == "Encoding":
                     print(line)
-                    this.Debug(1, line)
+                    self.Debug(1, line)
                 else:
-                    this.Debug(5, line)
-            r = visit_pipe(command, print_mpeg_line_cb, self)
-            self.Debug(1, "mpeg2encode returned %d" % r)
+                    self.Debug(5, line)
+            r = proc.returncode
+                
+            self.Debug(1, "mpeg2encode returned %s" % r)
 
             # Make sure that the movie exists before we delete files.
             files = os.listdir(self.outputDir)
