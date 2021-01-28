@@ -2384,14 +2384,11 @@ class MakeMovie(object):
             # also need to prepend a path to it.
             try:
                 # Read the XML file.
-                self.Debug(1, "Opening template file: %s" % self.templateFile)
-                f = open(self.templateFile, "rt")
-                lines = f.readlines()
-                f.close()
+                self.Debug(1, "Reading template file: %s" % self.templateFile)
+                parser = xml.sax.make_parser()
                 templateReader = MovieTemplateReader()
-                for line in lines:
-                   templateReader.feed(line)
-                templateReader.close()
+                parser.setContentHandler( templateReader )
+                parser.parse(self.templateFile)
 
                 # Get the name of the template work file from the XML template.
                 templatePY = prefix + "movietemplates" + self.slash + "visitmovietemplate.py"
