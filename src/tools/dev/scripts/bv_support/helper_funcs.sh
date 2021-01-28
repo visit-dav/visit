@@ -522,6 +522,16 @@ function download_file
         done
     fi
 
+    # if all else has failed, and running develop version of build_visit,
+    # then also check the master repo.
+    if [[ "$TRUNK_BUILD" == "yes" ]]; then
+        site="${thirdpartyroot_dev}"
+        try_download_file $site/$dfile $dfile
+        if [[ $? == 0 ]] ; then
+            return 0
+        fi
+    fi
+
     return 1
 }
 
