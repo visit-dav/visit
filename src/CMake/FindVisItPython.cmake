@@ -369,7 +369,9 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
         MESSAGE(STATUS "We're gonna install Python")
 
         # Install libpython
-        THIRD_PARTY_INSTALL_LIBRARY(${PYTHON_LIBRARIES})
+        foreach(pylib ${PYTHON_LIBRARIES})
+            THIRD_PARTY_INSTALL_LIBRARY(${pylib})
+        endforeach()
 
         # Only install Python support files if we are not using the system Python
         IF((NOT ${PYTHON_DIR} STREQUAL "/usr"))
