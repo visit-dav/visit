@@ -160,7 +160,7 @@ def test1(db):
     phi_values = [str(x) for x in  params["arguments"]["phi"]["values"]]
     time_values = params["arguments"]["time"]["values"]
 
-    theta = theta_values[len(theta_values)/4]
+    theta = theta_values[len(theta_values)//4]
     time = time_values[0]
     i = 3
     for phi in phi_values:

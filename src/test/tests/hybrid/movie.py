@@ -58,7 +58,6 @@ def TestMovieFrames(testFormatString, startindex, framefiles, percents=[], label
             files = files + [framefiles[idx][0]]
     else:
         files = [x[0] for x in framefiles]
-    annot = None
     if len(label) > 0:
         annot = CreateAnnotationObject("Text2D")
         annot.position = (0.02,0.92)
@@ -78,8 +77,12 @@ def TestMovieFrames(testFormatString, startindex, framefiles, percents=[], label
         Test(testname)
         DeleteAllPlots()
         CloseDatabase(f)
-    if annot != None:
-        annot.Delete()
+    if len(label) > 0:
+        annotations = GetAnnotationObjectNames()
+        for a in annotations:
+            if a.startswith("Text2D"):
+                GetAnnotationObject(a).Delete()
+                break
     return testid
 
 def FileSubstitution(infile, outfile, replacements):
@@ -96,7 +99,7 @@ def FileSubstitution(infile, outfile, replacements):
 def test012():
     # Set up a movie script.
     f = open("fb_wave.py", "wt")
-    f.write("print \"MOVIE SCRIPT EXECUTING\"\n")
+    f.write("print (\"MOVIE SCRIPT EXECUTING\")\n")
     f.write("OpenDatabase(r\"%s\")\n" % silo_data_path("wave*.silo database"))
     f.write("AddPlot(\"FilledBoundary\", \"Material\")\n")
     f.write("DrawPlots()\n")
@@ -138,7 +141,7 @@ def test012():
     f.write("ts.width = 0.98\n")
     f.write("ts.startColor = (255,140,80,250)\n")
     f.write("ts.rounded = 0\n")
-    f.write("for i in xrange(TimeSliderGetNStates()):\n")
+    f.write("for i in range(TimeSliderGetNStates()):\n")
     f.write("    SetTimeSliderState(i)\n")
     f.write("    SaveWindow()\n")
     f.close()
