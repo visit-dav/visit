@@ -81,7 +81,7 @@ def TestMovieFrames(testFormatString, startindex, framefiles, percents=[], label
         annotations = GetAnnotationObjectNames()
         for a in annotations:
             if a.startswith("Text2D"):
-                annot.Delete()
+                GetAnnotationObject(a).Delete()
                 break
     return testid
 
