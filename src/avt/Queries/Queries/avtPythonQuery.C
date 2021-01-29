@@ -46,11 +46,13 @@ using std::string;
 //  Creation:     April 17, 2009
 //
 //  Modifications:
+//    Eric Brugger, Tue Jan 26 13:17:19 PST 2021
+//    Modified the python args to be a char vector instead of a string.
 //
 // ****************************************************************************
 
 avtPythonQuery::avtPythonQuery()
-: avtDataObjectQuery(), avtDatasetSink(), pyEnv(NULL), pyScript(""),pyArgs("")
+: avtDataObjectQuery(), avtDatasetSink(), pyEnv(NULL), pyScript(""), pyArgs()
 {
     pyEnv = new avtPythonFilterEnvironment();
 }
@@ -84,13 +86,17 @@ avtPythonQuery::~avtPythonQuery()
 //  Programmer: Cyrus Harrison
 //  Creation:   March 30, 2012
 //
+//  Modifications:
+//    Eric Brugger, Tue Jan 26 13:17:19 PST 2021
+//    Modified the python args to be a char vector instead of a string.
+//
 // ****************************************************************************
 
 void
 avtPythonQuery::SetInputParams(const MapNode &params)
 {
     SetVariableNames(params.GetEntry("vars")->AsStringVector());
-    SetPythonArgs(params.GetEntry("args")->AsString());
+    SetPythonArgs(params.GetEntry("args")->AsCharVector());
     SetPythonScript(params.GetEntry("source")->AsString());
 }
 
@@ -212,11 +218,13 @@ avtPythonQuery::SetPythonScript(const std::string &py_script)
 //  Creation:   September 21, 2010
 //
 //  Modifications:
+//    Eric Brugger, Tue Jan 26 13:17:19 PST 2021
+//    Modified the python args to be a char vector instead of a string.
 //
 // ****************************************************************************
 
 void
-avtPythonQuery::SetPythonArgs(const std::string &py_args)
+avtPythonQuery::SetPythonArgs(const std::vector<char> &py_args)
 {
     pyArgs = py_args;
 }
@@ -341,6 +349,9 @@ avtPythonQuery::GetSecondaryVariables(std::vector<std::string> &res)
 //    Cyrus Harrison, Tue Sep 21 11:29:47 PDT 2010
 //    Unpickle passed args from pyArgs member.
 //
+//    Eric Brugger, Tue Jan 26 13:17:19 PST 2021
+//    Modified the python args to be a char vector instead of a string.
+//
 // ****************************************************************************
 
 void
@@ -432,7 +443,7 @@ avtPythonQuery::UpdateContract()
     }
 
     // get any other args
-    if(pyArgs != "")
+    if(pyArgs.size() > 0)
     {
         PyObject *py_args = pyEnv->Unpickle(pyArgs);
         if(!pyEnv->Filter()->SetAttribute("arguments",py_args))
