@@ -800,9 +800,9 @@ static struct PyModuleDef visit_writer_module_def =
 /******************************************************************/
     #if __GNUC__ >= 4
     /* Ensure this function is visible even if -fvisibility=hidden was passed */
-    PyObject * __attribute__ ((visibility("default"))) PyInit_visit( void )
+    __attribute__ ((visibility("default"))) PyObject * PyInit_visit_writer( void )
     #else
-    PyObject * PyInit_visit( void )
+    PyObject * PyInit_visit_writer( void )
     #endif
 /******************************************************************/
 /******************************************************************/

@@ -2,7 +2,9 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
-from xmllib import *
+import xml
+import xml.sax
+
 import string
 
 ###############################################################################
@@ -16,6 +18,8 @@ import string
 # Date:       Tue Nov 14 13:56:07 PST 2006
 #
 # Modifications:
+#   Eric Brugger, Thu Jan 28 09:49:07 PST 2021
+#   Converted from xmllib to xml.sax.
 #
 ###############################################################################
 
@@ -25,7 +29,7 @@ def attrs_getValue(dict, name):
         ret = dict[name]
     return ret
 
-class MovieTemplateReader(XMLParser): 
+class MovieTemplateReader(xml.sax.ContentHandler): 
     ###########################################################################
     # Method: __init__
     #
@@ -39,11 +43,12 @@ class MovieTemplateReader(XMLParser):
     # Creation:   Tue Nov 14 13:48:13 PST 2006
     #
     # Modifications:
+    #   Eric Brugger, Thu Jan 28 09:49:07 PST 2021
+    #   Converted from xmllib to xml.sax.
     #
     ###########################################################################
 
     def __init__ (self): 
-        XMLParser.__init__(self)
         self.elements = {"Object" : ("<Object>", "</Object>"), "Field" : ("<Field>", "</Field>")}
         self.attributes = {"name" : "", "type" : None, "length" : 0}
 
@@ -71,46 +76,46 @@ class MovieTemplateReader(XMLParser):
     #   This method gets called when the XML parser begins processing a tag.
     #
     # Arguments:
-    #   self  : This object reference.
-    #   name  : The XML tag name
-    #   attrs : Any attributes that are defined for the tag.
+    #   self       : This object reference.
+    #   tag        : The XML tag name
+    #   attributes : Any attributes that are defined for the tag.
     #
     # Programmer: Brad Whitlock
     # Creation:   Tue Nov 14 13:48:13 PST 2006
     #
     # Modifications:
+    #   Eric Brugger, Thu Jan 28 09:49:07 PST 2021
+    #   Converted from xmllib to xml.sax.
     #
     ###########################################################################
 
-    def handle_starttag(self, name, method, attrs): 
+    def startElement(self, tag, attributes): 
         self.line = ""
         self.fieldName = ""
         self.fieldType = ""
         self.fieldLength = 0
 
-        #print "<%s name=\"%s\">" % (name, attrs_getValue(attrs, "name"))
-        if name == "Object":
-            if attrs_getValue(attrs, "name") == "VIEWPORTS":
+        if tag == "Object":
+            if attributes.getValue("name") == "VIEWPORTS":
                 self.readMode = self.READ_VIEWPORT
                 self.objectIndent = 1
-            elif attrs_getValue(attrs, "name") == "SEQUENCEDATA":
+            elif attributes.getValue("name") == "SEQUENCEDATA":
                 self.readMode = self.READ_SEQUENCE
                 self.objectIndent = 1
             else:
                 self.objectIndent = self.objectIndent + 1
     
-        if name == "Object":
-            objName = attrs_getValue(attrs, "name")
+        if tag == "Object":
+            objName = attributes.getValue("name")
             if self.readMode == self.READ_VIEWPORT:
                 self.viewport_name = objName
             elif self.readMode == self.READ_SEQUENCE:
                 self.sequence_name = objName
-        elif name == "Field":
-            self.fieldName = attrs_getValue(attrs, "name")
-            self.fieldType = attrs_getValue(attrs, "type")
+        elif tag == "Field":
+            self.fieldName = attributes.getValue("name")
+            self.fieldType = attributes.getValue("type")
             try:
-                #print "length=", attrs_getValue(attrs,"length")
-                self.fieldLength = int(attrs_getValue(attrs,"length"))
+                self.fieldLength = int(attributes.getValue("length"))
             except:
                 self.fieldLength = 0
 
@@ -122,19 +127,20 @@ class MovieTemplateReader(XMLParser):
     #   use it to build up the line that will be processed later.
     #
     # Arguments:
-    #   self : This object reference.
-    #   ch   : The character being handled
+    #   self    : This object reference.
+    #   content : The character being handled
     #
     # Programmer: Brad Whitlock
     # Creation:   Tue Nov 14 13:48:13 PST 2006
     #
     # Modifications:
+    #   Eric Brugger, Thu Jan 28 09:49:07 PST 2021
+    #   Converted from xmllib to xml.sax.
     #
     ###########################################################################
 
-    def handle_data(self, data):
-        #print "handle_data: data=", data
-        self.line = self.line + data
+    def characters(self, content):
+        self.line = self.line + content
 
     ###########################################################################
     # Method: SpacedListToStringTuple
@@ -196,6 +202,9 @@ class MovieTemplateReader(XMLParser):
     #   Brad Whitlock, Mon Sep 13 16:03:36 PDT 2010
     #   Strip leading and trailing quotes off strings.
     #
+    #   Eric Brugger, Thu Jan 28 09:49:07 PST 2021
+    #   Converted to Python 3.
+    #
     ###########################################################################
 
     def EvalField(self):
@@ -211,7 +220,7 @@ class MovieTemplateReader(XMLParser):
 
         ret = 0
         s_line = str(self.line)
-        if string.find(self.fieldType, "Array") != -1:
+        if self.fieldType.find("Array") != -1:
             stuple = self.SpacedListToStringTuple(s_line)
             if self.fieldType in ("intArray", "ucharArray", "longArray"):
                 values = []
@@ -227,7 +236,7 @@ class MovieTemplateReader(XMLParser):
                 while len(values) < self.fieldLength:
                     values = values + [0.]
                 ret = tuple(values)
-        elif string.find(self.fieldType, "Vector") != -1:
+        elif self.fieldType.find("Vector") != -1:
             stuple = self.SpacedListToStringTuple(s_line)
             if self.fieldType in ("intVector", "ucharVector", "longVector"):
                 values = []
@@ -278,18 +287,19 @@ class MovieTemplateReader(XMLParser):
     #
     # Arguments:
     #   self : This object reference.
+    #   tag  : The XML tag name
     #
     # Programmer: Brad Whitlock
     # Creation:   Tue Nov 14 13:48:13 PST 2006
     #
     # Modifications:
+    #   Eric Brugger, Thu Jan 28 09:49:07 PST 2021
+    #   Converted from xmllib to xml.sax.
     #
     ###########################################################################
 
-    def handle_endtag(self, name, method):
-        #print self.line
-        #print "</%s name=%s, type=%s, length=%d>" % (name, self.fieldName, self.fieldType, self.fieldLength)
-        if name == "Field":
+    def endElement(self, tag):
+        if tag == "Field":
             if self.readMode == self.READ_VIEWPORT:
                 value = self.EvalField()
                 if self.viewport_name not in list(self.viewport_data.keys()):
@@ -953,11 +963,13 @@ class VisItMovieTemplate(object):
     # Creation:   Tue Nov 14 13:48:13 PST 2006
     #
     # Modifications:
+    #   Eric Brugger, Thu Jan 28 09:49:07 PST 2021
+    #   Converted to Python 3.
     #
     ###########################################################################
 
     def SequenceNameToFilebase(self, seqName):
-        return "seq_" + string.replace(seqName, " ", "_")
+        return "seq_" + seqName.replace(" ", "_")
 
     ###########################################################################
     # Method: FindFirstNonTransition
