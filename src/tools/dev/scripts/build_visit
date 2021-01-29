@@ -74,6 +74,9 @@ export webaddr="${webroot}/trunk/src/tools/dev/scripts/bv_support/"
 export visitroot="https://github.com/visit-dav/visit/releases/download/"
 export thirdpartyroot="https://github.com/visit-dav/third-party/releases/download/"
 
+# for use when running a develop verison of build_visit
+export thirdpartyroot_dev="https://github.com/visit-dav/third-party/raw/master/lib"
+
 #state = "disabled", "enabled", "installed"
 declare -a reqlibs
 declare -a reqlibs_state
@@ -432,6 +435,9 @@ function bv_write_unified_file
     echo "export webaddr=\"\${webroot}/trunk/src/tools/dev/scripts/bv_support/\"" >> $OUTPUT_bv_FILE
     echo "export visitroot=\"https://github.com/visit-dav/visit/releases/download/\"" >> $OUTPUT_bv_FILE
     echo "export thirdpartyroot=\"https://github.com/visit-dav/third-party/releases/download/\"" >> $OUTPUT_bv_FILE
+
+    # for use when running a develop verison of build_visit
+    echo "export thirdpartyroot_dev=\"https://github.com/visit-dav/third-party/raw/master/lib\"" >> $OUTPUT_bv_FILE
 
     echo "declare -a reqlibs" >> $OUTPUT_bv_FILE
     echo "declare -a optlibs" >> $OUTPUT_bv_FILE
