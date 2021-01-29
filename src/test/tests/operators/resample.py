@@ -17,6 +17,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Alister Maguire, Fri Jan 29 08:17:27 PST 2021
+#    Set useExtents = 0 where appropriate as setting the start/end
+#    values no longer overrides useExtents.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -51,6 +56,7 @@ SetOperatorOptions(resample)
 Test("ops_resampleop_noise_point_large")
 
 resample = ResampleAttributes()
+resample.useExtents = 0
 resample.startX = 5.25
 resample.endX = 9.57
 resample.samplesX = 10
