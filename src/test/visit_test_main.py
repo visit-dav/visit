@@ -2302,7 +2302,8 @@ class Simulation(object):
             # For now...
             import socket
             if "pascal" in socket.gethostname() or \
-               "cab" in socket.gethostname() or \
+               "quartz" in socket.gethostname() or \
+               "ruby" in socket.gethostname() or \
                "syrah" in socket.gethostname():
                 do_submit = 0
                 if do_submit:
@@ -2339,12 +2340,14 @@ class Simulation(object):
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE,
+                                      universal_newlines=True,
                                       close_fds=True)
         else:
             self.p = subprocess.Popen(args,
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE,
+                                      universal_newlines=True,
                                       close_fds=False)
 
         return self.p != None

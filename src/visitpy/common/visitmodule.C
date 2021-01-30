@@ -12107,6 +12107,9 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
 //   Cyrus Harrison, Mon Mar 23 12:02:27 PDT 2020
 //   Port to python 3.
 //
+//   Eric Brugger, Tue Jan 26 13:17:19 PST 2021
+//   Modified the python args to be a char vector instead of a string.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12133,7 +12136,7 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     stringVector vars;
-    std::string  args_pickled  = "";
+    charVector   args_pickled;
     std::string  script_source = "";
 
     // if vars were passed in, add them to the variable list
@@ -12155,9 +12158,10 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
 
-        char *str_val = PyString_AsString(res);
-        args_pickled = std::string(str_val);
-        PyString_AsString_Cleanup(str_val);
+        int size_py_args = PyBytes_Size(res);
+        char *str_py_args = PyBytes_AsString(res);
+        for (int i = 0; i < size_py_args; i++)
+            args_pickled.push_back(str_py_args[i]);
 
         // decref b/c we created a new python string
         Py_DECREF(res);

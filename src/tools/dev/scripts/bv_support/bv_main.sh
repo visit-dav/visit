@@ -350,8 +350,20 @@ function initialize_build_visit()
             export MACOSX_DEPLOYMENT_TARGET=10.13
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER_MAJOR} == 18 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=10.14
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER_MAJOR} == 19 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=10.15
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER_MAJOR} == 20 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=11.0
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         else
-            export MACOSX_DEPLOYMENT_TARGET=10.13
+            export MACOSX_DEPLOYMENT_TARGET=10.14
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         fi
