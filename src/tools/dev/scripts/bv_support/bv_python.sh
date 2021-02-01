@@ -572,6 +572,39 @@ function apply_python_patch
     return 0
 }
 
+function apply_python_seedme_patch
+{
+    info "Patching Python: fix setup.py in seedme."
+    patch -f -p0 << \EOF
+diff -c setup.py.orig setup.py
+*** setup.py.orig    Mon Feb  1 13:39:48 2021
+--- setup.py         Mon Feb  1 13:40:03 2021
+***************
+*** 73,79 ****
+                     'interface as well as methods and api for '         +\
+                     'programmatic usage. It performs extensive sanity ' +\
+                     'checks input data and is kept upto date with '     +\
+!                    'REST api at SeedMe.org.',
+  
+  setup(name='seedme',
+        version="1.2.4",
+--- 73,79 ----
+                     'interface as well as methods and api for '         +\
+                     'programmatic usage. It performs extensive sanity ' +\
+                     'checks input data and is kept upto date with '     +\
+!                    'REST api at SeedMe.org.'
+  
+  setup(name='seedme',
+        version="1.2.4",
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Python patch for setup.py in seedme failed."
+        return 1
+    fi
+
+    return 0
+}
+
 
 # *************************************************************************** #
 #                         Function 7, build_python                            #
@@ -975,7 +1008,23 @@ function build_seedme
         fi
     fi
 
+    #
+    # Apply patches
+    #
     pushd $SEEDME_BUILD_DIR > /dev/null
+    apply_python_seedme_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_python == 1 ]] ; then
+            warn "Giving up on seedme install."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
     info "Installing seedme python module ..."
     ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
