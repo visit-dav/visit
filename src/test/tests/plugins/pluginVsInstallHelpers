@@ -62,7 +62,7 @@ def getVersion():
 #
 # -----------------------------------------------------------------------------
 def regencmake(plugin, pluginResults):
-    print "regenerating cmake for ", plugin
+    print("regenerating cmake for ", plugin)
     pluginArg = plugin + '.xml'
     xml2cmake = visit_bin_path("..", "_install", "bin", "xml2cmake")
     status = 1
@@ -109,7 +109,7 @@ def build(plugin, pluginResults):
     fname = "%s_build_res.txt" %plugin
     f = open(fname, "w")
     try:
-        print "running cmake for ", plugin
+        print("running cmake for ", plugin)
         subprocess.check_call([cmakecmd, "../"],stdout=f,stderr=f)
     except subprocess.CalledProcessError as err:
         pluginResults[plugin] = 'cmake configure failed'
@@ -120,7 +120,7 @@ def build(plugin, pluginResults):
 
     if status == 1:
         try:
-            print "running make for ", plugin
+            print("running make for ", plugin)
             subprocess.check_call(["gmake", "-j", "8"],stdout=f,stderr=f)
             pluginResults[plugin] = 'success'
         except subprocess.CalledProcessError as err:
@@ -155,7 +155,7 @@ def build(plugin, pluginResults):
 #
 # -----------------------------------------------------------------------------
 def buildPlugin(pluginType, pluginList):
-    print "buildPlugin: ", pluginType
+    print("buildPlugin: ", pluginType)
     plugindir = abs_path(TestEnv.params["run_dir"], pluginType)
 
     if os.path.exists(plugindir):

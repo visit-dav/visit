@@ -4,6 +4,10 @@
 #  Tests: Ensures VisIt and/or the test harness is in the correct "mode".
 #
 #  Mark C. Miller, Mon Sep 28 16:24:44 PDT 2020
+#
+# Modifications:
+#    Mark C. Miller, Mon Jan 11 10:32:17 PST 2021
+#    Replace AssertTrue() with TestValueEQ(..., True)
 # ----------------------------------------------------------------------------
 import json
 import sys
@@ -96,11 +100,11 @@ def AllowdynamicClargMatchesMode():
 #
 activeModeKeys = GetModeKeysFromClArgs()
 
-AssertTrue("All mode strings compatible", AllModeKeysCompatible())
-AssertTrue("Engine matches mode", EngineMatchesMode())
-AssertTrue("Silo data path matches mode", SiloDataPathMatchesMode())
-AssertTrue("Scalable setting matches mode", ScalableSettingMatchesMode())
-AssertTrue("Icet clarg matches mode", IcetClargMatchesMode())
-AssertTrue("Allowdynamic clarg matches mode", AllowdynamicClargMatchesMode())
+TestValueEQ("All mode strings compatible", AllModeKeysCompatible(), True)
+TestValueEQ("Engine matches mode", EngineMatchesMode(), True)
+TestValueEQ("Silo data path matches mode", SiloDataPathMatchesMode(), True)
+TestValueEQ("Scalable setting matches mode", ScalableSettingMatchesMode(), True)
+TestValueEQ("Icet clarg matches mode", IcetClargMatchesMode(), True)
+TestValueEQ("Allowdynamic clarg matches mode", AllowdynamicClargMatchesMode(), True)
 
 Exit()

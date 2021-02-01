@@ -19,7 +19,7 @@
 // ****************************************************************************
 // Method: QvisScreenPositionEdit::QvisScreenPositionEdit
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisScreenPositionEdit class.
 //
 // Arguments:
@@ -38,7 +38,7 @@
 //
 // ****************************************************************************
 
-QvisScreenPositionEdit::QvisScreenPositionEdit(QWidget *parent) : 
+QvisScreenPositionEdit::QvisScreenPositionEdit(QWidget *parent) :
     QWidget(parent)
 {
     QHBoxLayout *hLayout = new QHBoxLayout(this);
@@ -77,14 +77,14 @@ QvisScreenPositionEdit::QvisScreenPositionEdit(QWidget *parent) :
 // ****************************************************************************
 // Method: QvisScreenPositionEdit::~QvisScreenPositionEdit
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisScreenPositionEdit class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 2 13:50:35 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisScreenPositionEdit::~QvisScreenPositionEdit()
@@ -94,7 +94,7 @@ QvisScreenPositionEdit::~QvisScreenPositionEdit()
 // ****************************************************************************
 // Method: QvisScreenPositionEdit::setPosition
 //
-// Purpose: 
+// Purpose:
 //   Sets the screen position.
 //
 // Arguments:
@@ -104,7 +104,7 @@ QvisScreenPositionEdit::~QvisScreenPositionEdit()
 // Creation:   Tue Dec 2 13:50:53 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -119,7 +119,7 @@ QvisScreenPositionEdit::setPosition(double x, double y)
 // ****************************************************************************
 // Method: QvisScreenPositionEdit::getPosition
 //
-// Purpose: 
+// Purpose:
 //   Gets the screen position.
 //
 // Arguments:
@@ -127,13 +127,13 @@ QvisScreenPositionEdit::setPosition(double x, double y)
 //
 // Returns:    True if the coordinates are valid, false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 2 13:51:39 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -156,7 +156,7 @@ QvisScreenPositionEdit::getPosition(double &x, double &y)
 // ****************************************************************************
 // Method: QvisScreenPositionEdit::getCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values from the line edit.
 //
 // Arguments:
@@ -191,7 +191,7 @@ QvisScreenPositionEdit::getCurrentValues(double *newX, double *newY)
 // ****************************************************************************
 // Method: QvisScreenPositionEdit::updateText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that updates the text in the line edit.
 //
 // Arguments:
@@ -201,21 +201,22 @@ QvisScreenPositionEdit::getCurrentValues(double *newX, double *newY)
 // Creation:   Tue Dec 2 13:53:39 PST 2003
 //
 // Modifications:
-//   
+//  Kathleen Biagas, Jan 21, 2021
+//  Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
 QvisScreenPositionEdit::updateText(double x, double y)
 {
-    QString tmp;
-    tmp.asprintf("%g %g", x, y);
+    QString tmp = QString("%1 %2").arg(x).arg(y);
     lineEdit->setText(tmp);
 }
 
 // ****************************************************************************
 // Method: QvisScreenPositionEdit::newScreenPosition
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that emits a screenPositionChanged signal
 //   when the screen coordinate changes for whatever reason.
 //
@@ -226,7 +227,7 @@ QvisScreenPositionEdit::updateText(double x, double y)
 // Creation:   Tue Dec 2 13:54:19 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -243,7 +244,7 @@ QvisScreenPositionEdit::newScreenPosition(double x, double y)
 // ****************************************************************************
 // Method: QvisScreenPositionEdit::popup
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called to popup the screen positioner
 //   widget.
 //
@@ -251,7 +252,7 @@ QvisScreenPositionEdit::newScreenPosition(double x, double y)
 // Creation:   Tue Dec 2 13:55:18 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -279,7 +280,7 @@ QvisScreenPositionEdit::popup()
     if(menuY - menuH < 0)
         menuY = menuY - height() - menuH;
 
-    // Show the popup menu.         
+    // Show the popup menu.
     screenPositionPopup->move(menuX, menuY);
     screenPositionPopup->popupShow();
 }
@@ -287,7 +288,7 @@ QvisScreenPositionEdit::popup()
 // ****************************************************************************
 // Method: QvisScreenPositionEdit::closePopup
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called by a timer when the screen
 //   positioner widget has been popped up for too long.
 //
@@ -295,7 +296,7 @@ QvisScreenPositionEdit::popup()
 // Creation:   Tue Dec 2 13:55:47 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -309,7 +310,7 @@ QvisScreenPositionEdit::closePopup()
 // ****************************************************************************
 // Method: QvisScreenPositionEdit::returnPressed
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when return is pressed in the
 //   line edit.
 //
@@ -317,7 +318,7 @@ QvisScreenPositionEdit::closePopup()
 // Creation:   Tue Dec 2 13:56:24 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

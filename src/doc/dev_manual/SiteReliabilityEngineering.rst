@@ -36,7 +36,7 @@ The continuous investment of effort to craft and carry out
 in response to such inquiries is a *best practice*. It represents a
 `fusion <https://medium.com/@aHev/why-ux-researchers-should-learn-sre-practices-a2b213e69a8a>`_
 of aspects of Google's
-`Site Reliability Engineering <https://landing.google.com/sre/sre-book/toc/>`_ (SRE)
+`Site Reliability Engineering <https://landing.google.com/sre/sre-book/toc/>`__ (SRE)
 process (sometimes also called
 `Systems Reliability Engineering or Services Reliability Engineering <https://www.cio.com/article/3192531/why-you-need-a-systems-reliability-engineer.html>`_)
 and maybe aspects of either
@@ -180,7 +180,7 @@ SRE vs. Product Development
 
 Part of the reason for formalizing this process is the recognition of a
 different category of work,
-`Site Reliability Engineering <https://en.wikipedia.org/wiki/Site_Reliability_Engineering>`_ (SRE),
+`Site Reliability Engineering <https://en.wikipedia.org/wiki/Site_Reliability_Engineering>`__ (SRE),
 that is
 `essential part of maintaining the overall quality <https://beyondphilosophy.com/15-statistics-that-should-change-the-business-world-but-havent>`_
 of a software product as well as the productivity of both developers and users

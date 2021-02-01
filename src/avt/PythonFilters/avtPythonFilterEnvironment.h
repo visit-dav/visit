@@ -10,6 +10,7 @@
 #include <avtPythonFilter.h>
 
 #include <iostream>
+#include <vector>
 
 
 // ****************************************************************************
@@ -29,6 +30,9 @@
 //   Cyrus Harrison,
 //   Added pickle support.
 //
+//   Eric Brugger, Tue Jan 26 13:17:19 PST 2021
+//   Modified Unpickle to take a char vector instead of a string.
+//
 // ****************************************************************************
 class AVTPYTHON_FILTERS_API avtPythonFilterEnvironment
 {
@@ -41,7 +45,7 @@ public:
     bool         FetchPythonError(std::string &msg_out);
 
     std::string  Pickle(PyObject *py_obj);
-    PyObject    *Unpickle(const std::string &s);
+    PyObject    *Unpickle(const std::vector<char> &s);
 
     PyObject    *WrapVTKObject(void *obj,
                                const std::string &obj_type);
