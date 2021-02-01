@@ -1,6 +1,6 @@
 
 if(NOT MSVC_VERSION OR MSVC_VERSION LESS 1910 OR NOT CMAKE_CL_64)
-    send_message(FATAL_ERROR "You have chosen a compiler version not currently supported by this config-site file.  You will need to specify \"Visual Studio 15 2017 Win64\" as your generator or create a new config-site file pointing to the locations of third party libraries on your system.")
+    message(FATAL_ERROR "You have chosen a compiler version not currently supported by this config-site file.  You will need to specify \"Visual Studio 15 2017 Win64\" as your generator or create a new config-site file pointing to the locations of third party libraries on your system.")
 endif()
 
 set(VISIT_MSVC_VERSION "MSVC2017")
@@ -92,8 +92,7 @@ VISIT_OPTION_DEFAULT(VISIT_QWT_DIR     ${VISITHOME}/Qwt/6.1.2)
 ##
 ## PYTHON
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.14)
-VISIT_OPTION_DEFAULT(VISIT_PYTHON3_DIR ${VISITHOME}/python/3.7.5)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/3.7.7)
 
 ##
 ## PYSIDE
