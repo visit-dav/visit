@@ -32,7 +32,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">General features added in version 3.2</font></b></p>
 <ul>
   <li>Upgraded VTKm to a recent version. Support was added for zone centered variables and 3D unstructured meshes with tetrahedra, pyramid and prism cells, in addition to the existing support for hexahedra.</li>
-  <li>General Feature 2</li>
+  <li>Added the <b>-py2to3</b> CLI command line option which enables limited on-the-fly Python 2 to Python 3 conversion for scripts passed via <b>-s</b> or <b>visit.Source()</b>. See VisIt's CLI manual for more details.</li>
+  <li>General Feature 3</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -92,7 +93,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Other bugs fixed in version 3.2</font></b></p>
 <ul>
   <li>The checkbox in the Expression window that turns on the display of expressions from the database now indicates that it displays expressions from the database and auto generated ones.</li>
-  <li>Bug Fix 2</li>
+  <li>Fixed an issue preventing build_visit from being able to build IceT.</li>
+  <li>When using the resample operator in VisIt's python interface, <code>useExtents</code> will now take precedence over setting the resample dimensions explicitly, which matches the behavior in the GUI.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -112,6 +114,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Removed emptydomain cases from skip list.</li>
   <li>Add new assertion tests to ensure tests are running in mode specified by -m/--mode= command-line argument.</li>
   <li>QT version updated to 5.14.2.</li>
+  <li>AssertXXXX() style test checks were replaced with TestValueXX which supports more features.</li>
+  <li>When run from develop, build_visit will now look for tarballs in the github master branch of visit-dav/thirdparty if all other avenues fail.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

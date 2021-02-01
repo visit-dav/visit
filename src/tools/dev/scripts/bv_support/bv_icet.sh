@@ -186,7 +186,6 @@ function build_icet
     else
         LIBEXT="a"
     fi
-    touch fakempi.${LIBEXT}
     rm -f CMakeCache.txt
 
     if [[ "$OPSYS" == "Darwin" ]] ; then
@@ -200,7 +199,6 @@ function build_icet
         -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
         -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}"\
         -DMPI_INCLUDE_PATH:PATH="${PAR_INCLUDE_DIR}"\
-        -DMPI_LIBRARY:FILEPATH="./fakempi.${LIBEXT}"\
         -DBUILD_TESTING:BOOL=OFF\
         .
     else
@@ -216,12 +214,9 @@ function build_icet
         -DOPENGL_gl_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
         -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}"\
         -DMPI_INCLUDE_PATH:PATH="${PAR_INCLUDE_DIR}"\
-        -DMPI_LIBRARY:FILEPATH="./fakempi.${LIBEXT}"\
         -DBUILD_TESTING:BOOL=OFF\
         .
     fi
-
-    rm fakempi.${LIBEXT}
 
     if [[ $? != 0 ]] ; then
         warn "Cannot get CMAKE to create the makefiles.  Giving up."

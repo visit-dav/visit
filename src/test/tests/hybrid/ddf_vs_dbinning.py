@@ -201,9 +201,9 @@ TestText("DDF","Mass Sum = %s" % ddf_val)
 TestText("DBIN with Coords","Mass Sum = %s" % dbin_coords_val)
 TestText("DBIN with Coords Exprs","Mass Sum = %s" % dbin_cexprs_val)
 
-AssertTrue("Orig Equals DDF",abs(orig_val - ddf_val)  < 1e-4 )
-AssertTrue("Orig Equals DBIN with Coords",abs(orig_val - dbin_coords_val) < 1e-4 )
-AssertTrue("Orig Equals DBIN with Coords Exprs",abs(orig_val - dbin_cexprs_val) < 1e-4 )
+TestValueLT("Orig Equals DDF",abs(orig_val - ddf_val), 1e-4 )
+TestValueLT("Orig Equals DBIN with Coords",abs(orig_val - dbin_coords_val), 1e-4 )
+TestValueLT("Orig Equals DBIN with Coords Exprs",abs(orig_val - dbin_cexprs_val), 1e-4 )
 
 Exit()
 
