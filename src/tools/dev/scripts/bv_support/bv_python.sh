@@ -1881,18 +1881,12 @@ function bv_python_is_installed
         PY_OK=0
     fi
 
-    if [[ "$DO_PYTHON2" == "yes" ]]; then
-        # seedme doesn't seem to work with python 3
-        # Error during install:
-        # AttributeError: 'tuple' object has no attribute 'split'
-        # Could be ported, we could ping seedme folks.
-        check_if_py_module_installed "seedme"
-        if [[ $? != 0 ]] ; then
-            if [[ $PY_CHECK_ECHO != 0 ]] ; then
-                info "python module seedme is not installed"
-            fi
-            PY_OK=0
+    check_if_py_module_installed "seedme"
+    if [[ $? != 0 ]] ; then
+        if [[ $PY_CHECK_ECHO != 0 ]] ; then
+            info "python module seedme is not installed"
         fi
+        PY_OK=0
     fi
     
     if [[ "$BUILD_SPHINX" == "yes" ]]; then
@@ -2021,16 +2015,13 @@ function bv_python_build
                 info "Done building the requests python module."
             fi
 
-            if [[ "$DO_PYTHON2" == "yes" ]]; then
-
-                check_if_py_module_installed "seedme"
+            check_if_py_module_installed "seedme"
+            if [[ $? != 0 ]] ; then
+                build_seedme
                 if [[ $? != 0 ]] ; then
-                    build_seedme
-                    if [[ $? != 0 ]] ; then
-                        error "seedme python module build failed. Bailing out."
-                    fi
-                    info "Done building the seedme python module."
+                    error "seedme python module build failed. Bailing out."
                 fi
+                info "Done building the seedme python module."
             fi
 
             if [[ "$BUILD_SPHINX" == "yes" ]]; then
