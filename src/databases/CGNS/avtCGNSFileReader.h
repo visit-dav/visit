@@ -10,6 +10,7 @@
 #define AVT_CGNS_FILE_READER_H
 
 #include <cgnslib.h>
+#include <cgns_io.h>
 #if CGNS_VERSION <= 3000
 #define cgsize_t int
 #else
@@ -22,6 +23,7 @@
 
 class vtkDataArray;
 class vtkDataSet;
+class vtkUnstructuredGrid;
 class avtDatabaseMetaData;
 
 using namespace std;
@@ -125,6 +127,14 @@ protected:
                                               const cgsize_t *, int, int);
     vtkDataSet *           GetUnstructuredMesh(int, int, int, const char *,
                                                const cgsize_t *, int, int);
+    void                   ReadMixedAndNamedElementSections(
+                               vtkUnstructuredGrid *,
+                               const char *, std::vector<int> &,
+                               int, int, int, int);
+    void                   ReadNGonSections(
+                               vtkUnstructuredGrid *,
+                               const char *, std::vector<int> &,
+                               int, int, int, int);
 
     void PrintVarInfo(ostream &out, const VarInfo &var, const char *indent);
     void PrintStringVarInfoMap(ostream &out, const StringVarInfoMap &vars, const char *indent);
