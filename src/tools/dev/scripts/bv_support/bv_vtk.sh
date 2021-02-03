@@ -1250,6 +1250,9 @@ function build_vtk
             vopts="${vopts} -DPYTHON_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
             vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
             vopts="${vopts} -DPYTHON_LIBRARY:FILEPATH=${pylib}"
+            if [[ "$DO_PYTHON2" == "no" ]]; then
+              vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
+            fi
             #            vopts="${vopts} -DPYTHON_UTIL_LIBRARY:FILEPATH="
         else
             warn "Forgetting python filters because we are doing a static build."
