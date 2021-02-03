@@ -47,8 +47,6 @@ function bv_llvm_print
     printf "%s%s\n" "BV_LLVM_BUILD_DIR=" "${BV_LLVM_BUILD_DIR}"
 }
 
-
-
 function bv_llvm_print_usage
 {
     printf "%-20s %s [%s]\n" "--llvm" "Build LLVM" "$DO_LLVM"
@@ -69,7 +67,7 @@ function bv_llvm_initialize_vars
 {
     export VISIT_LLVM_DIR=${VISIT_LLVM_DIR:-"$VISITDIR/llvm/${BV_LLVM_VERSION}/${VISITARCH}"}
     LLVM_INCLUDE_DIR="${VISIT_LLVM_DIR}/include"
-    export LLVM_LIB_DIR="${VISIT_LLVM_DIR}/lib"
+    LLVM_LIB_DIR="${VISIT_LLVM_DIR}/lib"
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         LLVM_LIB="${LLVM_LIB_DIR}/libLLVM.a"
     else

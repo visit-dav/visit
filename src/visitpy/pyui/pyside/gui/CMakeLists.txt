@@ -15,6 +15,7 @@
 #    Update for pyside2-qt-5.14.2.
 #
 #*****************************************************************************
+
 get_property(QT_CORE_INCLUDE_DIRS TARGET Qt5::Core PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 get_property(QT_GUI_INCLUDE_DIRS TARGET Qt5::Gui PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 get_property(QT_OPENGL_INCLUDE_DIRS TARGET Qt5::OpenGL PROPERTY INTERFACE_INCLUDE_DIRECTORIES)

@@ -40,7 +40,7 @@ if(NOT PySide_FOUND)
 
     if(NOT PYTHON_EXECUTABLE OR NOT PYTHON_LIBRARY)
         message(WARNING "PySide2 requires python, but python not found, disabling PySide")
-        set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE) 
+        set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE)
         return()
     endif()
 
@@ -58,15 +58,15 @@ if(NOT PySide_FOUND)
         # So, we perform an extra check if needed.
         if(EXISTS ${PYTHON_DIR}/bin/shiboken2 AND
            EXISTS ${PYTHON_SITE_PACKAGES_DIR}/PySide2 AND
-           EXISTS ${PYTHON_SITE_PACKAGES_DIR}/shiboken2) 
+           EXISTS ${PYTHON_SITE_PACKAGES_DIR}/shiboken2)
            # doesn't really make sense to set this to 0, other than it matches
            # with the result value if the above execute_process succeeds.
            set(HAVE_PYSIDE_IN_PYTHON 0)
         endif()
     endif()
     if(HAVE_PYSIDE_IN_PYTHON EQUAL 0)
-        set(PYSIDE_IN_PYTHON true) 
-        # use a macro taken from an example within PySide2 
+        set(PYSIDE_IN_PYTHON true)
+        # use a macro taken from an example within PySide2
         # The config script is located in  python's lib/site-packages/PySide2/examples/utils dir
         # perhaps we want to do this a different way?
 
@@ -74,7 +74,7 @@ if(NOT PySide_FOUND)
 
         if (NOT EXISTS ${pyside_config_script})
             message(WARNING "Cannot find PySide2 config script in ${pyside_config_script}, disabling PySide")
-            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE) 
+            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE)
 
             # should probably have a different find mechanism here perhaps along the lines of searching
             # for an installed version outside of python via VISIT_PYSIDE_DIR, or a find_package
@@ -108,12 +108,11 @@ if(NOT PySide_FOUND)
                          PATHS ${shib2_gen_path}
                          DOC "Shiboken generator executable"
                          NO_DEFAULT_PATH)
-
         endif()
 
         if(NOT SHIBOKEN_BINARY)
             message(WARNING "Cannot find PySide2 shiboken generator, disabling PySide")
-            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE) 
+            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE)
             return()
         endif()
 
@@ -127,35 +126,35 @@ if(NOT PySide_FOUND)
 
         if(NOT PYSIDE_TYPESYSTEMS)
             message(WARNING "Cannot find PySide2 typesystems dir, disabling PySide")
-            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE) 
+            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE)
             return()
         endif()
 
         pyside2_config("--shiboken2-generator-include-path" SHIBOKEN_INCLUDE_DIR)
         if(NOT SHIBOKEN_INCLUDE_DIR)
             message(WARNING "Cannot find PySide2 shiboken include dir, disabling PySide")
-            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE) 
+            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE)
             return()
         endif()
 
         pyside2_config("--pyside2-include-path" PYSIDE_INCLUDE_DIR)
         if(NOT PYSIDE_INCLUDE_DIR)
             message(WARNING "Cannot find PySide2 include dir, disabling PySide")
-            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE) 
+            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE)
             return()
         endif()
 
         pyside2_config("--shiboken2-module-shared-libraries-cmake" SHIBOKEN_LIBRARY)
         if(NOT SHIBOKEN_LIBRARY)
             message(WARNING "Cannot find PySide2 shiboken library, disabling PySide")
-            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE) 
+            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE)
             return()
         endif()
 
         pyside2_config("--pyside2-shared-libraries-cmake" PYSIDE_LIBRARY)
         if(NOT PYSIDE_LIBRARY)
             message(WARNING "Cannot find PySide2 pyside library, disabling PySide")
-            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE) 
+            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE)
             return()
         endif()
 
@@ -169,12 +168,12 @@ if(NOT PySide_FOUND)
         message(STATUS "    pyside library:     ${PYSIDE_LIBRARY}")
         message(STATUS "    pyside typesystems: ${PYSIDE_TYPESYSTEMS}")
     else()
-        set(PYSIDE_IN_PYTHON false) 
+        set(PYSIDE_IN_PYTHON false)
         # PySide not installed in python, it's a stand-alone, handle in usual manner
-       
+
         include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
         # pyside's cmake find logic unsets PYTHON_FOUND, so save it now for restoration after
-        set(vpy_found ${PYTHON_FOUND}) 
+        set(vpy_found ${PYTHON_FOUND})
         if(VISIT_PYSIDE_DIR)
             #  Find Shiboken 
             set(CMAKE_PREFIX_PATH ${VISIT_PYSIDE_DIR}/lib/cmake/Shiboken2-${PYSIDE_VERSION}.2)
@@ -182,14 +181,14 @@ if(NOT PySide_FOUND)
             if(NOT Shiboken2}_FOUND)
                 find_package(Shiboken2 ${PYSIDE_VERSION})
                 if(TARGET Shiboken2::shiboken2)
-                    get_target_property(SHIBOKEN_BINARY Shiboken2::shiboken2 IMPORTED_LOCATION_RELEASE) 
+                    get_target_property(SHIBOKEN_BINARY Shiboken2::shiboken2 IMPORTED_LOCATION_RELEASE)
                     message("SHIBOKEN_BINARY: ${SHIBOKEN_BINARY}")
                 else()
                     message(" no shiboken2 target")
                 endif()
                 if(TARGET Shiboken2::libshiboken)
-                    get_target_property(SHIBOKEN_INCLUDE_DIR Shiboken2::libshiboken INTERFACE_INCLUDE_DIRECTORIES) 
-                    get_target_property(SHIBOKEN_LIBRARY Shiboken2::libshiboken IMPORTED_LOCATION_RELEASE) 
+                    get_target_property(SHIBOKEN_INCLUDE_DIR Shiboken2::libshiboken INTERFACE_INCLUDE_DIRECTORIES)
+                    get_target_property(SHIBOKEN_LIBRARY Shiboken2::libshiboken IMPORTED_LOCATION_RELEASE)
                     message("SHIBOKEN_INCLUDE: ${SHIBOKEN_INCLUDE_DIR}")
                     message("SHIBOKEN_LIBRARY: ${SHIBOKEN_LIBRARY}")
                 else()
@@ -202,25 +201,24 @@ if(NOT PySide_FOUND)
             if (NOT PySide2_FOUND)
                 find_package(PySide2 ${PYSIDE_VERSION})
                 if(TARGET PySide2::pyside2)
-                    get_target_property(PYSIDE_INCLUDE_DIR PySide2::pyside2 INTERFACE_INCLUDE_DIRECTORIES) 
-                    get_target_property(PYSIDE_LIBRARY PySide2::pyside2 IMPORTED_LOCATION_RELEASE) 
+                    get_target_property(PYSIDE_INCLUDE_DIR PySide2::pyside2 INTERFACE_INCLUDE_DIRECTORIES)
+                    get_target_property(PYSIDE_LIBRARY PySide2::pyside2 IMPORTED_LOCATION_RELEASE)
                     message("PYSIDE_INCLUDE: ${PYSIDE_INCLUDE_DIR}")
                     message("PYSIDE_LIBRARY: ${PYSIDE_LIBRARY}")
                     message("PYSIDE_TYPESYSTEMS: ${PYSIDE_TYPESYSTEMS}")
-                    
                 endif()
             endif()
 
         endif()
-    
+
         if(NOT PySide2_FOUND OR NOT Shiboken2_FOUND)
             #If we dont have shiboken, force pyside off
             message(STATUS "PySide NOT found")
-            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE) 
+            set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE)
             set(PySide_FOUND 0)
         else()
             set(PySide_FOUND 1)
-            set(HAVE_LIBPYSIDE true CACHE BOOL "Have PySide2" FORCE) 
+            set(HAVE_LIBPYSIDE true CACHE BOOL "Have PySide2" FORCE)
         endif()
 
         if(PySide_FOUND)
@@ -240,8 +238,8 @@ if(NOT PySide_FOUND)
                     CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                     PATTERN ".svn" EXCLUDE
                     PATTERN ".git" EXCLUDE
-                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                                GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                 WORLD_READ             WORLD_EXECUTE
                     )
 
@@ -250,27 +248,27 @@ if(NOT PySide_FOUND)
                     CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                     PATTERN ".svn" EXCLUDE
                     PATTERN ".git" EXCLUDE
-                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                                GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                 WORLD_READ             WORLD_EXECUTE
                     )
         endif(PySide_FOUND)
-        set(PYTHON_FOUND ${vpy_found}) 
+        set(PYTHON_FOUND ${vpy_found})
         unset(vpy_found)
-    endif() 
+    endif()
 endif()
 
 #****************************************************************************
 # PYSIDE_ADD_GENERATOR_TARGET
 # Defines a new PySide generator target.
 #****************************************************************************
-function(PYSIDE_ADD_GENERATOR_TARGET 
+function(PYSIDE_ADD_GENERATOR_TARGET
             target_name gen_sources gen_include_paths gen_global gen_typesystem)
 
-    set(PYSIDE_GENERATOR_EXTRA_FLAGS 
-                                 --generator-set=shiboken 
-                                 --enable-parent-ctor-heuristic 
-                                 --enable-return-value-heuristic 
+    set(PYSIDE_GENERATOR_EXTRA_FLAGS
+                                 --generator-set=shiboken
+                                 --enable-parent-ctor-heuristic
+                                 --enable-return-value-heuristic
                                  --use-isnull-as-nb_nonzero
                                  --avoid-protected-hack)
 

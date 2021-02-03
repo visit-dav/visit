@@ -74,14 +74,13 @@ function bv_pyside_host_profile
     # a host-profile entry won't be necessary.
 
     # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH issue can be resolved
-    # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH issue can be resolved
     #if [[ "$DO_PYSIDE" == "yes" && ("$USE_SYSTEM_PYSIDE" == "yes" || "$USE_SYSTEM_PYTHON" == "yes" ) ]] ; then
     if [[ "$DO_PYSIDE" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## PySide" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        # version is needed by VisIt's Find module.
+        echo "# version is needed by VisIt's Find module." >> $HOSTCONF
         echo "set(PYSIDE_VERSION $PYSIDE_VERSION)" >> $HOSTCONF
         if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then
             echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR $PYSIDE_INSTALL_DIR)" >> $HOSTCONF
@@ -325,7 +324,7 @@ function build_pyside
     #        chmod -R ug+w,a+rX "$VISITDIR/python"
     #        chgrp -R ${GROUP} "$VISITDIR/python"
     #    fi
-    
+    #
     #fi
 
     cd "$START_DIR"
