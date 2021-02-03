@@ -32,7 +32,6 @@ function bv_llvm_info
     export LLVM_MD5_CHECKSUM="c88c98709300ce2c285391f387fecce0"
     export LLVM_SHA256_CHECKSUM="b6d6c324f9c71494c0ccaf3dac1f16236d970002b42bb24a6c9e1634f7d0f4e2"
 
-
     export BV_CLANG_URL=${BV_LLVM_URL}
     export BV_CLANG_FILE="cfe-${BV_LLVM_VERSION}.src.tar.xz"
     export BV_CLANG_BUILD_DIR="cfe-${BV_LLVM_VERSION}.src"
@@ -76,6 +75,7 @@ function bv_llvm_initialize_vars
     else
         LLVM_LIB="${LLVM_LIB_DIR}/libLLVM.${SO_EXT}"
     fi
+    # needed for clang and pyside
     export LLVM_INSTALL_DIR="${VISIT_LLVM_DIR}"
 }
 
@@ -260,7 +260,6 @@ function build_llvm
     echo "\"${CMAKE_COMMAND}\"" ${llvm_opts} ../${BV_LLVM_SRC_DIR} > bv_run_cmake.sh
     cat bv_run_cmake.sh
     issue_command bash bv_run_cmake.sh || error "LLVM configuration failed"
-
 
     info "Building LLVM . . ."
     ${MAKE} ${MAKE_OPT_FLAGS}

@@ -23,7 +23,7 @@ function bv_osmesa_depends_on
 function bv_osmesa_info
 {
     export OSMESA_VERSION=${OSMESA_VERSION:-"17.3.9"}
-    export OSMESA_FILE=${OSMESA_FILE:-"mesa-$OSMESA_VERSION.tar.gz"}
+    export OSMESA_FILE=${OSMESA_FILE:-"mesa-$OSMESA_VERSION.tar.xz"}
     export OSMESA_URL=${OSMESA_URL:-"https://archive.mesa3d.org/older-versions/17.x/"}
     export OSMESA_BUILD_DIR=${OSMESA_BUILD_DIR:-"mesa-$OSMESA_VERSION"}
     export OSMESA_MD5_CHECKSUM="b8042f9970ea70a36da1ee1fae27c448"
@@ -112,26 +112,27 @@ function apply_osmesa_patch
 {
     patch -p0 << \EOF
 diff -c configure.ac.orig configure.ac
-*** configure.ac.orig	Thu Oct 10 15:44:18 2019
---- configure.ac	Thu Oct 10 15:44:26 2019
+*** configure.ac.orig   Mon Jul 13 09:47:20 2020
+--- configure.ac        Mon Jul 13 09:50:37 2020
 ***************
-*** 2690,2696 ****
+*** 2653,2659 ****
+      dnl ourselves.
       dnl (See https://llvm.org/bugs/show_bug.cgi?id=6823)
-      if test "x$enable_llvm_shared_libs" = xyes; then
-          dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
-!         LLVM_SO_NAME=LLVM-`$LLVM_CONFIG --version`
-          AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
-  
-          if test "x$llvm_have_one_so" = xyes; then
---- 2690,2696 ----
+      dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
+!     LLVM_SO_NAME=LLVM-`$LLVM_CONFIG --version`
+      AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
+
+      if test "x$llvm_have_one_so" = xyes; then
+--- 2653,2659 ----
+      dnl ourselves.
       dnl (See https://llvm.org/bugs/show_bug.cgi?id=6823)
-      if test "x$enable_llvm_shared_libs" = xyes; then
-          dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
-!         LLVM_SO_NAME=LLVM-$LLVM_VERSION
-          AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
-  
-          if test "x$llvm_have_one_so" = xyes; then
+      dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
+!     LLVM_SO_NAME=LLVM-$LLVM_VERSION
+      AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
+
+      if test "x$llvm_have_one_so" = xyes; then
 EOF
+
     if [[ $? != 0 ]] ; then
         warn "OSMesa patch failed."
         return 1
@@ -202,6 +203,7 @@ function build_osmesa
         --with-platforms= \
         --with-gallium-drivers=swrast,swr \
         --enable-gallium-osmesa $OSMESA_STATIC_DYNAMIC  $OSMESA_DEBUG_BUILD \
+        --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
@@ -223,6 +225,7 @@ function build_osmesa
         --with-platforms= \
         --with-gallium-drivers=swrast,swr \
         --enable-gallium-osmesa $OSMESA_STATIC_DYNAMIC $OSMESA_DEBUG_BUILD \
+        --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
 
     if [[ $? != 0 ]] ; then
