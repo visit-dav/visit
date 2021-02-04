@@ -24,13 +24,11 @@
 
 #define BP_PLUGIN_INFO(  msg  )                                     \
 {                                                                   \
-    std::cout << msg << std::endl;                                            \
     CONDUIT_INFO( msg );                                            \
 }                                                                   \
 
 #define BP_PLUGIN_WARNING(  msg  )                                  \
 {                                                                   \
-    std::cout << msg << std::endl;                                            \
     CONDUIT_INFO( "[blueprint warning] " << msg );                  \
 }                                                                   \
 
@@ -39,7 +37,6 @@
     std::ostringstream bp_err_oss;                                  \
     bp_err_oss << msg << std::endl;                                 \
     debug1 << "[blueprint plugin error] " << bp_err_oss.str();      \
-    std::cout << bp_err_oss.str() << std::endl;                                            \
     EXCEPTION1( etype  , bp_err_oss.str() );                        \
 }                                                                   \
 

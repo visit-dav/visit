@@ -16,6 +16,7 @@
 
 #include "avtMaterial.h"
 #include "avtMixedVariable.h"
+#include "avtVariableCache.h"
 
 #include "DebugStream.h"
 #include "StringHelpers.h"
@@ -39,9 +40,6 @@
 #include "conduit_relay.hpp"
 #include "conduit_relay_io_hdf5.hpp"
 #include "conduit_blueprint.hpp"
-#include "conduit_blueprint_util_mesh.hpp"
-
-
 
 //-----------------------------------------------------------------------------
 // mfem includes
@@ -633,6 +631,7 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
         out.reset();
     }
 
+    // provide material_map
     out["matnames"] = n_mat_names;
 }
 
@@ -868,17 +867,30 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
         const Node &n_mset = msets_itr.next();
         string mset_name = msets_itr.name();
 
-
-        // the material names are in the "materials"
-        if (!n_mset.has_child("materials"))
+        // the material names are in the "materials" or "material_map" index
+        // entries
+        if( !n_mset.has_child("materials") && 
+            !n_mset.has_child("material_map") )
         {
-             // TODO ERROR!
+            BP_PLUGIN_INFO("mesh: "
+                           << mesh_name
+                           << " matset index: "
+                           << mset_name
+                           << " missing `material_map` or `materials`,"
+                           << " skipping matset" );
+            return;
         }
 
         // we also need the associated topo
         if (!n_mset.has_child("topology"))
         {
-             // TODO ERROR!
+            BP_PLUGIN_INFO("mesh: "
+                           << mesh_name
+                           << " matset index: "
+                           << mset_name
+                           << " missing `topology`,"
+                           << " skipping matset" );
+            return;
         }
 
         std::string topo_name = n_mset["topology"].as_string();
@@ -889,24 +901,69 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
         BP_PLUGIN_INFO("adding material set "
                         <<  mesh_topo_name << " " <<  mesh_matset_name);
 
-        std::vector<string>  matnames;
-
-        BP_PLUGIN_INFO("material names " <<   n_mset["materials"].to_yaml());
-
-        NodeConstIterator mnames_itr = n_mset["materials"].children();
-        
-        while (mnames_itr.has_next())
+        if ( n_mset.has_child("material_map") )
         {
-            mnames_itr.next();
-            matnames.push_back(mnames_itr.name());
-            // cache mat names as list of strings
-            m_matset_info[mesh_matset_name]["matnames"].append() = mnames_itr.name();
+            BP_PLUGIN_INFO("material map " << n_mset["material_map"].to_yaml());
+        
+            NodeConstIterator itr = n_mset["material_map"].children();
+
+            // construct material map in matset order
+            // NOTE: This assumes ids are [0,N)
+            Node &mid_to_name = m_matset_info[mesh_matset_name]["material_ids_to_name"];
+
+            while (itr.has_next())
+            {
+                const Node &curr_mat = itr.next();
+                mid_to_name.append();
+            }
+
+            itr.to_front();
+            while (itr.has_next())
+            {
+                const Node &curr_mat = itr.next();
+                int32 mat_id = curr_mat.to_int32();
+                mid_to_name[mat_id] = itr.name();
+            }
+
+            // now create a material mapp where the child order matches
+            // the id order
+            itr = mid_to_name.children();
+            while (itr.has_next())
+            {
+                itr.next();
+                std::string mat_name = itr.node().as_string();
+                int mat_id = itr.index();
+                m_matset_info[mesh_matset_name]["matnames"][mat_name] = mat_id;
+            }
+
         }
+        else // "materials" case, old path
+        {
+            BP_PLUGIN_INFO("material names " << n_mset["materials"].to_yaml());
+
+            NodeConstIterator itr = n_mset["materials"].children();
+            while (itr.has_next())
+            {
+                itr.next();
+                int32 mat_id = itr.index();
+                std::string mat_name = itr.name();
+                // cache mat names and idx (implied order)
+                m_matset_info[mesh_matset_name]["matnames"][mat_name] = mat_id;
+            }
+        }
+
+
+        // get matnames vec in sorted order.
+        std::vector<string>  matnames = m_matset_info[mesh_matset_name]["matnames"].child_names();
 
         m_matset_info[mesh_matset_name]["full_mesh_name"] = mesh_topo_name;
         m_matset_info[mesh_matset_name]["mesh_name"] = mesh_name;
         m_matset_info[mesh_matset_name]["topo_name"] = topo_name;
         m_matset_info[mesh_matset_name]["matset_name"] = mset_name;
+        
+        BP_PLUGIN_INFO("Matset Info for "
+                       << mesh_matset_name
+                       << " : " << m_matset_info[mesh_matset_name].to_yaml())
 
         avtMaterialMetaData *mmd = new avtMaterialMetaData(mesh_matset_name,
                                                            mesh_topo_name,
@@ -1109,8 +1166,8 @@ avtBlueprintFileFormat::ReadRootFile()
         if (PAR_Rank() == 0)
 #endif
         {
-
-            char buff[5] = {0,0,0,0,0};
+            // we will read 5 chars, and keep this str null termed
+            char buff[6] = {0,0,0,0,0,0};
 
             // heuristic, if json, we expect to see "{" in the first 5 chars of the file.
             ifstream ifs;
@@ -1237,7 +1294,6 @@ avtBlueprintFileFormat::ReadRootFile()
                                  "Failed to find a valid Mesh Blueprint Index\n"
                                  << n_verify_info.to_json());
         }
-
 }
 
 // ****************************************************************************
@@ -1355,7 +1411,6 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         ReadRootFile();
 
-        //std::cout << "Root file contents" << endl << m_root_node.to_json() << std::endl;
         BP_PLUGIN_INFO("Root file contents" << endl << m_root_node.to_json());
 
         m_protocol = "hdf5";
@@ -1711,7 +1766,6 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             return NULL;
         }
 
-
         Node verify_info;
         if(!blueprint::mesh::verify(n_mesh,verify_info))
         {
@@ -1739,8 +1793,71 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         delete gf;
         delete mesh;
     }
-    
-    // TODO Support mixed vars, cache as them a side effect like Silo?
+
+    // check to see if we have matset_values multi-material data
+    // if so, provide them as AUXILIARY_DATA_MIXED_VARIABLE
+    if(n_field.has_child("matset"))
+    {
+        // get mesh and topo for var:
+        //  - abs_varname_str
+        
+        // replace colons, etc
+        abs_varname_str = sanitize_var_name(abs_varname_str);
+        string abs_meshname = metadata->MeshForVar(abs_varname_str);
+
+        BP_PLUGIN_INFO("field " << abs_varname << " is defined on mesh " << abs_meshname);
+
+        string mesh_name;
+        string topo_name;
+        FetchMeshAndTopoNames(std::string(abs_meshname),
+                              mesh_name,
+                              topo_name);
+
+        std::string matset_name = n_field["matset"].as_string();
+        std::string mat_name = mesh_name + "_" + topo_name + "_" + matset_name;
+
+        BP_PLUGIN_INFO("mesh name: " << mesh_name);
+        BP_PLUGIN_INFO("topo name: " << topo_name);
+        BP_PLUGIN_INFO("materials name: " << mat_name);
+
+        // get the matset
+        // do the xform on the matset and the matset_values
+        Node n_matset;
+        ReadBlueprintMatset(domain,
+                            mat_name,
+                            n_matset);
+
+        Node n_silo_matset;
+        conduit::blueprint::mesh::field::to_silo(n_field,
+                                                 n_matset,
+                                                 n_silo_matset);
+
+
+        int mix_len  = (int) n_silo_matset["field_mixvar_values"].dtype().number_of_elements();
+
+        float *mixvals_ptr = NULL;
+        if(n_silo_matset["field_mixvar_values"].dtype().is_float())
+        {
+            mixvals_ptr = n_silo_matset["field_mixvar_values"].as_float_ptr();
+        }
+        else
+        {
+            n_silo_matset["field_mixvar_values"].to_float_array(
+                                        n_silo_matset["field_mixvar_values_float"]);
+            mixvals_ptr = n_silo_matset["field_mixvar_values_float"].as_float_ptr();
+        }
+
+
+        avtMixedVariable *mvar = new avtMixedVariable(mixvals_ptr,
+                                                      mix_len,
+                                                      abs_varname_str);
+        void_ref_ptr mvar_ref = void_ref_ptr(mvar, avtMixedVariable::Destruct);
+        cache->CacheVoidRef(abs_varname_str.c_str(),
+                            AUXILIARY_DATA_MIXED_VARIABLE,
+                            timestep,
+                            domain,
+                            mvar_ref);
+    }
 
     return res;
 }
@@ -1847,34 +1964,29 @@ avtBlueprintFileFormat::GetMaterial(int domain,
     ReadBlueprintMatset(domain,
                         mat_name,
                         n_matset);
-    std::vector<std::string> matnames;
 
-    std::cout << "BP MATSET" << std::endl;
-    n_matset.print();
-
-    NodeConstIterator itr = n_matset["matnames"].children();
-    // ids are 1-based, we need to add a dummy entry
-    // to keep avtMaterial healthy. 
-    matnames.push_back("EMPTY");
-    while(itr.has_next())
-    {
-        matnames.push_back(itr.next().as_string());
-    }
+    std::vector<std::string> matnames = n_matset["matnames"].child_names();
 
     // use to_silo util to convert from bp to the mixslot rep
     // that silo and visit use
 
     Node n_silo_matset;
-    conduit::blueprint::util::mesh::matset::to_silo(n_matset,
-                                                    n_silo_matset);
-
-    std::cout << "SILO MATSET" << std::endl;
-    n_silo_matset.print();;
+    conduit::blueprint::mesh::matset::to_silo(n_matset,
+                                              n_silo_matset);
 
     int nmats = (int) matnames.size();
-
     int nzones = (int) n_silo_matset["matlist"].dtype().number_of_elements();
     int *matlist = n_silo_matset["matlist"].as_int_ptr();
+
+    // we need to adjust the matlist.
+    for(int i=0;i<nzones;i++)
+    {
+        if(matlist[i] > 0 )
+        {
+            matlist[i]--;
+        }
+    }
+
     int mix_len  = (int) n_silo_matset["mix_mat"].dtype().number_of_elements();
     int *mix_mat  = n_silo_matset["mix_mat"].as_int_ptr();
     int *mix_next = n_silo_matset["mix_next"].as_int_ptr();
@@ -1912,48 +2024,6 @@ avtBlueprintFileFormat::GetMaterial(int domain,
                                        mix_vf    // mix_vf array
                                        );
 
-    // int dims[3] = {1,1,1}, ndims = 1;
-    // // Structured mesh case
-    // ndims = MESH DIMENSION, 2 OR 3;
-    // dims[0] = NUMBER OF ZONES IN X DIMENSION;
-    // dims[1] = NUMBER OF ZONES IN Y DIMENSION;
-    // dims[2] = NUMBER OF ZONES IN Z DIMENSION, OR 1 IF 2D;
-    //
-    // // Unstructured mesh case
-    // dims[0] = NUMBER OF ZONES IN THE MESH
-    // ndims = 1;
-    // // Read the number of materials from the file. This
-    // // must have already been read from the file when
-    // // PopulateDatabaseMetaData was called.
-    // int nmats = NUMBER OF MATERIALS;
-    // // The matnos array contains the list of numbers that
-    // // are associated with particular materials. For example,
-    // // matnos[0] is the number that will be associated with
-    // // the first material and any time it is seen in the
-    // // matlist array, that number should be taken to mean
-    // // material 1. The numbers in the matnos array must
-    // // all be greater than or equal to 1.
-    // int *matnos = new int[nmats];
-    // READ nmats INTEGER VALUES INTO THE matnos ARRAY.
-    // // Read the material names from your file format or
-    // Listing 4-39: matclean.C: C++ Language example for returning material data.
-    // Creating a database reader plugin
-    // Advanced topics 139
-    // // make up names for the materials. Use the same
-    // // approach as when you created material names in
-    // // the PopulateDatabaseMetaData method.
-    // char **names = new char *[nmats];
-    // READ MATERIAL NAMES FROM YOUR FILE FORMAT UNTIL EACH
-    // ELEMENT OF THE names ARRAY POINTS TO ITS OWN STRING.
-    // // Read the matlist array, which tells what the material
-    // // is for each zone in the mesh.
-    // int nzones = dims[0] * dims[1] * dims[2];
-    // int *matlist = new int[nzones];
-    // READ nzones INTEGERS INTO THE matlist array.
-    // // Optionally create mix_mat, mix_next, mix_zone, mix_vf
-    // // arrays and read their contents from the file format.
-    // // Use the information to create an avtMaterial object.
-    
     return mat;
 }
 

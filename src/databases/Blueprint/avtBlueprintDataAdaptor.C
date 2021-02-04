@@ -775,7 +775,11 @@ ElementTypeToShapeName(Element::Type element_type)
       case Element::QUADRILATERAL:  return "quad";
       case Element::TETRAHEDRON:    return "tet";
       case Element::HEXAHEDRON:     return "hex";
+      // not yet supported:
+      case Element::WEDGE:       return "unknown";
+      
    }
+   
 
    return "unknown";
 }
