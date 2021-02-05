@@ -59,6 +59,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The MFEM reader was modified so it provides VisIt with original cell numbers that allow VisIt to successfully eliminate mesh lines that were not part of the original high order mesh.</li>
   <li>The Rect reader was enabled as an optional plugin on Windows.</li>
   <li>The ZipWrapper reader was enabled on Windows.</li>
+  <li>Upgraded the CGNS library used by the CGNS reader from 3.2.1 to 4.1.2. The new CGNS library includes a fix for the handling of RIND zones in structured grids, so the results may change when viewing that type of data.</li>
 </ul>
 
 <a name="Plot_changes"></a>
