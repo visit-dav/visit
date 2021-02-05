@@ -208,8 +208,8 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #
 #   Eric Brugger, Wed Feb  3 16:49:58 PST 2021
 #   Added code to set the LD_LIBRARY_PATH on trinity to include the
-#   directory with the standard C++ library of the compiler used to
-#   compile visit.
+#   directory with the standard C++ library used by the compiler used
+#   to compile visit.
 #
 ###############################################################################
 
@@ -265,8 +265,8 @@ class LLNLLauncher(MainLauncher):
 
         #
         # Set the LD_LIBRARY_PATH on trinity to include the directory
-        # with the standard C++ library of the compiler used to compile
-        # visit.
+        # with the standard C++ library used by the compiler used to
+        # compile visit.
         #
         if self.sectorname() == "tr-fe" or self.sectorname() == "nid":
             ld_library_path = GETENV("LD_LIBRARY_PATH")
