@@ -42,7 +42,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Updated the documentation for the Smooth Operator.</li>
   <li>Enhanced boxlib readers to always serve up to VisIt double precision data.</li>
   <li>The -disable-ghosts-for-t-intersections flag has been reverted back to -enable-ghosts-for-t-intersections, and the creation of ghosts for t-intersections will now be off by default. This will improve performance for the default situation where ghost t-intersections are not needed or desired.</li>
-  <li>Updated the job launching on Trinity so that it is no longer necessary to load the module with the compiler used to build VisIt when using VisIt.</li>
+  <li>Updated the job launching on Trinity so that the VisIt CLI could be launched from a batch job without having to load the module of the compiler used to build VisIt.</li>
 </ul>
 
 <a name="Dev_changes"></a>
