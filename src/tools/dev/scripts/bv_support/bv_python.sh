@@ -461,12 +461,52 @@ EOF
     return 0
 }
 
+function apply_python_macos_patch
+{
+    info "Patching Python: fixes importing numpy in CLI error"
+    patch -f -p0 << \EOF
+diff -c Lib/ctypes/__init__.py.orig Lib/ctypes/__init__.py
+*** Lib/ctypes/__init__.py.orig	2021-02-09 11:21:07.991721280 -0800
+--- Lib/ctypes/__init__.py	2021-02-09 11:21:26.203491555 -0800
+***************
+*** 273,279 ****
+      # function is needed for the unittests on Win64 to succeed.  This MAY
+      # be a compiler bug, since the problem occurs only when _ctypes is
+      # compiled with the MS SDK compiler.  Or an uninitialized variable?
+!     CFUNCTYPE(c_int)(lambda: None)
+  
+  try:
+      from _ctypes import set_conversion_mode
+--- 273,279 ----
+      # function is needed for the unittests on Win64 to succeed.  This MAY
+      # be a compiler bug, since the problem occurs only when _ctypes is
+      # compiled with the MS SDK compiler.  Or an uninitialized variable?
+!     # CFUNCTYPE(c_int)(lambda: None)
+  
+  try:
+      from _ctypes import set_conversion_mode
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Python patch for numpy CLI issue on macOS failed."
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_python_patch
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
         VER=$(uname -r)
         if [[ ${VER%%.*} == 8 ]] ; then
             apply_python_osx104_patch
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
+        fi
+
+        if [[ ${PYTHON_VERSION} == 2.7.14 ]] ; then
+            apply_python_macos_patch
             if [[ $? != 0 ]] ; then
                 return 1
             fi
