@@ -30,14 +30,12 @@ function bv_conduit_depends_on
 
 function bv_conduit_info
 {
-    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.7.0-pre-ba073cb9"}
+    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.7.0"}
     export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}-src-with-blt.tar.gz"}
     export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.7.0"}
     export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
-    # For now since build_visit relies on a version tag in the third-party repo.
-    # The value for CONDUIT_URL can be removed after VisIt 3.2.0 comes out.
-    #export CONDUIT_MD5_CHECKSUM="05993a69376ca84721f3adeb6abbfa02"
-    #export CONDUIT_SHA256_CHECKSUM="6e0b3f7817455da1c892d602e0979aceea5c8389dfb9568ff56294083311fa77"
+    export CONDUIT_MD5_CHECKSUM="2f4188db6964a3ab51304f96be3b3253"
+    export CONDUIT_SHA256_CHECKSUM="ecaa9668ebec5d4efad19b104d654a587c0adbd5f502128f89601408cb4d7d0c"
 }
 
 function bv_conduit_print
