@@ -42,6 +42,9 @@ if (WIN32)
         # use full path here, instead of just lib file.
         #set(ZLIB_LIBRARY "${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
         set(ZLIB_LIBRARY "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "full path to zlib library" FORCE)
+        message(STATUS "ZLIB_LIBRARY = ${ZLIB_LIBRARY}.")
+    else ()
+        message(WARNING "ZLIB_LIBRARY not found.  VISIT_ZLIB_DIR = ${VISIT_ZLIB_DIR}, ZLIB_LIB_NAME = ${ZLIB_LIB_NAME}.")
     endif ()
 else (WIN32)
     # Have we told VisIt where to look for zlib?

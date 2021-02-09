@@ -1246,6 +1246,11 @@ class VisItCinema(object):
     # Programmer: Brad Whitlock
     # Date:       Mon Sep 11 17:33:38 PDT 2017
     #
+    # Modifications:
+    #   Kathleen Biagas, Thu Jan 28 11:35:47 PST 2021
+    #   Converted the / (division) operator to // (floor division) in a
+    #   calculation.
+    #
     ###########################################################################
 
     def CreatePhiThetaDatabase(self):
@@ -1319,7 +1324,7 @@ class VisItCinema(object):
             f.write('  "name_pattern":"phi_{phi}/theta_{theta}/time_{time}.%s",\n' % self.format)
             f.write('  "arguments":{\n')
             f.write('    "theta": {\n')
-            f.write('       "default":%d,\n' % ideg(theta[self.theta/2]))
+            f.write('       "default":%d,\n' % ideg(theta[self.theta//2]))
             f.write('       "label":"Theta",\n')
             f.write('       "type":"range",\n')
             f.write('       "values":[')

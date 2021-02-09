@@ -25,39 +25,15 @@ def ExtractIterablesFromString(s,pair='()',rnd=4):
                 retval.append([round(float(x),rnd) for x in r.split(',')])
     return retval
 
-def HasEigval(vals, cval, rnd=4):
-    vrnd = [round(float(x),rnd) for x in vals]
-    crnd = round(float(cval), rnd)
-    for i in range(len(vrnd)):
-        if vrnd[i] == crnd:
-           vals.remove(vals[i])
-           return True
-    return False
-
-#
-# Checks if a given vector, cvec, is amoung a list of vectors, vecs,
-# within the specified rounding tolerance, rnd. If so, removes the
-# matching entry and returns True.
-#
-def HasEigvec(vecs, cvec, rnd=4):
-    for v in vecs:
-        r = []
-        for i in range(len(v)):
-            if v[i] != 0:
-                ratio = float(cvec[i]) / float(v[i]);
-                r.append(round(ratio, rnd))
-        if (max(r) - min(r)) <= pow(10,-rnd+1):
-            vecs.remove(v)
-            return True
-    return False
-
-def ValuesAgree(vec, val, rnd=4):
-    valrnd = round(float(val), rnd)
-    vecrnd = [round(float(x), rnd) for x in vec]
-    for i in range(len(vecrnd)):
-        if vecrnd[i] != valrnd:
-            return False
-    return True
+def EqualEigVecs(a,b):
+    r = []
+    for i in range(len(b)):
+        if b[i] != 0:
+            r.append(float(a[i])/float(b[i]))
+    if min(r) == 0:
+        return max(r) < pow(10,-Prec+1)
+    else:
+        return abs((max(r)/min(r))-1) < pow(10,-Prec+1)
 
 #
 # Creates a group of related expressions; 9 constant scalar expressions and
@@ -79,7 +55,7 @@ def CreateConstantTensorExpr(name, meshName, constType, vals):
 #
 # Set precision for rounding operations
 #
-Prec = 3
+Prec = 5
 
 #  Since we use the expression system to construct mesh-wide constant values,
 #  all we need as far as a database is a simple, small mesh. Maybe for both
@@ -97,7 +73,8 @@ AddPlot("Pseudocolor", "max_shear_2d/result")
 DrawPlots()
 Query("MinMax")
 q = GetQueryOutputObject()
-AssertTrue("Maximum Shear 2D", ValuesAgree((q['min'], q['max']), 46.098, Prec))
+TestValueEQ("Maximum Shear 2D", q['min'], 46.09772, Prec)
+TestValueEQ("Maximum Shear 2D", q['max'], 46.09772, Prec)
 DeleteAllPlots()
 
 TestSection("3D Tensor Maximum Shear")
@@ -110,7 +87,8 @@ AddPlot("Pseudocolor", "max_shear/result")
 DrawPlots()
 Query("MinMax")
 q = GetQueryOutputObject()
-AssertTrue("Maximum Shear 3D", ValuesAgree((q['min'], q['max']), 12.5, Prec))
+TestValueEQ("Maximum Shear 3D", q['min'], 12.5, Prec)
+TestValueEQ("Maximum Shear 3D", q['max'], 12.5, Prec)
 DeleteAllPlots()
 
 TestSection("2D Effective Tensor")
@@ -123,7 +101,8 @@ AddPlot("Pseudocolor", "eff_tensor_2d/result")
 DrawPlots()
 Query("MinMax")
 q = GetQueryOutputObject()
-AssertTrue("2D Effective Tensor", ValuesAgree((q['min'], q['max']), 81.240, Prec))
+TestValueEQ("2D Effective Tensor", q['min'], 81.24039, Prec)
+TestValueEQ("2D Effective Tensor", q['max'], 81.24039, Prec)
 DeleteAllPlots()
 
 TestSection("3D Effective Tensor")
@@ -136,7 +115,8 @@ AddPlot("Pseudocolor", "eff_tensor/result")
 DrawPlots()
 Query("MinMax")
 q = GetQueryOutputObject()
-AssertTrue("Effective Tensor", ValuesAgree((q['min'], q['max']), 13.077, Prec))
+TestValueEQ("Effective Tensor", q['min'], 13.0767, Prec)
+TestValueEQ("Effective Tensor", q['max'], 13.0767, Prec)
 DeleteAllPlots()
 
 TestSection("3D, Symmetric Eigenvalues and Eigenvectors")
@@ -149,9 +129,9 @@ AddPlot("Vector", "eigvals_symm2/result")
 DrawPlots()
 p = PickByNode(0,('eigvals_symm2/result',))
 eigvals = list(p['eigvals_symm2/result'])
-AssertTrue("First Eigenvalue of 2", HasEigval(eigvals, 2, Prec))
-AssertTrue("Second Eigenvalue of 2+sqrt(2)", HasEigval(eigvals, 2+math.sqrt(2), Prec))
-AssertTrue("Third Eigenvalue of 2-sqrt(2)",  HasEigval(eigvals, 2-math.sqrt(2), Prec))
+TestValueIN("First Eigenvalue of 2", eigvals, 2, Prec)
+TestValueIN("Second Eigenvalue of 2+sqrt(2)", eigvals, 2+math.sqrt(2), Prec)
+TestValueIN("Third Eigenvalue of 2-sqrt(2)",  eigvals, 2-math.sqrt(2), Prec)
 DeleteAllPlots()
 DefineTensorExpression("eigvals_symm2/result2", "transpose(eigenvector(<eigvals_symm2/tensor>))")
 AddPlot("Tensor", "eigvals_symm2/result2")
@@ -159,9 +139,9 @@ DrawPlots()
 PickByNode(0)
 s = GetPickOutput()
 vecs = ExtractIterablesFromString(s, '()', Prec)
-AssertTrue("First Eigenvector of (1,0,-1)", HasEigvec(vecs, (1,0,-1), Prec))
-AssertTrue("Second Eigenvector of (1,-sqrt(2),1)", HasEigvec(vecs, (1,-math.sqrt(2),1), Prec))
-AssertTrue("Third Eigenvector of (1,sqrt(2),1)", HasEigvec(vecs, (1,math.sqrt(2),1), Prec))
+TestValueIN("First Eigenvector of (1,0,-1)", vecs, (1,0,-1), Prec, EqualEigVecs)
+TestValueIN("Second Eigenvector of (1,-sqrt(2),1)", vecs, (1,-math.sqrt(2),1), Prec, EqualEigVecs)
+TestValueIN("Third Eigenvector of (1,sqrt(2),1)", vecs, (1,math.sqrt(2),1), Prec, EqualEigVecs)
 
 TestSection("3D, Symmetric Eigenvalues and Eigenvectors with Repeated values")
 CreateConstantTensorExpr("eigvals_symm", meshName, "nodal",\
@@ -173,9 +153,10 @@ AddPlot("Vector", "eigvals_symm/result")
 DrawPlots()
 p = PickByNode(0)
 eigvals = list(p['eigvals_symm/result'])
-AssertTrue("First Eigenvalue of -1", HasEigval(eigvals, -1, Prec))
-AssertTrue("Second Eigenvalue of -1", HasEigval(eigvals, -1, Prec))
-AssertTrue("Third Eigenvalue of 8", HasEigval(eigvals, 8, Prec))
+TestValueIN("First Eigenvalue of -1", eigvals, -1, Prec)
+eigvals.remove(-1)
+TestValueIN("Second Eigenvalue of -1", eigvals, -1, Prec)
+TestValueIN("Third Eigenvalue of 8", eigvals, 8, Prec)
 DeleteAllPlots()
 DefineTensorExpression("eigvals_symm/result2", "transpose(eigenvector(<eigvals_symm/tensor>))")
 AddPlot("Tensor", "eigvals_symm/result2")
@@ -183,9 +164,9 @@ DrawPlots()
 PickByNode(0)
 s = GetPickOutput()
 vecs = ExtractIterablesFromString(s, '()', Prec+1)
-AssertTrue("First Eigenvector of (1,-2,0)", HasEigvec(vecs, (1,-2,0), Prec))
-AssertTrue("Second Eigenvector of (4,2,-5)", HasEigvec(vecs, (4,2,-5), Prec))
-AssertTrue("Third Eigenvector of (2,1,2)", HasEigvec(vecs, (2,1,2), Prec))
+TestValueIN("First Eigenvector of (1,-2,0)", vecs, (1,-2,0), Prec, EqualEigVecs)
+TestValueIN("Second Eigenvector of (4,2,-5)", vecs, (4,2,-5), Prec, EqualEigVecs)
+TestValueIN("Third Eigenvector of (2,1,2)", vecs, (2,1,2), Prec, EqualEigVecs)
 DeleteAllPlots()
 
 # Confirm principal_tensor function gives same result as above
@@ -195,9 +176,10 @@ AddPlot("Vector", "pcomps_symm/result")
 DrawPlots()
 p = PickByNode(0)
 pcomps = list(p['pcomps_symm/result'])
-AssertTrue("First principal component is first eigenvalue", HasEigval(pcomps, -1, Prec))
-AssertTrue("Second principal component is second eigenvalue", HasEigval(pcomps, -1, Prec))
-AssertTrue("Third principal component is third eigenvalue", HasEigval(pcomps, 8, Prec))
+TestValueIN("First principal component is first eigenvalue", pcomps, -1, Prec)
+pcomps.remove(-1) # elim the first of the expected two -1 eigvals
+TestValueIN("Second principal component is second eigenvalue", pcomps, -1, Prec)
+TestValueIN("Third principal component is third eigenvalue", pcomps, 8, Prec)
 
 TestSection("2D, Symmetric Eigenvalues and Eigenvectors")
 CreateConstantTensorExpr("eigvals_symm_2d", meshName, "nodal",\
@@ -209,8 +191,8 @@ AddPlot("Vector", "eigvals_symm_2d/result")
 DrawPlots()
 p = PickByNode(0,('eigvals_symm_2d/result',))
 eigvals = list(p['eigvals_symm_2d/result'])
-AssertTrue("First Eigenvalue of -1", HasEigval(eigvals, -1, Prec))
-AssertTrue("Second Eigenvalue of 5", HasEigval(eigvals, 5, Prec))
+TestValueIN("First Eigenvalue of -1", eigvals, -1, Prec)
+TestValueIN("Second Eigenvalue of 5", eigvals, 5, Prec)
 DeleteAllPlots()
 DefineTensorExpression("eigvals_symm_2d/result2", "transpose(eigenvector(<eigvals_symm_2d/tensor>))")
 AddPlot("Tensor", "eigvals_symm_2d/result2")
@@ -219,8 +201,8 @@ PickByNode(0)
 s = GetPickOutput()
 vecs = ExtractIterablesFromString(s, '()', Prec)
 vecs.remove([0,0,1]) # we have to take out the Z eigenvector
-AssertTrue("First Eigenvector of (1,-1)", HasEigvec(vecs, (1,-1), Prec))
-AssertTrue("Second Eigenvector of (1,1)", HasEigvec(vecs, (1,1), Prec))
+TestValueIN("First Eigenvector of (1,-1)", vecs, (1,-1), Prec, EqualEigVecs)
+TestValueIN("Second Eigenvector of (1,1)", vecs, (1,1), Prec, EqualEigVecs)
 
 #
 # Test a case where eigenvalues are complex (e.g. imaginary)
@@ -237,9 +219,9 @@ AddPlot("Vector", "eigvals_complex/result")
 DrawPlots()
 p = PickByNode(0)
 eigvals = list(p['eigvals_complex/result'])
-AssertTrue("First Eigenvalue of 2", HasEigval(eigvals, 2, Prec))
-AssertTrue("Second Eigenvalue of (4+3i)/5", HasEigval(eigvals, float(4+3)/5.0, Prec))
-AssertTrue("Third Eigenvalue of (4-3i)/5", HasEigval(eigvals, float(4-3)/5.0, Prec))
+TestValueIN("First Eigenvalue of 2", eigvals, 2, Prec)
+TestValueIN("Second Eigenvalue of (4+3i)/5", eigvals, float(4+3)/5.0, Prec)
+TestValueIN("Third Eigenvalue of (4-3i)/5", eigvals, float(4-3)/5.0, Prec)
 DeleteAllPlots()
 DefineTensorExpression("eigvals_complex/result2", "transpose(eigenvector(<eigvals_complex/tensor>))")
 AddPlot("Tensor", "eigvals_complex/result2")
@@ -247,7 +229,7 @@ DrawPlots()
 PickByNode(0)
 s = GetPickOutput()
 vecs = ExtractIterablesFromString(s, '()', Prec)
-AssertTrue("First Eigenvector of (0,0,1)", HasEigvec(vecs, (0,0,1), Prec))
+TestValueIN("First Eigenvector of (0,0,1)", vecs, (0,0,1), Prec, EqualEigVecs)
 DeleteAllPlots()
 
 # Re-use eigvals_symm here
@@ -274,6 +256,6 @@ PickByNode(0)
 s = GetPickOutput()
 dev2_vec = ExtractIterablesFromString(s, '()', Prec)
 DeleteAllPlots()
-AssertTrue("Principal deviatoric and principal-tr()/3 agree", dev_vec == dev2_vec)
+TestValueEQ("Principal deviatoric and principal-tr()/3 agree", dev_vec[0], dev2_vec[0])
 
 Exit()

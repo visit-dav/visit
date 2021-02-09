@@ -45,10 +45,15 @@
 #============================================================================
 
 # Finding NumPy involves calling the Python interpreter
-if(NumPy_FIND_REQUIRED)
-    find_package(PythonInterp REQUIRED)
-else()
-    find_package(PythonInterp)
+
+#if PYTHON already found, don't try again, it can cause problems
+#        (some PYTHON vars get unset)
+if(NOT PYTHON_FOUND)
+    if(NumPy_FIND_REQUIRED)
+        find_package(PythonInterp REQUIRED)
+    else()
+        find_package(PythonInterp)
+    endif()
 endif()
 
 if(PYTHONINTERP_FOUND)

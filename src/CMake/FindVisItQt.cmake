@@ -276,15 +276,18 @@ if(NOT VISIT_QT_SKIP_INSTALL)
 
   if(WIN32)
       # Need the ssl dll's too.
-      file(COPY ${VISIT_QT_DIR}/bin/libeay32.dll
-                ${VISIT_QT_DIR}/bin/ssleay32.dll
+      if (NOT OPENSSL_ROOT_DIR)
+        set(OPENSSL_ROOT_DIR "${VISIT_QT_DIR}")
+      endif ()
+      file(COPY ${OPENSSL_ROOT_DIR}/bin/libeay32.dll
+                ${OPENSSL_ROOT_DIR}/bin/ssleay32.dll
            DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty
            FILE_PERMISSIONS OWNER_READ OWNER_WRITE
                             GROUP_READ GROUP_WRITE
                             WORLD_READ
       )
-      install(FILES ${VISIT_QT_DIR}/bin/libeay32.dll
-                    ${VISIT_QT_DIR}/bin/ssleay32.dll
+      install(FILES ${OPENSSL_ROOT_DIR}/bin/libeay32.dll
+                    ${OPENSSL_ROOT_DIR}/bin/ssleay32.dll
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
               PERMISSIONS OWNER_READ OWNER_WRITE
                           GROUP_READ GROUP_WRITE

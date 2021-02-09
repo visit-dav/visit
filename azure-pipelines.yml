@@ -12,7 +12,7 @@
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2020-12-17-sha49ed7a
+  container_tag: visitdav/visit-ci-develop:2021-02-01-sha0a6756
 
 # only build merge target pr to develop
 trigger: none
@@ -117,7 +117,12 @@ stages:
            # add to ld_lib path (rpaths are missing?)
            export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${TBB_LIB_DIR}
            # run test suite on silo tests
-           ./run_visit_test_suite.sh  -v ../../src/test/tests/databases/silo.py 
+           export TESTS=../../src/test/tests/databases/silo.py 
+           # also run a few of our unit tests
+           export TESTS="${TESTS} ../../src/test/tests/unit/assert_simple.py"
+           export TESTS="${TESTS} ../../src/test/tests/unit/default_methods.py"
+           export TESTS="${TESTS} ../../src/test/tests/unit/convert2to3.py"
+           ./run_visit_test_suite.sh  -v ${TESTS}
         displayName: 'Run Tests'
       
       - task: CopyFiles@2
