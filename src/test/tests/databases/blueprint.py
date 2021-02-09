@@ -46,6 +46,15 @@ venn_s_by_e_root  =  data_path(pjoin(bp_venn_test_dir,
 venn_s_by_m_root  =  data_path(pjoin(bp_venn_test_dir,
                                "venn_small_example_sparse_by_material_hdf5.root"))
 
+venn_full_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
+                             "venn_small_example_full_yaml.root"))
+venn_s_by_e_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
+                               "venn_small_example_sparse_by_element_yaml.root"))
+
+venn_s_by_m_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
+                               "venn_small_example_sparse_by_material_yaml.root"))
+
+
 
 braid_2d_meshes = ["points", "uniform", "rect", "struct", "tris","quads"]
 braid_3d_meshes = ["points", "uniform", "rect", "struct", "tets","hexs"]
@@ -136,6 +145,7 @@ def test_mfem(tag_name, example_name, protocol):
     CloseDatabase(dbfile)
 
 def test_venn(tag_name, venn_db_file):
+    TestSection("Blueprint Matset Example Tests: {0} ".format(tag_name))
     OpenDatabase(venn_db_file)
     AddPlot("Pseudocolor", "mesh_topo/mat_check")
     DrawPlots()
@@ -275,12 +285,12 @@ CloseDatabase(braid_2d_json_root)
 
 test_paren_vars()
 
-TestSection("Blueprint Matset Example Tests")
-
 test_venn("venn_small_full", venn_full_root)
 test_venn("venn_small_sparse_by_element", venn_s_by_e_root)
 test_venn("venn_small_sparse_by_material", venn_s_by_m_root)
 
-
+test_venn("venn_small_full_yaml", venn_full_yaml_root)
+test_venn("venn_small_sparse_by_element_yaml", venn_s_by_e_yaml_root)
+test_venn("venn_small_sparse_by_material_yaml", venn_s_by_m_yaml_root)
 
 Exit()

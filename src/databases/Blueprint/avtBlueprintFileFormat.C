@@ -511,7 +511,7 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
     }
 
     const Node &bp_index_field = m_root_node["blueprint_index"][mesh_name]["fields"][varname];
-    BP_PLUGIN_INFO(bp_index_field.to_json());
+    BP_PLUGIN_INFO(bp_index_field.to_yaml());
 
     string topo_tag  = bp_index_field["topology"].as_string();
 
@@ -600,7 +600,7 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
     }
 
     const Node &bp_index_matset = m_root_node["blueprint_index"][mesh_name]["matsets"][matset_name];
-    BP_PLUGIN_INFO(bp_index_matset.to_json());
+    BP_PLUGIN_INFO(bp_index_matset.to_yaml());
 
     string topo_tag  = bp_index_matset["topology"].as_string();
 
@@ -656,7 +656,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
     {
         BP_PLUGIN_INFO("Skipping mesh named \"" << mesh_name << "\"" << endl
                        << "blueprint::mesh::index::verify failed " << endl
-                       << verify_info.to_json());
+                       << verify_info.to_yaml());
         return;
     }
 
@@ -752,7 +752,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         topo_dims[topo_name] = ndims;
 
         BP_PLUGIN_INFO("coordinate system: "
-                       << n_coords["coord_system"].to_json()
+                       << n_coords["coord_system"].to_yaml()
                        << " (ndims=" << ndims << ")");
 
         avtMeshMetaData *mmd = new avtMeshMetaData(mesh_topo_name,
@@ -1065,61 +1065,6 @@ AddBlueprintExpressionMetadata(avtDatabaseMetaData *md, string const &mesh_name,
 
 
 // ****************************************************************************
-//  Method: is_hdf5_file()
-//
-//  Purpose:  Check if passed path is an HDF5 file.
-//
-//  Note: This is a helper that will be moved into conduit in the future.
-//
-//  Programmer: Cyrus Harrison,
-//  Creation:  Fri Aug 24 14:01:50 PDT 2018
-//
-//  Modifications:
-//
-//    Cyrus Harrison, Mon Mar  9 15:37:28 PDT 2020
-//    Change to use H5F_ACC_RDONLY since that is compatible with our
-//    other H5Fopen calls.
-//
-// ****************************************************************************
-bool
-is_hdf5_file(const std::string &file_path)
-{
-    // callback used for hdf5 error interface
-    H5E_auto2_t  herr_func;
-    // data container for hdf5 error interface callback
-    void         *herr_func_client_data;
-
-    // mute hdf5 error stack handlers
-    H5Eget_auto(H5E_DEFAULT,
-                &herr_func,
-                &herr_func_client_data);
-
-    H5Eset_auto(H5E_DEFAULT,
-                NULL,
-                NULL);
-
-    bool res = false;
-    // open the hdf5 file for read + write
-    hid_t h5_file_id = H5Fopen(file_path.c_str(),
-                               H5F_ACC_RDONLY,
-                               H5P_DEFAULT);
-
-    if( h5_file_id >= 0)
-    {
-        res = true;
-        H5Fclose(h5_file_id);
-    }
-
-    // restore hdf5 error stack handlers
-    H5Eset_auto(H5E_DEFAULT,
-                herr_func,
-                herr_func_client_data);
-
-    return res;
-}
-
-
-// ****************************************************************************
 //  Method: avtBlueprintFileFormat::ReadRootFile
 //
 //  Purpose: Read contents of the root file
@@ -1158,6 +1103,7 @@ avtBlueprintFileFormat::ReadRootFile()
 
         // assume hdf5, but check json file
 
+
         std::string root_protocol = "hdf5";
         std::string error_msg = "";
 
@@ -1166,39 +1112,11 @@ avtBlueprintFileFormat::ReadRootFile()
         if (PAR_Rank() == 0)
 #endif
         {
-            // we will read 5 chars, and keep this str null termed
-            char buff[6] = {0,0,0,0,0,0};
-
-            // heuristic, if json, we expect to see "{" in the first 5 chars of the file.
-            ifstream ifs;
-            ifs.open(root_fname.c_str());
-            if(!ifs.is_open())
-            {
-               error =1;
-            }
-            ifs.read((char *)buff,5);
-            ifs.close();
-
-            std::string test_str(buff);
-
-            if(test_str.find("{") != std::string::npos)
-            {
-               root_protocol = "json";
-            }
-
-            // TODO Add YAML heuristic
-
-            // note: ".root" may be associated with with binary files
-            // that are not hdf5
-
-            // if we are using the hdf5 protocol, first check if this
-            // is an hdf5 file, and if so -- fast fail if we don't see
-            // the "file_pattern" entry
+            conduit::relay::io::identify_file_type(root_fname,root_protocol);
 
             if(root_protocol.find("hdf5") != std::string::npos)
             {
-               //if(relay::io::is_hdf5_file(root_fname))
-               if(is_hdf5_file(root_fname))
+               if(conduit::relay::io::is_hdf5_file(root_fname))
                {
 
                    // fast fail check for if this is a valid blueprint root file
@@ -1224,6 +1142,12 @@ avtBlueprintFileFormat::ReadRootFile()
                   error = 1;
                }
             }
+        }
+
+        if(root_protocol == "unknown")
+        {
+            error_msg = root_fname + " could not determine root file type (hdf5, json, or yaml )\n";
+            error = 1;
         }
 
 // check for error reading root file
@@ -1292,7 +1216,7 @@ avtBlueprintFileFormat::ReadRootFile()
         {
             BP_PLUGIN_EXCEPTION1(InvalidFilesException,
                                  "Failed to find a valid Mesh Blueprint Index\n"
-                                 << n_verify_info.to_json());
+                                 << n_verify_info.to_yaml());
         }
 }
 
@@ -1411,7 +1335,7 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         ReadRootFile();
 
-        BP_PLUGIN_INFO("Root file contents" << endl << m_root_node.to_json());
+        BP_PLUGIN_INFO("Root file contents" << endl << m_root_node.to_yaml());
 
         m_protocol = "hdf5";
 
@@ -1422,7 +1346,7 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         if (DebugStream::Level5())
         {
-            m_root_node.to_json_stream(DebugStream::Stream5());
+            m_root_node.to_yaml_stream(DebugStream::Stream5());
         }
 
         BP_PLUGIN_INFO("Using protocol: " << m_protocol);
@@ -1588,9 +1512,9 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         BP_PLUGIN_INFO("blueprint::mesh::verify failed for mesh "
                        << abs_meshname << " [domain " << domain << "]" << endl
                        << "Verify Info " << endl
-                       << verify_info.to_json() << endl
+                       << verify_info.to_yaml() << endl
                        << "Data Schema " << endl
-                       << data.schema().to_json());
+                       << data.schema().to_yaml());
 
         BP_PLUGIN_INFO("warning: "
                        "avtBlueprintFileFormat::GetMesh returning NULL "
@@ -1601,7 +1525,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         return NULL;
     }
 
-    BP_PLUGIN_INFO(data.schema().to_json());
+    BP_PLUGIN_INFO(data.schema().to_yaml());
 
     // prepare result vtk dataset
     vtkDataSet *res = NULL;
@@ -1698,9 +1622,9 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             BP_PLUGIN_INFO("blueprint::mesh::verify failed for field "
                            << abs_meshname << " [domain " << domain << "]" << endl
                            << "Verify Info " << endl
-                           << verify_info.to_json() << endl
+                           << verify_info.to_yaml() << endl
                            << "Data Schema " << endl
-                           << n_mesh.schema().to_json());
+                           << n_mesh.schema().to_yaml());
             return NULL;
         }
 
@@ -1734,9 +1658,9 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         BP_PLUGIN_INFO("blueprint::mesh::field::verify failed for field "
                        << abs_varname_str << " [domain " << domain << "]" << endl
                        << "Verify Info " << endl
-                       << verify_info.to_json() << endl
+                       << verify_info.to_yaml() << endl
                        << "Data Schema " << endl
-                       << n_field.schema().to_json());
+                       << n_field.schema().to_yaml());
         return NULL;
     }
 
@@ -1772,9 +1696,9 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             BP_PLUGIN_INFO("blueprint::mesh::verify failed for field "
                            << abs_meshname << " [domain " << domain << "]" << endl
                            << "Verify Info " << endl
-                           << verify_info.to_json() << endl
+                           << verify_info.to_yaml() << endl
                            << "Data Schema " << endl
-                           << n_mesh.schema().to_json());
+                           << n_mesh.schema().to_yaml());
             return NULL;
         }
 
@@ -1827,11 +1751,24 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                             mat_name,
                             n_matset);
 
-        Node n_silo_matset;
-        conduit::blueprint::mesh::field::to_silo(n_field,
-                                                 n_matset,
-                                                 n_silo_matset);
+        ///
+        /// TODO:
+        ///
+        // to_silo in conduit v0.7.0 has a bug
+        // that can cause data passed to be changed
+        // in a few cases.
+        // Since our data is cached and uses set_external
+        // we make copies to avoid this bug changing values.
+        // We can remove these copies when we update
+        // to a newer conduit that has a fix.
+        Node n_matset_copy, n_field_copy;
+        n_matset_copy.set(n_matset);
+        n_field_copy.set(n_field);
 
+        Node n_silo_matset;
+        conduit::blueprint::mesh::field::to_silo(n_field_copy,
+                                                 n_matset_copy,
+                                                 n_silo_matset);
 
         int mix_len  = (int) n_silo_matset["field_mixvar_values"].dtype().number_of_elements();
 
@@ -1970,13 +1907,49 @@ avtBlueprintFileFormat::GetMaterial(int domain,
     // use to_silo util to convert from bp to the mixslot rep
     // that silo and visit use
 
+    ///
+    /// TODO:
+    ///
+    // to_silo in conduit v0.7.0 has a bug
+    // that can cause data passed to be changed
+    // in a few cases.
+    // Since our data is cached and uses set_external
+    // we make copies to avoid this bug changing values.
+    // We can remove these copies when we update
+    // to a newer conduit that has a fix.
+    Node n_matset_copy;
+    n_matset_copy.set(n_matset);
+
     Node n_silo_matset;
-    conduit::blueprint::mesh::matset::to_silo(n_matset,
+    conduit::blueprint::mesh::matset::to_silo(n_matset_copy,
                                               n_silo_matset);
 
     int nmats = (int) matnames.size();
     int nzones = (int) n_silo_matset["matlist"].dtype().number_of_elements();
-    int *matlist = n_silo_matset["matlist"].as_int_ptr();
+
+    int *matlist  = NULL;
+    int *mix_mat  = NULL;
+    int *mix_next = NULL;
+
+    // we need int ptrs for the avtMaterial object,
+    // convert if needed
+
+    Node n_tmp;
+    if(!n_silo_matset["matlist"].dtype().is_int())
+    {
+        n_silo_matset["matlist"].to_int_array(n_tmp["matlist"]);
+        n_silo_matset["mix_mat"].to_int_array(n_tmp["mix_mat"]);
+        n_silo_matset["mix_next"].to_int_array(n_tmp["mix_next"]);
+        matlist  = n_tmp["matlist"].as_int_ptr();
+        mix_mat  = n_tmp["mix_mat"].as_int_ptr();
+        mix_next = n_tmp["mix_next"].as_int_ptr();
+    }
+    else
+    {
+        matlist  = n_silo_matset["matlist"].as_int_ptr();
+        mix_mat  = n_silo_matset["mix_mat"].as_int_ptr();
+        mix_next = n_silo_matset["mix_next"].as_int_ptr();
+    }
 
     // we need to adjust the matlist.
     for(int i=0;i<nzones;i++)
@@ -1988,8 +1961,6 @@ avtBlueprintFileFormat::GetMaterial(int domain,
     }
 
     int mix_len  = (int) n_silo_matset["mix_mat"].dtype().number_of_elements();
-    int *mix_mat  = n_silo_matset["mix_mat"].as_int_ptr();
-    int *mix_next = n_silo_matset["mix_next"].as_int_ptr();
 
     float *mix_vf = NULL;
     if(n_silo_matset["mix_vf"].dtype().is_float())
