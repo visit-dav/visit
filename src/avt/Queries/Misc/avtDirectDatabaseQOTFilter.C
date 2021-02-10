@@ -270,7 +270,6 @@ avtDirectDatabaseQOTFilter::VerifyAndRefinePointTimesteps(
     const int numPts = inPtData->GetNumberOfTuples();
     const int stride = atts.GetStride();
     const int startT = atts.GetStartTime();
-    const int stopT  = atts.GetEndTime();
 
     //
     // We need to check if any of the arrays have multiple
@@ -541,7 +540,6 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps(
     const int numCells = inCellData->GetNumberOfTuples();
     const int stride   = atts.GetStride();
     const int startT   = atts.GetStartTime();
-    const int stopT    = atts.GetEndTime();
 
     //
     // We need to check if any of the arrays have multiple
@@ -565,7 +563,6 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps(
     boolVector isValid;
     isValid.resize(numCells, true);
 
-    double coord[] = {0.0, 0.0, 0.0};
     double *tupleTemp = new double[maxComp];
 
     for (int i = 0; i < maxComp; ++i)
@@ -577,11 +574,11 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineArrayTimesteps(
     // We first need to check the mesh coordinates for errors
     // that may have occured during coordinate retrieval.
     //
-    for (int i, ts = 0; i < numCells; ++i, ts += stride)
+    for (int i = 0, ts = 0; i < numCells; ++i, ts += stride)
     {
         vtkIdType numCellPts;
-        vtkIdType *cellPts = NULL;
-        inCells->GetCell(i, numCellPts, cellPts);
+        const vtkIdType *cellPts = NULL;
+        inCells->GetCellAtId(i, numCellPts, cellPts);
 
         //
         // Invalid states are denoted by cells with NaN positions.
