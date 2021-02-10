@@ -157,8 +157,8 @@ def test_venn(tag_name, venn_db_file):
     # We expect:
     #int(res["max"]) == 4320
     #int(res["min"]) == 1
-    AssertEqual("assert_mat_check_max",int(res["max"]),4320)
-    AssertEqual("assert_mat_check_min",int(res["min"]),1)
+    TestValueEQ("testeq_t_mat_check_max",int(res["max"]),4320)
+    TestValueEQ("testeq_mat_check_min",int(res["min"]),1)
     DeleteAllPlots()
 
 
@@ -182,8 +182,8 @@ def test_venn(tag_name, venn_db_file):
         # We expect:
         #res["max"] == 1.0
         #res["min"] == 0.0
-        AssertEqual("assert_" + ename + "_max",res["max"],1.0)
-        AssertEqual("assert_" + ename + "_min",res["min"],0.0)
+        TestValueEQ("testeq_" + ename + "_max",res["max"],1.0)
+        TestValueEQ("testeq_" + ename + "_min",res["min"],0.0)
         DeleteAllPlots()
 
     TestSection("Blueprint Matset Example Tests: {0} Val4mat Exprs".format(tag_name))
@@ -211,8 +211,8 @@ def test_venn(tag_name, venn_db_file):
         print(res)
         #int(res["max"]) == v4m_test_vals[ename]
         #int(res["min"]) == 0
-        AssertEqual("assert_" + ename + "_max",int(res["max"]),v4m_test_vals[ename])
-        AssertEqual("assert_" + ename + "_min",int(res["min"]),0)
+        TestValueEQ("testeq_" + ename + "_max",int(res["max"]),v4m_test_vals[ename])
+        TestValueEQ("testeq_" + ename + "_min",int(res["min"]),0)
         DeleteAllPlots()
     
 
