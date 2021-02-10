@@ -105,6 +105,8 @@ function build_fms
     vopts="-DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/fms/${FMS_VERSION}/${VISITARCH}"
+    # newer versions of conduit require c++11
+    vopts="${vopts} -DCMAKE_CXX_STANDARD=11 -DCMAKE_CXX_STANDARD_REQUIRED=ON"
     if test "x${DO_STATIC_BUILD}" = "xyes" ; then
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
     else
