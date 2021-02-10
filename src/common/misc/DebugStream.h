@@ -35,11 +35,11 @@ namespace DebugStream
     extern MISC_API int GetLevel();
 }
 
-#define debug1 if (!DebugStream::Level1()) ; else (DebugStream::Stream1((char const *)__FILE__,(int)__LINE__))
-#define debug2 if (!DebugStream::Level2()) ; else (DebugStream::Stream2())
-#define debug3 if (!DebugStream::Level3()) ; else (DebugStream::Stream3())
-#define debug4 if (!DebugStream::Level4()) ; else (DebugStream::Stream4())
-#define debug5 if (!DebugStream::Level5()) ; else (DebugStream::Stream5())
+#define debug1 DebugStream::Level1() && DebugStream::Stream1((char const *)__FILE__,(int)__LINE__)
+#define debug2 DebugStream::Level2() && DebugStream::Stream2()
+#define debug3 DebugStream::Level3() && DebugStream::Stream3()
+#define debug4 DebugStream::Level4() && DebugStream::Stream4()
+#define debug5 DebugStream::Level5() && DebugStream::Stream5()
 
 #define vcerr(c) if (VisItInit::IsComponent(#c)) std::cerr << #c ": "
 

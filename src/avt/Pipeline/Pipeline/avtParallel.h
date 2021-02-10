@@ -46,7 +46,7 @@ PIPELINE_API void    SumDoubleArrayAcrossAllProcessors(double *, double *,int);
 PIPELINE_API void    SumDoubleArray(double *, double *,int);
 PIPELINE_API void    SumDoubleArrayInPlace(double *, int);
 PIPELINE_API void    SumIntArrayAcrossAllProcessors(int *, int *, int);
-PIPELINE_API void    SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG*, VISIT_LONG_LONG*, int);
+PIPELINE_API void    SumLongLongArrayAcrossAllProcessors(long long*, long long*, int);
 PIPELINE_API bool    ThisProcessorHasMinimumValue(double);
 PIPELINE_API bool    ThisProcessorHasMaximumValue(double);
 PIPELINE_API void    UnifyMinMax(double *, int, int=0);
@@ -63,7 +63,7 @@ PIPELINE_API void    UnifyMinimumDoubleArrayAcrossAllProcessors(double *, double
 PIPELINE_API void    UnifyMaximumDoubleArrayAcrossAllProcessors(double *, double *, int);
 
 PIPELINE_API void    BroadcastInt(int &i);
-PIPELINE_API void    BroadcastLongLong(VISIT_LONG_LONG &i);
+PIPELINE_API void    BroadcastLongLong(long long &i);
 PIPELINE_API void    BroadcastIntArray(int *array, int nArray);
 PIPELINE_API void    BroadcastIntVector(std::vector<int>&, int myrank);
 PIPELINE_API void    BroadcastIntVectorFromAny(std::vector<int> &, int, int);

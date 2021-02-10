@@ -68,8 +68,8 @@ class GUI_API QvisSimulationWindow : public QvisPostableWindowObserver
     typedef QMap<QString, avtDatabaseMetaData*> SimulationMetaDataMap;
 public:
     QvisSimulationWindow(EngineList *engineList,
-                     const QString &caption = QString::null,
-                     const QString &shortName = QString::null,
+                     const QString &caption = QString(),
+                     const QString &shortName = QString(),
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisSimulationWindow();
     virtual void CreateWindowContents();

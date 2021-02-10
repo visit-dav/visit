@@ -7,6 +7,7 @@ import os
 import select
 import signal
 import socket
+import subprocess
 import sys
 
 if (sys.version_info > (3, 0)):
@@ -222,100 +223,6 @@ def removeFilesHelper(threadID, start, end, conversionargs):
 def removeFiles(format, nframes):
     conversionargs = format
     return applyFunctionToFrames(removeFilesHelper, nframes, conversionargs)
-
-###############################################################################
-# Function: visit_pipe
-#
-# Purpose:    This function is acts like os.popen except that instead of
-#             returning a file object, this function returns the exit code
-#             of the command and you pass a callback function to process
-#             text output from the child process.
-#
-# Programmer: Brad Whitlock
-# Date:       Wed Sep 20 10:19:07 PDT 2006
-#
-# Modifications:
-#   Brad Whitlock, Thu Dec 21 19:42:19 PST 2006
-#   Fixed for win32.
-#
-###############################################################################
-
-def visit_pipe(command, line_callback, line_callback_data):
-    child_exit = 0
-
-    iterate = 1
-    # Install a signal handler.
-    def stop_iterating(a,b):
-        iterate = 0
-
-    do_fork = 1
-    try:
-        signal.signal(signal.SIGCHLD, stop_iterating)
-    except ValueError:
-        # We're not running from the master thread so we should not fork
-        # and read the input. We should just call os.system. Unless we can
-        # figure out some other way of determining when the child exits
-        # instead of using signals.
-        do_fork = 0
-    except AttributeError:
-        # We have a lame signal module that does not have SIGCHLD so
-        # we can't do a fork.
-        do_fork = 0
-
-    # We're not going to do a fork so just call os.system
-    if not do_fork:
-        return os.system(command)
-
-    # We're allowed to do fork.
-    fd = os.pipe()
-    id = os.fork()
-    if id == 0:
-        # Child
-        os.dup2(fd[1], 1)
-        os.dup2(fd[1], 2)
-        #os.close(2)
-        ret = os.system(command)
-        sys.exit(ret)
-    else:
-        # Parent
-        s = ""
-        while iterate:
-            # Wait for input from the child.
-            try:
-                fd_list = select.select([fd[0]], [], [])
-            except select.error:
-                iterate = 0
-                break
-            # If we have a file descriptor to read then read and process data.
-            if len(fd_list[0]) > 0:
-                # Read child output
-                s = s + os.read(fd_list[0][0], 100)
-
-                # Process the child output into lines.
-                if s[0] == '\n':
-                    if len(s) > 1:
-                        s = s[1:]
-                    else:
-                        s = ""
-                        continue
-                line = ""
-                len_s = len(s)
-                index = 0
-                for i in range(len_s):
-                    if s[index] == '\n':
-                        s = s[index:]
-                        line_callback(line, line_callback_data)
-                        index = 0
-                        line = ""
-                    else:
-                        line = line + s[index]
-                    index = index + 1
-        try:
-            child_result = os.waitpid(id, 0)
-        except IOError:
-            child_result=(id,0)
-        child_exit = child_result[1] / 256
-    return child_exit
 
 ###############################################################################
 # Function: MovieClassSaveWindow
@@ -2276,6 +2183,9 @@ class MakeMovie(object):
     #   Kathleen Biagas, Mon Oct 23 17:04:22 MST 2017
     #   Resources dir on Windows is same now whether dev build or not.
     #
+    #   Eric Brugger, Thu Jan 28 11:28:09 PST 2021
+    #   Replace use of xmllib with xml.sax to parse the movie template file.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -2383,14 +2293,11 @@ class MakeMovie(object):
             # also need to prepend a path to it.
             try:
                 # Read the XML file.
-                self.Debug(1, "Opening template file: %s" % self.templateFile)
-                f = open(self.templateFile, "rt")
-                lines = f.readlines()
-                f.close()
+                self.Debug(1, "Reading template file: %s" % self.templateFile)
+                parser = xml.sax.make_parser()
                 templateReader = MovieTemplateReader()
-                for line in lines:
-                   templateReader.feed(line)
-                templateReader.close()
+                parser.setContentHandler( templateReader )
+                parser.parse(self.templateFile)
 
                 # Get the name of the template work file from the XML template.
                 templatePY = prefix + "movietemplates" + self.slash + "visitmovietemplate.py"
@@ -2654,6 +2561,9 @@ class MakeMovie(object):
     #   Kathleen Biagas, Tue Jan 13 11:00:19 PST 2015
     #   Use mpeg2encode directly (instead of visit -mpeg2encode)
     #
+    #   Eric Brugger, Thu Jan 28 11:28:09 PST 2021
+    #   Replace visit_pipe function with subprocess.Popen.
+    #
     ###########################################################################
 
     def EncodeMPEGMovie_old(self, moviename, imageFormatString, xres, yres):
@@ -2761,15 +2671,23 @@ class MakeMovie(object):
             else:
                 command = "mpeg2encode.exe "  + '"' + paramFile + '" "' + absMovieName + '"'
             self.Debug(1, command)
-            # Function to print the mpeg2encode output
-            def print_mpeg_line_cb(line, this):
+            proc = subprocess.Popen(command,
+                                    shell=True,
+                                    universal_newlines=True,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT)
+            while True:
+                line = proc.stdout.readline()
+                if not line:
+                    break
                 if line[:8] == "Encoding":
                     print(line)
-                    this.Debug(1, line)
+                    self.Debug(1, line)
                 else:
-                    this.Debug(5, line)
-            r = visit_pipe(command, print_mpeg_line_cb, self)
-            self.Debug(1, "mpeg2encode returned %d" % r)
+                    self.Debug(5, line)
+            r = proc.returncode
+                
+            self.Debug(1, "mpeg2encode returned %s" % r)
 
             # Make sure that the movie exists before we delete files.
             files = os.listdir(self.outputDir)

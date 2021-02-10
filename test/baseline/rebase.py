@@ -183,7 +183,10 @@ def copy_currents_from_html_pages(prefix, filelist, datetag, prompt, test_type):
             mode = "serial"
             f = ffields[2]
         if prompt:
-            docopy = input("Copy file \"%s\" (enter y/Y for yes)? "%f)
+            if (sys.version_info > (3, 0)):
+                docopy = input("Copy file \"%s\" (enter y/Y for yes)? "%f)
+            else:
+                docopy = raw_input("Copy file \"%s\" (enter y/Y for yes)? "%f)
             if docopy != 'y' and docopy != 'Y':
                 continue
         if mode == "serial":
@@ -193,19 +196,23 @@ def copy_currents_from_html_pages(prefix, filelist, datetag, prompt, test_type):
         # As a sanity check, get current baseline image file size
         cursize = os.stat(target_file).st_size
         if (sys.version_info > (3, 0)):
-            g = urllib.request.urlopen("%s/%s/pascal_trunk_%s/c_%s"%(prefix,datetag,mode,f))
+            try:
+                g = urllib.request.urlopen("%s/%s/pascal_trunk_%s/c_%s"%(prefix,datetag,mode,f))
+            except:
+                print("*** Current \"%s\" not found or HTTP request failed in some way. Skipping."%f)
+                continue
         else:
             g = urllib.urlopen("%s/%s/pascal_trunk_%s/c_%s"%(prefix,datetag,mode,f))
-        if 'Not Found' in g.read():
-            print("*** Current \"%s\" not found. Skipping."%f)
+            if 'Not Found' in g.read():
+                print("*** Current \"%s\" not found. Skipping."%f)
+                continue
+        print("Copying file \"%s\""%f)
+        if (sys.version_info > (3, 0)):
+            urllib.request.urlretrieve("%s/%s/pascal_trunk_%s/c_%s"%(prefix,datetag,mode,f),
+                                       filename=target_file)
         else:
-            print("Copying file \"%s\""%f)
-            if (sys.version_info > (3, 0)):
-                urllib.request.urlretrieve("%s/%s/pascal_trunk_%s/c_%s"%(prefix,datetag,mode,f),
-                                           filename=target_file)
-            else:
-                urllib.urlretrieve("%s/%s/pascal_trunk_%s/c_%s"%(prefix,datetag,mode,f),
-                                   filename=target_file)
+            urllib.urlretrieve("%s/%s/pascal_trunk_%s/c_%s"%(prefix,datetag,mode,f),
+                               filename=target_file)
         # Do some simple sanity checks on the resulting file
         if test_type == 'png' and imghdr.what(target_file) != 'png':
             with open(target_file) as f:

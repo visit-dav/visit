@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[What's New in VisIt]]></title>
-  <IM>LLNL-WEB-813730</IM>
+  <IM>LLNL-WEB-816793</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[September 18, 2020]]></lastchanged>
+  <lastchanged><![CDATA[November 23, 2020]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,8 +22,10 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
+<h2>November, 2020 - VisIt 3.1.4 released</h2>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 3.1.4 contains over two dozen bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.1.4">VisIt 3.1.4 Release Notes</a>.</p>
 <h2>September, 2020 - VisIt 3.1.3 released</h2>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 3.1.3 contains over three dozen bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.1.3">VisIt 3.1.3 Release Notes</a>.</p>
+<p>VisIt 3.1.3 contains over three dozen bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.1.3">VisIt 3.1.3 Release Notes</a>.</p>
 <h2>May, 2020 - VisIt 3.1.2 released</h2>
 <p>VisIt 3.1.2 contains over two dozen bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.1.2">VisIt 3.1.2 Release Notes</a>.</p>
 <h2>February, 2020 - VisIt 3.1.1 released</h2>

@@ -48,6 +48,9 @@ class ColorTableAttributes;
 //    Added color distance methods. The just noticeable threshold was
 //    determined emperically by observing printed distance values for colors
 //    in the "levels" and "distinct" tables.
+//
+//    Mark C. Miller, Sun Nov  1 00:29:30 PDT 2020
+//    Add method to modify (lighten or darken) a color by multiplicative factor
 // ****************************************************************************
 
 class PIPELINE_API avtColorTables
@@ -57,7 +60,8 @@ public:
     static double          PerceptualColorDistance(unsigned char const *rgbA,
                                                    unsigned char const *rgbB);
     static int const       JNDColorDistance = 150;
-
+    static void            ModifyColor(unsigned char const *inrgb, double mult,
+                                       unsigned char *outrgb);
     const std::string   &GetDefaultContinuousColorTable() const;
     void                 SetDefaultContinuousColorTable(const std::string &);
     const std::string   &GetDefaultDiscreteColorTable() const;
@@ -76,9 +80,11 @@ public:
                                               int i, unsigned char *rgb,
                                               bool invert = false) const;
     bool                 GetJNDControlPointColor(const std::string &ctName,
-                                              int i, unsigned char const *avoidrgb,
+                                              const std::string &idxName,
+                                              unsigned char const *avoidrgb,
                                               unsigned char *jndrgb,
                                               bool invert = false) const;
+    void                 ResetJNDIndex(const std::string &idxName);
     int                  GetNumColors() const { return 256; };
     bool                 IsDiscrete(const std::string &ctName) const;
     bool                 ColorTableExists(const std::string &ctName) const;

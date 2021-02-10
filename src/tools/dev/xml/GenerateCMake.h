@@ -1226,14 +1226,14 @@ class CMakeGeneratorPlugin : public Plugin
     {
         const char *visithome = getenv("VISITARCHHOME");
         if (!visithome && !using_dev)
-            throw QString().sprintf("Please set the VISITARCHHOME "
+            throw QString().asprintf("Please set the VISITARCHHOME "
                                     "environment variable.\n"
                                     "You may have it set automatically "
                                     "using 'visit -xml2cmake'.");
 
         const char *visitplugdirpub = getenv("VISITPLUGININSTPUB");
         if (!visitplugdirpub && installpublic)
-            throw QString().sprintf("Please set the VISITPLUGININSTPUB "
+            throw QString().asprintf("Please set the VISITPLUGININSTPUB "
                                     "environment variable.\n"
                                     "You may have it set automatically "
                                     "using 'visit -xml2cmake'.");
@@ -1242,7 +1242,7 @@ class CMakeGeneratorPlugin : public Plugin
         if (!visitplugdirpri)
         {
            if ((using_dev && installprivate) || !using_dev)
-            throw QString().sprintf("Please set the VISITPLUGININSTPRI "
+            throw QString().asprintf("Please set the VISITPLUGININSTPRI "
                                     "environment variable.\n"
                                     "You may have it set automatically "
                                     "using 'visit -xml2cmake'.");

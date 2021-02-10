@@ -103,9 +103,52 @@ function bv_boost_dry_run
     fi
 }
 
+function apply_boost_ppc_rounding_control_patch
+{
+   # resolves a C++11 narrowing error
+
+   patch -p0 << \EOF
+*** boost/numeric/interval/detail/ppc_rounding_control.hpp.orig       Mon Aug 17 15:26:50 2020
+--- boost/numeric/interval/detail/ppc_rounding_control.hpp    Mon Aug 17 15:27:12 2020
+***************
+*** 28,37 ****
+    double dmode;
+  } rounding_mode_struct;
+  
+! static const rounding_mode_struct mode_upward      = { 0xFFF8000000000002LL };
+! static const rounding_mode_struct mode_downward    = { 0xFFF8000000000003LL };
+! static const rounding_mode_struct mode_to_nearest  = { 0xFFF8000000000000LL };
+! static const rounding_mode_struct mode_toward_zero = { 0xFFF8000000000001LL };
+  
+  struct ppc_rounding_control
+  {
+--- 28,37 ----
+    double dmode;
+  } rounding_mode_struct;
+  
+! static const rounding_mode_struct mode_upward      = { (long long int)0xFFF8000000000002LL };
+! static const rounding_mode_struct mode_downward    = { (long long int)0xFFF8000000000003LL };
+! static const rounding_mode_struct mode_to_nearest  = { (long long int)0xFFF8000000000000LL };
+! static const rounding_mode_struct mode_toward_zero = { (long long int)0xFFF8000000000001LL };
+  
+  struct ppc_rounding_control
+  {
+EOF
+
+   if [[ $? != 0 ]] ; then
+      warn "boost patch for ppc_rounding_control failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_boost_patch
 {
-    return 0
+    apply_boost_ppc_rounding_control_patch
+    if [[ $? != 0 ]] ; then
+       return 1
+    fi
+    return 0;
 }
 
 # *************************************************************************** #

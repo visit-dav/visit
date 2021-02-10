@@ -47,7 +47,7 @@ using   std::sort;
 //                            static data members
 // ----------------------------------------------------------------------------
 
-bool avtStructuredDomainBoundaries::createGhostsForTIntersections = true;
+bool avtStructuredDomainBoundaries::createGhostsForTIntersections = false;
 
 // ----------------------------------------------------------------------------
 //                            private helper methods

@@ -25,7 +25,7 @@ import llnl.visit.Plugin;
 
 public class ClipAttributes extends AttributeSubject implements Plugin
 {
-    private static int ClipAttributes_numAdditionalAtts = 16;
+    private static int ClipAttributes_numAdditionalAtts = 17;
 
     // Enum values
     public final static int CLIPSTYLE_PLANE = 0;
@@ -81,6 +81,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         center[2] = 0;
         radius = 1;
         sphereInverse = false;
+        crinkleClip = false;
     }
 
     public ClipAttributes(int nMoreFields)
@@ -124,6 +125,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         center[2] = 0;
         radius = 1;
         sphereInverse = false;
+        crinkleClip = false;
     }
 
     public ClipAttributes(ClipAttributes obj)
@@ -176,6 +178,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
 
         radius = obj.radius;
         sphereInverse = obj.sphereInverse;
+        crinkleClip = obj.crinkleClip;
 
         SelectAll();
     }
@@ -245,7 +248,8 @@ public class ClipAttributes extends AttributeSubject implements Plugin
                 (planeToolControlledClipPlane == obj.planeToolControlledClipPlane) &&
                 center_equal &&
                 (radius == obj.radius) &&
-                (sphereInverse == obj.sphereInverse));
+                (sphereInverse == obj.sphereInverse) &&
+                (crinkleClip == obj.crinkleClip));
     }
 
     public String GetName() { return "Clip"; }
@@ -418,6 +422,12 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         Select(15);
     }
 
+    public void SetCrinkleClip(boolean crinkleClip_)
+    {
+        crinkleClip = crinkleClip_;
+        Select(16);
+    }
+
     // Property getting methods
     public int      GetQuality() { return quality; }
     public int      GetFuncType() { return funcType; }
@@ -435,6 +445,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
     public double[] GetCenter() { return center; }
     public double   GetRadius() { return radius; }
     public boolean  GetSphereInverse() { return sphereInverse; }
+    public boolean  GetCrinkleClip() { return crinkleClip; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -471,6 +482,8 @@ public class ClipAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(radius);
         if(WriteSelect(15, buf))
             buf.WriteBool(sphereInverse);
+        if(WriteSelect(16, buf))
+            buf.WriteBool(crinkleClip);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -525,6 +538,9 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         case 15:
             SetSphereInverse(buf.ReadBool());
             break;
+        case 16:
+            SetCrinkleClip(buf.ReadBool());
+            break;
         }
     }
 
@@ -566,6 +582,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         str = str + doubleArrayToString("center", center, indent) + "\n";
         str = str + doubleToString("radius", radius, indent) + "\n";
         str = str + boolToString("sphereInverse", sphereInverse, indent) + "\n";
+        str = str + boolToString("crinkleClip", crinkleClip, indent) + "\n";
         return str;
     }
 
@@ -587,5 +604,6 @@ public class ClipAttributes extends AttributeSubject implements Plugin
     private double[] center;
     private double   radius;
     private boolean  sphereInverse;
+    private boolean  crinkleClip;
 }
 

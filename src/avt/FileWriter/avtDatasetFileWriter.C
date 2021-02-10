@@ -50,10 +50,6 @@
 
 #include <visit-config.h>
 
-#if defined (_MSC_VER) && (_MSC_VER < 1800) && !defined(round)
-inline double round(double x) {return (x-floor(x)) > 0.5 ? ceil(x) : floor(x);}
-#endif
-
 
 // This array contains strings that correspond to the file types that are 
 // enumerated in the DatasetFileFormat enum.

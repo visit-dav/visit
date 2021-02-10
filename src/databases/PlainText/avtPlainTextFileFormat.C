@@ -12,7 +12,7 @@
 #include <string>
 
 #include <vtkPointData.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkPolyData.h>
@@ -130,6 +130,8 @@ avtPlainTextFileFormat::avtPlainTextFileFormat(const char *fn,
 //    Hank Childs, Wed May 26 09:05:44 PDT 2010
 //    Fix memory bloat issue from STL.
 //
+//    Mark C. Miller, Tue Dec  1 13:07:23 PST 2020
+//    Switched to double precision data
 // ****************************************************************************
 
 void
@@ -137,7 +139,7 @@ avtPlainTextFileFormat::FreeUpResources(void)
 {
     variableNames.clear();
     data.clear();
-    std::vector< std::vector<float> > tmp;
+    std::vector< std::vector<double> > tmp;
     data.swap(tmp); // this makes capacity() drop to 0, which is better than
                     // what clear() does.
     fileRead = false;
@@ -231,6 +233,8 @@ avtPlainTextFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Thu Jan 20 13:26:04 EST 2011
 //    Fixed a copy/paste bug with creating 1D/2D point meshes.  (3D was okay.)
 //
+//    Mark C. Miller, Tue Dec  1 13:05:46 PST 2020
+//    Switched to double precision for coords
 // ****************************************************************************
 
 vtkDataSet *
@@ -242,11 +246,11 @@ avtPlainTextFileFormat::GetMesh(const char *meshname)
         // rectilinear grid
         vtkRectilinearGrid   *rgrid   = vtkRectilinearGrid::New(); 
 
-        vtkFloatArray   *coords[3];
+        vtkDoubleArray *coords[3];
         int dims[3] = {ncolumns, nrows, 1};
         for (int i = 0 ; i < 3 ; i++)
         {
-            coords[i] = vtkFloatArray::New();
+            coords[i] = vtkDoubleArray::New();
             coords[i]->SetNumberOfTuples(dims[i]);
 
             for (int j = 0 ; j < dims[i] ; j++)
@@ -279,13 +283,13 @@ avtPlainTextFileFormat::GetMesh(const char *meshname)
                 EXCEPTION1(InvalidVariableException, meshname);
 
 
-            vtkFloatArray *vals = vtkFloatArray::New();
+            vtkDoubleArray *vals = vtkDoubleArray::New();
             vals->SetNumberOfComponents(1);
             vals->SetNumberOfTuples(nrows);
             vals->SetName(meshname);
 
             vtkRectilinearGrid *rg =
-                vtkVisItUtility::Create1DRGrid(nrows,VTK_FLOAT);
+                vtkVisItUtility::Create1DRGrid(nrows,VTK_DOUBLE);
             rg->GetPointData()->SetScalars(vals);
 
             vtkDataArray *xc = rg->GetXCoordinates();
@@ -312,9 +316,9 @@ avtPlainTextFileFormat::GetMesh(const char *meshname)
             pts->Delete();
             for (int j = 0 ; j < nrows ; j++)
             {
-                float x = (xcol<0 || xcol>=ncolumns) ? 0 : data[j][xcol];
-                float y = (ycol<0 || ycol>=ncolumns) ? 0 : data[j][ycol];
-                float z = (zcol<0 || zcol>=ncolumns) ? 0 : data[j][zcol];
+                double x = (xcol<0 || xcol>=ncolumns) ? 0 : data[j][xcol];
+                double y = (ycol<0 || ycol>=ncolumns) ? 0 : data[j][ycol];
+                double z = (zcol<0 || zcol>=ncolumns) ? 0 : data[j][zcol];
                 pts->SetPoint(j, x, y, z);
             }
  
@@ -349,6 +353,8 @@ avtPlainTextFileFormat::GetMesh(const char *meshname)
 //  Programmer: Jeremy Meredith
 //  Creation:   January 24, 2008
 //
+//  Mark C. Miller, Tue Dec  1 13:06:00 PST 2020
+//  Switched to double precision for data
 // ****************************************************************************
 
 vtkDataArray *
@@ -359,7 +365,7 @@ avtPlainTextFileFormat::GetVar(const char *varname)
     if (format == Grid)
     {
         // just one var; do it blindly
-        vtkFloatArray *values = vtkFloatArray::New();
+        vtkDoubleArray *values = vtkDoubleArray::New();
         values->SetNumberOfTuples(nrows*ncolumns);
         int ctr = 0;
         for (int i=0; i<nrows; i++)
@@ -383,7 +389,7 @@ avtPlainTextFileFormat::GetVar(const char *varname)
         if (index < 0)
             EXCEPTION1(InvalidVariableException, varname);
 
-        vtkFloatArray *values = vtkFloatArray::New();
+        vtkDoubleArray *values = vtkDoubleArray::New();
         values->SetNumberOfTuples(nrows);
         int ctr = 0;
         for (int i=0; i<nrows; i++)
@@ -449,6 +455,8 @@ avtPlainTextFileFormat::GetVectorVar(const char *varname)
 //    Hank Childs, Mon Feb  4 10:52:01 PST 2013
 //    Improve logic for files with variable names.
 //
+//    Mark C. Miller, Tue Dec  1 13:06:57 PST 2020
+//    Switched to double precision for rows of data
 // ****************************************************************************
 
 void
@@ -490,7 +498,7 @@ avtPlainTextFileFormat::ReadFile()
     {
         int len = (int)strlen(buff);
         char *start = buff;
-        vector<float> row;
+        vector<double> row;
 
         if (comma)
         {
@@ -509,7 +517,7 @@ avtPlainTextFileFormat::ReadFile()
                 }
                 else
                 {
-                    float value = atof(start);
+                    double value = atof(start);
                     row.push_back(value);
                 }
                 start = end+1;
@@ -545,7 +553,7 @@ avtPlainTextFileFormat::ReadFile()
                     }
                     else
                     {
-                        float value = atof(start);
+                        double value = atof(start);
                         row.push_back(value);
                     }
                 }

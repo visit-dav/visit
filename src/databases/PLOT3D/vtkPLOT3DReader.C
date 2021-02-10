@@ -29,6 +29,10 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkCellData.h>
+
+#include <avtGhostData.h>
 
 #include "vtkPLOT3DReaderInternals.h"
 #include "PLOT3DFunctions.h"
@@ -115,7 +119,8 @@ vtkPLOT3DReader::vtkPLOT3DReader()
   this->FileSize = 0;
   this->MultiGrid = false;
   this->ByteOrder = FILE_BIG_ENDIAN;
-  this->IBlanking = false;
+  this->IBlankingInFile = 0;
+  this->UseIBlankingIfDetected = true;
   this->TwoDimensionalGeometry = false;
   this->DoublePrecision = false;
 
@@ -171,21 +176,22 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
   this->Internal->CheckBinaryFile(fp);
 
   if (!this->Internal->BinaryFile)
-    {
+  {
     vtkDebugMacro("Auto-detection only works with binary files.");
     if (this->BinaryFile)
-      {
+    {
       vtkWarningMacro("This appears to be an ASCII file. Please make sure "
                       "that all settings are correct to read it correctly.");
-      }
+    }
+    // Copy settings from reader to internal reader
     this->Internal->ByteOrder = this->ByteOrder;
     this->Internal->HasByteCount = this->HasByteCount;
     this->Internal->MultiGrid = this->MultiGrid;
     this->Internal->NumberOfDimensions = this->TwoDimensionalGeometry ? 2 : 3;
     this->Internal->Precision = this->DoublePrecision ? 8 : 4;
-    this->Internal->IBlanking = this->IBlanking;
+    this->Internal->IBlanking = this->IBlankingInFile;
     return 1;
-    }
+  }
 
   int success = this->Internal->CheckByteOrder(fp);
   if (!success)
@@ -225,6 +231,28 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
         }
       }
     }
+  
+  // Check that user settings match what VisIt has auto-detected.
+  if (this->IBlankingInFile == 0)
+  {
+    this->IBlankingInFile = this->Internal->IBlanking;
+  }
+  else
+  {
+    // Warn if mismatched
+    if (this->IBlankingInFile == 1 && this->Internal->IBlanking == 0)
+    {
+      vtkWarningMacro("User settings indicate that there is IBlanking in this "
+                      "file, but VisIt did not detect it. Reading with "
+                      "user settings.");
+    }
+    else if (this->IBlankingInFile == 2 && this->Internal->IBlanking == 1)
+    {
+      vtkWarningMacro("User settings indicate that there is not IBlanking in this "
+                      "file, but VisIt detected it. Reading with "
+                      "user settings.");
+    }
+  }
 
   if (!success)
     {
@@ -235,8 +263,9 @@ int vtkPLOT3DReader::AutoDetectionCheck(FILE* fp)
     this->Internal->MultiGrid = this->MultiGrid;
     this->Internal->NumberOfDimensions = this->TwoDimensionalGeometry ? 2 : 3;
     this->Internal->Precision = this->DoublePrecision ? 8 : 4;
-    this->Internal->IBlanking = this->IBlanking;
+    this->Internal->IBlanking = this->IBlankingInFile;
     }
+
   return success;
 }
 
@@ -414,6 +443,35 @@ int vtkPLOT3DReader::ReadScalar(FILE* fp, int n, vtkDataArray* scalar)
       return count;
       }
     }
+}
+
+int vtkPLOT3DReader::ReadIBlank(FILE* fp, int n, vtkIntArray* scalar)
+{
+  if (this->Internal->BinaryFile)
+  {
+    vtkPLOT3DArrayReader<int> arrayReader;
+    arrayReader.ByteOrder = this->Internal->ByteOrder;
+    return arrayReader.ReadScalar(fp, n, scalar->GetPointer(0));
+  }
+  else
+  {
+    int* values = scalar->GetPointer(0);
+
+    int count = 0;
+    for(int i = 0; i < n; i++)
+    {
+      int num = fscanf(fp, "%d", &(values[i]));
+      if ( num > 0 )
+      {
+        count++;
+      }
+      else
+      {
+        return 0;
+      }
+    }
+    return count;
+  }
 }
 
 int vtkPLOT3DReader::ReadVector(FILE* fp, int n, int numDims, vtkDataArray* vector)
@@ -790,20 +848,81 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
   this->SkipByteCount(xyzFp);
   int d = this->Internal->NumberOfDimensions;
   if (this->ReadVector(xyzFp, this->NumberOfPoints, d, pointArray) == 0)
-    {
+  {
     vtkErrorMacro("Encountered premature end-of-file while reading "
                   "the geometry file (or the file is corrupt).");
     return VTK_ERROR;
+  }
+
+  // Read IBlanking data
+  if (this->IBlankingInFile == 1 && this->UseIBlankingIfDetected == 1)
+  {
+    vtkIntArray* iblank = vtkIntArray::New();
+    iblank->SetNumberOfTuples(this->NumberOfPoints);
+
+    // Attempt to read the iblank data from the plot3d file. If the read fails,
+    // then the function will return 0 and we will error out. If the read passes,
+    // it will return the count that indicates how many numbers it read.
+    if (this->ReadIBlank(xyzFp, this->NumberOfPoints, iblank) == 0)
+    {
+      vtkErrorMacro("Encountered premature end-of-file while reading "
+                    "the iblanking data from the xyz file.");
+      return VTK_ERROR;
+    }    
+
+    // IBlank data is 0 if it should be blanked and 1 if it should not be
+    // blanked, which is a little backwards from how I think of it, but okay.
+    // So where ib is 0 we use NODE_NOT_APPLICABLE_TO_PROBLEM and where ib is
+    // 1 we just set to zero, which does not apply any ghosting.
+    vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
+    ghostNodes->SetName("avtGhostNodes");
+    ghostNodes->SetNumberOfTuples(this->NumberOfPoints);
+    ghostNodes->FillComponent(0, 0);
+    int *ib = iblank->GetPointer(0);
+    unsigned char *gnp = ghostNodes->GetPointer(0);
+    for (int i = 0; i < this->NumberOfPoints; ++i)
+    {
+      if (ib[i] == 0)
+      {
+        avtGhostData::AddGhostNodeType(gnp[i], avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM);
+      }
+      else if (ib[i] == 1)
+      {
+        gnp[i] = 0;
+      }
     }
 
-  // This is where we would read IBlanking information, but VisIt currently 
-  //  doesn't do anything with it
-  // 
-#if 0
-  if (this->Internal->IBlanking)
+    output->GetPointData()->AddArray(ghostNodes);
+    iblank->Delete();
+    ghostNodes->Delete();
+
+    // Based on the iblanked nodes, determine which zones should be iblanked.
+    vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
+    ghostZones->SetNumberOfValues(output->GetNumberOfCells());
+    ghostZones->SetName("avtGhostZones");
+    vtkIdList* ids = vtkIdList::New();
+    vtkIdType numCells = output->GetNumberOfCells();
+
+    for (vtkIdType cellId = 0; cellId < numCells; cellId++)
     {
+      output->GetCellPoints(cellId, ids);
+      vtkIdType numIds = ids->GetNumberOfIds();
+      unsigned char value = 0;
+      for (vtkIdType ptIdx = 0; ptIdx < numIds; ptIdx++)
+      {
+        if (avtGhostData::IsGhostNodeType(gnp[ids->GetId(ptIdx)], avtGhostNodeTypes::NODE_NOT_APPLICABLE_TO_PROBLEM))
+        {
+          // The node is iblanked, so the entire zone should be iblanked too.
+          avtGhostData::AddGhostZoneType(value, avtGhostZoneTypes::ZONE_NOT_APPLICABLE_TO_PROBLEM);
+          break;
+        }
+      }
+      ghostZones->SetValue(cellId, value);
     }
-#endif
+    ids->Delete();
+    output->GetCellData()->AddArray(ghostZones);
+    ghostZones->Delete();
+  }
   return VTK_OK;
 }
 
@@ -827,7 +946,7 @@ vtkPLOT3DReader::ComputeGridOffset(FILE *xyzFp)
       {
       if (this->Internal->BinaryFile)
         {
-        if (this->Internal->IBlanking)
+        if (this->IBlankingInFile == 1)
           {
             this->GridOffsets[j] = (this->GridOffsets[j-1] +        // starting offset
                 nd*this->GridSizes[j-1]*this->Internal->Precision + // coordinate sizes
@@ -844,7 +963,7 @@ vtkPLOT3DReader::ComputeGridOffset(FILE *xyzFp)
       else
         {
         int numberOfElements;
-        if (this->Internal->IBlanking)
+        if (this->IBlankingInFile == 1)
           {
           numberOfElements = (nd+1)*GridSizes[j-1];
           }
@@ -1056,7 +1175,8 @@ void vtkPLOT3DReader::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Gamma: " << this->Gamma << endl;
   os << indent << "R: " << this->R << endl;
   os << indent << "MultiGrid: " << this->MultiGrid << endl;
-  os << indent << "IBlanking: " << this->IBlanking << endl;
+  os << indent << "IBlankingInFile: " << this->IBlankingInFile << endl;
+  os << indent << "UseIBlankingIfDetected: " << this->UseIBlankingIfDetected << endl;
   os << indent << "ByteOrder: " << this->ByteOrder << endl;
   os << indent << "TwoDimensionalGeometry: " << (this->TwoDimensionalGeometry?"on":"off")
      << endl;

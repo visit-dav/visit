@@ -100,8 +100,8 @@ class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisRenderingWindow(const QString &caption = QString::null,
-                        const QString &shortName = QString::null,
+    QvisRenderingWindow(const QString &caption = QString(),
+                        const QString &shortName = QString(),
                         QvisNotepadArea *n = 0);
     virtual ~QvisRenderingWindow();
     virtual void CreateWindowContents();

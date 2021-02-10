@@ -103,7 +103,7 @@ UndoViewActionUI::UndoViewActionUI(ViewerActionLogic *L) :
 bool
 UndoViewActionUI::Enabled() const
 {
-    // This ActionUI should only be enabled if the window to which the 
+    // This ActionUI should only be enabled if the window to which the
     // ActionUI belongs has plots in it and there are views to undo.
     return (GetLogic()->GetWindow()->GetPlotList()->GetNumPlots() > 0) &&
             GetLogic()->GetWindow()->UndoViewEnabled();
@@ -121,7 +121,7 @@ RedoViewActionUI::RedoViewActionUI(ViewerActionLogic *L) : ViewerActionUISingle(
 bool
 RedoViewActionUI::Enabled() const
 {
-    // This ActionUI should only be enabled if the window to which the 
+    // This ActionUI should only be enabled if the window to which the
     // ActionUI belongs has plots in it and there are views to Redo.
     return (GetLogic()->GetWindow()->GetPlotList()->GetNumPlots() > 0) &&
             GetLogic()->GetWindow()->RedoViewEnabled();
@@ -129,7 +129,7 @@ RedoViewActionUI::Enabled() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ToggleFullFrameActionUI::ToggleFullFrameActionUI(ViewerActionLogic *L) : 
+ToggleFullFrameActionUI::ToggleFullFrameActionUI(ViewerActionLogic *L) :
     ViewerActionUIToggle(L)
 {
     SetAllText(tr("Full frame"));
@@ -139,7 +139,7 @@ ToggleFullFrameActionUI::ToggleFullFrameActionUI(ViewerActionLogic *L) :
 bool
 ToggleFullFrameActionUI::Enabled() const
 {
-    // This ActionUI should only be enabled if the window to which the ActionUI 
+    // This ActionUI should only be enabled if the window to which the ActionUI
     // belongs has plots in it, and is 2D.
     return (GetLogic()->GetWindow()->GetPlotList()->GetNumPlots() > 0) &&
            (GetLogic()->GetWindow()->GetWindowMode() == WINMODE_2D);
@@ -156,7 +156,7 @@ ToggleFullFrameActionUI::Checked() const
 // ****************************************************************************
 // Method: SaveViewActionUI::SaveViewActionUI
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the SaveViewActionUI class.
 //
 // Arguments:
@@ -207,14 +207,14 @@ SaveViewActionUI::SaveViewActionUI(ViewerActionLogic *L) : ViewerActionUIMultipl
 // ****************************************************************************
 // Method: SaveViewActionUI::~SaveViewActionUI
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the SaveViewActionUI class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Feb 26 08:53:31 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 SaveViewActionUI::~SaveViewActionUI()
@@ -269,7 +269,7 @@ SaveViewActionUI::Update()
                 QPixmap icon(blankcamera_xpm);
                 QPainter paint(&icon);
                 QString str;
-                str.sprintf("%d", nGUIViews + i + 1);
+                str.setNum(nGUIViews + i + 1);
                 paint.setPen(QColor(0,255,0));
                 QFont f(QApplication::font());
                 f.setBold(true);
@@ -312,14 +312,14 @@ SaveViewActionUI::Update()
 // ****************************************************************************
 // Method: SaveViewActionUI::Enabled
 //
-// Purpose: 
+// Purpose:
 //   Tells when this ActionUI is enabled.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Feb 26 08:53:46 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -332,7 +332,7 @@ SaveViewActionUI::Enabled() const
 // ****************************************************************************
 // Method: SaveViewActionUI::ChoiceEnabled
 //
-// Purpose: 
+// Purpose:
 //   Tells when the individual choices in this ActionUI are enabled.
 //
 // Arguments:
@@ -342,7 +342,7 @@ SaveViewActionUI::Enabled() const
 // Creation:   Wed Feb 26 08:53:14 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -365,7 +365,7 @@ SaveViewActionUI::ChoiceEnabled(int i) const
 // ****************************************************************************
 // Method: ChooseCenterOfRotationActionUI::ChooseCenterOfRotationActionUI
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the ChooseCenterOfRotationActionUI class.
 //
 // Arguments:
@@ -375,7 +375,7 @@ SaveViewActionUI::ChoiceEnabled(int i) const
 // Creation:   Wed Jan 7 10:05:39 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ChooseCenterOfRotationActionUI::ChooseCenterOfRotationActionUI(ViewerActionLogic *L) :
@@ -390,14 +390,14 @@ ChooseCenterOfRotationActionUI::ChooseCenterOfRotationActionUI(ViewerActionLogic
 // ****************************************************************************
 // Method: ChooseCenterOfRotationActionUI::~ChooseCenterOfRotationActionUI
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the ChooseCenterOfRotationActionUI class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 7 10:06:02 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ChooseCenterOfRotationActionUI::~ChooseCenterOfRotationActionUI()
@@ -407,7 +407,7 @@ ChooseCenterOfRotationActionUI::~ChooseCenterOfRotationActionUI()
 // ****************************************************************************
 // Method: ChooseCenterOfRotationActionUI::Enabled
 //
-// Purpose: 
+// Purpose:
 //   Returns when the ActionUI is enabled.
 //
 // Returns:    True if there are realized plots; false otherwise.

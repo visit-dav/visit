@@ -36,7 +36,7 @@
 #5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
 #6. bv_<module>_build builds the module
 
-export VISIT_VERSION=${VISIT_VERSION:-"3.1.0"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.1.4"}
 
 ####
 # Trunk:
@@ -73,6 +73,9 @@ export webroot="http://visit.ilight.com/svn/visit/"
 export webaddr="${webroot}/trunk/src/tools/dev/scripts/bv_support/"
 export visitroot="https://github.com/visit-dav/visit/releases/download/"
 export thirdpartyroot="https://github.com/visit-dav/third-party/releases/download/"
+
+# for use when running a develop verison of build_visit
+export thirdpartyroot_dev="https://github.com/visit-dav/third-party/raw/master/lib"
 
 #state = "disabled", "enabled", "installed"
 declare -a reqlibs
@@ -432,6 +435,9 @@ function bv_write_unified_file
     echo "export webaddr=\"\${webroot}/trunk/src/tools/dev/scripts/bv_support/\"" >> $OUTPUT_bv_FILE
     echo "export visitroot=\"https://github.com/visit-dav/visit/releases/download/\"" >> $OUTPUT_bv_FILE
     echo "export thirdpartyroot=\"https://github.com/visit-dav/third-party/releases/download/\"" >> $OUTPUT_bv_FILE
+
+    # for use when running a develop verison of build_visit
+    echo "export thirdpartyroot_dev=\"https://github.com/visit-dav/third-party/raw/master/lib\"" >> $OUTPUT_bv_FILE
 
     echo "declare -a reqlibs" >> $OUTPUT_bv_FILE
     echo "declare -a optlibs" >> $OUTPUT_bv_FILE

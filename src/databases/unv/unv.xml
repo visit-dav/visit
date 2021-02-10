@@ -3,6 +3,8 @@
     <FilePatterns>
       *.unv
       *.unv.gz
+      *.iv
+      *.msh
     </FilePatterns>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

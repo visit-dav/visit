@@ -1587,6 +1587,9 @@ ViewerPlot::GetMetaData() const
 //
 // Modifications:
 //
+//    Mark C. Miller, Wed Nov  4 12:03:59 PST 2020
+//    Add bg/fg color into to plot meta data.
+//
 // ****************************************************************************
 
 avtPlotMetaData
@@ -1612,9 +1615,25 @@ ViewerPlot::GetPlotMetaData() const
             actualSpatial = *dAtts.GetThisProcsOriginalSpatialExtents();
         }
     }
+
+    /* Get bg/fg color info from window. Even though this-> object
+       appears to have it also, it is not reliably kept up to date. */
+    int windowId = viewerPlotList?viewerPlotList->GetWindowId():0;
+    ViewerWindowManager *vwm = ViewerWindowManager::Instance();
+    ViewerWindow *w = vwm->GetWindow(windowId);
+    WindowAttributes winAtts = w->GetWindowAttributes();
+    AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
+
+    double bgc[4];
+    double fgc[4];
+    ColorAttribute const &bgca = annotAtts.GetBackgroundColor();
+    bgca.GetRgba(bgc);
+    ColorAttribute const &fgca = annotAtts.GetForegroundColor();
+    fgca.GetRgba(fgc);
+
     return avtPlotMetaData(GetMetaData(), GetVariableName(),
                            GetVarType(), GetSILRestriction(),
-                           actualSpatial, originalSpatial);
+                           actualSpatial, originalSpatial, bgc, fgc);
 }
 
 // ****************************************************************************

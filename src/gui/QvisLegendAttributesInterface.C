@@ -509,7 +509,11 @@ QvisLegendAttributesInterface::UpdateControls()
         suppliedLabels->horizontalHeaderItem(0)->setText(tr("Values"));
         for (int i = 0; i < size; ++i)
         {
-            temp.sprintf(fmt.toStdString().c_str(), sv[i]);
+            // Qt recommends that asprintf not be used, they recommend
+            // QTextStream or QString.arg. But neither of these will take
+            // the formatString in its current form. Would have to rethink
+            // the format interface.
+            temp = QString::asprintf(fmt.toStdString().c_str(), sv[i]);
             suppliedLabels->item(i, 0)->setText(temp.simplified());
             suppliedLabels->item(i, 0)->setFlags(
                      Qt::ItemIsSelectable|Qt::ItemIsEditable|Qt::ItemIsEnabled);
@@ -605,7 +609,10 @@ QvisLegendAttributesInterface::UpdateControls()
     drawMinmaxCheckBox->blockSignals(false);
 
     // Set the font height
-    fontHeight->setText(QString().sprintf("%g", annot->GetOptions().GetEntry("fontHeight")->AsDouble()));
+    // QString.arg  default format spec for double is '%g', so don't need
+    // to send format specifiers since that's what is wanted here.
+    QString fh = QString("%1").arg(annot->GetOptions().GetEntry("fontHeight")->AsDouble());
+    fontHeight->setText(fh);
 
     // Set the use foreground color check box.
     useForegroundColorCheckBox->blockSignals(true);

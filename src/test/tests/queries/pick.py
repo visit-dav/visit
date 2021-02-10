@@ -231,6 +231,8 @@
 #    Alister Maguire, Thu Jan  2 15:16:53 PST 2020
 #    Added test for translated zone highlights.
 #
+#    Mark C. Miller, Mon Jan 11 10:38:03 PST 2021
+#    Replace Assert-style with TestValue-style tests
 # ----------------------------------------------------------------------------
 from __future__ import print_function
 
@@ -3004,7 +3006,7 @@ def TestRemovePicks():
 
     #check that the returned list matches
     #what we expect
-    AssertEqual("Removed expected picks", removed, expected)
+    TestValueEQ("Removed expected picks", removed, expected)
     ClearPickPoints() 
 
     PickByZone(0)
@@ -3015,7 +3017,7 @@ def TestRemovePicks():
     removed   = RemovePicks(to_remove)
     Test("RemovePicks_04")
 
-    AssertEqual("Removed expected picks 2", removed, expected)
+    TestValueEQ("Removed expected picks 2", removed, expected)
 
     ClearPickPoints() 
     DeleteAllPlots()
@@ -3044,7 +3046,7 @@ def TestRemoveLabeledPicks():
     Test("RemoveLabeledPicks_01")
 
     expected = "shell 1, shell 2"
-    AssertEqual("Removed expected shell", expected, removed)
+    TestValueEQ("Removed expected shell", expected, removed)
 
     ClearPickPoints() 
     DeleteAllPlots()

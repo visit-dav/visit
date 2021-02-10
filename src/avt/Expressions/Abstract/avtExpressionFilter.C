@@ -14,6 +14,7 @@
 
 #include <visit-config.h>
 
+#include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkDataSet.h>
@@ -302,6 +303,16 @@ avtExpressionFilter::PostExecute(void)
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Eric Brugger, Thu Nov  5 08:54:21 PST 2020
+//    Change how the data extents are calculated. In the case of nodal
+//    variables, it now uses the zonelist to determine which nodes are
+//    actually referenced and then only considers those nodes. The use
+//    of ghost data was also modified. If a variable is nodal it first
+//    tries to use ghost node data and if that isn't available it tries
+//    to use ghost zone data. If a variable is zonal it first tries to
+//    use ghost zone data and if that isn't available it tries to use
+//    ghost node data.
+//
 // ****************************************************************************
 
 void
@@ -314,14 +325,34 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
     if (nc <= 0 && tree->HasData())
     {
         vtkDataSet *ds = tree->GetDataRepresentation().GetDataVTK();
+
+        //
+        // Get the ghost zone information.
+        //
+        vtkUnsignedCharArray *ghostZonesArray =
+           (vtkUnsignedCharArray*)ds->GetCellData()->GetArray("avtGhostZones");
+        vtkUnsignedCharArray *ghostNodesArray =
+           (vtkUnsignedCharArray*)ds->GetPointData()->GetArray("avtGhostNodes");
+        unsigned char *ghostZones = NULL;
+        if (ghostZonesArray != NULL)
+            ghostZones = ghostZonesArray->GetPointer(0);
+        unsigned char *ghostNodes = NULL;
+        if (ghostNodesArray != NULL)
+            ghostNodes = ghostNodesArray->GetPointer(0);
+
+        bool checkGhost = (ghostZones != NULL || ghostNodes != NULL);
+
+        vtkDataArray *data = NULL;
         bool isPoint = true;
-        vtkDataArray *dat = ds->GetPointData()->GetArray(outputVariableName);
-        if (dat == NULL)
+        if ((data = ds->GetPointData()->GetArray(outputVariableName)) != NULL)
         {
-            dat = ds->GetCellData()->GetArray(outputVariableName);
+            isPoint = true;
+        }
+        else if ((data = ds->GetCellData()->GetArray(outputVariableName)) != NULL)
+        {
             isPoint = false;
         }
-        if (dat == NULL)
+        else
         {
             debug1 << "VERY STRANGE.  We have been asked to update the "
                    << "extents for variable \"" << outputVariableName
@@ -329,54 +360,110 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
             return;
         }
 
-        int nvars = dat->GetNumberOfComponents();
+        //
+        // If this is a point variable, then determine if any nodes are
+        // not referenced by the zone list.
+        //
+        unsigned char *referenced = NULL;
+        if (isPoint && ds->GetNumberOfCells() > 0)
+        {
+            referenced = new unsigned char[data->GetNumberOfTuples()];
+            memset(referenced, 0, data->GetNumberOfTuples());
+            for (int i = 0; i < ds->GetNumberOfCells(); i++)
+            {
+                  vtkIdList *ids = ds->GetCell(i)->GetPointIds();
+                  for (int j = 0 ; j < ids->GetNumberOfIds(); j++)
+                      referenced[ids->GetId(j)] = 1;
+            }
+        }
+
+        //
+        // Initialize the extents.
+        //
+        int nvars = data->GetNumberOfComponents();
         double *compexts = new double[nvars*2];
         for (int d=0; d<nvars; d++)
         {
-            compexts[d*2+0] =  DBL_MAX;
+            compexts[d*2+0] = +DBL_MAX;
             compexts[d*2+1] = -DBL_MAX;
         }
-
         double exts[2];
-        unsigned char *ghosts = NULL;
-        if (isPoint)
-        {
-            vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
-                ds->GetPointData()->GetArray("avtGhostNodes");
-            if (g != NULL)
-            {
-                ghosts = g->GetPointer(0);
-            }
-        }
-        else
-        {
-            vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
-                ds->GetCellData()->GetArray("avtGhostZones");
-            if (g != NULL)
-            {
-                ghosts = g->GetPointer(0);
-            }
-        }
-        int ntuples = dat->GetNumberOfTuples();
         exts[0] = +FLT_MAX;
         exts[1] = -FLT_MAX;
-        for (int i = 0 ; i < ntuples ; i++)
+
+        vtkIdList *ids = vtkIdList::New();
+
+        int nref = 0;
+        for (int iTuple = 0 ; iTuple < data->GetNumberOfTuples(); iTuple++)
         {
-            if (ghosts != NULL && ghosts[i] > 0)
+            //
+            // Skip this tuple if if isn't referenced.
+            //
+            if (referenced != NULL && referenced[iTuple] == 0)
+                continue;
+            nref++;
+
+            //
+            // Determine if this is a ghost and skip it if it is.
+            //
+            bool ghost = false;
+            if (checkGhost)
+            {
+                if (isPoint)
+                {
+                    if (ghostNodes != NULL)
+                    {
+                        ghost = (ghostNodes[iTuple] > 0);
+                    }
+                    else
+                    {
+                        ds->GetPointCells(iTuple, ids);
+                        int numGhostCells = 0;
+                        for (int i = 0; i < ids->GetNumberOfIds(); i++)
+                            numGhostCells +=
+                              ghostZones[ids->GetId(i)] > 0 ?  1 : 0;
+                        ghost = numGhostCells == ids->GetNumberOfIds();
+                    }
+                }
+                else
+                {
+                    if (ghostZones != NULL)
+                    {   
+                        ghost = (ghostZones[iTuple] > 0);
+                    }
+                    else
+                    {
+                        ds->GetCellPoints(iTuple, ids);
+                        int numGhostNodes = 0;
+                        for (int i = 0; i < ids->GetNumberOfIds(); i++)
+                            numGhostNodes +=
+                              ghostNodes[ids->GetId(i)] > 0 ?  1 : 0;
+                        ghost = numGhostNodes > 0;
+                    }
+                }
+            }
+            if (ghost)
             {
                 continue;
             }
-            double *val = dat->GetTuple(i);
+
+            //
+            // Get the value for the tuple.
+            //
+            double *val = data->GetTuple(iTuple);
             double value = 0;
             if (nvars == 1)
                 value = *val;
             else if (nvars == 3)
-                value = val[0]*val[0] + val[1] * val[1] + val[2] *val[2];
+                value = val[0] * val[0] + val[1] * val[1] + val[2] * val[2];
             else if (nvars == 9)
                 // This function is found in avtCommonDataFunctions.
                 value = MajorEigenvalue(val);
             // else ... we handle array variables below
 
+            //
+            // Skip any nans.
+            //
 #ifndef _WIN32
 #ifdef HAVE_ISFINITE
             if(!isfinite(value))
@@ -393,12 +480,17 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
             }
 #endif
 
+            //
+            // Update the extents.
+            //
             if (value < exts[0])
                 exts[0] = value;
             if (value > exts[1])
                 exts[1] = value;
 
+            //
             // For array variables, update extents here
+            //
             for (int d=0; d<nvars; d++)
             {
                 if (val[d] < compexts[d*2+0])
@@ -407,23 +499,36 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
                     compexts[d*2+1] = val[d];
             }
         }
+
+        //
+        // If this is a vector take the magnitude. We do this outside the
+        // loop so that we only do it once.
+        //
         if (nvars == 3)
         {
             exts[0] = sqrt(exts[0]);
             exts[1] = sqrt(exts[1]);
         }
 
+        //
+        // Update the Extents.
+        //
         avtDataAttributes &outatts = GetOutput()->GetInfo().GetAttributes();
 
         outatts.GetThisProcsOriginalDataExtents(outputVariableName)->Merge(exts);
 
+        //
         // Update component extents in array variables
+        //
         if (outatts.GetVariableType(outputVariableName) == AVT_ARRAY_VAR)
         {
             outatts.GetVariableComponentExtents(outputVariableName)->
                 Merge(compexts);
         }
-        delete[] compexts;
+
+        ids->Delete();
+        if (referenced != NULL) delete [] referenced;
+        delete [] compexts;
     }
     else if (nc > 0)
         for (int i = 0 ; i < nc ; i++)

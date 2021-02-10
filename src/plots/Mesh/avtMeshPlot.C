@@ -232,6 +232,11 @@ avtMeshPlot::Create()
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Changed to the Set... method (Get is now done in avtPlot.C)
 //
+//    Mark C. Miller, Tue Dec 15 19:50:23 PST 2020
+//    Fix logic to set non-unit multipler only when...
+//       a) topo dim is zero...meaning its a point mesh and a glyphed plot
+//       b) spatial dim is 2 or 3...meaning glyphs are sets of 3D faces
+//    Set multipler to count of faces of each 2 or 3D glyph type.
 // ****************************************************************************
 
 void
@@ -239,11 +244,53 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 {
     if (*dob)
     {
-        int dim = dob->GetInfo().GetAttributes().GetSpatialDimension();
-        if (dim == 0)
-            cellCountMultiplierForSRThreshold = 6.0;
-        else
+        int tdim = dob->GetInfo().GetAttributes().GetTopologicalDimension();
+
+        if (tdim > 0)
+        {
             cellCountMultiplierForSRThreshold = 1.0;
+            return;
+        }
+
+        int sdim = dob->GetInfo().GetAttributes().GetSpatialDimension();
+        if (sdim < 2)
+        {
+            cellCountMultiplierForSRThreshold = 1.0;
+            return;
+        }
+
+        // 2D glyphs are polydata often comprised of multiple tris or quads
+        // but can include lines and points.
+        if (sdim == 2)
+        {
+            switch (atts.GetPointType())
+            {
+                case Box:            cellCountMultiplierForSRThreshold = 1.0; break;
+                case Axis:           cellCountMultiplierForSRThreshold = 1.5; break;
+                case Icosahedron:    cellCountMultiplierForSRThreshold = 10.0; break;
+                case Octahedron:     cellCountMultiplierForSRThreshold = 5.0; break;
+                case Tetrahedron:    cellCountMultiplierForSRThreshold = 1.0; break;
+                case SphereGeometry: cellCountMultiplierForSRThreshold = 1.0; break;
+                case Point:          cellCountMultiplierForSRThreshold = 1.0; break;
+                case Sphere:         cellCountMultiplierForSRThreshold = 1.0; break;
+            }
+            return;
+        }
+
+        if (sdim == 3)
+        {
+            switch (atts.GetPointType())
+            {
+                case Box:            cellCountMultiplierForSRThreshold = 6.0; break;
+                case Axis:           cellCountMultiplierForSRThreshold = 3.0; break;
+                case Icosahedron:    cellCountMultiplierForSRThreshold = 20.0; break;
+                case Octahedron:     cellCountMultiplierForSRThreshold = 8.0; break;
+                case Tetrahedron:    cellCountMultiplierForSRThreshold = 4.0; break;
+                case SphereGeometry: cellCountMultiplierForSRThreshold = 1.0; break;
+                case Point:          cellCountMultiplierForSRThreshold = 1.0; break;
+                case Sphere:         cellCountMultiplierForSRThreshold = 1.0; break;
+            }
+        }
     }
 }
 
@@ -329,17 +376,6 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     {
         SetMeshColor(fgColor);
     }
-    else if (atts.GetMeshColorSource() == MeshAttributes::MeshRandom)
-    {
-        unsigned char rgb[3] = {0,0,0};
-        unsigned char bg[3] = {static_cast<unsigned char>(bgColor[0]*255),
-                               static_cast<unsigned char>(bgColor[1]*255),
-                               static_cast<unsigned char>(bgColor[2]*255)};
-        avtColorTables *ct = avtColorTables::Instance();
-        if (! ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(), this->instanceIndex, bg, rgb))
-            ct->GetJNDControlPointColor("distinct", this->instanceIndex, bg, rgb);
-        SetMeshColor(rgb);
-    }
     else // MeshAttributes::MeshCustom
     {
         SetMeshColor(atts.GetMeshColor().GetColor());
@@ -349,14 +385,6 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     if (atts.GetOpaqueColorSource() == MeshAttributes::Background)
     {
         SetOpaqueColor(bgColor);
-    }
-    else if (atts.GetOpaqueColorSource() == MeshAttributes::OpaqueRandom)
-    {
-        unsigned char rgb[3] = {0,0,0};
-        avtColorTables *ct = avtColorTables::Instance();
-        if (! ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), this->instanceIndex+1, rgb))
-            ct->GetControlPointColor("distinct", this->instanceIndex+1, rgb);
-        SetOpaqueColor(rgb);
     }
     else // MeshAttributes::OpaqueCustom
     {

@@ -154,13 +154,21 @@ function bv_python_alt_python_dir
 {
     echo "Using alternate python directory"
 
-    [ ! -e "$1/bin/python-config" ] && error "Python not found in $1"
+    if [ -e "$1/bin/python-config" ]
+    then
+        PYTHON_COMMAND="$1/bin/python"
+        PYTHON_CONFIG_COMMAND="$1/bin/python-config"
+    elif [ -e "$1/bin/python3-config" ]
+    then
+        PYTHON_COMMAND="$1/bin/python3"
+        PYTHON_CONFIG_COMMAND="$1/bin/python3-config"
+    else
+        error "Python not found in $1"
+    fi
 
     bv_python_enable
     USE_SYSTEM_PYTHON="yes"
     PYTHON_ALT_DIR="$1"
-    PYTHON_COMMAND="$PYTHON_ALT_DIR/bin/python"
-    PYTHON_CONFIG_COMMAND="$PYTHON_ALT_DIR/bin/python-config"
     PYTHON_FILE=""
     python_set_vars_helper #set vars..
 }
@@ -496,6 +504,8 @@ function bv_python_initialize_vars
         # export PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/bin/python"
         export PYTHON_INCLUDE_DIR="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}"
         export PYTHON_LIBRARY="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"
+    else
+        export PYTHON_COMMAND="${PYTHON_COMMAND}"
     fi
 }
 
@@ -559,6 +569,39 @@ function apply_python_patch
                 return 1
             fi
         fi
+    fi
+
+    return 0
+}
+
+function apply_python_seedme_patch
+{
+    info "Patching Python: fix setup.py in seedme."
+    patch -f -p0 << \EOF
+diff -c setup.py.orig setup.py
+*** setup.py.orig    Mon Feb  1 13:39:48 2021
+--- setup.py         Mon Feb  1 13:40:03 2021
+***************
+*** 73,79 ****
+                     'interface as well as methods and api for '         +\
+                     'programmatic usage. It performs extensive sanity ' +\
+                     'checks input data and is kept upto date with '     +\
+!                    'REST api at SeedMe.org.',
+  
+  setup(name='seedme',
+        version="1.2.4",
+--- 73,79 ----
+                     'interface as well as methods and api for '         +\
+                     'programmatic usage. It performs extensive sanity ' +\
+                     'checks input data and is kept upto date with '     +\
+!                    'REST api at SeedMe.org.'
+  
+  setup(name='seedme',
+        version="1.2.4",
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Python patch for setup.py in seedme failed."
+        return 1
     fi
 
     return 0
@@ -967,7 +1010,23 @@ function build_seedme
         fi
     fi
 
+    #
+    # Apply patches
+    #
     pushd $SEEDME_BUILD_DIR > /dev/null
+    apply_python_seedme_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_python == 1 ]] ; then
+            warn "Giving up on seedme install."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
     info "Installing seedme python module ..."
     ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
@@ -1824,18 +1883,12 @@ function bv_python_is_installed
         PY_OK=0
     fi
 
-    if [[ "$DO_PYTHON2" == "yes" ]]; then
-        # seedme doesn't seem to work with python 3
-        # Error during install:
-        # AttributeError: 'tuple' object has no attribute 'split'
-        # Could be ported, we could ping seedme folks.
-        check_if_py_module_installed "seedme"
-        if [[ $? != 0 ]] ; then
-            if [[ $PY_CHECK_ECHO != 0 ]] ; then
-                info "python module seedme is not installed"
-            fi
-            PY_OK=0
+    check_if_py_module_installed "seedme"
+    if [[ $? != 0 ]] ; then
+        if [[ $PY_CHECK_ECHO != 0 ]] ; then
+            info "python module seedme is not installed"
         fi
+        PY_OK=0
     fi
     
     if [[ "$BUILD_SPHINX" == "yes" ]]; then
@@ -1912,15 +1965,6 @@ function bv_python_build
                 export PYTHON_COMMAND="${PYHOME}/bin/python3"
             fi
 
-            check_if_py_module_installed "PIL"
-            # use Pillow for when python 3
-            info "Building the Python Pillow Imaging Library"
-            build_pillow
-            if [[ $? != 0 ]] ; then
-                error "Pillow build failed. Bailing out."
-            fi
-            info "Done building the Python Pillow Imaging Library"
-
             check_if_py_module_installed "numpy"
             if [[ $? != 0 ]] ; then
                 info "Building the numpy module"
@@ -1930,6 +1974,15 @@ function bv_python_build
                 fi
                 info "Done building the numpy module."
             fi
+
+            check_if_py_module_installed "PIL"
+            # use Pillow for when python 3
+            info "Building the Python Pillow Imaging Library"
+            build_pillow
+            if [[ $? != 0 ]] ; then
+                error "Pillow build failed. Bailing out."
+            fi
+            info "Done building the Python Pillow Imaging Library"
 
             if [[ "$BUILD_MPI4PY" == "yes" ]]; then
 
@@ -1964,16 +2017,13 @@ function bv_python_build
                 info "Done building the requests python module."
             fi
 
-            if [[ "$DO_PYTHON2" == "yes" ]]; then
-
-                check_if_py_module_installed "seedme"
+            check_if_py_module_installed "seedme"
+            if [[ $? != 0 ]] ; then
+                build_seedme
                 if [[ $? != 0 ]] ; then
-                    build_seedme
-                    if [[ $? != 0 ]] ; then
-                        error "seedme python module build failed. Bailing out."
-                    fi
-                    info "Done building the seedme python module."
+                    error "seedme python module build failed. Bailing out."
                 fi
+                info "Done building the seedme python module."
             fi
 
             if [[ "$BUILD_SPHINX" == "yes" ]]; then

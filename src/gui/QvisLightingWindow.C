@@ -30,7 +30,7 @@
 // ****************************************************************************
 // Method: QvisLightingWindow::QvisLightingWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the QvisLightingWindow class.
 //
 // Arguments:
@@ -76,7 +76,7 @@ QvisLightingWindow::QvisLightingWindow(LightList *subj, const QString &caption,
 // ****************************************************************************
 // Method: QvisLightingWindow::~QvisLightingWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the QvisLightingWindow class.
 //
 // Programmer: Brad Whitlock
@@ -98,7 +98,7 @@ QvisLightingWindow::~QvisLightingWindow()
 // ****************************************************************************
 // Method: QvisLightingWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   This method creates the window's widgets.
 //
 // Programmer: Brad Whitlock
@@ -247,7 +247,7 @@ QvisLightingWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisLightingWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method updates the window's widgets when the light list changes.
 //
 // Programmer: Brad Whitlock
@@ -263,6 +263,9 @@ QvisLightingWindow::CreateWindowContents()
 //
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
+//
+//   Kathleen Biagas, Jan 21, 2021
+//   Replace QString.asprintf with simpler QString.setNum and QString.arg.
 //
 // ****************************************************************************
 
@@ -283,7 +286,7 @@ QvisLightingWindow::UpdateWindow(bool)
     {
         bool enabled = lights->GetLight(i).GetEnabledFlag();
         QString num;
-        num.sprintf("%d", i + 1);
+        num.setNum(i + 1);
         if(enabled)
         {
             activeLightComboBox->setItemText(i,num);
@@ -310,10 +313,10 @@ QvisLightingWindow::UpdateWindow(bool)
     lightEnabledCheckBox->blockSignals(false);
 
     // Update the light direction line edit.
-    QString tmp;
-    tmp.sprintf("%1.3g %1.3g %1.3g", light.GetDirection()[0],
-                                     light.GetDirection()[1],
-                                     light.GetDirection()[2]);
+    QString tmp = QString("%1 %2 %3")
+        .arg(light.GetDirection()[0], 1, 'g', 3)
+        .arg(light.GetDirection()[1], 1, 'g', 3)
+        .arg(light.GetDirection()[2], 1, 'g', 3);
     lightDirectionLineEdit->setText(tmp);
     bool val = (light.GetType() != LightAttributes::Ambient);
     lightDirectionLineEdit->setEnabled(val);
@@ -344,7 +347,7 @@ QvisLightingWindow::UpdateWindow(bool)
 // ****************************************************************************
 // Method: QvisLightingWindow::UpdateLightWidget
 //
-// Purpose: 
+// Purpose:
 //   Updates the light widget using the state in the light list.
 //
 // Programmer: Brad Whitlock
@@ -353,10 +356,10 @@ QvisLightingWindow::UpdateWindow(bool)
 // Modifications:
 //   Kathleen Bonnell, Tue Dec 28 16:20:47 PST 2004
 //   Cast args for QColor constructor to int to prevent comiler warnings.
-//   
-//   Kathleen Bonnell, Mon Feb  6 16:58:40 PST 2006 
-//   Removed unnecessary code that counted 'numEnabled' as it was not used. 
-//   
+//
+//   Kathleen Bonnell, Mon Feb  6 16:58:40 PST 2006
+//   Removed unnecessary code that counted 'numEnabled' as it was not used.
+//
 // ****************************************************************************
 
 void
@@ -371,7 +374,7 @@ QvisLightingWindow::UpdateLightWidget()
         for(int i = 0; i < lights->NumLights(); ++i)
         {
             const LightAttributes &light = lights->GetLight(i);
-           
+
             if(light.GetEnabledFlag())
             {
                 QColor c2((int)(light.GetColor().Red() * light.GetBrightness()),
@@ -407,7 +410,7 @@ QvisLightingWindow::UpdateLightWidget()
 // ****************************************************************************
 // Method: QvisLightingWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   This method is called in order to get the state for the direction text.
 //
 // Arguments:
@@ -419,9 +422,12 @@ QvisLightingWindow::UpdateLightWidget()
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
-//   
+//
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
+//
+//   Kathleen Biagas, Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
 //
 // ****************************************************************************
 
@@ -452,7 +458,7 @@ QvisLightingWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *d = light.GetDirection();
-            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
+            QString num = QString("<%1 %2 %3>.").arg(d[0]).arg(d[1]).arg(d[2]);
             msg = tr("The direction vector was invalid. "
                      "Resetting to the last good value %1.").arg(num);
             Message(msg);
@@ -465,7 +471,7 @@ QvisLightingWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisLightingWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   This method applies the light list.
 //
 // Arguments:
@@ -484,7 +490,7 @@ void
 QvisLightingWindow::Apply(bool ignore)
 {
     // This is a little different from how it is normally done in a window
-    // but we're setting attributes for an individual object in a list of 
+    // but we're setting attributes for an individual object in a list of
     // objects and we have to get the current values all the time in case
     // some of them changed because a full update is going to cause all
     // light attributes for the active light to be selected, which could
@@ -518,7 +524,7 @@ QvisLightingWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisLightingWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the apply button is
 //   clicked.
 //
@@ -526,7 +532,7 @@ QvisLightingWindow::Apply(bool ignore)
 // Creation:   Fri Oct 19 16:15:41 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -538,7 +544,7 @@ QvisLightingWindow::apply()
 // ****************************************************************************
 // Method: QvisLightingWindow::makeDefault
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the "make default" button
 //   is clicked.
 //
@@ -546,7 +552,7 @@ QvisLightingWindow::apply()
 // Creation:   Fri Oct 19 16:16:22 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -561,7 +567,7 @@ QvisLightingWindow::makeDefault()
 // ****************************************************************************
 // Method: QvisLightingWindow::reset
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the "reset" button is
 //   clicked.
 //
@@ -569,7 +575,7 @@ QvisLightingWindow::makeDefault()
 // Creation:   Fri Oct 19 16:17:03 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -581,7 +587,7 @@ QvisLightingWindow::reset()
 // ****************************************************************************
 // Method: QvisLightingWindow::activeLightComboBoxChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we change the active light.
 //
 // Arguments:
@@ -591,7 +597,7 @@ QvisLightingWindow::reset()
 // Creation:   Fri Oct 19 16:18:13 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -605,7 +611,7 @@ QvisLightingWindow::activeLightComboBoxChanged(int index)
 // ****************************************************************************
 // Method: QvisLightingWindow::brightnessChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the brightness changes.
 //
 // Arguments:
@@ -657,7 +663,7 @@ QvisLightingWindow::brightnessChanged2(int val)
 // ****************************************************************************
 // Method: QvisLightingWindow::enableToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the light is enabled or
 //   disabled.
 //
@@ -668,7 +674,7 @@ QvisLightingWindow::brightnessChanged2(int val)
 // Creation:   Fri Oct 19 16:19:27 PST 2001
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Fri Aug  6 07:13:17 PDT 2010
 //   Store that the enable button has been toggled.
 //
@@ -687,7 +693,7 @@ QvisLightingWindow::enableToggled(bool val)
 // ****************************************************************************
 // Method: QvisLightingWindow::lightMoved
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the active light is
 //   moved interactively.
 //
@@ -712,6 +718,9 @@ QvisLightingWindow::enableToggled(bool val)
 //   Brad Whitlock, Tue May 20 15:03:27 PST 2003
 //   Made it work with updated LightAttributes.
 //
+//   Kathleen Biagas, Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -728,8 +737,8 @@ QvisLightingWindow::lightMoved(double x, double y, double z)
             lights->SelectLight(activeLight);
             // Set the light direction into the direction line edit so
             // it works when autoupdate is on.
-            QString direction;
-            direction.sprintf("%1.3g %1.3g %1.3g", x, y, z);
+            QString direction = QString("%1 %2 %3")
+              .arg(x,1,'g',3).arg(y,1,'g',3).arg(z,1,'g',3);
             lightDirectionLineEdit->setText(direction);
             SetUpdate(false);
             Apply();
@@ -740,7 +749,7 @@ QvisLightingWindow::lightMoved(double x, double y, double z)
 // ****************************************************************************
 // Method: QvisLightingWindow::lightTypeComboBoxChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the light type is changed.
 //
 // Arguments:
@@ -750,7 +759,7 @@ QvisLightingWindow::lightMoved(double x, double y, double z)
 // Creation:   Fri Oct 19 16:21:16 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -765,7 +774,7 @@ QvisLightingWindow::lightTypeComboBoxChanged(int newType)
 // ****************************************************************************
 // Method: QvisLightingWindow::modeClicked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we want to change the
 //   window's mode from edit<->preview.
 //
@@ -776,7 +785,7 @@ QvisLightingWindow::lightTypeComboBoxChanged(int newType)
 // Creation:   Fri Oct 19 16:21:52 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -796,14 +805,14 @@ QvisLightingWindow::modeClicked(int index)
 // ****************************************************************************
 // Method: QvisLightingWindow::processLineDirectionText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the direction text changes.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 19 16:22:40 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -816,7 +825,7 @@ QvisLightingWindow::processLineDirectionText()
 // ****************************************************************************
 // Method: QvisLightingWindow::selectedLightColor
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the light color changes.
 //
 // Arguments:
@@ -826,7 +835,7 @@ QvisLightingWindow::processLineDirectionText()
 // Creation:   Fri Oct 19 16:23:09 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

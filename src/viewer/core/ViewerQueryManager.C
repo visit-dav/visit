@@ -201,7 +201,6 @@ ViewerQueryManager::ViewerQueryManager() : ViewerBase()
     lineoutList    = 0;
     nLineouts      = 0;
     nLineoutsAlloc = 0;
-    colorIndex     = 0;
 
     baseDesignator = 'A';
     cycleDesignator = false;
@@ -2940,29 +2939,22 @@ ViewerQueryManager::NoGraphicsPick(PICK_POINT_INFO *ppi)
 ColorAttribute
 ViewerQueryManager::GetColor()
 {
-    ColorAttribute c;
-    unsigned char rgb[3] = {0,0,0};
+    ViewerWindowManager *vwm = ViewerWindowManager::Instance();
+    ViewerWindow *w = vwm->GetLineoutWindow();
+    WindowAttributes winAtts = w->GetWindowAttributes();
+    AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
+    ColorAttribute const &bgca = annotAtts.GetBackgroundColor();
 
-    //
-    // Try and get the color for the colorIndex'th color in the default
-    // discrete color table.
-    //
     avtColorTables *ct = avtColorTables::Instance();
-    if(ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(),
-       colorIndex, rgb))
-    {
-        c.SetRed(int(rgb[0]));
-        c.SetGreen(int(rgb[1]));
-        c.SetBlue(int(rgb[2]));
-    }
+    unsigned char rgb[3] = {0,0,0};
+    if (!ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
+                                            "LineoutColor", bgca.GetColor(), rgb))
+        ct->GetJNDControlPointColor("distinct", "LineoutColor" , bgca.GetColor(), rgb);
 
-    // Increment the color index.
-    ++colorIndex;
+    ColorAttribute c(rgb[0], rgb[1], rgb[2]);
 
     return c;
 }
-
-
 
 // ****************************************************************************
 // Method: ViewerQueryManager::Lineout
@@ -4203,7 +4195,6 @@ ViewerQueryManager::CreateNode(DataNode *parentNode)
     //
     mgrNode->AddNode(new DataNode("baseDesignator", baseDesignator));
     mgrNode->AddNode(new DataNode("cycleDesignator", cycleDesignator));
-    mgrNode->AddNode(new DataNode("colorIndex", colorIndex));
 }
 
 // ****************************************************************************
@@ -4244,9 +4235,6 @@ ViewerQueryManager::SetFromNode(DataNode *parentNode,
         baseDesignator = node->AsChar() - 1;
         UpdateDesignator();
     }
-
-    if((node = mgrNode->GetNode("colorIndex")) != 0)
-        colorIndex = node->AsInt();
 }
 
 
@@ -6109,7 +6097,7 @@ ViewerQueryManager::FinishLineQuery()
 //  Method: ViewerQueryManager::ResetLineoutColor
 //
 //  Purpose:
-//    Resets colorIndex to the default state.
+//    Resets color index for lineouts
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   August 5, 2004
@@ -6121,7 +6109,8 @@ ViewerQueryManager::FinishLineQuery()
 void
 ViewerQueryManager::ResetLineoutColor()
 {
-    colorIndex     = 0;
+    avtColorTables *ct = avtColorTables::Instance();
+    ct->ResetJNDIndex("LineoutColor");
 }
 
 

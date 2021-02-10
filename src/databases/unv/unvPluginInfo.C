@@ -121,6 +121,8 @@ unvGeneralPluginInfo::GetDefaultFilePatterns() const
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.unv");
     defaultPatterns.push_back("*.unv.gz");
+    defaultPatterns.push_back("*.iv");
+    defaultPatterns.push_back("*.msh");
 
     return defaultPatterns;
 }

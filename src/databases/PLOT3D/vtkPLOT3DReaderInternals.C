@@ -178,65 +178,67 @@ int vtkPLOT3DReaderInternals::CheckBlankingAndPrecision(FILE* fp)
 
   rewind(fp);
   if(this->MultiGrid)
-    {
+  {
     if (!this->ReadInts(fp, 1, &recMarkBeg) ||
         !this->ReadInts(fp, 1, &numGrids) ||
         !this->ReadInts(fp, 1, &recMarkEnd))
-      {
-      return 0;
-      }
-    }
-  if (!this->ReadInts(fp, 1, &recMarkBeg))
     {
-    return 0;
+      return 0;
     }
+  }
+  if (!this->ReadInts(fp, 1, &recMarkBeg))
+  {
+    return 0;
+  }
   nMax = this->NumberOfDimensions * numGrids;
   jmax = new int[numGrids*3]; // allocate memory for jmax
   if (!this->ReadInts(fp, nMax, jmax) ||
       !this->ReadInts(fp, 1, &recMarkEnd))
-    {
+  {
     delete[] jmax;
     return 0;
-    }
+  }
   totPts = 1;
   for (int i=0; i<this->NumberOfDimensions; i++)
-    {
+  {
     totPts *= jmax[i];
-    }
+  }
   this->ReadInts(fp, 1, &recMarkBeg);
+
+  bool goodRead = false;
   // single precision, with iblanking
   if(recMarkBeg == totPts*(this->NumberOfDimensions*4 + 4))
-    {
+  {
     this->Precision = 4;
-    this->IBlanking = 1;
+    this->IBlanking = true;
     delete[] jmax;
-    return 1;
-    }
+    goodRead = true;
+  }
   // double precision, with iblanking
   else if(recMarkBeg == totPts*(this->NumberOfDimensions*8 + 4))
-    {
+  {
     this->Precision = 8;
-    this->IBlanking = 1;
+    this->IBlanking = true;
     delete[] jmax;
-    return 1;
-    }
+    goodRead = true;
+  }
   // single precision, no iblanking
   else if(recMarkBeg == totPts*this->NumberOfDimensions*4)
-    {
+  {
     this->Precision = 4;
-    this->IBlanking = 0;
+    this->IBlanking = false;
     delete[] jmax;
-    return 1;
-    }
+    goodRead = true;
+  }
   // double precision, no iblanking
   else if(recMarkBeg == totPts*this->NumberOfDimensions*8)
-    {
+  {
     this->Precision = 8;
-    this->IBlanking = 0;
+    this->IBlanking = false;
     delete[] jmax;
-    return 1;
-    }
-  return 0;
+    goodRead = true;
+  }
+  return goodRead;
 }
 
 // Unfortunately, a Plot3D file written in C is trickier

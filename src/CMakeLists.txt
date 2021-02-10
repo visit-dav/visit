@@ -689,6 +689,9 @@ IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
     SET(VISIT_OUT_OF_SOURCE_BUILD 0)
 ELSE("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
     SET(VISIT_OUT_OF_SOURCE_BUILD 1)
+    # Have to make this or an executable is made of this name.
+    # Suspect makemili_driver
+    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/exe")
 ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
 
 #-----------------------------------------------------------------------------
@@ -880,7 +883,6 @@ VISIT_3RDPARTY_VAR(CONDUIT_DIR   "Path containing the Conduit library's include 
 VISIT_3RDPARTY_DEP(CONDUIT_LIBDEP "Conduit library dependencies")
 VISIT_3RDPARTY_VAR(DAMARIS_DIR   "Path containing the Damaris library's include and lib")
 VISIT_3RDPARTY_VAR(FMS_DIR       "Path containing the FMS library's include and lib")
-VISIT_3RDPARTY_DEP(FMS_INCDEP    "FMS include dependencies")
 VISIT_3RDPARTY_DEP(FMS_LIBDEP    "FMS library dependencies")
 VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
 VISIT_3RDPARTY_VAR(GFORTRAN_DIR  "Path containing the GFortran library's include and lib")
@@ -895,6 +897,7 @@ VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
 VISIT_3RDPARTY_VAR(LLVM_DIR      "Path containing the LLVM library's include and lib")
 VISIT_3RDPARTY_VAR(MFEM_DIR      "Path containing the mfem library's include and lib")
 VISIT_3RDPARTY_DEP(MFEM_INCDEP   "MFEM include dependencies")
+VISIT_3RDPARTY_DEP(MFEM_LIBDEP   "MFEM library dependencies")
 VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
 VISIT_3RDPARTY_VAR(NEKTAR++_DIR  "Path containing the Nektar++ library's include and lib")
 VISIT_3RDPARTY_DEP(NEKTAR++_LIBDEP "Nektar++ library dependencies")

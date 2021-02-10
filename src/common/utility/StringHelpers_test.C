@@ -18,7 +18,7 @@ static string slash_swap_for_os(string const in)
 {
     string out = in;
 #ifdef WIN32
-    for (i = 0; i < in.size(); i++)
+    for (size_t i = 0; i < in.size(); i++)
         if (in[i] == '/') out[i] = '\\';
 #endif
     return out;
@@ -210,21 +210,14 @@ int main(int argc, char **argv)
     }
 
     //
-    // All tests involving pathnames are written using the unix slash
-    // character convention ('/') but the slash_swap_for_os func 
-    // swaps it as necessary. We should add some tests that test the
-    // "C:" leading part of windows pathnames. The utilities don't
-    // handle that yet either.
-    //
-
-    //
     // Test Basename and Dirname
     //
-#define CHECK_BASENAME_WITH_SUFFIX(path,suffix,expected)              \
+
+    // Modified: KSB 11-12-20
+    // Don't perform 'slash_swap_for_os', which only applied to Windows
+    // and isn't necessary for these tests.
+#define CHECK_BASENAME_WITH_SUFFIX(_path,_suffix,_expected)           \
     {                                                                 \
-        string _path = slash_swap_for_os(path);                       \
-        string _suffix = slash_swap_for_os(suffix);                   \
-        string _expected = slash_swap_for_os(expected);               \
         if (string(Basename(_path,_suffix)) != string(_expected))     \
         {                                                             \
             cerr << "Basename(" << _path << "," << _suffix << ") = \""\
@@ -234,11 +227,8 @@ int main(int argc, char **argv)
         }                                                             \
     }
         
-#define CHECK_PATHNAMES(path,dir,base)                                \
+#define CHECK_PATHNAMES(_path,_dir,_base)                             \
     {                                                                 \
-        string _path = slash_swap_for_os(path);                       \
-        string _dir  = slash_swap_for_os(dir);                        \
-        string _base = slash_swap_for_os(base);                       \
         if (string(Basename(_path)) != string(_base))                 \
         {                                                             \
             cerr << "Got Basename(" << _path << ") = \""              \
@@ -261,13 +251,21 @@ int main(int argc, char **argv)
     CHECK_BASENAME_WITH_SUFFIX("/foo/bar/gorfo.txt",  "",          "gorfo.txt");
 
 #ifdef WIN32
+    // test with unix-style path separators
     CHECK_PATHNAMES("C:/usr/lib",    "C:/usr",        "lib");
-    CHECK_PATHNAMES("D:/usr/",       "D:/",           "usr");
+    CHECK_PATHNAMES("D:/usr/",       "D:/usr",        "");
     CHECK_PATHNAMES("A:/usr",        "A:/",           "usr");
     CHECK_PATHNAMES("usr",           ".",             "usr");
-    CHECK_PATHNAMES("C:/",           "C:/",           "C:/");
+    CHECK_PATHNAMES("C:/",           "C:/",           "");
     CHECK_PATHNAMES(".",             ".",             ".");
     CHECK_PATHNAMES("..",            ".",             "..");
+    // test with windows-style path separators
+    CHECK_PATHNAMES("C:\\windows\\test",     "C:\\windows",   "test");
+    CHECK_PATHNAMES("C:\\users\\testuser\\", "C:\\users\\testuser", "");
+    // test some UNC style paths as well
+    CHECK_PATHNAMES("//servername/path/somefile", "//servername/path", "somefile");
+    CHECK_PATHNAMES("//servername/path/somedir/", "//servername/path/somedir", "");
+
 #else
     //              Expected behavior as documented in
     //              section 3 of unix manual...

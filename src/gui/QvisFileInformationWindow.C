@@ -91,8 +91,8 @@ QvisFileInformationWindow::CreateWindowContents()
 {
     // Create a multi line edit to display the text.
     outputText = new QTextEdit(central);
-    outputText->setMinimumSize(fontMetrics().width(titleSeparator),
-                               fontMetrics().width(titleSeparator));
+    outputText->setMinimumSize(fontMetrics().horizontalAdvance(titleSeparator),
+                               fontMetrics().horizontalAdvance(titleSeparator));
     outputText->setLineWrapMode(QTextEdit::NoWrap);
     outputText->setReadOnly(true);
     topLayout->addWidget(outputText);

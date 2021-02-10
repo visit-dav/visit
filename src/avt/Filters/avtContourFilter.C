@@ -497,6 +497,9 @@ avtContourFilter::PreExecute(void)
 //    I added checks to ensure that the data set could be handled by the
 //    VTKm contour filter and use the VTK one if not.
 //
+//    Eric Brugger, Wed Dec  9 09:12:27 PST 2020
+//    Updated to a newer VTKm.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -522,34 +525,51 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
         char *var = (activeVariable != NULL ? activeVariable
                                             : pipelineVariable);
         vtkDataArray *pointData = in_ds->GetPointData()->GetArray(var);
-        if (pointData == NULL)
-        {
-            useVTKm = false;
-        }
+
+        //
+        // If we have a rectilinear grid that isn't 3d, don't use VTKm.
+        //
         if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
             vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
 
             int dims[3];
             rgrid->GetDimensions(dims);
+            int nDims = 3;
+            if (dims[0] == 1) nDims--;
+            if (dims[1] == 1) nDims--;
+            if (dims[2] == 1) nDims--;
 
-            if (dims[2] == 1)
+            if (nDims < 3)
             {
                 useVTKm = false;
             }
         }
+
+        //
+        // If we have a structured grid that isn't 3d, don't use VTKm.
+        //
         else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
         {
             vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
 
             int dims[3];
             sgrid->GetDimensions(dims);
+            int nDims = 3;
+            if (dims[0] == 1) nDims--;
+            if (dims[1] == 1) nDims--;
+            if (dims[2] == 1) nDims--;
 
-            if (dims[2] == 1)
+            if (nDims < 3)
             {
                 useVTKm = false;
             }
         }
+
+        //
+        // If we have an unstructured grid with non 3d zoo elements, don't
+        // use VTKm.
+        //
         else if (in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
         {
             vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) in_ds;
@@ -559,8 +579,12 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
             vtkIdType iCell = 0;
             for (; iCell < nCells; ++iCell)
             {
-                if (*ct++ != VTK_HEXAHEDRON)
+                if (*ct != VTK_TETRA &&
+                    *ct != VTK_PYRAMID &&
+                    *ct != VTK_WEDGE &&
+                    *ct != VTK_HEXAHEDRON)
                     break;
+                ct++;
             }
             if (iCell != nCells)
             {
@@ -850,7 +874,9 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
 
         cf->Update();
         if (output->GetNumberOfCells() == 0)
+        {
             out_ds[i] = NULL;
+        }
         else
         {
             out_ds[i] = vtkPolyData::New();
@@ -926,6 +952,9 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
 //    Eric Brugger, Wed Sep 12 16:37:23 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
+//    Eric Brugger, Wed Dec  9 09:12:27 PST 2020
+//    Updated to a newer VTKm.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -958,7 +987,9 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
 
     int timerHandle = visitTimer->StartTimer();
 
-    //execute once per isovalue
+    //
+    // Execute once per isovalue.
+    //
     avtDataRepresentation **output = new avtDataRepresentation*[isoValues.size()];
 
     vtkh::MarchingCubes marcher;
@@ -974,12 +1005,28 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
         marcher.Update();
 
         vtkh::DataSet *isoOut = marcher.GetOutput();
+
+        //
+        // Determine if the dataset is empty, and if so, set the output
+        // to NULL.
+        //
         if (isoOut->GetNumberOfDomains() == 0)
         {
             delete isoOut;
             isoOut = NULL;
         }
+        vtkm::cont::DataSet vtkm_ds;
+        vtkm::Id vtkm_id;
+        isoOut->GetDomain(0, vtkm_ds, vtkm_id);
+        if(vtkm_ds.GetCellSet().GetNumberOfCells() == 0)
+        {
+            delete isoOut;
+            isoOut = NULL;
+        }
 
+        //
+        // Add the result to the output.
+        //
         if (shouldCreateLabels)
         {   
             output[i] = new avtDataRepresentation(isoOut,
@@ -992,7 +1039,9 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
         }
     }
 
-    //create the output data tree
+    //
+    // Create the output data tree
+    //
     avtDataTree_p outtree = new avtDataTree(isoValues.size(), output);
 
     visitTimer->StopTimer(timerHandle, "avtContourFilter::ExecuteDataTree_VTKM");

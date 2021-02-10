@@ -1406,6 +1406,9 @@ QvisSimulationWindow::UpdateStatusArea()
 //   Jean M. Favre, Mon Nov 28 13:04:28 PST 2011
 //   Use current time in some cases.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.setNum.
+//
 // ****************************************************************************
 void
 QvisSimulationWindow::UpdateInformation()
@@ -1476,7 +1479,7 @@ QvisSimulationWindow::UpdateInformation()
             QStringList(timestr.left(timestr.length()-1)));
 
         // Num processors
-        tmp1.sprintf("%d", np);
+        tmp1.setNum(np);
         item = new QTreeWidgetItem(simInfo,
                                    QStringList(tr("Num Processors")) +
                                    QStringList(tmp1));
@@ -1846,6 +1849,8 @@ QvisSimulationWindow::clearStripCharts()
 // Creation:   March 21, 2005
 //
 // Modifications:
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
 //
 // ****************************************************************************
 QString
@@ -1855,7 +1860,7 @@ QvisSimulationWindow::MakeKey(const std::string &host,
     if(sim.empty())
         return QString(host.c_str());
     else
-        return QString().sprintf("%s:%s", host.c_str(), sim.c_str());
+        return QString("%1:%2").arg(host.c_str()).arg(sim.c_str());
 }
 
 // ****************************************************************************

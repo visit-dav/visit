@@ -352,12 +352,15 @@ CGetDataExtents(avtDataRepresentation &data, void *g, bool &success)
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of nodes with a long long.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfZones(avtDataRepresentation &data, void *sum, bool &)
 {
-    VISIT_LONG_LONG *numCells = (VISIT_LONG_LONG*)sum;
+    long long *numCells = (long long*)sum;
     if (!data.Valid())
     {
         EXCEPTION0(NoInputException);
@@ -2841,12 +2844,15 @@ CGetVariableCentering(avtDataRepresentation &data, void *arg, bool &success)
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of nodes with a long long.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfNodes(avtDataRepresentation &data, void *sum, bool &)
 {
-    VISIT_LONG_LONG *numNodes = (VISIT_LONG_LONG*)sum;
+    long long *numNodes = (long long*)sum;
     if (!data.Valid())
     {
         EXCEPTION0(NoInputException);
@@ -2935,12 +2941,15 @@ CGetNumberOfOriginalNodes(avtDataRepresentation &data, void *arg, bool &)
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of nodes with a long long.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfRealZones(avtDataRepresentation &data, void *sum, bool &)
 {
-    VISIT_LONG_LONG *numZones = (VISIT_LONG_LONG*)sum;
+    long long *numZones = (long long*)sum;
     //
     // realZones  stored in numZones[0]
     // ghostZones stored in numZones[1]
@@ -3068,12 +3077,15 @@ CGetNumberOfRealOriginalZones(avtDataRepresentation &data, void *arg, bool &dumm
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of nodes with a long long.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfRealNodes(avtDataRepresentation &data, void *sum, bool &)
 {
-    VISIT_LONG_LONG *numNodes = (VISIT_LONG_LONG*)sum;
+    long long *numNodes = (long long*)sum;
     //
     // realNodes  stored in numNodes[0]
     // ghostNodes stored in numNodes[1]
@@ -3642,10 +3654,13 @@ CInsertRectilinearTransformInfoIntoDataset(avtDataRepresentation &data,
 //    Brad Whitlock, Tue Jul 21 13:01:47 PDT 2015
 //    Support non-standard memory layout.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 template <typename Array> static void
-PopulateHistogram(Array buf, int ntups, int nbins, double min, double max, VISIT_LONG_LONG *numVals)
+PopulateHistogram(Array buf, int ntups, int nbins, double min, double max, long long *numVals)
 {
     double mult = nbins/(max-min);  // This is actually needed to help the compiler.  2X difference.
     for (int i = 0 ; i < ntups ; i++)
@@ -3692,7 +3707,7 @@ CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
     int nbins = static_cast<int>(cha->numVals.size());
     double min = cha->min;
     double max = cha->max;
-    VISIT_LONG_LONG *numVals = &(cha->numVals[0]);
+    long long *numVals = &(cha->numVals[0]);
  
     if(arr->HasStandardMemoryLayout())
     {
