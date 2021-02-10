@@ -335,7 +335,7 @@ def main(opts_json):
     opts = load_opts(opts_json)
     ctx = Context()
     steps_visit(opts,ctx)
-    return fire("build")
+    return ctx.fire("build")
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1]))
