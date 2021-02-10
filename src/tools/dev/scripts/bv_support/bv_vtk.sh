@@ -76,14 +76,14 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-    export VTK_FILE=${VTK_FILE:-"VTK-9.0.0.tar.gz"}
-    export VTK_VERSION=${VTK_VERSION:-"9.0.0"}
+    export VTK_FILE=${VTK_FILE:-"VTK-9.0.1.tar.gz"}
+    export VTK_VERSION=${VTK_VERSION:-"9.0.1"}
     export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.0"}
     export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
     export VTK_URL=${VTK_URL:-"https://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
-    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-9.0.0"}
+    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-9.0.1"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
-    export VTK_MD5_CHECKSUM="fa61cd36491d89a17edab18522bdda49"
+    #export VTK_MD5_CHECKSUM="fa61cd36491d89a17edab18522bdda49"
     #export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
 }
 
