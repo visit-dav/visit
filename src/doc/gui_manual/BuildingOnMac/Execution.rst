@@ -27,8 +27,9 @@ Once masonry is running, it will produce log files in the ``_logs`` directory. T
 
    Mansonry Logs in HTML format
 
-Note that if you already have a web browser running on your system, that
-the web browser may not be able to connect to the local web server created
-to serve up the log file. In this case you should exit your existing web
-server and try again.
+The script will launch a web browser to connect to a local web server. If 
+you already have a web browser running on your system the script will use it.
+In this situation that web browser may not be able to connect to the local
+web server. If this happens you should exit your existing web browser and
+try again.
 
