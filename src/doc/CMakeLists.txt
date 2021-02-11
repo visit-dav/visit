@@ -24,7 +24,7 @@
 #
 #****************************************************************************
 
-if(VISIT_PYTHON_DIR and VISIT_ENABLE_MANUALS)
+if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS)
     message(STATUS "Configure manuals targets")
     set(errmsgtail "Either install sphinx or set VISIT_ENABLE_MANUALS to false.")
     if(WIN32)
