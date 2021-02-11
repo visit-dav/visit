@@ -205,8 +205,8 @@ def sexe(cmd,ret_output=False,echo = False,env=None):
         if ret_output:
             kwargs["stdout"] = subprocess.PIPE
             kwargs["stderr"] = subprocess.STDOUT
-            p = subprocess.Popen(cmd,**kwargs)
-            res =p.communicate()[0]
+            p = subprocess.Popen(cmd,**kwargs,universal_newlines=True)
+            res = p.communicate()[0]
             return p.returncode,res
         else:
             return subprocess.call(cmd,**kwargs),""
@@ -387,7 +387,7 @@ class NotarizeAction(Action):
                     cmd += ' --entitlements %s' % self.params["entitlements"]
                     cmd += ' -s "%s" %s' % (self.params["cert"], binary)
                     rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
-                    print "[res: %s]" % rout
+                    print("[res: %s]" % rout)
 
             # codesign VisIt.app
             visit_app = pjoin(bundle_dir, "VisIt-%s/VisIt.app" % self.params["build_version"])
@@ -395,7 +395,7 @@ class NotarizeAction(Action):
             cmd += ' --entitlements %s' % self.params["entitlements"]
             cmd += ' -s "%s" %s' % (self.params["cert"], visit_app) 
             rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
-            print "[res: %s]" % rout
+            print("[res: %s]" % rout)
 
             # Create DMG to upload to Apple
             notarize_dir = pjoin(self.params["build_dir"], "notarize.%s" % self.params["build_type"])
@@ -408,7 +408,7 @@ class NotarizeAction(Action):
 
             cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, temp_dmg)
             rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
-            print "[res: %s]" % rout
+            print("[res: %s]" % rout)
             
             ######################################
             # Upload to Apple Notary Service 
@@ -425,7 +425,7 @@ class NotarizeAction(Action):
 
             pl = plistlib.readPlistFromString(rout)
             uuid = pl["notarization-upload"]["RequestUUID"]
-            print "[uuid: %s]" % uuid
+            print("[uuid: %s]" % uuid)
 
             # Check status of notarization request
             cmd = "xcrun altool --notarization-info %s" % uuid
@@ -440,7 +440,7 @@ class NotarizeAction(Action):
                 pl = plistlib.readPlistFromString(rout)
                 status = pl["notarization-info"]["Status"]
                 status = status.strip()
-                print "[status: %s]" % status
+                print("[status: %s]" % status)
              
             ###################################
             # Staple notarization ticket to app bundle
@@ -449,25 +449,25 @@ class NotarizeAction(Action):
             if status == "success":
                 cmd = "xcrun stapler staple %s" % visit_app
                 rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
-                print "[stapler: %s]" % rout
+                print("[stapler: %s]" % rout)
 
                 # Create new DMG with stapled containing notarized app
                 dmg_stapled = pjoin(notarize_dir, "VisIt.stpl.dmg")
                 cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, dmg_stapled)
                 rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
-                print "[hdiutil: %s]" % rout
+                print("[hdiutil: %s]" % rout)
 
                 dmg_release = pjoin(notarize_dir, "VisIt-%s.dmg" % self.params["build_version"])
                 cmd = "hdiutil convert %s -format UDZO -o %s" % (dmg_stapled, dmg_release)
                 rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
-                print "[hdiutil:convert: %s]" % rout
+                print("[hdiutil:convert: %s]" % rout)
             else:
                 raise RuntimeError("Notarization Failed!")
         except KeyboardInterrupt as e:
             res["action"]["error"] = "notarize command interrupted by user (ctrl-c)"
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
-            print e
+            print(e)
             res["action"]["error"] = str(e)
 
         t_end = timenow()
@@ -694,7 +694,7 @@ def view_log(fname):
     try:
         child = subprocess.Popen([sys.executable, 
                                   '-m',
-                                  'SimpleHTTPServer',
+                                  'http.server',
                                   str(port)])
         url = 'http://localhost:8000/view_log.html?log=%s' % log_fname
         webbrowser.open(url)
