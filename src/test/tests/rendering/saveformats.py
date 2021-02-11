@@ -257,10 +257,10 @@ for f in IFormats:
     TestSaveFormat(f)
 swa.screenCapture = 1
 
-TestSection("Geometry Formats")
 DeleteAllPlots()
 CloseDatabase(silo_data_path("multi_rect2d.silo"))
 
+TestSection("Geometry Formats")
 OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Pseudocolor", "dx")
