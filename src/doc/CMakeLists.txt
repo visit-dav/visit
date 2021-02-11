@@ -19,27 +19,30 @@
 #   same for all platforms, except the sphinx build command which is
 #   different on Windows.  Added logic to ensure sphinx build command exists.
 #
+#   Eric Brugger, Wed Feb 10 15:07:41 PST 2021
+#   Update for switch to Python 3.
+#
 #****************************************************************************
 
-if(VISIT_PYTHON3_DIR AND VISIT_ENABLE_MANUALS)
+if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS)
     message(STATUS "Configure manuals targets")
     set(errmsgtail "Either install sphinx or set VISIT_ENABLE_MANUALS to false.")
     if(WIN32)
         # Need a different sphinx build command for windows
-        if(NOT EXISTS ${VISIT_PYTHON3_DIR}/Scripts/sphinx-build-script.py)
+        if(NOT EXISTS ${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py)
             message(FATAL_ERROR "Manuals are enabled but"
-                   " ${VISIT_PYTHON3_DIR}/Scripts/sphinx-build-script.py"
+                   " ${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py"
                    " does not exist. ${errmsgtail}")
         endif()
-        set(sphinx_build_cmd "${VISIT_PYTHON3_DIR}/python.exe \ "
-              "${VISIT_PYTHON3_DIR}/Scripts/sphinx-build-script.py")
+        set(sphinx_build_cmd "${VISIT_PYTHON_DIR}/python.exe \ "
+              "${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py")
     else()
-        if(NOT EXISTS ${VISIT_PYTHON3_DIR}/bin/sphinx-build)
+        if(NOT EXISTS ${VISIT_PYTHON_DIR}/bin/sphinx-build)
             message(FATAL_ERROR "Manuals are enabled but"
-                    " ${VISIT_PYTHON3_DIR}/bin/sphinx-build"
+                    " ${VISIT_PYTHON_DIR}/bin/sphinx-build"
                     " does not exist. ${errmsgtail}")
         endif()
-        set(sphinx_build_cmd ${VISIT_PYTHON3_DIR}/bin/sphinx-build)
+        set(sphinx_build_cmd ${VISIT_PYTHON_DIR}/bin/sphinx-build)
     endif()
 
     # Add custom target to build the manuals
