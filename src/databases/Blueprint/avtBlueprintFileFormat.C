@@ -1751,23 +1751,9 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                             mat_name,
                             n_matset);
 
-        ///
-        /// TODO:
-        ///
-        // to_silo in conduit v0.7.0 has a bug
-        // that can cause data passed to be changed
-        // in a few cases.
-        // Since our data is cached and uses set_external
-        // we make copies to avoid this bug changing values.
-        // We can remove these copies when we update
-        // to a newer conduit that has a fix.
-        Node n_matset_copy, n_field_copy;
-        n_matset_copy.set(n_matset);
-        n_field_copy.set(n_field);
-
         Node n_silo_matset;
-        conduit::blueprint::mesh::field::to_silo(n_field_copy,
-                                                 n_matset_copy,
+        conduit::blueprint::mesh::field::to_silo(n_field,
+                                                 n_matset,
                                                  n_silo_matset);
 
         int mix_len  = (int) n_silo_matset["field_mixvar_values"].dtype().number_of_elements();
@@ -1907,21 +1893,8 @@ avtBlueprintFileFormat::GetMaterial(int domain,
     // use to_silo util to convert from bp to the mixslot rep
     // that silo and visit use
 
-    ///
-    /// TODO:
-    ///
-    // to_silo in conduit v0.7.0 has a bug
-    // that can cause data passed to be changed
-    // in a few cases.
-    // Since our data is cached and uses set_external
-    // we make copies to avoid this bug changing values.
-    // We can remove these copies when we update
-    // to a newer conduit that has a fix.
-    Node n_matset_copy;
-    n_matset_copy.set(n_matset);
-
     Node n_silo_matset;
-    conduit::blueprint::mesh::matset::to_silo(n_matset_copy,
+    conduit::blueprint::mesh::matset::to_silo(n_matset,
                                               n_silo_matset);
 
     int nmats = (int) matnames.size();
