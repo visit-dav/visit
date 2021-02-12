@@ -87,8 +87,199 @@ function bv_cgns_dry_run
     fi
 }
 
+function apply_cgns_412_patch
+{
+    patch -p0 << \EOF
+diff -c CGNS-4.1.2/src/configure.orig CGNS-4.1.2/src/configure
+*** CGNS-4.1.2/src/configure.orig	Thu Feb 11 17:51:22 2021
+--- CGNS-4.1.2/src/configure	Fri Feb 12 07:55:02 2021
+***************
+*** 5939,5945 ****
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+--- 5939,5945 ----
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="$ZLIBLIB -lz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+***************
+*** 5974,5980 ****
+  #define HAVE_LIBZ 1
+  _ACEOF
+  
+!   LIBS="-lz $LIBS"
+  
+  else
+    unset HAVE_ZLIB
+--- 5974,5980 ----
+  #define HAVE_LIBZ 1
+  _ACEOF
+  
+!   LIBS="$ZLIBLIB -lz $LIBS"
+  
+  else
+    unset HAVE_ZLIB
+***************
+*** 6031,6037 ****
+  
+  
+      if test $shared = yes; then
+!       ZLIBLIB="-L$zlib_lib"
+      else
+        if test -n "$zlib_lib"; then
+          for a in $exts ; do
+--- 6031,6037 ----
+  
+  
+      if test $shared = yes; then
+!       ZLIBLIB="-L$zlib_lib -lz"
+      else
+        if test -n "$zlib_lib"; then
+          for a in $exts ; do
+***************
+*** 6050,6056 ****
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+--- 6050,6056 ----
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="$ZLIBLIB $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+***************
+*** 6085,6091 ****
+  #define HAVE_LIBZ 1
+  _ACEOF
+  
+!   LIBS="-lz $LIBS"
+  
+  else
+    unset HAVE_ZLIB
+--- 6085,6091 ----
+  #define HAVE_LIBZ 1
+  _ACEOF
+  
+!   LIBS="$ZLIBLIB $LIBS"
+  
+  else
+    unset HAVE_ZLIB
+***************
+*** 6147,6153 ****
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lsz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+--- 6147,6153 ----
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="$SZIPLIB -lsz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+***************
+*** 6182,6188 ****
+  #define HAVE_LIBSZ 1
+  _ACEOF
+  
+!   LIBS="-lsz $LIBS"
+  
+  else
+    unset HAVE_SZIP
+--- 6182,6188 ----
+  #define HAVE_LIBSZ 1
+  _ACEOF
+  
+!   LIBS="$SZIPLIB -lsz $LIBS"
+  
+  else
+    unset HAVE_SZIP
+***************
+*** 6239,6245 ****
+  
+  
+      if test $shared = yes; then
+!       SZIPLIB="-L$szip_lib"
+      else
+        if test -n "$szip_lib"; then
+          for a in $exts ; do
+--- 6239,6245 ----
+  
+  
+      if test $shared = yes; then
+!       SZIPLIB="-L$szip_lib -lsz"
+      else
+        if test -n "$szip_lib"; then
+          for a in $exts ; do
+***************
+*** 6258,6264 ****
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lsz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+--- 6258,6264 ----
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="$SZIPLIB $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+***************
+*** 6293,6299 ****
+  #define HAVE_LIBSZ 1
+  _ACEOF
+  
+!   LIBS="-lsz $LIBS"
+  
+  else
+    unset HAVE_SZIP
+--- 6293,6299 ----
+  #define HAVE_LIBSZ 1
+  _ACEOF
+  
+!   LIBS="$SZIPLIB $LIBS"
+  
+  else
+    unset HAVE_SZIP
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_cgns_patch
 {
+    if [[ ${CGNS_VERSION} == "4.1.2" ]] ; then
+        apply_cgns_412_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+
     return 0
 }
 
