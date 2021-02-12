@@ -221,7 +221,7 @@ def do_plugin_type(pluginType, pluginList):
     results = buildPlugin(pluginType, pluginList)
 
     pp = pprint.PrettyPrinter(indent=4)
-    txt = pp.pformat(results)
+    txt = pp.pformat(results) + "\n"
     TestText("%sVsInstall"%pluginType, txt)
 
 

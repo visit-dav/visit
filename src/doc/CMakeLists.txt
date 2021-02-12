@@ -19,8 +19,8 @@
 #   same for all platforms, except the sphinx build command which is
 #   different on Windows.  Added logic to ensure sphinx build command exists.
 #
-#   Cyrus Harrison, Tue Feb  9 15:32:29 PST 2021
-#   Change VISIT_PYTHON3_DIR to VISIT_PYTHON_DIR
+#   Eric Brugger, Wed Feb 10 15:07:41 PST 2021
+#   Update for switch to Python 3.
 #
 #****************************************************************************
 
@@ -39,7 +39,7 @@ if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS)
     else()
         if(NOT EXISTS ${VISIT_PYTHON_DIR}/bin/sphinx-build)
             message(FATAL_ERROR "Manuals are enabled but"
-                    " ${VISIT_PYTHON3_DIR}/bin/sphinx-build"
+                    " ${VISIT_PYTHON_DIR}/bin/sphinx-build"
                     " does not exist. ${errmsgtail}")
         endif()
         set(sphinx_build_cmd ${VISIT_PYTHON_DIR}/bin/sphinx-build)
