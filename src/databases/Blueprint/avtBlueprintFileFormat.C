@@ -576,7 +576,6 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 
     BP_PLUGIN_INFO("matset " << abs_matsetname << " is defined on mesh " << abs_meshname);
 
-
     string mesh_name = mset_info["mesh_name"].as_string();
     string topo_name = mset_info["topo_name"].as_string();
     string matset_name = mset_info["matset_name"].as_string();
@@ -634,7 +633,6 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
     // provide material_map
     out["matnames"] = n_mat_names;
 }
-
 
 
 // ****************************************************************************
@@ -935,7 +933,6 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
                 int mat_id = itr.index();
                 m_matset_info[mesh_matset_name]["matnames"][mat_name] = mat_id;
             }
-
         }
         else // "materials" case, old path
         {
@@ -951,7 +948,6 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
                 m_matset_info[mesh_matset_name]["matnames"][mat_name] = mat_id;
             }
         }
-
 
         // get matnames vec in sorted order.
         std::vector<string>  matnames = m_matset_info[mesh_matset_name]["matnames"].child_names();
@@ -1102,7 +1098,6 @@ avtBlueprintFileFormat::ReadRootFile()
         // this may be different than the protocol of the actual data files
 
         // assume hdf5, but check json file
-
 
         std::string root_protocol = "hdf5";
         std::string error_msg = "";
@@ -1770,7 +1765,6 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             mixvals_ptr = n_silo_matset["field_mixvar_values_float"].as_float_ptr();
         }
 
-
         avtMixedVariable *mvar = new avtMixedVariable(mixvals_ptr,
                                                       mix_len,
                                                       abs_varname_str);
@@ -1834,7 +1828,6 @@ avtBlueprintFileFormat::GetVectorVar(int domain, const char *varname)
 //
 //
 // ****************************************************************************
-
 void *
 avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
                                          int domain,
@@ -1874,7 +1867,6 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 //
 //
 // ****************************************************************************
-
 avtMaterial *
 avtBlueprintFileFormat::GetMaterial(int domain,
                                     const char *mat_name)
@@ -1946,17 +1938,6 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         mix_vf = n_silo_matset["mix_vf_float"].as_float_ptr();
     }
 
-    // we are using the following avtMaterial constructor:
-    // avtMaterial(int nmats,
-    //             const std::vector<std::string> &matnames,
-    //             int nzones,
-    //             const int *mat_list,
-    //             int mix_len,
-    //             const int *mix_mat,
-    //             const int *mix_next,
-    //             const int *mix_zone,
-    //             const float *mix_vf);
-
     avtMaterial *mat = new avtMaterial(nmats,    // The number of materials in mats.
                                        matnames, // material names
                                        nzones,   // number of zones (len of matlist)
@@ -1970,8 +1951,6 @@ avtBlueprintFileFormat::GetMaterial(int domain,
 
     return mat;
 }
-
-
 
 // ****************************************************************************
 //  Method: avtBlueprintFileFormat::RegisterDataSelections
