@@ -96,6 +96,7 @@ stages:
            git lfs pull --include blueprint_v0.7.0_venn_test_data.7z
            cd ../
            git lfs pull  --include test/baseline/databases/silo
+           git lfs pull  --include test/baseline/databases/blueprint
            cd build/testdata/
            export P7ZIP_BIN_DIR=`ls -d ${TPLS_PATH}/p7zip/*/ci/bin/`
            export PATH=$PATH:$P7ZIP_BIN_DIR
