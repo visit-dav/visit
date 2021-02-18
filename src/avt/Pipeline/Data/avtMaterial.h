@@ -130,7 +130,13 @@ struct MatZoneMap
 //
 //    Mark C. Miller, Wed Feb 11 17:02:22 PST 2015
 //    Added AssertSelfIsValid which is only ever active in debug builds. It
-//    does a more thorough check of the material object that gets constucted.  
+//    does a more thorough check of the material object that gets constructed.
+//
+//    Cyrus Harrison, Wed Feb 17 10:43:50 PST 2021
+//    Added variable names to avtMaterial(int nmats, std::vector<string> ... )
+//    variant of the constructor to make it easer to interpret what data 
+//    is needed.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMaterial
