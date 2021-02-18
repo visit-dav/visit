@@ -12,7 +12,7 @@
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2021-02-01-sha0a6756
+  container_tag: visitdav/visit-ci-develop:2021-02-18-sha9bfd19s
 
 # only build merge target pr to develop
 trigger: none
@@ -83,7 +83,7 @@ stages:
 
       - script: |
            #################################
-           # fetch subset of test data (silo)
+           # fetch subset of test data (silo + blueprint)
            #################################
            cd data
            git lfs pull --include silo_amr_test_data.7z
@@ -91,6 +91,9 @@ stages:
            git lfs pull --include silo_hdf5_test_data.7z
            git lfs pull --include silo_pdb_test_data.7z
            git lfs pull --include silo_sph_test_data.7z
+           git lfs pull --include blueprint_v0.3.1_test_data.7z
+           git lfs pull --include blueprint_v0.3.1_mfem_test_data.7z
+           git lfs pull --include blueprint_v0.7.0_venn_test_data.7z
            cd ../
            git lfs pull  --include test/baseline/databases/silo
            cd build/testdata/
@@ -101,11 +104,15 @@ stages:
            7za x -y ../../data/silo_hdf5_test_data.7z
            7za x -y ../../data/silo_pdb_test_data.7z
            7za x -y ../../data/silo_sph_test_data.7z
+           7za x -y ../../data/blueprint_v0.3.1_test_data.7z
+           7za x -y ../../data/blueprint_v0.3.1_mfem_test_data.7z
+           7za x -y ../../data/blueprint_v0.7.0_venn_test_data.7z
+           
         displayName: 'Prep Test Data'
 
       - script: |
            #################################
-           # run silo tests
+           # run tests
            #################################
            # run test suite
            cd build/test
@@ -116,8 +123,9 @@ stages:
            export TBB_LIB_DIR=`ls -d ${TPLS_PATH}/tbb/*/ci/lib/intel64/gcc4.7/`
            # add to ld_lib path (rpaths are missing?)
            export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${TBB_LIB_DIR}
-           # run test suite on silo tests
+           # run test suite on silo + blueprint tests
            export TESTS=../../src/test/tests/databases/silo.py 
+           export TESTS="${TESTS} ../../src/test/tests/databases/blueprint.py"
            # also run a few of our unit tests
            export TESTS="${TESTS} ../../src/test/tests/unit/assert_simple.py"
            export TESTS="${TESTS} ../../src/test/tests/unit/default_methods.py"
