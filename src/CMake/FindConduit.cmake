@@ -18,3 +18,25 @@ if(VISIT_PARALLEL)
 endif()
 
 
+# check if conduit was built with python support, if so we want
+# to install conduit's python modules
+if(EXISTS ${CONDUIT_DIR}/python-modules/conduit)
+    message(STATUS "Found Conduit Python Wrappers - ${CONDUIT_DIR}/python-modules/conduit")
+    install(DIRECTORY ${CONDUIT_DIR}/python-modules/conduit
+            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
+            FILE_PERMISSIONS 
+                    OWNER_WRITE
+                    OWNER_READ
+                    GROUP_WRITE
+                    GROUP_READ
+                    WORLD_READ
+            DIRECTORY_PERMISSIONS
+                    OWNER_WRITE
+                    OWNER_READ
+                    OWNER_EXECUTE
+                    GROUP_WRITE
+                    GROUP_READ
+                    GROUP_EXECUTE
+                    WORLD_READ WORLD_EXECUTE
+                )
+endif()

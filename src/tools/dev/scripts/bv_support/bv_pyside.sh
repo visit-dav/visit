@@ -280,6 +280,14 @@ function build_pyside
 
         info "Configuring pyside . . ."
 
+        # Note:
+        # the pyside build process needs to resolve OpenGL libs several times 
+        # if we are using mesa as gl, we need to provide the proper path 
+        # to gl via LD_LIBRARY_PATH
+        if [[ "$DO_MESAGL" == "yes" ]] ; then
+            export LD_LIBRARY_PATH=${MESAGL_LIB_DIR}:${LD_LIBRARY_PATH}
+        fi
+
         echo "\"${CMAKE_BIN}\"" ${pyside_opts} ../${PYSIDE_SRC_DIR} > bv_run_cmake.sh
         cat bv_run_cmake.sh
         issue_command bash bv_run_cmake.sh || error "pyside configuration failed."
