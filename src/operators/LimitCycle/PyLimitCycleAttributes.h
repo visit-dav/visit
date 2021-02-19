@@ -5,6 +5,7 @@
 #ifndef PY_LIMITCYCLEATTRIBUTES_H
 #define PY_LIMITCYCLEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <LimitCycleAttributes.h>
 
 //

@@ -38,6 +38,9 @@
 //    Added ability to reduce amount of lighting for low-gradient-mag areas.
 //    Default values to constructor leave the old behavior (i.e. gradmax=0).
 //
+//    Alister Maguire, Fri Mar 20 16:02:16 PDT 2020
+//    Added inv_lightingPower for use in AddLightingHeadlight.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtPhong : public avtLightingModel
@@ -49,10 +52,13 @@ class PIPELINE_API avtPhong : public avtLightingModel
     virtual void           AddLighting(int, const avtRay *, unsigned char *)
                              const;
 
-    virtual void       AddLightingHeadlight(int, const avtRay *, unsigned char *, double alpha, double matProperties[4]) 
-                 const;
+    virtual void           AddLightingHeadlight(int, const avtRay *,
+                                                unsigned char *,
+                                                double alpha,
+                                                double matProperties[4]) const;
   private:
     double                 gradMax, inv_gradMax, lightingPower;
+    double                 inv_lightingPower;
 };
 
 

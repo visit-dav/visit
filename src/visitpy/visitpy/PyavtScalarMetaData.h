@@ -5,6 +5,7 @@
 #ifndef PY_AVTSCALARMETADATA_H
 #define PY_AVTSCALARMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtScalarMetaData.h>
 #include <PyavtVarMetaData.h>
 #include <visitpy_exports.h>

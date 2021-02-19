@@ -296,7 +296,7 @@ class Quad
   public:
                    Quad() { ordering_case = 255; };
 
-    int            AssignNodes(const vtkIdType *);
+    vtkIdType      AssignNodes(const vtkIdType *);
     bool           Equals(Quad *);
     bool           Equals(Tri *);
     void           AddInRemainingTriangle(Tri *, int);
@@ -337,7 +337,7 @@ typedef enum
     Q3012, Q3021, Q3102, Q3120, Q3201, Q3210
 }  QUAD_ORDERING_CASES;
 
-static int quad_reorder_list[24][4] = 
+static vtkIdType quad_reorder_list[24][4] = 
     { { -1, 0, 1, 2 }, { -1, 0, 2, 1 }, { -1, 1, 0, 2 }, { -1, 2, 0, 1 },
       { -1, 1, 2, 0 }, { -1, 2, 1, 0 },
       { 0, -1, 1, 2 }, { 0, -1, 2, 1 }, { 1, -1, 0, 2 }, { 2, -1, 0, 1 },
@@ -348,7 +348,7 @@ static int quad_reorder_list[24][4] =
       { 1, 2, 0, -1 }, { 2, 1, 0, -1 } 
     };
 
-static int quad_map_back_list[24][3] =
+static vtkIdType quad_map_back_list[24][3] =
     {
          { 1, 2, 3 }, { 1, 3, 2 }, { 2, 1, 3 },
          { 2, 3, 1 }, { 3, 1, 2 }, { 3, 2, 1 },
@@ -381,7 +381,7 @@ class Tri
   public:
                    Tri() { ordering_case = 255; };
 
-    int            AssignNodes(const vtkIdType *);
+    vtkIdType      AssignNodes(const vtkIdType *);
     inline bool    Equals(Tri *&t)
                    {
                       if (t->nodes[0] == nodes[0] && t->nodes[1] == nodes[1])
@@ -494,10 +494,10 @@ static void LoopOverStripCells(vtkUnstructuredGrid *, vtkPolyData *,
 //
 // ****************************************************************************
 
-int
+vtkIdType
 Quad::AssignNodes(const vtkIdType *n)
 {
-    int smallest = 0;
+    vtkIdType smallest = 0;
     if (n[1] < n[smallest])
        smallest = 1;
     if (n[2] < n[smallest])
@@ -772,7 +772,7 @@ Quad::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
                  vtkCellData *out_cd)
 {
     vtkIdType n[4];
-    int *list = quad_reorder_list[ordering_case];
+    vtkIdType *list = quad_reorder_list[ordering_case];
     n[0] = (list[0] == -1 ? node0 : nodes[list[0]]);
     n[1] = (list[1] == -1 ? node0 : nodes[list[1]]);
     n[2] = (list[2] == -1 ? node0 : nodes[list[2]]);
@@ -896,10 +896,10 @@ Quad::AddInRemainingTriangle(Tri *t, int node_0)
 void
 Quad::AddInRemainingTriangle(int n, int node_0)
 {
-    int orig_quad_index = quad_map_back_list[ordering_case][n];
-    int *neighbors = quad_reorder_list[ordering_case];
+    vtkIdType orig_quad_index = quad_map_back_list[ordering_case][n];
+    vtkIdType *neighbors = quad_reorder_list[ordering_case];
 
-    int n_list[3];
+    vtkIdType n_list[3];
     n_list[0] = neighbors[(orig_quad_index+3)%4];
     n_list[1] = neighbors[orig_quad_index];
     n_list[2] = neighbors[(orig_quad_index+1)%4];
@@ -926,7 +926,7 @@ Quad::AddInRemainingTriangle(int n, int node_0)
 //
 // ****************************************************************************
 
-int
+vtkIdType
 Tri::AssignNodes(const vtkIdType *n)
 {
     int smallest = 0;
@@ -1559,7 +1559,7 @@ HashEntryList::AddTri(const vtkIdType *node_list, vtkIdType orig_zone)
 {
     nfaces++;
     Tri *tri = tmm.GetFreeTri(this);
-    int hash_index = tri->AssignNodes(node_list);
+    vtkIdType hash_index = tri->AssignNodes(node_list);
     tri->SetOriginalZone(orig_zone);
     if (list[hash_index] == NULL)
     {
@@ -1589,7 +1589,7 @@ HashEntryList::AddQuad(const vtkIdType *node_list, vtkIdType orig_zone)
 {
     nfaces++;
     Quad *quad = qmm.GetFreeQuad(this);
-    int hash_index = quad->AssignNodes(node_list);
+    vtkIdType hash_index = quad->AssignNodes(node_list);
     quad->SetOriginalZone(orig_zone);
     if (list[hash_index] == NULL)
     {

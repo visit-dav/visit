@@ -20,6 +20,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Alister Maguire, Fri Nov 13 14:07:54 PST 2020
+#    Added a test for the crinkle clip.
+#
 # ----------------------------------------------------------------------------
 
 def TestOne(filename, index, zonal_var, nodal_var, radius):
@@ -119,5 +123,20 @@ Test("clip_globe_fast")
 c.quality = c.Accurate
 SetOperatorOptions(c)
 Test("clip_globe_accurate")
+
+DeleteAllPlots()
+ResetView()
+
+#
+# Test the crinkle clip.
+#
+AddPlot("Pseudocolor", "u")
+AddOperator("Clip")
+c = ClipAttributes()
+c.crinkleClip = 1
+SetOperatorOptions(c)
+DrawPlots()
+Test("crinkle_clip_globe")
+DeleteAllPlots()
 
 Exit()

@@ -5,6 +5,7 @@
 #ifndef PY_METRICTHRESHOLDATTRIBUTES_H
 #define PY_METRICTHRESHOLDATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <MetricThresholdAttributes.h>
 
 //

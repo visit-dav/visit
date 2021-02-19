@@ -29,6 +29,7 @@ SubsetViewerEnginePluginInfo.C
 SubsetViewerPluginInfo.C
 avtSubsetPlot.C
 avtSubsetFilter.C
+avtSubsetMapper.C
 ${COMMON_SOURCES}
 )
 
@@ -37,12 +38,13 @@ SubsetViewerEnginePluginInfo.C
 SubsetEnginePluginInfo.C
 avtSubsetPlot.C
 avtSubsetFilter.C
+avtSubsetMapper.C
 ${COMMON_SOURCES}
 )
 
 
 IF(VISIT_PYTHON_SCRIPTING)
-    SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} ${VISIT_INCLUDE_DIR}/visitpy/visitpy)
+    SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} ${VISIT_INCLUDE_DIR}/visitpy/common ${VISIT_INCLUDE_DIR}/visitpy/visitpy)
 ENDIF(VISIT_PYTHON_SCRIPTING)
 
 INCLUDE_DIRECTORIES(
@@ -79,6 +81,7 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
+${VISIT_INCLUDE_DIR}/avt/Plotter/vtk
 )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )

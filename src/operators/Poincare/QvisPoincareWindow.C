@@ -237,7 +237,6 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     fieldType->addItem(tr("M3D-C1 3D"));
     fieldType->addItem(tr("Nek5000"));
     fieldType->addItem(tr("Nektar++"));
-    fieldType->addItem(tr("NIMROD"));
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);
@@ -281,7 +280,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     integrationType = new QComboBox(integrationGroup);
     integrationType->addItem(tr("Forward Euler (Single-step)"));
     integrationType->addItem(tr("Leapfrog (Single-step)"));
-    integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
+    integrationType->addItem(tr("Runge-Kutta-Dormand-Prince (RKDP)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
     integrationType->addItem(tr("Runge-Kutta 4 (Single-step)"));
     integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D fields only)"));
@@ -719,7 +718,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
 
     // Create the data group box.
     QGroupBox *dataGroup = new QGroupBox(central);
-    dataGroup->setTitle(tr("Data"));
+    dataGroup->setTitle(tr("Coloring"));
     mainLayout->addWidget(dataGroup, 0, 0);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
@@ -728,7 +727,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataLayout->setColumnStretch(2, 10);
 
 
-    dataValueLabel = new QLabel(tr("Data value:"), dataGroup);
+    dataValueLabel = new QLabel(tr("Color by"), dataGroup);
     dataLayout->addWidget(dataValueLabel, 0, 0);
 
     dataValueCombo = new QComboBox(dataGroup);
@@ -1005,27 +1004,22 @@ QvisPoincareWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(issueWarningForStiffness, 2, 0);
     QLabel *stiffnessLabel = new QLabel(tr("Issue warning when a stiffness condition is detected."), warningsGrp);
     warningsGLayout->addWidget(stiffnessLabel, 2, 1, 1, 2);
-    QLabel *stiffnessDescLabel1 = new QLabel(tr("(Stiffness refers to one vector component being so much "), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel1, 3, 1, 1, 2);
-    QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel2, 4, 1, 1, 2);
 
     issueWarningForCriticalPoints = new QCheckBox(central);
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
-    warningsGLayout->addWidget(issueWarningForCriticalPoints, 5, 0);
+    warningsGLayout->addWidget(issueWarningForCriticalPoints, 3, 0);
     QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
-    warningsGLayout->addWidget(critPointLabel, 5, 1, 1, 2);
-    QLabel *critPointDescLabel = new QLabel(tr("(I.e. the curve circles around the critical point without stopping.)"), warningsGrp);
-    warningsGLayout->addWidget(critPointDescLabel, 6, 1, 1, 2);
+    warningsGLayout->addWidget(critPointLabel, 3, 1, 1, 2);
+    
     criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
     criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-    warningsGLayout->addWidget(criticalPointThresholdLabel, 7, 1);
+    warningsGLayout->addWidget(criticalPointThresholdLabel, 4, 1);
     criticalPointThreshold = new QLineEdit(warningsGrp);
     criticalPointThreshold->setAlignment(Qt::AlignLeft);
     connect(criticalPointThreshold, SIGNAL(returnPressed()),
             this, SLOT(criticalPointThresholdProcessText()));
-    warningsGLayout->addWidget(criticalPointThreshold, 7, 2);
+    warningsGLayout->addWidget(criticalPointThreshold, 4, 2);
 }
 
 
@@ -1259,12 +1253,6 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
             {
               atts->SetIntegrationType(PoincareAttributes::M3DC12DIntegrator);
               integrationType->setCurrentIndex(PoincareAttributes::M3DC12DIntegrator);
-              UpdateIntegrationAttributes();
-            }
-            else if (atts->GetFieldType() == PoincareAttributes::NIMRODField)
-            {
-              atts->SetIntegrationType(PoincareAttributes::AdamsBashforth);
-              integrationType->setCurrentIndex(PoincareAttributes::AdamsBashforth);
               UpdateIntegrationAttributes();
             }
             else if (atts->GetIntegrationType() == PoincareAttributes::M3DC12DIntegrator)
@@ -2022,7 +2010,6 @@ QvisPoincareWindow::UpdateFieldAttributes()
       TurnOn(velocitySource, velocitySourceLabel);
       break;
 
-    case PoincareAttributes::NIMRODField:
     default:
       TurnOff(fieldConstant, fieldConstantLabel);
       TurnOff(velocitySource, velocitySourceLabel);

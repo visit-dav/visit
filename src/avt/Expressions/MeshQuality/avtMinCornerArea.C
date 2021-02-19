@@ -25,6 +25,14 @@
 //  Programmer: Matthew Wheeler
 //  Creation:   20 May, 2013
 //
+//  Modifications:
+//
+//    Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
+//    Alister Maguire, Fri Nov  6 08:53:20 PST 2020
+//    Removed direct database QOT disabler as they are now compatible.
+//
 // ****************************************************************************
 
 avtMinCornerArea::avtMinCornerArea()

@@ -70,7 +70,7 @@ typedef enum
 class avtCurve2DFileFormat : public avtSTSDFileFormat
 {
   public:
-                          avtCurve2DFileFormat(const char *, DBOptionsAttributes *);
+                          avtCurve2DFileFormat(const char *, const DBOptionsAttributes *);
     virtual              ~avtCurve2DFileFormat();
     
     virtual const char   *GetType(void) { return "Curve File Format"; };

@@ -44,7 +44,7 @@ class DBOptionsAttributes;
 class avtMirandaFileFormat : public avtMTMDFileFormat
 {
   public:
-                           avtMirandaFileFormat(const char *, DBOptionsAttributes *);
+                           avtMirandaFileFormat(const char *, const DBOptionsAttributes *);
     virtual               ~avtMirandaFileFormat() {;};
 
     virtual void          *GetAuxiliaryData(const char *var, int timestate, 

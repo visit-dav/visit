@@ -104,7 +104,7 @@ int avtVsFileFormat::instanceCounter = 0;
 //  Modifications:
 //
 avtVsFileFormat::avtVsFileFormat(const char* filename,
-                                 DBOptionsAttributes *readOpts) :
+                                 const DBOptionsAttributes *readOpts) :
   avtSTMDFileFormat(&filename, 1), dataFileName(filename),
   processDataSelections(false)
 {

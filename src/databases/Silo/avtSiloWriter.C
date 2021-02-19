@@ -313,7 +313,7 @@ RestoreSiloLibState()
 //
 // ****************************************************************************
 
-avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
+avtSiloWriter::avtSiloWriter(const DBOptionsAttributes *dbopts)
 {
     headerDbMd = 0;
     optlist = 0;

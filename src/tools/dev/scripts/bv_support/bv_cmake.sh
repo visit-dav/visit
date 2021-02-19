@@ -96,12 +96,12 @@ function bv_cmake_bin_cmake_dir
 
 function bv_cmake_info
 {
-    export CMAKE_URL=${CMAKE_URL:-"https://cmake.org/files/v3.9/"}
-    export CMAKE_VERSION=${CMAKE_VERSION:-"3.9.3"}
+    export CMAKE_URL=${CMAKE_URL:-"https://cmake.org/files/v3.14/"}
+    export CMAKE_VERSION=${CMAKE_VERSION:-"3.14.7"}
     export CMAKE_FILE=${CMAKE_FILE:-"cmake-${CMAKE_VERSION}.tar.gz"}
     export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-${CMAKE_VERSION}"}
-    export CMAKE_MD5_CHECKSUM="cb0f19828461904c72ed6a1e55459d03"
-    export CMAKE_SHA256_CHECKSUM="8eaf75e1e932159aae98ab5e7491499545554be62a08cbcbc7c75c84b999f28a"
+    export CMAKE_MD5_CHECKSUM="1b2d7d9215b51acceef20ed2895e8495"
+    export CMAKE_SHA256_CHECKSUM="9221993e0af3e6d10124d840ff24f5b2f3b884416fca04d3312cb0388dec1385"
 }
 
 function bv_cmake_print

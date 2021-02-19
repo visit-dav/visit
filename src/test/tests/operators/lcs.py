@@ -7,6 +7,10 @@
 #
 #  Programmer: Allen Sanderson
 #  Date:       August 25, 2015
+#
+#  Modifications:
+#    Kathleen Biagas, Thur Sep 17, 2020
+#    Shorten name used for 'Testing database' TestSection. Turn of warnings.
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("PICS_Tester")
 
@@ -43,21 +47,28 @@ AddPlot("Pseudocolor", "operators/LCS/velocity")
 
 LCSAtts = LCSAttributes()
 LCSAtts.Resolution = (101, 51, 1)
-LCSAtts.integrationDirection = LCSAtts.Forward  # Forward, Backward, Both
+LCSAtts.integrationDirection = LCSAtts.Forward
 LCSAtts.auxiliaryGridSpacing = 0.005
 LCSAtts.maxSteps = 1000000
-LCSAtts.operationType = LCSAtts.Lyapunov  # IntegrationTime, ArcLength, AverageDistanceFromSeed, EigenValue, EigenVector, Lyapunov
-LCSAtts.cauchyGreenTensor = LCSAtts.Right  # Left, Right
-LCSAtts.eigenComponent = LCSAtts.Largest  # Smallest, Intermediate, Largest, PosShearVector, NegShearVector, PosLambdaShearVector, NegLambdaShearVector
-LCSAtts.operatorType = LCSAtts.BaseValue  # BaseValue, Gradient
-LCSAtts.terminationType = LCSAtts.Time  # Time, Distance, Size
+LCSAtts.operationType = LCSAtts.Lyapunov
+LCSAtts.cauchyGreenTensor = LCSAtts.Right
+LCSAtts.eigenComponent = LCSAtts.Largest
+LCSAtts.operatorType = LCSAtts.BaseValue
+LCSAtts.terminationType = LCSAtts.Time
 LCSAtts.terminateByTime = 1
 LCSAtts.termTime = 4
 LCSAtts.maxStepLength = 0.001
-LCSAtts.integrationType = LCSAtts.AdamsBashforth  # Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, M3DC12DIntegrator
-LCSAtts.parallelizationAlgorithmType = LCSAtts.ParallelStaticDomains  # LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects
+LCSAtts.integrationType = LCSAtts.AdamsBashforth
+LCSAtts.parallelizationAlgorithmType = LCSAtts.ParallelStaticDomains
 LCSAtts.pathlines = 1
-LCSAtts.pathlinesCMFE = LCSAtts.CONN_CMFE  # CONN_CMFE, POS_CMFE
+LCSAtts.pathlinesCMFE = LCSAtts.CONN_CMFE
+LCSAtts.issueAdvectionWarnings = 0
+LCSAtts.issueBoundaryWarnings = 0
+LCSAtts.issueTerminationWarnings = 0
+LCSAtts.issueStepsizeWarnings = 0
+LCSAtts.issueStiffnessWarnings = 0
+LCSAtts.issueCriticalPointsWarnings = 0
+
 SetOperatorOptions(LCSAtts, 0)
 
 
@@ -66,13 +77,13 @@ databases=["ftle_double_gyre_1_domain", "ftle_double_gyre_2_domains"]
 src_type=[LCSAtts.RegularGrid, LCSAtts.NativeMesh]
 src_type_str=["RegularGrid", "NativeMesh"]
 
-aux_grid=[LCSAtts.None, LCSAtts.TwoDim]
+aux_grid=[LCSAtts.NONE, LCSAtts.TwoDim]
 aux_grid_str=["NoAuxGrid", "2DAuxGrid"]
 
 TestSection("Basic FTLE function")
 for i in range(len(databases)):
   db=data_path("pics_test_data/%s.pics") %(databases[i])
-  tmpstr="Testing database = %s" %(db)
+  tmpstr="Testing database = %s.pics" %(databases[i])
   TestSection(tmpstr)
   OpenDatabase(db)
   # Replace the database from before with this one as a new plot can

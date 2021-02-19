@@ -22,8 +22,7 @@
             <lib name="cgns"/>
             <lib name="conduit"/>
             <lib name="embree"/>
-            <lib name="fastbit"/>
-            <lib name="fastquery"/>
+            <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="glu"/>
             <lib name="h5part"/>
@@ -46,6 +45,7 @@
             <lib name="ospray"/>
             <lib name="p7zip"/>
             <lib name="pidx"/>
+            <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="stripack"/>
             <lib name="szip"/>
@@ -78,6 +78,7 @@
             <lib name="cgns"/>
             <lib name="conduit"/>
             <lib name="embree"/>
+            <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="glu"/>
             <lib name="h5part"/>
@@ -95,6 +96,7 @@
             <lib name="ospray"/>
             <lib name="p7zip"/>
             <lib name="pidx"/>
+            <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="tbb"/>
@@ -124,8 +126,7 @@
             <lib name="conduit"/>
             <lib name="mfem"/>
             <lib name="cgns"/>
-            <lib name="fastbit"/>
-            <lib name="fastquery"/>
+            <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="h5part"/>
             <lib name="hdf5"/>
@@ -152,8 +153,7 @@
             <lib name="conduit"/>
             <lib name="mfem"/>
             <lib name="cgns"/>
-            <lib name="fastbit"/>
-            <lib name="fastquery"/>
+            <lib name="fms"/>
             <lib name="gdal"/>
             <lib name="h5part"/>
             <lib name="hdf5"/>

@@ -267,8 +267,8 @@ QvisPeriodicTableWidget::drawItem(QPainter &paint, int index)
         color = palette().color(QPalette::Highlight);
     paint.fillRect(x + 1, y + 1, boxWidth - 2, boxHeight - 2, color);
     drawBox(paint, QRect(x+1,y+1,boxWidth-2,boxHeight-2),
-            color.light(125),
-            color.dark(125), 1);
+            color.lighter(125),
+            color.darker(125), 1);
     QFont oldfont(paint.font());
     if (hint)
     {

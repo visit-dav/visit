@@ -73,7 +73,7 @@ using     std::string;
 //
 // ****************************************************************************
 
-avtImageFileFormat::avtImageFileFormat(const char *filename, DBOptionsAttributes *)
+avtImageFileFormat::avtImageFileFormat(const char *filename, const DBOptionsAttributes *)
     : avtSTSDFileFormat(filename)
 {
     fname = filename;
@@ -614,6 +614,11 @@ avtImageFileFormat::ProcessDataSelections(int *xmin, int *xmax,
 //    Remove call to SetSource(NULL), as it now removes information necessary
 //    for the dataset. 
 //
+//    Eric Brugger, Mon Nov 23 12:53:21 PST 2020
+//    Correct the reading of Stimulate files to handle the case of a negative
+//    step. Previously, a negative step would have resulted in monotonically
+//    decreasing coordindates, which is invalid for a rectilinear grid.
+//
 // *****************************************************************************
 
 void avtImageFileFormat::ReadInImage(void)
@@ -723,6 +728,20 @@ void avtImageFileFormat::ReadInImage(void)
         reader->GetOrigin(xStart, yStart);
         reader->GetStep(xStep, yStep);
         reader->Delete();
+        if (xStep < 0.)
+        {
+            int dims[3];
+            image->GetDimensions(dims);
+            xStart = xStart + dims[0] * xStep;
+            xStep = - xStep;
+        }
+        if (yStep < 0.)
+        {
+            int dims[3];
+            image->GetDimensions(dims);
+            yStart = yStart + dims[1] * yStep;
+            yStep = - yStep;
+        }
     }
     else
         EXCEPTION1(InvalidFilesException, fname.c_str());

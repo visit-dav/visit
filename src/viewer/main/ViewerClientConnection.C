@@ -209,9 +209,14 @@ ViewerClientConnection::~ViewerClientConnection()
 //   when launching cli from command window is a problem, so limit that path
 //   to launch of gui.
 //
+//   Kevin Griffin. Wed Jun 17 15:08:15 PDT 2020
+//   Added check to determine if the remoteProcess->Open() call was successful.
+//   This method will now return true if the call to remoteProcess->Open() was
+//   successful, otherwise it will return false.
+//
 // ****************************************************************************
 
-void
+bool
 ViewerClientConnection::LaunchClient(const std::string &program,
     const stringVector &args, 
     void (*cb)(const std::string &, const stringVector &, void *),
@@ -225,7 +230,7 @@ ViewerClientConnection::LaunchClient(const std::string &program,
     {
         debug1 << mName << "This method is only to be used when "
             "listening for new client connections." << endl;
-        return;
+        return false;
     }
 
     if(cb == 0)
@@ -262,75 +267,83 @@ ViewerClientConnection::LaunchClient(const std::string &program,
 
     // Try opening the client.
     debug1 << mName << "Opening client connection." << endl;
-    remoteProcess->Open(MachineProfile::Default(), 1, 1);
-
-    debug1 << mName << "Successfully opened client connection." << endl;
-
-    // Hook up the remote process's input/output to xfer.
-    xfer->SetInputConnection(remoteProcess->GetWriteConnection());
-    xfer->SetOutputConnection(remoteProcess->GetReadConnection());
-
-    //
-    // Create a QSocketNotifier that tells us to call ReadFromClientAndProcess.
-    //
-    if(remoteProcess->GetWriteConnection())
+    bool success = remoteProcess->Open(MachineProfile::Default(), 1, 1);
+    if(success) 
     {
-        int desc = remoteProcess->GetWriteConnection()->GetDescriptor();
-        if(desc != -1)
-        {
-            debug1 << mName << "Creating socket notifier to listen to client."
-                   << endl;
-            WebSocketConnection* conn = dynamic_cast<WebSocketConnection*>(remoteProcess->GetWriteConnection());
+        debug1 << mName << "Successfully opened client connection." << endl;
 
-            if(conn) {
-                connect(conn, SIGNAL(frameRead(int)), this, SLOT(ReadFromClientAndProcess(int)));
-                connect(conn, SIGNAL(disconnected()), this, SLOT(ForceDisconnectClient()));
-            }
-            else {
-                notifier = new QSocketNotifier(desc, QSocketNotifier::Read, 0);
-                connect(notifier, SIGNAL(activated(int)),
-                        this, SLOT(ReadFromClientAndProcess(int)));
-                ownsNotifier = true;
-            }
+    	// Hook up the remote process's input/output to xfer.
+    	xfer->SetInputConnection(remoteProcess->GetWriteConnection());
+    	xfer->SetOutputConnection(remoteProcess->GetReadConnection());
 
-            /// if there is a close from client
+    	//
+    	// Create a QSocketNotifier that tells us to call ReadFromClientAndProcess.
+    	//
+    	if(remoteProcess->GetWriteConnection())
+    	{
+            int desc = remoteProcess->GetWriteConnection()->GetDescriptor();
+            if(desc != -1)
+            {
+            	debug1 << mName << "Creating socket notifier to listen to client."
+                       << endl;
+            	WebSocketConnection* conn = dynamic_cast<WebSocketConnection*>(remoteProcess->GetWriteConnection());
+
+            	if(conn) {
+                    connect(conn, SIGNAL(frameRead(int)), this, SLOT(ReadFromClientAndProcess(int)));
+                    connect(conn, SIGNAL(disconnected()), this, SLOT(ForceDisconnectClient()));
+            	}
+                else {
+                    notifier = new QSocketNotifier(desc, QSocketNotifier::Read, 0);
+                    connect(notifier, SIGNAL(activated(int)),
+                            this, SLOT(ReadFromClientAndProcess(int)));
+                    ownsNotifier = true;
+              	}
+
+            	/// if there is a close from client
 //            QTcpSocket* s = new QTcpSocket();
 //            s->setSocketDescriptor(desc);
 //            connect(s, SIGNAL(aboutToClose()), SLOT(ForceDisconnectClient()));
-        }
-    }
-    bool sendOnlyInitialState = false;
+            }
+    	}
+    	bool sendOnlyInitialState = false;
 #ifdef _WIN32
-    // Sending only initial state is a problem if launching cli via Command
-    // windows, so limit it to only gui.  Not sure if this is truly still
-    // necessary for the gui, but will leave it in nevertheless.
-    if (std::find(args.begin(), args.end(), "-gui") != args.end())
-        sendOnlyInitialState = true;
+    	// Sending only initial state is a problem if launching cli via Command
+    	// windows, so limit it to only gui.  Not sure if this is truly still
+    	// necessary for the gui, but will leave it in nevertheless.
+    	if (std::find(args.begin(), args.end(), "-gui") != args.end())
+            sendOnlyInitialState = true;
 #endif
-    if (sendOnlyInitialState)
-    {
-        // Initiate sending state objects to the client.
-        initialStateStage = allState ? 0 : viewerState->FreelyExchangedState();
-        QTimer::singleShot(50, this, SLOT(sendInitialState()));
-    }
-    else
-    {
-        // Send all of the state except for the first 7 state objects, which
-        // are: ViewerRPC, PostponedRPC, syncAtts, messageAtts, statusAtts,
-        // metaData, silAtts.
-        debug1 << mName << "Sending state objects to client." << endl;
-        for(int i = allState ? 0 : viewerState->FreelyExchangedState();
-            i < viewerState->GetNumStateObjects(); ++i)
-        {
-            viewerState->GetStateObject(i)->SelectAll();
-            SetUpdate(false);
-            if(allState) viewerState->GetStateObject(i)->SetSendMetaInformation(true);
-            viewerState->GetStateObject(i)->Notify();
-            if(allState) viewerState->GetStateObject(i)->SetSendMetaInformation(false);
-        }
-    }
+    	if (sendOnlyInitialState)
+    	{
+            // Initiate sending state objects to the client.
+            initialStateStage = allState ? 0 : viewerState->FreelyExchangedState();
+            QTimer::singleShot(50, this, SLOT(sendInitialState()));
+    	}
+    	else
+      	{
+            // Send all of the state except for the first 7 state objects, which
+            // are: ViewerRPC, PostponedRPC, syncAtts, messageAtts, statusAtts,
+            // metaData, silAtts.
+            debug1 << mName << "Sending state objects to client." << endl;
+            for(int i = allState ? 0 : viewerState->FreelyExchangedState();
+                i < viewerState->GetNumStateObjects(); ++i)
+            {
+            	viewerState->GetStateObject(i)->SelectAll();
+            	SetUpdate(false);
+            	if(allState) viewerState->GetStateObject(i)->SetSendMetaInformation(true);
+            	viewerState->GetStateObject(i)->Notify();
+            	if(allState) viewerState->GetStateObject(i)->SetSendMetaInformation(false);
+            }
+    	}
 
-    debug1 << mName << "Done" << endl;
+    	debug1 << mName << "Done" << endl;
+    	return true;
+    }
+    else 
+    {
+	debug1 << mName << "Failed" << endl;
+	return false;
+    }
 }
 
 // ****************************************************************************

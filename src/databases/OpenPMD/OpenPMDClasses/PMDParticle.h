@@ -81,7 +81,7 @@ struct particleBlockStruct
 // Class: PMDParticle
 //
 // Purpose:
-//      This class represents the Particle groups in the OpenPMD files.
+//      This class represents the Particle groups in the openPMD files.
 //
 // Programmer: Mathieu Lobet
 // Creation:   Fri Oct 14 2016
@@ -99,17 +99,17 @@ class PMDParticle
         {
             /// Scalar data name
             char    name[64];
-            /// Scalar data path in the OpenPMD file
+            /// Scalar data path in the openPMD file
             char    path[128];
-            /// Units computed from the OpenPMD file
+            /// Units computed from the openPMD file
             string    unitLabel;
             /// Factor for SI units
             double  unitSI;
             /// Weighting Power
             double  weigthingPower;
-            /// Time offset read from OpenPMD files
+            /// Time offset read from openPMD files
             double  timeOffset;
-            /// Macro-weighted read from OpenPMD file
+            /// Macro-weighted read from openPMD file
             int     macroWeighted;
             /// Data size in number of bytes (4,8)
             int     dataSize;
@@ -124,14 +124,14 @@ class PMDParticle
         {
             /// Vector data name
             char    name[64];
-            /// Vector data path in the OpenPMD file
+            /// Vector data path in the openPMD file
             char    path[128];
-            /// Units computed from the OpenPMD file
+            /// Units computed from the openPMD file
             string    unitLabel;
             /// Corresponding scalarDataSet objects in scalarDataSets
             /// for each vector component
             int     dataSetId[3];
-            /// Time offset read from OpenPMD files
+            /// Time offset read from openPMD files
             double  timeOffset;
             /// Weighting Power
             double  weigthingPower;

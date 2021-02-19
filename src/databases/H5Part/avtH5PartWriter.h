@@ -43,12 +43,15 @@ struct H5PartFile;
 //    Brad Whitlock, Wed Sep  2 14:16:43 PDT 2009
 //    I added methods for writing rectilinear and polydata datasets.
 //
+//    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+//    Removed FastBit and FastQuery
+//
 // ****************************************************************************
 
 class avtH5PartWriter : public virtual avtDatabaseWriter
 {
   public:
-                   avtH5PartWriter(DBOptionsAttributes *);
+                   avtH5PartWriter(const DBOptionsAttributes *);
     virtual       ~avtH5PartWriter();
 
   protected:
@@ -86,14 +89,6 @@ private:
     std::string variablePathPrefix;
     std::string parentFilename;
     bool        createParentFile;
-
-#ifdef HAVE_LIBFASTQUERY
-    const std::string getFastBitIndexPathPrefix( int timestep );
-  
-    bool        addFastBitIndexing;
-    std::string fastBitIndexPathPrefix;
-    std::string sortedKey;
-#endif  
 };
 
 #endif

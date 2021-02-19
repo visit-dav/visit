@@ -5,6 +5,7 @@
 #ifndef PY_ANNOTATIONATTRIBUTES_H
 #define PY_ANNOTATIONATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <AnnotationAttributes.h>
 #include <visitpy_exports.h>
 

@@ -36,6 +36,8 @@ using std::string;
 using std::map;
 using std::vector;
 
+using avtOUTCARNamespace::Atom;
+
 // ****************************************************************************
 //  Method: avtOUTCAR constructor
 //

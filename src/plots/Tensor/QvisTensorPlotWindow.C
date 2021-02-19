@@ -3,17 +3,20 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <QvisTensorPlotWindow.h>
-#include <QTabWidget>
 #include <QLayout> 
 #include <QButtonGroup>
-#include <QGroupBox>
-#include <QRadioButton>
-#include <QLabel>
 #include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QWidget>
+#include <QLabel>
 #include <QLineEdit>
+#include <QRadioButton>
+#include <QTabWidget>
 
 #include <TensorAttributes.h>
 #include <ViewerProxy.h>
+
 #include <QvisColorButton.h>
 #include <QvisColorTableWidget.h>
 
@@ -66,7 +69,7 @@ QvisTensorPlotWindow::QvisTensorPlotWindow(const int type,
 
 QvisTensorPlotWindow::~QvisTensorPlotWindow()
 {
-    tensorAtts = 0;
+    tensorAtts = nullptr;
 }
 
 // ****************************************************************************
@@ -104,109 +107,191 @@ QvisTensorPlotWindow::CreateWindowContents()
     topLayout->addWidget(propertyTabs);
 
     // ----------------------------------------------------------------------
-    // First tab
+    // Sampling tab
     // ----------------------------------------------------------------------
-    QWidget *firstTab = new QWidget(central);
-    propertyTabs->addTab(firstTab, tr("Data"));
-    
-    QGridLayout *mainLayout = new QGridLayout(firstTab);
+    QWidget *samplingTab = new QWidget(central);
+    propertyTabs->addTab(samplingTab, tr("Sampling"));
+    CreateSamplingTab(samplingTab);
 
+    // ----------------------------------------------------------------------
+    // Data tab
+    // ----------------------------------------------------------------------
+    QWidget *dataTab = new QWidget(central);
+    propertyTabs->addTab(dataTab, tr("Data"));
+    CreateDataTab(dataTab);
 
-    //
-    // Create the scale-related widgets.
-    //
-    QGroupBox * scaleGroupBox = new QGroupBox(central);
-    scaleGroupBox->setTitle(tr("Scale"));
-    mainLayout->addWidget(scaleGroupBox);
+    // ----------------------------------------------------------------------
+    // Geometry tab
+    // ----------------------------------------------------------------------
+    QWidget *geometryTab = new QWidget(central);
+    propertyTabs->addTab(geometryTab, tr("Geometry"));
+    CreateGeometryTab(geometryTab);
+}
 
-    QGridLayout *sgLayout = new QGridLayout(scaleGroupBox);
-    sgLayout->setMargin(5);
-    sgLayout->setSpacing(10);
-    sgLayout->setColumnStretch(1, 10);
+// ****************************************************************************
+// Method: QvisTensorPlotWindow::CreateSamplingTab
+//
+// Purpose: 
+//   Populates the sampling tab.
+//
+// Programmer: Allen Sanderson
+// Creation:   September 20 2013
+//
+// Modifications:
+//
+// ****************************************************************************
 
-    // Add the scale line edit.
-    scaleLineEdit = new QLineEdit(scaleGroupBox);
-    connect(scaleLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processScaleText()));
-    sgLayout->addWidget(scaleLineEdit, 0, 1);
-    QLabel *scaleLabel = new QLabel(tr("Scale"), scaleGroupBox);
-    scaleLabel->setBuddy(scaleLineEdit);
-    sgLayout->addWidget(scaleLabel, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
-
-    // Add the scale by magnitude toggle button.
-    scaleByMagnitudeToggle = new QCheckBox(tr("Scale by magnitude"), scaleGroupBox);
-    connect(scaleByMagnitudeToggle, SIGNAL(clicked(bool)), 
-            this, SLOT(scaleByMagnitudeToggled(bool)));
-    sgLayout->addWidget(scaleByMagnitudeToggle, 1, 0, 1, 2);
-
-    // Add the auto scale toggle button.
-    autoScaleToggle = new QCheckBox(tr("Auto scale"), scaleGroupBox);
-    connect(autoScaleToggle, SIGNAL(clicked(bool)),
-            this, SLOT(autoScaleToggled(bool)));
-    sgLayout->addWidget(autoScaleToggle, 2, 0, 1, 2);
-
+void
+QvisTensorPlotWindow::CreateSamplingTab(QWidget *pageTensor)
+{
+    QGridLayout *topLayout = new QGridLayout(pageTensor);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
 
     //
     // Create the reduce-related widgets.
     //
     QGroupBox * reduceGroupBox = new QGroupBox(central);
-    reduceGroupBox->setTitle(tr("Reduce by"));
-    mainLayout->addWidget(reduceGroupBox);
+    reduceGroupBox->setTitle(tr("Where to place the tensors and how many of them"));
+    topLayout->addWidget(reduceGroupBox);
     QGridLayout *rgLayout = new QGridLayout(reduceGroupBox);
     rgLayout->setSpacing(10);
 //    rgLayout->setColumnStretch(1, 10);
 
+    // Create the data location button group.
+    QLabel *locationLabel = new QLabel(tr("Placement"), reduceGroupBox);
+    rgLayout->addWidget(locationLabel, 0, 0);
+    locationButtonGroup = new QButtonGroup(reduceGroupBox);
+    connect(locationButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(locationMethodChanged(int)));
+    QRadioButton *rb = new QRadioButton(tr("Adapt to the mesh resolution"), reduceGroupBox);
+    rb->setChecked(true);
+    locationButtonGroup->addButton(rb, 0);
+    rgLayout->addWidget(rb, 0, 1, 1, 3);
+    rb = new QRadioButton(tr("Uniformly located throughout mesh"), reduceGroupBox);
+    locationButtonGroup->addButton(rb, 1);
+    rgLayout->addWidget(rb, 2, 1, 1, 3);
+
+    QFrame *hline1 = new QFrame(reduceGroupBox);
+    hline1->setFrameStyle(QFrame::HLine | QFrame::Sunken);
+    rgLayout->addWidget(hline1, 3, 0, 1, 4);
+
     // Create the reduce button group.
+    QLabel *reduceLabel = new QLabel(tr("Sampling"), reduceGroupBox);
+    rgLayout->addWidget(reduceLabel, 4, 0);
     reduceButtonGroup = new QButtonGroup(reduceGroupBox);
     connect(reduceButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(reduceMethodChanged(int)));
-    QRadioButton *rb = new QRadioButton(tr("N tensors"), reduceGroupBox);
+    rb = new QRadioButton(tr("Fixed number"), reduceGroupBox);
     rb->setChecked(true);
     reduceButtonGroup->addButton(rb, 0);
-    rgLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton(tr("Stride"), reduceGroupBox);
-    reduceButtonGroup->addButton(rb, 1);
-    rgLayout->addWidget(rb, 1, 0);
+    rgLayout->addWidget(rb, 4, 1);
+    strideRB = new QRadioButton(tr("Stride"), reduceGroupBox);
+    reduceButtonGroup->addButton(strideRB, 1);
+    rgLayout->addWidget(strideRB, 5, 1);
 
     // Add the N tensors line edit.
     nTensorsLineEdit = new QLineEdit(reduceGroupBox);
-    connect(scaleLineEdit, SIGNAL(returnPressed()),
+    connect(nTensorsLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processNTensorsText()));
-    rgLayout->addWidget(nTensorsLineEdit, 0, 1);
+    rgLayout->addWidget(nTensorsLineEdit, 4, 2);
 
     // Add the stride line edit.
     strideLineEdit = new QLineEdit(reduceGroupBox);
     connect(strideLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processStrideText()));
-    rgLayout->addWidget(strideLineEdit, 1, 1);
+    rgLayout->addWidget(strideLineEdit, 5, 2);
 
+    QFrame *hline2 = new QFrame(reduceGroupBox);
+    hline2->setFrameStyle(QFrame::HLine | QFrame::Sunken);
+    rgLayout->addWidget(hline2, 6, 0, 1, 4);
 
+    // Add the toggle to limit to one vector per original cell/node
+    limitToOrigToggle =
+      new QCheckBox(tr("Only show tensors on original nodes/cells"),
+                    reduceGroupBox);
+    connect(limitToOrigToggle, SIGNAL(toggled(bool)),
+            this, SLOT(limitToOrigToggled(bool)));
+    rgLayout->addWidget(limitToOrigToggle, 7, 0, 1, 4);
+}
 
-    // ----------------------------------------------------------------------
-    // Second tab
-    // ----------------------------------------------------------------------
-    QWidget *secondTab = new QWidget(central);
-    propertyTabs->addTab(secondTab, tr("Display"));
-    
-    mainLayout = new QGridLayout(secondTab);
+// ****************************************************************************
+// Method: QvisTensorPlotWindow::CreateDataTab
+//
+// Purpose: 
+//   Populates the data tab.
+//
+// Programmer: Allen Sanderson
+// Creation:   September 20 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
+{
+    QGridLayout *topLayout = new QGridLayout(pageTensor);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
+
+    //
+    // Create the Limits stuff
+    //
+    limitsGroup = new QGroupBox(central);
+    limitsGroup->setTitle(tr("Limits"));
+    topLayout->addWidget(limitsGroup);
+
+    QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setMargin(5);
+    limitsLayout->setSpacing(10);
+
+    limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
+
+    limitsSelect = new QComboBox(central);
+    limitsSelect->addItem(tr("Use Original Data"));
+    limitsSelect->addItem(tr("Use Current Plot"));
+    connect(limitsSelect, SIGNAL(activated(int)),
+            this, SLOT(limitsSelectChanged(int))); 
+    limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
+
+    // Create the min toggle and line edit
+    minToggle = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(minToggle, 1, 0);
+    connect(minToggle, SIGNAL(toggled(bool)),
+            this, SLOT(minToggled(bool)));
+    minLineEdit = new QLineEdit(central);
+    connect(minLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMinLimitText())); 
+    limitsLayout->addWidget(minLineEdit, 1, 1);
+
+    // Create the max toggle and line edit
+    maxToggle = new QCheckBox(tr("Maximum"), central);
+    limitsLayout->addWidget(maxToggle, 2, 0);
+    connect(maxToggle, SIGNAL(toggled(bool)),
+            this, SLOT(maxToggled(bool)));
+    maxLineEdit = new QLineEdit(central);
+    connect(maxLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMaxLimitText())); 
+    limitsLayout->addWidget(maxLineEdit, 2, 1);
 
     //
     // Create the color-related widgets.
     //
     QGroupBox * colorGroupBox = new QGroupBox(central);
     colorGroupBox->setTitle(tr("Color"));
-    mainLayout->addWidget(colorGroupBox);
+    topLayout->addWidget(colorGroupBox);
 
     QGridLayout *cgLayout = new QGridLayout(colorGroupBox);
     cgLayout->setMargin(5);
     cgLayout->setSpacing(10);
     cgLayout->setColumnStretch(1, 10);
 
-    // Add the tensor color label.
+    // Add the color label.
     colorButtonGroup = new QButtonGroup(colorGroupBox);
     connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
-    rb = new QRadioButton(tr("Eigenvalues"), colorGroupBox);
+    QRadioButton* rb = new QRadioButton(tr("Eigen values"), colorGroupBox);
     colorButtonGroup->addButton(rb, 0);
     cgLayout->addWidget(rb, 0, 0);
     rb = new QRadioButton(tr("Constant"), colorGroupBox);
@@ -236,7 +321,7 @@ QvisTensorPlotWindow::CreateWindowContents()
     //
     QGroupBox * miscGroup = new QGroupBox(central);
     miscGroup->setTitle(tr("Misc"));
-    mainLayout->addWidget(miscGroup);
+    topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
     miscLayout->setMargin(5);
@@ -248,6 +333,62 @@ QvisTensorPlotWindow::CreateWindowContents()
             this, SLOT(legendToggled(bool)));
     miscLayout->addWidget(legendToggle, 0, 0);
 }
+
+
+// ****************************************************************************
+// Method: QvisTensorPlotWindow::CreateGeometryTab
+//
+// Purpose: 
+//   Populates the geometry tab.
+//
+// Programmer: Allen Sanderson
+// Creation:   September 20 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisTensorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
+{
+    QGridLayout *topLayout = new QGridLayout(pageGlyphs);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
+
+    //
+    // Create the scale-related widgets.
+    //
+    QGroupBox * scaleGroupBox = new QGroupBox(central);
+    scaleGroupBox->setTitle(tr("Scale"));
+    topLayout->addWidget(scaleGroupBox);
+
+    QGridLayout *sgLayout = new QGridLayout(scaleGroupBox);
+    sgLayout->setMargin(5);
+    sgLayout->setSpacing(10);
+    sgLayout->setColumnStretch(1, 10);
+
+    // Add the scale line edit.
+    scaleLineEdit = new QLineEdit(scaleGroupBox);
+    connect(scaleLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processScaleText()));
+    sgLayout->addWidget(scaleLineEdit, 0, 1);
+    QLabel *scaleLabel = new QLabel(tr("Scale"), scaleGroupBox);
+    scaleLabel->setBuddy(scaleLineEdit);
+    sgLayout->addWidget(scaleLabel, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
+
+    // Add the scale by magnitude toggle button.
+    scaleByMagnitudeToggle = new QCheckBox(tr("Scale by magnitude"), scaleGroupBox);
+    connect(scaleByMagnitudeToggle, SIGNAL(clicked(bool)), 
+            this, SLOT(scaleByMagnitudeToggled(bool)));
+    sgLayout->addWidget(scaleByMagnitudeToggle, 0, 2);
+
+    // Add the auto scale toggle button.
+    autoScaleToggle = new QCheckBox(tr("Auto scale"), scaleGroupBox);
+    connect(autoScaleToggle, SIGNAL(clicked(bool)),
+            this, SLOT(autoScaleToggled(bool)));
+    sgLayout->addWidget(autoScaleToggle, 0, 3);
+}
+
 
 // ****************************************************************************
 // Method: QvisTensorPlotWindow::UpdateWindow
@@ -301,10 +442,16 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
             if(!tensorAtts->IsSelected(i))
                 continue;
         }
-
+        
         switch(i)
         {
-        case TensorAttributes::ID_useStride:
+          case TensorAttributes::ID_glyphLocation:
+            locationButtonGroup->blockSignals(true);
+            locationButtonGroup->button(tensorAtts->GetGlyphLocation() == TensorAttributes::AdaptsToMeshResolution ? 0 : 1);
+            strideRB->setEnabled(tensorAtts->GetGlyphLocation() == TensorAttributes::AdaptsToMeshResolution);
+            limitToOrigToggle->setEnabled(tensorAtts->GetGlyphLocation() == TensorAttributes::AdaptsToMeshResolution);
+            locationButtonGroup->blockSignals(false);
+          case TensorAttributes::ID_useStride:
             reduceButtonGroup->blockSignals(true);
             reduceButtonGroup->button(tensorAtts->GetUseStride()?1:0)->setChecked(true);
             reduceButtonGroup->blockSignals(false);
@@ -312,36 +459,57 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
             nTensorsLineEdit->setEnabled(!tensorAtts->GetUseStride());
             strideLineEdit->setEnabled(tensorAtts->GetUseStride());
             break;
-        case TensorAttributes::ID_stride:
+          case TensorAttributes::ID_stride:
             strideLineEdit->setText(IntToQString(tensorAtts->GetStride()));
             break;
-        case TensorAttributes::ID_nTensors:
+          case TensorAttributes::ID_nTensors:
             nTensorsLineEdit->setText(IntToQString(tensorAtts->GetNTensors()));
             break;
-        case TensorAttributes::ID_scale:
-            scaleLineEdit->setText(DoubleToQString(tensorAtts->GetScale()));
+          case TensorAttributes::ID_origOnly:
+            limitToOrigToggle->blockSignals(true);
+            limitToOrigToggle->setChecked(tensorAtts->GetOrigOnly());
+            limitToOrigToggle->blockSignals(false);
             break;
-        case TensorAttributes::ID_scaleByMagnitude:
-            scaleByMagnitudeToggle->blockSignals(true);
-            scaleByMagnitudeToggle->setChecked(tensorAtts->GetScaleByMagnitude());
-            scaleByMagnitudeToggle->blockSignals(false);
+
+          case TensorAttributes::ID_limitsMode:
+            limitsSelect->blockSignals(true);
+            limitsSelect->setCurrentIndex(tensorAtts->GetLimitsMode());
+            limitsSelect->blockSignals(false);
             break;
-        case TensorAttributes::ID_autoScale:
-            autoScaleToggle->blockSignals(true);
-            autoScaleToggle->setChecked(tensorAtts->GetAutoScale());
-            autoScaleToggle->blockSignals(false);
+          case TensorAttributes::ID_minFlag:
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(minToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(minToggled(bool)));
+            minToggle->setChecked(tensorAtts->GetMinFlag());
+            minLineEdit->setEnabled(tensorAtts->GetMinFlag());
+            connect(minToggle, SIGNAL(toggled(bool)),
+                    this, SLOT(minToggled(bool)));
             break;
-        case TensorAttributes::ID_colorByEigenvalues:
+          case TensorAttributes::ID_maxFlag:
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(maxToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(maxToggled(bool)));
+            maxToggle->setChecked(tensorAtts->GetMaxFlag());
+            maxLineEdit->setEnabled(tensorAtts->GetMaxFlag());
+            connect(maxToggle, SIGNAL(toggled(bool)),
+                    this, SLOT(maxToggled(bool)));
+           break;
+          case TensorAttributes::ID_min:
+            minLineEdit->setText(DoubleToQString(tensorAtts->GetMin()));
+            break;
+          case TensorAttributes::ID_max:
+            maxLineEdit->setText(DoubleToQString(tensorAtts->GetMax()));
+            break;
+
+          case TensorAttributes::ID_colorByEigenValues:
             colorButtonGroup->blockSignals(true);
-            colorButtonGroup->button(tensorAtts->GetColorByEigenvalues() ? 0 : 1)->setChecked(true);
+            colorButtonGroup->button(tensorAtts->GetColorByEigenValues() ? 0 : 1)->setChecked(true);
             colorButtonGroup->blockSignals(false);
+//            limitsGroup->setEnabled(tensorAtts->GetColorByEigenValues());
             break;
-        case TensorAttributes::ID_useLegend:
-            legendToggle->blockSignals(true);
-            legendToggle->setChecked(tensorAtts->GetUseLegend());
-            legendToggle->blockSignals(false);
-            break;
-        case TensorAttributes::ID_tensorColor:
+          case TensorAttributes::ID_tensorColor:
             { // new scope
             QColor temp(tensorAtts->GetTensorColor().Red(),
                         tensorAtts->GetTensorColor().Green(),
@@ -350,16 +518,35 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
             tensorColor->setButtonColor(temp);
             tensorColor->blockSignals(false);
             }
-            break;
-        case TensorAttributes::ID_colorTableName:
+          case TensorAttributes::ID_colorTableName:
             colorTableWidget->setColorTable(tensorAtts->GetColorTableName().c_str());
             break;
-        case TensorAttributes::ID_invertColorTable:
+          case TensorAttributes::ID_invertColorTable:
             colorTableWidget->setInvertColorTable(tensorAtts->GetInvertColorTable());
+            break;
+          case TensorAttributes::ID_useLegend:
+            legendToggle->blockSignals(true);
+            legendToggle->setChecked(tensorAtts->GetUseLegend());
+            legendToggle->blockSignals(false);
+            break;
+
+          case TensorAttributes::ID_scale:
+            scaleLineEdit->setText(DoubleToQString(tensorAtts->GetScale()));
+            break;
+          case TensorAttributes::ID_scaleByMagnitude:
+            scaleByMagnitudeToggle->blockSignals(true);
+            scaleByMagnitudeToggle->setChecked(tensorAtts->GetScaleByMagnitude());
+            scaleByMagnitudeToggle->blockSignals(false);
+            break;
+          case TensorAttributes::ID_autoScale:
+            autoScaleToggle->blockSignals(true);
+            autoScaleToggle->setChecked(tensorAtts->GetAutoScale());
+            autoScaleToggle->blockSignals(false);
             break;
         }
     } // end for
 }
+
 
 // ****************************************************************************
 // Method: QvisTensorPlotWindow::GetCurrentValues
@@ -371,37 +558,29 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
 //   which_widget : The number of the widget to update. If -1 is passed,
 //                  the routine gets the current values for all widgets.
 //
-// Programmer: Hank Childs
-// Creation:   September 23, 2003
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 23:51:58 PST 2001
 //
 // Modifications:
-//   Brad Whitlock, Wed Apr 23 12:05:54 PDT 2008
-//   Support for internationalization.
+//   Brad Whitlock, Fri Feb 15 11:49:34 PDT 2002
+//   Fixed format strings.
 //
-//   Brad Whitlock, Tue Aug 8 20:12:23 PST 2008
-//   Qt 4.
+//   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
+//   Get values for min and max.
+//
+//   Jeremy Meredith, Mon Mar 19 16:24:08 EDT 2007
+//   Added stemWidth.
+//
+//   Brad Whitlock, Wed Apr 23 12:11:47 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
 void
 QvisTensorPlotWindow::GetCurrentValues(int which_widget)
 {
-    bool doAll = (which_widget == -1);
+    bool okay, doAll = (which_widget == -1);
     QString msg, temp;
-
-    // Do the scale value.
-    if(which_widget == TensorAttributes::ID_scale || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(scaleLineEdit, val))
-            tensorAtts->SetScale(val);
-        else
-        {
-            ResettingError("scale value", 
-                DoubleToQString(tensorAtts->GetScale()));
-            tensorAtts->SetScale(tensorAtts->GetScale());
-        }
-    }
 
     // Do the N tensors value.
     if(which_widget == TensorAttributes::ID_nTensors || doAll)
@@ -411,7 +590,7 @@ QvisTensorPlotWindow::GetCurrentValues(int which_widget)
             tensorAtts->SetNTensors(val);
         else
         {
-            ResettingError("number of tensors",
+            ResettingError(tr("number of tensors"),
                 IntToQString(tensorAtts->GetNTensors()));
             tensorAtts->SetNTensors(tensorAtts->GetNTensors());
         }
@@ -425,10 +604,54 @@ QvisTensorPlotWindow::GetCurrentValues(int which_widget)
             tensorAtts->SetStride(val);
         else
         {
-            ResettingError("stride", IntToQString(tensorAtts->GetStride()));
+            ResettingError(tr("stride"), 
+                IntToQString(tensorAtts->GetStride()));
             tensorAtts->SetStride(tensorAtts->GetStride());
         }
     }
+
+    // Do the minimum value.
+    if(which_widget == TensorAttributes::ID_min || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(minLineEdit, val))
+            tensorAtts->SetMin(val);
+        else
+        {
+            ResettingError(tr("minimum value"),
+                DoubleToQString(tensorAtts->GetMin()));
+            tensorAtts->SetMin(tensorAtts->GetMin());
+        }
+    }
+
+    // Do the maximum value
+    if(which_widget == TensorAttributes::ID_max || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(maxLineEdit, val))
+            tensorAtts->SetMax(val);
+        else
+        {
+            ResettingError(tr("maximum value"),
+                DoubleToQString(tensorAtts->GetMax()));
+            tensorAtts->SetMax(tensorAtts->GetMax());
+        }
+    }
+
+    // Do the scale value.
+    if(which_widget == TensorAttributes::ID_scale || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(scaleLineEdit, val))
+            tensorAtts->SetScale(val);
+        else
+        {
+            ResettingError(tr("scale value"),
+                DoubleToQString(tensorAtts->GetScale()));
+            tensorAtts->SetScale(tensorAtts->GetScale());
+        }
+    }
+
 }
 
 // ****************************************************************************
@@ -443,9 +666,11 @@ QvisTensorPlotWindow::GetCurrentValues(int which_widget)
 //            AutoUpdate function and tell the viewer to apply the
 //            tensor attributes.
 //
-// Programmer: Hank Childs
-// Creation:   September 23, 2003
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 23:52:51 PST 2001
 //
+// Modifications:
+//   
 // ****************************************************************************
 
 void
@@ -492,6 +717,7 @@ QvisTensorPlotWindow::reset()
     GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
+
 // ****************************************************************************
 // Method: QvisTensorPlotWindow::tensorColorChanged
 //
@@ -502,8 +728,12 @@ QvisTensorPlotWindow::reset()
 // Arguments:
 //   color : The new tensor color.
 //
-// Programmer: Hank Childs
-// Creation:   September 23, 2003
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:21:58 PDT 2001
+//
+// Modifications:
+//   Brad Whitlock, Sat Jun 16 19:19:30 PST 2001
+//   Added code to disable coloration by tensor magnitude.
 //
 // ****************************************************************************
 
@@ -512,7 +742,7 @@ QvisTensorPlotWindow::tensorColorChanged(const QColor &color)
 {
     ColorAttribute temp(color.red(), color.green(), color.blue());
     tensorAtts->SetTensorColor(temp);
-    tensorAtts->SetColorByEigenvalues(false);
+    tensorAtts->SetColorByEigenValues(false);
     Apply();
 }
 
@@ -523,9 +753,11 @@ QvisTensorPlotWindow::tensorColorChanged(const QColor &color)
 //   This is a Qt slot function that is called when the user changes the
 //   scale line edit.
 //
-// Programmer: Hank Childs
-// Creation:   September 23, 2003
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:22:33 PDT 2001
 //
+// Modifications:
+//   
 // ****************************************************************************
 
 void
@@ -538,13 +770,15 @@ QvisTensorPlotWindow::processScaleText()
 // ****************************************************************************
 // Method: QvisTensorPlotWindow::scaleByMagnitudeToggled
 //
-// Purpose:
+// Purpose: 
 //   This is a Qt slot function that is called when the user toggles the
 //   window's scale by magnitude toggle button.
 //
 // Programmer: Eric Brugger
-// Creation:   November 24, 2004
+// Creation:   Tue Nov 23 10:18:29 PST 2004
 //
+// Modifications:
+//   
 // ****************************************************************************
 
 void
@@ -557,13 +791,15 @@ QvisTensorPlotWindow::scaleByMagnitudeToggled(bool)
 // ****************************************************************************
 // Method: QvisTensorPlotWindow::autoScaleToggled
 //
-// Purpose:
+// Purpose: 
 //   This is a Qt slot function that is called when the user toggles the
 //   window's auto scale toggle button.
 //
 // Programmer: Eric Brugger
-// Creation:   November 24, 2004
+// Creation:   Tue Nov 23 10:18:29 PST 2004
 //
+// Modifications:
+//   
 // ****************************************************************************
 
 void
@@ -583,9 +819,11 @@ QvisTensorPlotWindow::autoScaleToggled(bool)
 // Arguments:
 //   index : The reduction method.
 //
-// Programmer: Hank Childs
-// Creation:   September 23, 2003
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:24:08 PDT 2001
 //
+// Modifications:
+//   
 // ****************************************************************************
 
 void
@@ -596,15 +834,45 @@ QvisTensorPlotWindow::reduceMethodChanged(int index)
 }
 
 // ****************************************************************************
+// Method: QvisTensorPlotWindow::locationMethodChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   method used to place the tensors.
+//
+// Arguments:
+//   index : The location method.
+//
+// Programmer: Hank Childs
+// Creation:   August 24, 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisTensorPlotWindow::locationMethodChanged(int index)
+{
+    tensorAtts->SetGlyphLocation(index == 0 
+                                   ? TensorAttributes::AdaptsToMeshResolution
+                                   : TensorAttributes::UniformInSpace);
+    if (tensorAtts->GetGlyphLocation() == TensorAttributes::UniformInSpace)
+        tensorAtts->SetUseStride(false);
+    Apply();   
+}
+
+// ****************************************************************************
 // Method: QvisTensorPlotWindow::processNTensorsText
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the user changes the
 //   N tensors line edit.
 //
-// Programmer: Hank Childs
-// Creation:   September 23, 2003
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:22:33 PDT 2001
 //
+// Modifications:
+//   
 // ****************************************************************************
 
 void
@@ -621,9 +889,11 @@ QvisTensorPlotWindow::processNTensorsText()
 //   This is a Qt slot function that is called when the user changes the
 //   stride line edit.
 //
-// Programmer: Hank Childs
-// Creation:   September 23, 2003
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:22:33 PDT 2001
 //
+// Modifications:
+//   
 // ****************************************************************************
 
 void
@@ -634,15 +904,37 @@ QvisTensorPlotWindow::processStrideText()
 }
 
 // ****************************************************************************
+// Method: QvisTensorPlotWindow::limitToOrigToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's limit to original node/cell toggle button.
+//
+// Programmer: Jeremy Meredith
+// Creation:   July  8, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisTensorPlotWindow::limitToOrigToggled(bool val)
+{
+    tensorAtts->SetOrigOnly(val);
+    Apply();
+}
+
+// ****************************************************************************
 // Method: QvisTensorPlotWindow::legendToggled
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the user toggles the
 //   window's legend toggle button.
 //
-// Programmer: Hank Childs
-// Creation:   September 23, 2003
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:24:55 PDT 2001
 //
+// Modifications:
+//   
 // ****************************************************************************
 
 void
@@ -653,21 +945,26 @@ QvisTensorPlotWindow::legendToggled(bool)
 }
 
 // ****************************************************************************
-// Method: QvisTensorPlotWindow::colorByEigenvaluesToggled
+// Method: QvisTensorPlotWindow::colorByMagnitudeToggled
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the user toggles the
-//   window's "color by eigenvalues" toggle button.
+//   window's "color by magnitude" toggle button.
 //
-// Programmer: Hank Childs
-// Creation:   September 23, 2003
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:26:11 PDT 2001
 //
+// Modifications:
+//   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
+//   Set the enabled state for the limitsGroup based on ColorByMag.
+//   
 // ****************************************************************************
 
 void
 QvisTensorPlotWindow::colorModeChanged(int index)
 {
-    tensorAtts->SetColorByEigenvalues(index == 0);
+    tensorAtts->SetColorByEigenValues(index == 0);
+//    limitsGroup->setEnabled(tensorAtts->GetColorByEigenValues());
     Apply();
 }
 
@@ -683,16 +980,18 @@ QvisTensorPlotWindow::colorModeChanged(int index)
 //   ctName     : The name of the color table to use if we're not going to
 //                use the default.
 //
-// Programmer: Hank Childs
-// Creation:   September 23, 2003
+// Programmer: Brad Whitlock
+// Creation:   Sat Jun 16 18:30:51 PST 2001
 //
+// Modifications:
+//   
 // ****************************************************************************
 
 void
 QvisTensorPlotWindow::colorTableClicked(bool useDefault,
     const QString &ctName)
 {
-    tensorAtts->SetColorByEigenvalues(true);
+    tensorAtts->SetColorByEigenValues(true);
     tensorAtts->SetColorTableName(ctName.toStdString());
     Apply();
 }
@@ -721,3 +1020,106 @@ QvisTensorPlotWindow::invertColorTableToggled(bool val)
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisTensorPlotWindow::limitsSelectChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   window's limits selection combo box. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisTensorPlotWindow::limitsSelectChanged(int mode)
+{
+    // Only do it if it changed.
+    if(mode != tensorAtts->GetLimitsMode())
+    {
+        tensorAtts->SetLimitsMode(TensorAttributes::LimitsMode(mode));
+        Apply();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisTensorPlotWindow::processMinLimitText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   window's min line edit text. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisTensorPlotWindow::processMinLimitText()
+{
+    GetCurrentValues(TensorAttributes::ID_min);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisTensorPlotWindow::processMaxLimitText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   window's max line edit text. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisTensorPlotWindow::processMaxLimitText()
+{
+    GetCurrentValues(TensorAttributes::ID_max);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisTensorPlotWindow::minToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's min toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisTensorPlotWindow::minToggled(bool val)
+{
+    tensorAtts->SetMinFlag(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisTensorPlotWindow::maxToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's max toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisTensorPlotWindow::maxToggled(bool val)
+{
+    tensorAtts->SetMaxFlag(val);
+    Apply();
+}

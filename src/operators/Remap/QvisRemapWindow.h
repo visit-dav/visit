@@ -37,8 +37,8 @@ class QvisRemapWindow : public QvisOperatorWindow
   public:
     QvisRemapWindow(const int type,
                          RemapAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisRemapWindow();
     virtual void CreateWindowContents();

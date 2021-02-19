@@ -162,6 +162,10 @@ avtMetaData::GetSpatialExtents(int timeSlice, const char *var)
 //  Programmer: Hank Childs
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 bool
@@ -174,7 +178,7 @@ avtMetaData::GetHistogram(avtHistogramSpecification *hs)
     avtContract_p contract = GetContract();
     source->GetVariableAuxiliaryData(AUXILIARY_DATA_HISTOGRAM, (void *)hs,
                                      contract, list);
-    VISIT_LONG_LONG *counts = hs->GetCounts();
+    long long *counts = hs->GetCounts();
     for (int i = 0 ; i < hs->GetTotalNumberOfBins() ; i++)
         if (counts[i] != 0)
             return true;

@@ -4023,10 +4023,6 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Nek5000</translation>
     </message>
     <message>
-        <source>NIMROD</source>
-        <translation>NIMROD</translation>
-    </message>
-    <message>
         <source>Constant</source>
         <translation>Constante</translation>
     </message>
@@ -6182,10 +6178,6 @@ par le opérateur d&apos;alignement</translation>
         <translation>Nek5000</translation>
     </message>
     <message>
-        <source>NIMROD</source>
-        <translation>NIMROD</translation>
-    </message>
-    <message>
         <source>Constant</source>
         <translation>Constante</translation>
     </message>
@@ -6910,10 +6902,6 @@ par le opérateur d&apos;alignement</translation>
     <message>
         <source>Nek5000</source>
         <translation>Nek5000</translation>
-    </message>
-    <message>
-        <source>NIMROD</source>
-        <translation></translation>
     </message>
     <message>
         <source>Constant</source>
@@ -11012,10 +11000,6 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
         <translation>M3D-C1 3D</translation>
     </message>
     <message>
-        <source>NIMROD</source>
-        <translation>NIMROD</translation>
-    </message>
-    <message>
         <source>Flash</source>
         <translation>Eclair</translation>
     </message>
@@ -11381,10 +11365,6 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     <message>
         <source>Nek5000</source>
         <translation>Nek5000</translation>
-    </message>
-    <message>
-        <source>NIMROD</source>
-        <translation>NIMROD</translation>
     </message>
     <message>
         <source>Constant</source>
@@ -15752,10 +15732,6 @@ Coordinates plot.</source>
     </message>
     <message>
         <source>M3D-C1 3D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

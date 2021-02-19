@@ -54,16 +54,9 @@ GLX is the OpenGL extension to the X Window System. In the X Window System, Open
 
 Since performance is critical in 3D rendering, there is a way for OpenGL rendering to bypass the data encoding step, the data copying, and interpretation of that data by the X server. This direct rendering is possible only when a process has direct access to the graphics pipeline.
 
-Good documentation on GLX can be found at:
+* `Documentation on GLX <https://www.khronos.org/registry/OpenGL/specs/gl/glx1.4.pdf>`_.
+  * GLX functions all start with "glX" and GLX constants all start with "GLX".
+* `Documentation on creating an OpenGL 3.0 context <https://www.khronos.org/opengl/wiki/Tutorial:_OpenGL_3.0_Context_Creation_(GLX)>`_.
+  * It is the source of the test in build_visit to determine if the OpenGL on a system supports creating a 3.2 context.
+* `Documentation on the history of the changes to OpenGL <https://www.khronos.org/opengl/wiki/History_of_OpenGL>`_.
 
-https://www.khronos.org/registry/OpenGL/specs/gl/glx1.4.pdf
-
-GLX functions all start with "glX" and GLX constants all start with "GLX".
-
-Here is a link to some documentation about creating an OpenGL 3.0 context. It is the source of the test in build_visit to determine if the OpenGL on a system supports creating a 3.2 context.
-
-https://www.khronos.org/opengl/wiki/Tutorial:_OpenGL_3.0_Context_Creation_(GLX)
-
-Here is a link to some documentation about the history of the changes to OpenGL by OpenGL version.
-
-https://www.khronos.org/opengl/wiki/History_of_OpenGL

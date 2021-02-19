@@ -10,6 +10,9 @@
 #  Programmer: Allen Sanderson
 #  Date:       March 10, 2016
 #
+#  Modifications:
+#    Kathleen Biagas, Tue Sep 29 11:29:33 PDT 2020
+#    Turn off IC warnings.
 # ----------------------------------------------------------------------------
 
 OpenDatabase(silo_data_path("noise.silo"))
@@ -65,7 +68,7 @@ PseudocolorAtts.tubeRadiusVarEnabled = 0
 PseudocolorAtts.tubeRadiusVar = ""
 PseudocolorAtts.tubeRadiusVarRatio = 10
 PseudocolorAtts.tailStyle = PseudocolorAtts.Spheres  # None, Spheres, Cones
-PseudocolorAtts.headStyle = PseudocolorAtts.None  # None, Spheres, Cones
+PseudocolorAtts.headStyle = PseudocolorAtts.NONE  # None, Spheres, Cones
 PseudocolorAtts.endPointRadiusSizeType = PseudocolorAtts.Absolute  # Absolute, FractionOfBBox
 PseudocolorAtts.endPointRadiusAbsolute = 0.8
 PseudocolorAtts.endPointRadiusBBox = 0.005
@@ -116,7 +119,7 @@ IntegralCurveAtts.relTol = 1e-06
 IntegralCurveAtts.absTolSizeType = IntegralCurveAtts.FractionOfBBox  # Absolute, FractionOfBBox
 IntegralCurveAtts.absTolAbsolute = 1e-06
 IntegralCurveAtts.absTolBBox = 1e-07
-IntegralCurveAtts.fieldType = IntegralCurveAtts.Default  # Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, NektarPPField, NIMRODField
+IntegralCurveAtts.fieldType = IntegralCurveAtts.Default  # Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, NektarPPField
 IntegralCurveAtts.fieldConstant = 1
 IntegralCurveAtts.velocitySource = (0, 0, 0)
 IntegralCurveAtts.integrationType = IntegralCurveAtts.DormandPrince  # Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, M3DC12DIntegrator
@@ -142,12 +145,12 @@ IntegralCurveAtts.fillInterior = 1
 IntegralCurveAtts.randomSamples = 0
 IntegralCurveAtts.randomSeed = 0
 IntegralCurveAtts.numberOfRandomSamples = 1
-IntegralCurveAtts.issueAdvectionWarnings = 1
-IntegralCurveAtts.issueBoundaryWarnings = 1
-IntegralCurveAtts.issueTerminationWarnings = 1
-IntegralCurveAtts.issueStepsizeWarnings = 1
-IntegralCurveAtts.issueStiffnessWarnings = 1
-IntegralCurveAtts.issueCriticalPointsWarnings = 1
+IntegralCurveAtts.issueAdvectionWarnings = 0
+IntegralCurveAtts.issueBoundaryWarnings = 0
+IntegralCurveAtts.issueTerminationWarnings = 0
+IntegralCurveAtts.issueStepsizeWarnings = 0
+IntegralCurveAtts.issueStiffnessWarnings = 0
+IntegralCurveAtts.issueCriticalPointsWarnings = 0
 IntegralCurveAtts.criticalPointThreshold = 0.001
 IntegralCurveAtts.correlationDistanceAngTol = 5
 IntegralCurveAtts.correlationDistanceMinDistAbsolute = 1

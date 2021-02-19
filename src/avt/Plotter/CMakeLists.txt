@@ -76,7 +76,6 @@ SET(AVTPLOTTER_VTK_SOURCES
 vtk/InitVTKRendering.C 
 vtk/vtkAxesActor2D.C 
 vtk/vtkBackgroundActor.C 
-vtk/vtkDepthSortPolyData2.C
 vtk/vtkLineLegend.C 
 vtk/vtkMultiFontVectorText.C 
 vtk/vtkParallelImageSpaceRedistributor.C 

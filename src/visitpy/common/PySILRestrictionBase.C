@@ -5,7 +5,7 @@
 #include <PySILRestrictionBase.h>
 #include <VisItException.h>
 #include <avtSILRestrictionTraverser.h>
-
+#include <Py2and3Support.h>
 
 
 // ****************************************************************************
@@ -48,6 +48,9 @@ struct PySILRestrictionObject
 // SILRestriction methods.
 //
 
+// forward declare b/c we need to use in type def and need to use the type in this func
+static PyObject *SILRestriction_richcompare(PyObject *self, PyObject *other, int op);
+
 // ****************************************************************************
 // Function: SILRestriction_Categories
 //
@@ -83,6 +86,7 @@ SILRestriction_Categories(PyObject *self, PyObject *args)
     {
         int cIndex = mapsOut[i];
         avtSILCollection_p collection = silr->GetSILCollection(cIndex);
+        
         PyObject *dval = PyString_FromString(collection->GetCategory().c_str());
         if(dval == NULL)
             continue;
@@ -885,51 +889,90 @@ static const char *SILRestriction_Purpose = "This class contains attributes used
 static char *SILRestriction_Purpose = "This class contains attributes used to restrict the subset inclusion lattice of a plot.";
 #endif
 
+// CUSTOM
+
+//
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
 //
 // The type description structure
 //
+VISIT_PY_TYPE_OBJ(PySILRestrictionType,        \
+                  "SILRestriction",            \
+                  PySILRestrictionObject,      \
+                  SILRestriction_dealloc,      \
+                  SILRestriction_print,        \
+                  SILRestriction_getattr,      \
+                  0,                           \
+                  0,                           \
+                  SILRestriction_Purpose,      \
+                  SILRestriction_richcompare,  \
+                  0); /* as_number*/
 
-static PyTypeObject PySILRestrictionType =
+// ****************************************************************************
+// Function: SILRestriction_richcompare
+//
+// Purpose:
+//   Comparison function for PySILRestriction.
+//
+//
+// Programmer: TODO
+// Creation:   TODO
+//
+//  Modifications:
+//
+//   Hank Childs, Mon Dec  2 13:41:37 PST 2002
+//   Used a SIL Restriction Traverser to meet the new interface.
+//
+// ****************************************************************************
+static PyObject *
+SILRestriction_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "SILRestriction",                    // tp_name
-    sizeof(PySILRestrictionObject),      // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)SILRestriction_dealloc,  // tp_dealloc
-    (printfunc)SILRestriction_print,     // tp_print
-    (getattrfunc)SILRestriction_getattr, // tp_getattr
-    (setattrfunc)0,                      // tp_setattr
-    (cmpfunc)SILRestriction_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type Categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    0,                                   // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    SILRestriction_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &PySILRestrictionType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    
+    avtSILRestriction_p self_silr = *(((PySILRestrictionObject *)self)->silr);
+    avtSILRestrictionTraverser trav(self_silr);
+    avtSILRestriction_p other_silr = *(((PySILRestrictionObject *)other)->silr);
+    bool silr_equal = trav.Equal(other_silr);
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = silr_equal ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = !silr_equal ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

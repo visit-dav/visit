@@ -14,6 +14,7 @@
 #include <clocale>
 #include <iomanip>
 #include <visit-config.h>
+#include <DebugStream.h>
 
 // ****************************************************************************
 // Method: ConfigManager::ConfigManager
@@ -1131,6 +1132,11 @@ ConfigManager::ReadFieldData(std::istream& in,
 //    Mark C. Miller, Tue Mar 31 18:54:53 PDT 2015
 //    Incorporate changes as per Brad's guidance to force locale to en_US
 //    when reading.
+//
+//    Alister Maguire, Wed Jun 24 15:37:46 PDT 2020
+//    Changed setlocale from en_US to en_US.UTF-8 for Ubuntu compatibility,
+//    and added a check to see if it succeeded or not.
+//
 // ****************************************************************************
 
 bool
@@ -1140,7 +1146,14 @@ ConfigManager::ReadObject(std::istream& in, DataNode *parentNode)
     std::string current_locale = setlocale(LC_ALL, 0);
 
     // Force US locale.
-    setlocale(LC_ALL, "en_US");
+    const char * result = setlocale(LC_ALL, "en_US.UTF-8");
+
+    // Did we succeed?
+    if (result == NULL)
+    {
+        debug1 << "setlocale failed! This may result in erroneous reads..."
+            << endl;
+    }
 
     // Read the settings.
     bool te = false;

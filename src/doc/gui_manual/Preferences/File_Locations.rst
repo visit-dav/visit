@@ -256,7 +256,7 @@ other than ``VUSER_HOME``. These are breifly described in this section.
   ``<letter>.<component-name>.<mpi-rank-or-$pid>.<debug-level>.vlog`` where
   ``<letter>`` is one of ``A`` through ``E``, ``<component-name>`` is one of
   ``gui``, ``mdserver``, ``viewer``, ``engine_ser``, ``engine_par``,
-  ``<mpi-rank-or-$pid>`` is the MPI rank for a prallel engine (``engine_par``)
+  ``<mpi-rank-or-$pid>`` is the MPI rank for a parallel engine (``engine_par``)
   or, optionally if ``-pid`` is given as a command-line
   :ref:`startup option <StartupOptions>`) the component's process id,
   and ``<debug-level>`` is the integer argument for the ``-debug``

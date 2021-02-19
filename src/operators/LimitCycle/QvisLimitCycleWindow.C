@@ -321,7 +321,6 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     fieldType->addItem(tr("M3D-C1 3D"));
     fieldType->addItem(tr("Nek5000"));
     fieldType->addItem(tr("Nektar++"));
-    fieldType->addItem(tr("NIMROD"));
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);
@@ -378,7 +377,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     integrationType = new QComboBox(integrationGroup);
     integrationType->addItem(tr("Forward Euler (Single-step)"));
     integrationType->addItem(tr("Leapfrog (Single-step)"));
-    integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
+    integrationType->addItem(tr("Runge-Kutta-Dormand-Prince (RKDP)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
     integrationType->addItem(tr("Runge-Kutta 4 (Single-step)"));
     integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D fields only)"));
@@ -528,7 +527,7 @@ QvisLimitCycleWindow::CreateAppearanceTab(QWidget *pageAppearance)
     cycleLayout->addWidget(maxIterations, 1,1);
 
 
-    showPartialResults = new QCheckBox(tr("Show partial results (limit cycle may not be present)"), cycleGroup);
+    showPartialResults = new QCheckBox(tr("Show partial results"), cycleGroup);
     connect(showPartialResults, SIGNAL(toggled(bool)), this, SLOT(showPartialResultsChanged(bool)));
     cycleLayout->addWidget(showPartialResults, 2,0, 1,2);
 
@@ -539,7 +538,7 @@ QvisLimitCycleWindow::CreateAppearanceTab(QWidget *pageAppearance)
 
     // Create the data group
     QGroupBox *dataGroup = new QGroupBox(pageAppearance);
-    dataGroup->setTitle(tr("Data"));
+    dataGroup->setTitle(tr("Coloring"));
     mainLayout->addWidget(dataGroup, 2, 0);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
@@ -547,17 +546,17 @@ QvisLimitCycleWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataLayout->setColumnStretch(2,10);
 
     // Create the data value.
-    dataLayout->addWidget(new QLabel(tr("Data value"), dataGroup), 0, 0);
+    dataLayout->addWidget(new QLabel(tr("Color by"), dataGroup), 0, 0);
 
     dataValueComboBox = new QComboBox(dataGroup);
-    dataValueComboBox->addItem(tr("Solid"), LimitCycleAttributes::Solid);
-    dataValueComboBox->addItem(tr("Seed point ID"), LimitCycleAttributes::SeedPointID);
-    dataValueComboBox->addItem(tr("Speed"), LimitCycleAttributes::Speed);
+    dataValueComboBox->addItem(tr("Solid Color"), LimitCycleAttributes::Solid);
+    dataValueComboBox->addItem(tr("Random Color"), LimitCycleAttributes::SeedPointID);
+    dataValueComboBox->addItem(tr("Vector magnitude"), LimitCycleAttributes::Speed);
     dataValueComboBox->addItem(tr("Vorticity magnitude"), LimitCycleAttributes::Vorticity);
     dataValueComboBox->addItem(tr("Arc length"), LimitCycleAttributes::ArcLength);
-    dataValueComboBox->addItem(tr("Absolute time"), LimitCycleAttributes::TimeAbsolute);
-    dataValueComboBox->addItem(tr("Relative time"), LimitCycleAttributes::TimeRelative);
-    dataValueComboBox->addItem(tr("Ave. dist. from seed"), LimitCycleAttributes::AverageDistanceFromSeed);
+    dataValueComboBox->addItem(tr("Absolute integration time"), LimitCycleAttributes::TimeAbsolute);
+    dataValueComboBox->addItem(tr("Relative integration time"), LimitCycleAttributes::TimeRelative);
+    dataValueComboBox->addItem(tr("Avg. dist. from seed"), LimitCycleAttributes::AverageDistanceFromSeed);
     dataValueComboBox->addItem(tr("Correlation distance"), LimitCycleAttributes::CorrelationDistance);
     dataValueComboBox->addItem(tr("Difference"), LimitCycleAttributes::Difference);
     dataValueComboBox->addItem(tr("Variable"), LimitCycleAttributes::Variable);
@@ -768,27 +767,22 @@ QvisLimitCycleWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(issueWarningForStiffness, 2, 0);
     QLabel *stiffnessLabel = new QLabel(tr("Issue warning when a stiffness condition is detected."), warningsGrp);
     warningsGLayout->addWidget(stiffnessLabel, 2, 1, 1, 2);
-    QLabel *stiffnessDescLabel1 = new QLabel(tr("(Stiffness refers to one vector component being so much "), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel1, 3, 1, 1, 2);
-    QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel2, 4, 1, 1, 2);
 
     issueWarningForCriticalPoints = new QCheckBox(central);
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
-    warningsGLayout->addWidget(issueWarningForCriticalPoints, 5, 0);
+    warningsGLayout->addWidget(issueWarningForCriticalPoints, 3, 0);
     QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
-    warningsGLayout->addWidget(critPointLabel, 5, 1, 1, 2);
-    QLabel *critPointDescLabel = new QLabel(tr("(I.e. the curve circles around the critical point without stopping.)"), warningsGrp);
-    warningsGLayout->addWidget(critPointDescLabel, 6, 1, 1, 2);
+    warningsGLayout->addWidget(critPointLabel, 3, 1, 1, 2);
+    
     criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
     criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-    warningsGLayout->addWidget(criticalPointThresholdLabel, 7, 1);
+    warningsGLayout->addWidget(criticalPointThresholdLabel, 4, 1);
     criticalPointThreshold = new QLineEdit(warningsGrp);
     criticalPointThreshold->setAlignment(Qt::AlignLeft);
     connect(criticalPointThreshold, SIGNAL(returnPressed()),
             this, SLOT(criticalPointThresholdProcessText()));
-    warningsGLayout->addWidget(criticalPointThreshold, 7, 2);
+    warningsGLayout->addWidget(criticalPointThreshold, 4, 2);
 }
 
 // ****************************************************************************
@@ -1079,12 +1073,6 @@ QvisLimitCycleWindow::UpdateWindow(bool doAll)
             {
               atts->SetIntegrationType(LimitCycleAttributes::M3DC12DIntegrator);
               integrationType->setCurrentIndex(LimitCycleAttributes::M3DC12DIntegrator);
-              UpdateIntegrationAttributes();
-            }
-            else if (atts->GetFieldType() == LimitCycleAttributes::NIMRODField)
-            {
-              atts->SetIntegrationType(LimitCycleAttributes::AdamsBashforth);
-              integrationType->setCurrentIndex(LimitCycleAttributes::AdamsBashforth);
               UpdateIntegrationAttributes();
             }
             else if (atts->GetIntegrationType() == LimitCycleAttributes::M3DC12DIntegrator)
@@ -1433,7 +1421,6 @@ QvisLimitCycleWindow::UpdateFieldAttributes()
       TurnOn(velocitySource, velocitySourceLabel);
       break;
 
-    case LimitCycleAttributes::NIMRODField:
     default:
       TurnOff(fieldConstant, fieldConstantLabel);
       TurnOff(velocitySource, velocitySourceLabel);

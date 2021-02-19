@@ -5,6 +5,7 @@
 #ifndef PY_AXISLABELS_H
 #define PY_AXISLABELS_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <AxisLabels.h>
 #include <visitpy_exports.h>
 

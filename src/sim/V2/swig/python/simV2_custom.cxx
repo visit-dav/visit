@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include <functional>
+#include <Py2and3Support.h>
 
 // Also see the documentation in simV2_python.i
 // which describes the pattern's we use for handling

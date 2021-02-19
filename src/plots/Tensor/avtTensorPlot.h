@@ -9,7 +9,6 @@
 #ifndef AVT_Tensor_PLOT_H
 #define AVT_Tensor_PLOT_H
 
-
 #include <avtLegend.h>
 #include <avtPlot.h>
 
@@ -18,9 +17,9 @@
 class     avtTensorFilter;
 class     avtTensorGlyphMapper;
 class     avtGhostZoneFilter;
+class     avtResampleFilter;
 class     avtVariableLegend;
 class     avtLookupTable;
-
 
 // ****************************************************************************
 //  Class:  avtTensorPlot
@@ -66,33 +65,32 @@ class avtTensorPlot : public avtPointDataPlot
     virtual const MapNode      &GetExtraInfoForPick(void);
 
   protected:
-    TensorAttributes              atts;
-    bool                          colorsInitialized;
+    TensorAttributes            atts;
+    bool                        colorsInitialized;
 
-    avtTensorGlyphMapper         *tensorMapper;
-    avtVariableLegend            *varLegend;
-    avtLegend_p                   varLegendRefPtr;
-    avtTensorFilter              *TensorFilter;
-    avtGhostZoneFilter           *ghostFilter;
-    avtLookupTable               *avtLUT;
-
+    avtTensorGlyphMapper       *tensorMapper;
+    avtVariableLegend          *varLegend;
+    avtLegend_p                 varLegendRefPtr;
+    avtTensorFilter            *TensorFilter;
+    avtGhostZoneFilter         *ghostFilter;
+    avtResampleFilter          *resampleFilter;
+    avtLookupTable             *avtLUT;
 
     virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
     virtual void                CustomizeBehavior(void);
     virtual void                CustomizeMapper(avtDataObjectInformation &);
+
     bool                        SetColorTable(const char *);
+    void                        SetLimitsMode(int);
+    void                        SetMapperColors(void);
 
     virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; };
     void                        SetLegend(bool);
     void                        SetLegendRanges();
 
-    virtual void                SetCellCountMultiplierForSRThreshold(const avtDataObject_p)
-                                    { cellCountMultiplierForSRThreshold = 96.0; }; 
+    virtual void                SetCellCountMultiplierForSRThreshold(const avtDataObject_p);
 };
 
-
 #endif
-
-

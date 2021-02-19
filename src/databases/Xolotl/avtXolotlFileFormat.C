@@ -50,7 +50,7 @@ typedef struct {
 //  Creation:   March 22, 2016
 //
 // ****************************************************************************
-avtXolotlFileFormat::avtXolotlFileFormat(const char *fn, DBOptionsAttributes *readOpts)
+avtXolotlFileFormat::avtXolotlFileFormat(const char *fn, const DBOptionsAttributes *readOpts)
     : avtMTSDFileFormat(&fn, 1)
 {
     fileId = -1;

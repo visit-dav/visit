@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-  <Attribute name="ExportDBAttributes" purpose="The attributes for export a database" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="ExportDBAttributes" purpose="The attributes for export a database" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ExportDBAttributes.code">
     <Field name="allTimes" label="All time steps" type="bool">
       false
     </Field>
     <Field name="dirname" label="dirname" type="string">
-      "."
+      .
     </Field>
     <Field name="filename" label="filename" type="string">
       visit_ex_db
@@ -26,4 +26,9 @@
     </Field>
     <Field name="opts" label="opts" type="att" subtype="DBOptionsAttributes">
     </Field>
+    <Function name="PyExportDBAttributes_ToString" user="false" member="false">
+    </Function>
+    <Include file="source" quoted="true" target="xml2python">
+      PyDBOptionsAttributes_Helpers.h
+    </Include>
   </Attribute>

@@ -5,6 +5,7 @@
 #include <PyLimitCycleAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <Py2and3Support.h>
 
 // ****************************************************************************
 // Module: PyLimitCycleAttributes
@@ -34,7 +35,6 @@ struct LimitCycleAttributesObject
 // Internal prototypes
 //
 static PyObject *NewLimitCycleAttributes(int);
-
 std::string
 PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *prefix)
 {
@@ -274,7 +274,7 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
     snprintf(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
     str += tmpStr;
     const char *fieldType_names = "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
-        "NektarPPField, NIMRODField";
+        "NektarPPField";
     switch (atts->GetFieldType())
     {
       case LimitCycleAttributes::Default:
@@ -299,10 +299,6 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
           break;
       case LimitCycleAttributes::NektarPPField:
           snprintf(tmpStr, 1000, "%sfieldType = %sNektarPPField  # %s\n", prefix, prefix, fieldType_names);
-          str += tmpStr;
-          break;
-      case LimitCycleAttributes::NIMRODField:
-          snprintf(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       default:
@@ -1272,15 +1268,15 @@ LimitCycleAttributes_SetFieldType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the fieldType in the object.
-    if(ival >= 0 && ival < 7)
+    if(ival >= 0 && ival < 6)
         obj->data->SetFieldType(LimitCycleAttributes::FieldType(ival));
     else
     {
         fprintf(stderr, "An invalid fieldType value was given. "
-                        "Valid values are in the range of [0,6]. "
+                        "Valid values are in the range of [0,5]. "
                         "You can also use the following names: "
                         "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
-                        "NektarPPField, NIMRODField.");
+                        "NektarPPField.");
         return NULL;
     }
 
@@ -2342,14 +2338,7 @@ LimitCycleAttributes_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-LimitCycleAttributes_compare(PyObject *v, PyObject *w)
-{
-    LimitCycleAttributes *a = ((LimitCycleAttributesObject *)v)->data;
-    LimitCycleAttributes *b = ((LimitCycleAttributesObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
-
+static PyObject *LimitCycleAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyLimitCycleAttributes_getattr(PyObject *self, char *name)
 {
@@ -2459,8 +2448,6 @@ PyLimitCycleAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(LimitCycleAttributes::Nek5000Field));
     if(strcmp(name, "NektarPPField") == 0)
         return PyInt_FromLong(long(LimitCycleAttributes::NektarPPField));
-    if(strcmp(name, "NIMRODField") == 0)
-        return PyInt_FromLong(long(LimitCycleAttributes::NIMRODField));
 
     if(strcmp(name, "fieldConstant") == 0)
         return LimitCycleAttributes_GetFieldConstant(self, NULL);
@@ -2731,49 +2718,70 @@ static char *LimitCycleAttributes_Purpose = "Attributes for the LimitCycle";
 #endif
 
 //
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
+//
 // The type description structure
 //
-static PyTypeObject LimitCycleAttributesType =
+
+VISIT_PY_TYPE_OBJ(LimitCycleAttributesType,         \
+                  "LimitCycleAttributes",           \
+                  LimitCycleAttributesObject,       \
+                  LimitCycleAttributes_dealloc,     \
+                  LimitCycleAttributes_print,       \
+                  PyLimitCycleAttributes_getattr,   \
+                  PyLimitCycleAttributes_setattr,   \
+                  LimitCycleAttributes_str,         \
+                  LimitCycleAttributes_Purpose,     \
+                  LimitCycleAttributes_richcompare, \
+                  0); /* as_number*/
+
+//
+// Helper function for comparing.
+//
+static PyObject *
+LimitCycleAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "LimitCycleAttributes",                    // tp_name
-    sizeof(LimitCycleAttributesObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)LimitCycleAttributes_dealloc,  // tp_dealloc
-    (printfunc)LimitCycleAttributes_print,     // tp_print
-    (getattrfunc)PyLimitCycleAttributes_getattr, // tp_getattr
-    (setattrfunc)PyLimitCycleAttributes_setattr, // tp_setattr
-    (cmpfunc)LimitCycleAttributes_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)LimitCycleAttributes_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    LimitCycleAttributes_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) != &LimitCycleAttributesType
+         || Py_TYPE(other) != &LimitCycleAttributesType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    LimitCycleAttributes *a = ((LimitCycleAttributesObject *)self)->data;
+    LimitCycleAttributes *b = ((LimitCycleAttributesObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
 
 //
 // Helper functions for object allocation.

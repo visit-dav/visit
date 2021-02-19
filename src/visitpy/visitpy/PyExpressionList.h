@@ -5,6 +5,7 @@
 #ifndef PY_EXPRESSIONLIST_H
 #define PY_EXPRESSIONLIST_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ExpressionList.h>
 #include <visitpy_exports.h>
 

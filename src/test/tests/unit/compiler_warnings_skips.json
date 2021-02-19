@@ -182,12 +182,7 @@
             "extra ';'": 0
         }
     }, 
-    "visit_vtk/full/vtkTensorReduceFilter.h": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
-    "visit_vtk/full/vtkVectorReduceFilter.C": {
+    "visit_vtk/full/vtkReduceFilter.h": {
         "0": {
             "extra ';'": 0
         }

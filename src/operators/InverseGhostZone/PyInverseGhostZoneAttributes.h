@@ -5,6 +5,7 @@
 #ifndef PY_INVERSEGHOSTZONEATTRIBUTES_H
 #define PY_INVERSEGHOSTZONEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <InverseGhostZoneAttributes.h>
 
 //

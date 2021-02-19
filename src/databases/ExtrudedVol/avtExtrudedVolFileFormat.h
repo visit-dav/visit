@@ -32,7 +32,7 @@ class avtExtrudedVolFileFormat : public avtSTMDFileFormat
 {
   public:
                        avtExtrudedVolFileFormat(const char *, 
-                                                DBOptionsAttributes *);
+                                                const DBOptionsAttributes *);
     virtual           ~avtExtrudedVolFileFormat() {;};
 
     //

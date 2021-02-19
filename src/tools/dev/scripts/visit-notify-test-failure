@@ -133,7 +133,7 @@ is...
 EOF
 echo $modifiersEmails | tr ' ' '\n' | sort >> mailmsg
 echo "" >> mailmsg
-echo "The test suite results are at http://portal.nersc.gov/project/visit/" >> mailmsg
+echo "The test suite results are at https://visit-dav.github.io/dashboard/" >> mailmsg
 echo "" >> mailmsg
 
 if test -n "$testEmail"; then

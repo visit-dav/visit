@@ -34,8 +34,8 @@ class QvisCylinderWindow : public QvisOperatorWindow
   public:
     QvisCylinderWindow(const int type,
                          CylinderAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisCylinderWindow();
     virtual void CreateWindowContents();

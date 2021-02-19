@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 
+#include <Py2and3Support.h>
+
 #define THREADS
 
 //
@@ -130,7 +132,7 @@
 #include <PyLegendAttributesObject.h>
 #include <PyLaunchProfile.h>
 #include <PyLineObject.h>
-#include <PyLine3DObject.h>
+
 #include <PyLightAttributes.h>
 #include <PyMachineProfile.h>
 #include <PyMaterialAttributes.h>
@@ -146,10 +148,13 @@
 #include <PySelectionList.h>
 #include <PySILRestrictionBase.h>
 #include <PySILRestriction.h>
+
+#include <PyLine3DObject.h>
 #include <PyText2DObject.h>
 #include <PyText3DObject.h>
-#include <PyQueryOverTimeAttributes.h>
 #include <PyTimeSliderObject.h>
+
+#include <PyQueryOverTimeAttributes.h>
 #include <PyViewAttributes.h>
 #include <PyViewAxisArrayAttributes.h>
 #include <PyViewCurveAttributes.h>
@@ -209,7 +214,17 @@
 //
 extern "C"
 {
-    void VISITMODULE_API initvisit();
+    // standard form python module enty points used
+    // by their loader
+#if defined(IS_PY3K)
+    VISITMODULE_API PyObject * PyInit_visit();
+#else
+    void      VISITMODULE_API initvisit();
+#endif
+
+    // our main entry point
+    VISITMODULE_API PyObject * initialize_visit_python_module();
+
     void VISITMODULE_API cli_initvisit(int, bool, int, char **, int, char **);
     void VISITMODULE_API cli_runscript(const char *);
 
@@ -239,6 +254,24 @@ static void OperatorPluginAddInterface();
 static void InitializeExtensions();
 static void ExecuteClientMethod(ClientMethod *method, bool onNewThread);
 static int InitializeViewerProxy(ViewerProxy* viewerproxy = NULL);
+
+//
+// VISIT_METHODS_MAX_SIZE Controls the pre-allocated size of 
+// the VisItMethods std::vector.
+//
+// This vector is used to hold structs that are handed to python 
+// as pointers. These structs can't be realloced, or else Python
+// will dance around in memory when trying to call our module
+// methods!
+//
+// As of 2020-12-14, the current number of methods is ~350.
+// 1024 is used as a conservative estimate of future growth.
+//
+// When this number is too small, we show a runtime error
+// at cli startup.
+//
+int VISIT_METHODS_MAX_SIZE = 1024;
+
 //
 // Type definitions
 //
@@ -589,6 +622,67 @@ VisItUnlockPythonInterpreter(PyThreadState *myThreadState)
 }
 
 // ****************************************************************************
+// Function: cli_PyRun_SimpleFile
+//
+// Purpose:
+//   Helper to run a script from a file, handling auto 2to3 mode.
+//   Serves as a Drop in replacement for PyRun_SimpleFile.
+//
+// Notes:
+//
+// Programmer: Cyrus Harrison
+// Creation:   Fri Jan  8 09:18:16 PST 2021
+//
+// Modifications:
+//
+// ****************************************************************************
+void 
+cli_PyRun_SimpleFile(FILE *fp, const char *fileName)
+{
+    // check if we are in auto 2to3 mode, which is indicated by:
+    //  visit_utils.builtin.GetAutoPy2to3()
+    
+    // users can change this at any time, so we need to check its current
+    // value
+
+    bool use_py2to3 = false;
+    // read value into temp var
+    std::string pycmd = "__tmp_auto_py2to3 = visit_utils.builtin.GetAutoPy2to3()\n";
+    PyRun_SimpleString(pycmd.c_str());
+    // read result
+    // all refs are borrowed
+    PyObject *main_module = PyImport_AddModule("__main__");
+    PyObject *main_dict   = PyModule_GetDict(main_module);
+    PyObject *res_obj = PyDict_GetItemString(main_dict,"__tmp_auto_py2to3");
+
+    if(res_obj != NULL)
+    {
+        if(PyObject_IsTrue(res_obj))
+        {
+            use_py2to3 = true;
+        }
+
+        // remove temp
+        PyDict_DelItemString(main_dict,"__tmp_auto_py2to3");
+    }
+
+    if(use_py2to3)
+    {
+        // read the script contents, convert and run using exec
+        pycmd = "exec(";
+        pycmd += " visit_utils.ConvertPy2to3(";
+        pycmd += " open(\"" + std::string(fileName) + "\").read()";
+        pycmd += ")";
+        pycmd += ")\n";
+        PyRun_SimpleString(pycmd.c_str());
+    }
+    else // no auto magic, use standard path
+    {
+        PyRun_SimpleFile(fp,(char*)fileName);
+    }
+}
+
+// ****************************************************************************
 // Function: IntReturnValue
 //
 // Purpose:
@@ -711,6 +805,8 @@ StringVectorToTupleString(const stringVector &s)
 // Creation:   Tue Mar 2 09:51:39 PDT 2004
 //
 // Modifications:
+//   Cyrus Harrison, Mon Mar 23 12:02:27 PDT 2020
+//   Port to python 3.
 //
 // ****************************************************************************
 
@@ -730,7 +826,11 @@ GetStringVectorFromPyObject(PyObject *obj, stringVector &vec)
         {
             PyObject *item = PyTuple_GET_ITEM(obj, i);
             if(PyString_Check(item))
-                vec.push_back(PyString_AS_STRING(item));
+            {
+                char *str_val = PyString_AsString(item);
+                vec.push_back(std::string(str_val));
+                PyString_AsString_Cleanup(str_val);
+            }
             else
             {
                 VisItErrorFunc("The tuple must contain all strings.");
@@ -746,7 +846,11 @@ GetStringVectorFromPyObject(PyObject *obj, stringVector &vec)
         {
             PyObject *item = PyList_GET_ITEM(obj, i);
             if(PyString_Check(item))
-                vec.push_back(PyString_AS_STRING(item));
+            {
+                char *str_val = PyString_AsString(item);
+                vec.push_back(std::string(str_val));
+                PyString_AsString_Cleanup(str_val);
+            }
             else
             {
                 VisItErrorFunc("The list must contain all strings.");
@@ -757,7 +861,9 @@ GetStringVectorFromPyObject(PyObject *obj, stringVector &vec)
     }
     else if(PyString_Check(obj))
     {
-        vec.push_back(PyString_AS_STRING(obj));
+        char *str_val = PyString_AsString(obj);
+        vec.push_back(std::string(str_val));
+        PyString_AsString_Cleanup(str_val);
     }
     else
     {
@@ -899,6 +1005,9 @@ void PickleInit()
 //    Allow Enums to be represented by string, add range check for enum
 //    specified as int.
 //
+//    Cyrus Harrison, Mon Mar 23 12:02:27 PDT 2020
+//    Port to python 3.
+//
 // ****************************************************************************
 bool
 FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
@@ -925,7 +1034,11 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
     {
         std::string name;
         if (PyString_Check(key))
-            name = PyString_AS_STRING(key);
+        {
+            char *str_val = PyString_AsString(key);
+            name = std::string(str_val);
+            PyString_AsString_Cleanup(str_val);
+        }
         else
         {
             VisItErrorFunc("The key for an option must be a string.");
@@ -999,7 +1112,11 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
             break;
           case DBOptionsAttributes::String:
             if (PyString_Check(value))
-                opts.SetString(name, PyString_AS_STRING(value));
+            {
+                char *str_val = PyString_AsString(value);
+                opts.SetString(name, std::string(str_val));
+                PyString_AsString_Cleanup(str_val);
+            }
             else
             {
                 sprintf(msg, "Expected string to set '%s'", name.c_str());
@@ -1042,7 +1159,10 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
             {
                 if (PyString_Check(value))
                 {
-                    std::string sval(PyString_AS_STRING(value));
+                    char *str_val = PyString_AsString(value);
+                    std::string sval = std::string(str_val);
+                    PyString_AsString_Cleanup(str_val);
+
                     size_t rpos = sval.find("#");
                     if (rpos != std::string::npos)
                         sval = sval.erase(rpos-1); // remove the space before #
@@ -1561,11 +1681,9 @@ STATIC PyObject *
 visit_GetLastError(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
-
     const char *str = "";
     if(messageObserver)
         str = messageObserver->GetLastError().c_str();
-
     return PyString_FromString(str);
 }
 
@@ -7635,7 +7753,7 @@ visit_EnableTool(PyObject *self, PyObject *args)
 //   Get the plugin manager via the viewer proxy.
 //
 //   Cyrus Harrison, Thu Jul 23 12:22:05 PDT 2009
-//   Clear error after unsucessful tuple parse.
+//   Clear error after unsuccessful tuple parse.
 //
 // ****************************************************************************
 
@@ -9744,7 +9862,8 @@ TurnOnOffHelper(SILCategoryRole role, bool val, const stringVector &names)
 // Creation:   Wed Nov 13 13:34:34 PST 2002
 //
 // Modifications:
-//
+//   Cyrus Harrison, Mon Mar 23 12:02:27 PDT 2020
+//   Port to python 3.
 // ****************************************************************************
 
 bool
@@ -9768,7 +9887,11 @@ GetNamesHelper(PyObject *self, PyObject *args, stringVector &names)
             {
                 PyObject *item = PyTuple_GET_ITEM(tuple, i);
                 if(PyString_Check(item))
-                    names.push_back(PyString_AS_STRING(item));
+                {
+                    char *str_val = PyString_AsString(item);
+                    names.push_back(std::string(str_val));
+                    PyString_AsString_Cleanup(str_val);
+                }
                 else
                     names.push_back("invalid");
             }
@@ -11009,7 +11132,7 @@ visit_GetLight(PyObject *self, PyObject *args)
 //   Added book keeping to track execution stack of source files.
 //
 //   Cyrus Harrison, Wed Sep 30 07:53:17 PDT 2009
-//   Added spoofing of __name__ for Source() executiuon so we can use
+//   Added spoofing of __name__ for Source() execution so we can use
 //   standard python check:
 //     if __name__ == "__main__"
 //   To delineate between '-s' and sourced scripts.
@@ -11063,7 +11186,8 @@ visit_Source(PyObject *self, PyObject *args)
     //
     // Execute the commands in the file.
     //
-    PyRun_SimpleFile(fp, (char *)fileName);
+    cli_PyRun_SimpleFile(fp,fileName);
+
     fclose(fp);
 
     // book keeping for source file stack
@@ -11852,6 +11976,9 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
 //   Change return type (Object/Value/String) based on user request from
 //   SetQueryOutputToxxx calls. Default is string.
 //
+//   Cyrus Harrison, Mon Mar 23 12:02:27 PDT 2020
+//   Port to python 3.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -11859,7 +11986,8 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     ENSURE_VIEWER_EXISTS();
 
-    char *queryName = NULL;
+    std::string queryName("");
+    
     bool parse_success = true;
     MapNode queryParams;
 
@@ -11875,8 +12003,9 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
          VisItErrorFunc("Query requires first argument to be the query name.");
          return NULL;
     }
-    queryName = PyString_AS_STRING(PyTuple_GetItem(args, 0));
-
+    char *str_val = PyString_AsString(PyTuple_GetItem(args, 0));
+    queryName = std::string(str_val);
+    PyString_AsString_Cleanup(str_val);
  
     // parse other arguments.  First check if second arg (if present) is
     // a python dictionary object
@@ -11909,9 +12038,9 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
     // without 'Global'.  Perhaps should force proper query name and use
     // of UseGlobalId=1 in kwargs?
 #if defined(_WIN32)
-    if (_strnicmp(queryName, "Global ", 7) == 0)
+    if (_strnicmp(queryName.c_str(), "Global ", 7) == 0)
 #else
-    if (strncasecmp(queryName, "Global ", 7) == 0)
+    if (strncasecmp(queryName.c_str(), "Global ", 7) == 0)
 #endif
     {
         std::string::size_type pos1 = 0;
@@ -11923,7 +12052,7 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     else
     {
-        queryParams["query_name"] = std::string(queryName);
+        queryParams["query_name"] = queryName;
     }
 
     if (!suppressQueryOutputState)
@@ -11975,6 +12104,12 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
 //  Cyrus Harrison, Fri Mar 30 13:51:24 PDT 2012
 //  Convert python query filter to use new query params infrastructure.
 //
+//   Cyrus Harrison, Mon Mar 23 12:02:27 PDT 2020
+//   Port to python 3.
+//
+//   Eric Brugger, Tue Jan 26 13:17:19 PST 2021
+//   Modified the python args to be a char vector instead of a string.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12001,7 +12136,7 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     stringVector vars;
-    std::string  args_pickled  = "";
+    charVector   args_pickled;
     std::string  script_source = "";
 
     // if vars were passed in, add them to the variable list
@@ -12022,7 +12157,12 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
                             "PythonQuery: Failed to pickle passed 'args' value.");
             return NULL;
         }
-        args_pickled = std::string(PyString_AS_STRING(res));
+
+        int size_py_args = PyBytes_Size(res);
+        char *str_py_args = PyBytes_AsString(res);
+        for (int i = 0; i < size_py_args; i++)
+            args_pickled.push_back(str_py_args[i]);
+
         // decref b/c we created a new python string
         Py_DECREF(res);
     }
@@ -12563,6 +12703,8 @@ visit_QueryOverTime_deprecated(PyObject *self, PyObject *args)
 // Creation:   July 19, 2011
 //
 // Modifications:
+//   Cyrus Harrison, Mon Mar 23 12:02:27 PDT 2020
+//   Port to python 3.
 //
 // ****************************************************************************
 
@@ -12573,7 +12715,7 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
     ENSURE_VIEWER_EXISTS();
     const char* mn = "visit_QueryOverTime ";
 
-    char *queryName = NULL;
+    std::string  queryName("");
     bool parse_success = false;
     MapNode queryParams;
 
@@ -12588,9 +12730,11 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
          VisItErrorFunc("QueryOverTime: requires first argument to be the query name."); 
          return NULL;
     }
-    queryName = PyString_AS_STRING(PyTuple_GetItem(args, 0));
 
- 
+    char *str_val = PyString_AsString(PyTuple_GetItem(args, 0));
+    queryName = std::string(str_val);
+    PyString_AsString_Cleanup(str_val);
+
     // parse other arguments.  First check if second arg (if present) is
     // a python dictionary object
     // If no second 'args', check for named args (kwargs).
@@ -12619,7 +12763,7 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
         }
     }
 
-    queryParams["query_name"] = std::string(queryName);
+    queryParams["query_name"] = queryName;
     queryParams["do_time"] = 1;
 
     MUTEX_LOCK();
@@ -14916,6 +15060,8 @@ visit_UpdateSeedMeStatus(PyObject *self, PyObject *args)
 PyObject *
 CreateAnnotationWrapper(AnnotationObject *annot)
 {
+    // TODO: FIX WITH PURE PYTHON WRAPPERS
+    
     PyObject *retval = NULL;
     if(annot->GetObjectType() == AnnotationObject::Text2D)
     {
@@ -14952,7 +15098,7 @@ CreateAnnotationWrapper(AnnotationObject *annot)
         // Create a Image wrapper for the new annotation object.
         retval = PyLegendAttributesObject_WrapPyObject(annot);
     }
-    
+
     // Add more cases here later...
 
     else
@@ -16109,6 +16255,8 @@ visit_LoadUltra(PyObject *self, PyObject *args)
 // Creation:   Wed May 4 17:38:04 PST 2005
 //
 // Modifications:
+//   Cyrus Harrison, Mon Mar 23 12:02:27 PDT 2020
+//   Port to python 3.
 //
 // ****************************************************************************
 
@@ -16131,7 +16279,9 @@ PopulateMethodArgs(ClientMethod *m, PyObject *obj)
     }
     else if(PyString_Check(obj))
     {
-        m->AddArgument(std::string(PyString_AS_STRING(obj)));
+        char *str_val = PyString_AsString(obj);
+        m->AddArgument(std::string(str_val));
+        PyString_AsString_Cleanup(str_val);
     }
     else if(PyTuple_Check(obj))
     {
@@ -17198,6 +17348,14 @@ std::vector<PyMethodDef> VisItMethods;
 //   Cyrus Harrison, Wed Mar 17 11:16:58 PDT 2010
 //   Use PyCFunction typedef.
 //
+//   Cyrus Harrison, Mon Dec 14 11:28:57 PST 2020
+//   Pre-allocate the std::vector on first call to add.
+//   Since we hand pointers of these structs to python, we need
+//   to make sure the memory backing them isn't re/deallocated as we call
+//   push_back. This was not an issue with python 2 b/c how the module
+//   was inited, but realloc did cause problems with python 3 due 
+//   to required multi-step init.
+//
 // ****************************************************************************
 
 static void
@@ -17205,12 +17363,35 @@ AddMethod(const char *methodName,
           PyCFunction methodImp,
           const char *doc = NULL)
 {
-    PyMethodDef newMethod;
-    newMethod.ml_name  = (char *)methodName;
-    newMethod.ml_meth  = methodImp;
-    newMethod.ml_flags = METH_VARARGS;
-    newMethod.ml_doc   = (char *)doc;
-    VisItMethods.push_back(newMethod);
+    // these structs are passed to python, which uses the pointers
+    // they provide.
+    // the memory backing them can't change!
+
+    if(VisItMethods.size() == 0)
+    {
+        VisItMethods.reserve(VISIT_METHODS_MAX_SIZE);
+    }
+
+    // make sure we don't realloc, error if we hit max
+    if(VisItMethods.size() < VISIT_METHODS_MAX_SIZE)
+    {
+        PyMethodDef newMethod;
+        newMethod.ml_name  = (char *)methodName;
+        newMethod.ml_meth  = methodImp;
+        newMethod.ml_flags = METH_VARARGS;
+        newMethod.ml_doc   = (char *)doc;
+        VisItMethods.push_back(newMethod);
+    }
+    else
+    {
+        // ERROR!
+        std::ostringstream emsg;
+        emsg << "Internal Error: Attempt to add method beyond pre-allocated "
+             << "max VisItMethods.size() = " << VISIT_METHODS_MAX_SIZE 
+             <<  ". A VisIt developer must adjust compiled "
+             << "VISIT_METHODS_MAX_SIZE (in visitmodule.C) .";
+        EXCEPTION1(VisItException,emsg.str());
+    }
 }
 
 // ****************************************************************************
@@ -17229,6 +17410,13 @@ AddMethod(const char *methodName,
 // Creation:   Wed Mar 17 11:04:30 PDT 2010
 //
 // Modifications:
+//   Cyrus Harrison, Mon Dec 14 11:28:57 PST 2020
+//   Pre-allocate the std::vector on first call to add.
+//   Since we hand pointers of these structs to python, we need
+//   to make sure the memory backing them isn't re/deallocated as we call
+//   push_back. This was not an issue with python 2 b/c how the module
+//   was inited, but realloc did cause problems with python 3 due 
+//   to required multi-step init.
 //
 // ****************************************************************************
 
@@ -17237,12 +17425,32 @@ AddMethod(const char *methodName,
           PyCFunctionWithKeywords methodImp,
           const char *doc = NULL)
 {
-    PyMethodDef newMethod;
-    newMethod.ml_name  = (char *)methodName;
-    newMethod.ml_meth  = (PyCFunction)methodImp;
-    newMethod.ml_flags = METH_VARARGS | METH_KEYWORDS;
-    newMethod.ml_doc   = (char *)doc;
-    VisItMethods.push_back(newMethod);
+
+    if(VisItMethods.size() == 0)
+    {
+        VisItMethods.reserve(VISIT_METHODS_MAX_SIZE);
+    }
+
+    // make sure we don't realloc, error if we hit max
+    if(VisItMethods.size() < VISIT_METHODS_MAX_SIZE)
+    {
+        PyMethodDef newMethod;
+        newMethod.ml_name  = (char *)methodName;
+        newMethod.ml_meth  = (PyCFunction)methodImp;
+        newMethod.ml_flags = METH_VARARGS | METH_KEYWORDS;
+        newMethod.ml_doc   = (char *)doc;
+        VisItMethods.push_back(newMethod);
+    }
+    else
+    {
+        // ERROR!
+        std::ostringstream emsg;
+        emsg << "Internal Error: Attempt to add method beyond pre-allocated "
+             << "max VisItMethods.size() = " << VISIT_METHODS_MAX_SIZE 
+             <<  ". A VisIt developer must adjust compiled "
+             << "VISIT_METHODS_MAX_SIZE (in visitmodule.C) .";
+        EXCEPTION1(VisItException,emsg.str());
+    }
 }
 
 
@@ -18510,7 +18718,7 @@ OperatorPluginAddInterface()
             if(localNameSpace)
             {
                 // if we are running in the cli, we want these methods
-                // to exist in the local namespace.
+                // to exist in the local namespace
                 d = PyEval_GetLocals();
                 PyMethodDef *method = (PyMethodDef *)methods;
                 for(int j = 0; j < nMethods; ++j, ++method)
@@ -18697,6 +18905,15 @@ NeedToLoadPlugins(Subject *, void *)
 static int
 InitializeModule()
 {
+    //=====================
+    // cyrush 2020-04-09:
+    //=====================
+    // NOTE: Current logic looks a bit strange this method always returns '0'
+    // Also ret is set in the exception clause below.
+    // yet we have the (void) ret; stmt to avoid unused compiler warnings ?
+    // ret seems like it should be the return value but I am not 100% sure
+    // what the semantics are.
+
     bool ret = false; (void) ret;
 
     // Register a close-down function to close the viewer.
@@ -18733,10 +18950,12 @@ InitializeModule()
         }
 
         VisItInit::SetComponentName("cli");
+
         VisItInit::Initialize(argc, argv, 0, 1, false);
     }
     CATCH(VisItException)
     {
+        // TODO: This case isn't handled.
         // Return that we could not initialize VisIt.
         ret = true;
     }
@@ -18745,13 +18964,14 @@ InitializeModule()
     AddDefaultMethods();
     AddMethod(NULL, (PyCFunction)NULL);
     moduleInitialized = true;
+    
     return 0;
 }
 
 static int 
 InitializeViewerProxy(ViewerProxy* proxy)
 {
-    /// if viewer already initalized do not enter..
+    /// if viewer already initialized do not enter..
     if(viewer) return 0;
 
     //
@@ -18788,6 +19008,7 @@ InitializeViewerProxy(ViewerProxy* proxy)
             viewerEmbedded = true; //do not show window if it is embedded..
         GetViewerProxy()->AddArgument(cli_argv[i]);
     }
+
     //
     // Hook up observers
     //
@@ -18834,7 +19055,7 @@ InitializeViewerProxy(ViewerProxy* proxy)
 
     // Set the module initialized flag.
     //moduleInitialized = true;
-    initvisit();
+    initialize_visit_python_module();
 
     return 0;
 }
@@ -18947,6 +19168,9 @@ ReadVisItPluginDir(const char *visitProgram)
 //   Brad Whitlock, Tue Jun 24 12:19:57 PDT 2008
 //   Initialize the plugin managers via the viewer proxy.
 //
+//   Cyrus Harrison,
+//   Refactor to avoid freeVPD logic.
+//
 // ****************************************************************************
 
 static void
@@ -18966,32 +19190,35 @@ LaunchViewer(const char *visitProgram)
     // from "import visit" in a regular Python shell. Let's do our best
     // to set up VISITPLUGINDIR using the provided visitProgram.
     //
-    bool freeVPD = false;
-    char *VISITPLUGINDIR = getenv("VISITPLUGINDIR");
-    if(VISITPLUGINDIR == NULL)
+    
+    std::string visit_plugin_dir;
+    if(getenv("VISITPLUGINDIR") != NULL)
     {
-        VISITPLUGINDIR = ReadVisItPluginDir(visitProgram);
-        freeVPD = (VISITPLUGINDIR != NULL);
+        visit_plugin_dir = std::string(getenv("VISITPLUGINDIR"));
+    }
+    else
+    {
+        char *vplug_dir_read = ReadVisItPluginDir(visitProgram);
+        if(vplug_dir_read != NULL)
+        {
+            visit_plugin_dir = std::string(vplug_dir_read);
+        }
+        free(vplug_dir_read);
     }
 
     TRY
     {
         // Read the plugin info
         GetViewerProxy()->InitializePlugins(PlotPluginManager::Scripting,
-                                            VISITPLUGINDIR);
+                                            visit_plugin_dir.c_str());
     }
     CATCH(VisItException)
     {
-        if(freeVPD)
-            free(VISITPLUGINDIR);
         // Return since we could not initialize VisIt.
         CATCH_RETURN(1);
     }
     ENDTRY
 
-    // Free the VISITPLUGINDIR array if we need to.
-    if(freeVPD)
-        free(VISITPLUGINDIR);
 
     TRY
     {
@@ -19250,8 +19477,9 @@ VisItErrorFunc(const char *errString)
 // ****************************************************************************
 
 void
-cli_initvisit(int debugLevel, bool verbose, int argc, char **argv,
-    int argc_after_s, char **argv_after_s)
+cli_initvisit(int debugLevel, bool verbose,
+              int argc, char **argv,
+              int argc_after_s, char **argv_after_s)
 {
     if (debugLevel < 0)
     {
@@ -19269,7 +19497,9 @@ cli_initvisit(int debugLevel, bool verbose, int argc, char **argv,
     cli_argv = argv;
     cli_argc_after_s = argc_after_s;
     cli_argv_after_s = argv_after_s;
-    initvisit();
+
+    initialize_visit_python_module();
+
 }
 
 // ****************************************************************************
@@ -19308,7 +19538,7 @@ cli_runscript(const char *fileName)
             //
             // Execute the commands in the file.
             //
-            PyRun_SimpleFile(fp, (char *)fileName);
+            cli_PyRun_SimpleFile(fp, (char *)fileName);
             fclose(fp);
 
             // book keeping for source stack
@@ -19429,54 +19659,274 @@ GetViewerMethods()
 //   Cyrus Harrison, Mon Feb  7 15:34:17 PST 2011
 //   Add missing global dict.
 //
+//   Cyrus Harrison, Mon Mar 23 12:02:27 PDT 2020
+//   Port to python 3.
+//
 // ****************************************************************************
 
-void initvisitmodule()
+//---------------------------------------------------------------------------//
+//---------------------------------------------------------------------------//
+// Module Init Code
+//---------------------------------------------------------------------------//
+//---------------------------------------------------------------------------//
+
+struct module_state {
+    PyObject *error;
+};
+
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+#else
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+#endif
+//---------------------------------------------------------------------------//
+
+//---------------------------------------------------------------------------//
+// Extra Module Setup Logic for Python3
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)
+//---------------------------------------------------------------------------//
+static int
+visitmodule_traverse(PyObject *m, visitproc visit, void *arg)
 {
-    initvisit();
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
 }
 
-void
-initvisit()
+//---------------------------------------------------------------------------//
+static int 
+visitmodule_clear(PyObject *m)
 {
-    int initCode = 0; (void) initCode;
-    PyObject *main_module = NULL;
-    PyObject *gdict = NULL; (void) gdict;
-    PyEval_InitThreads();
-    // save a pointer to the main PyThreadState object
-    mainThreadState = PyThreadState_Get();
-    ///http://porky.linuxjournal.com:8080/LJ/073/3641.html
-    ///according to the above article PyEval_InitThreads() is
-    ///acquiring lock and needs to be released.
-    //PyEval_ReleaseLock();
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+//---------------------------------------------------------------------------//
+static struct PyModuleDef visitmodule_def = 
+{
+        PyModuleDef_HEAD_INIT,
+        "visit",
+        NULL,
+        sizeof(struct module_state),
+        NULL, /* NEED TO SET THIS AT RUNTIME, exists in a std vector */ 
+        NULL,
+        visitmodule_traverse,
+        visitmodule_clear,
+        NULL
+};
+#endif
+
+
+//---------------------------------------------------------------------------//
+// The module init function signature is different between py2 and py3
+// This macro simplifies the process of returning when an init error occurs.
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)
+#define PY_MODULE_INIT_RETURN_ERROR return NULL
+#else
+#define PY_MODULE_INIT_RETURN_ERROR return
+#endif
+
+//---------------------------------------------------------------------------//
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)
+//---------------------------------------------------------------------------//
+//---------------------------------------------------------------------------//
+PyObject *PyInit_visit()
+{
+    return initialize_visit_python_module();
+}
+//---------------------------------------------------------------------------//
+PyObject * PyInit_visitmodule(void)
+{
+    return initialize_visit_python_module();
+}
+
+//---------------------------------------------------------------------------//
+//---------------------------------------------------------------------------//
+#else // Py 2
+//---------------------------------------------------------------------------//
+//---------------------------------------------------------------------------//
+void initvisit()
+{
+    initialize_visit_python_module();
+}
+//---------------------------------------------------------------------------//
+void initvisitmodule(void)
+{
+    initialize_visit_python_module();
+}
+//---------------------------------------------------------------------------//
+#endif
+//---------------------------------------------------------------------------//
+
+//---------------------------------------------------------------------------//
+// Helper for updating our module's method table
+//---------------------------------------------------------------------------//
+void
+UpdateModuleMethods(PyObject *module,std::vector<PyMethodDef> &methods)
+{
+    PyObject *mod_dict = PyModule_GetDict(module);
+
+    for(int i=0; i < methods.size(); i++)
+    {
+        // check if method exists by doing a dict lookup
+        const char *method_name = methods[i].ml_name;
+
+        // note: last entry is always NULL to signal the end of valid methods
+        // if name is null, skip lookup
+        if(method_name != NULL)
+        {
+            PyObject *method_exists = PyDict_GetItemString(mod_dict,
+                                                           method_name);
+            // if == NULL, this method is new and we need to add it
+            if(method_exists == NULL)
+            {
+                PyObject *method = PyCFunction_New(&methods[i], Py_None);
+                PyDict_SetItemString(mod_dict,methods[i].ml_name, method);
+                Py_DECREF(method);
+            }
+        }
+    }
+}
+
+//---------------------------------------------------------------------------//
+// One module entry point supporting both python 2 and 3.
+//---------------------------------------------------------------------------//
+// cyrush note: 
+// This init dance is a multi step process
+// There is probably a way to break things part to make the flow
+// of the process much easier to understand, but right now I am 
+// relying on following the control flow of the tried and true python 2 logic.
+//
+// One Python 2 change I made was to update the method table instead of creating
+// a new module on subsequent calls.
+//---------------------------------------------------------------------------//
+PyObject *
+initialize_visit_python_module()
+{
+    debug1 << "initialize_visit_python_module" << std::endl;
+
     //
     // Initialize the module, but only do it one time.
     //
+
+    // note: these actions are more like a prep step
+    // before we create the actual python module.
     if(!moduleInitialized)
     {
+        PyEval_InitThreads();
+        // save a pointer to the main PyThreadState object
+        mainThreadState = PyThreadState_Get();
+        
         MUTEX_CREATE();
 #ifndef POLLING_SYNCHRONIZE
         SYNC_CREATE();
 #endif
         THREAD_INIT();
-        initCode = InitializeModule();
+        InitializeModule();
     }
 
-    main_module = PyImport_AddModule("__main__"); //borrowed
-    gdict = PyModule_GetDict(main_module); //borrowed
+    // now create the module
+    if(visitModule == 0)
+    {
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)  // python 3
+//---------------------------------------------------------------------------//
+        visitmodule_def.m_methods = &VisItMethods[0];
+        visitModule = PyModule_Create(&visitmodule_def);
 
-    PyObject *d;
+        //
+        // we need to add our visit module to sys.modules.
+        //
+        // the multi call style of initialize_visit_python_module
+        // worked in python 2 b/c the module was created and
+        // added to the system modules.
+        // 
+        // in python 3, the story is a bit more complex. 
+        // unless we add this to the sys.modules
+        // calling initialize_visit_python_module multiple times
+        // can cause dlopens and imports that don't share the 
+        // same static vars, leading to havoc (well leading to 
+        // a viewer launch that doesn't the proper args)
+        //
 
-    // Add the VisIt module to Python. Note that we're passing the address
-    // of the first element of a vector.
-    visitModule = Py_InitModule("visit", &VisItMethods[0]);
+        PyObject *sys_module = PyImport_AddModule("sys"); //borrowed
+        if(sys_module == NULL)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "Failed to import 'sys'");
+            return NULL;
+        }
 
-    // Add the Python error message.
-    d = PyModule_GetDict(visitModule);
-    VisItError = PyErr_NewException((char*)"visit.VisItException", NULL, NULL);
-    PyDict_SetItemString(d, "VisItException", VisItError);
-    VisItInterrupt = PyErr_NewException((char*)"visit.VisItInterrupt", NULL, NULL);
-    PyDict_SetItemString(d, "VisItInterrupt", VisItInterrupt);
+        PyObject *sys_dict   = PyModule_GetDict(sys_module); //borrowed
+        if(sys_module == NULL)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "Failed obtain 'sys.__dict__'");
+            return NULL;
+        }
+
+        PyObject *sys_mods_dict = PyDict_GetItemString(sys_dict,
+                                                       "modules"); //borrowed
+        if(sys_mods_dict == NULL)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "Failed to obtain 'sys.modules'");
+            return NULL;
+        }
+
+        if( PyDict_SetItemString(sys_mods_dict, "visit", visitModule) != 0 )
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "Failed to add 'visit' to 'sys.modules'");
+            return NULL;
+        }
+//---------------------------------------------------------------------------//
+#else // PYTHON 2
+//---------------------------------------------------------------------------//
+
+        visitModule = Py_InitModule((char*)"visit",
+                                           &VisItMethods[0]);
+//---------------------------------------------------------------------------//
+#endif
+//---------------------------------------------------------------------------//
+
+        // Add our Python Exceptions
+        PyObject *visit_mod_dict = PyModule_GetDict(visitModule);
+        VisItError = PyErr_NewException((char*)"visit.VisItException", NULL, NULL);
+        PyDict_SetItemString(visit_mod_dict, "VisItException", VisItError);
+        VisItInterrupt = PyErr_NewException((char*)"visit.VisItInterrupt", NULL, NULL);
+        PyDict_SetItemString(visit_mod_dict, "VisItInterrupt", VisItInterrupt);
+    }
+
+    // check for a problem
+    if(visitModule == 0)
+    {
+        // error
+        return NULL;
+    }
+
+//---------------------------------------------------------------------------//
+#if defined(IS_PY3K)  // python 3
+//---------------------------------------------------------------------------//
+    // update our methods table for the visit module on subsequent calls
+    // to init
+    UpdateModuleMethods(visitModule,VisItMethods);
+    
+//---------------------------------------------------------------------------//
+#else // PYTHON 2
+//---------------------------------------------------------------------------//
+
+        visitModule = Py_InitModule((char*)"visit",
+                                           &VisItMethods[0]);
+//---------------------------------------------------------------------------//
+#endif
+//---------------------------------------------------------------------------//
+
+    return visitModule;
 }
 
 // ****************************************************************************

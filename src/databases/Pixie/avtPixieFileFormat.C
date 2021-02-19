@@ -187,7 +187,7 @@ static void DetectTyphonIO(int fileId)
 //
 // ****************************************************************************
 
-avtPixieFileFormat::avtPixieFileFormat(const char *filename, DBOptionsAttributes *readOpts)
+avtPixieFileFormat::avtPixieFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
     : avtMTSDFileFormat(&filename, 1), variables(), meshes(),
       timeStatePrefix("/Timestep ")
 {
@@ -424,6 +424,10 @@ avtPixieFileFormat::FreeUpResources(void)
 //   Satheesh Maheswaran, Thu Oct 26 14:14:53 PDT 2012
 //   Added static function for detecting TyphonIO function
 //
+//   Eric Brugger, Fri May 22 13:37:44 PDT 2020
+//   Corrected a bug reading curvilinear meshes in parallel. I added
+//   isCoord to TraversalInfo and VarInfo to track if a variable is a
+//   coordinate array so that the decomposition can be done correctly.
 //
 // ****************************************************************************
 
@@ -483,6 +487,7 @@ avtPixieFileFormat::Initialize()
         info.level = 0;
         info.path = "/";
         info.hasCoords = false;
+        info.isCoord = false;
         info.coordX = "";
         info.coordY = "";
         info.coordZ = "";
@@ -496,6 +501,21 @@ avtPixieFileFormat::Initialize()
         H5Giterate(fileId, "/", NULL, GetVariableList, (void*)&info);
 //      H5Literate(fileId, H5_INDEX_NAME, H5_ITER_INC, 0, VisitLinks, (void*)&info);
         H5Gclose(gid);
+
+        // Tag any coordinates as isCoord.
+        for(VarInfoMap::const_iterator it = variables.begin();
+            it != variables.end(); ++it)
+        {
+            if (it->second.hasCoords)
+            {
+                if (variables.count(it->second.coordX) == 1)
+                    variables[it->second.coordX].isCoord = true;
+                if (variables.count(it->second.coordY) == 1)
+                    variables[it->second.coordY].isCoord = true;
+                if (variables.count(it->second.coordZ) == 1)
+                    variables[it->second.coordZ].isCoord = true;
+            }
+        }
 
         // Determine the names of the meshes that we'll need.
         for(VarInfoMap::const_iterator it = variables.begin();
@@ -572,6 +592,12 @@ avtPixieFileFormat::Initialize()
 //    Jean Favre, Wed Sep  9 14:11:03 CEST 2015
 //    Added a switch between PieceToExtent and PieceToExtentByPoints to
 //    correctly handle cell-based data ghosting
+//
+//    Eric Brugger, Fri May 22 13:37:44 PDT 2020
+//    Corrected a bug reading curvilinear meshes in parallel. I added
+//    isCoord to TraversalInfo and VarInfo to track if a variable is a
+//    coordinate array so that the decomposition can be done correctly.
+//
 // ****************************************************************************
 
 void
@@ -633,7 +659,7 @@ avtPixieFileFormat::PartitionDims()
         globalExtents[4] = 0;
         globalExtents[5] = it->second.dims[2] - 1;
         extTran->SetWholeExtent(globalExtents);
-        if (it->second.hasCoords)
+        if (it->second.hasCoords || it->second.isCoord)
             extTran->PieceToExtent();
         else
             extTran->PieceToExtentByPoints();
@@ -647,7 +673,7 @@ avtPixieFileFormat::PartitionDims()
         it->second.count[2] = extents[5] - extents[4] + 1;
 // redo without ghost to get the strict bounds
         extTran->SetGhostLevel(0);
-        if (it->second.hasCoords)
+        if (it->second.hasCoords || it->second.isCoord)
             extTran->PieceToExtent();
         else
             extTran->PieceToExtentByPoints();
@@ -2086,6 +2112,11 @@ avtPixieFileFormat::VisitLinks(hid_t locId, const char* name,
 //   Luis Chacon, Tue Mar 2 10:02:00 EST 2010
 //   Added code to read time value attributes
 //
+//   Eric Brugger, Fri May 22 13:37:44 PDT 2020
+//   Corrected a bug reading curvilinear meshes in parallel. I added
+//   isCoord to TraversalInfo and VarInfo to track if a variable is a
+//   coordinate array so that the decomposition can be done correctly.
+//
 // ****************************************************************************
 
 herr_t
@@ -2128,6 +2159,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
             varInfo.fileVarName = varName;
             varInfo.timeVarying = false;
             varInfo.hasCoords = info->hasCoords;
+            varInfo.isCoord = info->isCoord;
             varInfo.coordX = info->coordX;
             varInfo.coordY = info->coordY;
             varInfo.coordZ = info->coordZ;
@@ -2296,6 +2328,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
             info2.level = info->level + 1;
             info2.path = varName;
             info2.hasCoords = false;
+            info2.isCoord = false;
             info2.coordX = "";
             info2.coordY = "";
             info2.coordZ = "";

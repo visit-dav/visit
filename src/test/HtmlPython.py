@@ -38,7 +38,7 @@ class Parser:
     def __init__(self, raw, out = sys.stdout):
         """ Store the source text.
         """
-        self.raw = string.strip(string.expandtabs(raw))
+        self.raw = raw.expandtabs().strip()
         self.out = out
 
     def format(self, formatter, form, title):
@@ -48,7 +48,7 @@ class Parser:
         self.lines = [0, 0]
         pos = 0
         while 1:
-            pos = string.find(self.raw, '\n', pos) + 1
+            pos = self.raw.find('\n', pos) + 1
             if not pos: break
             self.lines.append(pos)
         self.lines.append(len(self.raw))
@@ -58,7 +58,10 @@ class Parser:
         text = io.StringIO(self.raw)
         self.out.write('<html><body bgcolor="#e0e0e0"><head><title>%s</title></head><pre><font face="Lucida,Courier New">'%title)
         try:
-            tokenize.tokenize(text.readline, self)
+            if (sys.version_info > (3, 0)):
+                tokenize.generate_tokens(text.readline)
+            else:
+                tokenize.tokenize(text.readline,self)
         except tokenize.TokenError as ex:
             msg = ex[0]
             line = ex[1][0]

@@ -296,4 +296,22 @@ DrawPlots()
 Test("tecplot_25")
 DeleteAllPlots()
 
+DeleteAllPlots();
+CloseDatabase(data_path("tecplot_test_data/pointmesh.tec"))
+
+# binary file containing both node and cell data in block format
+OpenDatabase(data_path("tecplot_test_data/two_triangles_node_and_cell.plt"))
+
+AddPlot("Pseudocolor","nodal_field")
+ResetView()
+DrawPlots()
+Test("tecplot_26")
+DeleteAllPlots()
+
+AddPlot("Pseudocolor","cell_field")
+ResetView()
+DrawPlots()
+Test("tecplot_27")
+DeleteAllPlots()
+
 Exit()

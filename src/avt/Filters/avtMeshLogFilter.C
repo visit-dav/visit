@@ -147,6 +147,10 @@ avtMeshLogFilter_ScaleValuesHelper(vtkDataArray *a, bool inv,
 //    Eric Brugger, Mon Jul 21 14:26:26 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Tues Oct 13, 2020
+//    Set the Modified flag on Points and Coordinates, to ensure downstream
+//    filters know they have been updated.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -169,11 +173,13 @@ avtMeshLogFilter::ExecuteData(avtDataRepresentation *in_dr)
         {
             avtMeshLogFilter_ScaleValuesHelper(
                 ((vtkRectilinearGrid*)out_ds)->GetXCoordinates(), useInvLogX);
+            ((vtkRectilinearGrid*)out_ds)->GetXCoordinates()->Modified();
         }
         if (yScaleMode == LOG)
         {
             avtMeshLogFilter_ScaleValuesHelper(
                 ((vtkRectilinearGrid*)out_ds)->GetYCoordinates(), useInvLogY);
+            ((vtkRectilinearGrid*)out_ds)->GetYCoordinates()->Modified();
         }
     }
     else 
@@ -187,6 +193,7 @@ avtMeshLogFilter::ExecuteData(avtDataRepresentation *in_dr)
         {
             avtMeshLogFilter_ScaleValuesHelper(points, useInvLogY, 1, 3); 
         }
+        points->Modified();
     }
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,

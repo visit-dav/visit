@@ -46,7 +46,13 @@
 // visit includes
 //-----------------------------------------------------------------------------
 #include "InvalidVariableException.h"
+#include "Expression.h"
+#include "ExpressionList.h"
 #include "UnexpectedValueException.h"
+
+#include "avtMaterial.h"
+#include "avtMixedVariable.h"
+
 
 //-----------------------------------------------------------------------------
 // std lib includes
@@ -202,7 +208,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         if(!blueprint::mcarray::verify(n,v_info))
         {
             BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                                 "Node is not a mcarray " << v_info.to_json());
+                                 "Node is not a mcarray " << v_info.to_yaml());
         }
 
         // in this case, each child is a component of the array
@@ -319,7 +325,7 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
 {
     vtkRectilinearGrid *rectgrid = vtkRectilinearGrid::New();
 
-    BP_PLUGIN_INFO(n_coords.to_json());
+    BP_PLUGIN_INFO(n_coords.to_yaml());
 
     int nx[3];
     nx[0] = n_coords["dims"].has_child("i") ? n_coords["dims/i"].to_int() : 1;
@@ -769,7 +775,11 @@ ElementTypeToShapeName(Element::Type element_type)
       case Element::QUADRILATERAL:  return "quad";
       case Element::TETRAHEDRON:    return "tet";
       case Element::HEXAHEDRON:     return "hex";
+      // not yet supported:
+      case Element::WEDGE:       return "unknown";
+      
    }
+   
 
    return "unknown";
 }

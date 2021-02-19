@@ -5,12 +5,13 @@
 #ifndef PY_TENSORATTRIBUTES_H
 #define PY_TENSORATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <TensorAttributes.h>
 
 //
 // Functions exposed to the VisIt module.
 //
-#define TENSORATTRIBUTES_NMETH 24
+#define TENSORATTRIBUTES_NMETH 40
 void           PyTensorAttributes_StartUp(TensorAttributes *subj, void *data);
 void           PyTensorAttributes_CloseDown();
 PyMethodDef *  PyTensorAttributes_GetMethodTable(int *nMethods);

@@ -5,6 +5,7 @@
 #ifndef PY_KEYFRAMEATTRIBUTES_H
 #define PY_KEYFRAMEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <KeyframeAttributes.h>
 #include <visitpy_exports.h>
 

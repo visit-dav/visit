@@ -18,6 +18,7 @@
 #include <PyAnnotationAttributes.h>
 #include <PyConstructDataBinningAttributes.h>
 #include <PyExportDBAttributes.h>
+#include <PyDBOptionsAttributes.h>
 #include <PyGlobalLineoutAttributes.h>
 #include <PyInteractorAttributes.h>
 #include <PyKeyframeAttributes.h>
@@ -1783,7 +1784,17 @@ static std::string log_ConstructDataBinningRPC(ViewerRPC *rpc)
 static std::string log_ExportDBRPC(ViewerRPC *rpc)
 {
     std::string s(constructor(PyExportDBAttributes_GetLogString()));
-    s += "ExportDatabase(ExportDBAtts)\n";
+
+    // if ops were included, we need to call differently 
+    if(s.find("DBExportOpts =") !=std::string::npos )
+    {
+        s += "ExportDatabase(ExportDBAtts, DBExportOpts)\n";
+    }
+    else // export w/o opts
+    {
+        s += "ExportDatabase(ExportDBAtts)\n";
+    }
+
     return visitmodule() + s;
 }
 

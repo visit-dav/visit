@@ -21,11 +21,11 @@ function vercomp ()
             # fill empty fields in ver2 with zeros
             ver2[i]=0
         fi
-        if [[ 10#${ver1[i]} > 10#${ver2[i]} ]]
+        if [[ 10#${ver1[i]} -gt 10#${ver2[i]} ]]
         then
             return 1
         fi
-        if [[ 10#${ver1[i]} < 10#${ver2[i]} ]]
+        if [[ 10#${ver1[i]} -lt 10#${ver2[i]} ]]
         then
             return 2
         fi
@@ -54,9 +54,9 @@ function check_minimum_compiler_version()
    if [[ "$CXX_COMPILER" == "g++" ]] ; then
         VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 )
         echo "g++ version $VERSION"
-        testvercomp $VERSION 4.8 '<'
+        testvercomp $VERSION 6.0 '<'
         if [[ $? == 0 ]] ; then
-            echo "Need g++ version >= 4.8"
+            echo "Need g++ version >= 6.0"
             exit 1
         fi
     elif [[ "$OPSYS" == "Darwin"  &&  "$CXX_COMPILER" == "clang++" ]] ; then 
@@ -350,8 +350,20 @@ function initialize_build_visit()
             export MACOSX_DEPLOYMENT_TARGET=10.13
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER_MAJOR} == 18 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=10.14
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER_MAJOR} == 19 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=10.15
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER_MAJOR} == 20 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=11.0
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         else
-            export MACOSX_DEPLOYMENT_TARGET=10.13
+            export MACOSX_DEPLOYMENT_TARGET=10.14
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         fi

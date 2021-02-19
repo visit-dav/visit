@@ -5,6 +5,7 @@
 #ifndef PY_AVTMESHMETADATA_H
 #define PY_AVTMESHMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtMeshMetaData.h>
 #include <visitpy_exports.h>
 

@@ -5,6 +5,7 @@
 #ifndef PY_FONTATTRIBUTES_H
 #define PY_FONTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <FontAttributes.h>
 #include <visitpy_exports.h>
 

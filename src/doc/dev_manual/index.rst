@@ -7,6 +7,7 @@ VisIt_ Developer Manual
     :maxdepth: 1
     :numbered: 
 
+    StyleGuide
     pr_create
     pr_review
     RCDevelopment
@@ -16,8 +17,9 @@ VisIt_ Developer Manual
     CreateRelease
     MemoryLeaks
     Docker
-    LiveCustomerResponse
+    SiteReliabilityEngineering
     OpenGL
+    CI
 
 .. Indices and tables
 .. ==================

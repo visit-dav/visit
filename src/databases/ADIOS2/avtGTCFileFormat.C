@@ -18,7 +18,6 @@
 #include <vtkGenericCell.h>
 
 #include <avtDatabaseMetaData.h>
-#include <DBOptionsAttributes.h>
 #include <Expression.h>
 #include <Utility.h>
 #include <VisItStreamUtil.h>

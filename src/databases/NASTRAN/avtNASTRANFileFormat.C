@@ -73,7 +73,7 @@ using std::vector;
 // ****************************************************************************
 
 avtNASTRANFileFormat::avtNASTRANFileFormat(const char *filename,
-    DBOptionsAttributes *rdatts) : avtSTSDFileFormat(filename), title()
+    const DBOptionsAttributes *rdatts) : avtSTSDFileFormat(filename), title()
 {
     meshDS = 0;
     matCountOpt = 0;

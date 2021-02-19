@@ -171,7 +171,7 @@ Test("scatter_14")
 #
 # Make it use a single color
 #
-s.var4Role = s.None
+s.var4Role = s.NONE
 s.colorType = 1
 s.singleColor = (0,255,0,255)
 SetPlotOptions(s)

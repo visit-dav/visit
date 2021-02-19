@@ -152,7 +152,7 @@ class DBOptionsAttributes;
 class avtChomboFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtChomboFileFormat(const char *, DBOptionsAttributes*);
+                       avtChomboFileFormat(const char *, const DBOptionsAttributes*);
     virtual           ~avtChomboFileFormat();
 
     virtual const char    *GetType(void)   { return "Chombo"; };

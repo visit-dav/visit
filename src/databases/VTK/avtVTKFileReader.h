@@ -92,7 +92,7 @@ class DBOptionsAttributes;
 class avtVTKFileReader
 {
   public:
-    avtVTKFileReader(const char *,DBOptionsAttributes *);
+    avtVTKFileReader(const char *, const DBOptionsAttributes *);
     ~avtVTKFileReader();
 
     int           GetNumberOfDomains();

@@ -65,12 +65,16 @@
 //    Ryan Bleile, Wed Jun 11 09:47:30 CDT 2014
 //    Modifies default for enableGhostNeighbors to fit new scheme
 //
+//    Alister Maguire, Fri Oct  9 11:04:05 PDT 2020
+//    Setting canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtConnComponentsExpression::avtConnComponentsExpression()
 {
     nFinalComps = 0;
     enableGhostNeighbors = 0;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

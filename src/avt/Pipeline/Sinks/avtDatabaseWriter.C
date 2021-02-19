@@ -132,10 +132,13 @@ avtDatabaseWriter::SetTargetChunks(int nChunks)
 //  Programmer: Hank Childs
 //  Creation:   September 11, 2004
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 bool
-avtDatabaseWriter::SetTargetZones(VISIT_LONG_LONG nZones)
+avtDatabaseWriter::SetTargetZones(long long nZones)
 {
     shouldChangeTotalZones = true;
     targetTotalZones = nZones;

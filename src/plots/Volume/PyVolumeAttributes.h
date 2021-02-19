@@ -5,6 +5,7 @@
 #ifndef PY_VOLUMEATTRIBUTES_H
 #define PY_VOLUMEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <VolumeAttributes.h>
 
 //

@@ -762,6 +762,9 @@ sv_SampleCellOpacityVariable_ERT(
 //     Alister Maguire, Mon Jun  3 15:40:31 PDT 2019
 //     Replaced oneSamplesContribution with a standard opacity correction. 
 //
+//     Alister Maguire, Wed Oct  7 16:30:23 PDT 2020
+//     Updated the opacity correction to use a sample distance reference.
+//
 // ****************************************************************************
 
 void
@@ -840,8 +843,15 @@ avtMassVoxelExtractor::SampleVariable_Common(int first, int last, int w, int h)
     // opacity correction: 
     // 1 - ((1 - alpha(x))**sampleDist)
     //
-    float viewDist = float((view.farPlane - view.nearPlane));
-    float sampleDist = viewDist / float(ray->GetNumberOfSamples());
+    // NOTE: This magic number "sampleDistReference" is completely
+    // made up. It acts as a "reference sample count" that results in
+    // an opacity correction that generally "looks good". Increasing this
+    // value will result in an increased opacity intensity, while decreasing
+    // this value will result in a decreased opacity intensity.
+    //
+    float sampleDistReference = 1.0/10.0;
+    float currentSampleDist = 1.0/float(ray->GetNumberOfSamples());
+    float sampleDist = currentSampleDist / sampleDistReference;
     float opacity = 0.f;
 #endif
 

@@ -7043,6 +7043,11 @@ avtDatabaseMetaData::IssueWarning(const char *msg) const
 //  Programmer: Kathleen Bonnell
 //  Creation:   September 5, 2002
 //
+//  Modifications:
+//
+//    Alister Maguire, Mon Jul 20 16:27:19 PDT 2020
+//    Check if the discovered mesh name is actually a known mesh.
+//
 // ****************************************************************************
 
 bool
@@ -7056,7 +7061,19 @@ avtDatabaseMetaData::VarIsCompound(const std::string &v) const
     {
         return false;
     }
-    return true;
+
+    std::string meshName = v.substr(beg + 1, end - beg - 1);
+
+    int nmeshes = GetNumMeshes();
+    for (int i = 0 ; i < nmeshes ; i++)
+    {
+        if (VariableNamesEqual(GetMeshes(i).name, meshName))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 // ****************************************************************************

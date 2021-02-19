@@ -4336,10 +4336,6 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>NIMROD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Constant</source>
         <translation type="unfinished">Constant</translation>
     </message>
@@ -6835,10 +6831,6 @@ door de Lineout operator</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>NIMROD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Constant</source>
         <translation type="unfinished">Constant</translation>
     </message>
@@ -7658,10 +7650,6 @@ door de Lineout operator</translation>
     </message>
     <message>
         <source>Nek5000</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12797,10 +12785,6 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>NIMROD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Flash</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13157,10 +13141,6 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     </message>
     <message>
         <source>Nek5000</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -18334,10 +18314,6 @@ Coordinates plot.</source>
     </message>
     <message>
         <source>M3D-C1 3D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

@@ -1,0 +1,154 @@
+# ----------------------------------------------------------------------------
+#  Main program for lcs_ic and lcs_lc tests.
+#
+#  Programmer: Allen Sanderson
+#  Date:       August 25, 2015
+#
+#  Modifications:
+#    Kathleen Biagas, Thur Sep 17, 2020
+#    Since this was split into 4 different tests, and each only tests one
+#    database, remove no-longer needed databases looping logic. Turn off
+#    all warnings.
+# ----------------------------------------------------------------------------
+RequiredDatabasePlugin("PICS_Tester")
+
+#-vargs="-debug 5"
+
+# For testing using the CLI
+
+#def data_path( db_name ):
+#  db="/Projects/VisIt/trunk/build/data/%s" %(db_name)
+#  return db
+
+#def Test(case_name):
+#   swatts = SaveWindowAttributes()
+#   swatts.family = 0
+#   swatts.fileName = "/Projects/tmp/lcs/ser/%s" %(case_name)
+#   SetSaveWindowAttributes(swatts)
+#   SaveWindow()
+#   return
+
+#def TestSection(tmpstr):
+#   tmpstr
+#   return
+
+#def Exit():
+#   return   
+
+def LCS_operator( operator, database ):
+  
+  # Open the database here and add a plot as for some reason it fails
+  # within a loop. It only happens with all-in-one plots with an operator
+  # such as with "Pseudocolor" and "operators/LCS/velocity"
+  #db=data_path("pics_test_data/ftle_double_gyre_1_domain.pics")
+  db=data_path("pics_test_data/%s.pics") %(database)
+  OpenDatabase(db)
+  AddPlot("Pseudocolor", "operators/LCS/velocity")
+  
+  AddOperator(operator)
+  
+  LCSAtts = LCSAttributes()
+  LCSAtts.Resolution = (101, 51, 1)
+  LCSAtts.integrationDirection = LCSAtts.Forward
+  LCSAtts.auxiliaryGridSpacing = 0.005
+  LCSAtts.maxSteps = 1000000
+  LCSAtts.operationType = LCSAtts.EigenVector
+  LCSAtts.cauchyGreenTensor = LCSAtts.Right
+  LCSAtts.eigenComponent = LCSAtts.PosLambdaShearVector
+  LCSAtts.eigenWeight = 0.98
+  LCSAtts.operatorType = LCSAtts.BaseValue
+  LCSAtts.terminationType = LCSAtts.Time
+  LCSAtts.terminateByTime = 1
+  LCSAtts.termTime = 10
+  LCSAtts.maxStepLength = 0.001
+  LCSAtts.integrationType = LCSAtts.AdamsBashforth
+  LCSAtts.parallelizationAlgorithmType = LCSAtts.ParallelStaticDomains
+  LCSAtts.pathlines = 1
+  LCSAtts.pathlinesCMFE = LCSAtts.CONN_CMFE
+  LCSAtts.issueAdvectionWarnings = 0
+  LCSAtts.issueBoundaryWarnings = 0
+  LCSAtts.issueTerminationWarnings = 0
+  LCSAtts.issueStepsizeWarnings = 0
+  LCSAtts.issueStiffnessWarnings = 0
+  LCSAtts.issueCriticalPointsWarnings = 0
+  SetOperatorOptions(LCSAtts, 0)
+  
+  
+  if(operator == "IntegralCurve"):
+    IntegralCurveAtts = IntegralCurveAttributes()
+    IntegralCurveAtts.sourceType = IntegralCurveAtts.SpecifiedPoint
+    IntegralCurveAtts.pointSource = (1.23053, 0.624189, 0)
+    IntegralCurveAtts.dataValue = IntegralCurveAtts.SeedPointID
+    IntegralCurveAtts.integrationDirection = IntegralCurveAtts.ForwardDirectionless
+    IntegralCurveAtts.maxSteps = 2000
+    IntegralCurveAtts.maxStepLength = 0.001
+    IntegralCurveAtts.integrationType = IntegralCurveAtts.AdamsBashforth
+    IntegralCurveAtts.parallelizationAlgorithmType = IntegralCurveAtts.ParallelStaticDomains
+    IntegralCurveAtts.issueAdvectionWarnings = 0
+    IntegralCurveAtts.issueBoundaryWarnings = 0
+    IntegralCurveAtts.issueTerminationWarnings = 0
+    IntegralCurveAtts.issueStepsizeWarnings = 0
+    IntegralCurveAtts.issueStiffnessWarnings = 0
+    IntegralCurveAtts.issueCriticalPointsWarnings = 0
+    SetOperatorOptions(IntegralCurveAtts, 0)
+  
+  elif(operator == "LimitCycle"):
+    LimitCycleAtts = LimitCycleAttributes()
+    LimitCycleAtts.sourceType = LimitCycleAtts.SpecifiedLine
+    LimitCycleAtts.lineStart = (1.0564, 0.667238, 0)
+    LimitCycleAtts.lineEnd = (1.51521, 0.553799, 0)
+    LimitCycleAtts.sampleDensity0 = 500
+    LimitCycleAtts.sampleDensity1 = 2
+    LimitCycleAtts.dataValue = LimitCycleAtts.ArcLength
+    LimitCycleAtts.integrationDirection = LimitCycleAtts.ForwardDirectionless
+    LimitCycleAtts.maxSteps = 10000
+    LimitCycleAtts.maxStepLength = 0.001
+    LimitCycleAtts.integrationType = LimitCycleAtts.AdamsBashforth
+    LimitCycleAtts.parallelizationAlgorithmType = LimitCycleAtts.ParallelStaticDomains
+    LimitCycleAtts.cycleTolerance = 1e-06
+    LimitCycleAtts.maxIterations = 10
+    LimitCycleAtts.showPartialResults = 0
+    LimitCycleAtts.showReturnDistances = 0
+    LimitCycleAtts.issueAdvectionWarnings = 0
+    LimitCycleAtts.issueBoundaryWarnings = 0
+    LimitCycleAtts.issueTerminationWarnings = 0
+    LimitCycleAtts.issueStepsizeWarnings = 0
+    LimitCycleAtts.issueStiffnessWarnings = 0
+    LimitCycleAtts.issueCriticalPointsWarnings = 0
+    SetOperatorOptions(LimitCycleAtts, 0)
+  
+  
+  src_type=[LCSAtts.RegularGrid, LCSAtts.NativeMesh]
+  src_type_str=["RegularGrid", "NativeMesh"]
+  
+  aux_grid=[LCSAtts.TwoDim]
+  aux_grid_str=["2DAuxGrid"]
+  
+  # FTLE with integral curve or limit cycle
+  TestSection("Basic FTLE function with %s operator" %(operator))
+  
+  tmpstr="Testing database = %s.pics" %(database)
+  TestSection(tmpstr)
+  for j in range(len(src_type)):
+     tmpstr="Testing sample source = %s" %(src_type_str[j])
+     TestSection(tmpstr)
+     LCSAtts.sourceType = src_type[j]  # NativeMesh, RegularGrid
+     for k in range(len(aux_grid)):
+        tmpstr="Testing auxiliary grid = %s" %(aux_grid_str[k])
+        TestSection(tmpstr)
+        tmpstr="lcs_%s_%s_%s_%s" %(database, src_type_str[j], aux_grid_str[k], operator)
+        LCSAtts.auxiliaryGrid = aux_grid[k]  # TwoDim
+        SetOperatorOptions(LCSAtts, 0)
+        DrawPlots()
+        Test(tmpstr)
+  
+# LCS->IC single   domain - native mesh      - serial   - okay
+# LCS->IC single   domain - rectilinear grid - serial   - okay
+# LCS->IC multiple domain - native mesh      - serial   - okay
+# LCS->IC multiple domain - rectilinear grid - serial   - failed zero velocity
+  
+# LCS->IC single   domain - native mesh      - parallel - okay
+# LCS->IC single   domain - rectilinear grid - parallel - okay
+# LCS->IC multiple domain - native mesh      - parallel - okay
+# LCS->IC multiple domain - rectilinear grid - parallel - failed in avtPICSFilter::InitializeLocators (fixed but failed like serial)
+  

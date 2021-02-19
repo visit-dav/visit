@@ -4,7 +4,7 @@
 #  Test Case:  subset.py
 #
 #  Tests:      meshes    - 2D curvilinear, multiple domain
-#              plots     - subset 
+#              plots     - subset
 #
 #  Defect ID:  '6105, '6762
 #
@@ -20,17 +20,20 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 #
 #    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
-#    Added call(s) to DrawPlots() b/c of changes to the default plot state 
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
 #    Hank Childs, Mon Mar 26 12:00:23 PDT 2012
 #    Add test for Subset plot + material selection
 #
+#    Kathleen Biagas, Fri Jun  5 08:35:31 PDT 2020
+#    Added tests for point glyhphing/sizing for data that doesn't declare
+#    itself a point mesh and for data with mixed topology.
+#
 # ----------------------------------------------------------------------------
 
 
 OpenDatabase(silo_data_path("multi_curv2d.silo"))
-
 
 AddPlot("Subset", "domains")
 DrawPlots()
@@ -82,6 +85,8 @@ SetPlotOptions(s)
 Test("subset_06")
 
 DeleteAllPlots()
+CloseDatabase(silo_data_path("multi_curv2d.silo"))
+
 OpenDatabase(data_path("boxlib_test_data/2D/plt0822/Header"))
 
 AddPlot("Subset", "levels")
@@ -108,15 +113,77 @@ ChangeActivePlotsVar("patches")
 Test("subset_09")
 
 DeleteAllPlots()
+CloseDatabase(data_path("boxlib_test_data/2D/plt0822/Header"))
+
 OpenDatabase(data_path("silo_amr_test_data/amr2d_wmrgtree.silo"))
 
 AddPlot("Subset", "blocks(amr_mesh)")
-DrawPlots() 
+DrawPlots()
 
 s = SubsetAttributes()
 s.wireframe = 1
 SetPlotOptions(s)
 
 Test("subset_10")
+
+DeleteAllPlots()
+CloseDatabase(data_path("silo_amr_test_data/amr2d_wmrgtree.silo"))
+
+TestSection("point mesh")
+OpenDatabase(data_path("blueprint_v0.3.1_test_data/braid_3d_examples_json.root"))
+AddPlot("Subset", "domains(points_mesh)")
+
+s = SubsetAttributes()
+s.colorType = s.ColorBySingleColor
+s.singleColor = (0, 170, 255, 255)
+SetPlotOptions(s)
+DrawPlots()
+ResetView()
+v = GetView3D()
+v.viewNormal = (-0.605449, 0.469667, 0.642529)
+v.viewUp = (0.169201, 0.864818, -0.472716)
+SetView3D(v)
+Test("subset_11")
+
+s.pointSizePixels = 5
+SetPlotOptions(s)
+Test("subset_12")
+
+
+s.pointType = s.Tetrahedron
+s.pointSize = 3
+SetPlotOptions(s)
+Test("subset_13")
+
+DeleteAllPlots()
+CloseDatabase(data_path("blueprint_v0.3.1_test_data/braid_3d_examples_json.root"))
+
+
+OpenDatabase(data_path("vtk_test_data/ugrid_mixed_cells.vtk"))
+
+AddPlot("Subset", "mesh")
+s = SubsetAttributes()
+s.colorType = s.ColorBySingleColor
+s.singleColor = (0, 170, 255, 255)
+s.lineWidth = 3
+s.pointType = s.Point
+s.pointSizePixels = 2
+SetPlotOptions(s)
+DrawPlots()
+ResetView()
+
+Test("subset_14")
+
+s.pointSizePixels = 5
+SetPlotOptions(s)
+Test("subset_15")
+
+s.pointType = s.Icosahedron
+s.pointSize = 0.5
+SetPlotOptions(s)
+Test("subset_16")
+
+DeleteAllPlots()
+CloseDatabase(data_path("vtk_test_data/ugrid_mixed_cells.vtk"))
 
 Exit()

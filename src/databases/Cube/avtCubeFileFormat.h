@@ -37,7 +37,7 @@ class DBOptionsAttributes;
 class avtCubeFileFormat : public avtMTSDFileFormat
 {
   public:
-                       avtCubeFileFormat(const char *, DBOptionsAttributes *);
+                       avtCubeFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtCubeFileFormat() {;};
 
     //

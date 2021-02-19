@@ -83,7 +83,7 @@ struct fieldBlockStruct
 };
 
 /// Field group structure
-/// This structure represents the group in the OpenPMD file
+/// This structure represents the group in the openPMD file
 struct fieldGroupStruct
 {
     /// name
@@ -104,7 +104,7 @@ struct fieldGroupStruct
 // Class: PMDField
 //
 // Purpose:
-//      This class represents the field datasets in the OpenPMD file.
+//      This class represents the field datasets in the openPMD file.
 //
 // Programmer: Mathieu Lobet
 // Creation:   Fri Oct 14 2016

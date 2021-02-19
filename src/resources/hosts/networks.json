@@ -129,6 +129,9 @@
           "name": "host_llnl_borax.xml"
         }, 
         {
+          "name": "host_llnl_boraxo.xml"
+        }, 
+        {
           "name": "host_llnl_lassen.xml"
         }, 
         {
@@ -182,28 +185,22 @@
           "name": "host_llnl_closed_agate.xml"
         }, 
         {
-          "name": "host_llnl_closed_cmax.xml"
-        }, 
-        {
           "name": "host_llnl_closed_jade.xml"
         }, 
         {
           "name": "host_llnl_closed_jadeita.xml"
         }, 
         {
-          "name": "host_llnl_closed_max.xml"
+          "name": "host_llnl_closed_magma.xml"
         }, 
         {
           "name": "host_llnl_closed_mica.xml"
         }, 
         {
-          "name": "host_llnl_closed_sequoia.xml"
-        }, 
-        {
-          "name": "host_llnl_closed_shark.xml"
-        }, 
-        {
           "name": "host_llnl_closed_sierra.xml"
+        }, 
+        {
+          "name": "host_llnl_closed_tron.xml"
         }, 
         {
           "name": "host_llnl_closed_zin.xml"
@@ -366,36 +363,25 @@
     {
       "files": [
         {
-          "name": "customlauncher"
+          "name": "host_sandia_attaway.xml"
         }, 
         {
-          "name": "host_sandia_glory.xml"
+          "name": "host_sandia_chama.xml"
         }, 
         {
-          "name": "host_sandia_redsky.xml"
+          "name": "host_sandia_eclipse.xml"
+        }, 
+        {
+          "name": "host_sandia_ghost.xml"
+        }, 
+        {
+          "name": "host_sandia_skybridge.xml"
+        }, 
+        {
+          "name": "host_sandia_uno.xml"
         }
       ], 
       "network": "sandia"
-    }, 
-    {
-      "files": [
-        {
-          "name": "customlauncher"
-        }, 
-        {
-          "name": "host_lanl_closed_cielo.xml"
-        }, 
-        {
-          "name": "host_sandia_closed_redsky-s.xml"
-        }, 
-        {
-          "name": "host_sandia_closed_unity.xml"
-        }, 
-        {
-          "name": "host_sandia_closed_whitney.xml"
-        }
-      ], 
-      "network": "sandia_closed"
     }, 
     {
       "files": [

@@ -62,6 +62,11 @@ All rights reserve
 //   Renamed AdjustBounds and AdjustValues to ComputeLabelExponent and
 //   ComputeLabelFormat, respectively.
 //
+//   Alister Maguire, Tue Apr 28 14:54:38 PDT 2020
+//   Added an override of SetVisibility to handle setting the visibility
+//   of individual characteristics. NOTE: this is currently needed for
+//   our OSPRay integration.
+//
 
 #ifndef __vtkVisItCubeAxesActor_h
 #define __vtkVisItCubeAxesActor_h
@@ -184,6 +189,10 @@ public:
   // The parameter window could be used to determine which graphic
   // resources to release.
   void ReleaseGraphicsResources(vtkWindow *) override;
+
+  // Description:
+  // Set visibility for ALL available attributes.
+  virtual void SetVisibility(bool);
 
   // Description:
   // Turn on and off the visibility of each axis.

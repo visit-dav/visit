@@ -5,6 +5,7 @@
 #ifndef PY_AVTDATABASEMETADATA_H
 #define PY_AVTDATABASEMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtDatabaseMetaData.h>
 #include <visitpy_exports.h>
 

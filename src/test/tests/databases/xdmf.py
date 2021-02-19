@@ -136,7 +136,7 @@ def test2(datapath):
     m.opaqueMode = m.Auto  # Auto, On, Off
     m.pointSize = 0.05
     m.opaqueColor = (192, 192, 192, 255)
-    m.smoothingLevel = m.None  # None, Fast, High
+    m.smoothingLevel = m.NONE  # None, Fast, High
     m.pointSizeVarEnabled = 0
     m.pointSizeVar = "default"
     m.pointType = m.Point  # Box, Axis, Icosahedron, Point, Sphere

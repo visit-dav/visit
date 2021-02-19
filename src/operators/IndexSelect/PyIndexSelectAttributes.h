@@ -5,6 +5,7 @@
 #ifndef PY_INDEXSELECTATTRIBUTES_H
 #define PY_INDEXSELECTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <IndexSelectAttributes.h>
 
 //

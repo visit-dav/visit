@@ -1536,8 +1536,8 @@ class WindowGeneratorAttribute : public GeneratorBase
         h << "    " << windowname << "("
           << (plugintype=="" ? "" : "const int type,") << endl
           << "                         "<<name<<" *subj," << endl
-          << "                         const QString &caption = QString::null," << endl
-          << "                         const QString &shortName = QString::null," << endl
+          << "                         const QString &caption = QString()," << endl
+          << "                         const QString &shortName = QString()," << endl
           << "                         QvisNotepadArea *notepad = 0);" << endl;
         h << "    virtual ~"<<windowname<<"();" << endl;
         h << "    virtual void CreateWindowContents();" << endl;

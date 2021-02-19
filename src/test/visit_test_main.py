@@ -11,13 +11,17 @@ notes:   Ported/refactored from 'Testing.py'
 """
 # ----------------------------------------------------------------------------
 #  Modifications:
-#
+#    Kathleen Biagas, Tue Feb 9, 2021
+#    When creating text diff output use difflib.context_diff instead of
+#    *nix 'diff', so content can be generated on Windows.
 # ----------------------------------------------------------------------------
 
 import atexit
+import difflib
 import glob
 import gzip
 import json
+import operator
 import os
 import platform
 import shutil
@@ -37,18 +41,22 @@ from xml.etree.ElementTree import ParseError
 
 # check for pil
 pil_available = True
+pil_import_error = None
 try:
     from PIL import Image, ImageChops, ImageStat
 except ImportError as pilImpErr:
+    pil_import_error = pilImpErr
     pil_available=False
 
 # check for VTK
 VTK_available = True
+VTK_import_error = None
 try:
     from vtk import vtkPNGReader, vtkPNMReader, vtkJPEGReader, vtkTIFFReader, \
                     vtkImageResize, vtkImageDifference
     import array
 except ImportError as vtkImpErr:
+    VTK_import_error = vtkImpErr
     VTK_available=False
 
 # used to acccess visit_test_common
@@ -393,12 +401,15 @@ def GenFileNames(test_case, ext):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Mark C. Miller, Fri Sep 11 18:58:34 PDT 2020
+#  Add pixdiff and avgdiff args
 # ----------------------------------------------------------------------------
-def CalcDiffState(p_pixs, d_pixs, davg):
+def CalcDiffState(p_pixs, d_pixs, davg, pixdiff, avgdiff):
     if p_pixs != 0:
         dpix = d_pixs * 100.0 / p_pixs
-        if dpix > TestEnv.params["pixdiff"]:
-            if davg > TestEnv.params["avgdiff"]:
+        if dpix > pixdiff:
+            if davg > avgdiff:
                 diff_state = 'Unacceptable'
             else:
                 diff_state = 'Acceptable'
@@ -611,14 +622,13 @@ def HTMLTextTestResult(case_name,status,nchanges,nlines,failed,skip):
     html.write(" </tr>\n")
 
 # ----------------------------------------------------------------------------
-#  Method: LogAssertTestResult
+#  Method: LogValueTestResult
 #
-#  Programmer: Cyrus Harrison
-#  Date:       Fri Nov 22 2013
+#  Programmer: Mark C. Miller, Sat Jan  9 20:17:22 PST 2021
 # ----------------------------------------------------------------------------
-def LogAssertTestResult(case_name,assert_check,result,details,skip):
+def LogValueTestResult(case_name,value_op,result,details,skip):
     """
-    Log the result of an assert based test.
+    Log the result of a value based test.
     """
     details = str(details)
     if not result:
@@ -629,19 +639,16 @@ def LogAssertTestResult(case_name,assert_check,result,details,skip):
     else:
         status = "passed"
     # write result
-    Log("    Test case '%s' (Assert: %s) %s" % (case_name,
-                                                assert_check,
-                                                status.upper()))
-    JSONAssertTestResult(case_name,status,assert_check,result,details,skip)
-    HTMLAssertTestResult(case_name,status,assert_check,result,details,skip)
+    Log("    Test case '%s' (%s) %s" % (case_name, value_op, status.upper()))
+    JSONValueTestResult(case_name,status,value_op,result,details,skip)
+    HTMLValueTestResult(case_name,status,value_op,result,details,skip)
 
 # ----------------------------------------------------------------------------
-#  Method: JSONAssertTestResult
+#  Method: JSONValueTestResult
 #
-#  Programmer: Cyrus Harrison
-#  Date:       Fri Nov 22 2013
+#  Programmer: Mark C. Miller, Sat Jan  9 20:19:12 PST 2021
 # ----------------------------------------------------------------------------
-def JSONAssertTestResult(case_name,status,assert_check,result,details,skip):
+def JSONValueTestResult(case_name,status,value_op,result,details,skip):
     res = json_results_load()
     
     if not result:
@@ -654,21 +661,19 @@ def JSONAssertTestResult(case_name,status,assert_check,result,details,skip):
     
     t_res = {'name':         case_name,
              'status':       status,
-             'assert_check': assert_check,
+             'value_op':     value_op,
              'details':      details}
     res["sections"][-1]["cases"].append(t_res)
     json_results_save(res)
 
-
 # ----------------------------------------------------------------------------
-#  Method: HTMLTextTestResult
+#  Method: HTMLValueTestResult
 #
-#  Programmer: Cyrus Harrison
-#  Date:       Fri Nov 22 2013
+#  Programmer: Mark C. Miller, Sat Jan  9 20:22:17 PST 2021
 # ----------------------------------------------------------------------------
-def HTMLAssertTestResult(case_name,status,assert_check,result,details,skip):
+def HTMLValueTestResult(case_name,status,value_op,result,details,skip):
     """
-    Creates html entry for the result of an assert based test.
+    Creates html entry for the result of a value based test.
     """
     # TODO use template file
     html = html_output_file_handle()
@@ -679,9 +684,14 @@ def HTMLAssertTestResult(case_name,status,assert_check,result,details,skip):
             color = "#0000ff"
         else:
             color = "#ff0000"
+    details = details.replace(' .in. ',' .in. <br>');
+    details = details.replace('], ','],<br>&nbsp;&nbsp;')
+    details = details.replace('), ','),<br>&nbsp;&nbsp;')
+    details = details.replace('] (prec=',']<br>&nbsp;(prec=')
+    details = details.replace(') (prec=',')<br>&nbsp;(prec=')
     html.write(" <tr>\n")
     html.write("  <td bgcolor=\"%s\">%s</td>\n" % (color, case_name))
-    html.write("  <td colspan=5 align=center> %s : %s (Assert_%s)</td>\n" % (details,str(result),assert_check))
+    html.write("  <td colspan=5 align=left><pre> %s : %s</pre></td>\n" % (details,str(result)))
     html.write(" </tr>\n")
 
 # ----------------------------------------------------------------------------
@@ -912,8 +922,11 @@ def Save_Validate_Perturb_Restore_Session(cur):
 #
 #   Mark C. Miller, Tue Sep  6 18:51:23 PDT 2016
 #   Added Save_Validate_... to rigorously test sessionfiles
+#
+#   Mark C. Miller, Fri Sep 11 19:26:34 PDT 2020
+#   Added pixdiff, avgdiff optional args
 # ----------------------------------------------------------------------------
-def Test(case_name, altSWA=0, alreadySaved=0):
+def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
     CheckInteractive(case_name)
     # for read only globals, we don't need to use "global"
     # we may need to use global for these guys
@@ -941,6 +954,14 @@ def Test(case_name, altSWA=0, alreadySaved=0):
             g = GetGlobalAttributes()
             win = g.windows[g.activeWindow]
             ResizeWindow(win, width, height)
+            ## the following can be used to save a JSON file and compare
+            ## the desired vs reported window size
+            # winfo = GetWindowInformation()
+            # wsize_info  = {}
+            # wsize_info["width"] = width;
+            # wsize_info["height"] = height;
+            # wsize_info["winfo_windowSize"] = winfo.windowSize
+            # json.dump(wsize_info,open("_wsize_info" + case_name + ".json","w" ))
         sa.family   = 0
         sa.fileName = cur
         sa.format   = sa.PNG
@@ -955,6 +976,10 @@ def Test(case_name, altSWA=0, alreadySaved=0):
     dpix      = 0.0
     davg      = 0.0
     thrErr    = -1.0
+    if pixdiff is None:
+        pixdiff = TestEnv.params["pixdiff"]
+    if avgdiff is None:
+        avgdiff = TestEnv.params["avgdiff"]
 
     if TestEnv.params["use_pil"]:
         if TestEnv.params["threshold_diff"]:
@@ -966,14 +991,14 @@ def Test(case_name, altSWA=0, alreadySaved=0):
             # raw difference
             (tPixs, pPixs, dPixs, davg) \
                 = DiffUsingPIL(case_name, cur, diff, base, altbase)
-            diffState, dpix = CalcDiffState(pPixs, dPixs, davg)
+            diffState, dpix = CalcDiffState(pPixs, dPixs, davg, pixdiff, avgdiff)
 
     if skip:
         diffState = 'Skipped'
         TestEnv.results["numskip"]+= 1
 
-    LogImageTestResult(case_name,diffState, modeSpecific,
-                       dpix, tPixs, pPixs, dPixs, davg,
+    LogImageTestResult(case_name, diffState, modeSpecific,
+                       tPixs, pPixs, dPixs, dpix, davg,
                        cur, diff, base, thrErr)
 
     # update maxmimum diff state
@@ -1119,24 +1144,24 @@ def GetBackgroundImage(file):
     activeList = []
 
     plots = ListPlots(1)
-    plotInfos = string.split(plots,"#")
+    plotInfos = plots.split("#")
     for entry in plotInfos:
 
         if entry == "":
             continue;
 
-        plotParts = string.split(entry,"|")
+        plotParts = entry.split("|")
         plotHeader = plotParts[0]
         plotInfo = plotParts[1]
 
         # get CLI's plot id for this plot
-        plotId = string.split(plotHeader,"[")
+        plotId = plotHeader.split("[")
         plotId = plotId[1]
-        plotId = string.split(plotId,"]")
+        plotId = plotId.split("]")
         plotId = int(plotId[0])
 
         # get this plot's active & hidden status
-        words = string.split(plotInfo,";")
+        words = plotInfo.split(";")
         hidden = -1
         active = -1
         for word in words:
@@ -1365,7 +1390,6 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
     # open it using PIL Image
     newimg = Image.open(cur)
     size = newimg.size;
-
     # open the baseline image
     try:
         if (os.path.isfile(altbase)):
@@ -1397,12 +1421,11 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
         diffimg = ImageChops.difference(oldimg, newimg)
     except:
         diffimg = oldimg
-    #dstatc = ImageStat.Stat(diffimg) # stats of color image
 
+    #dstatc = ImageStat.Stat(diffimg) # stats of color image
     mdiffimg, dmin, dmax, dmean, dmedian, drms, dstddev, \
     plotpixels, diffpixels, totpixels \
         = ProcessDiffImage(case_name, oldimg, newimg, diffimg)
-
     mdiffimg.save(diff)
 
     CreateImagesForWeb(case_name, bool(dmax!=0), oldimg, newimg, mdiffimg)
@@ -1422,7 +1445,7 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
 
 def CreateImagesForWeb(case_name, testFailed, baseimg, testimg, diffimg):
     """
-    Given test image set create coresponding thumbnails for web
+    Given test image set create corresponding thumbnails for web
     consumption
     """
     thumbsize = (100,100)
@@ -1583,9 +1606,11 @@ def ProcessDiffImage(case_name, baseimg, testimg, diffimg):
 #   Cyrus Harrison, Tue Nov  6 13:08:56 PST 2012
 #   Make sure to filter TestEnv.params["run_dir"] as well.
 #
+#   Mark C. Miller, Fri Sep 11 19:55:17 PDT 2020
+#   Added numdifftol arg
 # ----------------------------------------------------------------------------
 
-def FilterTestText(inText, baseText):
+def FilterTestText(inText, baseText, numdifftol):
     """
     Filters words from the test text before it gets saved.
     """
@@ -1597,7 +1622,6 @@ def FilterTestText(inText, baseText):
     inText = inText.replace(out_path(), "VISIT_TOP_DIR/test")
     inText = inText.replace(test_root_path(), "VISIT_TOP_DIR/test")
     inText = inText.replace(data_path(), "VISIT_TOP_DIR/data")
-    numdifftol = TestEnv.params["numdiff"]
     #
     # Only consider doing any string substitution if numerical diff threshold
     # is non-zero
@@ -1614,8 +1638,8 @@ def FilterTestText(inText, baseText):
         # threshold, eliminate the word from effecting text difference by
         # setting it identical to corresponding baseline word.
         #
-        baseWords = string.split(baseText)
-        inWords = string.split(tmpText)
+        baseWords = baseText.split()
+        inWords = tmpText.split()
         outText=""
         transTab = string.maketrans(string.digits, string.digits)
         inStart = 0
@@ -1738,12 +1762,25 @@ def CheckInteractive(case_name):
 #   Mark C. Miller, Thu Jun 28 18:37:31 PDT 2018
 #   Added logic to copy current file to "html" dir so it gets posted with
 #   results so it can be more easily re-based later if needed.
+#
+#   Mark C. Miller, Fri Sep 11 19:54:23 PDT 2020
+#   Added optional numdifftool arg
+#
+#   Mark C. Miller, Sat Jan  9 19:26:27 PST 2021
+#   Added optional baseText argument to enable baseline result to be codifed
+#   as an arg to the call itself rather than in a separate baseline txt file.
 # ----------------------------------------------------------------------------
-def TestText(case_name, inText):
+def TestText(case_name, inText, baseText=None, numdifftol=None):
     """
     Write out text to file, diff it with the baseline, and log the result.
     """
     CheckInteractive(case_name)
+
+    # If base text is supplied as arg, no need for baseline files
+    if baseText:
+        inText = FilterTestText(inText, baseText, numdifftol)
+        TestValueEQ(case_name, baseText, inText)
+        return
 
     # create file names
     (cur, diff, base, altbase, modeSpecific) = GenFileNames(case_name, ".txt")
@@ -1755,8 +1792,12 @@ def TestText(case_name, inText):
         base = test_module_path("notext.txt")
         baseText = "notext"
 
+    # Check for user specified tolerance
+    if numdifftol is None:
+        numdifftol = TestEnv.params["numdiff"]
+
     # Filter out unwanted text
-    inText = FilterTestText(inText, baseText)
+    inText = FilterTestText(inText, baseText, numdifftol)
 
     # save the current text output
     fout = open(cur, 'w')
@@ -1768,7 +1809,6 @@ def TestText(case_name, inText):
 
     # diff the baseline and current text files
     d = HtmlDiff.Differencer(base, cur)
-    # change to use difflib
     (nchanges, nlines) = d.Difference(out_path("html","%s.html"%case_name), case_name)
 
     # Copy the text file itself to "html" dir if there are diffs
@@ -1776,14 +1816,17 @@ def TestText(case_name, inText):
     if nchanges > 0:
         shutil.copy(cur, out_path("html", "c_%s.txt"%case_name))
 
-    # save the diff output
-    # TODO_WINDOWS THIS WONT WORK ON WINDOWS
-    # we can use difflib
-    diff_cmd = "diff " + base + " " + cur
-    res = sexe(diff_cmd,ret_output = True)
-    fout = open(diff, 'w')
-    fout.write(res["output"])
-    fout.close()
+    # save the diff output using difflib.context_diff
+
+    # open ... as handles close
+    with open(base) as bfile:
+        blines=bfile.readlines()
+    with open(cur) as cfile:
+        clines=cfile.readlines()
+
+    res = difflib.context_diff(blines, clines, base, cur) 
+    with open(diff, 'w') as fout:
+        fout.writelines(res)
 
     # did the test fail?
     failed = (nchanges > 0)
@@ -1799,130 +1842,104 @@ def TestText(case_name, inText):
     if failed and not skip:
         TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
 
+# ----------------------------------------------------------------------------
+# Function: TestValueOp
 
+# Programmer: Mark C. Miller, Sat Jan  9 20:17:22 PST 2021
+#
+# Base method for TestValueXX methods
+#
+# Similar in spirit to Test() or TestText() except operates on Python *values*
+# passed as args both for the current (actual) and the baseline (expected). The
+# baseline values are stored directly in the calling .py file as args in the
+# call to this method. The values can be any Python object. When they are floats
+# or ints or strings of floats or ints or lists/tuples of floats or ints or
+# strings of floats or ints, it will round them to the desired precision and do
+# the comparison numerically. Otherwise it will compare them as strings.
+# Returns whether or not the test resulted in True or False.
 # ----------------------------------------------------------------------------
-# Function: AssertTrue
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertTrue(case_name,val):
+def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=True):
     CheckInteractive(case_name)
-    result = val == True
+    result = False
+    try:
+        iterator = iter(expected) # excepts if not iterable
+    except TypeError: # not iterable
+        try:
+            result = oper(round(float(actual), rndprec),round(float(expected), rndprec))
+            actual_str = "%.*f"%(rndprec,round(float(actual),rndprec))
+            expected_str = "%.*f"%(rndprec,round(float(expected),rndprec))
+        except:
+            result = oper(str(actual), str(expected))
+            actual_str = str(actual)
+            expected_str = str(expected)
+    else: # iterable
+        try:
+            rndact = [round(float(x),rndprec) for x in actual]
+            rndexp = [round(float(x),rndprec) for x in expected]
+            result = oper(rndact,rndexp)
+            actual_str = ["%.*f"%(rndprec,round(float(x),rndprec)) for x in actual]
+            expected_str = ["%.*f"%(rndprec,round(float(x),rndprec)) for x in expected]
+        except:
+            result = oper(str(actual),str(expected))
+            actual_str = str(actual)
+            expected_str = str(expected)
+    if dolog:
+        skip = TestEnv.check_skip(case_name)
+        if skip:
+            TestEnv.results["numskip"] += 1
+        if result == False and not skip:
+            TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
+        LogValueTestResult(case_name,oper.__name__,result,
+            "%s .%s. %s (prec=%d)" % (actual_str,oper.__name__,expected_str,rndprec),skip)
+    return result
+
+# actual == expected
+def TestValueEQ(case_name, actual, expected, rndprec=5):
+    return TestValueOp(case_name, actual, expected, rndprec, operator.eq)
+
+# actual != expected
+def TestValueNE(case_name, actual, expected, rndprec=5):
+    return TestValueOp(case_name, actual, expected, rndprec, operator.ne)
+
+# actual < expected
+def TestValueLT(case_name, actual, expected, rndprec=5):
+    return TestValueOp(case_name, actual, expected, rndprec, operator.lt)
+
+# actual <= expected
+def TestValueLE(case_name, actual, expected, rndprec=5):
+    return TestValueOp(case_name, actual, expected, rndprec, operator.le)
+
+# actual > expected
+def TestValueGT(case_name, actual, expected, rndprec=5):
+    return TestValueOp(case_name, actual, expected, rndprec, operator.gt)
+
+# actual >= expected
+def TestValueGE(case_name, actual, expected, rndprec=5):
+    return TestValueOp(case_name, actual, expected, rndprec, operator.ge)
+
+# bucket contains expected (some item of bucket matches expected via eqoper) 
+def TestValueIN(case_name, bucket, expected, rndprec=5, eqoper=operator.eq):
+    CheckInteractive(case_name)
+    result = False
+    dontLog = False
+    at = 0
+    try:
+        for x in bucket:
+            if TestValueOp(case_name, x, expected, rndprec, eqoper, dontLog):
+                result = True
+                break
+            at = at + 1
+    except:
+        if TestValueOp(case_name, bucket, expected, rndprec, eqoper, dontLog):
+            result = True
     skip = TestEnv.check_skip(case_name)
     if skip:
         TestEnv.results["numskip"] += 1
     if result == False and not skip:
         TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"True",result,val,skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertTrue
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertFalse(case_name,val):
-    CheckInteractive(case_name)
-    result = val == False
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"False",result,val,skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertEqual
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertEqual(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a == val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Equal",result,
-                        "%s == %s" % (str(val_a),str(val_b)),skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertGT
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertGT(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a > val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Greater than",
-                        result,"%s > %s" % (str(val_a),str(val_b)),skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertGTE
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertGTE(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a >= val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Greater than or Equal",
-                        result,"%s >= %s" % (str(val_a),str(val_b)),skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertLT
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertLT(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a < val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Less than",
-                        result,"%s < %s" % (str(val_a),str(val_b)),skip)
-
-# ----------------------------------------------------------------------------
-# Function: AssertLTE
-#
-#
-# Modifications:
-#
-# ----------------------------------------------------------------------------
-def AssertLTE(case_name,val_a,val_b):
-    CheckInteractive(case_name)
-    result = val_a <= val_b
-    skip = TestEnv.check_skip(case_name)
-    if skip:
-        TestEnv.results["numskip"] += 1
-    if result == False and not skip:
-        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
-    LogAssertTestResult(case_name,"Less than or Equal",
-                        result,"%s <= %s" % (str(val_a),str(val_b)),skip)
+    LogValueTestResult(case_name,eqoper.__name__,result,
+        "%s .in. %s (prec=%d, at=%d)" % (str(expected),str(bucket),rndprec,at),skip)
+    return result
 
 # ----------------------------------------------------------------------------
 # Function: TestSection
@@ -2290,7 +2307,8 @@ class Simulation(object):
             # For now...
             import socket
             if "pascal" in socket.gethostname() or \
-               "cab" in socket.gethostname() or \
+               "quartz" in socket.gethostname() or \
+               "ruby" in socket.gethostname() or \
                "syrah" in socket.gethostname():
                 do_submit = 0
                 if do_submit:
@@ -2327,12 +2345,14 @@ class Simulation(object):
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE,
+                                      universal_newlines=True,
                                       close_fds=True)
         else:
             self.p = subprocess.Popen(args,
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE,
+                                      universal_newlines=True,
                                       close_fds=False)
 
         return self.p != None
@@ -2458,7 +2478,7 @@ def TestSimStartAndConnect(testname, sim):
 # ----------------------------------------------------------------------------
 
 def TestSimMetaData(testname, md):
-    lines = string.split(str(md), "\n")
+    lines = str(md).split("\n")
     txt = ""
     for line in lines:
         if "exprList" in line:
@@ -2579,7 +2599,7 @@ class TestEnv(object):
         else:
             cls.skiplist = None
         # parse modes for various possible modes
-        for mode in string.split(cls.params["modes"],","):
+        for mode in cls.params["modes"].split(","):
             if mode == "scalable":
                 cls.params["scalable"] = True
             if mode == "parallel":
@@ -2588,11 +2608,11 @@ class TestEnv(object):
             if mode == "pdb":
                 cls.params["silo_mode"] = "pdb"
             if (cls.params["use_pil"] or cls.params["threshold_diff"]) and not pil_available:
-                Log("WARNING: unable to import modules from PIL: %s" % str(pilImpErr))
+                Log("WARNING: unable to import modules from PIL: %s" % str(pil_import_error))
                 cls.params["use_pil"] = False
                 cls.params["threshold_diff"] = False
             if (cls.params["threshold_diff"]) and not VTK_available:
-                Log("WARNING: unable to import modules from VTK: %s" % str(vtkImpErr))
+                Log("WARNING: unable to import modules from VTK: %s" % str(VT_import_error))
                 cls.params["threshold_diff"] = False
         if cls.params["fuzzy_match"]:
             # default tols for scalable mode
@@ -2686,7 +2706,7 @@ def InitTestEnv():
     # default file
     params_file="params.json"
     for arg in sys.argv:
-        subargs = string.split(arg,"=")
+        subargs = arg.split("=")
         if (subargs[0] == "--params"):
             params_file = subargs[1]
     # main setup
@@ -2697,14 +2717,12 @@ def InitTestEnv():
     SetDefaultAnnotationAttributes(annot)
     SetAnnotationAttributes(annot)
     # set scalable rendering mode if desired
+    ra = GetRenderingAttributes()
     if TestEnv.params["scalable"]:
-        ra = GetRenderingAttributes()
         ra.scalableActivationMode = ra.Always
-        SetRenderingAttributes(ra)
     else:
-        ra = GetRenderingAttributes()
         ra.scalableActivationMode = ra.Never
-        SetRenderingAttributes(ra)
+    SetRenderingAttributes(ra)
 
     # If we passed a directory to use for reading host profiles then let's 
     # use the host profiles to launch the engine (since it has settings we
@@ -2715,7 +2733,7 @@ def InitTestEnv():
             mp = GetMachineProfile(TestEnv.params["data_host"])
             # Make some modifications to the machine profile.
             if TestEnv.params["parallel_launch"] not in ("mpirun", "srun"):
-                plaunch = string.split(TestEnv.params["parallel_launch"], " ")
+                plaunch = TestEnv.params["parallel_launch"].split(" ")
                 idx = 0
                 try:
                     while idx < len(plaunch):
@@ -2784,6 +2802,8 @@ SILO_MODE = TestEnv.SILO_MODE
 #
 # Run our test script using "Source"
 #
-visit.Source(TestEnv.params["script"])
+import visit
+from pathlib import Path
+visit.Source(Path(TestEnv.params["script"]).as_posix())
 
 

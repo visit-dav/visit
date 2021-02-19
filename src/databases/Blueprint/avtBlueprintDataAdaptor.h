@@ -19,12 +19,16 @@
 //-----------------------------------------------------------------------------
 #include "mfem.hpp"
 
-
 //-----------------------------------------------------------------------------
 // vtk forward decls
 //-----------------------------------------------------------------------------
 class vtkDataSet;
 class vtkDataArray;
+
+//-----------------------------------------------------------------------------
+// avt forward decls
+//-----------------------------------------------------------------------------
+class avtMaterial;
 
 //-----------------------------------------------------------------------------
 //  Class: avtBlueprintDataAdaptor
@@ -49,6 +53,14 @@ public:
       static vtkDataSet*    MeshToVTK(const conduit::Node &mesh);
       static vtkDataArray*  FieldToVTK(const conduit::Node &field);
 
+  };
+
+  /// Helpers for converting Blueprint Material info into avt Objects
+  class AVT
+  {
+    public:
+      static avtMaterial *MatsetToMaterial(const conduit::Node &matset);
+      // static avtMixedVar *MatsetVarToMixedVar(const conduit::Node &matset_var);
   };
 
   /// Helpers for converting vtk datasets to Mesh and Field Blueprint

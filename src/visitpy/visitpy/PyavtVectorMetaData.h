@@ -5,6 +5,7 @@
 #ifndef PY_AVTVECTORMETADATA_H
 #define PY_AVTVECTORMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtVectorMetaData.h>
 #include <PyavtVarMetaData.h>
 #include <visitpy_exports.h>

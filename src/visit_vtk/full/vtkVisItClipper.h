@@ -53,17 +53,38 @@ class vtkUnstructuredGrid;
 //    Kathleen Biagas, Tue Aug 15 11:22:11 MST 2012
 //    Renamed SetUpClipFunction to ModifyClip.  Added SetPrecomputeClipScalars.
 //
+//    Alister Maguire, Fri Nov 13 14:07:54 PST 2020
+//    Replaced removeWholeCells with cellClipStrategy and setters/getters.
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkVisItClipper : public vtkUnstructuredGridAlgorithm
 {
   public:
+
+    //
+    // Strategies for clipping a cell when it intersects with
+    // the clip boundary.
+    //
+    enum cellClipStrategy
+    {
+        REMOVE_PARTIAL_CELL,
+        REMOVE_WHOLE_CELL,
+        KEEP_WHOLE_CELL,
+    };
+
     vtkTypeMacro(vtkVisItClipper,vtkUnstructuredGridAlgorithm);
     void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkVisItClipper *New();
 
-    virtual void SetRemoveWholeCells(bool);
+    virtual void SetCellClipStrategy(cellClipStrategy);
+    virtual void SetCellClipStrategyToRemovePartial();
+    virtual void SetCellClipStrategyToRemoveWhole();
+    virtual void SetCellClipStrategyToKeepWhole();
+    virtual int  GetCellClipStrategy()
+        { return state.cellStrategy; }
+
     virtual void SetClipFunction(vtkImplicitFunction*);
     virtual void SetClipScalars(vtkDataArray *, float);
     virtual void SetInsideOut(bool);
@@ -93,7 +114,7 @@ class VISIT_VTK_API vtkVisItClipper : public vtkUnstructuredGridAlgorithm
 
         vtkUnstructuredGrid *otherOutput;
 
-        bool                 removeWholeCells;
+        cellClipStrategy     cellStrategy;
         bool                 insideOut;
         bool                 useZeroCrossings;
         bool                 computeInsideAndOut;

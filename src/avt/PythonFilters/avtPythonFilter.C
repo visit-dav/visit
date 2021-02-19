@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "Python.h"
+#include <Py2and3Support.h>
 #include "avtPythonFilter.h"
 
 #include <visit-config.h>

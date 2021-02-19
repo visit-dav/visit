@@ -47,8 +47,10 @@
 #
 #    Mark C. Miller, Wed Apr 10 10:24:32 PDT 2019
 #    Add tetrahedralize test
+#
+#    Mark C. Miller, Mon Jan 11 10:32:17 PST 2021
+#    Replace AssertTrue() with TestValueEQ(..., True)
 # ----------------------------------------------------------------------------
-import string
 import time
 import os.path
 import subprocess
@@ -114,7 +116,10 @@ def test0():
 #    CloseDatabase(silo_data_path("wave.visit"))
 
 def VTK_check_binary(filename):
-    f = open(filename, "rt")
+    if (sys.version_info > (3, 0)):
+        f = open(filename, "rt", encoding='utf-8', errors='ignore')
+    else:
+        f = open(filename, "rt")
     line = ""
     for i in (0,1,2):
         line = f.readline()
@@ -176,7 +181,7 @@ def test1():
     ExportDatabase(e, opts)
     time.sleep(1)
     line = "The binary_VTK.0.vtk file is NOT binary.\n\n"
-    visitfile = string.join(open("binary_VTK.visit").readlines())
+    visitfile = " ".join(open("binary_VTK.visit").readlines())
     if VTK_check_binary("binary_VTK/binary_VTK.0.vtk"):
         line = "The binary_VTK.0.vtk file is binary.\n\n"
     s = line + visitfile
@@ -331,7 +336,7 @@ def test2(writeGroupSize):
                 opendbs = opendbs + [formats[f][1]]
                 filelist = filelist + formats[f][1] + "\n"
             else:
-                filelist = "ERROR: " + string.join(os.listdir("."), "\n")
+                filelist = "ERROR: " + "\n".join(os.listdir("."))
         DrawPlots()
         t = CreateAnnotationObject("Text2D")
         t.text = f
@@ -485,8 +490,8 @@ def test_bov():
     opts["Compression"] = "None"
     ExportDatabase(e, opts)
     time.sleep(1)
-    AssertTrue("test_bov_uncompressed.bov exists", os.path.isfile("test_bov_uncompressed.bov"))
-    AssertTrue("test_bov_uncompressed exists", os.path.isfile("test_bov_uncompressed"))
+    TestValueEQ("test_bov_uncompressed.bov exists", os.path.isfile("test_bov_uncompressed.bov"), True)
+    TestValueEQ("test_bov_uncompressed exists", os.path.isfile("test_bov_uncompressed"), True)
     ReplaceDatabase("test_bov_uncompressed.bov")
     Test("export_db_5_01")
 
@@ -497,8 +502,8 @@ def test_bov():
     opts["Compression"] = "gzip"
     ExportDatabase(e, opts)
     time.sleep(1)
-    AssertTrue("test_bov_gzip.bov exists", os.path.isfile("test_bov_gzip.bov"))
-    AssertTrue("test_bov_gzip.gz exists", os.path.isfile("test_bov_gzip.gz"))
+    TestValueEQ("test_bov_gzip.bov exists", os.path.isfile("test_bov_gzip.bov"), True)
+    TestValueEQ("test_bov_gzip.gz exists", os.path.isfile("test_bov_gzip.gz"), True)
     with gzip.open("test_bov_gzip.gz", "rb") as f_in:
         with open("test_bov_gzip", "wb") as f_out:
             shutil.copyfileobj(f_in, f_out);

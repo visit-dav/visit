@@ -5,6 +5,7 @@
 #ifndef PY_PICKVARINFO_H
 #define PY_PICKVARINFO_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PickVarInfo.h>
 #include <visitpy_exports.h>
 

@@ -109,6 +109,7 @@ class TestWindow(unittest.TestCase):
         self.cleanup_windows()
     @visit_test
     def test_render_resize(self):
+        # NOTE -- VIEWER IS CRASHING HERE, NOT SURE WHY:
         sw1 = SimpleWindow()
         sw1.render(obase=pjoin(output_dir,"test.window.render.1"),res=[50,50],ores=[200,200])
         self.assertTrue(os.path.isfile(pjoin(output_dir,"test.window.render.1.png")))

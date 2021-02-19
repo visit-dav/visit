@@ -27,11 +27,18 @@
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2005
 //
+//  Modifications:
+//
+//    Alister Maguire, Fri Oct  9 11:46:22 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtSurfaceNormalExpression::avtSurfaceNormalExpression()
 {
-    isPoint = true;
+    isPoint            = true;
+    zonesHaveBeenSplit = false;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 
@@ -118,6 +125,11 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
     n->Update();
     vtkPolyData *out = n->GetOutput();
 
+    if (n->GetStripsHaveBeenDecomposed())
+    {
+        zonesHaveBeenSplit = true;
+    }
+
     vtkDataArray *arr = NULL;
     if (isPoint)
         arr = out->GetPointData()->GetNormals();
@@ -199,3 +211,32 @@ avtSurfaceNormalExpression::RectilinearDeriveVariable(vtkRectilinearGrid *rgrid)
 }
 
 
+// ****************************************************************************
+//  Method: avtSurfaceNormalExpression::UpdateDataObjectInfo
+//
+//  Purpose:
+//    Update the data object information.
+//
+//  Programmer: Alister Maguire
+//  Creation:   April 27, 2020
+//
+// ****************************************************************************
+
+void
+avtSurfaceNormalExpression::UpdateDataObjectInfo(void)
+{
+    avtDataAttributes &inputAtts = GetInput()->GetInfo().GetAttributes();
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+
+    SetExpressionAttributes(inputAtts, outAtts);
+
+    //
+    // We need to inform VisIt if the PolyDataNormalsFilter has split
+    // cells.
+    //
+    if (zonesHaveBeenSplit)
+    {
+        GetOutput()->GetInfo().GetValidity().InvalidateZones();
+        GetOutput()->GetInfo().GetValidity().ZonesSplit();
+    }
+}

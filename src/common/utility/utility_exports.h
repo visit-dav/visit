@@ -6,11 +6,15 @@
 #define UTILITY_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 # if defined(UTILITY_EXPORTS) || defined(visitcommon_EXPORTS)
 #   define UTILITY_API __declspec(dllexport)
 # else
 #   define UTILITY_API __declspec(dllimport)
 # endif
+#else
+#define UTILITY_API
+#endif
 # if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
 #   pragma warning(disable:4251)

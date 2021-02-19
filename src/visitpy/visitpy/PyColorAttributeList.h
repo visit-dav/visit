@@ -5,6 +5,7 @@
 #ifndef PY_COLORATTRIBUTELIST_H
 #define PY_COLORATTRIBUTELIST_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ColorAttributeList.h>
 #include <visitpy_exports.h>
 

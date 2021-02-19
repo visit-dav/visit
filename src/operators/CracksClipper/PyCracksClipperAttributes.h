@@ -5,6 +5,7 @@
 #ifndef PY_CRACKSCLIPPERATTRIBUTES_H
 #define PY_CRACKSCLIPPERATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <CracksClipperAttributes.h>
 
 //

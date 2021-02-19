@@ -5,6 +5,7 @@
 #ifndef PY_DECIMATEATTRIBUTES_H
 #define PY_DECIMATEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <DecimateAttributes.h>
 
 //

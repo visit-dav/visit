@@ -5,6 +5,7 @@
 #ifndef PY_RADIALRESAMPLEATTRIBUTES_H
 #define PY_RADIALRESAMPLEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <RadialResampleAttributes.h>
 
 //

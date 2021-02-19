@@ -5,6 +5,7 @@
 #ifndef PY_DATABINNINGATTRIBUTES_H
 #define PY_DATABINNINGATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <DataBinningAttributes.h>
 
 //

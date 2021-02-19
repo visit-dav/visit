@@ -60,8 +60,8 @@ using namespace std;
 //
 // Purpose:
 //	  This class enables to manage the different iterations of
-//	  an OpenPMD file.
-//	  When an OpenPMD file is read, a PMDIteration is created
+//	  an openPMD file.
+//	  When an openPMD file is read, a PMDIteration is created
 //	  for each iteration.
 //
 // Programmer: Mathieu Lobet
@@ -83,11 +83,11 @@ class PMDIteration
 
 	// Iteration attributes
 	/// Iteration name
-	char	name[20];
+	string	name;
 	/// Mesh path in the iteration group
-	char	meshesPath[64];
+	string	meshesPath;
 	/// Particles path in the iteration group
-	char	particlesPath[64];
+	string	particlesPath;
 	/// Iteration time step
 	float  	dt;
 	/// Iteration corresponding time

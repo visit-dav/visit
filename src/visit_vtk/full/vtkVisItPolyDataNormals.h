@@ -21,6 +21,11 @@ class vtkInformationVector;
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 12, 2003
 //
+//  Modifications:
+//
+//    Alister Maguire, Wed Apr  1 14:49:06 PDT 2020
+//    Added TransferCellData and StripsHaveBeenDecomposed.
+//
 // ****************************************************************************
 class VISIT_VTK_API vtkVisItPolyDataNormals : public vtkPolyDataAlgorithm
 {
@@ -32,6 +37,8 @@ class VISIT_VTK_API vtkVisItPolyDataNormals : public vtkPolyDataAlgorithm
     vtkSetMacro(FeatureAngle,float);
     vtkSetMacro(Splitting, bool);
     vtkBooleanMacro(Splitting, bool);
+    vtkGetMacro(StripsHaveBeenDecomposed, bool);
+
     void SetNormalTypeToCell()      { ComputePointNormals = false; }
     void SetNormalTypeToPoint()     { ComputePointNormals = true;  }
 
@@ -46,9 +53,12 @@ class VISIT_VTK_API vtkVisItPolyDataNormals : public vtkPolyDataAlgorithm
     void ExecutePointWithSplitting(vtkPolyData*, vtkPolyData*);
     void ExecuteCell(vtkPolyData *, vtkPolyData*);
 
+    void TransferCellData(vtkPolyData *, vtkPolyData *);
+
     float FeatureAngle;
     bool  Splitting;
     bool  ComputePointNormals;
+    bool  StripsHaveBeenDecomposed;
 
   private:
     vtkVisItPolyDataNormals(const vtkVisItPolyDataNormals&);  // Not implemented.

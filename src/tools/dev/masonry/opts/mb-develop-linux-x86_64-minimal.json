@@ -1,0 +1,20 @@
+{"bootstrap_visit":
+ {"version": "develop",
+ "build_types": ["release"],
+ "arch":   "linux-x86_64",
+ "make_nthreads": 8, 
+ "skip_checkout": "no",
+ "git": {"mode":"ssh"},
+ "build_visit":  { "cmake_ver": "3.14.7",
+                   "args":"--no-thirdparty",
+                   "libs":["cmake",
+                       "llvm",
+                       "mesagl",
+                       "openssl",
+                       "python",
+                       "qt",
+                       "qwt",
+                       "vtk",
+                       "szip",
+                       "zlib"]}
+}}

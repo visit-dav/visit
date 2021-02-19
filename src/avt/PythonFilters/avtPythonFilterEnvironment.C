@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "Python.h"
+#include <Py2and3Support.h>
 #include "avtPythonFilterEnvironment.h"
 #include "avtParallel.h"
 
@@ -84,6 +85,9 @@ avtPythonFilterEnvironment::~avtPythonFilterEnvironment()
 //    Kathleen Biagas, Fri May 4 14:08:12 PDT 2012 
 //    Call GetVisItLibraryDirectory instead of GetVisItArchitectureDirectory.
 //
+//    Cyrus Harrison, Thu Feb 18 16:06:46 PST 2021
+//    Change the way the import works for parallel case to support Python 3.
+//
 // ****************************************************************************
 
 bool
@@ -110,7 +114,7 @@ avtPythonFilterEnvironment::Initialize()
 
 #ifdef PARALLEL
     // init mpicom w/ visit's communicator
-    if(!pyi->RunScript("import mpicom\n"))
+    if(!pyi->RunScript("import mpicom.mpicom as mpicom\n"))
         return false;
     ostringstream oss;
     oss << (void*)VISIT_MPI_COMM_PTR;
@@ -231,6 +235,7 @@ avtPythonFilterEnvironment::WrapVTKObject(void *obj,
     return res;
 }
 
+
 // ****************************************************************************
 //  Method: avtPythonFilterEnvironment::UnwrapVTKObject
 //
@@ -286,7 +291,6 @@ avtPythonFilterEnvironment::UnwrapVTKObject(PyObject *obj,
 }
 
 
-
 // ****************************************************************************
 //  Method: avtPythonScriptExpression::FetchPythonError
 //
@@ -338,8 +342,10 @@ avtPythonFilterEnvironment::Pickle(PyObject *py_obj)
         return std::string("");
     }
 
-    char *res_cstr = PyString_AS_STRING(res_obj);
+
+    char *res_cstr = PyString_AsString(res_obj);
     std::string res(res_cstr);
+    PyString_AsString_Cleanup(res_cstr);
     Py_DECREF(res_obj);
     return res;
 }
@@ -353,16 +359,24 @@ avtPythonFilterEnvironment::Pickle(PyObject *py_obj)
 //  Programmer:   Cyrus Harrison
 //  Creation:     Fri Jul  9 13:54:40 PDT 2010
 //
+//  Modifications:
+//    Eric Brugger, Tue Jan 26 13:17:19 PST 2021
+//    Modified to take a char vector instead of a string.
+//
 // ****************************************************************************
 
 PyObject *
-avtPythonFilterEnvironment::Unpickle(const std::string &s)
+avtPythonFilterEnvironment::Unpickle(const std::vector<char> &v)
 {
     PyObject *res = NULL;
     if(!pickleReady)
         PickleInit();
 
-    PyObject *py_str_obj = PyString_FromString(s.c_str());
+    char *str = new char[v.size()];
+    for (int i = 0; i < v.size(); i++)
+        str[i] = v[i];
+    PyObject *py_str_obj = PyBytes_FromStringAndSize(str, v.size());
+    delete [] str;
     res = PyObject_CallFunctionObjArgs(pickleLoads,py_str_obj,NULL);
 
     if(res == NULL)
@@ -374,6 +388,7 @@ avtPythonFilterEnvironment::Unpickle(const std::string &s)
     Py_DECREF(py_str_obj);
     return res;
 }
+
 
 // ****************************************************************************
 //  Method: avtPythonScriptExpression::PickleInit

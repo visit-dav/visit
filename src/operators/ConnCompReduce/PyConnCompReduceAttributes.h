@@ -5,6 +5,7 @@
 #ifndef PY_CONNCOMPREDUCEATTRIBUTES_H
 #define PY_CONNCOMPREDUCEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ConnCompReduceAttributes.h>
 
 //

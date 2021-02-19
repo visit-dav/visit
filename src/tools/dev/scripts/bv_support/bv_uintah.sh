@@ -252,6 +252,7 @@ function build_uintah
     fi
 
     if [[ "$OPSYS" == "Darwin" ]]; then
+        sdk_root=`xcrun --show-sdk-path`
 
         info "Invoking command to configure UINTAH"
         info "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
@@ -265,7 +266,7 @@ function build_uintah
 	--with-fortran=no --with-petsc=no --with-hypre=no \
 	--with-lapack=no --with-blas=no \
         --with-mpi=\"$PAR_INCLUDE_DIR/..\" \ 
-        --with-libxml2=\"/usr\" "
+        --with-libxml2=\"$sdk_root/usr\" "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
         #        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "
@@ -281,7 +282,7 @@ function build_uintah
 	--with-fortran=no --with-petsc=no --with-hypre=no \
 	--with-lapack=no --with-blas=no \
         --with-mpi=\"$PAR_INCLUDE_DIR/..\" \
-        --with-libxml2=\"/usr\" "
+        --with-libxml2=\"$sdk_root/usr\" "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
         #        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "

@@ -6712,6 +6712,9 @@ NetworkManager::CalculateCellCountTotal(vector<long long> &cellCounts,
 //    Brad Whitlock, Thu Sep 21 16:49:49 PDT 2017
 //    Added getAlpha.
 //
+//    Alister Maguire, Mon May 18 16:06:51 PDT 2020
+//    If OSPRay is enabled, pass the ospray settings to the render window.
+//
 // ****************************************************************************
 
 void
@@ -6751,6 +6754,17 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
     renderState.cellCounts.resize(nPlots, 0);
     renderState.handledCues = false;
     renderState.stereoType = -1;
+
+#ifdef VISIT_OSPRAY
+    //
+    // Pass the OSPRay settings through so that we use the correct
+    // backend when saving windows and such.
+    //
+    renderState.window->SetOsprayRendering(renderAtts.GetOsprayRendering());
+    renderState.window->SetOspraySPP(renderAtts.GetOspraySPP());
+    renderState.window->SetOsprayAO(renderAtts.GetOsprayAO());
+    renderState.window->SetOsprayShadows(renderAtts.GetOsprayShadows());
+#endif
 
     // Apply any rendering-related changes to the annotation attributes.
     // This may mean turning some of them off, etc. Keep track of whether

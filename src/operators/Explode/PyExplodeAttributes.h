@@ -5,6 +5,7 @@
 #ifndef PY_EXPLODEATTRIBUTES_H
 #define PY_EXPLODEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ExplodeAttributes.h>
 
 //

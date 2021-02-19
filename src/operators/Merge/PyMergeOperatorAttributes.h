@@ -5,6 +5,7 @@
 #ifndef PY_MERGEOPERATORATTRIBUTES_H
 #define PY_MERGEOPERATORATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <MergeOperatorAttributes.h>
 
 //

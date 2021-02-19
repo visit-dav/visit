@@ -42,12 +42,16 @@ static double AreaOfCone(double, double, double);
 //    Kathleen Bonnell, Tue Feb  7 14:14:33 PST 2006
 //    Added revolveAboutX. 
 //
+//    Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtRevolvedSurfaceArea::avtRevolvedSurfaceArea()
 {
     haveIssuedWarning = false;
     revolveAboutX = true;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

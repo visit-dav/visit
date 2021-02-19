@@ -5,6 +5,7 @@
 #ifndef PY_LIGHTATTRIBUTES_H
 #define PY_LIGHTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <LightAttributes.h>
 #include <visitpy_exports.h>
 

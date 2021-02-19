@@ -60,8 +60,8 @@ class QvisSurfacePlotWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisSurfacePlotWindow(const int type, SurfaceAttributes *surfaceAtts_,
-                          const QString &caption = QString::null,
-                          const QString &shortName = QString::null,
+                          const QString &caption = QString(),
+                          const QString &shortName = QString(),
                           QvisNotepadArea *notepad = 0);
     virtual ~QvisSurfacePlotWindow();
     virtual void CreateWindowContents();

@@ -60,17 +60,25 @@
  *         option to "complex", on large tables the complex option can be slow.
  *         Default value: "simple"
  * 
- * @option Object headers (optional) An array containing the forces sorting
- *         rules. This option let's you specify a default sorting rule. Default
- *         value: null
+ * @option Object headers (optional) An object of instructions for per-column
+ *         controls in the format: headers: { 0: { option: setting }, ... }. For 
+ *         example, to disable sorting on the first two columns of a table:
+ *         headers: { 0: { sorter: false}, 1: {sorter: false} }.
+ *         Default value: null.
  * 
- * @option Array sortList (optional) An array containing the forces sorting
- *         rules. This option let's you specify a default sorting rule. Default
- *         value: null
+ * @option Array sortList (optional) An array of instructions for per-column sorting 
+ *         and direction in the format: [[columnIndex, sortDirection], ... ] where 
+ *         columnIndex is a zero-based index for your columns left-to-right and 
+ *         sortDirection is 0 for Ascending and 1 for Descending. A valid argument 
+ *         that sorts ascending first by column 1 and then column 2 looks like: 
+ *         [[0,0],[1,0]]. Default value: null.
  * 
  * @option Array sortForce (optional) An array containing forced sorting rules.
- *         This option let's you specify a default sorting rule, which is
- *         prepended to user-selected rules. Default value: null
+ *         Use to add an additional forced sort that will be appended to the dynamic
+ *         selections by the user. For example, can be used to sort people alphabetically
+ *         after some other user-selected sort that results in rows with the same value 
+ *         like dates or money due. It can help prevent data from appearing as though it 
+ *         has a random secondary sort. Default value: null.
  * 
  * @option Boolean sortLocaleCompare (optional) Boolean flag indicating whatever
  *         to use String.localeCampare method or not. Default set to true.
@@ -292,10 +300,14 @@
             };
 
             function getElementText(config, node) {
+            	
+                if (!node) return "";
+                
+		        var $node = $(node),
+		            data = $node.attr('data-sort-value');
+		        if (data !== undefined) return data;
 
                 var text = "";
-
-                if (!node) return "";
 
                 if (!config.supportsTextContent) config.supportsTextContent = node.textContent || false;
 
@@ -384,17 +396,17 @@
                 
                 var header_index = computeTableHeaderCellIndexes(table);
 
-                $tableHeaders = $(table.config.selectorHeaders, table).each(function (index) {
+                var $tableHeaders = $(table.config.selectorHeaders, table).each(function (index) {
 
                     this.column = header_index[this.parentNode.rowIndex + "-" + this.cellIndex];
                     // this.column = index;
                     this.order = formatSortingOrder(table.config.sortInitialOrder);
                     
-                    
-                    this.count = this.order;
+					
+					this.count = this.order;
 
                     if (checkHeaderMetadata(this) || checkHeaderOptions(table, index)) this.sortDisabled = true;
-                    if (checkHeaderOptionsSortingLocked(table, index)) this.order = this.lockedOrder = checkHeaderOptionsSortingLocked(table, index);
+					if (checkHeaderOptionsSortingLocked(table, index)) this.order = this.lockedOrder = checkHeaderOptionsSortingLocked(table, index);
 
                     if (!this.sortDisabled) {
                         var $th = $(this).addClass(table.config.cssHeader);
@@ -493,12 +505,12 @@
                 };
                 return false;
             }
-            
-             function checkHeaderOptionsSortingLocked(table, i) {
+			
+			 function checkHeaderOptionsSortingLocked(table, i) {
                 if ((table.config.headers[i]) && (table.config.headers[i].lockedOrder)) return table.config.headers[i].lockedOrder;
                 return false;
             }
-            
+			
             function applyWidget(table) {
                 var c = table.config.widgets;
                 var l = c.length;
@@ -576,6 +588,8 @@
             }
 
             /* sorting methods */
+            
+            var sortWrapper;
 
             function multisort(table, sortList, cache) {
 
@@ -583,7 +597,7 @@
                     var sortTime = new Date();
                 }
 
-                var dynamicExp = "var sortWrapper = function(a,b) {",
+                var dynamicExp = "sortWrapper = function(a,b) {",
                     l = sortList.length;
 
                 // TODO: inline functions.
@@ -725,10 +739,10 @@
                             var i = this.column;
                             // get current column sort order
                             this.order = this.count++ % 2;
-                            // always sort on the locked order.
-                            if(this.lockedOrder) this.order = this.lockedOrder;
-                            
-                            // user only whants to sort on one
+							// always sort on the locked order.
+							if(this.lockedOrder) this.order = this.lockedOrder;
+							
+							// user only whants to sort on one
                             // column
                             if (!e[config.sortMultiSortKey]) {
                                 // flush the sort list
@@ -768,9 +782,9 @@
                                 // set css for headers
                                 setHeadersCss($this[0], $headers, config.sortList, sortCSS);
                                 appendToTable(
-                                    $this[0], multisort(
-                                    $this[0], config.sortList, cache)
-                                );
+	                                $this[0], multisort(
+	                                $this[0], config.sortList, cache)
+								);
                             }, 1);
                             // stop normal event by returning false
                             return false;
@@ -860,11 +874,9 @@
             };
             this.clearTableBody = function (table) {
                 if ($.browser.msie) {
-                    function empty() {
-                        while (this.firstChild)
-                        this.removeChild(this.firstChild);
+                    while (table.tBodies[0].firstChild) {
+                        table.tBodies[0].removeChild(table.tBodies[0].firstChild);
                     }
-                    empty.apply(table.tBodies[0]);
                 } else {
                     table.tBodies[0].innerHTML = "";
                 }
@@ -903,9 +915,9 @@
     ts.addParser({
         id: "currency",
         is: function (s) {
-            return /^[Â£$â‚¬?.]/.test(s);
+            return /^[£$€?.]/.test(s);
         }, format: function (s) {
-            return $.tablesorter.formatFloat(s.replace(new RegExp(/[Â£$â‚¬]/g), ""));
+            return $.tablesorter.formatFloat(s.replace(new RegExp(/[£$€]/g), ""));
         }, type: "numeric"
     });
 
@@ -976,6 +988,9 @@
             if (c.dateFormat == "us") {
                 // reformat the string in ISO format
                 s = s.replace(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/, "$3/$1/$2");
+            }    
+            if (c.dateFormat == "pt") {
+                s = s.replace(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/, "$3/$2/$1");   
             } else if (c.dateFormat == "uk") {
                 // reformat the string in ISO format
                 s = s.replace(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/, "$3/$2/$1");

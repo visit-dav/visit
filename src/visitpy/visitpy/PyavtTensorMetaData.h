@@ -5,6 +5,7 @@
 #ifndef PY_AVTTENSORMETADATA_H
 #define PY_AVTTENSORMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtTensorMetaData.h>
 #include <PyavtVarMetaData.h>
 #include <visitpy_exports.h>

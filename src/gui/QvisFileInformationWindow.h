@@ -32,8 +32,8 @@ class GUI_API QvisFileInformationWindow : public QvisPostableWindowObserver
 {
     Q_OBJECT
 public:
-    QvisFileInformationWindow(FileServerList *fs, const QString &caption = QString::null,
-        const QString &shortName = QString::null, QvisNotepadArea *notepad = 0);
+    QvisFileInformationWindow(FileServerList *fs, const QString &caption = QString(),
+        const QString &shortName = QString(), QvisNotepadArea *notepad = 0);
     virtual ~QvisFileInformationWindow();
     virtual void CreateWindowContents();
 protected:

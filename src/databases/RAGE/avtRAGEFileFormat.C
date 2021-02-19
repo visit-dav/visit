@@ -16,7 +16,6 @@
 
 #include <avtDatabaseMetaData.h>
 
-#include <DBOptionsAttributes.h>
 #include <Expression.h>
 
 #include <ImproperUseException.h>

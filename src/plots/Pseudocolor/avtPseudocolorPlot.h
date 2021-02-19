@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                             avtPseudocolorPlot.h                          //
-// ************************************************************************* //
+// ****************************************************************************
+//  avtPseudocolorPlot.h
+// ****************************************************************************
 
 #ifndef AVT_PSEUDOCOLOR_PLOT_H
 #define AVT_PSEUDOCOLOR_PLOT_H
@@ -14,14 +14,15 @@
 #include <avtPlot.h>
 #include <PseudocolorAttributes.h>
 
+class     avtLineGlyphFilter;
 class     avtLookupTable;
-class     avtPseudocolorFilter;
-class     avtPseudocolorGeometryFilter;
-class     avtShiftCenteringFilter;
-class     avtPseudocolorMapper;
-class     avtVariableLegend;
 class     avtPolylineCleanupFilter;
+class     avtPseudocolorFilter;
+class     avtPseudocolorMapper;
+class     avtShiftCenteringFilter;
 class     avtStaggeringFilter;
+class     avtVariableLegend;
+class     avtVertexExtractor;
 
 // ****************************************************************************
 //  Class:  avtPseudocolorPlot
@@ -123,6 +124,10 @@ class     avtStaggeringFilter;
 //    Kathleen Biagas, Mon Nov 11 17:36:15 PST 2019
 //    Added ManagesOwnTransparency, so SR mode with transparency will work.
 //
+//    Kathleen Biagas, Thu Jun  4 17:19:38 PDT 2020
+//    Replace avtPseudocolorGeometryFilter with avtVertexExtractor and
+//    avtLineGlypher.
+//
 // ****************************************************************************
 
 class avtPseudocolorPlot : public avtSurfaceDataPlot
@@ -159,7 +164,8 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     avtLegend_p                    varLegendRefPtr;
     PseudocolorAttributes          atts;
     avtPseudocolorFilter          *pcFilter;
-    avtPseudocolorGeometryFilter  *geoFilter;
+    avtVertexExtractor            *vertexExtractor;
+    avtLineGlyphFilter            *lineGlypher;
 
     avtPolylineCleanupFilter      *polylineCleanupFilter;
     avtStaggeringFilter           *staggeringFilter;

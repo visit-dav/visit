@@ -76,7 +76,7 @@ QvisVectorPlotWindow::QvisVectorPlotWindow(const int type,
 
 QvisVectorPlotWindow::~QvisVectorPlotWindow()
 {
-    vectorAtts = 0;
+    vectorAtts = nullptr;
 }
 
 // ****************************************************************************
@@ -155,11 +155,11 @@ QvisVectorPlotWindow::CreateWindowContents()
     topLayout->addWidget(propertyTabs);
 
     // ----------------------------------------------------------------------
-    // Vectors tab
+    // Sampling tab
     // ----------------------------------------------------------------------
-    QWidget *vectorTab = new QWidget(central);
-    propertyTabs->addTab(vectorTab, tr("Vectors"));
-    CreateVectorTab(vectorTab);
+    QWidget *samplingTab = new QWidget(central);
+    propertyTabs->addTab(samplingTab, tr("Sampling"));
+    CreateSamplingTab(samplingTab);
 
     // ----------------------------------------------------------------------
     // Data tab
@@ -169,12 +169,11 @@ QvisVectorPlotWindow::CreateWindowContents()
     CreateDataTab(dataTab);
 
     // ----------------------------------------------------------------------
-    // Glyph tab
+    // Geometry tab
     // ----------------------------------------------------------------------
-    QWidget *glyphTab = new QWidget(central);
-    propertyTabs->addTab(glyphTab, tr("Glyphs"));
-    CreateGlyphTab(glyphTab);
-
+    QWidget *geometryTab = new QWidget(central);
+    propertyTabs->addTab(geometryTab, tr("Geometry"));
+    CreateGeometryTab(geometryTab);
 
     // ----------------------------------------------------------------------
     // Extras tab
@@ -184,12 +183,11 @@ QvisVectorPlotWindow::CreateWindowContents()
     // CreateExtrasTab(extrasTab);
 }
 
-
 // ****************************************************************************
-// Method: QvisVectorPlotWindow::CreateExtrasTab
+// Method: QvisVectorPlotWindow::CreateSamplingTab
 //
 // Purpose: 
-//   Populates the vector tab.
+//   Populates the sampling tab.
 //
 // Programmer: Allen Sanderson
 // Creation:   September 20 2013
@@ -199,7 +197,7 @@ QvisVectorPlotWindow::CreateWindowContents()
 // ****************************************************************************
 
 void
-QvisVectorPlotWindow::CreateVectorTab(QWidget *pageVector)
+QvisVectorPlotWindow::CreateSamplingTab(QWidget *pageVector)
 {
     QGridLayout *topLayout = new QGridLayout(pageVector);
     topLayout->setMargin(5);
@@ -216,12 +214,12 @@ QvisVectorPlotWindow::CreateVectorTab(QWidget *pageVector)
 //    rgLayout->setColumnStretch(1, 10);
 
     // Create the data location button group.
-    QLabel *locationLabel = new QLabel(tr("Vector placement"), reduceGroupBox);
+    QLabel *locationLabel = new QLabel(tr("Placement"), reduceGroupBox);
     rgLayout->addWidget(locationLabel, 0, 0);
     locationButtonGroup = new QButtonGroup(reduceGroupBox);
     connect(locationButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(locationMethodChanged(int)));
-    QRadioButton *rb = new QRadioButton(tr("Adapted to resolution of mesh"), reduceGroupBox);
+    QRadioButton *rb = new QRadioButton(tr("Adapt to the mesh resolution"), reduceGroupBox);
     rb->setChecked(true);
     locationButtonGroup->addButton(rb, 0);
     rgLayout->addWidget(rb, 0, 1, 1, 3);
@@ -234,7 +232,7 @@ QvisVectorPlotWindow::CreateVectorTab(QWidget *pageVector)
     rgLayout->addWidget(hline1, 3, 0, 1, 4);
 
     // Create the reduce button group.
-    QLabel *reduceLabel = new QLabel(tr("Vector amount"), reduceGroupBox);
+    QLabel *reduceLabel = new QLabel(tr("Sampling"), reduceGroupBox);
     rgLayout->addWidget(reduceLabel, 4, 0);
     reduceButtonGroup = new QButtonGroup(reduceGroupBox);
     connect(reduceButtonGroup, SIGNAL(buttonClicked(int)),
@@ -271,7 +269,6 @@ QvisVectorPlotWindow::CreateVectorTab(QWidget *pageVector)
             this, SLOT(limitToOrigToggled(bool)));
     rgLayout->addWidget(limitToOrigToggle, 7, 0, 1, 4);
 }
-
 
 // ****************************************************************************
 // Method: QvisVectorPlotWindow::CreateDataTab
@@ -325,13 +322,13 @@ QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
 
     // Create the max toggle and line edit
     maxToggle = new QCheckBox(tr("Maximum"), central);
-    limitsLayout->addWidget(maxToggle, 1, 2);
+    limitsLayout->addWidget(maxToggle, 2, 0);
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
     maxLineEdit = new QLineEdit(central);
     connect(maxLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMaxLimitText())); 
-    limitsLayout->addWidget(maxLineEdit, 1, 3);
+    limitsLayout->addWidget(maxLineEdit, 2, 1);
 
     //
     // Create the color-related widgets.
@@ -345,7 +342,7 @@ QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
     cgLayout->setSpacing(10);
     cgLayout->setColumnStretch(1, 10);
 
-    // Add the vector color label.
+    // Add the color label.
     colorButtonGroup = new QButtonGroup(colorGroupBox);
     connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
@@ -357,7 +354,7 @@ QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
     colorButtonGroup->addButton(rb, 1);
     cgLayout->addWidget(rb, 1, 0);
 
-    // Create the color-by-eigenvalues button.
+    // Create the color-by-magnitude button.
     colorTableWidget = new QvisColorTableWidget(colorGroupBox, true);
     connect(colorTableWidget, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
@@ -394,10 +391,10 @@ QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
 
 
 // ****************************************************************************
-// Method: QvisVectorPlotWindow::CreateGlyphTab
+// Method: QvisVectorPlotWindow::CreateGeometryTab
 //
 // Purpose: 
-//   Populates the glyph tab.
+//   Populates the geometry tab.
 //
 // Programmer: Allen Sanderson
 // Creation:   September 20 2013
@@ -407,7 +404,7 @@ QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
 // ****************************************************************************
 
 void
-QvisVectorPlotWindow::CreateGlyphTab(QWidget *pageGlyphs)
+QvisVectorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
 {
     QGridLayout *topLayout = new QGridLayout(pageGlyphs);
     topLayout->setMargin(5);
@@ -517,7 +514,6 @@ QvisVectorPlotWindow::CreateGlyphTab(QWidget *pageGlyphs)
     //
     // Create the radio buttons to choose the glyph origin
     //
-    
     QWidget *originBox = new QWidget(styleGroupBox);
     originButtonGroup = new QButtonGroup(originBox);
     QHBoxLayout *originLayout = new QHBoxLayout(originBox);
@@ -710,74 +706,17 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
           case VectorAttributes::ID_nVectors:
             nVectorsLineEdit->setText(IntToQString(vectorAtts->GetNVectors()));
             break;
-          case VectorAttributes::ID_lineWidth:
-            lineWidth->blockSignals(true);
-            lineWidth->SetLineWidth(vectorAtts->GetLineWidth());
-            lineWidth->blockSignals(false);
+          case VectorAttributes::ID_origOnly:
+            limitToOrigToggle->blockSignals(true);
+            limitToOrigToggle->setChecked(vectorAtts->GetOrigOnly());
+            limitToOrigToggle->blockSignals(false);
             break;
-          case VectorAttributes::ID_scale:
-            scaleLineEdit->setText(DoubleToQString(vectorAtts->GetScale()));
+
+          case VectorAttributes::ID_limitsMode:
+            limitsSelect->blockSignals(true);
+            limitsSelect->setCurrentIndex(vectorAtts->GetLimitsMode());
+            limitsSelect->blockSignals(false);
             break;
-          case VectorAttributes::ID_scaleByMagnitude:
-            scaleByMagnitudeToggle->blockSignals(true);
-            scaleByMagnitudeToggle->setChecked(vectorAtts->GetScaleByMagnitude());
-            scaleByMagnitudeToggle->blockSignals(false);
-            break;
-          case VectorAttributes::ID_autoScale:
-            autoScaleToggle->blockSignals(true);
-            autoScaleToggle->setChecked(vectorAtts->GetAutoScale());
-            autoScaleToggle->blockSignals(false);
-            break;
-          case VectorAttributes::ID_headSize:
-            headSizeLineEdit->setText(DoubleToQString(vectorAtts->GetHeadSize()));
-            break;
-          case VectorAttributes::ID_headOn:
-            drawHeadToggle->blockSignals(true);
-            drawHeadToggle->setChecked(vectorAtts->GetHeadOn());
-            drawHeadToggle->blockSignals(false);
-            break;
-          case VectorAttributes::ID_colorByMag:
-            colorButtonGroup->blockSignals(true);
-            colorButtonGroup->button(vectorAtts->GetColorByMag() ? 0 : 1)->setChecked(true);
-            colorButtonGroup->blockSignals(false);
-//            limitsGroup->setEnabled(vectorAtts->GetColorByMag());
-            break;
-          case VectorAttributes::ID_useLegend:
-            legendToggle->blockSignals(true);
-            legendToggle->setChecked(vectorAtts->GetUseLegend());
-            legendToggle->blockSignals(false);
-            break;
-          case VectorAttributes::ID_vectorColor:
-            { // new scope
-            QColor temp(vectorAtts->GetVectorColor().Red(),
-                        vectorAtts->GetVectorColor().Green(),
-                        vectorAtts->GetVectorColor().Blue());
-            vectorColor->blockSignals(true);
-            vectorColor->setButtonColor(temp);
-            vectorColor->blockSignals(false);
-            }
-          case VectorAttributes::ID_colorTableName:
-            colorTableWidget->setColorTable(vectorAtts->GetColorTableName().c_str());
-            break;
-          case VectorAttributes::ID_invertColorTable:
-            colorTableWidget->setInvertColorTable(vectorAtts->GetInvertColorTable());
-            break;
-          case VectorAttributes::ID_vectorOrigin:
-            originButtonGroup->blockSignals(true);
-            switch (vectorAtts->GetVectorOrigin())
-            {
-              case VectorAttributes::Head:
-                originButtonGroup->button(0)->setChecked(true);
-                break;
-              case VectorAttributes::Middle:
-                originButtonGroup->button(1)->setChecked(true);
-                break;
-              case VectorAttributes::Tail:
-                originButtonGroup->button(2)->setChecked(true);
-                break;
-            }
-            originButtonGroup->blockSignals(false);
-          break;
           case VectorAttributes::ID_minFlag:
             // Disconnect the slot before setting the toggle and
             // reconnect it after. This prevents multiple updates.
@@ -798,37 +737,52 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             connect(maxToggle, SIGNAL(toggled(bool)),
                     this, SLOT(maxToggled(bool)));
            break;
-          case VectorAttributes::ID_limitsMode:
-            limitsSelect->blockSignals(true);
-            limitsSelect->setCurrentIndex(vectorAtts->GetLimitsMode());
-            limitsSelect->blockSignals(false);
-            break;
           case VectorAttributes::ID_min:
             minLineEdit->setText(DoubleToQString(vectorAtts->GetMin()));
             break;
           case VectorAttributes::ID_max:
             maxLineEdit->setText(DoubleToQString(vectorAtts->GetMax()));
             break;
-          case VectorAttributes::ID_lineStem:
-            lineStem->blockSignals(true);
-            lineStem->setCurrentIndex(int(vectorAtts->GetLineStem()));
-            lineStem->blockSignals(false);
 
-            UpdateLineStem();
+          case VectorAttributes::ID_colorByMagnitude:
+            colorButtonGroup->blockSignals(true);
+            colorButtonGroup->button(vectorAtts->GetColorByMagnitude() ? 0 : 1)->setChecked(true);
+            colorButtonGroup->blockSignals(false);
+//            limitsGroup->setEnabled(vectorAtts->GetColorByMagnitude());
+            break;
+          case VectorAttributes::ID_vectorColor:
+            { // new scope
+            QColor temp(vectorAtts->GetVectorColor().Red(),
+                        vectorAtts->GetVectorColor().Green(),
+                        vectorAtts->GetVectorColor().Blue());
+            vectorColor->blockSignals(true);
+            vectorColor->setButtonColor(temp);
+            vectorColor->blockSignals(false);
+            }
+          case VectorAttributes::ID_colorTableName:
+            colorTableWidget->setColorTable(vectorAtts->GetColorTableName().c_str());
+            break;
+          case VectorAttributes::ID_invertColorTable:
+            colorTableWidget->setInvertColorTable(vectorAtts->GetInvertColorTable());
+            break;
+          case VectorAttributes::ID_useLegend:
+            legendToggle->blockSignals(true);
+            legendToggle->setChecked(vectorAtts->GetUseLegend());
+            legendToggle->blockSignals(false);
+            break;
 
+          case VectorAttributes::ID_scale:
+            scaleLineEdit->setText(DoubleToQString(vectorAtts->GetScale()));
             break;
-          case VectorAttributes::ID_geometryQuality:
-            geometryQualityButtons->blockSignals(true);
-            geometryQualityButtons->button(vectorAtts->GetGeometryQuality())->setChecked(true);
-            geometryQualityButtons->blockSignals(false);
+          case VectorAttributes::ID_scaleByMagnitude:
+            scaleByMagnitudeToggle->blockSignals(true);
+            scaleByMagnitudeToggle->setChecked(vectorAtts->GetScaleByMagnitude());
+            scaleByMagnitudeToggle->blockSignals(false);
             break;
-          case VectorAttributes::ID_stemWidth:
-            stemWidthEdit->setText(DoubleToQString(vectorAtts->GetStemWidth()));
-            break;
-          case VectorAttributes::ID_origOnly:
-            limitToOrigToggle->blockSignals(true);
-            limitToOrigToggle->setChecked(vectorAtts->GetOrigOnly());
-            limitToOrigToggle->blockSignals(false);
+          case VectorAttributes::ID_autoScale:
+            autoScaleToggle->blockSignals(true);
+            autoScaleToggle->setChecked(vectorAtts->GetAutoScale());
+            autoScaleToggle->blockSignals(false);
             break;
 
           case VectorAttributes::ID_glyphType:
@@ -838,67 +792,52 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             
             UpdateLineStem();
             break;
+          case VectorAttributes::ID_headOn:
+            drawHeadToggle->blockSignals(true);
+            drawHeadToggle->setChecked(vectorAtts->GetHeadOn());
+            drawHeadToggle->blockSignals(false);
+            break;
+          case VectorAttributes::ID_headSize:
+            headSizeLineEdit->setText(DoubleToQString(vectorAtts->GetHeadSize()));
+            break;
+          case VectorAttributes::ID_lineStem:
+            lineStem->blockSignals(true);
+            lineStem->setCurrentIndex(int(vectorAtts->GetLineStem()));
+            lineStem->blockSignals(false);
+
+            UpdateLineStem();
+            break;
+          case VectorAttributes::ID_lineWidth:
+            lineWidth->blockSignals(true);
+            lineWidth->SetLineWidth(vectorAtts->GetLineWidth());
+            lineWidth->blockSignals(false);
+            break;
+          case VectorAttributes::ID_stemWidth:
+            stemWidthEdit->setText(DoubleToQString(vectorAtts->GetStemWidth()));
+            break;
+          case VectorAttributes::ID_vectorOrigin:
+            originButtonGroup->blockSignals(true);
+            switch (vectorAtts->GetVectorOrigin())
+            {
+              case VectorAttributes::Head:
+                originButtonGroup->button(0)->setChecked(true);
+                break;
+              case VectorAttributes::Middle:
+                originButtonGroup->button(1)->setChecked(true);
+                break;
+              case VectorAttributes::Tail:
+                originButtonGroup->button(2)->setChecked(true);
+                break;
+            }
+            originButtonGroup->blockSignals(false);
+          break;
+          case VectorAttributes::ID_geometryQuality:
+            geometryQualityButtons->blockSignals(true);
+            geometryQualityButtons->button(vectorAtts->GetGeometryQuality())->setChecked(true);
+            geometryQualityButtons->blockSignals(false);
+            break;
         }
     } // end for
-}
-
-
-// ****************************************************************************
-// Method: QvisVectorPlotWindow::UpdateLineStem
-//
-// Purpose: 
-//   Updates the line stem attributes
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Mar 22 23:51:58 PST 2001
-//
-// Modifications:
-//
-// ****************************************************************************
-void
-QvisVectorPlotWindow::UpdateLineStem()
-{
-
-  if (vectorAtts->GetGlyphType() == VectorAttributes::Arrow)
-  {
-    lineStem->show();
-    lineStemLabel->show();
-    drawHeadToggle->show();
-    headSizeLabel->show();
-    headSizeLineEdit->show();
-
-    if( vectorAtts->GetLineStem() == VectorAttributes::Line )
-    {
-      lineWidth->show();
-      lineWidthLabel->show();
-      
-      stemWidthEdit->hide();
-      stemWidthLabel->hide();
-    }
-    else //if (vectorAtts->GetLineStem() == VectorAttributes::Cylinder)
-    {
-      lineWidth->hide();
-      lineWidthLabel->hide();
-      
-      stemWidthEdit->show();
-      stemWidthLabel->show();
-    }
-  }
-
-  else //if (vectorAtts->GetGlyphType() == VectorAttributes::Ellipsoid)
-  {
-    lineStem->hide();
-    lineStemLabel->hide();
-    drawHeadToggle->hide();
-    headSizeLabel->hide();
-    headSizeLineEdit->hide();
-
-    lineWidth->hide();
-    lineWidthLabel->hide();
-    
-    stemWidthEdit->hide();
-    stemWidthLabel->hide();
-  }
 }
 
 
@@ -936,36 +875,8 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
     bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
-    // Do the scale value.
-    if(which_widget == 0 || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(scaleLineEdit, val))
-            vectorAtts->SetScale(val);
-        else
-        {
-            ResettingError(tr("scale value"),
-                DoubleToQString(vectorAtts->GetScale()));
-            vectorAtts->SetScale(vectorAtts->GetScale());
-        }
-    }
-
-    // Do the head size value.
-    if(which_widget == 1 || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(headSizeLineEdit, val))
-            vectorAtts->SetHeadSize(val);
-        else
-        {
-            ResettingError(tr("head size"),
-                DoubleToQString(vectorAtts->GetHeadSize()));
-            vectorAtts->SetHeadSize(vectorAtts->GetHeadSize());
-        }
-    }
-
     // Do the N vectors value.
-    if(which_widget == 2 || doAll)
+    if(which_widget == VectorAttributes::ID_nVectors || doAll)
     {
         int val;
         if(LineEditGetInt(nVectorsLineEdit, val))
@@ -979,7 +890,7 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do the stride value.
-    if(which_widget == 3 || doAll)
+    if(which_widget == VectorAttributes::ID_stride || doAll)
     {
         int val;
         if(LineEditGetInt(strideLineEdit, val))
@@ -991,8 +902,9 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
             vectorAtts->SetStride(vectorAtts->GetStride());
         }
     }
-        // Do the minimum value.
-    if(which_widget == 4 || doAll)
+
+    // Do the minimum value.
+    if(which_widget == VectorAttributes::ID_min || doAll)
     {
         double val;
         if(LineEditGetDouble(minLineEdit, val))
@@ -1006,7 +918,7 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do the maximum value
-    if(which_widget == 5 || doAll)
+    if(which_widget == VectorAttributes::ID_max || doAll)
     {
         double val;
         if(LineEditGetDouble(maxLineEdit, val))
@@ -1019,8 +931,36 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do the scale value.
+    if(which_widget == VectorAttributes::ID_scale || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(scaleLineEdit, val))
+            vectorAtts->SetScale(val);
+        else
+        {
+            ResettingError(tr("scale value"),
+                DoubleToQString(vectorAtts->GetScale()));
+            vectorAtts->SetScale(vectorAtts->GetScale());
+        }
+    }
+
+    // Do the head size value.
+    if(which_widget == VectorAttributes::ID_headSize || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(headSizeLineEdit, val))
+            vectorAtts->SetHeadSize(val);
+        else
+        {
+            ResettingError(tr("head size"),
+                DoubleToQString(vectorAtts->GetHeadSize()));
+            vectorAtts->SetHeadSize(vectorAtts->GetHeadSize());
+        }
+    }
+
     // Do the stem width value.
-    if(which_widget == 22 || doAll)
+    if(which_widget == VectorAttributes::ID_stemWidth || doAll)
     {
         double val;
         if((okay = LineEditGetDouble(stemWidthEdit, val)) == true)
@@ -1105,30 +1045,6 @@ QvisVectorPlotWindow::reset()
 
 
 // ****************************************************************************
-// Method: QvisVectorPlotWindow::lineWidthChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the user changes the
-//   lineWidth widget.
-//
-// Arguments:
-//   newWidth : The new line width.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 23 12:20:44 PDT 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisVectorPlotWindow::lineWidthChanged(int newWidth)
-{
-    vectorAtts->SetLineWidth(newWidth);
-    Apply();
-}
-
-// ****************************************************************************
 // Method: QvisVectorPlotWindow::vectorColorChanged
 //
 // Purpose: 
@@ -1152,7 +1068,7 @@ QvisVectorPlotWindow::vectorColorChanged(const QColor &color)
 {
     ColorAttribute temp(color.red(), color.green(), color.blue());
     vectorAtts->SetVectorColor(temp);
-    vectorAtts->SetColorByMag(false);
+    vectorAtts->SetColorByMagnitude(false);
     Apply();
 }
 
@@ -1173,7 +1089,7 @@ QvisVectorPlotWindow::vectorColorChanged(const QColor &color)
 void
 QvisVectorPlotWindow::processScaleText()
 {
-    GetCurrentValues(0);
+    GetCurrentValues(VectorAttributes::ID_scale);
     Apply();
 }
 
@@ -1216,27 +1132,6 @@ void
 QvisVectorPlotWindow::autoScaleToggled(bool)
 {
     vectorAtts->SetAutoScale(!vectorAtts->GetAutoScale());
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisVectorPlotWindow::processHeadSizeText
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the user changes the
-//   head size line edit.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 23 12:22:33 PDT 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisVectorPlotWindow::processHeadSizeText()
-{
-    GetCurrentValues(1);
     Apply();
 }
 
@@ -1309,7 +1204,7 @@ QvisVectorPlotWindow::locationMethodChanged(int index)
 void
 QvisVectorPlotWindow::processNVectorsText()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(VectorAttributes::ID_nVectors);
     Apply();
 }
 
@@ -1330,7 +1225,27 @@ QvisVectorPlotWindow::processNVectorsText()
 void
 QvisVectorPlotWindow::processStrideText()
 {
-    GetCurrentValues(3);
+    GetCurrentValues(VectorAttributes::ID_stride);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::limitToOrigToggled
+//
+// Purpose:
+//   This is a Qt slot function that is called when the user toggles the
+//   window's limit to original node/cell toggle button.
+//
+// Programmer: Jeremy Meredith
+// Creation:   July  8, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisVectorPlotWindow::limitToOrigToggled(bool val)
+{
+    vectorAtts->SetOrigOnly(val);
     Apply();
 }
 
@@ -1356,30 +1271,6 @@ QvisVectorPlotWindow::legendToggled(bool)
 }
 
 // ****************************************************************************
-// Method: QvisVectorPlotWindow::drawHeadToggled
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the user toggles the
-//   window's "drawhead" toggle button.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 23 12:25:29 PDT 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisVectorPlotWindow::drawHeadToggled(bool val)
-{
-    vectorAtts->SetHeadOn(!vectorAtts->GetHeadOn());
-
-    headSizeLineEdit->setEnabled(val);
-
-    Apply();
-}
-
-// ****************************************************************************
 // Method: QvisVectorPlotWindow::colorByMagnitudeToggled
 //
 // Purpose: 
@@ -1398,8 +1289,8 @@ QvisVectorPlotWindow::drawHeadToggled(bool val)
 void
 QvisVectorPlotWindow::colorModeChanged(int index)
 {
-    vectorAtts->SetColorByMag(index == 0);
-//    limitsGroup->setEnabled(vectorAtts->GetColorByMag());
+    vectorAtts->SetColorByMagnitude(index == 0);
+//    limitsGroup->setEnabled(vectorAtts->GetColorByMagnitude());
     Apply();
 }
 
@@ -1426,7 +1317,7 @@ void
 QvisVectorPlotWindow::colorTableClicked(bool useDefault,
     const QString &ctName)
 {
-    vectorAtts->SetColorByMag(true);
+    vectorAtts->SetColorByMagnitude(true);
     vectorAtts->SetColorTableName(ctName.toStdString());
     Apply();
 }
@@ -1453,34 +1344,6 @@ QvisVectorPlotWindow::invertColorTableToggled(bool val)
 {
     vectorAtts->SetInvertColorTable(val);
     Apply();
-}
-
-// ****************************************************************************
-//  Method:  
-//
-//  Purpose:
-//    Qt slot function to change the state of the vector origin type on
-//    response to a radio button click.
-//
-//  Arguments:
-//    index      the index of the radio button
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    November 21, 2003
-//
-// ****************************************************************************
-void
-QvisVectorPlotWindow::originTypeChanged(int index)
-{
-    vectorAtts->SetVectorOrigin((VectorAttributes::OriginType) index);
-    Apply();
-}
-
-void
-QvisVectorPlotWindow::glyphTypeChanged(int newType)
-{
-    vectorAtts->SetGlyphType((VectorAttributes::GlyphType) newType);
-    Apply();    
 }
 
 // ****************************************************************************
@@ -1523,7 +1386,7 @@ QvisVectorPlotWindow::limitsSelectChanged(int mode)
 void
 QvisVectorPlotWindow::processMinLimitText()
 {
-    GetCurrentValues(4);
+    GetCurrentValues(VectorAttributes::ID_min);
     Apply();
 }
 
@@ -1543,7 +1406,7 @@ QvisVectorPlotWindow::processMinLimitText()
 void
 QvisVectorPlotWindow::processMaxLimitText()
 {
-    GetCurrentValues(5);
+    GetCurrentValues(VectorAttributes::ID_max);
     Apply();
 }
 
@@ -1587,6 +1450,70 @@ QvisVectorPlotWindow::maxToggled(bool val)
     Apply();
 }
 
+// ****************************************************************************
+//  Method: QvisVectorPlotWindow::glyphTypeChanged
+//
+//  Purpose:
+//    Qt slot function to change the state of the glyph type
+//
+//  Arguments:
+//    index      the index of the radio button
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2003
+//
+// ****************************************************************************
+void
+QvisVectorPlotWindow::glyphTypeChanged(int newType)
+{
+    vectorAtts->SetGlyphType((VectorAttributes::GlyphType) newType);
+    Apply();    
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::drawHeadToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's "drawhead" toggle button.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:25:29 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::drawHeadToggled(bool val)
+{
+    vectorAtts->SetHeadOn(!vectorAtts->GetHeadOn());
+
+    headSizeLineEdit->setEnabled(val);
+
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::processHeadSizeText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   head size line edit.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:22:33 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::processHeadSizeText()
+{
+    GetCurrentValues(VectorAttributes::ID_headSize);
+    Apply();
+}
 
 // ****************************************************************************
 // Method: QvisVectorPlotWindow::lineStemMethodChanged
@@ -1609,24 +1536,63 @@ QvisVectorPlotWindow::lineStemChanged(int val)
 }
 
 // ****************************************************************************
-// Method: QvisVectorPlotWindow::geometryQualityChanged
+// Method: QvisVectorPlotWindow::UpdateLineStem
 //
 // Purpose: 
-//   This is a Qt slot function that is called when the user toggles the
-//   window's high quality button.
+//   Updates the line stem attributes
 //
-// Programmer: Jeremy Meredith
-// Creation:   March 19, 2007
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 23:51:58 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
-QvisVectorPlotWindow::geometryQualityChanged(int val)
+QvisVectorPlotWindow::UpdateLineStem()
 {
-    vectorAtts->SetGeometryQuality( (VectorAttributes::Quality)val);
-    Apply();
+
+  if (vectorAtts->GetGlyphType() == VectorAttributes::Arrow)
+  {
+    lineStem->show();
+    lineStemLabel->show();
+    drawHeadToggle->show();
+    headSizeLabel->show();
+    headSizeLineEdit->show();
+
+    if( vectorAtts->GetLineStem() == VectorAttributes::Line )
+    {
+      lineWidth->show();
+      lineWidthLabel->show();
+      
+      stemWidthEdit->hide();
+      stemWidthLabel->hide();
+    }
+    else //if (vectorAtts->GetLineStem() == VectorAttributes::Cylinder)
+    {
+      lineWidth->hide();
+      lineWidthLabel->hide();
+      
+      stemWidthEdit->show();
+      stemWidthLabel->show();
+    }
+  }
+
+  else //if (vectorAtts->GetGlyphType() == VectorAttributes::Ellipsoid)
+  {
+    lineStem->hide();
+    lineStemLabel->hide();
+    drawHeadToggle->hide();
+    headSizeLabel->hide();
+    headSizeLineEdit->hide();
+
+    lineWidth->hide();
+    lineWidthLabel->hide();
+    
+    stemWidthEdit->hide();
+    stemWidthLabel->hide();
+  }
 }
+
 
 // ****************************************************************************
 // Method: QvisVectorPlotWindow::processStemWidthText
@@ -1644,26 +1610,71 @@ QvisVectorPlotWindow::geometryQualityChanged(int val)
 void
 QvisVectorPlotWindow::processStemWidthText()
 {
-    GetCurrentValues(22);
+    GetCurrentValues(VectorAttributes::ID_stemWidth);
     Apply();
 }
 
 // ****************************************************************************
-// Method: QvisVectorPlotWindow::limitToOrigToggled
+// Method: QvisVectorPlotWindow::lineWidthChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   lineWidth widget.
+//
+// Arguments:
+//   newWidth : The new line width.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:20:44 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::lineWidthChanged(int newWidth)
+{
+    vectorAtts->SetLineWidth(newWidth);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method: QvisVectorPlotWindow::originTypeChanged
+//
+//  Purpose:
+//    Qt slot function to change the state of the vector origin type on
+//    response to a radio button click.
+//
+//  Arguments:
+//    index      the index of the radio button
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2003
+//
+// ****************************************************************************
+void
+QvisVectorPlotWindow::originTypeChanged(int index)
+{
+    vectorAtts->SetVectorOrigin((VectorAttributes::OriginType) index);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::geometryQualityChanged
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the user toggles the
-//   window's limit to original node/cell toggle button.
+//   window's high quality button.
 //
 // Programmer: Jeremy Meredith
-// Creation:   July  8, 2008
+// Creation:   March 19, 2007
 //
 // Modifications:
 //   
 // ****************************************************************************
 void
-QvisVectorPlotWindow::limitToOrigToggled(bool val)
+QvisVectorPlotWindow::geometryQualityChanged(int val)
 {
-    vectorAtts->SetOrigOnly(val);
+    vectorAtts->SetGeometryQuality( (VectorAttributes::Quality)val);
     Apply();
 }

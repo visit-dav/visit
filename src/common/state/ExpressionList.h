@@ -90,6 +90,7 @@ public:
     const stringVector GetAllVarNames(const std::string &dbN) const;
     unsigned int GetHashVal() const;
     int IndexOf(const char *) const;
+    virtual void SortExpressions(void);
 
     // IDs that can be used to identify fields in case statements
     enum {

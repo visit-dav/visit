@@ -55,8 +55,8 @@ class GUI_API QvisLightingWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisLightingWindow(LightList *subj,
-                       const QString &caption = QString::null,
-                       const QString &shortName = QString::null,
+                       const QString &caption = QString(),
+                       const QString &shortName = QString(),
                        QvisNotepadArea *notepad = 0);
     virtual ~QvisLightingWindow();
     virtual void CreateWindowContents();

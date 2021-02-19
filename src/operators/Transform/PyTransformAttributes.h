@@ -5,6 +5,7 @@
 #ifndef PY_TRANSFORMATTRIBUTES_H
 #define PY_TRANSFORMATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <TransformAttributes.h>
 
 //

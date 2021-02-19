@@ -23,7 +23,6 @@
 #include <avtMaterial.h>
 #include <avtVariableCache.h>
 
-#include <DBOptionsAttributes.h>
 #include <Expression.h>
 
 #include <InvalidVariableException.h>

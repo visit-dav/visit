@@ -5,6 +5,7 @@
 #ifndef PY_PROCESSATTRIBUTES_H
 #define PY_PROCESSATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ProcessAttributes.h>
 #include <visitpy_exports.h>
 

@@ -14,7 +14,6 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <avtDatabaseMetaData.h>
-#include <DBOptionsAttributes.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidVariableException.h>
 #include <DebugStream.h>

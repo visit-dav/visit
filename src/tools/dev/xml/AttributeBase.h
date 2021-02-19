@@ -102,7 +102,7 @@ public:
         delete codeFile;
     }
 
-    bool HasFunction(const QString &f, const QString &target = QString::null) const
+    bool HasFunction(const QString &f, const QString &target = QString()) const
     {
         for (size_t i=0; i<functions.size(); i++)
             if (functions[i]->name == f && functions[i]->user == false)
@@ -112,7 +112,7 @@ public:
             }
         return false;
     }
-    void PrintFunction(QTextStream &out, const QString &f, const QString &target = QString::null) const
+    void PrintFunction(QTextStream &out, const QString &f, const QString &target = QString()) const
     {
         for (size_t i=0; i<functions.size(); i++)
             if (functions[i]->name == f && functions[i]->user == false)
@@ -126,7 +126,7 @@ public:
             }
     }
 
-    void DeleteFunction(QTextStream &out, const QString &f, const QString &target = QString::null)
+    void DeleteFunction(QTextStream &out, const QString &f, const QString &target = QString())
     {
         for (size_t i=0; i<functions.size(); i++)
             if (functions[i]->name == f && functions[i]->user == false)
@@ -140,7 +140,7 @@ public:
             }
     }
 
-    bool HasCode(const QString &cName, int part, const QString &target = QString::null) const
+    bool HasCode(const QString &cName, int part, const QString &target = QString()) const
     {
         for (size_t i=0; i<codes.size(); i++)
             if (codes[i]->name == cName)
@@ -157,7 +157,7 @@ public:
             }
         return false;
     }
-    void PrintCode(QTextStream &out, const QString &cName, int part, const QString &target = QString::null) const
+    void PrintCode(QTextStream &out, const QString &cName, int part, const QString &target = QString()) const
     {
         for (size_t i=0; i<codes.size(); i++)
             if (codes[i]->name == cName)

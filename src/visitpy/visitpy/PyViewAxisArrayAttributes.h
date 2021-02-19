@@ -5,6 +5,7 @@
 #ifndef PY_VIEWAXISARRAYATTRIBUTES_H
 #define PY_VIEWAXISARRAYATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ViewAxisArrayAttributes.h>
 #include <visitpy_exports.h>
 

@@ -45,7 +45,7 @@ using     std::string;
 //
 // ****************************************************************************
 
-avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttributes *readOpts)
+avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
   : avtMTSDFileFormat(&filename, 1), nw(0), nh(0)
 {
     if (std::string(filename) == "")

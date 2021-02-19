@@ -338,6 +338,9 @@ avtDatabaseFactory::SetBackendType(const int bType)
 //    Allow file permission check to be bypassed. We don't want it for batch
 //    in situ.
 //
+//    Eric Brugger, Fri May  1 12:39:32 PDT 2020
+//    Correct the parsing of !TIME when the time was 0.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -396,7 +399,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
              char *endptr = 0;
              errno = 0;
              double time = strtod(filelist[fileIndex] + strlen("!TIME "), &endptr);
-             if (errno != 0 || (time == 0.0 || endptr == filelist[fileIndex] + strlen("!TIME ")))
+             if (errno != 0 || (time == 0.0 && endptr == filelist[fileIndex] + strlen("!TIME ")))
              {
                  debug1 << "BAD SYNTAX FOR !TIME, \"" << filelist[fileIndex] << "\", RESETTING TO ";
                  if (times.size())

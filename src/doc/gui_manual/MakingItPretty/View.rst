@@ -150,24 +150,45 @@ of a 3D view.
 
    The 3D perspective view volume
 
-To set the 3D view, first decide on where you want to look from. Type a
-vector value into the **View normal** text field. Next, type the vector
-valued location of what you want to look at into the **Focus** text
-field. The **Up axis** vector is simply a vector that determines which
-way is up. A good default value for the up axis is 0 1 0. VisIt will
-often calculate a better value to use for the up axis so it is not too
-important to figure out the right value. The **View Angle** determines
-how wide the field of view is. The view angle is specified in degrees
-and a value around 30 is usually sufficient. **Near clipping** and
-**Far clipping** are values along the view normal that determine where
-the near and far clipping planes are to be placed. It is not easy to
-know that good values for these are so you will have to experiment.
-**Parallel scale** acts as a zoom factor and larger values zoom the
-camera towards the focus. The **Perspective** check box applies to 3D
-visualizations and it causes a more realistic view to be used where
-objects that are farther away are drawn smaller than closer objects of
-the same size. VisIt uses a perspective view for 3D visualizations by
-default.
+To set the 3D view, fill in the following fields:
+
+View normal
+    Where you want to look from.
+
+Focus
+    What you want to look at.
+
+Up axis
+    Determines which way is up. A good default value for the up axis is 0 1 0.
+    VisIt will often calculate a better value to use for the up axis so it is
+    not too important to figure out the right value.
+
+View Angle
+    Determines how wide the field of view is. The view angle is specified in
+    degrees and a value around 30 is usually sufficient.
+
+Near clipping and Far clipping
+    Values along the view normal that determine where the near and far clipping
+    planes are to be placed. It is not easy to know that good values for these
+    are so you will have to experiment.
+
+Parallel scale
+    Acts like a zoom factor that zooms the camera towards the focus. For a
+    parallel projection, it is half
+    the height of an object in the window. For example, if you had a sphere of
+    radius 10, setting the parallel scale to 10, would result in the top and
+    bottom of the sphere touching the top and bottom of the image. Where the
+    sphere touches on the left and right edges depends on the aspect ratio of
+    the image. If it was 1:1, then the sphere would also touch the left and
+    right edges of the image. When doing a perspective projection, it attempts
+    to have the top and bottom of the sphere touch the top and bottom of the
+    image.
+
+Perspective
+    Applies to 3D visualizations and it causes a more realistic view to be used
+    where objects that are farther away are drawn smaller than closer objects of
+    the same size. VisIt uses a perspective view for 3D visualizations by
+    default.
 
 VisIt supports stereo rendering, during which VisIt draws the image in
 the visualization window twice with the camera eye positioned in slightly

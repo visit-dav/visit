@@ -5,6 +5,7 @@
 #ifndef PY_EXTRUDEATTRIBUTES_H
 #define PY_EXTRUDEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ExtrudeAttributes.h>
 
 //

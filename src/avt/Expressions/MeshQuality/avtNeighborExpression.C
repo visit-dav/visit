@@ -31,11 +31,16 @@ const char * avtNeighborExpression::variableName = "neighbor";
 //  Programmer: Akira Haddox
 //  Creation:   June 27, 2002
 //
+//  Modifications:
+//
+//  Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//  Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtNeighborExpression::avtNeighborExpression()
 {
-
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

@@ -301,7 +301,8 @@ build_rect2d(DBfile * dbfile, int size)
     char          *meshname = NULL, *var1name = NULL, *var2name = NULL;
     char          *var3name = NULL, *var4name = NULL, *matname = NULL;
 
-    float         *d=NULL, *p=NULL, *u=NULL, *v=NULL, *t=NULL, *ascii=NULL, *distarr=NULL;
+    float         *d=NULL, *p=NULL, *u=NULL, *v=NULL, *t=NULL, *dmix=NULL;
+    float         *ascii=NULL, *distarr=NULL;
 
     char          *asciiw=NULL;
 
@@ -311,7 +312,7 @@ build_rect2d(DBfile * dbfile, int size)
     int            dims2[3];
     int            mixlen;
     int           *mix_next = NULL, *mix_mat = NULL, *mix_zone = NULL;
-    float         *mix_vf = NULL;
+    float         *mix_vf = NULL, *mix_dmix = NULL;
 
     DBoptlist     *optlist = NULL, *varOptList = NULL;
 
@@ -343,14 +344,22 @@ build_rect2d(DBfile * dbfile, int size)
     u = ALLOC_N (float, (nx + 1) * (ny + 1));
     v = ALLOC_N (float, (nx + 1) * (ny + 1));
     t = ALLOC_N (float, (nx + 1) * (ny + 1));
+    dmix = ALLOC_N (float, nx * ny);
     distarr = ALLOC_N (float, nx * ny);
     ascii = ALLOC_N (float, nx * ny);
     asciiw = ALLOC_N (char, nx * ny * 9);
     matlist = ALLOC_N (int, nx * ny);
+    //
+    // The 40 was choosen to hopefully over allocate the array. There
+    // is a check later on that checks if we exceeded the allocation
+    // and exits with an error message on the assumption that we will
+    // have clobbered memory and things may be in a bad state.
+    //
     mix_next = ALLOC_N (int, 40 * ny);
     mix_mat  = ALLOC_N (int, 40 * ny);
     mix_zone = ALLOC_N (int, 40 * ny);
     mix_vf   = ALLOC_N (float, 40 * ny);
+    mix_dmix = ALLOC_N (float, 40 * ny);
 
     //
     // Create the mesh.
@@ -540,10 +549,34 @@ build_rect2d(DBfile * dbfile, int size)
     fill_rect2d_mat (x, y, matlist, nx, ny, mix_next, mix_mat, mix_zone,
                      mix_vf, &mixlen, 18, 0.1);
 
+    //
+    // Check if we have exceeded the allocation for the mixed variable
+    // arrays. If we have print an error message and exit.
+    //
     if (mixlen > 40 * ny)
     {
-        printf ("mixlen = %d\n", mixlen);
+        fprintf (stderr, "ERROR: Hard-coded mixlen exceeded at line %d.\n",
+                 __LINE__);
         exit (1);
+    }
+
+    //
+    // Calculate dmix.
+    //
+    for (i = 0; i < nx * ny; i++)
+    {
+        if (matlist[i] > 0)
+        {
+            dmix[i] = matlist[i] * 0.2;
+        }
+        else
+        {
+            int m1 = - matlist[i] - 1;
+            int m2 = mix_next[m1] - 1;
+            mix_dmix[m1] = mix_mat[m1] * 0.2;
+            mix_dmix[m2] = mix_mat[m2] * 0.2;
+            dmix[i] = mix_dmix[m1] * mix_vf[m1] + mix_dmix[m2] * mix_vf[m2];
+        }
     }
 
     //
@@ -601,6 +634,11 @@ build_rect2d(DBfile * dbfile, int size)
                   DB_FLOAT, DB_NODECENT, varOptList);
     DBFreeOptlist(varOptList);
 
+    varOptList = rect2d_var_optlist("g/cm^2", &cycle, &time, &dtime);
+    DBPutQuadvar1(dbfile, "dmix", meshname, dmix, zdims, ndims, mix_dmix,
+                  mixlen, DB_FLOAT, DB_ZONECENT, varOptList);
+    DBFreeOptlist(varOptList);
+
     DBPutMaterial(dbfile, matname, meshname, nmats, matnos, matlist, dims2,
                   ndims, mix_next, mix_mat, mix_zone, mix_vf, mixlen,
                   DB_FLOAT, optlist);
@@ -652,6 +690,7 @@ build_rect2d(DBfile * dbfile, int size)
     FREE (u);
     FREE (v);
     FREE (t);
+    FREE (dmix);
     FREE (distarr);
     FREE (ascii);
     FREE (asciiw);
@@ -660,6 +699,7 @@ build_rect2d(DBfile * dbfile, int size)
     FREE (mix_mat);
     FREE (mix_zone);
     FREE (mix_vf);
+    FREE (mix_dmix);
 }
 
 static void
@@ -1284,7 +1324,6 @@ build_ucd2d_lines(DBfile * dbfile, int size)
     double          dtime;
     int             tdim;
     float          *coords[2];
-    int             dims[1];
     float           x[13], y[13];
     float           d[13],u[13],v[13];
     float           p[16];
@@ -1432,8 +1471,6 @@ build_ucd2d_lines(DBfile * dbfile, int size)
 
     DBPutUcdmesh(dbfile, "ucd_linesmesh2d", 2, NULL, coords, nnodes, nzones,
                  "ucd2d_zonelist", NULL, DB_FLOAT, optlist);
-
-    dims[0] = nzones;
 
     DBPutUcdvar1(dbfile, "d", "ucd_linesmesh2d", d, nnodes, NULL, 0, DB_FLOAT,
                  DB_NODECENT, NULL);
@@ -2621,7 +2658,6 @@ build_ucd3d_lines(DBfile * dbfile, int size)
     double          dtime;
     int             tdim;
     float          *coords[3];
-    int             dims[1];
     float           x[13], y[13], z[13];
     float           d[13];
     float           p[16];
@@ -3438,7 +3474,6 @@ main(int argc, char *argv[])
 {
     int            i;
     int            size;
-    int            ntests = 0;
     int            driver = DB_PDB;
 
     //
@@ -3458,7 +3493,7 @@ main(int argc, char *argv[])
         else if (strcmp(argv[i], "DB_PDB") == 0)
             driver = DB_PDB;
         else
-           fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[i]);
+           fprintf(stderr,"WARNING: Unrecognized command line option %s.\n", argv[i]);
     }
 
     //
@@ -3467,10 +3502,6 @@ main(int argc, char *argv[])
     DBShowErrors(DB_ABORT, NULL);
 
     MakeFiles(size, driver);
-    ntests++;
-
-    if (!ntests)
-        printf("No tests performed.\n");
 
     return(0);
 }

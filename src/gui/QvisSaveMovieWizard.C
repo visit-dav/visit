@@ -162,6 +162,9 @@ MenuNameToFormat(const char *menu_name)
 // Creation:   Tue Nov 21 14:05:35 PST 2006
 //
 // Modifications:
+//   Kathleen Biagas, Wed Mar 4 2020
+//   Test both forms of path separators, instead of VISIT_SLASH_STRING, as
+//   unix-style may sometimes be used on Windows in this wizard.
 //
 // ****************************************************************************
 
@@ -171,7 +174,10 @@ EnsureDirectoryExists(std::string &name, bool nameIsFile)
     QString dirName;
     if(nameIsFile)
     {
-        std::string::size_type pos = name.rfind(VISIT_SLASH_STRING);
+        std::string::size_type pos = name.rfind("/");
+        if (pos == std::string::npos)
+            pos = name.rfind("\\");
+
         if(pos != std::string::npos)
         {
             dirName = QString(name.substr(0, pos).c_str());
@@ -2605,6 +2611,9 @@ QvisSaveMovieWizard::page4_UpdateViews(int flags)
 //   Brad Whitlock, Tue Oct 14 11:47:18 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -2666,8 +2675,7 @@ QvisSaveMovieWizard::page5_Update(int flags)
                     if(sscanf(digits.c_str(), "%d", &number) == 1)
                     {
                         QString pre(name.substr(0, name.size()-digits.size()).c_str());
-                        QString idx;
-                        idx.sprintf("%05d", number);
+                        QString idx = QString("%1").arg(number,5,10,QLatin1Char('0'));
                         itemKey = pre + idx;
                     }
                 }
@@ -2873,6 +2881,9 @@ QvisSaveMovieWizard::page7_Update()
 //   Cameron Christensen, Friday, September 28, 2012
 //   Added Screen Capture
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -2924,15 +2935,15 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
         QString tmp;
         if(useCurrent[i] > 0)
         {
-            QString scale; scale.sprintf("%dx",  int(scales[i]));
+            QString scale = QString("%1x").arg(int(scales[i]));
             tmp = QString(FormatToMenuName(formats[i].c_str())) +
                   QString(" ") + tr("Current") + QString(" ") +
                   scale;
         }
         else
         {
-            tmp.sprintf("%s %dx%d",
-                FormatToMenuName(formats[i].c_str()), w[i], h[i]);
+            tmp = QString("%1 %2x%3")
+                .arg(FormatToMenuName(formats[i].c_str())).arg(w[i]).arg(h[i]);
         }
         s += tmp;
         int stereoType = movieAtts->GetStereoFlags()[i];
@@ -3009,11 +3020,11 @@ QvisSaveMovieWizard::page9_UpdateOutputs()
             QString res;
             if(useCurrent[i] > 0)
             {
-                res.sprintf(" %dx", int(scales[i]));
+                res = QString(" %1x").arg(int(scales[i]));
                 res = tr("Current") + res;
             }
             else
-                res.sprintf("%dx%d", w[i], h[i]);
+                res = QString("%1x%2").arg(w[i]).arg(h[i]);
             QTreeWidgetItem *item = new QTreeWidgetItem(page9_outputFormats);
             item->setText(0, FormatToMenuName(formats[i].c_str()));
             item->setText(1, res);
@@ -4462,6 +4473,9 @@ QvisSaveMovieWizard::page9_addOutput()
 //   Cameron Christensen, Friday, September 28, 2012
 //   Added Screen Capture
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -4486,9 +4500,8 @@ QvisSaveMovieWizard::page9_removeOutput()
         for(size_t i = 0; i < formats.size(); ++i)
         {
             QString fmt(FormatToMenuName(formats[i].c_str()));
-            QString res;  res.sprintf("%dx%d", widths[i], heights[i]);
-            QString res2;
-            res2.sprintf(" %dx", int(scales[i]));
+            QString res = QString("%1x%2").arg(widths[i]).arg(heights[i]);
+            QString res2 = QString(" %1x").arg(int(scales[i]));
             res2 = tr("Current") + res2;
             QString stereo(tr("off"));
             if(stereoFlags[i] == 1)

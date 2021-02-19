@@ -419,6 +419,10 @@ def VisItUI_addStripChartPoint(chart, curve, cycle, value):
     return _simV2.VisItUI_addStripChartPoint(chart, curve, cycle, value)
 VisItUI_addStripChartPoint = _simV2.VisItUI_addStripChartPoint
 
+def VisItUI_addStripChartPoints(chart, curve, npts, cycles, values):
+    return _simV2.VisItUI_addStripChartPoints(chart, curve, npts, cycles, values)
+VisItUI_addStripChartPoints = _simV2.VisItUI_addStripChartPoints
+
 def VisItAddPlot(plotType, var):
     return _simV2.VisItAddPlot(plotType, var)
 VisItAddPlot = _simV2.VisItAddPlot

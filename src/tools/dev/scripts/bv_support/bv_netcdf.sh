@@ -280,17 +280,19 @@ function apply_netcdf_patch
 
     if [[ ${NETCDF_VERSION} == 4.1.1 ]] ; then
         if [[ "$OPSYS" == "Darwin" ]] ; then
-            if [[ `sw_vers -productVersion` == 10.9.[0-9]* ||
-                  `sw_vers -productVersion` == 10.10.[0-9]* ||
-                  `sw_vers -productVersion` == 10.11.[0-9]* ||
-                  `sw_vers -productVersion` == 10.12.[0-9]* ]] ; then
+            productVersion=`sw_vers -productVersion`
+            if [[ $productVersion == 10.9.[0-9]* ||
+                  $productVersion == 10.10.[0-9]* ||
+                  $productVersion == 10.11.[0-9]* ||
+                  $productVersion == 10.12.[0-9]* ]] ; then
                 info "Applying OS X 10.9 and up patch . . ."
                 apply_netcdf_411_darwin_patch
             fi
             
-            if [[ `sw_vers -productVersion` == 10.13.[0-9]* ||
-                  `sw_vers -productVersion` == 10.14.[0-9]* ]] ; then
-                info "Applying macOS patch . . ."
+            if [[ $productVersion == 10.13.[0-9]* ||
+                  $productVersion == 10.14.[0-9]* || 
+                  $productVersion == 10.15.[0-9]* ]] ; then
+                info "Applying macOS 10.13 and up patch . . ."
                 apply_netcdf_411_macOS_patch
             fi
         fi

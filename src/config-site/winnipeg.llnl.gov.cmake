@@ -1,8 +1,8 @@
 #/usr/gapps/visit/thirdparty_shared/3.1.0/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake
 ##
-## ./build_visit3_1_0 generated host.cmake
-## created: Wed Jan  8 10:58:32 PST 2020
-## system: Linux winnipeg.llnl.gov 5.2.9-1.el7.elrepo.x86_64 #1 SMP Fri Aug 16 08:17:55 EDT 2019 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_1_3 generated host.cmake
+## created: Wed Sep 30 09:05:08 PDT 2020
+## system: Linux winnipeg.llnl.gov 3.10.0-1127.19.1.el7.x86_64 #1 SMP Tue Aug 11 19:12:04 EDT 2020 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger1
 
 ##
@@ -83,7 +83,7 @@ VISIT_OPTION_DEFAULT(VISIT_ISPC_DIR ${VISITHOME}/ispc/${ISPC_VERSION}/${VISITARC
 ##
 ## TBB
 ##
-SETUP_APP_VERSION(TBB tbb2018_20171205oss)
+set(TBB_VERSION tbb2018_20171205oss)
 VISIT_OPTION_DEFAULT(TBB_ROOT ${VISITHOME}/tbb/${TBB_VERSION}/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_TBB_DIR ${VISITHOME}/tbb/${TBB_VERSION}/${VISITARCH})
 
@@ -210,7 +210,7 @@ VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP ${VISIT_CONDUIT_LIBDEP} ${VISITHOME}/zlib
 ##
 ## Mili
 ##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/15.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/19.2/${VISITARCH})
 
 ##
 ## MOAB 

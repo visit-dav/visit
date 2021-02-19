@@ -5,6 +5,7 @@
 #ifndef PY_MATERIALATTRIBUTES_H
 #define PY_MATERIALATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <MaterialAttributes.h>
 #include <visitpy_exports.h>
 

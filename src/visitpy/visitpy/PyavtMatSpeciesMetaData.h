@@ -5,6 +5,7 @@
 #ifndef PY_AVTMATSPECIESMETADATA_H
 #define PY_AVTMATSPECIESMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtMatSpeciesMetaData.h>
 #include <visitpy_exports.h>
 

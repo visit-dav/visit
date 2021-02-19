@@ -11,6 +11,7 @@
 #include <avtLineScanFilter.h>
 #include <avtOriginatingSource.h>
 #include <avtParallel.h>
+#include <DebugStream.h>
 #include <QueryArgumentException.h>
 
 #include <vectortypes.h>
@@ -522,6 +523,10 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
 //    I added a flag which has the query optionally use the emissivity divided
 //    by the absorbtivity in place of the emissivity.
 //
+//    Eric Brugger, Fri Oct  2 09:15:29 PDT 2020
+//    Add logic to ignore the line if the line doesn't go from one side to
+//    the other.
+//
 // ****************************************************************************
 
 void
@@ -568,7 +573,7 @@ avtHohlraumFluxQuery::IntegrateLine(int oneSide, int otherSide,
     }
     output->GetPoint(currPt, pt0);
 
-    while (currPt != endPt)
+    while (currPt != endPt && currSeg != -1)
     {
         int newPt = -1, newSeg = -1;
         WalkChain1(output, currPt, currSeg,
@@ -604,9 +609,16 @@ avtHohlraumFluxQuery::IntegrateLine(int oneSide, int otherSide,
         pt0[1]  = pt1[1];
         pt0[2]  = pt1[2];
     }
-    for (ii = 0 ; ii < numBins ; ii++)
+    if (currPt == endPt)
     {
-        radBins[ii] += tmpBins[ii];
+        for (ii = 0 ; ii < numBins ; ii++)
+        {
+            radBins[ii] += tmpBins[ii];
+        }
+    }
+    else
+    {
+        debug5 << "avtHohlraumFluxQuery::IntegrateLine: Ignoring degenerate line." << endl;
     }
 }
 

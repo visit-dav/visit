@@ -37,7 +37,7 @@ class vtkPoints;
 class avtTecplotBinaryFileFormat : public avtSTMDFileFormat
 {
 public:
-    avtTecplotBinaryFileFormat(const char *, DBOptionsAttributes *);
+    avtTecplotBinaryFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtTecplotBinaryFileFormat() {;};
 
     //

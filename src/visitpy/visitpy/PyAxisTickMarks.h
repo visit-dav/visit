@@ -5,6 +5,7 @@
 #ifndef PY_AXISTICKMARKS_H
 #define PY_AXISTICKMARKS_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <AxisTickMarks.h>
 #include <visitpy_exports.h>
 

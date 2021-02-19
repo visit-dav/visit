@@ -45,6 +45,15 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state 
 #    behavior when an operator is added.
 #
+#    Kathleen Biagas, Wed Jun 10 17:39:23 PDT 2020
+#    Move RandomColor test to be first test run so that changes in mesh plot
+#    instances don't randomly make the test fail.
+#
+#    Kathleen Biagas, Thu Jun 11 07:57:10 PDT 2020
+#    Add more data files to PointMesh test, to ensure data that doesnt' set
+#    topological dimension to 0, and data with mixed topology can still do
+#    point glyphing and changes point size.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -144,6 +153,59 @@ def TestPointMesh():
     DeleteAllPlots()
     CloseDatabase(silo_data_path("noise2d.silo"))
 
+    OpenDatabase(data_path("blueprint_v0.3.1_test_data/braid_3d_examples_json.root"))
+
+    AddPlot("Mesh", "points_mesh")
+
+    m = MeshAttributes()
+    m.meshColorSource = m.MeshCustom
+    m.meshColor = (0, 170, 255, 255)
+    SetPlotOptions(m)
+    DrawPlots()
+    ResetView()
+    v = GetView3D()
+    v.viewNormal = (-0.605449, 0.469667, 0.642529)
+    v.viewUp = (0.169201, 0.864818, -0.472716)
+    SetView3D(v)
+    Test("mesh_point_07")
+
+    m.pointSizePixels = 5
+    SetPlotOptions(m)
+    Test("mesh_point_08")
+
+    m.pointType = m.Tetrahedron
+    m.pointSize = 3
+    SetPlotOptions(m)
+    Test("mesh_point_09")
+
+    DeleteAllPlots()
+    CloseDatabase(data_path("blueprint_v0.3.1_test_data/braid_3d_examples_json.root"))
+
+    OpenDatabase(data_path("vtk_test_data/ugrid_mixed_cells.vtk"))
+
+    AddPlot("Mesh", "mesh")
+    m.lineWidth = 3
+    m.pointType = m.Point
+    m.pointSizePixels = 2
+    SetPlotOptions(m)
+    DrawPlots()
+    ResetView()
+
+    Test("mesh_point_10")
+
+    m.pointSizePixels = 5
+    SetPlotOptions(m)
+    Test("mesh_point_11")
+
+    m.pointType = m.Icosahedron
+    m.pointSize = 0.5 
+    SetPlotOptions(m)
+    Test("mesh_point_12")
+
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_test_data/ugrid_mixed_cells.vtk"))
+
+
 def TestGlobe():
     TestSection("Mesh plot of a 3D unstructured mesh")
     OpenDatabase(silo_data_path("globe.silo"))
@@ -172,7 +234,8 @@ def TestGlobe():
     SetPlotOptions(m)
     Test("mesh_globe_03")
 
-    m.smoothingLevel = m.None
+    print(m.NONE)
+    m.smoothingLevel = m.NONE
     m.opaqueMode = m.Auto
     m.showInternal = 1
     SetPlotOptions(m)
@@ -291,38 +354,44 @@ def TestRandomColor():
     TestSection("Testing random color mode")
     OpenDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
 
-    AddPlot("Mesh", "2D/mesh1_phzl")
+    # Randomization of mesh colors is possible only at plot *creation* time.
+    # Therefore, we need to adjust Mesh plot default attributes to set
+    # the behavior *before* the plot is even created.
     m = MeshAttributes()
+    savedMeshAttrs = m
     m.meshColorSource = m.MeshRandom
-    SetPlotOptions(m)
+    SetDefaultPlotOptions(m)
+    AddPlot("Mesh", "2D/mesh1_phzl")
     ResetView()
     DrawPlots()
     Test("mesh_random_color_01")
+    DeleteActivePlots()
 
     m.meshColorSource = m.Foreground
-    SetPlotOptions(m)
-    m.meshColorSource = m.MeshRandom
-    SetPlotOptions(m)
+    SetDefaultPlotOptions(m)
+    AddPlot("Mesh", "2D/mesh1_phzl")
+    DrawPlots()
     Test("mesh_random_color_02")
     DeleteAllPlots()
 
     # Add a series of mesh plots with random opaque color
+    m = MeshAttributes()
+    m.opaqueColorSource = m.OpaqueRandom
+    SetDefaultPlotOptions(m)
     meshnames = ["2D/mesh1_phzl", "2D/mesh1_phzl2", "2D/mesh1_zl1", "2D/mesh1_zl2"]
     for i in range(len(meshnames)):
         mname = meshnames[i]
         AddPlot("Mesh", mname)
-        m = MeshAttributes()
-        m.opaqueColorSource = m.OpaqueRandom
-        SetPlotOptions(m)
         AddOperator("Transform")
         ta = TransformAttributes()
         ta.doTranslate = 1
         ta.translateY = 3*i
         SetOperatorOptions(ta)
-        DrawPlots()
+    DrawPlots()
     Test("mesh_random_color_03")
     DeleteAllPlots()
     CloseDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
+    SetDefaultPlotOptions(savedMeshAttrs)
     
 def TestCustomColor():
     TestSection("Testing custom color mode")
@@ -351,12 +420,12 @@ def TestCustomColor():
         
 def Main():
     TurnOffAllAnnotations()
+    TestRandomColor()
     TestCurve()
     TestPointMesh()
     TestGlobe()
     TestRect3d()
     TestAutoOpaqueFlag()
-    TestRandomColor()
     TestCustomColor()
 
 # Added to allow this test to be run with compression too.

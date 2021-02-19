@@ -191,10 +191,16 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //  Programmer: Sean Ahern
 //  Creation:   February 19, 2008
 //
+//  Modifications:
+//
+//    Alister Maguire, Fri Nov 13 14:07:54 PST 2020
+//    Changed nodesCritical to keepCellsWhole, and updated setting the
+//    clipper based on this variable.
+//
 // ****************************************************************************
 
 vtkUnstructuredGrid *
-avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool nodesCritical,
+avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool keepCellsWhole,
                                  vtkPlane *p1, vtkPlane *p2,
                                  vtkPlane *p3)
 {
@@ -221,7 +227,16 @@ avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool nodesCritical,
     clipper1->SetInputData(in);
     clipper1->SetClipFunction(funcs1);
     clipper1->SetInsideOut(true);
-    clipper1->SetRemoveWholeCells(nodesCritical);
+
+    if (keepCellsWhole)
+    {
+        clipper1->SetCellClipStrategyToKeepWhole();
+    }
+    else
+    {
+        clipper1->SetCellClipStrategyToRemovePartial();
+    }
+
     last = clipper1;
 
     if (p2 != NULL)
@@ -230,7 +245,16 @@ avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool nodesCritical,
         clipper2->SetInputConnection(last->GetOutputPort());
         clipper2->SetClipFunction(funcs2);
         clipper2->SetInsideOut(true);
-        clipper2->SetRemoveWholeCells(nodesCritical);
+
+        if (keepCellsWhole)
+        {
+            clipper2->SetCellClipStrategyToKeepWhole();
+        }
+        else
+        {
+            clipper2->SetCellClipStrategyToRemovePartial();
+        }
+
         last = clipper2;
     }
     if (p3 != NULL)
@@ -239,7 +263,16 @@ avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool nodesCritical,
         clipper3->SetInputConnection(last->GetOutputPort());
         clipper3->SetClipFunction(funcs3);
         clipper3->SetInsideOut(true);
-        clipper3->SetRemoveWholeCells(nodesCritical);
+
+        if (keepCellsWhole)
+        {
+            clipper3->SetCellClipStrategyToKeepWhole();
+        }
+        else
+        {
+            clipper3->SetCellClipStrategyToRemovePartial();
+        }
+
         last = clipper3;
     }
     last->Update();
@@ -370,18 +403,21 @@ avtClipFilter::ExecuteDataTree(avtDataRepresentation *inDR)
 //    we now have a way to show dangling bonds (periodic cases is
 //    another example) correctly, so we want to clip normally now.
 //
+//    Alister Maguire, Fri Nov 13 14:07:54 PST 2020
+//    Updated to handle the crinkle clip option.
+//
 // ****************************************************************************
 
 int
 avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
                                    ClipAttributes &atts, int domain, std::string label)
 {
-    // Gather global plane clipping information.
-    //bool nodesAreCritical = GetInput()->GetInfo().GetAttributes().NodesAreCritical();
-    // TODO: For now, set nodesAreCritical to false.  We can now handle
-    // partially-clipped bonds correctly in the molecule plot renderer.
-    bool nodesAreCritical = false;
-    int nDataSets = 0;
+    //
+    // Crinkle clip will keep zones that are intersected by the clip
+    // boundary intact.
+    //
+    bool crinkleClip = atts.GetCrinkleClip();
+    int nDataSets    = 0;
 
     if (atts.GetFuncType() == ClipAttributes::Plane)
     {
@@ -458,20 +494,20 @@ avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
             case 1:
                 // The inverse of the first plane.
                 outDS[nDataSets++] =
-                    ClipAgainstPlanes(inDS, nodesAreCritical,
+                    ClipAgainstPlanes(inDS, crinkleClip,
                                     inversePlanes[0]);
                 break;
             case 2:
                 // The first plane, and the inverse of the second plane.
                 outDS[nDataSets++] =
-                    ClipAgainstPlanes(inDS, nodesAreCritical,
+                    ClipAgainstPlanes(inDS, crinkleClip,
                                     inversePlanes[0],
                                     inversePlanes[1]);
                 break;
             case 3:
                 // The first plane, the second plane, and the inverse of the second plane.
                 outDS[nDataSets++] =
-                    ClipAgainstPlanes(inDS, nodesAreCritical,
+                    ClipAgainstPlanes(inDS, crinkleClip,
                                     inversePlanes[0],
                                     inversePlanes[1],
                                     inversePlanes[2]);
@@ -485,13 +521,14 @@ avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
             if (planeCount >= 1)
             {
                 // The first plane.
-                outDS[nDataSets++] = ClipAgainstPlanes(inDS, nodesAreCritical, planes[0]);
+                outDS[nDataSets++] =
+                    ClipAgainstPlanes(inDS, crinkleClip, planes[0]);
             }
             if (planeCount >= 2)
             {
                 // The inverse of the first plane, and the second plane.
                 outDS[nDataSets++] =
-                    ClipAgainstPlanes(inDS, nodesAreCritical,
+                    ClipAgainstPlanes(inDS, crinkleClip,
                                     inversePlanes[0], planes[1]);
             }
             if (planeCount >= 3)
@@ -499,7 +536,7 @@ avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
                 // The inverse of the first plane, the inverse of the second
                 // plane, and the third plane.
                 outDS[nDataSets++] =
-                    ClipAgainstPlanes(inDS, nodesAreCritical,
+                    ClipAgainstPlanes(inDS, crinkleClip,
                                     inversePlanes[0],
                                     inversePlanes[1], planes[2]);
             }
@@ -530,7 +567,16 @@ avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
         clipper->SetInputData(inDS);
         clipper->SetClipFunction(funcs);
         clipper->SetInsideOut(inverse);
-        clipper->SetRemoveWholeCells(nodesAreCritical);
+
+        if (crinkleClip)
+        {
+            clipper->SetCellClipStrategyToKeepWhole();
+        }
+        else
+        {
+            clipper->SetCellClipStrategyToRemovePartial();
+        }
+
         vtkUnstructuredGrid *ug = vtkUnstructuredGrid::New();
         clipper->SetOutput(ug);
         clipper->Update();
@@ -581,12 +627,6 @@ avtClipFilter::ComputeFastClip(vtkDataSet *inDS, vtkDataSet **outDS,
         return 1;
     }
 
-    //bool nodesAreCritical =
-    //    GetInput()->GetInfo().GetAttributes().NodesAreCritical();
-    // TODO: For now, set nodesAreCritical to false.  We can now handle
-    // partially-clipped bonds correctly in the molecule plot renderer.
-    bool nodesAreCritical = false;
-
     //
     // Set up and apply the clipping filters
     // 
@@ -609,7 +649,16 @@ avtClipFilter::ComputeFastClip(vtkDataSet *inDS, vtkDataSet **outDS,
         fastClipper->SetOutput(ug);
         fastClipper->SetClipFunction(ifuncs);
         fastClipper->SetInsideOut(inverse);
-        fastClipper->SetRemoveWholeCells(nodesAreCritical);
+
+        if (atts.GetCrinkleClip())
+        {
+            fastClipper->SetCellClipStrategyToKeepWhole();
+        }
+        else
+        {
+            fastClipper->SetCellClipStrategyToRemovePartial();
+        }
+
         fastClipper->Update();
         fastClipper->Delete();
 

@@ -5,6 +5,7 @@
 #ifndef PY_VECTORATTRIBUTES_H
 #define PY_VECTORATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <VectorAttributes.h>
 
 //

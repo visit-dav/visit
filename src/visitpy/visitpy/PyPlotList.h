@@ -5,6 +5,7 @@
 #ifndef PY_PLOTLIST_H
 #define PY_PLOTLIST_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PlotList.h>
 #include <visitpy_exports.h>
 

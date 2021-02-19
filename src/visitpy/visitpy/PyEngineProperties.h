@@ -5,6 +5,7 @@
 #ifndef PY_ENGINEPROPERTIES_H
 #define PY_ENGINEPROPERTIES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <EngineProperties.h>
 #include <visitpy_exports.h>
 

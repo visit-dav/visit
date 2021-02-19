@@ -1031,13 +1031,83 @@ avtBlueprintTreeCache::SetProtocol(const std::string &protocol)
     m_protocol = protocol;
 }
 
+//-----------------------------------------------------------------------------
+// This uses a mapping scheme created by ascent + conduit
+// Note: We will support explicit maps from the bp index in the future.
+// TODO: We should cache this, not regen every fetch
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+static void
+gen_domain_to_file_map(int num_domains,
+                       int num_files,
+                       Node &out)
+{
+    int num_domains_per_file = num_domains / num_files;
+    int left_overs = num_domains % num_files;
+
+    out["global_domains_per_file"].set(DataType::int32(num_files));
+    out["global_domain_offsets"].set(DataType::int32(num_files));
+    out["global_domain_to_file"].set(DataType::int32(num_domains));
+    
+    int32_array v_domains_per_file = out["global_domains_per_file"].value();
+    int32_array v_domains_offsets  = out["global_domain_offsets"].value();
+    int32_array v_domain_to_file   = out["global_domain_to_file"].value();
+    
+    // setup domains per file
+    for(int f=0; f < num_files; f++)
+    {
+        v_domains_per_file[f] = num_domains_per_file;
+        if( f < left_overs)
+            v_domains_per_file[f]+=1;
+    }
+
+    // prefix sum to calc offsets
+    for(int f=0; f < num_files; f++)
+    {
+        v_domains_offsets[f] = v_domains_per_file[f];
+        if(f > 0)
+            v_domains_offsets[f] += v_domains_offsets[f-1];
+    }
+    
+    // do assignment, create simple map
+    int f_idx = 0;
+    for(int d=0; d < num_domains; d++)
+    {
+        if(d >= v_domains_offsets[f_idx])
+            f_idx++;
+        v_domain_to_file[d] = f_idx;
+    }
+}
 
 //-------------------------------------------------------------------//
 std::string
 avtBlueprintTreeCache::GenerateFilePath(int tree_id) const
 {
-    // for now, we only support 1 tree per file.
-    int file_id = tree_id;
+    int file_id = -1;
+
+    if(m_num_trees == m_num_files)
+    {
+        file_id = tree_id;
+    }
+    else if(m_num_files == 1)
+    {
+        file_id = 0;
+    }
+    else
+    {
+        Node d2f_map;
+        gen_domain_to_file_map(m_num_trees,
+                                m_num_files,
+                                d2f_map);
+        int num_domains_per_file = m_num_trees / m_num_files;
+        int left_overs = m_num_trees % m_num_files;
+        int32_array v_domain_to_file = d2f_map["global_domain_to_file"].value();
+        file_id = v_domain_to_file[tree_id];
+    }
+
+    BP_PLUGIN_INFO( "tree_id: " << tree_id 
+                    << " ==> file_id: " << file_id);
+
     return Expand(m_file_pattern,file_id);
 }
 

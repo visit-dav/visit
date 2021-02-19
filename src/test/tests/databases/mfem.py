@@ -8,6 +8,12 @@
 #  Programmer: Cyrus Harrison
 #  Date:       Thu Jun 12 14:58:03 PDT 2014
 #
+#  Modifications:
+#    Brad Whitlock, Wed Sep  2 20:56:13 PDT 2020
+#    The MFEM reader now provides original cells so artificial mesh lines
+#    get removed. There's less of a point to seeing them here. Keep min/max
+#    refinement levels only. 
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("MFEM")
 
@@ -29,7 +35,7 @@ for f in input_meshs:
     AddPlot("Mesh","main")
     AddOperator("MultiresControl")
     SetActivePlots((0,1))
-    levels = [0,10,15,20]
+    levels = [0,20]
     if f.count("amr") > 0:
         levels = [0,5]
     for mres in levels:

@@ -227,11 +227,11 @@ class DATABASE_API avtFileFormat
     // and MTXX the void versions.
     //
     virtual void          GetCycles(std::vector<int>&) { return; };
-    virtual int           GetCycle(void) { return INVALID_CYCLE; };
-    virtual int           GetCycle(int) { return INVALID_CYCLE; };
+    virtual int           GetCycle(void);
+    virtual int           GetCycle(int);
     virtual void          GetTimes(std::vector<double>&) { return; };
-    virtual double        GetTime(void) { return INVALID_TIME; };
-    virtual double        GetTime(int) { return INVALID_TIME; };
+    virtual double        GetTime(void);
+    virtual double        GetTime(int);
 
     //
     // These methods are designed so that we can distinguish between
@@ -243,12 +243,8 @@ class DATABASE_API avtFileFormat
     // NOT to be trusted, but a plugin's guesses are. So, we need to know
     // the difference.
     //
-    virtual int           GetCycleFromFilename(const char *f) const
-                              { if (f[0] == '\0') return FORMAT_INVALID_CYCLE; 
-                                return GuessCycle(f); };
-    virtual double        GetTimeFromFilename(const char *f) const
-                              { if (f[0] == '\0') return FORMAT_INVALID_TIME; 
-                                return GuessTime(f); };
+    virtual int           GetCycleFromFilename(const char *f) const;
+    virtual double        GetTimeFromFilename(const char *f) const;
 
     void       AddMeshToMetaData(avtDatabaseMetaData *, std::string,
                                  avtMeshType, const double * = NULL, int = 1,

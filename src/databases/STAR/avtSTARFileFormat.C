@@ -41,7 +41,6 @@
 #include <avtSTARFileFormat.h>
 #include <avtDatabaseMetaData.h>
 #include <avtMeshMetaData.h>
-#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <Expression.h>
 #include <ImproperUseException.h>

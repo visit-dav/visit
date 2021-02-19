@@ -10,7 +10,7 @@
 #define AVT_MFIXCDF_FILE_FORMAT_H
 
 #include <avtSTMDFileFormat.h>
-#include <netcdfcpp.h>
+#include <netcdf.h>
 
 #include <string>
 #include <set>
@@ -41,7 +41,7 @@ class vtkUnsignedCharArray;
 class avtMFIXCDFFileFormat : public avtSTMDFileFormat
 {
 public:
-    avtMFIXCDFFileFormat(const char *, DBOptionsAttributes *);
+    avtMFIXCDFFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtMFIXCDFFileFormat();
 
     virtual double GetTime(void);
@@ -86,17 +86,17 @@ private:
     void               decompose_domains(int, int *, int *, int *);
     void               get_limit(int, int, int, vtkDoubleArray *,
                                  int *, int *, double **);
-    void               getBlockOfDoubles1D(NcFile* file,
+    void               getBlockOfDoubles1D(int ncid,
                                            const char* varname,
                                            double* data,
                                            long offset, int n);
-    void               getBlockOfFloats3D(NcFile* file,
+    void               getBlockOfFloats3D(int ncid,
                                           const char* varname,
                                           float* data,
                                           long iOffset, int iN,
                                           long jOffset, int jN,
                                           long kOffset, int kN);
-    void               getBlockOfInts3D(NcFile* file,
+    void               getBlockOfInts3D(int ncid,
                                         const char* varname,
                                         int* data,
                                         long iOffset, int iN,
@@ -108,7 +108,7 @@ private:
 
     // These members are initialized in the constructor
     std::string*       filePath;
-    NcFile*            dataFile;
+    int                dataFile;
     double             timeNow;
     int                numXDomains;
     int                numYDomains;

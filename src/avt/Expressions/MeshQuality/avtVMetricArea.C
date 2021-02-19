@@ -37,21 +37,28 @@
 //    Hank Childs, Thu Oct 17 08:07:53 PDT 2002
 //    Update for new verdict interface.
 //
+//    Eddie Rusu, Wed Feb 19 16:33:46 PST 2020
+//    Returns 0 instead of -1 if no verdict or unchecked cell.
+//
 // ****************************************************************************
 
 double avtVMetricArea::Metric (double coords[][3], int type)
 {
+    double out_value = 0.0;
 #ifdef HAVE_VERDICT
     switch(type)
     {
         case VTK_TRIANGLE:
-            return v_tri_area(3, coords);
-        
+            out_value = v_tri_area(3, coords);
+            break;
         case VTK_QUAD:
-            return v_quad_area(4, coords);
+            out_value = v_quad_area(4, coords);
+            break;
+        default:
+            out_value = 0.;
     }
 #endif
-    return -1;
+    return out_value;
 }
 
 

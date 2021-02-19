@@ -5,6 +5,7 @@
 #ifndef PY_DISPLACEATTRIBUTES_H
 #define PY_DISPLACEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <DisplaceAttributes.h>
 
 //

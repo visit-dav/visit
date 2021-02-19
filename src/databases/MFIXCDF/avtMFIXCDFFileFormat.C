@@ -51,28 +51,57 @@
 #define cbrt(x) (pow(x, 1.0/3.0))
 #endif
 
-using std::auto_ptr;
 using std::vector;
 using std::ostringstream;
 
-void checkFile(NcFile* ncFile, const char* fname, int iSz, int jSz, int kSz)
+void checkFile(int ncid, const char* fname, int iSz, int jSz, int kSz)
 {
-    NcDim* iDim= ncFile->get_dim("x");
-    if (iDim->size() != iSz-1)
+    int dimid;
+    size_t dimlen;
+
+    if (nc_inq_dimid(ncid, "x", &dimid) != NC_NOERR)
+    {
+        debug5 << "No x dimension" << endl;
+        EXCEPTION1(InvalidFilesException,fname);
+    }
+    if (nc_inq_dimlen(ncid, dimid, &dimlen) != NC_NOERR)
+    {
+        debug5 << "x dimension has no size" << endl;
+        EXCEPTION1(InvalidFilesException,fname);
+    }
+    if (dimlen != iSz-1)
     {
         debug5 << "File has wrong x dimension size" << endl;
         EXCEPTION1(InvalidFilesException,fname);
     }
 
-    NcDim* jDim= ncFile->get_dim("y");
-    if (jDim->size() != jSz-1)
+    if (nc_inq_dimid(ncid, "y", &dimid) != NC_NOERR)
+    {
+        debug5 << "No y dimension" << endl;
+        EXCEPTION1(InvalidFilesException,fname);
+    }
+    if (nc_inq_dimlen(ncid, dimid, &dimlen) != NC_NOERR)
+    {
+        debug5 << "y dimension has no size" << endl;
+        EXCEPTION1(InvalidFilesException,fname);
+    }
+    if (dimlen != jSz-1)
     {
         debug5 << "File has wrong y dimension size" << endl;
         EXCEPTION1(InvalidFilesException,fname);
     }
 
-    NcDim* kDim= ncFile->get_dim("z");
-    if (kDim->size() == 1)
+    if (nc_inq_dimid(ncid, "z", &dimid) != NC_NOERR)
+    {
+        debug5 << "No z dimension" << endl;
+        EXCEPTION1(InvalidFilesException,fname);
+    }
+    if (nc_inq_dimlen(ncid, dimid, &dimlen) != NC_NOERR)
+    {
+        debug5 << "z dimension has no size" << endl;
+        EXCEPTION1(InvalidFilesException,fname);
+    }
+    if (dimlen == 1)
     {
         if (kSz != 1)
         {
@@ -82,7 +111,7 @@ void checkFile(NcFile* ncFile, const char* fname, int iSz, int jSz, int kSz)
     }
     else
     {
-        if (kDim->size() != kSz-1)
+        if (dimlen != kSz-1)
         {
             debug5 << "File has wrong z dimension size" << endl;
             EXCEPTION1(InvalidFilesException,fname);
@@ -91,16 +120,22 @@ void checkFile(NcFile* ncFile, const char* fname, int iSz, int jSz, int kSz)
     debug5 << "checkFile succeeded for " << fname << endl;
 }
 
-NcFile* openFile( const char* filename )
+int openFile( const char* filename )
 {
-    NcFile* ncFile= new NcFile(filename, NcFile::ReadOnly);
-    if (!ncFile->is_valid())
+    int mode = NC_NOWRITE | NC_64BIT_OFFSET | NC_NETCDF4 | NC_CLASSIC_MODEL;
+    int ncid;
+    if (nc_open(filename, mode, &ncid) != NC_NOERR)
     {
-        debug5 << "NcFile constructor failed for " << filename << endl;
+        debug5 << "Failed to open " << filename << endl;
         EXCEPTION1(InvalidFilesException,filename);
     }
 
-    int nAttr= ncFile->num_atts();
+    int nAttr;
+    if (nc_inq_natts(ncid, &nAttr) != NC_NOERR)
+    {
+        debug5 << "Failed to get attribute count" << endl;
+        EXCEPTION1(InvalidFilesException,filename);
+    }
     if (nAttr != 0)
     {
         debug5 << "Unexpectedly found " << nAttr <<
@@ -108,44 +143,56 @@ NcFile* openFile( const char* filename )
         EXCEPTION1(InvalidFilesException,filename);
     }
 
-    NcDim* iDim= ncFile->get_dim("x");
-    if (!iDim->is_valid())
+    int dimid;
+    size_t dimlen;
+
+    if (nc_inq_dimid(ncid, "x", &dimid) != NC_NOERR)
     {
-        debug5 << "Invalid dim 'x'" << endl;
+        debug5 << "No x dimension" << endl;
         EXCEPTION1(InvalidFilesException,filename);
     }
-    debug5 << "Size of " << filename << " " << iDim->name()
-           << " is " << iDim->size() << endl;
-    if (iDim->size()<2)
+    if (nc_inq_dimlen(ncid, dimid, &dimlen) != NC_NOERR)
+    {
+        debug5 << "x dimension has no size" << endl;
+        EXCEPTION1(InvalidFilesException,filename);
+    }
+    debug5 << "Size of " << filename << " x  is " << dimlen << endl;
+    if (dimlen<2)
     {
         debug5 << "dimension of 1 in x is too small" << endl;
         EXCEPTION1(InvalidFilesException,filename);
     }
 
-    NcDim* jDim= ncFile->get_dim("y");
-    if (!jDim->is_valid())
+    if (nc_inq_dimid(ncid, "y", &dimid) != NC_NOERR)
     {
-        debug5 << "Invalid dim 'y'" << endl;
+        debug5 << "No y dimension" << endl;
         EXCEPTION1(InvalidFilesException,filename);
     }
-    debug5 << "Size of " << filename << " " << jDim->name()
-           << " is " << jDim->size() << endl;
-    if (jDim->size()<2)
+    if (nc_inq_dimlen(ncid, dimid, &dimlen) != NC_NOERR)
+    {
+        debug5 << "y dimension has no size" << endl;
+        EXCEPTION1(InvalidFilesException,filename);
+    }
+    debug5 << "Size of " << filename << " y  is " << dimlen << endl;
+    if (dimlen<2)
     {
         debug5 << "dimension of 1 in y is too small" << endl;
         EXCEPTION1(InvalidFilesException,filename);
     }
 
-    NcDim* kDim= ncFile->get_dim("z");
-    if (!kDim->is_valid())
+    if (nc_inq_dimid(ncid, "z", &dimid) != NC_NOERR)
     {
-        debug5 << "Invalid dim 'z'" << endl;
+        debug5 << "No z dimension" << endl;
         EXCEPTION1(InvalidFilesException,filename);
     }
-    debug5 << "Size of " << filename << " " << kDim->name()
-           << " is " << kDim->size() << endl;
+    if (nc_inq_dimlen(ncid, dimid, &dimlen) != NC_NOERR)
+    {
+        debug5 << "z dimension has no size" << endl;
+        EXCEPTION1(InvalidFilesException,filename);
+    }
+    debug5 << "Size of " << filename << " z  is " << dimlen << endl;
 
-    return ncFile;
+    return ncid;
 }
 
 // ****************************************************************************
@@ -156,7 +203,7 @@ NcFile* openFile( const char* filename )
 //
 // ****************************************************************************
 
-avtMFIXCDFFileFormat::avtMFIXCDFFileFormat(const char *filename, DBOptionsAttributes *readOpts)
+avtMFIXCDFFileFormat::avtMFIXCDFFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1)
 {
     // INITIALIZE DATA MEMBERS
@@ -176,9 +223,43 @@ avtMFIXCDFFileFormat::avtMFIXCDFFileFormat(const char *filename, DBOptionsAttrib
     // Open the file, or try
     dataFile= openFile(filename);
     filePath= new std::string(filename);
-    iSz= dataFile->get_dim("x")->size()+1;
-    jSz= dataFile->get_dim("y")->size()+1;
-    kSz= dataFile->get_dim("z")->size()+1;
+    int xdimid, ydimid, zdimid;
+    if (nc_inq_dimid(dataFile, "x", &xdimid) != NC_NOERR)
+    {
+        debug5 << "Missing x dimension" << endl;
+        EXCEPTION1(InvalidFilesException,filePath->c_str());
+    }
+    if (nc_inq_dimid(dataFile, "y", &ydimid) != NC_NOERR)
+    {
+        debug5 << "Missing y dimension" << endl;
+        EXCEPTION1(InvalidFilesException,filePath->c_str());
+    }
+    if (nc_inq_dimid(dataFile, "z", &zdimid) != NC_NOERR)
+    {
+        debug5 << "Missing z dimension" << endl;
+        EXCEPTION1(InvalidFilesException,filePath->c_str());
+    }
+
+    size_t xdimlen, ydimlen, zdimlen;
+    if (nc_inq_dimlen(dataFile, xdimid, &xdimlen) != NC_NOERR)
+    {
+        debug5 << "No size for x dimension" << endl;
+        EXCEPTION1(InvalidFilesException,filePath->c_str());
+    }
+    if (nc_inq_dimlen(dataFile, ydimid, &ydimlen) != NC_NOERR)
+    {
+        debug5 << "No size for y dimension" << endl;
+        EXCEPTION1(InvalidFilesException,filePath->c_str());
+    }
+    if (nc_inq_dimlen(dataFile, zdimid, &zdimlen) != NC_NOERR)
+    {
+        debug5 << "No size for z dimension" << endl;
+        EXCEPTION1(InvalidFilesException,filePath->c_str());
+    }
+
+    iSz= xdimlen+1;
+    jSz= ydimlen+1;
+    kSz= zdimlen+1;
     if (kSz==2)
     {
         kSz= 1; // special case of 2D
@@ -193,14 +274,31 @@ avtMFIXCDFFileFormat::avtMFIXCDFFileFormat(const char *filename, DBOptionsAttrib
     par_rank = PAR_Rank();
 
     // Get coordCode, which specifies coordinate system type
-    NcDim* coordDim= dataFile->get_dim("coordinates");
-    if (!coordDim->is_valid() || coordDim->size()!=1)
+    int coordDim;
+    if (nc_inq_dimid(dataFile, "coordinates", &coordDim) != NC_NOERR)
+    {
+        debug5 << "Missing coordinates dimension" << endl;
+        EXCEPTION1(InvalidFilesException,filePath->c_str());
+    }
+    size_t coorddimlen;
+    if (nc_inq_dimlen(dataFile, coordDim, &coorddimlen) != NC_NOERR)
+    {
+        debug5 << "No size for coordinates dimension" << endl;
+        EXCEPTION1(InvalidFilesException,filePath->c_str());
+    }
+    if (coorddimlen!=1)
     {
         debug5 << "Invalid dim 'coordinates' or size!=1" << endl;
         EXCEPTION1(InvalidFilesException,filePath->c_str());
     }
-    NcVar* coordVar= dataFile->get_var("coordinates");
-    if (!coordVar->get(&coordCode,1L))
+    int coordVar;
+    if (nc_inq_varid(dataFile, "coordinates", &coordVar) != NC_NOERR)
+    {
+        debug5 << "Missing coordinates variable" << endl;
+        EXCEPTION1(InvalidFilesException,filePath->c_str());
+    }
+    size_t coordStart[] = {0};
+    if (nc_get_var1_int(dataFile, coordVar, coordStart, &coordVar) != NC_NOERR)
     {
         debug5 << "'coordinates' data is not an int" << endl;
         EXCEPTION1(InvalidFilesException,filePath->c_str());
@@ -223,13 +321,14 @@ avtMFIXCDFFileFormat::avtMFIXCDFFileFormat(const char *filename, DBOptionsAttrib
     //     }
 
     // We will keep a copy of the time.
-    NcVar* timeVar= dataFile->get_var("t");
-    if (!timeVar)
+    int timeVar;
+    if (nc_inq_varid(dataFile, "t", &timeVar) != NC_NOERR)
     {
         debug5 << "Data file has no 'time' variable" << endl;
         EXCEPTION1(InvalidFilesException,filename);
     }
-    if (!(timeVar->get(&timeNow,1L)))
+    size_t timeStart[] = {0};
+    if (nc_get_var1_double(dataFile, timeVar, timeStart, &timeNow) != NC_NOERR)
     {
         debug5 << "failed to read 1 double from the 'time' variable" << endl;
         EXCEPTION2(UnexpectedValueException,"get failed","t");
@@ -246,7 +345,7 @@ avtMFIXCDFFileFormat::avtMFIXCDFFileFormat(const char *filename, DBOptionsAttrib
 avtMFIXCDFFileFormat::~avtMFIXCDFFileFormat()
 {
     debug5 << "destructor for time " << timeNow << endl;
-    delete dataFile;
+    nc_close(dataFile);
     delete filePath;
 }
 
@@ -299,8 +398,8 @@ avtMFIXCDFFileFormat::FreeUpResources(void)
         Lz->Delete();
         Lz= NULL;
     }
-    delete dataFile;
-    dataFile= NULL;
+    nc_close(dataFile);
+    dataFile= -1;
 }
 
 double
@@ -358,7 +457,7 @@ avtMFIXCDFFileFormat::GetAuxiliaryData(const char * var,
         int *matnos = NULL;
         int nmats = 0;
         char** names = NULL;
-        NcFile* meshFile = NULL;
+        int meshFile = -1;
         TRY
         {
             int dims[3] = {1,1,1}, ndims = 1, nzvals = 0;
@@ -411,7 +510,7 @@ avtMFIXCDFFileFormat::GetAuxiliaryData(const char * var,
                 char* ind= strrchr(meshFileName,'_');
                 *ind= '\0'; // string now ends before '_'
                 strncat(meshFileName,"_MESH.nc",sizeof(meshFileName)-1);
-                meshFile= openFile(meshFileName);
+                meshFile = openFile(meshFileName);
                 checkFile(meshFile, meshFileName, iSz, jSz, kSz);
                 getBlockOfInts3D( meshFile, "flag", matlist,
                                   offsets[0], widths[0]+2,
@@ -445,7 +544,7 @@ avtMFIXCDFFileFormat::GetAuxiliaryData(const char * var,
                                               );
 
             // Clean up.
-            delete meshFile;
+            nc_close(meshFile);
             delete [] matlist;
             delete [] matnos;
             for(int i = 0; i < nmats; ++i) delete [] names[i];
@@ -457,7 +556,7 @@ avtMFIXCDFFileFormat::GetAuxiliaryData(const char * var,
         CATCH(InvalidFilesException)
         {
             // Clean up.
-            delete meshFile;
+            nc_close(meshFile);
             delete [] matlist;
             delete [] matnos;
             for(int i = 0; i < nmats; ++i) delete [] names[i];
@@ -468,7 +567,7 @@ avtMFIXCDFFileFormat::GetAuxiliaryData(const char * var,
         CATCHALL
         {
             // Clean up.
-            delete meshFile;
+            nc_close(meshFile);
             delete [] matlist;
             delete [] matnos;
             for(int i = 0; i < nmats; ++i) delete [] names[i];
@@ -765,7 +864,6 @@ avtMFIXCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->name = "Mesh";
 
     checkCoordArrays();
-    int nVar= dataFile->num_vars();
 
     if (coordCode==0)
         mesh->meshType = AVT_RECTILINEAR_MESH;
@@ -817,23 +915,59 @@ avtMFIXCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     AddScalarVarToMetaData(md, "flagclass_var", "Mesh", AVT_ZONECENT);
 
     std::set<std::string> varNames;
+    int nVar;
+    int vars[NC_MAX_VARS];
+    if (nc_inq_varids(dataFile, &nVar, vars) != NC_NOERR)
+    {
+        debug5 << "Failed to get variable ids" << endl;
+        EXCEPTION1(InvalidFilesException,filePath->c_str());
+    }
+    char t[NC_MAX_NAME + 1];
     for (int i=0; i<nVar; i++)
     {
-        NcVar* v= dataFile->get_var(i);
-        NcToken t= v->name();
+        int var = vars[i];
+        if (nc_inq_varname(dataFile, var, t) != NC_NOERR)
+        {
+            debug5 << "Failed to get variable name" << endl;
+            EXCEPTION1(InvalidFilesException,filePath->c_str());
+        }
+        nc_type vartype;
+        if (nc_inq_vartype(dataFile, var, &vartype) != NC_NOERR)
+        {
+            debug5 << "Failed to get variable type" << endl;
+            EXCEPTION1(InvalidFilesException,filePath->c_str());
+        }
         std::string typeNames[]= {"nat","byte","char","short","int","float","double"};
-        debug5 << "Variable " << v->name() << " is of type "
-               << typeNames[v->type()] << endl;
+        debug5 << "Variable " << t << " is of type "
+               << typeNames[vartype] << endl;
         if (strcmp(t,"x") && strcmp(t,"y") && strcmp(t,"z")
                 && strcmp(t,"coordinates") && strcmp(t,"t"))
         {
             // Well, I guess this must be a real variable, then.
-            AddScalarVarToMetaData(md, v->name(), "Mesh", AVT_ZONECENT);
-            varNames.insert(v->name());
-            for (int l=0; l<v->num_dims(); l++)
+            AddScalarVarToMetaData(md, t, "Mesh", AVT_ZONECENT);
+            varNames.insert(t);
+            int ndims;
+            if (nc_inq_varndims(dataFile, var, &ndims) != NC_NOERR)
             {
-                debug5 << "Variable " << v->name() << " dim " << l << " size is "
-                       << v->get_dim(l)->size() << endl;
+                debug5 << "Failed to get variable dimension count" << endl;
+                EXCEPTION1(InvalidFilesException,filePath->c_str());
+            }
+            int dimids[NC_MAX_VAR_DIMS];
+            if (nc_inq_vardimid(dataFile, var, dimids) != NC_NOERR)
+            {
+                debug5 << "Failed to get variable dimension ids" << endl;
+                EXCEPTION1(InvalidFilesException,filePath->c_str());
+            }
+            for (int l=0; l<ndims; l++)
+            {
+                size_t dimlen;
+                if (nc_inq_dimlen(dataFile, dimids[l], &dimlen) != NC_NOERR)
+                {
+                    debug5 << "Failed to get variable dimension len" << endl;
+                    EXCEPTION1(InvalidFilesException,filePath->c_str());
+                }
+                debug5 << "Variable " << t << " dim " << l << " size is "
+                       << dimlen << endl;
             }
         }
     }
@@ -1449,14 +1583,12 @@ avtMFIXCDFFileFormat::GetVectorVar(int domain, const char *varname)
         nzvals= (widths[2]+3);
     }
 
-    // This trick with auto_ptr makes xvec, yvec and zvec get deleted
-    // when they go out of scope.
-    auto_ptr< vector<float> > xvec(new vector<float>(totZones));
-    float* xdata= &(*xvec)[0];
-    auto_ptr< vector<float> > yvec(new vector<float>(totZones));
-    float* ydata= &(*yvec)[0];
-    auto_ptr< vector<float> > zvec(new vector<float>(totZones));
-    float* zdata= &(*zvec)[0];
+    vector<float> xvec(totZones);
+    vector<float> yvec(totZones);
+    vector<float> zvec(totZones);
+    float *xdata = &xvec[0];
+    float *ydata = &yvec[0];
+    float *zdata = &zvec[0];
 
     if (!strncmp(varname,"Vel_",4))
     {
@@ -1572,26 +1704,21 @@ avtMFIXCDFFileFormat::GetVectorVar(int domain, const char *varname)
     return arr;
 }
 
-//void avtMFIXCDFFileFormat::getBlockOfDoubles1D(NcVar* in, vtkDoubleArray *v,
-//                        long offset, int n)
-void avtMFIXCDFFileFormat::getBlockOfDoubles1D(NcFile* file,
+void avtMFIXCDFFileFormat::getBlockOfDoubles1D(int ncid,
         const char* varname,
         double* data,
         long offset, int n)
 {
-    NcVar* inVar= file->get_var(varname);
-    if (!inVar)
+    int varid;
+    if (nc_inq_varid(ncid, varname, &varid) != NC_NOERR)
     {
         debug5 << "Data file nas no variable " << varname << endl;
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    if (!inVar->set_cur(offset))
-    {
-        debug5 << "set_cur failed with offset " << offset << endl;
-        EXCEPTION2(UnexpectedValueException,"set_cur failed",(int)offset);
-    }
-    if (!inVar->get(data,n))
+    size_t start[] = {static_cast<size_t>(offset)};
+    size_t count[] = {static_cast<size_t>(n)};
+    if (nc_get_vara_double(ncid, varid, start, count, data) != NC_NOERR)
     {
         debug5 << "get failed with offset,n values " << offset
                << " " << n << endl;
@@ -1601,34 +1728,28 @@ void avtMFIXCDFFileFormat::getBlockOfDoubles1D(NcFile* file,
 //      << inVar->name() << endl;
 }
 
-void avtMFIXCDFFileFormat::getBlockOfFloats3D(NcFile* file,
+void avtMFIXCDFFileFormat::getBlockOfFloats3D(int ncid,
         const char* varname,
         float *data,
         long iOffset, int iN,
         long jOffset, int jN,
         long kOffset, int kN)
 {
-    NcVar* inVar= file->get_var(varname);
-    if (!inVar)
+    int varid;
+    if (nc_inq_varid(ncid, varname, &varid) != NC_NOERR)
     {
         debug5 << "Data file nas no variable " << varname << endl;
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    debug5 << "Setting cur for " << inVar->name() << " to " << kOffset
+    debug5 << "Setting cur for " << varname << " to " << kOffset
            << " " << jOffset << " " << iOffset << endl;
-    if (!(inVar->set_cur(0,kOffset,jOffset,iOffset)))
-    {
-        debug5 << "Failure doing set_cur of " << inVar->name() << " to "
-               << kOffset << " " << jOffset << " " << iOffset << endl;
-        ostringstream oss;
-        oss << kOffset << " " << jOffset << " " << iOffset;
-        EXCEPTION2(UnexpectedValueException,"set_cur failed",oss.str());
-    }
+    size_t start[] = {static_cast<size_t>(kOffset), static_cast<size_t>(jOffset), static_cast<size_t>(iOffset)};
+    size_t count[] = {static_cast<size_t>(kN), static_cast<size_t>(jN), static_cast<size_t>(iN)};
     debug5 << "Getting " << kN << " " << jN << " " << iN << endl;
-    if (!(inVar->get(data, 1, kN, jN, iN)))
+    if (nc_get_vara_float(ncid, varid, start, count, data) != NC_NOERR)
     {
-        debug5 << "Failure doing get from " << inVar->name() << " of "
+        debug5 << "Failure doing get from " << varname << " of "
                << kN << " " << jN << " " << iN << endl;
         ostringstream oss;
         oss << kN << " " << jN << " " << iN;
@@ -1638,15 +1759,15 @@ void avtMFIXCDFFileFormat::getBlockOfFloats3D(NcFile* file,
            << data[2] << " ..." << endl;
 }
 
-void avtMFIXCDFFileFormat::getBlockOfInts3D(NcFile* file,
+void avtMFIXCDFFileFormat::getBlockOfInts3D(int ncid,
         const char* varname,
         int *data,
         long iOffset, int iN,
         long jOffset, int jN,
         long kOffset, int kN)
 {
-    NcVar* inVar= file->get_var(varname);
-    if (!inVar)
+    int varid;
+    if (nc_inq_varid(ncid, varname, &varid) != NC_NOERR)
     {
         debug5 << "Data file nas no variable " << varname << endl;
         EXCEPTION1(InvalidVariableException, varname);
@@ -1654,18 +1775,12 @@ void avtMFIXCDFFileFormat::getBlockOfInts3D(NcFile* file,
 
 //   debug5 << "Setting cur to " << kOffset << " " << jOffset << " "
 //      << iOffset << endl;
-    if (!(inVar->set_cur(0,kOffset,jOffset,iOffset)))
-    {
-        debug5 << "Failure doing set_cur of " << inVar->name() << " to "
-               << kOffset << " " << jOffset << " " << iOffset << endl;
-        ostringstream oss;
-        oss << kOffset << " " << jOffset << " " << iOffset;
-        EXCEPTION2(UnexpectedValueException,"set_cur failed",oss.str());
-    }
+    size_t start[] = {static_cast<size_t>(kOffset), static_cast<size_t>(jOffset), static_cast<size_t>(iOffset)};
+    size_t count[] = {static_cast<size_t>(kN), static_cast<size_t>(jN), static_cast<size_t>(iN)};
 //   debug5 << "Getting " << kN << " " << jN << " " << iN << endl;
-    if (!(inVar->get(data, 1, kN, jN, iN)))
+    if (nc_get_vara_int(ncid, varid, start, count, data) != NC_NOERR)
     {
-        debug5 << "Failure doing get from " << inVar->name() << " of "
+        debug5 << "Failure doing get from " << varname << " of "
                << kN << " " << jN << " " << iN << endl;
         ostringstream oss;
         oss << kN << " " << jN << " " << iN;

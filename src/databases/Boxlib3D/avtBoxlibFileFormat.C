@@ -29,6 +29,16 @@
 //   Code is currently in place to check these assumptions where possible,
 //   and issue warnings or throw exceptions as appropriate.
 //
+//   We read BoxLib data via the BoxLib library. A VisMF BoxLib object is
+//   instantiated to read the data into. AFAICT, that object, once instantiated,
+//   containes all variables from all boxes in memory. So, this isn't an
+//   interface that allows VisIt to read only the data needed in any given plot.
+//   It reads everything even if only some of the data is ever used.
+//
+//   Next, although BoxLib does have a compile-time control (-DBL_USE_FLOAT and
+//   -DBL_USE_DOUBLE) to set the internal precision BoxLib uses to 32 or 64 bit,
+//   VisIt has only ever compiled the default which is 64 bit. This means that
+//   VisIt has always only ever instantiated a double-precision VisMF object.
 // **************************************************************************//
 
 // It is necessary to define BL_USE_MPI for Boxlib to avoid collision of
@@ -49,8 +59,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
-#include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
@@ -1064,6 +1074,8 @@ AVTBOXLIBFILEFORMAT::ReadHeader(void)
 //    Hank Childs, Fri Oct 23 09:53:07 PDT 2009
 //    Fix gap between patches caused by floating point precision.
 //
+//    Mark C. Miller, Mon Jan  4 11:30:41 PST 2021
+//    Switch from vtkFloatArray to vtkDoubleArray (see note at top of file)
 // ****************************************************************************
 
 vtkDataSet *
@@ -1081,15 +1093,15 @@ AVTBOXLIBFILEFORMAT::CreateGrid(double lo[BL_SPACEDIM], double hi[BL_SPACEDIM], 
 
     rg->SetDimensions(steps);
 
-    vtkFloatArray  *xcoord = vtkFloatArray::New();
-    vtkFloatArray  *ycoord = vtkFloatArray::New();
-    vtkFloatArray  *zcoord = vtkFloatArray::New();
+    vtkDoubleArray  *xcoord = vtkDoubleArray::New();
+    vtkDoubleArray  *ycoord = vtkDoubleArray::New();
+    vtkDoubleArray  *zcoord = vtkDoubleArray::New();
 
     xcoord->SetNumberOfTuples(steps[0]);
     ycoord->SetNumberOfTuples(steps[1]);
     zcoord->SetNumberOfTuples(steps[2]);
 
-    float *ptr = xcoord->GetPointer(0);
+    double *ptr = xcoord->GetPointer(0);
     for (i = 0; i < steps[0]; ++i)
         ptr[i] = (lo[0] + i * delta[0]);
     ptr[steps[0]-1] = hi[0];
@@ -1229,6 +1241,8 @@ AVTBOXLIBFILEFORMAT::GetDimensions(int *dims, double *lo, double *hi,
 //    Gunther H. Weber, Mon Oct  4 11:06:18 PDT 2010
 //    Only get reference to fab. (BoxLib no longer provides a copy constructor.
 //
+//    Mark C. Miller, Mon Jan  4 11:30:41 PST 2021
+//    Switch from vtkFloatArray to vtkDoubleArray (see note at top of file)
 // ****************************************************************************
 
 vtkDataArray *
@@ -1295,14 +1309,14 @@ AVTBOXLIBFILEFORMAT::GetVar(int patch, const char *var_name)
         zorigin = len[2]-1 - dims[2];
 #endif
 
-    vtkFloatArray *farr = vtkFloatArray::New();
+    vtkDoubleArray *darr = vtkDoubleArray::New();
 #if BL_SPACEDIM==2
-    farr->SetNumberOfTuples(dims[0] * dims[1]);
+    darr->SetNumberOfTuples(dims[0] * dims[1]);
 #elif BL_SPACEDIM==3
-    farr->SetNumberOfTuples(dims[0] * dims[1] * dims[2]);
+    darr->SetNumberOfTuples(dims[0] * dims[1] * dims[2]);
 #endif
 
-    float *fptr = farr->GetPointer(0);
+    double *dptr = darr->GetPointer(0);
 
     // We need to index in the same box that the data is defined on,
     // so we need to offset all of our indexes by the lower box corner.
@@ -1322,14 +1336,14 @@ AVTBOXLIBFILEFORMAT::GetVar(int patch, const char *var_name)
             for (x = 0; x < dims[0]; x++)
             {
                 pos[0] = x + offset[0] + xorigin;
-                *(fptr++) = fab(pos);
+                *(dptr++) = fab(pos);
             }
         }
 #if BL_SPACEDIM==3
     }
 #endif
 
-    return farr;
+    return darr;
 }
 
 
@@ -1371,6 +1385,8 @@ AVTBOXLIBFILEFORMAT::GetVar(int patch, const char *var_name)
 //    Work with pointers to fabs since BoxLib no longer provides copy
 //    construcotr.
 //
+//    Mark C. Miller, Mon Jan  4 11:30:41 PST 2021
+//    Switch from vtkFloatArray to vtkDoubleArray (see note at top of file)
 // ****************************************************************************
 
 vtkDataArray *
@@ -1448,15 +1464,15 @@ AVTBOXLIBFILEFORMAT::GetVectorVar(int patch, const char *var_name)
         zorigin = len[2]-1 - dims[2];
 #endif
 
-    vtkFloatArray *farr = vtkFloatArray::New();
-    farr->SetNumberOfComponents(3);
+    vtkDoubleArray *darr = vtkDoubleArray::New();
+    darr->SetNumberOfComponents(3);
 #if BL_SPACEDIM==2
-    farr->SetNumberOfTuples(dims[0] * dims[1]);
+    darr->SetNumberOfTuples(dims[0] * dims[1]);
 #elif BL_SPACEDIM==3
-    farr->SetNumberOfTuples(dims[0] * dims[1] * dims[2]);
+    darr->SetNumberOfTuples(dims[0] * dims[1] * dims[2]);
 #endif
 
-    float *fptr = farr->GetPointer(0);
+    double *dptr = darr->GetPointer(0);
 
     // We need to index in the same box that the data is defined on,
     // so we need to offset all of our indexes by the lower box corner.
@@ -1480,12 +1496,12 @@ AVTBOXLIBFILEFORMAT::GetVectorVar(int patch, const char *var_name)
             {
                 pos[0] = x + offset[0] + xorigin;
 
-                *(fptr++) = (*(fab[0]))(pos);
-                *(fptr++) = (*(fab[1]))(pos);
+                *(dptr++) = (*(fab[0]))(pos);
+                *(dptr++) = (*(fab[1]))(pos);
 #if BL_SPACEDIM==2
-                *(fptr++) = 0.;
+                *(dptr++) = 0.;
 #elif BL_SPACEDIM==3
-                *(fptr++) = (*(fab[2]))(pos);
+                *(dptr++) = (*(fab[2]))(pos);
 #endif
             }
         }
@@ -1493,7 +1509,7 @@ AVTBOXLIBFILEFORMAT::GetVectorVar(int patch, const char *var_name)
     }
 #endif
 
-    return farr;
+    return darr;
 }
 
 
@@ -2043,6 +2059,8 @@ AVTBOXLIBFILEFORMAT::GetAuxiliaryData(const char *var, int dom,
 //    Kathleen Bonnell, Fri Apr 23 10:36:54 MST 2010
 //    Remove redundant line of code.
 //
+//    Mark C. Miller, Mon Jan  4 11:30:41 PST 2021
+//    Switch from vtkFloatArray to vtkDoubleArray (see note at top of file)
 // ****************************************************************************
 
 void *
@@ -2082,24 +2100,24 @@ AVTBOXLIBFILEFORMAT::GetMaterial(const char *var, int patch,
     vector<int> mix_mat;
     vector<int> mix_next;
     vector<int> mix_zone;
-    vector<float> mix_vf;
+    vector<float> mix_vf; // avtMaterial handles only float precision
 
     // Get the material fractions
-    vector<vtkFloatArray *> floatArrays(nMaterials);
-    vector<float *> mats(nMaterials);
+    vector<vtkDoubleArray *> doubleArrays(nMaterials);
+    vector<double *> mats(nMaterials);
     if (varnames_for_materials == none)
     {
         EXCEPTION1(ImproperUseException, "Trying to read materials from BoxLib file that does not have any");
     }
     else if (varnames_for_materials == vfrac)
     {
-        floatArrays[0] = (vtkFloatArray*)(GetVar(patch, "vfrac"));
-        mats[0] = floatArrays[0]->GetPointer(0);
-        floatArrays[1] = vtkFloatArray::New();
-        floatArrays[1]->SetNumberOfTuples(floatArrays[0]->GetNumberOfTuples());
-        for (vtkIdType tuple = 0; tuple < floatArrays[1]->GetNumberOfTuples(); ++tuple)
-            floatArrays[1]->SetTuple1(tuple, 1.0 - floatArrays[0]->GetTuple1(tuple));
-        mats[1] = floatArrays[1]->GetPointer(0);
+        doubleArrays[0] = (vtkDoubleArray*)(GetVar(patch, "vfrac"));
+        mats[0] = doubleArrays[0]->GetPointer(0);
+        doubleArrays[1] = vtkDoubleArray::New();
+        doubleArrays[1]->SetNumberOfTuples(doubleArrays[0]->GetNumberOfTuples());
+        for (vtkIdType tuple = 0; tuple < doubleArrays[1]->GetNumberOfTuples(); ++tuple)
+            doubleArrays[1]->SetTuple1(tuple, 1.0 - doubleArrays[0]->GetTuple1(tuple));
+        mats[1] = doubleArrays[1]->GetPointer(0);
     }
     else
     {
@@ -2109,8 +2127,8 @@ AVTBOXLIBFILEFORMAT::GetMaterial(const char *var, int patch,
                 sprintf(str,"vf_%d", i);
             else
                 sprintf(str,"frac%d", i);
-            floatArrays[i - 1] = (vtkFloatArray *)(GetVar(patch, str));
-            mats[i - 1] = floatArrays[i - 1]->GetPointer(0);
+            doubleArrays[i - 1] = (vtkDoubleArray *)(GetVar(patch, str));
+            mats[i - 1] = doubleArrays[i - 1]->GetPointer(0);
         }
     }
 
@@ -2154,18 +2172,18 @@ AVTBOXLIBFILEFORMAT::GetMaterial(const char *var, int patch,
         mix_next[mix_next.size() - 1] = 0;
     }
 
-    // we can now free up the vtkFloatArrays we obtained via GetVar calls
+    // we can now free up the vtkDoubleArrays we obtained via GetVar calls
     for (i = 1; i <= nMaterials; ++i)
     {
-        if (floatArrays[i - 1] != 0)
-            floatArrays[i - 1]->Delete();
+        if (doubleArrays[i - 1] != 0)
+            doubleArrays[i - 1]->Delete();
     }
 
     int mixed_size = (int)mix_zone.size();
 
     // get pointers to pass to avtMaterial
     int *ml = NULL, *mixm = NULL, *mixn = NULL, *mixz = NULL;
-    float *mixv = NULL;
+    float *mixv = NULL; // avtMaterial class handles only float precision
 
     if (material_list.size() > 0)
         ml = &(material_list[0]);

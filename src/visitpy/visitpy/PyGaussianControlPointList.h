@@ -5,6 +5,7 @@
 #ifndef PY_GAUSSIANCONTROLPOINTLIST_H
 #define PY_GAUSSIANCONTROLPOINTLIST_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <GaussianControlPointList.h>
 #include <visitpy_exports.h>
 

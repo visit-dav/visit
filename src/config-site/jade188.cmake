@@ -1,8 +1,8 @@
 #/usr/workspace/visit/visit/thirdparty_shared/3.1.0/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake
 ##
-## ./build_visit3_1_0 generated host.cmake
-## created: Tue Jan  7 13:20:54 PST 2020
-## system: Linux jade380 3.10.0-1062.1.1.1chaos.ch6.x86_64 #1 SMP Wed Sep 4 16:09:20 PDT 2019 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_1_3 generated host.cmake
+## created: Wed Sep 23 16:13:01 PDT 2020
+## system: Linux jade188 3.10.0-1127.18.2.1chaos.ch6.x86_64 #1 SMP Wed Jul 30 12:53:28 PDT 2020 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
@@ -101,7 +101,7 @@ VISIT_OPTION_DEFAULT(VISIT_ISPC_DIR ${VISITHOME}/ispc/${ISPC_VERSION}/${VISITARC
 ##
 ## TBB
 ##
-SETUP_APP_VERSION(TBB tbb2018_20171205oss)
+set(TBB_VERSION tbb2018_20171205oss)
 VISIT_OPTION_DEFAULT(TBB_ROOT ${VISITHOME}/tbb/${TBB_VERSION}/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_TBB_DIR ${VISITHOME}/tbb/${TBB_VERSION}/${VISITARCH})
 
@@ -220,7 +220,7 @@ VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP ${VISIT_CONDUIT_LIBDEP} ${VISITHOME}/zlib
 ##
 ## Mili
 ##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/15.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/19.2/${VISITARCH})
 
 ##
 ## MOAB 

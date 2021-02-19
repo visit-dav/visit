@@ -63,7 +63,7 @@
 // ****************************************************************************
 
 avtMFIXFileFormat::avtMFIXFileFormat(const char *filename,
-    DBOptionsAttributes *rdopts)
+    const DBOptionsAttributes *rdopts)
 : avtMTMDFileFormat(filename)
 {
     strncpy(this->RestartFileName, filename, MFIX_NAME_MAX);

@@ -1,1 +1,1 @@
-borax5.cmake
+quartz386.cmake

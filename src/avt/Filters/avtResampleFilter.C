@@ -558,12 +558,7 @@ avtResampleFilter::ResampleInput(void)
             const char *varname = vars[i]->GetName();
             if (strcmp(varname, primaryVariable) == 0)
             {
-                if (vars[i]->GetNumberOfComponents() == 3)
-                    if (cellCenteredOutput)
-                        rg->GetCellData()->SetVectors(vars[i]);
-                    else
-                        rg->GetPointData()->SetVectors(vars[i]);
-                else if (vars[i]->GetNumberOfComponents() == 1)
+                if (vars[i]->GetNumberOfComponents() == 1)
                 {
                     if (cellCenteredOutput)
                     {
@@ -576,13 +571,28 @@ avtResampleFilter::ResampleInput(void)
                         rg->GetPointData()->SetScalars(vars[i]);
                     }
                 }
+                else if (vars[i]->GetNumberOfComponents() == 3)
+                {
+                    if (cellCenteredOutput)
+                        rg->GetCellData()->SetVectors(vars[i]);
+                    else
+                        rg->GetPointData()->SetVectors(vars[i]);
+                }
+                else if (vars[i]->GetNumberOfComponents() == 6 ||
+                         vars[i]->GetNumberOfComponents() == 9)
+                {
+                    if (cellCenteredOutput)
+                        rg->GetCellData()->SetTensors(vars[i]);
+                    else
+                        rg->GetPointData()->SetTensors(vars[i]);
+                }
                 else
-               {
+                {
                     if (cellCenteredOutput)
                         rg->GetCellData()->AddArray(vars[i]);
                     else
                         rg->GetPointData()->AddArray(vars[i]);
-               }
+                }
             }
             else
             {

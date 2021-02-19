@@ -20,18 +20,24 @@ function bv_mfem_depends_on
     if [[ "$DO_CONDUIT" == "yes" ]] ; then
         depends_on="$depends_on conduit"
     fi
+    if [[ "$DO_FMS" == "yes" ]] ; then
+        depends_on="$depends_on fms"
+    fi
 
     echo $depends_on
 }
 
 function bv_mfem_info
 {
-    export MFEM_VERSION=${MFEM_VERSION:-"4.0"}
+    # NOTE: we are using a special version of MFEM that has not yet been in an MFEM release.
+    export MFEM_VERSION=${MFEM_VERSION:-"Add_FMS_support"}
     export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
     export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
-    export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-0"}
-    export MFEM_MD5_CHECKSUM="acbc9ca4398f3cc19762abdc47654607"
-    export MFEM_SHA256_CHECKSUM="df5bdac798ea84a263979f6fbf79de9013e1c55562f95f98644c3edcacfbc727"
+    # For the time being, get MFEM tarball from IL website if it cannot be downloaded from third-party
+    export MFEM_URL=${MFEM_URL:-"http://visit.ilight.com/assets"}
+    #export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-0"}
+    export MFEM_MD5_CHECKSUM="a8124f5a43bef277aeb659a492c05600"
+    export MFEM_SHA256_CHECKSUM="0dec3ebd2163bb2f104bdb6f4009da09a05ac27108b0d2f820c7f67cfda6921a"
 }
 
 function bv_mfem_print
@@ -60,14 +66,20 @@ function bv_mfem_host_profile
         ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
 
         CONDUIT_LIBDEP=""
+        INCDEP=""
         if [[ "$DO_CONDUIT" == "yes" ]] ; then
             CONDUIT_LIBDEP="\${VISIT_CONDUIT_LIBDEP}"
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_MFEM_INCDEP CONDUIT_INCLUDE_DIR TYPE STRING)" \
-                    >> $HOSTCONF
+            INCDEP="CONDUIT_INCLUDE_DIR"
+        fi
+        if [[ "$DO_FMS" == "yes" ]] ; then
+            INCDEP="$INCDEP FMS_INCLUDE_DIR"
         fi
 
-
+        if [[ "$INCDEP" != "" ]] ; then
+             echo \
+                "VISIT_OPTION_DEFAULT(VISIT_MFEM_INCDEP $INCDEP TYPE STRING)" \
+                    >> $HOSTCONF
+        fi
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP $CONDUIT_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
                 >> $HOSTCONF
@@ -109,34 +121,50 @@ function build_mfem
     fi
 
     cd $MFEM_BUILD_DIR || error "Can't cd to mfem build dir."
-
-    ZLIBARG=-L${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib
-
-    MFEM_USE_CONDUIT=NO
-
-    if [[ "$DO_CONDUIT" == "yes" ]] ; then
-        MFEM_USE_CONDUIT=YES
-        CONDUIT_OPT_VALS="-I${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}/include/conduit"
-        CONDUIT_LIB_VALS="-L${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}/lib/ -lconduit_relay -lconduit_blueprint -lconduit"
-        # we may also need HDF5, conduit's config.mk includes this info, but mfem isn't using it yet
-        if [[ "$DO_HDF5" == "yes" ]] ; then
-            CONDUIT_OPT_VALS="${CONDUIT_OPT_VALS} -I${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}/include/"
-            CONDUIT_LIB_VALS="${CONDUIT_OPT_VALS} -L${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}/ -lhdf5"
-        fi
-    fi
+    mkdir build
+    cd build || error "Can't cd to MFEM build dir."
 
     # Version 4.0 now requires c++11
     CXXFLAGS="-std=c++11 ${CXXFLAGS}"
+
+    vopts="-DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} $CFLAGS\""
+    vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS\""
+    vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/mfem/${MFEM_VERSION}/${VISITARCH}"
+    if test "x${DO_STATIC_BUILD}" = "xyes" ; then
+        vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
+    else
+        vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
+    fi
+    vopts="${vopts} -DMFEM_USE_EXCEPTIONS:BOOL=ON"
+    if [[ "$DO_CONDUIT" == "yes" ]] ; then
+        vopts="${vopts} -DMFEM_USE_CONDUIT=ON -DCONDUIT_DIR=${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}"
+    fi
+    if [[ "$DO_FMS" == "yes" ]] ; then
+        vopts="${vopts} -DMFEM_USE_FMS=ON -DFMS_DIR=${VISITDIR}/fms/${FMS_VERSION}/${VISITARCH}"
+    fi
+    vopts="${vopts} -DMFEM_USE_ZLIB=ON"
 
     #
     # Call configure
     #
     info "Configuring mfem . . ."
-    info $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" MFEM_USE_GZSTREAM=YES LDFLAGS="$ZLIBARG -lz" \
-              MFEM_USE_CONDUIT=${MFEM_USE_CONDUIT} CONDUIT_OPT="${CONDUIT_OPT_VALS}" CONDUIT_LIB="${CONDUIT_LIB_VALS}"
-
-    $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" MFEM_USE_GZSTREAM=YES LDFLAGS="$ZLIBARG -lz" \
-              MFEM_USE_CONDUIT=${MFEM_USE_CONDUIT} CONDUIT_OPT="${CONDUIT_OPT_VALS}" CONDUIT_LIB="${CONDUIT_LIB_VALS}"
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
+    fi
+    CMS=bv_run_cmake.sh
+    echo "#!/bin/bash" > $CMS
+    echo "# Find the right ZLIB" >> $CMS
+    echo "export CMAKE_PREFIX_PATH=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}" >> $CMS
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        echo "# Find the right HDF5" >> $CMS
+        echo "export HDF5_ROOT=${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}" >> $CMS
+    fi
+    echo "\"${CMAKE_BIN}\" ${vopts} .." >> $CMS
+    cat $CMS
+    issue_command bash $CMS || error "FMS configuration failed."
 
     #
     # Build mfem
@@ -152,7 +180,7 @@ function build_mfem
     # Install into the VisIt third party location.
     #
     info "Installing mfem"
-    $MAKE install PREFIX="$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/"
+    $MAKE install
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/mfem"

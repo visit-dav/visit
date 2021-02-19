@@ -81,7 +81,6 @@ window are saved to the specified curve file.
 Lineout Operator
 ~~~~~~~~~~~~~~~~
 
-
 The Curve plot uses the Lineout operator to extract data from a database
 along a linear path. The Lineout operator is not generally available
 since curves are created only through reference lines and not the
@@ -91,6 +90,260 @@ when you modify the Lineout attributes, it is best to turn
 off the **Apply operators to all plots** check box in the **Main Window**
 so that all curves do not get the same set of Lineout operator
 attributes. 
+
+There are two factors that affect how the interpolation along the line is
+performed. These are the centering of the variable and the lineout sampling
+method. There are two types of centering and two types of sampling. The
+following sections will go into detail for the four cases.
+
+Zonal variables are constant within a cell and a lineout would be expected
+to be a step function as the line moves from cell to cell.
+
+All the images associated with the examples can be generated with the
+script lineout.py.
+
+Zonal centering with sampling
+"""""""""""""""""""""""""""""
+
+In the case of sampling, the step function will become more and more apparent
+as the number of sample points increases.
+
+In the example below there are only 12 samples points and the step function
+is only somewhat apparent, since the number of sample points within a cell
+ranges between one and three.
+
+.. _lineoutexample2:
+
+.. figure:: images/rect2d_d_12_sampled.png
+
+   A zonal variable with relatively few sample points.
+
+In the example below there are 60 sample points and the step function is
+quite apparent.
+
+.. _lineoutexample3:
+
+.. figure:: images/rect2d_d_60_sampled.png
+
+   A zonal variable with a large number of sample points.
+
+Zonal centering without sampling
+""""""""""""""""""""""""""""""""
+
+In the case of non-sampling, the sample points are chosen where the line
+intersects cell boundaries, which are lines in 2D and faces in 3D. The first
+point of the line has the zonal value of the cell it is within and the
+remaining points have the value of the cell the line is about to enter.
+In this case the step function nature of the variable is completely lost.
+
+In the example below the sample points are placed based on where the line
+intersects the edges of the cells. The step function nature of the variable
+is completely lost and the line looks smoother than the sampled case.
+
+.. _lineoutexample4:
+
+.. figure:: images/rect2d_d_nonsampled.png
+
+   A zonal variable without sampling.
+
+Nodal variables vary linearly within a cell. Using sampling produces high
+quality results as long as the number of sample points is chosen such
+that all the cells along the line contain at least one sample point. Using
+non sampling tends to produce poor results based on its interpolation
+method (described below) and may result in jagged lines, even for smoothly
+varying functions.
+
+Nodal centering with sampling
+"""""""""""""""""""""""""""""
+
+In the example below the 12 samples points do a good job of capturing
+the data along the line since all the cells are sampled at least once.
+
+.. _lineoutexample5:
+
+.. figure:: images/rect2d_d2_12_sampled.png
+
+   A nodal variable with relatively few sample points.
+
+Increasing the number of sample points in this case doesn't change the
+shape of the curve.
+
+.. _lineoutexample6:
+
+.. figure:: images/rect2d_d2_60_sampled.png
+
+   A nodal variable with many sample points.
+
+Nodal centering without sampling
+""""""""""""""""""""""""""""""""
+
+In the example below the sample points are placed based on where the line
+intersects the edges of the cells. The first point of the line has the
+average of the nodes of the cell that the point is within and the remaining
+points have the value of the average of the nodes of the cell the line is
+about to enter. This can lead to a jagged line even for a smoothly varying
+function.
+
+.. _lineoutexample7:
+
+.. figure:: images/rect2d_d2_nonsampled.png
+
+   A nodal variable without sampling.
+
+Further exploring the Linout operator
+"""""""""""""""""""""""""""""""""""""
+
+The following script was used to generate 6 images above and can be used
+to further understand the behavior of the Lineout operator.
+
+::
+
+    import math
+    import time
+
+    def create_images(sampling, n_samples, var):
+        if (sampling == 1):
+            save_name = "rect2d_%s_%d_lineout_sampled" % (var, n_samples)
+            curve1_name = "rect2d_%s_%d_lineout_sampled.curve" % (var, n_samples)
+            curve2_name = "rect2d_%s_%d_refline_sampled.curve" % (var, n_samples)
+            image_name = "rect2d_%s_%d_pc_sampled" % (var, n_samples)
+        else:
+            save_name = "rect2d_%s_lineout_nonsampled" % var
+            curve1_name = "rect2d_%s_lineout_nonsampled.curve" % var
+            curve2_name = "rect2d_%s_refline_nonsampled.curve" % var
+            image_name = "rect2d_%s_pc_nonsampled" % var
+
+        #
+        # Open the database to make the lineouts from.
+        #
+        OpenDatabase("rect2d.silo")
+
+        #
+        # Turn off extraneous annotations.
+        #
+        annot = AnnotationAttributes()
+        annot.userInfoFlag = 0
+        annot.databaseInfoFlag = 0
+        annot.timeInfoFlag = 0
+        annot.legendInfoFlag = 0
+        SetAnnotationAttributes(annot)
+
+        #
+        # Create the lineout and do the lineout.
+        #
+        AddPlot("Mesh", "quadmesh2d")
+        AddPlot("Pseudocolor", var)
+        AddPlot("Label", var)
+        labelAtts = LabelAttributes()
+        labelAtts.numberOfLabels = 400
+        SetPlotOptions(labelAtts)
+        DrawPlots()
+        view2D = View2DAttributes()
+        view2D.windowCoords = (0.070, 0.255, 1.022, 1.210)
+        view2D.viewportCoords = (0.15, 0.95, 0.1, 0.95)
+        SetView2D(view2D)
+        Lineout(start_point=(0.11137, 1.18468), end_point=(0.21461, 1.05520), use_sampling=sampling, num_samples=n_samples)
+
+        #
+        # Go to the lineout window, save the image, save the curve and create
+        # a reference line with the sample points from the saved curve.
+        #
+        SetActiveWindow(2)
+        SetAnnotationAttributes(annot)
+        curveAtts = CurveAttributes()
+        curveAtts.showPoints = 1
+        curveAtts.pointSize = 8
+        curveAtts.showLegend = 0
+        curveAtts.showLabels = 0
+        curveAtts.curveColorSource = curveAtts.Custom
+        curveAtts.curveColor = (85, 85, 127, 255)
+        SetPlotOptions(curveAtts)
+        saveAtts = SaveWindowAttributes()
+        saveAtts.fileName = save_name
+        saveAtts.family = 0
+        saveAtts.format = saveAtts.CURVE
+        SetSaveWindowAttributes(saveAtts)
+        SaveWindow()
+        saveAtts.width = 600
+        saveAtts.height = 600
+        saveAtts.screenCapture = 0
+        saveAtts.resConstraint = saveAtts.NoConstraint
+        saveAtts.format = saveAtts.PNG
+        SetSaveWindowAttributes(saveAtts)
+        SaveWindow()
+
+        #
+        # Create a reference line with the sampled point from the saved curve
+        # to overlay on the pseudocolor plot.
+        #
+        time.sleep(1)
+
+        file1 = open(curve1_name, "r")
+        file2 = open(curve2_name, "w")
+
+        x1 = 0.11137
+        y1 = 1.18468
+        x2 = 0.21461
+        y2 = 1.05520
+        dx = x2 - x1
+        dy = y2 - y1
+        len = math.sqrt(dx * dx + dy * dy)
+        dx = dx / len
+        dy = dy / len
+        slope = dy / dx
+
+        line = file1.readline()
+        line = file1.readline()
+        file2.write("# refline\n")
+        while line:
+            vals = line.split()
+            dist = float(vals[0])
+            val = float(vals[1])
+            x = x1 + (dist / len) * (x2 - x1)
+            y = y1 + (dist / len) * (y2 - y1)
+            file2.write("%g %g\n" % (x, y))
+            line = file1.readline()
+
+        file1.close()
+        file2.close()
+
+        time.sleep(1)
+
+        #
+        # Add the reference line to the pseudocolor plot.
+        #
+        SetActiveWindow(1)
+        OpenDatabase(curve2_name)
+        AddPlot("Curve", "refline")
+        DrawPlots()
+        SetPlotOptions(curveAtts)
+        saveAtts.fileName = image_name
+        SetSaveWindowAttributes(saveAtts)
+        SaveWindow()
+
+        #
+        # Clean up.
+        #
+        DeleteAllPlots()
+        SetActiveWindow(2)
+        DeleteAllPlots()
+        SetActiveWindow(1)
+        CloseDatabase("rect2d.silo")
+        CloseDatabase(curve2_name)
+
+    OpenComputeEngine("localhost", ("-np", "1"))
+
+    DefineScalarExpression("d2", "recenter(<d>, \"nodal\")")
+
+    create_images(1, 12, "d")
+    create_images(1, 60, "d")
+    create_images(0, 12, "d")
+    create_images(1, 12, "d2")
+    create_images(1, 60, "d2")
+    create_images(0, 12, "d2")
+
+    quit()
+
 
 Setting lineout endpoints
 """""""""""""""""""""""""
@@ -111,28 +364,11 @@ set the value for the Z coordinate to zero.
 Setting the number of lineout samples
 """""""""""""""""""""""""""""""""""""
 
-The Lineout operator works by extracting sample points along a line.
-The sample points are then used to create Curve plots. The Lineout
-operator's default sampling scheme is to sample data values at the
-intersections between the sampling line and the cell boundaries
-encountered along the way. This method gives rise to jagged Curve plots
-favored by many VisIt users. See :numref:`Figure %s <lineoutsampling>`
-for a comparison between the sampling methods. If you instead want
-to smoothly sample the cells along the sampling line with some number
-of evenly spaced sample points, you can make the Lineout operator use evenly
-spaced sampling by clicking on the **Override Global Lineout Settings**
-check box in the **Lineout attributes** window. Then click on
-the **Use Sampling** check box and enter a number of sample points. The
-number of sample points taken along the line determine the fidelity
-of the Curve plot. Generally, it is best to set the number of sample
-points such that each cell is sampled at least once. To set the number
-of sample points, type a new number into the **Samples** text field.
+The sampling is controlled with the **Use Sampling** toggle button and
+the **Samples** text field. The **Use Sampling** toggle button controls
+whether sampling is used and **Samples** is used to set the number of
+sample points when sampling.
 
-.. _lineoutsampling:
-
-.. figure:: images/lineoutsampling.png
-
-   Lineout via cell intersection and lineout via sampling
 
 Interactive mode
 """"""""""""""""

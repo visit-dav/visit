@@ -42,16 +42,19 @@ typedef std::unordered_map<string, int> StrToIntMap;
 //  Purpose:
 //      A file format reader for Mili.
 //
-//  Notes:  This filter was largely re-written in Jan 2019 in order to better 
+//  Notes:  This filter was largely re-written in Jan 2019 in order to better
 //          handle scalability, extensibility, and the in-coming requests from
 //          mili users. Methods that retain significant portions of the original
-//          code contain notes about such in their docstrings. The original 
-//          filter was first created by Hank Childs on April 11, 2003. 
+//          code contain notes about such in their docstrings. The original
+//          filter was first created by Hank Childs on April 11, 2003.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Jan 16, 2019
 //
 //  Modifications:
+//
+//    Alister Maguire, Wed Jul 15 13:16:38 PDT 2020
+//    Added AddMiliDerivedVariables.
 //
 // ****************************************************************************
 
@@ -61,35 +64,35 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                            avtMiliFileFormat(const char *);
 
     virtual               ~avtMiliFileFormat();
-    
+
     virtual const char    *GetType(void) { return "Mili File Format"; };
-    
+
     virtual void           GetCycles(intVector &);
 
     virtual void           GetTimes(doubleVector &);
 
     virtual int            GetNTimesteps(void);
 
-    virtual vtkDataSet    *GetMesh(int, 
-                                   int, 
-                                   const char *); 
+    virtual vtkDataSet    *GetMesh(int,
+                                   int,
+                                   const char *);
 
-    virtual vtkDataArray  *GetVar(int, 
-                                  int, 
+    virtual vtkDataArray  *GetVar(int,
+                                  int,
                                   const char *);
 
-    virtual vtkDataArray  *GetVectorVar(int, 
-                                       int, 
+    virtual vtkDataArray  *GetVectorVar(int,
+                                       int,
                                        const char *);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
-    virtual void         *GetAuxiliaryData(const char *, 
-                                           int, 
+    virtual void         *GetAuxiliaryData(const char *,
                                            int,
-                                           const char *, 
+                                           int,
+                                           const char *,
                                            void *,
-                                           DestructorFunction &); 
+                                           DestructorFunction &);
 
     virtual void          FreeUpResources(void) {};
 
@@ -105,22 +108,22 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
     vtkPoints            *GetNodePositions(int, int, int);
 
-    void                  GetVar(int, 
-                                 int, 
+    void                  GetVar(int,
+                                 int,
                                  int,
                                  MiliVariableMetaData *varMD,
                                  vtkFloatArray *);
 
-    void                  GetVectorVar(int, 
-                                       int, 
+    void                  GetVectorVar(int,
+                                       int,
                                        int,
                                        MiliVariableMetaData *varMD,
                                        vtkFloatArray *);
 
-    void                  GetElementSetVar(int, 
+    void                  GetElementSetVar(int,
                                            int,
                                            int,
-                                           string, 
+                                           string,
                                            MiliVariableMetaData *varMD,
                                            vtkFloatArray *);
 
@@ -134,7 +137,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                               int,
                                               float *);
 
-    void                  PopulateSubrecordInfo(int, 
+    void                  PopulateSubrecordInfo(int,
                                                 int);
 
     void                  AddMiliVariableToMetaData(avtDatabaseMetaData *,
@@ -146,8 +149,12 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                                     const intVector &,
                                                     const stringVector &);
 
+    void                  AddMiliDerivedVariables(avtDatabaseMetaData *,
+                                                  const int,
+                                                  const std::string);
+
     //
-    // Json extraction methods. 
+    // Json extraction methods.
     //
     void                  LoadMiliInfoJson(const char *);
 
@@ -176,12 +183,12 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     //
     // Label info retrieval.
     //
-    void                   RetrieveZoneLabelInfo(const int, 
-                                                 char *, 
-                                                 const int, 
+    void                   RetrieveZoneLabelInfo(const int,
+                                                 char *,
+                                                 const int,
                                                  const int);
-    void                   RetrieveNodeLabelInfo(const int, 
-                                                 char *, 
+    void                   RetrieveNodeLabelInfo(const int,
+                                                 char *,
                                                  const int);
     vtkElementLabelArray  *GenerateLabelArray(int,
                                               int,
@@ -189,18 +196,18 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                              std::vector<MiliClassMetaData *>);
 
     //
-    // Expression helpers. 
+    // Expression helpers.
     //
-    Expression             CreateGenericExpression(const char *, 
+    Expression             CreateGenericExpression(const char *,
                                                    const char *,
                                                    Expression::ExprType);
 
     Expression             ScalarExpressionFromVec(const char *,
-                                                   const char *, 
+                                                   const char *,
                                                    int);
 
     //
-    // Protected data. 
+    // Protected data.
     //
     vtkUnstructuredGrid ***datasets;
     avtMaterial         ***materials;

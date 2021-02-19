@@ -4013,10 +4013,6 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>NIMROD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Constant</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6164,10 +6160,6 @@ by the Lineout operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>NIMROD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Constant</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6887,10 +6879,6 @@ by the Lineout operator</source>
     </message>
     <message>
         <source>Nek5000</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11007,10 +10995,6 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>NIMROD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Flash</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11371,10 +11355,6 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Nek5000</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15739,10 +15719,6 @@ Coordinates plot.</source>
     </message>
     <message>
         <source>M3D-C1 3D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

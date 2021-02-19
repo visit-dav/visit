@@ -6,6 +6,7 @@
 #define PLUGIN_EXPORTS_H
 
 #if defined(_WIN32)
+#if !defined(VISIT_STATIC)
 # if defined(PLUGIN_EXPORTS) || defined(visitcommon_EXPORTS)
 #   define PLUGIN_API  __declspec(dllexport)
 #   define PLUGIN_API2 __declspec(dllexport)
@@ -13,6 +14,10 @@
 #   define PLUGIN_API  __declspec(dllimport)
 #   define PLUGIN_API2 __declspec(dllimport)
 # endif
+#else
+#define PLUGIN_API
+#define PLUGIN_API2
+#endif
 # if defined(_MSC_VER)
 // Turn off warning about inheritance by dominance.
 #   pragma warning(disable:4250)

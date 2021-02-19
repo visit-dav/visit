@@ -113,8 +113,8 @@ def test2():
     s = ScatterAttributes()
     s.var2 = "d"
     s.var2Role = s.Coordinate1
-    s.var3Role = s.None
-    s.var4Role = s.None
+    s.var3Role = s.NONE
+    s.var4Role = s.NONE
     s.scaleCube = 0
     s.pointSizePixels = 5
     SetPlotOptions(s)

@@ -27,6 +27,18 @@
 
 using     std::string;
 
+static bool getline_cr(std::ifstream& istr, char* str, std::streamsize count)
+{
+    istr.getline(str, count);
+    bool ret = static_cast<bool>(istr);
+    size_t sz = strlen(str);
+    if (ret && str[sz - 1] == '\r')
+    {
+        str[sz - 1] = '\0';
+    }
+    return ret;
+}
+
 // ****************************************************************************
 //  Method: avtLAMMPSStructure constructor
 //
@@ -119,7 +131,7 @@ avtLAMMPSStructureFileFormat::OpenFileAtBeginning()
 {
     if (!in.is_open())
     {
-        in.open(filename.c_str());
+        in.open(filename.c_str(), std::ios::binary);
         if (!in)
         {
             EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -348,7 +360,7 @@ avtLAMMPSStructureFileFormat::ReadTimeStep(int timestep)
     // read all the atoms
     for (int a=0; a<nAtoms; a++)
     {
-        in.getline(buff,1000);
+        getline_cr(in,buff,1000);
         if (MAX_LAMMPS_STRUCTURE_VARS != 6)
         {
             EXCEPTION1(VisItException,
@@ -403,22 +415,22 @@ avtLAMMPSStructureFileFormat::ReadAllMetaData()
     nTimeSteps = 1;
     nVars = 0;
 
-    in.getline(buff,1000); // title
-    in.getline(buff,1000); // blank line
+    getline_cr(in,buff,1000); // title
+    getline_cr(in,buff,1000); // blank line
 
     in >> nAtoms;
-    in.getline(buff,1000); // skip rest of num atoms line
+    getline_cr(in,buff,1000); // skip rest of num atoms line
 
     int nAtomTypes;
     in >> nAtomTypes;
-    in.getline(buff,1000); // num atom types
+    getline_cr(in,buff,1000); // num atom types
 
-    in.getline(buff,1000); // x extents
-    in.getline(buff,1000); // y extents
-    in.getline(buff,1000); // z extents
-    in.getline(buff,1000); // blank
-    in.getline(buff,1000); // "Atoms"
-    in.getline(buff,1000); // blank
+    getline_cr(in,buff,1000); // x extents
+    getline_cr(in,buff,1000); // y extents
+    getline_cr(in,buff,1000); // z extents
+    getline_cr(in,buff,1000); // blank
+    getline_cr(in,buff,1000); // "Atoms"
+    getline_cr(in,buff,1000); // blank
 
     // data starts here
     istream::pos_type current_pos = in.tellg();
@@ -505,7 +517,7 @@ avtLAMMPSStructureFileFormat::FileContentsIdentify(const std::string &filename)
     char buff[1000];
     for (int i=0; i<20; i++)
     {
-        in.getline(buff, 1000);
+        getline_cr(in,buff, 1000);
         if (strstr(buff, "atoms"))
         {
             in.close();

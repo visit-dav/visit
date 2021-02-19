@@ -27,8 +27,7 @@ sys.dont_write_bytecode = True
 #
 
 from .frontend import *
-from .evalfuncs import *
-from .writescript import *
+from visit_utils.builtin import *
 
 try:
     import PySide2

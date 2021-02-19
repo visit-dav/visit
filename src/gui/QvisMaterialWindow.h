@@ -51,8 +51,8 @@ class QvisMaterialWindow : public QvisPostableWindowObserver
     Q_OBJECT
   public:
     QvisMaterialWindow(MaterialAttributes *subj,
-                       const QString &caption = QString::null,
-                       const QString &shortName = QString::null,
+                       const QString &caption = QString(),
+                       const QString &shortName = QString(),
                        QvisNotepadArea *notepad = 0);
     virtual ~QvisMaterialWindow();
     virtual void CreateWindowContents();

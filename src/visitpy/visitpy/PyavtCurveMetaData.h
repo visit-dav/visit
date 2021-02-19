@@ -5,6 +5,7 @@
 #ifndef PY_AVTCURVEMETADATA_H
 #define PY_AVTCURVEMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtCurveMetaData.h>
 #include <PyavtVarMetaData.h>
 #include <visitpy_exports.h>

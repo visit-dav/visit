@@ -21,6 +21,7 @@
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkGeometryFilter.h>
 #include <vtkIntArray.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
@@ -351,12 +352,15 @@ CGetDataExtents(avtDataRepresentation &data, void *g, bool &success)
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of nodes with a long long.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfZones(avtDataRepresentation &data, void *sum, bool &)
 {
-    VISIT_LONG_LONG *numCells = (VISIT_LONG_LONG*)sum;
+    long long *numCells = (long long*)sum;
     if (!data.Valid())
     {
         EXCEPTION0(NoInputException);
@@ -449,6 +453,9 @@ CGetNumberOfOriginalZones(avtDataRepresentation &data, void *arg, bool &)
 //    being converted to polydata properly. Maybe this routine should use the
 //    facelist filter.
 //
+//    Kathleen Biagas, Fri Aug 28 07:46:40 PDT 2020
+//    Use vtkGeometryFilter, which handles higher-order elements.
+//
 // ****************************************************************************
 
 void
@@ -462,53 +469,14 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
     vtkDataSet *ds = data.GetDataVTK();
     if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
-        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) ds;
-        vtkPolyData *out_pd = vtkPolyData::New();
-        int avtTopoDim = 2;
-
-        if (dataAndKey)
-        {
-            int intVal;
-            if (sscanf((char*)dataAndKey, "avtTopoDim=%d", &intVal) == 1)
-                avtTopoDim = intVal;
-        }
-
-        out_pd->SetPoints(ugrid->GetPoints());
-        out_pd->GetPointData()->ShallowCopy(ugrid->GetPointData());
-        out_pd->GetCellData()->ShallowCopy(ugrid->GetCellData());
-        out_pd->GetFieldData()->ShallowCopy(ugrid->GetFieldData());
-        vtkIdType ncells = ugrid->GetNumberOfCells();
-        out_pd->Allocate(ncells);
-        for (vtkIdType i = 0 ; i < ncells ; i++)
-        {
-            int cellTopoDim = ugrid->GetCell(i)->GetCellDimension();
-            if (cellTopoDim > avtTopoDim)
-            {
-                vtkIdType *pts = NULL;
-                static bool issuedWarning = false;
-                if (!issuedWarning)
-                {
-                    avtCallback::IssueWarning("Encountered a cell of topological "
-                        "dimension greater than the underlying dataset in which "
-                        "it is embedded. This occurs most often when there is an "
-                        "error in the file format reader. This cell and any others "
-                        "like it are being discarded.  Please contact a VisIt "
-                        "developer to resolve this issue.  (This warning will be "
-                        "issued only once per session.)");
-                    issuedWarning = true;
-                }
-                out_pd->InsertNextCell(VTK_EMPTY_CELL, 0, pts);
-            }
-            else
-            {
-                vtkIdType *pts, npts;
-                ugrid->GetCellPoints(i, npts, pts);
-                out_pd->InsertNextCell(ugrid->GetCellType(i), npts, pts);
-            }
-        }
+        vtkNew<vtkGeometryFilter> geoFilter;
+        geoFilter->SetInputData(ds);
+        geoFilter->Update();
+        vtkPolyData *out_pd = geoFilter->GetOutput();
+        out_pd->Register(NULL);
+        
         avtDataRepresentation new_data(out_pd, data.GetDomain(), data.GetLabel());
         data = new_data;
-        out_pd->Delete();
     }
 }
 
@@ -2876,12 +2844,15 @@ CGetVariableCentering(avtDataRepresentation &data, void *arg, bool &success)
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of nodes with a long long.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfNodes(avtDataRepresentation &data, void *sum, bool &)
 {
-    VISIT_LONG_LONG *numNodes = (VISIT_LONG_LONG*)sum;
+    long long *numNodes = (long long*)sum;
     if (!data.Valid())
     {
         EXCEPTION0(NoInputException);
@@ -2970,12 +2941,15 @@ CGetNumberOfOriginalNodes(avtDataRepresentation &data, void *arg, bool &)
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of nodes with a long long.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfRealZones(avtDataRepresentation &data, void *sum, bool &)
 {
-    VISIT_LONG_LONG *numZones = (VISIT_LONG_LONG*)sum;
+    long long *numZones = (long long*)sum;
     //
     // realZones  stored in numZones[0]
     // ghostZones stored in numZones[1]
@@ -3103,12 +3077,15 @@ CGetNumberOfRealOriginalZones(avtDataRepresentation &data, void *arg, bool &dumm
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of nodes with a long long.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfRealNodes(avtDataRepresentation &data, void *sum, bool &)
 {
-    VISIT_LONG_LONG *numNodes = (VISIT_LONG_LONG*)sum;
+    long long *numNodes = (long long*)sum;
     //
     // realNodes  stored in numNodes[0]
     // ghostNodes stored in numNodes[1]
@@ -3677,10 +3654,13 @@ CInsertRectilinearTransformInfoIntoDataset(avtDataRepresentation &data,
 //    Brad Whitlock, Tue Jul 21 13:01:47 PDT 2015
 //    Support non-standard memory layout.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 template <typename Array> static void
-PopulateHistogram(Array buf, int ntups, int nbins, double min, double max, VISIT_LONG_LONG *numVals)
+PopulateHistogram(Array buf, int ntups, int nbins, double min, double max, long long *numVals)
 {
     double mult = nbins/(max-min);  // This is actually needed to help the compiler.  2X difference.
     for (int i = 0 ; i < ntups ; i++)
@@ -3727,7 +3707,7 @@ CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
     int nbins = static_cast<int>(cha->numVals.size());
     double min = cha->min;
     double max = cha->max;
-    VISIT_LONG_LONG *numVals = &(cha->numVals[0]);
+    long long *numVals = &(cha->numVals[0]);
  
     if(arr->HasStandardMemoryLayout())
     {

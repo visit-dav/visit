@@ -22,6 +22,10 @@
 #    Adjusted to use STL as STSD test because VTK was changed from STSD
 #    to STMD. Removed code to generate test data because the test data is
 #    now stored as zipwrapper_test_data.tar.gz 
+#
+#    Kathleen Biagas, Fri Oct 9, 2020
+#    Changed how the virtual database is opened (remove .gz).
+#
 # ----------------------------------------------------------------------------
 
 #
@@ -46,7 +50,7 @@ Test("ZipWrapper_01")
 DeleteAllPlots()
 CloseDatabase(data_path("zipwrapper_test_data/multi_ucd.visit"))
 
-OpenDatabase(data_path("zipwrapper_test_data/histz_*.silo.gz database"), 3)
+OpenDatabase(data_path("zipwrapper_test_data/histz_*.silo database"), 3)
 
 AddPlot("Pseudocolor","d_dup")
 DrawPlots()

@@ -5,6 +5,7 @@
 #ifndef PY_AVTSUBSETSMETADATA_H
 #define PY_AVTSUBSETSMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtSubsetsMetaData.h>
 #include <PyavtVarMetaData.h>
 #include <visitpy_exports.h>

@@ -5,6 +5,7 @@
 #ifndef PY_SAVESUBWINDOWSATTRIBUTES_H
 #define PY_SAVESUBWINDOWSATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <SaveSubWindowsAttributes.h>
 #include <visitpy_exports.h>
 

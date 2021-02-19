@@ -1064,6 +1064,10 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //    Jeremy Meredith, Mon Apr 28 17:06:07 EDT 2014
 //    Added support for CONNECTIVITYSHAREZONE.  Also ignore "C" zone token.
 //
+//    Eric Brugger, Mon Jul 13 11:14:15 PDT 2020
+//    Added support for FILETYPE. We only support FULL, so throw an
+//    exception if not.
+//
 // ****************************************************************************
 
 void
@@ -1096,6 +1100,20 @@ avtTecplotFileFormat::ReadFile()
             GetNextToken(); // skip the equals sign
             title = GetNextToken();
             debug5 << "Tecplot: parsed title as: '"<<title<<"'\n";
+        }
+        else if (tok == "FILETYPE")
+        {
+            // it's the file type. We only support FULL.
+            // Issue an error if it's not.
+            GetNextToken(); // skip the equals sign
+            tok = GetNextToken();
+            debug5 << "Tecplot: parsed FILETYPE token\n";
+            if (tok != "FULL")
+            {
+                char msg[200];
+                sprintf(msg, "FILETYPE=%s not supported.", tok.c_str());
+                EXCEPTION2(InvalidFilesException, filename, msg);
+            }
         }
         else if (tok == "GEOMETRY")
         {
@@ -1737,7 +1755,7 @@ avtTecplotFileFormat::ReadFile()
 // ****************************************************************************
 
 avtTecplotFileFormat::avtTecplotFileFormat(const char *fname,
-                                           DBOptionsAttributes *readOpts)
+                                           const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&fname, 1), expressions()
 {
     file_read = false;

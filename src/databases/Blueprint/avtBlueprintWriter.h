@@ -11,12 +11,13 @@
 
 #include <avtDatabaseWriter.h>
 
+#include <ExpressionList.h>
+
 #include <string>
 #include <vector>
 
 #include "conduit.hpp"
 
-class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtBlueprintWriter
@@ -54,8 +55,11 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
     conduit::Node  n_root_file;
     std::string    m_root_file;
 
+    ExpressionList exprList;
+
     void           GenRootNode(conduit::Node &mesh,
-                               const std::string output_dir);
+                               const std::string output_dir,
+                               const int ndims);
 
     virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,

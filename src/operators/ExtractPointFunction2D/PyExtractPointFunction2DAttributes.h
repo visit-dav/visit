@@ -5,6 +5,7 @@
 #ifndef PY_EXTRACTPOINTFUNCTION2DATTRIBUTES_H
 #define PY_EXTRACTPOINTFUNCTION2DATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ExtractPointFunction2DAttributes.h>
 
 //

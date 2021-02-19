@@ -29,7 +29,7 @@ using     std::string;
 //
 // ****************************************************************************
 
-avtPLYFileFormat::avtPLYFileFormat(const char *filename, DBOptionsAttributes*&)
+avtPLYFileFormat::avtPLYFileFormat(const char *filename, const DBOptionsAttributes*)
     : avtSTSDFileFormat(filename)
 {
     dataset = NULL;

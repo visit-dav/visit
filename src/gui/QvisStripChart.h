@@ -83,6 +83,9 @@ public:
     void setCurveTitle( const unsigned int index, const QString &newTitle);
     void addDataPoint ( const unsigned int index,
                         const double x, const double y);
+    void addDataPoints( const unsigned int index,
+                        const unsigned int npts,
+                        const double *x, const double *y);
 
 private Q_SLOTS:
     void legendChecked( const QVariant &, bool on );

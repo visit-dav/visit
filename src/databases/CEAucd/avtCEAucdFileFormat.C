@@ -28,7 +28,6 @@
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
 
-#include <DBOptionsAttributes.h>
 #include <Expression.h>
 
 #include <InvalidFilesException.h>

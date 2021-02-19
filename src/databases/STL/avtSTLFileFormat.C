@@ -44,7 +44,7 @@ const char   *avtSTLFileFormat::MESHNAME = "STL_mesh";
 //    Added DBOptionsAttributes
 // ****************************************************************************
 
-avtSTLFileFormat::avtSTLFileFormat(const char *fname, DBOptionsAttributes*&) 
+avtSTLFileFormat::avtSTLFileFormat(const char *fname, const DBOptionsAttributes*) 
     : avtSTSDFileFormat(fname)
 {
     dataset = NULL;

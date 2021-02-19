@@ -40,8 +40,8 @@ class GUI_API QvisOutputWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisOutputWindow(MessageAttributes *subj,
-                     const QString &caption = QString::null,
-                     const QString &shortName = QString::null,
+                     const QString &caption = QString(),
+                     const QString &shortName = QString(),
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisOutputWindow();
     virtual void CreateWindowContents();

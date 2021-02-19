@@ -77,6 +77,7 @@ function error
              "message to the visit-users@ornl.gov list.  You will probably "\
              "need to compress the ${LOG_FILE} using a program like gzip "\
              "so it will fit within the size limits for email attachments."
+        info "Log file full path: " `pwd`/${LOG_FILE}
     fi
     exit 1
 }
@@ -330,8 +331,6 @@ function verify_sha_checksum
         return 0
     fi
 
-    set -x
-
     if [[ $checksum_algo == 512 ]]; then
         tmp=`shasum -a $checksum_algo $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{128\}'`
     else
@@ -521,6 +520,16 @@ function download_file
                 fi
             fi
         done
+    fi
+
+    # if all else has failed, and running develop version of build_visit,
+    # then also check the master repo.
+    if [[ "$TRUNK_BUILD" == "yes" ]]; then
+        site="${thirdpartyroot_dev}"
+        try_download_file $site/$dfile $dfile
+        if [[ $? == 0 ]] ; then
+            return 0
+        fi
     fi
 
     return 1

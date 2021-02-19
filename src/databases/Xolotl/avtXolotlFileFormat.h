@@ -31,7 +31,7 @@ class DBOptionsAttributes;
 class avtXolotlFileFormat : public avtMTSDFileFormat
 {
   public:
-                       avtXolotlFileFormat(const char *, DBOptionsAttributes *);
+                       avtXolotlFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtXolotlFileFormat();
 
     void               Initialize();

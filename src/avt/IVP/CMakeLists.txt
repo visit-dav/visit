@@ -28,7 +28,6 @@ avtIVPM3DC1Field.C
 avtIVPM3DC1Integrator.C
 avtIVPNek5000Field.C
 avtIVPNek5000TimeVaryingField.C
-avtIVPNIMRODField.C
 avtIVPFlashField.C
 avtIVPVTKField.C
 avtIVPVTKOffsetField.C

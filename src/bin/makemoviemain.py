@@ -1,4 +1,4 @@
-import sys, string
+import sys
 
 ###############################################################################
 # Function: main
@@ -15,8 +15,8 @@ import sys, string
 def main():
     makemovie = ""
     for arg in sys.argv[0:]:
-        if string.find(arg, "makemovie") != -1:
-            makemovie = string.replace(arg, "makemoviemain", "makemovie")
+        if arg.find("makemovie") != -1:
+            makemovie = arg.replace("makemoviemain", "makemovie")
             break
 
     if makemovie == "":

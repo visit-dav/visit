@@ -39,7 +39,10 @@ setup(name='visit_utils',
       author_email = 'cyrush@llnl.gov',
       description='VisIt Utilities Module',
       package_dir = {'visit_utils':'src'},
-      packages=['visit_utils','visit_utils.qannote','visit_utils.qplot'],
+      packages=['visit_utils',
+                'visit_utils.builtin',
+                'visit_utils.qannote',
+                'visit_utils.qplot'],
       cmdclass = { 'test': setup_tests.ExecuteTests})
 
 if using_visit:

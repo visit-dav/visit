@@ -38,7 +38,7 @@ using     std::vector;
 //
 // ****************************************************************************
 
-avtXmdvWriter::avtXmdvWriter(DBOptionsAttributes *atts)
+avtXmdvWriter::avtXmdvWriter(const DBOptionsAttributes *atts)
 {
     writeOutCoordinates = atts->GetBool("Export coordinates?");
 }

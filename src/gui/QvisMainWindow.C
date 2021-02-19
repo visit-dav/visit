@@ -1232,6 +1232,9 @@ QvisMainWindow::CreateGlobalArea(QWidget *par)
 //   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Thu Jun 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -1281,10 +1284,12 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
 
                 QString done(tr("done"));
                 QString ofStage(tr("of stage"));
-                QString totalPct; totalPct.sprintf("%d%% ", total);
-                QString progress; progress.sprintf(" (%d%% ", statusAtts->GetPercent());
-                QString progress2; progress2.sprintf(" %d/%d)", statusAtts->GetCurrentStage(),
-                    statusAtts->GetMaxStage());
+                QString totalPct = QString("%1% ").arg(total);
+                QString progress = QString(" (%1% ")
+                    .arg(statusAtts->GetPercent());
+                QString progress2 = QString(" %1/%2)")
+                    .arg(statusAtts->GetCurrentStage())
+                    .arg(statusAtts->GetMaxStage());
                 statusMsg = totalPct + done + ": " +
                             StatusAttributes_GetStatusMessage(*statusAtts) +
                             progress + ofStage + progress2;
@@ -1565,6 +1570,9 @@ QvisMainWindow::UpdateFileMenuPopup(QMenu *m, QAction *action)
 //   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Thu Jun 21, 2021
+//   Replace QString.asprintf with QString.setNum.
+//
 // ****************************************************************************
 
 void
@@ -1585,7 +1593,7 @@ QvisMainWindow::UpdateWindowList(bool doList)
             activeWindowComboBox->clear();
             for(size_t i = 0; i < indices.size(); ++i)
             {
-                QString temp; temp.sprintf("%d", indices[i]);
+                QString temp; temp.setNum(indices[i]);
                 activeWindowComboBox->addItem(temp);
             }
 
@@ -1593,7 +1601,7 @@ QvisMainWindow::UpdateWindowList(bool doList)
             activeWindowPopup->clear();
             for(size_t i = 0; i < indices.size(); ++i)
             {
-                QString str; str.sprintf("%d", indices[i]);
+                QString str; str.setNum(indices[i]);
                 QAction *act = activeWindowPopup->addAction(tr("Window ") + str);
                 act->setChecked(indices[i] == index);
             }
@@ -1654,6 +1662,9 @@ QvisMainWindow::UpdateWindowList(bool doList)
 //   Sets the text of the 'connect to DDT' action depending on if
 //   the viewer will connect or disconnect to/from DDT.
 //
+//   Kathleen Biagas, Thu Jun 21, 2021
+//   Replace QString.asprintf with QString.setNum.
+//
 // ****************************************************************************
 
 void
@@ -1679,7 +1690,7 @@ QvisMainWindow::UpdateWindowMenu(bool updateNumbers)
                     continue;
 
                 QString str;
-                str.sprintf("%d", indices[j]);
+                str.setNum(indices[j]);
                 copyPopup[i]->addAction(tr("Window ") + str);
                 n++;
             }

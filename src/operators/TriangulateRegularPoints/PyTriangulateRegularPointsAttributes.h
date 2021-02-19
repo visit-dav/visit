@@ -5,6 +5,7 @@
 #ifndef PY_TRIANGULATEREGULARPOINTSATTRIBUTES_H
 #define PY_TRIANGULATEREGULARPOINTSATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <TriangulateRegularPointsAttributes.h>
 
 //

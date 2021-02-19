@@ -5,6 +5,7 @@
 #ifndef PY_GLOBALATTRIBUTES_H
 #define PY_GLOBALATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <GlobalAttributes.h>
 #include <visitpy_exports.h>
 

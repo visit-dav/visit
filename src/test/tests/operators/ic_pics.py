@@ -10,6 +10,9 @@
 #  Programmer: Allen Sanderson
 #  Date:       March 10, 2016
 #
+#  Modifications:
+#    Kathleen Biagas, Thu Sep 17 11:35:47 PDT 2020
+#    Turn off IC warnings. Set larger linewidth so for better images.
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("PICS_Tester")
 
@@ -54,9 +57,18 @@ for i in range(len(databases)):
          DeleteAllPlots()
          OpenDatabase(db)
          AddPlot("Pseudocolor", "operators/IntegralCurve/velocity", 1, 0)
+         pcAtts = PseudocolorAttributes();
+         pcAtts.lineWidth = 3
+         SetPlotOptions(pcAtts)
          IntegralCurveAtts = IntegralCurveAttributes()
          IntegralCurveAtts.parallelizationAlgorithmType = algs[j]
          IntegralCurveAtts.sourceType = IntegralCurveAtts.SpecifiedPoint
+         IntegralCurveAtts.issueAdvectionWarnings = 0
+         IntegralCurveAtts.issueBoundaryWarnings = 0
+         IntegralCurveAtts.issueTerminationWarnings = 0
+         IntegralCurveAtts.issueStepsizeWarnings = 0
+         IntegralCurveAtts.issueStiffnessWarnings = 0
+         IntegralCurveAtts.issueCriticalPointsWarnings = 0
          if (is2D[i]):
            if (intg[integrator_i] in [IntegralCurveAtts.RK4, IntegralCurveAtts.DormandPrince, IntegralCurveAtts.AdamsBashforth]) :
              IntegralCurveAtts.pointSource = (0.51, 0.1, 0)

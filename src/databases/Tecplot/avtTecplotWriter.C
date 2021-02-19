@@ -12,6 +12,7 @@
 
 #include <avtDatabaseMetaData.h>
 
+#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <visit_gzstream.h>
@@ -38,7 +39,7 @@ using     std::vector;
 #define FLOAT_COLUMN_WIDTH 14
 #define INT_COLUMN_WIDTH   11
 
-avtTecplotWriter::avtTecplotWriter(DBOptionsAttributes *writeOpts)
+avtTecplotWriter::avtTecplotWriter(const DBOptionsAttributes *writeOpts)
 {
     variablesWritten = false;
     gzipLevel = 0;

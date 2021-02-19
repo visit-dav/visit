@@ -18,7 +18,6 @@
                  "cfitsio",
                  "cgns",
                  "eavl",
-                 "fastbit",
                  "gdal",
                  "hdf4",
                  "h5part",

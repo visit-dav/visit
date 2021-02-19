@@ -119,6 +119,9 @@ CallbackManager::CallbackManager(ViewerProxy *p) : SimpleObserver(),
 //   Brad Whitlock, Thu Aug 19 15:52:59 PDT 2010
 //   Be careful about deleting a class instance from here.
 //
+//   Cyrus Harrison, Fri Mar 20 16:01:38 PDT 2020
+//   Python 2 and 3 support.
+//
 // ****************************************************************************
 
 CallbackManager::~CallbackManager()
@@ -140,7 +143,8 @@ CallbackManager::~CallbackManager()
             //       even if it causes the object to get deleted. Other objects
             //       work okay so our reference counting seems good.
             bool lastInstance = Py_REFCNT(it->second.pycb_data) == 1 &&
-                                PyInstance_Check(it->second.pycb_data);
+            // python 2 ==> 3 use PyType_Check instead of PyInstance_Check
+                                          PyType_Check(it->second.pycb_data);
             if(!lastInstance)
 #endif
                 Py_DECREF(it->second.pycb_data);

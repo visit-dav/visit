@@ -47,12 +47,16 @@ using namespace std;
 //    Pulled out all the CGNS specific code from avtCGNSFileFormat into
 //    this class.
 //
+//    Eric Brugger, Thu Jul  2 10:56:36 PDT 2020
+//    Corrected a bug that caused a crash when doing a Subset plot of "zones"
+//    when reading data decomposed across multiple CGNS files.
+//
 // ****************************************************************************
 
 class avtCGNSFileReader
 {
 public:
-                           avtCGNSFileReader(const char *);
+                           avtCGNSFileReader(const char *, bool);
                           ~avtCGNSFileReader();
 
     virtual void           GetCycles(std::vector<int> &);
@@ -137,6 +141,7 @@ protected:
     std::map<std::string, int>             BaseNameToIndices;
     std::map<std::string, std::string>     VisItNameToCGNSName;
     bool                                   initializedMaps;
+    bool                                   cgnsIsMTMD;
 };
 
 #endif

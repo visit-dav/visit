@@ -25,6 +25,17 @@ to develop, in many instances the exact same changes can be applied to both
 the release candidate and develop, and in some instannces the changes
 applied to the two branches are slightly or significantly different.
 
+.. _communication_protocols_and_public_apis:
+
+Changes to files impacting communication protocols or public APIs are not permitted
+on a release candidate (RC) branch unless explicitly agreed to by the team. Communication
+protocol files are any XML files and their associated auto-generated header files for
+*state* objects (any class derived from ``AttributeSubject``) passed between VisIt_
+components (e.g. ``viewer`` and ``engine_par``) such as all XML and header files in
+``src/common/state`` and ``src/avt/DBAtts/MetaData``. Files impacting public APIs include
+any XML or header files used by database, plot or operator plugins as well as
+``src/avt/Database/Database`` and ``src/avt/Database/Formats``.
+
 The rest of the section will go through the steps of the most common case
 of making the exact same changes to both branches using an example of
 updating the 3.0.2 release notes on the 3.0RC and develop.

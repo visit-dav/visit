@@ -5,6 +5,7 @@
 #ifndef PY_ELLIPSOIDSLICEATTRIBUTES_H
 #define PY_ELLIPSOIDSLICEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <EllipsoidSliceAttributes.h>
 
 //

@@ -24,8 +24,8 @@ Modifications history :
 FichierU is used to read files named U_XXXXX or U_XXXXX_FEN_XXXXX that are addition to Avs UCD files to store informations like material names, time step values etc.
 \_en
 \fr
-la classes FichierU permet de lire les fichiers complémentaires U_XXXXX ou U_XXXXX_FEN_XXXXX, adjoints aux fichiers UCD en sortie des codes et dans lesquels sont stoqués
-les noms des matériaux, les valeurs de temps. Ces fichiers sont générés par l'api GPU et peuvent etre binaire ou ASCII.
+la classes FichierU permet de lire les fichiers complÃ©mentaires U_XXXXX ou U_XXXXX_FEN_XXXXX, adjoints aux fichiers UCD en sortie des codes et dans lesquels sont stoquÃ©s
+les noms des matÃ©riaux, les valeurs de temps. Ces fichiers sont gÃ©nÃ©rÃ©s par l'api GPU et peuvent etre binaire ou ASCII.
 \_fr
 */
 class FichierU
@@ -33,9 +33,9 @@ class FichierU
    public:
 
      /*! \fr
-      \param fileName nom du fichier complémentaire
-      \param offset emplacement du début du fichier, util dans le cas de collections gme.
-      \param taille nombre maximum d'octets que l'on peut lire (evite de lire la suite d'une collection gme si le fichier U est erroné)
+      \param fileName nom du fichier complÃ©mentaire
+      \param offset emplacement du dÃ©but du fichier, util dans le cas de collections gme.
+      \param taille nombre maximum d'octets que l'on peut lire (evite de lire la suite d'une collection gme si le fichier U est erronÃ©)
       \_fr */
       FichierU( const std::string& fileName, std::ifstream* istr=0, long offset = 0, long size = 0 );
 

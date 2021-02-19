@@ -22,8 +22,6 @@
 #include <StringHelpers.h>
 #include <InvalidFilesException.h>
 
-#include "visit_gzstream.h"
-
 
 using std::vector;
 using std::string;
@@ -46,11 +44,7 @@ using std::string;
 // ****************************************************************************
 
 avtLinesFileFormat::avtLinesFileFormat(const char *fname)
-    : avtSTMDFileFormat(&fname, 1)
-{
-    filename = fname;
-    readInFile = false;
-}
+: avtSTMDFileFormat(&fname, 1), filename(fname), readInFile(false) { }
 
 
 // ****************************************************************************
@@ -67,6 +61,32 @@ avtLinesFileFormat::~avtLinesFileFormat()
     {
         lines[i]->Delete();
     }
+}
+
+// ****************************************************************************
+//  Method: avtLinesFileFormat::FreeUpResources
+//
+//  Purpose:
+//      When VisIt is done focusing on a particular timestep, it asks that
+//      timestep to free up any resources (memory, file descriptors) that
+//      it has associated with it.  This method is the mechanism for doing
+//      that.
+//
+//  Programmer: Philip Blakely
+//  Creation:   Mon Jun 22 15:29:05 PDT 2020
+//
+// ****************************************************************************
+
+void
+avtLinesFileFormat::FreeUpResources(void)
+{
+    for (size_t i = 0 ; i < lines.size() ; i++)
+    {
+        lines[i]->Delete();
+    }
+
+    lines.clear();
+    readInFile = false;
 }
 
 
@@ -175,6 +195,9 @@ avtLinesFileFormat::GetVar(int, const char *name)
 //    Jeremy Meredith, Fri Jan  8 16:40:54 EST 2010
 //    If we didn't get any data, it's not a Lines file so throw an exception.
 //
+//    Alister Maguire, Tue Mar 17 08:50:32 PDT 2020
+//    Get the dimensionality of the line mesh.
+//
 // ****************************************************************************
 
 void
@@ -188,12 +211,23 @@ avtLinesFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                        "Parsed nothing useful from the file.");
     }
 
+    visit_ifstream ifile(filename.c_str());
+
+    if (ifile().fail())
+    {
+        debug1 << "Unable to open file " << filename.c_str() << endl;
+        return;
+    }
+
+    int meshDims = GetDimensionality(ifile);
+    ifile.close();
+
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "Lines";
     mesh->meshType = AVT_UNSTRUCTURED_MESH;
     mesh->numBlocks = (int)lines.size();
     mesh->blockOrigin = 0;
-    mesh->spatialDimension = 3;
+    mesh->spatialDimension = meshDims;
     mesh->topologicalDimension = 1;
     mesh->blockNames = lineNames;
     mesh->blockTitle = "lines";
@@ -228,6 +262,10 @@ avtLinesFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Tue Apr  8 09:10:58 PDT 2003
 //    Open the file here.
 //
+//    Alister Maguire, Tue Mar 17 08:50:32 PDT 2020
+//    Don't remove consecutive points if they are on different lines. Also,
+//    let's close the file when we're done with it.
+//
 // ****************************************************************************
 
 void
@@ -250,6 +288,8 @@ avtLinesFileFormat::ReadFile(void)
     vector<float> zl;
     vector<int>   cutoff;
     string  headerName = "";
+    bool newLine = true;
+
     while (!ifile().eof())
     {
         float   x, y, z;
@@ -260,10 +300,15 @@ avtLinesFileFormat::ReadFile(void)
             {
                 lineNames.push_back(headerName);
                 headerName = "";
+                newLine    = true;
             }
             size_t len = xl.size();
             bool shouldAddPoint = true;
-            if (len > 0)
+
+            //
+            // Remove consecutive, repeating points for each line.
+            //
+            if (len > 0 && !newLine)
             {
                 if (x == xl[len-1] && y == yl[len-1] && z == zl[len-1])
                 {
@@ -276,6 +321,8 @@ avtLinesFileFormat::ReadFile(void)
                 yl.push_back(y);
                 zl.push_back(z);
             }
+
+            newLine = false;
         }
         else
         {
@@ -285,7 +332,9 @@ avtLinesFileFormat::ReadFile(void)
             }
             cutoff.push_back((int)xl.size());
         }
-    }  
+    }
+
+    ifile.close();
 
     //
     // Now we can construct the lines as vtkPolyData.
@@ -415,3 +464,45 @@ avtLinesFileFormat::GetPoint(istream &ifile, float &x, float &y, float &z,
 }
 
 
+// ****************************************************************************
+//  Method: avtLinesFileFormat::GetDimensionality
+//
+//  Purpose:
+//    Make a pass through the file to determine dimensionality.
+//
+//  Arguments:
+//    ifile    The input file containing our lines.
+//
+//  Returns:
+//    The dimensions of the lines.
+//
+//  Programmer: Alister Maguire
+//  Creation:   March 16, 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtLinesFileFormat::GetDimensionality(visit_ifstream &ifile)
+{
+    //
+    // Assume we're in 2d until proven otherwise.
+    //
+    int dims = 2;
+    while (!ifile().eof())
+    {
+        float x, y, z;
+        string lineName;
+
+        if (GetPoint(ifile(), x, y, z, lineName))
+        {
+            if (z != 0.0)
+            {
+                dims = 3;
+            }
+        }
+    }
+
+    return dims;
+}

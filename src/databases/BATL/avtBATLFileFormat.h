@@ -82,7 +82,7 @@ class     DBOptionsAttributes;
 class avtBATLFileFormat : public avtSTMDFileFormat
 {
 public:
-    avtBATLFileFormat(const char *, DBOptionsAttributes *&);
+    avtBATLFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtBATLFileFormat();
 
     virtual bool           HasInvariantMetaData(void) const

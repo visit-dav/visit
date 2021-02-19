@@ -12,7 +12,7 @@
 #                         eth_zurich | llnl_open | llnl_open_rz |"
 #                         llnl_open_cz | llnl_closed | lrz | lsu | ncar |"
 #                         nersc | nics | ohio | ornl | princeton |"
-#                         sandia | sandia_closed | umich | utah]"
+#                         sandia | umich | utah]"
 #                      [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
 #                      [-beta | -private] version platform directory"
 #
@@ -496,7 +496,7 @@ if [ "$#" != "3" ]; then
    echo "                         eth_zurich | llnl_open | llnl_open_rz |"
    echo "                         llnl_open_cz | llnl_closed | lrz | lsu | ncar |"
    echo "                         nersc | nics | ohio | ornl | princeton | "
-   echo "                         sandia | sandia_closed | umich | utah]"
+   echo "                         sandia | umich | utah]"
    echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
@@ -773,14 +773,6 @@ if [ "$test" = "true" ]; then
        echo "failed"
        exit 1
     fi
-    echo "Testing sandia_closed configuration..."
-    rm -rf $dir
-    $0 -c sandia_closed $version $platform $dir > /dev/null 2>&1
-    files=`ls $dir/$version/.visit/hosts/host_sandia_closed*` 
-    if [ "$files" == "" ]; then
-       echo "failed"
-       exit 1
-    fi
     echo "Testing umich configuration..."
     rm -rf $dir
     $0 -c umich $version $platform $dir > /dev/null 2>&1
@@ -893,9 +885,6 @@ while [ "$config" = "prompt" ]; do
       19)
          config=sandia
          ;;
-      20)
-         config=sandia_closed
-         ;;
       21)
          config=cscs
          ;;
@@ -954,8 +943,6 @@ case "$config" in
       ;;
    sandia)
       ;;
-   sandia_closed)
-      ;;
    cscs)
       ;;
    umich)
@@ -966,7 +953,7 @@ case "$config" in
       echo "Illegal configuration option, choices are none, chombo, anl,"
       echo "arl, asu, awe, clemson, cscs, eth_zurich, llnl_open, llnl_open_rz,"
       echo "llnl_open_cz, llnl_closed, lrz, lsu, ncar, nersc, nics, ohio, ornl,"
-      echo "princeton, sandia, sandia_closed, umich, utah"
+      echo "princeton, sandia, umich, utah"
       exit 4
       ;;
 esac
@@ -1151,9 +1138,6 @@ elif [ "$config" = "princeton" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/config              "$dir"/$version+/.visit/config
 elif [ "$config" = "sandia" ]; then
-   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
-elif [ "$config" = "sandia_closed" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "umich" ]; then

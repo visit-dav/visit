@@ -17,7 +17,6 @@
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 
-#include <DBOptionsAttributes.h>
 #include <Expression.h>
 
 #include <InvalidVariableException.h>

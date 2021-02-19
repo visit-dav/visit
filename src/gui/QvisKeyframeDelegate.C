@@ -277,14 +277,14 @@ QvisKeyframeDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
         PlotRangeData s(index.data().value<PlotRangeData>());
         QvisKeyframePlotRangeWidget *edit = (QvisKeyframePlotRangeWidget *)editor;
         edit->getData(s.start, s.end);
-        model->setData(index, qVariantFromValue(s));
+        model->setData(index, QVariant::fromValue(s));
     }
     else if (index.data().canConvert<KeyframePoints>())
     {
         KeyframePoints s(index.data().value<KeyframePoints>());
         QvisKeyframeWidget *edit = (QvisKeyframeWidget *)editor;
         edit->getData(s.idToIndex);
-        model->setData(index, qVariantFromValue(s));
+        model->setData(index, QVariant::fromValue(s));
     }
 }
 

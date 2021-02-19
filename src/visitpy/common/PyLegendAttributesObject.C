@@ -7,6 +7,9 @@
 #include <ColorAttribute.h>
 #include <legend_defines.h>
 
+// CUSTOM:
+#include <Py2and3Support.h>
+
 // Functions that we need in visitmodule.C
 extern void UpdateAnnotationHelper(AnnotationObject *);
 extern bool DeleteAnnotationObjectHelper(AnnotationObject *);
@@ -854,7 +857,11 @@ LegendAttributesObject_SetSuppliedLabels(PyObject *self, PyObject *args)
         {
             PyObject *item = PyTuple_GET_ITEM(tuple, i);
             if (PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
+            {
+                char *item_c_str = PyString_AsString(item);
+                vec[i] = std::string(item_c_str);
+                PyString_AsString_Cleanup(item_c_str);
+            }
             else 
                 vec[i] = std::string("");
         }
@@ -862,7 +869,9 @@ LegendAttributesObject_SetSuppliedLabels(PyObject *self, PyObject *args)
     else if(PyString_Check(tuple))
     {
         vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
+        char *tuple_c_str = PyString_AsString(tuple);
+        vec[0] = std::string(tuple_c_str);
+        PyString_AsString_Cleanup(tuple_c_str);
     }
     else
         return NULL;
@@ -962,14 +971,6 @@ LegendAttributesObject_dealloc(PyObject *v)
    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)v;
    if(obj->owns)
        delete obj->data;
-}
-
-static int
-LegendAttributesObject_compare(PyObject *v, PyObject *w)
-{
-    AnnotationObject *a = ((LegendAttributesObjectObject *)v)->data;
-    AnnotationObject *b = ((LegendAttributesObjectObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
 }
 
 static PyObject *
@@ -1437,50 +1438,76 @@ static const char *LegendAttributesObject_Purpose = "This class defines defines 
 static char *LegendAttributesObject_Purpose = "This class defines defines an interface to a legend annotation object.";
 #endif
 
+
+// CUSTOM
+static PyObject *LegendAttributesObject_richcompare(PyObject *self, PyObject *other, int op);
+
+
+// CUSTOM
+
+//
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
 //
 // The type description structure
 //
-static PyTypeObject LegendAttributesObjectType =
+VISIT_PY_TYPE_OBJ(LegendAttributesObjectType,
+                  "LegendAttributesObject",
+                  LegendAttributesObjectObject,
+                  LegendAttributesObject_dealloc,
+                  LegendAttributesObject_print,
+                  LegendAttributesObject_getattr,
+                  LegendAttributesObject_setattr,
+                  LegendAttributesObject_str,
+                  LegendAttributesObject_Purpose,
+                  LegendAttributesObject_richcompare,
+                  0); /* as_number */
+
+// CUSTOM
+static PyObject *
+LegendAttributesObject_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "LegendAttributesObject",                    // tp_name
-    sizeof(LegendAttributesObjectObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)LegendAttributesObject_dealloc,  // tp_dealloc
-    (printfunc)LegendAttributesObject_print,     // tp_print
-    (getattrfunc)LegendAttributesObject_getattr, // tp_getattr
-    (setattrfunc)LegendAttributesObject_setattr, // tp_setattr
-    (cmpfunc)LegendAttributesObject_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)LegendAttributesObject_str,// tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    LegendAttributesObject_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &LegendAttributesObjectType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    AnnotationObject *a = ((LegendAttributesObjectObject *)self)->data;
+    AnnotationObject *b = ((LegendAttributesObjectObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
+
 
 //
 // Helper functions for object allocation.

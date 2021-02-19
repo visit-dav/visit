@@ -5,6 +5,7 @@
 #ifndef PY_EXTERNALSURFACEATTRIBUTES_H
 #define PY_EXTERNALSURFACEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ExternalSurfaceAttributes.h>
 
 //

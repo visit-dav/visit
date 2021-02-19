@@ -5,6 +5,7 @@
 #ifndef PY_TUBEATTRIBUTES_H
 #define PY_TUBEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <TubeAttributes.h>
 
 //

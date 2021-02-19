@@ -36,6 +36,7 @@ avtPhong::avtPhong(double gmax, double lpow)
     : gradMax(gmax), lightingPower(lpow)
 {
     inv_gradMax = 1. / gmax;
+    inv_lightingPower = 1. / lightingPower;
 }
 
 
@@ -246,7 +247,8 @@ double dot(double v1[3], double v2[3]){
 }
 
 
-void avtPhong::AddLightingHeadlight(int index, const avtRay *ray, unsigned char *rgb, double alpha, double matProperties[4]) const
+void avtPhong::AddLightingHeadlight(int index, const avtRay *ray,
+    unsigned char *rgb, double alpha, double matProperties[4]) const
 {
     const LightAttributes &l = lights.GetLight(0);
     if (l.GetEnabledFlag()){
@@ -300,9 +302,18 @@ void avtPhong::AddLightingHeadlight(int index, const avtRay *ray, unsigned char 
         if (nl < 0.0)
             nl = -nl;
 
+        //
+        // Lighting power is too harsh if we just multiply it in. Incorporating it
+        // into diffuse gives a much more palatable result.
+        //
         for (int i=0; i<3; i++) 
-              col[i] = ( ((matProperties[0] + (matProperties[1] * nl)) * col[i])   + ((matProperties[2] * pow(nl,matProperties[3])) * alpha) ) * lightingPower;
-            //                amb              +          diff                   +                    spec
+        {
+            // amb + diff + spec
+            double amb  = matProperties[0];
+            double diff = pow(matProperties[1], inv_lightingPower) * nl;
+            double spec = matProperties[2] * pow(nl,matProperties[3]) * alpha;
+            col[i] = ((amb + diff) * col[i]) + spec;
+        }
 
        // convert to unsignedChar
         if ((col[0] * 255) > 255.0)

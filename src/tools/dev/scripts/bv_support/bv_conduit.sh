@@ -20,7 +20,11 @@ function bv_conduit_depends_on
     if [[ "$DO_HDF5" == "yes" ]] ; then
         depends_on="hdf5"
     fi
-    
+
+    if [[ "$DO_PYTHON" == "yes" ]] ; then
+        depends_on="python"
+    fi
+
     if [[ "$DO_MPICH" == "yes" ]] ; then
         depends_on="$depends_on mpich"
     fi
@@ -30,12 +34,12 @@ function bv_conduit_depends_on
 
 function bv_conduit_info
 {
-    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.4.0"}
+    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.7.1"}
     export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}-src-with-blt.tar.gz"}
-    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.4.0"}
+    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.7.1"}
     export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
-    export CONDUIT_MD5_CHECKSUM="49c107c076ecd4e8ae6eb4ffe28198aa"
-    export CONDUIT_SHA256_CHECKSUM="c228e6f0ce5a9c0ffb98e0b3d886f2758ace1a4b40d00f3f118542c0747c1f52"
+    export CONDUIT_MD5_CHECKSUM="7f9bb79ef0a6bf42fa9bc05af3829e5b"
+    export CONDUIT_SHA256_CHECKSUM="460a480cf08fedbf5b38f707f94f20828798327adadb077f80dbab048fd0a07d"
 }
 
 function bv_conduit_print
@@ -72,7 +76,7 @@ function bv_conduit_host_profile
 function bv_conduit_ensure
 {
     if [[ "$DO_CONDUIT" == "yes" ]] ; then
-        ensure_built_or_ready "conduit" $CONDUIT_VERSION $CONDUIT_BUILD_DIR $CONDUIT_FILE
+        ensure_built_or_ready "conduit" $CONDUIT_VERSION $CONDUIT_BUILD_DIR $CONDUIT_FILE $CONDUIT_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_CONDUIT="no"
@@ -137,7 +141,7 @@ function build_conduit
     # Remove the CMakeCache.txt files ... existing files sometimes prevent
     # fields from getting overwritten properly.
     #
-    rm -Rf $CONDUIT_BUILD_DIR}/CMakeCache.txt $CONDUIT_BUILD_DIR/*/CMakeCache.txt
+    rm -Rf $CONDUIT_BUILD_DIR/CMakeCache.txt $CONDUIT_BUILD_DIR/*/CMakeCache.txt
 
 
     conduit_build_mode="${VISIT_BUILD_MODE}"
@@ -173,17 +177,21 @@ function build_conduit
             fi
         fi
     fi
-    
-    
+
     if [[ "$DO_HDF5" == "yes" ]] ; then
         cfg_opts="${cfg_opts} -DHDF5_DIR:STRING=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/"
+    fi
+
+    if [[ "$DO_PYTHON" == "yes" ]] ; then
+        cfg_opts="${cfg_opts} -DPYTHON_EXECUTABLE:STRING=$PYTHON_COMMAND"
+        cfg_opts="${cfg_opts} -DENABLE_PYTHON:STRING=TRUE"
     fi
 
     if [[ "$FC_COMPILER" != "no" ]] ; then
         cfg_opts="${cfg_opts} -DENABLE_FORTRAN:BOOL=ON"
         cfg_opts="${cfg_opts} -DCMAKE_Fortran_COMPILER:STRING=${FC_COMPILER}"
     fi
-    
+
     #
     # Conduit Relay MPI Support
     #
@@ -234,7 +242,7 @@ function build_conduit
     # Build Conduit
     #
     info "Building Conduit . . . (~5 minutes)"
-    $MAKE # don't use -j b/c gfortran can has issues with intermediate files
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "Conduit build failed.  Giving up"
         return 1

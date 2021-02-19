@@ -53,7 +53,7 @@ using     std::map;
 // ****************************************************************************
 
 avtOpenFOAMFileFormat::avtOpenFOAMFileFormat(const char *filename, 
-    DBOptionsAttributes *readOpts) : avtMTMDFileFormat(filename), timeSteps()
+    const DBOptionsAttributes *readOpts) : avtMTMDFileFormat(filename), timeSteps()
 {
     convertCellToPoint = false;
     readZones = false;
@@ -197,7 +197,7 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         // faceZones and cellZones if present.
         reader->SetReadZones(1);
     }
-    reader->Update();
+    reader->UpdateTimeStep(timeSteps[timeState]);
 
     stringVector lagrangianPatches;
     stringVector meshNames; // for non-lagrangian meshes

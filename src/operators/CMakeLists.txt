@@ -44,6 +44,9 @@
 #   Removed ProgrammableOp, since it doesn't compile and has been commented
 #   out for a while.
 #
+#   Eric Brugger, Mon Jul 20 16:07:05 PDT 2020
+#   I added the Tessellate operator.
+#
 #****************************************************************************
 
 IF(NOT WIN32)
@@ -111,6 +114,7 @@ Stagger
 StatisticalTrends
 SubdivideQuads
 SurfaceNormal
+Tessellate
 ThreeSlice
 Threshold
 ToroidalPoloidalProjection

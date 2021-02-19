@@ -74,7 +74,8 @@ VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 ## MPICH
 ##
 # Give VisIt information so it can install MPI into the binary distribution.
-VISIT_OPTION_DEFAULT(VISIT_MPICH_DIR ${VISITHOME}/mpich/3.0.4/${VISITARCH})
+#VISIT_OPTION_DEFAULT(VISIT_MPICH_DIR ${VISITHOME}/mpich/3.0.4/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MPICH_DIR /usr/local/mpich-3.3.2)
 VISIT_OPTION_DEFAULT(VISIT_MPICH_INSTALL ON TYPE BOOL)
 
 # Tell VisIt the parallel compiler so it can deduce parallel flags

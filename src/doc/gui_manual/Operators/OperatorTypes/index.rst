@@ -22,6 +22,7 @@ operators that you rarely use.
     Elevate_operator
     Explode_operator
     ExternalSurface_operator
+    ICS/index
     Index_Select_operator
     InverseGhostZone_operator
     Isosurface_operator
@@ -36,6 +37,7 @@ operators that you rarely use.
     Slice_operator
     Smooth_operator
     SphereSlice_operator
+    Tessellate_operator
     ThreeSlice_operator
     Threshold_operator
     Transform_operator

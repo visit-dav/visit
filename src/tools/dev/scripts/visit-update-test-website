@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd /project/projectdirs/visit/www
+cd /usr/workspace/wsa/visit/dashboard/dashboard
 
 # update top-level index.html file
 rm -f index.html
@@ -13,15 +13,22 @@ echo "   <td><b>Mode</b></td>" >> index.html
 echo "   <td><b>Result</b></td>" >> index.html
 echo "</tr>" >> index.html
 
-ls -1t /project/projectdirs/visit/www/tests/*/*/index.html | while read testLine; do
+ls -1t /usr/workspace/wsa/visit/dashboard/dashboard/*/*/index.html | while read testLine; do
 
-    theMode=`echo $testLine | cut -d'/' -f8`
-    theRelDir=`echo $testLine | cut -d'/' -f6-`
+    theMode=`echo $testLine | cut -d'/' -f9`
+    theRelDir=`echo $testLine | cut -d'/' -f8-`
     theRelDir="./${theRelDir}"
-    theTimeStamp=`ls -l --time-style=+"%A_%b_%d_%I:%M%p" $testLine | tr -s ' ' | cut -d' ' -f6`
+    theTimeStamp=`echo $testLine | cut -d'/' -f8`
+    theYear=`echo $theTimeStamp | cut -d'-' -f1`
+    f2=`echo $theTimeStamp | cut -d'-' -f2`
+    theDay=`echo $theTimeStamp | cut -d'-' -f3`
+    theTime=`echo $theTimeStamp | cut -d'-' -f4`
+    theDate="$theYear-$f2-$theDay"
+    theWeekDay=$(date -d $theDate +%A)
+    theMonth=$(date -d $theDate +%B)
 
     echo "<tr>" >> index.html
-    echo "<td>${theTimeStamp}</td>" >> index.html
+    echo "<td>${theWeekDay}, ${theMonth} ${theDay}, ${theYear} ${theTime}</td>" >> index.html
     echo "<td><a href=\"${theRelDir}\">${theMode}</a></td>" >> index.html
 
     hasFailed=`grep -m 1 Failed $testLine 2>/dev/null`
@@ -44,5 +51,5 @@ ls -1t /project/projectdirs/visit/www/tests/*/*/index.html | while read testLine
     echo "</tr>" >> index.html
 done
 
-chgrp -R visit index.html
-chmod -R g+rwX,o+rX index.html
+chgrp visit index.html
+chmod g+rwX,o+rX index.html

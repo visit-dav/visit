@@ -1019,3 +1019,44 @@ avtFileFormat::AddLabelVarToMetaData(avtDatabaseMetaData *md, string name,
     md->Add(label);
 }
 
+
+int
+avtFileFormat::GetCycle(void)
+{
+    return INVALID_CYCLE;
+}
+
+
+int
+avtFileFormat::GetCycle(int)
+{
+    return INVALID_CYCLE;
+}
+
+
+double
+avtFileFormat::GetTime(void)
+{
+    return INVALID_TIME;
+}
+
+
+double
+avtFileFormat::GetTime(int)
+{
+    return INVALID_TIME;
+}
+
+
+int
+avtFileFormat::GetCycleFromFilename(const char *f) const
+{
+    if (f[0] == '\0') return FORMAT_INVALID_CYCLE; return GuessCycle(f);
+}
+
+
+double
+avtFileFormat::GetTimeFromFilename(const char *f) const
+{
+    if (f[0] == '\0') return FORMAT_INVALID_TIME; return GuessTime(f);
+}

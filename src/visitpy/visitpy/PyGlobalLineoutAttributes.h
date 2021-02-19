@@ -5,6 +5,7 @@
 #ifndef PY_GLOBALLINEOUTATTRIBUTES_H
 #define PY_GLOBALLINEOUTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <GlobalLineoutAttributes.h>
 #include <visitpy_exports.h>
 

@@ -54,8 +54,8 @@ OpenDatabase(db[1])
 AddPlot("FilledBoundary", "material(mesh)")
 DrawPlots()
 Test("multi_format_02")
-
-SetTimeSliderState(TimeSliderGetNStates() / 2)
+# note: py3 div creates float
+SetTimeSliderState(int(TimeSliderGetNStates() / 2))
 Test("multi_format_03")
 
 # Switch back to window 1.

@@ -83,6 +83,10 @@ QvisMultiresControlWindow::~QvisMultiresControlWindow()
 //   Tom Fogal, Mon Aug 30 12:30:54 MDT 2010
 //   Add resolution # to label.
 //
+//   Brad Whitlock, Wed Sep  2 17:54:16 PDT 2020
+//   Use valueChanged to set the label text. Use sliderReleased to update the
+//   multires value. This makes autoupdate work better.
+//
 // ****************************************************************************
 
 void
@@ -92,8 +96,8 @@ QvisMultiresControlWindow::CreateWindowContents()
     topLayout->addLayout(mainLayout);
 
     resolutionLevelLabel = new QLabel(this);
-    resolutionLevelLabel->setText(tr("Resolution: %1").arg(0));
     mainLayout->addWidget(resolutionLevelLabel,0,0);
+    UpdateLabelText(0);
 
     this->resolution = new QSlider(Qt::Horizontal, this);
     this->resolution->setMaximum(32); // HACK, we don't know yet.
@@ -101,7 +105,9 @@ QvisMultiresControlWindow::CreateWindowContents()
     mainLayout->addWidget(this->resolution, 0, 1);
 
     connect(this->resolution, SIGNAL(valueChanged(int)), this,
-            SLOT(resolutionLevelChanged(int)));
+            SLOT(updateResolutionLevelLabel(int)));
+    connect(this->resolution, SIGNAL(sliderReleased()), this,
+            SLOT(resolutionLevelChanged()));
 }
 
 
@@ -153,8 +159,7 @@ QvisMultiresControlWindow::UpdateWindow(bool doAll)
     this->resolution->setMaximum(std::max(0, atts->GetMaxResolution()));
     this->resolution->blockSignals(false);
     this->resolution->update();
-    this->resolutionLevelLabel->setText(tr("Resolution: %1").
-                                        arg(atts->GetResolution()));
+    UpdateLabelText(atts->GetResolution());
     // set it back to its default background color.
     QPalette p = QApplication::palette();
     this->resolutionLevelLabel->setPalette(p);
@@ -187,32 +192,41 @@ QvisMultiresControlWindow::GetCurrentValues(int which_widget)
     {
         atts->SetResolution(this->resolution->value());
     }
-
-#if 0
-    // Not yet ported to Qt4; we might get rid of the 'info' label.
-
-    // Do info
-    if(which_widget == MultiresControlAttributes::ID_info || doAll)
-    {
-        temp = info->displayText();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            atts->SetInfo(temp.latin1());
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of info was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetInfo().c_str());
-            Message(msg);
-            atts->SetInfo(atts->GetInfo());
-        }
-    }
-#endif
 }
 
+// ****************************************************************************
+// Method: QvisMultiresControlWindow::UpdateLabelText
+//
+// Purpose:
+//   Update the resolution label text.
+//
+// Arguments:
+//   value : The value we want to put into the text.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep  2 18:28:45 PDT 2020
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisMultiresControlWindow::UpdateLabelText(int value)
+{
+    // Adjust padding so the width does not change so much that the slider moves
+    // because the label changed sizes.
+    QString res, space(" ");
+    res.setNum(value);
+    if(value < 100)
+        res = space + res;
+    if(value < 10)
+        res = space + res;
+    resolutionLevelLabel->setText(tr("Resolution: %1").arg(res));
+}
 
 //
 // Qt Slot functions
@@ -222,37 +236,33 @@ QvisMultiresControlWindow::GetCurrentValues(int which_widget)
 //
 //   Tom Fogal, Mon Aug 30 12:52:36 MDT 2010
 //   Change resolution label as well.
+//
+//   Brad Whitlock, Wed Sep  2 18:07:03 PDT 2020
+//   Only set the label values here.
 void
-QvisMultiresControlWindow::resolutionLevelChanged(int val)
+QvisMultiresControlWindow::updateResolutionLevelLabel(int val)
 {
     if(val != atts->GetResolution())
     {
-        atts->SetResolution(val);
-        resolution->setValue(val);
-        resolutionLevelLabel->setText(tr("Resolution: %1").arg(val));
+        UpdateLabelText(val);
         resolutionLevelLabel->setAutoFillBackground(true);
-        // Change the text color to indicate there are unapplied changes.
+        // Change the text color to indicate there would be unapplied changes.
         QPalette p;
         p.setColor(QPalette::WindowText, QColor(0,228,0));
         resolutionLevelLabel->setPalette(p);
-
-        SetUpdate(false);
-        Apply();
     }
 }
 
-
 void
-QvisMultiresControlWindow::resolutionProcessText()
+QvisMultiresControlWindow::resolutionLevelChanged()
 {
-    GetCurrentValues(MultiresControlAttributes::ID_resolution);
+    int val = resolution->value();
 
-    Apply();
-}
-
-void
-QvisMultiresControlWindow::infoProcessText()
-{
-    GetCurrentValues(MultiresControlAttributes::ID_info);
-    Apply();
+    if(val != atts->GetResolution())
+    {
+        UpdateLabelText(val);
+        atts->SetResolution(val);
+        SetUpdate(false);
+        Apply();
+    }
 }

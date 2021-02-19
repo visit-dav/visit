@@ -122,8 +122,8 @@ class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisAnnotationWindow(const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+    QvisAnnotationWindow(const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisAnnotationWindow();
     virtual void CreateWindowContents();

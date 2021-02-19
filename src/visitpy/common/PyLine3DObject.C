@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <ColorAttribute.h>
 #include <MapNode.h>
+// CUSTOM:
+#include <Py2and3Support.h>
+
 
 // Functions that we need in visitmodule.C
 extern void UpdateAnnotationHelper(AnnotationObject *);
@@ -711,13 +714,14 @@ Line3DObject_dealloc(PyObject *v)
        delete obj->data;
 }
 
-static int
-Line3DObject_compare(PyObject *v, PyObject *w)
-{
-    AnnotationObject *a = ((Line3DObjectObject *)v)->data;
-    AnnotationObject *b = ((Line3DObjectObject *)w)->data;
-    return (*a == *b) ? 0 : -1;
-}
+// OLD
+// static int
+// Line3DObject_compare(PyObject *v, PyObject *w)
+// {
+//     AnnotationObject *a = ((Line3DObjectObject *)v)->data;
+//     AnnotationObject *b = ((Line3DObjectObject *)w)->data;
+//     return (*a == *b) ? 0 : -1;
+// }
 
 static PyObject *
 Line3DObject_getattr(PyObject *self, char *name)
@@ -963,50 +967,74 @@ static const char *Line3DObject_Purpose = "This class defines defines an interfa
 static char *Line3DObject_Purpose = "This class defines defines an interface to a 3D line object.";
 #endif
 
+// CUSTOM
+static PyObject *Line3DObject_richcompare(PyObject *self, PyObject *other, int op);
+
+// CUSTOM
+
+//
+// Python Type Struct Def Macro from Py2and3Support.h
+//
+//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
+//                            VPY_NAME,
+//                            VPY_OBJECT,
+//                            VPY_DEALLOC,
+//                            VPY_PRINT,
+//                            VPY_GETATTR,
+//                            VPY_SETATTR,
+//                            VPY_STR,
+//                            VPY_PURPOSE,
+//                            VPY_RICHCOMP,
+//                            VPY_AS_NUMBER)
+
 //
 // The type description structure
 //
-static PyTypeObject Line3DObjectType =
+VISIT_PY_TYPE_OBJ(Line3DObjectType,
+                  "Line3DObject",
+                  Line3DObjectObject,
+                  Line3DObject_dealloc,
+                  Line3DObject_print,
+                  Line3DObject_getattr,
+                  Line3DObject_setattr,
+                  Line3DObject_str,
+                  Line3DObject_Purpose,
+                  Line3DObject_richcompare,
+                  0); /* as_number */
+
+// CUSTOM
+static PyObject *
+Line3DObject_richcompare(PyObject *self, PyObject *other, int op)
 {
-    //
-    // Type header
-    //
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                   // ob_size
-    "Line3DObject",                    // tp_name
-    sizeof(Line3DObjectObject),        // tp_basicsize
-    0,                                   // tp_itemsize
-    //
-    // Standard methods
-    //
-    (destructor)Line3DObject_dealloc,  // tp_dealloc
-    (printfunc)Line3DObject_print,     // tp_print
-    (getattrfunc)Line3DObject_getattr, // tp_getattr
-    (setattrfunc)Line3DObject_setattr, // tp_setattr
-    (cmpfunc)Line3DObject_compare,     // tp_compare
-    (reprfunc)0,                         // tp_repr
-    //
-    // Type categories
-    //
-    0,                                   // tp_as_number
-    0,                                   // tp_as_sequence
-    0,                                   // tp_as_mapping
-    //
-    // More methods
-    //
-    0,                                   // tp_hash
-    0,                                   // tp_call
-    (reprfunc)Line3DObject_str,        // tp_str
-    0,                                   // tp_getattro
-    0,                                   // tp_setattro
-    0,                                   // tp_as_buffer
-    Py_TPFLAGS_CHECKTYPES,               // tp_flags
-    Line3DObject_Purpose,              // tp_doc
-    0,                                   // tp_traverse
-    0,                                   // tp_clear
-    0,                                   // tp_richcompare
-    0                                    // tp_weaklistoffset
-};
+    // only compare against the same type 
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &Line3DObjectType)
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    PyObject *res = NULL;
+    AnnotationObject *a = ((Line3DObjectObject *)self)->data;
+    AnnotationObject *b = ((Line3DObjectObject *)other)->data;
+
+    switch (op)
+    {
+       case Py_EQ:
+           res = (*a == *b) ? Py_True : Py_False;
+           break;
+       case Py_NE:
+           res = (*a != *b) ? Py_True : Py_False;
+           break;
+       default:
+           res = Py_NotImplemented;
+           break;
+    }
+
+    Py_INCREF(res);
+    return res;
+}
+
 
 //
 // Helper functions for object allocation.

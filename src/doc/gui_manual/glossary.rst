@@ -1,3 +1,5 @@
+.. _Glossary:
+
 Glossary
 ========
 
@@ -10,11 +12,21 @@ Glossary
        setting of **Always** means to always enable the feature. A setting
        of **Auto**, which is typically the default, means the allow VisIt_ 
        to decide when it thinks it is best to enable or disable the feature.
+    
+   Integral Curve
+       An integral curve is a curve that begins at a seed location and is
+       tangent at every point in a vector field. It is computed by numerical
+       integration of the seed location through the vector field.
 
    Node
    Point
    Vertex
        These terms refer to the *corners* or *ends* of mesh elements.
+
+   Pathlines
+       A path rendered by an integrator that uses the vector field that is
+       *in-step* with the integrator, so that as the integrator steps through
+       time, it uses data from the vector field at each new time step.
 
    Node-centered
    Point-centered
@@ -29,6 +41,10 @@ Glossary
        portions of VisIt_ have supported multi-threaded processing for several
        years, in the currently available implementations, a parallel task is an
        :abbr:`MPI (Message Passing Interface)` rank.
+
+   Streamlines
+       A path rendered by an integrator that uses the *same* vector field for
+       the entire integration.
 
    SIL
    Subset Inclusion Lattice

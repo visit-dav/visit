@@ -446,16 +446,18 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->addWidget(samplingTypeButtons[1], sRow, 2);
     connect(samplingTypeButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(samplingTypeChanged(int)));
 
+    sRow++;
+
     fillLabel = new QLabel(tr("Sampling along:"), samplingGroup);
-    samplingLayout->addWidget(fillLabel, sRow, 3);
+    samplingLayout->addWidget(fillLabel, sRow, 0);
     fillButtonGroup = new QButtonGroup(samplingGroup);
     fillButtons[0] = new QRadioButton(tr("Boundary"), samplingGroup);
     fillButtons[1] = new QRadioButton(tr("Interior"), samplingGroup);
     fillButtons[0]->setChecked(true);
     fillButtonGroup->addButton(fillButtons[0], 0);
     fillButtonGroup->addButton(fillButtons[1], 1);
-    samplingLayout->addWidget(fillButtons[0], sRow, 4);
-    samplingLayout->addWidget(fillButtons[1], sRow, 5);
+    samplingLayout->addWidget(fillButtons[0], sRow, 1);
+    samplingLayout->addWidget(fillButtons[1], sRow, 2);
     connect(fillButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(fillChanged(int)));
 
     sRow++;
@@ -508,6 +510,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->addWidget(sampleDensity[1], sRow, 3);
     samplingLayout->addWidget(sampleDensityLabel[2], sRow, 4);
     samplingLayout->addWidget(sampleDensity[2], sRow, 5);
+
     sRow++;
 
     sampleDistanceLabel[0] = new QLabel(tr("Sample distance 0"), samplingGroup);
@@ -525,6 +528,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->addWidget(sampleDistance[1], sRow, 3);
     samplingLayout->addWidget(sampleDistanceLabel[2], sRow, 4);
     samplingLayout->addWidget(sampleDistance[2], sRow, 5);
+    
     sRow++;
 
     // Create the field group box.
@@ -545,7 +549,6 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     fieldType->addItem(tr("M3D-C1 3D"));
     fieldType->addItem(tr("Nek5000"));
     fieldType->addItem(tr("Nektar++"));
-    fieldType->addItem(tr("NIMROD"));
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);
@@ -601,7 +604,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     integrationType = new QComboBox(integrationGroup);
     integrationType->addItem(tr("Forward Euler (Single-step)"));
     integrationType->addItem(tr("Leapfrog (Single-step)"));
-    integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
+    integrationType->addItem(tr("Runge-Kutta-Dormand-Prince (RKDP)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
     integrationType->addItem(tr("Runge-Kutta 4 (Single-step)"));
     integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D fields only)"));
@@ -726,7 +729,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
 
     // Create the data group
     QGroupBox *dataGroup = new QGroupBox(pageAppearance);
-    dataGroup->setTitle(tr("Data"));
+    dataGroup->setTitle(tr("Coloring"));
     mainLayout->addWidget(dataGroup, 0, 0);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
@@ -734,17 +737,17 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataLayout->setColumnStretch(2,10);
 
     // Create the data value.
-    dataLayout->addWidget(new QLabel(tr("Data value"), dataGroup), 0, 0);
+    dataLayout->addWidget(new QLabel(tr("Color by"), dataGroup), 0, 0);
 
     dataValueComboBox = new QComboBox(dataGroup);
-    dataValueComboBox->addItem(tr("Solid"), IntegralCurveAttributes::Solid);
-    dataValueComboBox->addItem(tr("Seed point ID"), IntegralCurveAttributes::SeedPointID);
-    dataValueComboBox->addItem(tr("Speed"), IntegralCurveAttributes::Speed);
+    dataValueComboBox->addItem(tr("Solid Color"), IntegralCurveAttributes::Solid);
+    dataValueComboBox->addItem(tr("Random Color"), IntegralCurveAttributes::SeedPointID);
+    dataValueComboBox->addItem(tr("Vector magnitude"), IntegralCurveAttributes::Speed);
     dataValueComboBox->addItem(tr("Vorticity magnitude"), IntegralCurveAttributes::Vorticity);
     dataValueComboBox->addItem(tr("Arc length"), IntegralCurveAttributes::ArcLength);
-    dataValueComboBox->addItem(tr("Absolute time"), IntegralCurveAttributes::TimeAbsolute);
-    dataValueComboBox->addItem(tr("Relative time"), IntegralCurveAttributes::TimeRelative);
-    dataValueComboBox->addItem(tr("Ave. dist. from seed"), IntegralCurveAttributes::AverageDistanceFromSeed);
+    dataValueComboBox->addItem(tr("Absolute integration time"), IntegralCurveAttributes::TimeAbsolute);
+    dataValueComboBox->addItem(tr("Relative integration time"), IntegralCurveAttributes::TimeRelative);
+    dataValueComboBox->addItem(tr("Avg. dist. from seed"), IntegralCurveAttributes::AverageDistanceFromSeed);
     dataValueComboBox->addItem(tr("Correlation distance"), IntegralCurveAttributes::CorrelationDistance);
     dataValueComboBox->addItem(tr("Closed Curve"), IntegralCurveAttributes::ClosedCurve);
     dataValueComboBox->addItem(tr("Difference"), IntegralCurveAttributes::Difference);
@@ -1038,27 +1041,22 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->addWidget(issueWarningForStiffness, 4, 0);
     QLabel *stiffnessLabel = new QLabel(tr("Issue warning when a stiffness condition is detected."), warningsGrp);
     warningsGLayout->addWidget(stiffnessLabel, 4, 1, 1, 2);
-    QLabel *stiffnessDescLabel1 = new QLabel(tr("(Stiffness refers to one vector component being so much "), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel1, 5, 1, 1, 2);
-    QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel2, 6, 1, 1, 2);
 
     issueWarningForCriticalPoints = new QCheckBox(central);
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
-    warningsGLayout->addWidget(issueWarningForCriticalPoints, 7, 0);
+    warningsGLayout->addWidget(issueWarningForCriticalPoints, 5, 0);
     QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
-    warningsGLayout->addWidget(critPointLabel, 7, 1, 1, 2);
-    QLabel *critPointDescLabel = new QLabel(tr("(I.e. the curve circles around the critical point without stopping.)"), warningsGrp);
-    warningsGLayout->addWidget(critPointDescLabel, 8, 1, 1, 2);
+    warningsGLayout->addWidget(critPointLabel, 5, 1, 1, 2);
+
     criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
     criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-    warningsGLayout->addWidget(criticalPointThresholdLabel, 9, 1);
+    warningsGLayout->addWidget(criticalPointThresholdLabel, 6, 1);
     criticalPointThreshold = new QLineEdit(warningsGrp);
     criticalPointThreshold->setAlignment(Qt::AlignLeft);
     connect(criticalPointThreshold, SIGNAL(returnPressed()),
             this, SLOT(criticalPointThresholdProcessText()));
-    warningsGLayout->addWidget(criticalPointThreshold, 9, 2);
+    warningsGLayout->addWidget(criticalPointThreshold, 6, 2);
 }
 
 // ****************************************************************************
@@ -1507,12 +1505,6 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             {
               atts->SetIntegrationType(IntegralCurveAttributes::M3DC12DIntegrator);
               integrationType->setCurrentIndex(IntegralCurveAttributes::M3DC12DIntegrator);
-              UpdateIntegrationAttributes();
-            }
-            else if (atts->GetFieldType() == IntegralCurveAttributes::NIMRODField)
-            {
-              atts->SetIntegrationType(IntegralCurveAttributes::AdamsBashforth);
-              integrationType->setCurrentIndex(IntegralCurveAttributes::AdamsBashforth);
               UpdateIntegrationAttributes();
             }
             else if (atts->GetIntegrationType() == IntegralCurveAttributes::M3DC12DIntegrator)
@@ -2044,7 +2036,6 @@ QvisIntegralCurveWindow::UpdateFieldAttributes()
       TurnOn(velocitySource, velocitySourceLabel);
       break;
 
-    case IntegralCurveAttributes::NIMRODField:
     default:
       TurnOff(fieldConstant, fieldConstantLabel);
       TurnOff(velocitySource, velocitySourceLabel);

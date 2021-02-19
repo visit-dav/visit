@@ -36,7 +36,7 @@ class avtMaterial;
 class avtNASTRANFileFormat : public avtSTSDFileFormat
 {
 public:
-                       avtNASTRANFileFormat(const char *filename, DBOptionsAttributes*);
+                       avtNASTRANFileFormat(const char *filename, const DBOptionsAttributes*);
     virtual           ~avtNASTRANFileFormat();
 
     virtual void         *GetAuxiliaryData(const char *var,

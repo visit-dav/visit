@@ -69,8 +69,8 @@ using namespace std;
 // Class: PMDFile
 //
 // Purpose:
-//      The class PMDFile enables to read the structure of an OpenPMD file.
-//      This class constitutes the main one to read OpenPMD files.
+//      The class PMDFile enables to read the structure of an openPMD file.
+//      This class constitutes the main one to read openPMD files.
 //
 // Programmer: Mathieu Lobet
 // Creation:   Fri Oct 14 2016
@@ -87,17 +87,17 @@ class PMDFile
 
 		/// File path
 		char                    filePath[128];
-		/// OpenPMD version
+		/// openPMD standard version
 		string                  version;
 		/// Meshes path
-		char 					meshesPath[64];
+		string 					meshesPath;
 		// Particles path
-		char 					particlesPath[64];
+		string 					particlesPath;
 		/// Id of the file after opening
 		hid_t                   fileId;
 
 		/// vector of PMDIteration objects
-		/// that contains the OpenPMD iterations
+		/// that contains the openPMD iterations
 		vector <PMDIteration>   iterations;
 
 		void                    OpenFile(char * path);

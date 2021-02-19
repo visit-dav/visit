@@ -12,9 +12,16 @@
 #    Added exception handling code so it does not crash if baselines are
 #    missing.
 #
+#    Kathleen Biagas, Tue Feb 9 20201 
+#    Removed ParseDiff, which used *nix 'diff -f', in favor of
+#    difflib.SequenceMatcher and it's get_opcodes function.  This allows
+#    text diffs to work on Windows.  While difflib has an HtmlDiff option for
+#    creating html output, the html created here serves our purposes better,
+#    hence the choice of SequenceMatcher and get_opcodes.
+#
 # ----------------------------------------------------------------------------
 
-import os, string, cgi
+import os, string, cgi, difflib
 
 class TextFile:
     def __init__(self, fn, msg):
@@ -110,32 +117,8 @@ class Differencer:
         self.in1.close()
         self.in2.close()
 
-    def ParseDiff(self):
-        self.commands=[]
-        f = os.popen("/usr/bin/diff -f '%s' '%s' 2>/dev/null"%(self.fn1,self.fn2))
-        op = f.read(1)
-        while op != '':
-            arguments = string.split(f.readline())
-            line = int(arguments[0])
-            arg  = 1
-            if len(arguments) > 1: arg = int(arguments[1]) + 1 - line
-            if (op != 'd'):
-                length = 0;
-                buff = string.strip(f.readline())
-                while buff == "" or buff[0] != '.':
-                    length = length + 1
-                    buff = string.strip(f.readline())
-            else:
-                length = arg
-
-            if op != 'a': line=line-1
-
-            self.commands.append((op,line,arg,length))
-            op = f.read(1)
-        f.close()
-
     def GetNextLeft(self):
-        astr=cgi.escape(string.rstrip(self.nextleft))
+        astr=cgi.escape(self.nextleft.rstrip())
         self.nextleft = self.in1.readline()
         self.leftline = self.leftline+1
         if astr=="":
@@ -144,7 +127,7 @@ class Differencer:
             return astr
 
     def GetNextRight(self):
-        astr=cgi.escape(string.rstrip(self.nextright))
+        astr=cgi.escape(self.nextright.rstrip())
         self.nextright = self.in2.readline()
         self.rightline = self.rightline+1
         if astr=="":
@@ -200,53 +183,65 @@ class Differencer:
         return (self.nextleft == "" or self.nextright == "")
 
     def Difference(self, filename, testname):
-        commands = self.ParseDiff()
 
+        self.nModifications = 0
         self.nModifiedLines = 0
         self.nChanged = 0
         self.nAdded   = 0
         self.nDeleted = 0
-        for (op,line,arg,length) in self.commands:
-            if (op == 'a'): self.nAdded   = self.nAdded   + length
-            if (op == 'd'): self.nDeleted = self.nDeleted + arg
-            if (op == 'c'): self.nChanged = self.nChanged + arg
-        self.nModifications = len(self.commands)
-        self.nModifiedLines = self.nAdded + self.nChanged + self.nDeleted
-
         self.leftline=0
         self.rightline=0
-        curdiff=0
+
+        # open ... as handles the close
+        with open(self.fn1) as bf:
+            blines = bf.readlines()
+        with open(self.fn2) as cf:
+            clines = cf.readlines()
+
+        sm = difflib.SequenceMatcher(None, blines, clines)
+
+        # get mod counts before calling InitIO 
+        for opcode, b1, b2, c1, c2 in sm.get_opcodes():
+            #print("%7s base[%d:%d] cur[%d:%d] "%(opcode, b1, b2, c1, c2))
+            if opcode == 'delete':
+                self.nModifications += 1
+                self.nDeleted += (b2-b1)
+            elif opcode == 'insert':
+                self.nModifications += 1
+                self.nAdded += (c2-c1)
+            elif opcode == 'replace':
+                self.nModifications += 1
+                brange = b2-b1
+                crange = c2-c1
+                for i in range(min(brange,crange)):
+                    self.nChanged += 1
+                self.nChanged += abs(brange-crange) 
+
+        self.nModifiedLines = self.nAdded + self.nChanged + self.nDeleted
 
         self.InitIO(filename, testname)
-        while (not self.EOFReached()):
-            if (curdiff < len(self.commands)):
-                (op,line,arg,length) = self.commands[curdiff]
 
-            if (curdiff < len(self.commands) and line == self.leftline):
-                #print "op=%c line=%d arg=%d len=%d"%(op,line,arg,length)
-                if (op == 'd'):
-                    for i in range(arg):
-                        self.InsertLeft(self.DELETE)
-                elif (op == 'a'):
-                    for i in range(length):
-                        self.InsertRight(self.INSERT)
-                elif (op == 'c'):
-                    for i in range(min(arg,length)):
-                        self.InsertLine(self.CHANGE,self.CHANGE)
-                    if length>arg:
-                        for i in range(arg,length):
-                            self.InsertRight(self.CHANGE)
-                    else:
-                        for i in range(length,arg):
-                            self.InsertLeft(self.CHANGE)
-                curdiff=curdiff+1
-            else:
-                self.InsertLine(self.NOCOLOR, self.NOCOLOR)
-
-        while (self.nextleft != ""):
-            self.InsertLeft(self.DELETE)
-        while (self.nextright != ""):
-            self.InsertRight(self.INSERT)
+        for opcode, b1, b2, c1, c2 in sm.get_opcodes():
+            if opcode == 'delete':
+                for i in range(b2-b1):
+                    self.InsertLeft(self.DELETE)
+            elif opcode == 'insert':
+                for i in range(c2-c1):
+                    self.InsertRight(self.INSERT)
+            elif opcode == 'replace':
+                brange = b2-b1
+                crange = c2-c1
+                for i in range(min(brange,crange)):
+                    self.InsertLine(self.CHANGE, self.CHANGE)
+                if crange>brange:
+                    for i in range(brange,crange):
+                        self.InsertRight(self.CHANGE)
+                else:
+                    for i in range(crange,brange):
+                        self.InsertLeft(self.CHANGE)
+            else: # opcode == 'equal'
+                for i in range(b2-b1):
+                    self.InsertLine(self.NOCOLOR, self.NOCOLOR)
 
         self.FiniIO()
         

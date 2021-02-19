@@ -222,6 +222,11 @@ avtMultiCurveFilter::PostExecute(void)
 //    Don't throw an exception for no datasets. This is valid when running in
 //    parallel, doing a time-pick and creating MultiCurve plot from results.
 //
+//    Eric Brugger, Mon Jun 22 09:24:14 PDT 2020
+//    Increased the maximum number of curves to 20. Modified the end cap
+//    tick calculation to generate a single tick with 16 or more axes.
+//    Previously this gave no tick marks.
+//
 // ****************************************************************************
 
 void
@@ -298,11 +303,11 @@ avtMultiCurveFilter::Execute(void)
 
     int nx = dims[0];
     int ny = dims[1];
-    if (ny > 16)
+    if (ny > 20)
     {
         avtCallback::IssueWarning("The MultiCurve plot only allows up to "
-            "16 curves, displaying the first 16 curves.");
-        ny = 16;
+            "20 curves, displaying the first 20 curves.");
+        ny = 20;
     }
 
     vtkDataArray *xpts = grid->GetXCoordinates();
@@ -340,8 +345,13 @@ avtMultiCurveFilter::Execute(void)
     // that, otherwise use the range of the data.
     //
     double scale;
-    double nTicks = floor(30./ny-1.);
-    double tickSize = ny / 60.;
+    double nTicks = floor(32./ny-1.);
+    double tickSize = ny / 64.;
+    if (ny > 16)
+    {
+        nTicks = 1.;
+        tickSize = 0.25;
+    }
     if (atts.GetUseYAxisTickSpacing())
     {
         scale = tickSize / atts.GetYAxisTickSpacing();

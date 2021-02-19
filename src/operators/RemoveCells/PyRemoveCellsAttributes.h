@@ -5,6 +5,7 @@
 #ifndef PY_REMOVECELLSATTRIBUTES_H
 #define PY_REMOVECELLSATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <RemoveCellsAttributes.h>
 
 //

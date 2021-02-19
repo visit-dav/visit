@@ -30,6 +30,11 @@
 //  Programmer: Hank Childs
 //  Creation:   February 14, 2009
 //
+//  Modifications:
+//
+//  Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//  Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtTimeIteratorExpression::avtTimeIteratorExpression()
@@ -39,6 +44,7 @@ avtTimeIteratorExpression::avtTimeIteratorExpression()
     timeStride    = 1;
     numTimeSlicesToProcess = -1;
     cmfeType = CONN_CMFE;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

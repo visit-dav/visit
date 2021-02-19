@@ -99,3 +99,21 @@ inverted clipping region. This will make the plot appear whole. The plot with
 the inverted clipping region can then be transformed independently of the first 
 plot so it appears to slide out of the first plot. Then it is common to fade 
 out the second plot and zoom in on the first plot's clipped region.  
+
+Using the crinkle clip
+""""""""""""""""""""""
+
+Generally, when using the Clip operator, the clipped surface will be smooth,
+but this often isn't representative of the natural surfaces of the cells along
+the clipped boundary. The often jagged edges of those cells are cut away and replaced
+with new faces to create this smooth result. There are times, though, when
+it may be desirable to retain the original cell faces that lay along this
+boundary. This can be accomplished by enabling the **Crinkle clip** option, shown
+in :numref:`Figure %s <crinkle_clip>`.
+
+.. _crinkle_clip:
+
+.. figure:: images/crinkle_clip.png
+
+   Enabling the Crinkle clip option; Crinkle clip example
+

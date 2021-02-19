@@ -30,7 +30,7 @@ class vtkRectilinearGrid;
 class avtGGCMFileFormat : public avtMTSDFileFormat
 {
   public:
-                       avtGGCMFileFormat(const char *, DBOptionsAttributes *);
+                       avtGGCMFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtGGCMFileFormat();
 
     //

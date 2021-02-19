@@ -4,6 +4,7 @@
 
 #include <Python.h>
 #include <ViewerRPC.h>
+#include <Py2and3Support.h>
 #include <PyViewerRPC.h>
 #include <PyMapNode.h>
 

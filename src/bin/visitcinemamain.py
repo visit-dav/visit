@@ -1,4 +1,4 @@
-import sys, string
+import sys
 
 ###############################################################################
 # Function: main
@@ -15,8 +15,8 @@ import sys, string
 def main():
     visitcinema = ""
     for arg in sys.argv[0:]:
-        if string.find(arg, "visitcinema") != -1:
-            visitcinema = string.replace(arg, "visitcinemamain", "visitcinema")
+        if arg.find("visitcinema") != -1:
+            visitcinema = arg.replace("visitcinemamain", "visitcinema")
             break
 
     if visitcinema == "":

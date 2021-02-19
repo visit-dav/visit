@@ -5,6 +5,7 @@
 #ifndef PY_RENDERINGATTRIBUTES_H
 #define PY_RENDERINGATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <RenderingAttributes.h>
 #include <visitpy_exports.h>
 

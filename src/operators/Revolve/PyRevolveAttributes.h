@@ -5,6 +5,7 @@
 #ifndef PY_REVOLVEATTRIBUTES_H
 #define PY_REVOLVEATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <RevolveAttributes.h>
 
 //

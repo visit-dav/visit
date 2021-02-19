@@ -5,6 +5,7 @@
 #ifndef PY_TOPOLOGYATTRIBUTES_H
 #define PY_TOPOLOGYATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <TopologyAttributes.h>
 
 //

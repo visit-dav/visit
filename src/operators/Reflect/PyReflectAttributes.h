@@ -5,6 +5,7 @@
 #ifndef PY_REFLECTATTRIBUTES_H
 #define PY_REFLECTATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ReflectAttributes.h>
 
 //

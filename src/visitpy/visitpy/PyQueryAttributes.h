@@ -5,6 +5,7 @@
 #ifndef PY_QUERYATTRIBUTES_H
 #define PY_QUERYATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <QueryAttributes.h>
 #include <visitpy_exports.h>
 

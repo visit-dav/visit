@@ -5,6 +5,7 @@
 #ifndef PY_PICKATTRIBUTES_H
 #define PY_PICKATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <PickAttributes.h>
 #include <visitpy_exports.h>
 

@@ -32,7 +32,7 @@ class DBOptionsAttributes;
 class avtMDSplusFileFormat : public avtMTSDFileFormat
 {
   public:
-               avtMDSplusFileFormat(const char *, DBOptionsAttributes *);
+               avtMDSplusFileFormat(const char *, const DBOptionsAttributes *);
     virtual   ~avtMDSplusFileFormat() {;};
 
     //

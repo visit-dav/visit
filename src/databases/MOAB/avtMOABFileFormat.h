@@ -36,7 +36,7 @@ struct mhdf_FileDesc ;
 class avtMOABFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtMOABFileFormat(const char *, DBOptionsAttributes *);
+                       avtMOABFileFormat(const char *, const DBOptionsAttributes *);
     virtual           ~avtMOABFileFormat() {;};
 
     //
@@ -75,7 +75,7 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     vtkDataArray*          GetGeometrySetsVar();
     moab::Core*            mbCore;
     const char*            fileName;
-    DBOptionsAttributes *  readOptions;
+    const DBOptionsAttributes *  readOptions;
     bool                   fileLoaded;
     struct mhdf_FileDesc *       file_descriptor;
     std::set<int>          materials;

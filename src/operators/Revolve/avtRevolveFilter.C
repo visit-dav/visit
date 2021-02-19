@@ -362,6 +362,9 @@ RevolveVectors(vtkDataArray *vectors, bool cellVectors, int istop,
 //    Eric Brugger, Thu Aug 14 09:05:33 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Alister Maguire, Fri Jun 19 12:06:51 PDT 2020
+//    Added ability to revolve points (VTK_VERTEX).
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -411,9 +414,10 @@ avtRevolveFilter::ExecuteData(avtDataRepresentation *in_dr)
 
     //
     // Now set up the connectivity.  The output will consist of revolved
-    // quads (-> hexes) and revolved triangles (-> wedges).  No special care is
-    // given to the case where an edge of a cell lies directly on the axis of
-    // revolution (ie: you get a degenerate hex, not a wedge).
+    // quads (-> hexes), revolved triangles (-> wedges) and revolved points
+    // (vertexes). No special care is given to the case where an edge of a
+    // cell lies directly on the axis of revolution (ie: you get a degenerate
+    // hex, not a wedge).
     //
     vtkIdType n_out_cells = ncells*(nsteps-1);
     ugrid->Allocate(8*n_out_cells);
@@ -423,10 +427,10 @@ avtRevolveFilter::ExecuteData(avtDataRepresentation *in_dr)
          vtkCell *cell = in_ds->GetCell(i);
          int c = cell->GetCellType();
          if (c != VTK_QUAD && c != VTK_TRIANGLE && c != VTK_PIXEL &&
-             c != VTK_LINE)
+             c != VTK_LINE && c != VTK_VERTEX)
          {
              EXCEPTION1(InvalidCellTypeException, "anything but lines, quads,"
-                                                   " and tris.");
+                                                   " points, and tris.");
          }
          vtkIdList *list = cell->GetPointIds();
 
@@ -476,6 +480,25 @@ avtRevolveFilter::ExecuteData(avtDataRepresentation *in_dr)
                      quad[3] = pt0;
                  }
                  ugrid->InsertNextCell(VTK_QUAD, 4, quad);
+                 npts_times_j += npts;
+             }
+         }
+         else if (c == VTK_VERTEX)
+         {
+             vtkIdType in_vert = list->GetId(0);
+             vtkIdType npts_times_j = 0;
+             for (int j = 0; j < nsteps - 1; ++j)
+             {
+                 vtkIdType out_vert[1];
+                 if (j < nsteps-2)
+                 {
+                     out_vert[0] = npts_times_j + in_vert;
+                 }
+                 else
+                 {
+                     out_vert[0] = npts_times_j + in_vert;
+                 }
+                 ugrid->InsertNextCell(VTK_VERTEX, 1, out_vert);
                  npts_times_j += npts;
              }
          }

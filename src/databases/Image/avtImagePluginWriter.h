@@ -30,7 +30,7 @@ class
 avtImagePluginWriter : public virtual avtDatabaseWriter
 {
   public:
-                   avtImagePluginWriter(DBOptionsAttributes *);
+                   avtImagePluginWriter(const DBOptionsAttributes *);
     virtual       ~avtImagePluginWriter() {;};
 
   protected:

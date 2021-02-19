@@ -31,12 +31,16 @@
 //    Hank Childs, Thu Sep 22 15:39:11 PDT 2005
 //    Initialize takeMin.
 //
+//    Alister Maguire, Thu Jun 18 10:02:58 PDT 2020
+//    Set canApplyToDirectDatabaseQOT to false.
+//
 // ****************************************************************************
 
 avtSideVolume::avtSideVolume()
 {
     haveIssuedWarning = false;
     takeMin = true;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 

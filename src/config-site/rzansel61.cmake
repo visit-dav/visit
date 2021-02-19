@@ -1,25 +1,25 @@
 #/usr/workspace/visit/visit/thirdparty_shared/3.1.0/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake
 ##
-## ./build_visit3_1_0 generated host.cmake
-## created: Wed Dec 18 14:43:04 PST 2019
-## system: Linux rzansel61 4.14.0-115.10.1.1chaos.ch6a.ppc64le #1 SMP Thu Aug 8 15:51:58 PDT 2019 ppc64le ppc64le ppc64le GNU/Linux
+## ./build_visit3_1_3 generated host.cmake
+## created: Sun Sep 13 12:21:53 PDT 2020
+## system: Linux rzansel61 4.14.0-115.21.2.1chaos.ch6a.ppc64le #1 SMP Fri May 22 11:01:06 PDT 2020 ppc64le ppc64le ppc64le GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.1.0/blueos)
-SET(VISITARCH linux-ppc64le_gcc-4.9)
+SET(VISITHOME /usr/WS1/visit/visit/thirdparty_shared/3.2.0/blueos)
+SET(VISITARCH linux-ppc64le_gcc-7.3)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 ## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER /usr/tce/packages/gcc/gcc-7.3.1/bin/gcc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER /usr/tce/packages/gcc/gcc-7.3.1/bin/g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -fPIC -fvisibility=hidden" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -fPIC -fvisibility=hidden" TYPE STRING)
-SET(CMAKE_INSTALL_RPATH "/usr/tce/packages/gcc/gcc-4.9.3/lib64")
+SET(CMAKE_INSTALL_RPATH "/usr/tce/packages/gcc/gcc-7.3.1/lib")
 
 ##
 ## Parallel Build Setup.
@@ -84,7 +84,7 @@ VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.2.8/${VISITARCH})
 ##
 ## Qt
 ##
-SETUP_APP_VERSION(QT 5.10.1)
+SETUP_APP_VERSION(QT 5.14.2)
 VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${VISITHOME}/qt/${QT_VERSION}/${VISITARCH})
 
 ##
@@ -184,7 +184,7 @@ VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP ${VISIT_CONDUIT_LIBDEP} ${VISITHOME}/zlib
 ##
 ## Mili
 ##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/15.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/19.2/${VISITARCH})
 
 ##
 ## MOAB 

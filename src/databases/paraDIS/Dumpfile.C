@@ -25,7 +25,7 @@ using namespace std;
 
 int burgersTypes[18] = {-2,-1, 0, 10,11,12,13, 20,21,22, 30,31,32, 40,41,42, 50, 60};
 
-Dumpfile::Dumpfile(const char* filename, DBOptionsAttributes *rdatts) {
+Dumpfile::Dumpfile(const char* filename, const DBOptionsAttributes *rdatts) {
 
   this->Clear(); 
 

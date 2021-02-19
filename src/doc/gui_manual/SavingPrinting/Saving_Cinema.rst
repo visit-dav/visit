@@ -170,7 +170,7 @@ to make Libsim calls that set up VisIt plots or restore a session so there are
 plots when ``VisItSaveCinema`` is called. Finally, the simulation must call
 ``VisItEndCinema`` to close out the Cinema database context and free associated
 memory. A working example can be found in the 
-`batch simulation example <http://visit.ilight.com/svn/visit/trunk/src/tools/DataManualExamples/Simulations/batch.c>`_
+`batch simulation example <https://github.com/visit-dav/visit/blob/develop/src/tools/data/DataManualExamples/Simulations/batch.c>`_
 in VisIt's simulation directory. The overall call structure for creating a Cinema 
 database looks something like this: ::
 

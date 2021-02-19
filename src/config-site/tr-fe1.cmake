@@ -1,15 +1,15 @@
-#/usr/projects/views/visit/thirdparty_shared/3.1.0/cmake/3.9.3/linux-x86_64_gcc-8.2/bin/cmake
+#/usr/projects/views/visit/thirdparty_shared/3.1.3/cmake/3.9.3/linux-x86_64_gcc-9.3/bin/cmake
 ##
-## ./build_visit3_1_0 generated host.cmake
-## created: Fri Jan 10 10:14:05 MST 2020
-## system: Linux tr-fe2 4.4.180-94.103-default #1 SMP Mon Aug 19 15:06:57 UTC 2019 (62f4295) x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_1_3 generated host.cmake
+## created: Fri Oct 30 09:38:37 MDT 2020
+## system: Linux tr-fe1 4.12.14-197.45-default #1 SMP Thu Jun 4 11:06:04 UTC 2019 (2b6c749) x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/projects/views/visit/thirdparty_shared/3.1.0)
-SET(VISITARCH linux-x86_64_gcc-8.2)
+SET(VISITHOME /usr/projects/views/visit/thirdparty_shared/3.1.3)
+SET(VISITARCH linux-x86_64_gcc-9.3)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 ## Compiler flags.
@@ -17,18 +17,18 @@ VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden -B/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils/bin" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden -B/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils/bin" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 
 ##
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/lib" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib")
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/lib")
 
 ##
 ## VisIt Thread Option
@@ -95,7 +95,7 @@ VISIT_OPTION_DEFAULT(VISIT_ISPC_DIR ${VISITHOME}/ispc/${ISPC_VERSION}/${VISITARC
 ##
 ## TBB
 ##
-SETUP_APP_VERSION(TBB tbb2018_20171205oss)
+set(TBB_VERSION tbb2018_20171205oss)
 VISIT_OPTION_DEFAULT(TBB_ROOT ${VISITHOME}/tbb/${TBB_VERSION}/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_TBB_DIR ${VISITHOME}/tbb/${TBB_VERSION}/${VISITARCH})
 
@@ -202,11 +202,6 @@ VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/77c708f9090236b576669b74c5
 VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/4.0/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_MFEM_INCDEP CONDUIT_INCLUDE_DIR TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP ${VISIT_CONDUIT_LIBDEP} ${VISITHOME}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib z TYPE STRING)
-
-##
-## Mili
-##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/15.1/${VISITARCH})
 
 ##
 ## MOAB 

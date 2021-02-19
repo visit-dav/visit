@@ -5,6 +5,7 @@
 #ifndef PY_AVTDEFAULTPLOTMETADATA_H
 #define PY_AVTDEFAULTPLOTMETADATA_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <avtDefaultPlotMetaData.h>
 #include <visitpy_exports.h>
 

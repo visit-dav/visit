@@ -166,7 +166,7 @@ QvisInteractorWindow::CreateWindowContents()
     QRadioButton *never = new QRadioButton(tr("Never"), boundingBoxGroup);
     boundingBoxMode->addButton(never,1);
     boundingBoxLayout->addWidget(never, 1, 2);
-    QRadioButton *autorb = new QRadioButton(tr("Auto (remote rendering only)"), boundingBoxGroup);
+    QRadioButton *autorb = new QRadioButton(tr("Auto (scalable rendering only)"), boundingBoxGroup);
     boundingBoxMode->addButton(autorb,2);
     boundingBoxLayout->addWidget(autorb, 1, 3);
 

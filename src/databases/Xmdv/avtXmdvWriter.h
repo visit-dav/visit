@@ -46,7 +46,7 @@ class
 avtXmdvWriter : virtual public avtDatabaseWriter
 {
   public:
-                   avtXmdvWriter(DBOptionsAttributes *);
+                   avtXmdvWriter(const DBOptionsAttributes *);
     virtual       ~avtXmdvWriter() {;};
 
   protected:

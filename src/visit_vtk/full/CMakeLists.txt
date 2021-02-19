@@ -50,6 +50,7 @@ vtkCSGCell.C
 vtkCSGGrid.C
 vtkConnectedTubeFilter.C
 vtkDataSetRemoveGhostCells.C
+vtkExtractCellsByType.C
 vtkLineoutFilter.C
 vtkLinesFromOriginalCells.C
 vtkMergeTree.C
@@ -60,15 +61,14 @@ vtkPolyDataOnionPeelFilter.C
 vtkRGBWriter.C
 vtkRectilinearGridFacelistFilter.C
 vtkRectilinearLinesNoDataFilter.C
+vtkReduceFilter.C
 vtkSlicer.C
 vtkStructuredGridFacelistFilter.C
 vtkSurfaceFilter.C
 vtkSurfaceFromVolume.C
-vtkTensorReduceFilter.C
 vtkUniqueFeatureEdges.C
 vtkUnstructuredGridRelevantPointsFilter.C
 vtkVectorGlyph.C
-vtkVectorReduceFilter.C
 vtkVertexFilter.C
 vtkVisItCellDataToPointData.C
 vtkVisItClipper.C

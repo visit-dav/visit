@@ -21,7 +21,6 @@
 #include <vtkPolyData.h>
 #include <vtkTriangleFilter.h>
 #include <avtDatabaseMetaData.h>
-#include <DBOptionsAttributes.h>
 #include <vtkOBJWriter.h>
 
 #include <avtDatabaseMetaData.h>

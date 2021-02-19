@@ -46,7 +46,7 @@ class QNarrowLineEdit : public QLineEdit
     {
         QSize size = QLineEdit::sizeHint();
         QFontMetrics fm(font());
-        int w = fm.width('x') * 4; // 4 characters
+        int w = fm.horizontalAdvance('x') * 4; // 4 characters
         size.setWidth(w);
         return size;
     }
@@ -462,7 +462,7 @@ XMLEditFields::UpdateWindowSingleItem()
         if (f->type.right(5) == "Array")
         {
             QString str;
-            str.sprintf("%d",f->length);
+            str.setNum(f->length);
             length->setText(str);
         }
         else
@@ -1135,6 +1135,9 @@ XMLEditFields::valuesChanged()
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Thu Jan 21, 2021
+//    Replace use of QString.asprint with QString.arg.
+//
 // ****************************************************************************
 void
 XMLEditFields::fieldlistNew()
@@ -1146,7 +1149,7 @@ XMLEditFields::fieldlistNew()
     while (!okay)
     {
         okay = true;
-        newname.sprintf("unnamed%d", newid);
+        newname = QString("unnamed%1").arg(newid);
         for (int i=0; i<fieldlist->count() && okay; i++)
         {
             if (fieldlist->item(i)->text() == newname)

@@ -31,7 +31,6 @@
 #include <avtGhostData.h>
 
 #include <BadIndexException.h>
-#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <Expression.h>
 #include <ImproperUseException.h>

@@ -44,6 +44,10 @@ class ViewerState;
 //   I added a slot that we can use to trickle state objects out to the client
 //   that we launch.
 //
+//   Kevin Griffin, Wed Jun 17 15:08:15 PDT 2020
+//   Changed the return type of LaunchClient from void to bool to determine
+//   if the client was successfully launched.
+//
 // ****************************************************************************
 
 class ViewerClientConnection : public ViewerBaseUI, public SimpleObserver
@@ -56,7 +60,7 @@ public:
                            QObject *parent, const QString &name, const bool _allState = false);
     virtual ~ViewerClientConnection();
 
-    void LaunchClient(const std::string &program,
+    bool LaunchClient(const std::string &program,
                       const stringVector &args,
                       void (*)(const std::string &, const stringVector &, void *),
                       void *,

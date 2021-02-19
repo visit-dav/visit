@@ -62,7 +62,7 @@ class vtkVertexFilter;
 class avtVectorFilter : public avtDataTreeIterator
 {
   public:
-                              avtVectorFilter(bool us, int red);
+                              avtVectorFilter(bool, int);
     virtual                  ~avtVectorFilter();
 
     virtual const char       *GetType(void)   { return "avtVectorFilter"; };
@@ -71,27 +71,27 @@ class avtVectorFilter : public avtDataTreeIterator
 
     void                      SetStride(int);
     void                      SetNVectors(int);
-    void                      SetMagVarName(const std::string &);
     void                      SetLimitToOriginal(bool);
+
+    void                      SetMagVarName(const std::string &);
 
   protected:
     bool                      useStride;
     int                       stride;
     int                       nVectors;
-    std::string               magVarName;
-    bool                      keepNodeZone;
     bool                      origOnly;
+
+    bool                      keepNodeZone;
     int                       approxDomains;
+
+    std::string               magVarName;
 
     virtual void              PreExecute(void);
     virtual void              PostExecute(void);
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void              UpdateDataObjectInfo(void);
-    virtual avtContract_p
-                              ModifyContract(avtContract_p);
+    virtual avtContract_p     ModifyContract(avtContract_p);
 };
 
 
 #endif
-
-

@@ -18,6 +18,7 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkOpenGLRenderWindow.h>
 #include <vtkOpenGL.h>
+#include <vtkRenderer.h>
 
 #define DS_NOT_CHECKED    0
 #define DS_NOT_AVAILABLE  1
@@ -132,11 +133,31 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 //   since it is likely a vtkOSOpenGLRenderWindow, on offscreen window. I also
 //   improved the warning message.
 //
+//   Alister Maguire, Tue May 19 12:01:24 PDT 2020
+//   Added OSPRay check. When toggling out of OSPRay mode, we need to make
+//   sure that shadows are disabled. If we don't, VTK likes to crash.
+//
 // ****************************************************************************
 
 void
 VisWinRenderingWithoutWindow::RenderRenderWindow(void)
 {
+
+#ifdef VISIT_OSPRAY
+    if (GetOsprayRendering() && modeIsPerspective)
+    {
+        if (canvas->GetPass() == NULL)
+        {
+            canvas->SetPass(osprayPass);
+        }
+    }
+    else
+    {
+        canvas->SetUseShadows(false);
+        canvas->SetPass(0);
+    }
+#endif
+
 #if defined(__unix__) && !defined(__APPLE__) && defined(HAVE_LIBX11) && !defined(HAVE_OSMESA)
     if(displayStatus == DS_NOT_CHECKED)
     {

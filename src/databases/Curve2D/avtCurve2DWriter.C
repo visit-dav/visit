@@ -35,7 +35,7 @@ using     std::vector;
 //
 // ****************************************************************************
 
-avtCurve2DWriter::avtCurve2DWriter(DBOptionsAttributes *atts) : commentStyle("#")
+avtCurve2DWriter::avtCurve2DWriter(const DBOptionsAttributes *atts) : commentStyle("#")
 {
     nBlocks = 0;
     if (atts->GetEnum("CommentStyle") == 1)

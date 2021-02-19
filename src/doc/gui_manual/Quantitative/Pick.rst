@@ -182,3 +182,9 @@ a picked zone or node over time. To pick over time, you must click the
 that check box is turned on, each pick operation will result in a new Curve
 plot that shows the behavior of the most recently picked zone or node over
 time.
+
+**Note on performance**: You'll notice that you can either choose to follow
+the picked *coordinates* or the picked *element* through time. While each
+of these options generates very different results, it's worth keeping in
+mind that following the picked *element* will be substantially faster when
+working with datasets with large numbers of time steps.

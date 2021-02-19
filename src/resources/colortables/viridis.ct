@@ -4,6 +4,7 @@
     <Object name="ColorControlPointList">
         <Object name="ColorControlPoint">
             <Field name="colors" type="unsignedCharArray" length="4">68 1 84 255 </Field>
+            <Field name="position" type="float">0.000000</Field>
         </Object>
         <Object name="ColorControlPoint">
             <Field name="colors" type="unsignedCharArray" length="4">68 2 85 255 </Field>

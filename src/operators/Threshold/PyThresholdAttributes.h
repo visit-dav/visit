@@ -5,6 +5,7 @@
 #ifndef PY_THRESHOLDATTRIBUTES_H
 #define PY_THRESHOLDATTRIBUTES_H
 #include <Python.h>
+#include <Py2and3Support.h>
 #include <ThresholdAttributes.h>
 #include <PyThresholdOpAttributes.h>
 
