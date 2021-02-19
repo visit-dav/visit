@@ -162,6 +162,57 @@ avtXolotlFileFormat::GroupInfo(hid_t loc_id, const char *name, const H5L_info_t 
 
 
 // ****************************************************************************
+//  Method: avtXolotlFileFormat::PopulateNetworkGroupMetadata
+//
+//  Purpose:
+//      Gets the ntwork group meta data
+//
+//  Programmer: James Kress
+//  Creation:   February 19, 2021
+//
+// ****************************************************************************
+void
+avtXolotlFileFormat::PopulateNetworkGroupMetaData()
+{
+    // We need to stash the networkGroup attributes
+    hid_t normalSizeAttr = H5Aopen(networkGroup, "normalSize", H5P_DEFAULT);
+    if (normalSizeAttr < 0)
+    {
+        FreeUpResources();
+        EXCEPTION1(InvalidDBTypeException, "No 'normalSize' attribute.");
+    }
+
+    hid_t superSizeAttr = H5Aopen(networkGroup, "superSize", H5P_DEFAULT);
+    if (superSizeAttr < 0)
+    {
+        FreeUpResources();
+        EXCEPTION1(InvalidDBTypeException, "No 'superSize' attribute.");
+    }
+
+    int err2 = -1;
+    err2 = H5Aread(normalSizeAttr, H5T_NATIVE_INT, &normalSize);
+    if (err2 < 0)
+    {
+        FreeUpResources();
+        EXCEPTION1(InvalidDBTypeException, "cannot read 'normalSize' var.");
+    }
+    err2 = H5Aread(superSizeAttr, H5T_NATIVE_INT, &superSize);
+    if (err2 < 0)
+    {
+        FreeUpResources();
+        EXCEPTION1(InvalidDBTypeException, "cannot read 'superSize' var.");
+    }
+    if (debug) cerr << "normalSize="<<normalSize<<endl;
+    if (debug) cerr << "superSize="<<superSize<<endl;
+
+    // close and cleanup
+    H5Gclose(networkGroup);
+    H5Aclose(normalSizeAttr);
+    H5Aclose(superSizeAttr);
+}
+
+
+// ****************************************************************************
 //  Method: avtXolotlFileFormat::PopulateConcentrationGroupMetadata
 //
 //  Purpose:
@@ -491,6 +542,8 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
         {
             oneDGrid.push_back(data[i]);
         }
+
+        // cleanup and close
         delete [] data;
         H5Sclose(sid);
         H5Dclose(gridDataSet);
@@ -551,48 +604,18 @@ avtXolotlFileFormat::Initialize()
     PopulateConcentrationGroupMetaData();
 
 
-    if (dimension > 1)
+    if (dimension == 1)
     {
         //
         // Read the network
         //
-        hid_t networkGroup = H5Gopen(fileId, "networkGroup", H5P_DEFAULT);
+        networkGroup = H5Gopen(fileId, "networkGroup", H5P_DEFAULT);
         if (networkGroup<0)
         {
             FreeUpResources();
             EXCEPTION1(InvalidDBTypeException, "No 'networkGroup'.");
         }
-
-        hid_t networkDS = H5Dopen(networkGroup, "network", H5P_DEFAULT);
-        if (networkDS<0)
-        {
-            H5Gclose(networkGroup);
-            FreeUpResources();
-            EXCEPTION1(InvalidDBTypeException, "No 'network' dataset.");
-        }
-
-        hid_t networkSpace = H5Dget_space(networkDS);
-        hsize_t dims[2], maxdims[2];
-        int ndims = H5Sget_simple_extent_dims(networkSpace, dims, maxdims);
-        if (debug) cerr << "NDIMS="<<ndims<<" dims="<<dims[0]<<","<<dims[1]<<endl;
-
-        networkSize = dims[0];
-        networkParams = dims[1];
-        network.resize(networkSize * networkParams);
-        int err1 = H5Dread(networkDS, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL,
-                          H5P_DEFAULT, (void*)(&(network[0])));
-        ///\todo: check for err1<0
-        if (debug) cerr << "network[0]="<<network[0]<<endl;
-        if (debug) cerr << "network[1]="<<network[1]<<endl;
-        if (debug) cerr << "network[2]="<<network[2]<<endl;
-        if (debug) cerr << "network[3]="<<network[3]<<endl;
-        if (debug) cerr << "network[4]="<<network[4]<<endl;
-        if (debug) cerr << "network[5]="<<network[5]<<endl;
-        if (debug) cerr << "network[6]="<<network[6]<<endl;
-
-        H5Sclose(networkSpace);
-        H5Dclose(networkDS);
-        H5Gclose(networkGroup);
+        PopulateNetworkGroupMetaData();
     }
 }
 
@@ -1091,6 +1114,14 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
             rv->SetTuple1(i, zero);
         }
 
+        //Open the network for reading
+        hid_t networkGroup = H5Gopen(fileId, "networkGroup", H5P_DEFAULT);
+        if (networkGroup<0)
+        {
+            FreeUpResources();
+            EXCEPTION1(InvalidDBTypeException, "No 'networkGroup'.");
+        }
+
         //Loop over the grid
         for (int j = 0; j < oneDGrid.size(); j++)
         {
@@ -1102,10 +1133,58 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
                 {
                     continue;
                 }
-                // Get the x sizes of this cluster
-                float xSize = data[int(rdata[i].clusterNumber)*composition_dims[1] + variableIndexes[0]];
-                int pos = (xSize * (nx - 1)) + j;
-                rv->SetTuple1(pos, (rv->GetTuple1(pos) + rdata[i].concentration));
+
+                //Take care of the normal clustetrs
+                if(rdata[i].clusterNumber < normalSize)
+                {
+                    // Get the x sizes of this cluster
+                    //variableIndexes tells us either Helium, Deuterium, Tritium, Vacancies
+                    float xSize = data[int(rdata[i].clusterNumber)*composition_dims[1] + variableIndexes[0]];
+                    int pos = (xSize * (nx - 1)) + j;
+                    rv->SetTuple1(pos, (rv->GetTuple1(pos) + rdata[i].concentration));
+                }
+                else //Take care of the super clusters
+                {
+                    //Loop on the number of clusters it contains
+                    // Open the network group for this particular cluster
+                    char clusterName[100];
+                    snprintf(clusterName, 100, "%d", rdata[i].clusterNumber);
+                    hid_t currentCluster = H5Gopen(networkGroup, clusterName, H5P_DEFAULT);
+                    if (currentCluster < 0)
+                    {
+                        FreeUpResources();
+                        snprintf(varname, 100, "No '%d' network found", rdata[i].clusterNumber);
+                        EXCEPTION1(InvalidDBTypeException, clusterName);
+                    }
+
+                    // Read the heVList
+                    hid_t heVList = H5Dopen(currentCluster, "heVList", H5P_DEFAULT);
+                    if (heVList < 0)
+                    {
+                        FreeUpResources();
+                        EXCEPTION1(InvalidDBTypeException, "No 'heVList' group.");
+                    }
+
+                    hsize_t vListDims[1];
+                    hid_t heVListSpace   = H5Dget_space(heVList);
+                    hid_t heVList_ndims = H5Sget_simple_extent_dims(heVListSpace, vListDims, NULL);
+
+                    //read the values in the heVList table
+                    int *heVListTableData = new int[vListDims[0] * 4];
+                    H5Dread(heVList, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)heVListTableData);
+
+                    for ( int k = 0; k < vListDims[0]; k++)
+                    {
+                        float xSize = heVListTableData[k * 4 + variableIndexes[0]];
+                        int pos = (xSize * (nx - 1)) + j;
+                        rv->SetTuple1(pos, (rv->GetTuple1(pos) + rdata[i].concentration));
+                    }
+
+                    H5Sclose(heVListSpace);
+                    H5Dclose(heVList);
+                    H5Gclose(currentCluster);
+                    delete [] heVListTableData;
+                }
             }
         }
     }
