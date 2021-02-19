@@ -205,7 +205,8 @@ def sexe(cmd,ret_output=False,echo = False,env=None):
         if ret_output:
             kwargs["stdout"] = subprocess.PIPE
             kwargs["stderr"] = subprocess.STDOUT
-            p = subprocess.Popen(cmd,**kwargs,universal_newlines=True)
+            kwargs["universal_newlines"] = True
+            p = subprocess.Popen(cmd,**kwargs)
             res = p.communicate()[0]
             return p.returncode,res
         else:
@@ -268,11 +269,12 @@ class Context(object):
             ofile = open(ofname,"w")
             ofile.write(json.dumps(result,indent=2))
             ofile.close()
-            # create link
-            lastlink = pjoin(self.log_dir,"last.json")
-            if os.path.islink(lastlink):
-                os.unlink(lastlink)
-            os.symlink(ofname,lastlink)
+            if not sys.platform.startswith('win'):
+                # if not on windows, create syml link
+                lastlink = pjoin(self.log_dir,"last.json")
+                if os.path.islink(lastlink):
+                    os.unlink(lastlink)
+                os.symlink(ofname,lastlink)
         except Exception as e:
             print("<logging error> failed to write results to %s" % ofname)
             raise e
