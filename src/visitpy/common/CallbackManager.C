@@ -392,7 +392,7 @@ CallbackManager::Work()
     bool keepWorking = working;
 
     // Lock the Python interpreter
-    PyThreadState *threadState = VisItLockPythonInterpreter();
+    VISIT_PY_THREAD_LOCK_STATE threadState = VisItLockPythonInterpreter();
 
     do
     {
