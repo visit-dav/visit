@@ -20,7 +20,7 @@
 from . import mpistub
 
 # try to import the compiled module
-# (this will only exist if visit with built with mpi support)
+# (this will only exist if visit was built with mpi support)
 try:
     from . import mpicom
 except ImportError:
