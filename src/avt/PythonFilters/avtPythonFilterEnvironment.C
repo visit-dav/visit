@@ -85,6 +85,9 @@ avtPythonFilterEnvironment::~avtPythonFilterEnvironment()
 //    Kathleen Biagas, Fri May 4 14:08:12 PDT 2012 
 //    Call GetVisItLibraryDirectory instead of GetVisItArchitectureDirectory.
 //
+//    Cyrus Harrison, Thu Feb 18 16:06:46 PST 2021
+//    Change the way the import works for parallel case to support Python 3.
+//
 // ****************************************************************************
 
 bool
@@ -111,7 +114,7 @@ avtPythonFilterEnvironment::Initialize()
 
 #ifdef PARALLEL
     // init mpicom w/ visit's communicator
-    if(!pyi->RunScript("import mpicom\n"))
+    if(!pyi->RunScript("import mpicom.mpicom as mpicom\n"))
         return false;
     ostringstream oss;
     oss << (void*)VISIT_MPI_COMM_PTR;
