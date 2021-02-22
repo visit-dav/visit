@@ -591,13 +591,32 @@ static void WakeMainThread(Subject *, void *)
 #define THREAD_INIT()
 #endif
 
+// ---------------------------------------------------------------
+//
+// Our PyEval_AcquireLock() solution did not work in Python 3.
+// This lead to CLI crashing whenever a lock was requested
+// (the primary case was command line recording, but there
+//  may be others)
+//
+// Prior locking solution worked fine in Python 2, so we keep
+// it when Python 2 is in play, but provide a new Python 3
+// solution using on PyGILState_Ensure() + PyGILState_Release()
+//
+// ---------------------------------------------------------------
+
+// ---------------------------------------------------------------
 // Locks the Python interpreter by one thread.
-PyThreadState *
+VISIT_PY_THREAD_LOCK_STATE
 VisItLockPythonInterpreter()
 {
+#if defined(IS_PY3K)
+    // python 3 imp
+    return PyGILState_Ensure();
+#else
+    // python 2 imp
+
     // get the global lock
     PyEval_AcquireLock();
-
     // get a reference to the PyInterpreterState
     PyInterpreterState * mainInterpreterState = mainThreadState->interp;
     // create a thread state object for this thread
@@ -605,20 +624,29 @@ VisItLockPythonInterpreter()
     // swap in my thread state
     PyThreadState_Swap(myThreadState);
     return myThreadState;
+#endif
 }
 
+// ---------------------------------------------------------------
 // Unlocks the Python interpreter by one thread.
 void
-VisItUnlockPythonInterpreter(PyThreadState *myThreadState)
+VisItUnlockPythonInterpreter(VISIT_PY_THREAD_LOCK_STATE state)
 {
+#if defined(IS_PY3K)
+    // python 3 imp
+    PyGILState_Release(state);
+#else
+    // python 2 imp
+
     // clear the thread state
     PyThreadState_Swap(NULL);
     // clear out any cruft from thread state object
-    PyThreadState_Clear(myThreadState);
+    PyThreadState_Clear(state);
     // delete my thread state object
-    PyThreadState_Delete(myThreadState);
+    PyThreadState_Delete(state);
     // release our hold on the global interpreter
     PyEval_ReleaseLock();
+#endif
 }
 
 // ****************************************************************************
@@ -16893,7 +16921,7 @@ visit_exec_client_method(void *data)
     ClientMethod *m = (ClientMethod *)cbData[0];
     bool acquireLock = cbData[1] ? true : false;
 
-    PyThreadState *myThreadState = 0;
+    VISIT_PY_THREAD_LOCK_STATE myThreadState;
 
     if(acquireLock)
         myThreadState = VisItLockPythonInterpreter();
