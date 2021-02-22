@@ -31,8 +31,8 @@ from visit_utils.builtin import *
 
 try:
     import PySide2
-    import pyside_hook
-    import pyside_gui
+    from . pyside_hook
+    from . pyside_gui
     from . import pyside_support
 
     class KeyPressEater(PySide2.QtCore.QObject):
