@@ -61,4 +61,3 @@ if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS)
                                   WORLD_READ             WORLD_EXECUTE
             CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
 endif()
-
