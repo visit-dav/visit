@@ -43,9 +43,9 @@ function bv_icet_print
 
 function bv_icet_print_usage
 {
-    printf "%-20s %s [%s]\n" "--icet" "Build Ice-T (parallel rendering lib)" "$DO_ICET"
-    printf "%-20s %s [%s]\n" "--no-icet" "Prevent Ice-T from being built" "$PREVENT_ICET"
-    printf "%-20s %s\n" "" "NOTE: Ice-T is automatically built with --enable-parallel."
+    printf "%-20s %s [%s]\n" "--icet" "Build IceT (parallel rendering lib)" "$DO_ICET"
+    printf "%-20s %s [%s]\n" "--no-icet" "Prevent IceT from being built" "$PREVENT_ICET"
+    printf "%-20s %s\n" "" "NOTE: IceT is automatically built with --enable-parallel."
 }
 
 function bv_icet_host_profile
@@ -53,7 +53,7 @@ function bv_icet_host_profile
     if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## Ice-T" >> $HOSTCONF
+        echo "## IceT" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_ICET_DIR \${VISITHOME}/icet/$ICET_VERSION/\${VISITARCH})" \
@@ -68,7 +68,7 @@ function bv_icet_ensure
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ICET="no"
-            error "Unable to build Ice-T.  ${ICET_FILE} not found."
+            error "Unable to build IceT.  ${ICET_FILE} not found."
         fi
     fi
 }
@@ -96,7 +96,7 @@ function build_icet
     # or from PAR_COMPILER. Note that DO_MPICH causes PAR_COMPILER to be
     # set, so testing for that also catches using MPICH.
     if [[ "$PAR_COMPILER" == "" ]] ; then
-        warn "You must use MPICH or set either the PAR_COMPILER environment variable to build Ice-T."
+        warn "To build IceT, you must either use MPICH (add --mpich) or set the PAR_COMPILER environment variable."
         warn "PAR_COMPILER should be of the form \"/path/to/mpi/bin/mpicc\""
         warn "Giving Up!"
         return 1
@@ -111,13 +111,13 @@ function build_icet
     prepare_build_dir $ICET_BUILD_DIR $ICET_FILE
     untarred_icet=$?
     if [[ $untarred_icet == -1 ]] ; then
-        warn "Unable to prepare Ice-T build directory. Giving Up!"
+        warn "Unable to prepare IceT build directory. Giving Up!"
         return 1
     fi
 
     apply_icet_patch
 
-    info "Executing CMake on Ice-T"
+    info "Executing CMake on IceT"
     cd $ICET_BUILD_DIR || error "Can't cd to IceT build dir."
     if [[ "$DO_STATIC_BUILD" == "no" ]]; then
         LIBEXT="${SO_EXT}"
@@ -162,20 +162,20 @@ function build_icet
     fi
 
     #
-    # Now build Ice-T.
+    # Now build IceT.
     #
-    info "Building Ice-T . . . (~2 minutes)"
+    info "Building IceT . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "Ice-T did not build correctly.  Giving up."
+        warn "IceT did not build correctly.  Giving up."
         return 1
     fi
 
-    info "Installing Ice-T . . ."
+    info "Installing IceT . . ."
 
     $MAKE install
     if [[ $? != 0 ]] ; then
-        warn "Ice-T: 'make install' failed.  Giving up"
+        warn "IceT: 'make install' failed.  Giving up"
         return 1
     fi
 
@@ -185,7 +185,7 @@ function build_icet
     fi
 
     cd "$START_DIR"
-    echo "Done with Ice-T"
+    echo "Done with IceT"
     return 0
 }
 
@@ -212,14 +212,14 @@ function bv_icet_build
     if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
         check_if_installed "icet" $ICET_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping Ice-T build.  Ice-T is already installed."
+            info "Skipping IceT build.  IceT is already installed."
         else
-            info "Building Ice-T (~2 minutes)"
+            info "Building IceT (~2 minutes)"
             build_icet
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install Ice-T.  Bailing out."
+                error "Unable to build or install IceT.  Bailing out."
             fi
-            info "Done building Ice-T"
+            info "Done building IceT"
         fi
     fi
 }
