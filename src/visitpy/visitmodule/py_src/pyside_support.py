@@ -11,7 +11,8 @@
 #
 #
 # Modifications:
-#
+#  Cyrus Harrison, Mon Feb 22 12:39:10 PST 2021
+#  Use relative import to get pyside modules. 
 #
 ###############################################################################
 
@@ -23,8 +24,8 @@ using_pyside = False
 
 try:
     from PySide2.QtWidgets import QApplication
-    import pyside_hook
-    import pyside_gui
+    from . import pyside_hook
+    from . import pyside_gui
     using_pyside = True
 except ImportError:
     pass
