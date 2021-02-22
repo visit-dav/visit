@@ -34,7 +34,6 @@ function bv_osmesa_print
 {
     printf "%s%s\n" "OSMESA_FILE=" "${OSMESA_FILE}"
     printf "%s%s\n" "OSMESA_VERSION=" "${OSMESA_VERSION}"
-    printf "%s%s\n" "OSMESA_TARGET=" "${OSMESA_TARGET}"
     printf "%s%s\n" "OSMESA_BUILD_DIR=" "${OSMESA_BUILD_DIR}"
 }
 

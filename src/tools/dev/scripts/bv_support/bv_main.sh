@@ -376,18 +376,11 @@ function initialize_build_visit()
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export CXXFLAGS=${CXXFLAGS:-"-fno-common -fexceptions"}
         export FCFLAGS=${FCFLAGS:-$CFLAGS}
-        export MESA_TARGET=${MESA_TARGET:-"darwin"}
 	
     elif [[ "$OPSYS" == "Linux" ]]; then
         export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
         export SO_EXT="so"
-        if [[ "$(uname -m)" == "i386" ]] ; then
-            ###   export MESA_TARGET=${MESA_TARGET:-"linux-x86"} # Mesa-6.x
-            export MESA_TARGET=${MESA_TARGET:-"linux"}
-        elif [[ "$(uname -m)" == "i686" ]] ; then
-            ###   export MESA_TARGET=${MESA_TARGET:-"linux-x86"} # Mesa-6.x
-            export MESA_TARGET=${MESA_TARGET:-"linux"}
-        elif [[ "$(uname -m)" == "x86_64" ]] ; then
+        if [[ "$(uname -m)" == "x86_64" ]] ; then
             CFLAGS="$CFLAGS -m64 -fPIC"
             FCFLAGS="$FCFLAGS -m64 -fPIC"
             if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
@@ -397,15 +390,12 @@ function initialize_build_visit()
             if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                 CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
             fi
-            ###   export MESA_TARGET=${MESA_TARGET:-"linux-x86-64"} # Mesa-6.x
-            export MESA_TARGET=${MESA_TARGET:-"linux"}
         elif [[ "$(uname -m)" == "ppc64" ]] ; then
             if [[ "$C_COMPILER" == "xlc" ]] ; then
                 CFLAGS="$CFLAGS -qpic"
                 FCFLAGS="$FCFLAGS -qpic"
                 CXXFLAGS="$CXXFLAGS -qpic"
                 export CXX_COMPILER=${CXX_COMPILER-"xlC"}
-                export MESA_TARGET=${MESA_TARGET-"linux"}
             elif [[ "$C_COMPILER" == "bgxlc" ]] ; then
                 export CXX_COMPILER=${CXX_COMPILER-"bgxlC"}
             else
@@ -418,7 +408,6 @@ function initialize_build_visit()
                 if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                     CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
                 fi
-                export MESA_TARGET=${MESA_TARGET-"linux"}
             fi
         elif [[ "$(uname -m)" == "ppc64le" ]] ; then
             if [[ "$C_COMPILER" == "xlc" ]] ; then
@@ -426,7 +415,6 @@ function initialize_build_visit()
                 FCFLAGS="$FCFLAGS -qpic"
                 CXXFLAGS="$CXXFLAGS -qpic"
                 export CXX_COMPILER=${CXX_COMPILER-"xlC"}
-                export MESA_TARGET=${MESA_TARGET-"linux"}
                 QT_PLATFORM="linux-xlc" #aix-xlc"
             else
                 CFLAGS="$CFLAGS -fPIC"
@@ -438,7 +426,6 @@ function initialize_build_visit()
                 if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                     CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
                 fi
-                export MESA_TARGET=${MESA_TARGET-"linux"}
                 QT_PLATFORM="linux-g++"
             fi
         elif [[ "$(uname -m)" == "ia64" ]] ; then
@@ -457,7 +444,6 @@ function initialize_build_visit()
         export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
-        export MESA_TARGET=${MESA_TARGET:-"linux"}
     elif [[ "$OPSYS" == "AIX" ]]; then
         export ARCH="aix" # You can change this to say RHEL, SuSE, Fedora, etc.
         export SO_EXT="a"
@@ -467,7 +453,6 @@ function initialize_build_visit()
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export MAKE=${MAKE:-"gmake"}
-        export MESA_TARGET=${MESA_TARGET:-"aix"}
     elif [[ "$OPSYS" == "IRIX64" ]]; then
         export ARCH="irix64" # You can change this to say RHEL, SuSE, Fedora, etc.
         export SO_EXT="so"
@@ -477,7 +462,6 @@ function initialize_build_visit()
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export MAKE=${MAKE:-"gmake"}
-        export MESA_TARGET=${MESA_TARGET:-"irix6-64-dso"}
     elif [[ "$OPSYS" == "SunOS" ]]; then
         export ARCH=${ARCH:-"sunos5"}
         export SO_EXT="so"
@@ -487,7 +471,6 @@ function initialize_build_visit()
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export MAKE=${MAKE:-"make"}
-        export MESA_TARGET=${MESA_TARGET:-"sunos5-gcc"}
     else
         export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
         export SO_EXT="so"
