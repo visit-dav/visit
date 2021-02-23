@@ -13,6 +13,7 @@
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <ConstructDataBinningAttributes.h>
 
@@ -123,6 +124,9 @@ avtDataBinningConstructor::~avtDataBinningConstructor()
 //    Hank Childs, Mon Jul 16 16:19:51 PDT 2012
 //    Fix handling of mixed centering when the statistical reduction does not 
 //    involve a variable.
+//
+//    Cyrus Harrison, Tue Feb 23 10:41:21 PST 2021
+//    Add proper ghost zone handling (skip ghosts during binning)
 //
 // ****************************************************************************
 
@@ -505,11 +509,40 @@ avtDataBinningConstructor::ConstructDataBinning(
                     }
                 }
 
+                // for cells case: 
+                // see if we have a ghost zone labels array, if so
+                // we want to use it to exclude ghosts when constructing
+                // the binning
+                vtkUnsignedCharArray *gzones = NULL;
+                if(doCells)
+                {
+                    if(leaves[j]->GetCellData()->HasArray("avtGhostZones"))
+                    {
+                        debug5 << "DDF input dataset " << j 
+                               << " has ghost zones" << endl;
+                        gzones = (vtkUnsignedCharArray *) leaves[j]->GetCellData()->GetArray("avtGhostZones");
+                    }
+                    else
+                    {
+                        debug5 << "DDF input dataset " << j 
+                               << " does not have ghost zones" << endl;
+                    }
+                }
+
                 for (size_t l = 0 ; l < (size_t)nvals ; l++)
                 {
                     if (useValue.size() > 0)
                         if (!useValue[l])
                             continue;
+
+                    // skip if this zonal operation and the current zone is ghost
+                    if(gzones != NULL)
+                    {
+                        if(gzones->GetValue(l) != 0)
+                        {
+                            continue;
+                        }
+                    }
 
                     if (!mixedCentering)
                     {
