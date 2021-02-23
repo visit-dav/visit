@@ -33,7 +33,6 @@ function bv_mesagl_print
 {
     printf "%s%s\n" "MESAGL_FILE=" "${MESAGL_FILE}"
     printf "%s%s\n" "MESAGL_VERSION=" "${MESAGL_VERSION}"
-    printf "%s%s\n" "MESAGL_TARGET=" "${MESAGL_TARGET}"
     printf "%s%s\n" "MESAGL_BUILD_DIR=" "${MESAGL_BUILD_DIR}"
 }
 
