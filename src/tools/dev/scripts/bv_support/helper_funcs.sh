@@ -23,9 +23,31 @@ function errorFunc
 # *************************************************************************** #
 function log
 {
-    echo "$@" >> ${LOG_FILE}
+    if [[ "${LOG_FILE}" != "/dev/tty" && -w "${LOG_FILE}" ]] ; then
+        echo "$@" >> ${LOG_FILE}
+    fi
 }
+ 
+# *************************************************************************** #
+# Function: info                                                              #
+#                                                                             #
+# Purpose: Give an informative message to the user.                           #
+#                                                                             #
+# Programmer: Tom Fogal                                                       #
+# Date: Fri Oct  3 09:41:50 MDT 2008                                          #
+#                                                                             #
+# *************************************************************************** #
+function info
+{
+    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
+        echo -e "$@" 1>&3
+    else
+        echo -e "$@"
+    fi
 
+    # write message to log as well
+    log "$@"
+}
 
 # *************************************************************************** #
 # Function: warn                                                              #
@@ -43,16 +65,7 @@ function log
 # *************************************************************************** #
 function warn
 {
-    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-        echo -e "$@" 1>&3
-    else
-        echo -e "$@"
-    fi
-
-    if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
-        # write message to log as well
-        log "$@"
-    fi
+    info $@
 }
 
 # *************************************************************************** #
@@ -180,29 +193,6 @@ function verify_optional_module_exists
     declare -F "bv_${optlib}_dry_run" &>/dev/null || errorFunc "${optlib} dry_run not found"
     declare -F "bv_${optlib}_is_installed" &>/dev/null || errorFunc "${optlib} is_installed not found"
     declare -F "bv_${optlib}_is_enabled" &>/dev/null || errorFunc "${optlib} is_enabled not found"
-}
-
-# *************************************************************************** #
-# Function: info                                                              #
-#                                                                             #
-# Purpose: Give an informative message to the user.                           #
-#                                                                             #
-# Programmer: Tom Fogal                                                       #
-# Date: Fri Oct  3 09:41:50 MDT 2008                                          #
-#                                                                             #
-# *************************************************************************** #
-function info
-{
-    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-        echo "$@" 1>&3
-    else
-        echo "$@"
-    fi
-
-    if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
-        # write message to log as well
-        log "$@"
-    fi
 }
 
 # *************************************************************************** #
@@ -385,7 +375,7 @@ function verify_checksum_by_lookup
     # out function names and definitions from the search
     for var in $(set -o posix; set | grep _FILE=; set +o posix); do
         var=$(echo $var | cut -d '=' -f1)
-        if [ ${!var} = $dlfile ]; then
+        if [[ ${!var} = $dlfile ]]; then
             varbase=$(echo $var | sed -e 's/_FILE$//')
             md5sum_varname=${varbase}_MD5_CHECKSUM
             sha256_varname=${varbase}_SHA256_CHECKSUM
