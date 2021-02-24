@@ -49,10 +49,26 @@ function testvercomp ()
     fi
 }
 
+#
+# Way to get version digits from compiler output which is much less
+# sensitive to variations in how compiler vendors choose to output
+# this information. The tr filters replace every space or dash with
+# a newline, turning each word of output into its own line. The
+# grep then looks for lines that have only digits and dots between
+# the beginning (^) and ending ($) of the line. The final grep takes
+# only lines that actually contain output, presumably the one and only
+# isolated version digit string.
+#
+function get_version_digits()
+{
+    retval=$($1 -v 2>&1 | tr ' ' '\n' | tr '-' '\n' | grep '^[0-9\.]*$' | grep .)
+    echo $retval
+}
+
 function check_minimum_compiler_version()
 {
    if [[ "$CXX_COMPILER" == "g++" ]] ; then
-        VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 )
+        VERSION=$(get_version_digits g++)
         echo "g++ version $VERSION"
         testvercomp $VERSION 6.0 '<'
         if [[ $? == 0 ]] ; then
@@ -60,7 +76,7 @@ function check_minimum_compiler_version()
             exit 1
         fi
     elif [[ "$OPSYS" == "Darwin"  &&  "$CXX_COMPILER" == "clang++" ]] ; then 
-        VERSION=$(clang++ -v 2>&1 | grep "clang version" | cut -d' ' -f3 )
+        VERSION=$(get_version_digits clang++)
         echo "apple clang version $VERSION"
         testvercomp $VERSION 5.0 '<'
         if [[ $? == 0 ]] ; then
@@ -68,7 +84,7 @@ function check_minimum_compiler_version()
             exit 1
         fi
     elif [[ "$CXX_COMPILER" == "clang++" ]] ; then 
-        VERSION=$(clang++ -v 2>&1 | grep "clang version" | cut -d' ' -f3 )
+        VERSION=$(get_version_digits clang++)
         echo "clang version $VERSION"
         testvercomp $VERSION 3.3 '<'
         if [[ $? == 0 ]] ; then
@@ -76,7 +92,7 @@ function check_minimum_compiler_version()
             exit 1
         fi
     elif [[ "$CXX_COMPILER" == "icpc" ]] ; then 
-        VERSION=$(icpc -v 2>&1 | grep "icpc version" | cut -d' ' -f3 )
+        VERSION=$(get_version_digits icpc)
         if [[ $VERSION == "" ]] ; then
             VERSION=$(icpc -v 2>&1 | grep "icpc.orig version" | cut -d' ' -f3 )
         fi
@@ -1329,6 +1345,7 @@ function run_build_visit()
     # same log.
     #
     LINES="------------------------------------------------------------"
+    touch $LOG_FILE
     log $LINES
     log $0 $@
     log "Started:" $(date)
@@ -1377,7 +1394,8 @@ function run_build_visit()
                           "Bailing out."
                 fi
             else
-                info "The third party library location does not exist. Create it? [yes/no]"
+                info "The third party library location, \"$THIRD_PARTY_PATH\"" \
+                     "does not exist. Create it? [yes/no]"
                 read RESPONSE
                 if [[ "$RESPONSE" != "yes" ]] ; then
                     error "The third party library location does not exist." \
