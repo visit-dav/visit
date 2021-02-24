@@ -94,11 +94,11 @@ function quick_check_for_help
     for arg in "$@";
     do
         if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
-            echo 0
+            echo 0 # in sh, 0 return ==> ok
             return
         fi
     done
-    echo 1
+    echo 1 # in sh, non-zero return ==> not-ok
 }
 
 function check_for_versioning
