@@ -38,11 +38,18 @@ extern "C"
 #endif
 }
 
-MPI_Comm mpi_group = MPI_COMM_WORLD;
-void *mpi_comm_ptr = &mpi_group;
+/***************************************************************************/
+// use MPI f2c API to keep a mpi handle
+// and avoid MPI_Comm data structure issues.
+/***************************************************************************/
+static int mpi_comm_main_id = 0;
+MPI_Comm
+mpi_comm_main()
+{
+    return MPI_Comm_f2c(mpi_comm_main_id);
+}
 
-#define MPI_COMM_MAIN (*((MPI_Comm *)mpi_comm_ptr))
-
+#define MPI_COMM_MAIN mpi_comm_main()
 
 /*****************************************************************************
  * Function: mpicom_error.
@@ -81,43 +88,50 @@ mpicom_error(const char *err_msg, int err_code = 0)
  * Creation:   Mon Jan  5 11:44:24 PST 2009
  *
  * Modifications:
- *
+ *   Cyrus Harrison, Tue Feb 23 16:52:16 PST 2021
+ *   Use fortran com handle (an int) instead of com address.
+ * 
  * ***************************************************************************/
 static PyObject*
 mpicom_init(PyObject *self, PyObject *args,PyObject *kwds)
 {
     PyObject *args_tuple = NULL;
-    const char  *addy_cstr = "<unknown>";
-    static char *kwlist[] = {(char*)"argv", (char*)"caddy", NULL};
 
-     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O!s", kwlist,
-                                     &PyList_Type, &args_tuple, &addy_cstr))
+    int comm_handle_id = -1;
+    static char *kwlist[] = {(char*)"argv",
+                             (char*)"comm_id",
+                             NULL};
+
+     if (!PyArg_ParseTupleAndKeywords(args, kwds,
+                                      "|O!i",
+                                      kwlist,
+                                      &PyList_Type,
+                                      &args_tuple,
+                                      &comm_handle_id))
+    {
         return NULL;
+    }
 
     int inited = 0;
     MPI_Initialized(&inited);
 
-    string addy_str(addy_cstr);
-
-    if(addy_str != "<unknown>")
+    if(comm_handle_id != -1)
     {
         if(!inited)
         {
-            string emsg = "mpicom_init::";
-            emsg += "MPI not initialized: Cannot use existing";
-            emsg += "communicator @ address = ";
-            emsg += addy_str;
-            mpicom_error(emsg.c_str());
+            ostringstream oss;
+            oss << "mpicom_init::"
+                << "MPI not initialized: Cannot use existing"
+                << "communicator id = " << comm_handle_id;
+            mpicom_error(oss.str().c_str());
             return NULL;
         }
+
         // in this case we assume mpi is already initialized and we simply
         // want to set the communicator used by the mpicom module
-        // (use handy python helpers to obtain addy value)
-
-        istringstream iss(addy_str);
-        unsigned long addy = 0;
-        iss >> std::hex >> addy;
-        mpi_comm_ptr = (void*) addy;
+        // we use the fortran id since it is an integer, and is
+        // easy to pass though the python api
+        mpi_comm_main_id = comm_handle_id;
     }
     else if(args_tuple)
     {
