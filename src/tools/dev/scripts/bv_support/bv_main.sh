@@ -52,7 +52,7 @@ function testvercomp ()
 #
 # Way to get version digits from compiler output which is much less
 # sensitive to variations in how compiler vendors choose to output
-# this information. The tr filters replace every space or dash with
+# this information. The tr filter replaces every space or dash with
 # a newline, turning each word of output into its own line. The
 # grep then looks for lines that have only digits and dots between
 # the beginning (^) and ending ($) of the line. The final grep takes
@@ -61,7 +61,7 @@ function testvercomp ()
 #
 function get_version_digits()
 {
-    retval=$($1 -v 2>&1 | tr ' ' '\n' | tr '-' '\n' | grep '^[0-9\.]*$' | grep .)
+    retval=$($1 -v 2>&1 | tr ' -' '\n\n' | grep '^[0-9\.]*$' | grep .)
     echo $retval
 }
 
