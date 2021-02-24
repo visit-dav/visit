@@ -42,7 +42,7 @@ extern "C"
 // use MPI f2c API to keep a mpi handle
 // and avoid MPI_Comm data structure issues.
 /***************************************************************************/
-static int mpi_comm_main_id = 0;
+static int mpi_comm_main_id = -1;
 MPI_Comm
 mpi_comm_main()
 {
@@ -157,6 +157,8 @@ mpicom_init(PyObject *self, PyObject *args,PyObject *kwds)
             mpicom_error("mpicom_init:: Call to MPI_Init failed",err);
             return NULL;
         }
+
+        mpi_comm_main_id = MPI_Comm_c2f(MPI_COMM_WORLD);
     }
     else
     {
