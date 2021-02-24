@@ -12,6 +12,7 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkDataSetWriter.h>
@@ -149,6 +150,9 @@ avtDataBinning::CreateGrid(void)
 //    Add support for coordinates.  Also improve error handling for mixed 
 //    centering.
 //
+//    Cyrus Harrison, Tue Feb 23 10:41:21 PST 2021
+//    Add proper ghost zone handling (skip ghosts during binning)
+//
 // ****************************************************************************
 
 class ValueRetriever
@@ -191,6 +195,7 @@ avtDataBinning::ApplyFunction(vtkDataSet *ds)
     ValueRetriever **val_ret = new ValueRetriever*[nvars];
     for (k = 0 ; k < nvars ; k++)
          val_ret[k] = NULL;
+
     for (k = 0 ; k < nvars ; k++)
     {
         avtDataBinningFunctionInfo::BinBasedOn bbo =
@@ -240,6 +245,19 @@ avtDataBinning::ApplyFunction(vtkDataSet *ds)
         return NULL;
     }
 
+    // see if we have a ghost zone labels array, if so
+    // we want to pass it on for lookups during binning process
+    vtkUnsignedCharArray *gzones = NULL;
+    if(ds->GetCellData()->HasArray("avtGhostZones"))
+    {
+        debug5 << "DDF input dataset has ghost zones" << endl;
+        gzones = (vtkUnsignedCharArray *) ds->GetCellData()->GetArray("avtGhostZones");
+    }
+    else
+    {
+        debug5 << "DDF input dataset does not have ghost zones" << endl;
+    }
+
     bool isNodal = (numNodal > 0);
     int nvals = (isNodal ? ds->GetNumberOfPoints() : ds->GetNumberOfCells());
     vtkFloatArray *rv = vtkFloatArray::New();
@@ -249,6 +267,15 @@ avtDataBinning::ApplyFunction(vtkDataSet *ds)
     avtBinningScheme *bs = functionInfo->GetBinningScheme();
     for (i = 0 ; i < nvals ; i++)
     {
+        // skip if this zonal operation and the current zone is ghost
+        if(!isNodal && gzones != NULL)
+        {
+            if(gzones->GetValue(i) != 0)
+            {
+                continue;
+            }
+        }
+
         for (j = 0 ; j < nvars ; j++)
             v[j] = val_ret[j]->GetValue(i);
         int binId = bs->GetBinId(v);

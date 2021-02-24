@@ -127,6 +127,7 @@ stages:
            # run test suite on silo + blueprint tests
            export TESTS=../../src/test/tests/databases/silo.py 
            export TESTS="${TESTS} ../../src/test/tests/databases/blueprint.py"
+           export TESTS="${TESTS} ../../src/test/tests/hybrid/ddf.py"
            # also run a few of our unit tests
            export TESTS="${TESTS} ../../src/test/tests/unit/assert_simple.py"
            export TESTS="${TESTS} ../../src/test/tests/unit/default_methods.py"
