@@ -14,7 +14,7 @@
 // ****************************************************************************
 // Method: QvisRotationTransition::QvisRotationTransition
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Arguments:
@@ -31,6 +31,9 @@
 //
 //   Brad Whitlock, Tue Oct  7 09:37:43 PDT 2008
 //   Qt 4.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Fixed use of QString.asprintf to correct form.
 //
 // ****************************************************************************
 
@@ -60,12 +63,12 @@ QvisRotationTransition::QvisRotationTransition(const QPixmap &pix,
     startAngle->setMinimum(-360 * 100);
     startAngle->setMaximum(360 * 100);
     startAngle->setValue(0);
-    QString deg; deg.asprintf("%c", 176);
+    QString deg = QString::asprintf("%c", 176);
     QString startLabel(tr("Start angle") + deg);
     gLayout->addWidget(
         new QLabel(startLabel, this), 0, 0);
     gLayout->addWidget(startAngle, 0, 1);
-    
+
     endAngle = new QSpinBox(this);
     endAngle->setKeyboardTracking(false);
     endAngle->setMinimum(-360 * 100);
@@ -91,14 +94,14 @@ QvisRotationTransition::QvisRotationTransition(const QPixmap &pix,
 // ****************************************************************************
 // Method: QvisRotationTransition::~QvisRotationTransition
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 14 13:26:39 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisRotationTransition::~QvisRotationTransition()

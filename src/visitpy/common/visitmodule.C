@@ -591,13 +591,32 @@ static void WakeMainThread(Subject *, void *)
 #define THREAD_INIT()
 #endif
 
+// ---------------------------------------------------------------
+//
+// Our PyEval_AcquireLock() solution did not work in Python 3.
+// This lead to CLI crashing whenever a lock was requested
+// (the primary case was command line recording, but there
+//  may be others)
+//
+// Prior locking solution worked fine in Python 2, so we keep
+// it when Python 2 is in play, but provide a new Python 3
+// solution using on PyGILState_Ensure() + PyGILState_Release()
+//
+// ---------------------------------------------------------------
+
+// ---------------------------------------------------------------
 // Locks the Python interpreter by one thread.
-PyThreadState *
+VISIT_PY_THREAD_LOCK_STATE
 VisItLockPythonInterpreter()
 {
+#if defined(IS_PY3K)
+    // python 3 imp
+    return PyGILState_Ensure();
+#else
+    // python 2 imp
+
     // get the global lock
     PyEval_AcquireLock();
-
     // get a reference to the PyInterpreterState
     PyInterpreterState * mainInterpreterState = mainThreadState->interp;
     // create a thread state object for this thread
@@ -605,20 +624,90 @@ VisItLockPythonInterpreter()
     // swap in my thread state
     PyThreadState_Swap(myThreadState);
     return myThreadState;
+#endif
 }
 
+// ---------------------------------------------------------------
 // Unlocks the Python interpreter by one thread.
 void
-VisItUnlockPythonInterpreter(PyThreadState *myThreadState)
+VisItUnlockPythonInterpreter(VISIT_PY_THREAD_LOCK_STATE state)
 {
+#if defined(IS_PY3K)
+    // python 3 imp
+    PyGILState_Release(state);
+#else
+    // python 2 imp
+
     // clear the thread state
     PyThreadState_Swap(NULL);
     // clear out any cruft from thread state object
-    PyThreadState_Clear(myThreadState);
+    PyThreadState_Clear(state);
     // delete my thread state object
-    PyThreadState_Delete(myThreadState);
+    PyThreadState_Delete(state);
     // release our hold on the global interpreter
     PyEval_ReleaseLock();
+#endif
+}
+
+// ****************************************************************************
+// Function: cli_PyRun_SimpleFile
+//
+// Purpose:
+//   Helper to run a script from a file, handling auto 2to3 mode.
+//   Serves as a Drop in replacement for PyRun_SimpleFile.
+//
+// Notes:
+//
+// Programmer: Cyrus Harrison
+// Creation:   Fri Jan  8 09:18:16 PST 2021
+//
+// Modifications:
+//
+// ****************************************************************************
+void 
+cli_PyRun_SimpleFile(FILE *fp, const char *fileName)
+{
+    // check if we are in auto 2to3 mode, which is indicated by:
+    //  visit_utils.builtin.GetAutoPy2to3()
+    
+    // users can change this at any time, so we need to check its current
+    // value
+
+    bool use_py2to3 = false;
+    // read value into temp var
+    std::string pycmd = "__tmp_auto_py2to3 = visit_utils.builtin.GetAutoPy2to3()\n";
+    PyRun_SimpleString(pycmd.c_str());
+    // read result
+    // all refs are borrowed
+    PyObject *main_module = PyImport_AddModule("__main__");
+    PyObject *main_dict   = PyModule_GetDict(main_module);
+    PyObject *res_obj = PyDict_GetItemString(main_dict,"__tmp_auto_py2to3");
+
+    if(res_obj != NULL)
+    {
+        if(PyObject_IsTrue(res_obj))
+        {
+            use_py2to3 = true;
+        }
+
+        // remove temp
+        PyDict_DelItemString(main_dict,"__tmp_auto_py2to3");
+    }
+
+    if(use_py2to3)
+    {
+        // read the script contents, convert and run using exec
+        pycmd = "exec(";
+        pycmd += " visit_utils.ConvertPy2to3(";
+        pycmd += " open(\"" + std::string(fileName) + "\").read()";
+        pycmd += ")";
+        pycmd += ")\n";
+        PyRun_SimpleString(pycmd.c_str());
+    }
+    else // no auto magic, use standard path
+    {
+        PyRun_SimpleFile(fp,(char*)fileName);
+    }
 }
 
 // ****************************************************************************
@@ -11071,7 +11160,7 @@ visit_GetLight(PyObject *self, PyObject *args)
 //   Added book keeping to track execution stack of source files.
 //
 //   Cyrus Harrison, Wed Sep 30 07:53:17 PDT 2009
-//   Added spoofing of __name__ for Source() executiuon so we can use
+//   Added spoofing of __name__ for Source() execution so we can use
 //   standard python check:
 //     if __name__ == "__main__"
 //   To delineate between '-s' and sourced scripts.
@@ -11125,7 +11214,8 @@ visit_Source(PyObject *self, PyObject *args)
     //
     // Execute the commands in the file.
     //
-    PyRun_SimpleFile(fp, (char *)fileName);
+    cli_PyRun_SimpleFile(fp,fileName);
+
     fclose(fp);
 
     // book keeping for source file stack
@@ -12045,6 +12135,9 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
 //   Cyrus Harrison, Mon Mar 23 12:02:27 PDT 2020
 //   Port to python 3.
 //
+//   Eric Brugger, Tue Jan 26 13:17:19 PST 2021
+//   Modified the python args to be a char vector instead of a string.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12071,7 +12164,7 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     stringVector vars;
-    std::string  args_pickled  = "";
+    charVector   args_pickled;
     std::string  script_source = "";
 
     // if vars were passed in, add them to the variable list
@@ -12093,9 +12186,10 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
 
-        char *str_val = PyString_AsString(res);
-        args_pickled = std::string(str_val);
-        PyString_AsString_Cleanup(str_val);
+        int size_py_args = PyBytes_Size(res);
+        char *str_py_args = PyBytes_AsString(res);
+        for (int i = 0; i < size_py_args; i++)
+            args_pickled.push_back(str_py_args[i]);
 
         // decref b/c we created a new python string
         Py_DECREF(res);
@@ -16827,7 +16921,7 @@ visit_exec_client_method(void *data)
     ClientMethod *m = (ClientMethod *)cbData[0];
     bool acquireLock = cbData[1] ? true : false;
 
-    PyThreadState *myThreadState = 0;
+    VISIT_PY_THREAD_LOCK_STATE myThreadState;
 
     if(acquireLock)
         myThreadState = VisItLockPythonInterpreter();
@@ -19472,7 +19566,7 @@ cli_runscript(const char *fileName)
             //
             // Execute the commands in the file.
             //
-            PyRun_SimpleFile(fp, (char *)fileName);
+            cli_PyRun_SimpleFile(fp, (char *)fileName);
             fclose(fp);
 
             // book keeping for source stack

@@ -209,6 +209,11 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   Cyrus Harrison, Fri Dec 11 09:34:38 PST 2020
 #   Python 3 port (avoid using old string methods)
 #
+#   Eric Brugger, Wed Feb  3 16:49:58 PST 2021
+#   Added code to set the LD_LIBRARY_PATH on trinity to include the
+#   directory with the standard C++ library used by the compiler used
+#   to compile visit.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -260,6 +265,16 @@ class LLNLLauncher(MainLauncher):
             self.generalArgs.host = "130.106.204.1"
         elif self.generalArgs.host == "agate5.llnl.gov":
             self.generalArgs.host = "130.106.204.3"
+
+        #
+        # Set the LD_LIBRARY_PATH on trinity to include the directory
+        # with the standard C++ library used by the compiler used to
+        # compile visit.
+        #
+        if self.sectorname() == "tr-fe" or self.sectorname() == "nid":
+            ld_library_path = GETENV("LD_LIBRARY_PATH")
+            new_ld_library_path = self.joinpaths(["/opt/gcc/9.3.0/snos/lib64", ld_library_path])
+            SETENV("LD_LIBRARY_PATH", new_ld_library_path)
 
         #
         # Set the LD_LIBRARY_PATH to include the path to MPI on

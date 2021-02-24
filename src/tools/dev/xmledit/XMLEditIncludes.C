@@ -417,6 +417,9 @@ XMLEditIncludes::quotedGroupChanged(int qg)
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Thu Jan 21, 2021
+//    Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 void
 XMLEditIncludes::includelistNew()
@@ -428,7 +431,7 @@ XMLEditIncludes::includelistNew()
     while (!okay)
     {
         okay = true;
-        newname.asprintf("unnamed%d", newid);
+        newname = QString("unnamed%1").arg(newid);
         for (int i=0; i<includelist->count() && okay; i++)
         {
             if (includelist->item(i)->text() == newname)

@@ -522,6 +522,16 @@ function download_file
         done
     fi
 
+    # if all else has failed, and running develop version of build_visit,
+    # then also check the master repo.
+    if [[ "$TRUNK_BUILD" == "yes" ]]; then
+        site="${thirdpartyroot_dev}"
+        try_download_file $site/$dfile $dfile
+        if [[ $? == 0 ]] ; then
+            return 0
+        fi
+    fi
+
     return 1
 }
 
@@ -1244,7 +1254,7 @@ function build_hostconf
         echo "VISIT_OPTION_DEFAULT(VISIT_USE_GLEW         OFF TYPE BOOL)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_DISABLE_SELECT   ON  TYPE BOOL)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_USE_NOSPIN_BCAST OFF TYPE BOOL)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR       \${VISITHOME}/mesa/$MESA_VERSION/\${VISITARCH})" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR       \${VISITHOME}/mesa/$MESAGL_VERSION/\${VISITARCH})" >> $HOSTCONF
         echo "ADD_DEFINITIONS(-DVISIT_BLUE_GENE_Q)" >> $HOSTCONF
         echo >> $HOSTCONF
     fi

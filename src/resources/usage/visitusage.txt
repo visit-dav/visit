@@ -28,6 +28,8 @@
                              to launch an engine on a remote host, specify 
                              the host's name as the <host> parameter.
         -nosplash            Do not display the splash screen at startup.
+        -py2to3              Enable limited on-the-fly Python 2 to 3
+                             conversion support
 
     Window options
     ---------------------------------------------------------------------------
