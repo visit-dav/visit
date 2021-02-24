@@ -1463,7 +1463,6 @@ function usage
     initialize_build_visit
 
     printf "Usage: %s [options]\n" $0
-    printf "%-15s %s [%s]\n" "--skip-opengl-context-check" "Skip check for minimum OpenGL context." "false"
 
     printf "\n"
     printf "BUILD OPTIONS\n"
@@ -1511,7 +1510,7 @@ function usage
         name=${grouplibs_name[$bv_i]}
         comment=${grouplibs_comment[$bv_i]}
         enabled=${grouplibs_enabled[$bv_i]}
-        printf "%-15s %s [%s]\n" "--$name" "$comment" "$enabled"
+        printf "%-20s %s [%s]\n" "--$name" "$comment" "$enabled"
     done
     printf "\n"
 
@@ -1560,8 +1559,8 @@ function usage
     printf "GIT OPTIONS\n"
     printf "\n"
 
-    printf "%-26s %s\n"      "--git" "Obtain the VisIt source code"
-    printf "%-26s %s [%s]\n" "" "from the GIT server" "$DO_GIT"
+    printf "%-20s %s\n"      "--git" "Obtain the VisIt source code"
+    printf "%-20s %s [%s]\n" "" "from the GIT server" "$DO_GIT"
 
     printf "\n"
     printf "MISC OPTIONS\n"
@@ -1572,10 +1571,14 @@ function usage
     printf "%-20s %s [%s]\n" "--download-only" "Only download the specified packages" "no"
     printf "%-20s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
     printf "%-20s %s [%s]\n" "-h, --help" "Display this help message." "no"
+    printf "%-20s <%s>\n" "--log-file"  "filename"
+    printf "%-20s %s [%s]\n" ""  "Write build log to provided filename" "$LOG_FILE"
     printf "%-20s %s [%s]\n" "--print-vars" "Display user settable environment variables" "no"
     printf "%-20s %s\n" "--server-components-only" ""
     printf "%-20s %s\n" "" "Only build VisIt's server components"
     printf "%-20s %s [%s]\n" "" "(mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
+    printf "%-20s %s\n" "--skip-opengl-context-check" ""
+    printf "%-20s %s\n" "" "Skip check for minimum OpenGL context."
     printf "%-20s %s [%s]\n" "--stdout" "Write build log to stdout" "no"
     printf "%-20s <%s>\n" "--write-unified-file"  "filename"
     printf "%-20s %s [%s]\n" ""  "Write single unified build_visit file using the provided filename" "$WRITE_UNIFIED_FILE"
