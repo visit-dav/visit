@@ -135,6 +135,12 @@ protected:
                                vtkUnstructuredGrid *,
                                const char *, std::vector<int> &,
                                int, int, int, int);
+    void                   ReadNGonAndNFaceSections(
+                               vtkUnstructuredGrid *,
+                               const char *,
+                               std::vector<int> &,
+                               std::vector<int> &,
+                               int, int, int, int);
 
     void PrintVarInfo(ostream &out, const VarInfo &var, const char *indent);
     void PrintStringVarInfoMap(ostream &out, const StringVarInfoMap &vars, const char *indent);

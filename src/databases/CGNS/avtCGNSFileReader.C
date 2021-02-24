@@ -1839,7 +1839,7 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
         //if (status == CG_OK)
         //    cerr << "\nROOT ID: " << rootId << endl;//FIXME
         //else
-        //    eerr << "OH, NO! COULD NOT GET ROOT ID" << endl;//FIXME
+        //    cerr << "OH, NO! COULD NOT GET ROOT ID" << endl;//FIXME
 
         //std::vector<double> baseIds;
         //status = getBaseIds(cgioNum, rootId, baseIds);
@@ -1937,6 +1937,22 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
         {
             ReadNGonSections(ugrid, meshname, nGonSections, base, zone,
                 cell_dim, phys_dim);
+        }
+        else if (haveNGonSections && haveNFaceSections)
+        {
+            if (nGonSections.size() != nFaceSections.size())
+            {
+                cerr << "NUMBER OF NGON AND NFACE SECTIONS DON'T MATCH!" << endl;//FIXME
+                cerr << "NGON vs NFACE: " << nGonSections.size() << " vs " << nFaceSections.size() << endl;//FIXME
+            }
+            cerr << "Have faces and ngon" << endl;//FIXME
+            ReadNGonAndNFaceSections(ugrid, meshname, nGonSections,
+                nFaceSections, base, zone,
+                cell_dim, phys_dim);
+        }
+        else if (haveNFaceSections)
+        {
+            cerr << "HAVE ONLY FACES!" << endl;//FIXME
         }
 
         retval = ugrid;
@@ -2408,13 +2424,13 @@ avtCGNSFileReader::ReadNGonSections(vtkUnstructuredGrid *ugrid,
             sec, elements, NULL);
 
 
-        int cgioNum = 0;
-        int status  = cg_get_cgio(GetFileHandle(), &cgioNum);
+        //int cgioNum = 0;
+        //int status  = cg_get_cgio(GetFileHandle(), &cgioNum);
 
-        if (status == CG_OK)
-            cerr << "\nIO NUM: " << cgioNum << endl;//FIXME
-        else
-            cerr << "OH, NO! COULD NOT GET IO NUM" << endl;//FIXME
+        //if (status == CG_OK)
+        //    cerr << "\nIO NUM: " << cgioNum << endl;//FIXME
+        //else
+        //    cerr << "OH, NO! COULD NOT GET IO NUM" << endl;//FIXME
 
         //getSectionConnectivity(cgioNum, const double cgioSectionId,
         //    const int dim, const cgsize_t* srcStart, const cgsize_t* srcEnd,
@@ -2464,6 +2480,259 @@ avtCGNSFileReader::ReadNGonSections(vtkUnstructuredGrid *ugrid,
 
         delete [] elements;
         delete [] connOffsets;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtCGNSFileReader::ReadNGonAndNFaceSections
+//
+//  Purpose:
+//
+//  Arguments:
+//      urgrid                  The unstructured grid to add our cells to.
+//      meshName                The name of our mesh.
+//      mixedAndNamedSections   An array of our mixed and named section indices.
+//      base                    The CGNS base to use.
+//      zone                    The CGNS zone (domain) to use.
+//      cellDim                 Dimension of the cells; 3 for volume cells,
+//                              2 for surface cells and 1 for line cells.
+//      physDim                 Number of coordinates required to define a
+//                              vector in the field.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Feb  2 09:20:04 PST 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
+    const char *meshName, std::vector<int> &nGonSections,
+    std::vector<int> &nFaceSections, int base,
+    int zone, int cellDim, int physDim)
+{
+    const char *mName = "avtCGNSFileReader::ReadNGonAndNFaceSections: ";
+
+    //FIXME: do the size check in here.
+    int numSections = nGonSections.size();
+
+    //FIXME: this doesn't quite work because the section counts don't match...
+    // We can try to load them all individually and perform the mapping then.
+    // But... How does that really work? Does nFace only ever occur in one section?
+    for (int sec_idx = 0; sec_idx < numSections; ++sec_idx)
+    {
+        //
+        // Initialize variables for both NGon and NFace.
+        //
+        char tempSecName[33];
+        int status     = CG_OK;
+        int parentFlag = 0;
+
+        //
+        // First, let's retrieve all of the NGon data.
+        //
+        int nGonSec                  = nGonSections[sec_idx];
+        ElementType_t nGonElemType   = ElementTypeNull;
+        cgsize_t nGonSizeInterior    = 0;
+        cgsize_t nGonStart           = 1;
+        cgsize_t nGonStop            = 1;
+        int nGonBound                = 0;
+
+        if(cg_section_read(GetFileHandle(), base, zone, nGonSec, tempSecName,
+            &nGonElemType, &nGonStart, &nGonStop, &nGonBound, &parentFlag) != CG_OK)
+        {
+            debug4 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        if(parentFlag > 0)
+        {
+            debug4 << mName << "parentFlag = " << parentFlag << endl;
+            continue;
+        }
+
+        if(cellDim == physDim)
+            nGonSizeInterior = (nGonStop - nGonStart + 1) - nGonBound;
+        else
+            nGonSizeInterior = (nGonStop - nGonStart + 1);
+
+        //
+        // FIXME:
+        // eDataSize is the size of the "elements" array, i.e. the size
+        // of the connectivity array.
+        //
+        cgsize_t nGonDataSize = 0;
+        if(cg_ElementDataSize(GetFileHandle(), base, zone, nGonSec, &nGonDataSize)
+            != CG_OK)
+        {
+            debug4 << mName << "Could not determine ElementDataSize\n";
+            continue;
+        }
+
+        //debug4 << "Element data size for nGonSec " << nGonSec << " is:"
+        //    << eDataSize << endl;
+
+        //debug4 << "section " << nGonSec << ": nGonElemType=";
+        //PrintElementType(nGonElemType);
+        //debug4 << " nGonStart=" << nGonStart << " nGonStop=" << nGonStop << " nGonBound=" << nGonBound
+        //       << " interior elements=" << nGonSizeInterior
+        //       << " parentFlag=" << parentFlag << endl;
+
+        //
+        // CGNS refers to the element connectivity as "elements". These
+        // are actually indices of connectivity.
+        // NGon elements represent node connectivity within a face, and
+        // NFace elements represent face connectivity within a zone.
+        //
+        cgsize_t *nGonElements = new cgsize_t[nGonDataSize];
+        if(nGonElements == 0)
+        {
+            debug4 << mName << "Could not allocate memory for connectivity\n";
+            continue;
+        }
+
+        int nGonConnOffsetsSize   = nGonSizeInterior + 1;
+        cgsize_t *nGonConnOffsets = new cgsize_t[nGonConnOffsetsSize];
+
+        for (int i = 0; i < nGonConnOffsetsSize; ++i)
+        {
+            nGonConnOffsets[sec_idx] = 0;
+        }
+
+#if CGNS_VERSION >= 4000
+        status = cg_poly_elements_read(GetFileHandle(), base, 
+            zone, sec, nGonElements, nGonConnOffsets, NULL);
+#else
+        //FIXME: error out if version < 4000?
+        status = cg_elements_read(GetFileHandle(), base, zone,
+            nGonSec, nGonElements, NULL);
+#endif
+       
+        if (status != CG_OK)
+        {
+            delete [] nGonElements;
+            nGonElements = 0;
+            debug4 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        //
+        // Now that we have NGon, let's grab all of the NFace data.
+        //
+        int nFaceSec                 = nFaceSections[sec_idx];
+        ElementType_t nFaceElemType  = ElementTypeNull;
+        cgsize_t nFaceSizeInterior    = 0;
+        cgsize_t nFaceStart           = 1;
+        cgsize_t nFaceStop            = 1;
+        int nFaceBound                = 0;
+
+        if(cg_section_read(GetFileHandle(), base, zone, nFaceSec, tempSecName,
+           &nFaceElemType, &nFaceStart, &nFaceStop, &nFaceBound, &parentFlag)
+           != CG_OK)
+        {
+            debug4 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        if(parentFlag > 0)
+        {
+            debug4 << mName << "parentFlag = " << parentFlag << endl;
+            continue;
+        }
+
+        if(cellDim == physDim)
+            nFaceSizeInterior = (nFaceStop - nFaceStart + 1) - nFaceBound;
+        else
+            nFaceSizeInterior = (nFaceStop - nFaceStart + 1);
+
+        cgsize_t nFaceSize = 0;
+        if(cg_ElementDataSize(GetFileHandle(), base, zone, nFaceSec, &nFaceSize)
+            != CG_OK)
+        {
+            debug4 << mName << "Could not determine ElementDataSize\n";
+            continue;
+        }
+
+        //
+        // CGNS refers to the element connectivity as "elements". These
+        // are actually indices of connectivity.
+        // NGon elements represent node connectivity within a face, and
+        // NFace elements represent face connectivity within a zone.
+        //
+        cgsize_t *nFaceElements = new cgsize_t[nFaceSize];
+        if(nFaceElements == 0)
+        {
+            debug4 << mName << "Could not allocate memory for connectivity\n";
+            continue;
+        }
+
+        int nFaceConnOffsetsSize   = nFaceSizeInterior + 1;
+        cgsize_t *nFaceConnOffsets = new cgsize_t[nFaceConnOffsetsSize];
+
+        for (int i = 0; i < nFaceConnOffsetsSize; ++i)
+        {
+            nFaceConnOffsets[sec_idx] = 0;
+        }
+
+#if CGNS_VERSION >= 4000
+        status = cg_poly_elements_read(GetFileHandle(), base, 
+            zone, sec, nFaceElements, nFaceConnOffsets, NULL);
+#else
+        //FIXME: error out if version < 4000?
+        status = cg_elements_read(GetFileHandle(), base, zone,
+            nFaceSec, nFaceElements, NULL);
+#endif
+       
+        if (status != CG_OK)
+        {
+            delete [] nFaceElements;
+            nFaceElements = 0;
+            debug4 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+
+
+
+
+
+
+        ////
+        //// Iterate over our polygons and add them to the mesh.
+        ////
+        //vtkIdType verts[27];
+        //const cgsize_t *elementsPtr = elements;
+        //for(cgsize_t c = 0; c < nGonSizeInterior; ++c)
+        //{
+        //    //
+        //    // The connectivity offsets have size nGonSizeInterior + 1
+        //    // so that we can grab the number of points for each zone.
+        //    //
+        //    int numVertices = connOffsets[c+1] - connOffsets[c];
+
+        //    for (int v = 0; v < numVertices; ++v)
+        //    {
+        //        verts[v] = elementsPtr[v]-1;
+        //    }
+
+        //    ugrid->InsertNextCell(VTK_POLYGON, numVertices, verts);
+        //    elementsPtr += numVertices;
+        //}
+
+        //delete [] elements;
+        //delete [] connOffsets;
     }
 }
 
