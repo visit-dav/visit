@@ -27,7 +27,7 @@ QPixmap *QvisPlotListBoxItem::selectionIcon = 0;
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::QvisPlotListBoxItem
 //
-// Purpose: 
+// Purpose:
 //   Constructor for QvisPlotListBoxItem.
 //
 // Arguments:
@@ -53,7 +53,7 @@ QPixmap *QvisPlotListBoxItem::selectionIcon = 0;
 //   Initial Qt4 Port.
 //
 //   Cyrus Harrison, Thu Dec  4 08:28:50 PST 2008
-//   Removed unnecessary todo comment. 
+//   Removed unnecessary todo comment.
 //
 //   Brad Whitlock, Fri Jul 23 14:55:53 PDT 2010
 //   I added selectionName.
@@ -63,7 +63,7 @@ QPixmap *QvisPlotListBoxItem::selectionIcon = 0;
 //
 // ****************************************************************************
 
-QvisPlotListBoxItem::QvisPlotListBoxItem(const Plot &p, const QString &prefix_, 
+QvisPlotListBoxItem::QvisPlotListBoxItem(const Plot &p, const QString &prefix_,
     const QString &selectionName_)
     : QListWidgetItem(), plot(p), prefix(prefix_), selectionName(selectionName_),
       clickable()
@@ -144,7 +144,7 @@ QvisPlotListBoxItem::QvisPlotListBoxItem(const Plot &p, const QString &prefix_,
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::~QvisPlotListBoxItem
 //
-// Purpose: 
+// Purpose:
 //   Destructor for QvisPlotListBoxItem.
 //
 // Programmer: Brad Whitlock
@@ -167,7 +167,7 @@ QvisPlotListBoxItem::~QvisPlotListBoxItem()
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::height
 //
-// Purpose: 
+// Purpose:
 //   Returns the height of a line of text.
 //
 // Arguments:
@@ -184,7 +184,7 @@ QvisPlotListBoxItem::~QvisPlotListBoxItem()
 //   Initial Qt4 Port.
 //
 //   Brad Whitlock, Fri Jul 23 13:44:54 PDT 2010
-//   I increased the size, depending on whether a selection is applied or 
+//   I increased the size, depending on whether a selection is applied or
 //   created by this plot.
 //
 // ****************************************************************************
@@ -213,7 +213,7 @@ QvisPlotListBoxItem::height(const QListWidget *lb) const
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::width
 //
-// Purpose: 
+// Purpose:
 //   Returns the width of this line.
 //
 // Arguments:
@@ -223,7 +223,7 @@ QvisPlotListBoxItem::height(const QListWidget *lb) const
 // Creation:   Mon Sep 11 11:45:01 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -235,7 +235,7 @@ QvisPlotListBoxItem::width(const QListWidget *lb) const
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::textX
 //
-// Purpose: 
+// Purpose:
 //   Returns the x location of where we start drawing text.
 //
 // Returns:    The x coordinate of where we start drawing text.
@@ -244,7 +244,7 @@ QvisPlotListBoxItem::width(const QListWidget *lb) const
 // Creation:   Thu Oct 22 10:23:01 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -263,7 +263,7 @@ QvisPlotListBoxItem::textX() const
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::paint
 //
-// Purpose: 
+// Purpose:
 //   Draws the item in the listbox. It is drawn in different colors
 //   depending on the state of the plot.
 //
@@ -426,7 +426,7 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
         QString dbName;
         bool prefixIsNumeric = false;
         prefix.left(prefix.length() - 1).toInt(&prefixIsNumeric);
-        if(prefixIsNumeric) 
+        if(prefixIsNumeric)
         {
             // The prefix is a number so get the db name.
             QualifiedFilename name(plot.GetDatabaseName());
@@ -710,7 +710,7 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::setTextPen
 //
-// Purpose: 
+// Purpose:
 //   Sets the text pen according to the state of the plot and the highlightText
 //   argument.
 //
@@ -747,7 +747,7 @@ QvisPlotListBoxItem::setTextPen(QPainter *painter, bool highlightText) const
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::drawButtonSurface
 //
-// Purpose: 
+// Purpose:
 //   Draws a button with no contents in the specified rectangle.
 //
 // Arguments:
@@ -792,7 +792,7 @@ QvisPlotListBoxItem::drawButtonSurface(QPainter *painter, const QRect &r) const
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::drawUpDownButton
 //
-// Purpose: 
+// Purpose:
 //   Draws an up/down button in the specified rectangle.
 //
 // Arguments:
@@ -810,7 +810,7 @@ QvisPlotListBoxItem::drawButtonSurface(QPainter *painter, const QRect &r) const
 // ****************************************************************************
 
 void
-QvisPlotListBoxItem::drawUpDownButton(QPainter *painter, const QRect &r, 
+QvisPlotListBoxItem::drawUpDownButton(QPainter *painter, const QRect &r,
     bool up) const
 {
     painter->save();
@@ -832,7 +832,7 @@ QvisPlotListBoxItem::drawUpDownButton(QPainter *painter, const QRect &r,
         int x = r.x() + center + 2;
         tri.setPoint(0, x, y);
         tri.setPoint(1, x-d, y+d);
-        tri.setPoint(2, x+d, y+d);        
+        tri.setPoint(2, x+d, y+d);
     }
     else
     {
@@ -853,7 +853,7 @@ QvisPlotListBoxItem::drawUpDownButton(QPainter *painter, const QRect &r,
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::drawDeleteButton
 //
-// Purpose: 
+// Purpose:
 //   Draws a delete button in the specified rectangle.
 //
 // Arguments:
@@ -893,14 +893,14 @@ QvisPlotListBoxItem::drawDeleteButton(QPainter *painter, const QRect &r) const
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::clicked
 //
-// Purpose: 
+// Purpose:
 //   This method checks a clicked position against any significant things in
 //   the item. If anything significant is clicked, return a value other than
 //   -1.
 //
 // Arguments:
 //   pos           : The location of the click.
-//   doubleClicked : Whether we're calling this routine in response to a 
+//   doubleClicked : Whether we're calling this routine in response to a
 //                   double mouse click.
 //   id            : The int in which to return an identifier.
 //
@@ -1002,7 +1002,7 @@ QvisPlotListBoxItem::clicked(const QPoint &pos, bool doubleClicked, int &id)
             // Activate the plot attributes.
             id = plot.GetPlotType();
             return 2;
-        }         
+        }
     }
     else if(doubleClicked)
     {
@@ -1017,7 +1017,7 @@ QvisPlotListBoxItem::clicked(const QPoint &pos, bool doubleClicked, int &id)
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::AddClickableRectangle
 //
-// Purpose: 
+// Purpose:
 //   Adds a rectangle to the list of clickable rectangles so that we can check
 //   it when the user clicks on the item.
 //
@@ -1030,7 +1030,7 @@ QvisPlotListBoxItem::clicked(const QPoint &pos, bool doubleClicked, int &id)
 // Creation:   Thu Apr 10 15:32:08 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1044,7 +1044,7 @@ QvisPlotListBoxItem::AddClickableRectangle(int id, const QRect &r,
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::GetOperatorPixmap
 //
-// Purpose: 
+// Purpose:
 //   Gets the specified operator pixmap or creates one if necessary.
 //
 // Arguments:
@@ -1061,6 +1061,9 @@ QvisPlotListBoxItem::AddClickableRectangle(int id, const QRect &r,
 //   Cyrus Harrison, Mon Jul  7 13:39:58 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -1070,7 +1073,7 @@ QvisPlotListBoxItem::GetOperatorPixmap(int operatorType, QPixmap &pm)
     GUIOperatorPluginInfo *info = oMgr->GetGUIPluginInfo(
         oMgr->GetEnabledID(operatorType));
 
-    QString key; key.asprintf("operator_icon_%s", info->GetName());
+    QString key = QString("operator_icon_%1").arg(info->GetName());
     if(!QPixmapCache::find(key, pm))
     {
         if(info->XPMIconData())
@@ -1085,7 +1088,7 @@ QvisPlotListBoxItem::GetOperatorPixmap(int operatorType, QPixmap &pm)
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::GetPlotPixmap
 //
-// Purpose: 
+// Purpose:
 //   Gets the specified plot pixmap or creates one if necessary.
 //
 // Arguments:
@@ -1098,9 +1101,12 @@ QvisPlotListBoxItem::GetOperatorPixmap(int operatorType, QPixmap &pm)
 // Modifications:
 //   Brad Whitlock, Tue Jun 24 12:15:26 PDT 2008
 //   Get the plugin manager from the viewer proxy.
-//  
+//
 //   Cyrus Harrison, Mon Jul  7 13:39:58 PDT 2008
 //   Initial Qt4 Port.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
 //
 // ****************************************************************************
 
@@ -1111,7 +1117,7 @@ QvisPlotListBoxItem::GetPlotPixmap(int plotType, QPixmap &pm)
     GUIPlotPluginInfo *info = pMgr->GetGUIPluginInfo(
         pMgr->GetEnabledID(plotType));
 
-    QString key; key.asprintf("plot_icon_%s", info->GetName());
+    QString key = QString("plot_icon_%1").arg(info->GetName());
     if(!QPixmapCache::find(key, pm))
     {
         if(info->XPMIconData())
@@ -1126,14 +1132,14 @@ QvisPlotListBoxItem::GetPlotPixmap(int plotType, QPixmap &pm)
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::GetDisplayString
 //
-// Purpose: 
+// Purpose:
 //   Adds the applied operators to the plot variable and returns the
 //   resulting QString.
 //
 // Arguments:
 //   plot : The Plot for which we're creating the plot variable.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 25 12:48:30 PDT 2000
@@ -1187,7 +1193,7 @@ QvisPlotListBoxItem::GetDisplayString(const Plot &plot, const QString &prefix)
     QString plotVar;
     for(i = plot.GetNumOperators(); i > 0; --i)
     {
-        GUIOperatorPluginInfo *operatorInfo = 
+        GUIOperatorPluginInfo *operatorInfo =
             operatorPluginManager->GetGUIPluginInfo(
                   operatorPluginManager->GetEnabledID(plot.GetOperator(i-1)));
         s = operatorInfo->GetMenuName();
@@ -1210,7 +1216,7 @@ QvisPlotListBoxItem::GetDisplayString(const Plot &plot, const QString &prefix)
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::isExpanded
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the item is expanded.
 //
 // Returns:    True if the item is expanded; false otherwise.
@@ -1219,7 +1225,7 @@ QvisPlotListBoxItem::GetDisplayString(const Plot &plot, const QString &prefix)
 // Creation:   Thu Apr 17 09:28:36 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1231,7 +1237,7 @@ QvisPlotListBoxItem::isExpanded() const
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::activeOperatorIndex
 //
-// Purpose: 
+// Purpose:
 //   Returns the active operator index.
 //
 // Returns:    The active operator index.
@@ -1240,7 +1246,7 @@ QvisPlotListBoxItem::isExpanded() const
 // Creation:   Thu Apr 17 09:29:06 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -1252,21 +1258,21 @@ QvisPlotListBoxItem::activeOperatorIndex() const
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::setApplyOperators
 //
-// Purpose: 
+// Purpose:
 //   Called just before paint() to set whether operators should be applied
 //   to all plots.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 14 15:42:39 PDT 2013
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1304,7 +1310,7 @@ QvisPlotListBoxItem::ClickableRectangle::~ClickableRectangle()
 }
 
 void
-QvisPlotListBoxItem::ClickableRectangle::operator = ( 
+QvisPlotListBoxItem::ClickableRectangle::operator = (
     const QvisPlotListBoxItem::ClickableRectangle &obj)
 {
     r = obj.r;

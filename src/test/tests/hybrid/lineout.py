@@ -69,6 +69,12 @@
 #    Brad Whitlock, Tue Mar 26 12:06:51 PDT 2013
 #    I added TestOperatorCreatedVariables.
 #
+#    Kathleen Biagas, Wed Feb 24 10:11:35 PST 2021
+#    Remove setting of Pseudocolor colorTableName name to 'Default', as
+#    that is now the default anyways.
+#    Reset active continuous color table to 'hot' after a test that changes
+#    it is finished, so that other tests aren't affected.
+#
 # ----------------------------------------------------------------------------
 
 def GetOutputArray(plotID = -1, winID = -1):
@@ -117,9 +123,6 @@ def TestLineout2D(time, suffix):
 
     # Set the colortable to one that has white at the bottom values.
     SetActiveContinuousColorTable("calewhite")
-    pc = PseudocolorAttributes()
-    pc.colorTableName = "Default"
-    SetPlotOptions(pc)
 
     # Create the variable list.
     vars = ("default")
@@ -166,6 +169,8 @@ def TestLineout2D(time, suffix):
         s = '(' + s + ')'
         TestText("Lineout2d_output_15", s)
 
+    # Reset the CT to 'hot'
+    SetActiveContinuousColorTable("hot")
     # Delete the second window.
     DeleteWindow()
     DeleteAllPlots()
@@ -254,9 +259,6 @@ def TestSAMRAI(time, suffix):
 
     # Set the colortable to one that has white at the bottom values.
     SetActiveContinuousColorTable("rainbow")
-    pc = PseudocolorAttributes()
-    pc.colorTableName = "Default"
-    SetPlotOptions(pc)
 
     AddOperator("Slice", 1)
     slice = SliceAttributes()
@@ -294,6 +296,7 @@ def TestSAMRAI(time, suffix):
 
     ResetPickLetter()
     ResetLineoutColor()
+    SetActiveContinuousColorTable("hot")
 
 def TestSpecifyLineoutWindow(time, suffix):
     #window 1

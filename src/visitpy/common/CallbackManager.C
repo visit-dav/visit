@@ -383,6 +383,9 @@ CallbackManager::StartWork()
 //   Brad Whitlock, Tue Jun 24 14:20:53 PDT 2008
 //   Pass the viewer proxy pointer to the callback.
 //
+//   Cyrus Harrison, Fri Feb 19 13:25:57 PST 2021
+//   Update to use new VisItLockPythonInterpreter signature. 
+//
 // ****************************************************************************
 
 void
@@ -392,7 +395,7 @@ CallbackManager::Work()
     bool keepWorking = working;
 
     // Lock the Python interpreter
-    PyThreadState *threadState = VisItLockPythonInterpreter();
+    VISIT_PY_THREAD_LOCK_STATE threadState = VisItLockPythonInterpreter();
 
     do
     {

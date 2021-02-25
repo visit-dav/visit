@@ -49,10 +49,26 @@ function testvercomp ()
     fi
 }
 
+#
+# Way to get version digits from compiler output which is much less
+# sensitive to variations in how compiler vendors choose to output
+# this information. The tr filter replaces every space or dash with
+# a newline, turning each word of output into its own line. The
+# grep then looks for lines that have only digits and dots between
+# the beginning (^) and ending ($) of the line. The final grep takes
+# only lines that actually contain output, presumably the one and only
+# isolated version digit string.
+#
+function get_version_digits()
+{
+    retval=$($1 -v 2>&1 | tr ' -' '\n\n' | grep '^[0-9\.]*$' | grep .)
+    echo $retval
+}
+
 function check_minimum_compiler_version()
 {
    if [[ "$CXX_COMPILER" == "g++" ]] ; then
-        VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 )
+        VERSION=$(get_version_digits g++)
         echo "g++ version $VERSION"
         testvercomp $VERSION 6.0 '<'
         if [[ $? == 0 ]] ; then
@@ -60,7 +76,7 @@ function check_minimum_compiler_version()
             exit 1
         fi
     elif [[ "$OPSYS" == "Darwin"  &&  "$CXX_COMPILER" == "clang++" ]] ; then 
-        VERSION=$(clang++ -v 2>&1 | grep "clang version" | cut -d' ' -f3 )
+        VERSION=$(get_version_digits clang++)
         echo "apple clang version $VERSION"
         testvercomp $VERSION 5.0 '<'
         if [[ $? == 0 ]] ; then
@@ -68,7 +84,7 @@ function check_minimum_compiler_version()
             exit 1
         fi
     elif [[ "$CXX_COMPILER" == "clang++" ]] ; then 
-        VERSION=$(clang++ -v 2>&1 | grep "clang version" | cut -d' ' -f3 )
+        VERSION=$(get_version_digits clang++)
         echo "clang version $VERSION"
         testvercomp $VERSION 3.3 '<'
         if [[ $? == 0 ]] ; then
@@ -76,7 +92,7 @@ function check_minimum_compiler_version()
             exit 1
         fi
     elif [[ "$CXX_COMPILER" == "icpc" ]] ; then 
-        VERSION=$(icpc -v 2>&1 | grep "icpc version" | cut -d' ' -f3 )
+        VERSION=$(get_version_digits icpc)
         if [[ $VERSION == "" ]] ; then
             VERSION=$(icpc -v 2>&1 | grep "icpc.orig version" | cut -d' ' -f3 )
         fi
@@ -350,8 +366,20 @@ function initialize_build_visit()
             export MACOSX_DEPLOYMENT_TARGET=10.13
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER_MAJOR} == 18 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=10.14
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER_MAJOR} == 19 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=10.15
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER_MAJOR} == 20 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=11.0
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         else
-            export MACOSX_DEPLOYMENT_TARGET=10.13
+            export MACOSX_DEPLOYMENT_TARGET=10.14
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         fi
@@ -364,18 +392,11 @@ function initialize_build_visit()
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export CXXFLAGS=${CXXFLAGS:-"-fno-common -fexceptions"}
         export FCFLAGS=${FCFLAGS:-$CFLAGS}
-        export MESA_TARGET=${MESA_TARGET:-"darwin"}
 	
     elif [[ "$OPSYS" == "Linux" ]]; then
         export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
         export SO_EXT="so"
-        if [[ "$(uname -m)" == "i386" ]] ; then
-            ###   export MESA_TARGET=${MESA_TARGET:-"linux-x86"} # Mesa-6.x
-            export MESA_TARGET=${MESA_TARGET:-"linux"}
-        elif [[ "$(uname -m)" == "i686" ]] ; then
-            ###   export MESA_TARGET=${MESA_TARGET:-"linux-x86"} # Mesa-6.x
-            export MESA_TARGET=${MESA_TARGET:-"linux"}
-        elif [[ "$(uname -m)" == "x86_64" ]] ; then
+        if [[ "$(uname -m)" == "x86_64" ]] ; then
             CFLAGS="$CFLAGS -m64 -fPIC"
             FCFLAGS="$FCFLAGS -m64 -fPIC"
             if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
@@ -385,15 +406,12 @@ function initialize_build_visit()
             if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                 CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
             fi
-            ###   export MESA_TARGET=${MESA_TARGET:-"linux-x86-64"} # Mesa-6.x
-            export MESA_TARGET=${MESA_TARGET:-"linux"}
         elif [[ "$(uname -m)" == "ppc64" ]] ; then
             if [[ "$C_COMPILER" == "xlc" ]] ; then
                 CFLAGS="$CFLAGS -qpic"
                 FCFLAGS="$FCFLAGS -qpic"
                 CXXFLAGS="$CXXFLAGS -qpic"
                 export CXX_COMPILER=${CXX_COMPILER-"xlC"}
-                export MESA_TARGET=${MESA_TARGET-"linux"}
             elif [[ "$C_COMPILER" == "bgxlc" ]] ; then
                 export CXX_COMPILER=${CXX_COMPILER-"bgxlC"}
             else
@@ -406,7 +424,6 @@ function initialize_build_visit()
                 if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                     CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
                 fi
-                export MESA_TARGET=${MESA_TARGET-"linux"}
             fi
         elif [[ "$(uname -m)" == "ppc64le" ]] ; then
             if [[ "$C_COMPILER" == "xlc" ]] ; then
@@ -414,7 +431,6 @@ function initialize_build_visit()
                 FCFLAGS="$FCFLAGS -qpic"
                 CXXFLAGS="$CXXFLAGS -qpic"
                 export CXX_COMPILER=${CXX_COMPILER-"xlC"}
-                export MESA_TARGET=${MESA_TARGET-"linux"}
                 QT_PLATFORM="linux-xlc" #aix-xlc"
             else
                 CFLAGS="$CFLAGS -fPIC"
@@ -426,7 +442,6 @@ function initialize_build_visit()
                 if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                     CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
                 fi
-                export MESA_TARGET=${MESA_TARGET-"linux"}
                 QT_PLATFORM="linux-g++"
             fi
         elif [[ "$(uname -m)" == "ia64" ]] ; then
@@ -445,7 +460,6 @@ function initialize_build_visit()
         export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
-        export MESA_TARGET=${MESA_TARGET:-"linux"}
     elif [[ "$OPSYS" == "AIX" ]]; then
         export ARCH="aix" # You can change this to say RHEL, SuSE, Fedora, etc.
         export SO_EXT="a"
@@ -455,7 +469,6 @@ function initialize_build_visit()
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export MAKE=${MAKE:-"gmake"}
-        export MESA_TARGET=${MESA_TARGET:-"aix"}
     elif [[ "$OPSYS" == "IRIX64" ]]; then
         export ARCH="irix64" # You can change this to say RHEL, SuSE, Fedora, etc.
         export SO_EXT="so"
@@ -465,7 +478,6 @@ function initialize_build_visit()
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export MAKE=${MAKE:-"gmake"}
-        export MESA_TARGET=${MESA_TARGET:-"irix6-64-dso"}
     elif [[ "$OPSYS" == "SunOS" ]]; then
         export ARCH=${ARCH:-"sunos5"}
         export SO_EXT="so"
@@ -475,7 +487,6 @@ function initialize_build_visit()
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export MAKE=${MAKE:-"make"}
-        export MESA_TARGET=${MESA_TARGET:-"sunos5-gcc"}
     else
         export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
         export SO_EXT="so"
@@ -1334,6 +1345,7 @@ function run_build_visit()
     # same log.
     #
     LINES="------------------------------------------------------------"
+    touch $LOG_FILE
     log $LINES
     log $0 $@
     log "Started:" $(date)
@@ -1382,7 +1394,8 @@ function run_build_visit()
                           "Bailing out."
                 fi
             else
-                info "The third party library location does not exist. Create it? [yes/no]"
+                info "The third party library location, \"$THIRD_PARTY_PATH\"" \
+                     "does not exist. Create it? [yes/no]"
                 read RESPONSE
                 if [[ "$RESPONSE" != "yes" ]] ; then
                     error "The third party library location does not exist." \

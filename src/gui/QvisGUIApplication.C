@@ -4585,6 +4585,9 @@ QvisGUIApplication::SaveSession()
 //   Kathleen Biagas, Thu May 18, 2018
 //   Support UNC style paths on Windows.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString::asprintf with QString.arg as suggested by Qt docs.
+//
 // ****************************************************************************
 
 void
@@ -4594,16 +4597,23 @@ QvisGUIApplication::SaveSessionAs()
     QString defaultFile;
     if(sessionHost.empty())
     {
-        defaultFile.asprintf("%svisit%04d.session", sessionDir.c_str(), sessionCount);
+        defaultFile = QString("%1visit%2.session")
+            .arg(sessionDir.c_str())
+            .arg(sessionCount,4,10,QLatin1Char('0'));
     }
     else
     {
 #ifdef WIN32
         if (sessionDir.substr(0,2) == "\\\\")
-            defaultFile.asprintf("%svisit%04d.session", sessionDir.c_str(), sessionCount);
+            defaultFile = QString("%1visit%2.session")
+                .arg(sessionDir.c_str())
+                .arg(sessionCount,4,10,QLatin1Char('0'));
         else
 #endif
-        defaultFile.asprintf("%s:%svisit%04d.session", sessionHost.c_str(), sessionDir.c_str(), sessionCount);
+        defaultFile = QString("%1:%2visit%3.session")
+                .arg(sessionHost.c_str())
+                .arg(sessionDir.c_str())
+                .arg(sessionCount,4,10,QLatin1Char('0'));
     }
 
     // Get the name of the file that the user saved.
@@ -7363,6 +7373,9 @@ QvisGUIApplication::HandleMetaDataUpdate()
 //   Hank Childs, Tue Aug 31 10:10:39 PDT 2010
 //   Move Rob's auto-add operator code to the viewer.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Remove unused var 'QString wName'.
+//
 // ****************************************************************************
 
 void
@@ -7378,7 +7391,6 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
     const avtDatabaseMetaData *md =
         fileServer->GetMetaData(qf, GetStateForSource(qf),
         !FileServerList::ANY_STATE, !FileServerList::GET_NEW_MD);
-    QString wName; wName.asprintf("plot_wizard_%d", plotType);
     QvisWizard *wiz = GUIInfo->CreatePluginWizard(
         GetViewerState()->GetPlotAttributes(plotType), mainWin, varName.toStdString(),
         md, GetViewerState()->GetExpressionList());
@@ -7452,6 +7464,9 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
 //   ViewerPlotList), we need to ensure that plots get  redrawn if auto update
 //   is enabled.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Remove unused var 'QString wName'.
+//
 // ****************************************************************************
 
 void
@@ -7463,7 +7478,6 @@ QvisGUIApplication::AddOperator(int operatorType)
         operatorPluginManager->GetEnabledID(operatorType));
 
     // Try and create a wizard for the desired operator type.
-    QString wName; wName.asprintf("operator_wizard_%d", operatorType);
     QvisWizard *wiz = GUIInfo->CreatePluginWizard(
         GetViewerState()->GetOperatorAttributes(operatorType), mainWin);
 
@@ -8338,6 +8352,10 @@ QvisGUIApplication::SaveMovie()
 //   Brad Whitlock, Wed Dec  8 11:38:05 PST 2010
 //   Add a stride for saving movies.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString::asprintf with QString::arg as suggested in Qt docs,
+//   and with setNum in the simpler cases.
+//
 // ****************************************************************************
 
 void
@@ -8417,10 +8435,13 @@ QvisGUIApplication::SaveMovieMain()
                 const char *stereoNames[] = {"off", "leftright",
                     "redblue", "redgreen"};
                 int si = (stereos[i] < 0 || stereos[i] > 3) ? 0 : stereos[i];
-                QString order;
-                order.asprintf("    movie.RequestFormat(\"%s\", %d, %d, \"%s\")\n",
-                    formats[i].c_str(), widths[i], heights[i],
-                    stereoNames[si]);
+                QString order =
+                    QString("    movie.RequestFormat(\"%1\", %2, %3 \"%4\")\n")
+                    .arg(formats[i].c_str())
+                    .arg(widths[i])
+                    .arg(heights[i])
+                    .arg(stereoNames[si]);
+
                 code += order;
             }
 
@@ -8456,22 +8477,21 @@ QvisGUIApplication::SaveMovieMain()
 
             // Add fps and start/end index
             QString tmp;
-            tmp.asprintf("%d", movieAtts->GetFps());
+            tmp.setNum(movieAtts->GetFps());
             code += "    movie.fps = " + tmp + "\n";
-
-            tmp.asprintf("%d", movieAtts->GetStartIndex());
+            tmp.setNum(movieAtts->GetStartIndex());
             code += "    movie.frameStart = " + tmp + "\n";
 
             if (movieAtts->GetEndIndex() != 1000000000)
             {
-                tmp.asprintf("%d", movieAtts->GetEndIndex());
+                tmp.setNum(movieAtts->GetEndIndex());
                 code += "    movie.frameEnd = " + tmp + "\n";
             }
 
-            tmp.asprintf("%d", movieAtts->GetStride());
+            tmp.setNum(movieAtts->GetStride());
             code += "    movie.frameStep = " + tmp + "\n";
 
-            tmp.asprintf("%d", movieAtts->GetInitialFrameValue());
+            tmp.setNum(movieAtts->GetInitialFrameValue());
             code += "    movie.initialFrameValue = " + tmp + "\n";
 
             // If we want e-mail notification, add that info here.
