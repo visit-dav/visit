@@ -19,10 +19,10 @@
 #include <vtkPointData.h>
 
 #include <avtDatabaseMetaData.h>
-
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
 
+#include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
@@ -32,7 +32,6 @@
 #include <visit-hdf5.h>
 
 using namespace std;
-static const int debug = 0;
 
 //
 // struct for reading the HDF compound type 'concentration'
@@ -202,8 +201,8 @@ avtXolotlFileFormat::PopulateNetworkGroupMetaData()
         FreeUpResources();
         EXCEPTION1(InvalidDBTypeException, "cannot read 'superSize' var.");
     }
-    if (debug) cerr << "normalSize="<<normalSize<<endl;
-    if (debug) cerr << "superSize="<<superSize<<endl;
+    debug1 << "normalSize="<<normalSize<<endl;
+    debug1 << "superSize="<<superSize<<endl;
 
     // close and cleanup
     H5Gclose(networkGroup);
@@ -236,15 +235,8 @@ avtXolotlFileFormat::PopulateConcentrationGroupMetaData()
                GroupInfo,
                &cycleNumbers);
     nTimeStates = cycleNumbers.size();
-    if (debug) cerr << "Xolotl:: nTimeStates = " << nTimeStates << endl;
-    if (debug)
-    {
-	      for (auto it = cycleNumbers.cbegin(); it != cycleNumbers.cend(); it++)
-	      {
-		      cerr << *it << ' ';
-	      }
-	      cerr << endl;
-    }
+    debug1 << "Xolotl:: nTimeStates = " << nTimeStates << endl;
+
 
     //
     // Get the 'absoulteTime' and 'iSurface' value for each cycle if they exist
@@ -439,13 +431,13 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
     else
         dimension = 0;
 
-    if (debug) cerr << "hx="<<hx<<endl;
-    if (debug) cerr << "hy="<<hy<<endl;
-    if (debug) cerr << "hz="<<hz<<endl;
-    if (debug) cerr << "nx="<<nx<<endl;
-    if (debug) cerr << "ny="<<ny<<endl;
-    if (debug) cerr << "nz="<<nz<<endl;
-    if (debug) cerr << "dimension="<<dimension<<endl;
+    debug1 << "hx=" <<hx << endl;
+    debug1 << "hy=" <<hy << endl;
+    debug1 << "hz=" <<hz << endl;
+    debug1 << "nx=" <<nx << endl;
+    debug1 << "ny=" <<ny << endl;
+    debug1 << "nz=" <<nz << endl;
+    debug1 << "dimension=" << dimension << endl;
 
 
     // close the attributes and group
@@ -470,7 +462,7 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
     hid_t sid = H5Dget_space(compositionDataSet);
     hsize_t composition_dims[2];
     hid_t ndims = H5Sget_simple_extent_dims(sid, composition_dims, NULL);
-    if (debug) cout << "dimensions " <<
+    debug1 << "dimensions " <<
       (unsigned long)(composition_dims[0]) << " x " <<
       (unsigned long)(composition_dims[1]) <<
       " ndims " << ndims << endl;
@@ -523,7 +515,7 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
         hid_t sid = H5Dget_space(gridDataSet);
         hsize_t headerGrid_dims[1];
         hid_t ndims = H5Sget_simple_extent_dims(sid, headerGrid_dims, NULL);
-        if (debug) cout << "dimensions " <<
+        debug1 << "dimensions " <<
           (unsigned long)(headerGrid_dims[0]) <<
           " ndims " << ndims << endl;
 
@@ -561,6 +553,12 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
 //  Programmer: James Kress
 //  Creation:   July 15, 2019
 //
+//   Modifications:
+//   James Kress, Thur Feb 25 17:30:33 PDT 2021
+//   Added a PopulateNetworkGroupMetaData() function to simplify Initialize().
+//
+//   Modified the flow to only do PopulateNetworkGroupMetaData() if reading a
+//   1D xolotl file.
 // ****************************************************************************
 void
 avtXolotlFileFormat::Initialize()
@@ -772,7 +770,7 @@ avtXolotlFileFormat::GetMesh(int timestate, const char *meshname)
     {
         // What mesh do we need?
         int meshSizeIndex[2];
-        if (debug) cerr << "Getting mesh: " << meshname << endl;
+        debug1 << "Getting mesh: " << meshname << endl;
         if (strncmp(meshname, "0D/Helium", strlen("0D/Helium")) == 0)
         {
             meshSizeIndex[0] = 0;
@@ -987,6 +985,10 @@ avtXolotlFileFormat::GetPositionsOfVariableFromCompositionTable(int *variableInd
 //   compile stack created arrays unless their size can be determined at
 //   compile time.
 //
+//  James Kress, Thur Feb 25 17:30:33 PDT 2021
+//  Added the ability to visualize normal and super clusters for
+//  1D Xolotl files.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1115,8 +1117,8 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
         }
 
         //Open the network for reading
-        hid_t networkGroup = H5Gopen(fileId, "networkGroup", H5P_DEFAULT);
-        if (networkGroup<0)
+        networkGroup = H5Gopen(fileId, "networkGroup", H5P_DEFAULT);
+        if (networkGroup < 0)
         {
             FreeUpResources();
             EXCEPTION1(InvalidDBTypeException, "No 'networkGroup'.");
@@ -1138,14 +1140,14 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
                 if(rdata[i].clusterNumber < normalSize)
                 {
                     // Get the x sizes of this cluster
-                    //variableIndexes tells us either Helium, Deuterium, Tritium, Vacancies
+                    // variableIndexes tells us either Helium, Deuterium, Tritium, Vacancies
                     float xSize = data[int(rdata[i].clusterNumber)*composition_dims[1] + variableIndexes[0]];
                     int pos = (xSize * (nx - 1)) + j;
                     rv->SetTuple1(pos, (rv->GetTuple1(pos) + rdata[i].concentration));
                 }
-                else //Take care of the super clusters
+                else // Take care of the super clusters
                 {
-                    //Loop on the number of clusters it contains
+                    // Loop on the number of clusters it contains
                     // Open the network group for this particular cluster
                     char clusterName[100];
                     snprintf(clusterName, 100, "%d", rdata[i].clusterNumber);
@@ -1169,7 +1171,7 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
                     hid_t heVListSpace   = H5Dget_space(heVList);
                     hid_t heVList_ndims = H5Sget_simple_extent_dims(heVListSpace, vListDims, NULL);
 
-                    //read the values in the heVList table
+                    // Read the values in the heVList table
                     int *heVListTableData = new int[vListDims[0] * 4];
                     H5Dread(heVList, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)heVListTableData);
 
