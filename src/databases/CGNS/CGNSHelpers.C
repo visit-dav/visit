@@ -136,6 +136,7 @@ int getBaseIds(int cgioNum, double rootId, std::vector<double>& baseIds)
     std::size_t nc;
 
     baseIds.clear();
+    getChildrenIds(cgioNum, rootId, baseIds);
     if (baseIds.size() < 1)
     {
         std::cerr << "Error: Not enough nodes under the root description file." << std::endl;
