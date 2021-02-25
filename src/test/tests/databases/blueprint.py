@@ -20,6 +20,7 @@ RequiredDatabasePlugin("Blueprint")
 from os.path import join as pjoin
 
 bp_test_dir = "blueprint_v0.3.1_test_data"
+bp_venn_test_dir = "blueprint_v0.7.0_venn_test_data"
 bp_mfem_test_dir = "blueprint_v0.3.1_mfem_test_data"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
@@ -32,6 +33,27 @@ braid_2d_sidre_root = data_path(pjoin(bp_test_dir,"braid_2d_sidre_examples.root"
 braid_3d_sidre_root = data_path(pjoin(bp_test_dir,"braid_3d_sidre_examples.root"))
 
 uniform_root = data_path(pjoin(bp_test_dir,"uniform.cycle_001038.root"))
+
+#
+# venn test data (multi material)
+#
+
+venn_full_root  =  data_path(pjoin(bp_venn_test_dir,
+                             "venn_small_example_full_hdf5.root"))
+venn_s_by_e_root  =  data_path(pjoin(bp_venn_test_dir,
+                               "venn_small_example_sparse_by_element_hdf5.root"))
+
+venn_s_by_m_root  =  data_path(pjoin(bp_venn_test_dir,
+                               "venn_small_example_sparse_by_material_hdf5.root"))
+
+venn_full_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
+                             "venn_small_example_full_yaml.root"))
+venn_s_by_e_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
+                               "venn_small_example_sparse_by_element_yaml.root"))
+
+venn_s_by_m_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
+                               "venn_small_example_sparse_by_material_yaml.root"))
+
 
 
 braid_2d_meshes = ["points", "uniform", "rect", "struct", "tris","quads"]
@@ -122,6 +144,80 @@ def test_mfem(tag_name, example_name, protocol):
 
     CloseDatabase(dbfile)
 
+def test_venn(tag_name, venn_db_file):
+    TestSection("Blueprint Matset Example Tests: {0} ".format(tag_name))
+    OpenDatabase(venn_db_file)
+    AddPlot("Pseudocolor", "mesh_topo/mat_check")
+    DrawPlots()
+    Test(tag_name + "_mat_check")
+    # value check
+    Query("minmax")
+    res = GetQueryOutputObject()
+    print(res)
+    # We expect:
+    #int(res["max"]) == 4320
+    #int(res["min"]) == 1
+    TestValueEQ("testeq_t_mat_check_max",int(res["max"]),4320)
+    TestValueEQ("testeq_mat_check_min",int(res["min"]),1)
+    DeleteAllPlots()
+
+
+    TestSection("Blueprint Matset Example Tests: {0} Matvf Exprs".format(tag_name))
+
+    # check all volume fractions
+    vf_exprs = {"vf_bg":'matvf(mesh_topo_matset,"background")',
+                "vf_c_a":'matvf(mesh_topo_matset,"circle_a")',
+                "vf_c_b":'matvf(mesh_topo_matset,"circle_b")',
+                "vf_c_c":'matvf(mesh_topo_matset,"circle_c")'}
+
+    for ename,edef in vf_exprs.items():
+        DefineScalarExpression(ename,edef);
+        AddPlot("Pseudocolor", ename)
+        DrawPlots()
+        Test(tag_name + "_" + ename)
+        # value check
+        Query("minmax")
+        res = GetQueryOutputObject()
+        print(res)
+        # We expect:
+        #res["max"] == 1.0
+        #res["min"] == 0.0
+        TestValueEQ("testeq_" + ename + "_max",res["max"],1.0)
+        TestValueEQ("testeq_" + ename + "_min",res["min"],0.0)
+        DeleteAllPlots()
+
+    TestSection("Blueprint Matset Example Tests: {0} Val4mat Exprs".format(tag_name))
+    
+    # check all volume fractions
+    v4m_exprs = {"v4m_bg":'val4mat(<mesh_topo/mat_check>,"background")',
+                 "v4m_c_a":'val4mat(<mesh_topo/mat_check>,"circle_a")',
+                 "v4m_c_b":'val4mat(<mesh_topo/mat_check>,"circle_b")',
+                 "v4m_c_c":'val4mat(<mesh_topo/mat_check>,"circle_c")'}
+
+    v4m_test_vals = {"v4m_bg":     1,
+                     "v4m_c_a":   20,
+                     "v4m_c_b":  300,
+                     "v4m_c_c": 4000}
+
+    for ename,edef in v4m_exprs.items():
+        DefineScalarExpression(ename,edef);
+        AddPlot("Pseudocolor", ename)
+        DrawPlots()
+        Test(tag_name + "_" + ename)
+        # value check
+        Query("minmax")
+        # We expect:
+        res = GetQueryOutputObject()
+        print(res)
+        #int(res["max"]) == v4m_test_vals[ename]
+        #int(res["min"]) == 0
+        TestValueEQ("testeq_" + ename + "_max",int(res["max"]),v4m_test_vals[ename])
+        TestValueEQ("testeq_" + ename + "_min",int(res["min"]),0)
+        DeleteAllPlots()
+    
+
+    CloseDatabase(venn_db_file)
+
 def test_paren_vars():
     TestSection("Variables With Parens")
 
@@ -188,5 +284,13 @@ DeleteAllPlots()
 CloseDatabase(braid_2d_json_root)
 
 test_paren_vars()
+
+test_venn("venn_small_full", venn_full_root)
+test_venn("venn_small_sparse_by_element", venn_s_by_e_root)
+test_venn("venn_small_sparse_by_material", venn_s_by_m_root)
+
+test_venn("venn_small_full_yaml", venn_full_yaml_root)
+test_venn("venn_small_sparse_by_element_yaml", venn_s_by_e_yaml_root)
+test_venn("venn_small_sparse_by_material_yaml", venn_s_by_m_yaml_root)
 
 Exit()

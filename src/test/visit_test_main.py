@@ -2803,6 +2803,7 @@ SILO_MODE = TestEnv.SILO_MODE
 # Run our test script using "Source"
 #
 import visit
-visit.Source(TestEnv.params["script"])
+from pathlib import Path
+visit.Source(Path(TestEnv.params["script"]).as_posix())
 
 

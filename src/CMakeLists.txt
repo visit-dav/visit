@@ -469,7 +469,10 @@
 #    subdir's CMakeLists.txt
 #
 #    Kathleen Biagas, Mon Oct 26, 2020
-#    Add VISIT_ENABLE_UNIT_TESTS option (on by default).>> develop
+#    Add VISIT_ENABLE_UNIT_TESTS option (on by default).
+#
+#    Kathleen Biagas, Thu Feb 18, 2021
+#    Added logic to support codesigning Windows releases.
 #
 #****************************************************************************
 
@@ -2254,6 +2257,9 @@ ELSE (NOT WIN32)
         FILE(TO_NATIVE_PATH ${VISIT_WINDOWS_DIR} VWD_NATIVE)
         FILE(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX} CIP_NATIVE)
         FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CBD_NATIVE)
+        if(CODESIGN_HASH)
+           set(codesign "/DCODESIGN_HASH=${CODESIGN_HASH}")
+        endif()
         ADD_CUSTOM_COMMAND(OUTPUT visit${VISIT_VERSION}.exe
             COMMAND ${MAKENSIS}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
@@ -2262,6 +2268,7 @@ ELSE (NOT WIN32)
                     /DBIN_DIR=${CBD_NATIVE}
                     ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
             COMMAND ${MAKENSIS}
+                    ${codesign}
                     /DVisItVersion=${VISIT_VERSION}
                     /DCOMPILER=${VISIT_MSVC_VERSION}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
@@ -2274,8 +2281,12 @@ ELSE (NOT WIN32)
                     ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
         )
         ADD_CUSTOM_TARGET(_PACKAGE ALL DEPENDS visit${VISIT_VERSION}.exe)
-        ADD_CUSTOM_COMMAND(TARGET _PACKAGE PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P cmake_install.cmake)
+        if(NOT CODESIGN_HASH)
+          # not building a signed release
+          # make INSTALL be a prereq for _PACKAGE.
+          ADD_CUSTOM_COMMAND(TARGET _PACKAGE PRE_BUILD
+              COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P cmake_install.cmake)
+        endif()
         SET_TARGET_PROPERTIES(_PACKAGE PROPERTIES
                               EXCLUDE_FROM_DEFAULT_BUILD 1
                               EXCLUDE_FROM_ALL 1 )

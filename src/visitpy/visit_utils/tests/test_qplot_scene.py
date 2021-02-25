@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 #
-# file: test_basic.py
+# file: test_qplot_scene.py
 # author: cdh
 #
-# Tests for qannote module.
+# Tests for qplot module.
+#
+# Modification:
+#   Kathleen Biagas, Tue Feb 16, 2021
+#   Add encoding='iso-8859-1' to open command when reading.
 #
 #
 
@@ -31,7 +35,7 @@ def patch_scene_input(in_fname,ult_fname):
     #qi_fname = pjoin(output_dir,"qplot.example.in"
     #open(qi_fname,"w").write(qi)
     crv_file = os.path.abspath(pjoin(data_dir,ult_fname))
-    qi = open(pjoin(data_dir,in_fname)).read().replace("$SOURCE_FILE",crv_file)
+    qi = open(pjoin(data_dir,in_fname), encoding="iso-8859-1").read().replace("$SOURCE_FILE",crv_file)
     qi_fname = pjoin(output_dir,in_fname)
     open(qi_fname,"w").write(qi)
     return qi_fname
