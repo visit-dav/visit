@@ -3,6 +3,7 @@
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
                     {"category":"hybrid","file":"cinema-c.py"},
+                    {"category":"hybrid","file":"clonecopy.py"},
                     {"category":"hybrid","file":"ddf_vs_dbinning.py"},
                     {"category":"hybrid","file":"selections.py"},
                     {"category":"hybrid","file":"selections_pp.py"},
