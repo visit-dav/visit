@@ -1519,6 +1519,7 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
     {
         debug4 << mName << "\t\tCould not get the number of coords" << endl;
         debug4 << mName << cg_get_error() << endl;
+        cerr << cg_get_error() << endl;
     }
     else
     {
@@ -1573,6 +1574,7 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
         if (cg_goto(GetFileHandle(), base, "Zone_t", zone, GridCoordName, 0, "end") != CG_OK)
         {
             debug4 << cg_get_error() << endl;
+            cerr << cg_get_error() << endl;//FIXME
         }
 
         int narrays=0;
@@ -1580,6 +1582,7 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
         if(narrays < ncoords)
         {
             debug4 << "Not enough coordinates in node " << GridCoordName << endl;
+            cerr << "Not enough coordinates in node " << GridCoordName << endl;
             err = true;
         }
         // Every grid is read through cg_array. However, "GridCoordinates" node should always be present
@@ -1593,6 +1596,7 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
                 coordname) != CG_OK)
             {
                 debug4 << mName << cg_get_error() << endl;
+                cerr << cg_get_error() << endl;
             }
             else
             {
@@ -1605,6 +1609,7 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
                 if(cg_array_read_as(c, RealSingle, (void*)coords[c-1] ) != CG_OK)
                 {
                     debug4 << mName << cg_get_error() << endl;
+                    cerr << cg_get_error() << endl;//FIXME
                     err = true;
                 }
             }
@@ -1786,11 +1791,14 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
             delete [] coords[2];
             EXCEPTION1(InvalidVariableException, meshname);
         }
+        cerr << "NUM SECTIONS: " << numSections << endl;//FIXME
         
         // Populate the points array.
         unsigned int nPts = zsize[0];
         vtkPoints *pts = vtkPoints::New();
         pts->SetNumberOfPoints(nPts);
+
+        cerr << "NUM POINTS: " << nPts << endl;//FIXME
 
         const float *xc = coords[0];
         const float *yc = coords[1];
@@ -1827,44 +1835,43 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
 
 
 
-        //FIXME: for debugging
-        int cgioNum = 0;
-        // comes back as either CG_ERROR or CG_OK.
-        int status  = cg_get_cgio(GetFileHandle(), &cgioNum);
+        ////FIXME: for debugging
+        //int cgioNum = 0;
+        //// comes back as either CG_ERROR or CG_OK.
+        //int status  = cg_get_cgio(GetFileHandle(), &cgioNum);
 
-        if (status == CG_OK)
-            cerr << "\nIO NUM: " << cgioNum << endl;//FIXME
-        else
-            cerr << "OH, NO! COULD NOT GET IO NUM" << endl;//FIXME
+        //if (status == CG_OK)
+        //    cerr << "\nIO NUM: " << cgioNum << endl;//FIXME
+        //else
+        //    cerr << "OH, NO! COULD NOT GET IO NUM" << endl;//FIXME
 
-        double rootId = 0;
-        status = cgio_get_root_id(cgioNum, &rootId);
-        if (status == CG_OK)
-            cerr << "\nROOT ID: " << rootId << endl;//FIXME
-        else
-            cerr << "OH, NO! COULD NOT GET ROOT ID" << endl;//FIXME
+        //double rootId = 0;
+        //status = cgio_get_root_id(cgioNum, &rootId);
+        //if (status == CG_OK)
+        //    cerr << "\nROOT ID: " << rootId << endl;//FIXME
+        //else
+        //    cerr << "OH, NO! COULD NOT GET ROOT ID" << endl;//FIXME
 
-        std::vector<double> baseIds;
-        status = getBaseIds(cgioNum, rootId, baseIds);
-        cerr << "NUM BASE IDS: " << baseIds.size() << endl;//FIXME
+        //std::vector<double> baseIds;
+        //status = getBaseIds(cgioNum, rootId, baseIds);
+        //cerr << "NUM BASE IDS: " << baseIds.size() << endl;//FIXME
 
-        if (status == CG_OK)
-        {
-            cerr << "BASE IDS: " << endl;
-            for (int x = 0; x < baseIds.size(); ++x)
-                cerr << "    " << baseIds[x] << endl;
+        //if (status == CG_OK)
+        //{
+        //    cerr << "BASE IDS: " << endl;
+        //    for (int x = 0; x < baseIds.size(); ++x)
+        //        cerr << "    " << baseIds[x] << endl;
 
-            cerr << "GETTING CHILDREN IDS" << endl;//FIXME
-            std::vector<double> childIds;
-            status = showChildren(cgioNum, baseIds[1], childIds, "");
-            cerr << "DONE GETTING CHILDREN IDS" << endl;//FIXME
-            cerr << "NUM SECTIONS: " << numSections << endl;//FIXME
-        }
-        else
-        {
-            cerr << "OH, NO! COULD NOT GET BASE IDS" << endl;//FIXME
-            cerr << cg_get_error() << endl;
-        }
+        //    cerr << "GETTING CHILDREN IDS" << endl;//FIXME
+        //    std::vector<double> childIds;
+        //    status = showChildren(cgioNum, baseIds[1], childIds, "");
+        //    cerr << "DONE GETTING CHILDREN IDS" << endl;//FIXME
+        //}
+        //else
+        //{
+        //    cerr << "OH, NO! COULD NOT GET BASE IDS" << endl;//FIXME
+        //    cerr << cg_get_error() << endl;
+        //}
 
 
 
@@ -1895,8 +1902,9 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
         // Indexing is FORTRAN (1 based).
         // NOTE: sections can be thought of as "collections" of zones.
         //
-        for(int sec = 1; sec <= numSections; ++sec)
+        for(int sec = 1; sec < numSections + 1; ++sec)
         {
+            cerr << "PROCESSING SECTION " << sec << endl;//FIXME
             char sectionName[33];
             ElementType_t secElemType = ElementTypeNull;
             cgsize_t start            = 1; 
@@ -1909,29 +1917,34 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
                 &secElemType, &start, &end, &bound, &parentFlag) != CG_OK)
             {
                 debug4 << mName << cg_get_error() << endl;
+                cerr << cg_get_error() << endl;//FIXME
                 continue;
             }
 
             if(parentFlag > 0)
             {
                 debug4 << mName << "parentFlag = " << parentFlag << endl;
-                continue;
+                cerr << "parentFlag = " << parentFlag << endl;//FIXME
+                //continue;
             }
 
             switch(secElemType)
             {
                 case(NGON_n):
                 {
+                    cerr << "\nNGON\n" << endl;//FIXME
                     nGonSections.push_back(sec);
                     break;
                 }
                 case(NFACE_n):
                 {
+                    cerr << "\nNFACE\n" << endl;//FIXME
                     nFaceSections.push_back(sec);
                     break;
                 }
                 default:
                 {
+                    cerr << "\nMIXED AND NAMED\n" << endl;//FIXME
                     mixedAndNamedSections.push_back(sec);
                     break;
                 }
@@ -2550,14 +2563,16 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         int parentFlag               = 0;
         int sec                      = *nGonSecItr;
         ElementType_t elemType       = ElementTypeNull;
-        cgsize_t start               = 1;
-        cgsize_t stop                = 1;
+        //FIXME: change to offsetStart and offsetStop?
+        cgsize_t offsetStart               = 1;
+        cgsize_t offsetStop                = 1;
         int bound                    = 0;
 
         if (cg_section_read(GetFileHandle(), base, zone, sec, tempSecName,
-            &elemType, &start, &stop, &bound, &parentFlag) != CG_OK)
+            &elemType, &offsetStart, &offsetStop, &bound, &parentFlag) != CG_OK)
         {
             debug4 << mName << cg_get_error() << endl;
+            cerr << cg_get_error() << endl;//FIXME
             continue;
         }
 
@@ -2565,32 +2580,33 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         if (parentFlag > 0)
         {
             debug4 << mName << "parentFlag = " << parentFlag << endl;
-            continue;
+            cerr << "parentFlag = " << parentFlag << endl;//FIXME
+            //continue;
         }
 
         int elementsOffsetSize = 0;
 
         if (cellDim == physDim)
         {
-            elementsOffsetSize = (stop - start + 1) - bound;
+            elementsOffsetSize = (offsetStop - offsetStart + 1) - bound;
         }
         else
         {
-            elementsOffsetSize = (stop - start + 1);
+            elementsOffsetSize = (offsetStop - offsetStart + 1);
         }
         //FIXME
         //if (cellDim == physDim)
         //{
-        //    elementsOffsetSize = (stop - start) - bound;
+        //    elementsOffsetSize = (offsetStop - offsetStart) - bound;
         //}
         //else
         //{
-        //    elementsOffsetSize = (stop - start);
+        //    elementsOffsetSize = (offsetStop - offsetStart);
         //}
 
         //FIXME: 
-        totalNGonOffsetSize += elementsOffsetSize;
-        //totalNGonOffsetSize += elementsOffsetSize + 1;
+        //totalNGonOffsetSize += elementsOffsetSize;
+        totalNGonOffsetSize += elementsOffsetSize + 1;
 
         //
         // FIXME:
@@ -2602,6 +2618,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
             != CG_OK)
         {
             debug4 << mName << "Could not determine ElementDataSize\n";
+            cerr << "Could not determine ElementDataSize\n";
             continue;
         }
 
@@ -2610,14 +2627,16 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
 
     ++totalNGonOffsetSize;
 
-    cerr << "Total num ngon elements: " << numTotalNGonElements << endl;//FIXME
+    cerr << "\n\nTotal num ngon elements: " << numTotalNGonElements << endl;//FIXME
     cerr << "Total ngon offsets size: " << totalNGonOffsetSize << endl;//FIXME
-    cerr << endl;//FIXME
 
-    int totalNGonElementsIdx    = 0;
-    int offsetIdxBase = 0;
     cgsize_t *totalNGonElements = new cgsize_t[numTotalNGonElements];
     cgsize_t *totalNGonOffsets  = new cgsize_t[totalNGonOffsetSize];
+
+    cgsize_t *offsets1  = new cgsize_t[totalNGonOffsetSize];
+    cgsize_t *offsets2  = new cgsize_t[totalNGonOffsetSize];
+    cgsize_t *offsets3  = new cgsize_t[totalNGonOffsetSize];
+    cgsize_t *offsets4  = new cgsize_t[totalNGonOffsetSize];
 
     for (int i = 0; i < numTotalNGonElements; ++i)
     {
@@ -2631,23 +2650,30 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
 
     cerr << "\n\nCalculating NGon" << endl;
 
+    int prevLastOffset  = -1;
+    int firstOffset = -1;
+
+    int secIdx = 0;
     for (std::vector<int>::iterator nGonSecItr = nGonSections.begin();
          nGonSecItr != nGonSections.end(); ++nGonSecItr)
     {
+        prevLastOffset = firstOffset;
+
         char tempSecName[33];
         int status                   = CG_OK;
         int parentFlag               = 0;
         int sec                      = *nGonSecItr;
         ElementType_t elemType       = ElementTypeNull;
         cgsize_t elementsOffsetSize  = 0;
-        cgsize_t start               = 1;
-        cgsize_t stop                = 1;
+        cgsize_t offsetStart         = 1;
+        cgsize_t offsetStop          = 1;
         int bound                    = 0;
 
         if (cg_section_read(GetFileHandle(), base, zone, sec, tempSecName,
-            &elemType, &start, &stop, &bound, &parentFlag) != CG_OK)
+            &elemType, &offsetStart, &offsetStop, &bound, &parentFlag) != CG_OK)
         {
             debug4 << mName << cg_get_error() << endl;
+            cerr << cg_get_error() << endl;//FIXME
             continue;
         }
 
@@ -2655,16 +2681,17 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         if (parentFlag > 0)
         {
             debug4 << mName << "parentFlag = " << parentFlag << endl;
-            continue;
+            cerr << "parentFlag = " << parentFlag << endl;//FIXME
+            //continue;
         }
 
         if (cellDim == physDim)
         {
-            elementsOffsetSize = (stop - start + 1) - bound;
+            elementsOffsetSize = (offsetStop - offsetStart + 1) - bound;
         }
         else
         {
-            elementsOffsetSize = (stop - start + 1);
+            elementsOffsetSize = (offsetStop - offsetStart + 1);
         }
 
         //
@@ -2681,8 +2708,8 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         }
 
         cerr << "\nNGON SECTION NAME: " << tempSecName << endl;//FIXME
-        cerr << "    start: " << start << endl;
-        cerr << "    stop: " << stop << endl;
+        cerr << "    offsetStart: " << offsetStart << endl;
+        cerr << "    offsetStop: " << offsetStop << endl;
         cerr << "    element offset size: " << elementsOffsetSize << endl;
         cerr << "    bound: " << bound << endl;
         cerr << "    elements size: " << elementsSize << endl;
@@ -2714,8 +2741,8 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
             zone, sec, elements, connOffsets, NULL);
 #else
         //FIXME: error out if version < 4000?
-        status = cg_elements_read(GetFileHandle(), base, zone,
-            sec, elements, NULL);
+        //status = cg_elements_read(GetFileHandle(), base, zone,
+        //    sec, elements, NULL);
 #endif
        
         if (status != CG_OK)
@@ -2724,6 +2751,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
             delete [] connOffsets;
             elements = 0;
             debug4 << mName << cg_get_error() << endl;
+            cerr << cg_get_error() << endl;//FIXME
             continue;
         }
 
@@ -2734,31 +2762,38 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         
         cerr << "    first conn offset: " << connOffsets[0] << endl;//FIXME
 
-        int trueStart = start - 1;
+        int trueStart = offsetStart - 1;
         for (int i = 0; i < elementsSize; ++i)
         {
             totalNGonElements[trueStart + i] = elements[i];
         }
 
-        int maxOffset = -1;//FIXME
         for (int i = 0; i < connOffsetsSize; ++i)
         {
-            //FIXME: I don't think this is quite right.
             //totalNGonOffsets[trueStart + i] = connOffsets[i] + trueStart;
-            totalNGonOffsets[offsetIdxBase + i] = connOffsets[i] + trueStart;
-
-            if (connOffsets[i] + trueStart > maxOffset)//FIXME
-                maxOffset = connOffsets[i] + trueStart;
+            //cerr << "        offset: " << connOffsets[i] << endl;//FIXME
+            if (secIdx == 0) 
+                offsets1[trueStart + i] = connOffsets[i] + trueStart;
+            else if (secIdx == 1) 
+                offsets2[trueStart + i] = connOffsets[i] + trueStart;
+            else if (secIdx == 2) 
+                offsets3[trueStart + i] = connOffsets[i] + trueStart;
+            else if (secIdx == 3) 
+                offsets4[trueStart + i] = connOffsets[i] + trueStart;
+              
         }
-        offsetIdxBase += connOffsetsSize - 1;
+        //firstOffset = connOffsets[0] + trueStart;
+
+        secIdx++;
+
+        //cerr << "    current first offset vs prev last offset: " << firstOffset << " vs " << prevLastOffset << endl;//FIXME
 
         //int fooOffset = trueStart + elementsSize;
-        //cerr << "    Max offset vs (start + element size): " << maxOffset << " vs " << fooOffset << endl;//FIXME
+        //cerr << "    Max offset vs (offsetStart + element size): " << maxOffset << " vs " << fooOffset << endl;//FIXME
 
         delete [] elements;
         delete [] connOffsets;
     }
-
 
     cerr << "\n\nCalculating NFace" << endl;//FIXME
 
@@ -2770,13 +2805,13 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         int parentFlag                = 0;
         int sec                       = *nFaceSecItr;
         ElementType_t nFaceElemType   = ElementTypeNull;
-        cgsize_t faceOffsetsSize     = 0;
-        cgsize_t start                = 1;
-        cgsize_t stop                 = 1;
+        cgsize_t faceOffsetsSize      = 0;
+        cgsize_t offsetStart          = 1;
+        cgsize_t offsetStop           = 1;
         int bound                     = 0;
 
         if (cg_section_read(GetFileHandle(), base, zone, sec, tempSecName,
-           &nFaceElemType, &start, &stop, &bound, &parentFlag)
+           &nFaceElemType, &offsetStart, &offsetStop, &bound, &parentFlag)
            != CG_OK)
         {
             debug4 << mName << cg_get_error() << endl;
@@ -2790,9 +2825,9 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         }
 
         if (cellDim == physDim)
-            faceOffsetsSize = (stop - start + 1) - bound;
+            faceOffsetsSize = (offsetStop - offsetStart + 1) - bound;
         else
-            faceOffsetsSize = (stop - start + 1);
+            faceOffsetsSize = (offsetStop - offsetStart + 1);
 
         cgsize_t elementsSize = 0;
         if (cg_ElementDataSize(GetFileHandle(), base, zone, sec, &elementsSize)
@@ -2803,8 +2838,8 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         }
 
         cerr << "NFACE SECTION NAME: " << tempSecName << endl;//FIXME
-        cerr << "    start: " << start << endl;
-        cerr << "    stop: " << stop << endl;
+        cerr << "    offsetStart: " << offsetStart << endl;
+        cerr << "    offsetStop: " << offsetStop << endl;
         cerr << "    size interior: " << faceOffsetsSize << endl;
         cerr << "    bound: " << bound << endl;
         cerr << "    elements size: " << elementsSize << endl;
@@ -2865,8 +2900,11 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         }
         cerr << "    total num zones: " << totalNumZones << endl;//FIXME
         //ugrid->Allocate(totalNumZones);
-        int startTestZone = 0;
-        int stopTestZone  = 1010;
+        
+        int startTestZone = 814;
+        int stopTestZone  = 815;
+        //int startTestZone = 0;
+        //int stopTestZone  = 1000;
         int numTestZones = stopTestZone - startTestZone;
         ugrid->Allocate(numTestZones);//FIXME
 
@@ -2895,20 +2933,67 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
                 cerr << "        num faces: " << numFaces << endl;//FIXME
             }
 
-            for (int zoneFaceIdx = 0; zoneFaceIdx < numFaces; ++zoneFaceIdx)
+            //for (int zoneFaceIdx = 0; zoneFaceIdx < numFaces; ++zoneFaceIdx)
+            for (int zoneFaceIdx = faceConnOffsets[c]; zoneFaceIdx < faceConnOffsets[c+1]; ++zoneFaceIdx)
             {
-                int faceConnIdx    = abs(faceElementsPtr[zoneFaceIdx]) - 1;
-                //int faceConnIdx    = faceElementsPtr[zoneFaceIdx];
+                int count = 0;
+                bool first = false;
+                bool second = false;
+                bool third = false;
+                bool fourth = false;
 
-                //int faceConnIdx    = faceElementsPtr[zoneFaceIdx] - 1;
-                //int faceConnIdx    = abs(faceElementsPtr[zoneFaceIdx] - 1);
+                //int faceConnIdx    = abs(faceElementsPtr[zoneFaceIdx]) - 1;
+                int faceConnIdx    = abs(faceElements[zoneFaceIdx]) - 1;
 
                 if (show)
                     cerr << "        face con idx: " << faceConnIdx << endl;//FIXME
-                //faceConnIdx = abs(faceConnIdx);
 
-                int facePtStartIdx = totalNGonOffsets[faceConnIdx];
-                int facePtStopIdx  = totalNGonOffsets[faceConnIdx + 1];
+                //int facePtStartIdx = totalNGonOffsets[faceConnIdx];
+                //int facePtStopIdx  = totalNGonOffsets[faceConnIdx + 1];
+                //int numFacePts     = facePtStopIdx - facePtStartIdx;
+
+                int facePtStartIdx = 0;
+                int facePtStopIdx  = 0;
+
+                //FIXME: if we're processing by sections individually, then
+                // our offset array is + 1 so that we can get the length of
+                // our last chunk of elements. How does that work in this case
+                // if we're reading from one contiguous array of sections. That
+                // array does NOT have the extra offset to account for that
+                // last element's size. Strangely, I haven't seen any occurrences
+                // of this yet...
+                if (faceConnIdx <= 37193)
+                {
+                    if (!first)
+                        count++;
+                    first = true;
+                    facePtStartIdx = offsets1[faceConnIdx];
+                    facePtStopIdx  = offsets1[faceConnIdx + 1];
+                }
+                else if (faceConnIdx >= 37194 && faceConnIdx <= 38008) 
+                {
+                    if (!second)
+                        count++;
+                    second = true;
+                    facePtStartIdx = offsets2[faceConnIdx];
+                    facePtStopIdx  = offsets2[faceConnIdx + 1];
+                }
+                else if (faceConnIdx >= 38009 && faceConnIdx <= 38312)
+                {
+                    if (!third)
+                        count++;
+                    third = true;
+                    facePtStartIdx = offsets3[faceConnIdx];
+                    facePtStopIdx  = offsets3[faceConnIdx + 1];
+                }
+                else if (faceConnIdx <= 38475)
+                {
+                    if (!fourth)
+                        count++;
+                    fourth = true;
+                    facePtStartIdx = offsets4[faceConnIdx];
+                    facePtStopIdx  = offsets4[faceConnIdx + 1];
+                }
                 int numFacePts     = facePtStopIdx - facePtStartIdx;
 
                 if (show)
@@ -2920,14 +3005,17 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
                 for (int ptIdx = facePtStartIdx; ptIdx < facePtStopIdx;
                      ++ptIdx)
                 {
+                    
                     faceStream[faceStreamIdx] = totalNGonElements[ptIdx] - 1;
+
                     if (show)
                         cerr << "                face point: " << faceStream[faceStreamIdx] << endl;//FIXME
+
                     faceStreamIdx++;
                 }
 
-                //if (faceConnIdx > maxFaceIdx)//FIXME: remove
-                //    maxFaceIdx = faceConnIdx;
+                if (count > 1)
+                    cerr << "MIXING!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;//FIXME
             }
 
             if (faceStreamIdx > maxFaceStreamIdx)
@@ -2936,7 +3024,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
             ugrid->InsertNextCell(VTK_POLYHEDRON, numFaces, faceStream);
             zoneIdx++;
 
-            faceElementsPtr += numFaces;
+            //faceElementsPtr += numFaces;
         }
 
         //cerr << "    max face conn idx: " << maxFaceIdx << endl;//FIXME
@@ -2966,12 +3054,10 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         //    elementsPtr += numVertices;
         //}
 
-        cerr << "DELETING DATA 1" << endl;//FIXME
         delete [] faceElements;
         delete [] faceConnOffsets;
     }
 
-    cerr << "DELETING DATA 2" << endl;//FIXME
     delete [] totalNGonElements;
     delete [] totalNGonOffsets;
 
