@@ -23,6 +23,9 @@ function bv_mfem_depends_on
     if [[ "$DO_FMS" == "yes" ]] ; then
         depends_on="$depends_on fms"
     fi
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        depends_on="$depends_on hdf5"
+    fi
 
     echo $depends_on
 }
@@ -143,6 +146,8 @@ function build_mfem
     fi
     if [[ "$DO_FMS" == "yes" ]] ; then
         vopts="${vopts} -DMFEM_USE_FMS=ON -DFMS_DIR=${VISITDIR}/fms/${FMS_VERSION}/${VISITARCH}"
+    else
+        vopts="${vopts} -DMFEM_USE_FMS=OFF"
     fi
     vopts="${vopts} -DMFEM_USE_ZLIB=ON"
 
