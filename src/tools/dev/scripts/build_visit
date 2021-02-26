@@ -452,6 +452,7 @@ function bv_write_unified_file
     echo "declare -a defaultLicenses" >> $OUTPUT_bv_FILE
     echo "declare -a args" >> $OUTPUT_bv_FILE
 
+    declare -f quick_check_for_help >> $OUTPUT_bv_FILE
     declare -f check_for_versioning >> $OUTPUT_bv_FILE
     declare -f call_build_visit >> $OUTPUT_bv_FILE
     declare -f configure_support_files >> $OUTPUT_bv_FILE
