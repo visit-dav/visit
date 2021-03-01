@@ -1575,7 +1575,6 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
         if (cg_goto(GetFileHandle(), base, "Zone_t", zone, GridCoordName, 0, "end") != CG_OK)
         {
             debug4 << cg_get_error() << endl;
-            cerr << cg_get_error() << endl;//FIXME
         }
 
         int narrays=0;
@@ -1610,7 +1609,6 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
                 if(cg_array_read_as(c, RealSingle, (void*)coords[c-1] ) != CG_OK)
                 {
                     debug4 << mName << cg_get_error() << endl;
-                    cerr << cg_get_error() << endl;//FIXME
                     err = true;
                 }
             }
@@ -1792,14 +1790,11 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
             delete [] coords[2];
             EXCEPTION1(InvalidVariableException, meshname);
         }
-        cerr << "NUM SECTIONS: " << numSections << endl;//FIXME
         
         // Populate the points array.
         unsigned int nPts = zsize[0];
         vtkPoints *pts = vtkPoints::New();
         pts->SetNumberOfPoints(nPts);
-
-        cerr << "NUM POINTS: " << nPts << endl;//FIXME
 
         const float *xc = coords[0];
         const float *yc = coords[1];
@@ -1833,65 +1828,19 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
         pts->Delete();
         bool higherOrderWarning = false;
 
-
-
-
-        ////FIXME: for debugging
-        //int cgioNum = 0;
-        //// comes back as either CG_ERROR or CG_OK.
-        //int status  = cg_get_cgio(GetFileHandle(), &cgioNum);
-
-        //if (status == CG_OK)
-        //    cerr << "\nIO NUM: " << cgioNum << endl;//FIXME
-        //else
-        //    cerr << "OH, NO! COULD NOT GET IO NUM" << endl;//FIXME
-
-        //double rootId = 0;
-        //status = cgio_get_root_id(cgioNum, &rootId);
-        //if (status == CG_OK)
-        //    cerr << "\nROOT ID: " << rootId << endl;//FIXME
-        //else
-        //    cerr << "OH, NO! COULD NOT GET ROOT ID" << endl;//FIXME
-
-        //std::vector<double> baseIds;
-        //status = getBaseIds(cgioNum, rootId, baseIds);
-        //cerr << "NUM BASE IDS: " << baseIds.size() << endl;//FIXME
-
-        //if (status == CG_OK)
-        //{
-        //    cerr << "BASE IDS: " << endl;
-        //    for (int x = 0; x < baseIds.size(); ++x)
-        //        cerr << "    " << baseIds[x] << endl;
-
-        //    cerr << "GETTING CHILDREN IDS" << endl;//FIXME
-        //    std::vector<double> childIds;
-        //    status = showChildren(cgioNum, baseIds[1], childIds, "");
-        //    cerr << "DONE GETTING CHILDREN IDS" << endl;//FIXME
-        //}
-        //else
-        //{
-        //    cerr << "OH, NO! COULD NOT GET BASE IDS" << endl;//FIXME
-        //    cerr << cg_get_error() << endl;
-        //}
-
-
-
-
-
-
         //
         // First pass:
         // We need to figure out what kind of data we're reading,
         // each of which requires different approaches to processing.
         //
         // Options are:
-        //     1. NGON_n sections. This will contain nodal connectivity
+        //     1. NGON_n sections. This will contain point connectivity
         //        for faces. When used without NFACE_n, we construct 2D
         //        cells.
         //     2. NFACE_n sections. This will contain face connectivity
         //        for cells. This must be used in conjunction with NGON_n.
         //     3. Named sections. Each named section will explicity name
-        //        the cell type and nodal count as CELLTYPE_COUNT.
+        //        the cell type and point count as CELLTYPE_COUNT.
         //     4. MIXED. Mixed sections contain multiple named sections.
         //        The should NOT contain NGON_n sections.
         //
@@ -1905,7 +1854,6 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
         //
         for(int sec = 1; sec < numSections + 1; ++sec)
         {
-            cerr << "PROCESSING SECTION " << sec << endl;//FIXME
             char sectionName[33];
             ElementType_t secElemType = ElementTypeNull;
             cgsize_t start            = 1; 
@@ -1918,34 +1866,23 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
                 &secElemType, &start, &end, &bound, &parentFlag) != CG_OK)
             {
                 debug4 << mName << cg_get_error() << endl;
-                cerr << cg_get_error() << endl;//FIXME
                 continue;
-            }
-
-            if(parentFlag > 0)
-            {
-                debug4 << mName << "parentFlag = " << parentFlag << endl;
-                cerr << "parentFlag = " << parentFlag << endl;//FIXME
-                //continue;
             }
 
             switch(secElemType)
             {
                 case(NGON_n):
                 {
-                    cerr << "\nNGON\n" << endl;//FIXME
                     nGonSections.push_back(sec);
                     break;
                 }
                 case(NFACE_n):
                 {
-                    cerr << "\nNFACE\n" << endl;//FIXME
                     nFaceSections.push_back(sec);
                     break;
                 }
                 default:
                 {
-                    cerr << "\nMIXED AND NAMED\n" << endl;//FIXME
                     mixedAndNamedSections.push_back(sec);
                     break;
                 }
@@ -1979,11 +1916,9 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
                 cerr << "NUMBER OF NGON AND NFACE SECTIONS DON'T MATCH!" << endl;//FIXME
                 cerr << "NGON vs NFACE: " << nGonSections.size() << " vs " << nFaceSections.size() << endl;//FIXME
             }
-            cerr << "Have faces and ngon" << endl;//FIXME
             ReadNGonAndNFaceSections(ugrid, meshname, nGonSections,
                 nFaceSections, base, zone,
                 cell_dim, phys_dim);
-            cerr << "Done reading NGon and NFaces" << endl;//FIXME
         }
         else if (haveNFaceSections)
         {
@@ -1997,7 +1932,6 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
         EXCEPTION1(InvalidVariableException, meshname);
     }
 
-    cerr << "RETURNING" << endl;//FIXME
     return retval;
 }
 
@@ -2071,7 +2005,9 @@ avtCGNSFileReader::ReadMixedAndNamedElementSections(vtkUnstructuredGrid *ugrid,
         elementSizeInterior = (end - start + 1);
 
         if (cellDim == physDim)
+        {
             elementSizeInterior -= bound;
+        }
 
         cgsize_t eDataSize = 0;
 
@@ -2358,7 +2294,7 @@ avtCGNSFileReader::ReadMixedAndNamedElementSections(vtkUnstructuredGrid *ugrid,
 //
 //  Purpose:
 //      Read the NGON_n sections, and add them to a given unstructured
-//      grid. The NGON_n sections define nodal connectivity for faces.
+//      grid. The NGON_n sections define point connectivity for faces.
 //      This method assumes that NFACE_n is NOT defined for this mesh
 //      and will add the elements as 2D surface cells.
 //
@@ -2390,14 +2326,14 @@ avtCGNSFileReader::ReadNGonSections(vtkUnstructuredGrid *ugrid,
          nGonSecItr != nGonSections.end(); ++nGonSecItr)
     {
         char sectionName[33];
-        int sec                      = *nGonSecItr;
-        ElementType_t secElemType    = ElementTypeNull;
-        cgsize_t elementSizeInterior = 0;
-        cgsize_t start               = 1;
-        cgsize_t end                 = 1;
-        int bound                    = 0;
-        int parentFlag               = 0;
-        int status                   = CG_OK;
+        int sec                   = *nGonSecItr;
+        ElementType_t secElemType = ElementTypeNull;
+        cgsize_t numSectionZones  = 0;
+        cgsize_t start            = 1;
+        cgsize_t end              = 1;
+        int bound                 = 0;
+        int parentFlag            = 0;
+        int status                = CG_OK;
 
         if (cg_section_read(GetFileHandle(), base, zone, sec, sectionName,
             &secElemType, &start, &end, &bound, &parentFlag) != CG_OK)
@@ -2406,46 +2342,29 @@ avtCGNSFileReader::ReadNGonSections(vtkUnstructuredGrid *ugrid,
             continue;
         }
 
-        if (parentFlag > 0)
-        {
-            //FIXME: remove
-            debug4 << mName << "parentFlag = " << parentFlag << endl;
-            continue;
-        }
+        numSectionZones = (end - start + 1);
 
         if (cellDim == physDim)
-            elementSizeInterior = (end - start + 1) - bound;
-        else
-            elementSizeInterior = (end - start + 1);
-
-        //
-        // eDataSize is the size of the "elements" array, i.e. the size
-        // of the connectivity array.
-        //
-        cgsize_t eDataSize = 0;
-        if (cg_ElementDataSize(GetFileHandle(), base, zone, sec, &eDataSize)
-            != CG_OK)
         {
-            debug4 << mName << "Could not determine ElementDataSize\n";
+            numSectionZones -= bound;
+        }
+
+        cgsize_t zonePointsSize = 0;
+        if (cg_ElementDataSize(GetFileHandle(), base, zone, sec,
+            &zonePointsSize) != CG_OK)
+        {
+            debug1 << mName << "Could not determine ElementDataSize\n";
             continue;
         }
 
-        debug4 << "Element data size for sec " << sec << " is:"
-            << eDataSize << endl;
-
-        //
-        // CGNS refers to the element connectivity as "elements". These
-        // are actually indices to the nodes (or faces) of connectivity.
-        //
-        cgsize_t *elements = new cgsize_t[eDataSize];
-        if (elements == 0)
-        {
-            debug4 << mName << "Could not allocate memory for connectivity\n";
-            continue;
-        }
-
-        int connOffsetsSize   = elementSizeInterior + 1;
+        cgsize_t *zonePoints  = new cgsize_t[zonePointsSize];
+        int connOffsetsSize   = numSectionZones + 1;
         cgsize_t *connOffsets = new cgsize_t[connOffsetsSize];
+
+        for (int i = 0; i < zonePointsSize; ++i)
+        {
+            zonePoints[i] = 0;
+        }
 
         for (int i = 0; i < connOffsetsSize; ++i)
         {
@@ -2454,68 +2373,46 @@ avtCGNSFileReader::ReadNGonSections(vtkUnstructuredGrid *ugrid,
 
 #if CGNS_VERSION >= 4000
         status = cg_poly_elements_read(GetFileHandle(), base, 
-            zone, sec, elements, connOffsets, NULL);
+            zone, sec, zonePoints, connOffsets, NULL);
 #else
-        //FIXME: error out if version < 4000?
-        status = cg_elements_read(GetFileHandle(), base, zone,
-            sec, elements, NULL);
-
-
-        //int cgioNum = 0;
-        //int status  = cg_get_cgio(GetFileHandle(), &cgioNum);
-
-        //if (status == CG_OK)
-        //    cerr << "\nIO NUM: " << cgioNum << endl;//FIXME
-        //else
-        //    cerr << "OH, NO! COULD NOT GET IO NUM" << endl;//FIXME
-
-        //getSectionConnectivity(cgioNum, const double cgioSectionId,
-        //    const int dim, const cgsize_t* srcStart, const cgsize_t* srcEnd,
-        //    const cgsize_t* srcStride, const cgsize_t* memStart,
-        //    const cgsize_t* memEnd, const cgsize_t* memStride,
-        //    const cgsize_t* memDim, cglong_t *connectivity,
-        //    int connectivitySize)
+        char msg[256];
+        sprintf(msg, "CGNS version >= 4000 is required for reading aribitrary "
+            "polygons.")
+        EXCEPTION1(ImproperUseException, msg);
 #endif
        
         if (status != CG_OK)
         {
-            delete [] elements;
-            elements = 0;
-            debug4 << mName << cg_get_error() << endl;
+            delete [] zonePoints;
+            zonePoints = NULL;
+            debug1 << mName << cg_get_error() << endl;
             continue;
         }
 
-        debug4 << "section " << sec << ": secElemType=";
-        PrintElementType(secElemType);
-        debug4 << " start=" << start << " end=" << end << " bound=" << bound
-               << " interior elements=" << elementSizeInterior
-               << " parentFlag=" << parentFlag << endl;
+        vtkIdType verts[27];
+        const cgsize_t *zonePointsPtr = zonePoints;
 
-        // FIXME: we could really just add this to the primary loop with
-        // the named elements if we're only using versions >= 4.x.
         //
         // Iterate over our polygons and add them to the mesh.
         //
-        vtkIdType verts[27];
-        const cgsize_t *elementsPtr = elements;
-        for (cgsize_t c = 0; c < elementSizeInterior; ++c)
+        for (cgsize_t c = 0; c < numSectionZones; ++c)
         {
             //
-            // The connectivity offsets have size elementSizeInterior + 1
+            // The connectivity offsets have size numSectionZones + 1
             // so that we can grab the number of points for each zone.
             //
             int numVertices = connOffsets[c+1] - connOffsets[c];
 
             for (int v = 0; v < numVertices; ++v)
             {
-                verts[v] = elementsPtr[v]-1;
+                verts[v] = zonePointsPtr[v]-1;
             }
 
             ugrid->InsertNextCell(VTK_POLYGON, numVertices, verts);
-            elementsPtr += numVertices;
+            zonePointsPtr += numVertices;
         }
 
-        delete [] elements;
+        delete [] zonePoints;
         delete [] connOffsets;
     }
 }
@@ -2524,6 +2421,10 @@ avtCGNSFileReader::ReadNGonSections(vtkUnstructuredGrid *ugrid,
 //  Method: avtCGNSFileReader::ReadNGonAndNFaceSections
 //
 //  Purpose:
+//      NFace sections are used to define arbitrary polyhedra, and they are
+//      always used in conjunction with NGon. NFace "elements" define the
+//      zone-to-face connectivity, and NGon "elements" define the
+//      face-to-point connectivity.
 //
 //  Arguments:
 //      urgrid                  The unstructured grid to add our cells to.
@@ -2585,7 +2486,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         if (cg_section_read(GetFileHandle(), base, zone, curSec, tempSecName,
             &elemType, &faceStart, &faceStop, &bound, &parentFlag) != CG_OK)
         {
-            debug4 << mName << cg_get_error() << endl;
+            debug1 << mName << cg_get_error() << endl;
             continue;
         }
 
@@ -2593,13 +2494,10 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         // faceStart and faceStop are inclusive, which means that
         // we need to add 1 to account for the last face.
         //
+        numSectionFaces = faceStop - faceStart + 1;
         if (cellDim == physDim)
         {
-            numSectionFaces = (faceStop - faceStart + 1) - bound;
-        }
-        else
-        {
-            numSectionFaces = (faceStop - faceStart + 1);
+            numSectionFaces -= bound;
         }
 
         //
@@ -2610,7 +2508,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         if (cg_ElementDataSize(GetFileHandle(), base, zone,
                 curSec, &elementsSize) != CG_OK)
         {
-            debug4 << mName << "Could not determine ElementDataSize\n";
+            debug1 << mName << "Could not determine ElementDataSize\n";
             continue;
         }
 
@@ -2641,24 +2539,21 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
            &elemType, &offsetStart, &offsetStop, &bound, &parentFlag)
            != CG_OK)
         {
-            debug4 << mName << cg_get_error() << endl;
+            debug1 << mName << cg_get_error() << endl;
             continue;
         }
 
+        numSectionZones = (offsetStop - offsetStart + 1);
         if (cellDim == physDim)
         {
-            numSectionZones = (offsetStop - offsetStart + 1) - bound;
-        }
-        else
-        {
-            numSectionZones = (offsetStop - offsetStart + 1);
+            numSectionZones -= bound;
         }
 
         cgsize_t elementsSize = 0;
         if (cg_ElementDataSize(GetFileHandle(), base, zone,
                 curSec, &elementsSize) != CG_OK)
         {
-            debug4 << mName << "Could not determine ElementDataSize\n";
+            debug1 << mName << "Could not determine ElementDataSize\n";
             continue;
         }
 
@@ -2670,9 +2565,10 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         status = cg_poly_elements_read(GetFileHandle(), base, 
             zone, curSec, faceElements, zoneOffsets, NULL);
 #else
-        ////FIXME: error out if version < 4000?
-        //status = cg_elements_read(GetFileHandle(), base, zone,
-        //    sec, faceElements, NULL);
+        char msg[256];
+        sprintf(msg, "CGNS version >= 4000 is required for reading aribitrary "
+            "polyhedra.")
+        EXCEPTION1(ImproperUseException, msg);
 #endif
        
         if (status != CG_OK)
@@ -2680,8 +2576,8 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
             delete [] faceElements;
             delete [] zoneOffsets;
             faceElements = NULL;
-            //FIXME: change to debug1
-            debug4 << mName << cg_get_error() << endl;
+            zoneOffsets  = NULL;
+            debug1 << mName << cg_get_error() << endl;
             continue;
         }
 
@@ -2695,7 +2591,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
 
     //
     // NFace sections don't really correspond to NGon sections, but NFace
-    // elements will always map to the NGon offsets. So, we need to pool
+    // elements will always map to the global NGon offsets. So, we need to pool
     // all of our NGon data (face points and offsets) into single containers
     // that we can reach into later.
     // totalFacePoints contains all mappings of faces to global node ids,
@@ -2727,16 +2623,16 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
     std::vector<cgsize_t> nGonOffsetIdxToSectionIdx;
     nGonOffsetIdxToSectionIdx.reserve(totalNGonOffsetSize);
 
-    int nGonOffsetsIdx      = 0;
-    int secIdx              = 0;
-    int facePointIdx        = 0;
-    cgsize_t sectionOffset  = 0;
+    int nGonOffsetsIdx     = 0;
+    int secIdx             = 0;
+    int facePointIdx       = 0;
+    cgsize_t sectionOffset = 0;
 
     //
     // Second pass through our nGonSections: read all NGon data into
     // our section-wide containers. NOTE: reading data from sections in
     // (incremental) order SHOULD give back data that is in the correct
-    // order (by sections).
+    // global order (by sections).
     //
     for (std::vector<int>::iterator nGonSecItr = nGonSections.begin();
          nGonSecItr != nGonSections.end(); ++nGonSecItr)
@@ -2749,17 +2645,14 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         if (cg_section_read(GetFileHandle(), base, zone, curSec, tempSecName,
             &elemType, &faceStart, &faceStop, &bound, &parentFlag) != CG_OK)
         {
-            debug4 << mName << cg_get_error() << endl;
+            debug1 << mName << cg_get_error() << endl;
             continue;
         }
 
+        numSectionFaces = faceStop - faceStart + 1;
         if (cellDim == physDim)
         {
-            numSectionFaces = (faceStop - faceStart + 1) - bound;
-        }
-        else
-        {
-            numSectionFaces = (faceStop - faceStart + 1);
+            numSectionFaces -= bound;
         }
 
         int connOffsetsSize   = numSectionFaces + 1;
@@ -2776,16 +2669,17 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         status = cg_poly_elements_read(GetFileHandle(), base, 
             zone, curSec, sectionFacePtr, faceOffsets, NULL);
 #else
-        //FIXME: error out if version < 4000?
-        //status = cg_elements_read(GetFileHandle(), base, zone,
-        //    sec, elements, NULL);
+        char msg[256];
+        sprintf(msg, "CGNS version >= 4000 is required for reading aribitrary "
+            "polyhedra.")
+        EXCEPTION1(ImproperUseException, msg);
 #endif
        
         if (status != CG_OK)
         {
             delete [] faceOffsets;
             faceOffsets = NULL;
-            debug4 << mName << cg_get_error() << endl;
+            debug1 << mName << cg_get_error() << endl;
             continue;
         }
 
@@ -2819,7 +2713,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         if (cg_ElementDataSize(GetFileHandle(), base, zone,
                 curSec, &sectionElementsSize) != CG_OK)
         {
-            debug4 << mName << "Could not determine ElementDataSize\n";
+            debug1 << mName << "Could not determine ElementDataSize\n";
             continue;
         }
 
@@ -2846,24 +2740,21 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
            &elemType, &offsetStart, &offsetStop, &bound, &parentFlag)
            != CG_OK)
         {
-            debug4 << mName << cg_get_error() << endl;
+            debug1 << mName << cg_get_error() << endl;
             continue;
         }
 
+        numSectionZones = offsetStop - offsetStart + 1;
         if (cellDim == physDim)
         {
-            numSectionZones = (offsetStop - offsetStart + 1) - bound;
-        }
-        else
-        {
-            numSectionZones = (offsetStop - offsetStart + 1);
+            numSectionZones -= bound;
         }
 
         cgsize_t faceElementsSize = 0;
         if (cg_ElementDataSize(GetFileHandle(), base, zone,
                 curSec, &faceElementsSize) != CG_OK)
         {
-            debug4 << mName << "Could not determine ElementDataSize\n";
+            debug1 << mName << "Could not determine ElementDataSize\n";
             continue;
         }
 
@@ -2891,9 +2782,10 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         status = cg_poly_elements_read(GetFileHandle(), base, 
             zone, curSec, faceElements, zoneOffsets, NULL);
 #else
-        ////FIXME: error out if version < 4000?
-        //status = cg_elements_read(GetFileHandle(), base, zone,
-        //    sec, faceElements, NULL);
+        char msg[256];
+        sprintf(msg, "CGNS version >= 4000 is required for reading aribitrary "
+            "polyhedra.")
+        EXCEPTION1(ImproperUseException, msg);
 #endif
        
         if (status != CG_OK)
@@ -2902,8 +2794,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
             delete [] zoneOffsets;
             faceElements = NULL;
             zoneOffsets  = NULL;
-            //FIXME: change to debug1
-            debug4 << mName << cg_get_error() << endl;
+            debug1 << mName << cg_get_error() << endl;
             continue;
         }
 
