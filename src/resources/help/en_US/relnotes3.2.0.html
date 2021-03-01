@@ -9,7 +9,7 @@
 </head>
 <body>
 <center><b><font size="6">VisIt 3.2 Release Notes</font></b></center>
-<center><b><font size="4">February, 2021</font></b></center>
+<center><b><font size="4">March, 2021</font></b></center>
 
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
@@ -22,8 +22,6 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
   <li><a href="#Operator_changes">Changes to operators</a></li>
-  <li><a href="#Expression_changes">Changes to expressions</a></li>
-  <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
   <li><a href="#Configuration_changes">Configuration changes</a></li>
   <li><a href="#Build_features">Changes for build_visit</a></li>
@@ -33,8 +31,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_features"></a>
 <p><b><font size="4">General features added in version 3.2</font></b></p>
 <ul>
+  <li>Updated VisIt to use Python 3.</li>
+  <li>Added the command line option <b>-py2to3</b> to the CLI, which enables limited on-the-fly Python 2 to Python 3 conversion for scripts passed via <b>-s</b> or <b>visit.Source()</b>. See VisIt's CLI manual for more details.</li>
   <li>Upgraded VTKm to a recent version. Support was added for zone centered variables and 3D unstructured meshes with tetrahedra, pyramid and prism cells, in addition to the existing support for hexahedra.</li>
-  <li>Added the <b>-py2to3</b> CLI command line option which enables limited on-the-fly Python 2 to Python 3 conversion for scripts passed via <b>-s</b> or <b>visit.Source()</b>. See VisIt's CLI manual for more details.</li>
   <li>PySide has been re-enabled using a version matching Qt-5.14.2.</li>
   <li>The Windows package has been digitally signed, and should prevent or reduce Windows Defender and antivirus blocking/warnings.</li>
 </ul>
@@ -43,16 +42,12 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Advanced features added in version 3.2</font></b></p>
 <ul>
   <li>The -disable-ghosts-for-t-intersections flag has been reverted back to -enable-ghosts-for-t-intersections, and the creation of ghosts for t-intersections will now be off by default. This will improve performance for the default situation where ghost t-intersections are not needed or desired.</li>
-  <li>Advanced Feature 1</li>
-  <li>Advanced Feature 2</li>
 </ul>
 
 <a name="GUI_changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 3.2</font></b></p>
 <ul>
   <li>Fixed a bug in the GUI windows where changes sometimes would not take effect when the Apply button was clicked.</li>
-  <li>GUI Change 1</li>
-  <li>GUI Change 2</li>
 </ul>
 
 <a name="File_format"></a>
@@ -60,21 +55,18 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>A reader was added to support AVS ucd file format.</li>
   <li>A reader was added to support the FMS file format.</li>
-  <li>The MFEM reader was modified so it provides VisIt with original cell numbers that allow VisIt to successfully eliminate mesh lines that were not part of the original high order mesh.</li>
-  <li>The Rect reader was enabled as an optional plugin on Windows.</li>
-  <li>The ZipWrapper reader was enabled on Windows.</li>
+  <li>Enhanced the MFEM reader so that it provides the original cell numbers that allow VisIt to successfully eliminate mesh lines that were not part of the original high order mesh.</li>
+  <li>Enabled the Rect reader as an optional reader on Windows.</li>
+  <li>Enabled the ZipWrapper reader on Windows.</li>
   <li>Upgraded the CGNS library used by the CGNS reader from 3.2.1 to 4.1.2. The new CGNS library includes a fix for the handling of RIND zones in structured grids, so the results may change when viewing that type of data.</li>
-  <li>The Conduit Blueprint Database reader now supports material volume fractions and mixed-variable fields presented using
-      <a href="https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html#material-sets"> Blueprint Matsets </a>.
-  </li>
-  <li>The Conduit Blueprint Database reader now supports datasets written to YAML root and data files.</a>
-  </li>
-  <li>Enhanced boxlib readers to always serve up to VisIt double precision data.</li>
-  <li>Switched PlainText plugin from using single precision to double precision.</li>
-  <li>UNV plugin was updated to read gmsh legacy files (thanks Olivier Cessenat).</li>
-  <li>Tecplot reader was fixed for handling cell-centered data (Thank you <a href="https://github.com/whophil">Phil Chiu!</a>).</li>
-  <li>Fixed a problem reading double precision data from boxlib files.</li>
-  <li>Fixed a bug in the Silo database plugin that resulted in VisIt crashing whenever negative material numbers were encountered. VisIt will now display an error message noting that negative material numbers are not supported.</li>
+  <li>Enhanced the Conduit Blueprint reader to support material volume fractions and mixed-variable fields using <a href="https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html#material-sets"> Blueprint Matsets </a>.</li>
+  <li>Enhanced the Conduit Blueprint reader to support datasets written to YAML root and data files.</li>
+  <li>Enhanced the boxlib reader to always return double precision data.</li>
+  <li>Enhanced the PlainText reader to return double precision data.</li>
+  <li>Enhanced the UNV reader to read gmsh legacy files (thanks Olivier Cessenat).</li>
+  <li>Fixed a bug with the Tecplot reader for handling cell-centered data (Thank you <a href="https://github.com/whophil">Phil Chiu!</a>).</li>
+  <li>Fixed a bug with the Boxlib reader reading double precision data.</li>
+  <li>Fixed a bug with the Silo reader that resulted in VisIt crashing whenever negative material numbers were encountered. VisIt will now display an error message noting that negative material numbers are not supported.</li>
   <li>Fixed a bug in the Stimulate Image reader (file extensions spr, sdt), where a negative pixel delta in the metadata resulted in incorrect pick results, incorrect sampled lineouts and potentially other erroneous behavior.</li>
 </ul>
 
@@ -82,31 +74,15 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to VisIt's plots in version 3.2</font></b></p>
 <ul>
   <li>Fixed a bug in the Histogram Plot where <i>Use Current Plot</i> will now use the actual data extents.</li>
-  <li>Plot Change 1</li>
-  <li>Plot Change 2</li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 3.2</font></b></p>
 <ul>
   <li>The Stagger operator is no longer enabled by default.</li>
-  <li>The Clip operator now has the ability to "Crinkle" clip, which retains whole cells that intersect with the clip boundary.</li>
+  <li>Enhanced the Clip operator to support "Crinkle" clipping, which retains whole cells that intersect with the clip boundary.</li>
   <li>Threshold operations can now use the VTKm backend for structured meshes.</li>
   <li>Updated the documentation for the Smooth Operator.</li>
-</ul>
-
-<a name="Expression_changes"></a>
-<p><b><font size="4">Changes to VisIt's expression language in version 3.2</font></b></p>
-<ul>
-  <li>Expression Change 1</li>
-  <li>Expression Change 2</li>
-</ul>
-
-<a name="Query_changes"></a>
-<p><b><font size="4">Changes to VisIt's picks and queries in version 3.2</font></b></p>
-<ul>
-  <li>Query Change 1</li>
-  <li>Query Change 2</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -115,7 +91,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The checkbox in the Expression window that turns on the display of expressions from the database now indicates that it displays expressions from the database and auto generated ones.</li>
   <li>Fixed an issue preventing build_visit from being able to build IceT.</li>
   <li>When using the resample operator in VisIt's python interface, <code>useExtents</code> will now take precedence over setting the resample dimensions explicitly, which matches the behavior in the GUI.</li>
-  <li>Fixed a bug where DataBinning (and DDFs) did not exclude Ghost Zones when binning.</li>
+  <li>Fixed a bug with DataBinning (and DDFs) where it did not exclude Ghost Zones when binning.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
@@ -137,18 +113,18 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 3.2</font></b></p>
 <ul>
   <li>Added support for link checking in Sphinx documentation.</li>
-  <li>Add ability to pass diff tolerances in Test()/TestText() testing methods.</li>
-  <li>Updated dev docs on fuzzy matching and thresholds for testing.</li>
-  <li>Support <code>pdb</code> as a mode string for testing.</li>
-  <li>Removed emptydomain cases from skip list.</li>
-  <li>Add new assertion tests to ensure tests are running in mode specified by -m/--mode= command-line argument.</li>
-  <li>QT version updated to 5.14.2.</li>
-  <li>AssertXXXX() style test checks were replaced with TestValueXX which supports more features.</li>
-  <li>When run from develop, build_visit will now look for tarballs in the github master branch of visit-dav/thirdparty if all other avenues fail.</li>
-  <li>LLVM version updated to 6.0.1, added libclang to the build.</li>
-  <li>Mesa/OSMesa version updated to 17.3.9.</li>
+  <li>Added the ability to pass diff tolerances in Test()/TestText() testing methods in the test suite.</li>
+  <li>Updated the developer documentation on fuzzy matching and thresholds for testing.</li>
+  <li>Added support for <code>pdb</code> as a mode string for testing.</li>
+  <li>Removed the emptydomain cases from skip list for the test suite.</li>
+  <li>Added new assertion tests to ensure tests are running in the mode specified by the -m/--mode= command-line argument.</li>
+  <li>Updated the version of Qt to 5.14.2.</li>
+  <li>Replaced AssertXXXX() style test checks with TestValueXX, which supports more features, in the test suite.</li>
+  <li>Enhanced build_visit so that the version on the develop branch will now look for tar files in the github master branch of visit-dav/thirdparty if all other avenues fail.</li>
+  <li>Updated the version of LLVM version to 6.0.1 and added libclang to the build.</li>
+  <li>Updated the version of Mesa/OSMesa to 17.3.9.</li>
   <li>Updated masonry to use Python 3.</li>
-  <li>Textual differencing in regression testing has been fixed for Windows OS.</li>
+  <li>Fixed textual differencing in regression testing for Windows OS.</li>
   <li>Created a NotarizeAction in the masonry scripts so that notarization can be executed in the correct order with the rest of the actions.</li>
 </ul>
 
