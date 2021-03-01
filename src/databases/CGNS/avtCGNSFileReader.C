@@ -1902,7 +1902,7 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
         bool haveNFaceSections = nFaceSections.size() > 0;
 
         //
-        // Next, handle the case where we have NGON_n but no NFACE_n.
+        // Next, handle NGon and NFace cases.
         //
         if (haveNGonSections && !haveNFaceSections)
         {
@@ -1911,18 +1911,15 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
         }
         else if (haveNGonSections && haveNFaceSections)
         {
-            if (nGonSections.size() != nFaceSections.size())
-            {
-                cerr << "NUMBER OF NGON AND NFACE SECTIONS DON'T MATCH!" << endl;//FIXME
-                cerr << "NGON vs NFACE: " << nGonSections.size() << " vs " << nFaceSections.size() << endl;//FIXME
-            }
             ReadNGonAndNFaceSections(ugrid, meshname, nGonSections,
                 nFaceSections, base, zone,
                 cell_dim, phys_dim);
         }
         else if (haveNFaceSections)
         {
-            cerr << "HAVE ONLY FACES!" << endl;//FIXME
+            debug1 << mName << "NFace elements MUST be used in conjunction "
+                << " with NGon elements, but only NFace were found." << endl;
+            EXCEPTION1(InvalidVariableException, meshname);
         }
 
         retval = ugrid;
