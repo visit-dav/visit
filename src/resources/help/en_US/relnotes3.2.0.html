@@ -25,6 +25,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Configuration_changes">Configuration changes</a></li>
   <li><a href="#Build_features">Changes for build_visit</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
@@ -41,6 +42,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Advanced_features"></a>
 <p><b><font size="4">Advanced features added in version 3.2</font></b></p>
 <ul>
+  <li>The -disable-ghosts-for-t-intersections flag has been reverted back to -enable-ghosts-for-t-intersections, and the creation of ghosts for t-intersections will now be off by default. This will improve performance for the default situation where ghost t-intersections are not needed or desired.</li>
   <li>Advanced Feature 1</li>
   <li>Advanced Feature 2</li>
 </ul>
@@ -48,6 +50,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="GUI_changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 3.2</font></b></p>
 <ul>
+  <li>Fixed a bug in the GUI windows where changes sometimes would not take effect when the Apply button was clicked.</li>
   <li>GUI Change 1</li>
   <li>GUI Change 2</li>
 </ul>
@@ -66,11 +69,19 @@ enhancements and bug-fixes that were added to this release.</p>
   </li>
   <li>The Conduit Blueprint Database reader now supports datasets written to YAML root and data files.</a>
   </li>
+  <li>Enhanced boxlib readers to always serve up to VisIt double precision data.</li>
+  <li>Switched PlainText plugin from using single precision to double precision.</li>
+  <li>UNV plugin was updated to read gmsh legacy files (thanks Olivier Cessenat).</li>
+  <li>Tecplot reader was fixed for handling cell-centered data (Thank you <a href="https://github.com/whophil">Phil Chiu!</a>).</li>
+  <li>Fixed a problem reading double precision data from boxlib files.</li>
+  <li>Fixed a bug in the Silo database plugin that resulted in VisIt crashing whenever negative material numbers were encountered. VisIt will now display an error message noting that negative material numbers are not supported.</li>
+  <li>Fixed a bug in the Stimulate Image reader (file extensions spr, sdt), where a negative pixel delta in the metadata resulted in incorrect pick results, incorrect sampled lineouts and potentially other erroneous behavior.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 3.2</font></b></p>
 <ul>
+  <li>Fixed a bug in the Histogram Plot where <i>Use Current Plot</i> will now use the actual data extents.</li>
   <li>Plot Change 1</li>
   <li>Plot Change 2</li>
 </ul>
@@ -81,6 +92,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Stagger operator is no longer enabled by default.</li>
   <li>The Clip operator now has the ability to "Crinkle" clip, which retains whole cells that intersect with the clip boundary.</li>
   <li>Threshold operations can now use the VTKm backend for structured meshes.</li>
+  <li>Updated the documentation for the Smooth Operator.</li>
 </ul>
 
 <a name="Expression_changes"></a>
@@ -104,6 +116,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed an issue preventing build_visit from being able to build IceT.</li>
   <li>When using the resample operator in VisIt's python interface, <code>useExtents</code> will now take precedence over setting the resample dimensions explicitly, which matches the behavior in the GUI.</li>
   <li>Fixed a bug where DataBinning (and DDFs) did not exclude Ghost Zones when binning.</li>
+</ul>
+
+<a name="Configuration_changes"></a>
+<p><b><font size="4">Configuration changes in version 3.2</font></b></p>
+<ul>
+  <li>Added a host profile for the pdebug queue for the Lawrence Livermore National Laboratory's Magma system.</li>
+  <li>Updated the job launching on Trinity so that the VisIt CLI could be launched from a batch job without having to load the module of the compiler used to build VisIt.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -130,9 +149,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Mesa/OSMesa version updated to 17.3.9.</li>
   <li>Updated masonry to use Python 3.</li>
   <li>Textual differencing in regression testing has been fixed for Windows OS.</li>
+  <li>Created a NotarizeAction in the masonry scripts so that notarization can be executed in the correct order with the rest of the actions.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
-of VisIt: <a href=relnotes3.1.1.html>3.1.1</a>.</p>
+of VisIt: <a href=relnotes3.1.4.html>3.1.4</a>.</p>
 </body>
 </html>
