@@ -27,13 +27,16 @@
 #  Use 'splitlines' instead of split("\n"), use list version of first 
 #  argmument for Popen command, so that it works on Windows.
 #
-#   Brad Whitlock, Thu Mar 14 14:19:13 PDT 2013
-#   Fix __read_visit_env so the Windows changes get executed on Windows and the
-#   previous way gets executed for non-Windows -- so it works again on 
-#   non-Windows.
+#  Brad Whitlock, Thu Mar 14 14:19:13 PDT 2013
+#  Fix __read_visit_env so the Windows changes get executed on Windows and the
+#  previous way gets executed for non-Windows -- so it works again on 
+#  non-Windows.
 #
-#   Cyrus Harrison, Thu Apr  9 09:19:24 PDT 2020
-#   Update Popen call for Python 3.
+#  Cyrus Harrison, Thu Apr  9 09:19:24 PDT 2020
+#  Update Popen call for Python 3.
+#
+#  Cyrus Harrison, Wed Feb 24 16:13:34 PST 2021
+#  Update due to refactor of PySide 2 module logic.
 #
 ###############################################################################
 
@@ -41,10 +44,16 @@ import sys
 import subprocess
 import os
 import imp
+import visit_utils
 
 from os.path import join as pjoin
 
-__all__ = ["Launch","LaunchNowin","LaunchWithProxy","LaunchPySide","LaunchPyQt","AddArgument","SetDebugLevel","GetDebugLevel"]
+__all__ = ["Launch",
+           "LaunchNowin",
+           "LaunchWithProxy",
+           "LaunchPySide",
+           "LaunchPyQt",
+           "AddArgument","SetDebugLevel","GetDebugLevel"]
 
 def Launch(vdir=None):
     return VisItModuleState.launch(vdir)
@@ -58,14 +67,13 @@ def LaunchWithProxy(vdir=None,proxy=None):
 
 def LaunchPySide(vdir=None,args=None):
     VisItModuleState.add_argument("-pyuiembedded")
-    from . import pyside_support
-    ret = pyside_support.LaunchPyViewer(args)
+    ret = visit_utils.builtin.pyside_support.LaunchPyViewer(args)
     return VisItModuleState.launch(vdir,ret.GetViewerProxyPtr())
 
 def LaunchPyQt(vdir=None,args=None):
     VisItModuleState.add_argument("-pyuiembedded")
     from . import pyqt_support
-    ret = pyqt_support.LaunchPyViewer(args)
+    ret = visit_utils.builtin.pyqt_support.LaunchPyViewer(args)
     return VisItModuleState.launch(vdir,ret.GetViewerProxyPtr())
 
 def AddArgument(arg):
