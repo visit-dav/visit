@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <string>
+#include <set>
 
 #include <vtkCellTypes.h>
 #include <vtkCharArray.h>
@@ -2407,6 +2408,7 @@ avtCGNSFileReader::ReadNGonSections(vtkUnstructuredGrid *ugrid,
 
         if (parentFlag > 0)
         {
+            //FIXME: remove
             debug4 << mName << "parentFlag = " << parentFlag << endl;
             continue;
         }
@@ -2547,327 +2549,126 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
     std::vector<int> &nFaceSections, int base,
     int zone, int cellDim, int physDim)
 {
-    cerr << "READING NGON AND NFACE" << endl;//FIXME
     const char *mName = "avtCGNSFileReader::ReadNGonAndNFaceSections: ";
 
-    cerr << "Calculating totals" << endl;
+    //
+    // These sections should be sorted to begin with, but let's play it safe.
+    //
+    std::sort(nGonSections.begin(), nGonSections.end());
+    std::sort(nFaceSections.begin(), nFaceSections.end());
 
-    long numTotalNGonElements = 0;
-    long totalNGonOffsetSize  = 0;
+    //
+    // Establish variables needed for our section reads.
+    //
+    char tempSecName[33];
+    int status               = CG_OK;
+    int parentFlag           = 0;
+    int curSec               = 0;
+    int bound                = 0;
+    ElementType_t elemType   = ElementTypeNull;
 
+    long totalNumFacePoints  = 0;
+    long totalNGonOffsetSize = 0;
+
+    //
+    // First pass through our nGonSections: count the total number
+    // of face points and total size of our NGon offsets.
+    //
     for (std::vector<int>::iterator nGonSecItr = nGonSections.begin();
          nGonSecItr != nGonSections.end(); ++nGonSecItr)
     {
-        char tempSecName[33];
-        int status                   = CG_OK;
-        int parentFlag               = 0;
-        int sec                      = *nGonSecItr;
-        ElementType_t elemType       = ElementTypeNull;
-        //FIXME: change to offsetStart and offsetStop?
-        cgsize_t offsetStart               = 1;
-        cgsize_t offsetStop                = 1;
-        int bound                    = 0;
+        cgsize_t numSectionFaces = 0;
+        cgsize_t faceStart       = 1;
+        cgsize_t faceStop        = 1;
+        curSec                   = *nGonSecItr;
 
-        if (cg_section_read(GetFileHandle(), base, zone, sec, tempSecName,
-            &elemType, &offsetStart, &offsetStop, &bound, &parentFlag) != CG_OK)
+        if (cg_section_read(GetFileHandle(), base, zone, curSec, tempSecName,
+            &elemType, &faceStart, &faceStop, &bound, &parentFlag) != CG_OK)
         {
             debug4 << mName << cg_get_error() << endl;
-            cerr << cg_get_error() << endl;//FIXME
             continue;
         }
 
-
-        if (parentFlag > 0)
-        {
-            debug4 << mName << "parentFlag = " << parentFlag << endl;
-            cerr << "parentFlag = " << parentFlag << endl;//FIXME
-            //continue;
-        }
-
-        int elementsOffsetSize = 0;
-
+        //
+        // faceStart and faceStop are inclusive, which means that
+        // we need to add 1 to account for the last face.
+        //
         if (cellDim == physDim)
         {
-            elementsOffsetSize = (offsetStop - offsetStart + 1) - bound;
+            numSectionFaces = (faceStop - faceStart + 1) - bound;
         }
         else
         {
-            elementsOffsetSize = (offsetStop - offsetStart + 1);
+            numSectionFaces = (faceStop - faceStart + 1);
         }
-        //FIXME
-        //if (cellDim == physDim)
-        //{
-        //    elementsOffsetSize = (offsetStop - offsetStart) - bound;
-        //}
-        //else
-        //{
-        //    elementsOffsetSize = (offsetStop - offsetStart);
-        //}
-
-        //FIXME: 
-        //totalNGonOffsetSize += elementsOffsetSize;
-        totalNGonOffsetSize += elementsOffsetSize + 1;
 
         //
-        // FIXME:
-        // eDataSize is the size of the "elements" array, i.e. the size
+        // elementsSize is the size of the "elements" array, i.e. the size
         // of the connectivity array.
         //
         cgsize_t elementsSize = 0;
-        if (cg_ElementDataSize(GetFileHandle(), base, zone, sec, &elementsSize)
-            != CG_OK)
-        {
-            debug4 << mName << "Could not determine ElementDataSize\n";
-            cerr << "Could not determine ElementDataSize\n";
-            continue;
-        }
-
-        numTotalNGonElements += elementsSize;
-    }
-
-    ++totalNGonOffsetSize;
-
-    cerr << "\n\nTotal num ngon elements: " << numTotalNGonElements << endl;//FIXME
-    cerr << "Total ngon offsets size: " << totalNGonOffsetSize << endl;//FIXME
-
-    cgsize_t *totalNGonElements = new cgsize_t[numTotalNGonElements];
-    cgsize_t *totalNGonOffsets  = new cgsize_t[totalNGonOffsetSize];
-
-    cgsize_t *offsets1  = new cgsize_t[totalNGonOffsetSize];
-    cgsize_t *offsets2  = new cgsize_t[totalNGonOffsetSize];
-    cgsize_t *offsets3  = new cgsize_t[totalNGonOffsetSize];
-    cgsize_t *offsets4  = new cgsize_t[totalNGonOffsetSize];
-
-    for (int i = 0; i < numTotalNGonElements; ++i)
-    {
-        totalNGonElements[i] = 0;
-    }
-
-    for (int i = 0; i < totalNGonOffsetSize; ++i)
-    {
-        totalNGonOffsets[i] = 0;
-    }
-
-    cerr << "\n\nCalculating NGon" << endl;
-
-    int prevLastOffset  = -1;
-    int firstOffset = -1;
-
-    int secIdx = 0;
-    for (std::vector<int>::iterator nGonSecItr = nGonSections.begin();
-         nGonSecItr != nGonSections.end(); ++nGonSecItr)
-    {
-        prevLastOffset = firstOffset;
-
-        char tempSecName[33];
-        int status                   = CG_OK;
-        int parentFlag               = 0;
-        int sec                      = *nGonSecItr;
-        ElementType_t elemType       = ElementTypeNull;
-        cgsize_t elementsOffsetSize  = 0;
-        cgsize_t offsetStart         = 1;
-        cgsize_t offsetStop          = 1;
-        int bound                    = 0;
-
-        if (cg_section_read(GetFileHandle(), base, zone, sec, tempSecName,
-            &elemType, &offsetStart, &offsetStop, &bound, &parentFlag) != CG_OK)
-        {
-            debug4 << mName << cg_get_error() << endl;
-            cerr << cg_get_error() << endl;//FIXME
-            continue;
-        }
-
-
-        if (parentFlag > 0)
-        {
-            debug4 << mName << "parentFlag = " << parentFlag << endl;
-            cerr << "parentFlag = " << parentFlag << endl;//FIXME
-            //continue;
-        }
-
-        if (cellDim == physDim)
-        {
-            elementsOffsetSize = (offsetStop - offsetStart + 1) - bound;
-        }
-        else
-        {
-            elementsOffsetSize = (offsetStop - offsetStart + 1);
-        }
-
-        //
-        // FIXME:
-        // eDataSize is the size of the "elements" array, i.e. the size
-        // of the connectivity array.
-        //
-        cgsize_t elementsSize = 0;
-        if (cg_ElementDataSize(GetFileHandle(), base, zone, sec, &elementsSize)
-            != CG_OK)
+        if (cg_ElementDataSize(GetFileHandle(), base, zone,
+                curSec, &elementsSize) != CG_OK)
         {
             debug4 << mName << "Could not determine ElementDataSize\n";
             continue;
         }
 
-        cerr << "\nNGON SECTION NAME: " << tempSecName << endl;//FIXME
-        cerr << "    offsetStart: " << offsetStart << endl;
-        cerr << "    offsetStop: " << offsetStop << endl;
-        cerr << "    element offset size: " << elementsOffsetSize << endl;
-        cerr << "    bound: " << bound << endl;
-        cerr << "    elements size: " << elementsSize << endl;
-
         //
-        // CGNS refers to the element connectivity as "elements". These
-        // are actually indices of connectivity.
-        // NGon elements represent node connectivity within a face, and
-        // NFace elements represent face connectivity within a zone.
+        // NOTE: The offsets have an extra index on the end to allow us to
+        // count the total number of points in the last face.
         //
-        cgsize_t *elements = new cgsize_t[elementsSize];
-        if (elements == 0)
-        {
-            debug4 << mName << "Could not allocate memory for connectivity\n";
-            continue;
-        }
+        totalNGonOffsetSize += numSectionFaces + 1;
 
-        int connOffsetsSize   = elementsOffsetSize + 1;
-        cgsize_t *connOffsets = new cgsize_t[connOffsetsSize];
-
-        for (int i = 0; i < connOffsetsSize; ++i)
-        {
-            connOffsets[i] = 0;
-        }
-
-
-#if CGNS_VERSION >= 4000
-        status = cg_poly_elements_read(GetFileHandle(), base, 
-            zone, sec, elements, connOffsets, NULL);
-#else
-        //FIXME: error out if version < 4000?
-        //status = cg_elements_read(GetFileHandle(), base, zone,
-        //    sec, elements, NULL);
-#endif
-       
-        if (status != CG_OK)
-        {
-            delete [] elements;
-            delete [] connOffsets;
-            elements = 0;
-            debug4 << mName << cg_get_error() << endl;
-            cerr << cg_get_error() << endl;//FIXME
-            continue;
-        }
-
-        //
-        // TODO: we could also just pass in an offset pointer to the read function.
-        // Copy our data over to the larger container.
-        //
-        
-        cerr << "    first conn offset: " << connOffsets[0] << endl;//FIXME
-
-        int trueStart = offsetStart - 1;
-        for (int i = 0; i < elementsSize; ++i)
-        {
-            totalNGonElements[trueStart + i] = elements[i];
-        }
-
-        for (int i = 0; i < connOffsetsSize; ++i)
-        {
-            //totalNGonOffsets[trueStart + i] = connOffsets[i] + trueStart;
-            //cerr << "        offset: " << connOffsets[i] << endl;//FIXME
-            if (secIdx == 0) 
-                offsets1[trueStart + i] = connOffsets[i] + trueStart;
-            else if (secIdx == 1) 
-                offsets2[trueStart + i] = connOffsets[i] + trueStart;
-            else if (secIdx == 2) 
-                offsets3[trueStart + i] = connOffsets[i] + trueStart;
-            else if (secIdx == 3) 
-                offsets4[trueStart + i] = connOffsets[i] + trueStart;
-              
-        }
-        //firstOffset = connOffsets[0] + trueStart;
-
-        secIdx++;
-
-        //cerr << "    current first offset vs prev last offset: " << firstOffset << " vs " << prevLastOffset << endl;//FIXME
-
-        //int fooOffset = trueStart + elementsSize;
-        //cerr << "    Max offset vs (offsetStart + element size): " << maxOffset << " vs " << fooOffset << endl;//FIXME
-
-        delete [] elements;
-        delete [] connOffsets;
+        totalNumFacePoints += elementsSize;
     }
 
-    cerr << "\n\nCalculating NFace" << endl;//FIXME
+    cgsize_t totalNumZones = 0;
 
+    //
+    // First pass through our nFaceSections: count the total number of
+    // zones so that we can allocate space in our grid.
+    //
     for (std::vector<int>::iterator nFaceSecItr = nFaceSections.begin();
          nFaceSecItr != nFaceSections.end(); ++nFaceSecItr)
     {
-        char tempSecName[33];
-        int status                    = CG_OK;
-        int parentFlag                = 0;
-        int sec                       = *nFaceSecItr;
-        ElementType_t nFaceElemType   = ElementTypeNull;
-        cgsize_t faceOffsetsSize      = 0;
-        cgsize_t offsetStart          = 1;
-        cgsize_t offsetStop           = 1;
-        int bound                     = 0;
+        curSec                   = *nFaceSecItr;
+        cgsize_t numSectionZones = 0;
+        cgsize_t offsetStart     = 1;
+        cgsize_t offsetStop      = 1;
 
-        if (cg_section_read(GetFileHandle(), base, zone, sec, tempSecName,
-           &nFaceElemType, &offsetStart, &offsetStop, &bound, &parentFlag)
+        if (cg_section_read(GetFileHandle(), base, zone, curSec, tempSecName,
+           &elemType, &offsetStart, &offsetStop, &bound, &parentFlag)
            != CG_OK)
         {
             debug4 << mName << cg_get_error() << endl;
             continue;
         }
 
-        if (parentFlag > 0)
+        if (cellDim == physDim)
         {
-            debug4 << mName << "parentFlag = " << parentFlag << endl;
-            continue;
+            numSectionZones = (offsetStop - offsetStart + 1) - bound;
+        }
+        else
+        {
+            numSectionZones = (offsetStop - offsetStart + 1);
         }
 
-        if (cellDim == physDim)
-            faceOffsetsSize = (offsetStop - offsetStart + 1) - bound;
-        else
-            faceOffsetsSize = (offsetStop - offsetStart + 1);
-
         cgsize_t elementsSize = 0;
-        if (cg_ElementDataSize(GetFileHandle(), base, zone, sec, &elementsSize)
-            != CG_OK)
+        if (cg_ElementDataSize(GetFileHandle(), base, zone,
+                curSec, &elementsSize) != CG_OK)
         {
             debug4 << mName << "Could not determine ElementDataSize\n";
             continue;
         }
 
-        cerr << "NFACE SECTION NAME: " << tempSecName << endl;//FIXME
-        cerr << "    offsetStart: " << offsetStart << endl;
-        cerr << "    offsetStop: " << offsetStop << endl;
-        cerr << "    size interior: " << faceOffsetsSize << endl;
-        cerr << "    bound: " << bound << endl;
-        cerr << "    elements size: " << elementsSize << endl;
-
-        //
-        // CGNS refers to the element connectivity as "elements". These
-        // are actually indices of connectivity.
-        // NGon elements represent node connectivity within a face, and
-        // NFace elements represent face connectivity within a zone.
-        //
         cgsize_t *faceElements = new cgsize_t[elementsSize];
-        if (faceElements == 0)
-        {
-            debug4 << mName << "Could not allocate memory for connectivity\n";
-            continue;
-        }
-
-        int faceConnOffsetsSize   = faceOffsetsSize + 1;
-        cgsize_t *faceConnOffsets = new cgsize_t[faceConnOffsetsSize];
-
-        for (int i = 0; i < faceConnOffsetsSize; ++i)
-        {
-            faceConnOffsets[i] = 0;
-        }
+        int zoneOffsetsSize    = numSectionZones + 1;
+        cgsize_t *zoneOffsets  = new cgsize_t[zoneOffsetsSize];
 
 #if CGNS_VERSION >= 4000
         status = cg_poly_elements_read(GetFileHandle(), base, 
-            zone, sec, faceElements, faceConnOffsets, NULL);
+            zone, curSec, faceElements, zoneOffsets, NULL);
 #else
         ////FIXME: error out if version < 4000?
         //status = cg_elements_read(GetFileHandle(), base, zone,
@@ -2877,188 +2678,304 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         if (status != CG_OK)
         {
             delete [] faceElements;
-            delete [] faceConnOffsets;
+            delete [] zoneOffsets;
             faceElements = NULL;
             //FIXME: change to debug1
             debug4 << mName << cg_get_error() << endl;
-            cerr << cg_get_error() << endl;
             continue;
         }
 
+        totalNumZones += numSectionZones;
+    }
 
+    //
+    // Allocate space for our incoming zones.
+    //
+    ugrid->Allocate(totalNumZones);
 
+    //
+    // NFace sections don't really correspond to NGon sections, but NFace
+    // elements will always map to the NGon offsets. So, we need to pool
+    // all of our NGon data (face points and offsets) into single containers
+    // that we can reach into later.
+    // totalFacePoints contains all mappings of faces to global node ids,
+    // and totalNGonOffsets contains all offset information for reading this
+    // face connectivity.
+    //
+    cgsize_t *totalFacePoints  = new cgsize_t[totalNumFacePoints];
+    cgsize_t *totalNGonOffsets = new cgsize_t[totalNGonOffsetSize];
 
-        const cgsize_t *faceElementsPtr = faceElements;
-        const cgsize_t *nGonElementsPtr = totalNGonElements;
+    for (int i = 0; i < totalNumFacePoints; ++i)
+    {
+        totalFacePoints[i] = 0;
+    }
 
-        //FIXME: this doesn't handle the case when we have multiple face
-        // sections. We need to pass through all sections first to count this.
-        long totalNumZones = 0;
-        for(cgsize_t c = 0; c < faceOffsetsSize; ++c)
+    for (int i = 0; i < totalNGonOffsetSize; ++i)
+    {
+        totalNGonOffsets[i] = 0;
+    }
+
+    //
+    // Tricky business:
+    // When reading the NGon offsets, CGNS will always return 1 more offset
+    // at the end of the array to allow us to easily know the total number
+    // of nodes in the last face of the current section. Unfortunately, that
+    // last offset DOES NOT correspond to the start offset of the next
+    // section... This means that we need to keep track of which section we're
+    // on and offset appropriately to skip these "padded" values.
+    //
+    std::vector<cgsize_t> nGonOffsetIdxToSectionIdx;
+    nGonOffsetIdxToSectionIdx.reserve(totalNGonOffsetSize);
+
+    int nGonOffsetsIdx      = 0;
+    int secIdx              = 0;
+    int facePointIdx        = 0;
+    cgsize_t sectionOffset  = 0;
+
+    //
+    // Second pass through our nGonSections: read all NGon data into
+    // our section-wide containers. NOTE: reading data from sections in
+    // (incremental) order SHOULD give back data that is in the correct
+    // order (by sections).
+    //
+    for (std::vector<int>::iterator nGonSecItr = nGonSections.begin();
+         nGonSecItr != nGonSections.end(); ++nGonSecItr)
+    {
+        curSec                   = *nGonSecItr;
+        cgsize_t numSectionFaces = 0;
+        cgsize_t faceStart       = 1;
+        cgsize_t faceStop        = 1;
+
+        if (cg_section_read(GetFileHandle(), base, zone, curSec, tempSecName,
+            &elemType, &faceStart, &faceStop, &bound, &parentFlag) != CG_OK)
         {
-            totalNumZones++;
+            debug4 << mName << cg_get_error() << endl;
+            continue;
         }
-        cerr << "    total num zones: " << totalNumZones << endl;//FIXME
-        //ugrid->Allocate(totalNumZones);
-        
-        int startTestZone = 814;
-        int stopTestZone  = 815;
-        //int startTestZone = 0;
-        //int stopTestZone  = 1000;
-        int numTestZones = stopTestZone - startTestZone;
-        ugrid->Allocate(numTestZones);//FIXME
 
-        //FIXME document.
-        vtkIdType faceStream[1024];
-
-        //int maxFaceIdx = 0;//FIXME
-        
-        int zoneIdx = 0;//FIXME
-
-        cerr << "    Constructing Zones: " << endl;//FIXME
-        //for (cgsize_t c = 0; c < faceOffsetsSize; ++c)
-
-        bool show = false;
-        int maxFaceStreamIdx = 0;
-
-        for (cgsize_t c = startTestZone; c < stopTestZone; ++c)
-        //for (cgsize_t c = 0; c < faceOffsetsSize; ++c)
+        if (cellDim == physDim)
         {
+            numSectionFaces = (faceStop - faceStart + 1) - bound;
+        }
+        else
+        {
+            numSectionFaces = (faceStop - faceStart + 1);
+        }
 
-            int numFaces = faceConnOffsets[c+1] - faceConnOffsets[c];
-            int faceStreamIdx = 0;
-            if (show)
+        int connOffsetsSize   = numSectionFaces + 1;
+        cgsize_t *faceOffsets = new cgsize_t[connOffsetsSize];
+
+        for (int i = 0; i < connOffsetsSize; ++i)
+        {
+            faceOffsets[i] = 0;
+        }
+
+        cgsize_t *sectionFacePtr = totalFacePoints + sectionOffset;
+
+#if CGNS_VERSION >= 4000
+        status = cg_poly_elements_read(GetFileHandle(), base, 
+            zone, curSec, sectionFacePtr, faceOffsets, NULL);
+#else
+        //FIXME: error out if version < 4000?
+        //status = cg_elements_read(GetFileHandle(), base, zone,
+        //    sec, elements, NULL);
+#endif
+       
+        if (status != CG_OK)
+        {
+            delete [] faceOffsets;
+            faceOffsets = NULL;
+            debug4 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        //
+        // We need to be careful when copying over our offsets since we're
+        // now using section-wide containers, but this section read will
+        // give us offsets for this section only.
+        //
+        for (int i = 0; i < connOffsetsSize; ++i)
+        {
+            //
+            // The new offset will start at the section offset.
+            //
+            totalNGonOffsets[nGonOffsetsIdx++] = faceOffsets[i] + sectionOffset;
+            
+            //
+            // Update our map. Remember that the last entry in the connectivity
+            // array is not really part of the global offset indexing scheme in
+            // CGNS. So, we want to pretend they don't exist (kind of).
+            //
+            if (i < connOffsetsSize - 1)
             {
-                cerr << "        zone idx: " << zoneIdx << endl;//FIXME
-                cerr << "        num faces: " << numFaces << endl;//FIXME
+                nGonOffsetIdxToSectionIdx.push_back(secIdx);
             }
+        }
 
-            //for (int zoneFaceIdx = 0; zoneFaceIdx < numFaces; ++zoneFaceIdx)
-            for (int zoneFaceIdx = faceConnOffsets[c]; zoneFaceIdx < faceConnOffsets[c+1]; ++zoneFaceIdx)
+        //
+        // Lastly, update our section offset.
+        //
+        cgsize_t sectionElementsSize = 0;
+        if (cg_ElementDataSize(GetFileHandle(), base, zone,
+                curSec, &sectionElementsSize) != CG_OK)
+        {
+            debug4 << mName << "Could not determine ElementDataSize\n";
+            continue;
+        }
+
+        secIdx++;
+        sectionOffset += sectionElementsSize;
+
+        delete [] faceOffsets;
+    }
+
+    //
+    // Second pass over nFaceSections: Now that we have our global arrays for
+    // face-to-point connectivity, we can read in the zone-to-face connectivity
+    // and construct our zones.
+    //
+    for (std::vector<int>::iterator nFaceSecItr = nFaceSections.begin();
+         nFaceSecItr != nFaceSections.end(); ++nFaceSecItr)
+    {
+        curSec                   = *nFaceSecItr;
+        cgsize_t numSectionZones = 0;
+        cgsize_t offsetStart     = 1;
+        cgsize_t offsetStop      = 1;
+
+        if (cg_section_read(GetFileHandle(), base, zone, curSec, tempSecName,
+           &elemType, &offsetStart, &offsetStop, &bound, &parentFlag)
+           != CG_OK)
+        {
+            debug4 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        if (cellDim == physDim)
+        {
+            numSectionZones = (offsetStop - offsetStart + 1) - bound;
+        }
+        else
+        {
+            numSectionZones = (offsetStop - offsetStart + 1);
+        }
+
+        cgsize_t faceElementsSize = 0;
+        if (cg_ElementDataSize(GetFileHandle(), base, zone,
+                curSec, &faceElementsSize) != CG_OK)
+        {
+            debug4 << mName << "Could not determine ElementDataSize\n";
+            continue;
+        }
+
+        //
+        // faceElements will contain a mapping from zones to faces. The
+        // faces are actually 0 based indices into the NGon face-to-point
+        // connectivity array. NOTE: this mapping is the GLOBAL mapping and
+        // does not take sections into consideration.
+        //
+        cgsize_t *faceElements = new cgsize_t[faceElementsSize];
+        int zoneOffsetsSize    = numSectionZones + 1;
+        cgsize_t *zoneOffsets  = new cgsize_t[zoneOffsetsSize];
+
+        for (int i = 0; i < faceElementsSize; ++i)
+        {
+            faceElements[i] = 0;
+        }
+
+        for (int i = 0; i < zoneOffsetsSize; ++i)
+        {
+            zoneOffsets[i] = 0;
+        }
+
+#if CGNS_VERSION >= 4000
+        status = cg_poly_elements_read(GetFileHandle(), base, 
+            zone, curSec, faceElements, zoneOffsets, NULL);
+#else
+        ////FIXME: error out if version < 4000?
+        //status = cg_elements_read(GetFileHandle(), base, zone,
+        //    sec, faceElements, NULL);
+#endif
+       
+        if (status != CG_OK)
+        {
+            delete [] faceElements;
+            delete [] zoneOffsets;
+            faceElements = NULL;
+            zoneOffsets  = NULL;
+            //FIXME: change to debug1
+            debug4 << mName << cg_get_error() << endl;
+            continue;
+        }
+
+        //
+        // Finally, we can read in the zones!
+        // NOTE: for all sections, the CGNS offset arrays are 0 based, and
+        // the elements arrays are 1 based (Fortran).
+        //
+        for (cgsize_t c = 0; c < numSectionZones; ++c)
+        {
+            cgsize_t zoneStart = zoneOffsets[c];
+            cgsize_t zoneStop  = zoneOffsets[c + 1];
+            cgsize_t numFaces  = zoneStop - zoneStart;
+
+            //
+            // VTK defines the face stream as follows:
+            // numFacePoints, pt1, pt2, ..., numFacePoints, pt1, pt2,...
+            // With an entry for each face.
+            //
+            vtkIdType faceStream[1024];
+            int faceStreamIdx = 0;
+
+            for (cgsize_t zIdx = zoneStart; zIdx < zoneStop; ++zIdx)
             {
-                int count = 0;
-                bool first = false;
-                bool second = false;
-                bool third = false;
-                bool fourth = false;
+                //
+                // This index will map back to our NGon section so that we
+                // can read the connectivity for each face of the zone.
+                // NOTE: CGNS will flip the sign of a face index to denote
+                // normal directions.
+                //
+                cgsize_t faceOffsetIdx = abs(faceElements[zIdx]) - 1;
 
-                //int faceConnIdx    = abs(faceElementsPtr[zoneFaceIdx]) - 1;
-                int faceConnIdx    = abs(faceElements[zoneFaceIdx]) - 1;
+                //
+                // Here's where we come back to the tricky business from
+                // earlier. Our global offset array has padding after each
+                // section to count the points in the last face of each
+                // section. So, we need to account for this and ignore the
+                // padding when reading sections > 0.
+                //
+                int curSecIdx = nGonOffsetIdxToSectionIdx[faceOffsetIdx];
 
-                if (show)
-                    cerr << "        face con idx: " << faceConnIdx << endl;//FIXME
-
-                //int facePtStartIdx = totalNGonOffsets[faceConnIdx];
-                //int facePtStopIdx  = totalNGonOffsets[faceConnIdx + 1];
-                //int numFacePts     = facePtStopIdx - facePtStartIdx;
-
-                int facePtStartIdx = 0;
-                int facePtStopIdx  = 0;
-
-                //FIXME: if we're processing by sections individually, then
-                // our offset array is + 1 so that we can get the length of
-                // our last chunk of elements. How does that work in this case
-                // if we're reading from one contiguous array of sections. That
-                // array does NOT have the extra offset to account for that
-                // last element's size. Strangely, I haven't seen any occurrences
-                // of this yet...
-                if (faceConnIdx <= 37193)
+                if (curSecIdx == -1)
                 {
-                    if (!first)
-                        count++;
-                    first = true;
-                    facePtStartIdx = offsets1[faceConnIdx];
-                    facePtStopIdx  = offsets1[faceConnIdx + 1];
+                    cerr << mName << "We're trying to access a padding offset!"
+                        << "This will likely end very badly..." << endl;
                 }
-                else if (faceConnIdx >= 37194 && faceConnIdx <= 38008) 
-                {
-                    if (!second)
-                        count++;
-                    second = true;
-                    facePtStartIdx = offsets2[faceConnIdx];
-                    facePtStopIdx  = offsets2[faceConnIdx + 1];
-                }
-                else if (faceConnIdx >= 38009 && faceConnIdx <= 38312)
-                {
-                    if (!third)
-                        count++;
-                    third = true;
-                    facePtStartIdx = offsets3[faceConnIdx];
-                    facePtStopIdx  = offsets3[faceConnIdx + 1];
-                }
-                else if (faceConnIdx <= 38475)
-                {
-                    if (!fourth)
-                        count++;
-                    fourth = true;
-                    facePtStartIdx = offsets4[faceConnIdx];
-                    facePtStopIdx  = offsets4[faceConnIdx + 1];
-                }
-                int numFacePts     = facePtStopIdx - facePtStartIdx;
 
-                if (show)
-                    cerr << "            numFacePts: " << numFacePts << endl;//FIXME
+                cgsize_t facePtStartIdx =
+                    totalNGonOffsets[faceOffsetIdx + curSecIdx];
+                cgsize_t facePtStopIdx  =
+                    totalNGonOffsets[faceOffsetIdx + curSecIdx + 1];
 
-                faceStream[faceStreamIdx] = numFacePts;
-                faceStreamIdx++;
+                int numFacePts = facePtStopIdx - facePtStartIdx;
+
+                faceStream[faceStreamIdx++] = numFacePts;
 
                 for (int ptIdx = facePtStartIdx; ptIdx < facePtStopIdx;
                      ++ptIdx)
                 {
-                    
-                    faceStream[faceStreamIdx] = totalNGonElements[ptIdx] - 1;
-
-                    if (show)
-                        cerr << "                face point: " << faceStream[faceStreamIdx] << endl;//FIXME
-
-                    faceStreamIdx++;
+                    faceStream[faceStreamIdx++] = totalFacePoints[ptIdx] - 1;
                 }
-
-                if (count > 1)
-                    cerr << "MIXING!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;//FIXME
             }
 
-            if (faceStreamIdx > maxFaceStreamIdx)
-                maxFaceStreamIdx = faceStreamIdx;
-
             ugrid->InsertNextCell(VTK_POLYHEDRON, numFaces, faceStream);
-            zoneIdx++;
-
-            //faceElementsPtr += numFaces;
         }
 
-        //cerr << "    max face conn idx: " << maxFaceIdx << endl;//FIXME
-        cerr << "    max face stream idx: " << maxFaceStreamIdx << endl;//FIXME
-
-
-
-        ////
-        //// Iterate over our polygons and add them to the mesh.
-        ////
-        //vtkIdType verts[27];
-        //const cgsize_t *elementsPtr = elements;
-        //for(cgsize_t c = 0; c < elementsOffsetSize; ++c)
-        //{
-        //    //
-        //    // The connectivity offsets have size elementsOffsetSize + 1
-        //    // so that we can grab the number of points for each zone.
-        //    //
-        //    int numVertices = connOffsets[c+1] - connOffsets[c];
-
-        //    for (int v = 0; v < numVertices; ++v)
-        //    {
-        //        verts[v] = elementsPtr[v]-1;
-        //    }
-
-        //    ugrid->InsertNextCell(VTK_POLYGON, numVertices, verts);
-        //    elementsPtr += numVertices;
-        //}
 
         delete [] faceElements;
-        delete [] faceConnOffsets;
+        delete [] zoneOffsets;
     }
 
-    delete [] totalNGonElements;
+    delete [] totalFacePoints;
     delete [] totalNGonOffsets;
 
 }
