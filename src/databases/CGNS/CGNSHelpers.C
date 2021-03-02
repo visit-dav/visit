@@ -6,7 +6,6 @@
 #include <string>
 #include <cgnslib.h>
 #include <cgns_io.h>
-#include<unordered_map>
 
 
 // ****************************************************************************
@@ -98,6 +97,27 @@ PrintElementType(ElementType_t et)
 }
 
 
+// ****************************************************************************
+// Function: getChildrenIds
+//
+// Purpose: 
+//   Retrieve the children ids from a CGNS node.
+//
+//   NOTE: while this can be used for general purposes, it is currently
+//   here for debugging.
+//
+// Arguments:
+//     cgioNum       The cgio number.
+//     parentId      The node id to retrieve children from.
+//     childrenIds   A vector to store the children ids in.
+//
+// Programmer: Alister Maguire
+// Creation:   Tue Mar  2 08:01:12 PST 2021
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 int getChildrenIds(int cgioNum, double parentId,
     std::vector<double> &childrenIds)
 {
@@ -113,9 +133,8 @@ int getChildrenIds(int cgioNum, double parentId,
 
     if (numChildrenIds != numChildren)
     {
-        //FIXME
         delete[] tmpChildrenIds;
-        std::cerr << "Mismatch in number of children and child IDs read" << std::endl;
+        debug1 << "Mismatch in number of children and child Ids read" << endl;
         return 1;
     }
   
@@ -129,44 +148,67 @@ int getChildrenIds(int cgioNum, double parentId,
 }
 
 
+// ****************************************************************************
+// Function: getBaseIds
+//
+// Purpose: 
+//   Retrieve the base Ids from a root Id of a dataset.
+//
+//   NOTE: while this can be used for general purposes, it is currently
+//   here for debugging.
+//
+// Arguments:
+//     cgioNum       The cgio number.
+//     rootId        The root Id of a dataset.
+//     baseIds       A vector to store the base Ids in.
+//
+// Programmer: Alister Maguire
+// Creation:   Tue Mar  2 08:01:12 PST 2021
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 int getBaseIds(int cgioNum, double rootId, std::vector<double>& baseIds)
 {
     char nodeLabel[33];
-    std::size_t nbases = 0;
-    std::size_t nc;
+    std::size_t numBases = 0;
 
     baseIds.clear();
     getChildrenIds(cgioNum, rootId, baseIds);
+
     if (baseIds.size() < 1)
     {
-        std::cerr << "Error: Not enough nodes under the root description file." << std::endl;
+        debug1 << "Error: Not enough nodes under the root "
+            << "description file." << endl;
         return 1;
     }
 
-    for (nbases = 0, nc = 0; nc < baseIds.size(); nc++)
+    for (int c = 0; c < baseIds.size(); c++)
     {
-        if (cgio_get_label(cgioNum, baseIds[nc], nodeLabel) != CG_OK)
+        if (cgio_get_label(cgioNum, baseIds[c], nodeLabel) != CG_OK)
         {
             return 1;
         }
         if (strcmp(nodeLabel, "CGNSBase_t") == 0)
         {
-            if (nbases < nc)
+            if (numBases < c)
             {
-                baseIds[nbases] = baseIds[nc];
+                baseIds[numBases] = baseIds[c];
             }
-            nbases++;
+            numBases++;
         }
         else
         {
-            cgio_release_id(cgioNum, baseIds[nc]);
+            cgio_release_id(cgioNum, baseIds[c]);
         }
     }
-    baseIds.resize(nbases);
 
-    if (nbases < 1)
+    baseIds.resize(numBases);
+
+    if (numBases < 1)
     {
-        std::cerr << "Error: Not enough bases in the file." << std::endl;
+        debug1 << "Error: Not enough bases in the file." << endl;
         return 1;
     }
 
@@ -174,50 +216,27 @@ int getBaseIds(int cgioNum, double rootId, std::vector<double>& baseIds)
 }
 
 
-void populateSectionNameToIdMap(int cgioNum, vector<double> &idArray,
-    std::unordered_map<std::string, double> &nameToIdMap)
-{
-    int status = 0;
-    for (std::vector<double>::iterator idItr = idArray.begin();
-         idItr != idArray.end(); ++idItr)
-    {
-        //
-        // CGNS has a maximum name size of 33. FIXME: double check this.
-        //
-        char name[33];
-        status = cgio_get_name(cgioNum, *idItr, name);
-        //FIXME: check status 
-        
-        char *label = new char[CGIO_MAX_NAME_LENGTH + 1];
-        status = cgio_get_label(cgioNum, *idItr, label);
-
-        if (strcmp(label, "Elements_t") == 0)
-        {
-            nameToIdMap[std::string(name)] = *idItr;
-        }
-
-        delete [] label;
-
-        std::vector<double> childrenIds;
-        getChildrenIds(cgioNum, *idItr, childrenIds);
-
-        populateSectionNameToIdMap(cgioNum, childrenIds,
-            nameToIdMap);
-    }
-}
-
-
-std::unordered_map<std::string, double> generateSectionNameToIdMap(
-    int cgioNum, double rootId)
-{
-
-    std::unordered_map<std::string, double> nameToIdMap;
-    vector<double> baseIds;
-    getBaseIds(cgioNum, rootId, baseIds);
-
-    return nameToIdMap;    
-}
-
+// ****************************************************************************
+// Function: showChildren
+//
+// Purpose: 
+//   Show all children of a given CGNS node.
+//
+//   NOTE: this is for aid in debugging.
+//
+// Arguments:
+//     cgioNum       The cgio number.
+//     parentId      The Id of the node to show children from.
+//     childrenIds   A vector to store the children Ids in.
+//     prepend       An optional string to prepend to the beginning of
+//                   the output information.
+//
+// Programmer: Alister Maguire
+// Creation:   Tue Mar  2 08:01:12 PST 2021
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 int showChildren(int cgioNum, double parentId,
     std::vector<double> &childrenIds, std::string prepend="")
@@ -234,12 +253,15 @@ int showChildren(int cgioNum, double parentId,
 
     if (numChildrenIds != numChildren)
     {
-        //FIXME
         delete[] tmpChildrenIds;
-        std::cerr << "Mismatch in number of children and child IDs read" << std::endl;
+        debug1 << "Mismatch in number of children and child Ids read." << endl;
         return 1;
     }
   
+    //
+    // Recursively iterate through all children, displaying their
+    // information in the debug stream as we go.
+    //
     for (int cIdx = 0; cIdx < numChildren; cIdx++)
     {
         childrenIds[cIdx] = tmpChildrenIds[cIdx];
@@ -249,189 +271,16 @@ int showChildren(int cgioNum, double parentId,
         cgio_children_names(cgioNum, parentId, cIdx+1, 1,
           33, &nameLength, names);
 
-        //FIXME: this can't be used for windows?
-        char *childLabel = new char[CGIO_MAX_NAME_LENGTH + 1];
+        char childLabel[33];
         cgio_get_label(cgioNum, tmpChildrenIds[cIdx], childLabel);
 
-        cerr << prepend << cIdx << " NAME: " << string(names) << " (" << string(childLabel) << ")" << endl;
-        //fprintf(stderr, "\nID: %f", tmpChildrenIds[cIdx]);
+        debug1 << prepend << cIdx << " NAME: " <<
+            string(names) << " (" << string(childLabel) << ")" << endl;
 
         std::vector<double> bar;
         showChildren(cgioNum, tmpChildrenIds[cIdx], bar, prepend + "    ");
     }
   
-    delete[] tmpChildrenIds;
+    delete [] tmpChildrenIds;
     return 0;
 }
-
-
-//FIXME
-
-
-//FIXME: read_data_type isn't implemented until version 4.x
-//int getSectionConnectivity(const int cgioNum, const double cgioSectionId,
-//    const int dim, const cgsize_t* srcStart, const cgsize_t* srcEnd,
-//    const cgsize_t* srcStride, const cgsize_t* memStart,
-//    const cgsize_t* memEnd, const cgsize_t* memStride,
-//    const cgsize_t* memDim, vtkIdType* localElements)
-//{
-//    const char* connectivityPath = "ElementConnectivity";
-//    double cgioElemConnectId;
-//    char dataType[3];
-//    std::size_t sizeOfCnt = 0;
-//
-//    cgio_get_node_id(cgioNum, cgioSectionId, connectivityPath, &cgioElemConnectId);
-//    cgio_get_data_type(cgioNum, cgioElemConnectId, dataType);
-//
-//    if (strcmp(dataType, "I4") == 0)
-//    { 
-//        sizeOfCnt = sizeof(int);
-//    }
-//    else if (strcmp(dataType, "I8") == 0)
-//    { 
-//        sizeOfCnt = sizeof(cglong_t);
-//    }
-//    else
-//    { 
-//        std::cerr << "ElementConnectivity data_type unknown\n";
-//    }
-//
-//    if (sizeOfCnt == sizeof(vtkIdType))
-//    { 
-//        if (cgio_read_data_type(cgioNum, cgioElemConnectId, srcStart, srcEnd, srcStride, dataType, dim,
-//              memDim, memStart, memEnd, memStride, (void*)localElements) != CG_OK)
-//        { 
-//            char message[81];
-//            cgio_error_message(message);
-//            std::cerr << "cgio_read_data_type :" << message;
-//            return 1;
-//        }
-//    }
-//    else
-//    {
-//        // Need to read into temp array to convert data
-//        cgsize_t nn = 1;
-//        for (int ii = 0; ii < dim; ii++)
-//        {
-//            nn *= memDim[ii];
-//        }
-//        if (sizeOfCnt == sizeof(int))
-//        {
-//            int* data = new int[nn];
-//            if (data == 0)
-//            {
-//                std::cerr << "Allocation failed for temporary connectivity array\n";
-//            }
-//
-//            if (cgio_read_data_type(cgioNum, cgioElemConnectId, srcStart, srcEnd, srcStride, "I4", dim,
-//                  memDim, memStart, memEnd, memStride, (void*)data) != CG_OK)
-//            {
-//                delete[] data;
-//                char message[81];
-//                cgio_error_message(message);
-//                std::cerr << "cgio_read_data_type :" << message;
-//                return 1;
-//            }
-//            for (cgsize_t n = 0; n < nn; n++)
-//            {
-//                localElements[n] = static_cast<vtkIdType>(data[n]);
-//            }
-//            delete[] data;
-//        }
-//        else if (sizeOfCnt == sizeof(cglong_t))
-//        {
-//            cglong_t* data = new cglong_t[nn];
-//            if (data == 0)
-//            {
-//                std::cerr << "Allocation failed for temporary connectivity array\n";
-//                return 1;
-//            }
-//            if (cgio_read_data_type(cgioNum, cgioElemConnectId, srcStart, srcEnd, srcStride, "I8", dim,
-//                  memDim, memStart, memEnd, memStride, (void*)data) != CG_OK)
-//            {
-//                delete[] data;
-//                char message[81];
-//                cgio_error_message(message);
-//                std::cerr << "cgio_read_data_type :" << message;
-//                return 1;
-//            }  
-//            for (cgsize_t n = 0; n < nn; n++)
-//            {
-//                localElements[n] = static_cast<vtkIdType>(data[n]);
-//            }
-//            delete[] data;
-//        }
-//    }
-//    cgio_release_id(cgioNum, cgioElemConnectId);
-//    return 0;
-//}
-
-
-#if CGNS_VERSION < 4000
-int getSectionConnectivity(const int cgioNum, const double cgioSectionId,
-    const int dim, const cgsize_t* srcStart, const cgsize_t* srcEnd,
-    const cgsize_t* srcStride, const cgsize_t* memStart,
-    const cgsize_t* memEnd, const cgsize_t* memStride,
-    const cgsize_t* memDim, cglong_t *connectivity,
-    int connectivitySize)
-{
-    const char* connectivityPath = "ElementConnectivity";
-    double cgioElemConnectId;
-    char dataType[3];
-    std::size_t sizeOfCnt = 0;
-
-    cgio_get_node_id(cgioNum, cgioSectionId, connectivityPath, &cgioElemConnectId);
-    cgio_get_data_type(cgioNum, cgioElemConnectId, dataType);
-
-    //cgsize_t connSize = 1;
-
-    //for (int i = 0; i < dim; i++)
-    //{
-    //    connSize *= memDim[i];
-    //}
-
-    bool usingAllocTemp = false;
-    void *tempData      = NULL;
-
-    if (strcmp(dataType, "I4") == 0)
-    { 
-        tempData = new int[connectivitySize];
-        usingAllocTemp = true;
-    }
-    else if (strcmp(dataType, "I8") == 0)
-    { 
-        tempData = connectivity;
-    }
-    else
-    { 
-        //FIXME: visit error
-        std::cerr << "ElementConnectivity data_type unknown\n";
-    }
-
-    if (cgio_read_data(cgioNum, cgioElemConnectId, srcStart, srcEnd, srcStride, dim,
-          memDim, memStart, memEnd, memStride, (void*)tempData) != CG_OK)
-    {
-        if (usingAllocTemp)
-        {
-            delete [] (int *)tempData;
-        }
-        //FIXME: visit error?
-        //char message[81];
-        //cgio_error_message(message);
-        //std::cerr << "cgio_read_data :" << message;
-        return 1;
-    }
-
-    if (usingAllocTemp)
-    {
-        for (int i = 0; i < connectivitySize; i++)
-        {
-            connectivity[i] = static_cast<cglong_t>(((int *)tempData)[i]);
-        }
-        delete [] (int *)tempData;
-    }
-
-    cgio_release_id(cgioNum, cgioElemConnectId);
-    return 0;
-}
-#endif
