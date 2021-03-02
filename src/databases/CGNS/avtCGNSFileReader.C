@@ -2526,75 +2526,6 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         totalNumFacePoints += elementsSize;
     }
 
-    cgsize_t totalNumZones = 0;
-
-    //
-    // First pass through our nFaceSections: count the total number of
-    // zones so that we can allocate space in our grid.
-    //
-    for (std::vector<int>::iterator nFaceSecItr = nFaceSections.begin();
-         nFaceSecItr != nFaceSections.end(); ++nFaceSecItr)
-    {
-        curSec                   = *nFaceSecItr;
-        cgsize_t numSectionZones = 0;
-        cgsize_t offsetStart     = 1;
-        cgsize_t offsetStop      = 1;
-
-        if (cg_section_read(GetFileHandle(), base, zone, curSec, tempSecName,
-           &elemType, &offsetStart, &offsetStop, &bound, &parentFlag)
-           != CG_OK)
-        {
-            debug1 << mName << cg_get_error() << endl;
-            continue;
-        }
-
-        numSectionZones = (offsetStop - offsetStart + 1);
-        if (cellDim == physDim)
-        {
-            numSectionZones -= bound;
-        }
-
-        cgsize_t elementsSize = 0;
-        if (cg_ElementDataSize(GetFileHandle(), base, zone,
-                curSec, &elementsSize) != CG_OK)
-        {
-            debug1 << mName << "Could not determine ElementDataSize\n";
-            continue;
-        }
-
-        cgsize_t *faceElements = new cgsize_t[elementsSize];
-        int zoneOffsetsSize    = numSectionZones + 1;
-        cgsize_t *zoneOffsets  = new cgsize_t[zoneOffsetsSize];
-
-#if CGNS_VERSION >= 4000
-        status = cg_poly_elements_read(GetFileHandle(), base, 
-            zone, curSec, faceElements, zoneOffsets, NULL);
-#else
-        char msg[256];
-        sprintf(msg, "CGNS version >= 4000 is required for reading aribitrary "
-            "polyhedra.")
-        EXCEPTION1(ImproperUseException, msg);
-#endif
-       
-        if (status != CG_OK)
-        {
-            delete [] faceElements;
-            delete [] zoneOffsets;
-            debug1 << mName << cg_get_error() << endl;
-            continue;
-        }
-
-        totalNumZones += numSectionZones;
-
-        delete [] faceElements;
-        delete [] zoneOffsets;
-    }
-
-    //
-    // Allocate space for our incoming zones.
-    //
-    ugrid->Allocate(totalNumZones);
-
     //
     // NFace sections don't really correspond to NGon sections, but NFace
     // elements will always map to the global NGon offsets. So, we need to pool
@@ -2729,7 +2660,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
     }
 
     //
-    // Second pass over nFaceSections: Now that we have our global arrays for
+    // Single pass over nFaceSections: Now that we have our global arrays for
     // face-to-point connectivity, we can read in the zone-to-face connectivity
     // and construct our zones.
     //
