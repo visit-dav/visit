@@ -10,7 +10,6 @@
 #define AVT_CGNS_FILE_READER_H
 
 #include <cgnslib.h>
-#include <cgns_io.h>
 #if CGNS_VERSION <= 3000
 #define cgsize_t int
 #else
