@@ -1849,8 +1849,6 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
         std::vector<int> mixedAndNamedSections;
 
         //
-        // For our first pass, let's just figure out what section types
-        // we have.
         // NOTE: sections can be thought of as "collections" of zones.
         //
         for (int sec = 1; sec < numSections + 1; ++sec)
@@ -2489,7 +2487,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         curSec                   = *nGonSecItr;
 
         if (cg_section_read(GetFileHandle(), base, zone, curSec, tempSecName,
-            &elemType, &faceStart, &faceStop, &bound, &parentFlag) != CG_OK)
+                &elemType, &faceStart, &faceStop, &bound, &parentFlag) != CG_OK)
         {
             debug1 << mName << cg_get_error() << endl;
             continue;
@@ -2580,7 +2578,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         cgsize_t faceStop        = 1;
 
         if (cg_section_read(GetFileHandle(), base, zone, curSec, tempSecName,
-            &elemType, &faceStart, &faceStop, &bound, &parentFlag) != CG_OK)
+                &elemType, &faceStart, &faceStop, &bound, &parentFlag) != CG_OK)
         {
             debug1 << mName << cg_get_error() << endl;
             continue;
@@ -2673,8 +2671,8 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         cgsize_t offsetStop      = 1;
 
         if (cg_section_read(GetFileHandle(), base, zone, curSec, tempSecName,
-           &elemType, &offsetStart, &offsetStop, &bound, &parentFlag)
-           != CG_OK)
+               &elemType, &offsetStart, &offsetStop, &bound, &parentFlag)
+               != CG_OK)
         {
             debug1 << mName << cg_get_error() << endl;
             continue;
@@ -2769,12 +2767,6 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
                 // padding when reading sections > 0.
                 //
                 int curSecIdx = nGonOffsetIdxToSectionIdx[faceOffsetIdx];
-
-                if (curSecIdx == -1)
-                {
-                    debug1 << mName << "We're trying to access a padding offset!"
-                        << "This will likely end very badly..." << endl;
-                }
 
                 cgsize_t facePtStartIdx =
                     totalNGonOffsets[faceOffsetIdx + curSecIdx];
