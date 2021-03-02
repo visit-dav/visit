@@ -23,9 +23,31 @@ function errorFunc
 # *************************************************************************** #
 function log
 {
-    echo "$@" >> ${LOG_FILE}
+    if [[ "${LOG_FILE}" != "/dev/tty" && -w "${LOG_FILE}" ]] ; then
+        echo "$@" >> ${LOG_FILE}
+    fi
 }
+ 
+# *************************************************************************** #
+# Function: info                                                              #
+#                                                                             #
+# Purpose: Give an informative message to the user.                           #
+#                                                                             #
+# Programmer: Tom Fogal                                                       #
+# Date: Fri Oct  3 09:41:50 MDT 2008                                          #
+#                                                                             #
+# *************************************************************************** #
+function info
+{
+    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
+        echo -e "$@" 1>&3
+    else
+        echo -e "$@"
+    fi
 
+    # write message to log as well
+    log "$@"
+}
 
 # *************************************************************************** #
 # Function: warn                                                              #
@@ -43,16 +65,7 @@ function log
 # *************************************************************************** #
 function warn
 {
-    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-        echo -e "$@" 1>&3
-    else
-        echo -e "$@"
-    fi
-
-    if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
-        # write message to log as well
-        log "$@"
-    fi
+    info $@
 }
 
 # *************************************************************************** #
@@ -180,29 +193,6 @@ function verify_optional_module_exists
     declare -F "bv_${optlib}_dry_run" &>/dev/null || errorFunc "${optlib} dry_run not found"
     declare -F "bv_${optlib}_is_installed" &>/dev/null || errorFunc "${optlib} is_installed not found"
     declare -F "bv_${optlib}_is_enabled" &>/dev/null || errorFunc "${optlib} is_enabled not found"
-}
-
-# *************************************************************************** #
-# Function: info                                                              #
-#                                                                             #
-# Purpose: Give an informative message to the user.                           #
-#                                                                             #
-# Programmer: Tom Fogal                                                       #
-# Date: Fri Oct  3 09:41:50 MDT 2008                                          #
-#                                                                             #
-# *************************************************************************** #
-function info
-{
-    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-        echo "$@" 1>&3
-    else
-        echo "$@"
-    fi
-
-    if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
-        # write message to log as well
-        log "$@"
-    fi
 }
 
 # *************************************************************************** #
@@ -385,7 +375,7 @@ function verify_checksum_by_lookup
     # out function names and definitions from the search
     for var in $(set -o posix; set | grep _FILE=; set +o posix); do
         var=$(echo $var | cut -d '=' -f1)
-        if [ ${!var} = $dlfile ]; then
+        if [[ ${!var} = $dlfile ]]; then
             varbase=$(echo $var | sed -e 's/_FILE$//')
             md5sum_varname=${varbase}_MD5_CHECKSUM
             sha256_varname=${varbase}_SHA256_CHECKSUM
@@ -1463,7 +1453,6 @@ function usage
     initialize_build_visit
 
     printf "Usage: %s [options]\n" $0
-    printf "%-15s %s [%s]\n" "--skip-opengl-context-check" "Skip check for minimum OpenGL context." "false"
 
     printf "\n"
     printf "BUILD OPTIONS\n"
@@ -1511,7 +1500,7 @@ function usage
         name=${grouplibs_name[$bv_i]}
         comment=${grouplibs_comment[$bv_i]}
         enabled=${grouplibs_enabled[$bv_i]}
-        printf "%-15s %s [%s]\n" "--$name" "$comment" "$enabled"
+        printf "%-20s %s [%s]\n" "--$name" "$comment" "$enabled"
     done
     printf "\n"
 
@@ -1560,8 +1549,8 @@ function usage
     printf "GIT OPTIONS\n"
     printf "\n"
 
-    printf "%-26s %s\n"      "--git" "Obtain the VisIt source code"
-    printf "%-26s %s [%s]\n" "" "from the GIT server" "$DO_GIT"
+    printf "%-20s %s\n"      "--git" "Obtain the VisIt source code"
+    printf "%-20s %s [%s]\n" "" "from the GIT server" "$DO_GIT"
 
     printf "\n"
     printf "MISC OPTIONS\n"
@@ -1572,10 +1561,14 @@ function usage
     printf "%-20s %s [%s]\n" "--download-only" "Only download the specified packages" "no"
     printf "%-20s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
     printf "%-20s %s [%s]\n" "-h, --help" "Display this help message." "no"
+    printf "%-20s <%s>\n" "--log-file"  "filename"
+    printf "%-20s %s [%s]\n" ""  "Write build log to provided filename" "$LOG_FILE"
     printf "%-20s %s [%s]\n" "--print-vars" "Display user settable environment variables" "no"
     printf "%-20s %s\n" "--server-components-only" ""
     printf "%-20s %s\n" "" "Only build VisIt's server components"
     printf "%-20s %s [%s]\n" "" "(mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
+    printf "%-20s %s\n" "--skip-opengl-context-check" ""
+    printf "%-20s %s\n" "" "Skip check for minimum OpenGL context."
     printf "%-20s %s [%s]\n" "--stdout" "Write build log to stdout" "no"
     printf "%-20s <%s>\n" "--write-unified-file"  "filename"
     printf "%-20s %s [%s]\n" ""  "Write single unified build_visit file using the provided filename" "$WRITE_UNIFIED_FILE"
