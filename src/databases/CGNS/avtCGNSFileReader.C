@@ -1806,7 +1806,7 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
             zc = coords[2];
         }
 
-        for(unsigned int i = 0; i < nPts; ++i)
+        for (unsigned int i = 0; i < nPts; ++i)
         {
             float pt[3];
             pt[0] = *xc++;
@@ -1853,7 +1853,7 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
         // we have.
         // NOTE: sections can be thought of as "collections" of zones.
         //
-        for(int sec = 1; sec < numSections + 1; ++sec)
+        for (int sec = 1; sec < numSections + 1; ++sec)
         {
             char sectionName[33];
             ElementType_t secElemType = ElementTypeNull;
@@ -1863,21 +1863,21 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
             int parentFlag            = 0;
             int elem_status           = CG_OK;
 
-            if(cg_section_read(GetFileHandle(), base, zone, sec, sectionName,
-                &secElemType, &start, &end, &bound, &parentFlag) != CG_OK)
+            if (cg_section_read(GetFileHandle(), base, zone, sec, sectionName,
+                    &secElemType, &start, &end, &bound, &parentFlag) != CG_OK)
             {
-                debug4 << mName << cg_get_error() << endl;
+                debug1 << mName << cg_get_error() << endl;
                 continue;
             }
 
-            switch(secElemType)
+            switch (secElemType)
             {
-                case(NGON_n):
+                case (NGON_n):
                 {
                     nGonSections.push_back(sec);
                     break;
                 }
-                case(NFACE_n):
+                case (NFACE_n):
                 {
                     nFaceSections.push_back(sec);
                     break;
