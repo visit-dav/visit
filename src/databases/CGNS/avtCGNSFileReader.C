@@ -11,7 +11,6 @@
 
 #include <algorithm>
 #include <string>
-#include <set>
 
 #include <vtkCellTypes.h>
 #include <vtkCharArray.h>
@@ -1520,7 +1519,6 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
     {
         debug4 << mName << "\t\tCould not get the number of coords" << endl;
         debug4 << mName << cg_get_error() << endl;
-        cerr << cg_get_error() << endl;
     }
     else
     {
@@ -1582,7 +1580,6 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
         if(narrays < ncoords)
         {
             debug4 << "Not enough coordinates in node " << GridCoordName << endl;
-            cerr << "Not enough coordinates in node " << GridCoordName << endl;
             err = true;
         }
         // Every grid is read through cg_array. However, "GridCoordinates" node should always be present
@@ -1596,7 +1593,6 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
                 coordname) != CG_OK)
             {
                 debug4 << mName << cg_get_error() << endl;
-                cerr << cg_get_error() << endl;
             }
             else
             {
@@ -2845,7 +2841,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
 
                 if (curSecIdx == -1)
                 {
-                    cerr << mName << "We're trying to access a padding offset!"
+                    debug1 << mName << "We're trying to access a padding offset!"
                         << "This will likely end very badly..." << endl;
                 }
 
