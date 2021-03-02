@@ -53,6 +53,10 @@ using namespace std;
 //    Corrected a bug that caused a crash when doing a Subset plot of "zones"
 //    when reading data decomposed across multiple CGNS files.
 //
+//    Alister Maguire, Tue Mar  2 08:01:12 PST 2021
+//    Added ReadMixedAndNamedElementSections, ReadNGonSections,
+//    ReadNGonAndNFaceSections.
+//
 // ****************************************************************************
 
 class avtCGNSFileReader
