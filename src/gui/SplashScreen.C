@@ -241,6 +241,9 @@
 //    Kathleen Biagas, Thu Jan 21, 2021
 //    Replace QString.asprintf with QString.arg.
 //
+//    Eric Brugger, Mon Mar  1 14:47:30 PST 2021
+//    Changed the date on the splash screen to March 2021.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -361,9 +364,9 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 11;
+    int currentMonth = 3;
     lLayout->addWidget(new QLabel(versionText, this));
-    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2020", this));
+    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2021", this));
 
     copyrightButton = 0;
     contributorButton = 0;
