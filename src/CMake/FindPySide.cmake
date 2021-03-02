@@ -278,9 +278,46 @@ function(PYSIDE_ADD_GENERATOR_TARGET
     set(gen_include_paths_arg "-I${CMAKE_CURRENT_SOURCE_DIR}")
     list(APPEND gen_include_paths_arg "-I${PYSIDE_INCLUDE_DIR}")
 
+
+    # provide qt includes
+    # Get all relevant Qt include dirs, to pass them on to shiboken.
+    get_property(QT_CORE_INCLUDE_DIRS TARGET Qt5::Core PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    get_property(QT_WIDGETS_INCLUDE_DIRS TARGET Qt5::Widgets PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    get_property(QT_GUI_INCLUDE_DIRS TARGET Qt5::Gui PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    get_property(QT_WIDGETS_INCLUDE_DIRS TARGET Qt5::Widgets PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+
+    foreach(itm ${QT_CORE_INCLUDE_DIRS})
+        list(APPEND gen_include_paths_arg "-I${itm}")
+    endforeach()
+
+    foreach(itm ${QT_WIDGETS_INCLUDE_DIRS})
+        list(APPEND gen_include_paths_arg "-I${itm}")
+    endforeach()
+
+    foreach(itm ${QT_GUI_INCLUDE_DIRS})
+        list(APPEND gen_include_paths_arg "-I${itm}")
+    endforeach()
+
+    foreach(itm ${QT_WIDGETS_INCLUDE_DIRS})
+        list(APPEND gen_include_paths_arg "-I${itm}")
+    endforeach()
+
+    # On macOS, check if Qt is a framework build. This affects how include paths should be handled.
+    # adapted from: https://code.qt.io/cgit/pyside/pyside-setup.git/tree/examples/scriptableapplication/CMakeLists.txt
+    get_target_property(QtCore_is_framework Qt5::Core FRAMEWORK)
+    if (QtCore_is_framework)
+        get_target_property(qt_core_library_location Qt5::Core LOCATION)
+        get_filename_component(qt_core_library_location_dir "${qt_core_library_location}" DIRECTORY)
+        get_filename_component(lib_dir "${qt_core_library_location_dir}/../" ABSOLUTE)
+        list(APPEND gen_include_paths_arg "--framework-include-paths=${lib_dir}")
+    endif()
+
+    # add the rest of the includes
     foreach(itm ${${gen_include_paths}})
         list(APPEND gen_include_paths_arg "-I${itm}")
     endforeach()
+
+
 
     if(VISIT_LLVM_DIR)
         # the generator needs to know where to find libclang, so ensure its

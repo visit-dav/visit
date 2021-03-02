@@ -20123,6 +20123,9 @@ visit_eventloop(void *)
 //   Hari Krishnan, Brad Whitlock, Tue Mar 5 14:47:PST 2013
 //   Do not synchronize when using embedded viewer. It will cause deadlock.
 //
+//   Cyrus Harrison, Wed Feb 24 16:09:45 PST 2021
+//   Adjustments for Pyside 2 support. 
+//
 // ****************************************************************************
 
 static int
@@ -20147,7 +20150,7 @@ Synchronize()
 
         /// should only run once?
         while(syncCount != syncAtts->GetSyncTag()) {
-            PyRun_SimpleString("visit.__VisIt_PySide_Idle_Hook__()");
+            PyRun_SimpleString("visit_utils.builtin.pyside_support.__VisIt_PySide_Idle_Hook__()");
         }
         syncCount++;
         return 0;
