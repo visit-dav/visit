@@ -133,7 +133,7 @@ int getChildrenIds(int cgioNum, double parentId,
 
     if (numChildrenIds != numChildren)
     {
-        delete[] tmpChildrenIds;
+        delete [] tmpChildrenIds;
         debug1 << "Mismatch in number of children and child Ids read" << endl;
         return 1;
     }
@@ -143,7 +143,7 @@ int getChildrenIds(int cgioNum, double parentId,
         childrenIds[cIdx] = tmpChildrenIds[cIdx];
     }
   
-    delete[] tmpChildrenIds;
+    delete [] tmpChildrenIds;
     return 0;
 }
 
@@ -253,7 +253,7 @@ int showChildren(int cgioNum, double parentId,
 
     if (numChildrenIds != numChildren)
     {
-        delete[] tmpChildrenIds;
+        delete [] tmpChildrenIds;
         debug1 << "Mismatch in number of children and child Ids read." << endl;
         return 1;
     }
