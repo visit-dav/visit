@@ -2379,7 +2379,7 @@ avtCGNSFileReader::ReadNGonSections(vtkUnstructuredGrid *ugrid,
             zone, sec, zonePoints, connOffsets, NULL);
 #else
         char msg[256];
-        sprintf(msg, "CGNS version >= 4000 is required for reading aribitrary "
+        sprintf(msg, "CGNS version >= 4.0.0 is required for reading aribitrary "
             "polygons.")
         EXCEPTION1(ImproperUseException, msg);
 #endif
@@ -2605,7 +2605,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
             zone, curSec, sectionFacePtr, faceOffsets, NULL);
 #else
         char msg[256];
-        sprintf(msg, "CGNS version >= 4000 is required for reading aribitrary "
+        sprintf(msg, "CGNS version >= 4.0.0 is required for reading aribitrary "
             "polyhedra.")
         EXCEPTION1(ImproperUseException, msg);
 #endif
@@ -2717,7 +2717,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
             zone, curSec, faceElements, zoneOffsets, NULL);
 #else
         char msg[256];
-        sprintf(msg, "CGNS version >= 4000 is required for reading aribitrary "
+        sprintf(msg, "CGNS version >= 4.0.0 is required for reading aribitrary "
             "polyhedra.")
         EXCEPTION1(ImproperUseException, msg);
 #endif
