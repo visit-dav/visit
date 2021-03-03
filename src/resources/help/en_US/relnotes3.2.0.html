@@ -68,6 +68,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with the Boxlib reader reading double precision data.</li>
   <li>Fixed a bug with the Silo reader that resulted in VisIt crashing whenever negative material numbers were encountered. VisIt will now display an error message noting that negative material numbers are not supported.</li>
   <li>Fixed a bug in the Stimulate Image reader (file extensions spr, sdt), where a negative pixel delta in the metadata resulted in incorrect pick results, incorrect sampled lineouts and potentially other erroneous behavior.</li>
+  <li>The Xolotl Database reader now supports the ability to visulize super clusters.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -104,7 +105,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Build_features"></a>
 <p><b><font size="4">Build features added in version 3.2</font></b></p>
 <ul>
-  <li>For build_visit, there is now only one way to specify a debug build: --build-mode "Debug". The --debug flag was removed. The default build-mode is "Release". If "Debug" is specified, all third-party libraries are built in debug mode. If the intention is only to build VisIt in debug mode, it should be compiled separately after all the third-party libraries are compiled, passing -DCMAKE_BUILD_TYPE:STRING=Debug to cmake when configuring VisIt.</li> 
+  <li>For build_visit, there is now only one way to specify a debug build: --build-mode "Debug". The --debug flag was removed. The default build-mode is "Release". If "Debug" is specified, all third-party libraries are built in debug mode. If the intention is only to build VisIt in debug mode, it should be compiled separately after all the third-party libraries are compiled, passing -DCMAKE_BUILD_TYPE:STRING=Debug to cmake when configuring VisIt.</li>
   <li>Removed FastBit and FastQuery from VisIt.</li>
   <li>Fixed a bug with build_visit building IceT with MPICH.</li>
 </ul>
