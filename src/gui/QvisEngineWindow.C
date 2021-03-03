@@ -490,6 +490,9 @@ QvisEngineWindow::UpdateInformation(int index)
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Kathleen Biagas, Tue Mar  2 15:49:07 PST 2021
+//    Fix QString arg indexing.
+//
 // ****************************************************************************
 
 void
@@ -528,7 +531,7 @@ QvisEngineWindow::UpdateStatusArea()
         }
         else if (s->GetMessageType() == 2)
         {
-            QString msg = QString("%1/%1").arg(s->GetCurrentStage()).arg(s->GetMaxStage());
+            QString msg = QString("%1/%2").arg(s->GetCurrentStage()).arg(s->GetMaxStage());
             msg = tr("Total Status: Stage ") + msg;
             totalStatusLabel->setText(msg);
             msg = tr("Stage Status: ") + QString(s->GetCurrentStageName().c_str());
