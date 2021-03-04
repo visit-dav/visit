@@ -1772,7 +1772,7 @@ avtCGNSFileReader::GetCurvilinearMesh(int timestate, int base, int zone, const c
 // ****************************************************************************
 
 vtkDataSet *
-avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone, 
+avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
     const char *meshname, const cgsize_t *zsize, int cell_dim, int phys_dim)
 {
     const char *mName = "avtCGNSFileReader::GetUnstructuredMesh: ";
@@ -1792,7 +1792,7 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
             delete [] coords[2];
             EXCEPTION1(InvalidVariableException, meshname);
         }
-        
+
         // Populate the points array.
         unsigned int nPts = zsize[0];
         vtkPoints *pts = vtkPoints::New();
@@ -1856,9 +1856,9 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
         {
             char sectionName[33];
             ElementType_t secElemType = ElementTypeNull;
-            cgsize_t start            = 1; 
+            cgsize_t start            = 1;
             cgsize_t end              = 1;
-            int bound                 = 0; 
+            int bound                 = 0;
             int parentFlag            = 0;
             int elem_status           = CG_OK;
 
@@ -2038,7 +2038,7 @@ avtCGNSFileReader::ReadMixedAndNamedElementSections(vtkUnstructuredGrid *ugrid,
         if (secElemType == MIXED)
         {
 #if CGNS_VERSION >= 4000
-            elem_status = cg_poly_elements_read(GetFileHandle(), base, 
+            elem_status = cg_poly_elements_read(GetFileHandle(), base,
                 zone, sec, elements, NULL, NULL);
 #else
             elem_status = cg_elements_read(GetFileHandle(), base, zone,
@@ -2050,7 +2050,7 @@ avtCGNSFileReader::ReadMixedAndNamedElementSections(vtkUnstructuredGrid *ugrid,
             elem_status = cg_elements_read(GetFileHandle(), base,
                 zone, sec, elements, NULL);
         }
-        
+
         if (elem_status != CG_OK)
         {
             delete [] elements;
@@ -2261,12 +2261,12 @@ avtCGNSFileReader::ReadMixedAndNamedElementSections(vtkUnstructuredGrid *ugrid,
                     higherOrderWarning = true;
                     elem += 27;
                     break;
-                case NGON_n: 
+                case NGON_n:
                     debug1 << mName << "Found NGON_n types while processing "
                            << "named sections... This shouldn't happen!"
                            << endl;
                     break;
-                case NFACE_n: 
+                case NFACE_n:
                     debug1 << mName << "Found NFACE_n types while processing "
                            << "named sections... This shouldn't happen!"
                            << endl;
@@ -2379,7 +2379,7 @@ avtCGNSFileReader::ReadNGonSections(vtkUnstructuredGrid *ugrid,
         }
 
 #if CGNS_VERSION >= 4000
-        status = cg_poly_elements_read(GetFileHandle(), base, 
+        status = cg_poly_elements_read(GetFileHandle(), base,
             zone, sec, zonePoints, connOffsets, NULL);
 #else
         char msg[256];
@@ -2387,7 +2387,7 @@ avtCGNSFileReader::ReadNGonSections(vtkUnstructuredGrid *ugrid,
             "polygons.")
         EXCEPTION1(ImproperUseException, msg);
 #endif
-       
+
         if (status != CG_OK)
         {
             delete [] zonePoints;
@@ -2607,7 +2607,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         cgsize_t *sectionFacePtr = totalFacePoints + sectionOffset;
 
 #if CGNS_VERSION >= 4000
-        status = cg_poly_elements_read(GetFileHandle(), base, 
+        status = cg_poly_elements_read(GetFileHandle(), base,
             zone, curSec, sectionFacePtr, faceOffsets, NULL);
 #else
         char msg[256];
@@ -2615,7 +2615,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
             "polyhedra.")
         EXCEPTION1(ImproperUseException, msg);
 #endif
-       
+
         if (status != CG_OK)
         {
             delete [] faceOffsets;
@@ -2634,7 +2634,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
             // The new offset will start at the section offset.
             //
             totalNGonOffsets[nGonOffsetsIdx++] = faceOffsets[i] + sectionOffset;
-            
+
             //
             // Update our map. Remember that the last entry in the connectivity
             // array is not really part of the global offset indexing scheme in
@@ -2719,7 +2719,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
         }
 
 #if CGNS_VERSION >= 4000
-        status = cg_poly_elements_read(GetFileHandle(), base, 
+        status = cg_poly_elements_read(GetFileHandle(), base,
             zone, curSec, faceElements, zoneOffsets, NULL);
 #else
         char msg[256];
@@ -2727,7 +2727,7 @@ avtCGNSFileReader::ReadNGonAndNFaceSections(vtkUnstructuredGrid *ugrid,
             "polyhedra.")
         EXCEPTION1(ImproperUseException, msg);
 #endif
-       
+
         if (status != CG_OK)
         {
             delete [] faceElements;
