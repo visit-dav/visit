@@ -296,7 +296,7 @@ avtCGNSFileReader::ReadTimes()
                 if(cg_narrays(&narrays) == CG_OK)
                 {
                     debug4 << mName << narrays
-                       << " array(s) under BaseIterative" << endl;
+                           << " array(s) under BaseIterative" << endl;
                     for(int i = 0; i < narrays; ++i)
                     {
                         int ndims = 1;
@@ -368,8 +368,9 @@ avtCGNSFileReader::ReadTimes()
                 }
                 else
                 {
-                    debug4 << mName << "Could not read narrays under BaseIterative node: "
-                       << cg_get_error() << endl;
+                    debug4 << mName << "Could not read narrays "
+                           << "under BaseIterative node: "
+                           << cg_get_error() << endl;
                 }
             }
             else
@@ -1923,7 +1924,7 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
         else if (haveNFaceSections)
         {
             debug1 << mName << "NFace elements MUST be used in conjunction "
-                << " with NGon elements, but only NFace were found." << endl;
+                   << " with NGon elements, but only NFace were found." << endl;
             EXCEPTION1(InvalidVariableException, meshname);
         }
 
@@ -1949,7 +1950,7 @@ avtCGNSFileReader::GetUnstructuredMesh(int timestate, int base, int zone,
 //      GetUnstructuredMesh, which was originally authored by Brad Whitlock.
 //
 //  Arguments:
-//      urgrid                  The unstructured grid to add our cells to.
+//      ugrid                   The unstructured grid to add our cells to.
 //      meshName                The name of our mesh.
 //      mixedAndNamedSections   An array of our mixed and named section indices.
 //      base                    The CGNS base to use.
@@ -2021,7 +2022,7 @@ avtCGNSFileReader::ReadMixedAndNamedElementSections(vtkUnstructuredGrid *ugrid,
         }
 
         debug4 << "Element data size for sec " << sec << " is:"
-            << eDataSize << endl;
+               << eDataSize << endl;
 
         //
         // CGNS refers to the element connectivity as "elements". These
@@ -2262,11 +2263,13 @@ avtCGNSFileReader::ReadMixedAndNamedElementSections(vtkUnstructuredGrid *ugrid,
                     break;
                 case NGON_n: 
                     debug1 << mName << "Found NGON_n types while processing "
-                        << "named sections... This shouldn't happen!" << endl;
+                           << "named sections... This shouldn't happen!"
+                           << endl;
                     break;
                 case NFACE_n: 
                     debug1 << mName << "Found NFACE_n types while processing "
-                        << "named sections... This shouldn't happen!" << endl;
+                           << "named sections... This shouldn't happen!"
+                           << endl;
                     break;
                 default:
                     delete [] elements;
@@ -2301,8 +2304,9 @@ avtCGNSFileReader::ReadMixedAndNamedElementSections(vtkUnstructuredGrid *ugrid,
 //      and will add the elements as 2D surface cells.
 //
 //  Arguments:
-//      urgrid                  The unstructured grid to add our cells to.
+//      ugrid                   The unstructured grid to add our cells to.
 //      meshName                The name of our mesh.
+//      nGonSections            A vector containing NGon_n section ids.
 //      mixedAndNamedSections   An array of our mixed and named section indices.
 //      base                    The CGNS base to use.
 //      zone                    The CGNS zone (domain) to use.
@@ -2430,8 +2434,10 @@ avtCGNSFileReader::ReadNGonSections(vtkUnstructuredGrid *ugrid,
 //      face-to-point connectivity.
 //
 //  Arguments:
-//      urgrid                  The unstructured grid to add our cells to.
+//      ugrid                   The unstructured grid to add our cells to.
 //      meshName                The name of our mesh.
+//      nGonSections            A vector containing NGon_n section ids.
+//      nFaceSections           A vector containing NFace_n section ids.
 //      mixedAndNamedSections   An array of our mixed and named section indices.
 //      base                    The CGNS base to use.
 //      zone                    The CGNS zone (domain) to use.
@@ -2941,7 +2947,7 @@ avtCGNSFileReader::GetVar(int timestate, int domain, const char *varname)
         if(cg_nsols(GetFileHandle(), base, zone, &nsols) != CG_OK)
         {
             debug4 << mName << "Could not get number of solutions in zone "
-                 << zone << endl;
+                   << zone << endl;
             debug4 << cg_get_error() << endl;
             EXCEPTION1(InvalidVariableException, varname);
         }
@@ -2971,7 +2977,7 @@ avtCGNSFileReader::GetVar(int timestate, int domain, const char *varname)
                 &varcentering) != CG_OK)
             {
                 debug4 << "Could not get solution " << sol << "'s info."
-                     << endl;
+                       << endl;
                 debug4 << cg_get_error() << endl;
                 continue;
             }
