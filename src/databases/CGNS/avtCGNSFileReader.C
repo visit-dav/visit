@@ -2307,7 +2307,6 @@ avtCGNSFileReader::ReadMixedAndNamedElementSections(vtkUnstructuredGrid *ugrid,
 //      ugrid                   The unstructured grid to add our cells to.
 //      meshName                The name of our mesh.
 //      nGonSections            A vector containing NGon_n section ids.
-//      mixedAndNamedSections   An array of our mixed and named section indices.
 //      base                    The CGNS base to use.
 //      zone                    The CGNS zone (domain) to use.
 //      cellDim                 Dimension of the cells; 3 for volume cells,
@@ -2438,7 +2437,6 @@ avtCGNSFileReader::ReadNGonSections(vtkUnstructuredGrid *ugrid,
 //      meshName                The name of our mesh.
 //      nGonSections            A vector containing NGon_n section ids.
 //      nFaceSections           A vector containing NFace_n section ids.
-//      mixedAndNamedSections   An array of our mixed and named section indices.
 //      base                    The CGNS base to use.
 //      zone                    The CGNS zone (domain) to use.
 //      cellDim                 Dimension of the cells; 3 for volume cells,
