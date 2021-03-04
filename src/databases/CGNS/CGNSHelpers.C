@@ -11,7 +11,7 @@
 // ****************************************************************************
 // Function: PrintDataType
 //
-// Purpose: 
+// Purpose:
 //   Prints the name of the data type to debug4.
 //
 // Arguments:
@@ -21,7 +21,7 @@
 // Creation:   Wed Aug 31 09:33:43 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static void
@@ -56,7 +56,7 @@ PrintDataType(DataType_t dt)
 // ****************************************************************************
 // Function: PrintElementType
 //
-// Purpose: 
+// Purpose:
 //   Prints the name of the element type to debug4.
 //
 // Arguments:
@@ -66,7 +66,7 @@ PrintDataType(DataType_t dt)
 // Creation:   Wed Aug 31 09:33:43 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static void
@@ -100,7 +100,7 @@ PrintElementType(ElementType_t et)
 // ****************************************************************************
 // Function: getChildrenIds
 //
-// Purpose: 
+// Purpose:
 //   Retrieve the children ids from a CGNS node.
 //
 //   NOTE: while this can be used for general purposes, it is currently
@@ -115,7 +115,7 @@ PrintElementType(ElementType_t et)
 // Creation:   Tue Mar  2 08:01:12 PST 2021
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int getChildrenIds(int cgioNum, double parentId,
@@ -123,10 +123,10 @@ int getChildrenIds(int cgioNum, double parentId,
 {
     int numChildren;
     cgio_number_children(cgioNum, parentId, &numChildren);
-  
+
     childrenIds.resize(numChildren);
     double* tmpChildrenIds = new double[numChildren];
-  
+
     int numChildrenIds;
     cgio_children_ids(cgioNum, parentId, 1, numChildren,
         &numChildrenIds, tmpChildrenIds);
@@ -137,12 +137,12 @@ int getChildrenIds(int cgioNum, double parentId,
         debug1 << "Mismatch in number of children and child Ids read" << endl;
         return 1;
     }
-  
+
     for (int cIdx = 0; cIdx < numChildren; cIdx++)
     {
         childrenIds[cIdx] = tmpChildrenIds[cIdx];
     }
-  
+
     delete [] tmpChildrenIds;
     return 0;
 }
@@ -151,7 +151,7 @@ int getChildrenIds(int cgioNum, double parentId,
 // ****************************************************************************
 // Function: getBaseIds
 //
-// Purpose: 
+// Purpose:
 //   Retrieve the base Ids from a root Id of a dataset.
 //
 //   NOTE: while this can be used for general purposes, it is currently
@@ -166,7 +166,7 @@ int getChildrenIds(int cgioNum, double parentId,
 // Creation:   Tue Mar  2 08:01:12 PST 2021
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int getBaseIds(int cgioNum, double rootId, std::vector<double>& baseIds)
@@ -219,7 +219,7 @@ int getBaseIds(int cgioNum, double rootId, std::vector<double>& baseIds)
 // ****************************************************************************
 // Function: showChildren
 //
-// Purpose: 
+// Purpose:
 //   Show all children of a given CGNS node.
 //
 //   NOTE: this is for aid in debugging.
@@ -235,7 +235,7 @@ int getBaseIds(int cgioNum, double rootId, std::vector<double>& baseIds)
 // Creation:   Tue Mar  2 08:01:12 PST 2021
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int showChildren(int cgioNum, double parentId,
@@ -243,10 +243,10 @@ int showChildren(int cgioNum, double parentId,
 {
     int numChildren;
     cgio_number_children(cgioNum, parentId, &numChildren);
-  
+
     childrenIds.resize(numChildren);
     double* tmpChildrenIds = new double[numChildren];
-  
+
     int numChildrenIds;
     cgio_children_ids(cgioNum, parentId, 1, numChildren,
         &numChildrenIds, tmpChildrenIds);
@@ -257,7 +257,7 @@ int showChildren(int cgioNum, double parentId,
         debug1 << "Mismatch in number of children and child Ids read." << endl;
         return 1;
     }
-  
+
     //
     // Recursively iterate through all children, displaying their
     // information in the debug stream as we go.
@@ -280,7 +280,7 @@ int showChildren(int cgioNum, double parentId,
         std::vector<double> bar;
         showChildren(cgioNum, tmpChildrenIds[cIdx], bar, prepend + "    ");
     }
-  
+
     delete [] tmpChildrenIds;
     return 0;
 }
