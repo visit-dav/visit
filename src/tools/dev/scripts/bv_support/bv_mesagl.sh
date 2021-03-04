@@ -134,6 +134,10 @@ EOF
         return 1
     fi
 
+    #
+    # Patch so that displaying graphics to the XWin-32 2018 X server
+    # works properly.
+    #
     patch -p0 << \EOF
 diff -c src/gallium/winsys/sw/xlib/xlib_sw_winsys.c.orig src/gallium/winsys/sw/xlib/xlib_sw_winsys.c
 *** src/gallium/winsys/sw/xlib/xlib_sw_winsys.c.orig	Thu Mar  4 13:12:20 2021
