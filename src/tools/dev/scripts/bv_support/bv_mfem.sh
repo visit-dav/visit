@@ -108,6 +108,42 @@ function bv_mfem_dry_run
     fi
 }
 
+function apply_mfem_patch
+{
+    # On IBM PPC systems the system defines "__VSX__" but some of the
+    # VSX functions are not defined with gcc, which VisIt typically
+    # uses. To avoid this we disable all the VSX coding. This is ok
+    # since VSX just optimizes performance, so no functionality is lost.
+    patch -p0 << \EOF
+diff -c ./linalg/simd/vsx128.hpp.orig ./linalg/simd/vsx128.hpp
+*** ./linalg/simd/vsx128.hpp.orig	Tue Mar  9 06:55:45 2021
+--- ./linalg/simd/vsx128.hpp	Tue Mar  9 06:57:37 2021
+***************
+*** 12,18 ****
+  #ifndef MFEM_SIMD_VSX128_HPP
+  #define MFEM_SIMD_VSX128_HPP
+  
+! #ifdef __VSX__
+  
+  #include "../../config/tconfig.hpp"
+  #include <altivec.h>
+--- 12,18 ----
+  #ifndef MFEM_SIMD_VSX128_HPP
+  #define MFEM_SIMD_VSX128_HPP
+  
+! #ifdef __VSX_NOMATCH__
+  
+  #include "../../config/tconfig.hpp"
+  #include <altivec.h>
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MFEM patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 # *************************************************************************** #
 #                            Function 8, build_mfem
 # *************************************************************************** #
@@ -123,7 +159,28 @@ function build_mfem
         return 1
     fi
 
+    #
+    # Apply patches.
+    #
     cd $MFEM_BUILD_DIR || error "Can't cd to mfem build dir."
+
+    info "Patching MFEM"
+    apply_mfem_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_mfem == 1 ]] ; then
+            warn "Giving up on MFEM build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
+    #
+    # Build MFEM.
+    #
     mkdir build
     cd build || error "Can't cd to MFEM build dir."
 
