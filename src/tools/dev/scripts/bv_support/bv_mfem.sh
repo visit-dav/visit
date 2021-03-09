@@ -110,10 +110,10 @@ function bv_mfem_dry_run
 
 function apply_mfem_patch
 {
-    # On IBM POWER7 and later systems the system defines "__VSX__" but some
-    # of the VSX functions are not defined with gcc, which VisIt typically
-    # uses. To avoid this we disable all the VSX coding. This is ok because
-    # VSX just optimizes performance, so no functionality is lost.
+    # On IBM PPC systems the system defines "__VSX__" but some of the
+    # VSX functions are not defined with gcc, which VisIt typically
+    # uses. To avoid this we disable all the VSX coding. This is ok
+    # since VSX just optimizes performance, so no functionality is lost.
     patch -p0 << \EOF
 diff -c ./linalg/simd/vsx128.hpp.orig ./linalg/simd/vsx128.hpp
 *** ./linalg/simd/vsx128.hpp.orig	Tue Mar  9 06:55:45 2021
