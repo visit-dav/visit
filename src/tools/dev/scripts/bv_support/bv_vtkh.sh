@@ -156,13 +156,17 @@ function build_vtkh
     vopts=""
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/vtkh/${VTKH_VERSION}/${VISITARCH}"
     vopts="${vopts} -DVTKM_DIR=${VISITDIR}/vtkm/${VTKM_VERSION}/${VISITARCH}"
-    vopts="${vopts} -DBUILD_SHARED_LIBS=ON"
     vopts="${vopts} -DENABLE_MPI=OFF"
     vopts="${vopts} -DENABLE_OPENMP=OFF"
     vopts="${vopts} -DCMAKE_BUILD_TYPE=${VISIT_BUILD_MODE}"
     if [[ -d $CUDA_HOME ]]; then
+        # Turn off shared libraries with CUDA support, since VTKm
+        # requires static libraries with CUDA.
         echo "Building with CUDA support."
         vopts="${vopts} -DENABLE_CUDA=ON"
+        vopts="${vopts} -DBUILD_SHARED_LIBS=OFF"
+    else
+        vopts="${vopts} -DBUILD_SHARED_LIBS=ON"
     fi
 
     #
