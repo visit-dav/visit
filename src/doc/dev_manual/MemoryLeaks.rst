@@ -49,7 +49,8 @@ Building VisIt_
 Just like the third party libraries, VisIt_ needs to be built with debug
 support in order for Valgrind to produce useful stack traces. Furthermore,
 VisIt_ contains conditional code that does additional cleanup at exit to
-eliminate spurious memory leaks that is enabled with VISIT_DEBUG_LEAKS.
+eliminate spurious memory leaks. The additional cleanup is enabled with
+DEBUG_MEMORY_LEAKS.
 The following steps were used to build VisIt_ as described. ::
 
     cd visit3.1.0
