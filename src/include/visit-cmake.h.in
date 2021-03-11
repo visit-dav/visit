@@ -372,9 +372,16 @@ logic here to cause compilation failure if this logic seems to be failing.
 /* Define a uniform socket buffer size that we can use in various places. */
 #define VISIT_SOCKET_BUFFER_SIZE 1024
 
-/* define control to intentionally leak things or not. my profiling shows it
-   saves on the order of 0.001 sec to undefine this. leaving it undefined
-   for now in case there's some issue with it when using a remote server.
+/* 
+   When DEBUG_MEMORY_LEAKS is defined, then extra object-cleanup occurs.
+   When not defined, VisIt shortciruits some cleanup at exit.
+   Profiling shows it saves on the order of 0.001 sec to NOT have this defined.
+
+   Uncomment this when debugging memory leaks so that there will be no
+   intentional leaks.
+
+   The uncommenting of DEBUG_MEMORY_LEAKS should never be committed. 
+
 #define DEBUG_MEMORY_LEAKS
 */
 
