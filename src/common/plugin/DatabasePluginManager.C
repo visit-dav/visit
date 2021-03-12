@@ -54,7 +54,7 @@ DatabasePluginManager::DatabasePluginManager() : PluginManager("database")
 //    Call UnloadPlugins here since it calls virtual methods for this class.
 //
 //    Kathleen Biagas, Thu Mar 11 2021
-//    On Windows, only unload plugins when debugging memory leaks.
+//    Only unload plugins when debugging memory leaks.
 //    There is a crash during the unloading of the plugins at exit, causing
 //    mdserver memory dump files to be silently generated, sometimes even
 //    resulting in a Windows error dialog popping up on exit.
@@ -63,7 +63,7 @@ DatabasePluginManager::DatabasePluginManager() : PluginManager("database")
 
 DatabasePluginManager::~DatabasePluginManager()
 {
-#if !defined(_WIN32 ) || defined(DEBUG_MEMORY_LEAKS)
+#if defined(DEBUG_MEMORY_LEAKS)
     UnloadPlugins();
 #endif
 }
