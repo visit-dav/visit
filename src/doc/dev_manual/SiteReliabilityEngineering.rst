@@ -252,16 +252,16 @@ Active SRE Issues Repo
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. 
 For each new inquiry, the primary will file an issue ticket and assign themselves.
 
-The issue shall be closed when the associated inquiry is
-:ref:`resolved <sre_response_vs_resolution>`. Or, the issue will be closed and labeled
-``expired`` when 21 days pass in which when the user ceases to engage in any ongoing
-conversation VisIt_ developers require to reach resolution.
-
 The primary will endeavor to capture all relevant information and
 communications in this issue. The use of GitHub issues for this purpose has a number
 of advantages over other options such as email including better search/browse as well
 as support for attachments. For this reason, a number of steps were taken to integrate
 the ``visit-users@elist.ornl.gov`` email list with this issues-only repository.
+
+The SRE issue shall be closed when the associated inquiry is
+:ref:`resolved <sre_response_vs_resolution>`. Or, it will be closed and labeled
+``expired`` when 21 days pass in which when the user ceases to engage in any ongoing
+conversation VisIt_ developers require to reach resolution.
 
 Upon receiving a *new* inquiry on the ``visit-users`` email list, telephone hotline
 call, or walk-in (with the exception of walk-ins involving classified information),
