@@ -251,8 +251,13 @@ Active SRE Issues Repo
 `issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. 
 For each new inquiry, the primary will file an issue ticket and assign themselves.
-When the inquiry is :ref:`resolved <sre_response_vs_resolution>`, the associated
-issue is closed. The primary will endeavor to capture all relevant information and
+
+The issue shall be closed when the associated inquiry is
+:ref:`resolved <sre_response_vs_resolution>`. Or, the issue will be closed and labeled
+``expired`` when 21 days pass in which when the user ceases to engage in any ongoing
+conversation VisIt_ developers require to reach resolution.
+
+The primary will endeavor to capture all relevant information and
 communications in this issue. The use of GitHub issues for this purpose has a number
 of advantages over other options such as email including better search/browse as well
 as support for attachments. For this reason, a number of steps were taken to integrate
