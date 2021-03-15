@@ -260,8 +260,8 @@ the ``visit-users@elist.ornl.gov`` email list with this issues-only repository.
 
 The SRE issue shall be closed when the associated inquiry is
 :ref:`resolved <sre_response_vs_resolution>`. Or, it will be closed and labeled
-``wontfix`` when 21 days pass in which when the user ceases to engage in any ongoing
-conversation VisIt_ developers require to reach resolution.
+``wontfix`` after 21 days pass since the user last engaged in any conversation with
+VisIt developers to reach a resolution.
 
 Upon receiving a *new* inquiry on the ``visit-users`` email list, telephone hotline
 call, or walk-in (with the exception of walk-ins involving classified information),
