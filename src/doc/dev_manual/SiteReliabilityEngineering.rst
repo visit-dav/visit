@@ -12,7 +12,7 @@ Some of these may relate to the *use* of VisIt_ such as
 and some may relate to an *operational* aspect of either the VisIt_ software
 itself such as
 
-    * A botched *managed* VisIt installation.
+    * A botched *managed* VisIt_ installation.
     * An update to host profiles to address site access changes.
     * A missing database reader plugin.
 
@@ -261,7 +261,7 @@ the ``visit-users@elist.ornl.gov`` email list with this issues-only repository.
 The SRE issue shall be closed when the associated inquiry is
 :ref:`resolved <sre_response_vs_resolution>`. Or, it will be closed and labeled
 ``wontfix`` after 21 days pass since the user last engaged in any conversation with
-VisIt developers to reach a resolution.
+VisIt_ developers to reach a resolution.
 
 Upon receiving a *new* inquiry on the ``visit-users`` email list, telephone hotline
 call, or walk-in (with the exception of walk-ins involving classified information),
