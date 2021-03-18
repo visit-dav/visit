@@ -281,11 +281,21 @@ function build_pyside
         info "Configuring pyside . . ."
 
         # Note:
-        # the pyside build process needs to resolve OpenGL libs several times 
-        # if we are using mesa as gl, we need to provide the proper path 
-        # to gl via LD_LIBRARY_PATH
+        # The pyside build process needs to resolve OpenGL libs several
+        # times. If we are using mesa as gl, we need to provide the proper
+        # path to gl via LD_LIBRARY_PATH
         if [[ "$DO_MESAGL" == "yes" ]] ; then
             export LD_LIBRARY_PATH=${MESAGL_LIB_DIR}:${LD_LIBRARY_PATH}
+        fi
+
+        # If we are using our own llvm, then we need to provide the path
+        # to libLLVM.
+        if [[ "$DO_LLVM" == "yes" ]] ; then
+            if [[ "$OPSYS" == "Darwin" ]]; then
+                export DYLD_LIBRARY_PATH="$VISITDIR/llvm/$BV_LLVM_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+            else
+                export LD_LIBRARY_PATH="$VISITDIR/llvm/$BV_LLVM_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+            fi
         fi
 
         echo "\"${CMAKE_BIN}\"" ${pyside_opts} ../${PYSIDE_SRC_DIR} > bv_run_cmake.sh
